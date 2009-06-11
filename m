@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbZFKSzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZFKS5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757607AbZFKSzp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbZFKSzh
+	id S1757365AbZFKS5N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbZFKS47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:55:37 -0400
-Received: from mga09.intel.com ([134.134.136.24]:23034 "EHLO mga09.intel.com"
+	Thu, 11 Jun 2009 14:56:59 -0400
+Received: from mga01.intel.com ([192.55.52.88]:3208 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbZFKSzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:55:36 -0400
+	id S1754997AbZFKS46 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:56:58 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,203,1243839600"; 
-   d="scan'208";a="420946313"
-Date: Thu, 11 Jun 2009 11:54:58 -0700
+   d="scan'208";a="698575375"
+Date: Thu, 11 Jun 2009 11:56:13 -0700
 From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] PCI PM: Read device power state from register after
- updating it
-Message-ID: <20090611115458.66650e04@jbarnes-g45>
-In-Reply-To: <200905262152.29489.rjw@sisk.pl>
-References: <200905182246.41129.rjw@sisk.pl>
-	<200905182252.21478.rjw@sisk.pl>
-	<200905262152.29489.rjw@sisk.pl>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 1/3] pci: Provide Multiple Error Received and no error
+ source id support on AER
+Message-ID: <20090611115613.40beb30f@jbarnes-g45>
+In-Reply-To: <1241504532.27664.45.camel@ymzhang>
+References: <1241504532.27664.45.camel@ymzhang>
 X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 May 2009 21:52:29 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Tue, 05 May 2009 14:22:12 +0800
+"Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
 
-> On Monday 18 May 2009, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > After attempting to change the power state of a PCI device
-> > pci_raw_set_power_state() doesn't check if the value it wrote into
-> > the device's PCI_PM_CTRL register has been stored in there.  Still,
-> > it modifies the device's current_state field as though that's the
-> > case.  This may cause the driver of the device to think that its
-> > power state has been changed while in fact it hasn't.
-> > 
-> > To prevent such situations from happening modify
-> > pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
-> > register after writing into it and uses the value read from the
-> > register to update the device's current_state field.  Also make it
-> > return -EIO if the new state of the device is not equal to the state
-> > requested by the called.
-> > 
-> > To distinguish this error condition from the other ones make
-> > pci_raw_set_power_state() return -ENOSYS instead of -EIO when it is
-> > impossible to change the power state of the device, because it
-> > doesn't support the native PCI PM at all or the requested target
-> > state is not supported by it.
+> Based on PCI Express AER specs, a root port might receive multiple
+> TLP errors while it could only save a correctable error source id
+> and an uncorrectable error source id at the same time. In addition,
+> some root port hardware might be unable to provide a correct source
+> id, i.e., the source id provided by root port might be equal to 0.
 > 
-> Having reconsidered it I think that -ENODEV is probably better than
-> -ENOSYS for this purpose.  Updated patch follows.
+> The patchset implements the support in kernel by searching the device
+> tree under the root port.
+> 
+> Patch 1 changes parameter cb of function pci_walk_bus to return a
+> value. When cb return non-zero, pci_walk_bus stops more searching on
+> the device tree.
+> 
+> ﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
 
-Applied to linux-next, thanks Rafael.
+Yanmin, can you resend these against my linux-next tree later today or
+tomorrow?  I'll be rebasing to get the latest bits there, and there are
+some conflicts (would also be good to get some additional review; I
+definitely like this feature though).
 
+Thanks,
 -- 
 Jesse Barnes, Intel Open Source Technology Center
