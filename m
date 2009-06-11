@@ -1,88 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763125AbZFKLOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763216AbZFKLQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763125AbZFKLOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762167AbZFKLNs
+	id S1763216AbZFKLQA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762983AbZFKLPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:13:48 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58883 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763030AbZFKLNq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:13:46 -0400
-Message-ID: <4c72e5b8de091845036fe2b5227168f5.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
-References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090611170018.c3758488.kamezawa.hiroyu@jp.fujitsu.com>
-    <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
-Date: Thu, 11 Jun 2009 20:13:46 +0900 (JST)
-Subject: Re: [PATCH 1/3] remove wrong rotation at lumpy reclaim
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Minchan Kim" <minchan.kim@gmail.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie
-User-Agent: SquirrelMail/1.4.16
+	Thu, 11 Jun 2009 07:15:52 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56962 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762923AbZFKLPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 07:15:51 -0400
+Date: Thu, 11 Jun 2009 12:15:51 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH for mmotm 5/5] fix
+	vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
+Message-ID: <20090611111550.GF7302@csn.ul.ie>
+References: <20090611192114.6D4A.A69D9226@jp.fujitsu.com> <20090611192757.6D59.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090611192757.6D59.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
-> On Thu, Jun 11, 2009 at 5:00 PM, KAMEZAWA
-> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> At lumpy reclaim, a page failed to be taken by __isolate_lru_page() can
->> be pushed back to "src" list by list_move(). But the page may not be
->> from
->> "src" list. And list_move() itself is unnecessary because the page is
->> not on top of LRU. Then, leave it as it is if __isolate_lru_page()
->> fails.
->>
->> This patch doesn't change the logic as "we should exit loop or not" and
->> just fixes buggy list_move().
->>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> ---
->> ?mm/vmscan.c | ? ?9 +--------
->> ?1 file changed, 1 insertion(+), 8 deletions(-)
->>
->> Index: lumpy-reclaim-trial/mm/vmscan.c
->> ===================================================================
->> --- lumpy-reclaim-trial.orig/mm/vmscan.c
->> +++ lumpy-reclaim-trial/mm/vmscan.c
->> @@ -936,18 +936,11 @@ static unsigned long isolate_lru_pages(u
->> ? ? ? ? ? ? ? ? ? ? ? ?/* Check that we have not crossed a zone
->> boundary. */
->> ? ? ? ? ? ? ? ? ? ? ? ?if (unlikely(page_zone_id(cursor_page) !=
->> zone_id))
->> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?continue;
->> - ? ? ? ? ? ? ? ? ? ? ? switch (__isolate_lru_page(cursor_page, mode,
->> file)) {
->> - ? ? ? ? ? ? ? ? ? ? ? case 0:
->> + ? ? ? ? ? ? ? ? ? ? ? if (__isolate_lru_page(cursor_page, mode, file)
->> == 0) {
->> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?list_move(&cursor_page->lru, dst);
->> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?nr_taken++;
->> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?scan++;
->> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?break;
->
-> break ??
->
-good catch. I'll post updated one tomorrow.
-I'm very sorry ;(
+On Thu, Jun 11, 2009 at 07:28:30PM +0900, KOSAKI Motohiro wrote:
+> Subject: [PATCH] fix vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch 
+> 
+> 
+> +	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> +				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> +				 zone_page_state(zone, NR_FILE_MAPPED);
+> 
+> is wrong. it can be underflow because tmpfs pages are not counted NR_*_FILE,
+> but they are counted NR_FILE_MAPPED.
+> 
+> fixing here.
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  mm/vmscan.c |   32 ++++++++++++++++++++------------
+>  1 file changed, 20 insertions(+), 12 deletions(-)
+> 
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2333,6 +2333,23 @@ int sysctl_min_unmapped_ratio = 1;
+>   */
+>  int sysctl_min_slab_ratio = 5;
+>  
+> +static unsigned long zone_unmapped_file_pages(struct zone *zone)
+> +{
+> +	long nr_file_pages;
+> +	long nr_file_mapped;
+> +	long nr_unmapped_file_pages;
+> +
+> +	nr_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> +			zone_page_state(zone, NR_ACTIVE_FILE);
+> +	nr_file_mapped = zone_page_state(zone, NR_FILE_MAPPED) -
+> +			 zone_page_state(zone,
+> +					NR_SWAP_BACKED_FILE_MAPPED);
+> +	nr_unmapped_file_pages = nr_file_pages - nr_file_mapped;
+> +
+> +	return nr_unmapped_file_pages > 0 ? nr_unmapped_file_pages : 0;
+> +}
 
-Thanks,
--Kame
+This is a more accurate calculation for sure. The question is - is it
+necessary?
 
+> +
+> +
+>  /*
+>   * Try to free up some pages from this zone through reclaim.
+>   */
+> @@ -2355,7 +2372,6 @@ static int __zone_reclaim(struct zone *z
+>  		.isolate_pages = isolate_pages_global,
+>  	};
+>  	unsigned long slab_reclaimable;
+> -	long nr_unmapped_file_pages;
+>  
+>  	disable_swap_token();
+>  	cond_resched();
+> @@ -2368,11 +2384,7 @@ static int __zone_reclaim(struct zone *z
+>  	reclaim_state.reclaimed_slab = 0;
+>  	p->reclaim_state = &reclaim_state;
+>  
+> -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> -				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> -				 zone_page_state(zone, NR_FILE_MAPPED);
+> -
+> -	if (nr_unmapped_file_pages > zone->min_unmapped_pages) {
+> +	if (zone_unmapped_file_pages(zone) > zone->min_unmapped_pages) {
+>  		/*
+>  		 * Free memory by calling shrink zone with increasing
+>  		 * priorities until we have enough memory freed.
+> @@ -2419,8 +2431,7 @@ int zone_reclaim(struct zone *zone, gfp_
+>  {
+>  	int node_id;
+>  	int ret;
+> -	long nr_unmapped_file_pages;
+> -	long nr_slab_reclaimable;
+> +	unsigned long nr_slab_reclaimable;
+>  
+>  	/*
+>  	 * Zone reclaim reclaims unmapped file backed pages and
+> @@ -2432,11 +2443,8 @@ int zone_reclaim(struct zone *zone, gfp_
+>  	 * if less than a specified percentage of the zone is used by
+>  	 * unmapped file backed pages.
+>  	 */
+> -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> -				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> -				 zone_page_state(zone, NR_FILE_MAPPED);
+>  	nr_slab_reclaimable = zone_page_state(zone, NR_SLAB_RECLAIMABLE);
+> -	if (nr_unmapped_file_pages <= zone->min_unmapped_pages &&
+> +	if (zone_unmapped_file_pages(zone) <= zone->min_unmapped_pages &&
+>  	    nr_slab_reclaimable <= zone->min_slab_pages)
+>  		return 0;
+>  
+> 
+> 
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
