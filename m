@@ -1,90 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbZFKUQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbZFKUVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759480AbZFKUQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 16:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZFKUQM
+	id S1758424AbZFKUVw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 16:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZFKUVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 16:16:12 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:36982 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbZFKUQL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 16:16:11 -0400
+	Thu, 11 Jun 2009 16:21:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53919 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751434AbZFKUVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 16:21:44 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Stezenbach <js@sig21.net>
+Subject: Re: 2.6.30: hibernation/swsusp stuck in disable_nonboot_cpus
+Date: Thu, 11 Jun 2009 22:21:57 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <20090611165608.GA4908@sig21.net>
+In-Reply-To: <20090611165608.GA4908@sig21.net>
 MIME-Version: 1.0
-In-Reply-To: <20090611095432.2e3a4067@hskinnemoen-d830>
-References: <c8284b5b0906101641v586c3487i465263bb6908e3f7@mail.gmail.com>
-	 <20090611095432.2e3a4067@hskinnemoen-d830>
-Date: Thu, 11 Jun 2009 13:16:12 -0700
-X-Google-Sender-Auth: 2cfd987d77bec258
-Message-ID: <c8284b5b0906111316p1367a508vdb59ee7c2a8d2ff1@mail.gmail.com>
-Subject: Re: [PATCH][Fix] New Unified AVR32/AT91 MCI Driver that supports both 
-	MCI slots used at the same time
-From: Rob Emanuele <poorarm@shoreis.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Joey Oravec <joravec@drewtech.com>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906112221.57926.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Haavard,
+On Thursday 11 June 2009, Johannes Stezenbach wrote:
+> Hi,
+> 
+> on my work machine susend-to-disk is broken in 2.6.30.  Last
+> known working kernel was 2.6.29.1. I'm running a 32bit kernel.
+> CPU is an AMD Athlon(tm) Dual Core Processor 4850e.
+> Board is a Gigabyte GA-MA78GM-S2H rev 1.1.
+> 
+> - usually it stops on suspend after the message
+>   "Suspending console(s) (use no_console_suspend to debug)"
+> 
+> - I booted with no_console_suspend using serial console
+>   as recommended in Documentation/power/basic-pm-debugging.txt.
+> 
+>   No joy, apparently the serial driver is disabled during suspend
+>   and no interesting output on serial console...
+> 
+> - no_console_suspend on VESA fb console worked better, last msg is
+>   "Disabling non-boot CPUs ..."
+> 
+> - I stripped down my config, and after serveral retries
+>   it _sometimes_ gets past the "Disabling non-boot CPUs ...".
+>   Then the last lines are (penciled from screen):
+> 
+>       Enabling non-boot CPUs ...
+>       SMP alternatives: switching to SMP code
+>       Booting processor 1 APIC 0x1 ip 0x6000
+>       Initializing CPU#1
+>       Stuck ??
+>       Error taking CPU#1 up: -5
+> 
+>   I also got past this point once, but then it hung at the
+>   same spot on resume.
+> 
+> - I tried    echo 0 > /sys/devices/system/cpu/cpu1/online
+> 
+>      CPU 1 is now offline
+>      SMP alternatives: switching to UP code
+>      CPU0 attaching NULL sched-domain.
+>      CPU1 attaching NULL sched-domain.
+>      CPU0 attaching NULL sched-domain.
+>      PM: Removing info for No Bus:msr1
+>      PM: Removing info for No Bus:cpu1
+> 
+> - and     echo 1 > /sys/devices/system/cpu/cpu1/online
+> 
+>      PM: Adding info for No Bus:msr1
+>      PM: Adding info for No Bus:cpu1
+>      SMP alternatives: switching to SMP code
+>      Booting processor 1 APIC 0x1 ip 0x6000
+>      Initializing CPU#1
+>      Calibrating delay using timer specific routine.. 5022.45 BogoMIPS (lpj=10044915)
+>      CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+>      CPU: L2 Cache: 512K (64 bytes/line)
+>      CPU: Physical Processor ID: 0
+>      CPU: Processor Core ID: 1
+>      Intel machine check architecture supported.
+>      Intel machine check reporting enabled on CPU#1.
+>      CPU1: AMD Athlon(tm) Dual Core Processor 4850e stepping 02
+>      CPU0 attaching NULL sched-domain.
+>      Switched to high resolution mode on CPU 1
+>      CPU0 attaching sched-domain:
+>       domain 0: span 0-1 level CPU
+>        groups: 0 1
+>      CPU1 attaching sched-domain:
+>       domain 0: span 0-1 level CPU
+>        groups: 1 0
+>      Warning: Processor Platform Limit event detected, but not handled.
+>      Consider compiling CPUfreq support into your kernel.
+> 
+> 
+> Kernel config, dmesg and lspci below.  Is there anyting I could
+> try besides git bisect?
 
->> This patch unifies the at91 changes I had into the atmel-mci
->> (originally for AVR32) driver.
->
-> That doesn't look so bad...but I suspect PDC support hasn't been
-> integrated yet?
+Perhaps.  Please check if the kernel where the following commit is the head:
 
-PDC support is not written yet.
+commit 2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Mon Mar 16 22:34:06 2009 +0100
 
->
->> As with the at91 port I had of this driver, I had to add more flags to
->> the ATMCI_DATA_ERROR_FLAGS as other communication errors were
->> occurring and they were not be reported back.  Can anyone add more
->> insight into this?
->
-> Adding them to the data error bits doesn't sound like the right thing
-> to do...but I guess there might be some sort of timing issue in there
-> where we think we're done sending the command but the controller may
-> still raise errors.
->
->> Again, anyone who can, please test (on either or both the AT91 and
->> AVR32) and comment.
->
-> I haven't looked very closely at it yet, but I spotted a few things
-> which might prevent the patch from being accepted as-is:
->  - I'm not sure if adding "unified" (or "now supports AT91") all over
->    the place is the right thing to do. If the driver is selectable
->    when you configure for AT91, it should obviously work on AT91.
+    PM: Rework handling of interrupts during suspend-resume
 
-Well, what is the best way to differentiate it from the at91_mci
-driver and keep users from trying to use both drivers?
+is also broken.
 
->  - The patch seems to do a bit too much all at once. The bug fix which
->    has already been fixed is one example, another is the clock cap
->    option -- we used to have a module parameter for the same purpose,
->    but Pierre (the MMC maintainer, who should probably be added to the
->    loop) had problems with it. If this feature was in a separate
->    patch, it could be rejected without blowing away the rest of the
->    driver.
-
-Which kernel branch should I generate the patch against to have the
-most recent set of changes?
-
-I can break out the clock cap code without any issues.
-
->  - The AT91 platform parts should be separated from the rest since it
->    may need to go through a different maintainer.
-
-Who would that be as I haven't seen anyone who maintains any of those
-boards other than the at91rm8200 (at least nothing listed in the
-MAINTAINERS file)?  The board-sam9g20ek.c platform only shows Atmel as
-the most recent copyright.
-
-Thank you,
-
-Rob Emanuele
+Best,
+Rafael
