@@ -1,72 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbZFKXUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbZFKXVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbZFKXUS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbZFKXUG
+	id S1762691AbZFKXVT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbZFKXVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 19:20:06 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44247 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755516AbZFKXUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 19:20:05 -0400
-Date: Fri, 12 Jun 2009 00:19:52 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Marcel Holtmann <marcel@holtmann.org>, Ingo Molnar <mingo@elte.hu>,
-       Martin Bligh <mbligh@google.com>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-Message-ID: <20090611231952.GX8633@ZenIV.linux.org.uk>
-References: <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <33307c790906111124m17e57332oc38c89fa70e39231@mail.gmail.com> <alpine.LFD.2.01.0906111127520.3573@localhost.localdomain> <20090611202341.GA23590@elte.hu> <1244753357.27363.82.camel@violet> <20090611210810.GA9317@uranus.ravnborg.org> <1244755036.27363.93.camel@violet> <20090611212635.GA9446@uranus.ravnborg.org> <4A3182C6.803@gmail.com> <alpine.LFD.2.01.0906111521210.3535@localhost.localdomain>
+	Thu, 11 Jun 2009 19:21:00 -0400
+Received: from ns2.allidaho.com ([66.232.90.194]:52471 "EHLO mail.allidaho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755516AbZFKXU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 19:20:59 -0400
+X-Greylist: delayed 3164 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 19:20:59 EDT
+From: "Dialup Jon Norstog" <thursday@allidaho.com>
+To: john stultz <johnstul@us.ibm.com>, rth@twiddle.net,
+       ink@jurassic.park.msu.ru
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
+Subject: Re: [PATCH] Convert alpha to use arch_gettimeoffset()
+Date: Thu, 11 Jun 2009 16:21:51 -0600
+Message-Id: <20090611222122.M49967@allidaho.com>
+In-Reply-To: <1244758210.7192.5.camel@localhost.localdomain>
+References: <1244758210.7192.5.camel@localhost.localdomain>
+X-Mailer: OpenWebMail 2.52 20061019
+X-OriginatingIP: 65.117.241.100 (thursday)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906111521210.3535@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset=iso-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 03:27:36PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 12 Jun 2009, Jiri Slaby wrote:
-> > 
-> > Bah, having 40M .src.rpm for a 5k binary package?
-> 
-> Why do people who don't even know how packaging works bother to even 
-> participate in the discussion?
-> 
-> Look at how many git binary packages there are some day. For CVS users, 
-> for SVN people, graphical tools etc. Do you think that each of them has a 
-> source package?
-> 
-> No.
-> 
-> You can generate multiple binary packages from the same source package 
-> (trivial example: debug builds etc). But you want to make a point, and 
-> then YOU USE SOME DAMN IDIOTIC AND IGNORANT argument to do so.
+John,
 
-Linus, the real question that needs to be answered is this:
+Thank you so much!
 
-	What shall be done to ABI-breaking changes when users of that ABI are
-in tools/*?
 
-_That_ is the real issue.  Because I can guarantee that there will be attempts
-to use that as an excuse for ABI breakage.  We have one specimen in this
-thread already, complete with "oh, bisect problems don't matter, just rebuild
-all packages" (and install them where, exactly? if it, say, break-the-boot
-kind of incompatibility, how does one recover from running into a b0rken
-kernel during bisect?)
+jn
 
-If you are willing to ban that kind of crap - great; there are real remaining
-issues (mostly with choosing the dependencies between binary packages), but
-that's more or less survivable.  If not... we'll have one hell of a PITA
-to deal with when that kind of excuse gets actually used.
+---------- Original Message -----------
+From: john stultz <johnstul@us.ibm.com>
+To: rth@twiddle.net, ink@jurassic.park.msu.ru
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
+Sent: Thu, 11 Jun 2009 15:10:10 -0700
+Subject: [PATCH] Convert alpha to use arch_gettimeoffset()
+
+> This patch converts alpha to use GENERIC_TIME via the 
+> arch_getoffset() infrastructure, reducing the amount of arch 
+> specific code we need to maintain.
+> 
+> I suspect the alpha arch could even be further improved to provide 
+> and rpcc() based clocksource, but not having the hardware, I don't feel
+> comfortable attempting the more complicated conversion (but I'd be glad
+> to help if anyone else is interested).
+> 
+> This patch applies on top of Linus' current -git tree (pre 2.6.31-
+> rc1).
+> 
+> I've taken my best swing at converting this, but I'm not 100% confident
+> I got it right. It does cross compile, so that's hopefully a good sign.
+> Any assistance from arch maintainers or testers to get this merged would
+> be great.
+> 
+> thanks
+> -john
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> ---
+> 
+>  Kconfig       |    8 ++++++
+>  kernel/time.c |   72 +++--------------------------------------------
+> ----------- 2 files changed, 12 insertions(+), 68 deletions(-)
+> 
+> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+> index 9fb8aae..4434481 100644
+> --- a/arch/alpha/Kconfig
+> +++ b/arch/alpha/Kconfig
+> @@ -45,6 +45,14 @@ config GENERIC_CALIBRATE_DELAY
+>  	bool
+>  	default y
+> 
+> +config GENERIC_TIME
+> +	bool
+> +	default y
+> +
+> +config ARCH_USES_GETTIMEOFFSET
+> +	bool
+> +	default y
+> +
+>  config ZONE_DMA
+>  	bool
+>  	default y
+> diff --git a/arch/alpha/kernel/time.c b/arch/alpha/kernel/time.c
+> index b04e2cb..8f7eb6d 100644
+> --- a/arch/alpha/kernel/time.c
+> +++ b/arch/alpha/kernel/time.c
+> @@ -408,28 +408,17 @@ time_init(void)
+>   * part.  So we can't do the "find absolute time in terms of 
+> cycles" thing  * that the other ports do.  */ -void -
+> do_gettimeofday(struct timeval *tv) +u32 arch_gettimeoffset(void) { -
+> 	unsigned long flags; -	unsigned long sec, usec, seq; 	unsigned long 
+> delta_cycles, delta_usec, partial_tick;
+> 
+> -	do {
+> -		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+> -
+> -		delta_cycles = rpcc() - state.last_time;
+> -		sec = xtime.tv_sec;
+> -		usec = (xtime.tv_nsec / 1000);
+> -		partial_tick = state.partial_tick;
+> -
+> -	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+> -
+>  #ifdef CONFIG_SMP
+>  	/* Until and unless we figure out how to get cpu cycle counters
+>  	   in sync and keep them there, we can't use the rpcc tricks.  */
+>  	delta_usec = 0;
+>  #else
+> +	delta_cycles = rpcc() - state.last_time;
+> +	partial_tick = state.partial_tick;
+>  	/*
+>  	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
+>  	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
+> @@ -448,62 +437,9 @@ do_gettimeofday(struct timeval *tv)
+>  	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1)
+>  / 2; #endif
+> 
+> -	usec += delta_usec;
+> -	if (usec >= 1000000) {
+> -		sec += 1;
+> -		usec -= 1000000;
+> -	}
+> -
+> -	tv->tv_sec = sec;
+> -	tv->tv_usec = usec;
+> -}
+> -
+> -EXPORT_SYMBOL(do_gettimeofday);
+> -
+> -int
+> -do_settimeofday(struct timespec *tv)
+> -{
+> -	time_t wtm_sec, sec = tv->tv_sec;
+> -	long wtm_nsec, nsec = tv->tv_nsec;
+> -	unsigned long delta_nsec;
+> -
+> -	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+> -		return -EINVAL;
+> -
+> -	write_seqlock_irq(&xtime_lock);
+> -
+> -	/* The offset that is added into time in do_gettimeofday above
+> -	   must be subtracted out here to keep a coherent view of the
+> -	   time.  Without this, a full-tick error is possible.  */
+> -
+> -#ifdef CONFIG_SMP
+> -	delta_nsec = 0;
+> -#else
+> -	delta_nsec = rpcc() - state.last_time;
+> -	delta_nsec = (delta_nsec * state.scaled_ticks_per_cycle 
+> -		      + state.partial_tick) * 15625;
+> -	delta_nsec = ((delta_nsec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1)
+>  / 2; -	delta_nsec *= 1000; -#endif
+> -
+> -	nsec -= delta_nsec;
+> -
+> -	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+> -	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+> -
+> -	set_normalized_timespec(&xtime, sec, nsec);
+> -	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+> -
+> -	ntp_clear();
+> -
+> -	write_sequnlock_irq(&xtime_lock);
+> -	clock_was_set();
+> -	return 0;
+> +	return delta_usec * 1000;
+>  }
+> 
+> -EXPORT_SYMBOL(do_settimeofday);
+> -
+> -
+>  /*
+>   * In order to set the CMOS clock precisely, set_rtc_mmss has to be
+>   * called 500 ms after the second nowtime has started, because when
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-
+> alpha" in the body of a message to majordomo@vger.kernel.org More 
+> majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> -- 
+> This message has been scanned for viruses and
+> dangerous content by MailScanner, and is
+> believed to be clean.
+------- End of Original Message -------
+
