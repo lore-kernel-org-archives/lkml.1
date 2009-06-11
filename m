@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbZFKSkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbZFKSlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbZFKSkS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZFKSkH
+	id S1757732AbZFKSlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZFKSli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:40:07 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:37063 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754518AbZFKSkF convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 14:41:38 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:37719 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbZFKSlh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:40:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=cTsj4hcCersj2v7ESqr3NMOc0v0WL3hOk71WqFmTh/g2myXVECXdW67kGeTcyRi2rs
-         4i1xGrypQTFRuvaEiHW+COSXHNYqV6YEMWvL2DyBdxc4hJHZJRgz1VCuTr6CExq6m2JZ
-         i7jNOcnR09Ux+rDNpyubFaY6u10oAgZUulhIw=
-MIME-Version: 1.0
-In-Reply-To: <20090611183356.GH19203@electro-mechanical.com>
-References: <20090609195100.GY19203@electro-mechanical.com>
-	 <b6c5339f0906091339j3784c36bxe888af16272fbcde@mail.gmail.com>
-	 <20090610112357.GB19203@electro-mechanical.com>
-	 <20090610113406.GE19635@hash.localnet>
-	 <20090610115432.GC19203@electro-mechanical.com>
-	 <20090610120736.GF19635@hash.localnet>
-	 <20090611152502.GG19203@electro-mechanical.com>
-	 <b6c5339f0906111041u2cc55324w7b5c2523abbe2def@mail.gmail.com>
-	 <20090611183356.GH19203@electro-mechanical.com>
-Date: Thu, 11 Jun 2009 14:40:07 -0400
-X-Google-Sender-Auth: 1dea2e4987b5c149
-Message-ID: <b6c5339f0906111140l3557a545nc6a2949e8bd33f70@mail.gmail.com>
-Subject: Re: [ath5k-devel] 3com 3crxjk10075 with ath5k driver
-From: Bob Copeland <me@bobcopeland.com>
-To: William Thompson <wt@electro-mechanical.com>
-Cc: ath5k-devel <ath5k-devel@venema.h4ckr.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Jun 2009 14:41:37 -0400
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, npiggin@suse.de,
+       yanmin.zhang@linux.intel.com
+In-Reply-To: <1244732992.17483.54.camel@penberg-laptop>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>
+	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>
+	 <4A2BCC6F.8090004@redhat.com>
+	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
+	 <20090608101739.GA15377@csn.ul.ie>
+	 <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>
+	 <20090608110303.GD15377@csn.ul.ie>
+	 <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI>
+	 <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0906090046000.28701@chino.kir.corp.google.com>
+	 <1244534315.5024.34.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0906090105270.28701@chino.kir.corp.google.com>
+	 <1244536124.5024.41.camel@penberg-laptop>  <4A2FC62C.6030407@lwfinger.net>
+	 <1244648659.23799.26.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0906111040440.29827@gentwo.org>
+	 <1244732992.17483.54.camel@penberg-laptop>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-/FkWK6hML7XJpZj+OvK6"
+Date: Thu, 11 Jun 2009 20:41:36 +0200
+Message-Id: <1244745696.29447.0.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 2:33 PM, William
-Thompson<wt@electro-mechanical.com> wrote:
->
-> Isn't there an easy way to obtain the patch?  THe clone has completed but I
-> don't have a clue what to do.
 
-Just build the kernel from the resulting tree, it already has the changes
-included.
+--=-/FkWK6hML7XJpZj+OvK6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-As I said, the patch won't do any good because it needs the new rfkill
-infrastructure.  That is why I also suggested compat-wireless which is just
-the wireless code that you can build like out-of-tree modules, but it contains
-all the infrastructure (http://linuxwireless.org/download/compat-wireless-2.6/).
+On Thu, 2009-06-11 at 18:09 +0300, Pekka Enberg wrote:
+> On Wed, 10 Jun 2009, Pekka Enberg wrote:
+> > > Aha, SLUB thinks the minimum order for 4096 is 1. I guess you have
+> > > CONFIG_SLUB_DEBUG enabled? If yes, something like to following should
+> > > help. Christoph, are you okay with this patch?
+>=20
+> On Thu, 2009-06-11 at 10:41 -0400, Christoph Lameter wrote:
+> > He likely has CONFIG_SLUB_DEBUG_ON set which enables debugging and thus
+> > needs more than the payload for metadata.
+>=20
+> Yup. I suspect a lot of people who are doing _testing_ enable that. If
+> you're unhappy with my patch (the get_order one which shouldn't affect
+> that many caches anyway), any suggestions how to fix this up? It seems
+> that the wireless stack at least does quite a few kmalloc(4096)
+> allocations.
 
--- 
-Bob Copeland %% www.bobcopeland.com
+I think networking rounds up allocations, but it's not wireless per se.
+
+johannes
+
+--=-/FkWK6hML7XJpZj+OvK6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKMU/cAAoJEODzc/N7+QmaoRQP/2YeIoVKdIfBRZAZf3Ujq23j
+TV9AUxUXVfP4weCeveuFbCJMUG2NspBTOLfHzXHh0b+5RXwM6Kf1hG/5e9Z8nyPv
+f7t3DMnTiIjmnPr9zvffGlp0FAvlJePe0sgrlCV4DMyxEWgwZ31T8p5reYxGRAYd
+tQt9Cdeea6grFtbaXAKgYR81xgNSLvRM2CVji9qt4IGorwc+iThxwvUgmF8iNCZg
+J1ml9LHq6SYE//5at1GbpBcMgD3plJhLCIKRta+Do/be0+L+rhKEe9DB/YW34jgr
+sYg2/Zw74D8SVP/Dv7LYc4f4TeyfSRfIb4DfvDqTHyI3g7lT5FemmlRjfF123+HJ
+c6E3eRIC/8RkOudXJfYfL8xx3Rnmm9fXTZjVyO3ohdgDgvAlutDcBWWG/xVd7lyn
+JEH452bp8m/gRpd4WrGB9OouGUWpVkxKT/UJvbWyB+wDVDzlQxxsYcDkyWh2cQGD
+zDhLOFya5DvV6B3avZT0TxkfO2CtPElpVWEJirwwXnwGWaIF3mYszudzimGt3toi
+GqXDcmlxuyoTrpvBhri/U/fHWXh7vjMirgyRSos2JqkROXKjLGknxhcbjZA0wS8D
+auETghTc5Wv/BJGmO1UKeyinw1JPtnd4ciMSq8FHnlq/qcOewXNs0JMZuKQ2KoHX
+oOYpDEkH19RPmzmrFILO
+=haI9
+-----END PGP SIGNATURE-----
+
+--=-/FkWK6hML7XJpZj+OvK6--
+
