@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbZFKGFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbZFKGJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbZFKGFd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 02:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZFKGFZ
+	id S1756863AbZFKGJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 02:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZFKGJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 02:05:25 -0400
-Received: from mga05.intel.com ([192.55.52.89]:28961 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751628AbZFKGFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 02:05:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,200,1243839600"; 
-   d="scan'208";a="698387178"
-Subject: Re: Bug: fio traps into kernel without exiting because futex has a
-	deadloop
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4A309D16.4040505@us.ibm.com>
-References: <1244689688.2560.268.camel@ymzhang>
-	 <4A309D16.4040505@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 11 Jun 2009 14:05:31 +0800
-Message-Id: <1244700331.2560.271.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 11 Jun 2009 02:09:11 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63267 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752089AbZFKGJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 02:09:10 -0400
+Message-ID: <4A309FDD.4030804@cn.fujitsu.com>
+Date: Thu, 11 Jun 2009 14:10:37 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       yinghai@kernel.org
+Subject: Re: [PATCH 2/2] sched: use slab in cpupri_init()
+References: <Pine.LNX.4.64.0906110846330.2617@melkki.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0906110846330.2617@melkki.cs.Helsinki.FI>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-10 at 22:58 -0700, Darren Hart wrote:
-> Zhang, Yanmin wrote:
-> 
-> Hi Zhang,
-> 
-> > I investigate a fio hang issue. When I run fio multi-process
-> > testing on many disks, fio traps into kernel and doesn't exit
-> > (mostly hit once after runing sub test cases for ﻿hundreds of times).
-> > 
-> > Oprofile data shows kernel consumes time with some futex functions.
-> > Command kill couldn't kill the process and machine reboot also hangs.
-> > 
-> > Eventually, I locate the root cause as a bug of futex. Kernel enters
-> > a deadloop between 'retry' and 'goto retry' in function futex_wake_op.
-> > By unknown reason (might be an issue of fio or glibc), parameter uaddr2
-> > points to an area which is READONLY. So futex_atomic_op_inuser returns
-> > -EFAULT when trying to changing the data at uaddr2, but later get_user
-> > still succeeds becasue the area is READONLY. Then go back to retry.
-> > 
-> > I create a simple test case to trigger it, which just shmat an READONLY
-> > area for address uaddr2.
-> > 
-> > It could be used as a DOS attack.
-> 
-> Nice work on the diagnosis.  I recall discussing something like this a 
-> couple weeks back.  I thought this was fixed with a patch to ensure the 
-> pages were writable.  Cc'ing Thomas G. to confirm.  
+> @@ -163,9 +167,7 @@ int __init_refok cpupri_init(struct cpupri *cp, bool bootmem)
 
-> I didn't see a 
-> kernel version in your report, what are you running?
-2.6.30-rc1~rc8.
+so the __init_refok tag can be removed, no?
 
-
+>  
+>  		spin_lock_init(&vec->lock);
+>  		vec->count = 0;
+> -		if (bootmem)
+> -			alloc_bootmem_cpumask_var(&vec->mask);
+> -		else if (!zalloc_cpumask_var(&vec->mask, GFP_KERNEL))
+> +		if (!zalloc_cpumask_var(&vec->mask, gfp))
+>  			goto cleanup;
+>  	}
+>  
