@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763830AbZFKPQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763744AbZFKPR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763830AbZFKPQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 11:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZFKPQV
+	id S1763744AbZFKPR4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 11:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZFKPRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 11:16:21 -0400
-Received: from bhuna.collabora.co.uk ([93.93.131.97]:58977 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754773AbZFKPQU convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 11:17:49 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:36570 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643AbZFKPRs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 11:16:20 -0400
-Date: Thu, 11 Jun 2009 11:16:10 -0400
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Tobias_Mueller@twam.info
-Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       deepak@laptop.org, Takashi Iwai <tiwai@suse.de>,
-       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
-       jordan@cosmicpenguin.net, cjb@laptop.org
-Subject: Re: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver  
- support
-Message-ID: <20090611111610.0667898a@mycelium.queued.net>
-In-Reply-To: <17be05570906110746l214f88cdh8570488e1be51b30@mail.gmail.com>
-References: <20090610001033.27b7f69f@mycelium.queued.net>
-	<17be05570906110746l214f88cdh8570488e1be51b30@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Jun 2009 11:17:48 -0400
+X-Greylist: delayed 456 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 11:17:48 EDT
+Date: Thu, 11 Jun 2009 08:17:50 -0700
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Dan Williams <dan.j.williams@intel.com>, Timur Tabi <timur@freescale.com>,
+       David Hawkins <dwh@ovro.caltech.edu>,
+       Liu Dave-R63238 <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+Message-ID: <20090611151750.GB9323@ovro.caltech.edu>
+References: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com> <20090427204213.GA4960@ovro.caltech.edu> <49F619C4.20100@freescale.com> <e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com> <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 11 Jun 2009 08:17:51 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009 16:46:35 +0200
-Tobias Müller <Tobias_Mueller@twam.info> wrote:
+On Wed, Jun 10, 2009 at 09:45:26PM -0500, Kumar Gala wrote:
+>
+> On Apr 27, 2009, at 3:49 PM, Dan Williams wrote:
+>
+>> On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com>  
+>> wrote:
+>>> Adding Kumar to the CC: list, since he might pick up the patch.
+>>>
+>>
+>> Acked-by: Dan Williams <dan.j.williams@intel.com>
+>>
+>> I agree with taking this through Kumar's tree.
+>
+> I'm going through patches for .31.. Should I still pick this up?  Going 
+> forward should I pick up fsldma patches?
+>
 
-> 2009/6/10 Andres Salomon <dilinger@collabora.co.uk>:
-> > +config GPIO_CS5535
-> > +       tristate "AMD CS5535/CS5536 GPIO support"
-> > +       depends on PCI && !CS5535_GPIO && !MGEODE_LX
-> > +       help
-> > +         The AMD CS5535 and CS5536 southbridges support 28 GPIO
-> > pins that
-> > +         can be used for quite a number of things.  The CS5535/6
-> > is found on
-> > +         AMD Geode and Lemote Yeeloong devices.
-> 
-> Why do you depend on !MGEODE_LX? Are there any problems?
+I'm fine with that, but you should probably talk to Li Yang (added to
+CC). He's gotten in contact with me a few times recently.
 
-Because arch/x86/kernel/{mfgpt,geode}_32.c are built if
-CONFIG_MGEODE_LX is set, and they will happily clobber each other.  We
-need to get a broken-out mfgpt driver completed, and then we can rework
-or remove the arch/x86/kernel/{mfgpt,geode}_32.c stuff.
+In addition to the PCI Read Multiple patch, I've posted a few more
+fsldma patches to ppcdev recently:
 
-It's probably possible to add a separate config for that
-(CONFIG_GEODE_LEGACY or something?) rather than having it depend upon
-CONFIG_MGEODE_LX, but I haven't looked into it.  I'd rather spend the
-time fixing it correctly than fretting about with the various config
-permutations. :)
+fsldma: enable external start for the 83xx controller
+fsldma: do not clear bandwidth control bits on the 83xx controller
+fsldma: Add DMA_SLAVE support
+
+The first two are very straightforward. The third probably needs some
+review before it can be picked up, though. It is well tested, I've been
+using it for a few weeks without issues.
+
+Thanks,
+Ira
