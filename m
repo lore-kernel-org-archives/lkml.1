@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZFKNhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbZFKNiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbZFKNhH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZFKNg4
+	id S1754744AbZFKNiJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZFKNh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:36:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36666 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbZFKNgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:36:55 -0400
-Date: Thu, 11 Jun 2009 16:36:43 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, mtosatti@redhat.com
-Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
-Message-ID: <20090611133643.GA16335@redhat.com>
-References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090611131647.GA15743@redhat.com>
+	Thu, 11 Jun 2009 09:37:58 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48549 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbZFKNh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 09:37:57 -0400
+Date: Thu, 11 Jun 2009 14:37:36 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
+       swetland@google.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090611133736.GP795@n2100.arm.linux.org.uk>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <20090611135442.6b9ab315@lxorguk.ukuu.org.uk> <20090611132134.GA11199@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090611131647.GA15743@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090611132134.GA11199@atomide.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 04:16:47PM +0300, Michael S. Tsirkin wrote:
-> > +
-> > +	ret = file->f_op->poll(file, &irqfd->pt);
-> > +	if (ret < 0)
-> > +		goto fail;
-
-Looking at it some more, we have:
-struct file_operations {
-....
-	unsigned int (*poll) (struct file *, struct poll_table_struct *);
-
-So the comparison above does not seem to make sense:
-it seems that the return value from poll can not be negative.
-
-Will the callback be executed if someone did a write to eventfd
-before we attached it? If no, maybe we should call it here
-if ret != 0.
-
-
-> > +
-> > +	irqfd->file = file;
-> > +
-> > +	mutex_lock(&kvm->lock);
-> > +	list_add_tail(&irqfd->list, &kvm->irqfds);
-> > +	mutex_unlock(&kvm->lock);
-> > +
-> > +	return 0;
-> > +
-> > +fail:
-> > +	if (irqfd->wqh)
-> > +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+On Thu, Jun 11, 2009 at 06:21:35AM -0700, Tony Lindgren wrote:
+> We've done this for two merge windows now for omap patches where the
+> patches have been posted to linux-arm-kernel, then they go into the
+> for-next tree, and then Russell merges them in.
 > 
-> Why are these 2 lines here? Either we might get a callback even though
-> poll failed - and then this test without lock is probably racy -
-> or we can't, and then we can replace the above with BUG_ON(irqfd->wqh).
-> 
-> Which is it? I think the later ...
-> 
-> 
-> > +
-> > +	if (file && !IS_ERR(file))
-> > +		fput(file);
-> > +
-> > +	kfree(irqfd);
-> > +	return ret;
-> > +}
-> > +
+> It has worked OK, although Russell had some comments about having hard
+> time keeping track on what he had reviewed already.
+
+Yes, as I understand it, there was a closed room discussion between
+several folk about how you'd handle sending your next round of patches
+to me.
+
+What you apparantly decided (and I'm saying this from how it appeared
+on the receiving end and sort-of had it confirmed by Kevin in conference)
+is that you'd send a patch set for me to review, I'd review it, and then
+you'd merge it within your git tree into a branch for me.  You'd then do
+the same thing with the next patch set, and so forth.
+
+Eventually, near the merge window, you sent a pull request for the
+entire lot, by which time I looked at the list of changes and wondered
+whether that encompassed everything you'd asked me to review, or whether
+it contained extra stuff, or whether it was for something quite different,
+or what.
+
+So by separating the review from the merge by weeks or even months, it
+created additional problems.
