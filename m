@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763297AbZFKXVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763167AbZFKXWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763297AbZFKXVw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZFKXVp
+	id S1763167AbZFKXWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbZFKXWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 19:21:45 -0400
-Received: from mga14.intel.com ([143.182.124.37]:30434 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758758AbZFKXVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 19:21:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,204,1243839600"; 
-   d="scan'208";a="153363834"
-Date: Fri, 12 Jun 2009 07:21:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH for mmotm 1/5] cleanp page_remove_rmap()
-Message-ID: <20090611232131.GA5960@localhost>
-References: <20090611192114.6D4A.A69D9226@jp.fujitsu.com> <20090611192514.6D4D.A69D9226@jp.fujitsu.com>
+	Thu, 11 Jun 2009 19:22:32 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51647 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758044AbZFKXWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 19:22:31 -0400
+Date: Fri, 12 Jun 2009 01:22:25 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
+Message-ID: <20090611232224.GB18682@elf.ucw.cz>
+References: <20090604161847.513682672@de.ibm.com> <200906112346.28782.rjw@sisk.pl> <20090611220517.GF27376@elf.ucw.cz> <200906120030.00425.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090611192514.6D4D.A69D9226@jp.fujitsu.com>
+In-Reply-To: <200906120030.00425.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 06:26:04PM +0800, KOSAKI Motohiro wrote:
-> Subject: [PATCH] cleanp page_remove_rmap()
+> > > > > Other architectures will see this build error:
+> > > > > 
+> > > > > drivers/built-in.o: In function `sysdev_suspend':
+> > > > > (.text+0x15138): undefined reference to `check_wakeup_irqs'
+> > > > > drivers/built-in.o: In function `device_power_up':
+> > > > > (.text+0x1cb66): undefined reference to `resume_device_irqs'
+> > > > > drivers/built-in.o: In function `device_power_down':
+> > > > > (.text+0x1cb92): undefined reference to `suspend_device_irqs'
+> > > > > 
+> > > > > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
+> > > > 
+> > > > I don't think that's right fix. If architecture does not use
+> > > > GENERIC_HARDIRQS, it may want to implement *_device_irqs()
+> > > > itself. Before your patch, it could, after your patch, it can not.
+> > > > 
+> > > > Better put those empty functions in arch/s390/include?
+> > > 
+> > > If any of the affected architectures wants to implement *_device_irqs()
+> > > itself, it can do the appropriate change in future.  For now, let's not break
+> > > compilation on them, shall we?
+> > 
+> > Well, if one of those architectures will want to implement
+> > *_device_irqs(), it will have to either modify s390, and all other
+> > !GENERIC_HARDIRQS architectures.
 > 
-> page_remove_rmap() has multiple PageAnon() test and it has
-> a bit deeply nesting.
-> 
-> cleanup here.
-> 
-> note: this patch doesn't have behavior change.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Wu Fengguang <fengguang.wu@intel.com> 
+> Why will it?  I think it will be sufficient to modify the header changed by
+> this patch and the architecture in question.
 
-> ---
->  mm/rmap.c |   59 ++++++++++++++++++++++++++++++++---------------------------
->  1 file changed, 32 insertions(+), 27 deletions(-)
-> 
-> Index: b/mm/rmap.c
-> ===================================================================
-> --- a/mm/rmap.c
-> +++ b/mm/rmap.c
-> @@ -862,34 +862,39 @@ void page_dup_rmap(struct page *page, st
->   */
->  void page_remove_rmap(struct page *page)
->  {
-> -	if (atomic_add_negative(-1, &page->_mapcount)) {
-> -		/*
-> -		 * Now that the last pte has gone, s390 must transfer dirty
-> -		 * flag from storage key to struct page.  We can usually skip
-> -		 * this if the page is anon, so about to be freed; but perhaps
-> -		 * not if it's in swapcache - there might be another pte slot
-> -		 * containing the swap entry, but page not yet written to swap.
-> -		 */
-> -		if ((!PageAnon(page) || PageSwapCache(page)) &&
-> -		    page_test_dirty(page)) {
-> -			page_clear_dirty(page);
-> -			set_page_dirty(page);
-> -		}
-> -		if (PageAnon(page))
-> -			mem_cgroup_uncharge_page(page);
-> -		__dec_zone_page_state(page,
-> -			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
-> -		mem_cgroup_update_mapped_file_stat(page, -1);
-> -		/*
-> -		 * It would be tidy to reset the PageAnon mapping here,
-> -		 * but that might overwrite a racing page_add_anon_rmap
-> -		 * which increments mapcount after us but sets mapping
-> -		 * before us: so leave the reset to free_hot_cold_page,
-> -		 * and remember that it's only reliable while mapped.
-> -		 * Leaving it set also helps swapoff to reinstate ptes
-> -		 * faster for those pages still in swapcache.
-> -		 */
-> +	if (!atomic_add_negative(-1, &page->_mapcount)) {
-> +		/* the page is still mapped another one */
-> +		return;
->  	}
+Hmm, how? Putting #ifndef MY_ARCH into generic header? Inventing
+CONFIG_NON_GENERIC_HARDIRQS_BUT_I_NEED_DEVICE_IRQS?
+									Pavel
 
-Coding style nitpick.
-I'd prefer to remove the brackets and move the comment above the line:
-
-        /* page still mapped by someone else? */
-	if (!atomic_add_negative(-1, &page->_mapcount))
-                return;
-
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
