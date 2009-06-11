@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760277AbZFKUIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbZFKUKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760277AbZFKUIi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 16:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZFKUIb
+	id S1753722AbZFKUKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 16:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZFKUK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 16:08:31 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:37190 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbZFKUIa (ORCPT
+	Thu, 11 Jun 2009 16:10:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35218 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751309AbZFKUK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 16:08:30 -0400
-Date: Thu, 11 Jun 2009 22:10:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Magnus Damm <damm@igel.co.jp>, Paul Mundt <lethal@linux-sh.org>
-Cc: git-commits-head@vger.kernel.org
-Subject: Re: sh: include empty_zero_page in text
-Message-ID: <20090611201048.GA8817@uranus.ravnborg.org>
-References: <200906111903.n5BJ32vd019484@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906111903.n5BJ32vd019484@hera.kernel.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 11 Jun 2009 16:10:29 -0400
+Date: Thu, 11 Jun 2009 13:09:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: hch@infradead.org, a.p.zijlstra@chello.nl,
+       Al Viro <viro@ZenIV.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>, eranian@googlemail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       paulus@samba.org, tglx@linutronix.de
+Subject: Re: [GIT PULL] Performance Counters for Linux
+In-Reply-To: <20090611125804.411095e8.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.01.0906111305470.3535@localhost.localdomain>
+References: <20090611160329.GA3366@elte.hu> <20090611161714.GA5008@infradead.org> <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain> <20090611165226.GV8633@ZenIV.linux.org.uk> <1244739378.6691.540.camel@laptop> <20090611170015.GA3651@infradead.org>
+ <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <20090611125804.411095e8.akpm@linux-foundation.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 07:03:02PM +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/53c0054c3f11b49fc09f24e46f58661def952728
-> Commit:     53c0054c3f11b49fc09f24e46f58661def952728
-> Parent:     7bce6c2740fab36708233e998a9e53115649b193
-> Author:     Magnus Damm <damm@igel.co.jp>
-> AuthorDate: Mon May 11 08:45:27 2009 +0000
-> Committer:  Paul Mundt <lethal@linux-sh.org>
-> CommitDate: Mon May 11 18:42:14 2009 +0900
-> 
->     sh: include empty_zero_page in text
->     
->     Include empty_zero_page in _text. This fixes a problem
->     introduced by c3e2586b794b12ffcdf69b4e547030b51e18e6d9
->     which results in broken boot on R2D-Plus.
->     
->     Signed-off-by: Magnus Damm <damm@igel.co.jp>
->     Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> ---
->  arch/sh/kernel/vmlinux.lds.S |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/sh/kernel/vmlinux.lds.S b/arch/sh/kernel/vmlinux.lds.S
-> index d737230..f53c76a 100644
-> --- a/arch/sh/kernel/vmlinux.lds.S
-> +++ b/arch/sh/kernel/vmlinux.lds.S
-> @@ -26,12 +26,13 @@ SECTIONS
->  	. = CONFIG_PAGE_OFFSET + CONFIG_MEMORY_START + CONFIG_ZERO_PAGE_OFFSET;
->  #endif
->  
-> +	_text = .;		/* Text and read-only data */
-> +
->  	.empty_zero_page : AT(ADDR(.empty_zero_page) - LOAD_OFFSET) {
->  		*(.empty_zero_page)
->  	} = 0
->  
->  	.text : AT(ADDR(.text) - LOAD_OFFSET) {
-> -		_text = .;		/* Text and read-only data */
->  		HEAD_TEXT
->  		TEXT_TEXT
 
-This change turned _text to be an absolute symbol.
-Do you support rolocatable kernels then this may fail.
 
-	Sam
+On Thu, 11 Jun 2009, Andrew Morton wrote:
+> 
+> It could be that shipping userspace code in the kernel bundle will
+> improve that situation.  So let's give it a try.  If it turns out to be
+> good, let's do it again.  If it turns out to be bad, let's move perf
+> out of the kernel tree and not do it again.
+
+Exactly. Right now, I use the oprofile experience as a reason for why we 
+should try to do this. But hey, who knows, in one year, maybe people will 
+use _this_ experience as a reason why we should never do it again.
+
+We just don't know yet. But that's no reason not to try. Either way, we'll 
+hopefully learn something.
+
+Or to quote Edison:
+ "I have not failed 700 times. I have not failed once. I have succeeded in 
+  proving that those 700 ways will not work. When I have eliminated the 
+  ways that will not work, I will find the way that will work."
+
+			Linus
