@@ -1,62 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZFKRby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZFKRcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbZFKRby (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 13:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZFKRbq
+	id S1756000AbZFKRcU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 13:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZFKRcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 13:31:46 -0400
-Received: from sandeen.net ([209.173.210.139]:20567 "EHLO mail.sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782AbZFKRbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 13:31:46 -0400
-Message-ID: <4A313F84.20900@sandeen.net>
-Date: Thu, 11 Jun 2009 12:31:48 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 11 Jun 2009 13:32:08 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:33301 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753303AbZFKRcH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 13:32:07 -0400
+Date: Thu, 11 Jun 2009 19:32:06 +0200
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Giangiacomo Mariotti <giangiacomo.mariotti@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Possible memory leak in
+	arch/cris/arch-v32/drivers/cryptocop.c
+Message-ID: <20090611173206.GE12383@axis.com>
+References: <2aac3c260906110930k49d70eb9o9922795a5bfdadf8@mail.gmail.com>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.30: Memory/XFS leak, OOM killer kills many processes
-References: <alpine.DEB.2.00.0906111158470.2563@p34.internal.lan> <alpine.DEB.2.00.0906111255280.6809@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.0906111255280.6809@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2aac3c260906110930k49d70eb9o9922795a5bfdadf8@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> 
-> On Thu, 11 Jun 2009, Justin Piszcz wrote:
-> 
->> Hello,
->>
->> I have a daily cron that backs up my root filesystem using xfsdump, it has 
->> remain unchanged for at least 7-10 kernel versions.  When I migrated to 
->> 2.6.30, when the xfsdump ran at its scheduled time, nearly all of my 
->> processes were killed due to an OOM situation, I can reproduce the situation.
->>
->> Kernel: 2.6.30
->> Dist: Debian Testing
->> xfsdump: 2.2.48-1
-> 
-> Kernel 2.6.29.4 does not exhibit this problem:
-> 
-> xfsdump: estimated dump size: 8694781376 bytes
-> xfsdump: creating dump session media file 0 (media 0, file 0)
-> xfsdump: dumping ino map
-> xfsdump: dumping directories
-> xfsdump: dumping non-directory files
-> xfsdump: ending media file
-> xfsdump: media file size 8294709848 bytes
-> xfsdump: dump size (non-dir files) : 8208863560 bytes
-> xfsdump: dump complete: 102 seconds elapsed
-> xfsdump: Dump Status: SUCCESS
-> 
-> XFS(?) bug in 2.6.30.
+Hi,
 
-Any chance for a bisect run? :)
+I'm having trouble with this patch, it seems horribly whitespace damaged.
+Also, this leak has already been reported (bugzilla 11363) and
+fixed in our local repo.
 
-Or, just as a thought, watch slabtop while you run the dump?
+The following patch is what I have queued for the CRIS-tree:
 
--Eric
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+Subject: [PATCH] CRISv32: Fix potential null reference in cryptocop driver.
+
+The code didn't test the pointer to the newly allocated
+memory, but a parameter sent in as value.
+Since the input parameter was most often set, the code
+would have used a null pointer if the kmalloc failed.
+If the input parameter was not set, the code would
+leak the allocated buffer.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=11363
+
+Reported-by: Daniel Marjamäki <danielm77@spray.se>
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+---
+ arch/cris/arch-v32/drivers/cryptocop.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/cris/arch-v32/drivers/cryptocop.c b/arch/cris/arch-v32/drivers/cryptocop.c
+index 67c61ea..fd529a0 100644
+--- a/arch/cris/arch-v32/drivers/cryptocop.c
++++ b/arch/cris/arch-v32/drivers/cryptocop.c
+@@ -1395,7 +1395,7 @@ static int create_md5_pad(int alloc_flag, unsigned long long hashed_length, char
+ 	if (padlen < MD5_MIN_PAD_LENGTH) padlen += MD5_BLOCK_LENGTH;
+ 
+ 	p = kmalloc(padlen, alloc_flag);
+-	if (!pad) return -ENOMEM;
++	if (!p) return -ENOMEM;
+ 
+ 	*p = 0x80;
+ 	memset(p+1, 0, padlen - 1);
+@@ -1427,7 +1427,7 @@ static int create_sha1_pad(int alloc_flag, unsigned long long hashed_length, cha
+ 	if (padlen < SHA1_MIN_PAD_LENGTH) padlen += SHA1_BLOCK_LENGTH;
+ 
+ 	p = kmalloc(padlen, alloc_flag);
+-	if (!pad) return -ENOMEM;
++	if (!p) return -ENOMEM;
+ 
+ 	*p = 0x80;
+ 	memset(p+1, 0, padlen - 1);
+-- 
+1.6.1
+
+On Thu, Jun 11, 2009 at 06:30:17PM +0200, Giangiacomo Mariotti wrote:
+> From ee8e71f0ae1356b324906efc8e858b29025c60ef Mon Sep 17 00:00:00 2001
+> From: Giangiacomo Mariotti <giangiacomo.mariotti@gmail.com>
+> Date: Thu, 11 Jun 2009 18:13:52 +0200
+> Subject: [PATCH] Possible mem leak
+> 
+> ---
+>  arch/cris/arch-v32/drivers/cryptocop.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/cris/arch-v32/drivers/cryptocop.c
+> b/arch/cris/arch-v32/drivers/cryptocop.c
+> index 67c61ea..fd529a0 100644
+> --- a/arch/cris/arch-v32/drivers/cryptocop.c
+> +++ b/arch/cris/arch-v32/drivers/cryptocop.c
+> @@ -1395,7 +1395,7 @@ static int create_md5_pad(int alloc_flag,
+> unsigned long long hashed_length, char
+>  	if (padlen < MD5_MIN_PAD_LENGTH) padlen += MD5_BLOCK_LENGTH;
+> 
+>  	p = kmalloc(padlen, alloc_flag);
+> -	if (!pad) return -ENOMEM;
+> +	if (!p) return -ENOMEM;
+> 
+>  	*p = 0x80;
+>  	memset(p+1, 0, padlen - 1);
+> @@ -1427,7 +1427,7 @@ static int create_sha1_pad(int alloc_flag,
+> unsigned long long hashed_length, cha
+>  	if (padlen < SHA1_MIN_PAD_LENGTH) padlen += SHA1_BLOCK_LENGTH;
+> 
+>  	p = kmalloc(padlen, alloc_flag);
+> -	if (!pad) return -ENOMEM;
+> +	if (!p) return -ENOMEM;
+> 
+>  	*p = 0x80;
+>  	memset(p+1, 0, padlen - 1);
+> --
+> 
+> -- 
+> You highest men whom my eyes have seen, this is my doubt about you and
+> my secret laughter: I guess that you would call my overman—devil!
+> What is great is so alien to your souls that the overman would be
+> terrifying to you in his goodness ...
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
