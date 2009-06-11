@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763380AbZFKX0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763556AbZFKX2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763380AbZFKX0c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756720AbZFKX0Y
+	id S1763556AbZFKX2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZFKX2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 19:26:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38340 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754733AbZFKX0Y (ORCPT
+	Thu, 11 Jun 2009 19:28:14 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45536 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754733AbZFKX2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 19:26:24 -0400
-Date: Thu, 11 Jun 2009 16:25:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Marcel Holtmann <marcel@holtmann.org>, Ingo Molnar <mingo@elte.hu>,
-       Martin Bligh <mbligh@google.com>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-In-Reply-To: <20090611231952.GX8633@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.2.01.0906111624320.3237@localhost.localdomain>
-References: <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <33307c790906111124m17e57332oc38c89fa70e39231@mail.gmail.com> <alpine.LFD.2.01.0906111127520.3573@localhost.localdomain> <20090611202341.GA23590@elte.hu> <1244753357.27363.82.camel@violet>
- <20090611210810.GA9317@uranus.ravnborg.org> <1244755036.27363.93.camel@violet> <20090611212635.GA9446@uranus.ravnborg.org> <4A3182C6.803@gmail.com> <alpine.LFD.2.01.0906111521210.3535@localhost.localdomain> <20090611231952.GX8633@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 11 Jun 2009 19:28:14 -0400
+Date: Fri, 12 Jun 2009 01:28:07 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
+Message-ID: <20090611232807.GA19752@elf.ucw.cz>
+References: <20090604161847.513682672@de.ibm.com> <200906112346.28782.rjw@sisk.pl> <20090611220517.GF27376@elf.ucw.cz> <200906120030.00425.rjw@sisk.pl> <20090611232224.GB18682@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611232224.GB18682@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 12 Jun 2009, Al Viro wrote:
+> > > > > > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
+> > > > > 
+> > > > > I don't think that's right fix. If architecture does not use
+> > > > > GENERIC_HARDIRQS, it may want to implement *_device_irqs()
+> > > > > itself. Before your patch, it could, after your patch, it can not.
+> > > > > 
+> > > > > Better put those empty functions in arch/s390/include?
+> > > > 
+> > > > If any of the affected architectures wants to implement *_device_irqs()
+> > > > itself, it can do the appropriate change in future.  For now, let's not break
+> > > > compilation on them, shall we?
+> > > 
+> > > Well, if one of those architectures will want to implement
+> > > *_device_irqs(), it will have to either modify s390, and all other
+> > > !GENERIC_HARDIRQS architectures.
+> > 
+> > Why will it?  I think it will be sufficient to modify the header changed by
+> > this patch and the architecture in question.
 > 
-> Linus, the real question that needs to be answered is this:
+> Hmm, how? Putting #ifndef MY_ARCH into generic header? Inventing
+> CONFIG_NON_GENERIC_HARDIRQS_BUT_I_NEED_DEVICE_IRQS?
 
-No it's not.
-
-People have already told you that the intent isn't to change the ABI. So 
-your whole "hard-hitting journalism" is just bogus posturing.
-
-What does this have to do with anything?
-
-			Linus
+Maybe playing with attribute((weak)) is the cleanest solution?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
