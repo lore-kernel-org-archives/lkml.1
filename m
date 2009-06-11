@@ -1,112 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762594AbZFKW7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763352AbZFKXAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762594AbZFKW7n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760842AbZFKW71
+	id S1763352AbZFKXAG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762398AbZFKW7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:59:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:37882 "EHLO ozlabs.org"
+	Thu, 11 Jun 2009 18:59:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:37885 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760644AbZFKW70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760784AbZFKW70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Jun 2009 18:59:26 -0400
-To: linux-kernel@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+To: davej@redhat.com
+To: cpufreq@vger.kernel.org
+CC: Ingo Molnar <mingo@redhat.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Thu, 11 Jun 2009 22:59:58 +0930
-Subject: [PATCH 6/6] dcdbas: don't play with current's cpumask
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Douglas_Warzecha@dell.com
-Message-Id: <20090611225928.31C72DDD1B@ozlabs.org>
+Subject: [PATCH 4/6] cpumask: avoid cpumask games in arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Message-Id: <20090611225928.6B4ADDDDA0@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Impact: don't play with current's cpumask
+
 It's generally a very bad idea to mug some process's cpumask: it could
 legitimately and reasonably be changed by root, which could break us
 (if done before our code) or them (if we restore the wrong value).
 
-So we use smp_call_function_single instead of cpumask games.  I hope we
-are allowed to trigger the smi from interrupt context.
+Use rdmsr_on_cpu and wrmsr_on_cpu instead.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Douglas_Warzecha@dell.com
+To: davej@redhat.com
+To: cpufreq@vger.kernel.org
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 ---
- drivers/firmware/dcdbas.c |   51 +++++++++++++++++-----------------------------
- 1 file changed, 19 insertions(+), 32 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   60 ++++++-----------------
+ 1 file changed, 17 insertions(+), 43 deletions(-)
 
-diff --git a/drivers/firmware/dcdbas.c b/drivers/firmware/dcdbas.c
---- a/drivers/firmware/dcdbas.c
-+++ b/drivers/firmware/dcdbas.c
-@@ -237,34 +237,9 @@ static ssize_t host_control_on_shutdown_
- 	return count;
- }
- 
--/**
-- * dcdbas_smi_request: generate SMI request
-- *
-- * Called with smi_data_lock.
-- */
--int dcdbas_smi_request(struct smi_cmd *smi_cmd)
-+static void generate_smi(void *_smi_cmd)
+diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+--- a/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -323,14 +323,8 @@ static unsigned int get_cur_freq(unsigne
  {
--	cpumask_var_t old_mask;
--	int ret = 0;
--
--	if (smi_cmd->magic != SMI_CMD_MAGIC) {
--		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
--			 __func__);
--		return -EBADR;
--	}
--
--	/* SMI requires CPU 0 */
--	if (!alloc_cpumask_var(&old_mask, GFP_KERNEL))
--		return -ENOMEM;
--
--	cpumask_copy(old_mask, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current, cpumask_of(0));
--	if (smp_processor_id() != 0) {
--		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
--			__func__);
--		ret = -EBUSY;
--		goto out;
--	}
-+	struct smi_cmd *smi_cmd = _smi_cmd;
+ 	unsigned l, h;
+ 	unsigned clock_freq;
+-	cpumask_t saved_mask;
  
- 	/* generate SMI */
- 	asm volatile (
-@@ -276,14 +251,26 @@ int dcdbas_smi_request(struct smi_cmd *s
- 		  "c" (smi_cmd->ecx)
- 		: "memory"
- 	);
+-	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	if (smp_processor_id() != cpu)
+-		return 0;
 -
--out:
--	set_cpus_allowed_ptr(current, old_mask);
--	free_cpumask_var(old_mask);
--	return ret;
+-	rdmsr(MSR_IA32_PERF_STATUS, l, h);
++	rdmsr_on_cpu(cpu, MSR_IA32_PERF_STATUS, &l, &h);
+ 	clock_freq = extract_clock(l, cpu, 0);
+ 
+ 	if (unlikely(clock_freq == 0)) {
+@@ -340,11 +334,9 @@ static unsigned int get_cur_freq(unsigne
+ 		 * P-state transition (like TM2). Get the last freq set 
+ 		 * in PERF_CTL.
+ 		 */
+-		rdmsr(MSR_IA32_PERF_CTL, l, h);
++		rdmsr_on_cpu(cpu, MSR_IA32_PERF_CTL, &l, &h);
+ 		clock_freq = extract_clock(l, cpu, 1);
+ 	}
+-
+-	set_cpus_allowed_ptr(current, &saved_mask);
+ 	return clock_freq;
  }
  
- /**
-+ * dcdbas_smi_request: generate SMI request
-+ *
-+ * Called with smi_data_lock.
-+ */
-+int dcdbas_smi_request(struct smi_cmd *smi_cmd)
-+{
-+	if (smi_cmd->magic != SMI_CMD_MAGIC) {
-+		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
-+			 __func__);
-+		return -EBADR;
-+	}
-+
-+	/* SMI requires CPU 0 */
-+	smp_call_function_single(0, generate_smi, smi_cmd, 1);
-+	return 0;
-+}
-+/**
-  * smi_request_store:
-  *
-  * The valid values are:
+@@ -467,15 +459,10 @@ static int centrino_target (struct cpufr
+ 	struct cpufreq_freqs	freqs;
+ 	int			retval = 0;
+ 	unsigned int		j, k, first_cpu, tmp;
+-	cpumask_var_t saved_mask, covered_cpus;
++	cpumask_var_t covered_cpus;
+ 
+-	if (unlikely(!alloc_cpumask_var(&saved_mask, GFP_KERNEL)))
++	if (unlikely(!zalloc_cpumask_var(&covered_cpus, GFP_KERNEL)))
+ 		return -ENOMEM;
+-	if (unlikely(!zalloc_cpumask_var(&covered_cpus, GFP_KERNEL))) {
+-		free_cpumask_var(saved_mask);
+-		return -ENOMEM;
+-	}
+-	cpumask_copy(saved_mask, &current->cpus_allowed);
+ 
+ 	if (unlikely(per_cpu(centrino_model, cpu) == NULL)) {
+ 		retval = -ENODEV;
+@@ -493,7 +480,7 @@ static int centrino_target (struct cpufr
+ 
+ 	first_cpu = 1;
+ 	for_each_cpu(j, policy->cpus) {
+-		const struct cpumask *mask;
++		int good_cpu;
+ 
+ 		/* cpufreq holds the hotplug lock, so we are safe here */
+ 		if (!cpu_online(j))
+@@ -504,32 +491,30 @@ static int centrino_target (struct cpufr
+ 		 * Make sure we are running on CPU that wants to change freq
+ 		 */
+ 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			mask = policy->cpus;
++			good_cpu = cpumask_any_and(policy->cpus,
++						   cpu_online_mask);
+ 		else
+-			mask = cpumask_of(j);
++			good_cpu = j;
+ 
+-		set_cpus_allowed_ptr(current, mask);
+-		preempt_disable();
+-		if (unlikely(!cpu_isset(smp_processor_id(), *mask))) {
++		if (good_cpu >= nr_cpu_ids) {
+ 			dprintk("couldn't limit to CPUs in this domain\n");
+ 			retval = -EAGAIN;
+ 			if (first_cpu) {
+ 				/* We haven't started the transition yet. */
+-				goto migrate_end;
++				goto out;
+ 			}
+-			preempt_enable();
+ 			break;
+ 		}
+ 
+ 		msr = per_cpu(centrino_model, cpu)->op_points[newstate].index;
+ 
+ 		if (first_cpu) {
+-			rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++			rdmsr_on_cpu(good_cpu, MSR_IA32_PERF_CTL, &oldmsr, &h);
+ 			if (msr == (oldmsr & 0xffff)) {
+ 				dprintk("no change needed - msr was and needs "
+ 					"to be %x\n", oldmsr);
+ 				retval = 0;
+-				goto migrate_end;
++				goto out;
+ 			}
+ 
+ 			freqs.old = extract_clock(oldmsr, cpu, 0);
+@@ -553,14 +538,11 @@ static int centrino_target (struct cpufr
+ 			oldmsr |= msr;
+ 		}
+ 
+-		wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+-			preempt_enable();
++		wrmsr_on_cpu(good_cpu, MSR_IA32_PERF_CTL, oldmsr, h);
++		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+ 			break;
+-		}
+ 
+-		cpu_set(j, *covered_cpus);
+-		preempt_enable();
++		cpumask_set_cpu(j, covered_cpus);
+ 	}
+ 
+ 	for_each_cpu(k, policy->cpus) {
+@@ -578,10 +560,8 @@ static int centrino_target (struct cpufr
+ 		 * Best effort undo..
+ 		 */
+ 
+-		for_each_cpu_mask_nr(j, *covered_cpus) {
+-			set_cpus_allowed_ptr(current, &cpumask_of_cpu(j));
+-			wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-		}
++		for_each_cpu(j, covered_cpus)
++			wrmsr_on_cpu(j, MSR_IA32_PERF_CTL, oldmsr, h);
+ 
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+@@ -593,15 +573,9 @@ static int centrino_target (struct cpufr
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 		}
+ 	}
+-	set_cpus_allowed_ptr(current, saved_mask);
+ 	retval = 0;
+-	goto out;
+ 
+-migrate_end:
+-	preempt_enable();
+-	set_cpus_allowed_ptr(current, saved_mask);
+ out:
+-	free_cpumask_var(saved_mask);
+ 	free_cpumask_var(covered_cpus);
+ 	return retval;
+ }
 
