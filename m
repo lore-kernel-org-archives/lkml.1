@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbZFKSEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbZFKSE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbZFKSEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZFKSEY
+	id S1757112AbZFKSE5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbZFKSEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:04:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49623 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756758AbZFKSEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:04:23 -0400
-Date: Thu, 11 Jun 2009 19:04:22 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Larry.Finger@lwfinger.net
-Subject: Re: [PATCH 2/2] SLUB: Disable debugging if it increases the
-	minimum page order
-Message-ID: <20090611180422.GJ7302@csn.ul.ie>
-References: <Pine.LNX.4.64.0906111143490.6132@melkki.cs.Helsinki.FI> <alpine.DEB.1.10.0906110941520.29827@gentwo.org> <1244728824.17483.51.camel@penberg-laptop> <alpine.DEB.1.10.0906111021340.29827@gentwo.org> <1244733119.17483.56.camel@penberg-laptop> <alpine.DEB.1.10.0906111118350.14020@gentwo.org> <1244734086.17483.59.camel@penberg-laptop> <alpine.DEB.1.10.0906111140080.24376@gentwo.org>
+	Thu, 11 Jun 2009 14:04:32 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:48858 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756821AbZFKSEb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:04:31 -0400
+Message-ID: <4A314729.8030605@davidnewall.com>
+Date: Fri, 12 Jun 2009 03:34:25 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906111140080.24376@gentwo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+References: <20090611160329.GA3366@elte.hu>  <20090611161714.GA5008@infradead.org>  <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain> <1244738098.27363.36.camel@violet> <alpine.LFD.2.01.0906110937110.3573@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906110937110.3573@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 11:49:19AM -0400, Christoph Lameter wrote:
-> On Thu, 11 Jun 2009, Pekka Enberg wrote:
-> 
-> > My main point is that a lot of _testers_ will probably enable all SLUB
-> > debugging by default because we encourage them to and it's pretty bad
-> > that we end up causing order 1 allocations and oom conditions.
-> 
-> Other test methods (like PAGE_ALLOC debugging) also have significant side
-> effects.
-> 
+Linus Torvalds wrote:
+> On Thu, 11 Jun 2009, Marcel Holtmann wrote:
+>   
+>> so do you expect us to merge stuff like ip, iw, rfkill, crda, the WiMAX
+>> tools, the Bluetooth ones and whatever we have that are all have the
+>> same issues to be merged into the kernel source code as well.
+>>     
+>
+> No. Only stuff that I expect to be really close to hardware, and used for 
+> kernel purposes.
 
-True, but they come with huge big warnings and I agree that we don't want
-to make the SL*B debug warning too drastic, particularly because SL*B
-debugging is often so valuable and relatively lightweight in comparison
-to some debug options.
-
-
-> > So I still think we need to fix _at minimum_ the kmalloc-4096 case
-> > (assuming Larry won't hit the same problem still). I see you're not
-> > happy with my patch so any suggestions how to handle that?
-> 
-> Add a warning to Kconfig that the higher order page allocations may
-> increase with debugging on for caches with object sizes near or equal to
-> PAGE_SIZE?
-> 
-
-Possibly clueless suggestion here. How possible would it be to implement
-something like
-
-"With SLUB_DEBUG, enable debug on all caches unless the increased meta-data
-would force the minimum order up on order due to object sizes being near or
-equal the PAGE_SIZE. If SLUB_DEBUG must be enabled, specify slub_debug=A for
-'All caches enable debug regardless'"
-
-?
-
-> Its good to run with full debugging on for even the 4k sized caches.
-> Otherwise we wont be catching overruns there. But the debugging can cause
-> some side effects.
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Whilst having no opinion on the matter, I can't help noticing that Ingo
+said its "main focus is on measuring/profilig user-space apps" (sic), so
+I think its use is not for kernel purposes. Coupled with Christoph's
+observation that the tool is nowhere close to the hardware, it appears
+neither of your two criteria apply to this.
