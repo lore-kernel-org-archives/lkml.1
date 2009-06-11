@@ -1,173 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbZFKWLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759942AbZFKWSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762764AbZFKWLG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762318AbZFKWK3
+	id S1759942AbZFKWSc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 18:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbZFKWSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:10:29 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39622 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762306AbZFKWK1 (ORCPT
+	Thu, 11 Jun 2009 18:18:24 -0400
+Received: from outbound-mail-27.bluehost.com ([69.89.17.193]:60841 "HELO
+	outbound-mail-27.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753324AbZFKWSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:10:27 -0400
-Subject: [PATCH] Convert alpha to use arch_gettimeoffset()
-From: john stultz <johnstul@us.ibm.com>
-To: rth@twiddle.net, ink@jurassic.park.msu.ru
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 11 Jun 2009 15:10:10 -0700
-Message-Id: <1244758210.7192.5.camel@localhost.localdomain>
+	Thu, 11 Jun 2009 18:18:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=fneqpE2XYIq3/h6+iIEzI4KOVwo79gaDODW7NzjcBfaCxzTkoJ5AVuhZFINJ/UgcgXOwFuXJCpV+Jxll+JU+vmiFUeJWOL2AfnxU/n9VitbFPoYAVxiPJxlENMcL1SS5;
+Date: Thu, 11 Jun 2009 15:17:43 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Alex Chiang <achiang@hp.com>, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH v2 08/11] PCI Hotplug: acpiphp: convert to
+ acpi_get_pci_dev
+Message-ID: <20090611151743.6586cbb3@jbarnes-g45>
+In-Reply-To: <20090611144845.76e7dc1d@jbarnes-g45>
+References: <20090604054504.18802.21690.stgit@bob.kio>
+	<20090604055857.18802.34388.stgit@bob.kio>
+	<20090611144845.76e7dc1d@jbarnes-g45>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts alpha to use GENERIC_TIME via the arch_getoffset()
-infrastructure, reducing the amount of arch specific code we need to
-maintain.
+On Thu, 11 Jun 2009 14:48:45 -0700
+Jesse Barnes <jesse.barnes@intel.com> wrote:
 
-I suspect the alpha arch could even be further improved to provide and
-rpcc() based clocksource, but not having the hardware, I don't feel
-comfortable attempting the more complicated conversion (but I'd be glad
-to help if anyone else is interested).
+> On Wed, 03 Jun 2009 23:58:57 -0600
+> Alex Chiang <achiang@hp.com> wrote:
+> 
+> > Now that acpi_get_pci_dev is available, let's use it instead of
+> > acpi_get_pci_id.
+> > 
+> > Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> > Signed-off-by: Alex Chiang <achiang@hp.com>
+> > ---
+> > 
+> 
+> Applied to linux-next, thanks.
 
-This patch applies on top of Linus' current -git tree (pre 2.6.31-rc1).
+Oops, since this one depends on others in the series it's probably best
+if they just go in through Len's tree.  This one has my 
+  Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+too.
 
-I've taken my best swing at converting this, but I'm not 100% confident
-I got it right. It does cross compile, so that's hopefully a good sign.
-Any assistance from arch maintainers or testers to get this merged would
-be great.
-
-thanks
--john
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
----
-
- Kconfig       |    8 ++++++
- kernel/time.c |   72 +++-------------------------------------------------------
- 2 files changed, 12 insertions(+), 68 deletions(-)
-
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index 9fb8aae..4434481 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -45,6 +45,14 @@ config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
- 
-+config GENERIC_TIME
-+	bool
-+	default y
-+
-+config ARCH_USES_GETTIMEOFFSET
-+	bool
-+	default y
-+
- config ZONE_DMA
- 	bool
- 	default y
-diff --git a/arch/alpha/kernel/time.c b/arch/alpha/kernel/time.c
-index b04e2cb..8f7eb6d 100644
---- a/arch/alpha/kernel/time.c
-+++ b/arch/alpha/kernel/time.c
-@@ -408,28 +408,17 @@ time_init(void)
-  * part.  So we can't do the "find absolute time in terms of cycles" thing
-  * that the other ports do.
-  */
--void
--do_gettimeofday(struct timeval *tv)
-+u32 arch_gettimeoffset(void)
- {
--	unsigned long flags;
--	unsigned long sec, usec, seq;
- 	unsigned long delta_cycles, delta_usec, partial_tick;
- 
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--
--		delta_cycles = rpcc() - state.last_time;
--		sec = xtime.tv_sec;
--		usec = (xtime.tv_nsec / 1000);
--		partial_tick = state.partial_tick;
--
--	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--
- #ifdef CONFIG_SMP
- 	/* Until and unless we figure out how to get cpu cycle counters
- 	   in sync and keep them there, we can't use the rpcc tricks.  */
- 	delta_usec = 0;
- #else
-+	delta_cycles = rpcc() - state.last_time;
-+	partial_tick = state.partial_tick;
- 	/*
- 	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
- 	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
-@@ -448,62 +437,9 @@ do_gettimeofday(struct timeval *tv)
- 	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
- #endif
- 
--	usec += delta_usec;
--	if (usec >= 1000000) {
--		sec += 1;
--		usec -= 1000000;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
--
--int
--do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, sec = tv->tv_sec;
--	long wtm_nsec, nsec = tv->tv_nsec;
--	unsigned long delta_nsec;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irq(&xtime_lock);
--
--	/* The offset that is added into time in do_gettimeofday above
--	   must be subtracted out here to keep a coherent view of the
--	   time.  Without this, a full-tick error is possible.  */
--
--#ifdef CONFIG_SMP
--	delta_nsec = 0;
--#else
--	delta_nsec = rpcc() - state.last_time;
--	delta_nsec = (delta_nsec * state.scaled_ticks_per_cycle 
--		      + state.partial_tick) * 15625;
--	delta_nsec = ((delta_nsec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
--	delta_nsec *= 1000;
--#endif
--
--	nsec -= delta_nsec;
--
--	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
--
--	set_normalized_timespec(&xtime, sec, nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	ntp_clear();
--
--	write_sequnlock_irq(&xtime_lock);
--	clock_was_set();
--	return 0;
-+	return delta_usec * 1000;
- }
- 
--EXPORT_SYMBOL(do_settimeofday);
--
--
- /*
-  * In order to set the CMOS clock precisely, set_rtc_mmss has to be
-  * called 500 ms after the second nowtime has started, because when
-
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
