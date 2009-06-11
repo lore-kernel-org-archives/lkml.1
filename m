@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZFKRyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbZFKR7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbZFKRyB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 13:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZFKRxx
+	id S1754800AbZFKR7p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 13:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZFKR71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 13:53:53 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:55976 "EHLO
+	Thu, 11 Jun 2009 13:59:27 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:63210 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbZFKRxw (ORCPT
+	with ESMTP id S1755305AbZFKR70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 13:53:52 -0400
+	Thu, 11 Jun 2009 13:59:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=WlPcoe6l9KaP914+ASAwwJwtC2/wcBphoT0AHbvO4sXrY/pC0WBIxOWUdevVlhDwlv
-         geSToMDw5C/4sGWNDPY7aA/Q2JBk4rVWMJBVguvA4vav0SyHs7ogdR4NB+L+72Eq7Ofa
-         IQJRTBtYY1tN6M0qNChhjj6In5paotqDely+g=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Date: Thu, 11 Jun 2009 19:53:52 +0200
-User-Agent: KMail/1.9.9
-Cc: David Miller <davem@davemloft.net>, linux@arm.linux.org.uk, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, ibm@android.com, swetland@google.com,
-       san@android.com, rlove@google.com
-References: <20090610103131.GB13885@elf.ucw.cz> <20090610194852.GA28787@n2100.arm.linux.org.uk> <20090611.000219.206893038.davem@davemloft.net>
-In-Reply-To: <20090611.000219.206893038.davem@davemloft.net>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wZf0r1HkcUhaqLkvQwOiHCXCNtqQErfwBtn3DmCkGc5+Pu/jUNi9QIzQm65Cdsj+Fs
+         iBm6YxFkTt07kJmdShQe1zg79zbTdx9JRavyRfr1w724yNalAjh0n91rWF7WNY6PRHxO
+         HLcY/k+KDifPFO+irPqqB9MjVuD3kHnNv3oTw=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain>
+References: <20090611160329.GA3366@elte.hu>
+	 <20090611161714.GA5008@infradead.org>
+	 <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain>
+	 <20090611165226.GV8633@ZenIV.linux.org.uk>
+	 <1244739378.6691.540.camel@laptop>
+	 <20090611170015.GA3651@infradead.org>
+	 <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain>
+Date: Thu, 11 Jun 2009 20:59:26 +0300
+X-Google-Sender-Auth: a48a83d0792d96e3
+Message-ID: <84144f020906111059g6e25a090y4434cfd698f84fb4@mail.gmail.com>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906111953.52999.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 of June 2009 09:02:19 David Miller wrote:
-> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> Date: Wed, 10 Jun 2009 20:48:52 +0100
->
-> > In short not as far as I know, and I'm very disappointed with the state
-> > of affairs with google.
->
-> And of course, this whole android situation has absolutely nothing to
-> do with how much of a pain in that ass you are to deal with as ARM
-> maintainer.
+On Thu, 11 Jun 2009, Christoph Hellwig wrote:
+>> So what point is there in keeping it in-tree except making life hell for
+>> packagers?
 
-I had no problems with Russell yet, he always helped me with merging my 
-patches ... hmm
+On Thu, Jun 11, 2009 at 8:06 PM, Linus
+Torvalds<torvalds@linux-foundation.org> wrote:
+> Give it up. Packagers can trivially generate their own sub-packages. They
+> do it all the time. They already do it for the user-mode header files,
+> extracted from the kernel - something you've worked on yourself.
 >
-> Absolutely nothing, right?
+> So your point is clearly bogus, and dishonest.
 >
-> :-(
->
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> You haven't actually looked the real problem in the eye, and acknowledged
+> the disaster that is oprofile. Let's give a _new_ approach a chance, and
+> see if we can avoid the mistakes of yesteryear this time.
 
+Yup, I wonder what all the fuzz is about. We already have userspace
+tools in the kernel but people keep putting them under Documentation
+(to avoid this discussion, probably).
 
+For those who think an external repository is a good idea, I invite
+you to compare the success of kmemtrace (kernel memory profiler) and
+perf. The former has its userspace part out-of-tree and has gained
+zero new developers. Sure, there are probably fewer people interested
+in memory profiling and I or Eduard surely don't have the sex appeal
+of Ingo Molnar (yet anyway). But even if you take these factors into
+account, I'd argue that big part of the success has been the fact that
+it's easily accessible and hackable. And that pretty much means that
+the code needs to sit in the kernel tree, following kernel development
+process.
+
+And really, what do we gain by moving perf out of tree and making it
+follow its own release cycle (and getting out of sync eventually)?
+
+                        Pekka
