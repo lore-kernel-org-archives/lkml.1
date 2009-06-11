@@ -1,108 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763419AbZFKL4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763085AbZFKL6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763419AbZFKL4T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZFKL4M
+	id S1763085AbZFKL6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZFKL56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:56:12 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50089 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbZFKL4L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:56:11 -0400
-Subject: Re: [GIT PULL v2] Early boot SLAB for 2.6.31
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, hannes@cmpxchg.org, mpm@selenic.com,
-       npiggin@suse.de, yinghai@kernel.org
-In-Reply-To: <20090611114814.GB13391@elte.hu>
-References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI>
-	 <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain>
-	 <alpine.LFD.2.01.0906101332440.6847@localhost.localdomain>
-	 <Pine.LNX.4.64.0906111416070.10394@melkki.cs.Helsinki.FI>
-	 <20090611113512.GA6971@elte.hu> <20090611114032.GA8856@elte.hu>
-	 <20090611114203.GA13391@elte.hu>  <20090611114814.GB13391@elte.hu>
-Date: Thu, 11 Jun 2009 14:56:11 +0300
-Message-Id: <1244721371.17483.31.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 11 Jun 2009 07:57:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35099 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752065AbZFKL55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 07:57:57 -0400
+Date: Thu, 11 Jun 2009 11:57:35 GMT
+From: tip-bot for Andreas Herrmann <andreas.herrmann3@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, tglx@linutronix.de
+In-Reply-To: <20090611102927.GE12431@alberich.amd.com>
+References: <20090611102927.GE12431@alberich.amd.com>
+Subject: [tip:branch?] x86: memtest: add proper typecast for pointer comparison
+Message-ID: <tip-47e64f3c8430d0410c8e83f3e503532491c863c3@git.kernel.org>
+Git-Commit-ID: 47e64f3c8430d0410c8e83f3e503532491c863c3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 11 Jun 2009 11:57:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-11 at 13:48 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > Hm, with this pulled on a testbox i'm still getting:
-> > > 
-> > > [    0.000000] Experimental hierarchical RCU init done.
-> > > [    0.000000] NR_IRQS:4352 nr_irqs:256
-> > > [    0.000000] ------------[ cut here ]------------
-> > > [    0.000000] WARNING: at mm/bootmem.c:537 alloc_arch_preferred_bootmem+0x40/0x7e()
-> > 
-> > Another testbox crashed on bootup. I'm collecting a serial log 
-> > from it - config attached meanwhile.
-> 
-> We have a hard crash in the WP-protect code:
-> 
-> [    0.000000] Checking if this processor honours the WP bit even in supervisor mode...BUG: Int 14: CR2 ffcff000
-> [    0.000000]      EDI 00000188  ESI 00000ac7  EBP c17eaf9c  ESP c17eaf8c
-> [    0.000000]      EBX 000014e0  EDX 0000000e  ECX 01856067  EAX 00000001
-> [    0.000000]      err 00000003  EIP c10135b1   CS 00000060  flg 00010002
-> [    0.000000] Stack: c17eafa8 c17fd410 c16747bc c17eafc4 c17fd7e5 000011fd f8616000 c18237cc
-> [    0.000000]        00099800 c17bb000 c17eafec c17f1668 000001c5 c17f1322 c166e039 c1822bf0
-> [    0.000000]        c166e033 c153a014 c18237cc 00020800 c17eaff8 c17f106a 00020800 01ba5003
-> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-tip-02161-g7a74539-dirty #52203
-> [    0.000000] Call Trace:
-> [    0.000000]  [<c15357c2>] ? printk+0x14/0x16
-> [    0.000000]  [<c10135b1>] ? do_test_wp_bit+0x19/0x23
-> [    0.000000]  [<c17fd410>] ? test_wp_bit+0x26/0x64
-> [    0.000000]  [<c17fd7e5>] ? mem_init+0x1ba/0x1d8
-> [    0.000000]  [<c17f1668>] ? start_kernel+0x164/0x2f7
-> [    0.000000]  [<c17f1322>] ? unknown_bootoption+0x0/0x19c
-> [    0.000000]  [<c17f106a>] ? __init_begin+0x6a/0x6f
-> 
-> (full bootlog attached)
-> 
-> Just a quick analysis from the place we crash (without looking into 
-> any details): the WP test is the first time we really make use of 
-> the MMU during bootup - crashes there are often a sign of messed up 
-> pagetables, which is easy if the bootmem allocator is changed.
+Commit-ID:  47e64f3c8430d0410c8e83f3e503532491c863c3
+Gitweb:     http://git.kernel.org/tip/47e64f3c8430d0410c8e83f3e503532491c863c3
+Author:     Andreas Herrmann <andreas.herrmann3@amd.com>
+AuthorDate: Thu, 11 Jun 2009 12:29:27 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Thu, 11 Jun 2009 13:53:02 +0200
 
-No, mem_init() happens _before_ slab is set up so it's probably just
-this.
+x86: memtest: add proper typecast for pointer comparison
 
-And yes, the patch set clearly needs more work.
+Commit c9690998ef48ffefeccb91c70a7739eebdea57f9
+(x86: memtest: remove 64-bit division) introduced following compile warning:
 
-			Pekka
+ arch/x86/mm/memtest.c: In function 'memtest':
+ arch/x86/mm/memtest.c:56: warning: comparison of distinct pointer types lacks a cast
+ arch/x86/mm/memtest.c:58: warning: comparison of distinct pointer types lacks a cast
 
-diff --git a/init/main.c b/init/main.c
-index 859af21..6d38f96 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -588,6 +588,8 @@ asmlinkage void __init start_kernel(void)
- 	 */
- 	pidhash_init();
- 	vfs_caches_init_early();
-+	sort_main_extable();
-+	trap_init();
- 	/*
- 	 * Set up kernel memory allocators
- 	 */
-@@ -610,8 +612,6 @@ asmlinkage void __init start_kernel(void)
- 				"enabled *very* early, fixing it\n");
- 		local_irq_disable();
- 	}
--	sort_main_extable();
--	trap_init();
- 	rcu_init();
- 	/* init some links before init_ISA_irqs() */
- 	early_irq_init();
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+LKML-Reference: <20090611102927.GE12431@alberich.amd.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
+---
+ arch/x86/mm/memtest.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
+index c0bedcd..1a8b48f 100644
+--- a/arch/x86/mm/memtest.c
++++ b/arch/x86/mm/memtest.c
+@@ -53,9 +53,9 @@ static void __init memtest(u64 pattern, u64 start_phys, u64 size)
+ 	start_bad = 0;
+ 	last_bad = 0;
+ 
+-	for (p = start; p < end; p++)
++	for (p = start; (void *) p < end; p++)
+ 		*p = pattern;
+-	for (p = start; p < end; p++, start_phys_aligned += incr) {
++	for (p = start; (void *) p < end; p++, start_phys_aligned += incr) {
+ 		if (*p == pattern)
+ 			continue;
+ 		if (start_phys_aligned == last_bad + incr) {
