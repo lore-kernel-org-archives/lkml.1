@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763538AbZFKO6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbZFKPAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763538AbZFKO6Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZFKO6R
+	id S1763430AbZFKPAy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 11:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZFKPAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:58:17 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43410 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753699AbZFKO6Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 10:58:16 -0400
-Date: Thu, 11 Jun 2009 16:58:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611145811.GC2982@ucw.cz>
-References: <20090610103131.GB13885@elf.ucw.cz> <a55d774e0906101043q580fc5e5iad25a79203dc52c@mail.gmail.com> <20090611081012.GD8592@elf.ucw.cz> <a55d774e0906110127k1633dd90x96863c3dd6f888cf@mail.gmail.com> <20090611110946.GA7523@elf.ucw.cz> <a55d774e0906110424q631c83d5l5a5ba8bc0a1093b8@mail.gmail.com> <20090611114825.GD7523@elf.ucw.cz> <a55d774e0906110453g517d11of810e951a4a894f@mail.gmail.com>
+	Thu, 11 Jun 2009 11:00:46 -0400
+Received: from NaN.false.org ([208.75.86.248]:58544 "EHLO nan.false.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754142AbZFKPAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 11:00:45 -0400
+X-Greylist: delayed 2022 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 11:00:45 EDT
+Date: Thu, 11 Jun 2009 10:27:00 -0400
+From: Daniel Jacobowitz <dan@debian.org>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, Nicolas Pitre <nico@cam.org>,
+       linux-kernel@vger.kernel.org, linux@arm.linux.org.uk
+Subject: Re: ERESTART_RESTARTBLOCK and ptrace()
+Message-ID: <20090611142700.GA12259@caradoc.them.org>
+Mail-Followup-To: "Kirill A. Shutemov" <kirill@shutemov.name>,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Nicolas Pitre <nico@cam.org>, linux-kernel@vger.kernel.org,
+	linux@arm.linux.org.uk
+References: <cc557aab0906100325o4fd55e0eveb958915214809e3@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a55d774e0906110453g517d11of810e951a4a894f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <cc557aab0906100325o4fd55e0eveb958915214809e3@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2008-05-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-11 04:53:10, Brian Swetland wrote:
-> On Thu, Jun 11, 2009 at 4:48 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> >>
-> >> You'll need to fastboot boot arch/arm/boot/zImage ramdisk.img
-> >
-> > Aha, fastboot implies that ramdisk is optional.. apparently it is not.
+On Wed, Jun 10, 2009 at 01:25:34PM +0300, Kirill A. Shutemov wrote:
+> I've got bug in handling ERESTART_RESTARTBLOCK. Kernel version is 2.6.28.
 > 
-> Well, it *is* optional -- but the kernel as we build it needs an
-> initrd to do much that's visible.  Could probably enable fb console
-> and provide a commandline that points console there (-c "kernel
-> commandline"  argument to fastboot).
+> Steps to reproduce:
+> 1. Attach using ptrace() to process while it's in a syscall which use
+> ERESTART_RESTARTBLOCK
+> on interrupt. The easiest way is to attach to process which is in nanosleep().
+> 2. Run a syscall in context of the process like it does gdb.
+> 3. Continue the process.
+> 
+> Results:
+> Syscall(nanosleep) return error code 516(ERESTART_RESTARTBLOCK). It's
+> kernel's internal error
+> code and should never appear at userspace.
+> 
+> It seems ARM-related since I can't reproduce it on x86.
 
-I tried that without much luck. Also... defconfig has mem=64M. Is
-that correct?
-									Pavel
+That's because GDB has code to do the right thing on x86.  Consider
+filing a GDB bug please.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Daniel Jacobowitz
+CodeSourcery
