@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZFKS1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbZFKS2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757822AbZFKS1h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbZFKS13
+	id S1757795AbZFKS2z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbZFKS2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:27:29 -0400
-Received: from mga11.intel.com ([192.55.52.93]:15654 "EHLO mga11.intel.com"
+	Thu, 11 Jun 2009 14:28:48 -0400
+Received: from mga11.intel.com ([192.55.52.93]:28678 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757515AbZFKS12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:27:28 -0400
+	id S1756214AbZFKS2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:28:47 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,203,1243839600"; 
-   d="scan'208";a="465547177"
-Date: Thu, 11 Jun 2009 11:26:49 -0700
+   d="scan'208";a="465547411"
+Date: Thu, 11 Jun 2009 11:27:48 -0700
 From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] PCI PM: Follow PCI_PM_CTRL_NO_SOFT_RESET during
- transitions from D3
-Message-ID: <20090611112649.719a0eb5@jbarnes-g45>
-In-Reply-To: <200905182251.13197.rjw@sisk.pl>
-References: <200905182246.41129.rjw@sisk.pl>
-	<200905182251.13197.rjw@sisk.pl>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: eliminate redundant pci_stop_dev() call from
+ pci_destroy_dev()
+Message-ID: <20090611112748.0601e347@jbarnes-g45>
+In-Reply-To: <20090519010222.12679.74898.stgit@bob.kio>
+References: <20090519010222.12679.74898.stgit@bob.kio>
 X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -32,47 +29,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 May 2009 22:51:12 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Mon, 18 May 2009 19:02:38 -0600
+Alex Chiang <achiang@hp.com> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> We always call pci_stop_bus_device before calling pci_destroy_dev.
 > 
-> According to the PCI PM specification (PCI Bus Power Management
-> Interface Specification, Rev. 1.2, Section 5.4.1) we are supposed to
-> reinitialize devices that have PCI_PM_CTRL_NO_SOFT_RESET clear during
-> all transitions from PCI_D3hot to PCI_D0, but we only do it if the
-> device's current_state field is equal to PCI_UNKNOWN.
+> Since pci_stop_bus_device calls pci_stop_dev, there is no need
+> for pci_destroy_dev to repeat the call.
 > 
-> This may lead to problems if a device with PCI_PM_CTRL_NO_SOFT_RESET
-> unset is put into PCI_D3hot at run time by its driver and
-> pci_set_power_state() is used to put it back into PCI_D0, because in
-> that case the device will remain uninitialized after
-> pci_set_power_state() has returned.  Prevent that from happening by
-> modifying pci_raw_set_power_state() to reinitialize devices with
-> PCI_PM_CTRL_NO_SOFT_RESET unset during all transitions from D3 to D0.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
 > ---
->  drivers/pci/pci.c |    2 ++
->  1 file changed, 2 insertions(+)
 > 
-> Index: linux-2.6/drivers/pci/pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -480,6 +480,8 @@ static int pci_raw_set_power_state(struc
->  		pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
->  		pmcsr |= state;
->  		break;
-> +	case PCI_D3hot:
-> +	case PCI_D3cold:
->  	case PCI_UNKNOWN: /* Boot-up */
->  		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) == PCI_D3hot
->  		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET))
+>  drivers/pci/remove.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
 > 
+> diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+> index 86503c1..176615e 100644
+> --- a/drivers/pci/remove.c
+> +++ b/drivers/pci/remove.c
+> @@ -32,8 +32,6 @@ static void pci_stop_dev(struct pci_dev *dev)
+>  
+>  static void pci_destroy_dev(struct pci_dev *dev)
+>  {
+> -	pci_stop_dev(dev);
+> -
+>  	/* Remove the device from the device lists, and prevent any
+> further
+>  	 * list accesses from this device */
+>  	down_write(&pci_bus_sem);
 
-Applied to my linux-next branch, thanks Rafael.  I've also included
-stable@kernel.org in the cc, since this is a small but important fix.
+Applied to linux-next, thanks.
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
