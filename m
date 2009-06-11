@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbZFKIxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZFKJHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759044AbZFKIxQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbZFKIxI
+	id S1756406AbZFKJHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 05:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZFKJH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:53:08 -0400
-Received: from mail-pz0-f192.google.com ([209.85.222.192]:37478 "EHLO
-	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752974AbZFKIxH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:53:07 -0400
-X-Greylist: delayed 429 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 04:53:07 EDT
-MIME-Version: 1.0
-In-Reply-To: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
-References: <1243406874-3917-1-git-send-email-monstr@monstr.eu>
-Date: Thu, 11 Jun 2009 18:46:00 +1000
-Message-ID: <1d3f23370906110146w623419b8s41661c83490f588d@mail.gmail.com>
-Subject: Re: Microblaze MMU v2
-From: John Williams <john.williams@petalogix.com>
-To: Michal Simek <monstr@monstr.eu>
-Cc: linux-kernel@vger.kernel.org, michal.simek@petalogix.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Jun 2009 05:07:28 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39069 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751013AbZFKJH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 05:07:27 -0400
+Date: Thu, 11 Jun 2009 19:07:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: rr tree build failure
+Message-Id: <20090611190728.510af289.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 4:47 PM, Michal Simek<monstr@monstr.eu> wrote:
+Hi Rusty,
 
-> This is bunch of patches for Microblaze MMU kernel support version 2.
-> There is one problem(not functional) with uaccess.h which I know about and I would like
-> to fix it till rc2 with Arnd's new generic patches which I hope will be there.
+Today's linux-next build (sparc defconfig) failed like this:
 
-I've boot tested both MMU and noMMU configs of this tree - all looks great.
+arch/sparc/mm/extable.c: In function 'trim_init_extable':
+arch/sparc/mm/extable.c:78: error: too few arguments to function 'within_module_init'
 
-Tested-by: John Williams <john.williams@petalogix.com>
-Signed-off-by: John Williams <john.williams@petalogix.com>
+Caused by commit 2ac595c3960b80139e895c4e13e851ed6dfd127a ("module: trim
+exception table on init free").
 
-John
---
-John Williams, PhD, B.Eng, B.IT
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
+I applied the following patch (because I did not want to have to rebuild
+everything again).
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 11 Jun 2009 18:53:13 +1000
+Subject: [PATCH] rr: fix up for sparc32 extable
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/sparc/mm/extable.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/sparc/mm/extable.c b/arch/sparc/mm/extable.c
+index 6b5c373..a61c349 100644
+--- a/arch/sparc/mm/extable.c
++++ b/arch/sparc/mm/extable.c
+@@ -75,7 +75,7 @@ void trim_init_extable(struct module *m)
+ 	for (i = 0; i < m->num_exentries; i += range ? 2 : 1) {
+ 		range = m->extable[i].fixup == 0;
+ 
+-		if (within_module_init(m->extable[i].insn)) {
++		if (within_module_init(m->extable[i].insn, m)) {
+ 			m->extable[i].fixup = -1;
+ 			if (range)
+ 				m->extable[i+1].fixup = -1;
+-- 
+1.6.3.1
+
