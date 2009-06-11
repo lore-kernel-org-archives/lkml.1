@@ -1,152 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbZFKInz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbZFKIoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761381AbZFKInz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbZFKInr
+	id S1761543AbZFKIoL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 04:44:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760635AbZFKInx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:43:47 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44894 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751529AbZFKInq (ORCPT
+	Thu, 11 Jun 2009 04:43:53 -0400
+Received: from mga06.intel.com ([134.134.136.21]:19426 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761442AbZFKInv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:43:46 -0400
-Date: Thu, 11 Jun 2009 11:43:46 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: linux-kernel@vger.kernel.org
-cc: cl@linux-foundation.org, mel@csn.ul.ie, Larry.Finger@lwfinger.net
-Subject: [PATCH 1/2] SLUB: Out-of-memory diagnostics
-Message-ID: <Pine.LNX.4.64.0906111142350.6132@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Thu, 11 Jun 2009 04:43:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,201,1243839600"; 
+   d="scan'208";a="420783875"
+Date: Thu, 11 Jun 2009 16:27:10 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH -tip] perf_counter/x86: Correct some event and umask
+	values for Intel processors
+Message-ID: <20090611082710.GA29784@ywang-moblin2.bj.intel.com>
+References: <20090609131553.GA12489@ywang-moblin2.bj.intel.com> <20090609141621.GA32703@elte.hu> <20090610053623.GC30923@ywang-moblin2.bj.intel.com> <20090610104242.GB27724@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090610104242.GB27724@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+> > Btw, one thing I don't quite understand is why you aliased 
+> > dtlb-write-ops to l1d-write-ops when setting event and umask 
+> > values. Are they the same event?
+> 
+> No, they are indeed different events - that's a bug in the table, 
+> good spotting. Mind sending a (tested) patch for it?
+> 
 
-As suggested by Mel Gorman, add out-of-memory diagnostics to the SLUB allocator
-to make debugging OOM conditions easier. This patch helped hunt down a nasty
-OOM issue that popped up every now that was caused by SLUB debugging code which
-forced 4096 byte allocations to use order 1 pages even in the fallback case.
+I'm a little confused. By dtlb-write-ops, do you want to count the
+number of times that DTLB is accessed due to store operations or the
+number of times that DTLB entries are written to, i.e. updated?
 
-An example print out looks like this:
+Btw, do you know whether virtual cache is employed or not on
+atom/core2/nehalem so that tlb won't be accessed when accessing l1
+caches?
 
-  <snip page allocator out-of-memory message>
-  SLUB: Unable to allocate memory on node -1 (gfp=20)
-    cache: kmalloc-4096, object size: 4096, buffer size: 4168, default order: 3, min order: 1
-    node 0: slabs: 95, objs: 665, free: 0
-
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-Tested-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slub.c |   70 ++++++++++++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 51 insertions(+), 19 deletions(-)
-
-diff --git a/mm/slub.c b/mm/slub.c
-index 65ffda5..2bbacfc 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1484,6 +1484,56 @@ static inline int node_match(struct kmem_cache_cpu *c, int node)
- 	return 1;
- }
- 
-+static int count_free(struct page *page)
-+{
-+	return page->objects - page->inuse;
-+}
-+
-+static unsigned long count_partial(struct kmem_cache_node *n,
-+					int (*get_count)(struct page *))
-+{
-+	unsigned long flags;
-+	unsigned long x = 0;
-+	struct page *page;
-+
-+	spin_lock_irqsave(&n->list_lock, flags);
-+	list_for_each_entry(page, &n->partial, lru)
-+		x += get_count(page);
-+	spin_unlock_irqrestore(&n->list_lock, flags);
-+	return x;
-+}
-+
-+static noinline void
-+slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
-+{
-+	int node;
-+
-+	printk(KERN_WARNING
-+		"SLUB: Unable to allocate memory on node %d (gfp=%x)\n",
-+		nid, gfpflags);
-+	printk(KERN_WARNING "  cache: %s, object size: %d, buffer size: %d, "
-+		"default order: %d, min order: %d\n", s->name, s->objsize,
-+		s->size, oo_order(s->oo), oo_order(s->min));
-+
-+	for_each_online_node(node) {
-+		struct kmem_cache_node *n = get_node(s, node);
-+		unsigned long nr_slabs;
-+		unsigned long nr_objs;
-+		unsigned long nr_free;
-+
-+		if (!n)
-+			continue;
-+
-+		nr_slabs = atomic_long_read(&n->nr_slabs);
-+		nr_objs = atomic_long_read(&n->total_objects);
-+		nr_free = count_partial(n, count_free);
-+
-+		printk(KERN_WARNING
-+			"  node %d: slabs: %ld, objs: %ld, free: %ld\n",
-+			node, nr_slabs, nr_objs, nr_free);
-+	}
-+}
-+
- /*
-  * Slow path. The lockless freelist is empty or we need to perform
-  * debugging duties.
-@@ -1565,6 +1615,7 @@ new_slab:
- 		c->page = new;
- 		goto load_freelist;
- 	}
-+	slab_out_of_memory(s, gfpflags, node);
- 	return NULL;
- debug:
- 	if (!alloc_debug_processing(s, c->page, object, addr))
-@@ -3318,20 +3369,6 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
- }
- 
- #ifdef CONFIG_SLUB_DEBUG
--static unsigned long count_partial(struct kmem_cache_node *n,
--					int (*get_count)(struct page *))
--{
--	unsigned long flags;
--	unsigned long x = 0;
--	struct page *page;
--
--	spin_lock_irqsave(&n->list_lock, flags);
--	list_for_each_entry(page, &n->partial, lru)
--		x += get_count(page);
--	spin_unlock_irqrestore(&n->list_lock, flags);
--	return x;
--}
--
- static int count_inuse(struct page *page)
- {
- 	return page->inuse;
-@@ -3342,11 +3379,6 @@ static int count_total(struct page *page)
- 	return page->objects;
- }
- 
--static int count_free(struct page *page)
--{
--	return page->objects - page->inuse;
--}
--
- static int validate_slab(struct kmem_cache *s, struct page *page,
- 						unsigned long *map)
- {
--- 
-1.6.0.4
-
+-Yong
