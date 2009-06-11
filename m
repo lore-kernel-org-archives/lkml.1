@@ -1,64 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbZFKIZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbZFKIZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760348AbZFKIZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757493AbZFKIY7
+	id S1758377AbZFKIZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 04:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758663AbZFKIZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:24:59 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52693 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757424AbZFKIY6 (ORCPT
+	Thu, 11 Jun 2009 04:25:42 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41247 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757493AbZFKIZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:24:58 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 2/3] check unevictable flag in lumy reclaim
-Cc: kosaki.motohiro@jp.fujitsu.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       apw@canonical.com, riel@redhat.com, minchan.kim@gmail.com,
-       mel@csn.ul.ie
-In-Reply-To: <20090611170152.7a43b13b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com> <20090611170152.7a43b13b.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20090611172249.6D3C.A69D9226@jp.fujitsu.com>
+	Thu, 11 Jun 2009 04:25:39 -0400
+Date: Thu, 11 Jun 2009 10:25:33 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Brian Swetland <swetland@google.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090611082532.GE8592@elf.ucw.cz>
+References: <20090610103131.GB13885@elf.ucw.cz> <20090610194852.GA28787@n2100.arm.linux.org.uk> <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com> <20090610213710.GA8472@elf.ucw.cz> <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 11 Jun 2009 17:24:58 +0900 (JST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Wed 2009-06-10 14:55:52, Brian Swetland wrote:
+> On Wed, Jun 10, 2009 at 2:37 PM, Pavel Machek<pavel@ucw.cz> wrote:
+> >> I'd love to find an effective way to get more of the msm support
+> >> cleaned up (as necessary) and into the mainline.  We're bringing our
+> >> work forward and rebasing to keep tracking the latest released kernel,
+> >> and working on getting core bits we need that other stuff depends on
+> >> in -- look at the thread on linux-pm where the wakelock/suspendblocker
+> >> framework has been reviewed, revised, resent repeatedly, etc.
+> >
+> > I guess wakelocks should be removed from first version of drivers for merge.
 > 
-> Lumpy reclaim scans pages from their pfn. Then, it can find unevictable pages
-> in its loop. Abort lumpy reclaim when we find Unevictable page, we never get a
-> block of pages for requested order.
+> It'd be nice to get that sorted out first, but it does seem like it's
+> going to take a while to get there, so yeah, guess we'd have to go a
+> step at a time.
+
+Merging drivers is (/should be) easy. Merging core features take a
+while.
+
+> >> The msm7k unfortunately requires a lot of infrastructure to work given
+> >> that the baseband (a black box to us) controls much of the world.
+> >> Last time around when I tried submitting some of the core ipc support
+> >> to talk to it on the lakml, there seemed to be uncertainty about who
+> >> even would review that.
+> >
+> > Try again, then :-). [Merging to drivers/staging is _very_ easy, and
+> > even that is good first step.]
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
-> Index: lumpy-reclaim-trial/mm/vmscan.c
-> ===================================================================
-> --- lumpy-reclaim-trial.orig/mm/vmscan.c
-> +++ lumpy-reclaim-trial/mm/vmscan.c
-> @@ -936,6 +936,9 @@ static unsigned long isolate_lru_pages(u
->  			/* Check that we have not crossed a zone boundary. */
->  			if (unlikely(page_zone_id(cursor_page) != zone_id))
->  				continue;
-> +			/* Abort when the page is mlocked */
-> +			if (unlikely(PageUnevictable(cursor_page)))
-> +				break;
->  			if (__isolate_lru_page(cursor_page, mode, file) == 0) {
->  				list_move(&cursor_page->lru, dst);
->  				nr_taken++;
+> Is there something equivalent for arch code?  The bulk of our msm7k
+> support is under arch/arm/mach-msm/... though if there are sane places
+> to split out bigger chunks like the qdsp5/qdsp6 support, etc, we're
+> open to suggestion.
+
+drivers/staging already contains stuff such a filesystems. Putting
+arch-specific drivers there should be okay.
+
+> I'm not sure the smd (shared memory driver / virtual serial channels)
+> that everything else depends on makes sense outside of mach-msm, given
+> it's all very specific to the baseband and firmware that runs on it.
+
+Well, it is still a driver for your baseband chip, right?
+
+...drivers/staging is _not_ final place for your code. When the code
+is good enough, it should move. But it is place where stuff like TI
+wifi driver would be acceptable.
+
+> Basically there's a stack:
 > 
+> smsm  -- "shared memory state machine" (used for power collapse coordination)
+> smd -- "shared memory driver" (virtual serial channels, 8k bidirectional fifos)
+> rpcrouter/oncrpc -- rpc transport layer used for audio, audio routing, etc
+> 
+> These are linux implementations of protocols the baseband speaks.
+> 
+> Other stuff then stacks on smd (rmnet -- virtual ethernet, at control
+> channels, etc) and oncrpc (dsp control, rtc, gps, some media control).
 
-The code is good. thanks.
+Is it all neccessary for boot? Getting it booting with display should
+be the first goal... GPS/RTC/... can come later.
 
-But please comment adding more. plus, unevictable is made by multiple reason.
-not only mlock. please fix misleading comment.
+> > Actually, mailing patches so that people do not have to do git pull +
+> > diff is very good zeroth step :-).
+> 
+> We've tried to do both in the past -- setup a patchset that's pullable
+> for those who want to pull and get send-email 'em out to the list.
 
+Yeah, you need to repeat it like each two weeks to get attention.
 
+> >> We have full support for MSM7201A, including fully functional power
+> >> management, working on a number of commercially shipping devices that
+> >> we'd absolutely love to get into mainline.  Rebasing and bringing this
+> >> stuff forward all the time is a lot of work and certainly not the
+> >> optimal way to do it.  Getting it in a couple pieces at a time is slow
+> >> going, but it seemed to cause frustration with just the small number
+> >> of things we were looking for review/approval for...
+> >
+> > I have some experience with patch merging, lets see if I can
+> > help... It would be good to merge it upstream before the hw is
+> > obsolete...
+> 
+> Conveniently a lot of the peripherals are used in later generation 7k
+> and 8k SoCs, so this stuff should actually be useful for new hardware
+> for a while.  7201A based products are still shipping new this year
+> (HTC Magic, for example).
+
+Good.
+
+> I think we're probably due for another round of flattening and
+> cleaning up against 2.6.30 or 31 and seeing what survives review and
+> what we can do to get the mainline msm code closer to fully
+> functional.
+
+Yes, please.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
