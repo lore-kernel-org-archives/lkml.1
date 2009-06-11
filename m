@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbZFKK0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932351AbZFKK1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932104AbZFKK0r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 06:26:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762125AbZFKK01
+	id S932351AbZFKK1G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 06:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932137AbZFKK0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 06:26:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50935 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761868AbZFKK00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 06:26:26 -0400
-Subject: Re: [git-pull -tip] headers_check fix patches 20090610
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-am33-list@redhat.com,
-       yasutake.koichi@jp.panasonic.com
-In-Reply-To: <4A305F7C.9000308@snapgear.com>
-References: <1244640630.20890.22.camel@ht.satnam>
-	 <20090611001957.61b5530b.sfr@canb.auug.org.au>
-	 <1244647176.3070.8.camel@ht.satnam>  <4A305F7C.9000308@snapgear.com>
-Content-Type: text/plain
-Date: Thu, 11 Jun 2009 15:56:01 +0530
-Message-Id: <1244715961.6923.8.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Thu, 11 Jun 2009 06:26:49 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57577 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932214AbZFKK0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 06:26:48 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH for mmotm 2/5] 
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090611192114.6D4A.A69D9226@jp.fujitsu.com>
+References: <20090611192114.6D4A.A69D9226@jp.fujitsu.com>
+Message-Id: <20090611192600.6D50.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 11 Jun 2009 19:26:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-11 at 11:35 +1000, Greg Ungerer wrote:
-> Hi Jaswinder,
-> 
-> Jaswinder Singh Rajput wrote:
-> > Hello Stephen,
-> > 
-> > On Thu, 2009-06-11 at 00:19 +1000, Stephen Rothwell wrote:
-> >> Hi Jaswinder,
-> >>
-> >> On Wed, 10 Jun 2009 19:00:30 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> >>> The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a49:
-> >>>   Ingo Molnar (1):
-> >>>         Merge branch 'x86/mce4'
-> >>>
-> >>> are available in the git repository at:
-> >>>
-> >>>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
-> >>>
-> >>> Jaswinder Singh Rajput (3):
-> >>>       headers_check fix: m68k, swab.h
-> >>>       headers_check fix: mn10300, ptrace.h
-> >>>       headers_check fix: mn10300, setup.h
-> >>>
-> >>>  arch/m68k/include/asm/swab.h      |    2 +-
-> >>>  arch/mn10300/include/asm/ptrace.h |    5 ++---
-> >>>  arch/mn10300/include/asm/setup.h  |    3 ++-
-> >>>  3 files changed, 5 insertions(+), 5 deletions(-)
-> >> Is there some reason that these fixes are not just sent to the appropriate linux-am33-list@redhat.com
-> >> maintainers?  That way we would avoid unnecessary conflicts cropping up.
-> >>
-> > 
-> > Maintainers are also in CC.
-> > Patches were already sent on :
-> > 
-> > Subject: [PATCH 0/6] headers_check fix patches 20090604
-> > 
-> > Interested maintainers already pulled and applied patches. These are
-> > left-over patches. I am sending to Ingo hoping that he will merge it
-> > otherwise last option for me will be to prepare headers-check tree and
-> > send to linux-next ;-)
-> 
-> I am happy to take the m68k change and push that upstream.
-> If it hasn't already been picked up by someone else.
-> 
+Changes since Wu's original patch
+  - adding vmstat
+  - rename NR_TMPFS_MAPPED to NR_SWAP_BACKED_FILE_MAPPED
 
-Sure, take it.
 
-So now only mn10300 patches left :-)
+----------------------
+Subject: [PATCH] introduce NR_SWAP_BACKED_FILE_MAPPED zone stat
 
-Thanks,
---
-JSR
+Desirable zone reclaim implementaion want to know the number of
+file-backed and unmapped pages.
+
+Thus, we need to know number of swap-backed mapped pages for
+calculate above number.
+
+
+Cc: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/mmzone.h |    2 ++
+ mm/rmap.c              |    7 +++++++
+ mm/vmstat.c            |    1 +
+ 3 files changed, 10 insertions(+)
+
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -88,6 +88,8 @@ enum zone_stat_item {
+ 	NR_ANON_PAGES,	/* Mapped anonymous pages */
+ 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
+ 			   only modified from process context */
++	NR_SWAP_BACKED_FILE_MAPPED, /* Similar to NR_FILE_MAPPED. but
++				       only account swap-backed pages */
+ 	NR_FILE_PAGES,
+ 	NR_FILE_DIRTY,
+ 	NR_WRITEBACK,
+Index: b/mm/rmap.c
+===================================================================
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -829,6 +829,10 @@ void page_add_file_rmap(struct page *pag
+ {
+ 	if (atomic_inc_and_test(&page->_mapcount)) {
+ 		__inc_zone_page_state(page, NR_FILE_MAPPED);
++		if (PageSwapBacked(page))
++			__inc_zone_page_state(page,
++					      NR_SWAP_BACKED_FILE_MAPPED);
++
+ 		mem_cgroup_update_mapped_file_stat(page, 1);
+ 	}
+ }
+@@ -884,6 +888,9 @@ void page_remove_rmap(struct page *page)
+ 		__dec_zone_page_state(page, NR_ANON_PAGES);
+ 	} else {
+ 		__dec_zone_page_state(page, NR_FILE_MAPPED);
++		if (PageSwapBacked(page))
++			__dec_zone_page_state(page,
++					NR_SWAP_BACKED_FILE_MAPPED);
+ 	}
+ 	mem_cgroup_update_mapped_file_stat(page, -1);
+ 	/*
+Index: b/mm/vmstat.c
+===================================================================
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -633,6 +633,7 @@ static const char * const vmstat_text[] 
+ 	"nr_mlock",
+ 	"nr_anon_pages",
+ 	"nr_mapped",
++	"nr_swap_backed_file_mapped",
+ 	"nr_file_pages",
+ 	"nr_dirty",
+ 	"nr_writeback",
+
 
