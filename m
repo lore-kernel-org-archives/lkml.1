@@ -1,399 +1,482 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbZFKE4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762073AbZFKE4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbZFKE4V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 00:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbZFKEz5
+	id S1762073AbZFKE4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 00:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbZFKEz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 00:55:57 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:42216 "EHLO bilbo.ozlabs.org"
+	Thu, 11 Jun 2009 00:55:58 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:42215 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760461AbZFKEzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 00:55:55 -0400
+	id S1760426AbZFKEz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 00:55:56 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18992.36329.189378.17992@drongo.ozlabs.ibm.com>
-Date: Thu, 11 Jun 2009 14:54:01 +1000
+Message-ID: <18992.36430.933526.742969@drongo.ozlabs.ibm.com>
+Date: Thu, 11 Jun 2009 14:55:42 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] perf_counters: powerpc: Add support for POWER7 processors
+Subject: [PATCH 2/2] perf_counter: powerpc: Implement generalized
+   cache events for POWER processors
+In-Reply-To: <18992.36329.189378.17992@drongo.ozlabs.ibm.com>
+References: <18992.36329.189378.17992@drongo.ozlabs.ibm.com>
 X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds the back-end for the PMU on POWER7 processors.  POWER7
-has 4 fully-programmable counters and two fixed-function counters
-(which do respect the freeze conditions, can generate interrupts,
-and are writable, unlike PMC5/6 on POWER5+/6).
+This adds tables of event codes for the generalized cache events for
+all the currently supported powerpc processors: POWER{4,5,5+,6,7} and
+PPC970*, plus powerpc-specific code to use these tables when a
+generalized cache event is requested.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kernel/Makefile       |    3 +-
- arch/powerpc/kernel/perf_counter.c |    4 +
- arch/powerpc/kernel/power7-pmu.c   |  316 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 322 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/kernel/power7-pmu.c
+ arch/powerpc/include/asm/perf_counter.h |    3 ++
+ arch/powerpc/kernel/perf_counter.c      |   42 +++++++++++++++++++++++++++-
+ arch/powerpc/kernel/power4-pmu.c        |   41 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/power5+-pmu.c       |   45 +++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/power5-pmu.c        |   41 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/power6-pmu.c        |   46 +++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/power7-pmu.c        |   41 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/ppc970-pmu.c        |   41 +++++++++++++++++++++++++++
+ 8 files changed, 294 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 9ba1bb7..a2c6834 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -95,7 +95,8 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
- obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
- obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o power4-pmu.o ppc970-pmu.o \
--				   power5-pmu.o power5+-pmu.o power6-pmu.o
-+				   power5-pmu.o power5+-pmu.o power6-pmu.o \
-+				   power7-pmu.o
+diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
+index 1c60f0c..cc7c887 100644
+--- a/arch/powerpc/include/asm/perf_counter.h
++++ b/arch/powerpc/include/asm/perf_counter.h
+@@ -33,6 +33,9 @@ struct power_pmu {
+ 	u32	flags;
+ 	int	n_generic;
+ 	int	*generic_events;
++	int	(*cache_events)[PERF_COUNT_HW_CACHE_MAX]
++			       [PERF_COUNT_HW_CACHE_OP_MAX]
++			       [PERF_COUNT_HW_CACHE_RESULT_MAX];
+ };
  
- obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
- 
+ extern struct power_pmu *ppmu;
 diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 4990ce2..5d12e68 100644
+index 5d12e68..bb20238 100644
 --- a/arch/powerpc/kernel/perf_counter.c
 +++ b/arch/powerpc/kernel/perf_counter.c
-@@ -1181,6 +1181,7 @@ extern struct power_pmu ppc970_pmu;
- extern struct power_pmu power5_pmu;
- extern struct power_pmu power5p_pmu;
- extern struct power_pmu power6_pmu;
-+extern struct power_pmu power7_pmu;
+@@ -856,6 +856,36 @@ static void hw_perf_counter_destroy(struct perf_counter *counter)
+ 	}
+ }
  
- static int init_perf_counters(void)
++/*
++ * Translate a generic cache event config to a raw event code.
++ */
++static int hw_perf_cache_event(u64 config, u64 *eventp)
++{
++	unsigned long type, op, result;
++	int ev;
++
++	if (!ppmu->cache_events)
++		return -EINVAL;
++
++	/* unpack config */
++	type = config & 0xff;
++	op = (config >> 8) & 0xff;
++	result = (config >> 16) & 0xff;
++
++	if (type >= PERF_COUNT_HW_CACHE_MAX ||
++	    op >= PERF_COUNT_HW_CACHE_OP_MAX ||
++	    result >= PERF_COUNT_HW_CACHE_RESULT_MAX)
++		return -EINVAL;
++
++	ev = (*ppmu->cache_events)[type][op][result];
++	if (ev == 0)
++		return -EOPNOTSUPP;
++	if (ev == -1)
++		return -EINVAL;
++	*eventp = ev;
++	return 0;
++}
++
+ const struct pmu *hw_perf_counter_init(struct perf_counter *counter)
  {
-@@ -1207,6 +1208,9 @@ static int init_perf_counters(void)
- 	case 0x3e:
- 		ppmu = &power6_pmu;
- 		break;
-+	case 0x3f:
-+		ppmu = &power7_pmu;
+ 	u64 ev;
+@@ -868,13 +898,21 @@ const struct pmu *hw_perf_counter_init(struct perf_counter *counter)
+ 
+ 	if (!ppmu)
+ 		return ERR_PTR(-ENXIO);
+-	if (counter->attr.type != PERF_TYPE_RAW) {
++	switch (counter->attr.type) {
++	case PERF_TYPE_HARDWARE:
+ 		ev = counter->attr.config;
+ 		if (ev >= ppmu->n_generic || ppmu->generic_events[ev] == 0)
+ 			return ERR_PTR(-EOPNOTSUPP);
+ 		ev = ppmu->generic_events[ev];
+-	} else {
++		break;
++	case PERF_TYPE_HW_CACHE:
++		err = hw_perf_cache_event(counter->attr.config, &ev);
++		if (err)
++			return ERR_PTR(err);
++		break;
++	case PERF_TYPE_RAW:
+ 		ev = counter->attr.config;
 +		break;
  	}
+ 	counter->hw.config_base = ev;
+ 	counter->hw.idx = 0;
+diff --git a/arch/powerpc/kernel/power4-pmu.c b/arch/powerpc/kernel/power4-pmu.c
+index 836fa11..0e94b68 100644
+--- a/arch/powerpc/kernel/power4-pmu.c
++++ b/arch/powerpc/kernel/power4-pmu.c
+@@ -543,6 +543,46 @@ static int p4_generic_events[] = {
+ 	[PERF_COUNT_BRANCH_MISSES] = 0x331,		/* PM_BR_MPRED_CR */
+ };
  
- 	/*
++#define C(x)	PERF_COUNT_HW_CACHE_##x
++
++/*
++ * Table of generalized cache-related events.
++ * 0 means not supported, -1 means nonsensical, other values
++ * are event codes.
++ */
++static int power4_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x8c10,		0x3c10	},
++		[C(OP_WRITE)] = {	0x7c10,		0xc13	},
++		[C(OP_PREFETCH)] = {	0xc35,		0	},
++	},
++	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	0,		0	},
++	},
++	[C(L2)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0	},
++		[C(OP_WRITE)] = {	0,		0	},
++		[C(OP_PREFETCH)] = {	0xc34,		0	},
++	},
++	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x904	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
++	[C(ITLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x900	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
++	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x330,		0x331	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
++};
++
+ struct power_pmu power4_pmu = {
+ 	.n_counter = 8,
+ 	.max_alternatives = 5,
+@@ -554,4 +594,5 @@ struct power_pmu power4_pmu = {
+ 	.disable_pmc = p4_disable_pmc,
+ 	.n_generic = ARRAY_SIZE(p4_generic_events),
+ 	.generic_events = p4_generic_events,
++	.cache_events = &power4_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/power5+-pmu.c b/arch/powerpc/kernel/power5+-pmu.c
+index 8471e3c..bbf2cbb 100644
+--- a/arch/powerpc/kernel/power5+-pmu.c
++++ b/arch/powerpc/kernel/power5+-pmu.c
+@@ -614,6 +614,46 @@ static int power5p_generic_events[] = {
+ 	[PERF_COUNT_BRANCH_MISSES] = 0x230e5,		/* BR_MPRED_CR */
+ };
+ 
++#define C(x)	PERF_COUNT_HW_CACHE_##x
++
++/*
++ * Table of generalized cache-related events.
++ * 0 means not supported, -1 means nonsensical, other values
++ * are event codes.
++ */
++static int power5p_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x1c10a8,	0x3c1088	},
++		[C(OP_WRITE)] = {	0x2c10a8,	0xc10c3		},
++		[C(OP_PREFETCH)] = {	0xc70e7,	-1		},
++	},
++	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	0,		0		},
++	},
++	[C(L2)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0		},
++		[C(OP_WRITE)] = {	0,		0		},
++		[C(OP_PREFETCH)] = {	0xc50c3,	0		},
++	},
++	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0xc20e4,	0x800c4		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++	[C(ITLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x800c0		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x230e4,	0x230e5		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++};
++
+ struct power_pmu power5p_pmu = {
+ 	.n_counter = 6,
+ 	.max_alternatives = MAX_ALT,
+@@ -623,8 +663,9 @@ struct power_pmu power5p_pmu = {
+ 	.get_constraint = power5p_get_constraint,
+ 	.get_alternatives = power5p_get_alternatives,
+ 	.disable_pmc = power5p_disable_pmc,
++	.limited_pmc_event = power5p_limited_pmc_event,
++	.flags = PPMU_LIMITED_PMC5_6,
+ 	.n_generic = ARRAY_SIZE(power5p_generic_events),
+ 	.generic_events = power5p_generic_events,
+-	.flags = PPMU_LIMITED_PMC5_6,
+-	.limited_pmc_event = power5p_limited_pmc_event,
++	.cache_events = &power5p_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/power5-pmu.c b/arch/powerpc/kernel/power5-pmu.c
+index 1b44c5f..670cf10 100644
+--- a/arch/powerpc/kernel/power5-pmu.c
++++ b/arch/powerpc/kernel/power5-pmu.c
+@@ -556,6 +556,46 @@ static int power5_generic_events[] = {
+ 	[PERF_COUNT_BRANCH_MISSES] = 0x230e5,		/* BR_MPRED_CR */
+ };
+ 
++#define C(x)	PERF_COUNT_HW_CACHE_##x
++
++/*
++ * Table of generalized cache-related events.
++ * 0 means not supported, -1 means nonsensical, other values
++ * are event codes.
++ */
++static int power5_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x4c1090,	0x3c1088	},
++		[C(OP_WRITE)] = {	0x3c1090,	0xc10c3		},
++		[C(OP_PREFETCH)] = {	0xc70e7,	0		},
++	},
++	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	0,		0		},
++	},
++	[C(L2)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x3c309b	},
++		[C(OP_WRITE)] = {	0,		0		},
++		[C(OP_PREFETCH)] = {	0xc50c3,	0		},
++	},
++	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x2c4090,	0x800c4		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++	[C(ITLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x800c0		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x230e4,	0x230e5		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++};
++
+ struct power_pmu power5_pmu = {
+ 	.n_counter = 6,
+ 	.max_alternatives = MAX_ALT,
+@@ -567,4 +607,5 @@ struct power_pmu power5_pmu = {
+ 	.disable_pmc = power5_disable_pmc,
+ 	.n_generic = ARRAY_SIZE(power5_generic_events),
+ 	.generic_events = power5_generic_events,
++	.cache_events = &power5_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/power6-pmu.c b/arch/powerpc/kernel/power6-pmu.c
+index cd4fbe0..4da7078 100644
+--- a/arch/powerpc/kernel/power6-pmu.c
++++ b/arch/powerpc/kernel/power6-pmu.c
+@@ -474,6 +474,47 @@ static int power6_generic_events[] = {
+ 	[PERF_COUNT_BRANCH_MISSES] = 0x400052,		/* BR_MPRED */
+ };
+ 
++#define C(x)	PERF_COUNT_HW_CACHE_##x
++
++/*
++ * Table of generalized cache-related events.
++ * 0 means not supported, -1 means nonsensical, other values
++ * are event codes.
++ * The "DTLB" and "ITLB" events relate to the DERAT and IERAT.
++ */
++static int power6_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x80082,	0x80080		},
++		[C(OP_WRITE)] = {	0x80086,	0x80088		},
++		[C(OP_PREFETCH)] = {	0x810a4,	0		},
++	},
++	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x100056 	},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	0x4008c,	0		},
++	},
++	[C(L2)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x150730,	0x250532	},
++		[C(OP_WRITE)] = {	0x250432,	0x150432	},
++		[C(OP_PREFETCH)] = {	0x810a6,	0		},
++	},
++	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x20000e	},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++	[C(ITLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x420ce		},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x430e6,	0x400052	},
++		[C(OP_WRITE)] = {	-1,		-1		},
++		[C(OP_PREFETCH)] = {	-1,		-1		},
++	},
++};
++
+ struct power_pmu power6_pmu = {
+ 	.n_counter = 6,
+ 	.max_alternatives = MAX_ALT,
+@@ -483,8 +524,9 @@ struct power_pmu power6_pmu = {
+ 	.get_constraint = p6_get_constraint,
+ 	.get_alternatives = p6_get_alternatives,
+ 	.disable_pmc = p6_disable_pmc,
++	.limited_pmc_event = p6_limited_pmc_event,
++	.flags = PPMU_LIMITED_PMC5_6 | PPMU_ALT_SIPR,
+ 	.n_generic = ARRAY_SIZE(power6_generic_events),
+ 	.generic_events = power6_generic_events,
+-	.flags = PPMU_LIMITED_PMC5_6 | PPMU_ALT_SIPR,
+-	.limited_pmc_event = p6_limited_pmc_event,
++	.cache_events = &power6_cache_events,
+ };
 diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
-new file mode 100644
-index 0000000..89be745
---- /dev/null
+index 89be745..3cae407 100644
+--- a/arch/powerpc/kernel/power7-pmu.c
 +++ b/arch/powerpc/kernel/power7-pmu.c
-@@ -0,0 +1,316 @@
-+/*
-+ * Performance counter support for POWER7 processors.
-+ *
-+ * Copyright 2009 Paul Mackerras, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/perf_counter.h>
-+#include <asm/reg.h>
+@@ -302,6 +302,46 @@ static int power7_generic_events[] = {
+ 	[PERF_COUNT_BRANCH_MISSES] = 0x400f6,		/* BR_MPRED */
+ };
+ 
++#define C(x)	PERF_COUNT_HW_CACHE_##x
 +
 +/*
-+ * Bits in event code for POWER7
++ * Table of generalized cache-related events.
++ * 0 means not supported, -1 means nonsensical, other values
++ * are event codes.
 + */
-+#define PM_PMC_SH	16	/* PMC number (1-based) for direct events */
-+#define PM_PMC_MSK	0xf
-+#define PM_PMC_MSKS	(PM_PMC_MSK << PM_PMC_SH)
-+#define PM_UNIT_SH	12	/* TTMMUX number and setting - unit select */
-+#define PM_UNIT_MSK	0xf
-+#define PM_COMBINE_SH	11	/* Combined event bit */
-+#define PM_COMBINE_MSK	1
-+#define PM_COMBINE_MSKS	0x800
-+#define PM_L2SEL_SH	8	/* L2 event select */
-+#define PM_L2SEL_MSK	7
-+#define PM_PMCSEL_MSK	0xff
-+
-+/*
-+ * Bits in MMCR1 for POWER7
-+ */
-+#define MMCR1_TTM0SEL_SH	60
-+#define MMCR1_TTM1SEL_SH	56
-+#define MMCR1_TTM2SEL_SH	52
-+#define MMCR1_TTM3SEL_SH	48
-+#define MMCR1_TTMSEL_MSK	0xf
-+#define MMCR1_L2SEL_SH		45
-+#define MMCR1_L2SEL_MSK		7
-+#define MMCR1_PMC1_COMBINE_SH	35
-+#define MMCR1_PMC2_COMBINE_SH	34
-+#define MMCR1_PMC3_COMBINE_SH	33
-+#define MMCR1_PMC4_COMBINE_SH	32
-+#define MMCR1_PMC1SEL_SH	24
-+#define MMCR1_PMC2SEL_SH	16
-+#define MMCR1_PMC3SEL_SH	8
-+#define MMCR1_PMC4SEL_SH	0
-+#define MMCR1_PMCSEL_SH(n)	(MMCR1_PMC1SEL_SH - (n) * 8)
-+#define MMCR1_PMCSEL_MSK	0xff
-+
-+/*
-+ * Bits in MMCRA
-+ */
-+
-+/*
-+ * Layout of constraint bits:
-+ * 6666555555555544444444443333333333222222222211111111110000000000
-+ * 3210987654321098765432109876543210987654321098765432109876543210
-+ *                                                 [  ><><><><><><>
-+ *                                                  NC P6P5P4P3P2P1
-+ *
-+ * NC - number of counters
-+ *     15: NC error 0x8000
-+ *     12-14: number of events needing PMC1-4 0x7000
-+ *
-+ * P6
-+ *     11: P6 error 0x800
-+ *     10-11: Count of events needing PMC6
-+ *
-+ * P1..P5
-+ *     0-9: Count of events needing PMC1..PMC5
-+ */
-+
-+static int power7_get_constraint(u64 event, u64 *maskp, u64 *valp)
-+{
-+	int pmc, sh;
-+	u64 mask = 0, value = 0;
-+
-+	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
-+	if (pmc) {
-+		if (pmc > 6)
-+			return -1;
-+		sh = (pmc - 1) * 2;
-+		mask |= 2 << sh;
-+		value |= 1 << sh;
-+		if (pmc >= 5 && !(event == 0x500fa || event == 0x600f4))
-+			return -1;
-+	}
-+	if (pmc < 5) {
-+		/* need a counter from PMC1-4 set */
-+		mask  |= 0x8000;
-+		value |= 0x1000;
-+	}
-+	*maskp = mask;
-+	*valp = value;
-+	return 0;
-+}
-+
-+#define MAX_ALT	2	/* at most 2 alternatives for any event */
-+
-+static const unsigned int event_alternatives[][MAX_ALT] = {
-+	{ 0x200f2, 0x300f2 },		/* PM_INST_DISP */
-+	{ 0x200f4, 0x600f4 },		/* PM_RUN_CYC */
-+	{ 0x400fa, 0x500fa },		/* PM_RUN_INST_CMPL */
++static int power7_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x400f0,	0xc880	},
++		[C(OP_WRITE)] = {	0,		0x300f0	},
++		[C(OP_PREFETCH)] = {	0xd8b8,		0	},
++	},
++	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x200fc	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	0x408a,		0	},
++	},
++	[C(L2)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x6080,		0x6084	},
++		[C(OP_WRITE)] = {	0x6082,		0x6086	},
++		[C(OP_PREFETCH)] = {	0,		0	},
++	},
++	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x300fc	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
++	[C(ITLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x400fc	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
++	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x10068,	0x400f6	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
 +};
 +
-+/*
-+ * Scan the alternatives table for a match and return the
-+ * index into the alternatives table if found, else -1.
-+ */
-+static int find_alternative(u64 event)
-+{
-+	int i, j;
-+
-+	for (i = 0; i < ARRAY_SIZE(event_alternatives); ++i) {
-+		if (event < event_alternatives[i][0])
-+			break;
-+		for (j = 0; j < MAX_ALT && event_alternatives[i][j]; ++j)
-+			if (event == event_alternatives[i][j])
-+				return i;
-+	}
-+	return -1;
-+}
-+
-+static s64 find_alternative_decode(u64 event)
-+{
-+	int pmc, psel;
-+
-+	/* this only handles the 4x decode events */
-+	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
-+	psel = event & PM_PMCSEL_MSK;
-+	if ((pmc == 2 || pmc == 4) && (psel & ~7) == 0x40)
-+		return event - (1 << PM_PMC_SH) + 8;
-+	if ((pmc == 1 || pmc == 3) && (psel & ~7) == 0x48)
-+		return event + (1 << PM_PMC_SH) - 8;
-+	return -1;
-+}
-+
-+static int power7_get_alternatives(u64 event, unsigned int flags, u64 alt[])
-+{
-+	int i, j, nalt = 1;
-+	s64 ae;
-+
-+	alt[0] = event;
-+	nalt = 1;
-+	i = find_alternative(event);
-+	if (i >= 0) {
-+		for (j = 0; j < MAX_ALT; ++j) {
-+			ae = event_alternatives[i][j];
-+			if (ae && ae != event)
-+				alt[nalt++] = ae;
-+		}
-+	} else {
-+		ae = find_alternative_decode(event);
-+		if (ae > 0)
-+			alt[nalt++] = ae;
-+	}
-+
-+	if (flags & PPMU_ONLY_COUNT_RUN) {
-+		/*
-+		 * We're only counting in RUN state,
-+		 * so PM_CYC is equivalent to PM_RUN_CYC
-+		 * and PM_INST_CMPL === PM_RUN_INST_CMPL.
-+		 * This doesn't include alternatives that don't provide
-+		 * any extra flexibility in assigning PMCs.
-+		 */
-+		j = nalt;
-+		for (i = 0; i < nalt; ++i) {
-+			switch (alt[i]) {
-+			case 0x1e:	/* PM_CYC */
-+				alt[j++] = 0x600f4;	/* PM_RUN_CYC */
-+				break;
-+			case 0x600f4:	/* PM_RUN_CYC */
-+				alt[j++] = 0x1e;
-+				break;
-+			case 0x2:	/* PM_PPC_CMPL */
-+				alt[j++] = 0x500fa;	/* PM_RUN_INST_CMPL */
-+				break;
-+			case 0x500fa:	/* PM_RUN_INST_CMPL */
-+				alt[j++] = 0x2;	/* PM_PPC_CMPL */
-+				break;
-+			}
-+		}
-+		nalt = j;
-+	}
-+
-+	return nalt;
-+}
+ struct power_pmu power7_pmu = {
+ 	.n_counter = 6,
+ 	.max_alternatives = MAX_ALT + 1,
+@@ -313,4 +353,5 @@ struct power_pmu power7_pmu = {
+ 	.disable_pmc = power7_disable_pmc,
+ 	.n_generic = ARRAY_SIZE(power7_generic_events),
+ 	.generic_events = power7_generic_events,
++	.cache_events = &power7_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/ppc970-pmu.c b/arch/powerpc/kernel/ppc970-pmu.c
+index eed47c4..336adf1 100644
+--- a/arch/powerpc/kernel/ppc970-pmu.c
++++ b/arch/powerpc/kernel/ppc970-pmu.c
+@@ -427,6 +427,46 @@ static int ppc970_generic_events[] = {
+ 	[PERF_COUNT_BRANCH_MISSES] = 0x327,		/* PM_GRP_BR_MPRED */
+ };
+ 
++#define C(x)	PERF_COUNT_HW_CACHE_##x
 +
 +/*
-+ * Returns 1 if event counts things relating to marked instructions
-+ * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
++ * Table of generalized cache-related events.
++ * 0 means not supported, -1 means nonsensical, other values
++ * are event codes.
 + */
-+static int power7_marked_instr_event(u64 event)
-+{
-+	int pmc, psel;
-+	int unit;
-+
-+	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
-+	unit = (event >> PM_UNIT_SH) & PM_UNIT_MSK;
-+	psel = event & PM_PMCSEL_MSK & ~1;	/* trim off edge/level bit */
-+	if (pmc >= 5)
-+		return 0;
-+
-+	switch (psel >> 4) {
-+	case 2:
-+		return pmc == 2 || pmc == 4;
-+	case 3:
-+		if (psel == 0x3c)
-+			return pmc == 1;
-+		if (psel == 0x3e)
-+			return pmc != 2;
-+		return 1;
-+	case 4:
-+	case 5:
-+		return unit == 0xd;
-+	case 6:
-+		if (psel == 0x64)
-+			return pmc >= 3;
-+	case 8:
-+		return unit == 0xd;
-+	}
-+	return 0;
-+}
-+
-+static int power7_compute_mmcr(u64 event[], int n_ev,
-+			       unsigned int hwc[], u64 mmcr[])
-+{
-+	u64 mmcr1 = 0;
-+	u64 mmcra = 0;
-+	unsigned int pmc, unit, combine, l2sel, psel;
-+	unsigned int pmc_inuse = 0;
-+	int i;
-+
-+	/* First pass to count resource use */
-+	for (i = 0; i < n_ev; ++i) {
-+		pmc = (event[i] >> PM_PMC_SH) & PM_PMC_MSK;
-+		if (pmc) {
-+			if (pmc > 6)
-+				return -1;
-+			if (pmc_inuse & (1 << (pmc - 1)))
-+				return -1;
-+			pmc_inuse |= 1 << (pmc - 1);
-+		}
-+	}
-+
-+	/* Second pass: assign PMCs, set all MMCR1 fields */
-+	for (i = 0; i < n_ev; ++i) {
-+		pmc = (event[i] >> PM_PMC_SH) & PM_PMC_MSK;
-+		unit = (event[i] >> PM_UNIT_SH) & PM_UNIT_MSK;
-+		combine = (event[i] >> PM_COMBINE_SH) & PM_COMBINE_MSK;
-+		l2sel = (event[i] >> PM_L2SEL_SH) & PM_L2SEL_MSK;
-+		psel = event[i] & PM_PMCSEL_MSK;
-+		if (!pmc) {
-+			/* Bus event or any-PMC direct event */
-+			for (pmc = 0; pmc < 4; ++pmc) {
-+				if (!(pmc_inuse & (1 << pmc)))
-+					break;
-+			}
-+			if (pmc >= 4)
-+				return -1;
-+			pmc_inuse |= 1 << pmc;
-+		} else {
-+			/* Direct or decoded event */
-+			--pmc;
-+		}
-+		if (pmc <= 3) {
-+			mmcr1 |= (u64) unit << (MMCR1_TTM0SEL_SH - 4 * pmc);
-+			mmcr1 |= (u64) combine << (MMCR1_PMC1_COMBINE_SH - pmc);
-+			mmcr1 |= psel << MMCR1_PMCSEL_SH(pmc);
-+			if (unit == 6)	/* L2 events */
-+				mmcr1 |= (u64) l2sel << MMCR1_L2SEL_SH;
-+		}
-+		if (power7_marked_instr_event(event[i]))
-+			mmcra |= MMCRA_SAMPLE_ENABLE;
-+		hwc[i] = pmc;
-+	}
-+
-+	/* Return MMCRx values */
-+	mmcr[0] = 0;
-+	if (pmc_inuse & 1)
-+		mmcr[0] = MMCR0_PMC1CE;
-+	if (pmc_inuse & 0x3e)
-+		mmcr[0] |= MMCR0_PMCjCE;
-+	mmcr[1] = mmcr1;
-+	mmcr[2] = mmcra;
-+	return 0;
-+}
-+
-+static void power7_disable_pmc(unsigned int pmc, u64 mmcr[])
-+{
-+	if (pmc <= 3)
-+		mmcr[1] &= ~(0xffULL << MMCR1_PMCSEL_SH(pmc));
-+}
-+
-+static int power7_generic_events[] = {
-+	[PERF_COUNT_CPU_CYCLES] = 0x1e,
-+	[PERF_COUNT_INSTRUCTIONS] = 2,
-+	[PERF_COUNT_CACHE_REFERENCES] = 0xc880,		/* LD_REF_L1_LSU */
-+	[PERF_COUNT_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1 */
-+	[PERF_COUNT_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN */
-+	[PERF_COUNT_BRANCH_MISSES] = 0x400f6,		/* BR_MPRED */
++static int ppc970_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x8810,		0x3810	},
++		[C(OP_WRITE)] = {	0x7810,		0x813	},
++		[C(OP_PREFETCH)] = {	0x731,		0	},
++	},
++	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	0,		0	},
++	},
++	[C(L2)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0	},
++		[C(OP_WRITE)] = {	0,		0	},
++		[C(OP_PREFETCH)] = {	0x733,		0	},
++	},
++	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x704	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
++	[C(ITLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0,		0x700	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
++	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
++		[C(OP_READ)] = {	0x431,		0x327	},
++		[C(OP_WRITE)] = {	-1,		-1	},
++		[C(OP_PREFETCH)] = {	-1,		-1	},
++	},
 +};
 +
-+struct power_pmu power7_pmu = {
-+	.n_counter = 6,
-+	.max_alternatives = MAX_ALT + 1,
-+	.add_fields = 0x1555ull,
-+	.test_adder = 0x3000ull,
-+	.compute_mmcr = power7_compute_mmcr,
-+	.get_constraint = power7_get_constraint,
-+	.get_alternatives = power7_get_alternatives,
-+	.disable_pmc = power7_disable_pmc,
-+	.n_generic = ARRAY_SIZE(power7_generic_events),
-+	.generic_events = power7_generic_events,
-+};
+ struct power_pmu ppc970_pmu = {
+ 	.n_counter = 8,
+ 	.max_alternatives = 2,
+@@ -438,4 +478,5 @@ struct power_pmu ppc970_pmu = {
+ 	.disable_pmc = p970_disable_pmc,
+ 	.n_generic = ARRAY_SIZE(ppc970_generic_events),
+ 	.generic_events = ppc970_generic_events,
++	.cache_events = &ppc970_cache_events,
+ };
 -- 
 1.5.5.rc3.7.gba13
 
