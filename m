@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZFKNdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZFKNes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbZFKNdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFKNdG
+	id S1754313AbZFKNes (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZFKNej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:33:06 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:36810 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbZFKNdE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:33:04 -0400
-Date: Thu, 11 Jun 2009 15:32:18 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Pavel Machek <pavel@ucw.cz>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
-Message-ID: <20090611133218.GB3146@osiris.boeblingen.de.ibm.com>
-References: <20090604161847.513682672@de.ibm.com> <200906082048.28779.rjw@sisk.pl> <20090609104003.50830165@gondolin> <200906100109.20470.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906100109.20470.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 11 Jun 2009 09:34:39 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57809 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751708AbZFKNei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 09:34:38 -0400
+Cc: <akpm@linux-foundation.org>, <davem@davemloft.net>,
+       <mporter@kernel.crashing.org>, <linux-kernel@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>, <netdev@vger.kernel.org>,
+       "Zhang Wei" <zw@zh-kernel.org>
+Message-Id: <5D8775BD-9973-4DE8-B442-91FB15F86ACC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang-R58472 <LeoLi@freescale.com>
+In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED483CCD@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH 1/6] rapidio: add common mapping APIs for RapidIO memory access
+Date: Thu, 11 Jun 2009 08:32:24 -0500
+References: <1242117363-14949-1-git-send-email-leoli@freescale.com> <90AED712-28A1-4800-978C-125A887D0DA7@kernel.crashing.org> <3A45394FD742FA419B760BB8D398F9ED483CCD@zch01exm26.fsl.freescale.net>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
-> On Tuesday 09 June 2009, Cornelia Huck wrote:
-> > The *_nvs_* routines in swsusp.c make use of the io*map()
-> > functions, which are only provided for HAS_IOMEM, thus
-> > breaking compilation if HAS_IOMEM is not set. Fix this
-> > by moving the *_nvs_* routines into hibernation_nvs.c, which
-> > is only compiled if HAS_IOMEM is set.
-> > 
-> > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> 
-> Thanks, I added the GPLv2 line to the header comment and changed the name
-> of the file to hibernate_nvs.c (to match the other changes in the works).
-> 
-> I'll carry out some compilation testing on it and put it into the tree shortly.
 
-Rafael, could you add the patch below as well?
-Or should that go in via git390?
+On Jun 11, 2009, at 4:47 AM, Li Yang-R58472 wrote:
 
-Subject: [PATCH] PM: add empty suspend/resume device irq functions
+>> On May 12, 2009, at 3:35 AM, Li Yang wrote:
+>>
+>>> Add the mapping functions used to support direct IO memory access of
+>>> rapidIO.
+>>>
+>>> Signed-off-by: Zhang Wei <zw@zh-kernel.org>
+>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>
+>> Use inbnd/outbnd instead of inb/outb which make one think of
+>> byte level io accessors.
+>>
+>> As I look at this I don't think this is the correct API.  I
+>> think we should be using the DMA mapping API to hide these
+>> details.  The concept of mapping like this seems to be more a
+>> function of FSL's Address translation/mapping unit (ATMU) than
+>> anything specific to the RIO bus standard.
+>
+> This is a separate RIO block level ATMU.  Although it looks like the
+> system level ATMU, system ATMU doesn't have the knowledge of rapidIO
+> target device ID.  The mapping need to be dynamic, as it's easy to  
+> have
+> more RIO devices than the outbound windows.
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+I understand that.  What I'm saying is the RIO block level ATMU is a  
+Freescale specific detail and not part of any standard RIO bus  
+programming model.  We have mapping APIs that we can connect to for  
+this via the DMA API layer.
 
-git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
-device interrupts" introduced some helper functions. However these
-functions are only available for architectures which support
-GENERIC_HARDIRQS.
-
-Other architectures will see this build error:
-
-drivers/built-in.o: In function `sysdev_suspend':
-(.text+0x15138): undefined reference to `check_wakeup_irqs'
-drivers/built-in.o: In function `device_power_up':
-(.text+0x1cb66): undefined reference to `resume_device_irqs'
-drivers/built-in.o: In function `device_power_down':
-(.text+0x1cb92): undefined reference to `suspend_device_irqs'
-
-To fix this add some empty inline functions for !GENERIC_HARDIRQS.
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
-
- include/linux/interrupt.h |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff -urpN linux-2.6/include/linux/interrupt.h linux-2.6-patched/include/linux/interrupt.h
---- linux-2.6/include/linux/interrupt.h	2009-06-11 13:07:46.000000000 +0200
-+++ linux-2.6-patched/include/linux/interrupt.h	2009-06-11 13:08:31.000000000 +0200
-@@ -183,6 +183,7 @@ extern void disable_irq(unsigned int irq
- extern void enable_irq(unsigned int irq);
- 
- /* The following three functions are for the core kernel use only. */
-+#ifdef CONFIG_GENERIC_HARDIRQS
- extern void suspend_device_irqs(void);
- extern void resume_device_irqs(void);
- #ifdef CONFIG_PM_SLEEP
-@@ -190,6 +191,11 @@ extern int check_wakeup_irqs(void);
- #else
- static inline int check_wakeup_irqs(void) { return 0; }
- #endif
-+#else
-+static inline void suspend_device_irqs(void) { };
-+static inline void resume_device_irqs(void) { };
-+static inline int check_wakeup_irqs(void) { return 0; }
-+#endif
- 
- #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
- 
+- k
