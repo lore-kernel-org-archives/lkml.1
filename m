@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZFKMxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759103AbZFKMyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbZFKMxr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 08:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZFKMxk
+	id S1759103AbZFKMyE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 08:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZFKMxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 08:53:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55247 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750808AbZFKMxj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 08:53:39 -0400
-Date: Thu, 11 Jun 2009 13:54:42 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611135442.6b9ab315@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090611123852.GM795@n2100.arm.linux.org.uk>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>
-	<20090611.042226.28424489.davem@davemloft.net>
-	<20090611114911.GL795@n2100.arm.linux.org.uk>
-	<20090611.050030.169859977.davem@davemloft.net>
-	<20090611123852.GM795@n2100.arm.linux.org.uk>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Jun 2009 08:53:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60239 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbZFKMxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 08:53:52 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [PATCH block#for-2.6.31] block: add request clone interface (v2)
+References: <4A3075B2.9040208@ct.jp.nec.com>
+	<20090611110903.GO11363@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 11 Jun 2009 08:53:42 -0400
+In-Reply-To: <20090611110903.GO11363@kernel.dk> (Jens Axboe's message of "Thu,
+	11 Jun 2009 13:09:03 +0200")
+Message-ID: <x49vdn3lynd.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> For the most part, the answer is no.  People concentrate on their own
-> areas, and won't look at someone with a new class of platforms (eg,
-> the STMP or W90x900 stuff).
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-That would appear to be rational behaviour on their part.
+> On Thu, Jun 11 2009, Kiyoshi Ueda wrote:
+>> Hi Jens,
+>> 
+>> This patch adds the following 2 interfaces for request-stacking drivers:
+>> 
+>>   - blk_rq_prep_clone(struct request *clone, struct request *orig,
+>> 		      struct bio_set *bs, gfp_t gfp_mask,
+>> 		      int (*bio_ctr)(struct bio *, struct bio*, void *),
+>> 		      void *data)
+>>       * Clones bios in the original request to the clone request
+>>         (bio_ctr is called for each cloned bios.)
+>>       * Copies attributes of the original request to the clone request.
+>>         The actual data parts (e.g. ->cmd, ->buffer, ->sense) are not
+>>         copied.
+>> 
+>>   - blk_rq_unprep_clone(struct request *clone)
+>>       * Frees cloned bios from the clone request.
+>> 
+>> Request stacking drivers (e.g. request-based dm) need to make a clone
+>> request for a submitted request and dispatch it to other devices.
+>> 
+>> To allocate request for the clone, request stacking drivers may not
+>> be able to use blk_get_request() because the allocation may be done
+>> in an irq-disabled context.
+>> So blk_rq_prep_clone() takes a request allocated by the caller
+>> as an argument.
+>> 
+>> For each clone bio in the clone request, request stacking drivers
+>> should be able to set up their own completion handler.
+>> So blk_rq_prep_clone() takes a callback function which is called
+>> for each clone bio, and a pointer for private data which is passed
+>> to the callback.
+>> 
+>> NOTE:
+>> blk_rq_prep_clone() doesn't copy any actual data of the original
+>> request.  Pages are shared between original bios and cloned bios.
+>> So caller must not complete the original request before the clone
+>> request.
+>
+> This looks good to me now, I've applied it.
 
-> As I've already said, akpm tried to setup a mutual review between
-> several ARM folk, but as far as I'm aware, it has so far been 
-> unsuccessful (exactly why I don't know.)
+Is blk_rq_unprep_clone really the best name?
+          ^^^^^^
 
-Because its not rational economic behaviour on their part ?
-
-> If patchwork just gathers up every patch which has ever been seen on
-> a mailing list, then stuff will get lost at a higher rate than today
-> and it will have a negative impact.
-
-Stop trying to stand in the middle of the motorway and directing traffic.
-You will get run over if you do that even if you are the best person on
-the planet at that job.
-
-The problem is perfectly sortable with a bit of experimenting. This is a
-first suggestion - it might not work but it can't make things much worse
-and if the current system doesn't work the first process to fix it is to
-change things.
-
-Make your tree the core ARM code only, any other patches you don't
-accept. Aggressively push stuff out to platform code, and if people want
-to change core code "because our platform is different" make them extract
-it into the platform layer not carry it in the core bits.
-
-Nominate a bunch of people for the main ARM platforms. What they put into
-their platform specific trees goes direct from them to -next and if they
-trash their own platform thats their problem (and they can come to you
-for advice ;))
-
-Leave it to the platform people to push their driver code through the
-right channels.
-
-You may be ten times better than them at the job, but there are a hundred
-of them.
-
-Each of the teams now has an economic focus that is in accord with what
-they need to do "Get our platform working well", and as a secondary
-effect if one of the teams accidentally messes up another they've both
-got economic incentives to fix their shared problem. For core code
-issues you can just follow Linus usual approach of "I'll merge this when
-you've all stopped fighting and agreed a solution" (again you'll note
-this creates the correct incentives).
-
-Which all in all might give you a bit more time to go gliding rather than
-running around like a lunatic trying to herd cats.
-
-Alan
+Cheers,
+Jeff
