@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZFKHK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbZFKHKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757293AbZFKHK3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 03:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZFKHKX
+	id S1759131AbZFKHKn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 03:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757566AbZFKHKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 03:10:23 -0400
-Received: from mga03.intel.com ([143.182.124.21]:25277 "EHLO mga03.intel.com"
+	Thu, 11 Jun 2009 03:10:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:23482 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752324AbZFKHKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 03:10:23 -0400
+	id S1757507AbZFKHKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 03:10:31 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,201,1243839600"; 
-   d="scan'208";a="153045507"
-Subject: [RFC 0/7] crypto: PCLMULQDQ accelerated GHASH
+   d="scan'208";a="153045539"
+Subject: [RFC 3/7] crypto: Add crypto_spawn_shash
 From: Huang Ying <ying.huang@intel.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
 Content-Type: text/plain
-Date: Thu, 11 Jun 2009 15:10:23 +0800
-Message-Id: <1244704223.5320.123.camel@yhuang-dev.sh.intel.com>
+Date: Thu, 11 Jun 2009 15:10:30 +0800
+Message-Id: <1244704230.5320.126.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
@@ -26,14 +26,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Herbert,
+Needed to use shash in cryptd hash.
 
-This patchset adds PCLMULQDQ accelerated GHASH. Because conversion from
-crypto_hash to crypto_shash has not been done, this patchset is not
-intended to be merged now.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Please take a look at the general design.
+---
+ crypto/shash.c          |    6 ++++++
+ include/crypto/algapi.h |    8 ++++++++
+ 2 files changed, 14 insertions(+)
 
-Best Regards,
-Huang Ying
+--- a/include/crypto/algapi.h
++++ b/include/crypto/algapi.h
+@@ -240,6 +240,14 @@ static inline struct cipher_alg *crypto_
+ 	return &crypto_cipher_tfm(tfm)->__crt_alg->cra_cipher;
+ }
+ 
++static inline struct crypto_shash *crypto_spawn_shash(struct crypto_spawn *spawn)
++{
++	u32 type = CRYPTO_ALG_TYPE_SHASH;
++	u32 mask = CRYPTO_ALG_TYPE_MASK;
++
++	return (struct crypto_shash *)(crypto_spawn_tfm(spawn, type, mask));
++}
++
+ static inline struct crypto_hash *crypto_spawn_hash(struct crypto_spawn *spawn)
+ {
+ 	u32 type = CRYPTO_ALG_TYPE_HASH;
+--- a/crypto/shash.c
++++ b/crypto/shash.c
+@@ -408,6 +408,9 @@ static int crypto_init_shash_ops_compat(
+ 	return 0;
+ }
+ 
++static int crypto_shash_init_tfm(struct crypto_tfm *tfm,
++				 const struct crypto_type *frontend);
++
+ static int crypto_init_shash_ops(struct crypto_tfm *tfm, u32 type, u32 mask)
+ {
+ 	switch (mask & CRYPTO_ALG_TYPE_MASK) {
+@@ -415,6 +418,9 @@ static int crypto_init_shash_ops(struct 
+ 		return crypto_init_shash_ops_compat(tfm);
+ 	case CRYPTO_ALG_TYPE_AHASH_MASK:
+ 		return crypto_init_shash_ops_async(tfm);
++	case CRYPTO_ALG_TYPE_MASK:
++		if ((type & CRYPTO_ALG_TYPE_MASK) == CRYPTO_ALG_TYPE_SHASH)
++			return crypto_shash_init_tfm(tfm, &crypto_shash_type);
+ 	}
+ 
+ 	return -EINVAL;
+
 
