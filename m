@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763716AbZFKPLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbZFKPMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763716AbZFKPLG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 11:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbZFKPKz
+	id S1763471AbZFKPMI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 11:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZFKPL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 11:10:55 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:49648 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751505AbZFKPKy (ORCPT
+	Thu, 11 Jun 2009 11:11:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45261 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755571AbZFKPL4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 11:10:54 -0400
-Date: Thu, 11 Jun 2009 11:10:32 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
-Subject: Re: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_*
- operations
-In-Reply-To: <4A2F40A3.5020602@kernel.org>
-Message-ID: <alpine.DEB.1.10.0906111109410.29827@gentwo.org>
-References: <20090605191819.376530498@gentwo.org> <20090605191850.441840884@gentwo.org> <4A2F40A3.5020602@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 11 Jun 2009 11:11:56 -0400
+Subject: Re: NOHZ: local_softirq_pending 10
+From: Peter Zijlstra <peterz@infradead.org>
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org, linux-rt@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <4A311D2A.808@xs4all.nl>
+References: <4A311D2A.808@xs4all.nl>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 17:12:00 +0200
+Message-Id: <1244733120.6691.433.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009, Tejun Heo wrote:
+On Thu, 2009-06-11 at 17:05 +0200, Udo van den Heuvel wrote:
+> Hello,
+> 
+> I found a few of these in my 2.6.29.4-rt16 logs:
+> 
+> NOHZ: local_softirq_pending 10
+> 
+> Are they rt-related?
+> (I saw them in older kernels without -rt as well)
+> How serious? How to fix?
 
-> Looks good to me.  The only qualm I have is that I wish these macros
-> take pointer instead of the symbol name directly.  Currently it's not
+Not really serious, but curious, that appears to be BLOCK_SOFTIRQ, and
+the only one I suspected to trigger this would be HRTIMER_SOFTIRQ.
 
-They take the adress of the scalar. No symbol name is involved.
-
-> possible due to the per_cpu__ appending thing but those should go with
-> Rusty's patches and the same ops should be useable for both static and
-> dynamic ones.  One problem which may occur with such scheme is when
-
-They are usable for both as the following patches show.
