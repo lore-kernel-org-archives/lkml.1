@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZFKOvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760893AbZFKOwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbZFKOvq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZFKOvj
+	id S1760893AbZFKOwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 10:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbZFKOwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:51:39 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51825 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103AbZFKOvi (ORCPT
+	Thu, 11 Jun 2009 10:52:03 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55077 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752103AbZFKOwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 10:51:38 -0400
-Date: Thu, 11 Jun 2009 16:51:31 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       ibm@android.com, san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611145130.GA2982@ucw.cz>
-References: <20090610103131.GB13885@elf.ucw.cz> <a55d774e0906101043q580fc5e5iad25a79203dc52c@mail.gmail.com> <20090611081012.GD8592@elf.ucw.cz> <81b0412b0906110733i29c7cd21qe21dd8f467a91a3@mail.gmail.com>
+	Thu, 11 Jun 2009 10:52:01 -0400
+Date: Thu, 11 Jun 2009 10:52:03 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
+ [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+In-Reply-To: <200906111617.34635.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906111041020.3040-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <81b0412b0906110733i29c7cd21qe21dd8f467a91a3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-11 16:33:36, Alex Riesen wrote:
-> 2009/6/11 Pavel Machek <pavel@ucw.cz>:
-> >
-> > Strange, I attempted downloading this overnight (285MB!) by
-> >
-> > git clone  --template=/data/l/clean-cg/ git://android.git.kernel.org/kernel/msm.git
-> >
+On Thu, 11 Jun 2009, Rafael J. Wysocki wrote:
+
+> The point here is what the core is supposed to do.  Does it need to handle
+> this at all or leave it to the bus type and driver?
 > 
-> I believe you need --reference, not --template. No wonder you had to download
-> complete repository anew.
+> After reconsidering it for a while I think that we should define what
+> "suspended" is supposed to mean from the core point of view.  And my opinion
+> is that it should mean "device doesn't communicate with the CPUs and RAM due
+> to power management".  That need not be power management of the device itself,
+> but such that leads to the device not doing I/O.
+> 
+> Under this definition all devices behind an inactive link are suspended,
+> because they can't do any I/O.  Which appears to makes sense, because their
+> drivers have to be notified before the link is suspended and the link has to be
+> turned on for the devices to be able to communicate with the CPU and RAM.
+> 
+> If this definition is adopted, then it's quite clear that the device can only
+> be suspended if all of its children are suspended and it's always necessary
+> to resume the parent of a device in order to resume the device itself.
 
-Oops, right. My ISP hates me...
-									Pavel
+Okay, I'll agree to that.  It should be made clear that a device which 
+is "suspended" according to this definition is not necessarily in a 
+low-power state.  For example, before powering down the link to a disk 
+drive you might want the drive's suspend method to flush the drive's 
+cache, but it wouldn't have to spin the drive down.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(But this example leaves open the question of how we would go about
+spinning down the disk.  Submitting a 15-minute (or whatever) delayed
+autosuspend request wouldn't work; the request wouldn't be accepted
+because the disk is already suspended as far as the PM core is
+concerned.  The disk's driver would have to implement its own 
+spin-down delayed_work.)
+
+> > > > I haven't checked the details of the code yet.  More later...
+> > 
+> > One more thought...  The autosuspend and autoresume callbacks need to 
+> > be mutually exclusive with probe and remove.  So somehow the driver 
+> > core will need to block runtime PM calls.
+> 
+> That's correct and I'm going to take care of this.
+> 
+> > It might also be nice to make sure that the driver core autoresumes a 
+> > device before probing it and autosuspends a device (after some 
+> > reasonable delay) after unbinding its driver.
+> 
+> Agreed.
+
+This is another case where a usage counter comes in handy.  The driver
+core resumes the device and increments the counter -- thus preventing
+any unwanted autosuspends -- before making the probe and remove calls.
+
+Alan Stern
+
