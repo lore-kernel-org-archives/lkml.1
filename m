@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762814AbZFKKpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762717AbZFKKri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762814AbZFKKpk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 06:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbZFKKpc
+	id S1762717AbZFKKri (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 06:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZFKKrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 06:45:32 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:36408 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757491AbZFKKpb (ORCPT
+	Thu, 11 Jun 2009 06:47:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58667
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752619AbZFKKra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 06:45:31 -0400
-X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 06:45:31 EDT
-X-SpamScore: -3
-X-BigFish: VPS-3(zz4015Lzz1202hzzz32i6bh17ch)
-X-FB-SS: 13,
-X-WSS-ID: 0KL2L6G-02-7S7-01
-Date: Thu, 11 Jun 2009 12:29:27 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: memtest: fix compile warning
-Message-ID: <20090611102927.GE12431@alberich.amd.com>
-References: <20090611112746.802a24cb.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090611112746.802a24cb.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 11 Jun 2009 10:30:18.0159 (UTC) FILETIME=[9D8A1BF0:01C9EA7F]
+	Thu, 11 Jun 2009 06:47:30 -0400
+Date: Thu, 11 Jun 2009 03:47:32 -0700 (PDT)
+Message-Id: <20090611.034732.147822760.davem@davemloft.net>
+To: linux@arm.linux.org.uk
+Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, ibm@android.com,
+       swetland@google.com, san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090611.034421.180842375.davem@davemloft.net>
+References: <20090611073740.GB8592@elf.ucw.cz>
+	<20090611103457.GG795@n2100.arm.linux.org.uk>
+	<20090611.034421.180842375.davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit c9690998ef48ffefeccb91c70a7739eebdea57f9
-(x86: memtest: remove 64-bit division) introduced following compile warning:
+From: David Miller <davem@davemloft.net>
+Date: Thu, 11 Jun 2009 03:44:21 -0700 (PDT)
 
- arch/x86/mm/memtest.c: In function 'memtest':
- arch/x86/mm/memtest.c:56: warning: comparison of distinct pointer types lacks a cast
- arch/x86/mm/memtest.c:58: warning: comparison of distinct pointer types lacks a cast
+> It's not like this was stated on a public mailing list or on some
+> public web site.  It was IRC for heaven's sake.
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/mm/memtest.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+And BTW something you said in the same IRC arena shortly
+thereafterwards:
 
-Sorry.
-Please apply.
+<rmk> in hind sight, xxxxxxx was effectively right when he said on here a while ago
+<rmk> 22:34 <xxxxxx> jejb: google also just pretty much threw their ARM code over the wall and disappeared
 
-Thanks,
-Andreas
+There you are quoting this person, the same way you are quoting him
+here and demeaning him in this very email thread.
 
-diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
-index c0bedcd..1a8b48f 100644
---- a/arch/x86/mm/memtest.c
-+++ b/arch/x86/mm/memtest.c
-@@ -53,9 +53,9 @@ static void __init memtest(u64 pattern, u64 start_phys, u64 size)
- 	start_bad = 0;
- 	last_bad = 0;
- 
--	for (p = start; p < end; p++)
-+	for (p = start; (void *) p < end; p++)
- 		*p = pattern;
--	for (p = start; p < end; p++, start_phys_aligned += incr) {
-+	for (p = start; (void *) p < end; p++, start_phys_aligned += incr) {
- 		if (*p == pattern)
- 			continue;
- 		if (start_phys_aligned == last_bad + incr) {
--- 
-1.6.3.1
+And yet there you are agreeing with him.
 
-
-
+You're such a hypocrite Russell.
