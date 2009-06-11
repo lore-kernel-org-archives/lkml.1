@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761351AbZFKJct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbZFKJgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761351AbZFKJct (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 05:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbZFKJcm
+	id S1761539AbZFKJgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 05:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbZFKJg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 05:32:42 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:53585 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754733AbZFKJcl (ORCPT
+	Thu, 11 Jun 2009 05:36:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44694 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756630AbZFKJg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 05:32:41 -0400
-Date: Thu, 11 Jun 2009 10:32:42 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Brian Swetland <swetland@google.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611093242.GB26509@sirena.org.uk>
-References: <20090610103131.GB13885@elf.ucw.cz> <20090610194852.GA28787@n2100.arm.linux.org.uk> <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com>
-X-Cookie: Those who can't write, write manuals.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Thu, 11 Jun 2009 05:36:28 -0400
+Subject: Re: Bug: fio traps into kernel without exiting because futex has a
+ deadloop
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Darren Hart <dvhltc@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1244709196.2560.287.camel@ymzhang>
+References: <1244689688.2560.268.camel@ymzhang>
+	 <1244699756.6691.4.camel@laptop>  <1244701128.6691.5.camel@laptop>
+	 <1244709196.2560.287.camel@ymzhang>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Jun 2009 11:36:20 +0200
+Message-Id: <1244712980.6691.84.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 01:24:42PM -0700, Brian Swetland wrote:
+On Thu, 2009-06-11 at 16:33 +0800, Zhang, Yanmin wrote:
+> On Thu, 2009-06-11 at 08:18 +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-06-11 at 07:55 +0200, Peter Zijlstra wrote:
+> > > On Thu, 2009-06-11 at 11:08 +0800, Zhang, Yanmin wrote:
+> > > > I investigate a fio hang issue. When I run fio multi-process
+> > > > testing on many disks, fio traps into kernel and doesn't exit
+> > > > (mostly hit once after runing sub test cases for ﻿hundreds of times).
+> > > > 
+> > > > Oprofile data shows kernel consumes time with some futex functions.
+> > > > Command kill couldn't kill the process and machine reboot also hangs.
+> > > > 
+> > > > Eventually, I locate the root cause as a bug of futex. Kernel enters
+> > > > a deadloop between 'retry' and 'goto retry' in function futex_wake_op.
+> > > > By unknown reason (might be an issue of fio or glibc), parameter uaddr2
+> > > > points to an area which is READONLY. So futex_atomic_op_inuser returns
+> > > > -EFAULT when trying to changing the data at uaddr2, but later get_user
+> > > > still succeeds becasue the area is READONLY. Then go back to retry.
+> > > > 
+> > > > I create a simple test case to trigger it, which just shmat an READONLY
+> > > > area for address uaddr2.
+> > > > 
+> > > > It could be used as a DOS attack.
+> > 
+> > /me has morning juice and notices he sent the wrong commit...
+> > 
+> > commit 64d1304a64477629cb16b75491a77bafe6f86963
+> > Author: Thomas Gleixner <tglx@linutronix.de>
+> > Date:   Mon May 18 21:20:10 2009 +0200
+> 2.6.30 includes the new commit. I did a quick testing with my simple
+> test case and it traps into kernel without exiting.
+> 
+> The reason is I use flag FUTEX_PRIVATE_FLAG. So the fshared part in function
+> get_futex_key should be deleted. That might hurt performance.
 
-> The msm7k unfortunately requires a lot of infrastructure to work given
-> that the baseband (a black box to us) controls much of the world.
-> Last time around when I tried submitting some of the core ipc support
-> to talk to it on the lakml, there seemed to be uncertainty about who
-> even would review that.
+No reason to, the easiest fix would be to simply propagate that -EFAULT
+to userspace and let them chew on it, there's really nothing you can do
+with a RO mapping.
 
-Perhaps you might find common cause with the OMAP guys?  They've got
-similar issues to resolve with things like the DSPs on OMAPs.
-
-> We have full support for MSM7201A, including fully functional power
-> management, working on a number of commercially shipping devices that
-> we'd absolutely love to get into mainline.  Rebasing and bringing this
-> stuff forward all the time is a lot of work and certainly not the
-> optimal way to do it.  Getting it in a couple pieces at a time is slow
-> going, but it seemed to cause frustration with just the small number
-> of things we were looking for review/approval for...
-
-Is there more driver stuff which you could get upstream?  I'd have
-expected that it should be easier to get drivers in than the more
-invasive changes like wakelocks.
