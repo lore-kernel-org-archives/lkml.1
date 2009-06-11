@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbZFKR1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZFKR2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362AbZFKR1l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 13:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZFKR1d
+	id S1754088AbZFKR2V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 13:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZFKR2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 13:27:33 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47224 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbZFKR1c (ORCPT
+	Thu, 11 Jun 2009 13:28:10 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:33585 "EHLO
+	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbZFKR2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 13:27:32 -0400
-Message-ID: <4A311521.7000607@zytor.com>
-Date: Thu, 11 Jun 2009 07:30:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: memtest: fix compile warning
-References: <20090611112746.802a24cb.sfr@canb.auug.org.au> <20090611102927.GE12431@alberich.amd.com> <alpine.LFD.2.00.0906111512400.3372@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0906111512400.3372@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Jun 2009 13:28:09 -0400
+Message-Id: <cover.1244739994.git.keil@b1-systems.de>
+Date: Thu, 11 Jun 2009 19:06:34 +0200
+Subject: [PATCH 0/6] ISDN fixes
+From: Karsten Keil <keil@b1-systems.de>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       i4ldeveloper@listserv.isdn4linux.de
+X-Info: valid message
+X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> 
-> But aside of that this code is confusing.
-> 
-> 	start_phys_aligned = ALIGN(start_phys, incr);
-> 
-> Why do we have to fiddle with the alignment. Are you really seing e820
-> entries which are not 8 byte aligned ?
-> 
+Some more fixes for ISDN.
 
-I have personally seen those on real systems.
+You can pull it from
+git://master.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next.git for_david
 
-	-hpa
+Andreas Mohr (1):
+  mISDN: Free hfcpci IRQ if init was not successful
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Karsten Keil (4):
+  ISDN:Fix DMA alloc for hfcpci
+  mISDN: Fix overlapping data access
+  mISDN: Do not disable IRQ in ph_data_ind()
+  mISDN: cleanup mISDNhw.h
+
+Roel Kluin (1):
+  drivers/isdn/i4l/isdn_tty.c: fix check for array overindexing
+
+ drivers/isdn/hardware/mISDN/hfcpci.c |    7 ++---
+ drivers/isdn/hisax/hfc_pci.c         |   41 ++++++++++++++++++++++++---------
+ drivers/isdn/hisax/hisax.h           |    2 +-
+ drivers/isdn/i4l/isdn_tty.c          |    2 +-
+ drivers/isdn/mISDN/dsp_pipeline.c    |   11 ++++-----
+ drivers/isdn/mISDN/tei.c             |    7 +----
+ include/linux/mISDNhw.h              |   10 --------
+ 7 files changed, 42 insertions(+), 38 deletions(-)
 
