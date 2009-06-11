@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbZFKQoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762251AbZFKQrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760680AbZFKQoQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 12:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbZFKQoB
+	id S1762251AbZFKQrS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 12:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbZFKQrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 12:44:01 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:63184 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753549AbZFKQoA (ORCPT
+	Thu, 11 Jun 2009 12:47:05 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:57577 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbZFKQrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 12:44:00 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090611164111.GC12367@shareable.org>
-References: <1244723089-1145-1-git-send-email-ext-denis.2.karpov@nokia.com> 
-	<ac3eb2510906110626i165aadf0ma57f320e7e8a2356@mail.gmail.com> 
-	<20090611164111.GC12367@shareable.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 11 Jun 2009 18:43:46 +0200
-Message-ID: <ac3eb2510906110943r4af7a1baue3a8e6bc12b16f2d@mail.gmail.com>
-Subject: Re: [PATCH 0/5][V2] FS: userspace notification of errors
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Denis Karpov <ext-denis.2.karpov@nokia.com>, hirofumi@mail.parknet.co.jp,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       adrian.hunter@nokia.com, artem.bityutskiy@nokia.com,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 11 Jun 2009 12:47:03 -0400
+Subject: Re: [GIT PULL] Performance Counters for Linux
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.01.0906110937110.3573@localhost.localdomain>
+References: <20090611160329.GA3366@elte.hu>
+	 <20090611161714.GA5008@infradead.org>
+	 <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain>
+	 <1244738098.27363.36.camel@violet>
+	 <alpine.LFD.2.01.0906110937110.3573@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 18:47:02 +0200
+Message-Id: <1244738822.27363.39.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 18:41, Jamie Lokier<jamie@shareable.org> wrote:
-> Kay Sievers wrote:
->> No, the objection was to use the underlying *device* as the source to
->> raise filesystem events. I don't think there are problems in general
->> with objects in /sys/fs/ sending events.
->>
->> But, the remaining questions here are:
->> Do we really want superblocks exported in the global,
->> non-namespace-aware /sys? It might be wrong to export stuff from other
->> namespaces for filesytems which are irrelevant, and not even visible.
->> I'm not sure about this, and it needs careful evaluation. We once had
->> filesystem mount/umount uevents on block devices, and we needed to
->> remove them for that namespace reason.
->
-> Is there no namespace awareness in /sys?
+Hi Linus,
 
-No, not at all. It is the straight export of the core kernel objects.
+> > so do you expect us to merge stuff like ip, iw, rfkill, crda, the WiMAX
+> > tools, the Bluetooth ones and whatever we have that are all have the
+> > same issues to be merged into the kernel source code as well.
+> 
+> No. Only stuff that I expect to be really close to hardware, and used for 
+> kernel purposes.
 
-> So how do namespaced guests deal with not having access to /sys, given
-> modern distros make extensive use of it?
+and where exactly do we draw the line? It is just no clear to me.
 
-They ignore it and don't use it, or get confused, I guess. :)
+> > Also please consider the distro point of view. All these distros have
+> > already a hard time to keep up with the kernel patches etc. It is a lot
+> > easier to update a userspace package then having to provide a patches
+> > kernel source.
+> 
+> Feel free to split it all up if it turns out to be stable later.
+> 
+> But I refuse to go through another oprofile.
 
-Thanks,
-Kay
+Point taken on why you wanna do it. No questions asked here. However I
+still think it is a bad idea to begin with. The perf tool could very
+well has its own repository on git.kernel.org and be maintained side by
+side with the kernel.
+
+Regards
+
+Marcel
+
+
