@@ -1,45 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759397AbZFKTHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbZFKTKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759397AbZFKTHt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 15:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbZFKTHX
+	id S1758568AbZFKTKV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 15:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZFKTKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 15:07:23 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:48910 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758449AbZFKTHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 15:07:21 -0400
-Message-ID: <4A3155E3.3030603@davidnewall.com>
-Date: Fri, 12 Jun 2009 04:37:15 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-References: <20090611160329.GA3366@elte.hu>  <20090611161714.GA5008@infradead.org>  <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain>  <20090611165226.GV8633@ZenIV.linux.org.uk>  <1244739378.6691.540.camel@laptop>  <20090611170015.GA3651@infradead.org>  <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <84144f020906111059g6e25a090y4434cfd698f84fb4@mail.gmail.com> <4A3148AA.9000007@davidnewall.com> <alpine.LFD.2.01.0906111120100.3573@localhost.localdomain> <4A314F37.2080202@davidnewall.com> <alpine.LFD.2.01.0906111142390.3573@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906111142390.3573@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii
+	Thu, 11 Jun 2009 15:10:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52221 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755154AbZFKTKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 15:10:04 -0400
+Subject: [GIT PULL] fsnotify notification infrastructure
+From: Eric Paris <eparis@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, hch@infradead.org
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 15:09:13 -0400
+Message-Id: <1244747353.3037.23.camel@dhcp231-142.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> timeliness 
-> (kernel features vs taking advantage of them) and co-development (there 
-> always seems to be a huge impedance mis-match between user-level 
-> developers and kernel developers).
+Linus,
+   Please consider pulling the new filesystem notification patch queue
+which has been in linux-next for a number of weeks. This patch series
+implements a new generic infrastructure called fsnotify and reimplements
+inotify-user and dnotify on top of the generic infrastructure.  I will
+be working with Al in the coming days to find a way to merge the last in
+kernel user of inotify (audit) so we can start start to kick that old
+inotify code out.  Big winner here, new extensible notification
+framework and we shrink struct inode.
 
-You seem to be saying that putting the code in kernel tree will make
-user-level developers more responsive. FWIW (very little) I would have
-quietly guessed the opposite result.
+-Eric
+
+The following changes since commit c9059598ea8981d02356eead3188bf7fa4d717b8:
+  Linus Torvalds (1):
+        Merge branch 'for-2.6.31' of git://git.kernel.dk/linux-2.6-block
+
+are available in the git repository at:
+
+  git://git.infradead.org/users/eparis/notify.git for-linus
+
+Eric Paris (16):
+      fsnotify: unified filesystem notification backend
+      fsnotify: add marks to inodes so groups can interpret how to handle those inodes
+      fsnotify: parent event notification
+      dnotify: reimplement dnotify using fsnotify
+      fsnotify: generic notification queue and waitq
+      fsnotify: include pathnames with entries when possible
+      fsnotify: add correlations between events
+      fsnotify: allow groups to add private data to events
+      fsnotify: fsnotify marks on inodes pin them in core
+      fsnotify: handle filesystem unmounts with fsnotify marks
+      inotify: reimplement inotify using fsnotify
+      fsnotify: move events should indicate the event was on a child
+      dnotify: do not use ?true:false when assigning to a bool
+      dnotify: do not bother to lock entry->lock when reading mask
+      inotify/dnotify: should_send_event shouldn't match on FS_EVENT_ON_CHILD
+      fsnotify: allow groups to set freeing_mark to null
+
+ MAINTAINERS                          |    8 +-
+ fs/inode.c                           |   10 +
+ fs/notify/Kconfig                    |   13 +
+ fs/notify/Makefile                   |    2 +
+ fs/notify/dnotify/Kconfig            |    1 +
+ fs/notify/dnotify/dnotify.c          |  464 +++++++++++++++-----
+ fs/notify/fsnotify.c                 |  186 ++++++++
+ fs/notify/fsnotify.h                 |   34 ++
+ fs/notify/group.c                    |  254 ++++++++++
+ fs/notify/inode_mark.c               |  426 +++++++++++++++++
+ fs/notify/inotify/Kconfig            |   20 +-
+ fs/notify/inotify/Makefile           |    2 +-
+ fs/notify/inotify/inotify.c          |   20 +
+ fs/notify/inotify/inotify.h          |   21 +
+ fs/notify/inotify/inotify_fsnotify.c |  138 ++++++
+ fs/notify/inotify/inotify_user.c     |  837 ++++++++++++++++------------------
+ fs/notify/notification.c             |  411 +++++++++++++++++
+ include/linux/dcache.h               |    4 +-
+ include/linux/dnotify.h              |   29 +-
+ include/linux/fs.h                   |    6 +-
+ include/linux/fsnotify.h             |  199 +++++----
+ include/linux/fsnotify_backend.h     |  387 ++++++++++++++++
+ init/Kconfig                         |    3 +-
+ 23 files changed, 2813 insertions(+), 662 deletions(-)
+ create mode 100644 fs/notify/fsnotify.c
+ create mode 100644 fs/notify/fsnotify.h
+ create mode 100644 fs/notify/group.c
+ create mode 100644 fs/notify/inode_mark.c
+ create mode 100644 fs/notify/inotify/inotify.h
+ create mode 100644 fs/notify/inotify/inotify_fsnotify.c
+ create mode 100644 fs/notify/notification.c
+ create mode 100644 include/linux/fsnotify_backend.h
+
+
