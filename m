@@ -1,458 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbZFKNTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZFKNVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760659AbZFKNTT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZFKNTJ
+	id S1756162AbZFKNVa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZFKNVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:19:09 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:60965 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753488AbZFKNTI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:19:08 -0400
-From: Wolfgang =?iso-8859-15?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: Pierre Ossman <drzeus@drzeus.cx>
-Subject: [PATCH] mmc_spi: do propper retry managment in the block layer - 4th try
-Date: Thu, 11 Jun 2009 14:18:49 +0100
-User-Agent: KMail/1.9.10
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+	Thu, 11 Jun 2009 09:21:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:60691 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751331AbZFKNVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 09:21:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH v2 00/19] virtual-bus
+Date: Thu, 11 Jun 2009 22:51:20 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, lguest@ozlabs.org
+References: <20090409155200.32740.19358.stgit@dev.haskins.net> <200906060025.57961.rusty@rustcorp.com.au> <20090605162553.GC6778@linux.vnet.ibm.com>
+In-Reply-To: <20090605162553.GC6778@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906111518.49431.wolfgang.mues@auerswald.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Message-Id: <200906112251.20827.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+On Sat, 6 Jun 2009 01:55:53 am Paul E. McKenney wrote:
+> It is possible to get rid of the rmb() and wmb() as well, doing
+> something like the following:
+>
+> 	struct lg_eventfds_num {
+> 		unsigned int n;
+> 		struct lg_eventfds a[0];
+> 	}
+>
+> Then the rcu_dereference() gets you a pointer to a struct lg_eventfds_num,
+> which has the array and its length in guaranteed synchronization without
+> the need for barriers.
 
-This patch adds a propper retry managment for reading
-and writing data blocks for mmc and mmc_spi. Blocks are
-retransmitted if the cause of failure might be a transmission
-fault. After a permanent failure, we try to read all other
-pending sectors, but terminate on write.
-This patch was tested with induced transmission errors
-by ESD pulses (and survived).
+Yep, that's actually quite nice.  The only wart is that it needs to be
+allocated even when n == 0, but IMHO worth it for barrier avoidance.
 
-This patch is based on 
-[PATCH] mmc_spi: don't use EINVAL for possible transmission errors
+This is what I ended up with:
 
-Changes from previous version:
+lguest: use eventfds for device notification
 
-(1)  no "o " and indentation in the commit text.
-(2)  No dead code (#if 0).
-(3)  No noise in dmesg for the cases where a retry 
-     solved the issue.
-(4)  All three errors (cmd,data,stop) are printed separately.
-(5)  On unknown error codes, retain the old behaviour of
-     doing retries for read, and fail for write.
+Currently, when a Guest wants to perform I/O it calls LHCALL_NOTIFY with
+an address: the main Launcher process returns with this address, and figures
+out what device to run.
 
-Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+A far nicer model is to let processes bind an eventfd to an address: if we
+find one, we simply signal the eventfd.
 
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Davide Libenzi <davidel@xmailserver.org>
 ---
-diff -uprN 2_6_29_rc7_patch_EILSEQ/drivers/mmc/card/block.c 2_6_29_rc7_patch_retries/drivers/mmc/card/block.c
---- 2_6_29_rc7_patch_EILSEQ/drivers/mmc/card/block.c	2009-03-09 17:10:55.000000000 +0100
-+++ 2_6_29_rc7_patch_retries/drivers/mmc/card/block.c	2009-06-11 15:07:12.000000000 +0200
-@@ -230,12 +230,15 @@ static int mmc_blk_issue_rq(struct mmc_q
- 	struct mmc_card *card = md->queue.card;
- 	struct mmc_blk_request brq;
- 	int ret = 1, disable_multi = 0;
-+	int retries = 3;
- 
- 	mmc_claim_host(card->host);
- 
- 	do {
- 		struct mmc_command cmd;
- 		u32 readcmd, writecmd, status = 0;
-+		int error = 0;
-+		int terminate = 0;
- 
- 		memset(&brq, 0, sizeof(struct mmc_blk_request));
- 		brq.mrq.cmd = &brq.cmd;
-@@ -252,9 +255,8 @@ static int mmc_blk_issue_rq(struct mmc_q
- 		brq.data.blocks = req->nr_sectors;
- 
- 		/*
--		 * After a read error, we redo the request one sector at a time
--		 * in order to accurately determine which sectors can be read
--		 * successfully.
-+		 * After a transmission error, we switch to single block
-+		 * transfer until the problem is solved or we fail.
- 		 */
- 		if (disable_multi && brq.data.blocks > 1)
- 			brq.data.blocks = 1;
-@@ -262,10 +264,12 @@ static int mmc_blk_issue_rq(struct mmc_q
- 		if (brq.data.blocks > 1) {
- 			/* SPI multiblock writes terminate using a special
- 			 * token, not a STOP_TRANSMISSION request.
-+			 * Here, this request is set for ALL types of
-+			 * hosts, so that we can use it in the spi
-+			 * driver if the data transfer stage has failed
-+			 * and the card is not able to accept the token.
- 			 */
--			if (!mmc_host_is_spi(card->host)
--					|| rq_data_dir(req) == READ)
--				brq.mrq.stop = &brq.stop;
-+			brq.mrq.stop = &brq.stop;
- 			readcmd = MMC_READ_MULTIPLE_BLOCK;
- 			writecmd = MMC_WRITE_MULTIPLE_BLOCK;
- 		} else {
-@@ -312,47 +316,57 @@ static int mmc_blk_issue_rq(struct mmc_q
- 
- 		mmc_queue_bounce_post(mq);
- 
--		/*
--		 * Check for errors here, but don't jump to cmd_err
--		 * until later as we need to wait for the card to leave
--		 * programming mode even when things go wrong.
--		 */
--		if (brq.cmd.error || brq.data.error || brq.stop.error) {
--			if (brq.data.blocks > 1 && rq_data_dir(req) == READ) {
--				/* Redo read one sector at a time */
--				printk(KERN_WARNING "%s: retrying using single "
--				       "block read\n", req->rq_disk->disk_name);
--				disable_multi = 1;
--				continue;
--			}
--			status = get_card_status(card, req);
--		}
--
--		if (brq.cmd.error) {
--			printk(KERN_ERR "%s: error %d sending read/write "
--			       "command, response %#x, card status %#x\n",
--			       req->rq_disk->disk_name, brq.cmd.error,
--			       brq.cmd.resp[0], status);
--		}
--
--		if (brq.data.error) {
--			if (brq.data.error == -ETIMEDOUT && brq.mrq.stop)
-+		pr_debug("%s transfer sector %d count %d\n",
-+			 (rq_data_dir(req) == READ) ? "Read" : "Write",
-+			 (int)req->sector, (int)brq.data.blocks);
-+
-+		pr_debug("Cmd error = %d, Data error = %d, Stop error = %d\n",
-+			  brq.cmd.error, brq.data.error, brq.stop.error);
-+
-+		/* Check for errors. */
-+		error = brq.cmd.error;
-+		if (!error)
-+			error = brq.data.error;
-+		if (!error)
-+			error = brq.stop.error;
-+
-+		/* Aquire card status. */
-+		if (error) {
-+			if ((brq.data.error == -ETIMEDOUT)
-+			  && brq.mrq.stop && !brq.stop.error)
- 				/* 'Stop' response contains card status */
- 				status = brq.mrq.stop->resp[0];
--			printk(KERN_ERR "%s: error %d transferring data,"
--			       " sector %u, nr %u, card status %#x\n",
--			       req->rq_disk->disk_name, brq.data.error,
--			       (unsigned)req->sector,
--			       (unsigned)req->nr_sectors, status);
-+			else
-+				status = get_card_status(card, req);
+ drivers/lguest/Kconfig          |    2 
+ drivers/lguest/core.c           |    8 ++-
+ drivers/lguest/lg.h             |   13 +++++
+ drivers/lguest/lguest_user.c    |   98 +++++++++++++++++++++++++++++++++++++++-
+ include/linux/lguest_launcher.h |    1 
+ 5 files changed, 116 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/lguest/Kconfig b/drivers/lguest/Kconfig
+--- a/drivers/lguest/Kconfig
++++ b/drivers/lguest/Kconfig
+@@ -1,6 +1,6 @@
+ config LGUEST
+ 	tristate "Linux hypervisor example code"
+-	depends on X86_32 && EXPERIMENTAL && FUTEX
++	depends on X86_32 && EXPERIMENTAL && EVENTFD
+ 	select HVC_DRIVER
+ 	---help---
+ 	  This is a very simple module which allows you to run
+diff --git a/drivers/lguest/core.c b/drivers/lguest/core.c
+--- a/drivers/lguest/core.c
++++ b/drivers/lguest/core.c
+@@ -198,9 +198,11 @@ int run_guest(struct lg_cpu *cpu, unsign
+ 		/* It's possible the Guest did a NOTIFY hypercall to the
+ 		 * Launcher, in which case we return from the read() now. */
+ 		if (cpu->pending_notify) {
+-			if (put_user(cpu->pending_notify, user))
+-				return -EFAULT;
+-			return sizeof(cpu->pending_notify);
++			if (!send_notify_to_eventfd(cpu)) {
++				if (put_user(cpu->pending_notify, user))
++					return -EFAULT;
++				return sizeof(cpu->pending_notify);
++			}
  		}
  
--		if (brq.stop.error) {
--			printk(KERN_ERR "%s: error %d sending stop command, "
--			       "response %#x, card status %#x\n",
--			       req->rq_disk->disk_name, brq.stop.error,
--			       brq.stop.resp[0], status);
-+		/*
-+		 * If this is an SD card and we're writing, we can first
-+		 * mark the known good sectors as ok.
-+		 *
-+		 * If the card is not SD, we can still ok written sectors
-+		 * as reported by the controller (which might be less than
-+		 * the real number of written sectors, but never more).
-+		 *
-+		 * For read transfers, we report the number of transfered bytes.
-+		 */
-+		if (error && mmc_card_sd(card) && (rq_data_dir(req) != READ)) {
-+			u32 blocks;
-+
-+			blocks = mmc_sd_num_wr_blocks(card);
-+			if (blocks != (u32)-1)
-+				brq.data.bytes_xfered = blocks << 9;
-+		}
-+		if (brq.data.bytes_xfered) {
-+			spin_lock_irq(&md->lock);
-+			ret = __blk_end_request(req, 0, brq.data.bytes_xfered);
-+			spin_unlock_irq(&md->lock);
- 		}
+ 		/* Check for signals */
+diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
+--- a/drivers/lguest/lg.h
++++ b/drivers/lguest/lg.h
+@@ -82,6 +82,16 @@ struct lg_cpu {
+ 	struct lg_cpu_arch arch;
+ };
  
-+		/* Wait until card is ready for new data. This information is
-+		 * only available in non-SPI mode. In SPI mode, the busy
-+		 * handling is done in the SPI driver.
-+		 */
- 		if (!mmc_host_is_spi(card->host) && rq_data_dir(req) != READ) {
- 			do {
- 				int err;
-@@ -374,66 +388,140 @@ static int mmc_blk_issue_rq(struct mmc_q
- 			} while (!(cmd.resp[0] & R1_READY_FOR_DATA) ||
- 				(R1_CURRENT_STATE(cmd.resp[0]) == 7));
++struct lg_eventfd {
++	unsigned long addr;
++	struct file *event;
++};
++
++struct lg_eventfd_map {
++	unsigned int num;
++	struct lg_eventfd map[];
++};
++
+ /* The private info the thread maintains about the guest. */
+ struct lguest
+ {
+@@ -102,6 +112,8 @@ struct lguest
+ 	unsigned int stack_pages;
+ 	u32 tsc_khz;
  
--#if 0
--			if (cmd.resp[0] & ~0x00000900)
--				printk(KERN_ERR "%s: status = %08x\n",
--				       req->rq_disk->disk_name, cmd.resp[0]);
--			if (mmc_decode_status(cmd.resp))
--				goto cmd_err;
--#endif
- 		}
++	struct lg_eventfd_map *eventfds;
++
+ 	/* Dead? */
+ 	const char *dead;
+ };
+@@ -154,6 +166,7 @@ void setup_default_idt_entries(struct lg
+ void copy_traps(const struct lg_cpu *cpu, struct desc_struct *idt,
+ 		const unsigned long *def);
+ void guest_set_clockevent(struct lg_cpu *cpu, unsigned long delta);
++bool send_notify_to_eventfd(struct lg_cpu *cpu);
+ void init_clockdev(struct lg_cpu *cpu);
+ bool check_syscall_vector(struct lguest *lg);
+ int init_interrupts(void);
+diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
+--- a/drivers/lguest/lguest_user.c
++++ b/drivers/lguest/lguest_user.c
+@@ -7,6 +7,8 @@
+ #include <linux/miscdevice.h>
+ #include <linux/fs.h>
+ #include <linux/sched.h>
++#include <linux/eventfd.h>
++#include <linux/file.h>
+ #include "lg.h"
  
--		if (brq.cmd.error || brq.stop.error || brq.data.error) {
--			if (rq_data_dir(req) == READ) {
--				/*
--				 * After an error, we redo I/O one sector at a
--				 * time, so we only reach here after trying to
--				 * read a single sector.
--				 */
--				spin_lock_irq(&md->lock);
--				ret = __blk_end_request(req, -EIO, brq.data.blksz);
--				spin_unlock_irq(&md->lock);
--				continue;
--			}
--			goto cmd_err;
--		}
-+		/* Error code evaluation */
-+		switch (error) {
- 
--		/*
--		 * A block was successfully transferred.
--		 */
--		spin_lock_irq(&md->lock);
--		ret = __blk_end_request(req, 0, brq.data.bytes_xfered);
--		spin_unlock_irq(&md->lock);
--	} while (ret);
-+		/************** Recoverable Errors ********************/
- 
--	mmc_release_host(card->host);
-+		/* Card has not understand command. As we do only send
-+		 * valid commands, this must be a transmission error. */
-+		case -EPROTO:	/* fall through */
-+
-+		/* Transmission error/CRC. */
-+		case -EILSEQ:	/* fall through */
-+
-+		/* Parameter or address error.
-+		 * This might be a transmission error. */
-+		case -EFAULT:	/* fall through */
-+
-+		/* Function not implemented.
-+		 * This MUST be a transmission error. All cards
-+		 * have to respond to read/write commands. */
-+		case -ENOSYS:	/* fall through */
-+
-+		/* Erase response codes.
-+		 * These MUST be transmission errors, because
-+		 * erase codes are no valid responses after a
-+		 * read/write command. */
-+		case -EIO:	/* fall through */
-+
-+		/* Timeout, no answer. This might be a transmission error
-+		 * host -> card or a real timeout. If we repeat the command,
-+		 * we do an overall slowdown and have good chances to
-+		 * complete the transfer even in case of a real timeout. */
-+		case -ETIMEDOUT:
-+			/* Common transmission fault handling. */
-+			disable_multi = 1;
-+			if (--retries > 0)
-+				break;
-+			/* Do not continue after a write fail. */
-+			if (rq_data_dir(req) != READ)
-+				terminate = 1;
-+			goto report_error;
-+
-+		/******** Non-recoverable Errors ********************/
-+
-+		/* Request cannot be performed because of restrictions
-+		 * in hardware and/or the driver. */
-+		case -EINVAL:	/* fall through */
-+
-+		/* Host can determine that the slot is empty and is
-+		 * actively failing requests. */
-+		case -ENOMEDIUM:/* fall through */
-+
-+		/* No memory inside the driver. */
-+		case -ENOMEM:
-+			/* Common non-recoverable fault handling. */
-+			terminate = 1;
-+			goto report_error;
-+
-+		/*********************** Misc ************************/
-+
-+		case 0:	/* no error: continue, reset error variables */
-+			disable_multi = 0;
-+			retries = 3;
-+			break;
-+
-+		/* We do not know this particular error code.
-+		 * So we default to the old "proven" behaviour
-+		 * and do retries for read requests, and fail
-+		 * for write requests. */
-+		default:
-+			if (rq_data_dir(req) != READ) {
-+				terminate = 1;
-+				goto report_error;
-+			}
-+			disable_multi = 1;
-+			if (--retries > 0)
-+				break;
-+
-+report_error:		/* A non-recoverable error has occured.
-+			 * Report this error. */
-+
-+			if (brq.cmd.error) {
-+				printk(KERN_ERR "%s: error %d sending "
-+				       "read/write command, response %#x, "
-+				       "card status %#x\n",
-+				       req->rq_disk->disk_name, brq.cmd.error,
-+				       brq.cmd.resp[0], status);
-+			}
- 
--	return 1;
-+			if (brq.data.error) {
-+				printk(KERN_ERR "%s: error %d transferring "
-+				       "data, sector %u, nr %u, card status "
-+				       "%#x\n",
-+				       req->rq_disk->disk_name,
-+				       brq.data.error,
-+				       (unsigned)req->sector,
-+				       (unsigned)req->nr_sectors, status);
-+			}
- 
-- cmd_err:
-- 	/*
-- 	 * If this is an SD card and we're writing, we can first
-- 	 * mark the known good sectors as ok.
-- 	 *
--	 * If the card is not SD, we can still ok written sectors
--	 * as reported by the controller (which might be less than
--	 * the real number of written sectors, but never more).
--	 */
--	if (mmc_card_sd(card)) {
--		u32 blocks;
-+			if (brq.stop.error) {
-+				printk(KERN_ERR "%s: error %d sending stop "
-+				       "command, response %#x, card status "
-+				       "%#x\n",
-+				       req->rq_disk->disk_name,
-+				       brq.stop.error,
-+				       brq.stop.resp[0], status);
-+			}
- 
--		blocks = mmc_sd_num_wr_blocks(card);
--		if (blocks != (u32)-1) {
-+			/* Report the failure to the block layer. */
- 			spin_lock_irq(&md->lock);
--			ret = __blk_end_request(req, 0, blocks << 9);
-+			ret = __blk_end_request(req, -EIO,
-+				(brq.data.blocks * brq.data.blksz)
-+			       - brq.data.bytes_xfered);
- 			spin_unlock_irq(&md->lock);
-+
-+			/* reset error variables */
-+			disable_multi = 0;
-+			retries = 3;
-+
-+			if (terminate)
-+				goto cmd_err;
-+
-+			break;
- 		}
--	} else {
--		spin_lock_irq(&md->lock);
--		ret = __blk_end_request(req, 0, brq.data.bytes_xfered);
--		spin_unlock_irq(&md->lock);
--	}
- 
-+	/* repeat until no more sectors left */
-+	} while (ret);
-+
-+	mmc_release_host(card->host);
-+
-+	return 1;
-+
-+cmd_err:
- 	mmc_release_host(card->host);
- 
- 	spin_lock_irq(&md->lock);
-diff -uprN 2_6_29_rc7_patch_EILSEQ/drivers/mmc/host/mmc_spi.c 2_6_29_rc7_patch_retries/drivers/mmc/host/mmc_spi.c
---- 2_6_29_rc7_patch_EILSEQ/drivers/mmc/host/mmc_spi.c	2009-05-26 09:37:28.000000000 +0200
-+++ 2_6_29_rc7_patch_retries/drivers/mmc/host/mmc_spi.c	2009-05-26 11:30:33.000000000 +0200
-@@ -743,22 +743,24 @@ mmc_spi_writeblock(struct mmc_spi_host *
- 	if (status != 0) {
- 		dev_dbg(&spi->dev, "write error %02x (%d)\n",
- 			scratch->status[0], status);
--		return status;
-+	} else {
-+		t->tx_buf += t->len;
-+		if (host->dma_dev)
-+			t->tx_dma += t->len;
+ /*L:055 When something happens, the Waker process needs a way to stop the
+@@ -35,6 +37,81 @@ static int break_guest_out(struct lg_cpu
  	}
- 
--	t->tx_buf += t->len;
--	if (host->dma_dev)
--		t->tx_dma += t->len;
--
- 	/* Return when not busy.  If we didn't collect that status yet,
- 	 * we'll need some more I/O.
- 	 */
- 	for (i = 4; i < sizeof(scratch->status); i++) {
- 		/* card is non-busy if the most recent bit is 1 */
- 		if (scratch->status[i] & 0x01)
--			return 0;
-+		return status;
- 	}
--	return mmc_spi_wait_unbusy(host, timeout);
-+	i = mmc_spi_wait_unbusy(host, timeout);
-+	if (!status)
-+		status = i;
-+	return status;
  }
  
- /*
-@@ -1087,7 +1089,15 @@ static void mmc_spi_request(struct mmc_h
- 	status = mmc_spi_command_send(host, mrq, mrq->cmd, mrq->data != NULL);
- 	if (status == 0 && mrq->data) {
- 		mmc_spi_data_do(host, mrq->cmd, mrq->data, mrq->data->blksz);
--		if (mrq->stop)
-+		/* filter-out the stop command for multiblock writes,
-+		 * only if the data stage has no transmission error.
-+		 * If the data stage has a transmission error, send the
-+		 * STOP command because there is a great chance that the
-+		 * SPI stop token was not accepted by the card.
-+		 */
-+		if (mrq->stop &&
-+		  ((mrq->data->flags & MMC_DATA_READ)
-+		 || mrq->data->error))
- 			status = mmc_spi_command_send(host, mrq, mrq->stop, 0);
- 		else
- 			mmc_cs_off(host);
----
-regards
++bool send_notify_to_eventfd(struct lg_cpu *cpu)
++{
++	unsigned int i;
++	struct lg_eventfd_map *map;
++
++	/* lg->eventfds is RCU-protected */
++	rcu_read_lock();
++	map = rcu_dereference(cpu->lg->eventfds);
++	for (i = 0; i < map->num; i++) {
++		if (map->map[i].addr == cpu->pending_notify) {
++			eventfd_signal(map->map[i].event, 1);
++			cpu->pending_notify = 0;
++			break;
++		}
++	}
++	rcu_read_unlock();
++	return cpu->pending_notify == 0;
++}
++
++static int add_eventfd(struct lguest *lg, unsigned long addr, int fd)
++{
++	struct lg_eventfd_map *new, *old = lg->eventfds;
++
++	if (!addr)
++		return -EINVAL;
++
++	/* Replace the old array with the new one, carefully: others can
++	 * be accessing it at the same time */
++	new = kmalloc(sizeof(*new) + sizeof(new->map[0]) * (old->num + 1),
++		      GFP_KERNEL);
++	if (!new)
++		return -ENOMEM;
++
++	/* First make identical copy. */
++	memcpy(new->map, old->map, sizeof(old->map[0]) * old->num);
++	new->num = old->num;
++
++	/* Now append new entry. */
++	new->map[new->num].addr = addr;
++	new->map[new->num].event = eventfd_fget(fd);
++	if (IS_ERR(new->map[new->num].event)) {
++		kfree(new);
++		return PTR_ERR(new->map[new->num].event);
++	}
++	new->num++;
++
++	/* Now put new one in place. */
++	rcu_assign_pointer(lg->eventfds, new);
++
++	/* We're not in a big hurry.  Wait until noone's looking at old
++	 * version, then delete it. */
++	synchronize_rcu();
++	kfree(old);
++
++	return 0;
++}
++
++static int attach_eventfd(struct lguest *lg, const unsigned long __user *input)
++{
++	unsigned long addr, fd;
++	int err;
++
++	if (get_user(addr, input) != 0)
++		return -EFAULT;
++	input++;
++	if (get_user(fd, input) != 0)
++		return -EFAULT;
++
++	mutex_lock(&lguest_lock);
++	err = add_eventfd(lg, addr, fd);
++	mutex_unlock(&lguest_lock);
++
++	return 0;
++}
++
+ /*L:050 Sending an interrupt is done by writing LHREQ_IRQ and an interrupt
+  * number to /dev/lguest. */
+ static int user_send_irq(struct lg_cpu *cpu, const unsigned long __user *input)
+@@ -184,6 +261,13 @@ static int initialize(struct file *file,
+ 		goto unlock;
+ 	}
+ 
++	lg->eventfds = kmalloc(sizeof(*lg->eventfds), GFP_KERNEL);
++	if (!lg->eventfds) {
++		err = -ENOMEM;
++		goto free_lg;
++	}
++	lg->eventfds->num = 0;
++
+ 	/* Populate the easy fields of our "struct lguest" */
+ 	lg->mem_base = (void __user *)args[0];
+ 	lg->pfn_limit = args[1];
+@@ -191,7 +275,7 @@ static int initialize(struct file *file,
+ 	/* This is the first cpu (cpu 0) and it will start booting at args[2] */
+ 	err = lg_cpu_start(&lg->cpus[0], 0, args[2]);
+ 	if (err)
+-		goto release_guest;
++		goto free_eventfds;
+ 
+ 	/* Initialize the Guest's shadow page tables, using the toplevel
+ 	 * address the Launcher gave us.  This allocates memory, so can fail. */
+@@ -210,7 +294,9 @@ static int initialize(struct file *file,
+ free_regs:
+ 	/* FIXME: This should be in free_vcpu */
+ 	free_page(lg->cpus[0].regs_page);
+-release_guest:
++free_eventfds:
++	kfree(lg->eventfds);
++free_lg:
+ 	kfree(lg);
+ unlock:
+ 	mutex_unlock(&lguest_lock);
+@@ -260,6 +346,8 @@ static ssize_t write(struct file *file, 
+ 		return user_send_irq(cpu, input);
+ 	case LHREQ_BREAK:
+ 		return break_guest_out(cpu, input);
++	case LHREQ_EVENTFD:
++		return attach_eventfd(lg, input);
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -297,6 +385,12 @@ static int close(struct inode *inode, st
+ 		 * the Launcher's memory management structure. */
+ 		mmput(lg->cpus[i].mm);
+ 	}
++
++	/* Release any eventfds they registered. */
++	for (i = 0; i < lg->eventfds->num; i++)
++		fput(lg->eventfds->map[i].event);
++	kfree(lg->eventfds);
++
+ 	/* If lg->dead doesn't contain an error code it will be NULL or a
+ 	 * kmalloc()ed string, either of which is ok to hand to kfree(). */
+ 	if (!IS_ERR(lg->dead))
+diff --git a/include/linux/lguest_launcher.h b/include/linux/lguest_launcher.h
+--- a/include/linux/lguest_launcher.h
++++ b/include/linux/lguest_launcher.h
+@@ -58,6 +58,7 @@ enum lguest_req
+ 	LHREQ_GETDMA, /* No longer used */
+ 	LHREQ_IRQ, /* + irq */
+ 	LHREQ_BREAK, /* + on/off flag (on blocks until someone does off) */
++	LHREQ_EVENTFD, /* + address, fd. */
+ };
+ 
+ /* The alignment to use between consumer and producer parts of vring.
 
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
