@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbZFKQFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZFKQHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759904AbZFKQFQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 12:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbZFKQFE
+	id S1756061AbZFKQHn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 12:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZFKQHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 12:05:04 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:48439 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbZFKQFD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 12:05:03 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 18:05:52 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.30-rc7-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906111120260.3040-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906111120260.3040-100000@iolanthe.rowland.org>
+	Thu, 11 Jun 2009 12:07:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33512 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751324AbZFKQHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 12:07:36 -0400
+Message-ID: <4A312B9F.4010208@redhat.com>
+Date: Thu, 11 Jun 2009 12:06:55 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200906111805.53388.oliver@neukum.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 3/5] HWPOISON: remove early kill option for now
+References: <20090611142239.192891591@intel.com> <20090611144430.682162784@intel.com>
+In-Reply-To: <20090611144430.682162784@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 11. Juni 2009 17:22:06 schrieb Alan Stern:
-> > > Okay, I'll agree to that.  It should be made clear that a device which
-> > > is "suspended" according to this definition is not necessarily in a
-> > > low-power state.  For example, before powering down the link to a disk
-> > > drive you might want the drive's suspend method to flush the drive's
-> > > cache, but it wouldn't have to spin the drive down.
-> >
-> > This precludes handling busses that have low power states that are
-> > left automatically. If such links are stacked the management of
-> > acceptable latencies cannot be left to the busses.
-> > An actual example are the link states of USB 3.0
->
-> I don't understand.  Can you explain more fully?
+Wu Fengguang wrote:
+> It needs more thoughts, and is not a must have for .31.
+> 
+> CC: Nick Piggin <npiggin@suse.de>
+> CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 
-I am talking about the U1 and U2 feature of USB 3.0.
+Fair enough.  It's not an absolute must-have and still needs
+a little bit more work.
 
-Or abstractly any power saving state that does autoresume in hardware.
-In these cases you know that you can enter a powersaving state that
-will add X latency.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-In terms of user space API we'll probably add a way for user space
-to specify how much latency may be added for power management's sake.
-If busses are stacked the "latency budget" has to be handled at core level.
-If furthermore states that allow IO but with additional latency are ignored,
-the budget will be calculated wrongly.
-
-	Regards
-		Oliver
-
-
+-- 
+All rights reversed.
