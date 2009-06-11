@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZFKNes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZFKNhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbZFKNes (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZFKNej
+	id S1753972AbZFKNhH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZFKNg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:34:39 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57809 "EHLO gate.crashing.org"
+	Thu, 11 Jun 2009 09:36:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36666 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbZFKNei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:34:38 -0400
-Cc: <akpm@linux-foundation.org>, <davem@davemloft.net>,
-       <mporter@kernel.crashing.org>, <linux-kernel@vger.kernel.org>,
-       <linuxppc-dev@ozlabs.org>, <netdev@vger.kernel.org>,
-       "Zhang Wei" <zw@zh-kernel.org>
-Message-Id: <5D8775BD-9973-4DE8-B442-91FB15F86ACC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang-R58472 <LeoLi@freescale.com>
-In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED483CCD@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 1/6] rapidio: add common mapping APIs for RapidIO memory access
-Date: Thu, 11 Jun 2009 08:32:24 -0500
-References: <1242117363-14949-1-git-send-email-leoli@freescale.com> <90AED712-28A1-4800-978C-125A887D0DA7@kernel.crashing.org> <3A45394FD742FA419B760BB8D398F9ED483CCD@zch01exm26.fsl.freescale.net>
-X-Mailer: Apple Mail (2.935.3)
+	id S1751580AbZFKNgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 09:36:55 -0400
+Date: Thu, 11 Jun 2009 16:36:43 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, mtosatti@redhat.com
+Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
+Message-ID: <20090611133643.GA16335@redhat.com>
+References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090611131647.GA15743@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611131647.GA15743@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 11, 2009 at 04:16:47PM +0300, Michael S. Tsirkin wrote:
+> > +
+> > +	ret = file->f_op->poll(file, &irqfd->pt);
+> > +	if (ret < 0)
+> > +		goto fail;
 
-On Jun 11, 2009, at 4:47 AM, Li Yang-R58472 wrote:
+Looking at it some more, we have:
+struct file_operations {
+....
+	unsigned int (*poll) (struct file *, struct poll_table_struct *);
 
->> On May 12, 2009, at 3:35 AM, Li Yang wrote:
->>
->>> Add the mapping functions used to support direct IO memory access of
->>> rapidIO.
->>>
->>> Signed-off-by: Zhang Wei <zw@zh-kernel.org>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>
->> Use inbnd/outbnd instead of inb/outb which make one think of
->> byte level io accessors.
->>
->> As I look at this I don't think this is the correct API.  I
->> think we should be using the DMA mapping API to hide these
->> details.  The concept of mapping like this seems to be more a
->> function of FSL's Address translation/mapping unit (ATMU) than
->> anything specific to the RIO bus standard.
->
-> This is a separate RIO block level ATMU.  Although it looks like the
-> system level ATMU, system ATMU doesn't have the knowledge of rapidIO
-> target device ID.  The mapping need to be dynamic, as it's easy to  
-> have
-> more RIO devices than the outbound windows.
+So the comparison above does not seem to make sense:
+it seems that the return value from poll can not be negative.
 
-I understand that.  What I'm saying is the RIO block level ATMU is a  
-Freescale specific detail and not part of any standard RIO bus  
-programming model.  We have mapping APIs that we can connect to for  
-this via the DMA API layer.
+Will the callback be executed if someone did a write to eventfd
+before we attached it? If no, maybe we should call it here
+if ret != 0.
 
-- k
+
+> > +
+> > +	irqfd->file = file;
+> > +
+> > +	mutex_lock(&kvm->lock);
+> > +	list_add_tail(&irqfd->list, &kvm->irqfds);
+> > +	mutex_unlock(&kvm->lock);
+> > +
+> > +	return 0;
+> > +
+> > +fail:
+> > +	if (irqfd->wqh)
+> > +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+> 
+> Why are these 2 lines here? Either we might get a callback even though
+> poll failed - and then this test without lock is probably racy -
+> or we can't, and then we can replace the above with BUG_ON(irqfd->wqh).
+> 
+> Which is it? I think the later ...
+> 
+> 
+> > +
+> > +	if (file && !IS_ERR(file))
+> > +		fput(file);
+> > +
+> > +	kfree(irqfd);
+> > +	return ret;
+> > +}
+> > +
