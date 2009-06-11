@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbZFKBjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbZFKBvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761491AbZFKBjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 21:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZFKBje
+	id S1758594AbZFKBvQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 21:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbZFKBvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 21:39:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40463 "EHLO smtps.tip.net.au"
+	Wed, 10 Jun 2009 21:51:03 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55954 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753814AbZFKBje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 21:39:34 -0400
-Date: Thu, 11 Jun 2009 11:39:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Subject: linux-next: powerpc tree build warning
-Message-Id: <20090611113930.78a42893.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ"
+	id S1753672AbZFKBvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 21:51:02 -0400
+Cc: Leon Woestenberg <leon@sidebranch.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Message-Id: <6567F141-5B17-440E-B052-95E20276B222@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: leon.woestenberg@gmail.com
+In-Reply-To: <4a2a9611.06c8100a.49ae.ffff88e4@mx.google.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH v2] Add MSI interrupts to DTS of MPC8315E-RDB
+Date: Wed, 10 Jun 2009 20:50:54 -0500
+References: <4a2a9611.06c8100a.49ae.ffff88e4@mx.google.com>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
+On Jun 6, 2009, at 11:15 AM, leon.woestenberg@gmail.com wrote:
 
-Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+> The PCIe MSI interrupts are missing from the device tree source, and
+> thus were not enabled. This patch adds them.
+>
+> v2 of the patch fixes inconsistent white space, reported by David  
+> Gibson.
+>
+> Tested to work on MPC8315E-RDB with custom FPGA PCIe device.
+>
+> Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
+> Tested-by: Leon Woestenberg <leon@sidebranch.com>
 
-arch/powerpc/platforms/Kconfig.cputype:60:warning: defaults for choice valu=
-es not supported
+applied to next.
 
-We appear to have CONFIG_PPC_BOOK3S int two places which is confusing
-Kconfig.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkowYFIACgkQjjKRsyhoI8wSsQCghdrWz+5H8AzA/EKnpZyCGK/e
-1P4An2KGXrfT4V5CFWJ24NN9+lP7Es/J
-=m21z
------END PGP SIGNATURE-----
-
---Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ--
+- k
