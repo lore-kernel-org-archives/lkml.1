@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbZFKHu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759167AbZFKHyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759764AbZFKHu7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 03:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbZFKHuw
+	id S1759167AbZFKHyy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 03:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbZFKHyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 03:50:52 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46038 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbZFKHuv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 03:50:51 -0400
-Date: Thu, 11 Jun 2009 09:50:47 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Valdis.Kletnieks@vt.edu
-Cc: Stefan Schmidt <stefan@datenfreihafen.org>, laforge@gnumonks.org,
-       Marek Vasut <marek.vasut@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Brian Swetland <swetland@google.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>, san@android.com,
-       rlove@google.com
-Subject: Re: MSM6281 support was: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611075046.GC8592@elf.ucw.cz>
-References: <20090610103131.GB13885@elf.ucw.cz> <20090610204708.GD6251@dodger.lab.datenfreihafen.org> <a55d774e0906101408t75e507f5s8064796b080828c2@mail.gmail.com> <200906102328.40140.marek.vasut@gmail.com> <20090610213259.GA8224@elf.ucw.cz> <20090610221054.GF6251@dodger.lab.datenfreihafen.org> <20090610221940.GA8592@elf.ucw.cz> <206290.1244692927@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <206290.1244692927@turing-police.cc.vt.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 11 Jun 2009 03:54:46 -0400
+Received: from relay.atmel.no ([80.232.32.139]:53246 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754986AbZFKHyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 03:54:46 -0400
+Date: Thu, 11 Jun 2009 09:54:32 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Rob Emanuele <poorarm@shoreis.com>
+Cc: Joey Oravec <joravec@drewtech.com>,
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH][Fix] New Unified AVR32/AT91 MCI Driver that supports
+ both MCI  slots used at the same time
+Message-ID: <20090611095432.2e3a4067@hskinnemoen-d830>
+In-Reply-To: <c8284b5b0906101641v586c3487i465263bb6908e3f7@mail.gmail.com>
+References: <c8284b5b0906101641v586c3487i465263bb6908e3f7@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-11 00:02:07, Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 11 Jun 2009 00:19:40 +0200, Pavel Machek said:
-> > > They have the licence inside and offer source on request on the letter. I wrote
-> > > them a mail some hours ago and they state that all source will be on
-> > > http://opensource.palm.com/ within two weeks.
-> > 
-> > Ugh, nice approach to GPL :-(.
-> 
-> On the other hand, it's far from the worst GPL abuse we've seen.  It sounds
-> like they're at least *trying* to DTRT, and they're at least complying with the
-> letter of the license, and *mostly* the spirit...
+[cutting the redundant bits from Subject]
 
-"Far from the worst" is exact. Yes, it could be worse. Question is how
-they'll respond to those letters. I suspect they will just wait 14
-days and then send CD...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hi Rob,
+
+Rob Emanuele wrote:
+> This patch unifies the at91 changes I had into the atmel-mci
+> (originally for AVR32) driver.
+
+That doesn't look so bad...but I suspect PDC support hasn't been
+integrated yet?
+
+> This also fixes an important bug where in 4-bit mode you could only
+> select Slot A.
+
+It has already been fixed in mainline.
+
+> As with the at91 port I had of this driver, I had to add more flags to
+> the ATMCI_DATA_ERROR_FLAGS as other communication errors were
+> occurring and they were not be reported back.  Can anyone add more
+> insight into this?
+
+Adding them to the data error bits doesn't sound like the right thing
+to do...but I guess there might be some sort of timing issue in there
+where we think we're done sending the command but the controller may
+still raise errors.
+
+> Again, anyone who can, please test (on either or both the AT91 and
+> AVR32) and comment.
+
+I haven't looked very closely at it yet, but I spotted a few things
+which might prevent the patch from being accepted as-is:
+  - I'm not sure if adding "unified" (or "now supports AT91") all over
+    the place is the right thing to do. If the driver is selectable
+    when you configure for AT91, it should obviously work on AT91.
+  - The patch seems to do a bit too much all at once. The bug fix which
+    has already been fixed is one example, another is the clock cap
+    option -- we used to have a module parameter for the same purpose,
+    but Pierre (the MMC maintainer, who should probably be added to the
+    loop) had problems with it. If this feature was in a separate
+    patch, it could be rejected without blowing away the rest of the
+    driver.
+  - The AT91 platform parts should be separated from the rest since it
+    may need to go through a different maintainer.
+
+Haavard
