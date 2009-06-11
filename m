@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763744AbZFKPR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZFKPVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763744AbZFKPR4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 11:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZFKPRt
+	id S1757468AbZFKPVH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 11:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbZFKPU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 11:17:49 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:36570 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754643AbZFKPRs (ORCPT
+	Thu, 11 Jun 2009 11:20:56 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:45604 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753354AbZFKPU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 11:17:48 -0400
-X-Greylist: delayed 456 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 11:17:48 EDT
-Date: Thu, 11 Jun 2009 08:17:50 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Dan Williams <dan.j.williams@intel.com>, Timur Tabi <timur@freescale.com>,
-       David Hawkins <dwh@ovro.caltech.edu>,
-       Liu Dave-R63238 <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-Message-ID: <20090611151750.GB9323@ovro.caltech.edu>
-References: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com> <20090427204213.GA4960@ovro.caltech.edu> <49F619C4.20100@freescale.com> <e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com> <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org>
+	Thu, 11 Jun 2009 11:20:56 -0400
+Date: Thu, 11 Jun 2009 11:20:50 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: linux-kernel@vger.kernel.org, mel@csn.ul.ie, Larry.Finger@lwfinger.net
+Subject: Re: [PATCH 2/2] SLUB: Disable debugging if it increases the minimum
+ page order
+In-Reply-To: <1244733119.17483.56.camel@penberg-laptop>
+Message-ID: <alpine.DEB.1.10.0906111118350.14020@gentwo.org>
+References: <Pine.LNX.4.64.0906111143490.6132@melkki.cs.Helsinki.FI>  <alpine.DEB.1.10.0906110941520.29827@gentwo.org>  <1244728824.17483.51.camel@penberg-laptop>  <alpine.DEB.1.10.0906111021340.29827@gentwo.org> <1244733119.17483.56.camel@penberg-laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 11 Jun 2009 08:17:51 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 09:45:26PM -0500, Kumar Gala wrote:
->
-> On Apr 27, 2009, at 3:49 PM, Dan Williams wrote:
->
->> On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com>  
->> wrote:
->>> Adding Kumar to the CC: list, since he might pick up the patch.
->>>
->>
->> Acked-by: Dan Williams <dan.j.williams@intel.com>
->>
->> I agree with taking this through Kumar's tree.
->
-> I'm going through patches for .31.. Should I still pick this up?  Going 
-> forward should I pick up fsldma patches?
->
+On Thu, 11 Jun 2009, Pekka Enberg wrote:
 
-I'm fine with that, but you should probably talk to Li Yang (added to
-CC). He's gotten in contact with me a few times recently.
+> I think my patch is the simplest solution here: it turns off debugging
+> for those caches where the metadata bumps up the minimum allocation
+> order and I suspect that we disable cache only for 4096 in practice.
 
-In addition to the PCI Read Multiple patch, I've posted a few more
-fsldma patches to ppcdev recently:
+There could be other slab caches that would randomly be affected by this.
+I ran a couple of times into situations where I had to hack slab to do
+debugging of exempted slabs.
 
-fsldma: enable external start for the 83xx controller
-fsldma: do not clear bandwidth control bits on the 83xx controller
-fsldma: Add DMA_SLAVE support
+> Also note that when we switch back to more aggressive page allocator
+> pass-through, we lose SLUB debugging support.
 
-The first two are very straightforward. The third probably needs some
-review before it can be picked up, though. It is well tested, I've been
-using it for a few weeks without issues.
+Debugging options can have side effects. Slab debugging is not something
+suitable by default for production environments.
 
-Thanks,
-Ira
