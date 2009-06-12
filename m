@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbZFLT4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZFLT7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760336AbZFLT4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 15:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZFLT4I
+	id S1759614AbZFLT7q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 15:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZFLT7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 15:56:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59537 "EHLO ogre.sisk.pl"
+	Fri, 12 Jun 2009 15:59:39 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:33829 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752964AbZFLT4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 15:56:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Fri, 12 Jun 2009 21:56:14 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Oliver Neukum <oliver@neukum.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906121547490.2862-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906121547490.2862-100000@iolanthe.rowland.org>
+	id S1754207AbZFLT7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 15:59:39 -0400
+Date: Fri, 12 Jun 2009 21:59:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Steve Rottinger <steve@pentek.com>, linux-kernel@vger.kernel.org
+Subject: Re: splice methods in character device driver
+Message-ID: <20090612195940.GM11363@kernel.dk>
+References: <4A0838D1.5090102@pentek.com> <20090511192253.GH4694@kernel.dk> <4A0AFC62.3090002@pentek.com> <c384c5ea0906031432x2675c5a4xcc940a567ca408b8@mail.gmail.com> <20090604073218.GT11363@kernel.dk> <4A27CA0A.7060400@pentek.com> <c384c5ea0906121221p6a20d92fg6716f560164c46bf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200906122156.14873.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c384c5ea0906121221p6a20d92fg6716f560164c46bf@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 June 2009, Alan Stern wrote:
-> On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
+On Fri, Jun 12 2009, Leon Woestenberg wrote:
+> Steve, Jens,
 > 
-> > So, are you suggesting that the core should only check the "all children
-> > suspended" condition if special flag is set in dev_pm_info?
+> another few questions:
 > 
-> Or rather, check it only if the special flag _isn't_ set.
+> On Thu, Jun 4, 2009 at 3:20 PM, Steve Rottinger<steve@pentek.com> wrote:
+> > ...
+> > - The performance is poor, and much slower than transferring directly from
+> > main memory with O_DIRECT.  I suspect that this has a lot to do with
+> > large amount of systems calls required to move the data, since each call moves only
+> > 64K.  Maybe I'll try increasing the pipe size, next.
+> >
+> > Once I get past these issues, and I get the code in a better state, I'll
+> > be happy to share what
+> > I can.
+> >
+> I've been experimenting a bit using mostly-empty functions to learn
+> understand the function call flow:
+> 
+> splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_device);
+> pipe_to_device(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+> struct splice_desc *sd)
+> 
+> So some back-of-a-coaster calculations:
+> 
+> If I understand correctly, a pipe_buffer never spans more than one
+> page (typically 4kB).
 
-Where the default is unset, I guess?
+Correct
 
-But then, what about the resuming of the parents before the device is resumed?
-Should the parents be resumed regardless of the flag state?  And if so, what's
-the condition for breaking the recurrence?  Surely it's not sufficient to check
-if the parent is active, because its parent need not be active if it has this
-special flag set.
+> The SPLICE_BUFFERS is 16, thus splice_from_pipe() is called every 64kB.
 
-Best,
-Rafael
+Also correct.
+
+> The actor "pipe_to_device" is called on each pipe_buffer, so for every 4kB.
+
+Ditto.
+
+> For my case, I have a DMA engine that does say 200 MB/s, resulting in
+> 50000 actor calls per second.
+> 
+> As my use case would be to splice from an acquisition card to disk,
+> splice() made an interesting approach.
+> 
+> However, if the above is correct, I assume splice() is not meant for
+> my use-case?
+
+50000 function calls per second is not a lot. We do lots of things on a
+per-page basis in the kernel. Batching would of course speed things up,
+but it's not been a problem thus far. So I would not worry about 50k
+function calls per second to begin with.
+
+-- 
+Jens Axboe
+
