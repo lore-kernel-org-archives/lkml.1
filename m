@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763928AbZFLBWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764013AbZFLBXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763928AbZFLBWW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 21:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758383AbZFLBWL
+	id S1764013AbZFLBXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 21:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758383AbZFLBXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 21:22:11 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:15173 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753327AbZFLBWK (ORCPT
+	Thu, 11 Jun 2009 21:23:09 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:43147 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbZFLBXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 21:22:10 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Thu, 11 Jun 2009 21:21:42 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
+	Thu, 11 Jun 2009 21:23:08 -0400
+Date: Fri, 12 Jun 2009 02:23:04 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+       swetland@google.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
 Subject: Re: HTC Dream aka. t-mobile g1 support
-In-reply-to: <4A3175AC.9070100@bluewatersys.com>
-Message-id: <alpine.LFD.2.00.0906112105220.31536@xanadu.home>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>
- <20090611.042226.28424489.davem@davemloft.net>
- <20090611114911.GL795@n2100.arm.linux.org.uk>
- <20090611.050030.169859977.davem@davemloft.net>
- <20090611123852.GM795@n2100.arm.linux.org.uk>
- <20090611135442.6b9ab315@lxorguk.ukuu.org.uk>
- <20090611132134.GA11199@atomide.com>
- <20090611133736.GP795@n2100.arm.linux.org.uk>
- <20090611140038.GB11199@atomide.com>
- <20090611140624.GS795@n2100.arm.linux.org.uk>
- <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
- <4A3175AC.9070100@bluewatersys.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Message-ID: <20090612012304.GA25550@shareable.org>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <1244735580.895.80.camel@Joe-Laptop.home> <20090611160850.GX795@n2100.arm.linux.org.uk> <200906111837.21944.bzolnier@gmail.com> <20090611164218.GA21128@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611164218.GA21128@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Ryan Mallon wrote:
-
-> Nicolas Pitre wrote:
-> > On Thu, 11 Jun 2009, Russell King - ARM Linux wrote:
-> >
-> > I think that you, as the ARM maintainer, should continue gathering all 
-> > the ARM subarchitectures into a coherent ARM tree and arbitrate 
-> > conflicts when they occur.  You should especially keep a tight control 
-> > on the very core ARM code.  But everything under arch/arm/mach-* you 
-> > should let people maintaining those have control of that themselves and 
-> > free yourself from that responsibility as much as possible.  The current 
-> > directory structure is quite indicative of where the boundaries are 
-> > already.  This way, if I make a mess of arch/arm/mach-orion5x/* then you 
-> > just need to pass the blame straight to me.
+Russell King - ARM Linux wrote:
+> On Thu, Jun 11, 2009 at 06:37:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > "No reason given" part was just lovely..
 > > 
+> > After getting a couple of such messages I decided to stay as far away from
+> > linux-arm-kernel list as possible..
+> > 
+> > Before interacting with linux-arm-kernel list I really thought that people
+> > exaggerated the issue and that their complains were unfounded..
 > 
-> That works okay for the more popular sub-architectures like pxa, etc,
-> where there are a lot of people to review code and sort out issues
-> between themselves. However, for the architecture I do most of my work
-> on, ep93xx, there are basically two of us, Hartley and myself, doing
-> active work.
+> I wish people told me about this - it's certainly not my policy nor
+> indeed the policy which should be applied to the list.  I'll find out
+> what's going on when my co-list admin returns from his vacation.
 > 
-> It seems a bit dodgy if all the patches to ep93xx are written by one of
-> us and acked by the other with no input from anybody else. It would be
-> very easy for the ep93xx code to become and complete mess, and lack any
-> coherency with the other sub-archs. I prefer having Russell, or somebody
-> else, at least have a glance at the patches before they get applied.
+> Thanks for bringing it to my attention.
 
-This is all fine.  If you prefer some external help to judge your 
-patches that's OK.  In fact I'm not advocating for people to stop 
-posting their patches to linux-arm-kernel at all.  It is a good thing 
-for patches to be aired on the mailing list for everyone to see and 
-comment.
+Before I subscribed to linux-arm-kernel, I had quite a few moderation
+messages just because I responded to threads which included
+linux-arm-kernel in the addresses, but were cross-posted (by others)
+to say linux-kernel, uclinux-dev or linux-embedded.
 
-However if you start gathering more developers around the ep93xx then 
-someone should take charge and be responsible for it.  And this must not 
-necessarily be Russell as his cycles are not infinite.
+I got moderation messages, and found them slightly annoying because
+I'd put effort into my replies, and presumed that some people involved
+in the thread wouldn't see them.  Possibly the important people.
 
+That's the main reason I subscribed to linux-arm-kernel - just so I
+know people can see replies to threads that I'm responding to on other
+lists.
 
-Nicolas
+I do actually work on ARM kernels too, so don't unsubscribe me for that :-)
+
+When I did subscribe to linux-arm-kernel, I got a message telling me I
+was being considered...  Months went by, and it didn't subscribe me.
+That was annoying.  I presumed I'd been rejected.
+
+I tried again a few months later, and this time the subscription
+approval process was relatively quick at a week or so.  I was
+beginning to think I'd be silently rejected again, therefore delighted
+to be counted among the Special Ones allowed to subscribe :-)
+
+Other Linux mailing lists subscribe quickly with an automated
+confirmation process, which is more useful.
+
+-- Jamie
