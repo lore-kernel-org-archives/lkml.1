@@ -1,35 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765836AbZFLNea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765595AbZFLNeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765836AbZFLNea (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764865AbZFLN1Q
+	id S1765595AbZFLNeR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763658AbZFLN03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:27:16 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36132 "EHLO kernel.dk"
+	Fri, 12 Jun 2009 09:26:29 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:36122 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764839AbZFLN1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:27:15 -0400
-Date: Fri, 12 Jun 2009 15:27:17 +0200
+	id S1763580AbZFLN03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:26:29 -0400
+Date: Fri, 12 Jun 2009 15:26:31 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cfq: cleanup for last_end_request in cfq_data
-Message-ID: <20090612132717.GI11363@kernel.dk>
-References: <4A31C4B9.9090009@cn.fujitsu.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH -2.6.30-git3] block: fix kernel-doc in recent block/
+	changes
+Message-ID: <20090612132630.GH11363@kernel.dk>
+References: <4A31C4D9.80605@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A31C4B9.9090009@cn.fujitsu.com>
+In-Reply-To: <4A31C4D9.80605@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12 2009, Gui Jianfeng wrote:
-> Hi Jens,
+On Thu, Jun 11 2009, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Actually, last_end_request in cfq_data isn't used now.
+> Fix kernel-doc warnings in recently changed block/ source code.
 
-Thanks, applied!
+Thanks Randy, I see that Linus has already picked it up.
 
 -- 
 Jens Axboe
