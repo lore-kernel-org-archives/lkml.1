@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764839AbZFLOwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZFLOzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764839AbZFLOwh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761143AbZFLOw2
+	id S1753878AbZFLOzK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZFLOy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:52:28 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45387 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756533AbZFLOw1 (ORCPT
+	Fri, 12 Jun 2009 10:54:59 -0400
+Received: from avs3.arnes.si ([193.2.1.68]:44024 "EHLO avs3.arnes.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752818AbZFLOy7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:52:27 -0400
-Date: Fri, 12 Jun 2009 10:52:06 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@vinegar-pot.mit.edu
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       Anders Kaseorg <andersk@ksplice.com>
-Subject: Re: [PATCH] Improve vmlinux.lds.h support for arch specific linker
- scripts
-In-Reply-To: <20090607185430.GA15299@uranus.ravnborg.org>
-Message-ID: <alpine.DEB.1.10.0906112032560.9154@vinegar-pot.mit.edu>
-References: <20090607185430.GA15299@uranus.ravnborg.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 12 Jun 2009 10:54:59 -0400
+X-Greylist: delayed 519 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 10:54:59 EDT
+To: Harald Welte <HaraldWelte@viatech.com>,
+       "Michael S. Zick" <lkml@morethan.org>
+From: tomaz.mertelj@guest.arnes.si
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: =?UTF-8?Q?Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core	temperature=
+	?=
+Date: Fri, 12 Jun 2009 16:46:21 +0200
+Message-ID: <20090612_144621_045117.tomaz.mertelj@guest.arnes.si>
+X-originating-IP: 84.20.248.126
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 7 Jun 2009, Sam Ravnborg wrote:
+> > 
+> > Ah, 25 degrees C is room temperature - real hard for the junction 
+temperature
+> > to be 25 degrees C with power applied; lacking an infinitely perfect 
+heatsink.
+> > 
+> > Look for an "off by one" error in shifting or masking the value.
+> 
+> there is no shifting and the masking is 0xffffffff :)
+> 
+> it might be that the BIOS is doing something wrong when programming the
+> calibration MSR's at early botoup.  I would need the contents of MSR 
+> 0x1160 ... 0x116C as well as 0x1152 and 0x1153 to be able to determine 
+that.
+> 
 
-> Please review and comment..
-> It will be part of kbuild-next.git
+This is what I get on VB7002.. vith C7-D cpu:
 
-This patch looks great.  I have a few very minor comments.
 
-> + *	/DISCARD/ : {
-> + *		EXIT_TEXT
-> + *		EXIT_DATA
-> + *		*(.exitcall.exit)
-> + *	}
+DEBNAS:/home# sensors
 
-I recommend adding
+via-cputemp-isa-0000
+Adapter: ISA adapter
+Core 0:      +27.0 C 
 
-#define EXIT_CALL *(.exitcall.exit)
+DEBNAS:/home# for r in 0x1160 0x1161 0x1162 0x1163 0x1164 0x1165 0x1166 
+0x1167
+0x1168 0x1169 0x116a 0x116b 0x116c 0x1152 0x1153 ; do ./rdmsr $r ; done
+MSR register 0x1160 => 08:04:98:10:b8:0b:6f:f4
+MSR register 0x1161 => 08:04:98:10:b8:0a:8f:f4
+MSR register 0x1162 => 08:04:98:10:b7:f7:7f:f4
+MSR register 0x1163 => 08:04:98:10:b7:f1:1f:f4
+MSR register 0x1164 => 08:04:98:10:b7:ee:cf:f4
+MSR register 0x1165 => 08:04:98:10:b8:0b:4f:f4
+MSR register 0x1166 => 08:04:98:10:b7:f7:7f:f4
+MSR register 0x1167 => 08:04:98:10:b7:ef:8f:f4
+MSR register 0x1168 => 08:04:98:10:b7:fc:3f:f4
+MSR register 0x1169 => 08:04:98:10:b8:0d:6f:f4
+MSR register 0x116a => 08:04:98:10:b7:f3:8f:f4
+MSR register 0x116b => 08:04:98:10:b8:0b:bf:f4
+MSR register 0x116c => 08:04:98:10:b8:00:6f:f4
+MSR register 0x1152 => 08:04:98:10:b7:f2:2f:f4
+MSR register 0x1153 => 08:04:98:10:b8:0b:3f:f4
+DEBNAS:/home#
 
-and using it in the DISCARD section of the sample linker script so that 
-the sample linker script doesn't use any raw section names.
 
-> +#define BSS_SECTION(sbss_align, bss_align)				\
-> +	SBSS								\
-> +	BSS(bss_align)							\
-> +	. = ALIGN(4);							\
+Tomaz Mertelj
 
-This macro should end with the 'ALIGN(4);' -- there's an extra backslash 
-at the end of the line.
-
-I recommend changing HEAD_SECTION to HEAD_TEXT_SECTION to better fit the 
-naming scheme.  This would involve deleting the recently added 
-include/linux/section-names.h and going back to hardcoding .head.text in 
-include/linux/init.h (given the way these macros have turned out, 
-include/linux/section-names.h doesn't really make sense).
-
-Also, the commit message misspells 'alignment', 'linker', and 'Abbott'.
-
-	-Tim Abbott
