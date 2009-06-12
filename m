@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932600AbZFLHK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbZFLHLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932600AbZFLHK3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 03:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbZFLHKV
+	id S1761488AbZFLHLo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 03:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbZFLHLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 03:10:21 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52842 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755054AbZFLHKV (ORCPT
+	Fri, 12 Jun 2009 03:11:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48559 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbZFLHLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 03:10:21 -0400
-Subject: Re: [PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with
- __exit_signal()
+	Fri, 12 Jun 2009 03:11:36 -0400
+Subject: Re: [PATCH 2/2] posix-cpu-timers: remove tasklist_lock where we can
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Stanislaw Gruszka <sgruszka@redhat.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090612084910.1b63b0af@dhcp-lab-109.englab.brq.redhat.com>
-References: <20090612084910.1b63b0af@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <20090612084927.11673956@dhcp-lab-109.englab.brq.redhat.com>
+References: <20090612084927.11673956@dhcp-lab-109.englab.brq.redhat.com>
 Content-Type: text/plain
-Date: Fri, 12 Jun 2009 09:09:58 +0200
-Message-Id: <1244790598.6691.956.camel@laptop>
+Date: Fri, 12 Jun 2009 09:11:17 +0200
+Message-Id: <1244790677.6691.959.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -31,32 +30,56 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 2009-06-12 at 08:49 +0200, Stanislaw Gruszka wrote:
-> Protect thread_group_cputime() call by siglock, to avoid possible (but
-> to be honest - very improbable) double times accounting of exiting task.
-> This is revert of commit 2b5fe6de58276d0b5a7c884d5dbfc300ca47db78
-> "thread_group_cputime: move a couple of callsites outside of ->siglock",
-> but implementation of thread_group_cputime() was different then.
+> tasklist_lock is not needed to protect find_task_by_vpid() nor
+> thread_group_leader() nor same_thread_group() , use rcu_read_lock() instead.
 
-Would be nice to have a description of exactly how you'd end up
-accounting twice (and thus how this patch fixes it).
+Aside from not being strictly needed, one can sometimes require a
+tasklist_lock reader to ensure nothing changes, however since the code
+is racy in that regard anyway, this looks good.
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
 > Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
 > ---
->  kernel/sys.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  kernel/posix-cpu-timers.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/kernel/sys.c b/kernel/sys.c
-> index e7998cf..0805d08 100644
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -913,8 +913,8 @@ void do_sys_times(struct tms *tms)
->  	struct task_cputime cputime;
->  	cputime_t cutime, cstime;
+> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+> index bece7c0..1d9cdf3 100644
+> --- a/kernel/posix-cpu-timers.c
+> +++ b/kernel/posix-cpu-timers.c
+> @@ -37,13 +37,13 @@ static int check_clock(const clockid_t which_clock)
+>  	if (pid == 0)
+>  		return 0;
 >  
-> -	thread_group_cputime(current, &cputime);
->  	spin_lock_irq(&current->sighand->siglock);
-> +	thread_group_cputime(current, &cputime);
->  	cutime = current->signal->cutime;
->  	cstime = current->signal->cstime;
->  	spin_unlock_irq(&current->sighand->siglock);
+> -	read_lock(&tasklist_lock);
+> +	rcu_read_lock();
+>  	p = find_task_by_vpid(pid);
+>  	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
+>  		   same_thread_group(p, current) : thread_group_leader(p))) {
+>  		error = -EINVAL;
+>  	}
+> -	read_unlock(&tasklist_lock);
+> +	rcu_read_lock();
+>  
+>  	return error;
+>  }
+> @@ -398,7 +398,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
+>  	new_timer->it.cpu.incr.sched = 0;
+>  	new_timer->it.cpu.expires.sched = 0;
+>  
+> -	read_lock(&tasklist_lock);
+> +	rcu_read_lock();
+>  	if (CPUCLOCK_PERTHREAD(new_timer->it_clock)) {
+>  		if (pid == 0) {
+>  			p = current;
+> @@ -422,7 +422,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
+>  	} else {
+>  		ret = -EINVAL;
+>  	}
+> -	read_unlock(&tasklist_lock);
+> +	rcu_read_unlock();
+>  
+>  	return ret;
+>  }
 
