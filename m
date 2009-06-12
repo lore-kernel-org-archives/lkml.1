@@ -1,42 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765177AbZFLN2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765129AbZFLN2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765177AbZFLN2i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762802AbZFLNZ4
+	id S1765129AbZFLN2Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762662AbZFLNZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:25:56 -0400
-Received: from ozlabs.org ([203.10.76.45]:54982 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 09:25:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47955 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762936AbZFLNZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:25:55 -0400
-CC: linux-kernel@vger.kernel.org
-To: "David S. Miller" <davem@davemloft.net>
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Fri, 12 Jun 2009 22:31:04 +0930
-Subject: [PATCH 14/17] cpumask: remove obsolete topology_core_siblings and topology_thread_siblings: sparc
-Message-Id: <20090612132557.44F64DDD0C@ozlabs.org>
+	id S1759714AbZFLNZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:25:42 -0400
+From: Petr Tesarik <ptesarik@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Roland McGrath <roland@redhat.com>, Petr Tesarik <ptesarik@suse.cz>
+Subject: [PATCH 1/8] x86: Adjust the coding style of vdso-layout.lds.S
+Date: Fri, 12 Jun 2009 15:25:35 +0200
+Message-Id: <7defd050ad8b4f8de14cad095f298469261661ba.1244812577.git.ptesarik@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <cover.1244812577.git.ptesarik@suse.cz>
+References: <cover.1244812577.git.ptesarik@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The style we try to introduce for .lds files in
+arch/$ARCH/kernel/vmlinux.lds.S is much more C-like.
 
-There were replaced by topology_core_cpumask and topology_thread_cpumask.
+Use the same style in the vDSO linker script to get a consistent
+style in linker scripts.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Credits to Sam Ravnborg for suggesting this change.
+
+Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 ---
- arch/sparc/include/asm/topology_64.h |    2 --
- 1 file changed, 2 deletions(-)
+ arch/x86/vdso/vdso-layout.lds.S |   76 +++++++++++++++++++++++++++------------
+ 1 files changed, 53 insertions(+), 23 deletions(-)
 
-diff -r b1d85f253cf2 arch/sparc/include/asm/topology_64.h
---- a/arch/sparc/include/asm/topology_64.h	Thu Nov 20 11:58:09 2008 +1030
-+++ b/arch/sparc/include/asm/topology_64.h	Thu Nov 20 12:00:50 2008 +1030
-@@ -77,8 +77,6 @@
- #ifdef CONFIG_SMP
- #define topology_physical_package_id(cpu)	(cpu_data(cpu).proc_id)
- #define topology_core_id(cpu)			(cpu_data(cpu).core_id)
--#define topology_core_siblings(cpu)		(cpu_core_map[cpu])
--#define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
- #define topology_core_cpumask(cpu)		(&cpu_core_map[cpu])
- #define topology_thread_cpumask(cpu)		(&per_cpu(cpu_sibling_map, cpu))
- #define mc_capable()				(sparc64_multi_core)
+diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
+index 634a2cf..917df03 100644
+--- a/arch/x86/vdso/vdso-layout.lds.S
++++ b/arch/x86/vdso/vdso-layout.lds.S
+@@ -8,34 +8,62 @@ SECTIONS
+ {
+ 	. = VDSO_PRELINK + SIZEOF_HEADERS;
+ 
+-	.hash		: { *(.hash) }			:text
+-	.gnu.hash	: { *(.gnu.hash) }
+-	.dynsym		: { *(.dynsym) }
+-	.dynstr		: { *(.dynstr) }
+-	.gnu.version	: { *(.gnu.version) }
+-	.gnu.version_d	: { *(.gnu.version_d) }
+-	.gnu.version_r	: { *(.gnu.version_r) }
++	.hash : {
++		*(.hash)
++	} :text
++	.gnu.hash : {
++		*(.gnu.hash)
++	}
++	.dynsym : {
++		*(.dynsym)
++	}
++	.dynstr : {
++		*(.dynstr)
++	}
++	.gnu.version : {
++		*(.gnu.version)
++	}
++	.gnu.version_d : {
++		*(.gnu.version_d)
++	}
++	.gnu.version_r : {
++		*(.gnu.version_r)
++	}
+ 
+-	.note		: { *(.note.*) }		:text	:note
++	.note : {
++		*(.note.*)
++	} :text :note
+ 
+-	.eh_frame_hdr	: { *(.eh_frame_hdr) }		:text	:eh_frame_hdr
+-	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
++	.eh_frame_hdr : {
++		*(.eh_frame_hdr)
++	} :text :eh_frame_hdr
++	.eh_frame : {
++		KEEP (*(.eh_frame))
++	} :text
+ 
+-	.dynamic	: { *(.dynamic) }		:text	:dynamic
++	.dynamic : {
++		*(.dynamic)
++	} :text :dynamic
+ 
+-	.rodata		: { *(.rodata*) }		:text
+-	.data		: {
+-	      *(.data*)
+-	      *(.sdata*)
+-	      *(.got.plt) *(.got)
+-	      *(.gnu.linkonce.d.*)
+-	      *(.bss*)
+-	      *(.dynbss*)
+-	      *(.gnu.linkonce.b.*)
++	.rodata : {
++		*(.rodata*)
++	} :text
++	.data : {
++		*(.data*)
++		*(.sdata*)
++		*(.got.plt) *(.got)
++		*(.gnu.linkonce.d.*)
++		*(.bss*)
++		*(.dynbss*)
++		*(.gnu.linkonce.b.*)
+ 	}
+ 
+-	.altinstructions	: { *(.altinstructions) }
+-	.altinstr_replacement	: { *(.altinstr_replacement) }
++	.altinstructions : {
++		*(.altinstructions)
++	}
++	.altinstr_replacement : {
++		*(.altinstr_replacement)
++	}
+ 
+ 	/*
+ 	 * Align the actual code well away from the non-instruction data.
+@@ -43,7 +71,9 @@ SECTIONS
+ 	 */
+ 	. = ALIGN(0x100);
+ 
+-	.text		: { *(.text*) }			:text	=0x90909090
++	.text : {
++		*(.text*)
++	} :text	=0x90909090
+ }
+ 
+ /*
+-- 
+1.6.0.2
 
