@@ -1,77 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbZFLImB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933145AbZFLIm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033AbZFLImB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932930AbZFLIkv
+	id S933145AbZFLIm2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbZFLIlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:40:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51404 "EHLO mx2.redhat.com"
+	Fri, 12 Jun 2009 04:41:10 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59495 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932906AbZFLIkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:40:49 -0400
-Date: Fri, 12 Jun 2009 10:34:12 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] posix-cpu-timers: remove tasklist_lock where we can
-Message-ID: <20090612103412.3c490e3e@dhcp-lab-109.englab.brq.redhat.com>
-Organization: RedHat
+	id S1753561AbZFLIlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:41:06 -0400
+Subject: Re: slab: setup allocators earlier in the boot sequence
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
+       akpm@linux-foundation.org, npiggin@suse.de
+In-Reply-To: <1244792745.30512.13.camel@penberg-laptop>
+References: <200906111959.n5BJxFj9021205@hera.kernel.org>
+	 <1244770230.7172.4.camel@pasglop>  <1244779009.7172.52.camel@pasglop>
+	 <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop>
+	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
+	 <1244792079.7172.74.camel@pasglop>
+	 <1244792745.30512.13.camel@penberg-laptop>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 18:40:45 +1000
+Message-Id: <1244796045.7172.82.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tasklist_lock is not needed to protect find_task_by_vpid() nor
-thread_group_leader() nor same_thread_group() , use rcu_read_lock() instead.
+On Fri, 2009-06-12 at 10:45 +0300, Pekka Enberg wrote:
+> Hi Ben,
 
-Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
----
- kernel/posix-cpu-timers.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+> The call-sites I fixed up are all boot code AFAICT. And I like I said,
+> we can't really _miss_ any of those places, they must be checking for
+> slab_is_available() _anyway_; otherwise they have no business using
+> kmalloc(). And note: all call-sites that _unconditionally_ use
+> kmalloc(GFP_KERNEL) are safe because they worked before.
 
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index bece7c0..1fadd2f 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -37,13 +37,13 @@ static int check_clock(const clockid_t which_clock)
- 	if (pid == 0)
- 		return 0;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	p = find_task_by_vpid(pid);
- 	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
- 		   same_thread_group(p, current) : thread_group_leader(p))) {
- 		error = -EINVAL;
- 	}
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 
- 	return error;
- }
-@@ -398,7 +398,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
- 	new_timer->it.cpu.incr.sched = 0;
- 	new_timer->it.cpu.expires.sched = 0;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	if (CPUCLOCK_PERTHREAD(new_timer->it_clock)) {
- 		if (pid == 0) {
- 			p = current;
-@@ -422,7 +422,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
- 	} else {
- 		ret = -EINVAL;
- 	}
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 
- 	return ret;
- }
--- 
-1.5.5.6
+No. The check for slab_is_available() can be levels higher, for example
+the vmalloc case. I'm sure I can find a whole bunch more :-) Besides
+I find the approach fragile, and it will suck for things that can be
+rightfully called also later on.
+
+> Again, I audited the call-sites and they all should be boot-time code.
+> The only borderline case I could see is in s390 arch code which is why I
+> droppped that hunk for now.
+
+And the vmalloc case, and some page table handling code in arch/powerpc,
+and I'm sure we can find bazillion of them more if we look closely.
+
+> Sure, I think we can do what you want with the patch below.
+> 
+> But I still think we need my patch regardless. The call sites I
+> converted are all init code and should be using GFP_NOWAIT. Does it fix
+> your boot on powerpc?
+
+Not all init code needs to call GFP_NOWAIT. But again, my main worry
+isn't necessary init code call sites, it's things that can themselves be
+called from both init and later.
+
+But to get a step back, I do prefer not having to bother in every call
+site. It seems a lot more natural to me in this case to have the
+allocator itself degrade, avoiding the burden on the callers, the risk
+of error, the damage when we change and move things around etc...
+
+Cheers,
+Ben.
+
+> 			Pekka
+> 
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 9a90b00..722beb5 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -2791,6 +2791,13 @@ static int cache_grow(struct kmem_cache *cachep,
+>  
+>  	offset *= cachep->colour_off;
+>  
+> +	/*
+> +	 * Lets not wait if we're booting up or suspending even if the user
+> +	 * asks for it.
+> +	 */
+> +	if (system_state != SYSTEM_RUNNING)
+> +		local_flags &= ~__GFP_WAIT;
+> +
+>  	if (local_flags & __GFP_WAIT)
+>  		local_irq_enable();
+>  
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 65ffda5..f9a6bc8 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1547,6 +1547,13 @@ new_slab:
+>  		goto load_freelist;
+>  	}
+>  
+> +	/*
+> +	 * Lets not wait if we're booting up or suspending even if the user
+> +	 * asks for it.
+> +	 */
+> +	if (system_state != SYSTEM_RUNNING)
+> +		gfpflags &= ~__GFP_WAIT;
+> +
+>  	if (gfpflags & __GFP_WAIT)
+>  		local_irq_enable();
+>  
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
