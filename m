@@ -1,196 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZFLFHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZFLFIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbZFLFHk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 01:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZFLFHb
+	id S1754493AbZFLFIi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 01:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZFLFIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 01:07:31 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58381 "EHLO gate.crashing.org"
+	Fri, 12 Jun 2009 01:08:31 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50250 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975AbZFLFHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 01:07:31 -0400
-Subject: Re: slab: setup allocators earlier in the boot sequence
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <1244780756.7172.58.camel@pasglop>
-References: <200906111959.n5BJxFj9021205@hera.kernel.org>
-	 <1244770230.7172.4.camel@pasglop>  <1244779009.7172.52.camel@pasglop>
-	 <1244780756.7172.58.camel@pasglop>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 15:07:15 +1000
-Message-Id: <1244783235.7172.61.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1751975AbZFLFIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 01:08:30 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18993.58058.194954.997480@drongo.ozlabs.ibm.com>
+Date: Fri, 12 Jun 2009 15:08:26 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/2] perf_counter: powerpc: Implement generalized cache
+	events for POWER processors
+In-Reply-To: <20090611100720.GC12703@elte.hu>
+References: <18992.36329.189378.17992@drongo.ozlabs.ibm.com>
+	<18992.36430.933526.742969@drongo.ozlabs.ibm.com>
+	<20090611100720.GC12703@elte.hu>
+X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 14:25 +1000, Benjamin Herrenschmidt wrote:
+Ingo Molnar writes:
 
-> I'll cook up a patch that defines a global bitmask of "forbidden" GFP
-> bits and see how things go.
+> Ah, cool! I tried to construct the table so that Power would be able 
+> to fill it in a meaningful way - it seems like that was indeed 
+> possible.
 
->From ad87215e01b257ccc1af64aa9d5776ace580dea3 Mon Sep 17 00:00:00 2001
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 12 Jun 2009 15:03:47 +1000
-Subject: [PATCH] Sanitize "gfp" flags during boot
+Yes, by and large.  The coverage is a little spotty on some processors
+but there's enough there to be useful IMO.
 
-With the recent shuffle of initialization order to move memory related
-inits earlier, various subtle breakage was introduced in archs like
-powerpc due to code somewhat assuming that GFP_KERNEL can be used as
-soon as the allocators are up. This is not true because any __GFP_WAIT
-allocation will cause interrupts to be enabled, which can be fatal if
-it happens too early.
+> Any particular observations you have about the cache events 
+> generalization? Would you do more of them (which ones?), fewer of 
+> them?
 
-This isn't trivial to fix on every call site. For example, powerpc's
-ioremap implementation needs to be called early. For that, it uses two
-different mechanisms to carve out virtual space. Before memory init,
-by moving down VMALLOC_END, and then, by calling get_vm_area().
-Unfortunately, the later does GFK_KERNEL allocations. But we can't do
-anything else because once vmalloc's been initialized, we can no longer
-safely move VMALLOC_END to carve out space.
+One thing I noticed is that most of our processors have events for
+counting how many times data for a load comes from each of various
+sources.  On our larger machines it's not a simple hierarchy because
+data can come from an L2 or L3 cache in another chip or another node,
+or from memory.  On POWER6 for example there are separate events for
+data being loaded from each possible source, further divided up by the
+cacheline state (shared or modified) for the cache sources.  So we
+have ~ 18 separate data source events for POWER6 (not counting the L1
+hit case).  And similarly for events counting where instructions are
+fetched from and where PTEs are fetched from.
 
-There are other examples, wehere can can be called either very early
-or later on when devices are hot-plugged. It would be a major pain for
-such code to have to "know" whether it's in a context where it should
-use GFP_KERNEL or GFP_NOWAIT.
+It's a slightly different way of looking at things, I guess, looking
+at the distribution of where a processor is getting its data from
+instead of focusing on a particular cache and counting how often it
+does or doesn't supply data on request.
 
-Finally, by having the ability to silently removed __GFP_WAIT from
-allocations, we pave the way for suspend-to-RAM to use that feature
-to also remove __GFP_IO from allocations done after suspending devices
-has started. This is important because such allocations may hang if
-devices on the swap-out path have been suspended, but not-yet suspended
-drivers don't know about it, and may deadlock themselves by being hung
-into a kmalloc somewhere while holding a mutex for example.
+Does x86 have anything similar?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- include/linux/gfp.h |    8 ++++++++
- init/main.c         |    5 +++++
- mm/page_alloc.c     |    5 +++++
- mm/slab.c           |    9 +++++++++
- mm/slub.c           |    3 +++
- 5 files changed, 30 insertions(+), 0 deletions(-)
+> We can also add transparent fallback logic to the tools perhaps: for 
+> example a 'hits == total-misses' combo counter.
+> 
+> This can be expressed in the sampling space too: the latest tools do 
+> weighted samples, so we can actually do _negative_, weighted 
+> sampling: the misses can subtract from a function's ->count value.
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 0bbc15f..b0f7a22 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -99,6 +99,14 @@ struct vm_area_struct;
- /* 4GB DMA on some platforms */
- #define GFP_DMA32	__GFP_DMA32
- 
-+/* Illegal bits */
-+extern gfp_t gfp_smellybits;
-+
-+static inline gfp_t gfp_sanitize(gfp_t gfp_flags)
-+{
-+	return gfp_flags & ~gfp_smellybits;
-+}
-+
- /* Convert GFP flags to their corresponding migrate type */
- static inline int allocflags_to_migratetype(gfp_t gfp_flags)
- {
-diff --git a/init/main.c b/init/main.c
-index 5616661..bb812c1 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -539,6 +539,9 @@ void __init __weak thread_info_cache_init(void)
-  */
- static void __init mm_init(void)
- {
-+	/* Degrade everything into GFP_NOWAIT for now */
-+	gfp_smellybits = __GFP_WAIT | __GFP_FS | __GFP_IO;
-+
- 	mem_init();
- 	kmem_cache_init();
- 	vmalloc_init();
-@@ -634,6 +637,8 @@ asmlinkage void __init start_kernel(void)
- 		printk(KERN_CRIT "start_kernel(): bug: interrupts were "
- 				 "enabled early\n");
- 	early_boot_irqs_on();
-+	/* GFP_KERNEL allocations are good to go now */
-+	gfp_smellybits = 0;
- 	local_irq_enable();
- 
- 	/*
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 17d5f53..efde0d5 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -77,6 +77,8 @@ int percpu_pagelist_fraction;
- int pageblock_order __read_mostly;
- #endif
- 
-+gfp_t gfp_smellybits;
-+
- static void __free_pages_ok(struct page *page, unsigned int order);
- 
- /*
-@@ -1473,6 +1475,9 @@ __alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
- 	unsigned long did_some_progress;
- 	unsigned long pages_reclaimed = 0;
- 
-+	/* Sanitize flags so we don't enable irqs too early during boot */
-+	gfp_mask = gfp_sanitize(gfp_mask);
-+
- 	lockdep_trace_alloc(gfp_mask);
- 
- 	might_sleep_if(wait);
-diff --git a/mm/slab.c b/mm/slab.c
-index f46b65d..87b166e 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2791,6 +2791,9 @@ static int cache_grow(struct kmem_cache *cachep,
- 	gfp_t local_flags;
- 	struct kmem_list3 *l3;
- 
-+	/* Sanitize flags so we don't enable irqs too early during boot */
-+	gfp_mask = gfp_sanitize(gfp_mask);
-+
- 	/*
- 	 * Be lazy and only check for valid flags here,  keeping it out of the
- 	 * critical path in kmem_cache_alloc().
-@@ -3212,6 +3215,9 @@ static void *fallback_alloc(struct kmem_cache *cache, gfp_t flags)
- 	void *obj = NULL;
- 	int nid;
- 
-+	/* Sanitize flags so we don't enable irqs too early during boot */
-+	gfp_mask = gfp_sanitize(gfp_mask);
-+
- 	if (flags & __GFP_THISNODE)
- 		return NULL;
- 
-@@ -3434,6 +3440,9 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
- 	unsigned long save_flags;
- 	void *objp;
- 
-+	/* Sanitize flags so we don't enable irqs too early during boot */
-+	gfp_mask = gfp_sanitize(gfp_mask);
-+
- 	lockdep_trace_alloc(flags);
- 
- 	if (slab_should_failslab(cachep, flags))
-diff --git a/mm/slub.c b/mm/slub.c
-index 3964d3c..5c646f7 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1512,6 +1512,9 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
- 	/* We handle __GFP_ZERO in the caller */
- 	gfpflags &= ~__GFP_ZERO;
- 
-+	/* Sanitize flags so we don't enable irqs too early during boot */
-+	gfpflags = gfp_sanitize(gfpflags);
-+
- 	if (!c->page)
- 		goto new_slab;
- 
--- 
-1.6.1.2.14.gf26b5
+Cute, I hadn't noticed that.
 
+> I dont know whether we should do such combo counters in the kernel 
+> itself - i'm slightly against that notion. (seems complex)
 
+Yeah.
 
+When thinking about having "composite" events, i.e. a counter whose
+value is computed from two or more hardware counters, I couldn't see
+how to do sampling in the general case.  It's easy if we're just
+adding multiple counters, but sampling when subtracting counters is
+hard.  For example, if you want to sample every N cache hits, and
+you're computing hits as accesses - misses, I couldn't see a decent
+way to know when to take the sample, not without having to take an
+interrupt on every access in some circumstances.
+
+> One last-minute change we are thinking about is to change 'L2' to 
+> 'LLC'. This matters on systems which have a L3 cache. The first 
+> level and the last level cache are generally the most important 
+> ones. What do you think?
+
+It's probably a good idea.  I'll have to put in code to detect whether
+the system has L3 caches and adjust the table (or switch to a
+different table), but that's doable.
+
+There aren't "last level cache" events on POWER processors, except to
+the extent that the "data loaded from memory" events imply that no
+cache had the data.  But there's 3 separate memory-source events on
+POWER6, for instance, for memory attached to this core, another core
+in this node, or another node.
+
+Actually, it looks like the L3 miss event we have on POWER6 for
+instance just refers to the local L3.  It could be a miss in the local
+L3 but a hit in the L3 in another node, so the data will come from the
+remote L3 but still be counted as an L3 miss.
+
+> > +	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
+> > +		[C(OP_READ)] = {	0x430e6,	0x400052	},
+> > +		[C(OP_WRITE)] = {	-1,		-1		},
+> > +		[C(OP_PREFETCH)] = {	-1,		-1		},
+> 
+> Ah, the RESULT_ACCESS/RESULT_MISS tabularization is a nice aesthetic 
+> touch - will do that for x86 too.
+
+Yeah, it is quite clear while using only 1/4 of the vertical space.
+
+> Btw., a very small nit, any way i could convince you to do such 
+> mass-initializations in the Power code, in the way we do elsewhere 
+> in perfcounters, by using vertical spacing:
+
+Sure.
+
+Paul.
