@@ -1,272 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933286AbZFLJuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbZFLJuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933286AbZFLJuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761520AbZFLJuI
+	id S933460AbZFLJuk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbZFLJuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:50:08 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62281 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758598AbZFLJuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:50:06 -0400
-Message-ID: <4A32251C.8060001@cn.fujitsu.com>
-Date: Fri, 12 Jun 2009 17:51:24 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Zhaolei <zhaolei@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH RFC] softirq: fix ksoftirq starved
-References: <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu> <4A31BF1D.1050400@cn.fujitsu.com>
-In-Reply-To: <4A31BF1D.1050400@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 05:50:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42534 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763463AbZFLJuR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:50:17 -0400
+Date: Fri, 12 Jun 2009 11:58:11 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       riel@redhat.com, chris.mason@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
+Message-ID: <20090612095811.GA25568@one.firstfloor.org>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de> <Pine.LNX.4.64.0906091637430.13213@sister.anvils>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906091637430.13213@sister.anvils>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan wrote:
-> Ingo Molnar wrote:
->> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
->>
->>> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
->>>> Steven Rostedt wrote:
->>>>> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
->>>>>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->>>>>>>
->>>>>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
->>>>>>> can be found here: 
->>>>>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
->>>>>>> This tracepoint can trace the time stamp when softirq action is raised. 
->>>>>>>
->>>>>>> Changelog for v1 -> v2: 
->>>>>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
->>>>>>> 2: Move the tracepoint from raise_softirq_irqoff() to
->>>>>>>    __raise_softirq_irqoff()
->>>>>>>
->>>>>>> Changelog for v2 -> v3: 
->>>>>>> Move the definition of __raise_softifq_irqoff() to .c file when
->>>>>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
->>>>>>>
->>>>>>> Changelog for v3 -> v4: 
->>>>>>> 1: Come back to v2, and use forward declarations to avoid
->>>>>>>    recursive includes as Mathieu's suggestion
->>>>>>> 2: Modifiy the tracepoint name
->>>>>>> 3: Add comments for this tracepoint
->>>>>>>
->>>>>> This is a step in the right direction, but please see my email to Lai
->>>>>> about the fact that this assumes correct and undocumented include
->>>>>> dependencies in kernel/trace/events.c. Not explicitely stating the
->>>>>> include dependencies is a build error waiting to happen.
->>>>>>
->>>>>> Including interrupt.h under a ifdef would allow keeping track of
->>>>>> TRACE_EVENT specific build dependencies neatly on a per header basis.
->>>>> This is all moot, the events.c file no longer exists and as not an issue.
->>>>>
->>>> As Steve's says, use ftrace in ftrace.h not in events.c now. 
->>>> So, this mistake does not exist.
->>>> Dose this patch has other error? I expect for your views.
->>>>
->>>> Thanks for your review, is great help to me. ;-) 
->>> Hello,
->>>
->>> It seems Mathieu has no other comments on this patch now.
->>> Ingo, what is your opinion on this patch?
->> There's a complication: this area of the softirq code needs fixes 
->> (unrelated to tracing).
->>  
->> This API:
->>
->> inline void raise_softirq_irqoff(unsigned int nr)
->> {
->>         __raise_softirq_irqoff(nr);
->>
->>         /*
->>          * If we're in an interrupt or softirq, we're done
->>          * (this also catches softirq-disabled code). We will
->>          * actually run the softirq once we return from
->>          * the irq or softirq.
->>          *
->>          * Otherwise we wake up ksoftirqd to make sure we
->>          * schedule the softirq soon.
->>          */
->>         if (!in_interrupt())
->>                 wakeup_softirqd();
->> }
->>
->> is broken with RT tasks (as recently reported to lkml), as when a 
->> real-time task wakes up ksoftirqd (which has lower priority) it wont 
->> execute and we starve softirq execution.
->>
->> The proper solution would be to have a new API:
->>
->> 	raise_softirq_check()
->>
->> and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
->> - and put raise_softirq_check() to all places that use 
->> raise_softirq*() from process context.
-> 
-> It's a nice solution. But I think it would be nicer when it is changed a little.
-> 
-> The new API raise_softirq_check() will become a very hard _burden_ to
-> the users of raise_softirq*(). They have to find out a proper place to place
-> the "raise_softirq_check();". It's not an easy things, functions are complicated
-> and hard to be determined WHERE is the process context and WHEN(a function may be
-> called from multi kinds of context).
-> 
-> Instead, I prefer that raise_softirq_check() is hidden from users. We call
-> raise_softirq_check() from schedule(), it will handle the un-handle softirqs in time
-> (if un-handle softirqs are too much, it'll wakeup the ksoftirqd).
-> 
-> 
-> Lai
-> 
-> 
->>  
->> raise_softirq_check() would execute softirq handlers from process 
->> context, if there's any pending ones. It has to be called outside of 
->> bh critical sections - i.e. often a bit after the raise_softirq() 
->> has been done.
->>
->> __raise_softirq_irqoff() would be made private to kernel/softirq.c, 
->> and we'd only have two public APIs to trigger softirqs: 
->> raise_softirq() and raise_softirq_irqoff(). Both just set the 
->> pending flag and dont do any wakeup.
->>
->> As a side-effect of these fixes, the tracepoints will be sorted out 
->> as well - there wont be any need to hack into 
->> __raise_softirq_irqoff().
->>
->> 	Ingo
->>
->>
->>
-> 
+On Tue, Jun 09, 2009 at 05:05:53PM +0100, Hugh Dickins wrote:
+> To me, it's just another layer of complexity and maintenance burden
+> that one special-interest group is imposing upon mm, and I can't
+> keep up with it myself.
 
-Subject: [PATCH RFC] softirq: fix ksoftirq starved
+Thanks for the kind words.
+> 
+> However, if I'm interpreting these extracts correctly, the whole
+> thing looks very misguided to me.  Are we really going to kill any
+> process that has a cousin who might once have mapped the page that's
+> been found hwpoisonous?  The hwpoison secret police are dangerously
+> out of control, I'd say.
 
-The API:
-void raise_softirq_irqoff(unsigned int nr)
-{
-	__raise_softirq_irqoff(nr);
+What do you mean with once? It's a not yet afaik?
 
-	/*
-	 * If we're in an interrupt or softirq, we're done
-	 * (this also catches softirq-disabled code). We will
-	 * actually run the softirq once we return from
-	 * the irq or softirq.
-	 *
-	 * Otherwise we wake up ksoftirqd to make sure we
-	 * schedule the softirq soon.
-	 */
-	if (!in_interrupt())
-		wakeup_softirqd();
-}
+The not yet was intentional for early kill mode -- the main reason
+for that is KVM guests where it should mimic the hardware behaviour
+that you report a future memory corruption, so that the guest
+takes step to never access it. So even if the access
+to the bad page is in the future as long as the process
+has theoretical access it should be killed.
 
-is broken with RT tasks, as when a real-time task wakes up ksoftirqd
-(which has lower priority) it wont execute and we starve softirq execution.
+In late kill modus that's different of course.
 
-To make pending softirq is called in time, we check and run the pending
-softirq in schedule().
+> 
+> The usual use of rmap lookup loops is to go on to look into the page
+> table to see whether the page is actually mapped: I see no attempt
+> at that here, just an assumption that anyone on the list is guilty
+> of mapping the page and must be killed.  And even if it did go on
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index dd574d5..f59e552 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -359,6 +359,7 @@ struct softirq_action
- 
- asmlinkage void do_softirq(void);
- asmlinkage void __do_softirq(void);
-+extern void schedule_softirq_check(void);
- extern void open_softirq(int nr, void (*action)(struct softirq_action *));
- extern void softirq_init(void);
- #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
-diff --git a/kernel/sched.c b/kernel/sched.c
-index cfb0456..21b5f67 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5307,6 +5307,7 @@ need_resched:
- 	release_kernel_lock(prev);
- need_resched_nonpreemptible:
- 
-+	schedule_softirq_check();
- 	schedule_debug(prev);
- 
- 	if (sched_feat(HRTICK))
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index b41fb71..59d142b 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -55,6 +55,7 @@ EXPORT_SYMBOL(irq_stat);
- static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
- 
- static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
-+static DEFINE_PER_CPU(int, schedule_softirq_check);
- 
- char *softirq_to_name[NR_SOFTIRQS] = {
- 	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK",
-@@ -76,6 +77,14 @@ void wakeup_softirqd(void)
- 		wake_up_process(tsk);
- }
- 
-+static void set_schedule_softirq_check(void)
-+{
-+	if (current != __get_cpu_var(ksoftirqd)) {
-+		__get_cpu_var(schedule_softirq_check) = 1;
-+		set_tsk_need_resched(current);
-+	}
-+}
-+
- /*
-  * This one is for softirq.c-internal use,
-  * where hardirqs are disabled legitimately:
-@@ -243,6 +252,7 @@ restart:
- 
- 	lockdep_softirq_exit();
- 
-+	__get_cpu_var(schedule_softirq_check) = 0;
- 	account_system_vtime(current);
- 	_local_bh_enable();
- }
-@@ -269,6 +279,12 @@ asmlinkage void do_softirq(void)
- 
- #endif
- 
-+void schedule_softirq_check(void)
-+{
-+	if (__get_cpu_var(schedule_softirq_check))
-+		do_softirq();
-+}
-+
- /*
-  * Enter an interrupt context.
-  */
-@@ -323,11 +339,16 @@ inline void raise_softirq_irqoff(unsigned int nr)
- 	 * actually run the softirq once we return from
- 	 * the irq or softirq.
- 	 *
--	 * Otherwise we wake up ksoftirqd to make sure we
--	 * schedule the softirq soon.
-+	 * Otherwise we check and run the pending softirq in schedule().
-+	 *
-+	 * NOTE: It's sometimes helpless to wakeup the ksoftirqd here.
-+	 *       Because when current task is a real-time task(which
-+	 *       has higher priority) or a real-time task is on standby
-+	 *       in this cpu, ksoftirqd won't execute, we starve softirq
-+	 *       execution.
- 	 */
- 	if (!in_interrupt())
--		wakeup_softirqd();
-+		set_schedule_softirq_check();
- }
- 
- void raise_softirq(unsigned int nr)
+Yes that's intentional.
 
+> 
+> At least in the file's prio_tree case, we'll only be killing those
+> who mmapped the range which happens to include the page.  But in the
+> anon case, remember the anon_vma is just a bundle of "related" vmas
+> outside of which the page will not be found; so if one process got a
+> poisonous page through COW, all the other processes which happen to
+> be sharing that anon_vma through fork or through adjacent merging,
+> are going to get killed too.
+
+You're right the COW case is a bit of a problem, we don't distingush
+that.  Perhaps that can be easily checked, but even if we kill
+a bit too much it's still better than killing too little. I don't think it's
+as big a problem as you claim.
+
+> I think a much more sensible approach would be to follow the page
+> migration technique of replacing the page's ptes by a special swap-like
+> entry, then do the killing from do_swap_page() if a process actually
+> tries to access the page.
+
+That's what late kill modus does (see the patch description/comment on
+top of file), but it doesn't have the right semantics for KVM.
+It's still used for a few cases by default, e.g. for the swap cache.
+
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
