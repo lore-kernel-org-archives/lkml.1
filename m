@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbZFLPlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbZFLPlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761550AbZFLPlc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbZFLPlN
+	id S1761336AbZFLPlp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761439AbZFLPlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:41:13 -0400
+	Fri, 12 Jun 2009 11:41:31 -0400
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:60192 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757239AbZFLPlL (ORCPT
+	with ESMTP id S1754862AbZFLPl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:41:11 -0400
-Date: Fri, 12 Jun 2009 18:41:13 +0300 (EEST)
+	Fri, 12 Jun 2009 11:41:29 -0400
+Date: Fri, 12 Jun 2009 18:41:31 +0300 (EEST)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
        cl@linux-foundation.org, akpm@linux-foundation.org, npiggin@suse.de,
        benh@kernel.crashing.org
-Subject: [PATCH 2/3] slab,slub: don't enable interrupts during early boot
-Message-ID: <Pine.LNX.4.64.0906121840550.5491@melkki.cs.Helsinki.FI>
+Subject: [PATCH 3/3] slab: setup cpu caches later on when interrupts are
+ enabled
+Message-ID: <Pine.LNX.4.64.0906121841150.5491@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -26,196 +27,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-As explained by Benjamin Herrenschmidt:
+Fixes the following boot-time warning:
 
-  Oh and btw, your patch alone doesn't fix powerpc, because it's missing
-  a whole bunch of GFP_KERNEL's in the arch code... You would have to
-  grep the entire kernel for things that check slab_is_available() and
-  even then you'll be missing some.
+  [    0.000000] ------------[ cut here ]------------
+  [    0.000000] WARNING: at kernel/smp.c:369 smp_call_function_many+0x56/0x1bc()
+  [    0.000000] Hardware name:
+  [    0.000000] Modules linked in:
+  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30 #492
+  [    0.000000] Call Trace:
+  [    0.000000]  [<ffffffff8149e021>] ? _spin_unlock+0x4f/0x5c
+  [    0.000000]  [<ffffffff8108f11b>] ? smp_call_function_many+0x56/0x1bc
+  [    0.000000]  [<ffffffff81061764>] warn_slowpath_common+0x7c/0xa9
+  [    0.000000]  [<ffffffff810617a5>] warn_slowpath_null+0x14/0x16
+  [    0.000000]  [<ffffffff8108f11b>] smp_call_function_many+0x56/0x1bc
+  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
+  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
+  [    0.000000]  [<ffffffff8108f2be>] smp_call_function+0x3d/0x68
+  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
+  [    0.000000]  [<ffffffff81066fd8>] on_each_cpu+0x31/0x7c
+  [    0.000000]  [<ffffffff810f64f5>] do_tune_cpucache+0x119/0x454
+  [    0.000000]  [<ffffffff81087080>] ? lockdep_init_map+0x94/0x10b
+  [    0.000000]  [<ffffffff818133b0>] ? kmem_cache_init+0x421/0x593
+  [    0.000000]  [<ffffffff810f69cf>] enable_cpucache+0x68/0xad
+  [    0.000000]  [<ffffffff818133c3>] kmem_cache_init+0x434/0x593
+  [    0.000000]  [<ffffffff8180987c>] ? mem_init+0x156/0x161
+  [    0.000000]  [<ffffffff817f8aae>] start_kernel+0x1cc/0x3b9
+  [    0.000000]  [<ffffffff817f829a>] x86_64_start_reservations+0xaa/0xae
+  [    0.000000]  [<ffffffff817f837f>] x86_64_start_kernel+0xe1/0xe8
+  [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
 
-  For example, slab_is_available() didn't always exist, and so in the
-  early days on powerpc, we used a mem_init_done global that is set form
-  mem_init() (not perfect but works in practice). And we still have code
-  using that to do the test.
-
-Therefore, mask out __GFP_WAIT in the slab allocators in early boot code to
-avoid enabling interrupts.
-
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/gfp.h      |    3 +++
- include/linux/slab.h     |    2 ++
- include/linux/slob_def.h |    5 +++++
- include/linux/slub_def.h |    2 ++
- init/main.c              |    1 +
- mm/slab.c                |   22 ++++++++++++++++++++++
- mm/slub.c                |   16 ++++++++++++++++
- 7 files changed, 51 insertions(+), 0 deletions(-)
+ mm/slab.c |   37 +++++++++++++++++++------------------
+ 1 files changed, 19 insertions(+), 18 deletions(-)
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 0bbc15f..ec0fede 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -85,6 +85,9 @@ struct vm_area_struct;
- 			__GFP_NOWARN|__GFP_REPEAT|__GFP_NOFAIL|\
- 			__GFP_NORETRY|__GFP_NOMEMALLOC)
- 
-+/* Control slab gfp mask during early boot */
-+#define SLAB_GFP_BOOT_MASK __GFP_BITS_MASK & ~(__GFP_WAIT|__GFP_IO|__GFP_FS);
-+
- /* Control allocation constraints */
- #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
- 
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 4880306..219b8fb 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -319,4 +319,6 @@ static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
- 	return kmalloc_node(size, flags | __GFP_ZERO, node);
- }
- 
-+void __init kmem_cache_init_late(void);
-+
- #endif	/* _LINUX_SLAB_H */
-diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
-index 0ec00b3..bb5368d 100644
---- a/include/linux/slob_def.h
-+++ b/include/linux/slob_def.h
-@@ -34,4 +34,9 @@ static __always_inline void *__kmalloc(size_t size, gfp_t flags)
- 	return kmalloc(size, flags);
- }
- 
-+static inline void kmem_cache_init_late(void)
-+{
-+	/* Nothing to do */
-+}
-+
- #endif /* __LINUX_SLOB_DEF_H */
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index be5d40c..4dcbc2c 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -302,4 +302,6 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- }
- #endif
- 
-+void __init kmem_cache_init_late(void);
-+
- #endif /* _LINUX_SLUB_DEF_H */
-diff --git a/init/main.c b/init/main.c
-index b3e8f14..f6204f7 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -640,6 +640,7 @@ asmlinkage void __init start_kernel(void)
- 				 "enabled early\n");
- 	early_boot_irqs_on();
- 	local_irq_enable();
-+	kmem_cache_init_late();
- 
- 	/*
- 	 * HACK ALERT! This is early. We're enabling the console before
 diff --git a/mm/slab.c b/mm/slab.c
-index cd76964..6c0c4df 100644
+index 6c0c4df..f1e9f05 100644
 --- a/mm/slab.c
 +++ b/mm/slab.c
-@@ -304,6 +304,12 @@ struct kmem_list3 {
- };
+@@ -759,6 +759,7 @@ static enum {
+ 	NONE,
+ 	PARTIAL_AC,
+ 	PARTIAL_L3,
++	EARLY,
+ 	FULL
+ } g_cpucache_up;
  
- /*
-+ * The slab allocator is initialized with interrupts disabled. Therefore, make
-+ * sure early boot allocations don't accidentally enable interrupts.
-+ */
-+static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
-+
-+/*
-  * Need this for bootstrapping a per node allocator.
+@@ -767,7 +768,7 @@ static enum {
   */
- #define NUM_INIT_LISTS (3 * MAX_NUMNODES)
-@@ -1654,6 +1660,14 @@ void __init kmem_cache_init(void)
+ int slab_is_available(void)
+ {
+-	return g_cpucache_up == FULL;
++	return g_cpucache_up >= EARLY;
+ }
+ 
+ static DEFINE_PER_CPU(struct delayed_work, reap_work);
+@@ -1631,19 +1632,27 @@ void __init kmem_cache_init(void)
+ 		}
+ 	}
+ 
+-	/* 6) resize the head arrays to their final sizes */
+-	{
+-		struct kmem_cache *cachep;
+-		mutex_lock(&cache_chain_mutex);
+-		list_for_each_entry(cachep, &cache_chain, next)
+-			if (enable_cpucache(cachep, GFP_NOWAIT))
+-				BUG();
+-		mutex_unlock(&cache_chain_mutex);
+-	}
++	g_cpucache_up = EARLY;
+ 
+ 	/* Annotate slab for lockdep -- annotate the malloc caches */
+ 	init_lock_keys();
++}
++
++void __init kmem_cache_init_late(void)
++{
++	struct kmem_cache *cachep;
++
++	/*
++	 * Interrupts are enabled now so all GFP allocations are safe.
++	 */
++	slab_gfp_mask = __GFP_BITS_MASK;
+ 
++	/* 6) resize the head arrays to their final sizes */
++	mutex_lock(&cache_chain_mutex);
++	list_for_each_entry(cachep, &cache_chain, next)
++		if (enable_cpucache(cachep, GFP_NOWAIT))
++			BUG();
++	mutex_unlock(&cache_chain_mutex);
+ 
+ 	/* Done! */
+ 	g_cpucache_up = FULL;
+@@ -1660,14 +1669,6 @@ void __init kmem_cache_init(void)
  	 */
  }
  
-+void __init kmem_cache_init_late(void)
-+{
-+	/*
-+	 * Interrupts are enabled now so all GFP allocations are safe.
-+	 */
-+	slab_gfp_mask = __GFP_BITS_MASK;
-+}
-+
+-void __init kmem_cache_init_late(void)
+-{
+-	/*
+-	 * Interrupts are enabled now so all GFP allocations are safe.
+-	 */
+-	slab_gfp_mask = __GFP_BITS_MASK;
+-}
+-
  static int __init cpucache_init(void)
  {
  	int cpu;
-@@ -3237,6 +3251,10 @@ retry:
- 	}
- 
- 	if (!obj) {
-+		/* Lets avoid crashing in early boot code. */
-+		if (WARN_ON_ONCE((local_flags & ~slab_gfp_mask) != 0))
-+			local_flags &= slab_gfp_mask;
-+
- 		/*
- 		 * This allocation will be performed within the constraints
- 		 * of the current cpuset / memory policy requirements.
-@@ -3354,6 +3372,8 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
- 	unsigned long save_flags;
- 	void *ptr;
- 
-+	flags &= slab_gfp_mask;
-+
- 	lockdep_trace_alloc(flags);
- 
- 	if (slab_should_failslab(cachep, flags))
-@@ -3434,6 +3454,8 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
- 	unsigned long save_flags;
- 	void *objp;
- 
-+	flags &= slab_gfp_mask;
-+
- 	lockdep_trace_alloc(flags);
- 
- 	if (slab_should_failslab(cachep, flags))
-diff --git a/mm/slub.c b/mm/slub.c
-index 3964d3c..30354bf 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -178,6 +178,12 @@ static enum {
- 	SYSFS		/* Sysfs up */
- } slab_state = DOWN;
- 
-+/*
-+ * The slab allocator is initialized with interrupts disabled. Therefore, make
-+ * sure early boot allocations don't accidentally enable interrupts.
-+ */
-+static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
-+
- /* A list of all slab caches on the system */
- static DECLARE_RWSEM(slub_lock);
- static LIST_HEAD(slab_caches);
-@@ -1595,6 +1601,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
- 	unsigned long flags;
- 	unsigned int objsize;
- 
-+	gfpflags &= slab_gfp_mask;
-+
- 	lockdep_trace_alloc(gfpflags);
- 	might_sleep_if(gfpflags & __GFP_WAIT);
- 
-@@ -3104,6 +3112,14 @@ void __init kmem_cache_init(void)
- 		nr_cpu_ids, nr_node_ids);
- }
- 
-+void __init kmem_cache_init_late(void)
-+{
-+	/*
-+	 * Interrupts are enabled now so all GFP allocations are safe.
-+	 */
-+	slab_gfp_mask = __GFP_BITS_MASK;
-+}
-+
- /*
-  * Find a mergeable slab cache
-  */
 -- 
 1.6.0.4
 
