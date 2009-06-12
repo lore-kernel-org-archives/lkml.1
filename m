@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765220AbZFLVrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933109AbZFLVuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765220AbZFLVrr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 17:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934268AbZFLVr3
+	id S933109AbZFLVuB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 17:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758925AbZFLVtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 17:47:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42093 "EHLO gate.crashing.org"
+	Fri, 12 Jun 2009 17:49:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38855 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934273AbZFLVr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 17:47:28 -0400
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       npiggin@suse.de, yinghai@kernel.org
-In-Reply-To: <alpine.DEB.1.10.0906121317140.23840@gentwo.org>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
-	 <alpine.DEB.1.10.0906121317140.23840@gentwo.org>
-Content-Type: text/plain
-Date: Sat, 13 Jun 2009 07:46:03 +1000
-Message-Id: <1244843163.23936.2.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1755711AbZFLVtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 17:49:53 -0400
+Message-ID: <4A32CD79.5040803@redhat.com>
+Date: Sat, 13 Jun 2009 00:49:45 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: aarcange@redhat.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       chrisw@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 0/4] RFC - ksm api change into madvise
+References: <1242261048-4487-1-git-send-email-ieidus@redhat.com> <Pine.LNX.4.64.0906081555360.22943@sister.anvils> <4A2D47C1.5020302@redhat.com> <Pine.LNX.4.64.0906081902520.9518@sister.anvils> <4A2D7036.1010800@redhat.com> <20090609074848.5357839a@woof.tlv.redhat.com> <Pine.LNX.4.64.0906091807300.20120@sister.anvils> <Pine.LNX.4.64.0906092013580.31606@sister.anvils> <20090610092855.43be2405@woof.tlv.redhat.com> <Pine.LNX.4.64.0906111700390.18609@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0906111700390.18609@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hugh Dickins wrote:
+>
+> Okay.  We do have a macro to annotate such pacifying initializations,
+> but I've not used it before, and forget what it is or where to look
+> for an example, I don't see it in kernel.h or compiler.h.  Maybe
+> Andrew will chime in and remind us.
+>
+> Hugh
+>   
+I have looked on compiler.h - this file have something that deal with 
+warnings, but didnt find anything that is good for our case....
 
-> Adds code to hot code path.
-
-A single mask which should be mostly in the noise...
-
-> The allocators mask flags passed to the page allocator through
-> GFP_RECLAIM_MASK|GFP_CONSTRAINT_MASK. This is done outside of the critical
-> code paths.
-> 
-> The might_sleep issues may be fixed by adding another check to
-> __might_sleep().
-
-That is not enough because slab and slub explicitely re-enable
-interrupts when __GFP_WAIT is set, which is the problem we need to solve
-in the first place, so we need to do the masking there.
-
-Cheers,
-Ben.
-
+Anyone know where is this thing is found?
 
