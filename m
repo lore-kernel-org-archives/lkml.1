@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbZFLD5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751696AbZFLEAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760177AbZFLD5r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 23:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758659AbZFLD5e
+	id S1751696AbZFLEAf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 00:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbZFLEAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 23:57:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46604
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757434AbZFLD5d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 23:57:33 -0400
-Date: Thu, 11 Jun 2009 20:57:35 -0700 (PDT)
-Message-Id: <20090611.205735.120685201.davem@davemloft.net>
-To: john.dykstra1@gmail.com
-Cc: akpm@linux-foundation.org, fredrik.arnerup@edgeware.tv,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Re: IFF_LOWER_UP does not fit in ifr_flags
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1244219047.7969.7.camel@Maple>
-References: <89A39FC0957640879F8975880836CF91@edgeware.tv>
-	<20090529205028.3e01786b.akpm@linux-foundation.org>
-	<1244219047.7969.7.camel@Maple>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 12 Jun 2009 00:00:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63855 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750979AbZFLEAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 00:00:18 -0400
+Message-ID: <4A31D326.3030206@cn.fujitsu.com>
+Date: Fri, 12 Jun 2009 12:01:42 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, hannes@cmpxchg.org, torvalds@linux-foundation.org,
+       yinghai@kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: boot panic with memcg enabled (Was [PATCH 3/4] memcg: don't use
+ bootmem allocator in setup code)
+References: <Pine.LNX.4.64.0906110820170.2258@melkki.cs.Helsinki.FI>	<4A31C258.2050404@cn.fujitsu.com>	<20090612115501.df12a457.kamezawa.hiroyu@jp.fujitsu.com> <20090612124408.721ba2ae.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090612124408.721ba2ae.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: John Dykstra <john.dykstra1@gmail.com>
-Date: Fri, 05 Jun 2009 16:24:07 +0000
-
-> On Fri, 2009-05-29 at 20:50 -0700, Andrew Morton wrote:
->> On Thu, 28 May 2009 14:59:05 +0200 "Fredrik Arnerup" <fredrik.arnerup@edgeware.tv> wrote:
->> 
->> > Documentation/networking/operstates.txt (and netdevice(7)) claims that
->> > the flags IFF_LOWER_UP, IFF_DORMANT and IFF_ECHO can be read from user space
->> > using ioctl() with SIOCGIFFLAGS. Looking in include/linux/if.h however,
->> > the flags are returned in a struct ifreq in the field ifr_flags which
->> > is declared as a short, while the flags are defined as:
->> > 
->> > #define IFF_LOWER_UP    0x10000         /* driver signals L1 up         */
->> > #define IFF_DORMANT     0x20000         /* driver signals dormant       */
->> > #define IFF_ECHO        0x40000         /* echo sent packets            */
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 12 Jun 2009 11:55:01 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> [PATCH] net core: Some interface flags not returned by SIOCGIFFLAGS
- ...
-> Reported-by:  "Fredrik Arnerup" <fredrik.arnerup@edgeware.tv>
-> Signed-off-by: John Dykstra <john.dykstra1@gmail.com>
+>> On Fri, 12 Jun 2009 10:50:00 +0800
+>> Li Zefan <lizf@cn.fujitsu.com> wrote:
+>>
+>>> (This patch should have CCed memcg maitainers)
+>>>
+>>> My box failed to boot due to initialization failure of page_cgroup, and
+>>> it's caused by this patch:
+>>>
+>>> +	page = alloc_pages_node(nid, GFP_NOWAIT | __GFP_ZERO, order);
+>>>
+>> Oh, I don't know this patch ;(
+>>
+>>> I added a printk, and found that order == 11 == MAX_ORDER.
+>>>
+>> maybe possible because this allocates countinous pages of 60%? length of
+>> memmap. 
+>> If __alloc_bootmem_node_nopanic() is not available any more, memcg should be
+>> only used under CONFIG_SPARSEMEM. 
+>>
+>> Is that a request from bootmem maintainer ?
+>>
+> In other words,
+>  - Is there any replacment function to allocate continuous pages bigger
+>    than MAX_ORDER ?
+>  - If not, memcg (and io-controller under development) shouldn't support
+>    memory model other than SPARSEMEM.
+> 
+> IIUC, page_cgroup_init() is called before mem_init() and we could use
+> alloc_bootmem() here.
+> 
+> Could someone teach me which thread should I read to know
+> "why alloc_bootmem() is gone ?" ?
+> 
 
-Applied, thanks!
+alloc_bootmem() is not gone, but slab allocator is setup much earlier now.
+See this commit:
+
+commit 83b519e8b9572c319c8e0c615ee5dd7272856090
+Author: Pekka Enberg <penberg@cs.helsinki.fi>
+Date:   Wed Jun 10 19:40:04 2009 +0300
+
+    slab: setup allocators earlier in the boot sequence
+
+now page_cgroup_init() is called after mem_init().
