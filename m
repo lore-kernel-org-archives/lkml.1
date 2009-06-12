@@ -1,71 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763958AbZFLCQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764117AbZFLCQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763958AbZFLCQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 22:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZFLCQJ
+	id S1764117AbZFLCQl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 22:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759575AbZFLCQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 22:16:09 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:38132 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753864AbZFLCQI (ORCPT
+	Thu, 11 Jun 2009 22:16:33 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:60592 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756308AbZFLCQc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 22:16:08 -0400
-Date: Thu, 11 Jun 2009 22:16:10 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
- [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-In-Reply-To: <200906112305.49232.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0906112210340.21931-100000@netrider.rowland.org>
+	Thu, 11 Jun 2009 22:16:32 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=yL8e0s7FoLZtMJbToGcHjOhLVioC4N+swtZEVRYyzLbONGAwzO1eNJV9IMJPdEQ0e
+	+7VROtNTn80Lw+by2gqkg==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+In-Reply-To: <alpine.LFD.2.00.0906112138090.31536@xanadu.home>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk>
+	 <20090611132134.GA11199@atomide.com>
+	 <20090611133736.GP795@n2100.arm.linux.org.uk>
+	 <20090611140038.GB11199@atomide.com>
+	 <20090611140624.GS795@n2100.arm.linux.org.uk>
+	 <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
+	 <4A3175AC.9070100@bluewatersys.com>
+	 <alpine.LFD.2.00.0906112105220.31536@xanadu.home>
+	 <4A31AECA.6070303@bluewatersys.com>
+	 <alpine.LFD.2.00.0906112138090.31536@xanadu.home>
+Date: Thu, 11 Jun 2009 19:16:29 -0700
+Message-ID: <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: Brian Swetland <swetland@google.com>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Ryan Mallon <ryan@bluewatersys.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, pavel@ucw.cz,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009, Oliver Neukum wrote:
+On Thu, Jun 11, 2009 at 6:51 PM, Nicolas Pitre<nico@cam.org> wrote:
+> On Fri, 12 Jun 2009, Ryan Mallon wrote:
+>> Nicolas Pitre wrote:
+>>
+>> Thats my point though: In the meantime, it falls on Russell by default
+>> to be the one to verify all the patches going through. I think the same
+>> is true for new architectures, if nobody else has the interest/hardware
+>> besides those posting the patches, then who is meant to do the
+>> reviewing/acking?
+>
+> I think that, at some point, if nobody else has the interest/hardware,
+> then you are on your own. Â Just make sure that your code respects the
+> kernel coding style, has no obvious API misuses, and that it does not
+> affect anyone else. Â At that point if you can convince people that your
+> code is actually useful and that you'll be around to quickly respond
+> if/when issues are reported then it should just be merged.
 
-> Am Donnerstag, 11. Juni 2009 20:36:30 schrieb Alan Stern:
-> > > Or abstractly any power saving state that does autoresume in hardware.
-> > > In these cases you know that you can enter a powersaving state that
-> > > will add X latency.
-> > >
-> > > In terms of user space API we'll probably add a way for user space
-> > > to specify how much latency may be added for power management's sake.
-> > > If busses are stacked the "latency budget" has to be handled at core
-> > > level. If furthermore states that allow IO but with additional latency
-> > > are ignored, the budget will be calculated wrongly.
-> >
-> > Okay, fine.  What does this have to do with Rafael's work?  Why does
-> > setting the status to RPM_SUSPENDED even when a device is not in a
-> > low-power state preclude handling buses that automatically change their
-> > power state?
-> 
-> For these cases the tree constraint does not apply.
+My hope with the msm support is to get buildable, bootable (we're
+there now), style-clean (we probably have stuff that needs help yet,
+though I think we're improving) support for the platform in the tree
+so people can actually build mainline for things like HTC Dream /
+Sapphire, Qualcomm's SURF boards, etc.
 
-What tree constraint?  You mean that the PM core shouldn't allow 
-devices to suspend unless all their children are suspended?  Why 
-doesn't it still apply?
+At that point, I think we'll get more people looking at, testing, and
+hopefully contributing and reviewing patches in that domain -- I know
+there are a lot of folks out there hacking on ADP1 (the unlocked dev
+phone) or "rooted" G1s, and some of them tinker with things at the
+kernel level.
 
-Remember, when Rafael and I say "suspend" here, we don't mean "go to a 
-low-power state".  We mean "the PM core calls the runtime_suspend 
-method".  No matter what actions the link hardware may decide to take 
-on its own, the PM core will still want to observe the 
-all-children-suspended restriction when calling runtime_suspend 
-methods.
+>From a practical standpoint, some questions about trying to get a
+bunch of msm stuff cleaned up possibly for 2.6.31:
+- would having some ifdefs around code using wakelock support be
+acceptable for the time being?  The wakelock/suspendblock review does
+seem to be making progress on linux-pm if not super quickly, and I'd
+rather maintain some ifdefs than maintain two different versions of
+drivers while it's getting sorted out.
+- from where we are now, with .30 about to be wrapped up, what's the
+reasonable timeline for putting together a patch series for mach-msm
+and for drivers/staging/msm7k or the like?  When should I be sending
+what to where?  Presumably to lakml at the least?
+- is it essential to completely flatten down to single patches for new
+drivers?  We do have history including contributions from Qualcomm,
+HTC, etc, which would be nice to preserve in some cases, but if that's
+impractical, we can do a complete rebase and flatten on top of tip of
+tree.
 
-> I think there are devices who can be suspended while children are active
-> and devices which can not be. This is an attribute of the device and should
-> be evaluated by the core.
+I'd love review/feedback on things -- I think, to Alan's original
+suggestion, I just would like to avoid ending up in a holding pattern
+on getting support for these SoCs and devices into mainline
+(especially if we can do it without breaking anybody else).  I do
+understand if there aren't a lot of people interested in wading
+through the frightening realm of AMSS/QDSP remote interfaces...
 
-Clearly it should be decided by the driver.  Should there be a bit for
-it in the dev_pm_info structure?
+Thanks,
 
-Alan Stern
-
+Brian
