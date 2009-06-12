@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764032AbZFLB2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbZFLBaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764032AbZFLB2Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 21:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbZFLB2R
+	id S1764074AbZFLBaA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 21:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761229AbZFLB3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 21:28:17 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45862 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760070AbZFLB2Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 21:28:16 -0400
-Date: Fri, 12 Jun 2009 10:26:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com, mel@csn.ul.ie
-Subject: [BUGFIX][PATCH] fix lumpy reclaim lru handiling at
- isolate_lru_pages v2
-Message-Id: <20090612102644.a3e7ad3a.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 11 Jun 2009 21:29:53 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51226 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757212AbZFLB3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 21:29:52 -0400
+Subject: Re: slab: setup allocators earlier in the boot sequence
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: git-commits-head@vger.kernel.org
+In-Reply-To: <200906111959.n5BJxFj9021205@hera.kernel.org>
+References: <200906111959.n5BJxFj9021205@hera.kernel.org>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 11:29:52 +1000
+Message-Id: <1244770192.7172.3.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for noisy posts. I hope this should be the last trial.
-Thank you for all helps.
+On Thu, 2009-06-11 at 19:59 +0000, Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/linus/83b519e8b9572c319c8e0c615ee5dd7272856090
+> Commit:     83b519e8b9572c319c8e0c615ee5dd7272856090
+> Parent:     c91c4773b334d4d3a6d44626dc2a558ad97b86f3
+> Author:     Pekka Enberg <penberg@cs.helsinki.fi>
+> AuthorDate: Wed Jun 10 19:40:04 2009 +0300
+> Committer:  Pekka Enberg <penberg@cs.helsinki.fi>
+> CommitDate: Thu Jun 11 19:15:56 2009 +0300
+> 
+>     slab: setup allocators earlier in the boot sequence
+>     
+>     This patch makes kmalloc() available earlier in the boot sequence so we can get
+>     rid of some bootmem allocations. The bulk of the changes are due to
+>     kmem_cache_init() being called with interrupts disabled which requires some
+>     changes to allocator boostrap code.
+>     
+>     Note: 32-bit x86 does WP protect test in mem_init() so we must setup traps
+>     before we call mem_init() during boot as reported by Ingo Molnar:
 
--Kame
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+This seem to explode in various places on powerpc :-(
 
-At lumpy reclaim, a page failed to be taken by __isolate_lru_page() can
-be pushed back to "src" list by list_move(). But the page may not be from
-"src" list. This pushes the page back to wrong LRU.
-And list_move() itself is unnecessary because the page is
-not on top of LRU. Then, leave it as it is if __isolate_lru_page() fails.
+It would have been nice if we had enough advance warning to actually fix
+our archs too ... I had no idea it was going to be merged that soon. I
+did plan to dig into this at some stage but that was too soon. Maybe it
+should have been a CONFIG option for a couple of -rc's ?
 
-Changelog: v1->v2
- - removed buggy break.
+But yeah, of course, only x86 matters right ? We can break everybody
+else and fuck up bisection just for fun...
 
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/vmscan.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+Cheers,
+Ben.
 
-Index: lumpy-reclaim-trial/mm/vmscan.c
-===================================================================
---- lumpy-reclaim-trial.orig/mm/vmscan.c
-+++ lumpy-reclaim-trial/mm/vmscan.c
-@@ -936,18 +936,10 @@ static unsigned long isolate_lru_pages(u
- 			/* Check that we have not crossed a zone boundary. */
- 			if (unlikely(page_zone_id(cursor_page) != zone_id))
- 				continue;
--			switch (__isolate_lru_page(cursor_page, mode, file)) {
--			case 0:
-+			if (__isolate_lru_page(cursor_page, mode, file) == 0) {
- 				list_move(&cursor_page->lru, dst);
- 				nr_taken++;
- 				scan++;
--				break;
--
--			case -EBUSY:
--				/* else it is being freed elsewhere */
--				list_move(&cursor_page->lru, src);
--			default:
--				break;	/* ! on LRU or wrong list */
- 			}
- 		}
- 	}
 
