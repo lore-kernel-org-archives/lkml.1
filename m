@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764533AbZFLOXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760024AbZFLOXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764533AbZFLOXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763729AbZFLOX3
+	id S1760024AbZFLOXc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759819AbZFLOXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:23:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57842 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764146AbZFLOX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:23:27 -0400
-Subject: Re: linux-next: origin tree build failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, paulus@samba.org,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <20090612141118.GK32105@elte.hu>
-References: <20090612102427.32582baa.sfr@canb.auug.org.au>
-	 <1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu>
-	 <1244799197.7172.106.camel@pasglop> <20090612125335.GH31845@elte.hu>
-	 <1244812224.7172.146.camel@pasglop> <1244813397.7172.156.camel@pasglop>
-	 <20090612134940.GD32105@elte.hu> <1244815574.7172.171.camel@pasglop>
-	 <20090612141118.GK32105@elte.hu>
-Content-Type: text/plain
-Date: Sat, 13 Jun 2009 00:23:02 +1000
-Message-Id: <1244816582.7172.175.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 10:23:21 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:51166 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758972AbZFLOXT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 10:23:19 -0400
+Date: Fri, 12 Jun 2009 10:23:08 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Matt Mackall <mpm@selenic.com>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] crypto: add optional continuous repetition test to
+	entropy store based rngs
+Message-ID: <20090612142308.GA29341@hmsreliant.think-freely.org>
+References: <20090604195030.GA11300@hmsreliant.think-freely.org> <1244146450.22069.216.camel@calx> <20090605000456.GA10883@localhost.localdomain> <20090605003006.GA5236@gondor.apana.org.au> <20090605014816.GA15462@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090605014816.GA15462@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 16:11 +0200, Ingo Molnar wrote:
-> > Maybe. But maybe it's representative... so far in this merge 
-> > window, 100% of the powerpc build and runtime breakage upstream 
-> > comes from stuff that didn't get into -next before.
+On Thu, Jun 04, 2009 at 09:48:16PM -0400, Neil Horman wrote:
+> On Fri, Jun 05, 2009 at 10:30:06AM +1000, Herbert Xu wrote:
+> > On Thu, Jun 04, 2009 at 08:04:56PM -0400, Neil Horman wrote:
+> > >
+> > > Not sure what to do about this.  The intent is to provide the external reference
+> > > to the fips_enabled flag (which is either defined as an extern in or #defined to
+> > > 0 dependent on CONFIG_CRYPTO_FIPS).  I can cut'n'paste the code block from the
+> > > include file and put it in here, but that seems like a worse solution to me.
+> > > Let me know your thoughts, and I can change this accordingly.
+> > 
+> > You can put the fips flag into its own header file, e.g., linux/fips.h.
+> > 
 > 
-> But that's axiomatic, isnt it? linux-next build-tests PowerPC as the 
-> first in the row of tests - so no change that was in linux-next can 
-> ever cause a build failure on PowerPC, right?
+> Ok, that seems like a reasonable idea.  new patch below
+> Change Notes:
+> 
+> 1) Moved fips_enabled flag into its own header, included in all the appropriate
+> places
+> 
+> 2) removed flags field from entropy store, keying continuous test on the
+> non-null status of the last_data pointer
+> 
+> 
+> FIPS-140 requires that all random number generators implement continuous self
+> tests in which each extracted block of data is compared against the last block
+> for repetition.  The ansi_cprng implements such a test, but it would be nice if
+> the hw rng's did the same thing.  Obviously its not something thats always
+> needed, but it seems like it would be a nice feature to have on occasion. I've
+> written the below patch which allows individual entropy stores to be flagged as
+> desiring a continuous test to be run on them as is extracted.  By default this
+> option is off, but is enabled in the event that fips mode is selected during
+> bootup.
+> 
+> Neil
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+Ping, I don't see that this got picked up in the crypto tree.  Are there
+subsequent objections?
 
-I'd have to check with Stephen but I think linux-next tests a whole
-bunch of archs each round. Anyway, the idea is, just don't get things
-upstream before the at least had a chance to go through that little bit
-of integration testing .. Is it -that- hard ?
-
-Oh and before you ask me, yes, I do the same mistakes, and I have been
-caught too merging things at the last minute that ended up broken and
-that could have been caught by -next... I'm just trying to advocate the
-idea that we all try to improve in that area :-)
-
-Cheers,
-Ben.
-
+Neil
 
