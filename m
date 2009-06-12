@@ -1,398 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934565AbZFLWRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934234AbZFLWWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934565AbZFLWRt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934339AbZFLWRj
+	id S934234AbZFLWWl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbZFLWWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:17:39 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:38545 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762919AbZFLWRh (ORCPT
+	Fri, 12 Jun 2009 18:22:34 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58249 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbZFLWWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:17:37 -0400
-Subject: Re: [PATCH V4: 1/3] pci: Provide Multiple Error Received and no
- error source id support on AER
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1244776109.2560.319.camel@ymzhang>
-References: <1244776109.2560.319.camel@ymzhang>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Jun 2009 22:17:36 +0000
-Message-Id: <1244845057.19708.116.camel@grinch>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 12 Jun 2009 18:22:33 -0400
+Date: Sat, 13 Jun 2009 00:22:29 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Brian Swetland <swetland@google.com>
+Cc: Stefan Schmidt <stefan@datenfreihafen.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Greg KH <greg@kroah.com>, sop@google.com
+Subject: Re: Gerrit (was Re: HTC Dream aka. t-mobile g1 support)
+Message-ID: <20090612222229.GE17688@elf.ucw.cz>
+References: <a55d774e0906121450x12bab7b0sc1f4de0115a1af61@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <a55d774e0906121450x12bab7b0sc1f4de0115a1af61@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
-> Anyone could help me test it on powerpc? Or at least a compilation
-> to see there is any compiling error/warning. I have no powerpc machine.
-> Thanks.
+On Fri 2009-06-12 14:50:21, Brian Swetland wrote:
+> On Fri, Jun 12, 2009 at 10:35 AM, Stefan
+> Schmidt<stefan@datenfreihafen.org> wrote:
+> >> I think the intent is to have a
+> >> Gerrit instance to accept contributions. �I'll have to look into
+> >> whether this can be done without signing the agreement. �Right
+> >> now, I can't even contribute anything, so there are a lot of
+> >> issues to work out.
+> >
+> > Gerrit is the Android review system? I'm only interested into the kernel and
+> > especially running a mainline kernel on different devices. Anyway, a public
+> > review process and some more informations on what you are working and how you
+> > would like to bring it mainline would help here.
 > 
-> Changelog V4:
-> 	Port the patches to Jesses' linux-next tree (mostly based on
-> 	2.6.30).
-> 
-> ﻿﻿Changelog V3:
->         1) Probe devices under the root port when the bus id of
->         the source id is equal to 0; V2 does so when device id is
->         equal to 0;
->         2) Add more comments on critical path of finding devices.
-> 
-> ﻿Changelog V2:
->         Version 2 adds nosourceid, a boot parameter. When
->         aerdriver.nosourceid=y, aerdriver doesn't use the source
->         id saved by root port. Instead, it searches the device
->         tree under the root port to find the reporter. So if hardware
->         has errata and root port saves a bad source id, aerdriver
->         still could find the reporter.
->         There are 2 scenarios under which ﻿aerdriver searches the
->         device tree under root port:
->         1) nosourceid=n and error source id is equal to 0;
->         2) nosourceid=y.
-> 
-> ﻿Based on PCI Express AER specs, a root port might receive multiple
-> TLP errors while it could only save a correctable error source id
-> and an uncorrectable error source id at the same time. In addition,
-> some root port hardware might be unable to provide a correct source
-> id, i.e., the source id, or the bus id part of the source id provided
-> by root port might be equal to 0.
-> 
-> The patchset implements the support in kernel by searching the device
-> tree under the root port.
-> 
-> Patch 1 changes parameter cb of function pci_walk_bus to return a value.
-> When cb return non-zero, pci_walk_bus stops more searching on the
-> device tree.
-> 
-> ﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> 
+> Gerrit is a git patch review system that we (Google/Android) use for
+> android development (kernel and otherwise).  Some other folks like
+> Qualcomm, and TI (see http://review.omapzoom.org/) have adopted it
 
-This one looks fine to me. 
+Unfortunately, it seems quite unsuitable for kernel.
 
-Reviewed-by: Andrew Patterson <andrew.patterson@hp.com>
+Do I understand it right that to submit kernel patches I'd have to
+agree to "contributors agreement", and give up my copyright? No,
+sorry, I don't think I want to do that.
 
-> ---
-> 
-> diff -Nraup linux-2.6_next/arch/powerpc/platforms/pseries/eeh_driver.c linux-2.6_next_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c
-> --- linux-2.6_next/arch/powerpc/platforms/pseries/eeh_driver.c	2009-06-12 05:25:14.000000000 +0800
-> +++ linux-2.6_next_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c	2009-06-12 05:28:08.000000000 +0800
-> @@ -122,7 +122,7 @@ static void eeh_enable_irq(struct pci_de
->   * passed back in "userdata".
->   */
->  
-> -static void eeh_report_error(struct pci_dev *dev, void *userdata)
-> +static int eeh_report_error(struct pci_dev *dev, void *userdata)
->  {
->  	enum pci_ers_result rc, *res = userdata;
->  	struct pci_driver *driver = dev->driver;
-> @@ -130,19 +130,21 @@ static void eeh_report_error(struct pci_
->  	dev->error_state = pci_channel_io_frozen;
->  
->  	if (!driver)
-> -		return;
-> +		return 0;
->  
->  	eeh_disable_irq(dev);
->  
->  	if (!driver->err_handler ||
->  	    !driver->err_handler->error_detected)
-> -		return;
-> +		return 0;
->  
->  	rc = driver->err_handler->error_detected (dev, pci_channel_io_frozen);
->  
->  	/* A driver that needs a reset trumps all others */
->  	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
->  	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
-> +
-> +	return 0;
->  }
->  
->  /**
-> @@ -153,7 +155,7 @@ static void eeh_report_error(struct pci_
->   * Cumulative response passed back in "userdata".
->   */
->  
-> -static void eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
-> +static int eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
->  {
->  	enum pci_ers_result rc, *res = userdata;
->  	struct pci_driver *driver = dev->driver;
-> @@ -161,26 +163,28 @@ static void eeh_report_mmio_enabled(stru
->  	if (!driver ||
->  	    !driver->err_handler ||
->  	    !driver->err_handler->mmio_enabled)
-> -		return;
-> +		return 0;
->  
->  	rc = driver->err_handler->mmio_enabled (dev);
->  
->  	/* A driver that needs a reset trumps all others */
->  	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
->  	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
-> +
-> +	return 0;
->  }
->  
->  /**
->   * eeh_report_reset - tell device that slot has been reset
->   */
->  
-> -static void eeh_report_reset(struct pci_dev *dev, void *userdata)
-> +static int eeh_report_reset(struct pci_dev *dev, void *userdata)
->  {
->  	enum pci_ers_result rc, *res = userdata;
->  	struct pci_driver *driver = dev->driver;
->  
->  	if (!driver)
-> -		return;
-> +		return 0;
->  
->  	dev->error_state = pci_channel_io_normal;
->  
-> @@ -188,35 +192,39 @@ static void eeh_report_reset(struct pci_
->  
->  	if (!driver->err_handler ||
->  	    !driver->err_handler->slot_reset)
-> -		return;
-> +		return 0;
->  
->  	rc = driver->err_handler->slot_reset(dev);
->  	if ((*res == PCI_ERS_RESULT_NONE) ||
->  	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
->  	if (*res == PCI_ERS_RESULT_DISCONNECT &&
->  	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
-> +
-> +	return 0;
->  }
->  
->  /**
->   * eeh_report_resume - tell device to resume normal operations
->   */
->  
-> -static void eeh_report_resume(struct pci_dev *dev, void *userdata)
-> +static int eeh_report_resume(struct pci_dev *dev, void *userdata)
->  {
->  	struct pci_driver *driver = dev->driver;
->  
->  	dev->error_state = pci_channel_io_normal;
->  
->  	if (!driver)
-> -		return;
-> +		return 0;
->  
->  	eeh_enable_irq(dev);
->  
->  	if (!driver->err_handler ||
->  	    !driver->err_handler->resume)
-> -		return;
-> +		return 0;
->  
->  	driver->err_handler->resume(dev);
-> +
-> +	return 0;
->  }
->  
->  /**
-> @@ -226,22 +234,24 @@ static void eeh_report_resume(struct pci
->   * dead, and that no further recovery attempts will be made on it.
->   */
->  
-> -static void eeh_report_failure(struct pci_dev *dev, void *userdata)
-> +static int eeh_report_failure(struct pci_dev *dev, void *userdata)
->  {
->  	struct pci_driver *driver = dev->driver;
->  
->  	dev->error_state = pci_channel_io_perm_failure;
->  
->  	if (!driver)
-> -		return;
-> +		return 0;
->  
->  	eeh_disable_irq(dev);
->  
->  	if (!driver->err_handler ||
->  	    !driver->err_handler->error_detected)
-> -		return;
-> +		return 0;
->  
->  	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
-> +
-> +	return 0;
->  }
->  
->  /* ------------------------------------------------------- */
-> diff -Nraup linux-2.6_next/drivers/pci/bus.c linux-2.6_next_pciwalk/drivers/pci/bus.c
-> --- linux-2.6_next/drivers/pci/bus.c	2009-06-12 05:25:43.000000000 +0800
-> +++ linux-2.6_next_pciwalk/drivers/pci/bus.c	2009-06-12 05:28:08.000000000 +0800
-> @@ -206,13 +206,18 @@ void pci_enable_bridges(struct pci_bus *
->   *  Walk the given bus, including any bridged devices
->   *  on buses under this bus.  Call the provided callback
->   *  on each device found.
-> + *
-> + *  We check the return of @cb each time. If it returns anything
-> + *  other than 0, we break out.
-> + *
->   */
-> -void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
-> +void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
->  		  void *userdata)
->  {
->  	struct pci_dev *dev;
->  	struct pci_bus *bus;
->  	struct list_head *next;
-> +	int retval;
->  
->  	bus = top;
->  	down_read(&pci_bus_sem);
-> @@ -236,8 +241,10 @@ void pci_walk_bus(struct pci_bus *top, v
->  
->  		/* Run device routines with the device locked */
->  		down(&dev->dev.sem);
-> -		cb(dev, userdata);
-> +		retval = cb(dev, userdata);
->  		up(&dev->dev.sem);
-> +		if (retval)
-> +			break;
->  	}
->  	up_read(&pci_bus_sem);
->  }
-> diff -Nraup linux-2.6_next/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c
-> --- linux-2.6_next/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:25:43.000000000 +0800
-> +++ linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:31:53.000000000 +0800
-> @@ -109,7 +109,7 @@ int pci_cleanup_aer_correct_error_status
->  #endif  /*  0  */
->  
-> 
-> -static void set_device_error_reporting(struct pci_dev *dev, void *data)
-> +static int set_device_error_reporting(struct pci_dev *dev, void *data)
->  {
->  	bool enable = *((bool *)data);
->  
-> @@ -124,6 +124,8 @@ static void set_device_error_reporting(s
->  
->  	if (enable)
->  		pcie_set_ecrc_checking(dev);
-> +
-> +	return 0;
->  }
->  
->  /**
-> @@ -207,7 +209,7 @@ static struct device* find_source_device
->  	return NULL;
->  }
->  
-> -static void report_error_detected(struct pci_dev *dev, void *data)
-> +static int report_error_detected(struct pci_dev *dev, void *data)
->  {
->  	pci_ers_result_t vote;
->  	struct pci_error_handlers *err_handler;
-> @@ -232,16 +234,16 @@ static void report_error_detected(struct
->  				   dev->driver ?
->  				   "no AER-aware driver" : "no driver");
->  		}
-> -		return;
-> +		return 0;
->  	}
->  
->  	err_handler = dev->driver->err_handler;
->  	vote = err_handler->error_detected(dev, result_data->state);
->  	result_data->result = merge_result(result_data->result, vote);
-> -	return;
-> +	return 0;
->  }
->  
-> -static void report_mmio_enabled(struct pci_dev *dev, void *data)
-> +static int report_mmio_enabled(struct pci_dev *dev, void *data)
->  {
->  	pci_ers_result_t vote;
->  	struct pci_error_handlers *err_handler;
-> @@ -251,15 +253,15 @@ static void report_mmio_enabled(struct p
->  	if (!dev->driver ||
->  		!dev->driver->err_handler ||
->  		!dev->driver->err_handler->mmio_enabled)
-> -		return;
-> +		return 0;
->  
->  	err_handler = dev->driver->err_handler;
->  	vote = err_handler->mmio_enabled(dev);
->  	result_data->result = merge_result(result_data->result, vote);
-> -	return;
-> +	return 0;
->  }
->  
-> -static void report_slot_reset(struct pci_dev *dev, void *data)
-> +static int report_slot_reset(struct pci_dev *dev, void *data)
->  {
->  	pci_ers_result_t vote;
->  	struct pci_error_handlers *err_handler;
-> @@ -269,15 +271,15 @@ static void report_slot_reset(struct pci
->  	if (!dev->driver ||
->  		!dev->driver->err_handler ||
->  		!dev->driver->err_handler->slot_reset)
-> -		return;
-> +		return 0;
->  
->  	err_handler = dev->driver->err_handler;
->  	vote = err_handler->slot_reset(dev);
->  	result_data->result = merge_result(result_data->result, vote);
-> -	return;
-> +	return 0;
->  }
->  
-> -static void report_resume(struct pci_dev *dev, void *data)
-> +static int report_resume(struct pci_dev *dev, void *data)
->  {
->  	struct pci_error_handlers *err_handler;
->  
-> @@ -286,11 +288,11 @@ static void report_resume(struct pci_dev
->  	if (!dev->driver ||
->  		!dev->driver->err_handler ||
->  		!dev->driver->err_handler->resume)
-> -		return;
-> +		return 0;
->  
->  	err_handler = dev->driver->err_handler;
->  	err_handler->resume(dev);
-> -	return;
-> +	return 0;
->  }
->  
->  /**
-> @@ -307,7 +309,7 @@ static void report_resume(struct pci_dev
->  static pci_ers_result_t broadcast_error_message(struct pci_dev *dev,
->  	enum pci_channel_state state,
->  	char *error_mesg,
-> -	void (*cb)(struct pci_dev *, void *))
-> +	int (*cb)(struct pci_dev *, void *))
->  {
->  	struct aer_broadcast_data result_data;
->  
-> diff -Nraup linux-2.6_next/include/linux/pci.h linux-2.6_next_pciwalk/include/linux/pci.h
-> --- linux-2.6_next/include/linux/pci.h	2009-06-12 05:24:32.000000000 +0800
-> +++ linux-2.6_next_pciwalk/include/linux/pci.h	2009-06-12 05:28:08.000000000 +0800
-> @@ -789,7 +789,7 @@ const struct pci_device_id *pci_match_id
->  int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
->  		    int pass);
->  
-> -void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
-> +void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
->  		  void *userdata);
->  int pci_cfg_space_size_ext(struct pci_dev *dev);
->  int pci_cfg_space_size(struct pci_dev *dev);
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+	(I may be willing to do that for Android proper -- after
+	studying the agreement carefully, but not for GPLed kernel
+	code).
+	
+									Pavel
 -- 
-Andrew Patterson
-Hewlett-Packard
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
