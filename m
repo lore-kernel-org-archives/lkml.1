@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764916AbZFLNmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbZFLNnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764916AbZFLNmp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764591AbZFLNbP
+	id S933266AbZFLNnB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763404AbZFLNbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:31:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:55292 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 09:31:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:55294 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764585AbZFLNbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:31:07 -0400
+	id S1764628AbZFLNbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:31:06 -0400
 CC: linux-kernel@vger.kernel.org
-To: Paul Mundt <lethal@linux-sh.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Fri, 12 Jun 2009 22:32:35 +0930
-Subject: [PATCH 5/7] cpumask: arch_send_call_function_ipi_mask: sh
-Message-Id: <20090612133109.90693DDD01@ozlabs.org>
+Subject: [PATCH 4/7] cpumask: arch_send_call_function_ipi_mask: powerpc
+Message-Id: <20090612133108.A8692DDDA2@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Rusty Russell <rusty@rustcorp.com.au>
 
 We're weaning the core code off handing cpumask's around on-stack.
 This introduces arch_send_call_function_ipi_mask(), and by defining
@@ -26,38 +27,38 @@ it, the old arch_send_call_function_ipi is defined by the core code.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/sh/include/asm/smp.h |    3 ++-
- arch/sh/kernel/smp.c      |    4 ++--
+ arch/powerpc/include/asm/smp.h |    3 ++-
+ arch/powerpc/kernel/smp.c      |    4 ++--
  2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/sh/include/asm/smp.h b/arch/sh/include/asm/smp.h
---- a/arch/sh/include/asm/smp.h
-+++ b/arch/sh/include/asm/smp.h
-@@ -43,7 +43,8 @@ void plat_send_ipi(unsigned int cpu, uns
- void plat_send_ipi(unsigned int cpu, unsigned int message);
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -139,7 +139,8 @@ extern struct smp_ops_t *smp_ops;
+ extern struct smp_ops_t *smp_ops;
  
- void arch_send_call_function_single_ipi(int cpu);
--void arch_send_call_function_ipi(cpumask_t mask);
+ extern void arch_send_call_function_single_ipi(int cpu);
+-extern void arch_send_call_function_ipi(cpumask_t mask);
 +extern void arch_send_call_function_ipi_mask(const struct cpumask *mask);
 +#define arch_send_call_function_ipi_mask arch_send_call_function_ipi_mask
  
- #else
+ #endif /* __ASSEMBLY__ */
  
-diff --git a/arch/sh/kernel/smp.c b/arch/sh/kernel/smp.c
---- a/arch/sh/kernel/smp.c
-+++ b/arch/sh/kernel/smp.c
-@@ -171,11 +171,11 @@ void smp_send_stop(void)
- 	smp_call_function(stop_this_cpu, 0, 0);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -130,11 +130,11 @@ void arch_send_call_function_single_ipi(
+ 	smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
  }
  
 -void arch_send_call_function_ipi(cpumask_t mask)
 +void arch_send_call_function_ipi_mask(const struct cpumask *mask)
  {
- 	int cpu;
+ 	unsigned int cpu;
  
 -	for_each_cpu_mask(cpu, mask)
 +	for_each_cpu(cpu, mask)
- 		plat_send_ipi(cpu, SMP_MSG_FUNCTION);
+ 		smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNCTION);
  }
  
 
