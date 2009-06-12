@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932767AbZFLQb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933045AbZFLQbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932767AbZFLQb0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 12:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764769AbZFLQZS
+	id S933045AbZFLQbn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 12:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbZFLQZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 12:25:18 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39101 "EHLO smtp.gentoo.org"
+	Fri, 12 Jun 2009 12:25:19 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39103 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762220AbZFLQZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 12:25:07 -0400
+	id S1763910AbZFLQZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 12:25:08 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 19/27] Blackfin: add support for irqflags
-Date: Fri, 12 Jun 2009 12:24:37 -0400
-Message-Id: <1244823885-22410-20-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 20/27] Blackfin: punt unused/wrong mutex-dec.h
+Date: Fri, 12 Jun 2009 12:24:38 -0400
+Message-Id: <1244823885-22410-21-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244823885-22410-1-git-send-email-vapier@gentoo.org>
 References: <1244823885-22410-1-git-send-email-vapier@gentoo.org>
@@ -22,403 +22,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts the irq handling in the Blackfin arch from the old irq.h /
-system.h method to the new irqflags.h.  A stepping stone on the way to
-other tracing functionality.
+Looks like the mutex-dec.h header file was incorrectly copied into the
+Blackfin asm path.  Nothing uses it, so punt it.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/Kconfig                |    3 +
- arch/blackfin/include/asm/irq.h      |  271 +--------------------------------
- arch/blackfin/include/asm/irqflags.h |   63 ++++++++
- arch/blackfin/include/asm/system.h   |    4 +-
- 4 files changed, 77 insertions(+), 264 deletions(-)
- create mode 100644 arch/blackfin/include/asm/irqflags.h
+ arch/blackfin/include/asm/mutex-dec.h |  112 ---------------------------------
+ 1 files changed, 0 insertions(+), 112 deletions(-)
+ delete mode 100644 arch/blackfin/include/asm/mutex-dec.h
 
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index 6ae9a03..d68cb0d 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -55,6 +55,9 @@ config FORCE_MAX_ZONEORDER
- config GENERIC_CALIBRATE_DELAY
- 	def_bool y
- 
-+config TRACE_IRQFLAGS_SUPPORT
-+	def_bool y
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.preempt"
-diff --git a/arch/blackfin/include/asm/irq.h b/arch/blackfin/include/asm/irq.h
-index 7645e85..400bdd5 100644
---- a/arch/blackfin/include/asm/irq.h
-+++ b/arch/blackfin/include/asm/irq.h
-@@ -17,270 +17,17 @@
- #ifndef _BFIN_IRQ_H_
- #define _BFIN_IRQ_H_
- 
--/* SYS_IRQS and NR_IRQS are defined in <mach-bf5xx/irq.h>*/
--#include <mach/irq.h>
--#include <asm/pda.h>
--#include <asm/processor.h>
--
--#ifdef CONFIG_SMP
--/* Forward decl needed due to cdef inter dependencies */
--static inline uint32_t __pure bfin_dspid(void);
--# define blackfin_core_id() (bfin_dspid() & 0xff)
--# define bfin_irq_flags cpu_pda[blackfin_core_id()].imask
--#else
--extern unsigned long bfin_irq_flags;
--#endif
--
--#ifdef CONFIG_IPIPE
--
--#include <linux/ipipe_trace.h>
-+#include <linux/irqflags.h>
- 
--void __ipipe_unstall_root(void);
--
--void __ipipe_restore_root(unsigned long flags);
--
--#ifdef CONFIG_DEBUG_HWERR
--# define __all_masked_irq_flags 0x3f
--# define __save_and_cli_hw(x) \
--	__asm__ __volatile__( \
--		"cli %0;" \
--		"sti %1;" \
--		: "=&d"(x) \
--		: "d" (0x3F) \
--	)
--#else
--# define __all_masked_irq_flags 0x1f
--# define __save_and_cli_hw(x) \
--	__asm__ __volatile__( \
--		"cli %0;" \
--		: "=&d"(x) \
--	)
--#endif
--
--#define irqs_enabled_from_flags_hw(x)	((x) != __all_masked_irq_flags)
--#define raw_irqs_disabled_flags(flags)	(!irqs_enabled_from_flags_hw(flags))
--#define local_test_iflag_hw(x)		irqs_enabled_from_flags_hw(x)
--
--#define local_save_flags(x)					 \
--	do {							 \
--		(x) = __ipipe_test_root() ?			 \
--			__all_masked_irq_flags : bfin_irq_flags; \
--		barrier();					 \
--	} while (0)
--
--#define local_irq_save(x)					 \
--	do {						 	 \
--		(x) = __ipipe_test_and_stall_root() ?		 \
--			__all_masked_irq_flags : bfin_irq_flags; \
--		barrier();					 \
--	} while (0)
--
--static inline void local_irq_restore(unsigned long x)
--{
--	barrier();
--	__ipipe_restore_root(x == __all_masked_irq_flags);
--}
--
--#define local_irq_disable()			\
--	do {					\
--		__ipipe_stall_root();		\
--		barrier();			\
--	} while (0)
--
--static inline void local_irq_enable(void)
--{
--	barrier();
--	__ipipe_unstall_root();
--}
--
--#define irqs_disabled()		__ipipe_test_root()
--
--#define local_save_flags_hw(x) \
--	__asm__ __volatile__( \
--		"cli %0;" \
--		"sti %0;" \
--		: "=d"(x) \
--	)
--
--#define	irqs_disabled_hw()				\
--	({						\
--		unsigned long flags;			\
--		local_save_flags_hw(flags);		\
--		!irqs_enabled_from_flags_hw(flags);	\
--	})
--
--static inline unsigned long raw_mangle_irq_bits(int virt, unsigned long real)
--{
--	/* Merge virtual and real interrupt mask bits into a single
--	   32bit word. */
--	return (real & ~(1 << 31)) | ((virt != 0) << 31);
--}
--
--static inline int raw_demangle_irq_bits(unsigned long *x)
--{
--	int virt = (*x & (1 << 31)) != 0;
--	*x &= ~(1L << 31);
--	return virt;
--}
--
--#ifdef CONFIG_IPIPE_TRACE_IRQSOFF
--
--#define local_irq_disable_hw()						\
--	do {								\
--		int _tmp_dummy;						\
--		if (!irqs_disabled_hw())				\
--			ipipe_trace_begin(0x80000000);			\
--		__asm__ __volatile__ ("cli %0;" : "=d" (_tmp_dummy) : );	\
--	} while (0)
--
--#define local_irq_enable_hw()						\
--	do {								\
--		if (irqs_disabled_hw())					\
--			ipipe_trace_end(0x80000000);			\
--		__asm__ __volatile__ ("sti %0;" : : "d"(bfin_irq_flags));	\
--	} while (0)
--
--#define local_irq_save_hw(x)				\
--	do {						\
--		__save_and_cli_hw(x);			\
--		if (local_test_iflag_hw(x))		\
--			ipipe_trace_begin(0x80000001);	\
--	} while (0)
--
--#define local_irq_restore_hw(x)				\
--	do {						\
--		if (local_test_iflag_hw(x)) {		\
--			ipipe_trace_end(0x80000001);	\
--			local_irq_enable_hw_notrace();	\
--		}					\
--	} while (0)
--
--#define local_irq_disable_hw_notrace()					\
--	do {								\
--		int _tmp_dummy;						\
--		__asm__ __volatile__ ("cli %0;" : "=d" (_tmp_dummy) : );	\
--	} while (0)
--
--#define local_irq_enable_hw_notrace() \
--	__asm__ __volatile__( \
--		"sti %0;" \
--		: \
--		: "d"(bfin_irq_flags) \
--	)
--
--#define local_irq_save_hw_notrace(x) __save_and_cli_hw(x)
--
--#define local_irq_restore_hw_notrace(x)			\
--	do {						\
--		if (local_test_iflag_hw(x))		\
--			local_irq_enable_hw_notrace();	\
--	} while (0)
--
--#else /* CONFIG_IPIPE_TRACE_IRQSOFF */
--
--#define local_irq_enable_hw() \
--	__asm__ __volatile__( \
--		"sti %0;" \
--		: \
--		: "d"(bfin_irq_flags) \
--	)
--
--#define local_irq_disable_hw()			\
--	do {					\
--		int _tmp_dummy;			\
--		__asm__ __volatile__ (		\
--			"cli %0;"		\
--			: "=d" (_tmp_dummy));	\
--	} while (0)
--
--#define local_irq_restore_hw(x) \
--	do { \
--		if (irqs_enabled_from_flags_hw(x)) \
--			local_irq_enable_hw(); \
--	} while (0)
--
--#define local_irq_save_hw(x)		__save_and_cli_hw(x)
--
--#define local_irq_disable_hw_notrace()	local_irq_disable_hw()
--#define local_irq_enable_hw_notrace()	local_irq_enable_hw()
--#define local_irq_save_hw_notrace(x)	local_irq_save_hw(x)
--#define local_irq_restore_hw_notrace(x)	local_irq_restore_hw(x)
--
--#endif  /* CONFIG_IPIPE_TRACE_IRQSOFF */
--
--#else /* !CONFIG_IPIPE */
--
+diff --git a/arch/blackfin/include/asm/mutex-dec.h b/arch/blackfin/include/asm/mutex-dec.h
+deleted file mode 100644
+index 0134151..0000000
+--- a/arch/blackfin/include/asm/mutex-dec.h
++++ /dev/null
+@@ -1,112 +0,0 @@
 -/*
-- * Interrupt configuring macros.
+- * include/asm-generic/mutex-dec.h
+- *
+- * Generic implementation of the mutex fastpath, based on atomic
+- * decrement/increment.
 - */
--#define local_irq_disable() \
--	do { \
--		int __tmp_dummy; \
--		__asm__ __volatile__( \
--			"cli %0;" \
--			: "=d" (__tmp_dummy) \
--		); \
--	} while (0)
+-#ifndef _ASM_GENERIC_MUTEX_DEC_H
+-#define _ASM_GENERIC_MUTEX_DEC_H
 -
--#define local_irq_enable() \
--	__asm__ __volatile__( \
--		"sti %0;" \
--		: \
--		: "d" (bfin_irq_flags) \
--	)
+-/**
+- *  __mutex_fastpath_lock - try to take the lock by moving the count
+- *                          from 1 to a 0 value
+- *  @count: pointer of type atomic_t
+- *  @fail_fn: function to call if the original value was not 1
+- *
+- * Change the count from 1 to a value lower than 1, and call <fail_fn> if
+- * it wasn't 1 originally. This function MUST leave the value lower than
+- * 1 even when the "1" assertion wasn't true.
+- */
+-static inline void
+-__mutex_fastpath_lock(atomic_t *count, fastcall void (*fail_fn)(atomic_t *))
+-{
+-	if (unlikely(atomic_dec_return(count) < 0))
+-		fail_fn(count);
+-	else
+-		smp_mb();
+-}
 -
--#ifdef CONFIG_DEBUG_HWERR
--# define __save_and_cli(x) \
--	__asm__ __volatile__( \
--		"cli %0;" \
--		"sti %1;" \
--		: "=&d" (x) \
--		: "d" (0x3F) \
--	)
+-/**
+- *  __mutex_fastpath_lock_retval - try to take the lock by moving the count
+- *                                 from 1 to a 0 value
+- *  @count: pointer of type atomic_t
+- *  @fail_fn: function to call if the original value was not 1
+- *
+- * Change the count from 1 to a value lower than 1, and call <fail_fn> if
+- * it wasn't 1 originally. This function returns 0 if the fastpath succeeds,
+- * or anything the slow path function returns.
+- */
+-static inline int
+-__mutex_fastpath_lock_retval(atomic_t *count, fastcall int (*fail_fn)(atomic_t *))
+-{
+-	if (unlikely(atomic_dec_return(count) < 0))
+-		return fail_fn(count);
+-	else {
+-		smp_mb();
+-		return 0;
+-	}
+-}
+-
+-/**
+- *  __mutex_fastpath_unlock - try to promote the count from 0 to 1
+- *  @count: pointer of type atomic_t
+- *  @fail_fn: function to call if the original value was not 0
+- *
+- * Try to promote the count from 0 to 1. If it wasn't 0, call <fail_fn>.
+- * In the failure case, this function is allowed to either set the value to
+- * 1, or to set it to a value lower than 1.
+- *
+- * If the implementation sets it to a value of lower than 1, then the
+- * __mutex_slowpath_needs_to_unlock() macro needs to return 1, it needs
+- * to return 0 otherwise.
+- */
+-static inline void
+-__mutex_fastpath_unlock(atomic_t *count, fastcall void (*fail_fn)(atomic_t *))
+-{
+-	smp_mb();
+-	if (unlikely(atomic_inc_return(count) <= 0))
+-		fail_fn(count);
+-}
+-
+-#define __mutex_slowpath_needs_to_unlock()		1
+-
+-/**
+- * __mutex_fastpath_trylock - try to acquire the mutex, without waiting
+- *
+- *  @count: pointer of type atomic_t
+- *  @fail_fn: fallback function
+- *
+- * Change the count from 1 to a value lower than 1, and return 0 (failure)
+- * if it wasn't 1 originally, or return 1 (success) otherwise. This function
+- * MUST leave the value lower than 1 even when the "1" assertion wasn't true.
+- * Additionally, if the value was < 0 originally, this function must not leave
+- * it to 0 on failure.
+- *
+- * If the architecture has no effective trylock variant, it should call the
+- * <fail_fn> spinlock-based trylock variant unconditionally.
+- */
+-static inline int
+-__mutex_fastpath_trylock(atomic_t *count, int (*fail_fn)(atomic_t *))
+-{
+-	/*
+-	 * We have two variants here. The cmpxchg based one is the best one
+-	 * because it never induce a false contention state.  It is included
+-	 * here because architectures using the inc/dec algorithms over the
+-	 * xchg ones are much more likely to support cmpxchg natively.
+-	 *
+-	 * If not we fall back to the spinlock based variant - that is
+-	 * just as efficient (and simpler) as a 'destructive' probing of
+-	 * the mutex state would be.
+-	 */
+-#ifdef __HAVE_ARCH_CMPXCHG
+-	if (likely(atomic_cmpxchg(count, 1, 0) == 1)) {
+-		smp_mb();
+-		return 1;
+-	}
+-	return 0;
 -#else
--# define __save_and_cli(x) \
--	__asm__ __volatile__( \
--		"cli %0;" \
--		: "=&d" (x) \
--	)
+-	return fail_fn(count);
 -#endif
+-}
 -
--#define local_save_flags(x) \
--	__asm__ __volatile__( \
--		"cli %0;" \
--		"sti %0;" \
--		: "=d" (x) \
--	)
--
--#ifdef CONFIG_DEBUG_HWERR
--#define irqs_enabled_from_flags(x) (((x) & ~0x3f) != 0)
--#else
--#define irqs_enabled_from_flags(x) ((x) != 0x1f)
 -#endif
--
--#define local_irq_restore(x) \
--	do { \
--		if (irqs_enabled_from_flags(x)) \
--			local_irq_enable(); \
--	} while (0)
--
--/* For spinlocks etc */
--#define local_irq_save(x) __save_and_cli(x)
--
--#define irqs_disabled()				\
--({						\
--	unsigned long flags;			\
--	local_save_flags(flags);		\
--	!irqs_enabled_from_flags(flags);	\
--})
--
--#define local_irq_save_hw(x)		local_irq_save(x)
--#define local_irq_restore_hw(x)		local_irq_restore(x)
--#define local_irq_enable_hw()		local_irq_enable()
--#define local_irq_disable_hw()		local_irq_disable()
--#define irqs_disabled_hw()		irqs_disabled()
-+/* SYS_IRQS and NR_IRQS are defined in <mach-bf5xx/irq.h> */
-+#include <mach/irq.h>
- 
--#endif /* !CONFIG_IPIPE */
-+/* Xenomai IPIPE helpers */
-+#define local_irq_restore_hw(x) local_irq_restore(x)
-+#define local_irq_save_hw(x)    local_irq_save(x)
-+#define local_irq_enable_hw(x)  local_irq_enable(x)
-+#define local_irq_disable_hw(x) local_irq_disable(x)
-+#define irqs_disabled_hw(x)     irqs_disabled(x)
- 
- #if ANOMALY_05000244 && defined(CONFIG_BFIN_ICACHE)
- # define NOP_PAD_ANOMALY_05000244 "nop; nop;"
-diff --git a/arch/blackfin/include/asm/irqflags.h b/arch/blackfin/include/asm/irqflags.h
-new file mode 100644
-index 0000000..139cba4
---- /dev/null
-+++ b/arch/blackfin/include/asm/irqflags.h
-@@ -0,0 +1,63 @@
-+/*
-+ * interface to Blackfin CEC
-+ *
-+ * Copyright 2009 Analog Devices Inc.
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+#ifndef __ASM_BFIN_IRQFLAGS_H__
-+#define __ASM_BFIN_IRQFLAGS_H__
-+
-+#ifdef CONFIG_SMP
-+# include <asm/pda.h>
-+# include <asm/processor.h>
-+/* Forward decl needed due to cdef inter dependencies */
-+static inline uint32_t __pure bfin_dspid(void);
-+# define blackfin_core_id() (bfin_dspid() & 0xff)
-+# define bfin_irq_flags cpu_pda[blackfin_core_id()].imask
-+#else
-+extern unsigned long bfin_irq_flags;
-+#endif
-+
-+static inline void bfin_sti(unsigned long flags)
-+{
-+	asm volatile("sti %0;" : : "d" (flags));
-+}
-+
-+static inline unsigned long bfin_cli(void)
-+{
-+	unsigned long flags;
-+	asm volatile("cli %0;" : "=d" (flags));
-+	return flags;
-+}
-+
-+static inline void raw_local_irq_disable(void)
-+{
-+	bfin_cli();
-+}
-+static inline void raw_local_irq_enable(void)
-+{
-+	bfin_sti(bfin_irq_flags);
-+}
-+
-+#define raw_local_save_flags(flags) do { (flags) = bfin_read_IMASK(); } while (0)
-+
-+#define raw_irqs_disabled_flags(flags) (((flags) & ~0x3f) == 0)
-+
-+static inline void raw_local_irq_restore(unsigned long flags)
-+{
-+	if (!raw_irqs_disabled_flags(flags))
-+		raw_local_irq_enable();
-+}
-+
-+static inline unsigned long __raw_local_irq_save(void)
-+{
-+	unsigned long flags = bfin_cli();
-+#ifdef CONFIG_DEBUG_HWERR
-+	bfin_sti(0x3f);
-+#endif
-+	return flags;
-+}
-+#define raw_local_irq_save(flags) do { (flags) = __raw_local_irq_save(); } while (0)
-+
-+#endif
-diff --git a/arch/blackfin/include/asm/system.h b/arch/blackfin/include/asm/system.h
-index a4c8254..294dbda 100644
---- a/arch/blackfin/include/asm/system.h
-+++ b/arch/blackfin/include/asm/system.h
-@@ -35,10 +35,10 @@
- #define _BLACKFIN_SYSTEM_H
- 
- #include <linux/linkage.h>
--#include <linux/compiler.h>
-+#include <linux/irqflags.h>
- #include <mach/anomaly.h>
-+#include <asm/cache.h>
- #include <asm/pda.h>
--#include <asm/processor.h>
- #include <asm/irq.h>
- 
- /*
 -- 
 1.6.3.1
 
