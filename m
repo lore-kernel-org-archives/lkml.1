@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764115AbZFLKAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933472AbZFLKDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764115AbZFLKAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933416AbZFLKA3
+	id S933472AbZFLKDt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZFLKDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:00:29 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39822 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933778AbZFLKA2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:00:28 -0400
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
- suspending
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <1244800695.7172.115.camel@pasglop>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
-	 <20090612091002.GA32052@elte.hu> <1244798515.7172.99.camel@pasglop>
-	 <84144f020906120224v5ef44637pb849fd247eab84ea@mail.gmail.com>
-	 <1244799389.7172.110.camel@pasglop>
-	 <Pine.LNX.4.64.0906121244020.30911@melkki.cs.Helsinki.FI>
-	 <1244800695.7172.115.camel@pasglop>
-Date: Fri, 12 Jun 2009 13:00:29 +0300
-Message-Id: <1244800829.30512.40.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Fri, 12 Jun 2009 06:03:41 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:1997 "EHLO
+	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753501AbZFLKDk convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 06:03:40 -0400
+X-SpamScore: -41
+X-BigFish: VPS-41(z21eWz1432R98dR4015L1805M873fizz1202hzzz32i6bh17ch6di61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KL4ELX-02-4ZA-01
+Date: Fri, 12 Jun 2009 12:03:08 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] AMD64 EDAC module for 2.6.31
+Message-ID: <20090612100308.GA4403@aftab>
+References: <20090611103705.GC15454@aftab> <20090612080323.GA14669@liondog.tnic> <20090612181022.8accf95b.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090612181022.8accf95b.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-OriginalArrivalTime: 12 Jun 2009 10:03:12.0144 (UTC) FILETIME=[FEC5A900:01C9EB44]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Benjamin Herrenschmidt wrote:
-> > > Take a break, take a step back, and look at the big picture. Do you
-> > > really want to find all the needles in the haystack or just make sure
-> > > you wear gloves when handling the hay ? :-)
-
-On Fri, 2009-06-12 at 12:45 +0300, Pekka J Enberg wrote:
-> > Well, I would like to find the needles but I think we should do it with 
-> > gloves on.
+On Fri, Jun 12, 2009 at 06:10:22PM +1000, Stephen Rothwell wrote:
+> Hi Borislav,
+> 
+> On Fri, 12 Jun 2009 10:03:23 +0200 Borislav Petkov <petkovbb@googlemail.com> wrote:
+> >
+> > now that amd64 EDAC is upstream, I've removed the fox-next branch since
+> > the next patch series is not ready yet.
 > > 
-> > If everyone is happy with this version of Ben's patch, I'm going to just 
-> > apply it and push it to Linus.
+> > What is actually the proper way to let you know that I don't have any
+> > more patches for linux-next right now and that you don't have to pull
+> > from my repo for now?
+> 
+> Just set the for-next branch to point somewhere in Linus' tree (where it
+> was would be fine if that is what Linus' merged from you).  That way I
+> can still try to fetch it each day and when you have new stuff, you can
+> just put it there without bothering to remember to tell me anything.
 
-On Fri, 2009-06-12 at 19:58 +1000, Benjamin Herrenschmidt wrote:
-> Thanks :-) Looks right at first glance. I'll test tomorrow.
+Thanks, done.
 
-Nick? I do think this is the best short-term solution. We can get rid of
-it later on if we decide to fix up the callers instead.
+-- 
+Regards/Gruss,
+Boris.
 
-			Pekka
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
