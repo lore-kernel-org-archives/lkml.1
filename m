@@ -1,63 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbZFLSQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765433AbZFLSSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763481AbZFLSQR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZFLSQD
+	id S1765433AbZFLSSD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZFLSRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:16:03 -0400
-Received: from avs3.arnes.si ([193.2.1.68]:54135 "EHLO avs3.arnes.si"
+	Fri, 12 Jun 2009 14:17:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43413 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753063AbZFLSQB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:16:01 -0400
-To: "Michael S. Zick" <lkml@morethan.org>, tomaz.mertelj@guest.arnes.si
-From: tomaz.mertelj@guest.arnes.si
-Cc: Harald Welte <HaraldWelte@viatech.com>, Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: =?UTF-8?Q?Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core	temperature=
-	?=
-Date: Fri, 12 Jun 2009 20:16:03 +0200
-Message-ID: <20090612_181603_063915.tomaz.mertelj@guest.arnes.si>
-X-originating-IP: 84.20.248.126
+	id S1752169AbZFLSRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 14:17:54 -0400
+Message-ID: <4A329BCD.8070008@kernel.org>
+Date: Fri, 12 Jun 2009 11:17:49 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Cliff Wickman <cpw@sgi.com>, linux-kernel@vger.kernel.org,
+       "Huang, Ying" <ying.huang@intel.com>, pj@sgi.com
+Subject: Re: [PATCH] x86: vendor reserved memory type
+References: <E1MElFX-0007fY-TR@eag09.americas.sgi.com> <4A3123FF.3010803@zytor.com> <20090612133918.GA17557@sgi.com> <4A32980A.2020209@zytor.com>
+In-Reply-To: <4A32980A.2020209@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri June 12 2009, Michael S. Zick wrote:
+H. Peter Anvin wrote:
+> Yinghai, Huang, Paul: looks good to you [see patch at end]?  Anyone else
+> we should have look at this?
 > 
-> And the output of sensors with H.W. driver built-in:
+> 	-hpa
 > 
-> root@cb01:~# sensors
-> acpitz-virtual-0
-> Adapter: Virtual device
-> temp1:       +48.8�C  (crit = +94.8�C)
 > 
-> via-cputemp-isa-0000
-> Adapter: ISA adapter
-> Core 0:      +50.0�C
+> Cliff Wickman wrote:
+>>> There is no difference between that and E820_RESERVED, so there is no
+>>> reason to distinguish them.  The semantics are exactly the same.
+>> I thought a new type would be clearer, but if it would break an e820
+>> standard I withdraw the idea.  All is good as long as the memory gets reserved.
 > 
-> Which looks reasonable to me, on this machine.
+> We *could* add private types with negative numbers if we had to, but
+> that means adding some infrastructure, and this doesn't seem justified
+> for this case.  There is also a cost involved, since different types
+> can't be range-merged.
 > 
-> Mike 
+>>> The real problem is that this condition is too lenient:
+>>>
+>>>                 if (md->attribute & EFI_MEMORY_WB)
+>>>                         e820_type = E820_RAM;
+>>>                 else
+>>>                         e820_type = E820_RESERVED;
+>>>
+>>> It really should be something like:
+>>>
+>>> 	switch (md->type) {
+>>> 	case EFI_LOADER_CODE:
+>>> 	case EFI_LOADER_DATA:
+>>> 	case EFI_BOOT_SERVICES_CODE:
+>>> 	case EFI_BOOT_SERVICES_DATA:
+>>> 	case EFI_CONVENTIONAL_MEMORY:
+>>>                 if (md->attribute & EFI_MEMORY_WB)
+>>>                         e820_type = E820_RAM;
+>>>                 else
+>>>                         e820_type = E820_RESERVED;
+>>> 		break;
+>>> 	case EFI_ACPI_RECLAIM_MEMORY:
+>>> 		e820_type = E820_ACPI;
+>>> 		break;
+>>> 	case EFI_ACPI_MEMORY_NVS:
+>>> 		e820_type = E820_NVS;
+>>> 		break;
+>>> 	case EFI_UNUSABLE_MEMORY:
+>>> 		e820_type = E820_UNUSUABLE;
+>>> 		break;
+>>> 	default:
+>>> 		e820_type = E820_RESERVED;
+>>> 		break;
+>>> 	}
+>> Okay. I buy that as more straightforward.
+>>  
+>>> Personally, it's not clear to me if this should do add any non-memory
+>>> ranges, as the boot loader should have done that, but I guess in this
+>>> particular case we have already horked out.
+>>>
+>>> Another problem is that the comment is wrong.  sanitize_e820_map() will
+>>> coalesce adjacent entries, as it should.
+>>>
+>>> Finally, randomly definiting a standard value in E820 with new semantics
+>>> isn't going to fly; it's likely to conflict with official allocations.
+>>>
+>>> 	-hpa
+>> I propose to submit your code (basically) in the form of the below patch.
+>> It works for me.   Does it look okay to you?
+>>
+>>
+>>  
+>> Subject: [PATCH] x86: efi/e820 table merge fix
+>>
+>> This patch causes all the EFI_RESERVED_TYPE memory reservations to be recorded
+>> in the e820 table as type E820_RESERVED.
+>>
+>> Without this patch EFI_RESERVED_TYPE memory reservations may be
+>> marked usable in the e820 table. There may be a collision between
+>> kernel use and some reserver's use of this memory.
+>>
+>> (An example use of this functionality is the UV system, which
+>>  will access extremely large areas of memory with a memory engine
+>>  that allows a user to address beyond the processor's range.  Such
+>>  areas are reserved in the EFI table by the BIOS.
+>>  Some loaders have a restricted number of entries possible in the e820 table,
+>>  hence the need to record the reservations in the unrestricted EFI table.)
+>>
+>> The call to do_add_efi_memmap() is only made if "add_efi_memmap" is specified
+>> on the kernel command line.
+>>
+>> Diffed against 2.6.30-rc8
+>>
+>> Signed-off-by: Cliff Wickman <cpw@sgi.com>
+>> ---
+>>  arch/x86/kernel/efi.c |   31 ++++++++++++++++++++++++++++---
+>>  1 file changed, 28 insertions(+), 3 deletions(-)
+>>
+>> Index: linux/arch/x86/kernel/efi.c
+>> ===================================================================
+>> --- linux.orig/arch/x86/kernel/efi.c
+>> +++ linux/arch/x86/kernel/efi.c
+>> @@ -240,10 +240,35 @@ static void __init do_add_efi_memmap(voi
+>>  		unsigned long long size = md->num_pages << EFI_PAGE_SHIFT;
+>>  		int e820_type;
+>>  
+>> -		if (md->attribute & EFI_MEMORY_WB)
+>> -			e820_type = E820_RAM;
+>> -		else
+>> +		switch (md->type) {
+>> +		case EFI_LOADER_CODE:
+>> +		case EFI_LOADER_DATA:
+>> +		case EFI_BOOT_SERVICES_CODE:
+>> +		case EFI_BOOT_SERVICES_DATA:
+>> +		case EFI_CONVENTIONAL_MEMORY:
+>> +			if (md->attribute & EFI_MEMORY_WB)
+>> +				e820_type = E820_RAM;
+>> +			else
+>> +				e820_type = E820_RESERVED;
+>> +			break;
+>> +		case EFI_ACPI_RECLAIM_MEMORY:
+>> +			e820_type = E820_ACPI;
+>> +			break;
+>> +		case EFI_ACPI_MEMORY_NVS:
+>> +			e820_type = E820_NVS;
+>> +			break;
+>> +		case EFI_UNUSABLE_MEMORY:
+>> +			e820_type = E820_UNUSABLE;
+>> +			break;
+>> +		default:
+>> +			/*
+>> +			 * EFI_RESERVED_TYPE EFI_RUNTIME_SERVICES_CODE
+>> +			 * EFI_RUNTIME_SERVICES_DATA EFI_MEMORY_MAPPED_IO
+>> +			 * EFI_MEMORY_MAPPED_IO_PORT_SPACE EFI_PAL_CODE
+>> +			 */
+>>  			e820_type = E820_RESERVED;
 
-On VIA VB7002  acpitz  obviously does not work so I can not compare. I 
-guess BIOS does not support the temperature reading since there is no 
-temperature readout in BIOS. 
+then, if those entries are near TOML, and it is E820_RESERVED now, and it could not be directly mapped at first point.
 
-acpitz-virtual-0
-Adapter: Virtual device
-temp1:      -247.7 C  (crit = +140.0 C)
+but later efi_remap will direct map it if the size is too big for runtime service.
 
-via-cputemp-isa-0000
-Adapter: ISA adapter
-Core 0:      +27.0 C
+not sure others.
 
-Is there a way to reset the CPU temperature calibration to the factory 
-default?  
+YH
 
-Tomaz Mertelj 
+>> +			break;
+>> +		}
+>>  		e820_add_region(start, size, e820_type);
+>>  	}
+>>  	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
+>>
 
