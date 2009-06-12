@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZFLVXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbZFLVZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760161AbZFLVXv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 17:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbZFLVXn
+	id S1762775AbZFLVZV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 17:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbZFLVZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 17:23:43 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56838 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756893AbZFLVXm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 17:23:42 -0400
-Date: Fri, 12 Jun 2009 17:23:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
- [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-In-Reply-To: <200906122156.14873.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Jun 2009 17:25:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42694 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752987AbZFLVZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 17:25:09 -0400
+Date: Fri, 12 Jun 2009 17:24:34 -0400
+To: linux-kernel@vger.kernel.org
+Cc: fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, bligh@google.com, roland@redhat.com,
+       fche@redhat.com
+Message-Id: <cover.1244837725.git.jbaron@redhat.com>
+From: Jason Baron <jbaron@redhat.com>
+Subject: [PATCH 0/7] add syscall tracepoints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
+hi,
 
-> On Friday 12 June 2009, Alan Stern wrote:
-> > On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
-> > 
-> > > So, are you suggesting that the core should only check the "all children
-> > > suspended" condition if special flag is set in dev_pm_info?
-> > 
-> > Or rather, check it only if the special flag _isn't_ set.
-> 
-> Where the default is unset, I guess?
+The following is an implementation of Frederic's syscall tracer on top of
+tracepoints. It adds the ability to toggle the entry/exit of each syscall
+via the standard events/syscalls/syscall_blah/enable interface. The 
+implementation is done by adding 2 tracepoints. One on entry and one for exit.
 
-Yep.
+This implementation required a few 'core' api changes. I've added 
+'DECLARE_TRACE_REG()' macro which takes a register and and an unregister
+function as arguments. This allowed me to toggle the ftrace tif flag
+when the first tracepoint callback is added and the last is removed. Current
+callers of 'DECLARE_TRACE()' are not impacted.
 
-> But then, what about the resuming of the parents before the device is resumed?
-> Should the parents be resumed regardless of the flag state?
+Another change was to call arch_init_ftrace_syscalls via an 'arch_initall'. In
+this implmentation I needed to access the syscalls_metadata structure at
+runtime in order to determine which syscalls were 'traceable'. Although the
+implementation uses SYSCALL_DEFINE() to set up the the trace events, for
+some reason at runtime there is no syscalls_metadata, associated with some of
+the SYSCALL_DEFINE() calls. I'm not quite sure why that is. However, by
+calling arch_init_ftrace_syscalls() at boot I can make sure the lists are in
+sync.
 
-Yes.  In general you should assume a device's parent (and the device
-itself!) needs to be resumed whenever the kernel wants to do something
-with the device.  The special flag arises because sometimes it's safe
-to suspend the parent without suspending the device _if_ the kernel
-isn't using the device.
+thanks,
 
-Imagine an idle disk at the end of a link.  We might want to 
-autosuspend the link without spinning down the disk.  When we have to 
-communicate with the disk again, we autoresume the link.  (Including 
-the case where the communication is a "spin-down" command.)
+-Jason 
 
->  And if so, what's
-> the condition for breaking the recurrence?  Surely it's not sufficient to check
-> if the parent is active, because its parent need not be active if it has this
-> special flag set.
 
-That's a good question.  Let's assume that situations like this will be 
-handled by the drivers.
-
-For example, suppose A is the parent of B is the parent of C, and A is
-suspended but B isn't and C is.  What happens when somebody wants to
-use C?
-
-An autoresume request is generated for C.  Since C's parent is already
-resumed, the runtime_resume method in C's driver is called.  The driver
-has to do some I/O in order to resume C, so it passes an I/O request up
-to B's driver.  The request then gets passed up to A's driver.  This
-driver knows that A is suspended, so it starts an autoresume of A and
-waits for the autoresume to complete before carrying out the request.
-
-Then the I/O can go through, so C gets resumed and everything works 
-out.
-
-I don't know how often this sort of pattern will arise.  It certainly
-could be used in usb-storage; there would be no difficulty starting an
-autoresume when an I/O request arrives from the SCSI layer below.  In
-fact, that is exactly how some early runtime-PM patches for usb-storage
-worked.
-
-Alan Stern
+ arch/x86/include/asm/ftrace.h |    4 +-
+ arch/x86/kernel/ftrace.c      |   24 +++++-
+ arch/x86/kernel/ptrace.c      |    6 +-
+ include/linux/syscalls.h      |   63 +++++++++++++++
+ include/linux/tracepoint.h    |   27 ++++++-
+ include/trace/syscall.h       |   37 +++++++---
+ kernel/trace/trace_events.c   |   29 +++++---
+ kernel/trace/trace_syscalls.c |  172 +++++++++++++++++++----------------------
+ kernel/tracepoint.c           |   38 +++++++++
+ 9 files changed, 278 insertions(+), 122 deletions(-)
 
