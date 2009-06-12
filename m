@@ -1,92 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761604AbZFLAYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762075AbZFLA04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761604AbZFLAYi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 20:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZFLAYa
+	id S1762075AbZFLA04 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 20:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbZFLA0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 20:24:30 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45210 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753127AbZFLAYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 20:24:30 -0400
-Date: Fri, 12 Jun 2009 10:24:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       Ingo Molnar <mingo@elte.hu>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: origin tree build failure
-Message-Id: <20090612102427.32582baa.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Jun 2009 20:26:48 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45091 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbZFLA0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 20:26:48 -0400
+Date: Fri, 12 Jun 2009 01:26:34 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Marcel Holtmann <marcel@holtmann.org>, Ingo Molnar <mingo@elte.hu>,
+       Martin Bligh <mbligh@google.com>, Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+Message-ID: <20090612002634.GY8633@ZenIV.linux.org.uk>
+References: <alpine.LFD.2.01.0906111127520.3573@localhost.localdomain> <20090611202341.GA23590@elte.hu> <1244753357.27363.82.camel@violet> <20090611210810.GA9317@uranus.ravnborg.org> <1244755036.27363.93.camel@violet> <20090611212635.GA9446@uranus.ravnborg.org> <4A3182C6.803@gmail.com> <alpine.LFD.2.01.0906111521210.3535@localhost.localdomain> <20090611231952.GX8633@ZenIV.linux.org.uk> <alpine.LFD.2.01.0906111624320.3237@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906111624320.3237@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, Jun 11, 2009 at 04:25:19PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 12 Jun 2009, Al Viro wrote:
+> > 
+> > Linus, the real question that needs to be answered is this:
+> 
+> No it's not.
+> 
+> People have already told you that the intent isn't to change the ABI. So 
+> your whole "hard-hitting journalism" is just bogus posturing.
+> 
+> What does this have to do with anything?
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+Oh, for...  I can bloody well read, I've seen the reply from Peter and
+I've no reasons to doubt his words (and if I had, I would've said so).
+Not the issue.  I don't know who you are confusing me with, but for the
+record - I have no problem with this particular code being in tree.
 
-include/linux/perf_counter.h:677: error: redefinition of 'perf_counter_do_pending'
-arch/powerpc/include/asm/hw_irq.h:170: note: previous definition of 'perf_counter_do_pending' was here
+I do have a problem with another thing: suggestions I've heard quite a few
+times before; basically, "let's allow special breakable ABIs for use by
+userland code living in kernel tree and tied to specific version".  No,
+I'm not saying that this is what's happening with that merge.  But your
+support for userland code in the tree (and BTW, I agree that it's a good
+idea - hell, mount(8) makes a good candidate as far as I'm concerned) will
+be parsed as green light for that.  Has been already, in this thread.
 
-Caused by commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
-unify and fix delayed counter wakeup") which added the former definitions
-but forgot the remove the latter.
+So could you please clarify the situation?  If the ABI compatibility
+requirements remain the same as they used to be, whether the userland code
+is in-tree or not, I'm fine with the entire thing.  If they do not (and *ONLY*
+in that case), I think we have a real problem.
 
-I applied the following patch.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+For the record, I don't give a damn about packaging-related arguments and
+theories about keeping userland source separate as a matter of some principle.
+As far as I'm concerned, it's not a problem - as long as we take care of
+later version's $TOOL working on older kernel as well as $TOOL from that
+older kernel used to work, I'm fine with it.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 12 Jun 2009 10:14:22 +1000
-Subject: [PATCH] perfcounters: remove powerpc definitions of perf_counter_do_pending
-
-Commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
-unify and fix delayed counter wakeup") added global definitions.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/asm/hw_irq.h |    3 ---
- arch/powerpc/kernel/irq.c         |    1 +
- 2 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 20a44d0..5351237 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -156,8 +156,6 @@ static inline void clear_perf_counter_pending(void)
- 		"i" (offsetof(struct paca_struct, perf_counter_pending)));
- }
- 
--extern void perf_counter_do_pending(void);
--
- #else
- 
- static inline unsigned long test_perf_counter_pending(void)
-@@ -167,7 +165,6 @@ static inline unsigned long test_perf_counter_pending(void)
- 
- static inline void set_perf_counter_pending(void) {}
- static inline void clear_perf_counter_pending(void) {}
--static inline void perf_counter_do_pending(void) {}
- #endif /* CONFIG_PERF_COUNTERS */
- 
- #endif	/* __KERNEL__ */
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index feff792..844d3f8 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -53,6 +53,7 @@
- #include <linux/bootmem.h>
- #include <linux/pci.h>
- #include <linux/debugfs.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm/uaccess.h>
- #include <asm/system.h>
--- 
-1.6.3.1
-
+I realize that multi-side flamefests are messy, but let's keep track of
+who's saying what, OK?
