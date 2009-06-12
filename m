@@ -1,121 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763043AbZFLN5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZFLN5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763043AbZFLN5S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbZFLN5A
+	id S1753242AbZFLN5d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763411AbZFLN5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:57:00 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49334 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755595AbZFLN46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:56:58 -0400
-Subject: Re: linux-next: origin tree build failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, paulus@samba.org,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <20090612134428.GC32105@elte.hu>
-References: <20090612102427.32582baa.sfr@canb.auug.org.au>
-	 <1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu>
-	 <1244799197.7172.106.camel@pasglop> <20090612125335.GH31845@elte.hu>
-	 <1244812224.7172.146.camel@pasglop>  <20090612134428.GC32105@elte.hu>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 23:56:16 +1000
-Message-Id: <1244814976.7172.164.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 12 Jun 2009 09:57:07 -0400
+Received: from mail-fx0-f216.google.com ([209.85.220.216]:43048 "EHLO
+	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763008AbZFLN5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:57:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=gKXo+1JzzUPuGMNPI99ol3fEHHF+NYNo4dFbjStHhgXfUx9Ehpfbwqywy0RjFeMbTL
+         6MJt2kv69Lpr6dG5vlFbOpg710gGd5xWRTp/K1b4CnWeKwEpCOz1fQXCyYjeZFVzuCPc
+         fdHOiFBdS5jU0BGozGJMOESs+Z25pWu7A4OCg=
+MIME-Version: 1.0
+In-Reply-To: <20090612132443.GA24002@damson.ad.medicalresearch.no>
+References: <20090612132443.GA24002@damson.ad.medicalresearch.no>
+Date: Fri, 12 Jun 2009 16:57:04 +0300
+X-Google-Sender-Auth: dd64fe3a7815a90a
+Message-ID: <84144f020906120657j31fb3e82t2da251d31db6ba92@mail.gmail.com>
+Subject: Re: [GIT PULL] kmemcheck for mainline
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 15:44 +0200, Ingo Molnar wrote:
+Hi Linus,
 
-> This is certainly doable for agreeable features - which is the bulk 
-> - and it is being done.
-> 
-> But this is a catch-22 for _controversial_ new features - which 
-> perfcounters clearly was, in case you turned off your lkml 
-> subscription ;-)
+On Fri, Jun 12, 2009 at 4:31 PM, Vegard Nossum<vegard.nossum@gmail.com> wrote:
+> Please consider pulling the kmemcheck tree;
+>
+> kmemcheck is a feature which can (at run-time) detect some uses of
+> uninitialized memory within the kernel, similarly to what Valgrind's memcheck
+> does for userspace programs. We also have the ability to find use-after-free
+> errors and leaks of uninitialized data to userspace, both with a false-
+> positive rate of zero.
+>
+> kmemcheck is self-contained in the sense that when CONFIG_KMEMCHECK=n, it has
+> no effect on the compiled kernel whatsoever. Our code has lived in the -tip
+> tree and been in -next for over a year, and has the acks of x86 and slab
+> maintainers (Ingo and Pekka). Inclusion in mainline would lower the threshold
+> for building and running kmemcheck-enabled kernels, which would also
+> hopefully increase testing coverage of the rest of the kernel code.
 
-I didn't :-) My point here is that Linus can make a decision with an
-email -before- merging so that -next gets a chance, at least for a
-couple of days, to do the integration testing once the controversy has
-been sorted by his highness.
+I hope I didn't burn all my karma for this merge window with the slab
+early boot patches but:
 
-> And if you hit that build breakage during bisection you can do:
-> 
->    git cherry-pick e14112d
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Right, I can, you can, but can random tester who wants to track down
-what his problem is ? I'm not sure...
+for this pull request.
 
-> Also, you seem to brush off the notion that far more bugs slip 
-> through linux-next than get caught by it.
-
-Less than without linux-next. We aren't perfect and no process will
-solve everything. But this could have been easily avoided.
-
-> So if you think linux-next matters in terms of _regression_ testing, 
-> the numbers dont seem to support that notion. This particular 
-> incident does support that notion though, granted - but it's taken 
-> out of context IMHO:
-> 
-> In terms of test coverage, at least for our trees, less than 1% of 
-> the bugs we handle get reported in a linux-next context - and most 
-> of the bugs that get reported (against say the scheduler tree) are 
-> related to rare architectures.
-
-But most obvious bugs will have been caught way before that, which
-leaves the hard to catch ones or the configuration-specific ones. Those
-will pass linux-next, I agree. But that isn't my point and that isn't
-what linux-next will catch.  What is will catch is that kind of really
-simple mechanical problems, such as build breakage for other archs.
-
-If perfcounters had been 1 or 2 days in -next before being merged, we
-would have avoided that problem and made everybody's bisecting life
-easier.
-
-> In fact, i checked, there were _zero_ x86 bugs reported against 
-> linux-next and solved against it between v2.6.30-rc1 and v2.6.30:
-
-No but Stephen caught a bunch of mechanical compile fails due to
-integration problems.
-
->    git log --grep=next -i v2.6.30-rc1..v2.6.30 arch/x86/
-> 
-> Doing it over the full cycle shows one commit altogether - a Xen 
-> build failure. In fact, i just checked the whole stabilization cycle 
-> for the whole kernel (v2.6.30-rc1..v2.6.30-final), and there were 
-> only 5 linux-next originated patches, most of them build failures.
-> 
-> I did this by looking at all occurances of 'next', in all commit 
-> logs:
-> 
->    git log --grep=next -i v2.6.30-rc1..v2.6.30
-> 
-> and then manually checking the context of all 'next' matches and 
-> counting the linux-next related commits.
-> 
-> So lets be generous and say that because some people dont put the 
-> bug report originator into the changelog it was four times as many, 
-> 20 - but that's still dwarved by the sheer amount of post-rc1 
-> changes: thousands of changes and hundreds of regressions.
-> 
-> linux-next is mostly useful (to me at least) not for the 
-> cross-builds it does, but in terms of mapping out upcoming conflicts 
-> - which also drives early detection of problematic patches and 
-> problematic conflicts.
-
-Yes, it does. The problem is that it helps -you- that way, but won't
-help -us- vs. that kind of mechanical problems unless -you- also play
-the game and get your stuff in there for a little while before merging
-it :-)
-
-Cheers,
-Ben.
-
-
+                                      Pekka
