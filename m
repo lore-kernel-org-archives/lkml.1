@@ -1,121 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbZFLNKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761226AbZFLNLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758865AbZFLNKF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZFLNJy
+	id S1761226AbZFLNLV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZFLNLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:09:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49505 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751791AbZFLNJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:09:53 -0400
-Date: Fri, 12 Jun 2009 15:09:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open
-	when supported
-Message-ID: <20090612130949.GJ31845@elte.hu>
-References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> <20090612120507.GH16044@elte.hu> <8bd0f97a0906120513u4e823460t8192f00fd0460ab@mail.gmail.com> <20090612121757.GD31845@elte.hu> <8bd0f97a0906120522v51ae0151i48d5f6846ddcff10@mail.gmail.com> <20090612123152.GE31845@elte.hu> <8bd0f97a0906120541x739b7902pe40ff7aa91337bac@mail.gmail.com> <20090612125941.GI31845@elte.hu> <8bd0f97a0906120604o1e90ac93l469e86173224364e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0906120604o1e90ac93l469e86173224364e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 12 Jun 2009 09:11:04 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44619 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbZFLNLD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:11:03 -0400
+Date: Fri, 12 Jun 2009 16:11:03 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-kernel@vger.kernel.org
+cc: cl@linux-foundation.org, npiggin@suse.de, mingo@elte.hu
+Subject: [PATCH] slab: setup cpu caches later on when interrupts are enabled
+Message-ID: <Pine.LNX.4.64.0906121607210.2387@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-* Mike Frysinger <vapier.adi@gmail.com> wrote:
+Fixes the following boot-time warning:
 
-> On Fri, Jun 12, 2009 at 08:59, Ingo Molnar wrote:
-> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> >> On Fri, Jun 12, 2009 at 08:31, Ingo Molnar wrote:
-> >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> >> >> On Fri, Jun 12, 2009 at 08:17, Ingo Molnar wrote:
-> >> >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> >> >> >> On Fri, Jun 12, 2009 at 08:05, Ingo Molnar wrote:
-> >> >> >> > * Mike Frysinger <vapier@gentoo.org> wrote:
-> >> >> >> >> If the port does not support HAVE_PERF_COUNTERS, then they can't
-> >> >> >> >> support the perf_counter_open syscall either.  Rather than forcing
-> >> >> >> >> everyone to add an ignore (or suffer the warning until they get
-> >> >> >> >> around to implementing support), only whine about the syscall when
-> >> >> >> >> applicable.
-> >> >> >> >
-> >> >> >> > No, this patch is wrong - it's really easy to add support: just hook
-> >> >> >> > up the syscall. This should happen for every architecture really, so
-> >> >> >> > the warning is correct and it should not be patched out.
-> >> >> >> >
-> >> >> >> > PMU support is not required to get perfcounters support: if an
-> >> >> >> > architecture hooks up the syscall it will get generic software
-> >> >> >> > counters and the tools will work as well.
-> >> >> >> >
-> >> >> >> > Profiling falls back to a hrtimer-based sampling method - this is a
-> >> >> >> > much better fallback than oprofile's fall-back to the timer tick.
-> >> >> >> > This hrtimer based sampling is dynticks/nohz-correct and can go
-> >> >> >> > beyond HZ if the architecture supports hrtimers.
-> >> >> >>
-> >> >> >> if there is generic support available, why must every arch select
-> >> >> >> HAVE_PERF_COUNTERS in their Kconfig ?
-> >> >> >
-> >> >> > Because we only want to enable it on architectures that have tested
-> >> >> > it. It should only need a syscall addition, but nothing beats having
-> >> >> > tested things, hence we have that additional Kconfig symbol.
-> >> >>
-> >> >> that is a pretty weak reason. [...]
-> >> >
-> >> > It isnt - this is proper isolation - dont offer something to the
-> >> > user to enable that 1) cannot be used due to the lack of a syscall
-> >> > 2) has not been tested by anyone on that architecture, ever.
-> >> >
-> >> > That way say build breakages or runtime failures due to perfcounters
-> >> > only become possible on an architecture if the architecture
-> >> > maintainer has hooked up the syscall and has provided
-> >> > HAVE_PERF_COUNTERS explicitly.
-> >>
-> >> except that the syscall presence is trivial to detect in the code by
-> >> something like:
-> >> #ifndef __NR_perf_counter_open
-> >> # error sorry, your arch has not hooked up perf_counter_open syscall yet
-> >> #endif
-> >>
-> >> as for "no arch testing yet", there are plenty of drivers which lack
-> >> arch depends in the Kconfig specifically so that it can be *easily*
-> >> tested on random systems out there without requiring manual twiddling.
-> >
-> > This is a new kernel subsystem, not just yet another driver.
-> 
-> so what ?  if it has generic pieces, it is exactly the same as yet 
-> another generic driver.  people should be able to randomly test 
-> build it when possible to discover latent issues that your testing 
-> limited to one arch did not find.
-> 
-> > Which bit of: "we dont want perfcounters to be enabled in the
-> > Kconfig on architectures that have no syscalls and no testing for
-> > it" is hard to understand? It is a valid technical concern.
-> 
-> your (1) is valid but i already pointed out a simple fix for that. 
-> your (2) is not.
+  [    0.000000] ------------[ cut here ]------------
+  [    0.000000] WARNING: at kernel/smp.c:369 smp_call_function_many+0x56/0x1bc()
+  [    0.000000] Hardware name:
+  [    0.000000] Modules linked in:
+  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30 #492
+  [    0.000000] Call Trace:
+  [    0.000000]  [<ffffffff8149e021>] ? _spin_unlock+0x4f/0x5c
+  [    0.000000]  [<ffffffff8108f11b>] ? smp_call_function_many+0x56/0x1bc
+  [    0.000000]  [<ffffffff81061764>] warn_slowpath_common+0x7c/0xa9
+  [    0.000000]  [<ffffffff810617a5>] warn_slowpath_null+0x14/0x16
+  [    0.000000]  [<ffffffff8108f11b>] smp_call_function_many+0x56/0x1bc
+  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
+  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
+  [    0.000000]  [<ffffffff8108f2be>] smp_call_function+0x3d/0x68
+  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
+  [    0.000000]  [<ffffffff81066fd8>] on_each_cpu+0x31/0x7c
+  [    0.000000]  [<ffffffff810f64f5>] do_tune_cpucache+0x119/0x454
+  [    0.000000]  [<ffffffff81087080>] ? lockdep_init_map+0x94/0x10b
+  [    0.000000]  [<ffffffff818133b0>] ? kmem_cache_init+0x421/0x593
+  [    0.000000]  [<ffffffff810f69cf>] enable_cpucache+0x68/0xad
+  [    0.000000]  [<ffffffff818133c3>] kmem_cache_init+0x434/0x593
+  [    0.000000]  [<ffffffff8180987c>] ? mem_init+0x156/0x161
+  [    0.000000]  [<ffffffff817f8aae>] start_kernel+0x1cc/0x3b9
+  [    0.000000]  [<ffffffff817f829a>] x86_64_start_reservations+0xaa/0xae
+  [    0.000000]  [<ffffffff817f837f>] x86_64_start_kernel+0xe1/0xe8
+  [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
 
-Uhm, your 'fix':
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Note: this patch depends on the "[PATCH] slab: don't enable interrupts 
+during early boot" one that I posted earlier in the "Re: [PATCH v2] 
+slab,slub: ignore __GFP_WAIT if we're booting or  suspending" thread.
 
-  #ifndef __NR_perf_counter_open
-  # error sorry, your arch has not hooked up perf_counter_open syscall yet
-  #endif
+ mm/slab.c |   37 +++++++++++++++++++------------------
+ 1 files changed, 19 insertions(+), 18 deletions(-)
 
-is completely unacceptable. We dont propagate build failures via 
-user-enable config options, we never did. There's a lot of people 
-doing randconfig builds - if it randomly failed due to your 'fix' 
-that would upset a lot of testing for no good reason.
+diff --git a/mm/slab.c b/mm/slab.c
+index c8e217c..84368b8 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -759,6 +759,7 @@ static enum {
+ 	NONE,
+ 	PARTIAL_AC,
+ 	PARTIAL_L3,
++	EARLY,
+ 	FULL
+ } g_cpucache_up;
+ 
+@@ -767,7 +768,7 @@ static enum {
+  */
+ int slab_is_available(void)
+ {
+-	return g_cpucache_up == FULL;
++	return g_cpucache_up >= EARLY;
+ }
+ 
+ static DEFINE_PER_CPU(struct delayed_work, reap_work);
+@@ -1631,19 +1632,27 @@ void __init kmem_cache_init(void)
+ 		}
+ 	}
+ 
+-	/* 6) resize the head arrays to their final sizes */
+-	{
+-		struct kmem_cache *cachep;
+-		mutex_lock(&cache_chain_mutex);
+-		list_for_each_entry(cachep, &cache_chain, next)
+-			if (enable_cpucache(cachep, GFP_NOWAIT))
+-				BUG();
+-		mutex_unlock(&cache_chain_mutex);
+-	}
++	g_cpucache_up = EARLY;
+ 
+ 	/* Annotate slab for lockdep -- annotate the malloc caches */
+ 	init_lock_keys();
++}
++
++void __init kmem_cache_init_late(void)
++{
++	struct kmem_cache *cachep;
++
++	/*
++	 * Interrupts are enabled now so all GFP allocations are safe.
++	 */
++	slab_gfp_mask = __GFP_BITS_MASK;
+ 
++	/* 6) resize the head arrays to their final sizes */
++	mutex_lock(&cache_chain_mutex);
++	list_for_each_entry(cachep, &cache_chain, next)
++		if (enable_cpucache(cachep, GFP_NOWAIT))
++			BUG();
++	mutex_unlock(&cache_chain_mutex);
+ 
+ 	/* Done! */
+ 	g_cpucache_up = FULL;
+@@ -1660,14 +1669,6 @@ void __init kmem_cache_init(void)
+ 	 */
+ }
+ 
+-void __init kmem_cache_init_late(void)
+-{
+-	/*
+-	 * Interrupts are enabled now so all GFP allocations are safe.
+-	 */
+-	slab_gfp_mask = __GFP_BITS_MASK;
+-}
+-
+ static int __init cpucache_init(void)
+ {
+ 	int cpu;
+-- 
+1.6.0.4
 
-	Ingo
