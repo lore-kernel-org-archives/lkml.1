@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZFLFvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbZFLF7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbZFLFvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 01:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZFLFvL
+	id S1756866AbZFLF7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 01:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbZFLF7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 01:51:11 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:60672 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZFLFvK (ORCPT
+	Fri, 12 Jun 2009 01:59:33 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:54767 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753973AbZFLF7c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 01:51:10 -0400
-Message-ID: <4A31ECCD.7030805@in.ibm.com>
-Date: Fri, 12 Jun 2009 11:21:09 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Fri, 12 Jun 2009 01:59:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=uXOGRWnBe/z580kxTh/WRWMOFTsfGQeNlA/h4Sy3QSojIYkYVp1NG3OEkzBRw/CVna
+         YKD/3A39Hi62ajNEu2dMFMn02SWC1QgFDmrT5Id8mCMVbCbuxQ+nhVtzwKZ2U48PbTO0
+         9OEa4/TvbHkgwCMA8Z8E396q2Bq4QBJ2wcD8Y=
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: linuxppc-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PowerPC] 2.6.30-git3 build break : perf counters
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Fri, 12 Jun 2009 11:59:34 +0600
+Message-ID: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com>
+Subject: TPM drivers support and Linux Integrity Module for 2.6.30
+From: Shahbaz Khan <shaz.linux@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-git3 build with CONFIG_PERF_COUNTERS=y failed on a powerpc box.
+Hi,
 
- CC      arch/powerpc/kernel/power7-pmu.o
-arch/powerpc/kernel/power7-pmu.c:297: error: PERF_COUNT_CPU_CYCLES undeclared here (not in a function)
-arch/powerpc/kernel/power7-pmu.c:297: error: array index in initializer not of integer type
-arch/powerpc/kernel/power7-pmu.c:297: error: (near initialization for power7_generic_events)
-arch/powerpc/kernel/power7-pmu.c:298: error: PERF_COUNT_INSTRUCTIONS undeclared here (not in a function)
-arch/powerpc/kernel/power7-pmu.c:298: error: array index in initializer not of integer type
-......<SNIP>......
+I am using Intel Q45 Express chipset with TPM version 1.2 specs of
+TCG. The kernel version is 2.6.30. Problem is that the TPM drivers
+cannot provide functionality to the TCG TSS giving error message:
 
-Porbably because of commit 526e9a09d2e2dcb6c75c68710465678bb647e5fe
+"TCSD TDDL ERROR: Could not find a device to open!"
 
-Thanks
--Sachin
+The device node in /dev is also not being created which should be
+"/dev/tpm". If created manually then still it does not work.
 
+What should be done?
 
--- 
+Thanks.
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+--
+Shaz
