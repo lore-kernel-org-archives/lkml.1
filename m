@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZFLRWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZFLRZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbZFLRWz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZFLRWs
+	id S1758044AbZFLRZq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZFLRZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:22:48 -0400
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:38168 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbZFLRWr convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 13:25:38 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:50336 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750749AbZFLRZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:22:47 -0400
-X-Greylist: delayed 52648 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 13:22:47 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KCXrsVlsv+GBIb32XVqd1gArThwiiACE3Xtc7mlJnU+yF5in+hiMP2vqJnIB6TwXzf
-         2XNDz+gySuPjKjqTi/3jNfuPEDc3Z8Kfz44QKit0upVaAlkw9j1Uia4Hk2PzDx5OFub9
-         zjJb2gP7aCiWBTwrK4mEpLuKbXZpKKVvgeJ9A=
+	Fri, 12 Jun 2009 13:25:37 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [BUG][2.6.30] Niced processes do not raise CPU frequency with ondemand
+Date: Fri, 12 Jun 2009 19:25:37 +0200
+User-Agent: KMail/1.9.9
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+References: <200906121844.02004.elendil@planet.nl> <1244825317.4534.1342.camel@localhost.localdomain>
+In-Reply-To: <1244825317.4534.1342.camel@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <adak53h1q29.fsf@cisco.com>
-References: <86802c440906111945n2a42dc94mf08bd2b1a252842f@mail.gmail.com>
-	 <adak53h1q29.fsf@cisco.com>
-Date: Fri, 12 Jun 2009 10:22:49 -0700
-Message-ID: <86802c440906121022s532ee0f7tc556251d22ffd139@mail.gmail.com>
-Subject: Re: mthca double free irqs
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Barnes, Jesse" <jesse.barnes@intel.com>, Matthew Wilcox <matthew@wil.cx>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906121925.38693.elendil@planet.nl>
+X-OriginalArrivalTime: 12 Jun 2009 17:25:39.0353 (UTC) FILETIME=[CE244890:01C9EB82]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 7:31 AM, Roland Dreier<rdreier@cisco.com> wrote:
-> Thanks, will take a look.  It does seem this is on an error path:
->
->  > [  606.818317] ib_mthca 0000:c4:00.0: NOP command failed to generate
->  > interrupt (IRQ 98), aborting.
->  > [  606.826709] ib_mthca 0000:c4:00.0: BIOS or ACPI interrupt routing problem?
->
-> So your system already had problems -- the driver didn't get an
-> expected interrupt from the device.
+Thanks for the quick reply Venki.
 
-I knew that. but we should not get that double freeing.
+On Friday 12 June 2009, Pallipadi, Venkatesh wrote:
+> What does ignore_nice under cpufreq/ondemand say?
 
-BIOS doesn't allocate proper MMIO range for that card.
+Right, that's 1 (was not aware that existed :-P)
+And changing it to 0 solves the problem.
 
-YH
+Next question is: how and why does it get set?
+As userland has not changed (AFAIK), my first suspect remains the kernel.
+
+# grep . /sys/devices/system/cpu/cpu*/cpufreq/ondemand/*
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/ignore_nice_load:1
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/powersave_bias:0
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate:80000
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate_max:40000000
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate_min:40000
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold:90
+/sys/devices/system/cpu/cpu1/cpufreq/ondemand/ignore_nice_load:1
+/sys/devices/system/cpu/cpu1/cpufreq/ondemand/powersave_bias:0
+/sys/devices/system/cpu/cpu1/cpufreq/ondemand/sampling_rate:80000
+/sys/devices/system/cpu/cpu1/cpufreq/ondemand/sampling_rate_max:40000000
+/sys/devices/system/cpu/cpu1/cpufreq/ondemand/sampling_rate_min:40000
+/sys/devices/system/cpu/cpu1/cpufreq/ondemand/up_threshold:90
