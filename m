@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbZFLRiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932430AbZFLRic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763136AbZFLRiO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZFLRh7
+	id S932430AbZFLRic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZFLRiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:37:59 -0400
-Received: from mga01.intel.com ([192.55.52.88]:62570 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbZFLRh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:37:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,210,1243839600"; 
-   d="scan'208";a="465847387"
-Message-ID: <4A329278.3010607@intel.com>
-Date: Fri, 12 Jun 2009 10:38:00 -0700
-From: Dan Williams <dan.j.williams@intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 12 Jun 2009 13:38:22 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:43241 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761179AbZFLRiW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 13:38:22 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: tomaz.mertelj@guest.arnes.si
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU =?iso-8859-1?q?core=09temperature?=
+Date: Fri, 12 Jun 2009 12:38:19 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+References: <20090612_152510_043383.tomaz.mertelj@guest.arnes.si> <200906121031.05738.lkml@morethan.org> <200906121104.26174.lkml@morethan.org>
+In-Reply-To: <200906121104.26174.lkml@morethan.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Li Yang <leoli@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>,
-       Timur Tabi <timur@freescale.com>, David Hawkins <dwh@ovro.caltech.edu>,
-       Liu Dave-R63238 <DaveLiu@freescale.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com> <20090427204213.GA4960@ovro.caltech.edu> <49F619C4.20100@freescale.com> <e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com> <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org> <20090611151750.GB9323@ovro.caltech.edu> <2a27d3730906120223w9f30b7ewfd22eb328e3a23d3@mail.gmail.com> <24633D89-D4EC-4C27-8B7F-3992EFE50989@kernel.crashing.org>
-In-Reply-To: <24633D89-D4EC-4C27-8B7F-3992EFE50989@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906121238.21568.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
-> On Jun 12, 2009, at 4:23 AM, Li Yang wrote:
+On Fri June 12 2009, Michael S. Zick wrote:
+>
+> The tool does not report read failures.
+> **BUT** if you remember to "modprobe msr" or have it built in...
+> Translation: Cockpit error.  ;)
 > 
->> On Thu, Jun 11, 2009 at 11:17 PM, Ira Snyder<iws@ovro.caltech.edu>  
->> wrote:
->>> On Wed, Jun 10, 2009 at 09:45:26PM -0500, Kumar Gala wrote:
->>>> On Apr 27, 2009, at 3:49 PM, Dan Williams wrote:
->>>>
->>>>> On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com>
->>>>> wrote:
->>>>>> Adding Kumar to the CC: list, since he might pick up the patch.
->>>>>>
->>>>> Acked-by: Dan Williams <dan.j.williams@intel.com>
->>>>>
->>>>> I agree with taking this through Kumar's tree.
->>>> I'm going through patches for .31.. Should I still pick this up?   
->>>> Going
->>>> forward should I pick up fsldma patches?
->>>>
->>> I'm fine with that, but you should probably talk to Li Yang (added to
->>> CC). He's gotten in contact with me a few times recently.
->> I am fine with both ways for this patch as it is only related to
->> Freescale register details.  But in general I think patches should go
->> through functional subsystem, as they usually would need insight of
->> the subsystem architecture.  I prefer the way that the patch acked or
->> signed-off by Freescale guys and push upstream through Dan's tree as
->> most other subsystems did.  Unless Dan prefers to ack the subsystem
->> architectural part of each patch and have them pushed other way.
+> root@cb01:~# for r in 0x1160 0x1161 0x1162 0x1163 0x1164 0x1165 0x1166 0x1167 0x1168 0x1169 0x116a 0x116b 0x116c 0x1152 0x1153 ; do ./rdmsrll  $r ; done
+> MSR register 0x1160 => 00:00:00:00:00:00:05:dc
+> MSR register 0x1161 => 00:00:00:00:00:00:03:e8
+> MSR register 0x1162 => 00:00:00:00:00:00:00:00
+> MSR register 0x1163 => 00:00:00:00:00:00:00:00
+> MSR register 0x1164 => 00:00:00:00:00:00:00:5f
+> MSR register 0x1165 => 00:00:00:00:00:00:00:64
+> MSR register 0x1166 => 00:00:00:00:00:00:00:7d
+> MSR register 0x1167 => 00:00:00:00:00:00:00:00
+> MSR register 0x1168 => 00:00:00:00:00:00:01:8d
+> MSR register 0x1169 => 00:00:00:00:00:00:00:32
+> MSR register 0x116a => 00:00:00:00:00:00:00:03
+> MSR register 0x116b => 00:00:00:00:00:00:01:a6
+> MSR register 0x116c => 00:00:00:00:00:00:03:34
+> MSR register 0x1152 => e7:2c:b3:9f:fb:ff:ff:ff
+> MSR register 0x1153 => 04:06:0c:09:fe:ff:ff:ff
 > 
-> I agree w/this and just wanting to see what Dan's preference is.
+> Which is the same data as reported by msr-tools.
+>
 
-I'll take fsldma patches through the dmaengine tree with Leo's 
-ack/sign-off.  That last request was a one-off because I had nothing 
-else to push and the discussion was very architecture specific.
+And the output of sensors with H.W. driver built-in:
 
-Thanks,
-Dan
+root@cb01:~# sensors
+acpitz-virtual-0
+Adapter: Virtual device
+temp1:       +48.8°C  (crit = +94.8°C)
+
+via-cputemp-isa-0000
+Adapter: ISA adapter
+Core 0:      +50.0°C
+
+Which looks reasonable to me, on this machine.
+
+Mike 
+> Mike 
+
