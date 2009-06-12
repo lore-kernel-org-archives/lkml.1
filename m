@@ -1,160 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbZFLNGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764717AbZFLNGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762898AbZFLNGY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762812AbZFLM7u
+	id S1764717AbZFLNGk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762815AbZFLNAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:59:50 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:3845 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762803AbZFLM7s (ORCPT
+	Fri, 12 Jun 2009 09:00:11 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:32484 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763150AbZFLNAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:59:48 -0400
+	Fri, 12 Jun 2009 09:00:09 -0400
 X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i17ch43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KL4MQK-04-6AE-01
+X-BigFish: VPS3(zzzz1202hzzz32i17ch43j)
+X-FB-SS: 5,13,
+X-WSS-ID: 0KL4MQQ-03-HWD-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 06/23] x86/oprofile: remove #ifdefs in ibs functions
-Date: Fri, 12 Jun 2009 14:35:23 +0200
-Message-ID: <1244810140-20595-7-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 23/23] x86/oprofile: introduce oprofile_add_data64()
+Date: Fri, 12 Jun 2009 14:35:40 +0200
+Message-ID: <1244810140-20595-24-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
 References: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 12 Jun 2009 12:59:05.0873 (UTC) FILETIME=[9148E810:01C9EB5D]
+X-OriginalArrivalTime: 12 Jun 2009 12:59:09.0311 (UTC) FILETIME=[935580F0:01C9EB5D]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IBS code is moved to separate functions. This allows the removal
-of #ifdefs in functions.
+The IBS implemention writes 64 bit register values to the cpu buffer
+by writing two 32 values using oprofile_add_data(). This patch
+introduces oprofile_add_data64() to write a single 64 bit value to the
+buffer.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/op_model_amd.c |   80 ++++++++++++++++++++++----------------
- 1 files changed, 46 insertions(+), 34 deletions(-)
+ arch/x86/oprofile/op_model_amd.c |   27 +++++++++------------------
+ drivers/oprofile/cpu_buffer.c    |   15 +++++++++++++++
+ include/linux/oprofile.h         |    1 +
+ 3 files changed, 25 insertions(+), 18 deletions(-)
 
 diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
-index 8fdf06e..b54c088 100644
+index 6493ef7..cc93046 100644
 --- a/arch/x86/oprofile/op_model_amd.c
 +++ b/arch/x86/oprofile/op_model_amd.c
-@@ -220,6 +220,50 @@ op_amd_handle_ibs(struct pt_regs * const regs,
- 	return 1;
+@@ -140,13 +140,10 @@ op_amd_handle_ibs(struct pt_regs * const regs,
+ 			rdmsrl(MSR_AMD64_IBSFETCHLINAD, val);
+ 			oprofile_write_reserve(&entry, regs, val,
+ 					       IBS_FETCH_CODE, IBS_FETCH_SIZE);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
+-			oprofile_add_data(&entry, (u32)ctl);
+-			oprofile_add_data(&entry, (u32)(ctl >> 32));
++			oprofile_add_data64(&entry, val);
++			oprofile_add_data64(&entry, ctl);
+ 			rdmsrl(MSR_AMD64_IBSFETCHPHYSAD, val);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
++			oprofile_add_data64(&entry, val);
+ 			oprofile_write_commit(&entry);
+ 
+ 			/* reenable the IRQ */
+@@ -162,23 +159,17 @@ op_amd_handle_ibs(struct pt_regs * const regs,
+ 			rdmsrl(MSR_AMD64_IBSOPRIP, val);
+ 			oprofile_write_reserve(&entry, regs, val,
+ 					       IBS_OP_CODE, IBS_OP_SIZE);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
++			oprofile_add_data64(&entry, val);
+ 			rdmsrl(MSR_AMD64_IBSOPDATA, val);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
++			oprofile_add_data64(&entry, val);
+ 			rdmsrl(MSR_AMD64_IBSOPDATA2, val);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
++			oprofile_add_data64(&entry, val);
+ 			rdmsrl(MSR_AMD64_IBSOPDATA3, val);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
++			oprofile_add_data64(&entry, val);
+ 			rdmsrl(MSR_AMD64_IBSDCLINAD, val);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
++			oprofile_add_data64(&entry, val);
+ 			rdmsrl(MSR_AMD64_IBSDCPHYSAD, val);
+-			oprofile_add_data(&entry, (u32)val);
+-			oprofile_add_data(&entry, (u32)(val >> 32));
++			oprofile_add_data64(&entry, val);
+ 			oprofile_write_commit(&entry);
+ 
+ 			/* reenable the IRQ */
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index 50640cc..a7aae24 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -406,6 +406,21 @@ int oprofile_add_data(struct op_entry *entry, unsigned long val)
+ 	return op_cpu_buffer_add_data(entry, val);
  }
  
-+static inline void op_amd_start_ibs(void)
++int oprofile_add_data64(struct op_entry *entry, u64 val)
 +{
-+	unsigned int low, high;
-+	if (has_ibs && ibs_config.fetch_enabled) {
-+		low = (ibs_config.max_cnt_fetch >> 4) & 0xFFFF;
-+		high = ((ibs_config.rand_en & 0x1) << 25) /* bit 57 */
-+			+ IBS_FETCH_HIGH_ENABLE;
-+		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
-+	}
-+
-+	if (has_ibs && ibs_config.op_enabled) {
-+		low = ((ibs_config.max_cnt_op >> 4) & 0xFFFF)
-+			+ ((ibs_config.dispatched_ops & 0x1) << 19) /* bit 19 */
-+			+ IBS_OP_LOW_ENABLE;
-+		high = 0;
-+		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
-+	}
++	if (!entry->event)
++		return 0;
++	if (op_cpu_buffer_get_size(entry) < 2)
++		/*
++		 * the function returns 0 to indicate a too small
++		 * buffer, even if there is some space left
++		 */
++		return 0;
++	if (!op_cpu_buffer_add_data(entry, (u32)val))
++		return 0;
++	return op_cpu_buffer_add_data(entry, (u32)(val >> 32));
 +}
 +
-+static void op_amd_stop_ibs(void)
-+{
-+	unsigned int low, high;
-+	if (has_ibs && ibs_config.fetch_enabled) {
-+		/* clear max count and enable */
-+		low = 0;
-+		high = 0;
-+		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
-+	}
-+
-+	if (has_ibs && ibs_config.op_enabled) {
-+		/* clear max count and enable */
-+		low = 0;
-+		high = 0;
-+		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
-+	}
-+}
-+
-+#else
-+
-+static inline int op_amd_handle_ibs(struct pt_regs * const regs,
-+				    struct op_msrs const * const msrs) { }
-+static inline void op_amd_start_ibs(void) { }
-+static inline void op_amd_stop_ibs(void) { }
-+
- #endif
- 
- static int op_amd_check_ctrs(struct pt_regs * const regs,
-@@ -238,9 +282,7 @@ static int op_amd_check_ctrs(struct pt_regs * const regs,
- 		}
- 	}
- 
--#ifdef CONFIG_OPROFILE_IBS
- 	op_amd_handle_ibs(regs, msrs);
--#endif
- 
- 	/* See op_model_ppro.c */
- 	return 1;
-@@ -258,25 +300,9 @@ static void op_amd_start(struct op_msrs const * const msrs)
- 		}
- 	}
- 
--#ifdef CONFIG_OPROFILE_IBS
--	if (has_ibs && ibs_config.fetch_enabled) {
--		low = (ibs_config.max_cnt_fetch >> 4) & 0xFFFF;
--		high = ((ibs_config.rand_en & 0x1) << 25) /* bit 57 */
--			+ IBS_FETCH_HIGH_ENABLE;
--		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
--	}
--
--	if (has_ibs && ibs_config.op_enabled) {
--		low = ((ibs_config.max_cnt_op >> 4) & 0xFFFF)
--			+ ((ibs_config.dispatched_ops & 0x1) << 19) /* bit 19 */
--			+ IBS_OP_LOW_ENABLE;
--		high = 0;
--		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
--	}
--#endif
-+	op_amd_start_ibs();
- }
- 
--
- static void op_amd_stop(struct op_msrs const * const msrs)
+ int oprofile_write_commit(struct op_entry *entry)
  {
- 	unsigned int low, high;
-@@ -294,21 +320,7 @@ static void op_amd_stop(struct op_msrs const * const msrs)
- 		CTRL_WRITE(low, high, msrs, i);
- 	}
+ 	if (!entry->event)
+diff --git a/include/linux/oprofile.h b/include/linux/oprofile.h
+index dbbe2db..d68d2ed 100644
+--- a/include/linux/oprofile.h
++++ b/include/linux/oprofile.h
+@@ -179,6 +179,7 @@ void oprofile_write_reserve(struct op_entry *entry,
+ 			    struct pt_regs * const regs,
+ 			    unsigned long pc, int code, int size);
+ int oprofile_add_data(struct op_entry *entry, unsigned long val);
++int oprofile_add_data64(struct op_entry *entry, u64 val);
+ int oprofile_write_commit(struct op_entry *entry);
  
--#ifdef CONFIG_OPROFILE_IBS
--	if (has_ibs && ibs_config.fetch_enabled) {
--		/* clear max count and enable */
--		low = 0;
--		high = 0;
--		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
--	}
--
--	if (has_ibs && ibs_config.op_enabled) {
--		/* clear max count and enable */
--		low = 0;
--		high = 0;
--		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
--	}
--#endif
-+	op_amd_stop_ibs();
- }
- 
- static void op_amd_shutdown(struct op_msrs const * const msrs)
+ #endif /* OPROFILE_H */
 -- 
 1.6.3.1
 
