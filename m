@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933405AbZFLSSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZFLSUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933405AbZFLSSY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761230AbZFLSSL
+	id S1756551AbZFLSUW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZFLSUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:18:11 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:59566 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZFLSSK convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 14:20:11 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:46691 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbZFLSUK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:18:10 -0400
+	Fri, 12 Jun 2009 14:20:10 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: tomaz.mertelj@guest.arnes.si
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU =?utf-8?q?core=09temperature?=
+Date: Fri, 12 Jun 2009 13:20:06 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+References: <20090612_181603_063915.tomaz.mertelj@guest.arnes.si>
+In-Reply-To: <20090612_181603_063915.tomaz.mertelj@guest.arnes.si>
 MIME-Version: 1.0
-In-Reply-To: <4A3219F6.6000300@atmel.com>
-References: <c8284b5b0906101641v586c3487i465263bb6908e3f7@mail.gmail.com>
-	 <20090611095432.2e3a4067@hskinnemoen-d830>
-	 <c8284b5b0906111316p1367a508vdb59ee7c2a8d2ff1@mail.gmail.com>
-	 <4A3219F6.6000300@atmel.com>
-Date: Fri, 12 Jun 2009 11:18:10 -0700
-X-Google-Sender-Auth: 0ce73ace7202942b
-Message-ID: <c8284b5b0906121118r413bff3frd4a1d9e12e76bfca@mail.gmail.com>
-Subject: Re: [PATCH][Fix] New Unified AVR32/AT91 MCI Driver that supports both 
-	MCI slots used at the same time
-From: Rob Emanuele <poorarm@shoreis.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Andrew Victor <avictor.za@gmail.com>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Joey Oravec <joravec@drewtech.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906121320.10169.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nicolas & Haavard,
+On Fri June 12 2009, tomaz.mertelj@guest.arnes.si wrote:
+> > On Fri June 12 2009, Michael S. Zick wrote:
+> > 
+> > And the output of sensors with H.W. driver built-in:
+> > 
+> > root@cb01:~# sensors
+> > acpitz-virtual-0
+> > Adapter: Virtual device
+> > temp1:       +48.8ï¿½C  (crit = +94.8ï¿½C)
+> > 
+> > via-cputemp-isa-0000
+> > Adapter: ISA adapter
+> > Core 0:      +50.0ï¿½C
+> > 
+> > Which looks reasonable to me, on this machine.
+> > 
+> > Mike 
+> 
+> On VIA VB7002  acpitz  obviously does not work so I can not compare. I 
+> guess BIOS does not support the temperature reading since there is no 
+> temperature readout in BIOS. 
+> 
+> acpitz-virtual-0
+> Adapter: Virtual device
+> temp1:      -247.7 C  (crit = +140.0 C)
+> 
+> via-cputemp-isa-0000
+> Adapter: ISA adapter
+> Core 0:      +27.0 C
+> 
+> Is there a way to reset the CPU temperature calibration to the factory 
+> default?  
+> 
 
->> Well, what is the best way to differentiate it from the at91_mci
->> driver and keep users from trying to use both drivers?
->
-> I propose that we setup a kind of choice sub menu in the Kconfig for
-> those two drivers when they are both supported.
->
+There should be among those registers we dumped
+for Harald.  He now has a good and a bad case to
+look at - he also has access to the msr magic numbers.
 
-I'll try Haavard's suggestion of making the 2 drivers mutually
-exclusive and I'll remove "Unified" verbiage.
+Mike
+> Tomaz Mertelj 
+> 
+> 
+> 
 
->> Who would that be as I haven't seen anyone who maintains any of those
->> boards other than the at91rm8200 (at least nothing listed in the
->> MAINTAINERS file)?  The board-sam9g20ek.c platform only shows Atmel as
->> the most recent copyright.
->
-> Hey, AT91 are very well maintained, SAM9 as well as at91rm9200.
-> So, AT91 specific bits should be sent to this mailing-list with Andrew
-> Victor in copy.
 
-I never meant to imply that they were not maintained or even not
-maintained well, only that the maintainer's contact information was
-not obvious.  Below is a patch to correct that listing for Andrew
-Victor.
-
-> I will also certainly add comments on this code.
->
-
-I appreciate any comments you have.
-
---Rob
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5d460c9..a3bc13b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -472,7 +472,7 @@ M:	kernel@wantstofly.org
- L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
- S:	Maintained
-
--ARM/ATMEL AT91RM9200 ARM ARCHITECTURE
-+ARM/ATMEL AT91RM9200 & AT91SAM9* ARM ARCHITECTURES
- P:	Andrew Victor
- M:	linux@maxim.org.za
- L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
