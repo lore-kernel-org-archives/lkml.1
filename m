@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764162AbZFLLts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764313AbZFLLuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764162AbZFLLts (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZFLLtj
+	id S1764313AbZFLLuH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZFLLty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:49:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39086 "EHLO hera.kernel.org"
+	Fri, 12 Jun 2009 07:49:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54325 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753148AbZFLLti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:49:38 -0400
-Date: Fri, 12 Jun 2009 11:49:02 GMT
-From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, yong.y.wang@intel.com,
-       yong.y.wang@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, yong.y.wang@linux.intel.com,
-       a.p.zijlstra@chello.nl, yong.y.wang@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090612031706.GA22126@ywang-moblin2.bj.intel.com>
-References: <20090612031706.GA22126@ywang-moblin2.bj.intel.com>
-Subject: [tip:perfcounters/core] perf_counter tools: Remove one L1-data alias
-Message-ID: <tip-faafec1e61e61d350248af2a7e5f047606adab6e@git.kernel.org>
-Git-Commit-ID: faafec1e61e61d350248af2a7e5f047606adab6e
-X-Mailer: tip-git-log-daemon
+	id S1753528AbZFLLty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:49:54 -0400
+Date: Fri, 12 Jun 2009 13:49:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yong Wang <yong.y.wang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH -tip] perf_counter/x86: Add a quirk for Atom processors
+Message-ID: <20090612114948.GD16044@elte.hu>
+References: <20090612080855.GA2286@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 12 Jun 2009 11:49:04 +0000 (UTC)
+In-Reply-To: <20090612080855.GA2286@ywang-moblin2.bj.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  faafec1e61e61d350248af2a7e5f047606adab6e
-Gitweb:     http://git.kernel.org/tip/faafec1e61e61d350248af2a7e5f047606adab6e
-Author:     Yong Wang <yong.y.wang@linux.intel.com>
-AuthorDate: Fri, 12 Jun 2009 11:17:06 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 12 Jun 2009 13:45:09 +0200
 
-perf_counter tools: Remove one L1-data alias
+* Yong Wang <yong.y.wang@linux.intel.com> wrote:
 
-Otherwise all L1-instruction aliases will be recognized as
-L1-data by strcasestr() when calling function parse_aliases.
+> The fixed-function performance counters do not work on current 
+> Atom processors. Use the general-purpose ones instead.
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <20090612031706.GA22126@ywang-moblin2.bj.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+ah, nice - applied to tip:perfcounters/core, thanks!
 
+Does this make your Atom testbox work fine now?
 
----
- tools/perf/util/parse-events.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 9d5f1ca..5a72586 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -75,7 +75,7 @@ static char *sw_event_names[] = {
- #define MAX_ALIASES 8
- 
- static char *hw_cache [][MAX_ALIASES] = {
--	{ "L1-data"		, "l1-d", "l1d", "l1"				},
-+	{ "L1-data"		, "l1-d", "l1d"					},
- 	{ "L1-instruction"	, "l1-i", "l1i"					},
- 	{ "L2"			, "l2"						},
- 	{ "Data-TLB"		, "dtlb", "d-tlb"				},
+	Ingo
