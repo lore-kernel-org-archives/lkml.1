@@ -1,90 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764347AbZFLKfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762960AbZFLKg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764347AbZFLKfi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756391AbZFLKfb
+	id S1762960AbZFLKg1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764037AbZFLKgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:35:31 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41410 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753455AbZFLKfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:35:30 -0400
-Date: Fri, 12 Jun 2009 12:35:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, lkml <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090612103521.GD18682@elf.ucw.cz>
-References: <20090611132134.GA11199@atomide.com> <20090611133736.GP795@n2100.arm.linux.org.uk> <20090611140038.GB11199@atomide.com> <20090611140624.GS795@n2100.arm.linux.org.uk> <alpine.LFD.2.00.0906111314510.31536@xanadu.home> <4A3175AC.9070100@bluewatersys.com> <alpine.LFD.2.00.0906112105220.31536@xanadu.home> <4A31AECA.6070303@bluewatersys.com> <alpine.LFD.2.00.0906112138090.31536@xanadu.home> <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
+	Fri, 12 Jun 2009 06:36:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53979 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756391AbZFLKgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 06:36:18 -0400
+Date: Fri, 12 Jun 2009 11:36:17 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       linuxram@us.ibm.com, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: [PATCH 2/3] Do not unconditionally treat zones that fail
+	zone_reclaim() as full
+Message-ID: <20090612103617.GC14498@csn.ul.ie>
+References: <1244717273-15176-1-git-send-email-mel@csn.ul.ie> <1244717273-15176-3-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0906110948080.29827@gentwo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.1.10.0906110948080.29827@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, Jun 11, 2009 at 09:48:53AM -0400, Christoph Lameter wrote:
+> It needs to be mentioned that this fixes a bug introduced in 2.6.19.
+> Possibly a portion of this code needs to be backported to stable.
+> 
 
-> >> Thats my point though: In the meantime, it falls on Russell by default
-> >> to be the one to verify all the patches going through. I think the same
-> >> is true for new architectures, if nobody else has the interest/hardware
-> >> besides those posting the patches, then who is meant to do the
-> >> reviewing/acking?
+Andrew has sucked up the patch already so I can't patch it. Andrew, there
+is a further note below on the patch if you'd like to pick it up.
+
+On the stable front, I'm think that patches 1 and 2 should being considered
+-stable candidates. Patch 1 is certainly needed because it fixes up the
+malloc() stall and should be picked up by distro kernels as well. This patch
+closes another obvious hole albeit one harder to trigger.
+
+Ideally patch 3 would also be in -stable so distro kernels will suck it up
+as it will help identify this problem in the field if it occurs again but
+I'm not sure what the -stable policy is on such things are.
+
+> On Thu, 11 Jun 2009, Mel Gorman wrote:
+> 
+> > On NUMA machines, the administrator can configure zone_reclaim_mode that
+> > is a more targetted form of direct reclaim. On machines with large NUMA
+> > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> > unmapped pages will be reclaimed if the zone watermarks are not being
+> > met. The problem is that zone_reclaim() failing at all means the zone
+> > gets marked full.
 > >
-> > I think that, at some point, if nobody else has the interest/hardware,
-> > then you are on your own.  Just make sure that your code respects the
-> > kernel coding style, has no obvious API misuses, and that it does not
-> > affect anyone else.  At that point if you can convince people that your
-> > code is actually useful and that you'll be around to quickly respond
-> > if/when issues are reported then it should just be merged.
+> > This can cause situations where a zone is usable, but is being skipped
+> > because it has been considered full. Take a situation where a large tmpfs
+> > mount is occuping a large percentage of memory overall. The pages do not
+> > get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
+> > and the zonelist cache considers them not worth trying in the future.
+> >
+> > This patch makes zone_reclaim() return more fine-grained information about
+> > what occured when zone_reclaim() failued. The zone only gets marked full if
+> > it really is unreclaimable. If it's a case that the scan did not occur or
+> > if enough pages were not reclaimed with the limited reclaim_mode, then the
+> > zone is simply skipped.
+> >
+> > There is a side-effect to this patch. Currently, if zone_reclaim()
+> > successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would
+> > go ahead. With this patch applied, zone watermarks are rechecked after
+> > zone_reclaim() does some work.
+
+(Noted by Christoph)
+
+This bug was introduced by commit 9276b1bc96a132f4068fdee00983c532f43d3a26
+way back in 2.6.19 when the zonelist_cache was introduced. It was not intended
+that zone_reclaim() aggressively consider the zone to be full when it failed
+as full direct reclaim can still be an option. Due to the age of the bug,
+it should be considered a -stable candidate.
+
+> >
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> > Reviewed-by: Rik van Riel <riel@redhat.com>
+> > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  mm/internal.h   |    4 ++++
+> >  mm/page_alloc.c |   26 ++++++++++++++++++++++----
+> >  mm/vmscan.c     |   11 ++++++-----
+> >  3 files changed, 32 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index f02c750..f290c4d 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -259,4 +259,8 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+> >  		     unsigned long start, int len, int flags,
+> >  		     struct page **pages, struct vm_area_struct **vmas);
+> >
+> > +#define ZONE_RECLAIM_NOSCAN	-2
+> > +#define ZONE_RECLAIM_FULL	-1
+> > +#define ZONE_RECLAIM_SOME	0
+> > +#define ZONE_RECLAIM_SUCCESS	1
+> >  #endif
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index d35e753..667ffbb 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1477,15 +1477,33 @@ zonelist_scan:
+> >  		BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
+> >  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+> >  			unsigned long mark;
+> > +			int ret;
+> > +
+> >  			mark = zone->watermark[alloc_flags & ALLOC_WMARK_MASK];
+> > -			if (!zone_watermark_ok(zone, order, mark,
+> > -				    classzone_idx, alloc_flags)) {
+> > -				if (!zone_reclaim_mode ||
+> > -				    !zone_reclaim(zone, gfp_mask, order))
+> > +			if (zone_watermark_ok(zone, order, mark,
+> > +				    classzone_idx, alloc_flags))
+> > +				goto try_this_zone;
+> > +
+> > +			if (zone_reclaim_mode == 0)
+> > +				goto this_zone_full;
+> > +
+> > +			ret = zone_reclaim(zone, gfp_mask, order);
+> > +			switch (ret) {
+> > +			case ZONE_RECLAIM_NOSCAN:
+> > +				/* did not scan */
+> > +				goto try_next_zone;
+> > +			case ZONE_RECLAIM_FULL:
+> > +				/* scanned but unreclaimable */
+> > +				goto this_zone_full;
+> > +			default:
+> > +				/* did we reclaim enough */
+> > +				if (!zone_watermark_ok(zone, order, mark,
+> > +						classzone_idx, alloc_flags))
+> >  					goto this_zone_full;
+> >  			}
+> >  		}
+> >
+> > +try_this_zone:
+> >  		page = buffered_rmqueue(preferred_zone, zone, order,
+> >  						gfp_mask, migratetype);
+> >  		if (page)
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index d832ba8..7b8eb3f 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -2465,16 +2465,16 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  	 */
+> >  	if (zone_pagecache_reclaimable(zone) <= zone->min_unmapped_pages &&
+> >  	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
+> > -		return 0;
+> > +		return ZONE_RECLAIM_FULL;
+> >
+> >  	if (zone_is_all_unreclaimable(zone))
+> > -		return 0;
+> > +		return ZONE_RECLAIM_FULL;
+> >
+> >  	/*
+> >  	 * Do not scan if the allocation should not be delayed.
+> >  	 */
+> >  	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
+> > -			return 0;
+> > +		return ZONE_RECLAIM_NOSCAN;
+> >
+> >  	/*
+> >  	 * Only run zone reclaim on the local zone or on zones that do not
+> > @@ -2484,10 +2484,11 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  	 */
+> >  	node_id = zone_to_nid(zone);
+> >  	if (node_state(node_id, N_CPU) && node_id != numa_node_id())
+> > -		return 0;
+> > +		return ZONE_RECLAIM_NOSCAN;
+> >
+> >  	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
+> > -		return 0;
+> > +		return ZONE_RECLAIM_NOSCAN;
+> > +
+> >  	ret = __zone_reclaim(zone, gfp_mask, order);
+> >  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+> >
+> >
 > 
-> My hope with the msm support is to get buildable, bootable (we're
-> there now), style-clean (we probably have stuff that needs help yet,
 
-I still can't get it to boot :-(.
-
-> At that point, I think we'll get more people looking at, testing, and
-> hopefully contributing and reviewing patches in that domain -- I know
-> there are a lot of folks out there hacking on ADP1 (the unlocked dev
-> phone) or "rooted" G1s, and some of them tinker with things at the
-> kernel level.
-> 
-> >From a practical standpoint, some questions about trying to get a
-> bunch of msm stuff cleaned up possibly for 2.6.31:
-> - would having some ifdefs around code using wakelock support be
-> acceptable for the time being?  The wakelock/suspendblock review does
-> seem to be making progress on linux-pm if not super quickly, and I'd
-> rather maintain some ifdefs than maintain two different versions of
-> drivers while it's getting sorted out.
-
-#ifdefs are too ugly, I'm afraid. And there will be need for for
-second tree, at least temporarily.
-
-> - from where we are now, with .30 about to be wrapped up, what's the
-> reasonable timeline for putting together a patch series for mach-msm
-> and for drivers/staging/msm7k or the like?  When should I be sending
-> what to where?  Presumably to lakml at the least?
-
-Well, I guess "start ASAP and maybe we can make it into .32".
-
-> - is it essential to completely flatten down to single patches for new
-> drivers?  We do have history including contributions from Qualcomm,
-> HTC, etc, which would be nice to preserve in some cases, but if that's
-> impractical, we can do a complete rebase and flatten on top of tip of
-> tree.
-
-I guess preserving history is not top priority.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
