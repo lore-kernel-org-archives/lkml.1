@@ -1,100 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932438AbZFLDF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932452AbZFLDIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932438AbZFLDF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 23:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbZFLDFT
+	id S932452AbZFLDIe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 23:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756996AbZFLDI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 23:05:19 -0400
-Received: from sous-sol.org ([216.99.217.87]:43039 "EHLO sequoia.sous-sol.org"
+	Thu, 11 Jun 2009 23:08:28 -0400
+Received: from mga09.intel.com ([134.134.136.24]:42740 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbZFLDFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 23:05:18 -0400
-Date: Thu, 11 Jun 2009 20:05:11 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] amd-iommu: initialization fixes
-Message-ID: <20090612030511.GS20823@sequoia.sous-sol.org>
-References: <20090612030341.GQ20823@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090612030341.GQ20823@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752723AbZFLDI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 23:08:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,206,1243839600"; 
+   d="scan'208";a="421064876"
+Subject: [PATCH V4: 2/3] pci: Provide aer support when the error source id
+	is bad
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 12 Jun 2009 11:08:33 +0800
+Message-Id: <1244776113.2560.320.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the kernel in initialized w/out coming out of reset (e.g. kexec/kdump), the
-prior kernel may leave the IOMMU running.  Here's some fixes just to
-ensure all initialization is done in a sane manner.  
+﻿﻿﻿When the bus id part of error source id is equal to 0 or nosourceid=1,
+kernel probes the AER status registers of all devices under the root port
+to find the initial error reporter.
 
-1) disable IOMMU when discovered, will get renabled after it's set up
-2) disable event log handling while setting up the event log buffer.
-   the spec says:
-      Software Note: If EventLen or EventBase is changed while the
-      EventLogRun=1, the IOMMU behavior is undefined.
-3) ensure the head/tail event log buffer pointers are initialized to zero
+﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
 
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/x86/kernel/amd_iommu_init.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
 
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -252,6 +252,11 @@ static void __init iommu_enable(struct a
- 	iommu_feature_enable(iommu, CONTROL_IOMMU_EN);
- }
+--- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:31:53.000000000 +0800
++++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:39:24.000000000 +0800
+@@ -26,7 +26,9 @@
+ #include "aerdrv.h"
  
-+static void __init iommu_disable(struct amd_iommu *iommu)
-+{
-+	iommu_feature_disable(iommu, CONTROL_IOMMU_EN);
-+}
-+
- /* Function to enable IOMMU event logging and event interrupts */
- static void __init iommu_enable_event_logging(struct amd_iommu *iommu)
+ static int forceload;
++static int nosourceid;
+ module_param(forceload, bool, 0);
++module_param(nosourceid, bool, 0);
+ 
+ int pci_enable_pcie_error_reporting(struct pci_dev *dev)
  {
-@@ -259,6 +264,12 @@ static void __init iommu_enable_event_lo
- 	iommu_feature_enable(iommu, CONTROL_EVT_INT_EN);
+@@ -143,34 +145,82 @@ static void set_downstream_devices_error
+ 	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
  }
  
-+static void __init iommu_disable_event_logging(struct amd_iommu *iommu)
-+{
-+	iommu_feature_disable(iommu, CONTROL_EVT_INT_EN);
-+	iommu_feature_disable(iommu, CONTROL_EVT_LOG_EN);
+-static int find_device_iter(struct device *device, void *data)
++static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
+ {
+-	struct pci_dev *dev;
+-	u16 id = *(unsigned long *)data;
+-	u8 secondary, subordinate, d_bus = id >> 8;
+-
+-	if (device->bus == &pci_bus_type) {
+-		dev = to_pci_dev(device);
+-		if (id == ((dev->bus->number << 8) | dev->devfn)) {
+-			/*
+-			 * Device ID match
+-			 */
+-			*(unsigned long*)data = (unsigned long)device;
+-			return 1;
+-		}
+-
++	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
+ 		/*
+-		 * If device is P2P, check if it is an upstream?
++		 * Device ID match
+ 		 */
+-		if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
+-			pci_read_config_byte(dev, PCI_SECONDARY_BUS,
+-				&secondary);
+-			pci_read_config_byte(dev, PCI_SUBORDINATE_BUS,
+-				&subordinate);
+-			if (d_bus >= secondary && d_bus <= subordinate) {
+-				*(unsigned long*)data = (unsigned long)device;
+-				return 1;
+-			}
++		e_info->dev = dev;
++		return 1;
++	}
++
++	return 0;
 +}
 +
- /*
-  * mapping and unmapping functions for the IOMMU MMIO space. Each AMD IOMMU in
-  * the system has one.
-@@ -453,12 +464,19 @@ static u8 * __init alloc_event_buffer(st
- 	if (iommu->evt_buf == NULL)
- 		return NULL;
- 
-+	/* disable event logging while setting it up */
-+	iommu_disable_event_logging(iommu);
++#define	PCI_BUS(x)	(((x) >> 8) & 0xff)
 +
- 	entry = (u64)virt_to_phys(iommu->evt_buf) | EVT_LEN_MASK;
- 	memcpy_toio(iommu->mmio_base + MMIO_EVT_BUF_OFFSET,
- 		    &entry, sizeof(entry));
- 
- 	iommu->evt_buf_size = EVT_BUFFER_SIZE;
- 
-+	/* set head and tail to zero manually */
-+	writel(0x00, iommu->mmio_base + MMIO_EVT_HEAD_OFFSET);
-+	writel(0x00, iommu->mmio_base + MMIO_EVT_TAIL_OFFSET);
++static int find_device_iter(struct pci_dev *dev, void *data)
++{
++	int pos;
++	u32 status;
++	u32 mask;
++	u16 reg16;
++	struct aer_err_info *e_info = (struct aer_err_info *)data;
 +
- 	return iommu->evt_buf;
++	/*
++	 * When bus id is equal to 0, it might be a bad id
++	 * reported by root port.
++	 */
++	if (!nosourceid && (PCI_BUS(e_info->id) != 0))
++		return compare_device_id(dev, e_info);
++
++	/*
++	 * Next is to check when bus id is equal to 0 or
++	 * nosourceid==y. Some ports might lose the bus
++	 * id of error source id. We check AER status
++	 * registers to find the initial reporter.
++	 */
++	if (atomic_read(&dev->enable_cnt) == 0)
++		return 0;
++	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
++	if (!pos)
++		return 0;
++	/* Check if AER is enabled */
++	pci_read_config_word(dev, pos+PCI_EXP_DEVCTL, &reg16);
++	if (!(reg16 & (
++		PCI_EXP_DEVCTL_CERE |
++		PCI_EXP_DEVCTL_NFERE |
++		PCI_EXP_DEVCTL_FERE |
++		PCI_EXP_DEVCTL_URRE)))
++		return 0;
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
++	if (!pos)
++		return 0;
++
++	status = 0;
++	mask = 0;
++	if (e_info->severity == AER_CORRECTABLE) {
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_COR_STATUS,
++				&status);
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_COR_MASK,
++				&mask);
++		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
++			e_info->dev = dev;
++			return 1;
++		}
++	} else {
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_UNCOR_STATUS,
++				&status);
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_UNCOR_MASK,
++				&mask);
++		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
++			e_info->dev = dev;
++			return 1;
+ 		}
+ 	}
+ 
+@@ -180,33 +230,23 @@ static int find_device_iter(struct devic
+ /**
+  * find_source_device - search through device hierarchy for source device
+  * @parent: pointer to Root Port pci_dev data structure
+- * @id: device ID of agent who sends an error message to this Root Port
++ * @err_info: including detailed error information such like id
+  *
+  * Invoked when error is detected at the Root Port.
+  */
+-static struct device* find_source_device(struct pci_dev *parent, u16 id)
++static void find_source_device(struct pci_dev *parent,
++		struct aer_err_info *e_info)
+ {
+ 	struct pci_dev *dev = parent;
+-	struct device *device;
+-	unsigned long device_addr;
+-	int status;
++	int result;
+ 
+ 	/* Is Root Port an agent that sends error message? */
+-	if (id == ((dev->bus->number << 8) | dev->devfn))
+-		return &dev->dev;
+-
+-	do {
+-		device_addr = id;
+- 		if ((status = device_for_each_child(&dev->dev,
+-			&device_addr, find_device_iter))) {
+-			device = (struct device*)device_addr;
+-			dev = to_pci_dev(device);
+-			if (id == ((dev->bus->number << 8) | dev->devfn))
+-				return device;
+-		}
+- 	}while (status);
++	result = find_device_iter(dev, e_info);
++	if (result)
++		return;
+ 
+-	return NULL;
++	pci_walk_bus(parent->subordinate, find_device_iter, e_info);
++	return;
  }
  
-@@ -713,6 +731,9 @@ static int __init init_iommu_one(struct 
- 	if (!iommu->mmio_base)
- 		return -ENOMEM;
+ static int report_error_detected(struct pci_dev *dev, void *data)
+@@ -501,12 +541,12 @@ static pci_ers_result_t do_recovery(stru
+  */
+ static void handle_error_source(struct pcie_device * aerdev,
+ 	struct pci_dev *dev,
+-	struct aer_err_info info)
++	struct aer_err_info *info)
+ {
+ 	pci_ers_result_t status = 0;
+ 	int pos;
  
-+	/* disable IOMMU in case it was left on */
-+	iommu_disable(iommu);
+-	if (info.severity == AER_CORRECTABLE) {
++	if (info->severity == AER_CORRECTABLE) {
+ 		/*
+ 		 * Correctable error does not need software intevention.
+ 		 * No need to go through error recovery process.
+@@ -514,9 +554,9 @@ static void handle_error_source(struct p
+ 		pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+ 		if (pos)
+ 			pci_write_config_dword(dev, pos + PCI_ERR_COR_STATUS,
+-					info.status);
++					info->status);
+ 	} else {
+-		status = do_recovery(aerdev, dev, info.severity);
++		status = do_recovery(aerdev, dev, info->severity);
+ 		if (status == PCI_ERS_RESULT_RECOVERED) {
+ 			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
+ 				   "successfully recovered\n");
+@@ -673,10 +713,13 @@ static int get_device_error_info(struct 
+ static void aer_isr_one_error(struct pcie_device *p_device,
+ 		struct aer_err_source *e_src)
+ {
+-	struct device *s_device;
+-	struct aer_err_info e_info = {0, 0, 0,};
++	struct aer_err_info *e_info;
+ 	int i;
+-	u16 id;
 +
- 	iommu_set_device_table(iommu);
- 	iommu->cmd_buf = alloc_command_buffer(iommu);
- 	if (!iommu->cmd_buf)
++	/* struct aer_err_info might be big, so we allocate it with slab */
++	e_info = kmalloc(sizeof(struct aer_err_info), GFP_KERNEL);
++	if (e_info == NULL)
++		return;
+ 
+ 	/*
+ 	 * There is a possibility that both correctable error and
+@@ -688,31 +731,37 @@ static void aer_isr_one_error(struct pci
+ 		if (!(e_src->status & i))
+ 			continue;
+ 
++		memset(e_info, 0, sizeof(struct aer_err_info));
++
+ 		/* Init comprehensive error information */
+ 		if (i & PCI_ERR_ROOT_COR_RCV) {
+-			id = ERR_COR_ID(e_src->id);
+-			e_info.severity = AER_CORRECTABLE;
++			e_info->id = ERR_COR_ID(e_src->id);
++			e_info->severity = AER_CORRECTABLE;
+ 		} else {
+-			id = ERR_UNCOR_ID(e_src->id);
+-			e_info.severity = ((e_src->status >> 6) & 1);
++			e_info->id = ERR_UNCOR_ID(e_src->id);
++			e_info->severity = ((e_src->status >> 6) & 1);
+ 		}
+ 		if (e_src->status &
+ 			(PCI_ERR_ROOT_MULTI_COR_RCV |
+ 			 PCI_ERR_ROOT_MULTI_UNCOR_RCV))
+-			e_info.flags |= AER_MULTI_ERROR_VALID_FLAG;
+-		if (!(s_device = find_source_device(p_device->port, id))) {
++			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
++
++		find_source_device(p_device->port, e_info);
++		if (e_info->dev == NULL) {
+ 			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+-				__func__, id);
++				__func__, e_info->id);
+ 			continue;
+ 		}
+-		if (get_device_error_info(to_pci_dev(s_device), &e_info) ==
++		if (get_device_error_info(e_info->dev, e_info) ==
+ 				AER_SUCCESS) {
+-			aer_print_error(to_pci_dev(s_device), &e_info);
++			aer_print_error(e_info->dev, e_info);
+ 			handle_error_source(p_device,
+-				to_pci_dev(s_device),
++				e_info->dev,
+ 				e_info);
+ 		}
+ 	}
++
++	kfree(e_info);
+ }
+ 
+ /**
+--- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:27:46.000000000 +0800
++++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
+@@ -58,6 +58,8 @@ struct header_log_regs {
+ };
+ 
+ struct aer_err_info {
++	struct pci_dev *dev;
++	u16 id;
+ 	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
+ 	int flags;
+ 	unsigned int status;		/* COR/UNCOR Error Status */
+--- linux-2.6_next_pciwalk/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:27:40.000000000 +0800
++++ linux-2.6_next_aernoid/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:39:24.000000000 +0800
+@@ -60,6 +60,8 @@ forceload, a parameter of type bool, cou
+ be initiated although firmwares have no _OSC support. To enable the
+ walkaround, pls. add aerdriver.forceload=y to kernel boot parameter line
+ when booting kernel. Note that forceload=n by default.
++nosourceid, another parameter of type bool, is used when hardware (mostly
++chipset) has errata that root ports couldn't get error reporting source id.
+ 
+ 2.3 AER error output
+ When a PCI-E AER error is captured, an error message will be outputed to
+
+
