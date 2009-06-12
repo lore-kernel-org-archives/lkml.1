@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763985AbZFLJxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763582AbZFLJyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763985AbZFLJxn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZFLJxe
+	id S1763582AbZFLJyv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbZFLJyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:53:34 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54472 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751740AbZFLJxd (ORCPT
+	Fri, 12 Jun 2009 05:54:43 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35768 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbZFLJyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:53:33 -0400
-Subject: Re: kmemleak: Pull request
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0906111420430.3535@localhost.localdomain>
-References: <1244737527.13225.69.camel@pc1117.cambridge.arm.com>
-	 <alpine.LFD.2.01.0906111420430.3535@localhost.localdomain>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 12 Jun 2009 10:53:26 +0100
-Message-Id: <1244800406.26670.29.camel@pc1117.cambridge.arm.com>
+	Fri, 12 Jun 2009 05:54:43 -0400
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
+ suspending
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20090612095206.GA13607@wotan.suse.de>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+	 <20090612091002.GA32052@elte.hu>
+	 <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
+	 <20090612095206.GA13607@wotan.suse.de>
+Date: Fri, 12 Jun 2009 12:54:44 +0300
+Message-Id: <1244800484.30512.39.camel@penberg-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jun 2009 09:53:27.0530 (UTC) FILETIME=[A250A4A0:01C9EB43]
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-11 at 14:21 -0700, Linus Torvalds wrote:
+On Fri, 2009-06-12 at 11:52 +0200, Nick Piggin wrote:
+> Maybe if we just not make it a general "tweak gfpflag" bit (at
+> least not until a bit more discussion), but a specific workaround
+> for the local_irq_enable in early boot problem.
 > 
-> On Thu, 11 Jun 2009, Catalin Marinas wrote:
-> > 
-> > Please consider pulling the kmemleak patches from the branch detailed
-> > below.
-> 
-> Ok, I got conflicts with the slab/earlyboot changes, but they looked 
-> resolvable. I haven't tested the merge though, so please do give it a good 
-> check.
+> Seems like it would not be hard to track things down if we add
+> a warning if we have GFP_WAIT and interrupts are not enabled...
 
-I tested it with both slab and slub allocators and seems alright (and
-found a possible leak in tty_ldisc.c). I'll give it a try with slob as
-well.
+AFAICT, the point is that Ben thinks that we shouldn't go and try to fix
+up all the callers. But yes, we could certainly do that too.
 
-There are two more trivial patches to merge. I'll send them as replies
-to this mail but you can pull them directly from the same for-linus
-branch:
-
-
-The following changes since commit 8ebf975608aaebd7feb33d77f07ba21a6380e086:
-  Randy Dunlap (1):
-        block: fix kernel-doc in recent block/ changes
-
-are available in the git repository at:
-
-  git://linux-arm.org/linux-2.6.git for-linus
-
-Catalin Marinas (2):
-      kmemleak: Remove the kmemleak.h include in drivers/char/vt.c
-      kmemleak: Add more info to the MAINTAINERS entry
-
- MAINTAINERS       |   16 ++++++++++------
- drivers/char/vt.c |    1 -
- 2 files changed, 10 insertions(+), 7 deletions(-)
-
-
-Thanks.
-
--- 
-Catalin
+			Pekka
 
