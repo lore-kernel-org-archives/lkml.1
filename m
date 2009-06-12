@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZFLP3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbZFLPaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZFLP3q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZFLP3i
+	id S1759573AbZFLPaA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbZFLP3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:29:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46113 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752391AbZFLP3h (ORCPT
+	Fri, 12 Jun 2009 11:29:46 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:45786 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754107AbZFLP3p convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:29:37 -0400
-Date: Fri, 12 Jun 2009 08:28:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when feature
- is disabled
-In-Reply-To: <20090612131754.GA32105@elte.hu>
-Message-ID: <alpine.LFD.2.01.0906120827020.3237@localhost.localdomain>
-References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu> <20090612125741.GA6140@localhost> <20090612131754.GA32105@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 12 Jun 2009 11:29:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=BsLIC4ezp7F3/XpQhBu61TDJkbo+PS1PXdkx1IDh1/OnhMpXoSACqGpP2AK2ZAz+3b
+         rCleHiUU2sxf2eqie1z4N4ENiTdMa7hLUkbgurZZcnfd/PL+GyHDXJnNpQ3PAZ767Nhv
+         mprAVmMcTK3ZMfkxrH3jEAn0rPRmFflM71AYo=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090612152134.GA23483@elte.hu>
+References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> 
+	<20090612120507.GH16044@elte.hu> <8bd0f97a0906120816w26d91530nf1e1967470beb99c@mail.gmail.com> 
+	<20090612152134.GA23483@elte.hu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 12 Jun 2009 11:29:27 -0400
+Message-ID: <8bd0f97a0906120829p628751e9gb557f6a14e98fae2@mail.gmail.com>
+Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open 
+	when supported
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 12, 2009 at 11:21, Ingo Molnar wrote:
+> * Mike Frysinger <vapier.adi@gmail.com> wrote:
+>> the perf counter code explicitly requires:
+>> ...
+>>  - support for atomic64 types (unless i missed something, x86 is the
+>> only 32bit system that supports these)
+>
+> A wrapper suffices - should probably be librarized into lib/.
 
+wonder if we can trick Arnd into doing that ...
 
-On Fri, 12 Jun 2009, Ingo Molnar wrote:
-> 
-> This seems like trying to handle a failure mode that cannot be and 
-> shouldnt be 'handled' really. If there's an 'already corrupted' page 
-> then the box should go down hard and fast, and we should not risk 
-> _even more user data corruption_ by trying to 'continue' in the hope 
-> of having hit some 'harmless' user process that can be killed ...
+>>  - some perf stubs (like set_perf_counter_pending() -- prototype
+>> really should be in common perf_counters headers rather than forcing
+>> the arch to copy & paste the exact same line)
+>
+> Agreed.
 
-No, the box should _not_ go down hard-and-fast. That's the last thing we 
-should *ever* do.
+can i assume you'll take care of that ?
 
-We need to log it. Often at a user level (ie we want to make sure it 
-actually hits syslog, possibly goes out the network, maybe pops up a 
-window, whatever).
+>> not that any of this is documented ...
+>
+> Patches are welcome :-)
 
-Shutting down the machine is the last thing we ever want to do. 
+i cant find anything in Documentation/ covering perf counters.  did i
+miss some file ?
 
-The whole "let's panic" mentality is a disease.
+also, i was going just by a quick compile test.  dont know what else
+is actually required since there's no chance of me trying to get this
+to work on Blackfin anytime soon ...
 
-		Linus
+> You are right that the requirements are not necessarily trivial for
+> every arch - so i guess our original patch is correct.
+
+there is also some ptrace type piece missing for the Blackfin arch,
+but that looks like something that i should just implement as everyone
+else is doing it.
+-mike
