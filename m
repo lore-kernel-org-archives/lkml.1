@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZFLGsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZFLGz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZFLGsb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 02:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZFLGsY
+	id S1755222AbZFLGz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 02:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZFLGzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 02:48:24 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:33646 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbZFLGsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 02:48:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=gY5m6WR9xGNbejBn0/YB63AUnlAgqlqtIu7+ewn3a/6YeacmkHVtjIwPuFY9Obl2Nx
-         r0tBII6viUQAMrjL7TIf9WsB96X0n18sStPwjghTQiYfpqYItgkCwS7fxlSsAic3niON
-         x064H9c26l2DymK5BoAvGybV2K9sqyVEuUar0=
-Date: Fri, 12 Jun 2009 08:48:20 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] first block round for 2.6.31
-Message-ID: <20090612064820.GB5209@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
-	Steven Rostedt <srostedt@redhat.com>,
-	Li Zefan <lizf@cn.fujitsu.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20090611111339.GQ11363@kernel.dk> <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Fri, 12 Jun 2009 02:55:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48702 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753800AbZFLGzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 02:55:49 -0400
+Date: Fri, 12 Jun 2009 08:49:10 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with
+ __exit_signal()
+Message-ID: <20090612084910.1b63b0af@dhcp-lab-109.englab.brq.redhat.com>
+Organization: RedHat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 11:18:41AM -0700, Linus Torvalds wrote:
-> The ide-tape.c changes also need some expert tender loving checks. I 
-> neither know the code, nor have the hardware to check my fixups.
+Protect thread_group_cputime() call by siglock, to avoid possible (but
+to be honest - very improbable) double times accounting of exiting task.
+This is revert of commit 2b5fe6de58276d0b5a7c884d5dbfc300ca47db78
+"thread_group_cputime: move a couple of callsites outside of ->siglock",
+but implementation of thread_group_cputime() was different then.
 
-Yep, this is the result of the slimming exercise and diet pills we've
-put ide-tape on because it'd grown obese over the years and it had its
-own contraptions for buffer and pipeline handling which were clearly too
-much. It had to be taught to behave just like every other ATAPI device
-driver.
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+---
+ kernel/sys.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-But seriously, I'm testing ide-atapi stuff regularly and I'll take a
-look at the merge result during the weekend just to make sure everything
-went fine.
-
-> Almost 
-> all the changes are actually by the same person - it's almost all Tejun's 
-> code (and mostly the same patches), just coming in through two different 
-> trees. Not very nice.
-
-I think this was a one-time-thing only since it required syncing between
-at least three trees so it is possible that somewhere along the way
-things clash. It'll probably happen again when someone decides to change
-block layer/LLDDs interface again but those are very seldom, I hope, for
-the sake of everybody involved :).
-
+diff --git a/kernel/sys.c b/kernel/sys.c
+index e7998cf..0805d08 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -913,8 +913,8 @@ void do_sys_times(struct tms *tms)
+ 	struct task_cputime cputime;
+ 	cputime_t cutime, cstime;
+ 
+-	thread_group_cputime(current, &cputime);
+ 	spin_lock_irq(&current->sighand->siglock);
++	thread_group_cputime(current, &cputime);
+ 	cutime = current->signal->cutime;
+ 	cstime = current->signal->cstime;
+ 	spin_unlock_irq(&current->sighand->siglock);
 -- 
-Regards/Gruss,
-    Boris.
+1.6.0.6
+
