@@ -1,192 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764268AbZFLKWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764178AbZFLKZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764268AbZFLKWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763990AbZFLKWM
+	id S1764178AbZFLKZA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZFLKYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:22:12 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47866 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759622AbZFLKWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:22:11 -0400
-Date: Fri, 12 Jun 2009 11:22:11 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH for mmotm 2/5]
-Message-ID: <20090612102211.GB14498@csn.ul.ie>
-References: <20090611192600.6D50.A69D9226@jp.fujitsu.com> <20090611111341.GE7302@csn.ul.ie> <20090611204208.6D6B.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Fri, 12 Jun 2009 06:24:52 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38438 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbZFLKYv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 06:24:51 -0400
+Date: Fri, 12 Jun 2009 12:32:51 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+Cc: "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Lee.Schermerhorn@hp.com, linux-numa@vger.kernel.org,
+       Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       "'Brice Goglin'" <Brice.Goglin@inria.fr>
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+Message-ID: <20090612103251.GJ25568@one.firstfloor.org>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de> <87zldjn597.fsf@basil.nowhere.org> <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090611204208.6D6B.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 08:50:06PM +0900, KOSAKI Motohiro wrote:
-> > On Thu, Jun 11, 2009 at 07:26:48PM +0900, KOSAKI Motohiro wrote:
-> > > Changes since Wu's original patch
-> > >   - adding vmstat
-> > >   - rename NR_TMPFS_MAPPED to NR_SWAP_BACKED_FILE_MAPPED
-> > > 
-> > > 
-> > > ----------------------
-> > > Subject: [PATCH] introduce NR_SWAP_BACKED_FILE_MAPPED zone stat
-> > 
-> > This got lost in the actual subject line.
-> > 
-> > > Desirable zone reclaim implementaion want to know the number of
-> > > file-backed and unmapped pages.
-> > > 
-> > 
-> > There needs to be more justification for this. We need an example
-> > failure case that this addresses. For example, Patch 1 of my series was
-> > to address the following problem included with the patchset leader
-> > 
-> > "The reported problem was that malloc() stalled for a long time (minutes
-> > in some cases) if a large tmpfs mount was occupying a large percentage of
-> > memory overall. The pages did not get cleaned or reclaimed by zone_reclaim()
-> > because the zone_reclaim_mode was unsuitable, but the lists are uselessly
-> > scanned frequencly making the CPU spin at near 100%."
-> > 
-> > We should have a similar case.
-> > 
-> > What "desirable" zone_reclaim() should be spelled out as well. Minimally
-> > something like
-> > 
-> > "For zone_reclaim() to be efficient, it must be able to detect in advance
-> > if the LRU scan will reclaim the necessary pages with the limitations of
-> > the current zone_reclaim_mode. Otherwise, the CPU usage is increases as
-> > zone_reclaim() uselessly scans the LRU list.
-> > 
-> > The problem with the heuristic is ....
-> > 
-> > This patch fixes the heuristic by ...."
-> > 
-> > etc?
-> > 
-> > I'm not trying to be awkward. I believe I provided similar reasoning
-> > with my own patchset.
+On Thu, Jun 11, 2009 at 08:45:29PM +0200, Stefan Lankes wrote:
+> > Your patches seem to have a lot of overlap with
+> > Lee Schermerhorn's old migrate memory on cpu migration patches.
+> > I don't know the status of those.
 > 
-> You are right. my intention is not actual issue, it only fix
-> documentation lie.
-> 
-> Documentation/sysctl/vm.txt says
-> =============================================================
-> 
-> min_unmapped_ratio:
-> 
-> This is available only on NUMA kernels.
-> 
-> A percentage of the total pages in each zone.  Zone reclaim will only
-> occur if more than this percentage of pages are file backed and unmapped.
-> This is to insure that a minimal amount of local pages is still available for
-> file I/O even if the node is overallocated.
-> 
-> The default is 1 percent.
-> ==============================================================
-> 
-> but actual code don't account "percentage of file backed and unmapped".
-> Administrator can't imazine current implementation form this documentation.
-> 
+> I analyze Lee Schermerhorn's migrate memory on cpu migration patches
+> (http://free.linux.hp.com/~lts/Patches/PageMigration/). I think that Lee
+> Schermerhorn add similar functionalities to the kernel. He called the
+> "affinity-on-next-touch" functionality "migrate_on_fault" and uses in his
+> patches the normal NUMA memory policies. Therefore, his solution fits better
+> to the Linux kernel. I tested his patches with our test applications and got
+> nearly the same performance results. 
 
-That's a good point. I've suggested alternative documentation in another
-thread.
+That's great to know.
 
-> Plus, I don't think this patch is too messy. thus I did decide to make
-> this fix.
-> 
-> if anyone provide good documentation fix, my worry will vanish.
-> 
+I didn't think he had a per process setting though, did he?
 
-Hopefully your worry has vanished.
+> I found only patches for the kernel 2.6.25-rc2-mm1. Does someone develop
+> these patches further?
 
-While I have no objection to the patch as such, I would like to know
-what it's fixing. Believe me, if the scan-heuristic breaks again, this
-patch would be one of the first things I considered as a fix :/
+Not to much knowledge. Maybe Lee will pick them up again now that there
+are more use cases.
 
-> 
-> 
-> > > Thus, we need to know number of swap-backed mapped pages for
-> > > calculate above number.
-> > > 
-> > > 
-> > > Cc: Mel Gorman <mel@csn.ul.ie>
-> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > ---
-> > >  include/linux/mmzone.h |    2 ++
-> > >  mm/rmap.c              |    7 +++++++
-> > >  mm/vmstat.c            |    1 +
-> > >  3 files changed, 10 insertions(+)
-> > > 
-> > > Index: b/include/linux/mmzone.h
-> > > ===================================================================
-> > > --- a/include/linux/mmzone.h
-> > > +++ b/include/linux/mmzone.h
-> > > @@ -88,6 +88,8 @@ enum zone_stat_item {
-> > >  	NR_ANON_PAGES,	/* Mapped anonymous pages */
-> > >  	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
-> > >  			   only modified from process context */
-> > > +	NR_SWAP_BACKED_FILE_MAPPED, /* Similar to NR_FILE_MAPPED. but
-> > > +				       only account swap-backed pages */
-> > >  	NR_FILE_PAGES,
-> > >  	NR_FILE_DIRTY,
-> > >  	NR_WRITEBACK,
-> > > Index: b/mm/rmap.c
-> > > ===================================================================
-> > > --- a/mm/rmap.c
-> > > +++ b/mm/rmap.c
-> > > @@ -829,6 +829,10 @@ void page_add_file_rmap(struct page *pag
-> > >  {
-> > >  	if (atomic_inc_and_test(&page->_mapcount)) {
-> > >  		__inc_zone_page_state(page, NR_FILE_MAPPED);
-> > > +		if (PageSwapBacked(page))
-> > > +			__inc_zone_page_state(page,
-> > > +					      NR_SWAP_BACKED_FILE_MAPPED);
-> > > +
-> > >  		mem_cgroup_update_mapped_file_stat(page, 1);
-> > >  	}
-> > >  }
-> > > @@ -884,6 +888,9 @@ void page_remove_rmap(struct page *page)
-> > >  		__dec_zone_page_state(page, NR_ANON_PAGES);
-> > >  	} else {
-> > >  		__dec_zone_page_state(page, NR_FILE_MAPPED);
-> > > +		if (PageSwapBacked(page))
-> > > +			__dec_zone_page_state(page,
-> > > +					NR_SWAP_BACKED_FILE_MAPPED);
-> > >  	}
-> > >  	mem_cgroup_update_mapped_file_stat(page, -1);
-> > >  	/*
-> > > Index: b/mm/vmstat.c
-> > > ===================================================================
-> > > --- a/mm/vmstat.c
-> > > +++ b/mm/vmstat.c
-> > > @@ -633,6 +633,7 @@ static const char * const vmstat_text[] 
-> > >  	"nr_mlock",
-> > >  	"nr_anon_pages",
-> > >  	"nr_mapped",
-> > > +	"nr_swap_backed_file_mapped",
-> > >  	"nr_file_pages",
-> > >  	"nr_dirty",
-> > >  	"nr_writeback",
-> > > 
-> > 
-> > Otherwise the patch seems reasonable.
-> > 
-> > -- 
-> > Mel Gorman
-> > Part-time Phd Student                          Linux Technology Center
-> > University of Limerick                         IBM Dublin Software Lab
-> 
-> 
-> 
+If he doesn't have time maybe you could update them?
 
+-Andi
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ak@linux.intel.com -- Speaking for myself only.
