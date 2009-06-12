@@ -1,107 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933833AbZFLK21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbZFLKaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933833AbZFLK21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760066AbZFLK2Q
+	id S1757566AbZFLKaX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZFLKaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:28:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50623 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764327AbZFLK2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:28:15 -0400
-Date: Fri, 12 Jun 2009 12:28:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: eranian@gmail.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-Message-ID: <20090612102804.GA15914@elte.hu>
-References: <20090611160329.GA3366@elte.hu> <7c86c4470906120256m545363d4h85a3e84a88291ac7@mail.gmail.com>
-MIME-Version: 1.0
+	Fri, 12 Jun 2009 06:30:13 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46896 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758258AbZFLKaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 06:30:11 -0400
+Date: Fri, 12 Jun 2009 13:30:12 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <npiggin@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
+ suspending
+In-Reply-To: <20090612101511.GC13607@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0906121328030.32274@melkki.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <20090612091002.GA32052@elte.hu>
+ <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
+ <20090612100756.GA25185@elte.hu> <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
+ <20090612101511.GC13607@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7c86c4470906120256m545363d4h85a3e84a88291ac7@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* stephane eranian <eranian@googlemail.com> wrote:
-
-> Hi,
+On Fri, 12 Jun 2009, Nick Piggin wrote:
+> > Hi Ingo,
+> > 
+> > On Fri, Jun 12, 2009 at 1:07 PM, Ingo Molnar<mingo@elte.hu> wrote:
+> > > IMHO such invisible side-channels modifying the semantics of GFP
+> > > flags is a bit dubious.
+> > >
+> > > We could do GFP_INIT or GFP_BOOT. These can imply other useful
+> > > modifiers as well: panic-on-failure for example. (this would clean
+> > > up a fair amount of init code that currently checks for an panics on
+> > > allocation failure.)
+> > 
+> > OK, but that means we need to fix up every single caller. I'm fine
+> > with that but Ben is not. As I am unable to test powerpc here, I am
+> > inclined to just merge Ben's patch as "obviously correct".
 > 
-> On Thu, Jun 11, 2009 at 6:03 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> I agree with Ingo though that exposing it as a gfp modifier is
+> not so good. I just like the implementation to mask off GFP_WAIT
+> better, and also prefer not to test system state, but have someone
+> just call into slab to tell it not to unconditionally enable
+> interrupts.
 > 
-> > The counter concept got objected to in past discussions on lkml, 
-> > by DaveM and by Stephane Eranian (i've Cc:-ed them) - so this 
-> > code was not eligible for linux-next testing - nevertheless we 
-> > gave it good testing on PowerPC and x86 and i've done a wide 
-> > cross-build test as well to try to make sure it breaks no other 
-> > architecture.
+> > That does not mean we can't introduce GFP_BOOT later on if we want to. Hmm?
 > 
-> I don't think you can quote me saying "I object to this code". 
-> [...]
+> Yes, with sufficient warnings in place, I don't think it should be
+> too error prone to clean up remaining code over the course of
+> a few releases.
 
-I never saw you retract/change this negative opinion of yours about 
-the whole separate-counters concept:
+Hmm. This is turning into one epic patch discussion for sure! But here's a 
+patch to do what you suggested. With the amount of patches I am 
+generating, I'm bound to hit the right one sooner or later, no?-)
 
-  " In summary, although the idea of simplifying tools by moving the 
-    complexity elsewhere is legitimate, pushing it down to the 
-    kernel is the wrong approach in my opinion, perfmon has avoided 
-    that as much as possible for good reasons. "
+			Pekka
 
-    http://lkml.org/lkml/2008/12/5/359
-
-Do you like the concept now? That would be great news - you have a 
-lot of experience with various PMU details and we could certainly 
-welcome help with the perf tool and with the kernel side of 
-perfcounters!
-
-> [...]  I posted a detailed review of the API and implementation on 
-> X86 outlining lots of issues. Some got fixed, but many others are 
-> left unresolved at this point. And I will post some more shortly.
-
-Hm, Peter replied to you mail a week ago, in detail. We addressed a 
-good number of issues pointed out by you, and we credited you for 
-them:
-
-earth4:~/tip> git log v2.6.30..linus | grep 'Reported-by: Stephane Eranian'
-    Reported-by: Stephane Eranian <eranian@googlemail.com>
-    Reported-by: Stephane Eranian <eranian@googlemail.com>
-    Reported-by: Stephane Eranian <eranian@googlemail.com>
-    Reported-by: Stephane Eranian <eranian@googlemail.com>
-    Reported-by: Stephane Eranian <eranian@googlemail.com>
-    Reported-by: Stephane Eranian <eranian@googlemail.com>
-    Reported-by: Stephane Eranian <eranian@googlemail.com>
-
-You were on the Cc: of the commit notifications. If you see issues 
-left unaddressed after reply+commit please repeat it - it probably 
-just got lost in noise.
-
-> I don't think that because this code is coming from you, it should 
-> be allowed to short-circuit the established release process. You 
-> have to respond to questions, fix issues like everybody else and 
-> if that slows down the integration you cannot blame the reviewers 
-> for it.
-
-There's three maintainers of perfcounters: Peter Zijlstra, Paul 
-Mackerras and me - and if some real problem missed the attention of 
-all of us then please repeat it - it probably was just missed in a 
-bigger mail or so. I certainly dont remember anything major. We 
-generally try to reply to any and all feedback.
-
-Thanks,
-
-	Ingo
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 4880306..219b8fb 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -319,4 +319,6 @@ static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
+ 	return kmalloc_node(size, flags | __GFP_ZERO, node);
+ }
+ 
++void __init kmem_cache_init_late(void);
++
+ #endif	/* _LINUX_SLAB_H */
+diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
+index 0ec00b3..bb5368d 100644
+--- a/include/linux/slob_def.h
++++ b/include/linux/slob_def.h
+@@ -34,4 +34,9 @@ static __always_inline void *__kmalloc(size_t size, gfp_t flags)
+ 	return kmalloc(size, flags);
+ }
+ 
++static inline void kmem_cache_init_late(void)
++{
++	/* Nothing to do */
++}
++
+ #endif /* __LINUX_SLOB_DEF_H */
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index be5d40c..4dcbc2c 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -302,4 +302,6 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ }
+ #endif
+ 
++void __init kmem_cache_init_late(void);
++
+ #endif /* _LINUX_SLUB_DEF_H */
+diff --git a/init/main.c b/init/main.c
+index b3e8f14..f6204f7 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -640,6 +640,7 @@ asmlinkage void __init start_kernel(void)
+ 				 "enabled early\n");
+ 	early_boot_irqs_on();
+ 	local_irq_enable();
++	kmem_cache_init_late();
+ 
+ 	/*
+ 	 * HACK ALERT! This is early. We're enabling the console before
+diff --git a/mm/slab.c b/mm/slab.c
+index f46b65d..1fac378 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -304,6 +304,12 @@ struct kmem_list3 {
+ };
+ 
+ /*
++ * The slab allocator is initialized with interrupts disabled. Therefore, make
++ * sure early boot allocations don't accidentally enable interrupts.
++ */
++static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
++
++/*
+  * Need this for bootstrapping a per node allocator.
+  */
+ #define NUM_INIT_LISTS (3 * MAX_NUMNODES)
+@@ -1654,6 +1660,14 @@ void __init kmem_cache_init(void)
+ 	 */
+ }
+ 
++void __init kmem_cache_init_late(void)
++{
++	/*
++	 * Interrupts are enabled now so all GFP allocations are safe.
++	 */
++	slab_gfp_mask = __GFP_BITS_MASK;
++}
++
+ static int __init cpucache_init(void)
+ {
+ 	int cpu;
+@@ -3237,6 +3251,8 @@ retry:
+ 	}
+ 
+ 	if (!obj) {
++		local_flags &= slab_gfp_mask;
++
+ 		/*
+ 		 * This allocation will be performed within the constraints
+ 		 * of the current cpuset / memory policy requirements.
+@@ -3354,12 +3370,14 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
+ 	unsigned long save_flags;
+ 	void *ptr;
+ 
++	flags &= slab_gfp_mask;
++
+ 	lockdep_trace_alloc(flags);
+ 
+ 	if (slab_should_failslab(cachep, flags))
+ 		return NULL;
+ 
+-	cache_alloc_debugcheck_before(cachep, flags);
++	cache_alloc_debugcheck_before(cachep, flags & slab_gfp_flags);
+ 	local_irq_save(save_flags);
+ 
+ 	if (unlikely(nodeid == -1))
+@@ -3434,6 +3452,8 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
+ 	unsigned long save_flags;
+ 	void *objp;
+ 
++	flags &= slab_gfp_flags;
++
+ 	lockdep_trace_alloc(flags);
+ 
+ 	if (slab_should_failslab(cachep, flags))
+diff --git a/mm/slub.c b/mm/slub.c
+index 3964d3c..c09cb98 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -178,6 +178,12 @@ static enum {
+ 	SYSFS		/* Sysfs up */
+ } slab_state = DOWN;
+ 
++/*
++ * The slab allocator is initialized with interrupts disabled. Therefore, make
++ * sure early boot allocations don't accidentally enable interrupts.
++ */
++static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
++
+ /* A list of all slab caches on the system */
+ static DECLARE_RWSEM(slub_lock);
+ static LIST_HEAD(slab_caches);
+@@ -1595,6 +1601,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+ 	unsigned long flags;
+ 	unsigned int objsize;
+ 
++	gfpflags &= slab_gfp_mask;
++
+ 	lockdep_trace_alloc(gfpflags);
+ 	might_sleep_if(gfpflags & __GFP_WAIT);
+ 
+@@ -3104,6 +3112,14 @@ void __init kmem_cache_init(void)
+ 		nr_cpu_ids, nr_node_ids);
+ }
+ 
++void __init kmem_cache_init_late(void)
++{
++	/*
++	 * Interrupts are enabled now so all GFP allocations are safe.
++	 */
++	slab_gfp_mask = __GFP_BITS_MASK;
++}
++
+ /*
+  * Find a mergeable slab cache
+  */
