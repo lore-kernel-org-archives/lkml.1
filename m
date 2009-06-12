@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933616AbZFLJ5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761801AbZFLJ6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933616AbZFLJ5E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764173AbZFLJ4d
+	id S1761801AbZFLJ6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933553AbZFLJ6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:56:33 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:59509 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764169AbZFLJ4c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:56:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=NuDVgny5vrHIPN3c1KfEj3sLTpvoF/5MiLqWzcESKY2EUgxkzJ2T1TeoAuKEy0KfPK
-         evjPTWQL8fJXXFN0GaKn9xcY1JXu5uT4hPaYNcb8itW4TwC+kNIjJoFSkMV6ShN3EkH6
-         BE+ya9CDZSPoBdqFfUYdC1HAqQaIxmiLfUQ/k=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <20090611160329.GA3366@elte.hu>
-References: <20090611160329.GA3366@elte.hu>
-Date: Fri, 12 Jun 2009 11:56:33 +0200
-Message-ID: <7c86c4470906120256m545363d4h85a3e84a88291ac7@mail.gmail.com>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-From: stephane eranian <eranian@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 12 Jun 2009 05:58:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55686 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761718AbZFLJ6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:58:04 -0400
+Subject: Re: linux-next: origin tree build failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, paulus@samba.org,
+       ppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1244799786.6691.1133.camel@laptop>
+References: <20090612102427.32582baa.sfr@canb.auug.org.au>
+	 <1244768406.7172.1.camel@pasglop>  <20090612092054.GB32052@elte.hu>
+	 <1244799197.7172.106.camel@pasglop>  <1244799786.6691.1133.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 19:57:15 +1000
+Message-Id: <1244800635.7172.114.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2009-06-12 at 11:43 +0200, Peter Zijlstra wrote:
+> On Fri, 2009-06-12 at 19:33 +1000, Benjamin Herrenschmidt wrote:
+> > We should at least -try- to follow the
+> > process we've defined, don't you think ?
+> 
+> So you're saying -next should include whole new subsystems even though
+> its not clear they will be merged?
 
-On Thu, Jun 11, 2009 at 6:03 PM, Ingo Molnar <mingo@elte.hu> wrote:
+Maybe yes. And if there's some debate as to whether it should be merged
+or not, maybe Linus should make the decision, let -next carry it for a
+few days to iron out those problems, and -then- merge it.
 
-> The counter concept got objected to in past discussions on lkml, by
-> DaveM and by Stephane Eranian (i've Cc:-ed them) - so this code was
-> not eligible for linux-next testing - nevertheless we gave it good
-> testing on PowerPC and x86 and i've done a wide cross-build test as
-> well to try to make sure it breaks no other architecture.
+> That'll invariably create the opposite case where a tree doesn't get
+> pulled and breaks bits due to its absence.
+> 
+> -next does a great job of sorting the existing subsystem trees, but I
+> don't think its Stephens job to decide if things will get merged.
 
-I don't think you can quote me saying "I object to this code". I posted
-a detailed review of the API and implementation on X86 outlining lots
-of issues. Some got fixed, but many others are left unresolved at this
-point. And I will post some more shortly.
+No, it's not, but then, maybe Linus could play the game and -tell- us
+whether he intend to merge or not at least a few days in advance :-)
 
-I don't think that because this code is coming from you, it should be
-allowed to short-circuit the established release process. You have
-to respond to questions, fix issues like everybody else and if that
-slows down the integration you cannot blame the reviewers for it.
+> Therefore when things are in limbo (there was no definite ACK from Linus
+> on perf counters) both inclusion and exclusion from -next can lead to
+> trouble.
+
+Well, Linus did ACK by merging :-) So he should have been able to give
+that ack a few days in advance too..
+
+Cheers,
+Ben.
+
+
