@@ -1,44 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbZFLUYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZFLU1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbZFLUYR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 16:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZFLUYF
+	id S1758085AbZFLU1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 16:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbZFLU1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 16:24:05 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:59402 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754604AbZFLUYD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 16:24:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=RN9okkMQ/GfnVZc4ZtU/BKU9iNDdteMEdFd36HjaWYs3Jf3L1V8OZObWbD5tBjuuUP
-         ECmiAP1GfITglwr44GVUuRDB4ZV56E7h7lUeaBteVwVaAXcYVpde7+cqIdtqgtv8JmyB
-         qRxXMN/27ujZHUlMfPBYdA8n97HuMTNvCnv10=
-From: Diego Calleja <diegocg@gmail.com>
-To: Josh Stone <jistone@redhat.com>
-Subject: Re: SystemTap release 0.9.8
-Date: Fri, 12 Jun 2009 22:28:43 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30; KDE/4.2.2; x86_64; ; )
-Cc: SystemTap <systemtap@sourceware.org>, LKML <linux-kernel@vger.kernel.org>,
-       LWN <lwn@lwn.net>
-References: <4A31A945.7010705@redhat.com>
-In-Reply-To: <4A31A945.7010705@redhat.com>
+	Fri, 12 Jun 2009 16:27:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52021 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755278AbZFLU1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 16:27:11 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH] inotify: inotify_destroy_mark_entry could get called twice
+To: linux-kernel@vger.kernel.org
+Cc: peterz@infradead.org, viro@ZenIV.linux.org.uk
+Date: Fri, 12 Jun 2009 16:26:47 -0400
+Message-ID: <20090612202647.11976.87920.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Disposition: inline
-Message-Id: <200906122228.43238.diegocg@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5CKOr54007062
 
-On Viernes 12 Junio 2009 03:03:01 Josh Stone escribiÃ³:> The SystemTap team proudly announces release 0.9.8.
-OK, I've been trying to run sucesfully systemtap for months, andI have never been able to run even the example scripts, there'salways something that breaks. So I must be doing something wrong,or there's something wrong somewhere. Here's the detailed outputor a failure (happens with any example script):
-(PD: since systemtap seems to be affected by changes in the kernel version,are you planning to include systemtap in the linus tree, now that he thinksthat merging in the kernel tree userspace tools closely related to thekernel is a good thing?)
-# sudo bin/stap -vvv share/doc/systemtap/examples/network/tcp.stp SystemTap translator/driver (version 0.9.8/0.131 commit release-0.9.8-0-ge1774a7)                                             Copyright (C) 2005-2009 Red Hat, Inc. and others                                                                              This is free software; see the source for copying conditions.                                                                 Session arch: x86_64 release: 2.6.30                                                                                          Created temporary directory "/tmp/stappAJDNk"                                                                                 Searched '/home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/x86_64/*.stp', found 3                                 Searched '/home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/*.stp', found 51                                       Pass 1: parsed user script and 54 library script(s) in 300usr/10sys/311real ms.                                               blacklist regexps:                                                                                                            blfn: ^(atomic_notifier_call_chain|default_do_nmi|__die|die_nmi|do_debug|do_general_protection|do_int3|do_IRQ|do_page_fault|do_sparc64_fault|do_trap|dummy_nmi_callback|flush_icache_range|ia64_bad_break|ia64_do_page_fault|ia64_fault|io_check_error|mem_parity_error|nmi_watchdog_tick|notifier_call_chain|oops_begin|oops_end|program_check_exception|single_step_exception|sync_regs|unhandled_fault|unknown_nmi_error|.*raw_.*lock.*|.*read_.*lock.*|.*write_.*lock.*|.*spin_.*lock.*|.*rwlock_.*lock.*|.*rwsem_.*lock.*|.*mutex_.*lock.*|raw_.*|.*seq_.*lock.*|atomic_.*|atomic64_.*|get_bh|put_bh|.*apic.*|.*APIC.*|.*softirq.*|.*IRQ.*|.*_intr.*|__delay|.*kernel_text.*|get_current|current_.*|.*exception_tables.*|.*setup_rt_frame.*|.*preempt_count.*|preempt_schedule|__switch_to)$                                                                                                                 blfn_ret: ^(do_exit|sys_exit|sys_exit_group)$                                                                                 blfile: ^(kernel/kprobes.c|arch/.*/kernel/kprobes.c|include/asm/io.h|include/asm/bitops.h|arch/.*/include/asm/io.h|arch/.*/include/asm/bitops.h|drivers/ide/ide-iops.c)$                                                                                    parsed 'tcp_recvmsg' -> func 'tcp_recvmsg'                                                                                    focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    selected function tcp_recvmsg                                                                                                 probe tcp_recvmsg@net/ipv4/tcp.c:1312 kernel reloc=.dynamic section=.text pc=0xffffffff805285b0                               finding location for local 'sk' near address 0xffffffff805285b0, module bias 0x0                                              finding location for local 'len' near address 0xffffffff805285b0, module bias 0x0                                             finding location for local 'sk' near address 0xffffffff805285b0, module bias 0x0                                              finding location for local 'sk' near address 0xffffffff805285b0, module bias 0x0                                              finding location for local 'sk' near address 0xffffffff805285b0, module bias 0x0                                              finding location for local 'sk' near address 0xffffffff805285b0, module bias 0x0                                              focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for inet_sock(net/ipv4/ip_input.c)                                                    focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for inet_sock(net/ipv4/ip_input.c)                                                    focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for iphdr(net/ipv4/route.c)                                                           focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for iphdr(net/ipv4/route.c)                                                           focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for iphdr(net/ipv4/route.c)                                                           focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for inet_sock(net/ipv4/ip_input.c)                                                    focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for tcphdr(net/ipv4/ip_output.c)                                                      focused on module 'kernel = [0xffffffff80200000-0xffffffff808a1000, bias 0x0] file /lib/modules/2.6.30/build/vmlinux ELF machine |x86_64 (code 62)                                                                                                          focused on module 'kernel'                                                                                                    literal_stmt_for_pointer: finding value for inet_sock(net/ipv4/ip_input.c)                                                    Eliding unused function __get_skb_iphdr                                                                                       Eliding unused function __get_skb_iphdr_new                                                                                   Eliding unused function __get_skb_tcphdr                                                                                      Eliding unused function __get_skb_tcphdr_new                                                                                  Eliding unused function __ip_skb_daddr                                                                                        Eliding unused function __ip_skb_proto                                                                                        Eliding unused function __ip_skb_saddr                                                                                        Eliding unused function __tcp_skb_ack                                                                                         Eliding unused function __tcp_skb_dport                                                                                       Eliding unused function __tcp_skb_fin                                                                                         Eliding unused function __tcp_skb_psh                                                                                         Eliding unused function __tcp_skb_rst                                                                                         Eliding unused function __tcp_skb_sport                                                                                       Eliding unused function __tcp_skb_syn                                                                                         Eliding unused function __tcp_skb_urg                                                                                         Eliding unused function _dwarf_tvar_get_cast_10                                                                               Eliding unused function _dwarf_tvar_get_cast_12                                                                               Eliding unused function _dwarf_tvar_get_cast_13                                                                               Eliding unused function _dwarf_tvar_get_cast_14                                                                               Eliding unused function _dwarf_tvar_get_cast_15                                                                               Eliding unused function _dwarf_tvar_get_cast_16                                                                               Eliding unused function _dwarf_tvar_get_cast_17                                                                               Eliding unused function _dwarf_tvar_get_cast_18                                                                               Eliding unused function _dwarf_tvar_get_cast_19                                                                               Eliding unused function _dwarf_tvar_get_cast_8                                                                                Eliding unused function _dwarf_tvar_get_cast_9                                                                                Eliding unused function htonl                                                                                                 Eliding unused function htonll                                                                                                Eliding unused function htons                                                                                                 Eliding unused function ntohl                                                                                                 Eliding unused function ntohll                                                                                                Eliding unused function ntohs                                                                                                 Eliding unused function tcp_get_info_rto                                                                                      Eliding unused function tcp_get_info_snd_cwnd                                                                                 Eliding unused function tcp_sockopt_str                                                                                       Eliding unused function tcp_sockstate_str                                                                                     Eliding unused function tcp_ts_get_info_rcv_mss                                                                               Eliding unused function tcp_ts_get_info_snd_ssthresh                                                                          Eliding unused function tcp_ts_get_info_state                                                                                 Eliding unused global variable sockstate                                                                                      Eliding unused global variable sockstate_init_p                                                                               Eliding unused global variable sockopt                                                                                        Eliding unused global variable sockopt_init_p                                                                                 Eliding assignment to name at operator '=' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:268:7      Eliding assignment to sock at operator '=' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:269:10     Eliding assignment to size at operator '=' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:270:10     Eliding assignment to daddr at operator '=' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:272:10    Eliding side-effect-free expression identifier 'name' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:268:2                                                                                                                         Eliding side-effect-free expression identifier 'sock' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:269:2                                                                                                                         Eliding side-effect-free expression identifier 'size' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:270:2                                                                                                                         Flattening nested block operator '{' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:267:52           Eliding side-effect-free singleton block operator '{' at share/doc/systemtap/examples/network/tcp.stp:11:19                   Eliding side-effect-free singleton block operator '{' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/ip.stp:34:1                                                                                                                           Eliding side-effect-free singleton block operator '{' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/ip.stp:28:1                                                                                                                           Eliding side-effect-free singleton block operator '{' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:78:43                                                                                                                         Eliding side-effect-free singleton block operator '{' at /home/diego/cÃ³digo/systemtap/binarios/share/systemtap/tapset/tcp.stp:147:43                                                                                                                        Eliding unused function _dwarf_tvar_get_len_1                                                                                 Eliding unused function _dwarf_tvar_get_sk_0                                                                                  Eliding unused local variable name in probe_1748                                                                              Eliding unused local variable sock in probe_1748                                                                              Eliding unused local variable size in probe_1748                                                                              Eliding unused local variable daddr in probe_1748                                                                             Changing _dwarf_tvar_get_sk_3 reference to _dwarf_tvar_get_sk_2 reference                                                     Changing _dwarf_tvar_get_sk_4 reference to _dwarf_tvar_get_sk_2 reference                                                     Changing _dwarf_tvar_get_sk_5 reference to _dwarf_tvar_get_sk_2 reference                                                     Pass 2: analyzed script: 2 probe(s), 10 function(s), 2 embed(s), 0 global(s) in 620usr/60sys/694real ms.                      probe_1748 locks nothing                                                                                                      stap_dwarf_probe module[7]                                                                                                    stap_dwarf_probe section[7]                                                                                                   stap_dwarf_probe pp[55]                                                                                                       dump_unwindsyms kernel index=0 base=0xffffffff80200000                                                                        Found build-id in kernel, length 20, end at 0xffffffff80578318                                                                Found kernel _stext extra offset 0x9000                                                                                       Pass 3: translated to C into "/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c" in 280usr/10sys/292real ms.       Running make -C "/lib/modules/2.6.30/build" M="/tmp/stappAJDNk" modules V=1                                                   make: Entering directory `/home/diego/cÃ³digo/linux'                                                                           test -e include/linux/autoconf.h -a -e include/config/auto.conf || (            \                                                     echo;                                                           \                                                             echo "  ERROR: Kernel configuration is invalid.";               \                                                             echo "         include/linux/autoconf.h or include/config/auto.conf are missing.";      \                                     echo "         Run 'make oldconfig && make prepare' on kernel src to fix it.";  \                                             echo;                                                           \                                                             /bin/false)                                                                                                           mkdir -p /tmp/stappAJDNk/.tmp_versions ; rm -f /tmp/stappAJDNk/.tmp_versions/*                                                make -f scripts/Makefile.build obj=/tmp/stappAJDNk  gcc -Wp,-MD,/tmp/stappAJDNk/.stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/4.3.3/include -Iinclude  -I/home/diego/cÃ³digo/linux/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -O2 -m64 -march=core2 -mno-red-zone -mcmodel=kernel -funit-at-a-time -maccumulate-outgoing-args -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-stack-protector -fno-omit-frame-pointer -fno-optimize-sibling-calls -g -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -Iinclude2/asm/mach-default -include /tmp/stappAJDNk/stapconf_d549f94e2acc8e3e6a565fb4f50c4265_458.h -freorder-blocks -Wno-unused -Werror -I"/home/diego/cÃ³digo/systemtap/binarios/share/systemtap/runtime"  -DMODULE -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(stap_81fde145f94951b89c4fc6f9e2a1c96f_3784)"  -D"KBUILD_MODNAME=KBUILD_STR(stap_81fde145f94951b89c4fc6f9e2a1c96f_3784)"  -c -o /tmp/stappAJDNk/.tmp_stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.o /tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:232:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:232:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:271:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:271:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:310:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:310:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:349:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:349:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:388:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:388:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:437:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:437:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:486:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:486:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:535:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:535:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:584:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:584:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:625:18: error: octal escape sequence out of range/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:625:18: error: octal escape sequence out of rangeIn file included from /tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.c:1480:/tmp/stappAJDNk/stap-symbols.h:73294:9: error: octal escape sequence out of range/tmp/stappAJDNk/stap-symbols.h:73294:9: error: octal escape sequence out of rangemake[1]: *** [/tmp/stappAJDNk/stap_81fde145f94951b89c4fc6f9e2a1c96f_3784.o] Error 1ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+inotify_destroy_mark_entry could get called twice for the same mark since it
+is called directly in inotify_rm_watch and when the mark is being destroyed for
+another reason.  As an example assume that the file being watched was just
+deleted so inotify_destroy_mark_entry would get called from the path
+fsnotify_inoderemove() -> fsnotify_destroy_marks_by_inode() ->
+fsnotify_destroy_mark_entry() -> inotify_destroy_mark_entry().  If this
+happened at the same time as userspace tried to remove a watch via
+inotify_rm_watch we could attempt to remove the mark from the idr twice and
+could thus double dec the ref cnt and potentially could be in a use after
+free/double free situation.  The fix is to have inotify_rm_watch use the
+generic recursive safe fsnotify_destroy_mark_by_entry() so we are sure the
+inotify_destroy_mark_entry() function can only be called one.
+
+This patch also renames the function to inotify_ingored_remove_idr() so it is
+clear what is actually going on in the function.
+
+Hopefully this fixes:
+[   20.342058] idr_remove called for id=20 which is not allocated.
+[   20.348000] Pid: 1860, comm: udevd Not tainted 2.6.30-tip #1077
+[   20.353933] Call Trace:
+[   20.356410]  [<ffffffff811a82b7>] idr_remove+0x115/0x18f
+[   20.361737]  [<ffffffff8134259d>] ? _spin_lock+0x6d/0x75
+[   20.367061]  [<ffffffff8111640a>] ? inotify_destroy_mark_entry+0xa3/0xcf
+[   20.373771]  [<ffffffff8111641e>] inotify_destroy_mark_entry+0xb7/0xcf
+[   20.380306]  [<ffffffff81115913>] inotify_freeing_mark+0xe/0x10
+[   20.386238]  [<ffffffff8111410d>] fsnotify_destroy_mark_by_entry+0x143/0x170
+[   20.393293]  [<ffffffff811163a3>] inotify_destroy_mark_entry+0x3c/0xcf
+[   20.399829]  [<ffffffff811164d1>] sys_inotify_rm_watch+0x9b/0xc6
+[   20.405850]  [<ffffffff8100bcdb>] system_call_fastpath+0x16/0x1b
+
+Reported-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
+
+ fs/notify/inotify/inotify.h          |    3 ++-
+ fs/notify/inotify/inotify_fsnotify.c |    2 +-
+ fs/notify/inotify/inotify_user.c     |   32 +++++---------------------------
+ 3 files changed, 8 insertions(+), 29 deletions(-)
+
+diff --git a/fs/notify/inotify/inotify.h b/fs/notify/inotify/inotify.h
+index ea2605a..f234f3a 100644
+--- a/fs/notify/inotify/inotify.h
++++ b/fs/notify/inotify/inotify.h
+@@ -15,7 +15,8 @@ struct inotify_inode_mark_entry {
+ 	int wd;
+ };
+ 
+-extern void inotify_destroy_mark_entry(struct fsnotify_mark_entry *entry, struct fsnotify_group *group);
++extern void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
++					   struct fsnotify_group *group);
+ extern void inotify_free_event_priv(struct fsnotify_event_private_data *event_priv);
+ 
+ extern const struct fsnotify_ops inotify_fsnotify_ops;
+diff --git a/fs/notify/inotify/inotify_fsnotify.c b/fs/notify/inotify/inotify_fsnotify.c
+index 7ef75b8..47cd258 100644
+--- a/fs/notify/inotify/inotify_fsnotify.c
++++ b/fs/notify/inotify/inotify_fsnotify.c
+@@ -81,7 +81,7 @@ static int inotify_handle_event(struct fsnotify_group *group, struct fsnotify_ev
+ 
+ static void inotify_freeing_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *group)
+ {
+-	inotify_destroy_mark_entry(entry, group);
++	inotify_ignored_and_remove_idr(entry, group);
+ }
+ 
+ static bool inotify_should_send_event(struct fsnotify_group *group, struct inode *inode, __u32 mask)
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index 982a412..ff231ad 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -363,39 +363,17 @@ static int inotify_find_inode(const char __user *dirname, struct path *path, uns
+ }
+ 
+ /*
+- * When, for whatever reason, inotify is done with a mark (or what used to be a
+- * watch) we need to remove that watch from the idr and we need to send IN_IGNORED
+- * for the given wd.
+- *
+- * There is a bit of recursion here.  The loop looks like:
+- * 	inotify_destroy_mark_entry -> fsnotify_destroy_mark_by_entry ->
+- *	inotify_freeing_mark -> inotify_destory_mark_entry -> restart
+- * But the loop is broken in 2 places.  fsnotify_destroy_mark_by_entry sets
+- * entry->group = NULL before the call to inotify_freeing_mark, so the if (egroup)
+- * test below will not call back to fsnotify again.  But even if that test wasn't
+- * there this would still be safe since fsnotify_destroy_mark_by_entry() is
+- * safe from recursion.
++ * Send IN_IGNORED for this wd, remove this wd from the idr, and drop the
++ * internal reference help on the mark because it is in the idr.
+  */
+-void inotify_destroy_mark_entry(struct fsnotify_mark_entry *entry, struct fsnotify_group *group)
++void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
++				    struct fsnotify_group *group)
+ {
+ 	struct inotify_inode_mark_entry *ientry;
+ 	struct inotify_event_private_data *event_priv;
+ 	struct fsnotify_event_private_data *fsn_event_priv;
+-	struct fsnotify_group *egroup;
+ 	struct idr *idr;
+ 
+-	spin_lock(&entry->lock);
+-	egroup = entry->group;
+-
+-	/* if egroup we aren't really done and something might still send events
+-	 * for this inode, on the callback we'll send the IN_IGNORED */
+-	if (egroup) {
+-		spin_unlock(&entry->lock);
+-		fsnotify_destroy_mark_by_entry(entry);
+-		return;
+-	}
+-	spin_unlock(&entry->lock);
+-
+ 	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+ 
+ 	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
+@@ -699,7 +677,7 @@ SYSCALL_DEFINE2(inotify_rm_watch, int, fd, __s32, wd)
+ 	fsnotify_get_mark(entry);
+ 	spin_unlock(&group->inotify_data.idr_lock);
+ 
+-	inotify_destroy_mark_entry(entry, group);
++	fsnotify_destroy_mark_by_entry(entry);
+ 	fsnotify_put_mark(entry);
+ 
+ out:
+
