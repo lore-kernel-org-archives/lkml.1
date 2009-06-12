@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZFLRdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbZFLRdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbZFLRdN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZFLRc6
+	id S1760059AbZFLRdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZFLRds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:32:58 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:16212 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbZFLRc5 convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 13:33:48 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:59548 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751206AbZFLRdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:32:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=V8UzTtP1BTd4eH6BHviCVEZp53LdgQdsnBJkxtdu3HO/oCv0hXE9WQyjYOSD1rSBoF
-         aTw0UFwHGI+3jrk3FYkxvx6dDdkMJyzBSZwe+FWHFv1f5EvuMLnPtrpUgBkuRR5lqpKO
-         8HSlXIHLmsgwo7Ih2KPOFNll8vIsCtnVcvMQo=
+	Fri, 12 Jun 2009 13:33:47 -0400
+Date: Fri, 12 Jun 2009 13:30:33 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+In-Reply-To: <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+Message-ID: <alpine.DEB.1.10.0906121317140.23840@gentwo.org>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <20090612173031.GA11233@elte.hu>
-References: <1244827063-24046-1-git-send-email-vapier@gentoo.org> 
-	<20090612173031.GA11233@elte.hu>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 12 Jun 2009 13:32:40 -0400
-Message-ID: <8bd0f97a0906121032p12710878h14c5013fbec58b91@mail.gmail.com>
-Subject: Re: [PATCH] perf_counters: start documenting HAVE_PERF_COUNTERS 
-	requirements
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 13:30, Ingo Molnar wrote:
-> * Mike Frysinger <vapier@gentoo.org> wrote:
->> Help out arch porters who want to support perf counters by listing some
->> basic requirements.
->>
->> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->> ---
->> i imagine more details would be good, but this is a starting point and
->> better than nothing
->>
->>  init/Kconfig          |    2 ++
->>  tools/perf/design.txt |   15 +++++++++++++++
->>  2 files changed, 17 insertions(+), 0 deletions(-)
->>
->> diff --git a/init/Kconfig b/init/Kconfig
->> index c649657..20f85b1 100644
->> --- a/init/Kconfig
->> +++ b/init/Kconfig
->> @@ -936,6 +936,8 @@ config AIO
->>
->>  config HAVE_PERF_COUNTERS
->>       bool
->> +     help
->> +       See end of tools/perf/design.txt
->>
->>  menu "Performance Counters"
->
-> Applied, thanks Mike! I have made a small change: i changed it from
-> help text into a regular comment. We usually use help texts for
-> interactive Kconfig options - but this is not one.
+On Fri, 12 Jun 2009, Pekka J Enberg wrote:
 
-yes, but i like the help text because when i use the kconfig search
-option, it shows up.  otherwise doing a search for HAVE_PERF_COUNTERS
-shows nothing useful.
--mike
+> @@ -3434,6 +3451,8 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
+>  	unsigned long save_flags;
+>  	void *objp;
+>
+> +	flags &= slab_gfp_mask;
+> +
+>  	lockdep_trace_alloc(flags);
+>
+>  	if (slab_should_failslab(cachep, flags))
+
+Adds code to hot code path.
+
+> @@ -1595,6 +1601,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+>  	unsigned long flags;
+>  	unsigned int objsize;
+>
+> +	gfpflags &= slab_gfp_mask;
+> +
+>  	lockdep_trace_alloc(gfpflags);
+>  	might_sleep_if(gfpflags & __GFP_WAIT);
+>
+
+Adds code to hot code path.
+
+The allocators mask flags passed to the page allocator through
+GFP_RECLAIM_MASK|GFP_CONSTRAINT_MASK. This is done outside of the critical
+code paths.
+
+The might_sleep issues may be fixed by adding another check to
+__might_sleep().
+
+
