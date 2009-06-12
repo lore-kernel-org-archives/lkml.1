@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763205AbZFLJWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbZFLJWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763205AbZFLJWE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZFLJVy
+	id S933342AbZFLJWY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763168AbZFLJWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:21:54 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50349 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755568AbZFLJVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:21:54 -0400
-Subject: Possible memory leak via tty_ldisc_try_get
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
+	Fri, 12 Jun 2009 05:22:13 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51493 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752674AbZFLJWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:22:12 -0400
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
+ suspending
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20090612091002.GA32052@elte.hu>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+	 <20090612091002.GA32052@elte.hu>
 Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 12 Jun 2009 10:21:48 +0100
-Message-Id: <1244798508.26670.20.camel@pc1117.cambridge.arm.com>
+Date: Fri, 12 Jun 2009 19:21:55 +1000
+Message-Id: <1244798515.7172.99.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jun 2009 09:21:49.0414 (UTC) FILETIME=[36F32060:01C9EB3F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
 
-I noticed you pushed some changes to drivers/char/tty_ldisc.c recently.
-I now get about 12 kmemleak reports like below (on an ARM platform):
+> We emit a debug warning but dont crash, so all should be fine and 
+> the culprits can then be fixed, right?
 
-kmemleak: unreferenced object 0xdfaffd60 (size 32):
-  comm "init", pid 1, jiffies 4294937946
-  backtrace:
-    [<c007b8fc>] kmemleak_alloc+0x14c/0x260
-    [<c0079624>] kmem_cache_alloc+0x90/0x98
-    [<c0147428>] tty_ldisc_try_get+0x14/0xac
-    [<c01475a4>] tty_ldisc_get+0x18/0x40
-    [<c0147850>] tty_ldisc_reinit+0x28/0x5c
-    [<c01478ac>] tty_ldisc_release+0x28/0x3c
-    [<c0143450>] tty_release_dev+0x3cc/0x428
-    [<c01434b8>] tty_release+0xc/0x14
-    [<c007eb60>] __fput+0x104/0x1c4
-    [<c007bb48>] filp_close+0x70/0x7c
-    [<c007bbc8>] sys_close+0x74/0xa8
-    [<c0022dc0>] ret_fast_syscall+0x0/0x2c
-    [<ffffffff>] 0xffffffff
+ ... rewind ... :-)
 
-Could you please check whether the code is leaking memory? Let me know
-if you need more information.
+Ok so, no, the culprit cannot be all fixed in a satifactory way.
 
-Thanks.
+The main reason is that I believe it's not "right" to have every caller
+of slab around know whether GFP_KERNEL is good to go or it should get
+into GFP_NOWAIT. This depends on many factors (among others us moving
+things around more), and is not actually a good solution for thing that
+can be called both at boot and later, such as get_vm_area().
 
--- 
-Catalin
+I really think we are looking for trouble (and a lot of hidden bugs) by
+trying to "fix" all callers, in addition to making some code like
+vmalloc() more failure prone because it's unconditionally changed from
+GFP_KERNEL to GFP_NOWAIT.
+
+It seems a lot more reasonably to me to have sl*b naturally degrade to
+NOWAIT when it's too early to enable interrupts.
+
+In addition, my proposal of having bits to mask off gfp will also be
+useful in fixing similar issues with suspend/resume vs. GFP_NOIO which
+should really become implicit when devices start becoming suspended.
+
+Cheers,
+Ben.
+
 
