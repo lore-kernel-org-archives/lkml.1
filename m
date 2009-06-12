@@ -1,64 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbZFLJ30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbZFLJaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932832AbZFLJ30 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZFLJ3T
+	id S933347AbZFLJaV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbZFLJaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:29:19 -0400
-Received: from relay.atmel.no ([80.232.32.139]:58258 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754420AbZFLJ3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:29:18 -0400
-Date: Fri, 12 Jun 2009 11:29:00 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Rob Emanuele <poorarm@shoreis.com>, Andrew Victor <avictor.za@gmail.com>,
-       Joey Oravec <joravec@drewtech.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Subject: Re: [PATCH][Fix] New Unified AVR32/AT91 MCI Driver that supports
- both 	MCI slots used at the same time
-Message-ID: <20090612112900.4435f70f@hskinnemoen-d830>
-In-Reply-To: <4A3219F6.6000300@atmel.com>
-References: <c8284b5b0906101641v586c3487i465263bb6908e3f7@mail.gmail.com>
-	<20090611095432.2e3a4067@hskinnemoen-d830>
-	<c8284b5b0906111316p1367a508vdb59ee7c2a8d2ff1@mail.gmail.com>
-	<4A3219F6.6000300@atmel.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 05:30:10 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:41895 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755140AbZFLJaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:30:09 -0400
+Date: Fri, 12 Jun 2009 17:27:37 +0800
+From: Harald Welte <HaraldWelte@viatech.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core
+	temperature
+Message-ID: <20090612092737.GD30843@prithivi.gnumonks.org>
+References: <20090609083406.GE25316@prithivi.gnumonks.org> <loom.20090610T172830-164@post.gmane.org> <20090611153255.ba8d6c54.akpm@linux-foundation.org> <20090612101200.3fe6d494@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090612101200.3fe6d494@hyperion.delvare>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Ferre wrote:
-> > Well, what is the best way to differentiate it from the at91_mci
-> > driver and keep users from trying to use both drivers?  
+Hi Jean and Tomaz,
+
+On Fri, Jun 12, 2009 at 10:12:00AM +0200, Jean Delvare wrote:
+> > > Harald,
+> > 
+> > You carefully removed Harald from Cc: so he probably didn't read your
+> > email.
+
+That was indeed true, thanks for noticing this.
+
+> > > via-cputemp-isa-0000
 > 
-> I propose that we setup a kind of choice sub menu in the Kconfig for
-> those two drivers when they are both supported.
+> Harald, dashes in hwmon chip names are _prohibited_. Please change to
+> via_cputemp or similar.
 
-Shouldn't it be enough to simply add
+done.
 
-	depends on !THE_OTHER_DRIVER
+> Temperature values are supposed to be expressed in millidegrees C, not
+> degrees C as it seems to be doing 
 
-to both of them?
+> (although 25 degrees C seems pretty low for a CPU temperature?) 
 
-Btw, what are the long-term plans for this? Should the at91_mci driver
-be phased out once the atmel-mci driver supports all at91 and avr32
-devices?
+It's really low, though the VIA Nano on my desk has 30 degrees C and doesn't
+need a fan.  Only during kernel compiles it goes to something like 40
+centigrade.
 
-> > Who would that be as I haven't seen anyone who maintains any of those
-> > boards other than the at91rm8200 (at least nothing listed in the
-> > MAINTAINERS file)?  The board-sam9g20ek.c platform only shows Atmel as
-> > the most recent copyright.  
-> 
-> Hey, AT91 are very well maintained, SAM9 as well as at91rm9200.
-> So, AT91 specific bits should be sent to this mailing-list with Andrew
-> Victor in copy.
-> I will also certainly add comments on this code.
+Some older C7 (Model A) had an errata where the temperature sensors had a
+really high error on low temperatures.
 
-One of you should update MAINTAINERS to reflect this.
+There is also another errata with that C7 Model A, where if you underclock
+the FSB of the CPU, the temperature reading would be wrong (but much too
+high in that case).
 
-Haavard
+Since there really is nothing we can do in software to fix this, I didn't
+put any of this in the driver.  What I could do though is some bits to
+add a printk() message once you load the driver on such a system.
+
+> The drivers needs to multiply values by 1000 before exporting them to sysfs.
+> Then "sensors" will report the correct temperature value.
+
+done.  Please find an incremental patch right here:
+=============
+diff --git a/drivers/hwmon/via-cputemp.c b/drivers/hwmon/via-cputemp.c
+index 1032355..2abe516 100644
+--- a/drivers/hwmon/via-cputemp.c
++++ b/drivers/hwmon/via-cputemp.c
+@@ -37,7 +37,7 @@
+ #include <asm/msr.h>
+ #include <asm/processor.h>
+ 
+-#define DRVNAME	"via-cputemp"
++#define DRVNAME	"via_cputemp"
+ 
+ typedef enum { SHOW_TEMP, SHOW_LABEL, SHOW_NAME } SHOW;
+ 
+@@ -81,7 +81,7 @@ static ssize_t show_temp(struct device *dev,
+ 	if (err)
+ 		return -EAGAIN;
+ 
+-	err = sprintf(buf, "%d\n", eax & 0xffffff);
++	err = sprintf(buf, "%d\n", (eax & 0xffffff) * 1000);
+ 
+ 	return err;
+ }
+=============
+
+I'll re-submit the full driver after adding the above-mentioned printk.
+
+-- 
+- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
+============================================================================
+VIA Free and Open Source Software Liaison
