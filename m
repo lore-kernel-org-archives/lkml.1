@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933016AbZFLIOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933047AbZFLIOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933016AbZFLIOB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932826AbZFLINm
+	id S933047AbZFLIOr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762115AbZFLIOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:13:42 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43935 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932979AbZFLINj (ORCPT
+	Fri, 12 Jun 2009 04:14:31 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:43218 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762181AbZFLIOa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:13:39 -0400
-Date: Fri, 12 Jun 2009 11:13:40 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       npiggin@suse.de, benh@kernel.crashing.org
-Subject: [PATCH 2/2] slab,slub: ignore __GFP_WAIT if we're booting or suspending
-Message-ID: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 04:14:30 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Fri, 12 Jun 2009 10:15:19 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.30-rc7-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0906112210340.21931-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906112210340.21931-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906121015.19504.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Am Freitag, 12. Juni 2009 04:16:10 schrieb Alan Stern:
+> What tree constraint?  You mean that the PM core shouldn't allow
+> devices to suspend unless all their children are suspended?  Why
+> doesn't it still apply?
 
-As explained by Benjamin Herrenschmidt:
+Because the hardware doesn't need it.
 
-  Oh and btw, your patch alone doesn't fix powerpc, because it's missing
-  a whole bunch of GFP_KERNEL's in the arch code... You would have to
-  grep the entire kernel for things that check slab_is_available() and
-  even then you'll be missing some.
+> Remember, when Rafael and I say "suspend" here, we don't mean "go to a
+> low-power state".  We mean "the PM core calls the runtime_suspend
+> method".  No matter what actions the link hardware may decide to take
+> on its own, the PM core will still want to observe the
+> all-children-suspended restriction when calling runtime_suspend
+> methods.
 
-  For example, slab_is_available() didn't always exist, and so in the
-  early days on powerpc, we used a mem_init_done global that is set form
-  mem_init() (not perfect but works in practice). And we still have code
-  using that to do the test.
+No. The core if it insists all children be suspended will not use
+the hardware's full capabilities.
+If it leaves such power saving measures to the drivers, latency
+accounting will be wrong.
 
-Therefore, ignore __GFP_WAIT in the slab allocators if we're booting or
-suspending.
+> > I think there are devices who can be suspended while children are active
+> > and devices which can not be. This is an attribute of the device and
+> > should be evaluated by the core.
+>
+> Clearly it should be decided by the driver.  Should there be a bit for
+> it in the dev_pm_info structure?
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slab.c |    7 +++++++
- mm/slub.c |    7 +++++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+Yes.
 
-diff --git a/mm/slab.c b/mm/slab.c
-index f46b65d..4b932e0 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2812,6 +2812,13 @@ static int cache_grow(struct kmem_cache *cachep,
- 
- 	offset *= cachep->colour_off;
- 
-+	/*
-+	 * Lets not wait if we're booting up or suspending even if the user
-+	 * asks for it.
-+	 */
-+	if (system_state != SYSTEM_RUNNING)
-+		local_flags &= ~__GFP_WAIT;
-+
- 	if (local_flags & __GFP_WAIT)
- 		local_irq_enable();
- 
-diff --git a/mm/slub.c b/mm/slub.c
-index 3964d3c..053ea3e 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1548,6 +1548,13 @@ new_slab:
- 		goto load_freelist;
- 	}
- 
-+	/*
-+	 * Lets not wait if we're booting up or suspending even if the user
-+	 * asks for it.
-+	 */
-+	if (system_state != SYSTEM_RUNNING)
-+		gfpflags &= ~__GFP_WAIT;
-+
- 	if (gfpflags & __GFP_WAIT)
- 		local_irq_enable();
- 
--- 
-1.6.0.4
+	Regards
+		Oliver
+
 
