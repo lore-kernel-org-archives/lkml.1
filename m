@@ -1,140 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbZFLPlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbZFLPlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbZFLPlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZFLPlF
+	id S1761550AbZFLPlc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbZFLPlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:41:05 -0400
-Received: from sg2ehsobe004.messaging.microsoft.com ([207.46.51.78]:48021 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755163AbZFLPlB (ORCPT
+	Fri, 12 Jun 2009 11:41:13 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60192 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757239AbZFLPlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:41:01 -0400
-X-SpamScore: -20
-X-BigFish: VPS-20(z21eW39eeh6f5iz98dR11e2K4cd6ka1d3kzz1202hzzz32i6bh17ch61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KL4U7L-02-I9D-01
-Date: Fri, 12 Jun 2009 17:39:06 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Tony Vroon <tony@vroon.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: WARNING: at kernel/smp.c:369
-	smp_call_function_many+0x52/0x1b3() [2.6.30-01557-gb640f04]
-Message-ID: <20090612153906.GI12431@alberich.amd.com>
-References: <1244753567.3768.2.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1244753567.3768.2.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 12 Jun 2009 15:39:59.0046 (UTC) FILETIME=[0B063660:01C9EB74]
+	Fri, 12 Jun 2009 11:41:11 -0400
+Date: Fri, 12 Jun 2009 18:41:13 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       cl@linux-foundation.org, akpm@linux-foundation.org, npiggin@suse.de,
+       benh@kernel.crashing.org
+Subject: [PATCH 2/3] slab,slub: don't enable interrupts during early boot
+Message-ID: <Pine.LNX.4.64.0906121840550.5491@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 09:52:47PM +0100, Tony Vroon wrote:
-> This one is new to me:
-   ...
-> ------------[ cut here ]------------
-> WARNING: at kernel/smp.c:369 smp_call_function_many+0x52/0x1b3()
-   ...
-> ---[ end trace 4eaa2a86a8e2da22 ]---
-> start_kernel(): bug: interrupts were enabled *very* early, fixing it
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Same here with v2.6.30-2327-g8ebf975, e.g.
+As explained by Benjamin Herrenschmidt:
 
-Jun 16 04:07:35 polonium ------------[ cut here ]------------
-Jun 16 04:07:35 polonium WARNING: at kernel/smp.c:369 smp_call_function_many+0x\
-52/0x1b3()
-Jun 16 04:07:35 polonium Hardware name: Dinar
-Jun 16 04:07:35 polonium Modules linked in:
-Jun 16 04:07:35 polonium Pid: 0, comm: swapper Not tainted 2.6.30-numa-sched-fi\
-xup-02332-g8892f68 #1
-Jun 16 04:07:35 polonium Call Trace:
-Jun 16 04:07:35 polonium [<ffffffff8105a07b>] ? smp_call_function_many+0x52/0x1\
-b3
-Jun 16 04:07:35 polonium [<ffffffff8105a07b>] ? smp_call_function_many+0x52/0x1\
-b3
-Jun 16 04:07:35 polonium [<ffffffff8103b415>] ? warn_slowpath_common+0x77/0xa3
-Jun 16 04:07:35 polonium [<ffffffff8108d1ae>] ? do_ccupdate_local+0x0/0x2a
-Jun 16 04:07:35 polonium [<ffffffff8105a07b>] ? smp_call_function_many+0x52/0x1\
-b3
-Jun 16 04:07:35 polonium [<ffffffff8108d1ae>] ? do_ccupdate_local+0x0/0x2a
-Jun 16 04:07:35 polonium [<ffffffff8108d1ae>] ? do_ccupdate_local+0x0/0x2a
-Jun 16 04:07:35 polonium [<ffffffff8105a1fc>] ? smp_call_function+0x20/0x24
-Jun 16 04:07:35 polonium [<ffffffff8103f945>] ? on_each_cpu+0x10/0x22
-Jun 16 04:07:35 polonium [<ffffffff8108f024>] ? do_tune_cpucache+0xee/0x43d
-Jun 16 04:07:35 polonium [<ffffffff8108f518>] ? enable_cpucache+0x5d/0x9d
-Jun 16 04:07:35 polonium [<ffffffff81695faf>] ? kmem_cache_init+0x3f7/0x451
-Jun 16 04:07:35 polonium [<ffffffff810d6092>] ? kclist_add+0x18/0x36
-Jun 16 04:07:35 polonium [<ffffffff8168f047>] ? mem_init+0x152/0x15a
-Jun 16 04:07:35 polonium [<ffffffff8167fa06>] ? start_kernel+0x1a4/0x2b7
-Jun 16 04:07:35 polonium [<ffffffff8167f354>] ? x86_64_start_kernel+0xe5/0xeb
-Jun 16 04:07:35 polonium ---[ end trace 4eaa2a86a8e2da22 ]---
-Jun 16 04:07:35 polonium start_kernel(): bug: interrupts were enabled *very* ea\
-rly, fixing it
+  Oh and btw, your patch alone doesn't fix powerpc, because it's missing
+  a whole bunch of GFP_KERNEL's in the arch code... You would have to
+  grep the entire kernel for things that check slab_is_available() and
+  even then you'll be missing some.
 
-and it's followed by Oopses when I am trying to log in via network, e.g.
+  For example, slab_is_available() didn't always exist, and so in the
+  early days on powerpc, we used a mem_init_done global that is set form
+  mem_init() (not perfect but works in practice). And we still have code
+  using that to do the test.
 
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<ffffffff811c7c9f>] pty_chars_in_buffer+0x14/0x40
-PGD 2320b8067 PUD 234929067 PMD 0
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:13.2/usb2/2-6/2-6.2/serial
-CPU 0
-Modules linked in:
-Pid: 5312, comm: sshd Tainted: G        W  2.6.30-numa-sched-fixup-02332-g8892f\
-68 #1 Dinar
-RIP: 0010:[<ffffffff811c7c9f>]  [<ffffffff811c7c9f>] pty_chars_in_buffer+0x14/0\
-x40
-RSP: 0018:ffff8802330bd9a8  EFLAGS: 00010286
-RAX: 0000000000000000 RBX: ffff88023518d000 RCX: ffffffff815263db
-RDX: ffff8802319ec6c0 RSI: ffff88023518d188 RDI: ffff880234e23000
-RBP: ffff88023518d000 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000286 R11: ffffffff811c7c8b R12: ffff880232953700
-R13: ffff880232953740 R14: 0000000000000000 R15: 0000000000000000
-FS:  00007fa6b23756f0(0000) GS:ffff880028034000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 0000000233008000 CR4: 00000000000006f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process sshd (pid: 5312, threadinfo ffff8802330bc000, task ffff880235f86210)
-Stack:
- 0000000000000000 ffffffff811c343d 0000000000000046 0000000000000000
- ffff88023518d000 ffff880232953740 ffff8802355567c0 ffffffff811c0050
- 0000000000000200 0000000000000000 ffff880232953740 0000000000000000
-Call Trace:
- [<ffffffff811c343d>] ? n_tty_poll+0x10d/0x130
- [<ffffffff811c0050>] ? tty_poll+0x56/0x6d
- [<ffffffff810a0552>] ? do_select+0x330/0x507
- [<ffffffff810a0bf4>] ? __pollwait+0x0/0xcd
- [<ffffffff810a0cc1>] ? pollwake+0x0/0x47
- [<ffffffff810a0cc1>] ? pollwake+0x0/0x47
- [<ffffffff810a0cc1>] ? pollwake+0x0/0x47
- [<ffffffff810a0cc1>] ? pollwake+0x0/0x47
- [<ffffffff812fd009>] ? sk_reset_timer+0xf/0x1d
- [<ffffffff81334a00>] ? tcp_write_xmit+0x890/0x979
- [<ffffffff81331b61>] ? tcp_current_mss+0x3c/0x57
- [<ffffffff813a7188>] ? _spin_lock_bh+0x9/0x1f
- [<ffffffff812fcb98>] ? release_sock+0x13/0x95
- [<ffffffff81329a9f>] ? tcp_sendmsg+0x8c2/0x9b6
- [<ffffffff810a08d4>] ? core_sys_select+0x1ab/0x26f
- [<ffffffff810779e1>] ? __do_fault+0x3d4/0x40f
- [<ffffffff8104ce8e>] ? autoremove_wake_function+0x0/0x2e
- [<ffffffff810a0bcb>] ? sys_select+0x92/0xbb
- [<ffffffff8109406a>] ? sys_write+0x45/0x6e
- [<ffffffff8100b96b>] ? system_call_fastpath+0x16/0x1b
-Code: 85 c0 74 10 f6 87 ec 00 00 00 01 75 07 8b 80 f0 00 00 00 c3 31 c0 c3 53 4\
-8 89 fb 48 8b bf f8 00 00 00 48 85 ff 74 2a 48 8b 47 40 <48> 8b 00 48 8b 40 30 \
-48 85 c0 74 1a ff d0 89 c2 48 8b 43 08 66
-RIP  [<ffffffff811c7c9f>] pty_chars_in_buffer+0x14/0x40
- RSP <ffff8802330bd9a8>
-CR2: 0000000000000000
----[ end trace 4eaa2a86a8e2da24 ]---
+Therefore, mask out __GFP_WAIT in the slab allocators in early boot code to
+avoid enabling interrupts.
 
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/gfp.h      |    3 +++
+ include/linux/slab.h     |    2 ++
+ include/linux/slob_def.h |    5 +++++
+ include/linux/slub_def.h |    2 ++
+ init/main.c              |    1 +
+ mm/slab.c                |   22 ++++++++++++++++++++++
+ mm/slub.c                |   16 ++++++++++++++++
+ 7 files changed, 51 insertions(+), 0 deletions(-)
 
-
-Regards,
-Andreas
-
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 0bbc15f..ec0fede 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -85,6 +85,9 @@ struct vm_area_struct;
+ 			__GFP_NOWARN|__GFP_REPEAT|__GFP_NOFAIL|\
+ 			__GFP_NORETRY|__GFP_NOMEMALLOC)
+ 
++/* Control slab gfp mask during early boot */
++#define SLAB_GFP_BOOT_MASK __GFP_BITS_MASK & ~(__GFP_WAIT|__GFP_IO|__GFP_FS);
++
+ /* Control allocation constraints */
+ #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
+ 
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 4880306..219b8fb 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -319,4 +319,6 @@ static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
+ 	return kmalloc_node(size, flags | __GFP_ZERO, node);
+ }
+ 
++void __init kmem_cache_init_late(void);
++
+ #endif	/* _LINUX_SLAB_H */
+diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
+index 0ec00b3..bb5368d 100644
+--- a/include/linux/slob_def.h
++++ b/include/linux/slob_def.h
+@@ -34,4 +34,9 @@ static __always_inline void *__kmalloc(size_t size, gfp_t flags)
+ 	return kmalloc(size, flags);
+ }
+ 
++static inline void kmem_cache_init_late(void)
++{
++	/* Nothing to do */
++}
++
+ #endif /* __LINUX_SLOB_DEF_H */
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index be5d40c..4dcbc2c 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -302,4 +302,6 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ }
+ #endif
+ 
++void __init kmem_cache_init_late(void);
++
+ #endif /* _LINUX_SLUB_DEF_H */
+diff --git a/init/main.c b/init/main.c
+index b3e8f14..f6204f7 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -640,6 +640,7 @@ asmlinkage void __init start_kernel(void)
+ 				 "enabled early\n");
+ 	early_boot_irqs_on();
+ 	local_irq_enable();
++	kmem_cache_init_late();
+ 
+ 	/*
+ 	 * HACK ALERT! This is early. We're enabling the console before
+diff --git a/mm/slab.c b/mm/slab.c
+index cd76964..6c0c4df 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -304,6 +304,12 @@ struct kmem_list3 {
+ };
+ 
+ /*
++ * The slab allocator is initialized with interrupts disabled. Therefore, make
++ * sure early boot allocations don't accidentally enable interrupts.
++ */
++static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
++
++/*
+  * Need this for bootstrapping a per node allocator.
+  */
+ #define NUM_INIT_LISTS (3 * MAX_NUMNODES)
+@@ -1654,6 +1660,14 @@ void __init kmem_cache_init(void)
+ 	 */
+ }
+ 
++void __init kmem_cache_init_late(void)
++{
++	/*
++	 * Interrupts are enabled now so all GFP allocations are safe.
++	 */
++	slab_gfp_mask = __GFP_BITS_MASK;
++}
++
+ static int __init cpucache_init(void)
+ {
+ 	int cpu;
+@@ -3237,6 +3251,10 @@ retry:
+ 	}
+ 
+ 	if (!obj) {
++		/* Lets avoid crashing in early boot code. */
++		if (WARN_ON_ONCE((local_flags & ~slab_gfp_mask) != 0))
++			local_flags &= slab_gfp_mask;
++
+ 		/*
+ 		 * This allocation will be performed within the constraints
+ 		 * of the current cpuset / memory policy requirements.
+@@ -3354,6 +3372,8 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
+ 	unsigned long save_flags;
+ 	void *ptr;
+ 
++	flags &= slab_gfp_mask;
++
+ 	lockdep_trace_alloc(flags);
+ 
+ 	if (slab_should_failslab(cachep, flags))
+@@ -3434,6 +3454,8 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
+ 	unsigned long save_flags;
+ 	void *objp;
+ 
++	flags &= slab_gfp_mask;
++
+ 	lockdep_trace_alloc(flags);
+ 
+ 	if (slab_should_failslab(cachep, flags))
+diff --git a/mm/slub.c b/mm/slub.c
+index 3964d3c..30354bf 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -178,6 +178,12 @@ static enum {
+ 	SYSFS		/* Sysfs up */
+ } slab_state = DOWN;
+ 
++/*
++ * The slab allocator is initialized with interrupts disabled. Therefore, make
++ * sure early boot allocations don't accidentally enable interrupts.
++ */
++static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
++
+ /* A list of all slab caches on the system */
+ static DECLARE_RWSEM(slub_lock);
+ static LIST_HEAD(slab_caches);
+@@ -1595,6 +1601,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+ 	unsigned long flags;
+ 	unsigned int objsize;
+ 
++	gfpflags &= slab_gfp_mask;
++
+ 	lockdep_trace_alloc(gfpflags);
+ 	might_sleep_if(gfpflags & __GFP_WAIT);
+ 
+@@ -3104,6 +3112,14 @@ void __init kmem_cache_init(void)
+ 		nr_cpu_ids, nr_node_ids);
+ }
+ 
++void __init kmem_cache_init_late(void)
++{
++	/*
++	 * Interrupts are enabled now so all GFP allocations are safe.
++	 */
++	slab_gfp_mask = __GFP_BITS_MASK;
++}
++
+ /*
+  * Find a mergeable slab cache
+  */
+-- 
+1.6.0.4
 
