@@ -1,125 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763294AbZFLNLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758410AbZFLNOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763294AbZFLNLu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbZFLNLj
+	id S1758410AbZFLNOc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbZFLNOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:11:39 -0400
-Received: from mail-yx0-f186.google.com ([209.85.210.186]:59847 "EHLO
-	mail-yx0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763422AbZFLNLh convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 09:14:23 -0400
+Received: from sg2ehsobe004.messaging.microsoft.com ([207.46.51.78]:35102 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755558AbZFLNOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:11:37 -0400
-X-Greylist: delayed 435 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 09:11:36 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=KwIBLKPas/4aw0fUPBXSJLQr16cRuglcTgctfqEP8JzrfA5gBazEN/w6v/j+2dr5Fg
-         iKV4nlWtFdznSTmgUauA8j7V02eSojZahOulbZE9qFOHhzlEkuPpWa9cnL/AQWt/h11A
-         GOr4KZj/sf7p7m4CNg/nZwLInX+vrATtVpl+I=
-MIME-Version: 1.0
-In-Reply-To: <20090612125941.GI31845@elte.hu>
-References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> 
-	<20090612120507.GH16044@elte.hu> <8bd0f97a0906120513u4e823460t8192f00fd0460ab@mail.gmail.com> 
-	<20090612121757.GD31845@elte.hu> <8bd0f97a0906120522v51ae0151i48d5f6846ddcff10@mail.gmail.com> 
-	<20090612123152.GE31845@elte.hu> <8bd0f97a0906120541x739b7902pe40ff7aa91337bac@mail.gmail.com> 
-	<20090612125941.GI31845@elte.hu>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 12 Jun 2009 09:04:03 -0400
-Message-ID: <8bd0f97a0906120604o1e90ac93l469e86173224364e@mail.gmail.com>
-Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open 
-	when supported
+	Fri, 12 Jun 2009 09:14:22 -0400
+X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 09:14:21 EDT
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i17ch61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KL4MQD-01-LYH-01
+From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: [PATCH 0/23] updates for oprofile
+Date: Fri, 12 Jun 2009 14:35:17 +0200
+Message-ID: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.6.3.1
+X-OriginalArrivalTime: 12 Jun 2009 12:59:05.0217 (UTC) FILETIME=[90E4CF10:01C9EB5D]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 08:59, Ingo Molnar wrote:
-> * Mike Frysinger <vapier.adi@gmail.com> wrote:
->> On Fri, Jun 12, 2009 at 08:31, Ingo Molnar wrote:
->> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
->> >> On Fri, Jun 12, 2009 at 08:17, Ingo Molnar wrote:
->> >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
->> >> >> On Fri, Jun 12, 2009 at 08:05, Ingo Molnar wrote:
->> >> >> > * Mike Frysinger <vapier@gentoo.org> wrote:
->> >> >> >> If the port does not support HAVE_PERF_COUNTERS, then they can't
->> >> >> >> support the perf_counter_open syscall either.  Rather than forcing
->> >> >> >> everyone to add an ignore (or suffer the warning until they get
->> >> >> >> around to implementing support), only whine about the syscall when
->> >> >> >> applicable.
->> >> >> >
->> >> >> > No, this patch is wrong - it's really easy to add support: just hook
->> >> >> > up the syscall. This should happen for every architecture really, so
->> >> >> > the warning is correct and it should not be patched out.
->> >> >> >
->> >> >> > PMU support is not required to get perfcounters support: if an
->> >> >> > architecture hooks up the syscall it will get generic software
->> >> >> > counters and the tools will work as well.
->> >> >> >
->> >> >> > Profiling falls back to a hrtimer-based sampling method - this is a
->> >> >> > much better fallback than oprofile's fall-back to the timer tick.
->> >> >> > This hrtimer based sampling is dynticks/nohz-correct and can go
->> >> >> > beyond HZ if the architecture supports hrtimers.
->> >> >>
->> >> >> if there is generic support available, why must every arch select
->> >> >> HAVE_PERF_COUNTERS in their Kconfig ?
->> >> >
->> >> > Because we only want to enable it on architectures that have tested
->> >> > it. It should only need a syscall addition, but nothing beats having
->> >> > tested things, hence we have that additional Kconfig symbol.
->> >>
->> >> that is a pretty weak reason. [...]
->> >
->> > It isnt - this is proper isolation - dont offer something to the
->> > user to enable that 1) cannot be used due to the lack of a syscall
->> > 2) has not been tested by anyone on that architecture, ever.
->> >
->> > That way say build breakages or runtime failures due to perfcounters
->> > only become possible on an architecture if the architecture
->> > maintainer has hooked up the syscall and has provided
->> > HAVE_PERF_COUNTERS explicitly.
->>
->> except that the syscall presence is trivial to detect in the code by
->> something like:
->> #ifndef __NR_perf_counter_open
->> # error sorry, your arch has not hooked up perf_counter_open syscall yet
->> #endif
->>
->> as for "no arch testing yet", there are plenty of drivers which lack
->> arch depends in the Kconfig specifically so that it can be *easily*
->> tested on random systems out there without requiring manual twiddling.
->
-> This is a new kernel subsystem, not just yet another driver.
+These patches are updates for oprofile, mainly for x86. Most patches
+for x86 replace many macro definitions by function calls and implement
+internal 64 bit usage for MSR access. The code is now better readable
+and maintainable. Future changes can be made easier.
 
-so what ?  if it has generic pieces, it is exactly the same as yet
-another generic driver.  people should be able to randomly test build
-it when possible to discover latent issues that your testing limited
-to one arch did not find.
+Also, struct op_x86_model_spec has been extended to better describe
+the x86 model. This patch series introduces common functions that can
+be used by all x86 models. It is a first step to merge similar model
+specific code and to get a common code base for all models.
 
-> Which bit of: "we dont want perfcounters to be enabled in the
-> Kconfig on architectures that have no syscalls and no testing for
-> it" is hard to understand? It is a valid technical concern.
+Another change is the rework of arch_perfmon init code. There was
+model specific code in nmi_int.c. This code is moved to
+op_model_ppro.c by using the init function pointer in struct
+op_x86_model_spec.
 
-your (1) is valid but i already pointed out a simple fix for that.
-your (2) is not.
+There are no functional changes in this patch set, it only contains
+cleanups and reworks.
 
-> I on the other hand fail to see what specific problem your patch is
-> trying to solve.
+The following changes since commit 0886751c5d8b19fcee2e65d34ae21c9111e652a9:
+  Robert Richter (1):
+        Merge commit 'v2.6.30' into oprofile/master
 
-i'm not debating the merit of my patch.  like you said, it is wrong.
-i am however debating the validity of a Kconfig option that
-masquerades as yet another useless:
-depends on X86 || PPC || SH || ....
+are available in the git repository at:
 
-> Anyway - feel free to apply that hack to checksyscalls if you want
-> to hide the lack of a feature that could be supported by the
-> architecture - we certainly wont enable perfcounters on
-> architectures that havent got it tested first.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git master
 
-no one is asking you to enable it.  that is for the user to do it.
--mike
+-Robert
+
+-----------
+
+Robert Richter (23):
+      Revert "oprofile: discover counters for op ppro too"
+      x86/oprofile: moving arch_perfmon counter setup to op_x86_model_spec.init
+      x86/oprofile: minor style changes in struct op_x86_model_spec
+      oprofile: remove irq_flags in struct op_entry
+      oprofile: remove obselete include headers
+      x86/oprofile: remove #ifdefs in ibs functions
+      x86/oprofile: simplify AMD cpu init code
+      x86/oprofile: move common macros to op_x86_model.h
+      x86/oprofile: remove MSR macros for AMD cpus
+      x86/oprofile: remove MSR macros for ppro cpus
+      x86/oprofile: remove MSR macros for p4 cpus
+      x86/oprofile: fix and cleanup CTRL_SET_* macros
+      x86/oprofile: remove unused macros for AMD virtualization profiling
+      x86/oprofile: pass the model to setup_ctrs() functions
+      x86/oprofile: replace macros to calculate control register
+      x86/oprofile: replace CTR_OVERFLOWED macros
+      x86/oprofile: replace CTRL_SET_*ACTIVE macros
+      x86/oprofile: replace CTR*_IS_RESERVED macros
+      x86/oprofile: use 64 bit wrmsr functions
+      x86/oprofile: use 64 bit values to save MSR states
+      x86/oprofile: remove some local variables in MSR save/restore functions
+      x86/oprofile: use 64 bit values in IBS functions
+      x86/oprofile: introduce oprofile_add_data64()
+
+ arch/x86/oprofile/nmi_int.c       |   98 +++++++-------
+ arch/x86/oprofile/op_model_amd.c  |  267 ++++++++++++++++---------------------
+ arch/x86/oprofile/op_model_p4.c   |   60 ++++-----
+ arch/x86/oprofile/op_model_ppro.c |   95 ++++++--------
+ arch/x86/oprofile/op_x86_model.h  |   47 ++++---
+ drivers/oprofile/cpu_buffer.c     |   16 ++-
+ include/linux/oprofile.h          |    2 +-
+ 7 files changed, 281 insertions(+), 304 deletions(-)
+
+
+
