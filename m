@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932194AbZFLOcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765270AbZFLOcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932194AbZFLOcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758890AbZFLOcB
+	id S1765270AbZFLOcd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932312AbZFLOcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:32:01 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:32885 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754921AbZFLOcA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:32:00 -0400
-Date: Fri, 12 Jun 2009 10:32:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
- [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-In-Reply-To: <200906121015.19504.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0906121027300.2915-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Jun 2009 10:32:23 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:51597 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762888AbZFLOcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 10:32:21 -0400
+Subject: Re: TPM drivers support and Linux Integrity Module for 2.6.30
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Shahbaz Khan <shaz.linux@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       Debora Velarde <debora@linux.vnet.ibm.com>,
+       tpmdd-devel@lists.sourceforge.net
+In-Reply-To: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com>
+References: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 10:32:21 -0400
+Message-Id: <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Oliver Neukum wrote:
-
-> Am Freitag, 12. Juni 2009 04:16:10 schrieb Alan Stern:
-> > What tree constraint?  You mean that the PM core shouldn't allow
-> > devices to suspend unless all their children are suspended?  Why
-> > doesn't it still apply?
+On Fri, 2009-06-12 at 11:59 +0600, Shahbaz Khan wrote:
+> Hi,
 > 
-> Because the hardware doesn't need it.
-
-But maybe drivers need it.
-
-> > Remember, when Rafael and I say "suspend" here, we don't mean "go to a
-> > low-power state".  We mean "the PM core calls the runtime_suspend
-> > method".  No matter what actions the link hardware may decide to take
-> > on its own, the PM core will still want to observe the
-> > all-children-suspended restriction when calling runtime_suspend
-> > methods.
+> I am using Intel Q45 Express chipset with TPM version 1.2 specs of
+> TCG. The kernel version is 2.6.30. Problem is that the TPM drivers
+> cannot provide functionality to the TCG TSS giving error message:
 > 
-> No. The core if it insists all children be suspended will not use
-> the hardware's full capabilities.
-
-That isn't what I said.  The core does not insist that all children be 
-suspended, i.e., be in a low-power state.  It insists only that the 
-children's drivers' runtime_suspend methods have been called.  Those 
-methods are not obligated to put the children in a low-power state.
-
-> If it leaves such power saving measures to the drivers, latency
-> accounting will be wrong.
+> "TCSD TDDL ERROR: Could not find a device to open!"
 > 
-> > > I think there are devices who can be suspended while children are active
-> > > and devices which can not be. This is an attribute of the device and
-> > > should be evaluated by the core.
-> >
-> > Clearly it should be decided by the driver.  Should there be a bit for
-> > it in the dev_pm_info structure?
+> The device node in /dev is also not being created which should be
+> "/dev/tpm". If created manually then still it does not work.
 > 
-> Yes.
+> What should be done?
+> 
+> Thanks.
+> 
+> --
+> Shaz
 
-That would resolve the issue.
+This is a device driver issue. Copying the TPM maintainers and the
+forum.
 
-Alan Stern
+Mimi
 
