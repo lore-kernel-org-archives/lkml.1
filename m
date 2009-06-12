@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbZFLVmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933808AbZFLVnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760476AbZFLVmS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 17:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbZFLVmK
+	id S933808AbZFLVnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 17:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbZFLVnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 17:42:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:58772 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbZFLVmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 17:42:09 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH] Blackfin: sync termios header changes with x86
-Date: Fri, 12 Jun 2009 23:41:29 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200906121247.50745.arnd@arndb.de> <200906121329.33473.arnd@arndb.de> <8bd0f97a0906120435w16a1f46ewd9ad94ee35c04e6e@mail.gmail.com>
-In-Reply-To: <8bd0f97a0906120435w16a1f46ewd9ad94ee35c04e6e@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Fri, 12 Jun 2009 17:43:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57435 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757470AbZFLVnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 17:43:04 -0400
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
+ suspending
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       cl@linux-foundation.org, torvalds@linux-foundation.org
+In-Reply-To: <20090612083005.56336219.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+	 <20090612091002.GA32052@elte.hu>
+	 <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
+	 <20090612100756.GA25185@elte.hu>
+	 <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
+	 <1244805060.7172.126.camel@pasglop>
+	 <1244806440.30512.51.camel@penberg-laptop>
+	 <20090612083005.56336219.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 13 Jun 2009 07:42:36 +1000
+Message-Id: <1244842956.23936.0.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906122341.30518.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18JN7hRtJg7JRcnaMAB6oYGz5tk6yrxNxdu5tk
- Y1yI9exu1sX4EKkqX7708Gy0FNPi330ztrUSWb/phd51gm7ri1
- CIxSOkr5Yk9dSsYDLnThQ5xAZvVM5Rz
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 June 2009, Mike Frysinger wrote:
-> > If you want a working version of this file, best copy it from avr32
-> > or frv. Or just wait for the asm-generic version.
+On Fri, 2009-06-12 at 08:30 -0700, Andrew Morton wrote:
+> On Fri, 12 Jun 2009 14:34:00 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 > 
-> is asm-generic going to be in 2.6.31 ?  otherwise i'd prefer to have
-> Blackfin fixed now rather than 2.6.32+
+> > +static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
+> 
+> It'd be safer and saner to disable __GFP_FS and __GFP_IO as well.
 
-I certainly hope it does. I've sent the pull request yesterday,
-so it's probably still in Linus' queue for trees to merge, unless
-he dropped it.
+Right. That's what my original patch does in fact. I also re-enabled
+them all together but in that case, it might be better to re-enable FS
+and IO later, I'll let experts decide.
+ 
+> Having either of those flags set without __GFP_WAIT is a somewhat
+> self-contradictory thing and there might be code under reclaim which
+> assumes that __GFP_FS|__GFP_IO implies __GFP_WAIT.
+> 
+> <wonders why mempool_alloc() didn't clear __GFP_FS>
 
-	Arnd <><
+Cheers,
+Ben.
+
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
