@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765193AbZFLQn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbZFLQoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765193AbZFLQn0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 12:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733AbZFLQnR
+	id S932390AbZFLQoS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 12:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbZFLQoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 12:43:17 -0400
-Received: from sirius.lasnet.de ([78.47.116.19]:41152 "EHLO sirius.lasnet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753111AbZFLQnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 12:43:16 -0400
-Date: Fri, 12 Jun 2009 18:43:25 +0200
-From: Stefan Schmidt <stefan@datenfreihafen.org>
-To: David Brown <davidb@quicinc.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Brian Swetland <swetland@google.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
-Message-ID: <20090612164325.GA12863@dodger.lab.datenfreihafen.org>
-References: <20090610103131.GB13885@elf.ucw.cz> <20090610194852.GA28787@n2100.arm.linux.org.uk> <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com> <20090610213710.GA8472@elf.ucw.cz> <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com> <20090611082532.GE8592@elf.ucw.cz> <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com> <20090612150504.GA15084@elf.ucw.cz> <20090612160015.GA8942@linode.davidb.org>
+	Fri, 12 Jun 2009 12:44:03 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:61924 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753696AbZFLQoC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 12:44:02 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG][2.6.30] Niced processes do not raise CPU frequency with ondemand
+Date: Fri, 12 Jun 2009 18:44:00 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-acpi@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090612160015.GA8942@linode.davidb.org>
-X-Mailer: Mutt http://www.mutt.org/
-X-KeyID: 0xDDF51665
-X-Website: http://www.datenfreihafen.org/
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-Id: <200906121844.02004.elendil@planet.nl>
+X-OriginalArrivalTime: 12 Jun 2009 16:44:02.0574 (UTC) FILETIME=[FDF20AE0:01C9EB7C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+I first noticed this while (cross-)compiling several 2.6.30 kernels on my 
+Core Duo HP 2510p notebook. I run the kernel builds with 'nice -n 10' and 
+noticed that both cores stayed at 800MHz instead of going up to 1333MHz.
 
-On Fri, 2009-06-12 at 09:00, David Brown wrote:
-> On Fri, Jun 12, 2009 at 05:05:04PM +0200, Pavel Machek wrote:
-> 
-> Support for these devices is in our reference kernel at:
-> 
->     https://www.codeaurora.org/gitweb/quic/le/?p=kernel/msm.git;a=summary
-> 
-> in the android-msm-2.6.29 branch, which is about 213 commits divergent
-> from Google's tree, posted earlier.  We've been trying to work to get
-> our commits to be closer to being appropriate for inclusion in the
-> mainstream kernel.  Sadly, most of out work so far ended up being
-> squashed into a single "Initial contribution" commit.
-> 
-> It's also a bit unfortunate that our primary development happens on
-> development boards that aren't available to the general public.
+It does not seem to be a cpufreq problem as the frequency does go up if I 
+run the process without nice.
 
-That and that one have to sign a contributor agreement just to register on your
-your site and get in touch. While your kernel tree is public that looks a lot
-like a closed development process to me.
+I can simply reproduce it by running an empty loop:
+$ sh -c "while :; do :; done" => one core immediately goes to 1333MHz
+$ nice -n 10 sh -c "while :; do :; done" => both cores stay at 800MHz
 
-Any plan to make this more transparent?
+In both cases top shows 99/100% CPU usage for one core.
 
-regards
-Stefan Schmidt
+The problem does not occur immediately after a new boot: the cpu frequency 
+does get raised to 1333MHz even for niced processes. I've also checked 
+that a single suspend to RAM + resume cycle does not trigger it.
+
+It is possible that it is triggered by undocking the notebook (I have not 
+verified that yet), but I do know that the problem remains after the 
+notebook is docked again.
+
+I'm certain that the problem did not occur with earlier kernels (even when 
+undocked), but am not sure when it first started happening. As I'm not 
+yet certain how to trigger it, I cannot currently check that.
+
+System is running x86_64 kernel with Debian stable ("Lenny") userland.
+
+Any suggestions?
+
+Cheers,
+FJP
+
+# grep . /sys/devices/system/cpu/*/cpufreq/*
+.../cpu0/cpufreq/affected_cpus:0
+.../cpu0/cpufreq/cpuinfo_cur_freq:800000
+.../cpu0/cpufreq/cpuinfo_max_freq:1333000
+.../cpu0/cpufreq/cpuinfo_min_freq:800000
+.../cpu0/cpufreq/cpuinfo_transition_latency:10000
+.../cpu0/cpufreq/related_cpus:0 1
+.../cpu0/cpufreq/scaling_available_frequencies:1333000 1200000 1067000 
+933000 800000
+.../cpu0/cpufreq/scaling_available_governors:ondemand performance
+.../cpu0/cpufreq/scaling_cur_freq:800000
+.../cpu0/cpufreq/scaling_driver:acpi-cpufreq
+.../cpu0/cpufreq/scaling_governor:ondemand
+.../cpu0/cpufreq/scaling_max_freq:1333000
+.../cpu0/cpufreq/scaling_min_freq:800000
+.../cpu0/cpufreq/scaling_setspeed:<unsupported>
+.../cpu1/cpufreq/affected_cpus:1
+.../cpu1/cpufreq/cpuinfo_cur_freq:800000
+.../cpu1/cpufreq/cpuinfo_max_freq:1333000
+.../cpu1/cpufreq/cpuinfo_min_freq:800000
+.../cpu1/cpufreq/cpuinfo_transition_latency:10000
+.../cpu1/cpufreq/related_cpus:0 1
+.../cpu1/cpufreq/scaling_available_frequencies:1333000 1200000 1067000 
+933000 800000
+.../cpu1/cpufreq/scaling_available_governors:ondemand performance
+.../cpu1/cpufreq/scaling_cur_freq:800000
+.../cpu1/cpufreq/scaling_driver:acpi-cpufreq
+.../cpu1/cpufreq/scaling_governor:ondemand
+.../cpu1/cpufreq/scaling_max_freq:1333000
+.../cpu1/cpufreq/scaling_min_freq:800000
+.../cpu1/cpufreq/scaling_setspeed:<unsupported>
