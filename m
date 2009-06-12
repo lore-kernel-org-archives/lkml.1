@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbZFLMgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZFLMiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953AbZFLMgM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 08:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZFLMf6
+	id S1755512AbZFLMiP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 08:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZFLMiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:35:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:41303 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 08:38:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48210 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751282AbZFLMf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:35:58 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] module and parameter
-Date: Fri, 12 Jun 2009 22:05:56 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Amerigo Wang <amwang@redhat.com>,
-       alex@shark-linux.de, David Miller <davem@davemloft.net>,
-       "Luck, Tony" <tony.luck@intel.com>, rth@twiddle.net
+	id S1750783AbZFLMiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 08:38:00 -0400
+Date: Fri, 12 Jun 2009 14:37:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/5] x86/paravirt: clean up paravirt.h and optimise FPU
+	context switch
+Message-ID: <20090612123753.GG31845@elte.hu>
+References: <1244748040-27185-1-git-send-email-jeremy@goop.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906122205.57362.rusty@rustcorp.com.au>
+In-Reply-To: <1244748040-27185-1-git-send-email-jeremy@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 8ebf975608aaebd7feb33d77f07ba21a6380e086:
-  Randy Dunlap (1):
-        block: fix kernel-doc in recent block/ changes
 
-are available in the git repository at:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-module-and-param.git master
+> Hi Ingo,
+> 
+> This series:
+>  - splits asm/paravirt.h into paravirt.h and paravirt_types.h
+>  - splits out the context switch core of math_state_restore into __math_state_restore
+>  - rearranges 32 and 64 bit context switch to be the same and to properly
+>    batch FPU context switches when running paravirtualized
+> 
+> There should be no performance side-effects of these changes.  They amount
+> to a small rearrangement of the existing code (and bringing the 64-bit
+> code a bit closer to 32-bit, countering some genetic drift).
+> 
+> I think these are probably safe to go into this merge window, but I
+> don't think I've posted these before, so I understand if you're hesitant
+> (I've had them applied locally for some time with no ill-effects).
+> The paravirt cleanup is pure movement between headers, so I don't think
+> there's much risk there at all.
+> 
+>  arch/x86/include/asm/i387.h           |    1 +
+>  arch/x86/include/asm/paravirt.h       |  711 +--------------------------------
+>  arch/x86/include/asm/paravirt_types.h |  720 +++++++++++++++++++++++++++++++++
+>  arch/x86/kernel/process_32.c          |   27 +-
+>  arch/x86/kernel/process_64.c          |   33 +-
+>  arch/x86/kernel/traps.c               |   33 +-
+>  6 files changed, 782 insertions(+), 743 deletions(-)
 
-Amerigo Wang (4):
-      x86 module: merge the same functions in module_32.c and module_64.c
-      x86 module: merge the rest functions with macros
-      uml module: fix uml build process due to this merge
-      module: merge module_alloc() finally
+hm, no Git pull coordinates - but you have this in a Git tree, 
+right?
 
-Rusty Russell (8):
-      cyber2000fb.c: use proper method for stopping unload if CONFIG_ARCH_SHARK
-      module_param: invbool should take a 'bool', not an 'int'
-      module_param: split perm field into flags and perm
-      module_param: add __same_type convenience wrapper for __builtin_types_compatible_p
-      module_param: allow 'bool' module_params to be bool, not just int.
-      uvesafb: improve parameter handling.
-      module: trim exception table on init free.
-      module: cleanup FIXME comments about trimming exception table entries.
-
- arch/alpha/mm/extable.c                   |   21 ++++
- arch/avr32/kernel/module.c                |    2 -
- arch/cris/kernel/module.c                 |    2 -
- arch/frv/kernel/module.c                  |    2 -
- arch/h8300/kernel/module.c                |    2 -
- arch/ia64/mm/extable.c                    |   26 +++++
- arch/m32r/kernel/module.c                 |    2 -
- arch/m68k/kernel/module.c                 |    2 -
- arch/m68knommu/kernel/module.c            |    2 -
- arch/mips/kernel/module.c                 |    2 -
- arch/mn10300/kernel/module.c              |    2 -
- arch/parisc/kernel/module.c               |    2 -
- arch/powerpc/kernel/module.c              |    2 -
- arch/s390/kernel/module.c                 |    2 -
- arch/sh/kernel/module.c                   |    2 -
- arch/sparc/include/asm/uaccess_32.h       |    3 +
- arch/sparc/kernel/module.c                |    2 -
- arch/sparc/mm/extable.c                   |   29 ++++++
- arch/um/include/asm/pgtable.h             |    7 +-
- arch/um/sys-i386/Makefile                 |    2 +-
- arch/um/sys-x86_64/Makefile               |    4 +-
- arch/um/sys-x86_64/um_module.c            |   21 ----
- arch/x86/include/asm/pgtable_32_types.h   |    4 +
- arch/x86/kernel/Makefile                  |    2 +-
- arch/x86/kernel/{module_64.c => module.c} |   82 +++++++++++++---
- arch/x86/kernel/module_32.c               |  152 -----------------------------
- arch/xtensa/kernel/module.c               |    2 -
- drivers/video/aty/aty128fb.c              |    2 +-
- drivers/video/cyber2000fb.c               |    9 +-
- drivers/video/uvesafb.c                   |   10 +-
- include/linux/compiler.h                  |    5 +
- include/linux/module.h                    |    1 +
- include/linux/moduleparam.h               |   40 ++++++--
- kernel/module.c                           |    1 +
- kernel/params.c                           |   46 ++++++---
- lib/extable.c                             |   21 ++++-
- 36 files changed, 256 insertions(+), 262 deletions(-)
- delete mode 100644 arch/um/sys-x86_64/um_module.c
- rename arch/x86/kernel/{module_64.c => module.c} (74%)
- delete mode 100644 arch/x86/kernel/module_32.c
-
+	Ingo
