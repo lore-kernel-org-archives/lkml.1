@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbZFLPaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbZFLPaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbZFLPaA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbZFLP3q
+	id S1760821AbZFLPaf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZFLPaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:29:46 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:45786 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754107AbZFLP3p convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 11:30:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54438 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754030AbZFLPaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:29:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=BsLIC4ezp7F3/XpQhBu61TDJkbo+PS1PXdkx1IDh1/OnhMpXoSACqGpP2AK2ZAz+3b
-         rCleHiUU2sxf2eqie1z4N4ENiTdMa7hLUkbgurZZcnfd/PL+GyHDXJnNpQ3PAZ767Nhv
-         mprAVmMcTK3ZMfkxrH3jEAn0rPRmFflM71AYo=
-MIME-Version: 1.0
-In-Reply-To: <20090612152134.GA23483@elte.hu>
-References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> 
-	<20090612120507.GH16044@elte.hu> <8bd0f97a0906120816w26d91530nf1e1967470beb99c@mail.gmail.com> 
-	<20090612152134.GA23483@elte.hu>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 12 Jun 2009 11:29:27 -0400
-Message-ID: <8bd0f97a0906120829p628751e9gb557f6a14e98fae2@mail.gmail.com>
-Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open 
-	when supported
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Jun 2009 11:30:24 -0400
+Date: Fri, 12 Jun 2009 08:30:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
+ suspending
+Message-Id: <20090612083005.56336219.akpm@linux-foundation.org>
+In-Reply-To: <1244806440.30512.51.camel@penberg-laptop>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+	<Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+	<20090612091002.GA32052@elte.hu>
+	<84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
+	<20090612100756.GA25185@elte.hu>
+	<84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
+	<1244805060.7172.126.camel@pasglop>
+	<1244806440.30512.51.camel@penberg-laptop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 11:21, Ingo Molnar wrote:
-> * Mike Frysinger <vapier.adi@gmail.com> wrote:
->> the perf counter code explicitly requires:
->> ...
->>  - support for atomic64 types (unless i missed something, x86 is the
->> only 32bit system that supports these)
->
-> A wrapper suffices - should probably be librarized into lib/.
+On Fri, 12 Jun 2009 14:34:00 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-wonder if we can trick Arnd into doing that ...
+> +static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
 
->>  - some perf stubs (like set_perf_counter_pending() -- prototype
->> really should be in common perf_counters headers rather than forcing
->> the arch to copy & paste the exact same line)
->
-> Agreed.
+It'd be safer and saner to disable __GFP_FS and __GFP_IO as well. 
+Having either of those flags set without __GFP_WAIT is a somewhat
+self-contradictory thing and there might be code under reclaim which
+assumes that __GFP_FS|__GFP_IO implies __GFP_WAIT.
 
-can i assume you'll take care of that ?
-
->> not that any of this is documented ...
->
-> Patches are welcome :-)
-
-i cant find anything in Documentation/ covering perf counters.  did i
-miss some file ?
-
-also, i was going just by a quick compile test.  dont know what else
-is actually required since there's no chance of me trying to get this
-to work on Blackfin anytime soon ...
-
-> You are right that the requirements are not necessarily trivial for
-> every arch - so i guess our original patch is correct.
-
-there is also some ptrace type piece missing for the Blackfin arch,
-but that looks like something that i should just implement as everyone
-else is doing it.
--mike
+<wonders why mempool_alloc() didn't clear __GFP_FS>
