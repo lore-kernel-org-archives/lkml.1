@@ -1,72 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764783AbZFLR4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764618AbZFLR5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764783AbZFLR4U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZFLR4M
+	id S1764618AbZFLR5T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZFLR5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:56:12 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:35523 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbZFLR4M (ORCPT
+	Fri, 12 Jun 2009 13:57:09 -0400
+Received: from mail-pz0-f187.google.com ([209.85.222.187]:42888 "EHLO
+	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751758AbZFLR5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:56:12 -0400
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] genirq: do not disable IRQ_WAKEUP marked irqs on suspend
-References: <cMiA9-1MZ-13@gated-at.bofh.it>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Fri, 12 Jun 2009 10:56:12 -0700
-Message-ID: <87fxe5fi9v.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 12 Jun 2009 13:57:09 -0400
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe path
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org, john.linn@xilinx.com
+Date: Fri, 12 Jun 2009 11:57:06 -0600
+Message-ID: <20090612175634.12827.12207.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+From: Grant Likely <grant.likely@secretlab.ca>
 
-> commit 0a0c5168df (PM: Introduce functions for suspending and resuming
-> device interrupts) iterates through all interrupts and disables them
-> on the hardware level. Some architectures have functionality
-> implemented to mark an interrupt source as wakeup source for suspend,
-> but the new power management code disables them unconditionally which
-> breaks the resume on interrupt functionality.
->
-> The wakeup interrupts are marked in the status with the IRQ_WAKEUP
-> bit. Skip the disablement for those interrupts which have the
-> IRQ_WAKEUP bit set.
->     
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: stable@kernel.org
+The xilinxfb driver is improperly casting a physical address to a
+u32, and the probe routine isn't as straight forward as it could be.
+(discovered by gcc spitting out warnings on most recent change to
+xilinxfb driver).
 
-Hi Thomas,
+This patch fixes the cast and simplifies the probe path.
 
-I posted the same patch last month and lost the argument, original
-thread here:
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-  http://lkml.org/lkml/2009/5/6/549
+John, can you please test and verify this fix is correct?
 
-Kevin
+Thanks,
+g.
+
+ drivers/video/xilinxfb.c |   59 ++++++++++++++++++----------------------------
+ 1 files changed, 23 insertions(+), 36 deletions(-)
 
 
-> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-> index 638d8be..bce6afd 100644
-> --- a/kernel/irq/pm.c
-> +++ b/kernel/irq/pm.c
-> @@ -29,7 +29,8 @@ void suspend_device_irqs(void)
->  		unsigned long flags;
->  
->  		spin_lock_irqsave(&desc->lock, flags);
-> -		__disable_irq(desc, irq, true);
-> +		if (!(desc->status & IRQ_WAKEUP))
-> +			__disable_irq(desc, irq, true);
->  		spin_unlock_irqrestore(&desc->lock, flags);
->  	}
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 7a868bd..b68b331 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -124,7 +124,6 @@ struct xilinxfb_drvdata {
+ 						registers */
+ 
+ 	dcr_host_t      dcr_host;
+-	unsigned int    dcr_start;
+ 	unsigned int    dcr_len;
+ 
+ 	void		*fb_virt;	/* virt. address of the frame buffer */
+@@ -325,8 +324,8 @@ static int xilinxfb_assign(struct device *dev,
+ 					drvdata->regs);
+ 	}
+ 	/* Put a banner in the log (for DEBUG) */
+-	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
+-		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
++	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
++		(unsigned long long)drvdata->fb_phys, drvdata->fb_virt, fbsize);
+ 
+ 	return 0;	/* success */
+ 
+@@ -404,9 +403,7 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+ 	u32 tft_access;
+ 	struct xilinxfb_platform_data pdata;
+ 	struct resource res;
+-	int size, rc;
+-	int start = 0, len = 0;
+-	dcr_host_t dcr_host;
++	int size, rc, start;
+ 	struct xilinxfb_drvdata *drvdata;
+ 
+ 	/* Copy with the default pdata (not a ptr reference!) */
+@@ -414,35 +411,39 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+ 
+ 	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
+ 
++	/* Allocate the driver data region */
++	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
++	if (!drvdata) {
++		dev_err(&op->dev, "Couldn't allocate device private record\n");
++		return -ENOMEM;
++	}
++
+ 	/*
+ 	 * To check whether the core is connected directly to DCR or PLB
+ 	 * interface and initialize the tft_access accordingly.
+ 	 */
+ 	p = (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if", NULL);
+-
+-	if (p)
+-		tft_access = *p;
+-	else
+-		tft_access = 0;		/* For backward compatibility */
++	tft_access = p ? *p : 0;
+ 
+ 	/*
+ 	 * Fill the resource structure if its direct PLB interface
+ 	 * otherwise fill the dcr_host structure.
+ 	 */
+ 	if (tft_access) {
++		drvdata->flags |= PLB_ACCESS_FLAG;
+ 		rc = of_address_to_resource(op->node, 0, &res);
+ 		if (rc) {
+ 			dev_err(&op->dev, "invalid address\n");
+-			return -ENODEV;
++			goto err;
+ 		}
+-
+ 	} else {
++		res.start = 0;
+ 		start = dcr_resource_start(op->node, 0);
+-		len = dcr_resource_len(op->node, 0);
+-		dcr_host = dcr_map(op->node, start, len);
+-		if (!DCR_MAP_OK(dcr_host)) {
+-			dev_err(&op->dev, "invalid address\n");
+-			return -ENODEV;
++		drvdata->dcr_len = dcr_resource_len(op->node, 0);
++		drvdata->dcr_host = dcr_map(op->node, start, drvdata->len);
++		if (!DCR_MAP_OK(drvdata->dcr_host)) {
++			dev_err(&op->dev, "invalid DCR address\n");
++			goto err;
+ 		}
+ 	}
+ 
+@@ -467,26 +468,12 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+ 	if (of_find_property(op->node, "rotate-display", NULL))
+ 		pdata.rotate_screen = 1;
+ 
+-	/* Allocate the driver data region */
+-	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+-	if (!drvdata) {
+-		dev_err(&op->dev, "Couldn't allocate device private record\n");
+-		return -ENOMEM;
+-	}
+ 	dev_set_drvdata(&op->dev, drvdata);
++	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
+ 
+-	if (tft_access)
+-		drvdata->flags |= PLB_ACCESS_FLAG;
+-
+-	/* Arguments are passed based on the interface */
+-	if (drvdata->flags & PLB_ACCESS_FLAG) {
+-		return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
+-	} else {
+-		drvdata->dcr_start = start;
+-		drvdata->dcr_len = len;
+-		drvdata->dcr_host = dcr_host;
+-		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
+-	}
++ err:
++	kfree(drvdata);
++	return -ENODEV;
+ }
+ 
+ static int __devexit xilinxfb_of_remove(struct of_device *op)
+
