@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764021AbZFLCK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763958AbZFLCQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764021AbZFLCK3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 22:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZFLCKT
+	id S1763958AbZFLCQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 22:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZFLCQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 22:10:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40540 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755960AbZFLCKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 22:10:18 -0400
-Message-ID: <4A31B8BF.30304@kernel.org>
-Date: Fri, 12 Jun 2009 11:09:03 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 11 Jun 2009 22:16:09 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:38132 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753864AbZFLCQI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 22:16:08 -0400
+Date: Thu, 11 Jun 2009 22:16:10 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
+ [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+In-Reply-To: <200906112305.49232.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0906112210340.21931-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
-Subject: Re: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_*
- operations
-References: <20090605191819.376530498@gentwo.org> <20090605191850.441840884@gentwo.org> <4A2F40A3.5020602@kernel.org> <alpine.DEB.1.10.0906111109410.29827@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0906111109410.29827@gentwo.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 12 Jun 2009 02:09:06 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Wed, 10 Jun 2009, Tejun Heo wrote:
-> 
->> Looks good to me.  The only qualm I have is that I wish these macros
->> take pointer instead of the symbol name directly.  Currently it's not
-> 
-> They take the adress of the scalar. No symbol name is involved.
-> 
->> possible due to the per_cpu__ appending thing but those should go with
->> Rusty's patches and the same ops should be useable for both static and
->> dynamic ones.  One problem which may occur with such scheme is when
-> 
-> They are usable for both as the following patches show.
+On Thu, 11 Jun 2009, Oliver Neukum wrote:
 
-Oops, sorry about that.  Got confused there.  :-)
+> Am Donnerstag, 11. Juni 2009 20:36:30 schrieb Alan Stern:
+> > > Or abstractly any power saving state that does autoresume in hardware.
+> > > In these cases you know that you can enter a powersaving state that
+> > > will add X latency.
+> > >
+> > > In terms of user space API we'll probably add a way for user space
+> > > to specify how much latency may be added for power management's sake.
+> > > If busses are stacked the "latency budget" has to be handled at core
+> > > level. If furthermore states that allow IO but with additional latency
+> > > are ignored, the budget will be calculated wrongly.
+> >
+> > Okay, fine.  What does this have to do with Rafael's work?  Why does
+> > setting the status to RPM_SUSPENDED even when a device is not in a
+> > low-power state preclude handling buses that automatically change their
+> > power state?
+> 
+> For these cases the tree constraint does not apply.
 
-Thanks.
+What tree constraint?  You mean that the PM core shouldn't allow 
+devices to suspend unless all their children are suspended?  Why 
+doesn't it still apply?
 
--- 
-tejun
+Remember, when Rafael and I say "suspend" here, we don't mean "go to a 
+low-power state".  We mean "the PM core calls the runtime_suspend 
+method".  No matter what actions the link hardware may decide to take 
+on its own, the PM core will still want to observe the 
+all-children-suspended restriction when calling runtime_suspend 
+methods.
+
+> I think there are devices who can be suspended while children are active
+> and devices which can not be. This is an attribute of the device and should
+> be evaluated by the core.
+
+Clearly it should be decided by the driver.  Should there be a bit for
+it in the dev_pm_info structure?
+
+Alan Stern
+
