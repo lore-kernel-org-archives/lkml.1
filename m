@@ -1,112 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761738AbZFLUi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbZFLUpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761738AbZFLUi0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 16:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZFLUiT
+	id S1758587AbZFLUpx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 16:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZFLUpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 16:38:19 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:7608 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbZFLUiT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 16:38:19 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: Non-requested PCI IRQs unavailable to ISA PnP devices and pci_dev_uses_irq()
-Date: Fri, 12 Jun 2009 14:38:17 -0600
-User-Agent: KMail/1.9.10
-Cc: abelay@mit.edu, "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <200906122143.59510.linux@rainbow-software.org>
-In-Reply-To: <200906122143.59510.linux@rainbow-software.org>
+	Fri, 12 Jun 2009 16:45:45 -0400
+Received: from mail.pentek.com ([12.35.250.145]:4742 "HELO mailhost.pentek.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751952AbZFLUpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 16:45:44 -0400
+Message-ID: <4A32BE5B.7080503@pentek.com>
+Date: Fri, 12 Jun 2009 16:45:15 -0400
+From: Steve Rottinger <steve@pentek.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+CC: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: splice methods in character device driver
+References: <4A0838D1.5090102@pentek.com> <20090511192253.GH4694@kernel.dk>	 <4A0AFC62.3090002@pentek.com>	 <c384c5ea0906031432x2675c5a4xcc940a567ca408b8@mail.gmail.com>	 <20090604073218.GT11363@kernel.dk> <4A27CA0A.7060400@pentek.com> <c384c5ea0906121221p6a20d92fg6716f560164c46bf@mail.gmail.com>
+In-Reply-To: <c384c5ea0906121221p6a20d92fg6716f560164c46bf@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906121438.17750.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 June 2009 01:43:57 pm Ondrej Zary wrote:
-> Hello,
-> some PCI devices have an IRQ but the driver does not use it. Such an example 
-> is matroxfb. It does request_irq() only for some vblank operations. Thus, the 
-> irq is not marked as used in /proc/interrupts:
->            CPU0
->   0:     246481    XT-PIC-XT        timer
->   1:       3507    XT-PIC-XT        i8042
->   2:          0    XT-PIC-XT        cascade
->   3:          1    XT-PIC-XT
->   4:          1    XT-PIC-XT
->   5:       4306    XT-PIC-XT        eth0
->   6:          5    XT-PIC-XT        floppy
->   7:          1    XT-PIC-XT        parport0
->   8:          1    XT-PIC-XT        rtc
->   9:          0    XT-PIC-XT        acpi
->  11:      13748    XT-PIC-XT        pata_it821x, uhci_hcd:usb1
->  12:      65539    XT-PIC-XT        i8042
->  14:          0    XT-PIC-XT        ata_piix
->  15:      33052    XT-PIC-XT        ata_piix
-> NMI:          0   Non-maskable interrupts
-> ERR:          0
-> 
-> IRQ 10 is not listed but is used by one of the two Matrox cards:
-> 
-> pci 0000:00:13.0: Boot video device
-> ACPI: PCI Interrupt Link [LNKB] enabled at IRQ 11
-> PCI: setting IRQ 11 as level-triggered
-> matroxfb 0000:00:13.0: PCI INT A -> Link[LNKB] -> GSI 11 (level, low) -> IRQ 
-> 11
-> matroxfb: Matrox Mystique (PCI) detected
-> PInS memtype = 0
-> matroxfb: MTRR's turned on
-> matroxfb: 1024x768x8bpp (virtual: 1024x4096)
-> matroxfb: framebuffer at 0xE1000000, mapped to 0xd0880000, size 4194304
-> Console: switching to colour frame buffer device 128x48
-> fb0: MATROX frame buffer device
-> matroxfb 0000:00:14.0: enabling device (0000 -> 0002)
-> ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 10
-> PCI: setting IRQ 10 as level-triggered
-> matroxfb 0000:00:14.0: PCI INT A -> Link[LNKA] -> GSI 10 (level, low) -> IRQ 
-> 10
-> matroxfb: Matrox Millennium II (PCI) detected
-> PInS memtype = 0
-> matroxfb: MTRR's turned on
-> matroxfb: 1024x768x8bpp (virtual: 1024x4096)
-> matroxfb: framebuffer at 0xE3000000, mapped to 0xd1100000, size 4194304
-> fb1: MATROX frame buffer device
-> fb1: initializing hardware
-> 
-> 
-> But this interrupt is not available to ISA PnP devices because 
-> drivers/pnp/resource.c calls pci_uses_irq() function which in turn calls 
-> pci_dev_uses_irq() for all PCI devices. pci_dev_uses_irq() simply checks the 
-> irq field in struct pci_dev.
-> 
-> I wonder if that's correct (is it a bug or a feature)?
+Hi Leon,
 
-The code that tries to keep PCI and PNP IRQs from clashing is
-definitely sub-optimal.  Of course, PNP doesn't know what the
-matroxfb driver doesn't need the interrupt.  Some drivers request
-and free the IRQ dynamically, depending on whether the device is
-in use.
+It does seem like a lot of code needs to be executed to move a small
+chunk of data.
+Although,  I think that most of the overhead that I was experiencing
+came from the cumulative
+overhead of each splice system call.   I increased my pipe size using
+Jens' pipe size patch,
+from 16 to 256 pages, and this had a huge effect -- the speed of my
+transfers more than doubled.
+Pipe sizes larger that 256 pages, cause my kernel to crash.
 
-Maybe what we should be doing here is more sharing of PCI interrupts
-to leave more available for PNP.  For example, the 00:14.0 device
-that's currently using IRQ 10 is connected to a programmable IRQ
-link (LNKA).  Possibly that link could be programmed to share IRQ 11
-instead.
+I'm doing about 300MB/s to my hardware RAID, running two instances of my
+splice() copy application
+(One on each RAID channel).  I would like to combine the two RAID
+channels using a software RAID 0;
+however, splice, even from /dev/zero runs horribly slow to a software
+RAID device.  I'd be curious
+to know if anyone else has tried this?
 
-In the absence of an automatic mechanism, can you work around this
-with the "acpi_irq_isa=10" kernel parameter?
+-Steve
 
-Bjorn
-
-> I can't use CMI8239A sound card on my machine because of this (it needs two 
-> IRQs). When I comment out that check (and move eth0 to IRQ3), the sound card 
-> works, allocating IRQ 10 and 3 (with some modifications to cmi8330 driver - 
-> will be posted separately).
-
-
+Leon Woestenberg wrote:
+> Steve, Jens,
+>
+> another few questions:
+>
+> On Thu, Jun 4, 2009 at 3:20 PM, Steve Rottinger<steve@pentek.com> wrote:
+>   
+>> ...
+>> - The performance is poor, and much slower than transferring directly from
+>> main memory with O_DIRECT.  I suspect that this has a lot to do with
+>> large amount of systems calls required to move the data, since each call moves only
+>> 64K.  Maybe I'll try increasing the pipe size, next.
+>>
+>> Once I get past these issues, and I get the code in a better state, I'll
+>> be happy to share what
+>> I can.
+>>
+>>     
+> I've been experimenting a bit using mostly-empty functions to learn
+> understand the function call flow:
+>
+> splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_device);
+> pipe_to_device(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+> struct splice_desc *sd)
+>
+> So some back-of-a-coaster calculations:
+>
+> If I understand correctly, a pipe_buffer never spans more than one
+> page (typically 4kB).
+>
+> The SPLICE_BUFFERS is 16, thus splice_from_pipe() is called every 64kB.
+>
+> The actor "pipe_to_device" is called on each pipe_buffer, so for every 4kB.
+>
+> For my case, I have a DMA engine that does say 200 MB/s, resulting in
+> 50000 actor calls per second.
+>
+> As my use case would be to splice from an acquisition card to disk,
+> splice() made an interesting approach.
+>
+> However, if the above is correct, I assume splice() is not meant for
+> my use-case?
+>
+>
+> Regards,
+>
+> Leon.
+>
+>
+>
+>
+>
+>
+> /* the actor which takes pages from the pipe to the device
+>  *
+>  * it must move a single struct pipe_buffer to the desired destination
+>  * Existing implementations are pipe_to_file, pipe_to_sendpage, pipe_to_user.
+>  */
+> static int pipe_to_device(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+> 		 struct splice_desc *sd)
+> {
+> 	int rc;
+> 	printk(KERN_DEBUG "pipe_to_device(buf->offset=%d, sd->len=%d)\n",
+> 		buf->offset, sd->len);
+> 	/* make sure the data in this buffer is up-to-date */
+> 	rc = buf->ops->confirm(pipe, buf);
+> 	if (unlikely(rc))
+> 		return rc;
+> 	/* create a transfer for this buffer */
+> 	
+> }
+> /* kernel wants to write from the pipe into our file at ppos */
+> ssize_t splice_write(struct pipe_inode_info *pipe, struct file *out,
+> loff_t *ppos, size_t len, unsigned int flags)
+> {
+> 	int ret;
+> 	printk(KERN_DEBUG "splice_write(len=%d)\n", len);
+> 	ret = splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_device);
+> 	return 0;
+> }
+>
+>   
 
