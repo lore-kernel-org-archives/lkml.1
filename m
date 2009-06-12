@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbZFLJv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933644AbZFLJwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933610AbZFLJv5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbZFLJva
+	id S933644AbZFLJwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933629AbZFLJwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:51:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42543 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933519AbZFLJv3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:51:29 -0400
-Date: Fri, 12 Jun 2009 11:59:28 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 3/5] HWPOISON: remove early kill option for now
-Message-ID: <20090612095928.GB25568@one.firstfloor.org>
-References: <20090611142239.192891591@intel.com> <20090611144430.682162784@intel.com>
+	Fri, 12 Jun 2009 05:52:06 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41581 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933619AbZFLJwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:52:04 -0400
+Date: Fri, 12 Jun 2009 11:52:06 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or suspending
+Message-ID: <20090612095206.GA13607@wotan.suse.de>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <20090612091002.GA32052@elte.hu> <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090611144430.682162784@intel.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 10:22:42PM +0800, Wu Fengguang wrote:
-> It needs more thoughts, and is not a must have for .31.
+On Fri, Jun 12, 2009 at 12:49:17PM +0300, Pekka Enberg wrote:
+> On Fri, Jun 12, 2009 at 12:10 PM, Ingo Molnar<mingo@elte.hu> wrote:
+> >> @@ -1548,6 +1548,20 @@ new_slab:
+> >>               goto load_freelist;
+> >>       }
+> >>
+> >> +     /*
+> >> +      * Lets not wait if we're booting up or suspending even if the user
+> >> +      * asks for it.
+> >> +      */
+> >> +     if (system_state != SYSTEM_RUNNING)
+> >> +             gfpflags &= ~__GFP_WAIT;
+> >
+> > Hiding that bug like that is not particularly clean IMO. We should
+> > not let system_state hacks spread like that.
+> >
+> > We emit a debug warning but dont crash, so all should be fine and
+> > the culprits can then be fixed, right?
+> 
+> OK, lets not use system_state then and go with Ben's approach then.
+> Again, neither of the patches are about "hiding buggy callers" but
+> changing allocation policy wrt. gfp flags during boot (and later on
+> during suspend).
 
-Please don't do that. I don't think the problem Hugh described is fatal
-and there are some scenarios where it is needed.
+Maybe if we just not make it a general "tweak gfpflag" bit (at
+least not until a bit more discussion), but a specific workaround
+for the local_irq_enable in early boot problem.
+
+Seems like it would not be hard to track things down if we add
+a warning if we have GFP_WAIT and interrupts are not enabled...
 
 
--Andi
