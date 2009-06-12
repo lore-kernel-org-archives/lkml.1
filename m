@@ -1,94 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759171AbZFLTxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbZFLT4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759171AbZFLTxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 15:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbZFLTwt
+	id S1760336AbZFLT4S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 15:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZFLT4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 15:52:49 -0400
-Received: from www.tglx.de ([62.245.132.106]:40891 "EHLO www.tglx.de"
+	Fri, 12 Jun 2009 15:56:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59537 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752964AbZFLTws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 15:52:48 -0400
-Date: Fri, 12 Jun 2009 21:52:46 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] genirq: do not disable IRQ_WAKEUP marked irqs on
- suspend
-In-Reply-To: <87hbylb8u3.fsf@deeprootsystems.com>
-Message-ID: <alpine.LFD.2.00.0906122039420.2800@localhost.localdomain>
-References: <cMiA9-1MZ-13@gated-at.bofh.it> <87fxe5fi9v.fsf@deeprootsystems.com> <alpine.LFD.2.00.0906122005140.2800@localhost.localdomain> <87hbylb8u3.fsf@deeprootsystems.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752964AbZFLT4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 15:56:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Fri, 12 Jun 2009 21:56:14 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0906121547490.2862-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906121547490.2862-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906122156.14873.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Kevin Hilman wrote:
->   http://lkml.org/lkml/2009/5/4/448
+On Friday 12 June 2009, Alan Stern wrote:
+> On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
 > 
-> Only difference is I did the checking outside of the lock, which is
-> probably wrong.  In any case, you'll be interested in the thread that
-> follows.
+> > So, are you suggesting that the core should only check the "all children
+> > suspended" condition if special flag is set in dev_pm_info?
+> 
+> Or rather, check it only if the special flag _isn't_ set.
 
-Hmm, darn. That means that on hardware which has trouble with the
-delayed disable and therefor uses it's own chip->disable_irq() method
-the suspend logic is wreckaged.
+Where the default is unset, I guess?
 
-But there is always a way to get broken hardware tamed. :)
+But then, what about the resuming of the parents before the device is resumed?
+Should the parents be resumed regardless of the flag state?  And if so, what's
+the condition for breaking the recurrence?  Surely it's not sufficient to check
+if the parent is active, because its parent need not be active if it has this
+special flag set.
 
-suspend does:
-	__disable_irq();
-		status |= IRQ_SUSPENDED;
-		chip->disable_irq();
-
-resume does:
-       __enable_irq();
-		status &= ~IRQ_SUSPENDED;
-		chip->enable_irq();
-
-So
-
--      set_irq_handler(handle_level_irq);
-+      set_irq_handler(my_own_handler);
-
-+my_own_handler()
-+{
-+	if (!(status & IRQ_SUSPENDED)) {
-+	       handle_level_irq();
-+	} else {
-+	       mask_at_hardware_level();
-+	       status |= IRQ_PENDING;
-+	       save_important_information();
-+	} 
-+}
-
-my_disable_irq()
-{
-+	if (!(status & IRQ_SUSPENDED))
-	       mask_at_hardware_level();
-}
-
-my_enable_irq()
-{
-+	if (important_information_has_been_saved)
-+	       replay_what_happened();
-+
-        unmask_at_hardware_level();
-}
-
-Ugly, but that might work somehow. Not sure about the replay part, but
-that can be deferred via some more hackery as well :)
-
-Raphael, these delayed disable and the chip->irq_disable() override
-implications vs. suspend really need to be documented. The current
-comment of suspend_device_irqs() is bogus:
-
- * During system-wide suspend or hibernation device interrupts need to be
- * disabled at the chip level and this function is provided for this purpose.
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Thanks,
-
-	tglx
+Best,
+Rafael
