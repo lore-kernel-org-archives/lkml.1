@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZFLMZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbZFLMac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbZFLMZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 08:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZFLMZM
+	id S1753197AbZFLMac (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 08:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbZFLMaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:25:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51474 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbZFLMZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:25:10 -0400
-Date: Fri, 12 Jun 2009 12:24:37 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, jaswinder@kernel.org, sachinp@in.ibm.com,
-       jaswinderrajput@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, jaswinder@kernel.org, sachinp@in.ibm.com,
-       jaswinderrajput@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1244788494.5554.1.camel@ht.satnam>
-References: <1244788494.5554.1.camel@ht.satnam>
-Subject: [tip:perfcounters/core] powerpc, perf_counter: Fix performance counter event types
-Message-ID: <tip-4c921126fe553440261f56691c5f60fbaaa486d6@git.kernel.org>
-Git-Commit-ID: 4c921126fe553440261f56691c5f60fbaaa486d6
-X-Mailer: tip-git-log-daemon
+	Fri, 12 Jun 2009 08:30:24 -0400
+Received: from web31706.mail.mud.yahoo.com ([68.142.201.186]:34879 "HELO
+	web31706.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750832AbZFLMaY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 08:30:24 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 08:30:24 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=QuMLhjSMvImDag8UgyAX1fGjafo+MQB6AsIGMKbeODbQ4HDIgK7c4+SNwebnIEqmqqyyIokFqwKWwIh51USHy0iIbsaTiSKPc6BvTVT551FpmuqItwMfov3rTW2bZoc7Wqdr7gxHRhKFMht0/V7DYGKSmUjjs0YkLrRi1zzQmBA=;
+Message-ID: <233030.36441.qm@web31706.mail.mud.yahoo.com>
+X-YMail-OSG: lrbmfv0VM1nvjfYqJXk_gaIiWgTr2wKQ3SHDM3rRB18T1A9kdk_Xd9VhfoSGmWVNNP601kITUMKdFDGaY0EIGA1KRwaW6Wem0G_7x_8bEyyKFdLwYki8DPfv6v8NRyYKriwn0K36Kgingt8mthz_unizrj6Y2MUoqepKroIU25mzliD22XsWVI5WMM2qie3bw1yHRtdFOahH5CV.uamW1xfsywKltZzChsJSajvWf_hympCYc_SW3SzIIbf0AGcoDpUJvjE2dLIjQrQnscGJsgjDMwDto3sCvZi3xl.X1zVX5D4liTj9zIgBkTvFqT6DQ.j_tQYXAtzk.AvkOTXeWvy4N5mI4rGrKa1XfzLR3qBSVC1dNq0cODHlMgbs0B8t
+X-Mailer: YahooMailRC/1357.18 YahooMailWebService/0.7.289.15
+Date: Fri, 12 Jun 2009 05:23:46 -0700 (PDT)
+From: Sanka Piyaratna <cesanka@yahoo.com>
+Subject: PCIe interface memory memory mapping issue
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 12 Jun 2009 12:24:38 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4c921126fe553440261f56691c5f60fbaaa486d6
-Gitweb:     http://git.kernel.org/tip/4c921126fe553440261f56691c5f60fbaaa486d6
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Fri, 12 Jun 2009 12:04:54 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 12 Jun 2009 14:21:11 +0200
 
-powerpc, perf_counter: Fix performance counter event types
+Hi,
 
-Sachin Sant reported these compiler errors:
+I have developed a PCI express interface using Xilinx ML555 hardware module. I have implemented Linux kernel mode device drivers and everything works correctly as long as I am using the device within a computer with dual channel DDR arrangement. However, as soon as I pug this device into a core i7 or an older single channel DDR machine, the interface memory mapping does not work any more. As if the register map with in the device does no longer exsists. However, "lspci" utility provides correct information. I am not sure if this has anything to do with the number of DDR memory channels the motherboard has or why that would be a problem for PCI express device. However, this seem to be the common link between the machines that demonstrate this issue.
 
- CC      arch/powerpc/kernel/power7-pmu.o
-arch/powerpc/kernel/power7-pmu.c:297: error: PERF_COUNT_CPU_CYCLES undeclared here (not in a function)
+Could some one please let me know if you have ever experience this kind of problem before and/or any ideas to fix this problem?
 
-Which happened because a last-minute rename of symbols crossed with
-the Power7 support patch.
+Thank you very much,
 
-Fix this by using the new symbol names.
+Regards,
 
-Reported-by: Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
-LKML-Reference: <1244788494.5554.1.camel@ht.satnam>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Sanka
 
 
----
- arch/powerpc/kernel/power7-pmu.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
-index b3f7d12..b72e7a1 100644
---- a/arch/powerpc/kernel/power7-pmu.c
-+++ b/arch/powerpc/kernel/power7-pmu.c
-@@ -294,12 +294,12 @@ static void power7_disable_pmc(unsigned int pmc, u64 mmcr[])
- }
- 
- static int power7_generic_events[] = {
--	[PERF_COUNT_CPU_CYCLES] = 0x1e,
--	[PERF_COUNT_INSTRUCTIONS] = 2,
--	[PERF_COUNT_CACHE_REFERENCES] = 0xc880,		/* LD_REF_L1_LSU */
--	[PERF_COUNT_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1 */
--	[PERF_COUNT_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN */
--	[PERF_COUNT_BRANCH_MISSES] = 0x400f6,		/* BR_MPRED */
-+	[PERF_COUNT_HW_CPU_CYCLES] = 0x1e,
-+	[PERF_COUNT_HW_INSTRUCTIONS] = 2,
-+	[PERF_COUNT_HW_CACHE_REFERENCES] = 0xc880,	/* LD_REF_L1_LSU*/
-+	[PERF_COUNT_HW_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1	*/
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN	*/
-+	[PERF_COUNT_HW_BRANCH_MISSES] = 0x400f6,	/* BR_MPRED	*/
- };
- 
- #define C(x)	PERF_COUNT_HW_CACHE_##x
+      Need a Holiday? Win a $10,000 Holiday of your choice. Enter now.http://us.lrd.yahoo.com/_ylc=X3oDMTJxN2x2ZmNpBF9zAzIwMjM2MTY2MTMEdG1fZG1lY2gDVGV4dCBMaW5rBHRtX2xuawNVMTEwMzk3NwR0bV9uZXQDWWFob28hBHRtX3BvcwN0YWdsaW5lBHRtX3BwdHkDYXVueg--/SIG=14600t3ni/**http%3A//au.rd.yahoo.com/mail/tagline/creativeholidays/*http%3A//au.docs.yahoo.com/homepageset/%3Fp1=other%26p2=au%26p3=mailtagline
