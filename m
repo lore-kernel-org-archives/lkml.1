@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZFLNjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbZFLNjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZFLNjR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760322AbZFLNbF
+	id S1759310AbZFLNjd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763989AbZFLNbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:31:05 -0400
-Received: from ozlabs.org ([203.10.76.45]:55285 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 09:31:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:55287 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758199AbZFLNbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:31:03 -0400
+	id S1764444AbZFLNbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:31:04 -0400
 CC: linux-kernel@vger.kernel.org
-To: Ralf Baechle <ralf@linux-mips.org>
+To: Paul Mundt <lethal@linux-sh.org>
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Fri, 12 Jun 2009 22:33:14 +0930
-Subject: [PATCH 3/13] cpumask: Use accessors for cpu_*_mask: mips
+Subject: [PATCH 5/13] cpumask: Use accessors for cpu_*_mask: sh
 Cc: Mike Travis <travis@sgi.com>
-Message-Id: <20090612133105.A1BFDDDDA2@ozlabs.org>
+Message-Id: <20090612133105.E5D7ADDD0C@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,34 +27,51 @@ are const).
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/mips/kernel/smp-cmp.c |    5 ++++-
- arch/mips/kernel/smp.c     |    2 +-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/sh/kernel/cpu/sh4a/smp-shx3.c |    5 ++---
+ arch/sh/kernel/smp.c               |    6 +++---
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
---- linux-2.6.28.orig/arch/mips/kernel/smp-cmp.c
-+++ linux-2.6.28/arch/mips/kernel/smp-cmp.c
-@@ -52,8 +52,11 @@ static int __init allowcpus(char *str)
+--- linux-2.6.28.orig/arch/sh/kernel/cpu/sh4a/smp-shx3.c
++++ linux-2.6.28/arch/sh/kernel/cpu/sh4a/smp-shx3.c
+@@ -19,8 +19,7 @@ void __init plat_smp_setup(void)
+ 	unsigned int cpu = 0;
+ 	int i, num;
  
- 	cpus_clear(cpu_allow_map);
- 	if (cpulist_parse(str, &cpu_allow_map) == 0) {
- 		cpu_set(0, cpu_allow_map);
--		cpus_and(cpu_possible_map, cpu_possible_map, cpu_allow_map);
-+		unsigned int i;
-+		for (i = 1; i < nr_cpu_ids; i++)
-+			if (!cpumask_test_cpu(i, cpu_allow_map))
-+				set_cpu_possible(i, false);
- 		len = cpulist_scnprintf(buf, sizeof(buf)-1, &cpu_possible_map);
- 		buf[len] = '\0';
- 		pr_debug("Allowable CPUs: %s\n", buf);
---- linux-2.6.28.orig/arch/mips/kernel/smp.c
-+++ linux-2.6.28/arch/mips/kernel/smp.c
-@@ -186,7 +186,7 @@ void __init smp_prepare_cpus(unsigned in
- 	mp_ops->prepare_cpus(max_cpus);
- 	set_cpu_sibling_map(0);
+-	cpus_clear(cpu_possible_map);
+-	cpu_set(cpu, cpu_possible_map);
++	init_cpu_possible(cpumask_of(cpu));
+ 
+ 	__cpu_number_map[0] = 0;
+ 	__cpu_logical_map[0] = 0;
+@@ -30,7 +29,7 @@ void __init plat_smp_setup(void)
+ 	 * for the total number of cores.
+ 	 */
+ 	for (i = 1, num = 0; i < NR_CPUS; i++) {
+-		cpu_set(i, cpu_possible_map);
++		set_cpu_possible(i, true);
+ 		__cpu_number_map[i] = ++num;
+ 		__cpu_logical_map[num] = i;
+ 	}
+--- linux-2.6.28.orig/arch/sh/kernel/smp.c
++++ linux-2.6.28/arch/sh/kernel/smp.c
+@@ -52,7 +52,7 @@ void __init smp_prepare_cpus(unsigned in
+ 	plat_prepare_cpus(max_cpus);
+ 
  #ifndef CONFIG_HOTPLUG_CPU
 -	cpu_present_map = cpu_possible_map;
 +	init_cpu_present(&cpu_possible_map);
  #endif
  }
  
+@@ -63,8 +63,8 @@ void __devinit smp_prepare_boot_cpu(void
+ 	__cpu_number_map[0] = cpu;
+ 	__cpu_logical_map[0] = cpu;
+ 
+-	cpu_set(cpu, cpu_online_map);
+-	cpu_set(cpu, cpu_possible_map);
++	set_cpu_online(cpu, true);
++	set_cpu_possible(cpu, true);
+ }
+ 
+ asmlinkage void __cpuinit start_secondary(void)
 
