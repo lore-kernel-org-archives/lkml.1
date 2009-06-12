@@ -1,85 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934753AbZFLWtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934786AbZFLWuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934753AbZFLWtn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbZFLWsr
+	id S934786AbZFLWuA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934661AbZFLWss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:48:47 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56016 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934634AbZFLWsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:48:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57407 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934559AbZFLWsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Jun 2009 18:48:45 -0400
-Date: Sat, 13 Jun 2009 00:48:40 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Shawn Pearce <sop@google.com>
-Cc: Brian Swetland <swetland@google.com>,
-       Stefan Schmidt <stefan@datenfreihafen.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Greg KH <greg@kroah.com>
-Subject: Re: Gerrit (was Re: HTC Dream aka. t-mobile g1 support)
-Message-ID: <20090612224840.GG17688@elf.ucw.cz>
-References: <a55d774e0906121450x12bab7b0sc1f4de0115a1af61@mail.gmail.com> <20090612222229.GE17688@elf.ucw.cz> <1cc472780906121538h5b70fa4dg891ff729fda1a566@mail.gmail.com>
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [RFC][ PATCH -tip 4/6] kprobes: x86: cleanup save/restore registers
+To: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
+       Tim Abbott <tabbott@ksplice.com>
+Date: Fri, 12 Jun 2009 18:49:51 -0400
+Message-ID: <20090612224950.17825.95992.stgit@localhost.localdomain>
+In-Reply-To: <20090612224925.17825.49637.stgit@localhost.localdomain>
+References: <20090612224925.17825.49637.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1cc472780906121538h5b70fa4dg891ff729fda1a566@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Introduce SAVE/RESOTRE_REGS_STRING for cleanup kretprobe-trampoline asm
+code. These macros will be used for emulating interruption.
 
->    On Fri 2009-06-12 14:50:21, Brian Swetland wrote:
->    > Gerrit is a git patch review system that we (Google/Android) use for
->    > android development (kernel and otherwise).  Some other folks like
->    > Qualcomm, and TI (see [2]http://review.omapzoom.org/) have adopted it
-> 
->      Unfortunately, it seems quite unsuitable for kernel.
->      Do I understand it right that to submit kernel patches I'd have to
->      agree to "contributors agreement", and give up my copyright? No,
->      sorry, I don't think I want to do that.
-> 
->    No.  The contributor agreement used by [3]review.source.android.com is
->    a stronger version of the Developers Certificate of Origin normally use
->    d by kernel contributors.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Anders Kaseorg <andersk@ksplice.com>
+Cc: Tim Abbott <tabbott@ksplice.com>
+---
 
-So, agreeing to that is neccessary for using Gerrit? Too bad. As I
-said, it is unsuitable for kernel patches.
+ arch/x86/kernel/kprobes.c |  128 ++++++++++++++++++++++++---------------------
+ 1 files changed, 67 insertions(+), 61 deletions(-)
 
->    For the actual agreement text see[1], but the basic principle is the
->    same.  No assignment of copyright, only assignment of license for
->    redistribution, which is what the GPL asks anyway.  It also
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index b77e050..979b7ed 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -568,6 +568,69 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_X86_64
++#define SAVE_REGS_STRING		\
++	/* Skip cs, ip, orig_ax. */	\
++	"	subq $24, %rsp\n"	\
++	"	pushq %rdi\n"		\
++	"	pushq %rsi\n"		\
++	"	pushq %rdx\n"		\
++	"	pushq %rcx\n"		\
++	"	pushq %rax\n"		\
++	"	pushq %r8\n"		\
++	"	pushq %r9\n"		\
++	"	pushq %r10\n"		\
++	"	pushq %r11\n"		\
++	"	pushq %rbx\n"		\
++	"	pushq %rbp\n"		\
++	"	pushq %r12\n"		\
++	"	pushq %r13\n"		\
++	"	pushq %r14\n"		\
++	"	pushq %r15\n"
++#define RESTORE_REGS_STRING		\
++	"	popq %r15\n"		\
++	"	popq %r14\n"		\
++	"	popq %r13\n"		\
++	"	popq %r12\n"		\
++	"	popq %rbp\n"		\
++	"	popq %rbx\n"		\
++	"	popq %r11\n"		\
++	"	popq %r10\n"		\
++	"	popq %r9\n"		\
++	"	popq %r8\n"		\
++	"	popq %rax\n"		\
++	"	popq %rcx\n"		\
++	"	popq %rdx\n"		\
++	"	popq %rsi\n"		\
++	"	popq %rdi\n"		\
++	/* Skip orig_ax, ip, cs */	\
++	"	addq $24, %rsp\n"
++#else
++#define SAVE_REGS_STRING		\
++	/* Skip cs, ip, orig_ax and gs. */	\
++	"	subl $16, %esp\n"	\
++	"	pushl %fs\n"		\
++	"	pushl %ds\n"		\
++	"	pushl %es\n"		\
++	"	pushl %eax\n"		\
++	"	pushl %ebp\n"		\
++	"	pushl %edi\n"		\
++	"	pushl %esi\n"		\
++	"	pushl %edx\n"		\
++	"	pushl %ecx\n"		\
++	"	pushl %ebx\n"
++#define RESTORE_REGS_STRING		\
++	"	popl %ebx\n"		\
++	"	popl %ecx\n"		\
++	"	popl %edx\n"		\
++	"	popl %esi\n"		\
++	"	popl %edi\n"		\
++	"	popl %ebp\n"		\
++	"	popl %eax\n"		\
++	/* Skip ds, es, fs, gs, orig_ax, and ip. Note: don't pop cs here*/\
++	"	addl $24, %esp\n"
++#endif
++
+ /*
+  * When a retprobed function returns, this code saves registers and
+  * calls trampoline_handler() runs, which calls the kretprobe's handler.
+@@ -581,65 +644,16 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
+ 			/* We don't bother saving the ss register */
+ 			"	pushq %rsp\n"
+ 			"	pushfq\n"
+-			/*
+-			 * Skip cs, ip, orig_ax.
+-			 * trampoline_handler() will plug in these values
+-			 */
+-			"	subq $24, %rsp\n"
+-			"	pushq %rdi\n"
+-			"	pushq %rsi\n"
+-			"	pushq %rdx\n"
+-			"	pushq %rcx\n"
+-			"	pushq %rax\n"
+-			"	pushq %r8\n"
+-			"	pushq %r9\n"
+-			"	pushq %r10\n"
+-			"	pushq %r11\n"
+-			"	pushq %rbx\n"
+-			"	pushq %rbp\n"
+-			"	pushq %r12\n"
+-			"	pushq %r13\n"
+-			"	pushq %r14\n"
+-			"	pushq %r15\n"
++			SAVE_REGS_STRING
+ 			"	movq %rsp, %rdi\n"
+ 			"	call trampoline_handler\n"
+ 			/* Replace saved sp with true return address. */
+ 			"	movq %rax, 152(%rsp)\n"
+-			"	popq %r15\n"
+-			"	popq %r14\n"
+-			"	popq %r13\n"
+-			"	popq %r12\n"
+-			"	popq %rbp\n"
+-			"	popq %rbx\n"
+-			"	popq %r11\n"
+-			"	popq %r10\n"
+-			"	popq %r9\n"
+-			"	popq %r8\n"
+-			"	popq %rax\n"
+-			"	popq %rcx\n"
+-			"	popq %rdx\n"
+-			"	popq %rsi\n"
+-			"	popq %rdi\n"
+-			/* Skip orig_ax, ip, cs */
+-			"	addq $24, %rsp\n"
++			RESTORE_REGS_STRING
+ 			"	popfq\n"
+ #else
+ 			"	pushf\n"
+-			/*
+-			 * Skip cs, ip, orig_ax and gs.
+-			 * trampoline_handler() will plug in these values
+-			 */
+-			"	subl $16, %esp\n"
+-			"	pushl %fs\n"
+-			"	pushl %es\n"
+-			"	pushl %ds\n"
+-			"	pushl %eax\n"
+-			"	pushl %ebp\n"
+-			"	pushl %edi\n"
+-			"	pushl %esi\n"
+-			"	pushl %edx\n"
+-			"	pushl %ecx\n"
+-			"	pushl %ebx\n"
++			SAVE_REGS_STRING
+ 			"	movl %esp, %eax\n"
+ 			"	call trampoline_handler\n"
+ 			/* Move flags to cs */
+@@ -647,15 +661,7 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
+ 			"	movl %edx, 52(%esp)\n"
+ 			/* Replace saved flags with true return address. */
+ 			"	movl %eax, 56(%esp)\n"
+-			"	popl %ebx\n"
+-			"	popl %ecx\n"
+-			"	popl %edx\n"
+-			"	popl %esi\n"
+-			"	popl %edi\n"
+-			"	popl %ebp\n"
+-			"	popl %eax\n"
+-			/* Skip ds, es, fs, gs, orig_ax and ip */
+-			"	addl $24, %esp\n"
++			RESTORE_REGS_STRING
+ 			"	popf\n"
+ #endif
+ 			"	ret\n");
 
-As I read it, it is very different from GPL.
-
-It grants google license to do anything with that code, such as
-packaging it into closed source product.
-
-# 2. Grant of Copyright License. Subject to the terms and conditions of
-# this Grant, You hereby grant to the Project Leads and to recipients of
-# software distributed by the Project Leads a perpetual, worldwide,
-# non-exclusive, no-charge, royalty-free, irrevocable copyright license
-# to reproduce, prepare derivative works of, publicly display, publicly
-# perform, sublicense, and distribute Your Contributions and such
-# derivative works.
-
-Kernel already has GPL license and Developers Certificate of Origin,
-so please just use that for the kernel. (Kernel also has perfectly
-working patch review system called mailing lists and git trees; please
-use that, too).
-
->    patent provision, similar to what the Apache License contains, to
->    protect the project leads from submarine patent infringement by code
->    contributed by a patent holder.
->    [1] [4]https://review.source.android.com/static/cla_individual.html
-
-									Pavel
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
