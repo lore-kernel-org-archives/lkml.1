@@ -1,93 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765664AbZFLWov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933809AbZFLWpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765664AbZFLWov (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763507AbZFLWoA
+	id S933809AbZFLWpH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764860AbZFLWoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:44:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60155 "EHLO ogre.sisk.pl"
+	Fri, 12 Jun 2009 18:44:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55168 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764303AbZFLWn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:43:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.31
-Date: Sat, 13 Jun 2009 00:44:09 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Lauro Salmito <laurosalmito@gmail.com>, Magnus Damm <damm@igel.co.jp>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Sergio Luis <sergio@larces.uece.br>
-References: <200906122202.08345.rjw@sisk.pl> <alpine.LFD.2.01.0906121317320.3237@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906121317320.3237@localhost.localdomain>
+	id S1765100AbZFLWoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:44:14 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [RESEND][ PATCH -tip -v9 3/7] kprobes: checks probe address is
+	instruction boudary on x86
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Fri, 12 Jun 2009 18:45:09 -0400
+Message-ID: <20090612224509.17311.47956.stgit@localhost.localdomain>
+In-Reply-To: <20090612224447.17311.72404.stgit@localhost.localdomain>
+References: <20090612224447.17311.72404.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906130044.11273.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 June 2009, Linus Torvalds wrote:
-> 
-> On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > Hi Linus,
-> > 
-> > Please pull power management updates for 2.6.31 from:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
-> > 
-> > They are cleanups and code rearrangements mostly, in particular:
-> > 
-> > * arch/x86/power/cpu_(32|64) unification from Sergio Luis (Ingo saw
-> >   these patches and his opinion was that they should better go
-> >   through the suspend tree)
-> > 
-> > * Removal of some unused files and PM callbacks, function renames
-> >   from Magnus Damm and Alan Stern
-> > 
-> > * Rearrangements of the code under kernel/power from me and
-> >   Cornelia Huck
-> > 
-> > * Two patches related to the memory shrinking (for the record, Pavel
-> >   doesn't like the "PM/Suspend: Do not shrink memory before suspend"
-> >   patch, so please let me know if I should drop it)
-> > 
-> > * A couple of bug fixes
-> > 
-> > 
-> >  arch/x86/power/cpu.c             |  259 +++++++++++
-> >  arch/x86/power/cpu_32.c          |  148 ------
-> >  arch/x86/power/cpu_64.c          |  174 -------
-> >  kernel/power/disk.c              |  955 --------------------------------------
-> >  kernel/power/hibernate.c         |  955 ++++++++++++++++++++++++++++++++++++++
-> >  kernel/power/hibernate_nvs.c     |  135 ++++++
-> >  35 files changed, 2056 insertions(+), 2194 deletions(-)
-> 
-> Please add rename detection to your pull script (and --summary, for that 
-> matter). This _should_ have looked like
-> 
->  33 files changed, 984 insertions(+), 1122 deletions(-)
-> 
-> because it would have detected this:
-> 
->  rename arch/x86/power/{cpu_64.c => cpu.c} (62%)
->  delete mode 100644 arch/x86/power/cpu_32.c
->  rename kernel/power/{disk.c => hibernate.c} (96%)
-> 
-> instead of counting those as some huge patches that add/remove code.
+Ensure safeness of inserting kprobes by checking whether the specified
+address is at the first byte of a instruction on x86.
+This is done by decoding probed function from its head to the probe point.
 
-I will, sorry for not doing it this time and thanks for pulling.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
-Best,
-Rafael
+ arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 69 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index b5b1848..5341842 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -48,6 +48,7 @@
+ #include <linux/preempt.h>
+ #include <linux/module.h>
+ #include <linux/kdebug.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/desc.h>
+@@ -55,6 +56,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
+ #include <asm/debugreg.h>
++#include <asm/insn.h>
+ 
+ void jprobe_return_end(void);
+ 
+@@ -245,6 +247,71 @@ retry:
+ 	}
+ }
+ 
++/* Recover the probed instruction at addr for further analysis. */
++static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
++{
++	struct kprobe *kp;
++	kp = get_kprobe((void *)addr);
++	if (!kp)
++		return -EINVAL;
++
++	/*
++	 *  Basically, kp->ainsn.insn has an original instruction.
++	 *  However, RIP-relative instruction can not do single-stepping
++	 *  at different place, fix_riprel() tweaks the displacement of
++	 *  that instruction. In that case, we can't recover the instruction
++	 *  from the kp->ainsn.insn.
++	 *
++	 *  On the other hand, kp->opcode has a copy of the first byte of
++	 *  the probed instruction, which is overwritten by int3. And
++	 *  the instruction at kp->addr is not modified by kprobes except
++	 *  for the first byte, we can recover the original instruction
++	 *  from it and kp->opcode.
++	 */
++	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
++	buf[0] = kp->opcode;
++	return 0;
++}
++
++/* Dummy buffers for kallsyms_lookup */
++static char __dummy_buf[KSYM_NAME_LEN];
++
++/* Check if paddr is at an instruction boundary */
++static int __kprobes can_probe(unsigned long paddr)
++{
++	int ret;
++	unsigned long addr, offset = 0;
++	struct insn insn;
++	kprobe_opcode_t buf[MAX_INSN_SIZE];
++
++	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
++		return 0;
++
++	/* Decode instructions */
++	addr = paddr - offset;
++	while (addr < paddr) {
++		kernel_insn_init(&insn, (void *)addr);
++		insn_get_opcode(&insn);
++
++		/* Check if the instruction has been modified. */
++		if (OPCODE1(&insn) == BREAKPOINT_INSTRUCTION) {
++			ret = recover_probed_instruction(buf, addr);
++			if (ret)
++				/*
++				 * Another debugging subsystem might insert
++				 * this breakpoint. In that case, we can't
++				 * recover it.
++				 */
++				return 0;
++			kernel_insn_init(&insn, buf);
++		}
++		insn_get_length(&insn);
++		addr += insn.length;
++	}
++
++	return (addr == paddr);
++}
++
+ /*
+  * Returns non-zero if opcode modifies the interrupt flag.
+  */
+@@ -360,6 +427,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
+ 
+ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+ {
++	if (!can_probe((unsigned long)p->addr))
++		return -EILSEQ;
+ 	/* insn: must be on special executable page on x86. */
+ 	p->ainsn.insn = get_insn_slot();
+ 	if (!p->ainsn.insn)
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
