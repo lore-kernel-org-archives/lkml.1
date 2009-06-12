@@ -1,75 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbZFLJfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933457AbZFLJgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763463AbZFLJfU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZFLJfJ
+	id S933457AbZFLJgH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbZFLJfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:35:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58021 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753196AbZFLJfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:35:09 -0400
-Subject: Re: [PATCH] powerpc: don't pass GFP_WAIT to kmalloc() from
- *_maybe_bootmem()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, mingo@elte.hu
-In-Reply-To: <Pine.LNX.4.64.0906121215090.30411@melkki.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0906121215090.30411@melkki.cs.Helsinki.FI>
+	Fri, 12 Jun 2009 05:35:54 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:42303 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755485AbZFLJfw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:35:52 -0400
+Subject: Re: [BUILD FAILURE 02/04] Next June 04:PPC64 randconfig
+	[drivers/usb/host/ohci-hcd.o]
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: David Brownell <david-b@pacbell.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-usb@vger.kernel.org,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux-Next <linux-next@vger.kernel.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, kernel@wantstofly.org
+In-Reply-To: <200906091738.58154.david-b@pacbell.net>
+References: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
+	 <200906091738.58154.david-b@pacbell.net>
 Content-Type: text/plain
-Date: Fri, 12 Jun 2009 19:34:58 +1000
-Message-Id: <1244799298.7172.108.camel@pasglop>
+Organization: IBM
+Date: Fri, 12 Jun 2009 15:05:48 +0530
+Message-Id: <1244799348.5234.13.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 12:22 +0300, Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Tue, 2009-06-09 at 17:38 -0700, David Brownell wrote:
+> On Friday 05 June 2009, Subrata Modak wrote:
+> > Correct, it fixes the issue. However, since few changes might have gone
+> > to the Kconfig, the patch does not apply cleanly. Below is the patch, just
+> > a retake of the earlier one, but on the latest code. 
 > 
-> As slab is initialized much earlier now, we must not pass GFP_WAIT to kmalloc()
-> from *_maybe_bootmem() functions; otherwise slab allocators will enable
-> interrupts.
+> And it got mangled a bit along the way.  Plus, the original one
+> goofed up Kconfig dependency displays ... both issues fixed in
+> this version, against current mainline GIT.
 > 
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> If someone can verify all four PPC/OF/OHCI configs build on
+> on PPC64, I'm OK with it.
+> 
+> - Dave
+
+Dave,
+
+Sorry for being late. The patch fixes the issue on the latest git for
+PPC64. Infact, the whole drivers/usb/host/ builds just fine:
+
+linux-2.6 # make drivers/usb/host/
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-powerpc
+  CALL    scripts/checksyscalls.sh
+  CC      drivers/usb/host/ohci-hcd.o
+  CC      drivers/usb/host/pci-quirks.o
+  CC      drivers/usb/host/uhci-hcd.o
+  LD      drivers/usb/host/built-in.o
+  CC [M]  drivers/usb/host/isp116x-hcd.o
+  CC [M]  drivers/usb/host/u132-hcd.o
+
+You can check in the patch now.
+
+Regards--
+Subrata
+
+> 
+> 
+> ========== CUT HERE
+> From: Arnd Bergmann <arnd@arndb.de>
+> Subject: fix build failure for PPC64 randconfig [usb/ohci]
+> 
+> We could just make the USB_OHCI_HCD_PPC_OF option implicit
+> and selected only if at least one of USB_OHCI_HCD_PPC_OF_BE
+> and USB_OHCI_HCD_PPC_OF_LE are set.
+> 
+> [ dbrownell@users.sourceforge.net: fix patch manglation and dependencies ]
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Resent-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 > ---
-> Ben, while we're discussing the slab side of things, can we go ahead and 
-> merge this one? It should fix plenty of cases for powerpc.
-
-We can, but it's a plaster... I won't fix it all, and again, what tells
-you that things calling alloc_maybe_bootmem() don't do that specifically
--because- they can be called also much later ? (In this case, it's
-__init so I'm not going to object, but I still think it's unnecessary if
-we fix it properly).
-
-Cheers,
-Ben.
-
->  arch/powerpc/lib/alloc.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  drivers/usb/host/Kconfig |   29 +++++++++++++++--------------
+>  1 file changed, 15 insertions(+), 14 deletions(-)
 > 
-> diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
-> index f53e09c..56b35e3 100644
-> --- a/arch/powerpc/lib/alloc.c
-> +++ b/arch/powerpc/lib/alloc.c
-> @@ -9,7 +9,7 @@
->  void * __init_refok alloc_maybe_bootmem(size_t size, gfp_t mask)
->  {
->  	if (mem_init_done)
-> -		return kmalloc(size, mask);
-> +		return kmalloc(size, mask & ~__GFP_WAIT);
->  	else
->  		return alloc_bootmem(size);
->  }
-> @@ -19,7 +19,7 @@ void * __init_refok zalloc_maybe_bootmem(size_t size, gfp_t mask)
->  	void *p;
->  
->  	if (mem_init_done)
-> -		p = kzalloc(size, mask);
-> +		p = kzalloc(size, mask & ~__GFP_WAIT);
->  	else {
->  		p = alloc_bootmem(size);
->  		if (p)
+> --- a/drivers/usb/host/Kconfig
+> +++ b/drivers/usb/host/Kconfig
+> @@ -180,26 +180,27 @@ config USB_OHCI_HCD_PPC_SOC
+>  	  Enables support for the USB controller on the MPC52xx or
+>  	  STB03xxx processor chip.  If unsure, say Y.
+> 
+> -config USB_OHCI_HCD_PPC_OF
+> -	bool "OHCI support for PPC USB controller on OF platform bus"
+> -	depends on USB_OHCI_HCD && PPC_OF
+> -	default y
+> -	---help---
+> -	  Enables support for the USB controller PowerPC present on the
+> -	  OpenFirmware platform bus.
+> -
+>  config USB_OHCI_HCD_PPC_OF_BE
+> -	bool "Support big endian HC"
+> -	depends on USB_OHCI_HCD_PPC_OF
+> -	default y
+> +	bool "OHCI support for OF platform bus (big endian)"
+> +	depends on USB_OHCI_HCD && PPC_OF
+>  	select USB_OHCI_BIG_ENDIAN_DESC
+>  	select USB_OHCI_BIG_ENDIAN_MMIO
+> +	---help---
+> +	  Enables support for big-endian USB controllers present on the
+> +	  OpenFirmware platform bus.
+> 
+>  config USB_OHCI_HCD_PPC_OF_LE
+> -	bool "Support little endian HC"
+> -	depends on USB_OHCI_HCD_PPC_OF
+> -	default n
+> +	bool "OHCI support for OF platform bus (little endian)"
+> +	depends on USB_OHCI_HCD && PPC_OF
+>  	select USB_OHCI_LITTLE_ENDIAN
+> +	---help---
+> +	  Enables support for little-endian USB controllers present on the
+> +	  OpenFirmware platform bus.
+> +
+> +config USB_OHCI_HCD_PPC_OF
+> +	bool
+> +	depends on USB_OHCI_HCD && PPC_OF
+> +	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
+> 
+>  config USB_OHCI_HCD_PCI
+>  	bool "OHCI support for PCI-bus USB controllers"
+> 
 
