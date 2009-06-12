@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934234AbZFLWWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934484AbZFLW1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934234AbZFLWWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbZFLWWe
+	id S934484AbZFLW1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbZFLW1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:22:34 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58249 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089AbZFLWWd (ORCPT
+	Fri, 12 Jun 2009 18:27:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:61710 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754348AbZFLW1C convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:22:33 -0400
-Date: Sat, 13 Jun 2009 00:22:29 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: Stefan Schmidt <stefan@datenfreihafen.org>,
+	Fri, 12 Jun 2009 18:27:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=U2FGFL02Cvae+U1/hap14kGgsOfFFUuKUIXByZp2UWp9y/UP4dOZLx8QExleXz7WU
+	DhrWty6v8Z1tFml/8NVdA==
+MIME-Version: 1.0
+In-Reply-To: <4A32D079.9030707@mnementh.co.uk>
+References: <20090610103131.GB13885@elf.ucw.cz>
+	 <20090610194852.GA28787@n2100.arm.linux.org.uk>
+	 <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com>
+	 <20090610213710.GA8472@elf.ucw.cz>
+	 <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com>
+	 <20090611082532.GE8592@elf.ucw.cz>
+	 <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com>
+	 <20090612150504.GA15084@elf.ucw.cz>
+	 <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com>
+	 <4A32D079.9030707@mnementh.co.uk>
+Date: Fri, 12 Jun 2009 15:27:01 -0700
+Message-ID: <a55d774e0906121527n16019225q81084945a38bb97e@mail.gmail.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: Brian Swetland <swetland@google.com>
+To: Ian Molton <ian@mnementh.co.uk>
+Cc: Pavel Machek <pavel@ucw.cz>,
        Russell King - ARM Linux <linux@arm.linux.org.uk>,
        kernel list <linux-kernel@vger.kernel.org>,
        linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Greg KH <greg@kroah.com>, sop@google.com
-Subject: Re: Gerrit (was Re: HTC Dream aka. t-mobile g1 support)
-Message-ID: <20090612222229.GE17688@elf.ucw.cz>
-References: <a55d774e0906121450x12bab7b0sc1f4de0115a1af61@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a55d774e0906121450x12bab7b0sc1f4de0115a1af61@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-06-12 14:50:21, Brian Swetland wrote:
-> On Fri, Jun 12, 2009 at 10:35 AM, Stefan
-> Schmidt<stefan@datenfreihafen.org> wrote:
-> >> I think the intent is to have a
-> >> Gerrit instance to accept contributions.  I'll have to look into
-> >> whether this can be done without signing the agreement.  Right
-> >> now, I can't even contribute anything, so there are a lot of
-> >> issues to work out.
-> >
-> > Gerrit is the Android review system? I'm only interested into the kernel and
-> > especially running a mainline kernel on different devices. Anyway, a public
-> > review process and some more informations on what you are working and how you
-> > would like to bring it mainline would help here.
-> 
-> Gerrit is a git patch review system that we (Google/Android) use for
-> android development (kernel and otherwise).  Some other folks like
-> Qualcomm, and TI (see http://review.omapzoom.org/) have adopted it
+On Fri, Jun 12, 2009 at 3:02 PM, Ian Molton<ian@mnementh.co.uk> wrote:
+> Brian Swetland wrote:
+>
+>> Yup. Â It's an HTC specific thing -- some of their devices don't have a
+>> battery gauge IC and estimate current drain based on hints provided to
+>> the baseband from the apps processor. Â I'm not particularly thrilled
+>> with the interface, but without it the battery level estimation is
+>> flakier.
+>
+> Is there a reason that this couldnt be done in userspace?
 
-Unfortunately, it seems quite unsuitable for kernel.
+It'd be a lot more overhead -- in some cases it's updated with
+relatively fine granularity (wifi driver changing state, backlight
+changing, etc), and on the kernel side it's just updating a shared
+memory location with the current estimate.  Userspace doesn't
+necessarily have the visibility into driver state to update it
+accurately, and punching that information down to userspace and then
+having userspace feed it back up to the kernel seems like more
+overhead and code to maintain to me.
 
-Do I understand it right that to submit kernel patches I'd have to
-agree to "contributors agreement", and give up my copyright? No,
-sorry, I don't think I want to do that.
-
-	(I may be willing to do that for Android proper -- after
-	studying the agreement carefully, but not for GPLed kernel
-	code).
-	
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Brian
