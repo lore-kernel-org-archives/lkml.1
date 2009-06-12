@@ -1,85 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbZFLHLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbZFLHR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761488AbZFLHLo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 03:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbZFLHLh
+	id S1760078AbZFLHR4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 03:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbZFLHRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 03:11:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48559 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151AbZFLHLg (ORCPT
+	Fri, 12 Jun 2009 03:17:48 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54624 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbZFLHRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 03:11:36 -0400
-Subject: Re: [PATCH 2/2] posix-cpu-timers: remove tasklist_lock where we can
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090612084927.11673956@dhcp-lab-109.englab.brq.redhat.com>
-References: <20090612084927.11673956@dhcp-lab-109.englab.brq.redhat.com>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 09:11:17 +0200
-Message-Id: <1244790677.6691.959.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 03:17:47 -0400
+Date: Fri, 12 Jun 2009 09:16:49 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Oskar Schirmer <os@emlix.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 7/9 -v2] imx: serial: use rational library function
+Message-ID: <20090612071649.GA31396@pengutronix.de>
+References: <1244635716-23315-1-git-send-email-os@emlix.com> <1244635716-23315-8-git-send-email-os@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244635716-23315-8-git-send-email-os@emlix.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 09:15:01 up 31 days, 21:39, 15 users,  load average: 0.00, 0.00,
+	0.00
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 08:49 +0200, Stanislaw Gruszka wrote:
-> tasklist_lock is not needed to protect find_task_by_vpid() nor
-> thread_group_leader() nor same_thread_group() , use rcu_read_lock() instead.
+Hi Oskar,
 
-Aside from not being strictly needed, one can sometimes require a
-tasklist_lock reader to ensure nothing changes, however since the code
-is racy in that regard anyway, this looks good.
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
-> ---
->  kernel/posix-cpu-timers.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
+On Wed, Jun 10, 2009 at 02:08:34PM +0200, Oskar Schirmer wrote:
+> for calculation of numerator and denominator
+> used in baud rate setting, use generic library function
+> for optimum settings.
 > 
-> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-> index bece7c0..1d9cdf3 100644
-> --- a/kernel/posix-cpu-timers.c
-> +++ b/kernel/posix-cpu-timers.c
-> @@ -37,13 +37,13 @@ static int check_clock(const clockid_t which_clock)
->  	if (pid == 0)
->  		return 0;
+> Signed-off-by: Oskar Schirmer <os@emlix.com>
+> ---
+>  drivers/serial/Kconfig |    1 +
+>  drivers/serial/imx.c   |   30 ++++++++++--------------------
+>  2 files changed, 11 insertions(+), 20 deletions(-)
+> 
+> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+> index 343e3a3..0ecb4c4 100644
+> --- a/drivers/serial/Kconfig
+> +++ b/drivers/serial/Kconfig
+> @@ -833,6 +833,7 @@ config SERIAL_IMX
+>  	bool "IMX serial port support"
+>  	depends on ARM && (ARCH_IMX || ARCH_MXC)
+>  	select SERIAL_CORE
+> +	select RATIONAL
+>  	help
+>  	  If you have a machine based on a Motorola IMX CPU you
+>  	  can enable its onboard serial port by enabling this option.
+> diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
+> index 60892a2..11f93e2 100644
+> --- a/drivers/serial/imx.c
+> +++ b/drivers/serial/imx.c
+> @@ -41,6 +41,7 @@
+>  #include <linux/serial_core.h>
+>  #include <linux/serial.h>
+>  #include <linux/clk.h>
+> +#include <linux/rational.h>
 >  
-> -	read_lock(&tasklist_lock);
-> +	rcu_read_lock();
->  	p = find_task_by_vpid(pid);
->  	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
->  		   same_thread_group(p, current) : thread_group_leader(p))) {
->  		error = -EINVAL;
->  	}
-> -	read_unlock(&tasklist_lock);
-> +	rcu_read_lock();
+>  #include <asm/io.h>
+>  #include <asm/irq.h>
+> @@ -670,7 +671,8 @@ imx_set_termios(struct uart_port *port, struct ktermios *termios,
+>  	unsigned long flags;
+>  	unsigned int ucr2, old_ucr1, old_txrxen, baud, quot;
+>  	unsigned int old_csize = old ? old->c_cflag & CSIZE : CS8;
+> -	unsigned int div, num, denom, ufcr;
+> +	unsigned int div, ufcr;
+> +	unsigned long num, denom;
 >  
->  	return error;
->  }
-> @@ -398,7 +398,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
->  	new_timer->it.cpu.incr.sched = 0;
->  	new_timer->it.cpu.expires.sched = 0;
+>  	/*
+>  	 * If we don't support modem control lines, don't allow
+> @@ -772,32 +774,20 @@ imx_set_termios(struct uart_port *port, struct ktermios *termios,
+>  	if (!div)
+>  		div = 1;
 >  
-> -	read_lock(&tasklist_lock);
-> +	rcu_read_lock();
->  	if (CPUCLOCK_PERTHREAD(new_timer->it_clock)) {
->  		if (pid == 0) {
->  			p = current;
-> @@ -422,7 +422,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
->  	} else {
->  		ret = -EINVAL;
->  	}
-> -	read_unlock(&tasklist_lock);
-> +	rcu_read_unlock();
->  
->  	return ret;
->  }
+> -	num = baud;
+> -	denom = port->uartclk / div / 16;
+> +	rational_best_approximation(16 * div * baud, sport->port.uartclk,
+> +		1 << 16, 1 << 16, &num, &denom);
 
+Reading the example you have given for rational_best_approximation() in
+the last patch this should be (1 << 16) - 1, right?
+
+>  
+> -	/* shift num and denom right until they fit into 16 bits */
+> -	while (num > 0x10000 || denom > 0x10000) {
+> -		num >>= 1;
+> -		denom >>= 1;
+> -	}
+> -	if (num > 0)
+> -		num -= 1;
+> -	if (denom > 0)
+> -		denom -= 1;
+> -
+> -	writel(num, sport->port.membase + UBIR);
+> -	writel(denom, sport->port.membase + UBMR);
+> -
+> -	if (div == 7)
+> -		div = 6; /* 6 in RFDIV means divide by 7 */
+> -	else
+> -		div = 6 - div;
+> +	num -= 1;
+> +	denom -= 1;
+>  
+>  	ufcr = readl(sport->port.membase + UFCR);
+>  	ufcr = (ufcr & (~UFCR_RFDIV)) |
+>  	    (div << 7);
+>  	writel(ufcr, sport->port.membase + UFCR);
+>  
+> +	writel(num, sport->port.membase + UBIR);
+> +	writel(denom, sport->port.membase + UBMR);
+> +
+>  #ifdef ONEMS
+>  	writel(sport->port.uartclk / div / 1000, sport->port.membase + ONEMS);
+>  #endif
+> -- 
+> 1.5.3.7
+> 
+> 
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
