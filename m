@@ -1,111 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933821AbZFLNn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765336AbZFLNoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933821AbZFLNn7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763980AbZFLNeG
+	id S1765336AbZFLNoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765789AbZFLNee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:34:06 -0400
-Received: from mga14.intel.com ([143.182.124.37]:38581 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765747AbZFLNeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:34:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,209,1243839600"; 
-   d="scan'208";a="153569091"
-Date: Fri, 12 Jun 2009 21:33:52 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when
-	feature is disabled
-Message-ID: <20090612133352.GC6751@localhost>
-References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu> <20090612125741.GA6140@localhost> <20090612131754.GA32105@elte.hu>
+	Fri, 12 Jun 2009 09:34:34 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:53137 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765828AbZFLNed (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:34:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=g8vAYznClh/mfp3pKVTCLA+MPrCumSR1VLSP77Wt7yux+u5AzuyR5LOdjvaZ6Z0gHG
+         kWHcz6tTX5C5VKdkHmbN2bYC85jomnqIAo950J0vZ/QUQPV/6fH1R0qDPILeGVT77isW
+         gUF+eJC346Z6K+9vftKiRKvFhXz34xuETnsos=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090612131754.GA32105@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090612123152.GE31845@elte.hu>
+References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> 
+	<20090612120507.GH16044@elte.hu> <8bd0f97a0906120513u4e823460t8192f00fd0460ab@mail.gmail.com> 
+	<20090612121757.GD31845@elte.hu> <8bd0f97a0906120522v51ae0151i48d5f6846ddcff10@mail.gmail.com> 
+	<20090612123152.GE31845@elte.hu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 12 Jun 2009 09:34:15 -0400
+Message-ID: <8bd0f97a0906120634o1f25d713v61e01de6ed47f936@mail.gmail.com>
+Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open 
+	when supported
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 09:17:54PM +0800, Ingo Molnar wrote:
-> 
-> * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Hi Ingo,
-> > 
-> > On Fri, Jun 12, 2009 at 07:22:58PM +0800, Ingo Molnar wrote:
-> > > 
-> > > * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 
-> > > > So as to eliminate one #ifdef in the c source.
-> > > > 
-> > > > Proposed by Nick Piggin.
-> > > > 
-> > > > CC: Nick Piggin <npiggin@suse.de>
-> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > ---
-> > > >  arch/x86/mm/fault.c |    3 +--
-> > > >  include/linux/mm.h  |    7 ++++++-
-> > > >  2 files changed, 7 insertions(+), 3 deletions(-)
-> > > > 
-> > > > --- sound-2.6.orig/arch/x86/mm/fault.c
-> > > > +++ sound-2.6/arch/x86/mm/fault.c
-> > > > @@ -819,14 +819,13 @@ do_sigbus(struct pt_regs *regs, unsigned
-> > > >  	tsk->thread.error_code	= error_code;
-> > > >  	tsk->thread.trap_no	= 14;
-> > > >  
-> > > > -#ifdef CONFIG_MEMORY_FAILURE
-> > > >  	if (fault & VM_FAULT_HWPOISON) {
-> > > >  		printk(KERN_ERR
-> > > >  	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
-> > > >  			tsk->comm, tsk->pid, address);
-> > > >  		code = BUS_MCEERR_AR;
-> > > >  	}
-> > > > -#endif
-> > > 
-> > > Btw., anything like this should happen in close cooperation with 
-> > > the x86 tree, not as some pure MM feature. I dont see Cc:s and 
-> > > nothing that indicates that realization. What's going on here?
-> > 
-> > Ah sorry for the ignorance!  Andi has a nice overview of the big 
-> > picture here: http://lkml.org/lkml/2009/6/3/371
-> > 
-> > In the above chunk, the process is trying to access the already 
-> > corrupted page and thus shall be killed, otherwise it will either 
-> > silently consume corrupted data, or will trigger another (deadly) 
-> > MCE event and bring down the whole machine.
-> 
-> This seems like trying to handle a failure mode that cannot be and 
-> shouldnt be 'handled' really. If there's an 'already corrupted' page 
-> then the box should go down hard and fast, and we should not risk 
-> _even more user data corruption_ by trying to 'continue' in the hope 
-> of having hit some 'harmless' user process that can be killed ...
-> 
-> So i find the whole feature rather dubious - what's the point? We 
-> should panic at this point - we just corrupted user data so that 
-> piece of hardware cannot be trusted. Nor can any subsequent kernel 
-> bug messages be trusted.
-> 
-> Do we really want this in the core Linux VM and in the architecture 
-> pagefault handling code and elsewhere? Am i the only one who finds 
-> this concept of 'handling' user data corruption rather dubious?
+On Fri, Jun 12, 2009 at 08:31, Ingo Molnar wrote:
+> That way say build breakages or runtime failures due to perfcounters
+> only become possible on an architecture if the architecture
+> maintainer has hooked up the syscall
 
-- The corrupted data only impacts one or more process(es)
-- The corrupted data has not be consumed yet
-
-The data corruption has not caused real hurt yet, and can be isolated
-to prevent future accesses.  So it makes sense to just kill the
-impacted process(es).
-
-Thanks,
-Fengguang
+also, this syscall approach is not how any other syscall is handled.
+a runtime error along the lines of ENOSYS is trivial to diagnosis and
+explain.  you get the exact same behavior on supported architectures
+running an older kernel or any kernel with the profiling code
+disabled, so any userland code should already be sanely handling this.
+-mike
