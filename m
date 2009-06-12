@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbZFLMi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbZFLMjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757700AbZFLMi1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 08:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZFLMiR
+	id S1757928AbZFLMjm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 08:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZFLMje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:38:17 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:41505 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753587AbZFLMiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:38:15 -0400
-Message-ID: <4A324C0C.8070302@atmel.com>
-Date: Fri, 12 Jun 2009 14:37:32 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 12 Jun 2009 08:39:34 -0400
+Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:21661
+	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750783AbZFLMjd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 08:39:33 -0400
+X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 08:39:32 EDT
+X-IronPort-AV: E=Sophos;i="4.42,209,1243807200"; 
+   d="scan'208";a="41643759"
+Message-ID: <4A324A4E.1060405@inria.fr>
+Date: Fri, 12 Jun 2009 14:30:06 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Rob Emanuele <poorarm@shoreis.com>
-CC: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Joey Oravec <joravec@drewtech.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Subject: Re: [PATCH][Fix] New Unified AVR32/AT91 MCI Driver that supports
- both 	MCI slots used at the same time
-References: <c8284b5b0906101641v586c3487i465263bb6908e3f7@mail.gmail.com>	 <20090611095432.2e3a4067@hskinnemoen-d830> <c8284b5b0906111316p1367a508vdb59ee7c2a8d2ff1@mail.gmail.com>
-In-Reply-To: <c8284b5b0906111316p1367a508vdb59ee7c2a8d2ff1@mail.gmail.com>
+To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+CC: "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Lee.Schermerhorn@hp.com, linux-numa@vger.kernel.org,
+       Boris Bierbaum <boris@lfbs.rwth-aachen.de>
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de> <87zldjn597.fsf@basil.nowhere.org> <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de> <20090612103251.GJ25568@one.firstfloor.org> <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+In-Reply-To: <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Emanuele :
->>  - The patch seems to do a bit too much all at once. The bug fix which
->>    has already been fixed is one example, another is the clock cap
->>    option -- we used to have a module parameter for the same purpose,
->>    but Pierre (the MMC maintainer, who should probably be added to the
->>    loop) had problems with it. If this feature was in a separate
->>    patch, it could be rejected without blowing away the rest of the
->>    driver.
-> 
-> Which kernel branch should I generate the patch against to have the
-> most recent set of changes?
+Stefan Lankes wrote:
+> He enables the support of migration-on-fault via cpusets (echo 1 >
+> /dev/cpuset/migrate_on_fault).
+> Afterwards, every process could initiate migration-on-fault via mbind(...,
+> MPOL_MF_MOVE|MPOL_MF_LAZY).
 
-I think that you can use current (today) linus' git tree with this
-additional patch from Haavard in avr32 tree
-"Add support for inverted detect pin":
-http://git.kernel.org/?p=linux/kernel/git/hskinnemoen/avr32-2.6.git;a=commit;h=1c1452be2e9ae282a7316c3b23987811bd7acda6
+So mbind(MPOL_MF_LAZY) is taking care of changing page protection so as
+to generate page-faults on next-touch? (instead of your madvise)
+Is it migrating the whole memory area? Or only single pages?
 
-Kind regards,
--- 
-Nicolas Ferre
+Then, what's happening with MPOL_MF_LAZY in the kernel? Is it actually
+stored in the mempolicy? If so, couldn't another fault later cause
+another migration?
+Or is MPOL_MF_LAZY filtered out of the policy once the protection of all
+PTE has been changed?
+I don't see why we need a new mempolicy here. If we are migrating single
+pages, migrate-on-next-touch looks like a page-attribute to me. There
+should be nothing to store in a mempolicy/VMA/whatever.
+
+Brice
 
