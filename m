@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbZFLNft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbZFLNgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761125AbZFLNft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765124AbZFLN2F
+	id S932344AbZFLNgH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763679AbZFLN3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:28:05 -0400
-Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:7222 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762393AbZFLN2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:28:00 -0400
-X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 09:28:00 EDT
-X-SpamScore: -28
-X-BigFish: VPS-28(zz1432R98dR4015L1805Mzz1202hzzz32i17ch6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KL4ND8-02-BCR-01
-Date: Fri, 12 Jun 2009 15:11:45 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] x86: memtest: fix compile warning
-Message-ID: <20090612131145.GH12431@alberich.amd.com>
-References: <20090611112746.802a24cb.sfr@canb.auug.org.au> <20090611102927.GE12431@alberich.amd.com> <alpine.LFD.2.00.0906111512400.3372@localhost.localdomain> <20090611152658.GF12431@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090611152658.GF12431@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 12 Jun 2009 13:12:37.0436 (UTC) FILETIME=[750397C0:01C9EB5F]
+	Fri, 12 Jun 2009 09:29:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48059 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757229AbZFLN3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:29:45 -0400
+Subject: Re: [PATCH 3/8] x86: Remove .dynbss from the vDSO linker script
+From: Petr Tesarik <ptesarik@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Roland McGrath <roland@redhat.com>
+In-Reply-To: <8de6230206ca20a4c205066fd213bbc951dbfac6.1244812577.git.ptesarik@suse.cz>
+References: <cover.1244812577.git.ptesarik@suse.cz>
+	 <8de6230206ca20a4c205066fd213bbc951dbfac6.1244812577.git.ptesarik@suse.cz>
+Content-Type: text/plain; charset="UTF-8"
+Organization: SUSE LINUX
+Date: Fri, 12 Jun 2009 15:29:46 +0200
+Message-Id: <1244813386.5377.3.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 05:26:58PM +0200, Andreas Herrmann wrote:
-> On Thu, Jun 11, 2009 at 04:21:41PM +0200, Thomas Gleixner wrote:
-> > On Thu, 11 Jun 2009, Andreas Herrmann wrote:
-> > 
-> > > Commit c9690998ef48ffefeccb91c70a7739eebdea57f9
-> > > (x86: memtest: remove 64-bit division) introduced following compile warning:
-> > > 
-> > >  arch/x86/mm/memtest.c: In function 'memtest':
-> > >  arch/x86/mm/memtest.c:56: warning: comparison of distinct pointer types lacks a cast
-> > >  arch/x86/mm/memtest.c:58: warning: comparison of distinct pointer types lacks a cast
-> > > 
-> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > ---
-> > >  arch/x86/mm/memtest.c |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > Sorry.
-> > > Please apply.
-> > 
-> > I applied it already, but zapped it right away, as it is bad style to
-> > do the type casting in the loops. The proper fix is below.
+Petr Tesarik píše v Pá 12. 06. 2009 v 15:25 +0200:
+> As far as I can see, the .dynbss section does not make any sense
+> and cannot even appear in a shared library.
 > 
-> Doesn't your fix re-introduces the 64-bit division problem with old
-> gcc?  I removed that division with the mentioned commit just forgot to
-> type-cast the pointer.
+> Remove it.
 
-It doesn't.
+Argh, this commit was wrong. But it changes the context for some of the
+following patches. :/ I'll just send the whole patch series again.
 
-> > diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
-> > index d1c5cef..18d244f 100644
-> > --- a/arch/x86/mm/memtest.c
-> > +++ b/arch/x86/mm/memtest.c
-> > @@ -40,16 +40,14 @@ static void __init reserve_bad_mem(u64 pattern, u64 start_bad, u64 end_bad)
-> >  
-> >  static void __init memtest(u64 pattern, u64 start_phys, u64 size)
-> >  {
-> > -	u64 *p, *end;
-> > -	void *start;
-> > +	u64 *p, *start, *end;
-> >  	u64 start_bad, last_bad;
-> >  	u64 start_phys_aligned;
-> > -	size_t incr;
-> > +	const size_t incr = sizeof(pattern);
+Sorry.
 
-The const qualifier made the difference.
+Petr Tesarik
 
-
-Thanks,
-
-Andreas
-
+> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+> ---
+>  arch/x86/vdso/vdso-layout.lds.S |   11 ++++-------
+>  1 files changed, 4 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
+> index af3fa61..0386c92 100644
+> --- a/arch/x86/vdso/vdso-layout.lds.S
+> +++ b/arch/x86/vdso/vdso-layout.lds.S
+> @@ -46,15 +46,12 @@ SECTIONS
+>  	} :text :dynamic
+>  
+>  	.rodata : {
+> -		*(.rodata*)
+> +		*(.rodata* .gnu.linkonce.r.*)
+>  	} :text
+>  	.data : {
+> -		*(.data*)
+> +		*(.data* .gnu.linkonce.d.*)
+>  		*(.got.plt) *(.got)
+> -		*(.gnu.linkonce.d.*)
+> -		*(.bss*)
+> -		*(.dynbss*)
+> -		*(.gnu.linkonce.b.*)
+> +		*(.bss* .gnu.linkonce.b.*)
+>  	}
+>  
+>  	.altinstructions : {
+> @@ -71,7 +68,7 @@ SECTIONS
+>  	. = ALIGN(0x100);
+>  
+>  	.text : {
+> -		*(.text*)
+> +		*(.text* .gnu.linkonce.t.*)
+>  	} :text	=0x90909090
+>  }
+>  
 
