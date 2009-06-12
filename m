@@ -1,193 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765727AbZFLSvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933574AbZFLSwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765727AbZFLSvj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759285AbZFLSvS
+	id S933574AbZFLSwl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762609AbZFLSvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:51:18 -0400
-Received: from fifo99.com ([67.223.236.141]:46216 "EHLO fifo99.com"
+	Fri, 12 Jun 2009 14:51:22 -0400
+Received: from fifo99.com ([67.223.236.141]:46226 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755498AbZFLSvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:51:17 -0400
+	id S1758446AbZFLSvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 14:51:18 -0400
 From: Daniel Walker <dwalker@fifo99.com>
 To: Greg Kroah-Hartman <greg@kroah.com>
 Cc: Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org,
        Daniel Walker <dwalker@fifo99.com>
-Subject: [PATCH 3/6] staging: android: binder: remove a predefine
-Date: Fri, 12 Jun 2009 11:51:15 -0700
-Message-Id: <1244832678-30329-3-git-send-email-dwalker@fifo99.com>
+Subject: [PATCH 6/6] staging: android: binder: clean up for all the stat statments
+Date: Fri, 12 Jun 2009 11:51:18 -0700
+Message-Id: <1244832678-30329-6-git-send-email-dwalker@fifo99.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1244832678-30329-2-git-send-email-dwalker@fifo99.com>
+In-Reply-To: <1244832678-30329-5-git-send-email-dwalker@fifo99.com>
 References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
  <1244832678-30329-2-git-send-email-dwalker@fifo99.com>
+ <1244832678-30329-3-git-send-email-dwalker@fifo99.com>
+ <1244832678-30329-4-git-send-email-dwalker@fifo99.com>
+ <1244832678-30329-5-git-send-email-dwalker@fifo99.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I removed the binder_transaction_buffer_release predefine, and put
-the actual function in place of it.
+An initial cleanup of all the binder_stat statements. The binder
+command and return stats still need some assistance tho.
 
 Signed-off-by: Daniel Walker <dwalker@fifo99.com>
 ---
- drivers/staging/android/binder.c |  138 ++++++++++++++++++-------------------
- 1 files changed, 67 insertions(+), 71 deletions(-)
+ drivers/staging/android/binder.c |   54 ++++++++++++++++++++++---------------
+ 1 files changed, 32 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
-index c4a596f..ec86808 100644
+index 01711e3..027f17e 100644
 --- a/drivers/staging/android/binder.c
 +++ b/drivers/staging/android/binder.c
-@@ -1270,7 +1270,73 @@ static void binder_send_failed_reply(struct binder_transaction *t,
+@@ -117,7 +117,7 @@ module_param_call(stop_on_user_error, binder_set_stop_on_user_error,
+ 			binder_stop_on_user_error = 2; \
+ 	} while (0)
  
- static void binder_transaction_buffer_release(struct binder_proc *proc,
- 					      struct binder_buffer *buffer,
--					      size_t *failed_at);
-+					      size_t *failed_at)
+-enum {
++enum binder_stat_types {
+ 	BINDER_STAT_PROC,
+ 	BINDER_STAT_THREAD,
+ 	BINDER_STAT_NODE,
+@@ -137,6 +137,16 @@ struct binder_stats {
+ 
+ static struct binder_stats binder_stats;
+ 
++static inline void binder_stats_deleted(enum binder_stat_types type)
 +{
-+	size_t *offp, *off_end;
-+	int debug_id = buffer->debug_id;
-+
-+	binder_debug(BINDER_DEBUG_TRANSACTION,
-+		     "binder: %d buffer release %d, size %zd-%zd, failed at %p\n",
-+		     proc->pid, buffer->debug_id,
-+		     buffer->data_size, buffer->offsets_size, failed_at);
-+
-+	if (buffer->target_node)
-+		binder_dec_node(buffer->target_node, 1, 0);
-+
-+	offp = (size_t *)(buffer->data + ALIGN(buffer->data_size, sizeof(void *)));
-+	if (failed_at)
-+		off_end = failed_at;
-+	else
-+		off_end = (void *)offp + buffer->offsets_size;
-+	for (; offp < off_end; offp++) {
-+		struct flat_binder_object *fp;
-+		if (*offp > buffer->data_size - sizeof(*fp) ||
-+		    buffer->data_size < sizeof(*fp) ||
-+		    !IS_ALIGNED(*offp, sizeof(void *))) {
-+			printk(KERN_ERR "binder: transaction release %d bad"
-+					"offset %zd, size %zd\n", debug_id, *offp, buffer->data_size);
-+			continue;
-+		}
-+		fp = (struct flat_binder_object *)(buffer->data + *offp);
-+		switch (fp->type) {
-+		case BINDER_TYPE_BINDER:
-+		case BINDER_TYPE_WEAK_BINDER: {
-+			struct binder_node *node = binder_get_node(proc, fp->binder);
-+			if (node == NULL) {
-+				printk(KERN_ERR "binder: transaction release %d bad node %p\n", debug_id, fp->binder);
-+				break;
-+			}
-+			binder_debug(BINDER_DEBUG_TRANSACTION,
-+				     "        node %d u%p\n",
-+				     node->debug_id, node->ptr);
-+			binder_dec_node(node, fp->type == BINDER_TYPE_BINDER, 0);
-+		} break;
-+		case BINDER_TYPE_HANDLE:
-+		case BINDER_TYPE_WEAK_HANDLE: {
-+			struct binder_ref *ref = binder_get_ref(proc, fp->handle);
-+			if (ref == NULL) {
-+				printk(KERN_ERR "binder: transaction release %d bad handle %ld\n", debug_id, fp->handle);
-+				break;
-+			}
-+			binder_debug(BINDER_DEBUG_TRANSACTION,
-+				     "        ref %d desc %d (node %d)\n",
-+				     ref->debug_id, ref->desc, ref->node->debug_id);
-+			binder_dec_ref(ref, fp->type == BINDER_TYPE_HANDLE);
-+		} break;
-+
-+		case BINDER_TYPE_FD:
-+			binder_debug(BINDER_DEBUG_TRANSACTION,
-+				     "        fd %ld\n", fp->handle);
-+			if (failed_at)
-+				task_close_fd(proc, fp->handle);
-+			break;
-+
-+		default:
-+			printk(KERN_ERR "binder: transaction release %d bad object type %lx\n", debug_id, fp->type);
-+			break;
-+		}
-+	}
++	binder_stats.obj_deleted[type]++;
 +}
++
++static inline void binder_stats_created(enum binder_stat_types type)
++{
++	binder_stats.obj_created[type]++;
++}
++
+ struct binder_transaction_log_entry {
+ 	int debug_id;
+ 	int call_type;
+@@ -937,7 +947,7 @@ static struct binder_node *binder_new_node(struct binder_proc *proc,
+ 	node = kzalloc(sizeof(*node), GFP_KERNEL);
+ 	if (node == NULL)
+ 		return NULL;
+-	binder_stats.obj_created[BINDER_STAT_NODE]++;
++	binder_stats_created(BINDER_STAT_NODE);
+ 	rb_link_node(&node->rb_node, parent, p);
+ 	rb_insert_color(&node->rb_node, &proc->nodes);
+ 	node->debug_id = ++binder_last_id;
+@@ -1025,7 +1035,7 @@ static int binder_dec_node(struct binder_node *node, int strong, int internal)
+ 					     node->debug_id);
+ 			}
+ 			kfree(node);
+-			binder_stats.obj_deleted[BINDER_STAT_NODE]++;
++			binder_stats_deleted(BINDER_STAT_NODE);
+ 		}
+ 	}
  
- static void binder_transaction(struct binder_proc *proc,
- 			       struct binder_thread *thread,
-@@ -1679,76 +1745,6 @@ err_no_context_mgr_node:
- 		thread->return_error = return_error;
+@@ -1074,7 +1084,7 @@ static struct binder_ref *binder_get_ref_for_node(struct binder_proc *proc,
+ 	new_ref = kzalloc(sizeof(*ref), GFP_KERNEL);
+ 	if (new_ref == NULL)
+ 		return NULL;
+-	binder_stats.obj_created[BINDER_STAT_REF]++;
++	binder_stats_created(BINDER_STAT_REF);
+ 	new_ref->debug_id = ++binder_last_id;
+ 	new_ref->proc = proc;
+ 	new_ref->node = node;
+@@ -1139,10 +1149,10 @@ static void binder_delete_ref(struct binder_ref *ref)
+ 		             ref->debug_id, ref->desc);
+ 		list_del(&ref->death->work.entry);
+ 		kfree(ref->death);
+-		binder_stats.obj_deleted[BINDER_STAT_DEATH]++;
++		binder_stats_deleted(BINDER_STAT_DEATH);
+ 	}
+ 	kfree(ref);
+-	binder_stats.obj_deleted[BINDER_STAT_REF]++;
++	binder_stats_deleted(BINDER_STAT_REF);
  }
  
--static void binder_transaction_buffer_release(struct binder_proc *proc,
--					      struct binder_buffer *buffer,
--					      size_t *failed_at)
--{
--	size_t *offp, *off_end;
--	int debug_id = buffer->debug_id;
--
--	binder_debug(BINDER_DEBUG_TRANSACTION,
--		     "binder: %d buffer release %d, size %zd-%zd, failed at %p\n",
--		     proc->pid, buffer->debug_id,
--		     buffer->data_size, buffer->offsets_size, failed_at);
--
--	if (buffer->target_node)
--		binder_dec_node(buffer->target_node, 1, 0);
--
--	offp = (size_t *)(buffer->data + ALIGN(buffer->data_size, sizeof(void *)));
--	if (failed_at)
--		off_end = failed_at;
--	else
--		off_end = (void *)offp + buffer->offsets_size;
--	for (; offp < off_end; offp++) {
--		struct flat_binder_object *fp;
--		if (*offp > buffer->data_size - sizeof(*fp) ||
--		    buffer->data_size < sizeof(*fp) ||
--		    !IS_ALIGNED(*offp, sizeof(void *))) {
--			printk(KERN_ERR "binder: transaction release %d bad"
--					"offset %zd, size %zd\n", debug_id, *offp, buffer->data_size);
--			continue;
--		}
--		fp = (struct flat_binder_object *)(buffer->data + *offp);
--		switch (fp->type) {
--		case BINDER_TYPE_BINDER:
--		case BINDER_TYPE_WEAK_BINDER: {
--			struct binder_node *node = binder_get_node(proc, fp->binder);
--			if (node == NULL) {
--				printk(KERN_ERR "binder: transaction release %d bad node %p\n", debug_id, fp->binder);
--				break;
--			}
--			binder_debug(BINDER_DEBUG_TRANSACTION,
--				     "        node %d u%p\n",
--				     node->debug_id, node->ptr);
--			binder_dec_node(node, fp->type == BINDER_TYPE_BINDER, 0);
--		} break;
--		case BINDER_TYPE_HANDLE:
--		case BINDER_TYPE_WEAK_HANDLE: {
--			struct binder_ref *ref = binder_get_ref(proc, fp->handle);
--			if (ref == NULL) {
--				printk(KERN_ERR "binder: transaction release %d bad handle %ld\n", debug_id, fp->handle);
--				break;
--			}
--			binder_debug(BINDER_DEBUG_TRANSACTION,
--				     "        ref %d desc %d (node %d)\n",
--				     ref->debug_id, ref->desc, ref->node->debug_id);
--			binder_dec_ref(ref, fp->type == BINDER_TYPE_HANDLE);
--		} break;
--
--		case BINDER_TYPE_FD:
--			binder_debug(BINDER_DEBUG_TRANSACTION,
--				     "        fd %ld\n", fp->handle);
--			if (failed_at)
--				task_close_fd(proc, fp->handle);
--			break;
--
--		default:
--			printk(KERN_ERR "binder: transaction release %d bad object type %lx\n", debug_id, fp->type);
--			break;
--		}
--	}
--}
--
- int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
- 			void __user *buffer, int size, signed long *consumed)
- {
+ static int binder_inc_ref(struct binder_ref *ref, int strong,
+@@ -1214,7 +1224,7 @@ static void binder_pop_transaction(struct binder_thread *target_thread,
+ 	if (t->buffer)
+ 		t->buffer->transaction = NULL;
+ 	kfree(t);
+-	binder_stats.obj_deleted[BINDER_STAT_TRANSACTION]++;
++	binder_stats_deleted(BINDER_STAT_TRANSACTION);
+ }
+ 
+ static void binder_send_failed_reply(struct binder_transaction *t,
+@@ -1471,14 +1481,14 @@ static void binder_transaction(struct binder_proc *proc,
+ 		return_error = BR_FAILED_REPLY;
+ 		goto err_alloc_t_failed;
+ 	}
+-	binder_stats.obj_created[BINDER_STAT_TRANSACTION]++;
++	binder_stats_created(BINDER_STAT_TRANSACTION);
+ 
+ 	tcomplete = kzalloc(sizeof(*tcomplete), GFP_KERNEL);
+ 	if (tcomplete == NULL) {
+ 		return_error = BR_FAILED_REPLY;
+ 		goto err_alloc_tcomplete_failed;
+ 	}
+-	binder_stats.obj_created[BINDER_STAT_TRANSACTION_COMPLETE]++;
++	binder_stats_created(BINDER_STAT_TRANSACTION_COMPLETE);
+ 
+ 	t->debug_id = ++binder_last_id;
+ 	e->debug_id = t->debug_id;
+@@ -1720,10 +1730,10 @@ err_copy_data_failed:
+ 	binder_free_buf(target_proc, t->buffer);
+ err_binder_alloc_buf_failed:
+ 	kfree(tcomplete);
+-	binder_stats.obj_deleted[BINDER_STAT_TRANSACTION_COMPLETE]++;
++	binder_stats_deleted(BINDER_STAT_TRANSACTION_COMPLETE);
+ err_alloc_tcomplete_failed:
+ 	kfree(t);
+-	binder_stats.obj_deleted[BINDER_STAT_TRANSACTION]++;
++	binder_stats_deleted(BINDER_STAT_TRANSACTION);
+ err_alloc_t_failed:
+ err_bad_call_stack:
+ err_empty_call_stack:
+@@ -2039,7 +2049,7 @@ int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
+ 						     proc->pid, thread->pid);
+ 					break;
+ 				}
+-				binder_stats.obj_created[BINDER_STAT_DEATH]++;
++				binder_stats_created(BINDER_STAT_DEATH);
+ 				INIT_LIST_HEAD(&death->work.entry);
+ 				death->cookie = cookie;
+ 				ref->death = death;
+@@ -2266,7 +2276,7 @@ retry:
+ 
+ 			list_del(&w->entry);
+ 			kfree(w);
+-			binder_stats.obj_deleted[BINDER_STAT_TRANSACTION_COMPLETE]++;
++			binder_stats_deleted(BINDER_STAT_TRANSACTION_COMPLETE);
+ 		} break;
+ 		case BINDER_WORK_NODE: {
+ 			struct binder_node *node = container_of(w, struct binder_node, work);
+@@ -2319,7 +2329,7 @@ retry:
+ 						     node->ptr, node->cookie);
+ 					rb_erase(&node->rb_node, &proc->nodes);
+ 					kfree(node);
+-					binder_stats.obj_deleted[BINDER_STAT_NODE]++;
++					binder_stats_deleted(BINDER_STAT_NODE);
+ 				} else {
+ 					binder_debug(BINDER_DEBUG_INTERNAL_REFS,
+ 						     "binder: %d:%d node %d u%p c%p state unchanged\n",
+@@ -2356,7 +2366,7 @@ retry:
+ 			if (w->type == BINDER_WORK_CLEAR_DEATH_NOTIFICATION) {
+ 				list_del(&w->entry);
+ 				kfree(death);
+-				binder_stats.obj_deleted[BINDER_STAT_DEATH]++;
++				binder_stats_deleted(BINDER_STAT_DEATH);
+ 			} else
+ 				list_move(&w->entry, &proc->delivered_death);
+ 			if (cmd == BR_DEAD_BINDER)
+@@ -2433,7 +2443,7 @@ retry:
+ 		} else {
+ 			t->buffer->transaction = NULL;
+ 			kfree(t);
+-			binder_stats.obj_deleted[BINDER_STAT_TRANSACTION]++;
++			binder_stats_deleted(BINDER_STAT_TRANSACTION);
+ 		}
+ 		break;
+ 	}
+@@ -2472,7 +2482,7 @@ static void binder_release_work(struct list_head *list)
+ 		} break;
+ 		case BINDER_WORK_TRANSACTION_COMPLETE: {
+ 			kfree(w);
+-			binder_stats.obj_deleted[BINDER_STAT_TRANSACTION_COMPLETE]++;
++			binder_stats_deleted(BINDER_STAT_TRANSACTION_COMPLETE);
+ 		} break;
+ 		default:
+ 			break;
+@@ -2502,7 +2512,7 @@ static struct binder_thread *binder_get_thread(struct binder_proc *proc)
+ 		thread = kzalloc(sizeof(*thread), GFP_KERNEL);
+ 		if (thread == NULL)
+ 			return NULL;
+-		binder_stats.obj_created[BINDER_STAT_THREAD]++;
++		binder_stats_created(BINDER_STAT_THREAD);
+ 		thread->proc = proc;
+ 		thread->pid = current->pid;
+ 		init_waitqueue_head(&thread->wait);
+@@ -2553,7 +2563,7 @@ static int binder_free_thread(struct binder_proc *proc,
+ 		binder_send_failed_reply(send_reply, BR_DEAD_REPLY);
+ 	binder_release_work(&thread->todo);
+ 	kfree(thread);
+-	binder_stats.obj_deleted[BINDER_STAT_THREAD]++;
++	binder_stats_deleted(BINDER_STAT_THREAD);
+ 	return active_transactions;
+ }
+ 
+@@ -2854,7 +2864,7 @@ static int binder_open(struct inode *nodp, struct file *filp)
+ 	init_waitqueue_head(&proc->wait);
+ 	proc->default_priority = task_nice(current);
+ 	mutex_lock(&binder_lock);
+-	binder_stats.obj_created[BINDER_STAT_PROC]++;
++	binder_stats_created(BINDER_STAT_PROC);
+ 	hlist_add_head(&proc->proc_node, &binder_procs);
+ 	proc->pid = current->group_leader->pid;
+ 	INIT_LIST_HEAD(&proc->delivered_death);
+@@ -2950,7 +2960,7 @@ static void binder_deferred_release(struct binder_proc *proc)
+ 		list_del_init(&node->work.entry);
+ 		if (hlist_empty(&node->refs)) {
+ 			kfree(node);
+-			binder_stats.obj_deleted[BINDER_STAT_NODE]++;
++			binder_stats_deleted(BINDER_STAT_NODE);
+ 		} else {
+ 			struct binder_ref *ref;
+ 			int death = 0;
+@@ -3004,7 +3014,7 @@ static void binder_deferred_release(struct binder_proc *proc)
+ 		buffers++;
+ 	}
+ 
+-	binder_stats.obj_deleted[BINDER_STAT_PROC]++;
++	binder_stats_deleted(BINDER_STAT_PROC);
+ 
+ 	page_count = 0;
+ 	if (proc->pages) {
 -- 
 1.5.4.3
 
