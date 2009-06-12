@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763420AbZFLVFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZFLVXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763420AbZFLVFy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 17:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbZFLVFq
+	id S1760161AbZFLVXv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 17:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbZFLVXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 17:05:46 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:55837 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754660AbZFLVFp convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 17:23:43 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56838 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756893AbZFLVXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 17:05:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ZCD9RsnGq2iEQ8ocm05JbyV+z8SupMi98bu2AHNiEi0de1ZVni44VjRZo0c7RgnrO8
-         JpdNWmRdwLcgQtj5VeMdSmRsALODtGRKZ6DgyNDtNtv3MV/qem3fwIdVMCq3xkWVDIC+
-         oCJl9otXbrRlXAU1UrbzJEOpgbxqS0Mpz6T9Q=
+	Fri, 12 Jun 2009 17:23:42 -0400
+Date: Fri, 12 Jun 2009 17:23:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
+ [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+In-Reply-To: <200906122156.14873.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <200906122205.57362.rusty@rustcorp.com.au>
-References: <200906122205.57362.rusty@rustcorp.com.au>
-Date: Fri, 12 Jun 2009 14:05:46 -0700
-X-Google-Sender-Auth: 8c4424eb18cc8c3d
-Message-ID: <12c511ca0906121405x5ccd0a60k4b804266a87a7896@mail.gmail.com>
-Subject: Re: [PULL] module and parameter
-From: Tony Luck <tony.luck@intel.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Amerigo Wang <amwang@redhat.com>,
-       alex@shark-linux.de, David Miller <davem@davemloft.net>,
-       rth@twiddle.net, sfr@canb.auug.org.au
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 5:35 AM, Rusty Russell<rusty@rustcorp.com.au> wrote:
-> The following changes since commit 8ebf975608aaebd7feb33d77f07ba21a6380e086:
->  Randy Dunlap (1):
-...
->      module: trim exception table on init free.
+On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
 
-This is causing build errors for ia64:
+> On Friday 12 June 2009, Alan Stern wrote:
+> > On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
+> > 
+> > > So, are you suggesting that the core should only check the "all children
+> > > suspended" condition if special flag is set in dev_pm_info?
+> > 
+> > Or rather, check it only if the special flag _isn't_ set.
+> 
+> Where the default is unset, I guess?
 
-arch/ia64/mm/extable.c: In function 'ex_to_addr':
-arch/ia64/mm/extable.c:58: error: 'const struct exception_table_entry'
-has no member named 'insn'
-arch/ia64/mm/extable.c:58: error: 'const struct exception_table_entry'
-has no member named 'insn'
-arch/ia64/mm/extable.c: In function 'trim_init_extable':
-arch/ia64/mm/extable.c:69: error: dereferencing pointer to incomplete type
-arch/ia64/mm/extable.c:70: error: implicit declaration of function
-'within_module_init'
-arch/ia64/mm/extable.c:70: error: dereferencing pointer to incomplete type
-arch/ia64/mm/extable.c:71: error: dereferencing pointer to incomplete type
-arch/ia64/mm/extable.c:72: error: dereferencing pointer to incomplete type
-arch/ia64/mm/extable.c:75: error: dereferencing pointer to incomplete type
-arch/ia64/mm/extable.c:76: error: dereferencing pointer to incomplete type
-arch/ia64/mm/extable.c:76: error: dereferencing pointer to incomplete type
-arch/ia64/mm/extable.c:78: error: dereferencing pointer to incomplete type
+Yep.
 
-I note that this commit has been reverted in linux-next.  What's going on?
+> But then, what about the resuming of the parents before the device is resumed?
+> Should the parents be resumed regardless of the flag state?
 
--Tony
+Yes.  In general you should assume a device's parent (and the device
+itself!) needs to be resumed whenever the kernel wants to do something
+with the device.  The special flag arises because sometimes it's safe
+to suspend the parent without suspending the device _if_ the kernel
+isn't using the device.
+
+Imagine an idle disk at the end of a link.  We might want to 
+autosuspend the link without spinning down the disk.  When we have to 
+communicate with the disk again, we autoresume the link.  (Including 
+the case where the communication is a "spin-down" command.)
+
+>  And if so, what's
+> the condition for breaking the recurrence?  Surely it's not sufficient to check
+> if the parent is active, because its parent need not be active if it has this
+> special flag set.
+
+That's a good question.  Let's assume that situations like this will be 
+handled by the drivers.
+
+For example, suppose A is the parent of B is the parent of C, and A is
+suspended but B isn't and C is.  What happens when somebody wants to
+use C?
+
+An autoresume request is generated for C.  Since C's parent is already
+resumed, the runtime_resume method in C's driver is called.  The driver
+has to do some I/O in order to resume C, so it passes an I/O request up
+to B's driver.  The request then gets passed up to A's driver.  This
+driver knows that A is suspended, so it starts an autoresume of A and
+waits for the autoresume to complete before carrying out the request.
+
+Then the I/O can go through, so C gets resumed and everything works 
+out.
+
+I don't know how often this sort of pattern will arise.  It certainly
+could be used in usb-storage; there would be no difficulty starting an
+autoresume when an I/O request arrives from the SCSI layer below.  In
+fact, that is exactly how some early runtime-PM patches for usb-storage
+worked.
+
+Alan Stern
+
