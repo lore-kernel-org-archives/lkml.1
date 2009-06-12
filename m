@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbZFLIPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbZFLIQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933082AbZFLIPT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbZFLIO6
+	id S1762913AbZFLIQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbZFLIQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:14:58 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59731 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932860AbZFLIO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:14:56 -0400
-Date: Fri, 12 Jun 2009 18:14:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: linux-next: manual merge of the rr-latest-cpumask tree with the arm
- tree
-Message-Id: <20090612181456.f9e61dc8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 12 Jun 2009 04:16:15 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:54403 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754508AbZFLIQN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:16:13 -0400
+Message-ID: <4A320ECC.6000107@in.ibm.com>
+Date: Fri, 12 Jun 2009 13:46:12 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+MIME-Version: 1.0
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PowerPC] 2.6.30-git3 build break : perf counters
+References: <4A31ECCD.7030805@in.ibm.com> <1244788494.5554.1.camel@ht.satnam>
+In-Reply-To: <1244788494.5554.1.camel@ht.satnam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
+Jaswinder Singh Rajput wrote:
+> Please check this patch :
+>
+> [PATCH] powerpc: perf_counter fix performance counter event types
+>
+> Fix compilation warnings :
+>  CC      arch/powerpc/kernel/power7-pmu.o
+> arch/powerpc/kernel/power7-pmu.c:297: error: PERF_COUNT_CPU_CYCLES undeclared here (not in a function)
+> arch/powerpc/kernel/power7-pmu.c:297: error: array index in initializer not of integer type
+> arch/powerpc/kernel/power7-pmu.c:297: error: (near initialization for power7_generic_events)
+> arch/powerpc/kernel/power7-pmu.c:298: error: PERF_COUNT_INSTRUCTIONS undeclared here (not in a function)
+> arch/powerpc/kernel/power7-pmu.c:298: error: array index in initializer not of integer type
+> ......<SNIP>......
+>
+> Reported-by: Sachin Sant <sachinp@in.ibm.com>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>   
+Yes this fixed the build error.
 
-Today's linux-next merge of the rr-latest-cpumask tree got a conflict in
-arch/arm/kernel/smp.c between commit
-faa7bc51c11d5bbe440ac04710fd7a3208782000 ("Check whether the TLB
-operations need broadcasting on SMP systems") from the arm tree and
-commit a29a30f4777dc23679cd588912e0a93f5ab777b0
-("cpumask:use-mm_cpumask-arm") from the rr-latest-cpumask tree.
+Thanks
+-Sachin
 
-I fixed it up (see below) and can carry the fix as necessary.
+
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc arch/arm/kernel/smp.c
-index de885fd,9a36ed2..0000000
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@@ -642,21 -592,17 +642,21 @@@ void flush_tlb_all(void
-  
-  void flush_tlb_mm(struct mm_struct *mm)
-  {
- -	on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, mm_cpumask(mm));
- +	if (tlb_ops_need_broadcast())
-- 		on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, &mm->cpu_vm_mask);
-++		on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, mm_cpumask(mm));
- +	else
- +		local_flush_tlb_mm(mm);
-  }
-  
-  void flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
-  {
- -	struct tlb_args ta;
- -
- -	ta.ta_vma = vma;
- -	ta.ta_start = uaddr;
- -
- -	on_each_cpu_mask(ipi_flush_tlb_page, &ta, 1, mm_cpumask(vma->vm_mm));
- +	if (tlb_ops_need_broadcast()) {
- +		struct tlb_args ta;
- +		ta.ta_vma = vma;
- +		ta.ta_start = uaddr;
-- 		on_each_cpu_mask(ipi_flush_tlb_page, &ta, 1, &vma->vm_mm->cpu_vm_mask);
-++		on_each_cpu_mask(ipi_flush_tlb_page, &ta, 1, mm_cpumask(vma->vm_mm));
- +	} else
- +		local_flush_tlb_page(vma, uaddr);
-  }
-  
-  void flush_tlb_kernel_page(unsigned long kaddr)
-@@@ -672,14 -617,13 +672,14 @@@
-  void flush_tlb_range(struct vm_area_struct *vma,
-                       unsigned long start, unsigned long end)
-  {
- -	struct tlb_args ta;
- -
- -	ta.ta_vma = vma;
- -	ta.ta_start = start;
- -	ta.ta_end = end;
- -
- -	on_each_cpu_mask(ipi_flush_tlb_range, &ta, 1, mm_cpumask(vma->vm_mm));
- +	if (tlb_ops_need_broadcast()) {
- +		struct tlb_args ta;
- +		ta.ta_vma = vma;
- +		ta.ta_start = start;
- +		ta.ta_end = end;
-- 		on_each_cpu_mask(ipi_flush_tlb_range, &ta, 1, &vma->vm_mm->cpu_vm_mask);
-++		on_each_cpu_mask(ipi_flush_tlb_range, &ta, 1, mm_cpumask(vma->vm_mm));
- +	} else
- +		local_flush_tlb_range(vma, start, end);
-  }
-  
-  void flush_tlb_kernel_range(unsigned long start, unsigned long end)
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
