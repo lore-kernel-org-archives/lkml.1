@@ -1,77 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761330AbZFLSdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933280AbZFLSd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761330AbZFLSdq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZFLSdi
+	id S933280AbZFLSd7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756362AbZFLSdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:33:38 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:40820 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZFLSdh (ORCPT
+	Fri, 12 Jun 2009 14:33:42 -0400
+Received: from mail-px0-f187.google.com ([209.85.216.187]:49606 "EHLO
+	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761245AbZFLSdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:33:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=rAynv/SofHN3mbnbsV6isFGEwW6a+9KpMQDlVdETDQqQy6QYVcnx0XqJgZueJ/H77v
-         dk1QjcmE0M5R0J+E6JAvNrFThglZgvXhIaQtakTdvKWzhaSiV66bGCfSBBLJzdOpZsEY
-         sHD2TEUtzK+UfdVsee/PBLEzRSuaurhyvlnn0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Date: Fri, 12 Jun 2009 20:38:40 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612-07181-g84f26e4; KDE/4.2.3; i686; ; )
-Cc: Jamie Lokier <jamie@shareable.org>, Joe Perches <joe@perches.com>,
-       David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-References: <20090611111821.GK795@n2100.arm.linux.org.uk> <200906121039.44524.bzolnier@gmail.com> <20090612174419.GA17812@n2100.arm.linux.org.uk>
-In-Reply-To: <20090612174419.GA17812@n2100.arm.linux.org.uk>
+	Fri, 12 Jun 2009 14:33:41 -0400
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] genirq: do not disable IRQ_WAKEUP marked irqs on suspend
+References: <cMiA9-1MZ-13@gated-at.bofh.it>
+	<87fxe5fi9v.fsf@deeprootsystems.com>
+	<alpine.LFD.2.00.0906122005140.2800@localhost.localdomain>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Fri, 12 Jun 2009 11:33:40 -0700
+In-Reply-To: <alpine.LFD.2.00.0906122005140.2800@localhost.localdomain> (Thomas Gleixner's message of "Fri\, 12 Jun 2009 20\:09\:07 +0200 \(CEST\)")
+Message-ID: <87hbylb8u3.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200906122038.40788.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 June 2009 19:44:19 Russell King - ARM Linux wrote:
-> On Fri, Jun 12, 2009 at 10:39:43AM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > The irony of this all is that the same people that complain about lack of
-> > time still invest it in such idiotic tasks like approval of subscription
-> > requests or moderation of messages..
-> 
-> There we go again, people making unfounded statements with no basis
-> in reality.
-> 
-> It doesn't surprise me that people find me hard to get on with when
-> they go around making such statements without doing the basic research
-> first.
-> 
-> At the bottom of the mailing list web pages there is a line which tells
-> you who looks after them.  For this list, it says:
-> 
->     Linux-arm-kernel list run by rmk+listadmin at arm.linux.org.uk, mouw at
->     nl.linux.org
-> 
-> Oh my, two people.  Wow.  Could it be that I'm not the one who is
-> primerily involved with doing the approval.  Now that's a thought.
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-I'm *really* sorry for not having the telepathy skill.
+> On Fri, 12 Jun 2009, Kevin Hilman wrote:
+>> Thomas Gleixner <tglx@linutronix.de> writes:
+>> 
+>> > commit 0a0c5168df (PM: Introduce functions for suspending and resuming
+>> > device interrupts) iterates through all interrupts and disables them
+>> > on the hardware level. Some architectures have functionality
+>> > implemented to mark an interrupt source as wakeup source for suspend,
+>> > but the new power management code disables them unconditionally which
+>> > breaks the resume on interrupt functionality.
+>> >
+>> > The wakeup interrupts are marked in the status with the IRQ_WAKEUP
+>> > bit. Skip the disablement for those interrupts which have the
+>> > IRQ_WAKEUP bit set.
+>> >     
+>> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>> > Cc: stable@kernel.org
+>> 
+>> Hi Thomas,
+>> 
+>> I posted the same patch last month and lost the argument, original
+>> thread here:
+>> 
+>>   http://lkml.org/lkml/2009/5/6/549
+>
+> Err no. Care to look at the difference ? 
 
-I promise to work on it! :)
+Oops, sent link to wrong patch.  Here's the one solving the same problem:
 
-> So, next time, do some research before making such incorrect
-> statements.
+  http://marc.info/?l=linux-kernel&m=124148347804447&w=2
 
-Well..
+or
 
-* Erik is not an ARM (co-)maintainer in the first place.
+  http://lkml.org/lkml/2009/5/4/448
 
-* I don't hear him defending the broken-by-design idea of having
-  semi-private mailing list for the second most relevant (IMHO)
-  CPU architecture.
+Only difference is I did the checking outside of the lock, which is
+probably wrong.  In any case, you'll be interested in the thread that
+follows.
+
+Kevin
+
+> I missed the above discussion, but I'm revisiting the delayed disable
+> issue.
+>
+>> 
+>> > diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+>> > index 638d8be..bce6afd 100644
+>> > --- a/kernel/irq/pm.c
+>> > +++ b/kernel/irq/pm.c
+>> > @@ -29,7 +29,8 @@ void suspend_device_irqs(void)
+>> >  		unsigned long flags;
+>> >  
+>> >  		spin_lock_irqsave(&desc->lock, flags);
+>> > -		__disable_irq(desc, irq, true);
+>> > +		if (!(desc->status & IRQ_WAKEUP))
+>> > +			__disable_irq(desc, irq, true);
+>> >  		spin_unlock_irqrestore(&desc->lock, flags);
+>> >  	}
+>> >  
+>> > --
+>> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> > the body of a message to majordomo@vger.kernel.org
+>> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> > Please read the FAQ at  http://www.tux.org/lkml/
+>> 
