@@ -1,68 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758478AbZFLUfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761738AbZFLUi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758478AbZFLUfw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 16:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZFLUfn
+	id S1761738AbZFLUi0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 16:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZFLUiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 16:35:43 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:40891 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754331AbZFLUfm (ORCPT
+	Fri, 12 Jun 2009 16:38:19 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:7608 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753848AbZFLUiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 16:35:42 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-References: <4A329CF8.4050502@goop.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 12 Jun 2009 13:35:35 -0700
-In-Reply-To: <4A329CF8.4050502@goop.org> (Jeremy Fitzhardinge's message of "Fri\, 12 Jun 2009 11\:22\:48 -0700")
-Message-ID: <m1d499yyug.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 12 Jun 2009 16:38:19 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Ondrej Zary <linux@rainbow-software.org>
+Subject: Re: Non-requested PCI IRQs unavailable to ISA PnP devices and pci_dev_uses_irq()
+Date: Fri, 12 Jun 2009 14:38:17 -0600
+User-Agent: KMail/1.9.10
+Cc: abelay@mit.edu, "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200906122143.59510.linux@rainbow-software.org>
+In-Reply-To: <200906122143.59510.linux@rainbow-software.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: jeremy@goop.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906121438.17750.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+On Friday 12 June 2009 01:43:57 pm Ondrej Zary wrote:
+> Hello,
+> some PCI devices have an IRQ but the driver does not use it. Such an example 
+> is matroxfb. It does request_irq() only for some vblank operations. Thus, the 
+> irq is not marked as used in /proc/interrupts:
+>            CPU0
+>   0:     246481    XT-PIC-XT        timer
+>   1:       3507    XT-PIC-XT        i8042
+>   2:          0    XT-PIC-XT        cascade
+>   3:          1    XT-PIC-XT
+>   4:          1    XT-PIC-XT
+>   5:       4306    XT-PIC-XT        eth0
+>   6:          5    XT-PIC-XT        floppy
+>   7:          1    XT-PIC-XT        parport0
+>   8:          1    XT-PIC-XT        rtc
+>   9:          0    XT-PIC-XT        acpi
+>  11:      13748    XT-PIC-XT        pata_it821x, uhci_hcd:usb1
+>  12:      65539    XT-PIC-XT        i8042
+>  14:          0    XT-PIC-XT        ata_piix
+>  15:      33052    XT-PIC-XT        ata_piix
+> NMI:          0   Non-maskable interrupts
+> ERR:          0
+> 
+> IRQ 10 is not listed but is used by one of the two Matrox cards:
+> 
+> pci 0000:00:13.0: Boot video device
+> ACPI: PCI Interrupt Link [LNKB] enabled at IRQ 11
+> PCI: setting IRQ 11 as level-triggered
+> matroxfb 0000:00:13.0: PCI INT A -> Link[LNKB] -> GSI 11 (level, low) -> IRQ 
+> 11
+> matroxfb: Matrox Mystique (PCI) detected
+> PInS memtype = 0
+> matroxfb: MTRR's turned on
+> matroxfb: 1024x768x8bpp (virtual: 1024x4096)
+> matroxfb: framebuffer at 0xE1000000, mapped to 0xd0880000, size 4194304
+> Console: switching to colour frame buffer device 128x48
+> fb0: MATROX frame buffer device
+> matroxfb 0000:00:14.0: enabling device (0000 -> 0002)
+> ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 10
+> PCI: setting IRQ 10 as level-triggered
+> matroxfb 0000:00:14.0: PCI INT A -> Link[LNKA] -> GSI 10 (level, low) -> IRQ 
+> 10
+> matroxfb: Matrox Millennium II (PCI) detected
+> PInS memtype = 0
+> matroxfb: MTRR's turned on
+> matroxfb: 1024x768x8bpp (virtual: 1024x4096)
+> matroxfb: framebuffer at 0xE3000000, mapped to 0xd1100000, size 4194304
+> fb1: MATROX frame buffer device
+> fb1: initializing hardware
+> 
+> 
+> But this interrupt is not available to ISA PnP devices because 
+> drivers/pnp/resource.c calls pci_uses_irq() function which in turn calls 
+> pci_dev_uses_irq() for all PCI devices. pci_dev_uses_irq() simply checks the 
+> irq field in struct pci_dev.
+> 
+> I wonder if that's correct (is it a bug or a feature)?
 
-> Parse the ACPI MADT for I/O APIC information, even if the cpu has no
-> (apparent) local APIC (ie, the CPU's APIC feature flag is clear).
->
-> In principle, the local APIC and the I/O APIC are distinct (but related)
-> components, which can be independently present.
->
-> In practice this can happen in a Xen system, where the hypervisor has
-> full control over the local APICs, and delivers interrupts initiated by
-> the I/O APICs via Xen's event channel mechanism.
+The code that tries to keep PCI and PNP IRQs from clashing is
+definitely sub-optimal.  Of course, PNP doesn't know what the
+matroxfb driver doesn't need the interrupt.  Some drivers request
+and free the IRQ dynamically, depending on whether the device is
+in use.
 
-Xen  is giving us a semi bogus acpi table?
+Maybe what we should be doing here is more sharing of PCI interrupts
+to leave more available for PNP.  For example, the 00:14.0 device
+that's currently using IRQ 10 is connected to a programmable IRQ
+link (LNKA).  Possibly that link could be programmed to share IRQ 11
+instead.
 
-What is the paravirt configuration model with Xen?  Is it documented
-somewhere?
+In the absence of an automatic mechanism, can you work around this
+with the "acpi_irq_isa=10" kernel parameter?
 
-Eric
+Bjorn
+
+> I can't use CMI8239A sound card on my machine because of this (it needs two 
+> IRQs). When I comment out that check (and move eth0 to IRQ3), the sound card 
+> works, allocating IRQ 10 and 3 (with some modifications to cmi8330 driver - 
+> will be posted separately).
+
+
+
