@@ -1,152 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbZFLPg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbZFLPh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbZFLPg4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZFLPgt
+	id S1754802AbZFLPh7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbZFLPhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:36:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47449 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753340AbZFLPgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:36:48 -0400
-Date: Fri, 12 Jun 2009 17:36:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when
-	feature is disabled
-Message-ID: <20090612153620.GB23483@elte.hu>
-References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu> <20090612125741.GA6140@localhost> <20090612131754.GA32105@elte.hu> <20090612133352.GC6751@localhost>
+	Fri, 12 Jun 2009 11:37:51 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:42669 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZFLPhu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 11:37:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=o1LPnPdvTtl/gDMRMLICel6OSH82aAkzEbETPWwkL4Ou4w0AfqD9pHAkDjHWcUrbG3
+         Z2p2ZaxtVJZxDNVtPFw1fJwvbsA7HUcOs31+rokxCE9AH+qMGA85fho5umuUNHdFV9U3
+         xzxGpfzTQJK0IfQjCnGLmtuFPg52tC9QNck98=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090612133352.GC6751@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090612143740.GA17845@rhlx01.hs-esslingen.de>
+References: <20090604211103.4214303f.peter@piie.net>
+	 <20090612143740.GA17845@rhlx01.hs-esslingen.de>
+Date: Fri, 12 Jun 2009 17:37:51 +0200
+Message-ID: <9ea470500906120837y23839a8ase31d3157f51d95cd@mail.gmail.com>
+Subject: Re: [PATCH/RFC] Acer Aspire One fan control resume fix, improvements
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Peter Feuerer <peter@piie.net>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <len.brown@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Fri, Jun 12, 2009 at 4:37 PM, Andreas Mohr<andi@lisas.de> wrote:
+> Hello all,
+>
+> tried version 0.5.6, didn't (quite!) like it. ;)
+> Reason being that when suspending, every couple times there was
+> a fan state check error on resume, leading to the annoying issue of
+> kernel mode fan control getting disabled (via a safety measure).
+>
+> ChangeLog:
+> - reduce maximum temperature check interval, 20 seconds seems a bit much
+>  (we have to take into account _external_ heat sources, too!)
+> - configure BIOS mode during suspend downtime, since our driver code is
+>  having a day off (and go back to previous setting after resume)
+> - update fan state variable during resume, to reflect new state after
+>  powering up
+> - optimization: add bios_settings pointer to current bios's settings,
+>  avoids array indirection
+> - change cmd_off, cmd_auto to fancmd[2] for streamlined code
+> - several improved log messages
+> - reverse fan state printing (every value that doesn't indicate "OFF" should
+>  definitely lead towards an "AUTO" fan setting!!!!)
 
-> On Fri, Jun 12, 2009 at 09:17:54PM +0800, Ingo Molnar wrote:
-> > 
-> > * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > Hi Ingo,
-> > > 
-> > > On Fri, Jun 12, 2009 at 07:22:58PM +0800, Ingo Molnar wrote:
-> > > > 
-> > > > * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > > 
-> > > > > So as to eliminate one #ifdef in the c source.
-> > > > > 
-> > > > > Proposed by Nick Piggin.
-> > > > > 
-> > > > > CC: Nick Piggin <npiggin@suse.de>
-> > > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > > ---
-> > > > >  arch/x86/mm/fault.c |    3 +--
-> > > > >  include/linux/mm.h  |    7 ++++++-
-> > > > >  2 files changed, 7 insertions(+), 3 deletions(-)
-> > > > > 
-> > > > > --- sound-2.6.orig/arch/x86/mm/fault.c
-> > > > > +++ sound-2.6/arch/x86/mm/fault.c
-> > > > > @@ -819,14 +819,13 @@ do_sigbus(struct pt_regs *regs, unsigned
-> > > > >  	tsk->thread.error_code	= error_code;
-> > > > >  	tsk->thread.trap_no	= 14;
-> > > > >  
-> > > > > -#ifdef CONFIG_MEMORY_FAILURE
-> > > > >  	if (fault & VM_FAULT_HWPOISON) {
-> > > > >  		printk(KERN_ERR
-> > > > >  	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
-> > > > >  			tsk->comm, tsk->pid, address);
-> > > > >  		code = BUS_MCEERR_AR;
-> > > > >  	}
-> > > > > -#endif
-> > > > 
-> > > > Btw., anything like this should happen in close cooperation with 
-> > > > the x86 tree, not as some pure MM feature. I dont see Cc:s and 
-> > > > nothing that indicates that realization. What's going on here?
-> > > 
-> > > Ah sorry for the ignorance!  Andi has a nice overview of the big 
-> > > picture here: http://lkml.org/lkml/2009/6/3/371
-> > > 
-> > > In the above chunk, the process is trying to access the already 
-> > > corrupted page and thus shall be killed, otherwise it will either 
-> > > silently consume corrupted data, or will trigger another (deadly) 
-> > > MCE event and bring down the whole machine.
-> > 
-> > This seems like trying to handle a failure mode that cannot be and 
-> > shouldnt be 'handled' really. If there's an 'already corrupted' page 
-> > then the box should go down hard and fast, and we should not risk 
-> > _even more user data corruption_ by trying to 'continue' in the hope 
-> > of having hit some 'harmless' user process that can be killed ...
-> > 
-> > So i find the whole feature rather dubious - what's the point? We 
-> > should panic at this point - we just corrupted user data so that 
-> > piece of hardware cannot be trusted. Nor can any subsequent kernel 
-> > bug messages be trusted.
-> > 
-> > Do we really want this in the core Linux VM and in the architecture 
-> > pagefault handling code and elsewhere? Am i the only one who finds 
-> > this concept of 'handling' user data corruption rather dubious?
-> 
-> - The corrupted data only impacts one or more process(es)
-> - The corrupted data has not be consumed yet
-> 
-> The data corruption has not caused real hurt yet, and can be 
-> isolated to prevent future accesses.  So it makes sense to just 
-> kill the impacted process(es).
+good catch!
 
-Dunno, this just looks like a license to allow more crappy hardware, 
-hm? I'm all for _logging_ errors, but hwpoison is not about that: it 
-is about allowing the hardware to limp along in 'enterprise' setups, 
-with a (false looking) 'guarantee' that everything is fine.
+>  [some functional check was unsafe in this respect, too]
+> - use LONG_MAX instead of open-coded 0x7fffffffl
+>
+> Suspend tested multiple times (on 2.6.30-rc8), checkpatch.pl:ed.
+> Version 0.5.7 was internal release only.
+> This patch is intended for Peter mainly, he should decide what to do with
+> that content - better don't commit it yet.
+>
+> Signed-off-by: Andreas Mohr <andi@lisas.de>
+>
+> --- linux-2.6.30-rc8.acerhdf/drivers/platform/x86/acerhdf.c.patched_orig        2009-06-12 10:39:30.000000000 +0200
+> +++ linux-2.6.30-rc8.acerhdf/drivers/platform/x86/acerhdf.c     2009-06-12 16:10:58.000000000 +0200
+> @@ -13,6 +13,7 @@
+>  *               - Carlos Corbacho  cathectic (at) gmail.com
+>  *  o lkml       - Matthew Garrett
+>  *               - Borislav Petkov
+> + *               - Andreas Mohr
+>  *
+>  *  This program is free software; you can redistribute it and/or modify
+>  *  it under the terms of the GNU General Public License as published by
+> @@ -52,7 +53,7 @@
+>  */
+>  #undef START_IN_KERNEL_MODE
+>
+> -#define VERSION "0.5.6"
+> +#define VERSION "0.5.8"
+>
+>  /*
+>  * According to the Atom N270 datasheet,
+> @@ -62,8 +63,8 @@
+>  * assume 89°C is critical temperature.
+>  */
+>  #define ACERHDF_TEMP_CRIT 89
+> -#define ACERHDF_FAN_AUTO 1
+>  #define ACERHDF_FAN_OFF 0
+> +#define ACERHDF_FAN_AUTO 1
+>
+>  /*
+>  * No matter what value the user puts into the fanon variable, turn on the fan
+> @@ -72,17 +73,18 @@
+>  #define ACERHDF_MAX_FANON 80
+>
+>  /*
+> - * Maximal interval between two temperature checks is 20 seconds, as the die
+> - * can get hot really fast under heavy load
+> + * Maximum interval between two temperature checks is 15 seconds, as the die
+> + * can get hot really fast under heavy load (plus we shouldn't forget about
+> + * possible impact of _external_ aggressive sources such as heaters, sun etc.)
+>  */
+> -#define ACERHDF_MAX_INTERVAL 20
+> +#define ACERHDF_MAX_INTERVAL 15
+>
+>  /*
+>  * As temperatures can be negative, zero or positive, the value indicating
+>  * an error must be somewhere beyond valid temperature values.
+> - * 0x7fffffffl - highest possible positive long value should do the job.
+> + * LONG_MAX (highest possible positive long value) should do the job.
+>  */
+> -#define ACERHDF_ERROR 0x7fffffffl
+> +#define ACERHDF_ERROR LONG_MAX
+>
+>
+>  #ifdef START_IN_KERNEL_MODE
+> @@ -97,7 +99,7 @@
+>  static unsigned int verbose;
+>  static unsigned int fanstate = ACERHDF_FAN_AUTO;
+>  static int disable_kernelmode;
+> -static int bios_version = -1;
+> +static int pre_suspend_kernelmode;
 
-There's no guarantee that the fault doesnt hit something critical - 
-and by allowing 'harmless' faults we push up the noise level.
+ok, this variable is unnecessary:
 
-Any move from us to make faulty hardware more acceptable by 
-"handling" it in a percentage of cases (and crashing/corrupting in 
-other cases) is futile IMHO - it just sends the wrong general 
-message.
+it is enough to do
 
-I.e. i think this thinking misses the general harm on for example 
-the quality of kernel bugreports: if such a system corrupts memory, 
-and crashes in a weird way - we'll get a weird kernel-crash report. 
-If it 'only' corrupts some user process in a 'harmless' way, we wont 
-get a crash report. Say the kernel crashes in 10% of the cases, 
-user-space crashes in 90% of the cases.
+if (kernelmode)
+	acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
 
-If we allow that 90% to continue, we make the 10% "bad" crash 
-proportion more prominent in our stats too. I.e. by allowing 
-'harmless' bugs to be more acceptable in practice, we indirectly 
-increase the proportion of _bad_ crashes as well.
+on suspend and since the machine starts with the BIOS in control of the
+fan, the acerhdf_set_cur_state() thermal callback will figure out what
+to do so you don't need to explicitly save the kernelmode setting before
+suspend and restore it on resume.
 
-Do you accept that general point or am i wrong?
+>  static char force_bios[16];
+>  static unsigned int prev_interval;
+>  struct thermal_zone_device *acerhdf_thz_dev;
+> @@ -123,25 +125,26 @@
+>        const char *version;
+>        unsigned char fanreg;
+>        unsigned char tempreg;
+> -       unsigned char cmd_off;
+> -       unsigned char cmd_auto;
+> +       unsigned char fancmd[2]; /* fan off and auto commands */
+>  };
+>
+>  /* Register addresses and values for different BIOS versions */
+> -static const struct bios_settings_t bios_settings[] = {
+> -       {"Acer", "v0.3109", 0x55, 0x58, 0x1f, 0x00},
+> -       {"Acer", "v0.3114", 0x55, 0x58, 0x1f, 0x00},
+> -       {"Acer", "v0.3301", 0x55, 0x58, 0xaf, 0x00},
+> -       {"Acer", "v0.3304", 0x55, 0x58, 0xaf, 0x00},
+> -       {"Acer", "v0.3305", 0x55, 0x58, 0xaf, 0x00},
+> -       {"Acer", "v0.3308", 0x55, 0x58, 0x21, 0x00},
+> -       {"Acer", "v0.3309", 0x55, 0x58, 0x21, 0x00},
+> -       {"Acer", "v0.3310", 0x55, 0x58, 0x21, 0x00},
+> -       {"Gateway", "v0.3103", 0x55, 0x58, 0x21, 0x00},
+> -       {"Packard Bell", "v0.3105", 0x55, 0x58, 0x21, 0x00},
+> -       {"", 0, 0, 0, 0, 0}
+> +static const struct bios_settings_t bios_settings_table[] = {
+> +       {"Acer", "v0.3109", 0x55, 0x58, {0x1f, 0x00} },
+> +       {"Acer", "v0.3114", 0x55, 0x58, {0x1f, 0x00} },
+> +       {"Acer", "v0.3301", 0x55, 0x58, {0xaf, 0x00} },
+> +       {"Acer", "v0.3304", 0x55, 0x58, {0xaf, 0x00} },
+> +       {"Acer", "v0.3305", 0x55, 0x58, {0xaf, 0x00} },
+> +       {"Acer", "v0.3308", 0x55, 0x58, {0x21, 0x00} },
+> +       {"Acer", "v0.3309", 0x55, 0x58, {0x21, 0x00} },
+> +       {"Acer", "v0.3310", 0x55, 0x58, {0x21, 0x00} },
+> +       {"Gateway", "v0.3103", 0x55, 0x58, {0x21, 0x00} },
+> +       {"Packard Bell", "v0.3105", 0x55, 0x58, {0x21, 0x00} },
+> +       {"", 0, 0, 0, {0, 0} }
+>  };
+>
+> +static const struct bios_settings_t *bios_settings __read_mostly;
+> +
+>
+>  /* acer ec functions */
+>  static int acerhdf_get_temp(void)
+> @@ -149,7 +152,7 @@
+>        u8 temp;
+>
+>        /* read temperature */
+> -       if (!ec_read(bios_settings[bios_version].tempreg, &temp)) {
+> +       if (!ec_read(bios_settings->tempreg, &temp)) {
+>                if (verbose)
+>                        pr_notice("temp %d\n", temp);
+>                return temp;
+> @@ -161,8 +164,8 @@
+>  {
+>        u8 fan;
+>
+> -       if (!ec_read(bios_settings[bios_version].fanreg, &fan))
+> -               return (fan == bios_settings[bios_version].cmd_off) ?
+> +       if (!ec_read(bios_settings->fanreg, &fan))
+> +               return (fan == bios_settings->fancmd[ACERHDF_FAN_OFF]) ?
+>                        ACERHDF_FAN_OFF : ACERHDF_FAN_AUTO;
+>
+>        return ACERHDF_ERROR;
+> @@ -173,19 +176,19 @@
+>        unsigned char cmd;
+>
+>        if (verbose)
+> -               pr_notice("fan %s\n", (state == ACERHDF_FAN_AUTO) ?
+> -                               "ON" : "OFF");
+> +               pr_notice("fan %s\n", (state == ACERHDF_FAN_OFF) ?
+> +                               "OFF" : "ON");
+>
+> -       if (state == ACERHDF_FAN_AUTO) {
+> -               cmd = bios_settings[bios_version].cmd_auto;
+> -               fanstate = ACERHDF_FAN_AUTO;
+> -       } else {
+> -               cmd = bios_settings[bios_version].cmd_off;
+> -               fanstate = ACERHDF_FAN_OFF;
+> +       if ((state != ACERHDF_FAN_OFF) && (state != ACERHDF_FAN_AUTO)) {
+> +               pr_err("invalid fan state %d requested, setting to auto!\n",
+> +                       state);
+> +               state = ACERHDF_FAN_AUTO;
+>        }
+>
+> -       ec_write(bios_settings[bios_version].fanreg, cmd);
+> +       cmd = bios_settings->fancmd[state];
+> +       fanstate = state;
+>
+> +       ec_write(bios_settings->fanreg, cmd);
+>  }
+>
+>  /* helpers */
+> @@ -253,6 +256,18 @@
+>        return 0;
+>  }
+>
+> +/* provide one central function to set disable_kernelmode
+> + * (always set ACERHDF_FAN_AUTO, too!) */
+> +static inline void acerhdf_revert_to_bios_mode(void)
+> +{
+> +       acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> +       /*
+> +        * let the thermal layer disable kernel mode. This ensures that
+> +        * the thermal layer doesn't switch off the fan again
+> +        */
+> +       disable_kernelmode = 1;
+> +}
+> +
+>  /*  current operation mode - enabled / disabled */
+>  static int acerhdf_get_mode(struct thermal_zone_device *thermal,
+>                enum thermal_device_mode *mode)
+> @@ -279,13 +294,8 @@
+>                pr_notice("kernel mode OFF\n");
+>                thermal->polling_delay = 0;
+>                thermal_zone_device_update(thermal);
+> -               acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+>
+> -               /*
+> -                * let the thermal layer disable kernel mode. This ensures that
+> -                * the thermal layer doesn't switch off the fan again
+> -                */
+> -               disable_kernelmode = 1;
+> +               acerhdf_revert_to_bios_mode();
+>        } else {
+>                kernelmode = 1;
+>                pr_notice("kernel mode ON\n");
+> @@ -394,21 +404,19 @@
+>         */
+>        if (cur_state != fanstate) {
+>                pr_err("failed reading fan state, "
+> -                               "disabling kernelmode.\n");
+> +                               "falling back to default BIOS handling.\n");
+>                pr_err("read state: %d expected state: %d\n",
+>                                cur_state, fanstate);
+>
+> -               acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> -               disable_kernelmode = 1;
+> +               acerhdf_revert_to_bios_mode();
+>                return -EINVAL;
+>        }
+>        /* same with temperature */
+>        if (cur_temp == ACERHDF_ERROR) {
+>                pr_err("failed reading temperature, "
+> -                               "disabling kernelmode.\n");
+> +                               "falling back to default BIOS handling.\n");
+>
+> -               acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> -               disable_kernelmode = 1;
+> +               acerhdf_revert_to_bios_mode();
+>                return -EINVAL;
+>        }
+>
+> @@ -437,11 +445,21 @@
+>                pm_message_t state)
+>  {
+>        /*
+> -        * in kernelmode turn on fan, because the aspire one awakes with
+> -        * spinning fan
+> +        * always revert to BIOS mode during suspend/resume activities:
+> +        * a) during suspend our driver is inactive, thus if there's
+> +        *    anything to be done fan-wise, it's the BIOS's job...
+> +        * b) Aspire awakes with spinning fan in BIOS mode,
+> +        *    thus we better do the same (behaviour is preserved if we use BIOS)
+>         */
+> -       if (kernelmode)
+> +
+> +       /* remember previous setting */
+> +       pre_suspend_kernelmode = kernelmode;
+> +
+> +       if (kernelmode) {
+>                acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+> +               kernelmode = 0;
+> +       }
+> +
+>        if (verbose)
+>                pr_notice("going suspend\n");
+>        return 0;
+> @@ -449,6 +467,14 @@
+>
+>  static int acerhdf_resume(struct platform_device *device)
+>  {
+> +       kernelmode = pre_suspend_kernelmode;
+> +
+> +       /* update our fanstate variable to the possibly different
+> +        * post-resume fan state
+> +        * (to prevent a safety check from failing)
+> +        */
 
-Computing along the von Neumann principles really depends on having 
-a sufficiently well working piece of hardware that one can trust 
-with a reasonable certainty. Probabilistic computing is fine too in 
-certain isolated fields where you say want some probabilistic result 
-to begin with (say the result of some property of the physical 
-world) - but in general purpose hardware i doubt it's the right kind 
-of approach ...
+please use kernel-style comments:
 
-	Ingo
+/*
+ * comment text goes here
+ */
+
+> +       fanstate = acerhdf_get_fanstate();
+> +
+>        if (verbose)
+>                pr_notice("resuming\n");
+>        return 0;
+> @@ -526,15 +552,16 @@
+>
+>
+>        /* search BIOS version and BIOS vendor in BIOS settings table */
+> -       for (i = 0; bios_settings[i].version[0]; ++i) {
+> -               if (!strcmp(bios_settings[i].vendor, vendor) &&
+> -                               !strcmp(bios_settings[i].version, version)) {
+> -                       bios_version = i;
+> +       for (i = 0; bios_settings_table[i].version[0]; ++i) {
+> +               if (!strcmp(bios_settings_table[i].vendor, vendor) &&
+> +                   !strcmp(bios_settings_table[i].version, version)) {
+> +                       bios_settings = &bios_settings_table[i];
+>                        break;
+>                }
+>        }
+> -       if (bios_version == -1) {
+> -               pr_err("cannot find BIOS version\n");
+> +       if (!bios_settings) {
+> +               pr_err("unknown (unsupported) BIOS version %s/%s, "
+> +                       "please report, aborting!\n", vendor, version);
+>                return ACERHDF_ERROR;
+>        }
+>        return 0;
+>
+
+-- 
+Regards/Gruss,
+Boris
