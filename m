@@ -1,95 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762402AbZFLRek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760973AbZFLReW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762402AbZFLRek (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZFLRe3
+	id S1760973AbZFLReW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZFLReJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:34:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59888 "EHLO hera.kernel.org"
+	Fri, 12 Jun 2009 13:34:09 -0400
+Received: from www.tglx.de ([62.245.132.106]:37178 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbZFLRe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:34:28 -0400
-Date: Fri, 12 Jun 2009 17:33:46 GMT
-From: tip-bot for Mike Frysinger <vapier@gentoo.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, vapier@gentoo.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, vapier@gentoo.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1244827063-24046-1-git-send-email-vapier@gentoo.org>
-References: <1244827063-24046-1-git-send-email-vapier@gentoo.org>
-Subject: [tip:perfcounters/core] perf_counter: Start documenting HAVE_PERF_COUNTERS requirements
-Message-ID: <tip-3c1f287bf974b05ad75df3c462fccace10035fbd@git.kernel.org>
-Git-Commit-ID: 3c1f287bf974b05ad75df3c462fccace10035fbd
-X-Mailer: tip-git-log-daemon
+	id S1751676AbZFLReH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 13:34:07 -0400
+Date: Fri, 12 Jun 2009 19:31:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: [Announce] 2.6.29.4-rt18
+In-Reply-To: <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
+ <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain> <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
+ <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+ <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 12 Jun 2009 17:33:47 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3c1f287bf974b05ad75df3c462fccace10035fbd
-Gitweb:     http://git.kernel.org/tip/3c1f287bf974b05ad75df3c462fccace10035fbd
-Author:     Mike Frysinger <vapier@gentoo.org>
-AuthorDate: Fri, 12 Jun 2009 13:17:43 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 12 Jun 2009 19:29:44 +0200
-
-perf_counter: Start documenting HAVE_PERF_COUNTERS requirements
-
-Help out arch porters who want to support perf counters by listing some
-basic requirements.
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1244827063-24046-1-git-send-email-vapier@gentoo.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- init/Kconfig          |    3 +++
- tools/perf/design.txt |   15 +++++++++++++++
- 2 files changed, 18 insertions(+), 0 deletions(-)
-
-diff --git a/init/Kconfig b/init/Kconfig
-index c649657..e03959d 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -934,6 +934,9 @@ config AIO
-           by some high performance threaded applications. Disabling
-           this option saves about 7k.
+We are pleased to announce the next update to our new preempt-rt
+series.
  
-+#
-+# See tools/perf/design.txt about details:
-+#
- config HAVE_PERF_COUNTERS
- 	bool
- 
-diff --git a/tools/perf/design.txt b/tools/perf/design.txt
-index 860e116..f71e0d2 100644
---- a/tools/perf/design.txt
-+++ b/tools/perf/design.txt
-@@ -440,3 +440,18 @@ by this process or by another, and doesn't affect any counters that
- this process has created on other processes.  It only enables or
- disables the group leaders, not any other members in the groups.
- 
-+
-+Arch requirements
-+-----------------
-+
-+If your architecture does not have hardware performance metrics, you can
-+still use the generic software counters based on hrtimers for sampling.
-+
-+So to start with, in order to add HAVE_PERF_COUNTERS to your Kconfig, you
-+will need at least this:
-+	- asm/perf_counter.h - a basic stub will suffice at first
-+	- support for atomic64 types (and associated helper functions)
-+	- set_perf_counter_pending() implemented
-+
-+If your architecture does have hardware capabilities, you can override the
-+weak stub hw_perf_counter_init() to register hardware counters.
+     - futex bug fix (tglx)
+     - hwlat latency detector module (Jon Cool Masters)
+
+I have to say it works pretty well when you call someone a Slacker :)
+
+Clark is working on user space tools which help you to use it w/o
+fiddling module parameters. It's going to be in the next rt-tests
+release which has a not yet defined schedule. I wonder whether I
+should try that slacker trick again :)
+
+Download locations:
+
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.29.4-rt18 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.4.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.4-rt18.bz2
+
+The broken out patches are also available at the same download
+locations.
+
+Enjoy !
+
+       tglx
+
