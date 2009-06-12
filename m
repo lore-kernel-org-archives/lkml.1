@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933412AbZFLJX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933303AbZFLJYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933412AbZFLJX7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757940AbZFLJXv
+	id S933303AbZFLJYm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbZFLJYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:23:51 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:50165 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752462AbZFLJXu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:23:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=WOORB8rpQdvkmc6+Cj/Tz4AgfclErd520RaoBVSL3CkTpZgFDp+CiHPDWZhxeKX6jf
-         ukd4nZ6nxGxOmYI6uXFGyfi17JoFeXLjV9IukzPzCTvKiEaAFjJ8SjYMFgCA+VG1Ftc3
-         pcTFv9JkB/d0rZCOISkv7p/BaRHq7mJDb1V8g=
-MIME-Version: 1.0
-In-Reply-To: <20090611151750.GB9323@ovro.caltech.edu>
-References: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
-	 <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com>
-	 <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com>
-	 <20090427204213.GA4960@ovro.caltech.edu>
-	 <49F619C4.20100@freescale.com>
-	 <e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com>
-	 <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org>
-	 <20090611151750.GB9323@ovro.caltech.edu>
-Date: Fri, 12 Jun 2009 17:23:52 +0800
-X-Google-Sender-Auth: bd30ab6682cf657b
-Message-ID: <2a27d3730906120223w9f30b7ewfd22eb328e3a23d3@mail.gmail.com>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-From: Li Yang <leoli@freescale.com>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Timur Tabi <timur@freescale.com>, David Hawkins <dwh@ovro.caltech.edu>,
-       Liu Dave-R63238 <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Jun 2009 05:24:34 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44339 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758598AbZFLJYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:24:33 -0400
+Subject: Re: slab: setup allocators earlier in the boot sequence
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20090612091304.GE24044@wotan.suse.de>
+References: <1244783235.7172.61.camel@pasglop>
+	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
+	 <1244792079.7172.74.camel@pasglop>
+	 <1244792745.30512.13.camel@penberg-laptop>
+	 <20090612075427.GA24044@wotan.suse.de>
+	 <1244793592.30512.17.camel@penberg-laptop>
+	 <20090612080236.GB24044@wotan.suse.de>
+	 <1244793879.30512.19.camel@penberg-laptop>
+	 <1244796291.7172.87.camel@pasglop>
+	 <84144f020906120149k6cbe5177vef1944d9d216e8b2@mail.gmail.com>
+	 <20090612091304.GE24044@wotan.suse.de>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 19:24:20 +1000
+Message-Id: <1244798660.7172.102.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 11:17 PM, Ira Snyder<iws@ovro.caltech.edu> wrote:
-> On Wed, Jun 10, 2009 at 09:45:26PM -0500, Kumar Gala wrote:
->>
->> On Apr 27, 2009, at 3:49 PM, Dan Williams wrote:
->>
->>> On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com>
->>> wrote:
->>>> Adding Kumar to the CC: list, since he might pick up the patch.
->>>>
->>>
->>> Acked-by: Dan Williams <dan.j.williams@intel.com>
->>>
->>> I agree with taking this through Kumar's tree.
->>
->> I'm going through patches for .31.. Should I still pick this up?  Going
->> forward should I pick up fsldma patches?
->>
->
-> I'm fine with that, but you should probably talk to Li Yang (added to
-> CC). He's gotten in contact with me a few times recently.
 
-I am fine with both ways for this patch as it is only related to
-Freescale register details.  But in general I think patches should go
-through functional subsystem, as they usually would need insight of
-the subsystem architecture.  I prefer the way that the patch acked or
-signed-off by Freescale guys and push upstream through Dan's tree as
-most other subsystems did.  Unless Dan prefers to ack the subsystem
-architectural part of each patch and have them pushed other way.
+> It's OK. I'd make it gfp_notsmellybits, and avoid the ~.
+> And read_mostly.
 
-- Leo
+read_mostly is fine. gfp_notsmellybits isn't a nice name :-) Make it
+gfp_allowedbits then. I did it backward on purpose though as the risk of
+"missing" bits here (as we may add new ones) is higher and it seemed to
+me generally simpler to just explicit spell out the ones to forbid
+(also, on powerpc,  &~ is one instruction :-)
+ 
+> Probably would be better to hide it in mm/ and then just
+> allow it to be modified with a couple of calls. OTOH if
+> it is only modified in a couple of places then maybe that's
+> overkill.
+
+It might indeed be nicer to hide it behind an accessor.
+
+> The whole problem comes about because we don't just restore
+> our previously saved flags here... I guess it probably adds
+> even more overhead to do that and make everything just work :(
+
+Well... that's part of the equation. My solution has the advantage to
+also providing ground to forbid GFP_IO during suspend/resume etc...
+
+Cheers,
+Ben.
+
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
