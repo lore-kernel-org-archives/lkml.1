@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbZFLHcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932614AbZFLHco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762222AbZFLHcP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 03:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbZFLHb7
+	id S932614AbZFLHco (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 03:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbZFLHcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 03:31:59 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57110 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753024AbZFLHb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 03:31:59 -0400
-Message-ID: <4A3204CA.8070005@cn.fujitsu.com>
-Date: Fri, 12 Jun 2009 15:33:30 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 12 Jun 2009 03:32:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49954 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753024AbZFLHce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 03:32:34 -0400
+Date: Fri, 12 Jun 2009 07:31:56 GMT
+From: tip-bot for Catalin Marinas <catalin.marinas@arm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       catalin.marinas@arm.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       catalin.marinas@arm.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
+References: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
+Subject: [tip:x86/urgent] x86: Provide _sdata in the vmlinux.lds.S file
+Message-ID: <tip-1260866a271abc84274345580f3d613d3bceff87@git.kernel.org>
+Git-Commit-ID: 1260866a271abc84274345580f3d613d3bceff87
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       hannes@cmpxchg.org, mpm@selenic.com, npiggin@suse.de,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [GIT PULL v3] Early boot SLAB for 2.6.31
-References: <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain>	 <alpine.LFD.2.01.0906101332440.6847@localhost.localdomain>	 <Pine.LNX.4.64.0906111416070.10394@melkki.cs.Helsinki.FI>	 <alpine.DEB.1.10.0906110954030.29827@gentwo.org>	 <84144f020906110706y8df301bhd930dc48f3188d3c@mail.gmail.com>	 <84144f020906110824g7b3981abmdbcf94ae2f9068de@mail.gmail.com>	 <4A3143E3.3090705@kernel.org>	 <Pine.LNX.4.64.0906112101020.21593@melkki.cs.Helsinki.FI>	 <20090611214342.GA12762@elte.hu> <20090611220307.GA16180@elte.hu>	 <20090612071703.GA29679@elte.hu> <1244791788.30512.2.camel@penberg-laptop>
-In-Reply-To: <1244791788.30512.2.camel@penberg-laptop>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 12 Jun 2009 07:31:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Hi Ingo,
-> 
-> On Fri, 2009-06-12 at 09:17 +0200, Ingo Molnar wrote:
->> Plus i quickly got this crash too:
->>
->> [    0.000000] console [tty0] enabled
->> [    0.000000] allocation of page_cgroup was failed.
->> [    0.000000] please try cgroup_disable=memory boot option
->> [    0.000000] Kernel panic - not syncing: Out of memory
->> [    0.000000] Rebooting in 1 seconds..<1>BUG: unable to handle kernel NULL pointer dereference at 0000004c
->> [    0.000000] IP: [<c16ec708>] klist_next+0x10/0x8f
->> [    0.000000] *pdpt = 0000000001a8a001 *pde = 0000000000000000 
->> [    0.000000] Thread overran stack, or stack corrupted
-> 
-> Hmm, does this patch fix it? Hiroyuki, Li, does the oops look familiar to you?
-> 
+Commit-ID:  1260866a271abc84274345580f3d613d3bceff87
+Gitweb:     http://git.kernel.org/tip/1260866a271abc84274345580f3d613d3bceff87
+Author:     Catalin Marinas <catalin.marinas@arm.com>
+AuthorDate: Mon, 11 May 2009 13:22:00 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 12 Jun 2009 09:21:33 +0200
 
-should be the same bug.
+x86: Provide _sdata in the vmlinux.lds.S file
+
+_sdata is a common symbol defined by many architectures and made
+available to the kernel via asm-generic/sections.h. Kmemleak uses this
+symbol when scanning the data sections.
+
+[ Impact: add new global symbol ]
+
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+LKML-Reference: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ arch/x86/kernel/vmlinux.lds.S |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 4c85b2e..367e878 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -108,6 +108,8 @@ SECTIONS
+ 	/* Data */
+ 	. = ALIGN(PAGE_SIZE);
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
++		/* Start of data section */
++		_sdata = .;
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 
