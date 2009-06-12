@@ -1,143 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbZFLO5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbZFLPBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752237AbZFLO5f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZFLO51
+	id S1751726AbZFLPBy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbZFLPBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:57:27 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:42598 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbZFLO51 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:57:27 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: tomaz.mertelj@guest.arnes.si
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core	temperature
-Date: Fri, 12 Jun 2009 09:57:24 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>, Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-References: <20090612_144621_045117.tomaz.mertelj@guest.arnes.si>
-In-Reply-To: <20090612_144621_045117.tomaz.mertelj@guest.arnes.si>
+	Fri, 12 Jun 2009 11:01:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41026 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751100AbZFLPBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 11:01:47 -0400
+Date: Fri, 12 Jun 2009 17:00:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Yinghai Lu <yinghai@kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: use zalloc_cpumask_var in arch_early_irq_init
+Message-ID: <20090612150042.GB31667@elte.hu>
+References: <4A318034.3010102@kernel.org> <200906122110.01032.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_XzmMKrOF44zXK8P"
-Message-Id: <200906120957.27223.lkml@morethan.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906122110.01032.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_XzmMKrOF44zXK8P
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Fri June 12 2009, tomaz.mertelj@guest.arnes.si wrote:
-> > > 
-> > > Ah, 25 degrees C is room temperature - real hard for the junction 
-> temperature
-> > > to be 25 degrees C with power applied; lacking an infinitely perfect 
-> heatsink.
-> > > 
-> > > Look for an "off by one" error in shifting or masking the value.
-> > 
-> > there is no shifting and the masking is 0xffffffff :)
-> > 
-> > it might be that the BIOS is doing something wrong when programming the
-> > calibration MSR's at early botoup.  I would need the contents of MSR 
-> > 0x1160 ... 0x116C as well as 0x1152 and 0x1153 to be able to determine 
-> that.
-> > 
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Fri, 12 Jun 2009 07:37:48 am Yinghai Lu wrote:
+> > So could make sure MAXSMP get clearred cpumask
+> >
+> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
-> This is what I get on VB7002.. vith C7-D cpu:
-> 
-> 
-> DEBNAS:/home# sensors
-> 
-> via-cputemp-isa-0000
-> Adapter: ISA adapter
-> Core 0:      +27.0 C 
-> 
-> DEBNAS:/home# for r in 0x1160 0x1161 0x1162 0x1163 0x1164 0x1165 0x1166 
-> 0x1167
-> 0x1168 0x1169 0x116a 0x116b 0x116c 0x1152 0x1153 ; do ./rdmsr $r ; done
-> MSR register 0x1160 => 08:04:98:10:b8:0b:6f:f4
-> MSR register 0x1161 => 08:04:98:10:b8:0a:8f:f4
-> MSR register 0x1162 => 08:04:98:10:b7:f7:7f:f4
-> MSR register 0x1163 => 08:04:98:10:b7:f1:1f:f4
-> MSR register 0x1164 => 08:04:98:10:b7:ee:cf:f4
-> MSR register 0x1165 => 08:04:98:10:b8:0b:4f:f4
-> MSR register 0x1166 => 08:04:98:10:b7:f7:7f:f4
-> MSR register 0x1167 => 08:04:98:10:b7:ef:8f:f4
-> MSR register 0x1168 => 08:04:98:10:b7:fc:3f:f4
-> MSR register 0x1169 => 08:04:98:10:b8:0d:6f:f4
-> MSR register 0x116a => 08:04:98:10:b7:f3:8f:f4
-> MSR register 0x116b => 08:04:98:10:b8:0b:bf:f4
-> MSR register 0x116c => 08:04:98:10:b8:00:6f:f4
-> MSR register 0x1152 => 08:04:98:10:b7:f2:2f:f4
-> MSR register 0x1153 => 08:04:98:10:b8:0b:3f:f4
-> DEBNAS:/home#
-> 
->
+> Ingo, this only applies to your tree; can you take it?
 
-The author had a problem in that routine -
-try this one (32bit machines only) -
+should apply to upstream too so could go into your tree with the 
+other cpumask changes, right?
 
-Mike 
-> Tomaz Mertelj
-> 
-> 
-> 
-
-
-
---Boundary-00=_XzmMKrOF44zXK8P
-Content-Type: text/x-csrc;
-  charset="iso 8859-15";
-  name="rdmsrll.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="rdmsrll.c"
-
-/* By Ron Minnich @ wiki.laptop.org */
-/* No rights or license mentioned.  */
-
-#define _LARGEFILE64_SOURCE
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-int main (int argc, char *argv[])
-{
-    unsigned char buf[8];
-    int fd_msr, i;
-    unsigned long long addr = 0;
-
-    if (argc < 2) {
-        printf("usage:rdmsr reg\n");
-        exit(1);
-    }
-    /* assignment zeros high 32bits */
-    addr = strtoul(argv[1], NULL, 0);
-
-    fd_msr = open("/dev/cpu/0/msr", O_RDONLY);
-    lseek64(fd_msr, (off64_t)addr, SEEK_SET);
-    read(fd_msr, buf, 8);
-
-    printf("MSR register 0x%llx => ", addr);
-    for (i = 7; i > 0; i--)
-        printf("%2.2x:", buf[i]);
-    printf("%2.2x\n", buf[i]);
-
-    return(0);
-}
-
-
---Boundary-00=_XzmMKrOF44zXK8P--
+	Ingo
