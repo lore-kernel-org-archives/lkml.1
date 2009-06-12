@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934437AbZFLWxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934582AbZFLWz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934437AbZFLWxz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZFLWxo
+	id S934582AbZFLWz1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZFLWzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:53:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47555 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbZFLWxn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:53:43 -0400
-Message-ID: <4A32DBD1.30309@zytor.com>
-Date: Fri, 12 Jun 2009 15:50:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 12 Jun 2009 18:55:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57705 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751309AbZFLWzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:55:12 -0400
+Date: Fri, 12 Jun 2009 15:45:56 -0700
+From: Greg KH <gregkh@suse.de>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/87] 2.6.29-stable review
+Message-ID: <20090612224556.GA9051@suse.de>
+References: <20090609094451.GA26439@kroah.com> <b637ec0b0906121211v515833c9l8a7856b4a463d63d@mail.gmail.com>
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>
-Subject: Re: [RESEND][ PATCH -tip -v9 1/7] x86: instruction decoder API
-References: <20090612224447.17311.72404.stgit@localhost.localdomain> <20090612224455.17311.19421.stgit@localhost.localdomain>
-In-Reply-To: <20090612224455.17311.19421.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <b637ec0b0906121211v515833c9l8a7856b4a463d63d@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Add x86 instruction decoder to arch-specific libraries. This decoder
-> can decode x86 instructions used in kernel into prefix, opcode, modrm,
-> sib, displacement and immediates. This can also show the length of
-> instructions.
+On Fri, Jun 12, 2009 at 09:11:29PM +0200, Fabio Comolli wrote:
+> Hi Greg.
 > 
-> This version introduces instruction attributes for decoding instructions.
-> The instruction attribute tables are generated from the opcode map file
-> (x86-opcode-map.txt) by the generator script(gen-insn-attr-x86.awk).
+> On Tue, Jun 9, 2009 at 11:44 AM, Greg KH<gregkh@suse.de> wrote:
+> >
+> > This is the start of the stable review cycle for the 2.6.29.5 release.
+> > There are 87 patches in this series, all will be posted as a response to
+> > this one. †If anyone has any issues with these being applied, please let
+> > us know. †If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
+> >
+> > These patches are sent out with a number of different people on the Cc:
+> > line. †If you wish to be a reviewer, please email stable@kernel.org to
+> > add your name to the list. †If you want to be off the reviewer list,
+> > also email us.
+> >
+> > Responses should be made by June 11 09:00:00 UTC. †Anything received
+> > after that time might be too late.
 > 
-> Currently, the opcode maps are based on opcode maps in Intel(R) 64 and
-> IA-32 Architectures Software Developers Manual Vol.2: Appendix.A,
-> and consist of below two types of opcode tables.
-> 
-> 1-byte/2-bytes/3-bytes opcodes, which has 256 elements, are
-> written as below;
-> 
->  Table: table-name
->  Referrer: escaped-name
->  opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
->   (or)
->  opcode: escape # escaped-name
->  EndTable
-> 
-> Group opcodes, which has 8 elements, are written as below;
-> 
->  GrpTable: GrpXXX
->  reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
->  EndTable
-> 
-> These opcode maps do NOT include most of SSE and FP opcodes, because
-> those opcodes are not used in the kernel.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Andi Kleen <ak@linux.intel.com>
-> Cc: Vegard Nossum <vegard.nossum@gmail.com>
-> Cc: Avi Kivity <avi@redhat.com>
-> Cc: Przemys≈Çaw Pawe≈Çczyk <przemyslaw@pawelczyk.it>
-> ---
-> 
+> Are there any problems with this release?
 
-The decoder looks good by now.
+No, sorry, am traveling at the moment, and didn't have the chance to get
+this out yesterday due to other obligations.  Give me another day or so
+to get it out.
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+thanks for your patience,
 
-	-hpa
+greg k-h
