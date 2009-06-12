@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933312AbZFLSw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764312AbZFLSwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933312AbZFLSw1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762271AbZFLSvV
+	id S1764312AbZFLSwz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761374AbZFLSvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:51:21 -0400
-Received: from fifo99.com ([67.223.236.141]:46224 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757194AbZFLSvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:51:17 -0400
-From: Daniel Walker <dwalker@fifo99.com>
-To: Greg Kroah-Hartman <greg@kroah.com>
-Cc: Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: [PATCH 5/6] staging: android: binder: global variable cleanup.
-Date: Fri, 12 Jun 2009 11:51:17 -0700
-Message-Id: <1244832678-30329-5-git-send-email-dwalker@fifo99.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1244832678-30329-4-git-send-email-dwalker@fifo99.com>
-References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
- <1244832678-30329-2-git-send-email-dwalker@fifo99.com>
- <1244832678-30329-3-git-send-email-dwalker@fifo99.com>
- <1244832678-30329-4-git-send-email-dwalker@fifo99.com>
+	Fri, 12 Jun 2009 14:51:32 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:31521 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764272AbZFLSva (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 14:51:30 -0400
+Message-ID: <4A32A2CE.40002@oracle.com>
+Date: Fri, 12 Jun 2009 11:47:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org
+Subject: [PATCH -next] v4l: expose function outside of ifdef/endif block
+References: <20090612185601.be53b034.sfr@canb.auug.org.au>
+In-Reply-To: <20090612185601.be53b034.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.4A32A3A3.016B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replaced a manual hlist_head declaration with a macro based one.
-Also reorganized the globals to be grouped better.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Signed-off-by: Daniel Walker <dwalker@fifo99.com>
+Move v4l_bound_align_image() outside of an #ifdef CONFIG_I2C block
+so that it is always built.  Fixes a build error:
+
+vivi.c:(.text+0x48e26): undefined reference to `v4l_bound_align_image'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/staging/android/binder.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
+ drivers/media/video/v4l2-common.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
-index 30a5ea5..01711e3 100644
---- a/drivers/staging/android/binder.c
-+++ b/drivers/staging/android/binder.c
-@@ -31,18 +31,21 @@
- #include <linux/sched.h>
- #include <linux/uaccess.h>
- #include <linux/vmalloc.h>
-+
- #include "binder.h"
+--- linux-next-20090612.orig/drivers/media/video/v4l2-common.c
++++ linux-next-20090612/drivers/media/video/v4l2-common.c
+@@ -915,6 +915,7 @@ const unsigned short *v4l2_i2c_tuner_add
+ 	return NULL;
+ }
+ EXPORT_SYMBOL_GPL(v4l2_i2c_tuner_addrs);
++#endif
  
- static DEFINE_MUTEX(binder_lock);
-+static DEFINE_MUTEX(binder_deferred_lock);
-+
- static HLIST_HEAD(binder_procs);
-+static HLIST_HEAD(binder_deferred_list);
-+static HLIST_HEAD(binder_dead_nodes);
-+
-+static struct proc_dir_entry *binder_proc_dir_entry_root;
-+static struct proc_dir_entry *binder_proc_dir_entry_proc;
- static struct binder_node *binder_context_mgr_node;
- static uid_t binder_context_mgr_uid = -1;
- static int binder_last_id;
--static struct proc_dir_entry *binder_proc_dir_entry_root;
--static struct proc_dir_entry *binder_proc_dir_entry_proc;
--static struct hlist_head binder_dead_nodes;
--static HLIST_HEAD(binder_deferred_list);
--static DEFINE_MUTEX(binder_deferred_lock);
- 
- static int binder_read_proc_proc(char *page, char **start, off_t off,
- 				 int count, int *eof, void *data);
+ /* Clamp x to be between min and max, aligned to a multiple of 2^align.  min
+  * and max don't have to be aligned, but there must be at least one valid
+@@ -986,5 +987,3 @@ void v4l_bound_align_image(u32 *w, unsig
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(v4l_bound_align_image);
+-
+-#endif
+
+
 -- 
-1.5.4.3
-
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
