@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbZFLKvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764266AbZFLKxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763463AbZFLKvo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbZFLKvg
+	id S1764266AbZFLKxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbZFLKxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:51:36 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56472 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753711AbZFLKvf (ORCPT
+	Fri, 12 Jun 2009 06:53:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:52558 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755552AbZFLKxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:51:35 -0400
-Date: Fri, 12 Jun 2009 12:51:26 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, Magnus Damm <damm@igel.co.jp>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Sergio Luis <sergio@larces.uece.br>,
-       Lauro Salmito <laurosalmito@gmail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [PATCH 09/19] PM: Rename device_power_down/up()
-Message-ID: <20090612105126.GJ18682@elf.ucw.cz>
-References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl> <S4AoGnG.A.cG.6eYMKB@chimera>
+	Fri, 12 Jun 2009 06:53:38 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH] tty: fix unused warning when TCGETX is not defined
+Date: Fri, 12 Jun 2009 12:53:27 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <1244802468-13667-1-git-send-email-vapier@gentoo.org> <20090612113830.6c21dfc9@lxorguk.ukuu.org.uk> <8bd0f97a0906120345s61c7216cp1925f05f829a1c3a@mail.gmail.com>
+In-Reply-To: <8bd0f97a0906120345s61c7216cp1925f05f829a1c3a@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <S4AoGnG.A.cG.6eYMKB@chimera>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906121253.28336.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/mW0ieGDKAtXBzlG0toG7aAof72wsDcZCGIcZ
+ m7TdAg0DJUC4T2zOo02hkfIwA78oM8zR1DAhdNmmyHPhFRw5er
+ 5azJSlrL+W9Ng/2Q4zDXg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-11 22:37:28, Rafael J. Wysocki wrote:
-> From: Magnus Damm <damm@igel.co.jp>
-> 
-> Rename the functions performing "_noirq" dev_pm_ops
-> operations from device_power_down() and device_power_up()
-> to device_suspend_noirq() and device_resume_noirq().
-> 
-> The new function names are chosen to show that the functions
-> are responsible for calling the _noirq() versions to finalize
-> the suspend/resume operation. The current function names do
-> not perform power down/up anymore so the names may be misleading.
-> 
-> Global function renames:
-> - device_power_down() -> device_suspend_noirq()
-> - device_power_up() -> device_resume_noirq()
-> 
-> Static function renames:
-> - suspend_device_noirq() -> __device_suspend_noirq()
-> - resume_device_noirq() -> __device_resume_noirq()
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> Acked-by: Len Brown <lenb@kernel.org>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday 12 June 2009, Mike Frysinger wrote:
+> TIOCGRS485
+> TIOCSRS485
+> TCGETX
+> TCSETX
+> TCSETXF
+> TCSETXW
 
-Ack.
+These can easily be added, as my patch does.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> TIOCGHAYESESP
+> TIOCSHAYESESP
+
+These two are better left out IMHO. TIOCGHAYESESP on half the architectures
+has the same number as FIOQSIZE on the other half (including blackfin).
+The only driver using it is ESPSERIAL, which is marked as broken and depending
+on ISA, so you really don't care.
+
+	Arnd <><
