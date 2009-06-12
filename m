@@ -1,98 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760419AbZFLL2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760986AbZFLL3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760419AbZFLL2r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZFLL2k
+	id S1760986AbZFLL3r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbZFLL3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:28:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:36234 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 07:29:39 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:59255 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827AbZFLL2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:28:39 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Dave Jones <davej@redhat.com>
-Subject: [PATCH] cpumask: new cpumask operators for arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-Date: Fri, 12 Jun 2009 20:58:37 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, mark.langsdorf@amd.com
-References: <20090611225928.E6FF4DDDA1@ozlabs.org> <20090611232517.GA32486@redhat.com>
-In-Reply-To: <20090611232517.GA32486@redhat.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906122058.38112.rusty@rustcorp.com.au>
+	id S1750749AbZFLL3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:29:38 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open when supported
+Date: Fri, 12 Jun 2009 07:29:29 -0400
+Message-Id: <1244806169-12232-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove all old-style cpumask operators, and cpumask_t.
+If the port does not support HAVE_PERF_COUNTERS, then they can't support
+the perf_counter_open syscall either.  Rather than forcing everyone to add
+an ignore (or suffer the warning until they get around to implementing
+support), only whine about the syscall when applicable.
 
-Also: get rid of the unused define_siblings function.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    8 ++++----
- arch/x86/kernel/cpu/cpufreq/powernow-k8.h |   11 -----------
- 2 files changed, 4 insertions(+), 15 deletions(-)
+ scripts/checksyscalls.sh |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -1060,7 +1060,7 @@ static int transition_frequency_fidvid(s
- 	freqs.old = find_khz_freq_from_fid(data->currfid);
- 	freqs.new = find_khz_freq_from_fid(fid);
+diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
+index 60d00d1..90fb953 100755
+--- a/scripts/checksyscalls.sh
++++ b/scripts/checksyscalls.sh
+@@ -104,6 +104,11 @@ cat << EOF
+ #define __IGNORE_sync_file_range
+ #endif
  
--	for_each_cpu_mask_nr(i, *(data->available_cores)) {
-+	for_each_cpu(i, data->available_cores) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 	}
-@@ -1068,7 +1068,7 @@ static int transition_frequency_fidvid(s
- 	res = transition_fid_vid(data, fid, vid);
- 	freqs.new = find_khz_freq_from_fid(data->currfid);
- 
--	for_each_cpu_mask_nr(i, *(data->available_cores)) {
-+	for_each_cpu(i, data->available_cores) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 	}
-@@ -1093,7 +1093,7 @@ static int transition_frequency_pstate(s
- 			data->currpstate);
- 	freqs.new = find_khz_freq_from_pstate(data->powernow_table, pstate);
- 
--	for_each_cpu_mask_nr(i, *(data->available_cores)) {
-+	for_each_cpu(i, data->available_cores) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 	}
-@@ -1101,7 +1101,7 @@ static int transition_frequency_pstate(s
- 	res = transition_pstate(data, pstate);
- 	freqs.new = find_khz_freq_from_pstate(data->powernow_table, pstate);
- 
--	for_each_cpu_mask_nr(i, *(data->available_cores)) {
-+	for_each_cpu(i, data->available_cores) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 	}
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-@@ -223,14 +223,3 @@ static void powernow_k8_acpi_pst_values(
- 
- static int fill_powernow_table_pstate(struct powernow_k8_data *data, struct cpufreq_frequency_table *powernow_table);
- static int fill_powernow_table_fidvid(struct powernow_k8_data *data, struct cpufreq_frequency_table *powernow_table);
--
--#ifdef CONFIG_SMP
--static inline void define_siblings(int cpu, cpumask_t cpu_sharedcore_mask[])
--{
--}
--#else
--static inline void define_siblings(int cpu, cpumask_t cpu_sharedcore_mask[])
--{
--	cpu_set(0, cpu_sharedcore_mask[0]);
--}
--#endif
++/* if the port doesn't have support for it yet */
++#ifndef CONFIG_HAVE_PERF_COUNTERS
++#define __IGNORE_perf_counter_open
++#endif
++
+ /* Unmerged syscalls for AFS, STREAMS, etc. */
+ #define __IGNORE_afs_syscall
+ #define __IGNORE_getpmsg
+-- 
+1.6.3.1
 
