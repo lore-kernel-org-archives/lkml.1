@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934431AbZFLNvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbZFLNwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934431AbZFLNvr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934278AbZFLNtb
+	id S1762764AbZFLNwK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934347AbZFLNtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:49:31 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:58536 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934282AbZFLNta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:49:30 -0400
-Date: Fri, 12 Jun 2009 09:49:26 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, akpm@linux-foundation.org,
-       npiggin@suse.de
-Subject: Re: slab: setup allocators earlier in the boot sequence
-In-Reply-To: <1244797659.30512.37.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.10.0906120944540.15809@gentwo.org>
-References: <200906111959.n5BJxFj9021205@hera.kernel.org>  <1244770230.7172.4.camel@pasglop>  <1244779009.7172.52.camel@pasglop>  <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop>  <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
-  <1244792079.7172.74.camel@pasglop>  <1244792745.30512.13.camel@penberg-laptop>  <1244796045.7172.82.camel@pasglop>  <1244796211.30512.32.camel@penberg-laptop>  <1244796837.7172.95.camel@pasglop> <1244797659.30512.37.camel@penberg-laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 12 Jun 2009 09:49:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59803 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934314AbZFLNtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:49:53 -0400
+Date: Fri, 12 Jun 2009 15:49:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, paulus@samba.org,
+       ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: origin tree build failure
+Message-ID: <20090612134940.GD32105@elte.hu>
+References: <20090612102427.32582baa.sfr@canb.auug.org.au> <1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu> <1244799197.7172.106.camel@pasglop> <20090612125335.GH31845@elte.hu> <1244812224.7172.146.camel@pasglop> <1244813397.7172.156.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244813397.7172.156.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Pekka Enberg wrote:
 
-> So I am sending the GFP_NOWAIT conversion for boot code even though you
-> didn't seem to like it (but didn't explicitly NAK) as it fixes problems
-> on x86.
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-The use GFP_NOWAIT means that the caller sites are still special cased for
-an early boot situation. After bootstrap is complete the sites may use
-GFP_KERNEL instead. Bad.
+> On Fri, 2009-06-12 at 23:10 +1000, Benjamin Herrenschmidt wrote:
+> > On Fri, 2009-06-12 at 14:53 +0200, Ingo Molnar wrote:
+> 
+> > To some extent, here, the issue is on Linus side and it's up to him (Hey
+> > Linus ! still listening ?) to maybe be more proactive at giving an ack
+> > or nack so that we can get a chance to do that final pass of ironing out
+> > the mechanical bugs before we hit the main tree.
+> 
+> Let me add a little bit more background to my reasoning here and why I
+> think having this integration testing step is so valuable...
+> 
+> It all boils down to bisection and having a bisectable tree.
 
-Best thing to do is to recognize the fact that we are still in early boot
-in the allocators. Derived allocators (such as slab and vmalloc) mask bits
-using GFP_RECLAIM_MASK and when doing allocations through the page
-allocator. You could make GFP_RECLAIM_MASK a variable. During boot
-__GFP_WAIT would not be set in GFP_RECLAIM_MASK.
+I think you are way too concentrated on this particular incident, 
+and you are generalizing it into something that is not so in 
+practice.
+
+Even in this particular case, there's just 3 other commit points in 
+the Git tree between commit 8a1ca8c (the breakage on PowerPC) and 
+e14112d (the fix). We'll have up to 10,000 commits.
+
+I bisect on an almost daily basis, and i'm not seeing unreasonable 
+problems.
+
+	Ingo
