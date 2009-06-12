@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932602AbZFLHrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbZFLHsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932602AbZFLHrr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 03:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbZFLHrj
+	id S932615AbZFLHsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 03:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZFLHsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 03:47:39 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37974 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbZFLHri (ORCPT
+	Fri, 12 Jun 2009 03:48:25 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:47529 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752670AbZFLHsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 03:47:38 -0400
-Subject: Re: slab: setup allocators earlier in the boot sequence
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, mingo@elte.hu
-In-Reply-To: <1244792380.7172.77.camel@pasglop>
-References: <200906111959.n5BJxFj9021205@hera.kernel.org>
-	 <1244770230.7172.4.camel@pasglop>  <1244779009.7172.52.camel@pasglop>
-	 <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop>
-	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
-	 <1244792079.7172.74.camel@pasglop>  <1244792380.7172.77.camel@pasglop>
-Date: Fri, 12 Jun 2009 10:47:40 +0300
-Message-Id: <1244792860.30512.15.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 12 Jun 2009 03:48:24 -0400
+Message-ID: <4A320848.6000701@rsk.demon.co.uk>
+Date: Fri, 12 Jun 2009 08:48:24 +0100
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] posix-cpu-timers: remove tasklist_lock where we can
+References: <20090612084927.11673956@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <20090612084927.11673956@dhcp-lab-109.englab.brq.redhat.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Benjamin,
-
-On Fri, 2009-06-12 at 17:34 +1000, Benjamin Herrenschmidt wrote:
-> > I don't like that approach at all. Fixing all the call sites... we are
-> > changing things all over the place, we'll certainly miss some, and
-> > honestly, it's none of the business of things like vmalloc to know about
-> > things like what kmalloc flags are valid and when... 
+Stanislaw Gruszka wrote:
+> tasklist_lock is not needed to protect find_task_by_vpid() nor
+> thread_group_leader() nor same_thread_group() , use rcu_read_lock() instead.
 > 
-> Oh and btw, your patch alone doesn't fix powerpc, because it's missing
-> a whole bunch of GFP_KERNEL's in the arch code... You would have to
-> grep the entire kernel for things that check slab_is_available() and
-> even then you'll be missing some.
+> Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+> ---
+>  kernel/posix-cpu-timers.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+> index bece7c0..1d9cdf3 100644
+> --- a/kernel/posix-cpu-timers.c
+> +++ b/kernel/posix-cpu-timers.c
+> @@ -37,13 +37,13 @@ static int check_clock(const clockid_t which_clock)
+>  	if (pid == 0)
+>  		return 0;
+>  
+> -	read_lock(&tasklist_lock);
+> +	rcu_read_lock();
+>  	p = find_task_by_vpid(pid);
+>  	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
+>  		   same_thread_group(p, current) : thread_group_leader(p))) {
+>  		error = -EINVAL;
+>  	}
+> -	read_unlock(&tasklist_lock);
+> +	rcu_read_lock();
+>  
+Did you really intend to replace an unlock with a lock?
 
-Ah, the patch is not against current git so, yeah, I missed some.
-
-On Fri, 2009-06-12 at 17:39 +1000, Benjamin Herrenschmidt wrote:
-> For example, slab_is_available() didn't always exist, and so in the
-> early days on powerpc, we used a mem_init_done global that is set form
-> mem_init() (not perfect but works in practice). And we still have code
-> using that to do the test.
-
-IMHO, that would be a bug :-). But anyway, see the other thread for my
-suggestion how to do what you want in a slightly cleaner way.
-
-			Pekka
-
+regards
+Richard
