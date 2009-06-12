@@ -1,67 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933400AbZFLJow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933506AbZFLJpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933400AbZFLJow (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbZFLJop
+	id S933506AbZFLJpa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbZFLJpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:44:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46177 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754420AbZFLJoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:44:44 -0400
-Subject: Re: slab: setup allocators earlier in the boot sequence
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20090612093046.GG24044@wotan.suse.de>
-References: <1244792079.7172.74.camel@pasglop>
-	 <1244792745.30512.13.camel@penberg-laptop>
-	 <20090612075427.GA24044@wotan.suse.de>
-	 <1244793592.30512.17.camel@penberg-laptop>
-	 <20090612080236.GB24044@wotan.suse.de>
-	 <1244793879.30512.19.camel@penberg-laptop>
-	 <1244796291.7172.87.camel@pasglop>
-	 <84144f020906120149k6cbe5177vef1944d9d216e8b2@mail.gmail.com>
-	 <20090612091304.GE24044@wotan.suse.de> <1244798660.7172.102.camel@pasglop>
-	 <20090612093046.GG24044@wotan.suse.de>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 19:44:25 +1000
-Message-Id: <1244799865.7172.112.camel@pasglop>
+	Fri, 12 Jun 2009 05:45:22 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59393 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754124AbZFLJpV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:45:21 -0400
+Date: Fri, 12 Jun 2009 12:45:21 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
+ suspending
+In-Reply-To: <1244799389.7172.110.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0906121244020.30911@melkki.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> 
+ <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> 
+ <20090612091002.GA32052@elte.hu> <1244798515.7172.99.camel@pasglop> 
+ <84144f020906120224v5ef44637pb849fd247eab84ea@mail.gmail.com>
+ <1244799389.7172.110.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 11:30 +0200, Nick Piggin wrote:
-> On Fri, Jun 12, 2009 at 07:24:20PM +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > > It's OK. I'd make it gfp_notsmellybits, and avoid the ~.
-> > > And read_mostly.
-> > 
-> > read_mostly is fine. gfp_notsmellybits isn't a nice name :-) Make it
-> > gfp_allowedbits then. I did it backward on purpose though as the risk of
-> > "missing" bits here (as we may add new ones) is higher and it seemed to
-> > me generally simpler to just explicit spell out the ones to forbid
-> > (also, on powerpc,  &~ is one instruction :-)
-> 
-> But just do the ~ in the assignment. No missing bits :)
+On Fri, 12 Jun 2009, Benjamin Herrenschmidt wrote:
+> Take a break, take a step back, and look at the big picture. Do you
+> really want to find all the needles in the haystack or just make sure
+> you wear gloves when handling the hay ? :-)
 
-Heh, ok.
-> Yeah but it doesn't do it in the page allocator so it isn't
-> really useful as a general allocator flags tweak. ATM it only
-> helps this case of slab allocator hackery.
+Well, I would like to find the needles but I think we should do it with 
+gloves on.
 
-I though I did it in page_alloc.c too but I'm happy to be told what I
-missed :-) The intend is certainly do have a general allocator flag
-tweak.
+If everyone is happy with this version of Ben's patch, I'm going to just 
+apply it and push it to Linus.
 
-Cheers,
-Ben.
+			Pekka
 
+>From 7760451b006b165bce052622af7316b54bd5a122 Mon Sep 17 00:00:00 2001
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 12 Jun 2009 12:39:58 +0300
+Subject: [PATCH] Sanitize "gfp" flags during boot
+
+With the recent shuffle of initialization order to move memory related
+inits earlier, various subtle breakage was introduced in archs like
+powerpc due to code somewhat assuming that GFP_KERNEL can be used as
+soon as the allocators are up. This is not true because any __GFP_WAIT
+allocation will cause interrupts to be enabled, which can be fatal if
+it happens too early.
+
+This isn't trivial to fix on every call site. For example, powerpc's
+ioremap implementation needs to be called early. For that, it uses two
+different mechanisms to carve out virtual space. Before memory init,
+by moving down VMALLOC_END, and then, by calling get_vm_area().
+Unfortunately, the later does GFK_KERNEL allocations. But we can't do
+anything else because once vmalloc's been initialized, we can no longer
+safely move VMALLOC_END to carve out space.
+
+There are other examples, wehere can can be called either very early
+or later on when devices are hot-plugged. It would be a major pain for
+such code to have to "know" whether it's in a context where it should
+use GFP_KERNEL or GFP_NOWAIT.
+
+Finally, by having the ability to silently removed __GFP_WAIT from
+allocations, we pave the way for suspend-to-RAM to use that feature
+to also remove __GFP_IO from allocations done after suspending devices
+has started. This is important because such allocations may hang if
+devices on the swap-out path have been suspended, but not-yet suspended
+drivers don't know about it, and may deadlock themselves by being hung
+into a kmalloc somewhere while holding a mutex for example.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/gfp.h |    9 +++++++++
+ init/main.c         |    1 +
+ mm/page_alloc.c     |   18 ++++++++++++++++++
+ mm/slab.c           |    9 +++++++++
+ mm/slub.c           |    3 +++
+ 5 files changed, 40 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 0bbc15f..8d2ea79 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -99,6 +99,13 @@ struct vm_area_struct;
+ /* 4GB DMA on some platforms */
+ #define GFP_DMA32	__GFP_DMA32
+ 
++extern gfp_t gfp_allowed_bits;
++
++static inline gfp_t gfp_sanitize(gfp_t gfp_flags)
++{
++	return gfp_flags & gfp_allowed_bits;
++}
++
+ /* Convert GFP flags to their corresponding migrate type */
+ static inline int allocflags_to_migratetype(gfp_t gfp_flags)
+ {
+@@ -245,4 +252,6 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
+ void drain_all_pages(void);
+ void drain_local_pages(void *dummy);
+ 
++void mm_late_init(void);
++
+ #endif /* __LINUX_GFP_H */
+diff --git a/init/main.c b/init/main.c
+index b3e8f14..34c6e7e 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -640,6 +640,7 @@ asmlinkage void __init start_kernel(void)
+ 				 "enabled early\n");
+ 	early_boot_irqs_on();
+ 	local_irq_enable();
++	mm_late_init();
+ 
+ 	/*
+ 	 * HACK ALERT! This is early. We're enabling the console before
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 7760ef9..a42e4c7 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -77,6 +77,13 @@ int percpu_pagelist_fraction;
+ int pageblock_order __read_mostly;
+ #endif
+ 
++/*
++ * We set up the page allocator and the slab allocator early on with interrupts
++ * disabled. Therefore, make sure that we sanitize GFP flags accordingly before
++ * everything is up and running.
++ */
++gfp_t gfp_allowed_bits = ~(__GFP_WAIT|__GFP_FS | __GFP_IO);
++
+ static void __free_pages_ok(struct page *page, unsigned int order);
+ 
+ /*
+@@ -1473,6 +1480,9 @@ __alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
+ 	unsigned long did_some_progress;
+ 	unsigned long pages_reclaimed = 0;
+ 
++	/* Sanitize flags so we don't enable irqs too early during boot */
++	gfp_mask = gfp_sanitize(gfp_mask);
++
+ 	lockdep_trace_alloc(gfp_mask);
+ 
+ 	might_sleep_if(wait);
+@@ -4728,3 +4738,11 @@ __offline_isolated_pages(unsigned long start_pfn, unsigned long end_pfn)
+ 	spin_unlock_irqrestore(&zone->lock, flags);
+ }
+ #endif
++
++void mm_late_init(void)
++{
++	/*
++	 * Interrupts are enabled now so all GFP allocations are safe.
++	 */
++	gfp_allowed_bits = __GFP_BITS_MASK;
++}
+diff --git a/mm/slab.c b/mm/slab.c
+index f46b65d..87b166e 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2791,6 +2791,9 @@ static int cache_grow(struct kmem_cache *cachep,
+ 	gfp_t local_flags;
+ 	struct kmem_list3 *l3;
+ 
++	/* Sanitize flags so we don't enable irqs too early during boot */
++	gfp_mask = gfp_sanitize(gfp_mask);
++
+ 	/*
+ 	 * Be lazy and only check for valid flags here,  keeping it out of the
+ 	 * critical path in kmem_cache_alloc().
+@@ -3212,6 +3215,9 @@ static void *fallback_alloc(struct kmem_cache *cache, gfp_t flags)
+ 	void *obj = NULL;
+ 	int nid;
+ 
++	/* Sanitize flags so we don't enable irqs too early during boot */
++	gfp_mask = gfp_sanitize(gfp_mask);
++
+ 	if (flags & __GFP_THISNODE)
+ 		return NULL;
+ 
+@@ -3434,6 +3440,9 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
+ 	unsigned long save_flags;
+ 	void *objp;
+ 
++	/* Sanitize flags so we don't enable irqs too early during boot */
++	gfp_mask = gfp_sanitize(gfp_mask);
++
+ 	lockdep_trace_alloc(flags);
+ 
+ 	if (slab_should_failslab(cachep, flags))
+diff --git a/mm/slub.c b/mm/slub.c
+index 3964d3c..5c646f7 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1512,6 +1512,9 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
+ 	/* We handle __GFP_ZERO in the caller */
+ 	gfpflags &= ~__GFP_ZERO;
+ 
++	/* Sanitize flags so we don't enable irqs too early during boot */
++	gfpflags = gfp_sanitize(gfpflags);
++
+ 	if (!c->page)
+ 		goto new_slab;
+ 
+-- 
+1.6.0.4
 
