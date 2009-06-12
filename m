@@ -1,116 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbZFLN14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765316AbZFLN31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765071AbZFLN14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762393AbZFLNZr
+	id S1765316AbZFLN31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763297AbZFLNZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:25:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47966 "EHLO mx2.suse.de"
+	Fri, 12 Jun 2009 09:25:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:54981 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759386AbZFLNZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:25:42 -0400
-From: Petr Tesarik <ptesarik@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Roland McGrath <roland@redhat.com>, Petr Tesarik <ptesarik@suse.cz>
-Subject: [PATCH 7/8] x86: check the size of GOT in vDSO
-Date: Fri, 12 Jun 2009 15:25:41 +0200
-Message-Id: <0e89bbcf8b8dcfc9c89fb383cd96654754a572f0.1244812577.git.ptesarik@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <cover.1244812577.git.ptesarik@suse.cz>
-References: <cover.1244812577.git.ptesarik@suse.cz>
+	id S1761523AbZFLNZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:25:56 -0400
+CC: linux-kernel@vger.kernel.org
+To: Paul Mundt <lethal@linux-sh.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Fri, 12 Jun 2009 22:31:04 +0930
+Subject: [PATCH 4/17] cpumask: remove the now-obsoleted pcibus_to_cpumask(): sh
+Message-Id: <20090612132556.EEAEADDD04@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There should be no real entries in the GOT, because they are basically
-pointers to dynamic symbols, and that will not work correctly without
-a real dynamic linker for the vDSO.
 
-However, the ABI pre-defines three entries in the GOT which are always
-present, so the GOT section is never completely empty. We can check
-that there are no extra entries beyond these three.
+cpumask_of_pcibus() is the new version.
 
-To make it work:
-  - move the GOT into a separate section
-  - check the size of that section
-  - pass -m32 or -m64 to the pre-processor to get the correct
-    definition of __SIZEOF_POINTER__
-
-Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/x86/vdso/Makefile          |    5 +++--
- arch/x86/vdso/vdso-layout.lds.S |   20 +++++++++++++++++++-
- 2 files changed, 22 insertions(+), 3 deletions(-)
+ arch/sh/include/asm/topology.h |    3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index 16a9020..8c7f06a 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -23,7 +23,8 @@ $(obj)/vdso.o: $(obj)/vdso.so
+diff --git a/arch/sh/include/asm/topology.h b/arch/sh/include/asm/topology.h
+--- a/arch/sh/include/asm/topology.h
++++ b/arch/sh/include/asm/topology.h
+@@ -35,9 +35,6 @@
+ #define cpumask_of_node(node)	((void)node, cpu_online_mask)
  
- targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y)
- 
--export CPPFLAGS_vdso.lds += -P -C
-+vdso-cppflags = -P -C
-+export CPPFLAGS_vdso.lds += -m64 $(vdso-cppflags)
- 
- VDSO_LDFLAGS_vdso.lds = -m elf_x86_64 -Wl,-soname=linux-vdso.so.1 \
- 		      	-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
-@@ -68,7 +69,7 @@ vdso32.so-$(VDSO32-y)		+= sysenter
- 
- vdso32-images			= $(vdso32.so-y:%=vdso32-%.so)
- 
--CPPFLAGS_vdso32.lds = $(CPPFLAGS_vdso.lds)
-+CPPFLAGS_vdso32.lds = -m32 $(vdso-cppflags)
- VDSO_LDFLAGS_vdso32.lds = -m elf_i386 -Wl,-soname=linux-gate.so.1
- 
- # This makes sure the $(obj) subdirectory exists even though vdso32/
-diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
-index 0da3db0..ea9ef58 100644
---- a/arch/x86/vdso/vdso-layout.lds.S
-+++ b/arch/x86/vdso/vdso-layout.lds.S
-@@ -44,13 +44,15 @@ SECTIONS
- 	.dynamic : {
- 		*(.dynamic)
- 	} :text :dynamic
-+	.got : {
-+		*(.got.plt) *(.got)
-+	} :text
- 
- 	.rodata : {
- 		*(.rodata* .gnu.linkonce.r.*)
- 	} :text
- 	.data : {
- 		*(.data* .gnu.linkonce.d.*)
--		*(.got.plt) *(.got)
- 		*(.bss* .gnu.linkonce.b.*)
- 	}
- 
-@@ -111,6 +113,22 @@ SECTIONS
-  */
- ASSERT(!SIZEOF(.broken), "The vdso linker script found a section that is bad. See vdso-layout.lds.S for details.");
- 
-+/* This assert is triggered if the resulting GOT is larger than the
-+ * minimum defined by the ABI, i.e. there is some actual use of the
-+ * GOT.
-+ *
-+ * To find the offending symbols you may:
-+ *  1. temporarily disable this check
-+ *  2. examine the dynamic relocations of the resulting vDSO with
-+ *     objdump -R
-+ *
-+ * To find the places where the symbols were used, you may:
-+ *  1. add -Wl,--emit-relocs to VDSO_LDFLAGS
-+ *  2. run objdump -r on the resulting vDSO and look for all
-+ *     GOT-type relocations.
-+ */
-+ASSERT(SIZEOF(.got) == 3*__SIZEOF_POINTER__, "The vdso linker script found a wrong reference to an external object. See vdso-layout.lds.S for details.");
-+
- /*
-  * Very old versions of ld do not recognize this name token; use the constant.
-  */
--- 
-1.6.0.2
+ #define pcibus_to_node(bus)	((void)(bus), -1)
+-#define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
+-					CPU_MASK_ALL : \
+-					node_to_cpumask(pcibus_to_node(bus)))
+ #define cpumask_of_pcibus(bus)	(pcibus_to_node(bus) == -1 ? \
+ 					CPU_MASK_ALL_PTR : \
+ 					cpumask_of_node(pcibus_to_node(bus)))
 
