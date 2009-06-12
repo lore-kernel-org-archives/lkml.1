@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765632AbZFLRox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765453AbZFLRpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765632AbZFLRox (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZFLRop
+	id S1765453AbZFLRpJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765304AbZFLRot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:44:45 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:49452 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755312AbZFLRoo (ORCPT
+	Fri, 12 Jun 2009 13:44:49 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51312 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765538AbZFLRos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:44:44 -0400
-Message-ID: <4A329322.7030403@oracle.com>
-Date: Fri, 12 Jun 2009 10:40:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 12 Jun 2009 13:44:48 -0400
+Date: Fri, 12 Jun 2009 18:44:19 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jamie Lokier <jamie@shareable.org>, Joe Perches <joe@perches.com>,
+       David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090612174419.GA17812@n2100.arm.linux.org.uk>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611164218.GA21128@n2100.arm.linux.org.uk> <20090612012304.GA25550@shareable.org> <200906121039.44524.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       samr <sam@ravnborg.org>
-Subject: Re: [PATCH] perf_counters: start documenting HAVE_PERF_COUNTERS 
- requirements
-References: <1244827063-24046-1-git-send-email-vapier@gentoo.org> 	<20090612173031.GA11233@elte.hu> <8bd0f97a0906121032p12710878h14c5013fbec58b91@mail.gmail.com> 	<20090612173647.GC22015@elte.hu> <8bd0f97a0906121040m5222cd5et77ecc1bd5edb6b89@mail.gmail.com>
-In-Reply-To: <8bd0f97a0906121040m5222cd5et77ecc1bd5edb6b89@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4A3293F9.020B:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906121039.44524.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On Fri, Jun 12, 2009 at 13:36, Ingo Molnar wrote:
->> * Mike Frysinger <vapier.adi@gmail.com> wrote:
->>> On Fri, Jun 12, 2009 at 13:30, Ingo Molnar wrote:
->>>> * Mike Frysinger <vapier@gentoo.org> wrote:
->>>>> Help out arch porters who want to support perf counters by listing some
->>>>> basic requirements.
->>>>>
->>>>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->>>>> ---
->>>>> i imagine more details would be good, but this is a starting point and
->>>>> better than nothing
->>>>>
->>>>>  init/Kconfig          |    2 ++
->>>>>  tools/perf/design.txt |   15 +++++++++++++++
->>>>>  2 files changed, 17 insertions(+), 0 deletions(-)
->>>>>
->>>>> diff --git a/init/Kconfig b/init/Kconfig
->>>>> index c649657..20f85b1 100644
->>>>> --- a/init/Kconfig
->>>>> +++ b/init/Kconfig
->>>>> @@ -936,6 +936,8 @@ config AIO
->>>>>
->>>>>  config HAVE_PERF_COUNTERS
->>>>>       bool
->>>>> +     help
->>>>> +       See end of tools/perf/design.txt
->>>>>
->>>>>  menu "Performance Counters"
->>>> Applied, thanks Mike! I have made a small change: i changed it from
->>>> help text into a regular comment. We usually use help texts for
->>>> interactive Kconfig options - but this is not one.
->>> yes, but i like the help text because when i use the kconfig
->>> search option, it shows up.  otherwise doing a search for
->>> HAVE_PERF_COUNTERS shows nothing useful.
->> When i did this modification i tried that in 'make menuconfig' and
->> the help didnt show up. Is it only available in certain kconfig
->> methods?
+On Fri, Jun 12, 2009 at 10:39:43AM +0200, Bartlomiej Zolnierkiewicz wrote:
+> The irony of this all is that the same people that complain about lack of
+> time still invest it in such idiotic tasks like approval of subscription
+> requests or moderation of messages..
 
-There is no prompt string for it, so it's invisible in menuconfig.
-xconfig has View options that can show it.
+There we go again, people making unfounded statements with no basis
+in reality.
 
-> hrm, you're right.  not sure what i was thinking of.  sounds like an
-> enhancement request though for kconfig.
+It doesn't surprise me that people find me hard to get on with when
+they go around making such statements without doing the basic research
+first.
 
-Could be.  Cc: Sam added.
+At the bottom of the mailing list web pages there is a line which tells
+you who looks after them.  For this list, it says:
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+    Linux-arm-kernel list run by rmk+listadmin at arm.linux.org.uk, mouw at
+    nl.linux.org
+
+Oh my, two people.  Wow.  Could it be that I'm not the one who is
+primerily involved with doing the approval.  Now that's a thought.
+
+So, next time, do some research before making such incorrect
+statements.
