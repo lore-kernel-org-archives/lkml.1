@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765582AbZFLRli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765446AbZFLRna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765582AbZFLRli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765099AbZFLRl1
+	id S1765446AbZFLRna (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZFLRnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:41:27 -0400
-Received: from mail-px0-f187.google.com ([209.85.216.187]:63331 "EHLO
-	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761688AbZFLRl0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:41:26 -0400
-From: Kevin Hilman <khilman@deeprootsystems.com>
-To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH resend v3] UART regs: add OMAP wakeup-enable register
-Date: Fri, 12 Jun 2009 10:41:26 -0700
-Message-Id: <1244828486-13666-1-git-send-email-khilman@ti.deeprootsystems.com>
-X-Mailer: git-send-email 1.6.2.2
+	Fri, 12 Jun 2009 13:43:22 -0400
+Received: from mga02.intel.com ([134.134.136.20]:28987 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751834AbZFLRnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 13:43:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,210,1243839600"; 
+   d="scan'208";a="421251257"
+Subject: Re: [BUG][2.6.30] Niced processes do not raise CPU frequency with
+ ondemand
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <200906121925.38693.elendil@planet.nl>
+References: <200906121844.02004.elendil@planet.nl>
+	 <1244825317.4534.1342.camel@localhost.localdomain>
+	 <200906121925.38693.elendil@planet.nl>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 10:41:48 -0700
+Message-Id: <1244828508.4534.1404.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kevin Hilman <khilman@deeprootsystems.com>
+On Fri, 2009-06-12 at 10:25 -0700, Frans Pop wrote:
+> Thanks for the quick reply Venki.
+> 
+> On Friday 12 June 2009, Pallipadi, Venkatesh wrote:
+> > What does ignore_nice under cpufreq/ondemand say?
+> 
+> Right, that's 1 (was not aware that existed :-P)
+> And changing it to 0 solves the problem.
 
-Add the wakeup enable register to the list of OMAP-specific UART
-registers.
-
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
- include/linux/serial_reg.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
-index 96c0d93..850db2e 100644
---- a/include/linux/serial_reg.h
-+++ b/include/linux/serial_reg.h
-@@ -323,6 +323,7 @@
- #define UART_OMAP_MVER		0x14	/* Module version register */
- #define UART_OMAP_SYSC		0x15	/* System configuration register */
- #define UART_OMAP_SYSS		0x16	/* System status register */
-+#define UART_OMAP_WER		0x17	/* Wake-up enable register */
+OK. Good to know that there are no kernel bugs with honoring
+ignore_nice_load setting. :)
  
- #endif /* _LINUX_SERIAL_REG_H */
- 
--- 
-1.6.2.2
+> Next question is: how and why does it get set?
+> As userland has not changed (AFAIK), my first suspect remains the kernel.
+> 
+
+Kernel never sets this. It is initialized to 0 and provides a /sys
+interface to user. I think it is set by some user app
+(gnome-power-manager or some other app like that). That explains why it
+is 0 initially after boot and gets changed later.
+
+The support for ignore_nice_load=1 was broken in kernel for a short
+while (arounf 2.6.28, IIRC). That may be the reason why this behavior
+was not noticed earlier.
+
+Thanks,
+Venki
 
