@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764373AbZFLLLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760924AbZFLLNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764373AbZFLLLc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZFLLLW
+	id S1760924AbZFLLNa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZFLLNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:11:22 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54401 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752303AbZFLLLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:11:21 -0400
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
- suspending
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
-	 <20090612091002.GA32052@elte.hu>
-	 <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
-	 <20090612100756.GA25185@elte.hu>
-	 <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 21:11:00 +1000
-Message-Id: <1244805060.7172.126.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 07:13:25 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40016 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbZFLLNY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:13:24 -0400
+Date: Fri, 12 Jun 2009 13:13:17 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Magnus Damm <damm@igel.co.jp>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Sergio Luis <sergio@larces.uece.br>,
+       Lauro Salmito <laurosalmito@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [PATCH 19/19] PM: Add empty suspend/resume device irq functions
+Message-ID: <20090612111317.GP18682@elf.ucw.cz>
+References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl> <S4AoGnG.A.AI.ZjYMKB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <S4AoGnG.A.AI.ZjYMKB@chimera>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> OK, but that means we need to fix up every single caller. I'm fine
-> with that but Ben is not. As I am unable to test powerpc here, I am
-> inclined to just merge Ben's patch as "obviously correct".
+On Thu 2009-06-11 22:42:09, Rafael J. Wysocki wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> That does not mean we can't introduce GFP_BOOT later on if we want to. Hmm?
+> git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
+> device interrupts" introduced some helper functions. However these
+> functions are only available for architectures which support
+> GENERIC_HARDIRQS.
 
-Again, you are missing part of the picture. Yes we -can- fix all the
--direct- callers that are obviously only be run at boot time. But what
-about all the indirect ones (or even direct ones) that can be called
-either at boot time or later. vmalloc() is the perfect example (or more
-precisely __get_vm_area() which brings in ioremap etc...) but there are
-many more.
+I believe architectures that do not use GENERIC_HARDIRQs should just
+provide the empty functions themselves.
 
-Cheers,
-Ben.
+If we want to help them, perhaps few attribute((weak)) functions in
+the core are the way to go...
+								Pavel
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
