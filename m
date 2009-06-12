@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932419AbZFLDIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932556AbZFLDJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932419AbZFLDIq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 23:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbZFLDIi
+	id S932556AbZFLDJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 23:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbZFLDIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 23:08:38 -0400
-Received: from mga12.intel.com ([143.182.124.36]:58976 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932419AbZFLDId (ORCPT
+	Thu, 11 Jun 2009 23:08:51 -0400
+Received: from mga05.intel.com ([192.55.52.89]:27344 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932515AbZFLDIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 23:08:33 -0400
+	Thu, 11 Jun 2009 23:08:43 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,206,1243839600"; 
-   d="scan'208";a="153421804"
-Subject: [PATCH V4: 3/3] pci: Provide Multiple Error Received support on AER
+   d="scan'208";a="465669312"
+Subject: [PATCH V4: 1/3] pci: Provide Multiple Error Received and no error
+	source id support on AER
 From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 12 Jun 2009 11:08:38 +0800
-Message-Id: <1244776118.2560.321.camel@ymzhang>
+Date: Fri, 12 Jun 2009 11:08:29 +0800
+Message-Id: <1244776109.2560.319.camel@ymzhang>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 8bit
@@ -27,187 +28,356 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿﻿﻿﻿﻿When a root port receive the same errors more than once before kernel
- process them, the Multiple Error Messages Received flags are set by
-hardware. Because root port could only save one kind of correctable
-error source id and another uncorrectable error source id at the same
-time, so the second message sender id is lost if the 2 messages are
-sent from 2 different devices. Below patch searches all devices under
-the root port when multiple messages are received.
+Anyone could help me test it on powerpc? Or at least a compilation
+to see there is any compiling error/warning. I have no powerpc machine.
+Thanks.
 
-﻿﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+Changelog V4:
+	Port the patches to Jesses' linux-next tree (mostly based on
+	2.6.30).
+
+﻿﻿Changelog V3:
+        1) Probe devices under the root port when the bus id of
+        the source id is equal to 0; V2 does so when device id is
+        equal to 0;
+        2) Add more comments on critical path of finding devices.
+
+﻿Changelog V2:
+        Version 2 adds nosourceid, a boot parameter. When
+        aerdriver.nosourceid=y, aerdriver doesn't use the source
+        id saved by root port. Instead, it searches the device
+        tree under the root port to find the reporter. So if hardware
+        has errata and root port saves a bad source id, aerdriver
+        still could find the reporter.
+        There are 2 scenarios under which ﻿aerdriver searches the
+        device tree under root port:
+        1) nosourceid=n and error source id is equal to 0;
+        2) nosourceid=y.
+
+﻿Based on PCI Express AER specs, a root port might receive multiple
+TLP errors while it could only save a correctable error source id
+and an uncorrectable error source id at the same time. In addition,
+some root port hardware might be unable to provide a correct source
+id, i.e., the source id, or the bus id part of the source id provided
+by root port might be equal to 0.
+
+The patchset implements the support in kernel by searching the device
+tree under the root port.
+
+Patch 1 changes parameter cb of function pci_walk_bus to return a value.
+When cb return non-zero, pci_walk_bus stops more searching on the
+device tree.
+
+﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
 
 ---
 
-diff -Nraup linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv_core.c
---- linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:39:24.000000000 +0800
-+++ linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:45:15.000000000 +0800
-@@ -145,13 +145,22 @@ static void set_downstream_devices_error
- 	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
- }
+diff -Nraup linux-2.6_next/arch/powerpc/platforms/pseries/eeh_driver.c linux-2.6_next_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c
+--- linux-2.6_next/arch/powerpc/platforms/pseries/eeh_driver.c	2009-06-12 05:25:14.000000000 +0800
++++ linux-2.6_next_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c	2009-06-12 05:28:08.000000000 +0800
+@@ -122,7 +122,7 @@ static void eeh_enable_irq(struct pci_de
+  * passed back in "userdata".
+  */
  
-+static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
-+{
-+	if (e_info->error_dev_num < AER_MAX_MULTI_ERR_DEVICES) {
-+		e_info->dev[e_info->error_dev_num ++] = dev;
-+		return 1;
-+	} else
-+		return 0;
-+}
-+
- static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
+-static void eeh_report_error(struct pci_dev *dev, void *userdata)
++static int eeh_report_error(struct pci_dev *dev, void *userdata)
  {
- 	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
- 		/*
- 		 * Device ID match
- 		 */
--		e_info->dev = dev;
-+		add_error_device(e_info, dev);
- 		return 1;
- 	}
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -130,19 +130,21 @@ static void eeh_report_error(struct pci_
+ 	dev->error_state = pci_channel_io_frozen;
  
-@@ -166,20 +175,38 @@ static int find_device_iter(struct pci_d
- 	u32 status;
- 	u32 mask;
- 	u16 reg16;
-+	int result;
- 	struct aer_err_info *e_info = (struct aer_err_info *)data;
- 
- 	/*
- 	 * When bus id is equal to 0, it might be a bad id
- 	 * reported by root port.
- 	 */
--	if (!nosourceid && (PCI_BUS(e_info->id) != 0))
--		return compare_device_id(dev, e_info);
-+	if (!nosourceid && (PCI_BUS(e_info->id) != 0)) {
-+		result = compare_device_id(dev, e_info);
-+		/*
-+		 * If there is no multiple error, we stop
-+		 * or continue based on the id comparing.
-+		 */
-+		if (!(e_info->flags & AER_MULTI_ERROR_VALID_FLAG))
-+			return result;
-+
-+		/*
-+		 * If there are multiple errors and id does match,
-+		 * We need continue to search other devices under
-+		 * the root port. Return 0 means that.
-+		 */
-+		if (result)
-+			return 0;
-+	}
- 
- 	/*
--	 * Next is to check when bus id is equal to 0 or
--	 * nosourceid==y. Some ports might lose the bus
--	 * id of error source id. We check AER status
--	 * registers to find the initial reporter.
-+	 * When either
-+	 * 	1) nosourceid==y;
-+	 * 	2) bus id is equal to 0. Some ports might lose the bus
-+	 * 		id of error source id;
-+	 * 	3) There are multiple errors and prior id comparing fails;
-+	 * We check AER status registers to find the initial reporter.
- 	 */
- 	if (atomic_read(&dev->enable_cnt) == 0)
- 		return 0;
-@@ -208,8 +235,8 @@ static int find_device_iter(struct pci_d
- 				pos + PCI_ERR_COR_MASK,
- 				&mask);
- 		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
--			e_info->dev = dev;
--			return 1;
-+			add_error_device(e_info, dev);
-+			goto added;
- 		}
- 	} else {
- 		pci_read_config_dword(dev,
-@@ -219,12 +246,18 @@ static int find_device_iter(struct pci_d
- 				pos + PCI_ERR_UNCOR_MASK,
- 				&mask);
- 		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
--			e_info->dev = dev;
--			return 1;
-+			add_error_device(e_info, dev);
-+			goto added;
- 		}
- 	}
- 
- 	return 0;
-+
-+added:
-+	if (e_info->flags & AER_MULTI_ERROR_VALID_FLAG) {
+ 	if (!driver)
+-		return;
 +		return 0;
-+	} else
-+		return 1;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->error_detected (dev, pci_channel_io_frozen);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
  }
  
  /**
-@@ -705,6 +738,30 @@ static int get_device_error_info(struct 
- 	return AER_SUCCESS;
+@@ -153,7 +155,7 @@ static void eeh_report_error(struct pci_
+  * Cumulative response passed back in "userdata".
+  */
+ 
+-static void eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
++static int eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -161,26 +163,28 @@ static void eeh_report_mmio_enabled(stru
+ 	if (!driver ||
+ 	    !driver->err_handler ||
+ 	    !driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->mmio_enabled (dev);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
  }
  
-+static inline void aer_process_err_devices(struct pcie_device *p_device,
-+			struct aer_err_info *e_info)
-+{
-+	int i;
+ /**
+  * eeh_report_reset - tell device that slot has been reset
+  */
+ 
+-static void eeh_report_reset(struct pci_dev *dev, void *userdata)
++static int eeh_report_reset(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+@@ -188,35 +192,39 @@ static void eeh_report_reset(struct pci_
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->slot_reset(dev);
+ 	if ((*res == PCI_ERS_RESULT_NONE) ||
+ 	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+ 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
 +
-+	if (e_info->dev[0] == NULL) {
-+		printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
-+				__func__, e_info->id);
-+	}
++	return 0;
+ }
+ 
+ /**
+  * eeh_report_resume - tell device to resume normal operations
+  */
+ 
+-static void eeh_report_resume(struct pci_dev *dev, void *userdata)
++static int eeh_report_resume(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_enable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->resume(dev);
 +
-+	for (i = 0; i < e_info->error_dev_num; i ++) {
-+		if (e_info->dev[i] == NULL)
++	return 0;
+ }
+ 
+ /**
+@@ -226,22 +234,24 @@ static void eeh_report_resume(struct pci
+  * dead, and that no further recovery attempts will be made on it.
+  */
+ 
+-static void eeh_report_failure(struct pci_dev *dev, void *userdata)
++static int eeh_report_failure(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
++
++	return 0;
+ }
+ 
+ /* ------------------------------------------------------- */
+diff -Nraup linux-2.6_next/drivers/pci/bus.c linux-2.6_next_pciwalk/drivers/pci/bus.c
+--- linux-2.6_next/drivers/pci/bus.c	2009-06-12 05:25:43.000000000 +0800
++++ linux-2.6_next_pciwalk/drivers/pci/bus.c	2009-06-12 05:28:08.000000000 +0800
+@@ -206,13 +206,18 @@ void pci_enable_bridges(struct pci_bus *
+  *  Walk the given bus, including any bridged devices
+  *  on buses under this bus.  Call the provided callback
+  *  on each device found.
++ *
++ *  We check the return of @cb each time. If it returns anything
++ *  other than 0, we break out.
++ *
+  */
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata)
+ {
+ 	struct pci_dev *dev;
+ 	struct pci_bus *bus;
+ 	struct list_head *next;
++	int retval;
+ 
+ 	bus = top;
+ 	down_read(&pci_bus_sem);
+@@ -236,8 +241,10 @@ void pci_walk_bus(struct pci_bus *top, v
+ 
+ 		/* Run device routines with the device locked */
+ 		down(&dev->dev.sem);
+-		cb(dev, userdata);
++		retval = cb(dev, userdata);
+ 		up(&dev->dev.sem);
++		if (retval)
 +			break;
-+
-+		if (get_device_error_info(e_info->dev[i], e_info) ==
-+				AER_SUCCESS) {
-+			aer_print_error(e_info->dev[i], e_info);
-+			handle_error_source(p_device,
-+					e_info->dev[i],
-+					e_info);
-+		}
-+	}
-+}
-+
- /**
-  * aer_isr_one_error - consume an error detected by root port
-  * @p_device: pointer to error root port service device
-@@ -747,18 +804,7 @@ static void aer_isr_one_error(struct pci
- 			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
+ 	}
+ 	up_read(&pci_bus_sem);
+ }
+diff -Nraup linux-2.6_next/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c
+--- linux-2.6_next/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:25:43.000000000 +0800
++++ linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:31:53.000000000 +0800
+@@ -109,7 +109,7 @@ int pci_cleanup_aer_correct_error_status
+ #endif  /*  0  */
  
- 		find_source_device(p_device->port, e_info);
--		if (e_info->dev == NULL) {
--			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
--				__func__, e_info->id);
--			continue;
--		}
--		if (get_device_error_info(e_info->dev, e_info) ==
--				AER_SUCCESS) {
--			aer_print_error(e_info->dev, e_info);
--			handle_error_source(p_device,
--				e_info->dev,
--				e_info);
--		}
-+		aer_process_err_devices(p_device, e_info);
+ 
+-static void set_device_error_reporting(struct pci_dev *dev, void *data)
++static int set_device_error_reporting(struct pci_dev *dev, void *data)
+ {
+ 	bool enable = *((bool *)data);
+ 
+@@ -124,6 +124,8 @@ static void set_device_error_reporting(s
+ 
+ 	if (enable)
+ 		pcie_set_ecrc_checking(dev);
++
++	return 0;
+ }
+ 
+ /**
+@@ -207,7 +209,7 @@ static struct device* find_source_device
+ 	return NULL;
+ }
+ 
+-static void report_error_detected(struct pci_dev *dev, void *data)
++static int report_error_detected(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -232,16 +234,16 @@ static void report_error_detected(struct
+ 				   dev->driver ?
+ 				   "no AER-aware driver" : "no driver");
+ 		}
+-		return;
++		return 0;
  	}
  
- 	kfree(e_info);
-diff -Nraup linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h
---- linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
-+++ linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:45:15.000000000 +0800
-@@ -57,8 +57,10 @@ struct header_log_regs {
- 	unsigned int dw3;
- };
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->error_detected(dev, result_data->state);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
  
-+#define AER_MAX_MULTI_ERR_DEVICES	5
- struct aer_err_info {
--	struct pci_dev *dev;
-+	struct pci_dev *dev[AER_MAX_MULTI_ERR_DEVICES];
-+	int error_dev_num;
- 	u16 id;
- 	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
- 	int flags;
+-static void report_mmio_enabled(struct pci_dev *dev, void *data)
++static int report_mmio_enabled(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -251,15 +253,15 @@ static void report_mmio_enabled(struct p
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->mmio_enabled(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_slot_reset(struct pci_dev *dev, void *data)
++static int report_slot_reset(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -269,15 +271,15 @@ static void report_slot_reset(struct pci
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->slot_reset(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_resume(struct pci_dev *dev, void *data)
++static int report_resume(struct pci_dev *dev, void *data)
+ {
+ 	struct pci_error_handlers *err_handler;
+ 
+@@ -286,11 +288,11 @@ static void report_resume(struct pci_dev
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	err_handler->resume(dev);
+-	return;
++	return 0;
+ }
+ 
+ /**
+@@ -307,7 +309,7 @@ static void report_resume(struct pci_dev
+ static pci_ers_result_t broadcast_error_message(struct pci_dev *dev,
+ 	enum pci_channel_state state,
+ 	char *error_mesg,
+-	void (*cb)(struct pci_dev *, void *))
++	int (*cb)(struct pci_dev *, void *))
+ {
+ 	struct aer_broadcast_data result_data;
+ 
+diff -Nraup linux-2.6_next/include/linux/pci.h linux-2.6_next_pciwalk/include/linux/pci.h
+--- linux-2.6_next/include/linux/pci.h	2009-06-12 05:24:32.000000000 +0800
++++ linux-2.6_next_pciwalk/include/linux/pci.h	2009-06-12 05:28:08.000000000 +0800
+@@ -789,7 +789,7 @@ const struct pci_device_id *pci_match_id
+ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+ 		    int pass);
+ 
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
+ int pci_cfg_space_size_ext(struct pci_dev *dev);
+ int pci_cfg_space_size(struct pci_dev *dev);
 
 
