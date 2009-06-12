@@ -1,116 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZFLNse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761264AbZFLNs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbZFLNse (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933254AbZFLNkr
+	id S1761264AbZFLNs4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762109AbZFLNlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:40:47 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42309 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933216AbZFLNkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:40:40 -0400
-From: Petr Tesarik <ptesarik@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Roland McGrath <roland@redhat.com>, Petr Tesarik <ptesarik@suse.cz>
-Subject: [PATCH v2 7/8] x86: check the size of GOT in vDSO
-Date: Fri, 12 Jun 2009 15:40:39 +0200
-Message-Id: <1244814040-5810-8-git-send-email-ptesarik@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>
-References: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>
+	Fri, 12 Jun 2009 09:41:09 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:59886 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933333AbZFLNlI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:41:08 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core temperature
+Date: Fri, 12 Jun 2009 08:41:05 -0500
+User-Agent: KMail/1.9.9
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+References: <20090609083406.GE25316@prithivi.gnumonks.org> <200906120646.48615.lkml@morethan.org> <20090612125450.GK30843@prithivi.gnumonks.org>
+In-Reply-To: <20090612125450.GK30843@prithivi.gnumonks.org>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_0rlMKDXGXZL9sZ3"
+Message-Id: <200906120841.08114.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There should be no real entries in the GOT, because they are basically
-pointers to dynamic symbols, and that will not work correctly without
-a real dynamic linker for the vDSO.
+--Boundary-00=_0rlMKDXGXZL9sZ3
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-However, the ABI pre-defines three entries in the GOT which are always
-present, so the GOT section is never completely empty. We can check
-that there are no extra entries beyond these three.
+On Fri June 12 2009, Harald Welte wrote:
+> On Fri, Jun 12, 2009 at 06:46:45AM -0500, Michael S. Zick wrote:
+> > > Temperature values are supposed to be expressed in millidegrees C, not
+> > > degrees C as it seems to be doing (although 25 degrees C seems pretty
+> > > low for a CPU temperature?) The drivers needs to multiply values by
+> > > 1000 before exporting them to sysfs. Then "sensors" will report the
+> > > correct temperature value.
+> > > 
+> > 
+> > Ah, 25 degrees C is room temperature - real hard for the junction temperature
+> > to be 25 degrees C with power applied; lacking an infinitely perfect heatsink.
+> > 
+> > Look for an "off by one" error in shifting or masking the value.
+> 
+> there is no shifting and the masking is 0xffffffff :)
+> 
+> it might be that the BIOS is doing something wrong when programming the
+> calibration MSR's at early botoup.  I would need the contents of MSR 
+> 0x1160 ... 0x116C as well as 0x1152 and 0x1153 to be able to determine that.
+> 
 
-To make it work:
-  - move the GOT into a separate section
-  - check the size of that section
-  - pass -m32 or -m64 to the pre-processor to get the correct
-    definition of __SIZEOF_POINTER__
+root@cb01:~# for r in 0x1160 0x1161 0x1162 0x1163 0x1164 0x1165 0x1166 0x1167 0x1168 0x1169 0x116a 0x116b 0x116c 0x1152 0x1153 ; do ./rdmsr $r ; done
+MSR register 0x1160 => 08:04:98:10:b7:ef:8f:f4
+MSR register 0x1161 => 08:04:98:10:b7:fb:af:f4
+MSR register 0x1162 => 08:04:98:10:b7:ec:ff:f4
+MSR register 0x1163 => 08:04:98:10:b7:fa:cf:f4
+MSR register 0x1164 => 08:04:98:10:b7:f4:cf:f4
+MSR register 0x1165 => 08:04:98:10:b7:f3:2f:f4
+MSR register 0x1166 => 08:04:98:10:b7:f1:7f:f4
+MSR register 0x1167 => 08:04:98:10:b7:f2:0f:f4
+MSR register 0x1168 => 08:04:98:10:b7:ef:0f:f4
+MSR register 0x1169 => 08:04:98:10:b7:fc:8f:f4
+MSR register 0x116a => 08:04:98:10:b7:ef:8f:f4
+MSR register 0x116b => 08:04:98:10:b7:f8:bf:f4
+MSR register 0x116c => 08:04:98:10:b7:f9:df:f4
+MSR register 0x1152 => 08:04:98:10:b7:ed:5f:f4
+MSR register 0x1153 => 08:04:98:10:b7:ed:cf:f4
 
-Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
----
- arch/x86/vdso/Makefile          |    5 +++--
- arch/x86/vdso/vdso-layout.lds.S |   20 +++++++++++++++++++-
- 2 files changed, 22 insertions(+), 3 deletions(-)
+The high 32b look strange in that output - might be
+the utility I used (attached).
 
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index 16a9020..8c7f06a 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -23,7 +23,8 @@ $(obj)/vdso.o: $(obj)/vdso.so
- 
- targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y)
- 
--export CPPFLAGS_vdso.lds += -P -C
-+vdso-cppflags = -P -C
-+export CPPFLAGS_vdso.lds += -m64 $(vdso-cppflags)
- 
- VDSO_LDFLAGS_vdso.lds = -m elf_x86_64 -Wl,-soname=linux-vdso.so.1 \
- 		      	-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
-@@ -68,7 +69,7 @@ vdso32.so-$(VDSO32-y)		+= sysenter
- 
- vdso32-images			= $(vdso32.so-y:%=vdso32-%.so)
- 
--CPPFLAGS_vdso32.lds = $(CPPFLAGS_vdso.lds)
-+CPPFLAGS_vdso32.lds = -m32 $(vdso-cppflags)
- VDSO_LDFLAGS_vdso32.lds = -m elf_i386 -Wl,-soname=linux-gate.so.1
- 
- # This makes sure the $(obj) subdirectory exists even though vdso32/
-diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
-index ffd17e8..3b56e2f 100644
---- a/arch/x86/vdso/vdso-layout.lds.S
-+++ b/arch/x86/vdso/vdso-layout.lds.S
-@@ -44,13 +44,15 @@ SECTIONS
- 	.dynamic : {
- 		*(.dynamic)
- 	} :text :dynamic
-+	.got : {
-+		*(.got.plt) *(.got)
-+	} :text
- 
- 	.rodata : {
- 		*(.rodata*)
- 	} :text
- 	.data : {
- 		*(.data*)
--		*(.got.plt) *(.got)
- 		*(.gnu.linkonce.d.*)
- 		*(.bss*)
- 		*(.gnu.linkonce.b.*)
-@@ -113,6 +115,22 @@ SECTIONS
-  */
- ASSERT(!SIZEOF(.broken), "The vdso linker script found a section that is bad. See vdso-layout.lds.S for details.");
- 
-+/* This assert is triggered if the resulting GOT is larger than the
-+ * minimum defined by the ABI, i.e. there is some actual use of the
-+ * GOT.
-+ *
-+ * To find the offending symbols you may:
-+ *  1. temporarily disable this check
-+ *  2. examine the dynamic relocations of the resulting vDSO with
-+ *     objdump -R
-+ *
-+ * To find the places where the symbols were used, you may:
-+ *  1. add -Wl,--emit-relocs to VDSO_LDFLAGS
-+ *  2. run objdump -r on the resulting vDSO and look for all
-+ *     GOT-type relocations.
-+ */
-+ASSERT(SIZEOF(.got) == 3*__SIZEOF_POINTER__, "The vdso linker script found a wrong reference to an external object. See vdso-layout.lds.S for details.");
-+
- /*
-  * Very old versions of ld do not recognize this name token; use the constant.
-  */
--- 
-1.6.0.2
+Mike
 
+
+--Boundary-00=_0rlMKDXGXZL9sZ3
+Content-Type: text/x-csrc;
+  charset="iso 8859-15";
+  name="rdmsr.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="rdmsr.c"
+
+/* By Ron Minnich @ wiki.laptop.org */
+/* No rights or license mentioned.  */
+
+#define _LARGEFILE64_SOURCE
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main (int argc, char *argv[])
+{
+    unsigned char buf[8];
+    int fd_msr, i;
+    unsigned long addr = 0;
+
+    if (argc < 2) {
+        printf("usage:rdmsr reg\n");
+        exit(1);
+    }
+    addr = strtoul(argv[1], NULL, 0);
+
+    fd_msr = open("/dev/cpu/0/msr", O_RDONLY);
+    lseek64(fd_msr, (off64_t)addr, SEEK_SET);
+    read(fd_msr, buf, 8);
+
+    printf("MSR register 0x%lx => ", addr);
+    for (i = 7; i > 0; i--)
+        printf("%2.2x:", buf[i]);
+    printf("%2.2x\n", buf[i]);
+
+    return(0);
+}
+
+
+--Boundary-00=_0rlMKDXGXZL9sZ3--
