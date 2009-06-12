@@ -1,202 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934786AbZFLWvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934437AbZFLWxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934786AbZFLWvr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763437AbZFLWtu
+	id S934437AbZFLWxz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZFLWxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:49:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57437 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934772AbZFLWtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:49:47 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RESEND][ PATCH -tip -v9 4/7] kprobes: cleanup fix_riprel() using
-	insn decoder on x86
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Date: Fri, 12 Jun 2009 18:45:15 -0400
-Message-ID: <20090612224515.17311.71517.stgit@localhost.localdomain>
-In-Reply-To: <20090612224447.17311.72404.stgit@localhost.localdomain>
-References: <20090612224447.17311.72404.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Fri, 12 Jun 2009 18:53:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47555 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbZFLWxn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:53:43 -0400
+Message-ID: <4A32DBD1.30309@zytor.com>
+Date: Fri, 12 Jun 2009 15:50:57 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
+       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>
+Subject: Re: [RESEND][ PATCH -tip -v9 1/7] x86: instruction decoder API
+References: <20090612224447.17311.72404.stgit@localhost.localdomain> <20090612224455.17311.19421.stgit@localhost.localdomain>
+In-Reply-To: <20090612224455.17311.19421.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
-decoder.
+Masami Hiramatsu wrote:
+> Add x86 instruction decoder to arch-specific libraries. This decoder
+> can decode x86 instructions used in kernel into prefix, opcode, modrm,
+> sib, displacement and immediates. This can also show the length of
+> instructions.
+> 
+> This version introduces instruction attributes for decoding instructions.
+> The instruction attribute tables are generated from the opcode map file
+> (x86-opcode-map.txt) by the generator script(gen-insn-attr-x86.awk).
+> 
+> Currently, the opcode maps are based on opcode maps in Intel(R) 64 and
+> IA-32 Architectures Software Developers Manual Vol.2: Appendix.A,
+> and consist of below two types of opcode tables.
+> 
+> 1-byte/2-bytes/3-bytes opcodes, which has 256 elements, are
+> written as below;
+> 
+>  Table: table-name
+>  Referrer: escaped-name
+>  opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
+>   (or)
+>  opcode: escape # escaped-name
+>  EndTable
+> 
+> Group opcodes, which has 8 elements, are written as below;
+> 
+>  GrpTable: GrpXXX
+>  reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
+>  EndTable
+> 
+> These opcode maps do NOT include most of SSE and FP opcodes, because
+> those opcodes are not used in the kernel.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Andi Kleen <ak@linux.intel.com>
+> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+> Cc: Avi Kivity <avi@redhat.com>
+> Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
+> ---
+> 
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
+The decoder looks good by now.
 
- arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
- 1 files changed, 23 insertions(+), 105 deletions(-)
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 5341842..b77e050 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -109,50 +109,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
- 	/*      -----------------------------------------------         */
- 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
- };
--static const u32 onebyte_has_modrm[256 / 32] = {
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--	/*      -----------------------------------------------         */
--	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
--	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
--	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
--	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
--	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
--	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
--	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
--	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
--	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
--	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
--	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
--	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
--	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
--	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
--	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
--	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
--	/*      -----------------------------------------------         */
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--};
--static const u32 twobyte_has_modrm[256 / 32] = {
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--	/*      -----------------------------------------------         */
--	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
--	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
--	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
--	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
--	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
--	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
--	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
--	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
--	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
--	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
--	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
--	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
--	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
--	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
--	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
--	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
--	/*      -----------------------------------------------         */
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--};
- #undef W
- 
- struct kretprobe_blackpoint kretprobe_blacklist[] = {
-@@ -345,68 +301,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
- static void __kprobes fix_riprel(struct kprobe *p)
- {
- #ifdef CONFIG_X86_64
--	u8 *insn = p->ainsn.insn;
--	s64 disp;
--	int need_modrm;
--
--	/* Skip legacy instruction prefixes.  */
--	while (1) {
--		switch (*insn) {
--		case 0x66:
--		case 0x67:
--		case 0x2e:
--		case 0x3e:
--		case 0x26:
--		case 0x64:
--		case 0x65:
--		case 0x36:
--		case 0xf0:
--		case 0xf3:
--		case 0xf2:
--			++insn;
--			continue;
--		}
--		break;
--	}
-+	struct insn insn;
-+	kernel_insn_init(&insn, p->ainsn.insn);
- 
--	/* Skip REX instruction prefix.  */
--	if (is_REX_prefix(insn))
--		++insn;
--
--	if (*insn == 0x0f) {
--		/* Two-byte opcode.  */
--		++insn;
--		need_modrm = test_bit(*insn,
--				      (unsigned long *)twobyte_has_modrm);
--	} else
--		/* One-byte opcode.  */
--		need_modrm = test_bit(*insn,
--				      (unsigned long *)onebyte_has_modrm);
--
--	if (need_modrm) {
--		u8 modrm = *++insn;
--		if ((modrm & 0xc7) == 0x05) {
--			/* %rip+disp32 addressing mode */
--			/* Displacement follows ModRM byte.  */
--			++insn;
--			/*
--			 * The copied instruction uses the %rip-relative
--			 * addressing mode.  Adjust the displacement for the
--			 * difference between the original location of this
--			 * instruction and the location of the copy that will
--			 * actually be run.  The tricky bit here is making sure
--			 * that the sign extension happens correctly in this
--			 * calculation, since we need a signed 32-bit result to
--			 * be sign-extended to 64 bits when it's added to the
--			 * %rip value and yield the same 64-bit result that the
--			 * sign-extension of the original signed 32-bit
--			 * displacement would have given.
--			 */
--			disp = (u8 *) p->addr + *((s32 *) insn) -
--			       (u8 *) p->ainsn.insn;
--			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
--			*(s32 *)insn = (s32) disp;
--		}
-+	if (insn_rip_relative(&insn)) {
-+		s64 newdisp;
-+		u8 *disp;
-+		insn_get_displacement(&insn);
-+		/*
-+		 * The copied instruction uses the %rip-relative addressing
-+		 * mode.  Adjust the displacement for the difference between
-+		 * the original location of this instruction and the location
-+		 * of the copy that will actually be run.  The tricky bit here
-+		 * is making sure that the sign extension happens correctly in
-+		 * this calculation, since we need a signed 32-bit result to
-+		 * be sign-extended to 64 bits when it's added to the %rip
-+		 * value and yield the same 64-bit result that the sign-
-+		 * extension of the original signed 32-bit displacement would
-+		 * have given.
-+		 */
-+		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
-+			  (u8 *) p->ainsn.insn;
-+		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
-+		disp = (u8 *) p->ainsn.insn + INSN_DISPLACEMENT_OFFS(&insn);
-+		*(s32 *) disp = (s32) newdisp;
- 	}
- #endif
- }
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+	-hpa
