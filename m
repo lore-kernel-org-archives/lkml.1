@@ -1,65 +1,344 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934182AbZFLVuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934380AbZFLVvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934182AbZFLVuc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 17:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762091AbZFLVuW
+	id S934380AbZFLVvX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 17:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762091AbZFLVvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 17:50:22 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:58450 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759153AbZFLVuV convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 17:51:11 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:41600 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760049AbZFLVvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 17:50:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:cc:
-	content-type:content-transfer-encoding:x-system-of-record;
-	b=tXcSws05brFKXxj6bnQ3TF+VcsjCis1ieHjU4DngP83Tb/oJP1How7pnFHKC7LSQW
-	yzlw3Tw7PbgRQsioNcO/A==
-MIME-Version: 1.0
-Date: Fri, 12 Jun 2009 14:50:21 -0700
-Message-ID: <a55d774e0906121450x12bab7b0sc1f4de0115a1af61@mail.gmail.com>
-Subject: Gerrit (was Re: HTC Dream aka. t-mobile g1 support)
-From: Brian Swetland <swetland@google.com>
-To: Stefan Schmidt <stefan@datenfreihafen.org>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Greg KH <greg@kroah.com>, sop@google.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Fri, 12 Jun 2009 17:51:10 -0400
+Subject: Re: [PATCH V4: 2/3] pci: Provide aer support when the error source
+ id is bad
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1244776113.2560.320.camel@ymzhang>
+References: <1244776113.2560.320.camel@ymzhang>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Jun 2009 21:51:07 +0000
+Message-Id: <1244843467.19708.91.camel@grinch>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 10:35 AM, Stefan
-Schmidt<stefan@datenfreihafen.org> wrote:
->> I think the intent is to have a
->> Gerrit instance to accept contributions.  I'll have to look into
->> whether this can be done without signing the agreement.  Right
->> now, I can't even contribute anything, so there are a lot of
->> issues to work out.
->
-> Gerrit is the Android review system? I'm only interested into the kernel and
-> especially running a mainline kernel on different devices. Anyway, a public
-> review process and some more informations on what you are working and how you
-> would like to bring it mainline would help here.
+On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
+> ﻿﻿﻿When the bus id part of error source id is equal to 0 or nosourceid=1,
+> kernel probes the AER status registers of all devices under the root port
+> to find the initial error reporter.
+> 
+> ﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> 
+> ---
+> 
+> --- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:31:53.000000000 +0800
+> +++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:39:24.000000000 +0800
+> @@ -26,7 +26,9 @@
+>  #include "aerdrv.h"
+>  
+>  static int forceload;
+> +static int nosourceid;
+>  module_param(forceload, bool, 0);
+> +module_param(nosourceid, bool, 0);
+>  
+>  int pci_enable_pcie_error_reporting(struct pci_dev *dev)
+>  {
+> @@ -143,34 +145,82 @@ static void set_downstream_devices_error
+>  	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
+>  }
+>  
+> -static int find_device_iter(struct device *device, void *data)
+> +static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
+>  {
+> -	struct pci_dev *dev;
+> -	u16 id = *(unsigned long *)data;
+> -	u8 secondary, subordinate, d_bus = id >> 8;
+> -
+> -	if (device->bus == &pci_bus_type) {
+> -		dev = to_pci_dev(device);
+> -		if (id == ((dev->bus->number << 8) | dev->devfn)) {
+> -			/*
+> -			 * Device ID match
+> -			 */
+> -			*(unsigned long*)data = (unsigned long)device;
+> -			return 1;
+> -		}
+> -
+> +	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
+>  		/*
+> -		 * If device is P2P, check if it is an upstream?
+> +		 * Device ID match
+>  		 */
+> -		if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
+> -			pci_read_config_byte(dev, PCI_SECONDARY_BUS,
+> -				&secondary);
+> -			pci_read_config_byte(dev, PCI_SUBORDINATE_BUS,
+> -				&subordinate);
+> -			if (d_bus >= secondary && d_bus <= subordinate) {
+> -				*(unsigned long*)data = (unsigned long)device;
+> -				return 1;
+> -			}
+> +		e_info->dev = dev;
+> +		return 1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +#define	PCI_BUS(x)	(((x) >> 8) & 0xff)
+> +
+> +static int find_device_iter(struct pci_dev *dev, void *data)
+> +{
+> +	int pos;
+> +	u32 status;
+> +	u32 mask;
+> +	u16 reg16;
+> +	struct aer_err_info *e_info = (struct aer_err_info *)data;
+> +
+> +	/*
+> +	 * When bus id is equal to 0, it might be a bad id
+> +	 * reported by root port.
+> +	 */
+> +	if (!nosourceid && (PCI_BUS(e_info->id) != 0))
+> +		return compare_device_id(dev, e_info);
+> +
+> +	/*
+> +	 * Next is to check when bus id is equal to 0 or
+> +	 * nosourceid==y. Some ports might lose the bus
+> +	 * id of error source id. We check AER status
+> +	 * registers to find the initial reporter.
+> +	 */
+> +	if (atomic_read(&dev->enable_cnt) == 0)
+> +		return 0;
+> +	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+> +	if (!pos)
+> +		return 0;
+> +	/* Check if AER is enabled */
+> +	pci_read_config_word(dev, pos+PCI_EXP_DEVCTL, &reg16);
+> +	if (!(reg16 & (
+> +		PCI_EXP_DEVCTL_CERE |
+> +		PCI_EXP_DEVCTL_NFERE |
+> +		PCI_EXP_DEVCTL_FERE |
+> +		PCI_EXP_DEVCTL_URRE)))
+> +		return 0;
+> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+> +	if (!pos)
+> +		return 0;
+> +
+> +	status = 0;
+> +	mask = 0;
+> +	if (e_info->severity == AER_CORRECTABLE) {
+> +		pci_read_config_dword(dev,
+> +				pos + PCI_ERR_COR_STATUS,
+> +				&status);
+> +		pci_read_config_dword(dev,
+> +				pos + PCI_ERR_COR_MASK,
+> +				&mask);
+> +		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
+> +			e_info->dev = dev;
+> +			return 1;
+> +		}
+> +	} else {
+> +		pci_read_config_dword(dev,
+> +				pos + PCI_ERR_UNCOR_STATUS,
+> +				&status);
+> +		pci_read_config_dword(dev,
+> +				pos + PCI_ERR_UNCOR_MASK,
+> +				&mask);
+> +		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
+> +			e_info->dev = dev;
+> +			return 1;
+>  		}
+>  	}
+>  
+> @@ -180,33 +230,23 @@ static int find_device_iter(struct devic
+>  /**
+>   * find_source_device - search through device hierarchy for source device
+>   * @parent: pointer to Root Port pci_dev data structure
+> - * @id: device ID of agent who sends an error message to this Root Port
+> + * @err_info: including detailed error information such like id
+>   *
+>   * Invoked when error is detected at the Root Port.
+>   */
+> -static struct device* find_source_device(struct pci_dev *parent, u16 id)
+> +static void find_source_device(struct pci_dev *parent,
+> +		struct aer_err_info *e_info)
+>  {
+>  	struct pci_dev *dev = parent;
+> -	struct device *device;
+> -	unsigned long device_addr;
+> -	int status;
+> +	int result;
+>  
+>  	/* Is Root Port an agent that sends error message? */
+> -	if (id == ((dev->bus->number << 8) | dev->devfn))
+> -		return &dev->dev;
+> -
+> -	do {
+> -		device_addr = id;
+> - 		if ((status = device_for_each_child(&dev->dev,
+> -			&device_addr, find_device_iter))) {
+> -			device = (struct device*)device_addr;
+> -			dev = to_pci_dev(device);
+> -			if (id == ((dev->bus->number << 8) | dev->devfn))
+> -				return device;
+> -		}
+> - 	}while (status);
+> +	result = find_device_iter(dev, e_info);
+> +	if (result)
+> +		return;
+>  
+> -	return NULL;
+> +	pci_walk_bus(parent->subordinate, find_device_iter, e_info);
 
-Gerrit is a git patch review system that we (Google/Android) use for
-android development (kernel and otherwise).  Some other folks like
-Qualcomm, and TI (see http://review.omapzoom.org/) have adopted it as
-well.  We're still happy to accept patches via email and
-review/discuss them on the usual mailing lists as well.  It'd be cool
-to get an automated process set up to slurp submitted patches into
-Gerrit at some point, and further unify the two different workflows.
+Minor nit. This return is redundant.
 
-Gerrit's very actively maintained by Shawn O. Pearce:
-http://code.google.com/p/gerrit/
+> +	return;
+>  }
+>  
 
-Here's an example of a patch in Gerrit (though a dull one -- when
-logged in you can basically annotate the diff with line by line
-comments, etc, which is pretty slick if you like that sort of thing):
-https://review.source.android.com/10348
+Minor. The e_info goes to pointer changes probably belong in a separate
+patch.
 
-Brian
+>  static int report_error_detected(struct pci_dev *dev, void *data)
+> @@ -501,12 +541,12 @@ static pci_ers_result_t do_recovery(stru
+>   */
+>  static void handle_error_source(struct pcie_device * aerdev,
+>  	struct pci_dev *dev,
+> -	struct aer_err_info info)
+> +	struct aer_err_info *info)
+>  {
+>  	pci_ers_result_t status = 0;
+>  	int pos;
+>  
+> -	if (info.severity == AER_CORRECTABLE) {
+> +	if (info->severity == AER_CORRECTABLE) {
+>  		/*
+>  		 * Correctable error does not need software intevention.
+>  		 * No need to go through error recovery process.
+> @@ -514,9 +554,9 @@ static void handle_error_source(struct p
+>  		pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+>  		if (pos)
+>  			pci_write_config_dword(dev, pos + PCI_ERR_COR_STATUS,
+> -					info.status);
+> +					info->status);
+>  	} else {
+> -		status = do_recovery(aerdev, dev, info.severity);
+> +		status = do_recovery(aerdev, dev, info->severity);
+>  		if (status == PCI_ERS_RESULT_RECOVERED) {
+>  			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
+>  				   "successfully recovered\n");
+> @@ -673,10 +713,13 @@ static int get_device_error_info(struct 
+>  static void aer_isr_one_error(struct pcie_device *p_device,
+>  		struct aer_err_source *e_src)
+>  {
+> -	struct device *s_device;
+> -	struct aer_err_info e_info = {0, 0, 0,};
+> +	struct aer_err_info *e_info;
+>  	int i;
+> -	u16 id;
+> +
+> +	/* struct aer_err_info might be big, so we allocate it with slab */
+> +	e_info = kmalloc(sizeof(struct aer_err_info), GFP_KERNEL);
+> +	if (e_info == NULL)
+> +		return;
+>  
+Should we get some sort of warning here? We might be concealing PCIe
+errors when out of memory.
+
+>  	/*
+>  	 * There is a possibility that both correctable error and
+> @@ -688,31 +731,37 @@ static void aer_isr_one_error(struct pci
+>  		if (!(e_src->status & i))
+>  			continue;
+>  
+> +		memset(e_info, 0, sizeof(struct aer_err_info));
+> +
+>  		/* Init comprehensive error information */
+>  		if (i & PCI_ERR_ROOT_COR_RCV) {
+> -			id = ERR_COR_ID(e_src->id);
+> -			e_info.severity = AER_CORRECTABLE;
+> +			e_info->id = ERR_COR_ID(e_src->id);
+> +			e_info->severity = AER_CORRECTABLE;
+>  		} else {
+> -			id = ERR_UNCOR_ID(e_src->id);
+> -			e_info.severity = ((e_src->status >> 6) & 1);
+> +			e_info->id = ERR_UNCOR_ID(e_src->id);
+> +			e_info->severity = ((e_src->status >> 6) & 1);
+>  		}
+>  		if (e_src->status &
+>  			(PCI_ERR_ROOT_MULTI_COR_RCV |
+>  			 PCI_ERR_ROOT_MULTI_UNCOR_RCV))
+> -			e_info.flags |= AER_MULTI_ERROR_VALID_FLAG;
+> -		if (!(s_device = find_source_device(p_device->port, id))) {
+> +			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
+> +
+> +		find_source_device(p_device->port, e_info);
+> +		if (e_info->dev == NULL) {
+>  			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+> -				__func__, id);
+> +				__func__, e_info->id);
+>  			continue;
+>  		}
+> -		if (get_device_error_info(to_pci_dev(s_device), &e_info) ==
+> +		if (get_device_error_info(e_info->dev, e_info) ==
+>  				AER_SUCCESS) {
+> -			aer_print_error(to_pci_dev(s_device), &e_info);
+> +			aer_print_error(e_info->dev, e_info);
+>  			handle_error_source(p_device,
+> -				to_pci_dev(s_device),
+> +				e_info->dev,
+>  				e_info);
+>  		}
+>  	}
+> +
+> +	kfree(e_info);
+>  }
+>  
+>  /**
+> --- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:27:46.000000000 +0800
+> +++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
+> @@ -58,6 +58,8 @@ struct header_log_regs {
+>  };
+>  
+>  struct aer_err_info {
+> +	struct pci_dev *dev;
+> +	u16 id;
+>  	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
+>  	int flags;
+>  	unsigned int status;		/* COR/UNCOR Error Status */
+> --- linux-2.6_next_pciwalk/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:27:40.000000000 +0800
+> +++ linux-2.6_next_aernoid/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:39:24.000000000 +0800
+> @@ -60,6 +60,8 @@ forceload, a parameter of type bool, cou
+>  be initiated although firmwares have no _OSC support. To enable the
+>  walkaround, pls. add aerdriver.forceload=y to kernel boot parameter line
+>  when booting kernel. Note that forceload=n by default.
+
+
+We need a new paragraph here.
+> +nosourceid, another parameter of type bool, is used when hardware (mostly
+> +chipset) has errata that root ports couldn't get error reporting source id.
+>  
+
+Perhaps ".. can be used when broken hardware (mostly chipsets) has root
+ports that cannot obtain the reporting source ID."
+
+>  2.3 AER error output
+>  When a PCI-E AER error is captured, an error message will be outputed to
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+-- 
+Andrew Patterson
+Hewlett-Packard
+
