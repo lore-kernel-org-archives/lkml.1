@@ -1,78 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbZFLLOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760308AbZFLLTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756490AbZFLLOU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZFLLOM
+	id S1760308AbZFLLTZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbZFLLTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:14:12 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60822 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZFLLOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:14:12 -0400
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
- suspending
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20090612101511.GC13607@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
-	 <20090612091002.GA32052@elte.hu>
-	 <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
-	 <20090612100756.GA25185@elte.hu>
-	 <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
-	 <20090612101511.GC13607@wotan.suse.de>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 21:13:50 +1000
-Message-Id: <1244805230.7172.130.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 12 Jun 2009 07:19:17 -0400
+Received: from tomts29-srv.bellnexxia.net ([209.226.175.103]:42293 "EHLO
+	tomts29-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754014AbZFLLTQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:19:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvgVAIHTMUrR4q/5/2dsb2JhbACBL40ekkGuS4EXgmAF
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [41.219.137.100]
+From: ELC <aiguisagegeneral@bellnet.ca>
+Reply-To: dr.jerry_smith222@8u8.com
+To: <info@lotto.org>
+Subject: file for your claim 
+Date: Fri, 12 Jun 2009 7:19:04 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090612111907.EBIT29191.tomts29-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+LG Electronics Has just awarded you with the sum of 950.000.00pounds send us your info. name, address, age and tell/sex.
 
-> I agree with Ingo though that exposing it as a gfp modifier is
-> not so good. I just like the implementation to mask off GFP_WAIT
-> better, and also prefer not to test system state, but have someone
-> just call into slab to tell it not to unconditionally enable
-> interrupts.
-
-But interrupts is just one example. GFP_NOIO is another one vs. suspend
-and resume.
-
-What we have here is the allocator needs to be clamped down based on the
-system state. I think it will not work to try to butcher every caller,
-especially since they don't always know themselves in what state they
-are called.
-
-Moving the "fix" into the couple of nexuses where all the code path go
-through really seem like a better, simpler, more maintainable and more
-fool proof solution to me.
-
-> Yes, with sufficient warnings in place, I don't think it should be
-> too error prone to clean up remaining code over the course of
-> a few releases.
-
-But that will no fix all the cases. That will not fix __get_vm_area()
-being called from both boot and non-boot (and ioremap, etc..) and every
-similar thing we can have all over the place (I have some in the
-interrupt handling on powerpc, I'm sure we can find much more).
-
-I don't see what the problem is in providing simple allocator semantics
-and have the allocator itself adapt to the system state, especially when
-the code is as small as having a bit mask applied in 2 or 3 places.
-
-Cheers,
-Ben.
-
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Regards.
+Co-ordinator
 
