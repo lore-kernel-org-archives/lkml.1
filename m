@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763679AbZFLOEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764016AbZFLOEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763679AbZFLOEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763689AbZFLOER
+	id S1764016AbZFLOEr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762282AbZFLOEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:04:17 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55276 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763189AbZFLOEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:04:16 -0400
-Subject: Re: slab: setup allocators earlier in the boot sequence
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, akpm@linux-foundation.org,
-       npiggin@suse.de
-In-Reply-To: <1244815370.7172.169.camel@pasglop>
-References: <200906111959.n5BJxFj9021205@hera.kernel.org>
-	 <1244770230.7172.4.camel@pasglop>  <1244779009.7172.52.camel@pasglop>
-	 <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop>
-	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
-	 <1244792079.7172.74.camel@pasglop>
-	 <1244792745.30512.13.camel@penberg-laptop>
-	 <1244796045.7172.82.camel@pasglop>
-	 <1244796211.30512.32.camel@penberg-laptop>
-	 <1244796837.7172.95.camel@pasglop>
-	 <1244797659.30512.37.camel@penberg-laptop>
-	 <alpine.DEB.1.10.0906120944540.15809@gentwo.org>
-	 <1244814852.30512.67.camel@penberg-laptop>
-	 <1244815370.7172.169.camel@pasglop>
-Date: Fri, 12 Jun 2009 17:04:17 +0300
-Message-Id: <1244815457.30512.68.camel@penberg-laptop>
+	Fri, 12 Jun 2009 10:04:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56535 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763816AbZFLOES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 10:04:18 -0400
+Subject: GFS2: Pull request #2
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+ 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+ Street, Windsor, Berkshire, SL4 ITE
+Date: Fri, 12 Jun 2009 15:01:39 +0100
+Message-Id: <1244815299.3216.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+Hi,
 
-On Sat, 2009-06-13 at 00:02 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2009-06-12 at 16:54 +0300, Pekka Enberg wrote:
-> > Hi Christoph,
-> > 
-> > On Fri, 2009-06-12 at 09:49 -0400, Christoph Lameter wrote:
-> > > Best thing to do is to recognize the fact that we are still in early boot
-> > > in the allocators. Derived allocators (such as slab and vmalloc) mask bits
-> > > using GFP_RECLAIM_MASK and when doing allocations through the page
-> > > allocator. You could make GFP_RECLAIM_MASK a variable. During boot
-> > > __GFP_WAIT would not be set in GFP_RECLAIM_MASK.
-> > 
-> > Ben's patch does something like that and I have patches that do that
-> > floating around too.
-> > 
-> > The problem here is that it's not enough that we make GFP_RECLAIM_MASK a
-> > variable. There are various _debugging checks_ that happen much earlier
-> > than that. We need to mask out those too which adds overhead to
-> > kmalloc() fastpath, for example.
-> 
-> Hrm... I though I stuck my masking before the lockdep tests but maybe I
-> missed some...
 
-Your patch is fine but what Christoph suggested is not (at least the way
-I understood it).
+Please consider pulling the following two patches,
 
-			Pekka
+Steve.
+
+----------------------------------------------------------------------------
+The following changes since commit 8ebf975608aaebd7feb33d77f07ba21a6380e086:
+  Randy Dunlap (1):
+        block: fix kernel-doc in recent block/ changes
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git master
+
+Steven Whitehouse (2):
+      GFS2: Add tracepoints
+      GFS2: Remove lock_kernel from gfs2_put_super()
+
+ fs/gfs2/Makefile     |    1 +
+ fs/gfs2/bmap.c       |    3 +
+ fs/gfs2/glock.c      |   12 ++-
+ fs/gfs2/log.c        |    9 +-
+ fs/gfs2/lops.c       |    3 +
+ fs/gfs2/ops_fstype.c |    2 +
+ fs/gfs2/rgrp.c       |   11 +-
+ fs/gfs2/super.c      |    4 -
+ fs/gfs2/trace_gfs2.h |  407 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 9 files changed, 442 insertions(+), 10 deletions(-)
+ create mode 100644 fs/gfs2/trace_gfs2.h
+
 
