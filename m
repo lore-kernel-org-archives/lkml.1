@@ -1,104 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764117AbZFLCQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbZFLCfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764117AbZFLCQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 22:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759575AbZFLCQd
+	id S1762948AbZFLCfG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 22:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbZFLCez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 22:16:33 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:60592 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756308AbZFLCQc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 22:16:32 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=yL8e0s7FoLZtMJbToGcHjOhLVioC4N+swtZEVRYyzLbONGAwzO1eNJV9IMJPdEQ0e
-	+7VROtNTn80Lw+by2gqkg==
+	Thu, 11 Jun 2009 22:34:55 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52959 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755112AbZFLCey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 22:34:54 -0400
+Message-ID: <4A31BF1D.1050400@cn.fujitsu.com>
+Date: Fri, 12 Jun 2009 10:36:13 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0906112138090.31536@xanadu.home>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>
-	 <20090611132134.GA11199@atomide.com>
-	 <20090611133736.GP795@n2100.arm.linux.org.uk>
-	 <20090611140038.GB11199@atomide.com>
-	 <20090611140624.GS795@n2100.arm.linux.org.uk>
-	 <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
-	 <4A3175AC.9070100@bluewatersys.com>
-	 <alpine.LFD.2.00.0906112105220.31536@xanadu.home>
-	 <4A31AECA.6070303@bluewatersys.com>
-	 <alpine.LFD.2.00.0906112138090.31536@xanadu.home>
-Date: Thu, 11 Jun 2009 19:16:29 -0700
-Message-ID: <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-From: Brian Swetland <swetland@google.com>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Ryan Mallon <ryan@bluewatersys.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, pavel@ucw.cz,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: Zhaolei <zhaolei@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v4] ftrace: add a tracepoint for	__raise_softirq_irqoff()
+References: <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu>
+In-Reply-To: <20090519082435.GB15286@elte.hu>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 6:51 PM, Nicolas Pitre<nico@cam.org> wrote:
-> On Fri, 12 Jun 2009, Ryan Mallon wrote:
->> Nicolas Pitre wrote:
+Ingo Molnar wrote:
+> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+> 
+>> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
+>>> Steven Rostedt wrote:
+>>>> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
+>>>>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>>>>>>
+>>>>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
+>>>>>> can be found here: 
+>>>>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+>>>>>> This tracepoint can trace the time stamp when softirq action is raised. 
+>>>>>>
+>>>>>> Changelog for v1 -> v2: 
+>>>>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+>>>>>> 2: Move the tracepoint from raise_softirq_irqoff() to
+>>>>>>    __raise_softirq_irqoff()
+>>>>>>
+>>>>>> Changelog for v2 -> v3: 
+>>>>>> Move the definition of __raise_softifq_irqoff() to .c file when
+>>>>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+>>>>>>
+>>>>>> Changelog for v3 -> v4: 
+>>>>>> 1: Come back to v2, and use forward declarations to avoid
+>>>>>>    recursive includes as Mathieu's suggestion
+>>>>>> 2: Modifiy the tracepoint name
+>>>>>> 3: Add comments for this tracepoint
+>>>>>>
+>>>>> This is a step in the right direction, but please see my email to Lai
+>>>>> about the fact that this assumes correct and undocumented include
+>>>>> dependencies in kernel/trace/events.c. Not explicitely stating the
+>>>>> include dependencies is a build error waiting to happen.
+>>>>>
+>>>>> Including interrupt.h under a ifdef would allow keeping track of
+>>>>> TRACE_EVENT specific build dependencies neatly on a per header basis.
+>>>> This is all moot, the events.c file no longer exists and as not an issue.
+>>>>
+>>> As Steve's says, use ftrace in ftrace.h not in events.c now. 
+>>> So, this mistake does not exist.
+>>> Dose this patch has other error? I expect for your views.
+>>>
+>>> Thanks for your review, is great help to me. ;-) 
+>> Hello,
 >>
->> Thats my point though: In the meantime, it falls on Russell by default
->> to be the one to verify all the patches going through. I think the same
->> is true for new architectures, if nobody else has the interest/hardware
->> besides those posting the patches, then who is meant to do the
->> reviewing/acking?
->
-> I think that, at some point, if nobody else has the interest/hardware,
-> then you are on your own.  Just make sure that your code respects the
-> kernel coding style, has no obvious API misuses, and that it does not
-> affect anyone else.  At that point if you can convince people that your
-> code is actually useful and that you'll be around to quickly respond
-> if/when issues are reported then it should just be merged.
+>> It seems Mathieu has no other comments on this patch now.
+>> Ingo, what is your opinion on this patch?
+> 
+> There's a complication: this area of the softirq code needs fixes 
+> (unrelated to tracing).
+>  
+> This API:
+> 
+> inline void raise_softirq_irqoff(unsigned int nr)
+> {
+>         __raise_softirq_irqoff(nr);
+> 
+>         /*
+>          * If we're in an interrupt or softirq, we're done
+>          * (this also catches softirq-disabled code). We will
+>          * actually run the softirq once we return from
+>          * the irq or softirq.
+>          *
+>          * Otherwise we wake up ksoftirqd to make sure we
+>          * schedule the softirq soon.
+>          */
+>         if (!in_interrupt())
+>                 wakeup_softirqd();
+> }
+> 
+> is broken with RT tasks (as recently reported to lkml), as when a 
+> real-time task wakes up ksoftirqd (which has lower priority) it wont 
+> execute and we starve softirq execution.
+> 
+> The proper solution would be to have a new API:
+> 
+> 	raise_softirq_check()
+> 
+> and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
+> - and put raise_softirq_check() to all places that use 
+> raise_softirq*() from process context.
 
-My hope with the msm support is to get buildable, bootable (we're
-there now), style-clean (we probably have stuff that needs help yet,
-though I think we're improving) support for the platform in the tree
-so people can actually build mainline for things like HTC Dream /
-Sapphire, Qualcomm's SURF boards, etc.
+It's a nice solution. But I think it would be nicer when it is changed a little.
 
-At that point, I think we'll get more people looking at, testing, and
-hopefully contributing and reviewing patches in that domain -- I know
-there are a lot of folks out there hacking on ADP1 (the unlocked dev
-phone) or "rooted" G1s, and some of them tinker with things at the
-kernel level.
+The new API raise_softirq_check() will become a very hard _burden_ to the users of raise_softirq*(). They have to find out a proper place to place the "raise_softirq_check();". It's not an easy things, functions are complicated and hard to be determined WHERE is the process context and WHEN(a function may be called from multi kinds of context).
 
->From a practical standpoint, some questions about trying to get a
-bunch of msm stuff cleaned up possibly for 2.6.31:
-- would having some ifdefs around code using wakelock support be
-acceptable for the time being?  The wakelock/suspendblock review does
-seem to be making progress on linux-pm if not super quickly, and I'd
-rather maintain some ifdefs than maintain two different versions of
-drivers while it's getting sorted out.
-- from where we are now, with .30 about to be wrapped up, what's the
-reasonable timeline for putting together a patch series for mach-msm
-and for drivers/staging/msm7k or the like?  When should I be sending
-what to where?  Presumably to lakml at the least?
-- is it essential to completely flatten down to single patches for new
-drivers?  We do have history including contributions from Qualcomm,
-HTC, etc, which would be nice to preserve in some cases, but if that's
-impractical, we can do a complete rebase and flatten on top of tip of
-tree.
+Instead, I prefer that raise_softirq_check() is hidden from users. We call raise_softirq_check() from schedule(), it will handle the un-handle softirqs in time(if un-handle softirqs are too much, it'll wakeup the ksoftirqd).
 
-I'd love review/feedback on things -- I think, to Alan's original
-suggestion, I just would like to avoid ending up in a holding pattern
-on getting support for these SoCs and devices into mainline
-(especially if we can do it without breaking anybody else).  I do
-understand if there aren't a lot of people interested in wading
-through the frightening realm of AMSS/QDSP remote interfaces...
 
-Thanks,
+Lai
 
-Brian
+
+>  
+> raise_softirq_check() would execute softirq handlers from process 
+> context, if there's any pending ones. It has to be called outside of 
+> bh critical sections - i.e. often a bit after the raise_softirq() 
+> has been done.
+> 
+> __raise_softirq_irqoff() would be made private to kernel/softirq.c, 
+> and we'd only have two public APIs to trigger softirqs: 
+> raise_softirq() and raise_softirq_irqoff(). Both just set the 
+> pending flag and dont do any wakeup.
+> 
+> As a side-effect of these fixes, the tracepoints will be sorted out 
+> as well - there wont be any need to hack into 
+> __raise_softirq_irqoff().
+> 
+> 	Ingo
+> 
+> 
+> 
+
+
