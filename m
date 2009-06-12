@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZFLG4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZFLG6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbZFLG4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 02:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbZFLG4D
+	id S932086AbZFLG6W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 02:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbZFLG6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 02:56:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48713 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755778AbZFLG4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 02:56:00 -0400
-Date: Fri, 12 Jun 2009 08:49:27 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] posix-cpu-timers: remove tasklist_lock where we can
-Message-ID: <20090612084927.11673956@dhcp-lab-109.englab.brq.redhat.com>
-Organization: RedHat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 12 Jun 2009 02:58:15 -0400
+Received: from s15277822.onlinehome-server.info ([87.106.189.147]:38036 "EHLO
+	s15277822.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752933AbZFLG6O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 02:58:14 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 02:58:14 EDT
+Message-ID: <4A31FAF9.7000500@kuix.de>
+Date: Fri, 12 Jun 2009 08:51:37 +0200
+From: Kai Engert <kaie@kuix.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1pre) Gecko/20090609 Lightning/1.0pre Shredder/3.0b3pre
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.30] USB: option.c: add Qualcomm/Option iCON 210 modem
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tasklist_lock is not needed to protect find_task_by_vpid() nor
-thread_group_leader() nor same_thread_group() , use rcu_read_lock() instead.
+Add modem portion of USB device labeled:
+Model iCON 210, Qualcomm 3G HSDPA, designed in EU by Option
 
-Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+Signed-off-by: Kai Engert <kaie@kuix.de>
 ---
- kernel/posix-cpu-timers.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index bece7c0..1d9cdf3 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -37,13 +37,13 @@ static int check_clock(const clockid_t which_clock)
- 	if (pid == 0)
- 		return 0;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	p = find_task_by_vpid(pid);
- 	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
- 		   same_thread_group(p, current) : thread_group_leader(p))) {
- 		error = -EINVAL;
- 	}
--	read_unlock(&tasklist_lock);
-+	rcu_read_lock();
- 
- 	return error;
- }
-@@ -398,7 +398,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
- 	new_timer->it.cpu.incr.sched = 0;
- 	new_timer->it.cpu.expires.sched = 0;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	if (CPUCLOCK_PERTHREAD(new_timer->it_clock)) {
- 		if (pid == 0) {
- 			p = current;
-@@ -422,7 +422,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
- 	} else {
- 		ret = -EINVAL;
- 	}
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 
- 	return ret;
- }
--- 
-1.6.0.6
+Device starts in usb-storage mode (1e0e:f000) and requires the use of a tool like usb_modeswitch to switch it to modem mode (1e0e:9000).
+I'm not subscribed to the mailing list, please cc me on replies, thanks.
+Regards, Kai
 
+--- linux-2.6.30/drivers/usb/serial/option.c.preicon210	2009-06-12 08:11:37.000000000 +0200
++++ linux-2.6.30/drivers/usb/serial/option.c	2009-06-12 08:11:39.000000000 +0200
+@@ -93,6 +93,9 @@
+  #define OPTION_PRODUCT_ETNA_KOI_MODEM		0x7100
+  #define OPTION_PRODUCT_GTM380_MODEM		0x7201
+
++#define QUALCOMM_OPTION_VENDOR_ID		0x1e0e
++#define QUALCOMM_OPTION_PRODUCT_ICON_210	0x9000
++
+  #define HUAWEI_VENDOR_ID			0x12D1
+  #define HUAWEI_PRODUCT_E600			0x1001
+  #define HUAWEI_PRODUCT_E220			0x1003
+@@ -330,6 +333,7 @@
+  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_MODEM_EX) },
+  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
+  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_GTM380_MODEM) },
++	{ USB_DEVICE(QUALCOMM_OPTION_VENDOR_ID, QUALCOMM_OPTION_PRODUCT_ICON_210) },
+  	{ USB_DEVICE(QUANTA_VENDOR_ID, QUANTA_PRODUCT_Q101) },
+  	{ USB_DEVICE(QUANTA_VENDOR_ID, QUANTA_PRODUCT_Q111) },
+  	{ USB_DEVICE(QUANTA_VENDOR_ID, QUANTA_PRODUCT_GLX) },
