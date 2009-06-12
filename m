@@ -1,77 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763637AbZFLSv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765727AbZFLSvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763637AbZFLSv0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZFLSvR
+	id S1765727AbZFLSvj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759285AbZFLSvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:51:17 -0400
-Received: from fifo99.com ([67.223.236.141]:46209 "EHLO fifo99.com"
+	Fri, 12 Jun 2009 14:51:18 -0400
+Received: from fifo99.com ([67.223.236.141]:46216 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751918AbZFLSvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:51:16 -0400
+	id S1755498AbZFLSvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 14:51:17 -0400
 From: Daniel Walker <dwalker@fifo99.com>
 To: Greg Kroah-Hartman <greg@kroah.com>
 Cc: Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org,
        Daniel Walker <dwalker@fifo99.com>
-Subject: [PATCH 1/6] staging: android: binder: Remove some funny && usage
-Date: Fri, 12 Jun 2009 11:51:13 -0700
-Message-Id: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+Subject: [PATCH 3/6] staging: android: binder: remove a predefine
+Date: Fri, 12 Jun 2009 11:51:15 -0700
+Message-Id: <1244832678-30329-3-git-send-email-dwalker@fifo99.com>
 X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1244832678-30329-2-git-send-email-dwalker@fifo99.com>
+References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+ <1244832678-30329-2-git-send-email-dwalker@fifo99.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This && usage is a bit confusing. I reworked these to be actual
-if statements so it's clear what is going on.
+I removed the binder_transaction_buffer_release predefine, and put
+the actual function in place of it.
 
 Signed-off-by: Daniel Walker <dwalker@fifo99.com>
 ---
- drivers/staging/android/binder.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/staging/android/binder.c |  138 ++++++++++++++++++-------------------
+ 1 files changed, 67 insertions(+), 71 deletions(-)
 
 diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
-index 17d89a8..c37336d 100644
+index c4a596f..ec86808 100644
 --- a/drivers/staging/android/binder.c
 +++ b/drivers/staging/android/binder.c
-@@ -2146,7 +2146,7 @@ static int binder_thread_read(struct binder_proc *proc,
- 	void __user *end = buffer + size;
+@@ -1270,7 +1270,73 @@ static void binder_send_failed_reply(struct binder_transaction *t,
  
- 	int ret = 0;
--	int wait_for_proc_work;
-+	int wait_for_proc_work = 0;
- 
- 	if (*consumed == 0) {
- 		if (put_user(BR_NOOP, (uint32_t __user *)ptr))
-@@ -2155,8 +2155,8 @@ static int binder_thread_read(struct binder_proc *proc,
- 	}
- 
- retry:
--	wait_for_proc_work = thread->transaction_stack == NULL &&
--				list_empty(&thread->todo);
-+	if (list_empty(&thread->todo) && thread->transaction_stack == NULL)
-+		wait_for_proc_work = 1;
- 
- 	if (thread->return_error != BR_OK && ptr < end) {
- 		if (thread->return_error2 != BR_OK) {
-@@ -2539,13 +2539,15 @@ static unsigned int binder_poll(struct file *filp,
- {
- 	struct binder_proc *proc = filp->private_data;
- 	struct binder_thread *thread = NULL;
--	int wait_for_proc_work;
-+	int wait_for_proc_work = 0;
- 
- 	mutex_lock(&binder_lock);
- 	thread = binder_get_thread(proc);
- 
--	wait_for_proc_work = thread->transaction_stack == NULL &&
--		list_empty(&thread->todo) && thread->return_error == BR_OK;
-+	if (list_empty(&thread->todo) && thread->transaction_stack == NULL &&
-+	    thread->return_error == BR_OK)
-+		wait_for_proc_work = 1;
+ static void binder_transaction_buffer_release(struct binder_proc *proc,
+ 					      struct binder_buffer *buffer,
+-					      size_t *failed_at);
++					      size_t *failed_at)
++{
++	size_t *offp, *off_end;
++	int debug_id = buffer->debug_id;
 +
- 	mutex_unlock(&binder_lock);
++	binder_debug(BINDER_DEBUG_TRANSACTION,
++		     "binder: %d buffer release %d, size %zd-%zd, failed at %p\n",
++		     proc->pid, buffer->debug_id,
++		     buffer->data_size, buffer->offsets_size, failed_at);
++
++	if (buffer->target_node)
++		binder_dec_node(buffer->target_node, 1, 0);
++
++	offp = (size_t *)(buffer->data + ALIGN(buffer->data_size, sizeof(void *)));
++	if (failed_at)
++		off_end = failed_at;
++	else
++		off_end = (void *)offp + buffer->offsets_size;
++	for (; offp < off_end; offp++) {
++		struct flat_binder_object *fp;
++		if (*offp > buffer->data_size - sizeof(*fp) ||
++		    buffer->data_size < sizeof(*fp) ||
++		    !IS_ALIGNED(*offp, sizeof(void *))) {
++			printk(KERN_ERR "binder: transaction release %d bad"
++					"offset %zd, size %zd\n", debug_id, *offp, buffer->data_size);
++			continue;
++		}
++		fp = (struct flat_binder_object *)(buffer->data + *offp);
++		switch (fp->type) {
++		case BINDER_TYPE_BINDER:
++		case BINDER_TYPE_WEAK_BINDER: {
++			struct binder_node *node = binder_get_node(proc, fp->binder);
++			if (node == NULL) {
++				printk(KERN_ERR "binder: transaction release %d bad node %p\n", debug_id, fp->binder);
++				break;
++			}
++			binder_debug(BINDER_DEBUG_TRANSACTION,
++				     "        node %d u%p\n",
++				     node->debug_id, node->ptr);
++			binder_dec_node(node, fp->type == BINDER_TYPE_BINDER, 0);
++		} break;
++		case BINDER_TYPE_HANDLE:
++		case BINDER_TYPE_WEAK_HANDLE: {
++			struct binder_ref *ref = binder_get_ref(proc, fp->handle);
++			if (ref == NULL) {
++				printk(KERN_ERR "binder: transaction release %d bad handle %ld\n", debug_id, fp->handle);
++				break;
++			}
++			binder_debug(BINDER_DEBUG_TRANSACTION,
++				     "        ref %d desc %d (node %d)\n",
++				     ref->debug_id, ref->desc, ref->node->debug_id);
++			binder_dec_ref(ref, fp->type == BINDER_TYPE_HANDLE);
++		} break;
++
++		case BINDER_TYPE_FD:
++			binder_debug(BINDER_DEBUG_TRANSACTION,
++				     "        fd %ld\n", fp->handle);
++			if (failed_at)
++				task_close_fd(proc, fp->handle);
++			break;
++
++		default:
++			printk(KERN_ERR "binder: transaction release %d bad object type %lx\n", debug_id, fp->type);
++			break;
++		}
++	}
++}
  
- 	if (wait_for_proc_work) {
+ static void binder_transaction(struct binder_proc *proc,
+ 			       struct binder_thread *thread,
+@@ -1679,76 +1745,6 @@ err_no_context_mgr_node:
+ 		thread->return_error = return_error;
+ }
+ 
+-static void binder_transaction_buffer_release(struct binder_proc *proc,
+-					      struct binder_buffer *buffer,
+-					      size_t *failed_at)
+-{
+-	size_t *offp, *off_end;
+-	int debug_id = buffer->debug_id;
+-
+-	binder_debug(BINDER_DEBUG_TRANSACTION,
+-		     "binder: %d buffer release %d, size %zd-%zd, failed at %p\n",
+-		     proc->pid, buffer->debug_id,
+-		     buffer->data_size, buffer->offsets_size, failed_at);
+-
+-	if (buffer->target_node)
+-		binder_dec_node(buffer->target_node, 1, 0);
+-
+-	offp = (size_t *)(buffer->data + ALIGN(buffer->data_size, sizeof(void *)));
+-	if (failed_at)
+-		off_end = failed_at;
+-	else
+-		off_end = (void *)offp + buffer->offsets_size;
+-	for (; offp < off_end; offp++) {
+-		struct flat_binder_object *fp;
+-		if (*offp > buffer->data_size - sizeof(*fp) ||
+-		    buffer->data_size < sizeof(*fp) ||
+-		    !IS_ALIGNED(*offp, sizeof(void *))) {
+-			printk(KERN_ERR "binder: transaction release %d bad"
+-					"offset %zd, size %zd\n", debug_id, *offp, buffer->data_size);
+-			continue;
+-		}
+-		fp = (struct flat_binder_object *)(buffer->data + *offp);
+-		switch (fp->type) {
+-		case BINDER_TYPE_BINDER:
+-		case BINDER_TYPE_WEAK_BINDER: {
+-			struct binder_node *node = binder_get_node(proc, fp->binder);
+-			if (node == NULL) {
+-				printk(KERN_ERR "binder: transaction release %d bad node %p\n", debug_id, fp->binder);
+-				break;
+-			}
+-			binder_debug(BINDER_DEBUG_TRANSACTION,
+-				     "        node %d u%p\n",
+-				     node->debug_id, node->ptr);
+-			binder_dec_node(node, fp->type == BINDER_TYPE_BINDER, 0);
+-		} break;
+-		case BINDER_TYPE_HANDLE:
+-		case BINDER_TYPE_WEAK_HANDLE: {
+-			struct binder_ref *ref = binder_get_ref(proc, fp->handle);
+-			if (ref == NULL) {
+-				printk(KERN_ERR "binder: transaction release %d bad handle %ld\n", debug_id, fp->handle);
+-				break;
+-			}
+-			binder_debug(BINDER_DEBUG_TRANSACTION,
+-				     "        ref %d desc %d (node %d)\n",
+-				     ref->debug_id, ref->desc, ref->node->debug_id);
+-			binder_dec_ref(ref, fp->type == BINDER_TYPE_HANDLE);
+-		} break;
+-
+-		case BINDER_TYPE_FD:
+-			binder_debug(BINDER_DEBUG_TRANSACTION,
+-				     "        fd %ld\n", fp->handle);
+-			if (failed_at)
+-				task_close_fd(proc, fp->handle);
+-			break;
+-
+-		default:
+-			printk(KERN_ERR "binder: transaction release %d bad object type %lx\n", debug_id, fp->type);
+-			break;
+-		}
+-	}
+-}
+-
+ int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
+ 			void __user *buffer, int size, signed long *consumed)
+ {
 -- 
 1.5.4.3
 
