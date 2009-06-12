@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763433AbZFLAFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbZFLAF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763433AbZFLAFA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 20:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762721AbZFLAEq
+	id S1763277AbZFLAF0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 20:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763142AbZFLAEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 20:04:46 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59582 "EHLO
+	Thu, 11 Jun 2009 20:04:51 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:59592 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761604AbZFLAEp (ORCPT
+	with ESMTP id S1761986AbZFLAEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 20:04:45 -0400
+	Thu, 11 Jun 2009 20:04:49 -0400
 From: Wolfram Sang <w.sang@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
        Wolfram Sang <w.sang@pengutronix.de>,
        Magnus Damm <magnus.damm@gmail.com>, "Hans J. Koch" <hjk@linutronix.de>,
        Greg KH <gregkh@suse.de>
-Date: Fri, 12 Jun 2009 02:04:21 +0200
-Message-Id: <1244765062-14144-2-git-send-email-w.sang@pengutronix.de>
+Date: Fri, 12 Jun 2009 02:04:22 +0200
+Message-Id: <1244765062-14144-3-git-send-email-w.sang@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de>
 References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de>
 X-SA-Exim-Connect-IP: 92.198.50.58
 X-SA-Exim-Mail-From: w.sang@pengutronix.de
-Subject: [PATCH 1/2] uio/pdrv_genirq: Refactor probe routine to expose a generic part
+Subject: [PATCH 2/2] uio: add an of_genirq driver
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
 X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
@@ -31,155 +31,183 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch refactors the probe routine, so that an of-version of a similiar
-driver can pick it up later.
+Picking up the now exported generic probe function from the
+platform-variant of this driver, this patch adds an of-version. Also add
+the binding documentation.
 
 Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 Cc: Magnus Damm <magnus.damm@gmail.com>
 Cc: Hans J. Koch <hjk@linutronix.de>
 Cc: Greg KH <gregkh@suse.de>
 ---
- drivers/uio/uio_pdrv_genirq.c   |   60 ++++++++++++++++++++------------------
- include/linux/uio_pdrv_genirq.h |   13 ++++++++
- 2 files changed, 45 insertions(+), 28 deletions(-)
- create mode 100644 include/linux/uio_pdrv_genirq.h
 
-diff --git a/drivers/uio/uio_pdrv_genirq.c b/drivers/uio/uio_pdrv_genirq.c
-index 3f06818..8f8a0f9 100644
---- a/drivers/uio/uio_pdrv_genirq.c
-+++ b/drivers/uio/uio_pdrv_genirq.c
-@@ -20,15 +20,10 @@
- #include <linux/bitops.h>
- #include <linux/interrupt.h>
- #include <linux/stringify.h>
-+#include <linux/uio_pdrv_genirq.h>
- 
- #define DRIVER_NAME "uio_pdrv_genirq"
- 
--struct uio_pdrv_genirq_platdata {
--	struct uio_info *uioinfo;
--	spinlock_t lock;
--	unsigned long flags;
--};
--
- static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
- {
- 	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
-@@ -68,29 +63,18 @@ static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
- 	return 0;
- }
- 
--static int uio_pdrv_genirq_probe(struct platform_device *pdev)
-+int __uio_pdrv_genirq_probe(struct device *dev, struct uio_info *uioinfo,
-+		struct resource *resources, unsigned int num_resources)
- {
--	struct uio_info *uioinfo = pdev->dev.platform_data;
- 	struct uio_pdrv_genirq_platdata *priv;
- 	struct uio_mem *uiomem;
--	int ret = -EINVAL;
--	int i;
--
--	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
--		dev_err(&pdev->dev, "missing platform_data\n");
--		goto bad0;
--	}
--
--	if (uioinfo->handler || uioinfo->irqcontrol ||
--	    uioinfo->irq_flags & IRQF_SHARED) {
--		dev_err(&pdev->dev, "interrupt configuration error\n");
--		goto bad0;
--	}
-+	unsigned int i;
-+	int ret;
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (!priv) {
- 		ret = -ENOMEM;
--		dev_err(&pdev->dev, "unable to kmalloc\n");
-+		dev_err(dev, "unable to kmalloc\n");
- 		goto bad0;
- 	}
- 
-@@ -100,14 +84,14 @@ static int uio_pdrv_genirq_probe(struct platform_device *pdev)
- 
- 	uiomem = &uioinfo->mem[0];
- 
--	for (i = 0; i < pdev->num_resources; ++i) {
--		struct resource *r = &pdev->resource[i];
-+	for (i = 0; i < num_resources; ++i) {
-+		struct resource *r = resources + i;
- 
- 		if (r->flags != IORESOURCE_MEM)
- 			continue;
- 
- 		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
--			dev_warn(&pdev->dev, "device has more than "
-+			dev_warn(dev, "device has more than "
- 					__stringify(MAX_UIO_MAPS)
- 					" I/O memory resources.\n");
- 			break;
-@@ -138,19 +122,39 @@ static int uio_pdrv_genirq_probe(struct platform_device *pdev)
- 	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
- 	uioinfo->priv = priv;
- 
--	ret = uio_register_device(&pdev->dev, priv->uioinfo);
-+	ret = uio_register_device(dev, priv->uioinfo);
- 	if (ret) {
--		dev_err(&pdev->dev, "unable to register uio device\n");
-+		dev_err(dev, "unable to register uio device\n");
- 		goto bad1;
- 	}
- 
--	platform_set_drvdata(pdev, priv);
-+	dev_set_drvdata(dev, priv);
- 	return 0;
-  bad1:
- 	kfree(priv);
-  bad0:
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(__uio_pdrv_genirq_probe);
-+
-+static int uio_pdrv_genirq_probe(struct platform_device *pdev)
-+{
-+	struct uio_info *uioinfo = pdev->dev.platform_data;
-+
-+	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
-+		dev_err(&pdev->dev, "missing platform_data\n");
-+		return -EINVAL;
-+	}
-+
-+	if (uioinfo->handler || uioinfo->irqcontrol ||
-+	    uioinfo->irq_flags & IRQF_SHARED) {
-+		dev_err(&pdev->dev, "interrupt configuration error\n");
-+		return -EINVAL;
-+	}
-+
-+	return __uio_pdrv_genirq_probe(&pdev->dev, uioinfo, pdev->resource,
-+			pdev->num_resources);
-+}
- 
- static int uio_pdrv_genirq_remove(struct platform_device *pdev)
- {
-diff --git a/include/linux/uio_pdrv_genirq.h b/include/linux/uio_pdrv_genirq.h
+In probe, I put the resources-array on the stack to simplify the code. If this
+is considered too huge for the stack (140 byte for a 32-bit system at the
+moment), I can also post a version using kzalloc.
+
+ Documentation/powerpc/dts-bindings/uio-generic.txt |   16 +++
+ drivers/uio/Kconfig                                |    6 +
+ drivers/uio/Makefile                               |    1 +
+ drivers/uio/uio_of_genirq.c                        |   98 ++++++++++++++++++++
+ 4 files changed, 121 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/uio-generic.txt
+ create mode 100644 drivers/uio/uio_of_genirq.c
+
+diff --git a/Documentation/powerpc/dts-bindings/uio-generic.txt b/Documentation/powerpc/dts-bindings/uio-generic.txt
 new file mode 100644
-index 0000000..a410390
+index 0000000..8ad9861
 --- /dev/null
-+++ b/include/linux/uio_pdrv_genirq.h
-@@ -0,0 +1,13 @@
-+#ifndef _LINUX_UIO_PDRV_GENIRQ_H
-+#define _LINUX_UIO_PDRV_GENIRQ_H
++++ b/Documentation/powerpc/dts-bindings/uio-generic.txt
+@@ -0,0 +1,16 @@
++UIO for custom devices
 +
-+struct uio_pdrv_genirq_platdata {
++A device which will be mapped using the UIO subsystem.
++
++Properties:
++ - compatible : should contain the specific model used, followed by
++                "generic-uio".
++ - reg : address range(s) of the device (up to MAX_UIO_MAPS)
++ - interrupts : interrupt of the device
++
++Example:
++        c64fpga@0 {
++                compatible = "ptx,c64fpga001", "generic-uio";
++                reg = <0x0 0x10000>;
++                interrupts = <0 0 3>;
++        };
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index 7f86534..18efe38 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -46,6 +46,12 @@ config UIO_PDRV_GENIRQ
+ 
+ 	  If you don't know what to do here, say N.
+ 
++config UIO_OF_GENIRQ
++	tristate "Userspace I/O OF driver with generic IRQ handling"
++	depends on UIO_PDRV_GENIRQ && OF
++	help
++	  OF wrapper for the above platform driver.
++
+ config UIO_SMX
+ 	tristate "SMX cryptengine UIO interface"
+ 	default n
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index 5c2586d..089fd56 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -2,6 +2,7 @@ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+ obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+ obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
++obj-$(CONFIG_UIO_OF_GENIRQ)	+= uio_of_genirq.o
+ obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+ obj-$(CONFIG_UIO_AEC)	+= uio_aec.o
+ obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
+diff --git a/drivers/uio/uio_of_genirq.c b/drivers/uio/uio_of_genirq.c
+new file mode 100644
+index 0000000..254ec5b
+--- /dev/null
++++ b/drivers/uio/uio_of_genirq.c
+@@ -0,0 +1,98 @@
++/*
++ * OF wrapper to make use of the uio_pdrv_genirq-driver.
++ *
++ * Copyright (C) 2009 Wolfram Sang, Pengutronix
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/uio_driver.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
++#include <linux/uio_pdrv_genirq.h>
++
++#define OF_DRIVER_VERSION "1"
++
++static __devinit int uio_of_genirq_probe(struct of_device *op,
++		const struct of_device_id *match)
++{
 +	struct uio_info *uioinfo;
-+	spinlock_t lock;
-+	unsigned long flags;
++	struct resource resources[MAX_UIO_MAPS];
++	int i, ret;
++
++	uioinfo = kzalloc(sizeof(*uioinfo), GFP_KERNEL);
++	if (!uioinfo)
++		return -ENOMEM;
++
++	uioinfo->name = op->node->name;
++	uioinfo->version = OF_DRIVER_VERSION;
++	uioinfo->irq = irq_of_parse_and_map(op->node, 0);
++	if (!uioinfo->irq)
++		uioinfo->irq = UIO_IRQ_NONE;
++
++	for (i = 0; i < MAX_UIO_MAPS; ++i)
++		if (of_address_to_resource(op->node, i, &resources[i]))
++			break;
++
++	ret = __uio_pdrv_genirq_probe(&op->dev, uioinfo, &resources, i);
++	if (ret)
++		goto err_cleanup;
++
++	return 0;
++
++err_cleanup:
++	if (uioinfo->irq != UIO_IRQ_NONE)
++		irq_dispose_mapping(uioinfo->irq);
++
++	kfree(uioinfo);
++	return ret;
++}
++
++static __devexit int uio_of_genirq_remove(struct of_device *op)
++{
++	struct uio_pdrv_genirq_platdata *priv = dev_get_drvdata(&op->dev);
++
++	uio_unregister_device(priv->uioinfo);
++
++	if (priv->uioinfo->irq != UIO_IRQ_NONE)
++		irq_dispose_mapping(priv->uioinfo->irq);
++
++	kfree(priv->uioinfo);
++	kfree(priv);
++	return 0;
++}
++
++/* Match table for of_platform binding */
++static const struct of_device_id __devinitconst uio_of_genirq_match[] = {
++	{ .compatible = "generic-uio", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, uio_of_genirq_match);
++
++static struct of_platform_driver uio_of_genirq_driver = {
++	.owner = THIS_MODULE,
++	.name = "uio-of-genirq",
++	.match_table = uio_of_genirq_match,
++	.probe = uio_of_genirq_probe,
++	.remove = __devexit_p(uio_of_genirq_remove),
 +};
 +
-+extern int __uio_pdrv_genirq_probe(struct device *dev, struct uio_info *uioinfo,
-+	struct resource *resources, unsigned int num_resources);
++static inline int __init uio_of_genirq_init(void)
++{
++	return of_register_platform_driver(&uio_of_genirq_driver);
++}
++module_init(uio_of_genirq_init);
 +
-+#endif
++static inline void __exit uio_of_genirq_exit(void)
++{
++	of_unregister_platform_driver(&uio_of_genirq_driver);
++}
++module_exit(uio_of_genirq_exit);
++
++MODULE_AUTHOR("Wolfram Sang");
++MODULE_DESCRIPTION("Userspace I/O OF driver with generic IRQ handling");
++MODULE_LICENSE("GPL v2");
 -- 
 1.6.3.1
 
