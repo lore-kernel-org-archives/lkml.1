@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763764AbZFLLt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764162AbZFLLts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763764AbZFLLt3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761323AbZFLLtM
+	id S1764162AbZFLLts (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZFLLtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:49:12 -0400
-Received: from ozlabs.org ([203.10.76.45]:35472 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 07:49:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39086 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760308AbZFLLtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:49:11 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] kvm: remove the duplicated cpumask_clear
-Date: Fri, 12 Jun 2009 21:19:10 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Avi Kivity <avi@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <4A318034.3010102@kernel.org> <4A31807C.7000909@kernel.org>
-In-Reply-To: <4A31807C.7000909@kernel.org>
+	id S1753148AbZFLLti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:49:38 -0400
+Date: Fri, 12 Jun 2009 11:49:02 GMT
+From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, yong.y.wang@intel.com,
+       yong.y.wang@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, yong.y.wang@linux.intel.com,
+       a.p.zijlstra@chello.nl, yong.y.wang@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090612031706.GA22126@ywang-moblin2.bj.intel.com>
+References: <20090612031706.GA22126@ywang-moblin2.bj.intel.com>
+Subject: [tip:perfcounters/core] perf_counter tools: Remove one L1-data alias
+Message-ID: <tip-faafec1e61e61d350248af2a7e5f047606adab6e@git.kernel.org>
+Git-Commit-ID: faafec1e61e61d350248af2a7e5f047606adab6e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906122119.10978.rusty@rustcorp.com.au>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 12 Jun 2009 11:49:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009 07:39:00 am Yinghai Lu wrote:
-> zalloc_cpumask_var already had that clear.
+Commit-ID:  faafec1e61e61d350248af2a7e5f047606adab6e
+Gitweb:     http://git.kernel.org/tip/faafec1e61e61d350248af2a7e5f047606adab6e
+Author:     Yong Wang <yong.y.wang@linux.intel.com>
+AuthorDate: Fri, 12 Jun 2009 11:17:06 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 12 Jun 2009 13:45:09 +0200
 
-Only because of your previous patch... I've folded them into one patch for
-Avi:
+perf_counter tools: Remove one L1-data alias
 
-Subject: kvm: use zalloc_cpumask_var instead of cpumask_clear
+Otherwise all L1-instruction aliases will be recognized as
+L1-data by strcasestr() when calling function parse_aliases.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <20090612031706.GA22126@ywang-moblin2.bj.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- virt/kvm/kvm_main.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ tools/perf/util/parse-events.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -2301,11 +2301,10 @@ int kvm_init(void *opaque, unsigned int 
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 9d5f1ca..5a72586 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -75,7 +75,7 @@ static char *sw_event_names[] = {
+ #define MAX_ALIASES 8
  
- 	bad_pfn = page_to_pfn(bad_page);
- 
--	if (!alloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
-+	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
- 		r = -ENOMEM;
- 		goto out_free_0;
- 	}
--	cpumask_clear(cpus_hardware_enabled);
- 
- 	r = kvm_arch_hardware_setup();
- 	if (r < 0)
-
+ static char *hw_cache [][MAX_ALIASES] = {
+-	{ "L1-data"		, "l1-d", "l1d", "l1"				},
++	{ "L1-data"		, "l1-d", "l1d"					},
+ 	{ "L1-instruction"	, "l1-i", "l1i"					},
+ 	{ "L2"			, "l2"						},
+ 	{ "Data-TLB"		, "dtlb", "d-tlb"				},
