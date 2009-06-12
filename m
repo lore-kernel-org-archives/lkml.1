@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbZFLIEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbZFLIE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932886AbZFLIEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932677AbZFLIDb
+	id S932929AbZFLIE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932852AbZFLIEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:03:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52191 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbZFLID2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:03:28 -0400
-Date: Fri, 12 Jun 2009 09:56:50 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with
- __exit_signal()
-Message-ID: <20090612095650.61863c41@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <1244790598.6691.956.camel@laptop>
-References: <20090612084910.1b63b0af@dhcp-lab-109.englab.brq.redhat.com>
-	<1244790598.6691.956.camel@laptop>
-Organization: RedHat
+	Fri, 12 Jun 2009 04:04:39 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42431 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932876AbZFLIEh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:04:37 -0400
+Subject: Re: slab: setup allocators earlier in the boot sequence
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20090612080236.GB24044@wotan.suse.de>
+References: <200906111959.n5BJxFj9021205@hera.kernel.org>
+	 <1244770230.7172.4.camel@pasglop> <1244779009.7172.52.camel@pasglop>
+	 <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop>
+	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
+	 <1244792079.7172.74.camel@pasglop>
+	 <1244792745.30512.13.camel@penberg-laptop>
+	 <20090612075427.GA24044@wotan.suse.de>
+	 <1244793592.30512.17.camel@penberg-laptop>
+	 <20090612080236.GB24044@wotan.suse.de>
+Date: Fri, 12 Jun 2009 11:04:39 +0300
+Message-Id: <1244793879.30512.19.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009 09:09:58 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+Hi Nick,
 
-> On Fri, 2009-06-12 at 08:49 +0200, Stanislaw Gruszka wrote:
-> > Protect thread_group_cputime() call by siglock, to avoid possible (but
-> > to be honest - very improbable) double times accounting of exiting task.
-> > This is revert of commit 2b5fe6de58276d0b5a7c884d5dbfc300ca47db78
-> > "thread_group_cputime: move a couple of callsites outside of ->siglock",
-> > but implementation of thread_group_cputime() was different then.
-> 
-> Would be nice to have a description of exactly how you'd end up
-> accounting twice (and thus how this patch fixes it).
+On Fri, 2009-06-12 at 10:02 +0200, Nick Piggin wrote:
+> Fair enough, but this can be done right down in the synchronous
+> reclaim path in the page allocator. This will catch more cases
+> of code using the page allocator directly, and should be not
+> as hot as the slab allocator.
 
-In thread_group_cputime() we loop on all threads within the group to sum 
-they cputimes. After finish loop, we add killed tasks times from tsk->signal.
-If thread (one or more) exit in gap between loop and adding killed tasks
-times, __exit_signal() function add already accounted times to tsk->signal.
-So some exiting threads times could be accounted twice.
+So you want to push the local_irq_enable() to the page allocator too? We
+can certainly do that but I think we ought to wait for Andrew to merge
+Mel's patches to mainline first, OK?
 
-Stanislaw
+			Pekka
+
