@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbZFLRe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbZFLRf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763319AbZFLRe4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763289AbZFLReq
+	id S1764072AbZFLRf3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZFLRfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:34:46 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:59190 "EHLO bear.ext.ti.com"
+	Fri, 12 Jun 2009 13:35:21 -0400
+Received: from sirius.lasnet.de ([78.47.116.19]:60306 "EHLO sirius.lasnet.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763074AbZFLRem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:34:42 -0400
-From: Vikram Pandita <vikram.pandita@ti.com>
-To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Vikram Pandita <vikram.pandita@ti.com>
-Subject: [PATCH] serial: 8250: add IRQ trigger support
-Date: Fri, 12 Jun 2009 12:32:51 -0500
-Message-Id: <1244827971-14981-1-git-send-email-vikram.pandita@ti.com>
-X-Mailer: git-send-email 1.6.0.3.613.g9f8f13
+	id S1755025AbZFLRfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 13:35:20 -0400
+Date: Fri, 12 Jun 2009 19:35:37 +0200
+From: Stefan Schmidt <stefan@datenfreihafen.org>
+To: Stefan Schmidt <stefan@datenfreihafen.org>, Pavel Machek <pavel@ucw.cz>,
+       Brian Swetland <swetland@google.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "san@android.com" <san@android.com>,
+       "rlove@google.com" <rlove@google.com>, Greg KH <greg@kroah.com>
+Message-ID: <20090612173537.GC12863@dodger.lab.datenfreihafen.org>
+References: <20090610194852.GA28787@n2100.arm.linux.org.uk> <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com> <20090610213710.GA8472@elf.ucw.cz> <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com> <20090611082532.GE8592@elf.ucw.cz> <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com> <20090612150504.GA15084@elf.ucw.cz> <20090612160015.GA8942@linode.davidb.org> <20090612164325.GA12863@dodger.lab.datenfreihafen.org> <20090612165528.GA31278@huya.quicinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090612165528.GA31278@huya.quicinc.com>
+X-Mailer: Mutt http://www.mutt.org/
+X-KeyID: 0xDDF51665
+X-Website: http://www.datenfreihafen.org/
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Subject: Re: HTC Dream aka. t-mobile g1 support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is currently no provision for passing IRQ trigger flags for
-serial IRQs with triggering requirements (such as GPIO IRQs.)
+Hello.
 
-This patch adds UPF_IRQ_TRIG_* flags which map on to IRQF_TRIGGER_*
-flags.
+On Fri, 2009-06-12 at 09:55, davidb@quicinc.com wrote:
+> On Fri, Jun 12, 2009 at 09:43:25AM -0700, Stefan Schmidt wrote:
+> > 
+> > On Fri, 2009-06-12 at 09:00, David Brown wrote:
+> > > On Fri, Jun 12, 2009 at 05:05:04PM +0200, Pavel Machek wrote:
+> > > 
+> > > Support for these devices is in our reference kernel at:
+> > > 
+> > >     https://www.codeaurora.org/gitweb/quic/le/?p=kernel/msm.git;a=summary
+> > > 
+> > > It's also a bit unfortunate that our primary development happens on
+> > > development boards that aren't available to the general public.
+> > 
+> > That and that one have to sign a contributor agreement just to register on your
+> > your site and get in touch. While your kernel tree is public that looks a lot
+> > like a closed development process to me.
+> > 
+> > Any plan to make this more transparent?
+> 
+> We're definitely working on it.
 
-Signed-off-by: Vikram Pandita <vikram.pandita@ti.com>
-Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
----
- drivers/serial/8250.c       |   10 ++++++++++
- include/linux/serial_core.h |    4 ++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+Good.
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index bab115e..8235ef5 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1641,6 +1641,16 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
- 	struct irq_info *i;
- 	int ret, irq_flags = up->port.flags & UPF_SHARE_IRQ ? IRQF_SHARED : 0;
- 
-+	/* Get IRQ Trigger Flag */
-+	if (up->port.flags & UPF_IRQ_TRIG_RISING)
-+		irq_flags |= IRQF_TRIGGER_RISING;
-+	else if (up->port.flags & UPF_IRQ_TRIG_FALLING)
-+		irq_flags |= IRQF_TRIGGER_FALLING;
-+	else if (up->port.flags & UPF_IRQ_TRIG_HIGH)
-+		irq_flags |= IRQF_TRIGGER_HIGH;
-+	else if (up->port.flags & UPF_IRQ_TRIG_LOW)
-+		irq_flags |= IRQF_TRIGGER_LOW;
-+
- 	mutex_lock(&hash_mutex);
- 
- 	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 57a97e5..07591d5 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -296,7 +296,11 @@ struct uart_port {
- #define UPF_SPD_WARP		((__force upf_t) (0x1010))
- #define UPF_SKIP_TEST		((__force upf_t) (1 << 6))
- #define UPF_AUTO_IRQ		((__force upf_t) (1 << 7))
-+#define UPF_IRQ_TRIG_RISING	((__force upf_t) (1 << 8))
-+#define UPF_IRQ_TRIG_FALLING	((__force upf_t) (1 << 9))
-+#define UPF_IRQ_TRIG_HIGH	((__force upf_t) (1 << 10))
- #define UPF_HARDPPS_CD		((__force upf_t) (1 << 11))
-+#define UPF_IRQ_TRIG_LOW	((__force upf_t) (1 << 12))
- #define UPF_LOW_LATENCY		((__force upf_t) (1 << 13))
- #define UPF_BUGGY_UART		((__force upf_t) (1 << 14))
- #define UPF_NO_TXEN_TEST	((__force upf_t) (1 << 15))
--- 
-1.6.0.3.613.g9f8f13
+> I think the intent is to have a
+> Gerrit instance to accept contributions.  I'll have to look into
+> whether this can be done without signing the agreement.  Right
+> now, I can't even contribute anything, so there are a lot of
+> issues to work out.
 
+Gerrit is the Android review system? I'm only interested into the kernel and
+especially running a mainline kernel on different devices. Anyway, a public
+review process and some more informations on what you are working and how you
+would like to bring it mainline would help here.
+
+regards
+Stefan Schmidt
