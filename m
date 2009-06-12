@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZFLLtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763764AbZFLLt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299AbZFLLtR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbZFLLtH
+	id S1763764AbZFLLt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761323AbZFLLtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:49:07 -0400
-Received: from mail-px0-f187.google.com ([209.85.216.187]:42249 "EHLO
-	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753478AbZFLLtG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:49:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type:content-transfer-encoding;
-        b=WCvQm5lwP7uZ2foqiuD3Rp+d27CN1vzYkbRtKsnH+6wrF7sBuTrN1v/jD53gkt47ok
-         xGKEO7M75ohvTPdXXH4rPrHGIqqlGnIQDPYnxZOwKXMd2/fRgshjSdXiM27QshD0pRea
-         B2+Z68uyDGmglt51s8Llh9Jo6yZMG9/bhK4X0=
+	Fri, 12 Jun 2009 07:49:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:35472 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760308AbZFLLtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:49:11 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] kvm: remove the duplicated cpumask_clear
+Date: Fri, 12 Jun 2009 21:19:10 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Avi Kivity <avi@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <4A318034.3010102@kernel.org> <4A31807C.7000909@kernel.org>
+In-Reply-To: <4A31807C.7000909@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <a160a7d60906120427w3510f52fva99792d6c00c3bc7@mail.gmail.com>
-References: <a160a7d60906120427w3510f52fva99792d6c00c3bc7@mail.gmail.com>
-From: Sucan Zhang <bitzsk@gmail.com>
-Date: Fri, 12 Jun 2009 19:42:15 +0800
-Message-ID: <a160a7d60906120442t7d5d0eb6v2fb3da7f635866ce@mail.gmail.com>
-Subject: How to make the block number of a file not change?
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200906122119.10978.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 12 Jun 2009 07:39:00 am Yinghai Lu wrote:
+> zalloc_cpumask_var already had that clear.
 
-when i modify a file ,the block number of the file will be changed
-instantly, how to modify the linux kernel or some part of ext3
-filesystem to let
+Only because of your previous patch... I've folded them into one patch for
+Avi:
 
-the block number not change?
+Subject: kvm: use zalloc_cpumask_var instead of cpumask_clear
 
-Thanks!
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ virt/kvm/kvm_main.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---
-Regards,
-Sucan
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2301,11 +2301,10 @@ int kvm_init(void *opaque, unsigned int 
+ 
+ 	bad_pfn = page_to_pfn(bad_page);
+ 
+-	if (!alloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
++	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
+ 		r = -ENOMEM;
+ 		goto out_free_0;
+ 	}
+-	cpumask_clear(cpus_hardware_enabled);
+ 
+ 	r = kvm_arch_hardware_setup();
+ 	if (r < 0)
 
-
-
--- 
-Regards,
-Sucan
