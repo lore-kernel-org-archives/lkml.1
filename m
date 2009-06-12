@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbZFLLKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZFLLKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbZFLLKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758812AbZFLLKR
+	id S1757945AbZFLLKu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759569AbZFLLKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:10:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:58227 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759569AbZFLLKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:10:15 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: rr-latest-cpumask/sparc tree build failure
-Date: Fri, 12 Jun 2009 20:40:10 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
-References: <20090612185102.2d1391e5.sfr@canb.auug.org.au>
-In-Reply-To: <20090612185102.2d1391e5.sfr@canb.auug.org.au>
+	Fri, 12 Jun 2009 07:10:23 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:57831 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758664AbZFLLKV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:10:21 -0400
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906122040.10541.rusty@rustcorp.com.au>
+In-Reply-To: <20090611142700.GA12259@caradoc.them.org>
+References: <cc557aab0906100325o4fd55e0eveb958915214809e3@mail.gmail.com>
+	 <20090611142700.GA12259@caradoc.them.org>
+Date: Fri, 12 Jun 2009 14:10:20 +0300
+Message-ID: <cc557aab0906120410h71e3ab59neeaf85c3223fd7c6@mail.gmail.com>
+Subject: Re: ERESTART_RESTARTBLOCK and ptrace()
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       linux-arm-kernel@lists.arm.linux.org.uk, Nicolas Pitre <nico@cam.org>,
+       linux-kernel@vger.kernel.org, linux@arm.linux.org.uk
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009 06:21:02 pm Stephen Rothwell wrote:
-> Hi Rusty,
+On Thu, Jun 11, 2009 at 5:27 PM, Daniel Jacobowitz<dan@debian.org> wrote:
+> On Wed, Jun 10, 2009 at 01:25:34PM +0300, Kirill A. Shutemov wrote:
+>> I've got bug in handling ERESTART_RESTARTBLOCK. Kernel version is 2.6.28.
+>>
+>> Steps to reproduce:
+>> 1. Attach using ptrace() to process while it's in a syscall which use
+>> ERESTART_RESTARTBLOCK
+>> on interrupt. The easiest way is to attach to process which is in nanosleep().
+>> 2. Run a syscall in context of the process like it does gdb.
+>> 3. Continue the process.
+>>
+>> Results:
+>> Syscall(nanosleep) return error code 516(ERESTART_RESTARTBLOCK). It's
+>> kernel's internal error
+>> code and should never appear at userspace.
+>>
+>> It seems ARM-related since I can't reproduce it on x86.
 >
-> Today's linux-next build (sparc64 defconfig) failed like this:
->
-> arch/sparc/mm/init_64.c: In function 'paging_init':
-> arch/sparc/mm/init_64.c:1802: error: 'CPU_MASK_ALL_PTR' undeclared (first
+> That's because GDB has code to do the right thing on x86.  Consider
+> filing a GDB bug please.
 
-OK, Dave could you take/fold Stephen's fix then?
-
-FYI here's the patch explaining why we're CPU_MASK_ALL_PTR -> cpu_all_mask:
-
-Subject: cpumask: remove dangerous CPU_MASK_ALL_PTR
-
-(Thanks to Al Viro for reminding me of this, via Ingo)
-
-CPU_MASK_ALL is the (deprecated) "all bits set" cpumask, defined as so:
-
-	#define CPU_MASK_ALL (cpumask_t) { { ... } }
-
-Taking the address of such a temporary is questionable at best,
-unfortunately 321a8e9d (cpumask: add CPU_MASK_ALL_PTR macro) added
-CPU_MASK_ALL_PTR:
-
-	#define CPU_MASK_ALL_PTR (&CPU_MASK_ALL)
-
-Which formalizes this practice.  One day gcc could bite us over this
-usage (though we seem to have gotten away with it so far).
-
-Now all callers are removed, we kill it.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Reported-by: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Mike Travis <travis@sgi.com>
----
- include/linux/cpumask.h |    3 ---
- 1 file changed, 3 deletions(-)
-
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -324,8 +324,6 @@ static inline const struct cpumask *get_
- 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
- } }
- 
--#define CPU_MASK_ALL_PTR	(&CPU_MASK_ALL)
--
- #else
- 
- #define CPU_MASK_ALL							\
-@@ -333,7 +331,6 @@ static inline const struct cpumask *get_
- 
- /* cpu_mask_all is in init/main.c */
- extern cpumask_t cpu_mask_all;
--#define CPU_MASK_ALL_PTR	(&cpu_mask_all)
- 
- #endif
- 
-
+http://sourceware.org/bugzilla/show_bug.cgi?id=10267
