@@ -1,123 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934159AbZFLWIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934233AbZFLWJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934159AbZFLWIl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759151AbZFLWIc
+	id S934233AbZFLWJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759151AbZFLWJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:08:32 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:25862
-	"EHLO WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753831AbZFLWIc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:08:32 -0400
-X-SpamScore: 6
-X-BigFish: VPS6(z37d5nzzz1202hzzz2fh6bh17ch67h)
-X-Spam-TCS-SCL: 6:0
-Message-ID: <4A32D1AF.7060107@am.sony.com>
-Date: Fri, 12 Jun 2009 15:07:43 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 12 Jun 2009 18:09:06 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:42553 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760104AbZFLWJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:09:05 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: Non-requested PCI IRQs unavailable to ISA PnP devices and pci_dev_uses_irq()
+Date: Sat, 13 Jun 2009 00:08:55 +0200
+User-Agent: KMail/1.9.10
+Cc: abelay@mit.edu, "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200906122143.59510.linux@rainbow-software.org> <200906121438.17750.bjorn.helgaas@hp.com>
+In-Reply-To: <200906121438.17750.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-To: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH] ftrace,arm: add notrace to ARM sched_clock routines - resend
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jun 2009 22:07:44.0334 (UTC) FILETIME=[36376EE0:01C9EBAA]
-X-SEL-encryption-scan: scanned
+Content-Disposition: inline
+Message-Id: <200906130008.57928.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add notrace attribute to sched_clock, to avoid
-recursion with ftrace function tracing.
+On Friday 12 June 2009 22:38:17 you wrote:
+> On Friday 12 June 2009 01:43:57 pm Ondrej Zary wrote:
+> > Hello,
+> > some PCI devices have an IRQ but the driver does not use it. Such an
+> > example is matroxfb. It does request_irq() only for some vblank
+> > operations. Thus, the irq is not marked as used in /proc/interrupts:
+> >            CPU0
+> >   0:     246481    XT-PIC-XT        timer
+> >   1:       3507    XT-PIC-XT        i8042
+> >   2:          0    XT-PIC-XT        cascade
+> >   3:          1    XT-PIC-XT
+> >   4:          1    XT-PIC-XT
+> >   5:       4306    XT-PIC-XT        eth0
+> >   6:          5    XT-PIC-XT        floppy
+> >   7:          1    XT-PIC-XT        parport0
+> >   8:          1    XT-PIC-XT        rtc
+> >   9:          0    XT-PIC-XT        acpi
+> >  11:      13748    XT-PIC-XT        pata_it821x, uhci_hcd:usb1
+> >  12:      65539    XT-PIC-XT        i8042
+> >  14:          0    XT-PIC-XT        ata_piix
+> >  15:      33052    XT-PIC-XT        ata_piix
+> > NMI:          0   Non-maskable interrupts
+> > ERR:          0
+> >
+> > IRQ 10 is not listed but is used by one of the two Matrox cards:
+> >
+> > pci 0000:00:13.0: Boot video device
+> > ACPI: PCI Interrupt Link [LNKB] enabled at IRQ 11
+> > PCI: setting IRQ 11 as level-triggered
+> > matroxfb 0000:00:13.0: PCI INT A -> Link[LNKB] -> GSI 11 (level, low) ->
+> > IRQ 11
+> > matroxfb: Matrox Mystique (PCI) detected
+> > PInS memtype = 0
+> > matroxfb: MTRR's turned on
+> > matroxfb: 1024x768x8bpp (virtual: 1024x4096)
+> > matroxfb: framebuffer at 0xE1000000, mapped to 0xd0880000, size 4194304
+> > Console: switching to colour frame buffer device 128x48
+> > fb0: MATROX frame buffer device
+> > matroxfb 0000:00:14.0: enabling device (0000 -> 0002)
+> > ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 10
+> > PCI: setting IRQ 10 as level-triggered
+> > matroxfb 0000:00:14.0: PCI INT A -> Link[LNKA] -> GSI 10 (level, low) ->
+> > IRQ 10
+> > matroxfb: Matrox Millennium II (PCI) detected
+> > PInS memtype = 0
+> > matroxfb: MTRR's turned on
+> > matroxfb: 1024x768x8bpp (virtual: 1024x4096)
+> > matroxfb: framebuffer at 0xE3000000, mapped to 0xd1100000, size 4194304
+> > fb1: MATROX frame buffer device
+> > fb1: initializing hardware
+> >
+> >
+> > But this interrupt is not available to ISA PnP devices because
+> > drivers/pnp/resource.c calls pci_uses_irq() function which in turn calls
+> > pci_dev_uses_irq() for all PCI devices. pci_dev_uses_irq() simply checks
+> > the irq field in struct pci_dev.
+> >
+> > I wonder if that's correct (is it a bug or a feature)?
+>
+> The code that tries to keep PCI and PNP IRQs from clashing is
+> definitely sub-optimal.  Of course, PNP doesn't know what the
+> matroxfb driver doesn't need the interrupt.  Some drivers request
+> and free the IRQ dynamically, depending on whether the device is
+> in use.
+>
+> Maybe what we should be doing here is more sharing of PCI interrupts
+> to leave more available for PNP.  For example, the 00:14.0 device
+> that's currently using IRQ 10 is connected to a programmable IRQ
+> link (LNKA).  Possibly that link could be programmed to share IRQ 11
+> instead.
+>
+> In the absence of an automatic mechanism, can you work around this
+> with the "acpi_irq_isa=10" kernel parameter?
 
-Signed-off-by: Tim Bird <tim.bird@am.sony.com>
----
- arch/arm/mach-mmp/time.c       |    2 +-
- arch/arm/mach-pxa/time.c       |    2 +-
- arch/arm/mach-realview/core.c  |    2 +-
- arch/arm/mach-sa1100/generic.c |    2 +-
- arch/arm/mach-versatile/core.c |    2 +-
- arch/arm/plat-omap/common.c    |    4 ++--
- 6 files changed, 7 insertions(+), 7 deletions(-)
+Great, it works - both matrox cards are now at IRQ 11. Thanks for suggestion. 
+Although it should not work according do Documentation/kernel-parameters.txt:
 
---- a/arch/arm/mach-mmp/time.c
-+++ b/arch/arm/mach-mmp/time.c
-@@ -72,7 +72,7 @@ static inline uint32_t timer_read(void)
- 	return __raw_readl(TIMERS_VIRT_BASE + TMR_CVWR(0));
- }
+acpi_irq_isa=   [HW,ACPI] If irq_balance, mark listed IRQs used by ISA
+                Format: <irq>,<irq>...
 
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(timer_read());
- 	return (v * tcr2ns_scale) >> TCR2NS_SCALE_FACTOR;
---- a/arch/arm/mach-pxa/time.c
-+++ b/arch/arm/mach-pxa/time.c
-@@ -51,7 +51,7 @@ static void __init set_oscr2ns_scale(uns
- 		oscr2ns_scale++;
- }
-
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(OSCR);
- 	return (v * oscr2ns_scale) >> OSCR2NS_SCALE_FACTOR;
---- a/arch/arm/mach-realview/core.c
-+++ b/arch/arm/mach-realview/core.c
-@@ -60,7 +60,7 @@ void __iomem *gic_cpu_base_addr;
-  * This is the RealView sched_clock implementation.  This has
-  * a resolution of 41.7ns, and a maximum value of about 179s.
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v;
-
---- a/arch/arm/mach-sa1100/generic.c
-+++ b/arch/arm/mach-sa1100/generic.c
-@@ -131,7 +131,7 @@ EXPORT_SYMBOL(cpufreq_get);
-  *
-  *  ( * 1E9 / 3686400 => * 78125 / 288)
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(OSCR);
-
---- a/arch/arm/mach-versatile/core.c
-+++ b/arch/arm/mach-versatile/core.c
-@@ -237,7 +237,7 @@ void __init versatile_map_io(void)
-  * long as there is always less than 89 seconds between successive
-  * calls to this function.
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long v = cnt32_to_63(readl(VERSATILE_REFCOUNTER));
-
---- a/arch/arm/plat-omap/common.c
-+++ b/arch/arm/plat-omap/common.c
-@@ -185,7 +185,7 @@ console_initcall(omap_add_serial_console
-
- #include <linux/clocksource.h>
-
--static cycle_t omap_32k_read(struct clocksource *cs)
-+static cycle_t notrace omap_32k_read(struct clocksource *cs)
- {
- 	return omap_readl(TIMER_32K_SYNCHRONIZED);
- }
-@@ -203,7 +203,7 @@ static struct clocksource clocksource_32
-  * Returns current time from boot in nsecs. It's OK for this to wrap
-  * around for now, as it's just a relative time stamp.
-  */
--unsigned long long sched_clock(void)
-+unsigned long long notrace sched_clock(void)
- {
- 	unsigned long long ret;
+But this should apply to my machine:
+acpi_irq_nobalance [HW,ACPI]
+                ACPI will not move active IRQs (default)
+                default in PIC mode
 
 
+>
+> Bjorn
+>
+> > I can't use CMI8239A sound card on my machine because of this (it needs
+> > two IRQs). When I comment out that check (and move eth0 to IRQ3), the
+> > sound card works, allocating IRQ 10 and 3 (with some modifications to
+> > cmi8330 driver - will be posted separately).
+
+
+
+-- 
+Ondrej Zary
