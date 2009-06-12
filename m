@@ -1,101 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZFLPJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZFLPJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbZFLPJG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZFLPI4
+	id S1755264AbZFLPJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZFLPJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:08:56 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:50865 "EHLO atmel-es2.atmel.fr"
+	Fri, 12 Jun 2009 11:09:10 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:51148 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbZFLPIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:08:55 -0400
+	id S1754733AbZFLPJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 11:09:09 -0400
 From: Nicolas Ferre <nicolas.ferre@atmel.com>
 To: pierre@ossman.eu, haavard.skinnemoen@atmel.com,
        linux-arm-kernel@lists.arm.linux.org.uk, poorarm@shoreis.com
 Cc: linux-kernel@vger.kernel.org, avictor.za@gmail.com,
        nicolas.ferre@atmel.com
-Subject: [PATCH 2/2] atmel-mci: add MCI2 register definitions
-Date: Fri, 12 Jun 2009 17:58:30 +0200
-Message-Id: <1244822310-11562-2-git-send-email-nicolas.ferre@atmel.com>
+Subject: [PATCH 1/2] atmel-mci: Integrate AT91 specific definition in header file
+Date: Fri, 12 Jun 2009 17:58:29 +0200
+Message-Id: <1244822310-11562-1-git-send-email-nicolas.ferre@atmel.com>
 X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1244822310-11562-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1244822310-11562-1-git-send-email-nicolas.ferre@atmel.com>
-Message-Id: <a54493d37159af0d7f118934e9e5599979fa2bef.1244821292.git.nicolas.ferre@atmel.com>
-In-Reply-To: <81b92e58966b864e4a26004204f43d242d9cc8aa.1244821292.git.nicolas.ferre@atmel.com>
-References: <81b92e58966b864e4a26004204f43d242d9cc8aa.1244821292.git.nicolas.ferre@atmel.com>
+Message-Id: <81b92e58966b864e4a26004204f43d242d9cc8aa.1244821292.git.nicolas.ferre@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-New revision of Atmel MCI interface adds new features. This is a update of
-register definition in header file. This new MCI IP is called MCI2.
+The MCI IP is shared among AVR32 and AT91 SOCs.
+AT91 has specific bit definitions in the user interface of MCI SD/MMC IP.
 
 Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
-Some of this work comes form Haavard Skinnemoen.
-I take advantage of this MCI rework to integrate register definition for future
-inclusion of MCI2 support.
-MCI2 is included in at91sam9g45 which is being included on arm-linux-kernel
-mailing list.
+Thanks to Rob Emanuele who has begun this unification work. I take the hand on
+this header file work as I have some bits to integrate for MCI2 support.
 
- drivers/mmc/host/atmel-mci-regs.h |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ drivers/mmc/host/atmel-mci-regs.h |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/atmel-mci-regs.h b/drivers/mmc/host/atmel-mci-regs.h
-index adfb885..fc8a0fe 100644
+index b58364e..adfb885 100644
 --- a/drivers/mmc/host/atmel-mci-regs.h
 +++ b/drivers/mmc/host/atmel-mci-regs.h
-@@ -10,6 +10,7 @@
- 
- /*
-  * Superset of MCI IP registers integrated in Atmel AVR32 and AT91 Processors
-+ * Registers and bitfields marked with [2] are only available in MCI2
+@@ -7,6 +7,11 @@
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
   */
- 
++
++/*
++ * Superset of MCI IP registers integrated in Atmel AVR32 and AT91 Processors
++ */
++
  #ifndef __DRIVERS_MMC_ATMEL_MCI_H__
-@@ -39,6 +40,7 @@
- # define MCI_SDCSEL_MASK	(  3 <<  0)
- # define MCI_SDCBUS_1BIT	(  0 <<  6)	/* 1-bit data bus */
- # define MCI_SDCBUS_4BIT	(  2 <<  6)	/* 4-bit data bus */
-+# define MCI_SDCBUS_8BIT	(  3 <<  6)	/* 8-bit data bus[2] */
- # define MCI_SDCBUS_MASK	(  3 <<  6)
- #define MCI_ARGR		0x0010	/* Command Argument */
- #define MCI_CMDR		0x0014	/* Command */
-@@ -67,6 +69,9 @@
- #define MCI_BLKR		0x0018	/* Block */
- # define MCI_BCNT(x)		((x) <<  0)	/* Data Block Count */
- # define MCI_BLKLEN(x)		((x) << 16)	/* Data Block Length */
-+#define MCI_CSTOR		0x001c	/* Completion Signal Timeout[2] */
-+# define MCI_CSTOCYC(x)		((x) <<  0)	/* CST cycles */
-+# define MCI_CSTOMUL(x)		((x) <<  4)	/* CST multiplier */
- #define MCI_RSPR		0x0020	/* Response 0 */
- #define MCI_RSPR1		0x0024	/* Response 1 */
- #define MCI_RSPR2		0x0028	/* Response 2 */
-@@ -94,7 +99,24 @@
- # define MCI_DTOE		(  1 <<  22)	/* Data Time-Out Error */
- # define MCI_OVRE		(  1 <<  30)	/* RX Overrun Error */
- # define MCI_UNRE		(  1 <<  31)	/* TX Underrun Error */
-+#define MCI_DMA			0x0050	/* DMA Configuration[2] */
-+# define MCI_DMA_OFFSET(x)	((x) <<  0)	/* DMA Write Buffer Offset */
-+# define MCI_DMA_CHKSIZE(x)	((x) <<  4)	/* DMA Channel Read and Write Chunk Size */
-+# define MCI_DMAEN		(  1 <<  8)	/* DMA Hardware Handshaking Enable */
-+#define MCI_CFG			0x0054	/* Configuration[2] */
-+# define MCI_CFG_FIFOMODE_1DATA	(  1 <<  0)	/* MCI Internal FIFO control mode */
-+# define MCI_CFG_FERRCTRL_COR	(  1 <<  4)	/* Flow Error flag reset control mode */
-+# define MCI_CFG_HSMODE		(  1 <<  8)	/* High Speed Mode */
-+# define MCI_CFG_LSYNC		(  1 << 12)	/* Synchronize on the last block */
-+#define MCI_WPMR		0x00e4	/* Write Protection Mode[2] */
-+# define MCI_WP_EN		(  1 <<  0)	/* WP Enable */
-+# define MCI_WP_KEY		(0x4d4349 << 8)	/* WP Key */
-+#define MCI_WPSR		0x00e8	/* Write Protection Status[2] */
-+# define MCI_GET_WP_VS(x)	((x) & 0x0f)
-+# define MCI_GET_WP_VSRC(x)	(((x) >> 8) & 0xffff)
-+#define MCI_FIFO_APERTURE	0x0200	/* FIFO Aperture[2] */
+ #define __DRIVERS_MMC_ATMEL_MCI_H__
  
-+/* This is not including the FIFO Aperture on MCI2 */
- #define MCI_REGS_SIZE		0x100
- 
- /* Register access macros */
+@@ -14,11 +19,17 @@
+ #define MCI_CR			0x0000	/* Control */
+ # define MCI_CR_MCIEN		(  1 <<  0)	/* MCI Enable */
+ # define MCI_CR_MCIDIS		(  1 <<  1)	/* MCI Disable */
++# define MCI_CR_PWSEN		(  1 <<  2)	/* Power Save Enable */
++# define MCI_CR_PWSDIS		(  1 <<  3)	/* Power Save Disable */
+ # define MCI_CR_SWRST		(  1 <<  7)	/* Software Reset */
+ #define MCI_MR			0x0004	/* Mode */
+ # define MCI_MR_CLKDIV(x)	((x) <<  0)	/* Clock Divider */
++# define MCI_MR_PWSDIV(x)	((x) <<  8)	/* Power Saving Divider */
+ # define MCI_MR_RDPROOF		(  1 << 11)	/* Read Proof */
+ # define MCI_MR_WRPROOF		(  1 << 12)	/* Write Proof */
++# define MCI_MR_PDCFBYTE	(  1 << 13)	/* Force Byte Transfer */
++# define MCI_MR_PDCPADV		(  1 << 14)	/* Padding Value */
++# define MCI_MR_PDCMODE		(  1 << 15)	/* PDC-oriented Mode */
+ #define MCI_DTOR		0x0008	/* Data Timeout */
+ # define MCI_DTOCYC(x)		((x) <<  0)	/* Data Timeout Cycles */
+ # define MCI_DTOMUL(x)		((x) <<  4)	/* Data Timeout Multiplier */
 -- 
 1.5.3.7
 
