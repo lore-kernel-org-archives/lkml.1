@@ -1,143 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761226AbZFLNLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbZFLNLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761226AbZFLNLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZFLNLE
+	id S1762801AbZFLNLe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbZFLNLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:11:04 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44619 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752627AbZFLNLD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:11:03 -0400
-Date: Fri, 12 Jun 2009 16:11:03 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: linux-kernel@vger.kernel.org
-cc: cl@linux-foundation.org, npiggin@suse.de, mingo@elte.hu
-Subject: [PATCH] slab: setup cpu caches later on when interrupts are enabled
-Message-ID: <Pine.LNX.4.64.0906121607210.2387@melkki.cs.Helsinki.FI>
+	Fri, 12 Jun 2009 09:11:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:48716 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756958AbZFLNLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:11:17 -0400
+Subject: Re: linux-next: origin tree build failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, paulus@samba.org,
+       ppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20090612125335.GH31845@elte.hu>
+References: <20090612102427.32582baa.sfr@canb.auug.org.au>
+	 <1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu>
+	 <1244799197.7172.106.camel@pasglop>  <20090612125335.GH31845@elte.hu>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 23:10:24 +1000
+Message-Id: <1244812224.7172.146.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Fri, 2009-06-12 at 14:53 +0200, Ingo Molnar wrote:
+> * Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Fixes the following boot-time warning:
+> linux-next has integration testing so that interactions between 
+> maintainer trees are mapped and that architectures that otherwise 
+> few people use get build-tested too (well beyond their practical 
+> relevance, i have to add) - but there's little critical review done 
+> in linux-next. Nor should it be the forum for that, it simply 
+> contains way too much stuff and has a weird history format with 
+> daily rebases that makes review hard and expensive in that form.
 
-  [    0.000000] ------------[ cut here ]------------
-  [    0.000000] WARNING: at kernel/smp.c:369 smp_call_function_many+0x56/0x1bc()
-  [    0.000000] Hardware name:
-  [    0.000000] Modules linked in:
-  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30 #492
-  [    0.000000] Call Trace:
-  [    0.000000]  [<ffffffff8149e021>] ? _spin_unlock+0x4f/0x5c
-  [    0.000000]  [<ffffffff8108f11b>] ? smp_call_function_many+0x56/0x1bc
-  [    0.000000]  [<ffffffff81061764>] warn_slowpath_common+0x7c/0xa9
-  [    0.000000]  [<ffffffff810617a5>] warn_slowpath_null+0x14/0x16
-  [    0.000000]  [<ffffffff8108f11b>] smp_call_function_many+0x56/0x1bc
-  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
-  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
-  [    0.000000]  [<ffffffff8108f2be>] smp_call_function+0x3d/0x68
-  [    0.000000]  [<ffffffff810f3e00>] ? do_ccupdate_local+0x0/0x54
-  [    0.000000]  [<ffffffff81066fd8>] on_each_cpu+0x31/0x7c
-  [    0.000000]  [<ffffffff810f64f5>] do_tune_cpucache+0x119/0x454
-  [    0.000000]  [<ffffffff81087080>] ? lockdep_init_map+0x94/0x10b
-  [    0.000000]  [<ffffffff818133b0>] ? kmem_cache_init+0x421/0x593
-  [    0.000000]  [<ffffffff810f69cf>] enable_cpucache+0x68/0xad
-  [    0.000000]  [<ffffffff818133c3>] kmem_cache_init+0x434/0x593
-  [    0.000000]  [<ffffffff8180987c>] ? mem_init+0x156/0x161
-  [    0.000000]  [<ffffffff817f8aae>] start_kernel+0x1cc/0x3b9
-  [    0.000000]  [<ffffffff817f829a>] x86_64_start_reservations+0xaa/0xae
-  [    0.000000]  [<ffffffff817f837f>] x86_64_start_kernel+0xe1/0xe8
-  [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+I think you are mixing several issues. One is integration testing, one
+is the problem of remote architecture of subsystems testing...
 
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-Note: this patch depends on the "[PATCH] slab: don't enable interrupts 
-during early boot" one that I posted earlier in the "Re: [PATCH v2] 
-slab,slub: ignore __GFP_WAIT if we're booting or  suspending" thread.
+> linux-next should not be second-guessing maintainers and should not 
+> act as an "approval forum" for controversial features, increasing 
+> the (already quite substantial) pressure on maintainers to apply 
+> more crap.
 
- mm/slab.c |   37 +++++++++++++++++++------------------
- 1 files changed, 19 insertions(+), 18 deletions(-)
+I agree here. That's not the point. The idea is that for things that
+-are- approved by their respective maintainers, to get some integration
+testing and ironing of those mechanical bugs so that by the time they
+hit mainstream, they don't break bisection among others.
 
-diff --git a/mm/slab.c b/mm/slab.c
-index c8e217c..84368b8 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -759,6 +759,7 @@ static enum {
- 	NONE,
- 	PARTIAL_AC,
- 	PARTIAL_L3,
-+	EARLY,
- 	FULL
- } g_cpucache_up;
- 
-@@ -767,7 +768,7 @@ static enum {
-  */
- int slab_is_available(void)
- {
--	return g_cpucache_up == FULL;
-+	return g_cpucache_up >= EARLY;
- }
- 
- static DEFINE_PER_CPU(struct delayed_work, reap_work);
-@@ -1631,19 +1632,27 @@ void __init kmem_cache_init(void)
- 		}
- 	}
- 
--	/* 6) resize the head arrays to their final sizes */
--	{
--		struct kmem_cache *cachep;
--		mutex_lock(&cache_chain_mutex);
--		list_for_each_entry(cachep, &cache_chain, next)
--			if (enable_cpucache(cachep, GFP_NOWAIT))
--				BUG();
--		mutex_unlock(&cache_chain_mutex);
--	}
-+	g_cpucache_up = EARLY;
- 
- 	/* Annotate slab for lockdep -- annotate the malloc caches */
- 	init_lock_keys();
-+}
-+
-+void __init kmem_cache_init_late(void)
-+{
-+	struct kmem_cache *cachep;
-+
-+	/*
-+	 * Interrupts are enabled now so all GFP allocations are safe.
-+	 */
-+	slab_gfp_mask = __GFP_BITS_MASK;
- 
-+	/* 6) resize the head arrays to their final sizes */
-+	mutex_lock(&cache_chain_mutex);
-+	list_for_each_entry(cachep, &cache_chain, next)
-+		if (enable_cpucache(cachep, GFP_NOWAIT))
-+			BUG();
-+	mutex_unlock(&cache_chain_mutex);
- 
- 	/* Done! */
- 	g_cpucache_up = FULL;
-@@ -1660,14 +1669,6 @@ void __init kmem_cache_init(void)
- 	 */
- }
- 
--void __init kmem_cache_init_late(void)
--{
--	/*
--	 * Interrupts are enabled now so all GFP allocations are safe.
--	 */
--	slab_gfp_mask = __GFP_BITS_MASK;
--}
--
- static int __init cpucache_init(void)
- {
- 	int cpu;
--- 
-1.6.0.4
+Yes, next is -not- the place to debate controversial features. That's
+not, I believe, why it was initiated (I may be wrong, Stephen will
+correct me if I am), but the way I see things is that stuff that is
+meant to be merged gets a chance to get some of that integration testing
+against all the other stuff that is also meant to be merged to limit the
+amount of clash and problems once we hit Linus tree.
+
+> And that is true even if it's a new feature that i happen to support 
+> - as in this case - it sure would have been handy to have more 
+> perfcounters test coverage, every little bit of extra testing helps.
+
+That doesn't invalidate my point. We are not talking about whether
+perfcounters is worth merging or not, testing more or not, but strictly,
+imho, about getting a chance (a couple of days at least) to do that
+integration testing and catch the simple issues like the one that
+triggered my initial rant -before- they hit mainline.
+
+To some extent, here, the issue is on Linus side and it's up to him (Hey
+Linus ! still listening ?) to maybe be more proactive at giving an ack
+or nack so that we can get a chance to do that final pass of ironing out
+the mechanical bugs before we hit the main tree.
+
+Cheers,
+Ben.
+
+> If linux-next wants to do that then it should be renamed to 
+> something else and not called linux-next.
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
