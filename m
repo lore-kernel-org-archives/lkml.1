@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbZFLO1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbZFLOaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764248AbZFLO1G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbZFLO0y
+	id S1760470AbZFLOaj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbZFLOac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:26:54 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:33481 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755100AbZFLO0x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:26:53 -0400
-Date: Sat, 13 Jun 2009 00:26:45 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [PATCH] crypto: add optional continuous repetition test to
-	entropy store based rngs
-Message-ID: <20090612142644.GA15644@gondor.apana.org.au>
-References: <20090604195030.GA11300@hmsreliant.think-freely.org> <1244146450.22069.216.camel@calx> <20090605000456.GA10883@localhost.localdomain> <20090605003006.GA5236@gondor.apana.org.au> <20090605014816.GA15462@localhost.localdomain> <20090612142308.GA29341@hmsreliant.think-freely.org>
+	Fri, 12 Jun 2009 10:30:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41507 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753685AbZFLOab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 10:30:31 -0400
+Date: Fri, 12 Jun 2009 16:25:46 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH] posix-cpu-timers: optimize calling
+	thread_group_cputime()
+Message-ID: <20090612142546.GC3784@redhat.com>
+References: <20090612123903.37cfd868@dhcp-lab-109.englab.brq.redhat.com> <1244804986.6691.1224.camel@laptop> <20090612132008.0c6f3e93@dhcp-lab-109.englab.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090612142308.GA29341@hmsreliant.think-freely.org>
+In-Reply-To: <20090612132008.0c6f3e93@dhcp-lab-109.englab.brq.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 10:23:08AM -0400, Neil Horman wrote:
+To clarify, I am not arguing against this patch, just a queston.
+
+On 06/12, Stanislaw Gruszka wrote:
 >
-> > Ok, that seems like a reasonable idea.  new patch below
-> > Change Notes:
-> > 
-> > 1) Moved fips_enabled flag into its own header, included in all the appropriate
-> > places
-> > 
-> > 2) removed flags field from entropy store, keying continuous test on the
-> > non-null status of the last_data pointer
-> > 
-> > 
-> > FIPS-140 requires that all random number generators implement continuous self
-> > tests in which each extracted block of data is compared against the last block
-> > for repetition.  The ansi_cprng implements such a test, but it would be nice if
-> > the hw rng's did the same thing.  Obviously its not something thats always
-> > needed, but it seems like it would be a nice feature to have on occasion. I've
-> > written the below patch which allows individual entropy stores to be flagged as
-> > desiring a continuous test to be run on them as is extracted.  By default this
-> > option is off, but is enabled in the event that fips mode is selected during
-> > bootup.
-> > 
-> > Neil
-> > 
-> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> > 
-> Ping, I don't see that this got picked up in the crypto tree.  Are there
-> subsequent objections?
+> On Fri, 12 Jun 2009 13:09:46 +0200
+> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> > On Fri, 2009-06-12 at 12:39 +0200, Stanislaw Gruszka wrote:
+> > > -               times->utime = cputime_add(times->utime, t->utime);
+> > > -               times->stime = cputime_add(times->stime, t->stime);
+> > > -               times->sum_exec_runtime += t->se.sum_exec_runtime;
+> > > +               if (mask & TG_CPUCLOCK_UTIME)
+> > > +                       times->utime = cputime_add(times->utime, t->utime);
+> > > +               if (mask & TG_CPUCLOCK_STIME)
+> > > +                       times->stime = cputime_add(times->stime, t->stime);
+> > > +               if (mask & TG_CPUCLOCK_SCHED)
+> > > +                       times->sum_exec_runtime += t->se.sum_exec_runtime;
+> >
+> > Does adding 3 branches really make it faster?
+> Actually I did not any benchmarking yet, so I don't know what is the real
+> impact of the patch. I hope it make things taster but the result can be
+> opposite from my expectations.
 
-Matt, are you OK with me picking this up or do you want to pick it
-up?
+I agree with Peter, if we complicate the code it would be nice to know
+this really makes it faster. Besides, thread_group_cputime() should not
+be called that often.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Perhaps it makes sense to turn ->running into bitmask though, this should
+"obviously" speed up account_group_xxx() helpers.
+
+But in that case, perhaps stop_process_timers() should accept bitmask too?
+otherwise this doesn't look "complete".
+
+Oleg.
+
