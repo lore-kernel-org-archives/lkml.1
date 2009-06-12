@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbZFLQa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932767AbZFLQb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932760AbZFLQa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 12:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764630AbZFLQZR
+	id S932767AbZFLQb0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 12:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764769AbZFLQZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 12:25:17 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39100 "EHLO smtp.gentoo.org"
+	Fri, 12 Jun 2009 12:25:18 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39101 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763258AbZFLQZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 12:25:06 -0400
+	id S1762220AbZFLQZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 12:25:07 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 18/27] Blackfin: add support for bzip2/lzma compressed kernel images
-Date: Fri, 12 Jun 2009 12:24:36 -0400
-Message-Id: <1244823885-22410-19-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 19/27] Blackfin: add support for irqflags
+Date: Fri, 12 Jun 2009 12:24:37 -0400
+Message-Id: <1244823885-22410-20-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244823885-22410-1-git-send-email-vapier@gentoo.org>
 References: <1244823885-22410-1-git-send-email-vapier@gentoo.org>
@@ -22,117 +22,403 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since U-Boot can support these compression types, add appropriate targets
-to the Blackfin boot files.
+This converts the irq handling in the Blackfin arch from the old irq.h /
+system.h method to the new irqflags.h.  A stepping stone on the way to
+other tracing functionality.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/Kconfig         |    3 +++
- arch/blackfin/Makefile        |    7 +++++--
- arch/blackfin/boot/.gitignore |    3 ++-
- arch/blackfin/boot/Makefile   |   31 ++++++++++++++++++++++++-------
- 4 files changed, 34 insertions(+), 10 deletions(-)
+ arch/blackfin/Kconfig                |    3 +
+ arch/blackfin/include/asm/irq.h      |  271 +--------------------------------
+ arch/blackfin/include/asm/irqflags.h |   63 ++++++++
+ arch/blackfin/include/asm/system.h   |    4 +-
+ 4 files changed, 77 insertions(+), 264 deletions(-)
+ create mode 100644 arch/blackfin/include/asm/irqflags.h
 
 diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index 2cf455a..6ae9a03 100644
+index 6ae9a03..d68cb0d 100644
 --- a/arch/blackfin/Kconfig
 +++ b/arch/blackfin/Kconfig
-@@ -20,6 +20,9 @@ config RWSEM_XCHGADD_ALGORITHM
- config BLACKFIN
+@@ -55,6 +55,9 @@ config FORCE_MAX_ZONEORDER
+ config GENERIC_CALIBRATE_DELAY
  	def_bool y
- 	select HAVE_IDE
-+	select HAVE_KERNEL_GZIP
-+	select HAVE_KERNEL_BZIP2
-+	select HAVE_KERNEL_LZMA
- 	select HAVE_OPROFILE
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
  
-diff --git a/arch/blackfin/Makefile b/arch/blackfin/Makefile
-index d54c828..6f9533c 100644
---- a/arch/blackfin/Makefile
-+++ b/arch/blackfin/Makefile
-@@ -137,7 +137,7 @@ archclean:
- 
- INSTALL_PATH ?= /tftpboot
- boot := arch/$(ARCH)/boot
--BOOT_TARGETS = vmImage
-+BOOT_TARGETS = vmImage vmImage.bz2 vmImage.gz vmImage.lzma
- PHONY += $(BOOT_TARGETS) install
- KBUILD_IMAGE := $(boot)/vmImage
- 
-@@ -150,7 +150,10 @@ install:
- 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) install
- 
- define archhelp
--  echo  '* vmImage         - Kernel-only image for U-Boot (arch/$(ARCH)/boot/vmImage)'
-+  echo  '* vmImage         - Alias to selected kernel format (vmImage.gz by default)'
-+  echo  '  vmImage.bz2     - Kernel-only image for U-Boot (arch/$(ARCH)/boot/vmImage.bz2)'
-+  echo  '* vmImage.gz      - Kernel-only image for U-Boot (arch/$(ARCH)/boot/vmImage.gz)'
-+  echo  '  vmImage.lzma    - Kernel-only image for U-Boot (arch/$(ARCH)/boot/vmImage.lzma)'
-   echo  '  install         - Install kernel using'
-   echo  '                     (your) ~/bin/$(CROSS_COMPILE)installkernel or'
-   echo  '                     (distribution) PATH: $(CROSS_COMPILE)installkernel or'
-diff --git a/arch/blackfin/boot/.gitignore b/arch/blackfin/boot/.gitignore
-index 3ae0399..229e508 100644
---- a/arch/blackfin/boot/.gitignore
-+++ b/arch/blackfin/boot/.gitignore
-@@ -1 +1,2 @@
--+vmImage
-+vmImage*
-+vmlinux*
-diff --git a/arch/blackfin/boot/Makefile b/arch/blackfin/boot/Makefile
-index e028d13..3ab6f23 100644
---- a/arch/blackfin/boot/Makefile
-+++ b/arch/blackfin/boot/Makefile
-@@ -8,24 +8,41 @@
- 
- MKIMAGE := $(srctree)/scripts/mkuboot.sh
- 
--targets := vmImage
--extra-y += vmlinux.bin vmlinux.gz
-+targets := vmImage vmImage.bz2 vmImage.gz vmImage.lzma
-+extra-y += vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma
- 
- quiet_cmd_uimage = UIMAGE  $@
-       cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A $(ARCH) -O linux -T kernel \
--                   -C gzip -n 'Linux-$(KERNELRELEASE)' -a $(CONFIG_BOOT_LOAD) \
-+                   -C $(2) -n 'Linux-$(KERNELRELEASE)' -a $(CONFIG_BOOT_LOAD) \
-                    -e $(shell $(NM) vmlinux | awk '$$NF == "__start" {print $$1}') \
-                    -d $< $@
- 
- $(obj)/vmlinux.bin: vmlinux FORCE
- 	$(call if_changed,objcopy)
- 
--$(obj)/vmlinux.gz: $(obj)/vmlinux.bin FORCE
-+$(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
- 	$(call if_changed,gzip)
- 
--$(obj)/vmImage: $(obj)/vmlinux.gz
--	$(call if_changed,uimage)
--	@$(kecho) 'Kernel: $@ is ready'
-+$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,bzip2)
++config TRACE_IRQFLAGS_SUPPORT
++	def_bool y
 +
-+$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,lzma)
-+
-+$(obj)/vmImage.bz2: $(obj)/vmlinux.bin.bz2
-+	$(call if_changed,uimage,bzip2)
-+
-+$(obj)/vmImage.gz: $(obj)/vmlinux.bin.gz
-+	$(call if_changed,uimage,gzip)
-+
-+$(obj)/vmImage.lzma: $(obj)/vmlinux.bin.lzma
-+	$(call if_changed,uimage,lzma)
-+
-+suffix-$(CONFIG_KERNEL_GZIP)  := gz
-+suffix-$(CONFIG_KERNEL_BZIP2) := bz2
-+suffix-$(CONFIG_KERNEL_LZMA)  := lzma
-+$(obj)/vmImage: $(obj)/vmImage.$(suffix-y)
-+	@ln -sf $(notdir $<) $@
+ source "init/Kconfig"
  
- install:
- 	sh $(srctree)/$(src)/install.sh $(KERNELRELEASE) $(BOOTIMAGE) System.map "$(INSTALL_PATH)"
+ source "kernel/Kconfig.preempt"
+diff --git a/arch/blackfin/include/asm/irq.h b/arch/blackfin/include/asm/irq.h
+index 7645e85..400bdd5 100644
+--- a/arch/blackfin/include/asm/irq.h
++++ b/arch/blackfin/include/asm/irq.h
+@@ -17,270 +17,17 @@
+ #ifndef _BFIN_IRQ_H_
+ #define _BFIN_IRQ_H_
+ 
+-/* SYS_IRQS and NR_IRQS are defined in <mach-bf5xx/irq.h>*/
+-#include <mach/irq.h>
+-#include <asm/pda.h>
+-#include <asm/processor.h>
+-
+-#ifdef CONFIG_SMP
+-/* Forward decl needed due to cdef inter dependencies */
+-static inline uint32_t __pure bfin_dspid(void);
+-# define blackfin_core_id() (bfin_dspid() & 0xff)
+-# define bfin_irq_flags cpu_pda[blackfin_core_id()].imask
+-#else
+-extern unsigned long bfin_irq_flags;
+-#endif
+-
+-#ifdef CONFIG_IPIPE
+-
+-#include <linux/ipipe_trace.h>
++#include <linux/irqflags.h>
+ 
+-void __ipipe_unstall_root(void);
+-
+-void __ipipe_restore_root(unsigned long flags);
+-
+-#ifdef CONFIG_DEBUG_HWERR
+-# define __all_masked_irq_flags 0x3f
+-# define __save_and_cli_hw(x) \
+-	__asm__ __volatile__( \
+-		"cli %0;" \
+-		"sti %1;" \
+-		: "=&d"(x) \
+-		: "d" (0x3F) \
+-	)
+-#else
+-# define __all_masked_irq_flags 0x1f
+-# define __save_and_cli_hw(x) \
+-	__asm__ __volatile__( \
+-		"cli %0;" \
+-		: "=&d"(x) \
+-	)
+-#endif
+-
+-#define irqs_enabled_from_flags_hw(x)	((x) != __all_masked_irq_flags)
+-#define raw_irqs_disabled_flags(flags)	(!irqs_enabled_from_flags_hw(flags))
+-#define local_test_iflag_hw(x)		irqs_enabled_from_flags_hw(x)
+-
+-#define local_save_flags(x)					 \
+-	do {							 \
+-		(x) = __ipipe_test_root() ?			 \
+-			__all_masked_irq_flags : bfin_irq_flags; \
+-		barrier();					 \
+-	} while (0)
+-
+-#define local_irq_save(x)					 \
+-	do {						 	 \
+-		(x) = __ipipe_test_and_stall_root() ?		 \
+-			__all_masked_irq_flags : bfin_irq_flags; \
+-		barrier();					 \
+-	} while (0)
+-
+-static inline void local_irq_restore(unsigned long x)
+-{
+-	barrier();
+-	__ipipe_restore_root(x == __all_masked_irq_flags);
+-}
+-
+-#define local_irq_disable()			\
+-	do {					\
+-		__ipipe_stall_root();		\
+-		barrier();			\
+-	} while (0)
+-
+-static inline void local_irq_enable(void)
+-{
+-	barrier();
+-	__ipipe_unstall_root();
+-}
+-
+-#define irqs_disabled()		__ipipe_test_root()
+-
+-#define local_save_flags_hw(x) \
+-	__asm__ __volatile__( \
+-		"cli %0;" \
+-		"sti %0;" \
+-		: "=d"(x) \
+-	)
+-
+-#define	irqs_disabled_hw()				\
+-	({						\
+-		unsigned long flags;			\
+-		local_save_flags_hw(flags);		\
+-		!irqs_enabled_from_flags_hw(flags);	\
+-	})
+-
+-static inline unsigned long raw_mangle_irq_bits(int virt, unsigned long real)
+-{
+-	/* Merge virtual and real interrupt mask bits into a single
+-	   32bit word. */
+-	return (real & ~(1 << 31)) | ((virt != 0) << 31);
+-}
+-
+-static inline int raw_demangle_irq_bits(unsigned long *x)
+-{
+-	int virt = (*x & (1 << 31)) != 0;
+-	*x &= ~(1L << 31);
+-	return virt;
+-}
+-
+-#ifdef CONFIG_IPIPE_TRACE_IRQSOFF
+-
+-#define local_irq_disable_hw()						\
+-	do {								\
+-		int _tmp_dummy;						\
+-		if (!irqs_disabled_hw())				\
+-			ipipe_trace_begin(0x80000000);			\
+-		__asm__ __volatile__ ("cli %0;" : "=d" (_tmp_dummy) : );	\
+-	} while (0)
+-
+-#define local_irq_enable_hw()						\
+-	do {								\
+-		if (irqs_disabled_hw())					\
+-			ipipe_trace_end(0x80000000);			\
+-		__asm__ __volatile__ ("sti %0;" : : "d"(bfin_irq_flags));	\
+-	} while (0)
+-
+-#define local_irq_save_hw(x)				\
+-	do {						\
+-		__save_and_cli_hw(x);			\
+-		if (local_test_iflag_hw(x))		\
+-			ipipe_trace_begin(0x80000001);	\
+-	} while (0)
+-
+-#define local_irq_restore_hw(x)				\
+-	do {						\
+-		if (local_test_iflag_hw(x)) {		\
+-			ipipe_trace_end(0x80000001);	\
+-			local_irq_enable_hw_notrace();	\
+-		}					\
+-	} while (0)
+-
+-#define local_irq_disable_hw_notrace()					\
+-	do {								\
+-		int _tmp_dummy;						\
+-		__asm__ __volatile__ ("cli %0;" : "=d" (_tmp_dummy) : );	\
+-	} while (0)
+-
+-#define local_irq_enable_hw_notrace() \
+-	__asm__ __volatile__( \
+-		"sti %0;" \
+-		: \
+-		: "d"(bfin_irq_flags) \
+-	)
+-
+-#define local_irq_save_hw_notrace(x) __save_and_cli_hw(x)
+-
+-#define local_irq_restore_hw_notrace(x)			\
+-	do {						\
+-		if (local_test_iflag_hw(x))		\
+-			local_irq_enable_hw_notrace();	\
+-	} while (0)
+-
+-#else /* CONFIG_IPIPE_TRACE_IRQSOFF */
+-
+-#define local_irq_enable_hw() \
+-	__asm__ __volatile__( \
+-		"sti %0;" \
+-		: \
+-		: "d"(bfin_irq_flags) \
+-	)
+-
+-#define local_irq_disable_hw()			\
+-	do {					\
+-		int _tmp_dummy;			\
+-		__asm__ __volatile__ (		\
+-			"cli %0;"		\
+-			: "=d" (_tmp_dummy));	\
+-	} while (0)
+-
+-#define local_irq_restore_hw(x) \
+-	do { \
+-		if (irqs_enabled_from_flags_hw(x)) \
+-			local_irq_enable_hw(); \
+-	} while (0)
+-
+-#define local_irq_save_hw(x)		__save_and_cli_hw(x)
+-
+-#define local_irq_disable_hw_notrace()	local_irq_disable_hw()
+-#define local_irq_enable_hw_notrace()	local_irq_enable_hw()
+-#define local_irq_save_hw_notrace(x)	local_irq_save_hw(x)
+-#define local_irq_restore_hw_notrace(x)	local_irq_restore_hw(x)
+-
+-#endif  /* CONFIG_IPIPE_TRACE_IRQSOFF */
+-
+-#else /* !CONFIG_IPIPE */
+-
+-/*
+- * Interrupt configuring macros.
+- */
+-#define local_irq_disable() \
+-	do { \
+-		int __tmp_dummy; \
+-		__asm__ __volatile__( \
+-			"cli %0;" \
+-			: "=d" (__tmp_dummy) \
+-		); \
+-	} while (0)
+-
+-#define local_irq_enable() \
+-	__asm__ __volatile__( \
+-		"sti %0;" \
+-		: \
+-		: "d" (bfin_irq_flags) \
+-	)
+-
+-#ifdef CONFIG_DEBUG_HWERR
+-# define __save_and_cli(x) \
+-	__asm__ __volatile__( \
+-		"cli %0;" \
+-		"sti %1;" \
+-		: "=&d" (x) \
+-		: "d" (0x3F) \
+-	)
+-#else
+-# define __save_and_cli(x) \
+-	__asm__ __volatile__( \
+-		"cli %0;" \
+-		: "=&d" (x) \
+-	)
+-#endif
+-
+-#define local_save_flags(x) \
+-	__asm__ __volatile__( \
+-		"cli %0;" \
+-		"sti %0;" \
+-		: "=d" (x) \
+-	)
+-
+-#ifdef CONFIG_DEBUG_HWERR
+-#define irqs_enabled_from_flags(x) (((x) & ~0x3f) != 0)
+-#else
+-#define irqs_enabled_from_flags(x) ((x) != 0x1f)
+-#endif
+-
+-#define local_irq_restore(x) \
+-	do { \
+-		if (irqs_enabled_from_flags(x)) \
+-			local_irq_enable(); \
+-	} while (0)
+-
+-/* For spinlocks etc */
+-#define local_irq_save(x) __save_and_cli(x)
+-
+-#define irqs_disabled()				\
+-({						\
+-	unsigned long flags;			\
+-	local_save_flags(flags);		\
+-	!irqs_enabled_from_flags(flags);	\
+-})
+-
+-#define local_irq_save_hw(x)		local_irq_save(x)
+-#define local_irq_restore_hw(x)		local_irq_restore(x)
+-#define local_irq_enable_hw()		local_irq_enable()
+-#define local_irq_disable_hw()		local_irq_disable()
+-#define irqs_disabled_hw()		irqs_disabled()
++/* SYS_IRQS and NR_IRQS are defined in <mach-bf5xx/irq.h> */
++#include <mach/irq.h>
+ 
+-#endif /* !CONFIG_IPIPE */
++/* Xenomai IPIPE helpers */
++#define local_irq_restore_hw(x) local_irq_restore(x)
++#define local_irq_save_hw(x)    local_irq_save(x)
++#define local_irq_enable_hw(x)  local_irq_enable(x)
++#define local_irq_disable_hw(x) local_irq_disable(x)
++#define irqs_disabled_hw(x)     irqs_disabled(x)
+ 
+ #if ANOMALY_05000244 && defined(CONFIG_BFIN_ICACHE)
+ # define NOP_PAD_ANOMALY_05000244 "nop; nop;"
+diff --git a/arch/blackfin/include/asm/irqflags.h b/arch/blackfin/include/asm/irqflags.h
+new file mode 100644
+index 0000000..139cba4
+--- /dev/null
++++ b/arch/blackfin/include/asm/irqflags.h
+@@ -0,0 +1,63 @@
++/*
++ * interface to Blackfin CEC
++ *
++ * Copyright 2009 Analog Devices Inc.
++ * Licensed under the GPL-2 or later.
++ */
++
++#ifndef __ASM_BFIN_IRQFLAGS_H__
++#define __ASM_BFIN_IRQFLAGS_H__
++
++#ifdef CONFIG_SMP
++# include <asm/pda.h>
++# include <asm/processor.h>
++/* Forward decl needed due to cdef inter dependencies */
++static inline uint32_t __pure bfin_dspid(void);
++# define blackfin_core_id() (bfin_dspid() & 0xff)
++# define bfin_irq_flags cpu_pda[blackfin_core_id()].imask
++#else
++extern unsigned long bfin_irq_flags;
++#endif
++
++static inline void bfin_sti(unsigned long flags)
++{
++	asm volatile("sti %0;" : : "d" (flags));
++}
++
++static inline unsigned long bfin_cli(void)
++{
++	unsigned long flags;
++	asm volatile("cli %0;" : "=d" (flags));
++	return flags;
++}
++
++static inline void raw_local_irq_disable(void)
++{
++	bfin_cli();
++}
++static inline void raw_local_irq_enable(void)
++{
++	bfin_sti(bfin_irq_flags);
++}
++
++#define raw_local_save_flags(flags) do { (flags) = bfin_read_IMASK(); } while (0)
++
++#define raw_irqs_disabled_flags(flags) (((flags) & ~0x3f) == 0)
++
++static inline void raw_local_irq_restore(unsigned long flags)
++{
++	if (!raw_irqs_disabled_flags(flags))
++		raw_local_irq_enable();
++}
++
++static inline unsigned long __raw_local_irq_save(void)
++{
++	unsigned long flags = bfin_cli();
++#ifdef CONFIG_DEBUG_HWERR
++	bfin_sti(0x3f);
++#endif
++	return flags;
++}
++#define raw_local_irq_save(flags) do { (flags) = __raw_local_irq_save(); } while (0)
++
++#endif
+diff --git a/arch/blackfin/include/asm/system.h b/arch/blackfin/include/asm/system.h
+index a4c8254..294dbda 100644
+--- a/arch/blackfin/include/asm/system.h
++++ b/arch/blackfin/include/asm/system.h
+@@ -35,10 +35,10 @@
+ #define _BLACKFIN_SYSTEM_H
+ 
+ #include <linux/linkage.h>
+-#include <linux/compiler.h>
++#include <linux/irqflags.h>
+ #include <mach/anomaly.h>
++#include <asm/cache.h>
+ #include <asm/pda.h>
+-#include <asm/processor.h>
+ #include <asm/irq.h>
+ 
+ /*
 -- 
 1.6.3.1
 
