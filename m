@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764016AbZFLOEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765643AbZFLOFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764016AbZFLOEr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762282AbZFLOEU
+	id S1765643AbZFLOFB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:05:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765414AbZFLOEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:04:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56535 "EHLO mx2.redhat.com"
+	Fri, 12 Jun 2009 10:04:36 -0400
+Received: from mga14.intel.com ([143.182.124.37]:46881 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763816AbZFLOES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:04:18 -0400
-Subject: GFS2: Pull request #2
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
- 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
- Street, Windsor, Berkshire, SL4 ITE
-Date: Fri, 12 Jun 2009 15:01:39 +0100
-Message-Id: <1244815299.3216.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1764362AbZFLOEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 10:04:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,209,1243839600"; 
+   d="scan'208";a="153577650"
+Date: Fri, 12 Jun 2009 22:04:26 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 2/5] HWPOISON: fix tasklist_lock/anon_vma locking order
+Message-ID: <20090612140426.GA8481@localhost>
+References: <20090611142239.192891591@intel.com> <20090611144430.540500784@intel.com> <20090612100308.GD25568@one.firstfloor.org> <20090612132714.GB6751@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090612132714.GB6751@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Jun 12, 2009 at 09:27:14PM +0800, Wu Fengguang wrote:
+> On Fri, Jun 12, 2009 at 06:03:08PM +0800, Andi Kleen wrote:
+> > On Thu, Jun 11, 2009 at 10:22:41PM +0800, Wu Fengguang wrote:
+> > > To avoid possible deadlock. Proposed by Nick Piggin:
+> > 
+> > I disagree with the description. There's no possible deadlock right now.
+> > It would be purely out of paranoia.
+> > 
+> > > 
+> > >   You have tasklist_lock(R) nesting outside i_mmap_lock, and inside anon_vma
+> > >   lock. And anon_vma lock nests inside i_mmap_lock.
+> > > 
+> > >   This seems fragile. If rwlocks ever become FIFO or tasklist_lock changes
+> > 
+> > I was a bit dubious on this reasoning. If rwlocks become FIFO a lot of
+> > stuff will likely break.
+> > 
+> > >   type (maybe -rt kernels do it), then you could have a task holding
+> > 
+> > I think they tried but backed off quickly again
+> > 
+> > It's ok with a less scare-mongering description.
+> 
+> Why not merge it into the original patch and add a simple changelog
+> line there? I tried the last 6.5 patchset and it didn't apply cleanly
+> to the latest -mm tree. And this patch was updated:
 
+Andy, please apply this patch too. It fixed a kernel panic: when
+invalid PFN is feed to the debug injection interface, action_result()
+will try to do a pfn_to_page() on it..
 
-Please consider pulling the following two patches,
+Thanks,
+Fengguang
 
-Steve.
+---
+ mm/memory-failure.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-----------------------------------------------------------------------------
-The following changes since commit 8ebf975608aaebd7feb33d77f07ba21a6380e086:
-  Randy Dunlap (1):
-        block: fix kernel-doc in recent block/ changes
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git master
-
-Steven Whitehouse (2):
-      GFS2: Add tracepoints
-      GFS2: Remove lock_kernel from gfs2_put_super()
-
- fs/gfs2/Makefile     |    1 +
- fs/gfs2/bmap.c       |    3 +
- fs/gfs2/glock.c      |   12 ++-
- fs/gfs2/log.c        |    9 +-
- fs/gfs2/lops.c       |    3 +
- fs/gfs2/ops_fstype.c |    2 +
- fs/gfs2/rgrp.c       |   11 +-
- fs/gfs2/super.c      |    4 -
- fs/gfs2/trace_gfs2.h |  407 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 9 files changed, 442 insertions(+), 10 deletions(-)
- create mode 100644 fs/gfs2/trace_gfs2.h
-
-
+--- sound-2.6.orig/mm/memory-failure.c
++++ sound-2.6/mm/memory-failure.c
+@@ -439,7 +439,9 @@ void memory_failure(unsigned long pfn, i
+ 	struct page *p;
+ 
+ 	if (!pfn_valid(pfn)) {
+-		action_result(pfn, "memory outside kernel control", IGNORED);
++		printk(KERN_ERR
++		       "MCE %#lx: memory outside kernel control: Ignored\n",
++		       pfn);
+ 		return;
+ 	}
+ 
