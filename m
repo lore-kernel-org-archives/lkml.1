@@ -1,96 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZFLMuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZFLMyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753623AbZFLMuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 08:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbZFLMuL
+	id S1755686AbZFLMyD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 08:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZFLMxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:50:11 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:20539 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbZFLMuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:50:09 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <4A324F00.7020602@tremplin-utc.net>
-Date: Fri, 12 Jun 2009 14:50:08 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
+	Fri, 12 Jun 2009 08:53:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42147 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbZFLMxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 08:53:53 -0400
+Date: Fri, 12 Jun 2009 14:53:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, paulus@samba.org,
+       ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: origin tree build failure
+Message-ID: <20090612125335.GH31845@elte.hu>
+References: <20090612102427.32582baa.sfr@canb.auug.org.au> <1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu> <1244799197.7172.106.camel@pasglop>
 MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] lis3: add click function
-References: <20090612101805.GC18682@elf.ucw.cz> <1244803042-2913-1-git-send-email-daniel@caiaq.de> <4A323FB4.1090404@tremplin-utc.net> <20090612123156.GE29236@buzzloop.caiaq.de>
-In-Reply-To: <20090612123156.GE29236@buzzloop.caiaq.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244799197.7172.106.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 12-06-09 14:31, Daniel Mack schreef:
-:
-> 
-> It's not so much black magic but follows the standard procedure for
-> passing device specific data to probed SPI devices. What you find in
-> board support code for embedded devices is a defintion of an
-> spi_board_info struct. On my platform, it looks like this for the lis3
-> device:
-> 
-> static struct lis3lv02d_platform_data lis3_pdata = {
->         .click_flags    = LIS3_CLICK_SINGLE_X |
->                           LIS3_CLICK_SINGLE_Y |
->                           LIS3_CLICK_SINGLE_Z,
->         .click_thresh_x = 10,
->         .click_thresh_y = 10,
->         .click_thresh_z = 10,
->         .irq_cfg        = LIS3_IRQ1_CLICK,
->                           LIS3_IRQ_ACTIVE_HIGH,
-> };
-> 
-> static struct spi_board_info my_spi_devices[] __initdata = {
->         {
->                 .modalias       = "lis3lv02d_spi",
->                 .max_speed_hz   = 1000000,
->                 .bus_num        = 0,
->                 .chip_select    = 0,
->                 .controller_data = (void *) mfp_to_gpio(GPIO_ACCEL_CS),
->                 .platform_data  = &lis3_pdata,
->                 .irq            = gpio_to_irq(mfp_to_gpio(GPIO_ACCEL_IRQ)),
->         },
-> 
-I see. So your platform is not among the one contained in the vanilla
-kernel? Shouldn't this above code be written somewhere so that people
-know about it? Some of the values do not seem especially obvious!
 
-> I don't know ACPI, so I can't say how a similiar abstraction could be
-> achieved.
-> 
->> Also, it seems to only set up the "click" feature, without ever using
->> it. How do you access this information from userspace? Is it specific to
->> SPI? Maybe it could also generate button events in the joystick interface?
-> 
-> We're using the IRQ outputs of that chips directly as source to other
-> circuity, so there is no userspace logic in the game. If anyone needs
-> that, a simple callback function would be easy to add at some later
-> point.
-I guess that to have the functionality in ACPI, a complete handling of
-the interruptions, up to the generation of button events would be
-needed. This can be done later on, whenever someone finds the need...
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
+> > Ah - thanks. The bug was caused by me being a bit too optimistic 
+> > in applying the shiny-new Power7 support patches on the last 
+> > day. (nice CPU btw.)
 > 
-> See the updated patch below.
-Looks good to me.
+> In that case paulus tells me it's actually Peter screwing up 
+> moving something from the powerpc code to generic :-)
 
+Yes, but i committed it and it's my task to make sure that the thing 
+works as a whole so it's my fault still :)
+
+>  .../...
 > 
-> From 17d749d1f7b9c1287cc5b8109921e7a6f149b8bc Mon Sep 17 00:00:00 2001
-> From: Daniel Mack <daniel@caiaq.de>
-> Date: Thu, 11 Jun 2009 21:47:10 +0200
-> Subject: [PATCH] lis3: add click function
+> > Such bugs happen, and they are easy enough to fix. What matters 
+> > arent the 1-2 short-lived bugs that do happen when a new 
+> > combination of trees is created, but the long-lived combination 
+> > bugs and conflicts.
 > 
+> I'm not saying -next would fix world hunger ... but in this case 
+> we have two sets of issues, perfctr and the init ordering change 
+> which both got merged totally bypassing -next... We should at 
+> least -try- to follow the process we've defined, don't you think ?
 
-Acked-by: Eric Piel <eric.piel@tremplin-utc.net>
+You are trying to define a process that does not exist in that form 
+and which never existed in that form.
 
-Thanks,
-Eric
+It was never true that new code _MUST_ go via linux-next - and i 
+hope it will never be true.
+
+linux-next has integration testing so that interactions between 
+maintainer trees are mapped and that architectures that otherwise 
+few people use get build-tested too (well beyond their practical 
+relevance, i have to add) - but there's little critical review done 
+in linux-next. Nor should it be the forum for that, it simply 
+contains way too much stuff and has a weird history format with 
+daily rebases that makes review hard and expensive in that form.
+
+linux-next should not be second-guessing maintainers and should not 
+act as an "approval forum" for controversial features, increasing 
+the (already quite substantial) pressure on maintainers to apply 
+more crap.
+
+And that is true even if it's a new feature that i happen to support 
+- as in this case - it sure would have been handy to have more 
+perfcounters test coverage, every little bit of extra testing helps.
+
+If linux-next wants to do that then it should be renamed to 
+something else and not called linux-next.
+
+	Ingo
