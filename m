@@ -1,56 +1,399 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934505AbZFLWrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934637AbZFLWrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934505AbZFLWrT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934167AbZFLWpR
+	id S934637AbZFLWrf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934445AbZFLWqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:45:17 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:63384 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934124AbZFLWpP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:45:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=gZiqQHkBTf+odiipk30MTKMlLJSq0L5Kp3Hy3bD3R2613ZD2kCD/JwOPpoOuDgxEU
-	fo3yL8cix82s8qrE6p0sA==
+	Fri, 12 Jun 2009 18:46:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55199 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934450AbZFLWqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:46:01 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [RESEND][ PATCH -tip -v9 6/7] tracing: ftrace dynamic
+	ftrace_event_call support
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Date: Fri, 12 Jun 2009 18:45:28 -0400
+Message-ID: <20090612224527.17311.53654.stgit@localhost.localdomain>
+In-Reply-To: <20090612224447.17311.72404.stgit@localhost.localdomain>
+References: <20090612224447.17311.72404.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-In-Reply-To: <1cc472780906121543l20ceb412kf93f7f73b1f6fe79@mail.gmail.com>
-References: <a55d774e0906121450x12bab7b0sc1f4de0115a1af61@mail.gmail.com>
-	 <20090612222229.GE17688@elf.ucw.cz>
-	 <1cc472780906121538h5b70fa4dg891ff729fda1a566@mail.gmail.com>
-	 <a55d774e0906121542g182d4814udd66c2d1ebf57cf5@mail.gmail.com>
-	 <1cc472780906121543l20ceb412kf93f7f73b1f6fe79@mail.gmail.com>
-Date: Fri, 12 Jun 2009 15:45:15 -0700
-Message-ID: <a55d774e0906121545y21fbfe8ftd7cce160e7a43581@mail.gmail.com>
-Subject: Re: Gerrit (was Re: HTC Dream aka. t-mobile g1 support)
-From: Brian Swetland <swetland@google.com>
-To: Shawn Pearce <sop@google.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Stefan Schmidt <stefan@datenfreihafen.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Greg KH <greg@kroah.com>, Chris Dibona <cdibona@google.com>,
-       Daniel Berlin <dannyb@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 3:43 PM, Shawn Pearce<sop@google.com> wrote:
-> On Fri, Jun 12, 2009 at 15:42, Brian Swetland <swetland@google.com> wrote:
->> When we first discussed the CLA, I raised this concern (that the
->> mainline kernel folks would not be thrilled by another system in
->> addition to Signed-off-by), and was informed that we should not have
->> to require CLA acceptance for contributions to the kernel/... trees.
->> I'm not sure if Gerrit is setup to handle this yet.
->
-> It is, but we haven't flipped the bit on the kernel projects that says
-> "no CLA".  I can do that if you want me to.
+Add dynamic ftrace_event_call support to ftrace. Trace engines can adds new
+ftrace_event_call to ftrace on the fly. Each operator functions of the call
+takes a ftrace_event_call data structure as an argument, because these
+functions may be shared among several ftrace_event_calls.
 
-Please do.  Thanks!
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+---
 
-Brian
+ include/linux/ftrace_event.h |   13 +++++---
+ include/trace/ftrace.h       |   22 +++++++------
+ kernel/trace/trace_events.c  |   70 ++++++++++++++++++++++++++++++++----------
+ kernel/trace/trace_export.c  |   27 ++++++++--------
+ 4 files changed, 85 insertions(+), 47 deletions(-)
+
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 5c093ff..f7733b6 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -108,12 +108,13 @@ struct ftrace_event_call {
+ 	struct dentry		*dir;
+ 	struct trace_event	*event;
+ 	int			enabled;
+-	int			(*regfunc)(void);
+-	void			(*unregfunc)(void);
++	int			(*regfunc)(struct ftrace_event_call *);
++	void			(*unregfunc)(struct ftrace_event_call *);
+ 	int			id;
+-	int			(*raw_init)(void);
+-	int			(*show_format)(struct trace_seq *s);
+-	int			(*define_fields)(void);
++	int			(*raw_init)(struct ftrace_event_call *);
++	int			(*show_format)(struct ftrace_event_call *,
++					       struct trace_seq *);
++	int			(*define_fields)(struct ftrace_event_call *);
+ 	struct list_head	fields;
+ 	int			filter_active;
+ 	void			*filter;
+@@ -138,6 +139,8 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+ 
+ extern int trace_define_field(struct ftrace_event_call *call, char *type,
+ 			      char *name, int offset, int size, int is_signed);
++extern int trace_add_event_call(struct ftrace_event_call *call);
++extern void trace_remove_event_call(struct ftrace_event_call *call);
+ 
+ #define is_signed_type(type)	(((type)(-1)) < 0)
+ 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 1867553..d696580 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -147,7 +147,8 @@
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *event_call,		\
++		     struct trace_seq *s)				\
+ {									\
+ 	struct ftrace_raw_##call field __attribute__((unused));		\
+ 	int ret = 0;							\
+@@ -289,10 +290,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+ 	struct ftrace_raw_##call field;					\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	int ret;							\
+ 									\
+ 	__common_field(int, type, 1);					\
+@@ -355,7 +355,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	event_trace_printk(_RET_IP_, "<call>: " <fmt>);
+  * }
+  *
+- * static int ftrace_reg_event_<call>(void)
++ * static int ftrace_reg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int ret;
+  *
+@@ -366,7 +366,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	unregister_trace_<call>(ftrace_event_<call>);
+  * }
+@@ -399,7 +399,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	trace_current_buffer_unlock_commit(event, irq_flags, pc);
+  * }
+  *
+- * static int ftrace_raw_reg_event_<call>(void)
++ * static int ftrace_raw_reg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int ret;
+  *
+@@ -410,7 +410,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	unregister_trace_<call>(ftrace_raw_event_<call>);
+  * }
+@@ -419,7 +419,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	.trace			= ftrace_raw_output_<call>, <-- stage 2
+  * };
+  *
+- * static int ftrace_raw_init_event_<call>(void)
++ * static int ftrace_raw_init_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int id;
+  *
+@@ -537,7 +537,7 @@ static void ftrace_raw_event_##call(proto)				\
+ 		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+ }									\
+ 									\
+-static int ftrace_raw_reg_event_##call(void)				\
++static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	int ret;							\
+ 									\
+@@ -548,7 +548,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+ 	return ret;							\
+ }									\
+ 									\
+-static void ftrace_raw_unreg_event_##call(void)				\
++static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	unregister_trace_##call(ftrace_raw_event_##call);		\
+ }									\
+@@ -557,7 +557,7 @@ static struct trace_event ftrace_event_type_##call = {			\
+ 	.trace			= ftrace_raw_output_##call,		\
+ };									\
+ 									\
+-static int ftrace_raw_init_event_##call(void)				\
++static int ftrace_raw_init_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	int id;								\
+ 									\
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index aa08be6..bdcfa30 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -60,9 +60,7 @@ err:
+ }
+ EXPORT_SYMBOL_GPL(trace_define_field);
+ 
+-#ifdef CONFIG_MODULES
+-
+-static void trace_destroy_fields(struct ftrace_event_call *call)
++void trace_destroy_fields(struct ftrace_event_call *call)
+ {
+ 	struct ftrace_event_field *field, *next;
+ 
+@@ -74,8 +72,6 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
+ 	}
+ }
+ 
+-#endif /* CONFIG_MODULES */
+-
+ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 					int enable)
+ {
+@@ -84,14 +80,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 		if (call->enabled) {
+ 			call->enabled = 0;
+ 			tracing_stop_cmdline_record();
+-			call->unregfunc();
++			call->unregfunc(call);
+ 		}
+ 		break;
+ 	case 1:
+ 		if (!call->enabled) {
+ 			call->enabled = 1;
+ 			tracing_start_cmdline_record();
+-			call->regfunc();
++			call->regfunc(call);
+ 		}
+ 		break;
+ 	}
+@@ -558,7 +554,7 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 	trace_seq_printf(s, "format:\n");
+ 	trace_write_header(s);
+ 
+-	r = call->show_format(s);
++	r = call->show_format(call, s);
+ 	if (!r) {
+ 		/*
+ 		 * ug!  The format output is bigger than a PAGE!!
+@@ -905,7 +901,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 		d_events = event_subsystem_dir(call->system, d_events);
+ 
+ 	if (call->raw_init) {
+-		ret = call->raw_init();
++		ret = call->raw_init(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -929,7 +925,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 					  id);
+ 
+ 	if (call->define_fields) {
+-		ret = call->define_fields();
++		ret = call->define_fields(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -949,6 +945,52 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 	return 0;
+ }
+ 
++static int __trace_add_event_call(struct ftrace_event_call *call)
++{
++	struct dentry *d_events;
++
++	if (!call->name)
++		return -EINVAL;
++
++	d_events = event_trace_events_dir();
++	if (!d_events)
++		return -ENOENT;
++
++	list_add(&call->list, &ftrace_events);
++	return event_create_dir(call, d_events, &ftrace_event_id_fops,
++				&ftrace_enable_fops, &ftrace_event_filter_fops,
++				&ftrace_event_format_fops);
++}
++
++/* Add an additional event_call dynamically */
++int trace_add_event_call(struct ftrace_event_call *call)
++{
++	int ret;
++	mutex_lock(&event_mutex);
++	ret = __trace_add_event_call(call);
++	mutex_unlock(&event_mutex);
++	return ret;
++}
++
++static void __trace_remove_event_call(struct ftrace_event_call *call)
++{
++	ftrace_event_enable_disable(call, 0);
++	if (call->event)
++		__unregister_ftrace_event(call->event);
++	debugfs_remove_recursive(call->dir);
++	list_del(&call->list);
++	trace_destroy_fields(call);
++	destroy_preds(call);
++}
++
++/* Remove an event_call */
++void trace_remove_event_call(struct ftrace_event_call *call)
++{
++	mutex_lock(&event_mutex);
++	__trace_remove_event_call(call);
++	mutex_unlock(&event_mutex);
++}
++
+ #define for_each_event(event, start, end)			\
+ 	for (event = start;					\
+ 	     (unsigned long)event < (unsigned long)end;		\
+@@ -1054,13 +1096,7 @@ static void trace_module_remove_events(struct module *mod)
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+ 		if (call->mod == mod) {
+ 			found = true;
+-			ftrace_event_enable_disable(call, 0);
+-			if (call->event)
+-				__unregister_ftrace_event(call->event);
+-			debugfs_remove_recursive(call->dir);
+-			list_del(&call->list);
+-			trace_destroy_fields(call);
+-			destroy_preds(call);
++			__trace_remove_event_call(call);
+ 		}
+ 	}
+ 
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index d06cf89..7cee79d 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -60,7 +60,7 @@ extern void __bad_type_size(void);
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -76,7 +76,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+ 				    tpfmt)				\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -115,10 +115,16 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_FIELD_SPECIAL(type_item, item, len, cmd)	\
+ 	cmd;
+ 
++static int ftrace_raw_init_event(struct ftrace_event_call *event_call)
++{
++	INIT_LIST_HEAD(&event_call->fields);
++	init_preds(event_call);
++	return 0;
++}
++
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+-int ftrace_define_fields_##call(void);					\
+-static int ftrace_raw_init_event_##call(void);				\
++int ftrace_define_fields_##call(struct ftrace_event_call *c);		\
+ 									\
+ struct ftrace_event_call __used						\
+ __attribute__((__aligned__(4)))						\
+@@ -126,16 +132,10 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.name			= #call,				\
+ 	.id			= proto,				\
+ 	.system			= __stringify(TRACE_SYSTEM),		\
+-	.raw_init		= ftrace_raw_init_event_##call,		\
++	.raw_init		= ftrace_raw_init_event,		\
+ 	.show_format		= ftrace_format_##call,			\
+ 	.define_fields		= ftrace_define_fields_##call,		\
+-};									\
+-static int ftrace_raw_init_event_##call(void)				\
+-{									\
+-	INIT_LIST_HEAD(&event_##call.fields);				\
+-	init_preds(&event_##call);					\
+-	return 0;							\
+-}									\
++};
+ 
+ #undef TRACE_EVENT_FORMAT_NOFILTER
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+@@ -182,9 +182,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	struct args field;						\
+ 	int ret;							\
+ 									\
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
