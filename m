@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763228AbZFLIvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760409AbZFLIy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763228AbZFLIvR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbZFLIvD
+	id S1760409AbZFLIy4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZFLIys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:51:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55200 "EHLO smtps.tip.net.au"
+	Fri, 12 Jun 2009 04:54:48 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34736 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbZFLIvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:51:01 -0400
-Date: Fri, 12 Jun 2009 18:51:02 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: linux-next: rr-latest-cpumask/sparc tree build failure
-Message-Id: <20090612185102.2d1391e5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	id S1753193AbZFLIys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:54:48 -0400
+Subject: Re: slab: setup allocators earlier in the boot sequence
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
+       akpm@linux-foundation.org, npiggin@suse.de
+In-Reply-To: <1244796211.30512.32.camel@penberg-laptop>
+References: <200906111959.n5BJxFj9021205@hera.kernel.org>
+	 <1244770230.7172.4.camel@pasglop>  <1244779009.7172.52.camel@pasglop>
+	 <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop>
+	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
+	 <1244792079.7172.74.camel@pasglop>
+	 <1244792745.30512.13.camel@penberg-laptop>
+	 <1244796045.7172.82.camel@pasglop>
+	 <1244796211.30512.32.camel@penberg-laptop>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 18:53:57 +1000
+Message-Id: <1244796837.7172.95.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
 
-Today's linux-next build (sparc64 defconfig) failed like this:
+> Yes, you're obviously right. I overlooked the fact that arch code have
+> their own special slab_is_available() heuristics (yikes!).
+> 
+> But are you happy with the two patches I posted so I can push them to
+> Linus?
 
-arch/sparc/mm/init_64.c: In function 'paging_init':
-arch/sparc/mm/init_64.c:1802: error: 'CPU_MASK_ALL_PTR' undeclared (first use in this function)
-arch/sparc/kernel/smp_64.c: In function 'setup_per_cpu_areas':
-arch/sparc/kernel/smp_64.c:1541: error: 'CPU_MASK_ALL_PTR' undeclared (first use in this function)
+I won't be able to test them until tomorrow. However, I think the first
+one becomes unnecessary with the second one applied (provided you didn't
+miss a case), no ?
 
-Caused by commit b46586049330222ccab229a1a1e498e94c5fa5dc
-("cpumask:remove-CPU_MASK_ALL_PTR") from the rr-latest-cpumask tree
-interacting with commits 21bc149d59288fe43d1ba18a59d874ba6a5f1db9
-("sparc64: Make mdesc_fill_in_cpu_data take a cpumask_t pointer") and
-63750a3dc53a87a1f5ca42101ea88578b934ab52 ("sparc64: Defer cpu_data()
-setup until end of per-cpu data initialization") from the sparc tree.
+I still prefer my approach of having a more fine grained control of what
+bits to remove. First because applying a mask is less expensive than a
+conditional branch (I used a negative mask because it would be too easy
+to miss bits otherwise) and second, because it allows for masking of
+other bits easily, for example, __GFP_IO for the suspend path etc...
 
-I applied this patch:
+Now, if you find it a bit too ugly, feel free to rename smellybits to
+something else and create an accessor function for setting what bits are
+masked out, but I still believe that the basic idea behind my patch is
+saner than yours :-)
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 12 Jun 2009 18:43:54 +1000
-Subject: [PATCH] sparc: replace uses of CPU_MASK_ALL_PTR
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/sparc/kernel/smp_64.c |    2 +-
- arch/sparc/mm/init_64.c    |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
-index 1de47d2..f3a83b0 100644
---- a/arch/sparc/kernel/smp_64.c
-+++ b/arch/sparc/kernel/smp_64.c
-@@ -1538,5 +1538,5 @@ void __init setup_per_cpu_areas(void)
- 
- 	of_fill_in_cpu_data();
- 	if (tlb_type == hypervisor)
--		mdesc_fill_in_cpu_data(CPU_MASK_ALL_PTR);
-+		mdesc_fill_in_cpu_data(cpu_all_mask);
- }
-diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index b5a5932..ca92e2f 100644
---- a/arch/sparc/mm/init_64.c
-+++ b/arch/sparc/mm/init_64.c
-@@ -1799,7 +1799,7 @@ void __init paging_init(void)
- 
- 	if (tlb_type == hypervisor) {
- 		sun4v_mdesc_init();
--		mdesc_populate_present_mask(CPU_MASK_ALL_PTR);
-+		mdesc_populate_present_mask(cpu_all_mask);
- 	}
- 
- 	/* Once the OF device tree and MDESC have been setup, we know
--- 
-1.6.3.1
-
-
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
+
