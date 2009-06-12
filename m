@@ -1,91 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762985AbZFLQkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbZFLQlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762985AbZFLQkG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 12:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbZFLQj4
+	id S1759131AbZFLQlz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 12:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZFLQlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 12:39:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52987 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751582AbZFLQjz (ORCPT
+	Fri, 12 Jun 2009 12:41:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48770 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751206AbZFLQlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 12:39:55 -0400
-Message-ID: <4A328444.3010301@zytor.com>
-Date: Fri, 12 Jun 2009 09:37:24 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Fri, 12 Jun 2009 12:41:47 -0400
+Date: Fri, 12 Jun 2009 09:41:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when	feature
- is disabled
-References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu> <20090612125741.GA6140@localhost> <20090612131754.GA32105@elte.hu> <alpine.LFD.2.01.0906120827020.3237@localhost.localdomain> <20090612153501.GA5737@elte.hu>
-In-Reply-To: <20090612153501.GA5737@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] kmemcheck for mainline
+In-Reply-To: <alpine.LFD.2.01.0906120933120.3237@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906120939250.3237@localhost.localdomain>
+References: <20090612132443.GA24002@damson.ad.medicalresearch.no> <alpine.LFD.2.01.0906120933120.3237@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+
+
+On Fri, 12 Jun 2009, Linus Torvalds wrote:
 > 
-> So i think hwpoison simply does not affect our ability to get log 
-> messages out - but it sure allows crappier hardware to be used.
-> Am i wrong about that for some reason?
-> 
+> This release, I'm only going to pull trees that don't do crazy shit.
 
-Crappy hardware isn't the kind of hardware that is likely to have the
-hwpoison features, just like crappy hardware generally doesn't even have
-ECC -- or even basic parity checking (I personally think non-ECC memory
-should be considered a crime against humanity in this day and age.)
+>From another thread yesterday:
 
-You're making the fundamental assumption that failover and hardware
-replacement is a relatively cheap and fast operation.  In high
-reliability applications, of course, failover is always an option -- it
-*HAS* to be an option -- but that doesn't mean that hardware replacement
-is cheap, fast or even possible -- and now you've blown your failover
-option.
+> http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html
+> http://lkml.org/lkml/2008/5/16/540
 
-These kinds of features are used when extremely high reliability is
-required, think for example a telco core router.  A page error may have
-happened due to stray radiation or through power supply glitches (which
-happen even in the best of systems), but if they are a pattern, a box
-needs to be replaced.  *How quickly* a box can be taken out of service
-and replaced can vary greatly, and its urgency depend on patterns;
-furthermore, in the meantime the device has to work the best it can.
+Especially that first one, and in that first one, especially about the 
+"Don't merge upstream/downstream code at random points."
 
-Consider, for example, a control computer on the Hubble Space Telescope
--- the only way to replace it is by space shuttle, and you can safely
-guarantee that *that* won't happen in a heartbeat.  On the new Herschel
-Space Observatory, not even the space shuttle can help: if the computers
-die, *or* if bad data gets fed to its control system, the spacecraft is
-lost.  As such, it's of paramount importance for the computers to (a)
-continue to provide service at the level the hardware is capable of
-doing, (b) as accurately as possible continually assess and report that
-level of service, and (c) not allow a failure to pass undetected.  A lot
-of failures are simple one-time events (especially in space, a high-rad
-environment), others reflect decaying hardware but can be isolated (e.g.
-a RAM cell which has developed a short circuit, or a CPU core which has
-a damaged ALU), while others yet reflect a general ill health of the
-system that cannot be recovered.
-
-What these kinds of features do is it gives the overall-system designers
-and the administrators more options.
-
-(Note: this is an hpa position statement, not necessarily an Intel one.)
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+		Linus
