@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbZFLJuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933535AbZFLJv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933460AbZFLJuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbZFLJuT
+	id S933535AbZFLJv0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbZFLJvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:50:19 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42534 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763463AbZFLJuR (ORCPT
+	Fri, 12 Jun 2009 05:51:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:58732 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932696AbZFLJvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:50:17 -0400
-Date: Fri, 12 Jun 2009 11:58:11 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       riel@redhat.com, chris.mason@oracle.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
-Message-ID: <20090612095811.GA25568@one.firstfloor.org>
-References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de> <Pine.LNX.4.64.0906091637430.13213@sister.anvils>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906091637430.13213@sister.anvils>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 12 Jun 2009 05:51:15 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Patrick Ringl <patrick.ringl@gmx.de>
+Subject: Re: PATCH: README - Fix misleading pointer to the defconf directory
+Date: Fri, 12 Jun 2009 11:50:39 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org,
+       linux-kbuild@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+References: <4A321A3C.6030400@gmx.de>
+In-Reply-To: <4A321A3C.6030400@gmx.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906121150.40332.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19efcY/G8riXCqDr8t8SiVH8ylun36+XdQWbCP
+ GG1LlU1nJdjO1N7MzscNYi2R+KypBecEch9l8wLOuLNAJVkqES
+ rLOEDueM+CoArPmwG91GQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 05:05:53PM +0100, Hugh Dickins wrote:
-> To me, it's just another layer of complexity and maintenance burden
-> that one special-interest group is imposing upon mm, and I can't
-> keep up with it myself.
+On Friday 12 June 2009, Patrick Ringl wrote:
+> the README simply points to a wrong/non-existent directory where the default
+> configurations are not suited, hence the patch.
 
-Thanks for the kind words.
-> 
-> However, if I'm interpreting these extracts correctly, the whole
-> thing looks very misguided to me.  Are we really going to kill any
-> process that has a cousin who might once have mapped the page that's
-> been found hwpoisonous?  The hwpoison secret police are dangerously
-> out of control, I'd say.
+On six architectures, it's still the right directory, your patch breaks it.
 
-What do you mean with once? It's a not yet afaik?
+> Signed-off-by: Patrick Ringl <patrick_@freenet.de>
+>
+> --- linux.orig/README   2009-06-10 05:05:27.000000000 +0200
+> +++ linux/README        2009-06-12 10:46:15.000000000 +0200
+> @@ -175,7 +175,7 @@
+>                            Like above, but avoids cluttering the screen
+>                            with questions already answered.
+>         "make defconfig"   Create a ./.config file by using the default
+> -                          symbol values from arch/$ARCH/defconfig.
+> +                          symbol values from arch/$ARCH/configs/*_defconfig.
+>         "make allyesconfig"
+>                            Create a ./.config file by setting symbol
+>                            values to 'y' as much as possible.
 
-The not yet was intentional for early kill mode -- the main reason
-for that is KVM guests where it should mimic the hardware behaviour
-that you report a future memory corruption, so that the guest
-takes step to never access it. So even if the access
-to the bad page is in the future as long as the process
-has theoretical access it should be killed.
+You could write e.g.
 
-In late kill modus that's different of course.
+	default symbol values from one of arch/{$ARCH}/defconfig or
+	arch/${ARCH}/configs/${PLATFORM}_defconfig, depending on
+	the architecture.
 
-> 
-> The usual use of rmap lookup loops is to go on to look into the page
-> table to see whether the page is actually mapped: I see no attempt
-> at that here, just an assumption that anyone on the list is guilty
-> of mapping the page and must be killed.  And even if it did go on
+It would also be consistent to list the specific defconfigs here, like
 
-Yes that's intentional.
+	"make ${PLATFORM}_defconfig"
+			Create a ./.config file by using the default
+			symbol values from
+			arch/${ARCH}/configs/${PLATFORM}_defconfig.
+			Use "make help" to see a list of the available
+			platforms on your architecture.
 
-> 
-> At least in the file's prio_tree case, we'll only be killing those
-> who mmapped the range which happens to include the page.  But in the
-> anon case, remember the anon_vma is just a bundle of "related" vmas
-> outside of which the page will not be found; so if one process got a
-> poisonous page through COW, all the other processes which happen to
-> be sharing that anon_vma through fork or through adjacent merging,
-> are going to get killed too.
+Not also that your patch should be merged through a subsystem maintainer.
+If you don't know who that is, use scripts/get_maintainer.pl.
+For scripts/kconfig/* and README it suggests sending it to Sam, Roman and
+linux-kbuild@vger.kernel.org, which sounds right.
 
-You're right the COW case is a bit of a problem, we don't distingush
-that.  Perhaps that can be easily checked, but even if we kill
-a bit too much it's still better than killing too little. I don't think it's
-as big a problem as you claim.
-
-> I think a much more sensible approach would be to follow the page
-> migration technique of replacing the page's ptes by a special swap-like
-> entry, then do the killing from do_swap_page() if a process actually
-> tries to access the page.
-
-That's what late kill modus does (see the patch description/comment on
-top of file), but it doesn't have the right semantics for KVM.
-It's still used for a few cases by default, e.g. for the swap cache.
-
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Arnd <><
