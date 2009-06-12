@@ -1,86 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbZFLAsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbZFLAxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762953AbZFLAsL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 20:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZFLAr5
+	id S1762616AbZFLAxo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 20:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZFLAxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 20:47:57 -0400
-Received: from mga11.intel.com ([192.55.52.93]:42917 "EHLO mga11.intel.com"
+	Thu, 11 Jun 2009 20:53:33 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:54766 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbZFLAr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 20:47:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,205,1243839600"; 
-   d="scan'208";a="698663634"
-Subject: Re: 2.6.30-rc6: i915: Xserver crash - oops after rmmod
-From: yakui_zhao <yakui.zhao@intel.com>
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "eric@anholt.net" <eric@anholt.net>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <4A1E1D95.5060409@gmail.com>
-References: <4A11B52E.7080808@gmail.com>
-	 <20090527171414.108710cf.akpm@linux-foundation.org>
-	 <4A1E1D95.5060409@gmail.com>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Fri, 12 Jun 2009 08:49:12 +0800
-Message-Id: <1244767752.3618.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	id S1753860AbZFLAxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 20:53:33 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18993.42761.401143.92106@cargo.ozlabs.ibm.com>
+Date: Fri, 12 Jun 2009 10:53:29 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: origin tree build failure
+In-Reply-To: <20090612102427.32582baa.sfr@canb.auug.org.au>
+References: <20090612102427.32582baa.sfr@canb.auug.org.au>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-28 at 13:13 +0800, Niel Lambrechts wrote:
-> Hi Andrew,
-> 
-> On 05/28/2009 02:14 AM, Andrew Morton wrote:
-> > On Mon, 18 May 2009 21:21:18 +0200
-> > Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
-> >
-> >   
-> >> Hi,
-> >>     
-> > Huge response, huh?
-> >   
-> Yeah, no one fell for the humour coating... ;-)
-> 
-> > The wordwrapping makes this painful to read.
-> >
-> > rmmod crashed under drivers/acpi/video.c:acpi_video_exit()'s call to
-> > acpi_bus_unregister_driver().  So it might be an acpi-related bug.
-> >
-> > If it's reproducible at all, please raise a (non-wordwrapped!) report
-> > against acpi at bugzilla.kernel.org, thanks.
-> >   
-> Ugh, Thunderbird doesn't format it like this when you preview - but when
-> I save it to a file it looks horrible...
-> 
-> I don't think I would easily be able to reproduce this, but I still had
-> a copy of my kernel log for that date. The bug is filed at:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13396
-> 
-> Also, if you do have a moment, I'd love to hear your opinion on my post
-> "2.6.29.4: hibernation fails with large kernel trace"!
-> 
-> Thanks for the response!
-Yes. This bug can be reproduced very easily. 
-I attach one patch in bug
-http://bugzilla.kernel.org/show_bug.cgi?id=13396#C5.
-And the issue should be fixed by the patch.
+Stephen Rothwell writes:
 
-In the patch the reference count is added to avoid loading/unloading the
-ACPI video bus twice.
-
-Thanks.
+> Subject: [PATCH] perfcounters: remove powerpc definitions of perf_counter_do_pending
 > 
-> Niel
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
+> unify and fix delayed counter wakeup") added global definitions.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
+Acked-by: Paul Mackerras <paulus@samba.org>
