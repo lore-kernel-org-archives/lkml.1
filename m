@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZFLLKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbZFLLLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbZFLLKu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759569AbZFLLKX
+	id S1759177AbZFLLLQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZFLLK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:10:23 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:57831 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758664AbZFLLKV convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 07:10:59 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39708 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbZFLLK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:10:21 -0400
+	Fri, 12 Jun 2009 07:10:59 -0400
+Date: Fri, 12 Jun 2009 13:10:52 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Magnus Damm <damm@igel.co.jp>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Sergio Luis <sergio@larces.uece.br>,
+       Lauro Salmito <laurosalmito@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [PATCH 15/19] Driver Core: Rework platform suspend/resume,
+	print warning
+Message-ID: <20090612111051.GO18682@elf.ucw.cz>
+References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl> <S4AoGnG.A.YH.yhYMKB@chimera>
 MIME-Version: 1.0
-In-Reply-To: <20090611142700.GA12259@caradoc.them.org>
-References: <cc557aab0906100325o4fd55e0eveb958915214809e3@mail.gmail.com>
-	 <20090611142700.GA12259@caradoc.them.org>
-Date: Fri, 12 Jun 2009 14:10:20 +0300
-Message-ID: <cc557aab0906120410h71e3ab59neeaf85c3223fd7c6@mail.gmail.com>
-Subject: Re: ERESTART_RESTARTBLOCK and ptrace()
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>,
-       linux-arm-kernel@lists.arm.linux.org.uk, Nicolas Pitre <nico@cam.org>,
-       linux-kernel@vger.kernel.org, linux@arm.linux.org.uk
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <S4AoGnG.A.YH.yhYMKB@chimera>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 5:27 PM, Daniel Jacobowitz<dan@debian.org> wrote:
-> On Wed, Jun 10, 2009 at 01:25:34PM +0300, Kirill A. Shutemov wrote:
->> I've got bug in handling ERESTART_RESTARTBLOCK. Kernel version is 2.6.28.
->>
->> Steps to reproduce:
->> 1. Attach using ptrace() to process while it's in a syscall which use
->> ERESTART_RESTARTBLOCK
->> on interrupt. The easiest way is to attach to process which is in nanosleep().
->> 2. Run a syscall in context of the process like it does gdb.
->> 3. Continue the process.
->>
->> Results:
->> Syscall(nanosleep) return error code 516(ERESTART_RESTARTBLOCK). It's
->> kernel's internal error
->> code and should never appear at userspace.
->>
->> It seems ARM-related since I can't reproduce it on x86.
->
-> That's because GDB has code to do the right thing on x86.  Consider
-> filing a GDB bug please.
+On Thu 2009-06-11 22:40:30, Rafael J. Wysocki wrote:
+> From: Magnus Damm <damm@igel.co.jp>
+> 
+> This patch reworks the platform driver code for legacy
+> suspend and resume to avoid installing callbacks in
+> struct device_driver. A warning is also added telling
+> users to update the platform driver to use dev_pm_ops.
+> 
+> The functions platform_legacy_suspend()/resume() directly
+> call suspend and resume callbacks in struct platform_driver
+> instead of wrapping things in platform_drv_suspend()/resume().
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-http://sourceware.org/bugzilla/show_bug.cgi?id=10267
+Ack.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
