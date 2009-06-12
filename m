@@ -1,82 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZFLT7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbZFLUBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759614AbZFLT7q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 15:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZFLT7j
+	id S1754712AbZFLUBl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 16:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZFLUBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 15:59:39 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:33829 "EHLO kernel.dk"
+	Fri, 12 Jun 2009 16:01:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59557 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754207AbZFLT7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 15:59:39 -0400
-Date: Fri, 12 Jun 2009 21:59:41 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Cc: Steve Rottinger <steve@pentek.com>, linux-kernel@vger.kernel.org
-Subject: Re: splice methods in character device driver
-Message-ID: <20090612195940.GM11363@kernel.dk>
-References: <4A0838D1.5090102@pentek.com> <20090511192253.GH4694@kernel.dk> <4A0AFC62.3090002@pentek.com> <c384c5ea0906031432x2675c5a4xcc940a567ca408b8@mail.gmail.com> <20090604073218.GT11363@kernel.dk> <4A27CA0A.7060400@pentek.com> <c384c5ea0906121221p6a20d92fg6716f560164c46bf@mail.gmail.com>
+	id S1750767AbZFLUBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 16:01:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] PM updates for 2.6.31
+Date: Fri, 12 Jun 2009 22:02:06 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Lauro Salmito <laurosalmito@gmail.com>, Magnus Damm <damm@igel.co.jp>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Sergio Luis <sergio@larces.uece.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c384c5ea0906121221p6a20d92fg6716f560164c46bf@mail.gmail.com>
+Message-Id: <200906122202.08345.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12 2009, Leon Woestenberg wrote:
-> Steve, Jens,
-> 
-> another few questions:
-> 
-> On Thu, Jun 4, 2009 at 3:20 PM, Steve Rottinger<steve@pentek.com> wrote:
-> > ...
-> > - The performance is poor, and much slower than transferring directly from
-> > main memory with O_DIRECT.  I suspect that this has a lot to do with
-> > large amount of systems calls required to move the data, since each call moves only
-> > 64K.  Maybe I'll try increasing the pipe size, next.
-> >
-> > Once I get past these issues, and I get the code in a better state, I'll
-> > be happy to share what
-> > I can.
-> >
-> I've been experimenting a bit using mostly-empty functions to learn
-> understand the function call flow:
-> 
-> splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_device);
-> pipe_to_device(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
-> struct splice_desc *sd)
-> 
-> So some back-of-a-coaster calculations:
-> 
-> If I understand correctly, a pipe_buffer never spans more than one
-> page (typically 4kB).
+Hi Linus,
 
-Correct
+Please pull power management updates for 2.6.31 from:
 
-> The SPLICE_BUFFERS is 16, thus splice_from_pipe() is called every 64kB.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-Also correct.
+They are cleanups and code rearrangements mostly, in particular:
 
-> The actor "pipe_to_device" is called on each pipe_buffer, so for every 4kB.
+* arch/x86/power/cpu_(32|64) unification from Sergio Luis (Ingo saw
+  these patches and his opinion was that they should better go
+  through the suspend tree)
 
-Ditto.
+* Removal of some unused files and PM callbacks, function renames
+  from Magnus Damm and Alan Stern
 
-> For my case, I have a DMA engine that does say 200 MB/s, resulting in
-> 50000 actor calls per second.
-> 
-> As my use case would be to splice from an acquisition card to disk,
-> splice() made an interesting approach.
-> 
-> However, if the above is correct, I assume splice() is not meant for
-> my use-case?
+* Rearrangements of the code under kernel/power from me and
+  Cornelia Huck
 
-50000 function calls per second is not a lot. We do lots of things on a
-per-page basis in the kernel. Batching would of course speed things up,
-but it's not been a problem thus far. So I would not worry about 50k
-function calls per second to begin with.
+* Two patches related to the memory shrinking (for the record, Pavel
+  doesn't like the "PM/Suspend: Do not shrink memory before suspend"
+  patch, so please let me know if I should drop it)
 
--- 
-Jens Axboe
+* A couple of bug fixes
+
+
+ Documentation/power/devices.txt  |   34 +--
+ arch/alpha/include/asm/suspend.h |    6 -
+ arch/arm/include/asm/suspend.h   |    4 -
+ arch/ia64/include/asm/suspend.h  |    1 -
+ arch/m68k/include/asm/suspend.h  |    6 -
+ arch/mips/include/asm/suspend.h  |    6 -
+ arch/s390/include/asm/suspend.h  |    5 -
+ arch/um/include/asm/suspend.h    |    4 -
+ arch/x86/kernel/acpi/sleep.c     |    2 +-
+ arch/x86/kernel/apm_32.c         |   14 +-
+ arch/x86/power/Makefile          |    2 +-
+ arch/x86/power/cpu.c             |  259 +++++++++++
+ arch/x86/power/cpu_32.c          |  148 ------
+ arch/x86/power/cpu_64.c          |  174 -------
+ drivers/base/platform.c          |   36 +-
+ drivers/base/power/main.c        |   94 ++---
+ drivers/base/sys.c               |   16 +
+ drivers/xen/manage.c             |   16 +-
+ include/linux/device.h           |    5 -
+ include/linux/interrupt.h        |    6 +
+ include/linux/pm.h               |   11 +-
+ include/linux/suspend.h          |   18 +-
+ kernel/kexec.c                   |   14 +-
+ kernel/power/Kconfig             |    4 +
+ kernel/power/Makefile            |    5 +-
+ kernel/power/disk.c              |  955 --------------------------------------
+ kernel/power/hibernate.c         |  955 ++++++++++++++++++++++++++++++++++++++
+ kernel/power/hibernate_nvs.c     |  135 ++++++
+ kernel/power/main.c              |  521 ---------------------
+ kernel/power/power.h             |   25 +-
+ kernel/power/snapshot.c          |   80 +++-
+ kernel/power/suspend.c           |  300 ++++++++++++
+ kernel/power/suspend_test.c      |  187 ++++++++
+ kernel/power/swsusp.c            |  198 --------
+ mm/vmscan.c                      |    4 +-
+ 35 files changed, 2056 insertions(+), 2194 deletions(-)
+
+---------------
+
+Alan Stern (1):
+      PM core: rename suspend and resume functions
+
+Cornelia Huck (1):
+      PM/Hibernate: Move NVS routines into a seperate file (v2).
+
+Heiko Carstens (1):
+      PM: Add empty suspend/resume device irq functions
+
+Jaswinder Singh Rajput (1):
+      PM/ACPI/x86: Fix sparse warning in arch/x86/kernel/acpi/sleep.c
+
+Magnus Damm (5):
+      PM: Remove unused asm/suspend.h
+      PM: Rename device_power_down/up()
+      PM: Remove bus_type suspend_late()/resume_early() V2
+      PM: Remove device_type suspend()/resume()
+      Driver Core: Rework platform suspend/resume, print warning
+
+Rafael J. Wysocki (5):
+      PM: Warn if interrupts are enabled during suspend-resume of sysdevs
+      PM/Suspend: Do not shrink memory before suspend
+      PM/Hibernate: Move memory shrinking to snapshot.c (rev. 2)
+      PM: Separate suspend to RAM functionality from core
+      PM/Hibernate: Rename disk.c to hibernate.c
+
+Sergio Luis (6):
+      x86: unify power/cpu_(32|64) headers
+      x86: unify power/cpu_(32|64) global variables
+      x86: unify power/cpu_(32|64) regarding saving processor state
+      x86: unify power/cpu_(32|64) regarding restoring processor state
+      x86: unify power/cpu_(32|64) copyright notes
+      x86: unify power/cpu_(32|64).c
 
