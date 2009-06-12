@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbZFLItj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763228AbZFLIvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933231AbZFLItj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbZFLItc
+	id S1763228AbZFLIvR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbZFLIvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:49:32 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:47903 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754239AbZFLIta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:49:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=eiL07dKxaqCiiCePi7Rd9mtgnUZKKqPfEwL6Dxoa3RTJKk/+Jg4lhH/sDAdmYtDHHR
-         6TuRTs5dj9q8GtYXmjjC1Epf2PIu0EHqoJ122AULpCFf+sz8iidn83ldvY5DWsszUGTb
-         WO7rQcP4tRgWQWTbHcX9AYRMr8vKiqGPIixZo=
-MIME-Version: 1.0
-In-Reply-To: <1244796291.7172.87.camel@pasglop>
-References: <200906111959.n5BJxFj9021205@hera.kernel.org>
-	 <1244783235.7172.61.camel@pasglop>
-	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
-	 <1244792079.7172.74.camel@pasglop>
-	 <1244792745.30512.13.camel@penberg-laptop>
-	 <20090612075427.GA24044@wotan.suse.de>
-	 <1244793592.30512.17.camel@penberg-laptop>
-	 <20090612080236.GB24044@wotan.suse.de>
-	 <1244793879.30512.19.camel@penberg-laptop>
-	 <1244796291.7172.87.camel@pasglop>
-Date: Fri, 12 Jun 2009 11:49:31 +0300
-X-Google-Sender-Auth: 596d85a05699f041
-Message-ID: <84144f020906120149k6cbe5177vef1944d9d216e8b2@mail.gmail.com>
-Subject: Re: slab: setup allocators earlier in the boot sequence
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 12 Jun 2009 04:51:03 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55200 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbZFLIvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:51:01 -0400
+Date: Fri, 12 Jun 2009 18:51:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: linux-next: rr-latest-cpumask/sparc tree build failure
+Message-Id: <20090612185102.2d1391e5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 11:44 AM, Benjamin
-Herrenschmidt<benh@kernel.crashing.org> wrote:
-> On Fri, 2009-06-12 at 11:04 +0300, Pekka Enberg wrote:
->> Hi Nick,
->>
->> On Fri, 2009-06-12 at 10:02 +0200, Nick Piggin wrote:
->> > Fair enough, but this can be done right down in the synchronous
->> > reclaim path in the page allocator. This will catch more cases
->> > of code using the page allocator directly, and should be not
->> > as hot as the slab allocator.
->>
->> So you want to push the local_irq_enable() to the page allocator too? We
->> can certainly do that but I think we ought to wait for Andrew to merge
->> Mel's patches to mainline first, OK?
->
-> Doesn't my patch take care of all the cases in a much more simple way ?
+Hi Rusty,
 
-Nick, the patch Ben is talking about is here:
+Today's linux-next build (sparc64 defconfig) failed like this:
 
-http://patchwork.kernel.org/patch/29700/
+arch/sparc/mm/init_64.c: In function 'paging_init':
+arch/sparc/mm/init_64.c:1802: error: 'CPU_MASK_ALL_PTR' undeclared (first use in this function)
+arch/sparc/kernel/smp_64.c: In function 'setup_per_cpu_areas':
+arch/sparc/kernel/smp_64.c:1541: error: 'CPU_MASK_ALL_PTR' undeclared (first use in this function)
 
-The biggest problem with the patch is that the gfp_smellybits is wide
-open for abuse. Hmm.
+Caused by commit b46586049330222ccab229a1a1e498e94c5fa5dc
+("cpumask:remove-CPU_MASK_ALL_PTR") from the rr-latest-cpumask tree
+interacting with commits 21bc149d59288fe43d1ba18a59d874ba6a5f1db9
+("sparc64: Make mdesc_fill_in_cpu_data take a cpumask_t pointer") and
+63750a3dc53a87a1f5ca42101ea88578b934ab52 ("sparc64: Defer cpu_data()
+setup until end of per-cpu data initialization") from the sparc tree.
 
-                        Pekka
+I applied this patch:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 12 Jun 2009 18:43:54 +1000
+Subject: [PATCH] sparc: replace uses of CPU_MASK_ALL_PTR
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/sparc/kernel/smp_64.c |    2 +-
+ arch/sparc/mm/init_64.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+index 1de47d2..f3a83b0 100644
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -1538,5 +1538,5 @@ void __init setup_per_cpu_areas(void)
+ 
+ 	of_fill_in_cpu_data();
+ 	if (tlb_type == hypervisor)
+-		mdesc_fill_in_cpu_data(CPU_MASK_ALL_PTR);
++		mdesc_fill_in_cpu_data(cpu_all_mask);
+ }
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index b5a5932..ca92e2f 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -1799,7 +1799,7 @@ void __init paging_init(void)
+ 
+ 	if (tlb_type == hypervisor) {
+ 		sun4v_mdesc_init();
+-		mdesc_populate_present_mask(CPU_MASK_ALL_PTR);
++		mdesc_populate_present_mask(cpu_all_mask);
+ 	}
+ 
+ 	/* Once the OF device tree and MDESC have been setup, we know
+-- 
+1.6.3.1
+
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
