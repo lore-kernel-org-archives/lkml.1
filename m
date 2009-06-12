@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZFLPVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZFLPVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZFLPVZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZFLPVS
+	id S1757207AbZFLPVt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZFLPVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:21:18 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46716 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbZFLPVS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:21:18 -0400
-Message-ID: <4A327161.7000803@cs.helsinki.fi>
-Date: Fri, 12 Jun 2009 18:16:49 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Fri, 12 Jun 2009 11:21:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50712 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750744AbZFLPVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 11:21:40 -0400
+Date: Fri, 12 Jun 2009 17:21:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open
+	when supported
+Message-ID: <20090612152134.GA23483@elte.hu>
+References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> <20090612120507.GH16044@elte.hu> <8bd0f97a0906120816w26d91530nf1e1967470beb99c@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or suspending
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <20090612091002.GA32052@elte.hu> <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com> <20090612100756.GA25185@elte.hu> <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com> <20090612101511.GC13607@wotan.suse.de> <Pine.LNX.4.64.0906121328030.32274@melkki.cs.Helsinki.FI> <alpine.LFD.2.01.0906120809560.3237@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906120809560.3237@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0906120816w26d91530nf1e1967470beb99c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Fri, 12 Jun 2009, Pekka J Enberg wrote:
->> Hmm. This is turning into one epic patch discussion for sure! But here's a 
->> patch to do what you suggested. With the amount of patches I am 
->> generating, I'm bound to hit the right one sooner or later, no?-)
-> 
-> Ok, this one looks pretty good. I like the statics, and I like how it lets 
-> each allocator decide what to do.
-> 
-> Small nit: your mm/slab.c patch does an obviously unnecessary mask in:
-> 
-> 	cache_alloc_debugcheck_before(cachep, flags & slab_gfp_flags);
-> 
-> but that's stupid, because the bits were already masked earlier.
 
-Yeah, the SLAB parts were completely untested. I have this in my tree 
-now (that I sent a pull request for):
+* Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=f6b726dae91cc74fb3a00f192932ec4fe0949875
+> On Fri, Jun 12, 2009 at 08:05, Ingo Molnar wrote:
+> > * Mike Frysinger <vapier@gentoo.org> wrote:
+> >> If the port does not support HAVE_PERF_COUNTERS, then they can't
+> >> support the perf_counter_open syscall either.  Rather than forcing
+> >> everyone to add an ignore (or suffer the warning until they get
+> >> around to implementing support), only whine about the syscall when
+> >> applicable.
+> >
+> > No, this patch is wrong - it's really easy to add support: just hook
+> > up the syscall. This should happen for every architecture really, so
+> > the warning is correct and it should not be patched out.
+> >
+> > PMU support is not required to get perfcounters support: if an
+> > architecture hooks up the syscall it will get generic software
+> > counters and the tools will work as well.
+> >
+> > Profiling falls back to a hrtimer-based sampling method - this is a
+> > much better fallback than oprofile's fall-back to the timer tick.
+> > This hrtimer based sampling is dynticks/nohz-correct and can go
+> > beyond HZ if the architecture supports hrtimers.
+> 
+> these statements are actually incorrect.  the perf counter code
+> explicitly requires:
+>  - asm/perf_counter.h
 
-Do you want me to drop it? I can also do an incremental patch to do the 
-unmasking as in this patch.
+An empty stub suffices.
 
-			Pekka
+>  - support for atomic64 types (unless i missed something, x86 is the
+> only 32bit system that supports these)
+
+A wrapper suffices - should probably be librarized into lib/.
+
+>  - some perf stubs (like set_perf_counter_pending() -- prototype
+> really should be in common perf_counters headers rather than forcing
+> the arch to copy & paste the exact same line)
+
+Agreed.
+
+> not that any of this is documented ...
+
+Patches are welcome :-)
+
+You are right that the requirements are not necessarily trivial for 
+every arch - so i guess our original patch is correct.
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
