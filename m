@@ -1,107 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbZFLB0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763978AbZFLB1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932217AbZFLB0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 21:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbZFLB0F
+	id S1763978AbZFLB1x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 21:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZFLB1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 21:26:05 -0400
-Received: from mail.windriver.com ([147.11.1.11]:63160 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754038AbZFLB0E convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 21:27:45 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:45360 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbZFLB1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 21:26:04 -0400
-Subject: [PATCH 1/1] EDAC: Add DDR3 memory type for MPC85xx EDAC
-From: yshi <yang.shi@windriver.com>
-To: dougthompson@xmission.com,
-       "bluesmoke-devel@lists.sourceforge.net" 
-	<bluesmoke-devel@lists.sourceforge.net>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 12 Jun 2009 09:26:10 +0800
-Message-Id: <1244769970.3419.246.camel@yshi-desktop.CORP>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 12 Jun 2009 01:25:50.0344 (UTC) FILETIME=[B86AE080:01C9EAFC]
+	Thu, 11 Jun 2009 21:27:45 -0400
+Date: Fri, 12 Jun 2009 02:27:45 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, David Miller <davem@davemloft.net>,
+       swetland@google.com, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090612012745.GB25550@shareable.org>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <20090611132117.GH7523@elf.ucw.cz> <20090611155245.GA20460@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611155245.GA20460@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿Since some new MPC85xx SOCs support DDR3 memory now, so
-add DDR3 memory type for MPC85xx EDAC.
+Russell King - ARM Linux wrote:
+> I still operate with email in a way
+> which means if I don't deal with something as soon as I see it, it gets
+> filed away and almost never looked at again - even if I re-mark the
+> message as 'New'.  That means if it's inconvenient to apply a patch
+> (because the machine with the git trees on is powered down) then the
+> patch tends to get lost.
 
-Signed-off-by: Yang Shi <yang.shi@windriver.com>
----
- b/drivers/edac/edac_core.h     |    4 ++++
- b/drivers/edac/edac_mc_sysfs.c |    4 +++-
- b/drivers/edac/mpc85xx_edac.c  |    6 ++++++
- b/drivers/edac/mpc85xx_edac.h  |    1 +
- 4 files changed, 14 insertions(+), 1 deletion(-)
+Same here.  Can't keep up, never enough time to go back through old
+'New' mails.
 
---- a/drivers/edac/mpc85xx_edac.h
-+++ b/drivers/edac/mpc85xx_edac.h
-@@ -53,6 +53,7 @@
- 
- #define DSC_SDTYPE_DDR         0x02000000
- #define DSC_SDTYPE_DDR2                0x03000000
-+#define DSC_SDTYPE_DDR3                0x07000000
- #define DSC_X32_EN     0x00000020
- 
- /* Err_Int_En */
---- a/drivers/edac/edac_core.h
-+++ b/drivers/edac/edac_core.h
-@@ -149,6 +149,8 @@ enum mem_type {
-        MEM_FB_DDR2,            /* fully buffered DDR2 */
-        MEM_RDDR2,              /* Registered DDR2 RAM */
-        MEM_XDR,                /* Rambus XDR */
-+       MEM_DDR3,               /* DDR3 RAM */
-+       MEM_RDDR3,              /* Registered DDR3 RAM */
- };
- 
- #define MEM_FLAG_EMPTY         BIT(MEM_EMPTY)
-@@ -166,6 +168,8 @@ enum mem_type {
- #define MEM_FLAG_FB_DDR2        BIT(MEM_FB_DDR2)
- #define MEM_FLAG_RDDR2          BIT(MEM_RDDR2)
- #define MEM_FLAG_XDR            BIT(MEM_XDR)
-+#define MEM_FLAG_DDR3           BIT(MEM_DDR3)
-+#define MEM_FLAG_RDDR3          BIT(MEM_RDDR3)
- 
- /* chipset Error Detection and Correction capabilities and mode */
- enum edac_type {
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -757,6 +757,9 @@ static void __devinit mpc85xx_init_csrow
-                case DSC_SDTYPE_DDR2:
-                        mtype = MEM_RDDR2;
-                        break;
-+               case DSC_SDTYPE_DDR3:
-+                       mtype = MEM_RDDR3;
-+                       break;
-                default:
-                        mtype = MEM_UNKNOWN;
-                        break;
-@@ -769,6 +772,9 @@ static void __devinit mpc85xx_init_csrow
-                case DSC_SDTYPE_DDR2:
-                        mtype = MEM_DDR2;
-                        break;
-+               case DSC_SDTYPE_DDR3:
-+                       mtype = MEM_DDR3;
-+                       break;
-                default:
-                        mtype = MEM_UNKNOWN;
-                        break;
---- a/drivers/edac/edac_mc_sysfs.c
-+++ b/drivers/edac/edac_mc_sysfs.c
-@@ -94,7 +94,9 @@ static const char *mem_types[] = {
-        [MEM_DDR2] = "Unbuffered-DDR2",
-        [MEM_FB_DDR2] = "FullyBuffered-DDR2",
-        [MEM_RDDR2] = "Registered-DDR2",
--       [MEM_XDR] = "XDR"
-+       [MEM_XDR] = "XDR",
-+       [MEM_DDR3] = "Unbuffered-DDR3",
-+       [MEM_RDDR3] = "Registered-DDR3"
- };
- 
- static const char *dev_types[] = {
+> But hey, if you want me to drop lots of patches, then sure just send
+> them by email.  Just expect to nag me a lot more about applying your
+> patch.
 
+Thanks for mentioning this.  With the huge number of patches sent to
+the mailing list these days, I was getting the impression sending to
+the list was the thing to do.
+
+-- Jamie
