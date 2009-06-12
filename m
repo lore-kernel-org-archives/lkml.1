@@ -1,153 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbZFLTfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759390AbZFLTiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763578AbZFLTfi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 15:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbZFLTfb
+	id S1759390AbZFLTiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 15:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758278AbZFLTiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 15:35:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42088 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753008AbZFLTfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 15:35:30 -0400
-Subject: Re: [PATCH 2/2 -tip] x86: perf_counter update AMD hw caching
- related event table
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1244835318.2802.1.camel@ht.satnam>
-References: <1244714289.6923.0.camel@ht.satnam>
-	 <1244714379.6923.2.camel@ht.satnam>  <20090612173520.GB22015@elte.hu>
-	 <1244835318.2802.1.camel@ht.satnam>
-Content-Type: text/plain
-Date: Sat, 13 Jun 2009 01:06:21 +0530
-Message-Id: <1244835381.2802.2.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 15:38:10 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:35714 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbZFLTiJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 15:38:09 -0400
+Date: Fri, 12 Jun 2009 12:31:29 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org
+Subject: Re: [PATCH -next] v4l: expose function outside of ifdef/endif block
+In-Reply-To: <4A32A2CE.40002@oracle.com>
+Message-ID: <Pine.LNX.4.58.0906121220520.32713@shell2.speakeasy.net>
+References: <20090612185601.be53b034.sfr@canb.auug.org.au> <4A32A2CE.40002@oracle.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="289735540-2083449865-1244835089=:32713"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-13 at 01:05 +0530, Jaswinder Singh Rajput wrote:
-> On Fri, 2009-06-12 at 19:35 +0200, Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > 
-> > > AMD shares same hw caching related event table.
-> > > 
-> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > ---
-> > >  arch/x86/kernel/cpu/perf_counter.c |   36 +++++++++++++++---------------------
-> > >  1 files changed, 15 insertions(+), 21 deletions(-)
-> > 
-> > Looks good - but your patch does not apply anymore. (Neither to -git 
-> > nor to -tip)
-> > 
-> 
-> It is because of L2 -> LL
-> 
-> Here are new patches :
-> 
-> [PATCH 1/2 -tip] x86: perf_counter check AMD performance monitoring support
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-[PATCH 2/2 -tip] x86: perf_counter update AMD hw caching related event table
+--289735540-2083449865-1244835089=:32713
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-AMD shares same hw caching related event table.
+On Fri, 12 Jun 2009, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> Move v4l_bound_align_image() outside of an #ifdef CONFIG_I2C block
+> so that it is always built.  Fixes a build error:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/perf_counter.c |   36 +++++++++++++++---------------------
- 1 files changed, 15 insertions(+), 21 deletions(-)
+clamp_align() should be moved as well, since it's only used by
+v4l_bound_align_image().  I'm attaching an alternate version that fixes
+this.  Labeled the endif too.
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index b74e602..0e747e5 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -389,23 +389,23 @@ static u64 intel_pmu_raw_event(u64 event)
- 	return event & CORE_EVNTSEL_MASK;
- }
- 
--static const u64 amd_0f_hw_cache_event_ids
-+static const u64 amd_hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_MAX]
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
- {
-  [ C(L1D) ] = {
- 	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0040, /* Data Cache Accesses        */
-+		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
- 	},
- 	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0042, /* Data Cache Refills from L2 */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
- 	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0267, /* Data Prefetcher :attempts  */
-+		[ C(RESULT_MISS)   ] = 0x0167, /* Data Prefetcher :cancelled */
- 	},
-  },
-  [ C(L1I ) ] = {
-@@ -418,17 +418,17 @@ static const u64 amd_0f_hw_cache_event_ids
- 		[ C(RESULT_MISS)   ] = -1,
- 	},
- 	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x014B, /* Prefetch Instructions :Load */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
-  },
-  [ C(LL  ) ] = {
- 	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x037D, /* Requests to L2 Cache :IC+DC */
-+		[ C(RESULT_MISS)   ] = 0x037E, /* L2 Cache Misses : IC+DC     */
- 	},
- 	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x017F, /* L2 Fill/Writeback           */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
- 	[ C(OP_PREFETCH) ] = {
-@@ -438,8 +438,8 @@ static const u64 amd_0f_hw_cache_event_ids
-  },
-  [ C(DTLB) ] = {
- 	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0040, /* Data Cache Accesses        */
-+		[ C(RESULT_MISS)   ] = 0x0046, /* L1 DTLB and L2 DLTB Miss   */
- 	},
- 	[ C(OP_WRITE) ] = {
- 		[ C(RESULT_ACCESS) ] = 0,
-@@ -1465,16 +1465,10 @@ static int amd_pmu_init(void)
- 
- 	x86_pmu = amd_pmu;
- 
--	switch (boot_cpu_data.x86) {
--	case 0x0f:
--	case 0x10:
--	case 0x11:
--		memcpy(hw_cache_event_ids, amd_0f_hw_cache_event_ids,
--		       sizeof(hw_cache_event_ids));
-+	/* Events are common for all AMDs */
-+	memcpy(hw_cache_event_ids, amd_hw_cache_event_ids,
-+	       sizeof(hw_cache_event_ids));
- 
--		pr_cont("AMD Family 0f/10/11 events, ");
--		break;
--	}
- 	return 0;
- }
- 
--- 
-1.6.0.6
+>  drivers/media/video/v4l2-common.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> --- linux-next-20090612.orig/drivers/media/video/v4l2-common.c
+> +++ linux-next-20090612/drivers/media/video/v4l2-common.c
+> @@ -915,6 +915,7 @@ const unsigned short *v4l2_i2c_tuner_add
+>  	return NULL;
+>  }
+>  EXPORT_SYMBOL_GPL(v4l2_i2c_tuner_addrs);
+> +#endif
+>
+>  /* Clamp x to be between min and max, aligned to a multiple of 2^align.  min
+>   * and max don't have to be aligned, but there must be at least one valid
+> @@ -986,5 +987,3 @@ void v4l_bound_align_image(u32 *w, unsig
+>  	}
+>  }
+>  EXPORT_SYMBOL_GPL(v4l_bound_align_image);
+> -
+> -#endif
+--289735540-2083449865-1244835089=:32713
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="tmp.patch"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.58.0906121231290.32713@shell2.speakeasy.net>
+Content-Description: 
+Content-Disposition: attachment; filename="tmp.patch"
 
+IyBIRyBjaGFuZ2VzZXQgcGF0Y2gNCiMgVXNlciBUcmVudCBQaWVwaG8gPHh5
+enp5QHNwZWFrZWFzeS5vcmc+DQojIERhdGUgMTI0NDgzNDk1OCAyNTIwMA0K
+IyBOb2RlIElEIDIzYmQ2NTE2ZWFmY2MwNmZmYjU5MDA3M2U3NDRjN2UxNzM4
+MmFlZjkNCiMgUGFyZW50ICAwMWZkNGUzYmQxYzBmYjUyY2IxNWFjYmQyMmNh
+N2Y0ODU3MTcwZTZlDQp2NGwyOiBNb3ZlIGJvdW5kaW5nIGNvZGUgb3V0c2lk
+ZSBJMkMgaWZkZWYgYmxvY2sNCg0KRnJvbTogVHJlbnQgUGllcGhvIDx4eXp6
+eUBzcGVha2Vhc3kub3JnPg0KDQpNb3ZlIHY0bF9ib3VuZF9hbGlnbl9pbWFn
+ZSgpIGFuZCBjbGFtcF9hbGlnbigpIG91dHNpZGUgb2YgYW4gaWZkZWYgYmxv
+Y2sNCmZvciBJMkMgcmVsYXRlZCBjb2RlLiAgQ2FuIGNhdXNlIGFuIHVuZGVm
+aW5lZCByZWZlcmVuY2UgdG8NCmB2NGxfYm91bmRfYWxpZ25faW1hZ2UnIGlm
+IEkyQyBpc24ndCBlbmFibGVkLg0KDQpQcmlvcml0eTogaGlnaA0KDQpTaWdu
+ZWQtb2ZmLWJ5OiBUcmVudCBQaWVwaG8gPHh5enp5QHNwZWFrZWFzeS5vcmc+
+DQpSZXBvcnRlZC1ieTogUmFuZHkgRHVubGFwIDxyYW5keS5kdW5sYXBAb3Jh
+Y2xlLmNvbT4NCg0KZGlmZiAtciAwMWZkNGUzYmQxYzAgLXIgMjNiZDY1MTZl
+YWZjIGxpbnV4L2RyaXZlcnMvbWVkaWEvdmlkZW8vdjRsMi1jb21tb24uYw0K
+LS0tIGEvbGludXgvZHJpdmVycy9tZWRpYS92aWRlby92NGwyLWNvbW1vbi5j
+CVRodSBKdW4gMTEgMTU6MzE6MjIgMjAwOSAtMDcwMA0KKysrIGIvbGludXgv
+ZHJpdmVycy9tZWRpYS92aWRlby92NGwyLWNvbW1vbi5jCUZyaSBKdW4gMTIg
+MTI6Mjk6MTggMjAwOSAtMDcwMA0KQEAgLTk5Nyw2ICs5OTcsOCBAQCBjb25z
+dCB1bnNpZ25lZCBzaG9ydCAqdjRsMl9pMmNfdHVuZXJfYWRkDQogfQ0KIEVY
+UE9SVF9TWU1CT0xfR1BMKHY0bDJfaTJjX3R1bmVyX2FkZHJzKTsNCiANCisj
+ZW5kaWYgLyogZGVmaW5lZChDT05GSUdfSTJDKSAqLw0KKw0KIC8qIENsYW1w
+IHggdG8gYmUgYmV0d2VlbiBtaW4gYW5kIG1heCwgYWxpZ25lZCB0byBhIG11
+bHRpcGxlIG9mIDJeYWxpZ24uICBtaW4NCiAgKiBhbmQgbWF4IGRvbid0IGhh
+dmUgdG8gYmUgYWxpZ25lZCwgYnV0IHRoZXJlIG11c3QgYmUgYXQgbGVhc3Qg
+b25lIHZhbGlkDQogICogdmFsdWUuICBFLmcuLCBtaW49MTcsbWF4PTMxLGFs
+aWduPTQgaXMgbm90IGFsbG93ZWQgYXMgdGhlcmUgYXJlIG5vIG11bHRpcGxl
+cw0KQEAgLTEwNjcsNSArMTA2OSwzIEBAIHZvaWQgdjRsX2JvdW5kX2FsaWdu
+X2ltYWdlKHUzMiAqdywgdW5zaWcNCiAJfQ0KIH0NCiBFWFBPUlRfU1lNQk9M
+X0dQTCh2NGxfYm91bmRfYWxpZ25faW1hZ2UpOw0KLQ0KLSNlbmRpZg0K
 
-
+--289735540-2083449865-1244835089=:32713--
