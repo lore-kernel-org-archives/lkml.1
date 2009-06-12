@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbZFLMRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZFLMRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757343AbZFLMRU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 08:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZFLMRH
+	id S1758603AbZFLMRg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 08:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbZFLMRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:17:07 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:48434 "EHLO
+	Fri, 12 Jun 2009 08:17:08 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:49176 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753277AbZFLMRF convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752427AbZFLMRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:17:05 -0400
+	Fri, 12 Jun 2009 08:17:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=r4PYEUKrYKKqRdOYRaudkT+T1w4aAhk/3sWGPj0s7zVQvYVc0wHl1RDBCteJFvk6by
-         oqsJYPadjXMxO0cMO/hn0HUjg7pglXSCd2LkujMtynNhwFMhxxPa7z94kjoFFrHvGjZ/
-         z8cNWG/fAfdchtXb9E0rPGZ/Cn59O5kMC7olE=
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=QIouZU3yq7qiXZNNaE/0dLaL7PyS7U2wr5MYWFFd1VwoZ4cbG0VXWHkkg5Bkxrf+4T
+         YyLDpIZTYS0vHn8ODy13jlX+euoltmeY7HP7WRZ0qoqfd1o0fJvLYRavBg/5nWKhS5pJ
+         pdX5Aw6DOsh6UAE8ZzCpQ01YVt7rDabnRTE10=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: sound skipping regression introduced in 2.6.30-rc8
-Date: Fri, 12 Jun 2009 13:44:25 +0200
+To: Jamie Lokier <jamie@shareable.org>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Date: Fri, 12 Jun 2009 10:39:43 +0200
 User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090611-07944-gc1b019d-dirty; KDE/4.2.3; i686; ; )
-Cc: Sven =?iso-8859-1?q?K=F6hler?= <sven.koehler@gmail.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-References: <20090610.112804.193703669.davem@davemloft.net> <4A317949.9090301@gmail.com> <s5hzlcedxqn.wl%tiwai@suse.de>
-In-Reply-To: <s5hzlcedxqn.wl%tiwai@suse.de>
+Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+       swetland@google.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611164218.GA21128@n2100.arm.linux.org.uk> <20090612012304.GA25550@shareable.org>
+In-Reply-To: <20090612012304.GA25550@shareable.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200906121344.26139.bzolnier@gmail.com>
 Content-Type: Text/Plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906121039.44524.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Friday 12 June 2009 03:52:48 Takashi Iwai wrote:
-> At Thu, 11 Jun 2009 23:38:17 +0200,
-> Sven Köhler wrote:
-> > 
-> > >>>> Can somebody point out, how I can set this xrun_debug thing or can
-> > >>>> somebody provide a patch that reverts the change?
-> > >>> Did you read my reply to David?
-> > >> I will try, what is described there and I will report back if I get any
-> > >> debug output.
+On Friday 12 June 2009 03:23:04 Jamie Lokier wrote:
+> Russell King - ARM Linux wrote:
+> > On Thu, Jun 11, 2009 at 06:37:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > "No reason given" part was just lovely..
 > > > 
-> > > Thanks, that'll be be helpful.
+> > > After getting a couple of such messages I decided to stay as far away from
+> > > linux-arm-kernel list as possible..
+> > > 
+> > > Before interacting with linux-arm-kernel list I really thought that people
+> > > exaggerated the issue and that their complains were unfounded..
 > > 
-> > Below is the output. Note, that audacious 2.x was not only skipping a
-> > little bit. In fact, the clock that was showing the time of audio played
-> > was running twice as fast or even 4 times as fast. The sound was played
-> > at the right samplerate but in fast it seems, that much of the audio
-> > data was skipped and I only heard a series of short fragments of what
-> > should have been the song I'm listening to.
+> > I wish people told me about this - it's certainly not my policy nor
+> > indeed the policy which should be applied to the list.  I'll find out
+> > what's going on when my co-list admin returns from his vacation.
 > > 
-> > 
-> > PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+> > Thanks for bringing it to my attention.
 > 
-> OK, it must be the same problem indeed as David and Bartlomiej see.
+> Before I subscribed to linux-arm-kernel, I had quite a few moderation
+> messages just because I responded to threads which included
+> linux-arm-kernel in the addresses, but were cross-posted (by others)
+> to say linux-kernel, uclinux-dev or linux-embedded.
 > 
-> Although Bartlomiej wrote that reverting the commit below didn't help,
-> I still suspect it comes from there.
->      commit da2436a23c038055b1da6fe30b6ea2886b1e07b0
->      Author: Jaroslav Kysela <perex@perex.cz>
->      Date:   Mon Apr 13 21:31:25 2009 +0200
->      [ALSA] intel8x0: do not use zero value from PICB register
+> I got moderation messages, and found them slightly annoying because
+> I'd put effort into my replies, and presumed that some people involved
+> in the thread wouldn't see them.  Possibly the important people.
 > 
-> The below is a revised patch to fix the possible regression from this.
-> Could you guys give it a try, or check reverting the above?
+> That's the main reason I subscribed to linux-arm-kernel - just so I
+> know people can see replies to threads that I'm responding to on other
+> lists.
+> 
+> I do actually work on ARM kernels too, so don't unsubscribe me for that :-)
+> 
+> When I did subscribe to linux-arm-kernel, I got a message telling me I
+> was being considered...  Months went by, and it didn't subscribe me.
+> That was annoying.  I presumed I'd been rejected.
+> 
+> I tried again a few months later, and this time the subscription
+> approval process was relatively quick at a week or so.  I was
+> beginning to think I'd be silently rejected again, therefore delighted
+> to be counted among the Special Ones allowed to subscribe :-)
 
-The issue is still present with the revised patch.
+:)
+
+Now imagine a new or a seasonal ARM developer waiting a week just to be
+able to post an obvious bug fix patch.  In most other kernel areas such
+patch would be long applied.
+
+The irony of this all is that the same people that complain about lack of
+time still invest it in such idiotic tasks like approval of subscription
+requests or moderation of messages..
