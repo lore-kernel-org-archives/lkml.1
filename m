@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbZFLILZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932885AbZFLIMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932951AbZFLILZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762886AbZFLIKf
+	id S932885AbZFLIMb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762877AbZFLIMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:10:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46743 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762884AbZFLIKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:10:33 -0400
-Date: Fri, 12 Jun 2009 18:10:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, borislav.petkov@amd.com
-Subject: Re: [GIT PULL] AMD64 EDAC module for 2.6.31
-Message-Id: <20090612181022.8accf95b.sfr@canb.auug.org.au>
-In-Reply-To: <20090612080323.GA14669@liondog.tnic>
-References: <20090611103705.GC15454@aftab>
-	<20090612080323.GA14669@liondog.tnic>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Fri, 12 Jun 2009 04:12:16 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:24333 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758794AbZFLIMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:12:14 -0400
+Date: Fri, 12 Jun 2009 10:12:00 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>,
+       Harald Welte <HaraldWelte@viatech.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core 
+ temperature
+Message-ID: <20090612101200.3fe6d494@hyperion.delvare>
+In-Reply-To: <20090611153255.ba8d6c54.akpm@linux-foundation.org>
+References: <20090609083406.GE25316@prithivi.gnumonks.org>
+	<loom.20090610T172830-164@post.gmane.org>
+	<20090611153255.ba8d6c54.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 11 Jun 2009 15:32:55 -0700, Andrew Morton wrote:
+> On Wed, 10 Jun 2009 17:40:31 +0000 (UTC)
+> Tomaz Mertelj <tomaz.mertelj@guest.arnes.si> wrote:
+> 
+> > Harald Welte <HaraldWelte <at> viatech.com> writes:
+> > 
+> > > 
+> > > This is a driver for the on-die digital temperature sensor of
+> > > VIA's recent CPU models.
+> > > 
+> > > Signed-off-by: Harald Welte <HaraldWelte <at> viatech.com>
+> > > 
+> > 
+> > Harald,
+> 
+> You carefully removed Harald from Cc: so he probably didn't read your
+> email.
+> 
+> > I tested it on 2.6.28.3 kernel on VIA VB7002 motherboard and it does not work 
+> > correctly.
+> > 
+> > Output form sensors:
+> > 
+> > via-cputemp-isa-0000
 
-Hi Borislav,
+Harald, dashes in hwmon chip names are _prohibited_. Please change to
+via_cputemp or similar.
 
-On Fri, 12 Jun 2009 10:03:23 +0200 Borislav Petkov <petkovbb@googlemail.com=
-> wrote:
->
-> now that amd64 EDAC is upstream, I've removed the fox-next branch since
-> the next patch series is not ready yet.
->=20
-> What is actually the proper way to let you know that I don't have any
-> more patches for linux-next right now and that you don't have to pull
-> from my repo for now?
+> > Adapter: ISA adapter
+> > Core 0:       +0.0 C
+> > 
+> > On the other hand 
+> > cat '/sys/class/hwmon/hwmon2/device/driver/via-cputemp.0/temp1_input' outputs 
+> > numbers between 25-27. 
+> > 
 
-Just set the for-next branch to point somewhere in Linus' tree (where it
-was would be fine if that is what Linus' merged from you).  That way I
-can still try to fetch it each day and when you have new stuff, you can
-just put it there without bothering to remember to tell me anything.
+Temperature values are supposed to be expressed in millidegrees C, not
+degrees C as it seems to be doing (although 25 degrees C seems pretty
+low for a CPU temperature?) The drivers needs to multiply values by
+1000 before exporting them to sysfs. Then "sensors" will report the
+correct temperature value.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoyDW4ACgkQjjKRsyhoI8zPbgCfQ/WcD++GSIuhrvOwt3xiZDKx
-jLYAn2HdQqIBQyur34fnyRskcgCw41q5
-=63ax
------END PGP SIGNATURE-----
-
---Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j--
+-- 
+Jean Delvare
