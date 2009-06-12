@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZFLLlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZFLLn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbZFLLlj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZFLLlb
+	id S1757462AbZFLLn5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZFLLnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:41:31 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53931 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827AbZFLLla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:41:30 -0400
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
- suspending
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <1244806440.30512.51.camel@penberg-laptop>
+	Fri, 12 Jun 2009 07:43:50 -0400
+Received: from mail-fx0-f216.google.com ([209.85.220.216]:60474 "EHLO
+	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbZFLLnt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:43:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=WN10BgX2721ufc94jdHYvwldS8O0rdaqkEevGAnEeqZWJFR/mkVnn0n7BX+NTEwoz+
+         R1nSBZLLF4v/H93tAOfeCk2ocAHgOBKHkFInjzo6UY7mHEITG9satCwTqMxMxI4WkTY1
+         PugcH9tYsNoAT3R4eBUR1vEzvfPTwos3tFY5c=
+MIME-Version: 1.0
+In-Reply-To: <1244806872.7172.138.camel@pasglop>
 References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
 	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
 	 <20090612091002.GA32052@elte.hu>
@@ -26,235 +28,52 @@ References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
 	 <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
 	 <1244805060.7172.126.camel@pasglop>
 	 <1244806440.30512.51.camel@penberg-laptop>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 21:41:12 +1000
-Message-Id: <1244806872.7172.138.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	 <1244806872.7172.138.camel@pasglop>
+Date: Fri, 12 Jun 2009 14:43:50 +0300
+X-Google-Sender-Auth: b097960559765db8
+Message-ID: <84144f020906120443w6496d408uadede7a8e1b772a@mail.gmail.com>
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
+	suspending
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ben,
 
-> No, I don't think I am. We can fix up the indirect callers too by making
-> sure we pass the proper GFP flag and propagate that all the way down.
-> Yes, this is potentially quite a bit of code churn which is why I do see
-> your patch being the easy way out.
+On Fri, Jun 12, 2009 at 2:41 PM, Benjamin
+Herrenschmidt<benh@kernel.crashing.org> wrote:
+>> That said, Nick and Ingo seem to think special-casing is questionable
+>> and I haven't had green light for any of the patches yet. The gfp
+>> sanitization patch adds some overhead to kmalloc() and page allocator
+>> paths which is obviously a concern.
+>
+> Let's wait and see what Linus thinks...
 
-s/churn/bloat ... and I really don't see the point. We can duplicate all
-of the __get_vm_area() interface variants with some _boot() versions,
-that's going to grow the kernel text for no good reason.
+Yup, lets do that.
 
-Again, why would every call site have to know whether it's called during
-the boot process or not... more than that, whether interrupts have been
-turned on yet or not, especially since we may decide to move the point
-where we turn them on in the future.
+On Fri, Jun 12, 2009 at 2:41 PM, Benjamin
+Herrenschmidt<benh@kernel.crashing.org> wrote:
+>> So while we continue to discuss this, I'd really like to proceed with
+>> the patch below. At least it should allow people to boot their kernels
+>> (although it will produce warnings). I really don't want to keep other
+>> people waiting for us to reach a resolution on this. Are you OK with
+>> that?
+>
+> I don't care -how- we achieve the result I want as long as we achieve
+> it, which is to remove the need for callers to care. My approach was one
+> way to do it, I'm sure there's a better one. That's not the point. I'm
+> too tried now to properly review your patch and I'll need to test it
+> tomorrow morning, but it looks ok except for the WARN_ON maybe.
 
-I really don't follow your logic here. It's fragile, adds complexity and
-bloat, in an area where we are trying to remove some.
+OK, the WARN_ON is there because you will get warnings for
+might_sleep() et al as well.
 
-> That said, Nick and Ingo seem to think special-casing is questionable
-> and I haven't had green light for any of the patches yet. The gfp
-> sanitization patch adds some overhead to kmalloc() and page allocator
-> paths which is obviously a concern.
-
-Let's wait and see what Linus thinks...
-
-> So while we continue to discuss this, I'd really like to proceed with
-> the patch below. At least it should allow people to boot their kernels
-> (although it will produce warnings). I really don't want to keep other
-> people waiting for us to reach a resolution on this. Are you OK with
-> that?
-
-I don't care -how- we achieve the result I want as long as we achieve
-it, which is to remove the need for callers to care. My approach was one
-way to do it, I'm sure there's a better one. That's not the point. I'm
-too tried now to properly review your patch and I'll need to test it
-tomorrow morning, but it looks ok except for the WARN_ON maybe.
-
-Again, I don't think we need to -fix- things. I think most code should
-be able to call kmalloc(GFP_KERNEL) without having to bother at which
-precise stage of the boot sequence it is running.
-
-Cheers,
-Ben.
-
-> 			Pekka
-> 
-> >From f6b726dae91cc74fb3a00f192932ec4fe0949875 Mon Sep 17 00:00:00 2001
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> Date: Fri, 12 Jun 2009 14:03:06 +0300
-> Subject: [PATCH] slab: don't enable interrupts during early boot
-> 
-> As explained by Benjamin Herrenschmidt:
-> 
->   Oh and btw, your patch alone doesn't fix powerpc, because it's missing
->   a whole bunch of GFP_KERNEL's in the arch code... You would have to
->   grep the entire kernel for things that check slab_is_available() and
->   even then you'll be missing some.
-> 
->   For example, slab_is_available() didn't always exist, and so in the
->   early days on powerpc, we used a mem_init_done global that is set form
->   mem_init() (not perfect but works in practice). And we still have code
->   using that to do the test.
-> 
-> Therefore, mask out __GFP_WAIT in the slab allocators in early boot code to
-> avoid enabling interrupts.
-> 
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  include/linux/slab.h     |    2 ++
->  include/linux/slob_def.h |    5 +++++
->  include/linux/slub_def.h |    2 ++
->  init/main.c              |    1 +
->  mm/slab.c                |   22 ++++++++++++++++++++++
->  mm/slub.c                |   18 ++++++++++++++++++
->  6 files changed, 50 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/slab.h b/include/linux/slab.h
-> index 4880306..219b8fb 100644
-> --- a/include/linux/slab.h
-> +++ b/include/linux/slab.h
-> @@ -319,4 +319,6 @@ static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
->  	return kmalloc_node(size, flags | __GFP_ZERO, node);
->  }
->  
-> +void __init kmem_cache_init_late(void);
-> +
->  #endif	/* _LINUX_SLAB_H */
-> diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
-> index 0ec00b3..bb5368d 100644
-> --- a/include/linux/slob_def.h
-> +++ b/include/linux/slob_def.h
-> @@ -34,4 +34,9 @@ static __always_inline void *__kmalloc(size_t size, gfp_t flags)
->  	return kmalloc(size, flags);
->  }
->  
-> +static inline void kmem_cache_init_late(void)
-> +{
-> +	/* Nothing to do */
-> +}
-> +
->  #endif /* __LINUX_SLOB_DEF_H */
-> diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-> index be5d40c..4dcbc2c 100644
-> --- a/include/linux/slub_def.h
-> +++ b/include/linux/slub_def.h
-> @@ -302,4 +302,6 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
->  }
->  #endif
->  
-> +void __init kmem_cache_init_late(void);
-> +
->  #endif /* _LINUX_SLUB_DEF_H */
-> diff --git a/init/main.c b/init/main.c
-> index b3e8f14..f6204f7 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -640,6 +640,7 @@ asmlinkage void __init start_kernel(void)
->  				 "enabled early\n");
->  	early_boot_irqs_on();
->  	local_irq_enable();
-> +	kmem_cache_init_late();
->  
->  	/*
->  	 * HACK ALERT! This is early. We're enabling the console before
-> diff --git a/mm/slab.c b/mm/slab.c
-> index f46b65d..a785808 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -304,6 +304,12 @@ struct kmem_list3 {
->  };
->  
->  /*
-> + * The slab allocator is initialized with interrupts disabled. Therefore, make
-> + * sure early boot allocations don't accidentally enable interrupts.
-> + */
-> +static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
-> +
-> +/*
->   * Need this for bootstrapping a per node allocator.
->   */
->  #define NUM_INIT_LISTS (3 * MAX_NUMNODES)
-> @@ -1654,6 +1660,14 @@ void __init kmem_cache_init(void)
->  	 */
->  }
->  
-> +void __init kmem_cache_init_late(void)
-> +{
-> +	/*
-> +	 * Interrupts are enabled now so all GFP allocations are safe.
-> +	 */
-> +	slab_gfp_mask = __GFP_BITS_MASK;
-> +}
-> +
->  static int __init cpucache_init(void)
->  {
->  	int cpu;
-> @@ -2812,6 +2826,10 @@ static int cache_grow(struct kmem_cache *cachep,
->  
->  	offset *= cachep->colour_off;
->  
-> +	/* Lets avoid crashing in early boot code. */
-> +	if (WARN_ON_ONCE((local_flags & ~slab_gfp_mask) != 0))
-> +		local_flags &= slab_gfp_mask;
-> +
->  	if (local_flags & __GFP_WAIT)
->  		local_irq_enable();
->  
-> @@ -3237,6 +3255,10 @@ retry:
->  	}
->  
->  	if (!obj) {
-> +		/* Lets avoid crashing in early boot code. */
-> +		if (WARN_ON_ONCE((local_flags & ~slab_gfp_mask) != 0))
-> +			local_flags &= slab_gfp_mask;
-> +
->  		/*
->  		 * This allocation will be performed within the constraints
->  		 * of the current cpuset / memory policy requirements.
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 3964d3c..651bb34 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -178,6 +178,12 @@ static enum {
->  	SYSFS		/* Sysfs up */
->  } slab_state = DOWN;
->  
-> +/*
-> + * The slab allocator is initialized with interrupts disabled. Therefore, make
-> + * sure early boot allocations don't accidentally enable interrupts.
-> + */
-> +static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
-> +
->  /* A list of all slab caches on the system */
->  static DECLARE_RWSEM(slub_lock);
->  static LIST_HEAD(slab_caches);
-> @@ -1548,6 +1554,10 @@ new_slab:
->  		goto load_freelist;
->  	}
->  
-> +	/* Lets avoid crashing in early boot code. */
-> +	if (WARN_ON_ONCE((gfpflags & ~slab_gfp_mask) != 0))
-> +		gfpflags &= slab_gfp_mask;
-> +
->  	if (gfpflags & __GFP_WAIT)
->  		local_irq_enable();
->  
-> @@ -3104,6 +3114,14 @@ void __init kmem_cache_init(void)
->  		nr_cpu_ids, nr_node_ids);
->  }
->  
-> +void __init kmem_cache_init_late(void)
-> +{
-> +	/*
-> +	 * Interrupts are enabled now so all GFP allocations are safe.
-> +	 */
-> +	slab_gfp_mask = __GFP_BITS_MASK;
-> +}
-> +
->  /*
->   * Find a mergeable slab cache
->   */
-
+                                        Pekka
