@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbZFLJaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763718AbZFLJay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933347AbZFLJaV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbZFLJaK
+	id S1763718AbZFLJay (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759285AbZFLJap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:30:10 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:41895 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755140AbZFLJaJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:30:09 -0400
-Date: Fri, 12 Jun 2009 17:27:37 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core
-	temperature
-Message-ID: <20090612092737.GD30843@prithivi.gnumonks.org>
-References: <20090609083406.GE25316@prithivi.gnumonks.org> <loom.20090610T172830-164@post.gmane.org> <20090611153255.ba8d6c54.akpm@linux-foundation.org> <20090612101200.3fe6d494@hyperion.delvare>
-MIME-Version: 1.0
+	Fri, 12 Jun 2009 05:30:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41107 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758959AbZFLJap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:30:45 -0400
+Date: Fri, 12 Jun 2009 11:30:46 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
+       akpm@linux-foundation.org
+Subject: Re: slab: setup allocators earlier in the boot sequence
+Message-ID: <20090612093046.GG24044@wotan.suse.de>
+References: <1244792079.7172.74.camel@pasglop> <1244792745.30512.13.camel@penberg-laptop> <20090612075427.GA24044@wotan.suse.de> <1244793592.30512.17.camel@penberg-laptop> <20090612080236.GB24044@wotan.suse.de> <1244793879.30512.19.camel@penberg-laptop> <1244796291.7172.87.camel@pasglop> <84144f020906120149k6cbe5177vef1944d9d216e8b2@mail.gmail.com> <20090612091304.GE24044@wotan.suse.de> <1244798660.7172.102.camel@pasglop>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090612101200.3fe6d494@hyperion.delvare>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1244798660.7172.102.camel@pasglop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean and Tomaz,
-
-On Fri, Jun 12, 2009 at 10:12:00AM +0200, Jean Delvare wrote:
-> > > Harald,
-> > 
-> > You carefully removed Harald from Cc: so he probably didn't read your
-> > email.
-
-That was indeed true, thanks for noticing this.
-
-> > > via-cputemp-isa-0000
+On Fri, Jun 12, 2009 at 07:24:20PM +1000, Benjamin Herrenschmidt wrote:
 > 
-> Harald, dashes in hwmon chip names are _prohibited_. Please change to
-> via_cputemp or similar.
+> > It's OK. I'd make it gfp_notsmellybits, and avoid the ~.
+> > And read_mostly.
+> 
+> read_mostly is fine. gfp_notsmellybits isn't a nice name :-) Make it
+> gfp_allowedbits then. I did it backward on purpose though as the risk of
+> "missing" bits here (as we may add new ones) is higher and it seemed to
+> me generally simpler to just explicit spell out the ones to forbid
+> (also, on powerpc,  &~ is one instruction :-)
 
-done.
+But just do the ~ in the assignment. No missing bits :)
 
-> Temperature values are supposed to be expressed in millidegrees C, not
-> degrees C as it seems to be doing 
+  
+> > Probably would be better to hide it in mm/ and then just
+> > allow it to be modified with a couple of calls. OTOH if
+> > it is only modified in a couple of places then maybe that's
+> > overkill.
+> 
+> It might indeed be nicer to hide it behind an accessor.
+> 
+> > The whole problem comes about because we don't just restore
+> > our previously saved flags here... I guess it probably adds
+> > even more overhead to do that and make everything just work :(
+> 
+> Well... that's part of the equation. My solution has the advantage to
+> also providing ground to forbid GFP_IO during suspend/resume etc...
 
-> (although 25 degrees C seems pretty low for a CPU temperature?) 
+Yeah but it doesn't do it in the page allocator so it isn't
+really useful as a general allocator flags tweak. ATM it only
+helps this case of slab allocator hackery.
 
-It's really low, though the VIA Nano on my desk has 30 degrees C and doesn't
-need a fan.  Only during kernel compiles it goes to something like 40
-centigrade.
+In my slab allocator I'm going to actually look at what it
+costs to keep track of flags properly. That would be far cleaner...
+OTOH, SLUB is apparently much more sensitive about page allocator
+performance so maybe the hack is worthwhile there.
 
-Some older C7 (Model A) had an errata where the temperature sensors had a
-really high error on low temperatures.
-
-There is also another errata with that C7 Model A, where if you underclock
-the FSB of the CPU, the temperature reading would be wrong (but much too
-high in that case).
-
-Since there really is nothing we can do in software to fix this, I didn't
-put any of this in the driver.  What I could do though is some bits to
-add a printk() message once you load the driver on such a system.
-
-> The drivers needs to multiply values by 1000 before exporting them to sysfs.
-> Then "sensors" will report the correct temperature value.
-
-done.  Please find an incremental patch right here:
-=============
-diff --git a/drivers/hwmon/via-cputemp.c b/drivers/hwmon/via-cputemp.c
-index 1032355..2abe516 100644
---- a/drivers/hwmon/via-cputemp.c
-+++ b/drivers/hwmon/via-cputemp.c
-@@ -37,7 +37,7 @@
- #include <asm/msr.h>
- #include <asm/processor.h>
- 
--#define DRVNAME	"via-cputemp"
-+#define DRVNAME	"via_cputemp"
- 
- typedef enum { SHOW_TEMP, SHOW_LABEL, SHOW_NAME } SHOW;
- 
-@@ -81,7 +81,7 @@ static ssize_t show_temp(struct device *dev,
- 	if (err)
- 		return -EAGAIN;
- 
--	err = sprintf(buf, "%d\n", eax & 0xffffff);
-+	err = sprintf(buf, "%d\n", (eax & 0xffffff) * 1000);
- 
- 	return err;
- }
-=============
-
-I'll re-submit the full driver after adding the above-mentioned printk.
-
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
