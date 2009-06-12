@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbZFLPYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbZFLPZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757782AbZFLPYg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbZFLPY2
+	id S1759721AbZFLPZW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZFLPZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:24:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58216 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751582AbZFLPY2 (ORCPT
+	Fri, 12 Jun 2009 11:25:09 -0400
+Received: from avs2.arnes.si ([193.2.1.75]:56796 "EHLO avs2.arnes.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751745AbZFLPZI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:24:28 -0400
-Date: Fri, 12 Jun 2009 16:25:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open
- when supported
-Message-ID: <20090612162529.2fc4d863@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090612135603.GF32105@elte.hu>
-References: <20090612120507.GH16044@elte.hu>
-	<8bd0f97a0906120513u4e823460t8192f00fd0460ab@mail.gmail.com>
-	<20090612121757.GD31845@elte.hu>
-	<8bd0f97a0906120522v51ae0151i48d5f6846ddcff10@mail.gmail.com>
-	<20090612123152.GE31845@elte.hu>
-	<8bd0f97a0906120541x739b7902pe40ff7aa91337bac@mail.gmail.com>
-	<20090612125941.GI31845@elte.hu>
-	<8bd0f97a0906120604o1e90ac93l469e86173224364e@mail.gmail.com>
-	<20090612130949.GJ31845@elte.hu>
-	<8bd0f97a0906120621o609d7489v83cd3efc0102412d@mail.gmail.com>
-	<20090612135603.GF32105@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 11:25:08 -0400
+To: "Michael S. Zick" <lkml@morethan.org>, tomaz.mertelj@guest.arnes.si
+From: tomaz.mertelj@guest.arnes.si
+Cc: Harald Welte <HaraldWelte@viatech.com>, Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: =?UTF-8?Q?Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core	temperature=
+	?=
+Date: Fri, 12 Jun 2009 17:25:10 +0200
+Message-ID: <20090612_152510_043383.tomaz.mertelj@guest.arnes.si>
+X-originating-IP: 84.20.248.126
+MIME-Version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On Fri, Jun 12, 2009 at 09:09, Ingo Molnar wrote:
-> > > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > >> On Fri, Jun 12, 2009 at 08:59, Ingo Molnar wrote:
-> > >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > >> >> On Fri, Jun 12, 2009 at 08:31, Ingo Molnar wrote:
-> > >> >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > >> >> >> On Fri, Jun 12, 2009 at 08:17, Ingo Molnar wrote:
-> > >> >> >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > >> >> >> >> On Fri, Jun 12, 2009 at 08:05, Ingo Molnar wrote:
-> > >> >> >> >> > * Mike Frysinger <vapier@gentoo.org> wrote:
->
+> 
+> The author had a problem in that routine -
+> try this one (32bit machines only) -
+> 
+> Mike 
 
-> Anyway, i have no time to teach you about kernel mainteinance basics 
-> really so i probably wont follow up on future emails.
+DEBNAS:/home# for r in 0x1160 0x1161 0x1162 0x1163 0x1164 0x1165 0x1166 
+0x1167
+0x1168 0x1169 0x116a 0x116b 0x116c 0x1152 0x1153 ; do  ./rdmsrll $r ; 
+done
+MSR register 0x1160 => 08:04:83:94:bf:c2:39:c8
+MSR register 0x1161 => 08:04:83:94:bf:ce:12:88
+MSR register 0x1162 => 08:04:83:94:bf:d0:7a:a8
+MSR register 0x1163 => 08:04:83:94:bf:9e:1f:88
+MSR register 0x1164 => 08:04:83:94:bf:9c:ff:78
+MSR register 0x1165 => 08:04:83:94:bf:87:6e:18
+MSR register 0x1166 => 08:04:83:94:bf:a1:87:b8
+MSR register 0x1167 => 08:04:83:94:bf:f1:cc:b8
+MSR register 0x1168 => 08:04:83:94:bf:c6:22:08
+MSR register 0x1169 => 08:04:83:94:bf:cf:b8:68
+MSR register 0x116a => 08:04:83:94:bf:a3:57:d8
+MSR register 0x116b => 08:04:83:94:bf:b3:a8:d8
+MSR register 0x116c => 08:04:83:94:bf:ea:04:48
+MSR register 0x1152 => 08:04:83:94:bf:84:85:e8
+MSR register 0x1153 => 08:04:83:94:bf:d6:fb:18
 
-So yet again you resort to personal attacks when someone objects to the
-world according to Ingo. Please stop it, it's not as if you can't find
-good technical reasons in many of these cases.
+I 
+I hope this is better.
 
-And please both of you - trim the emails you are replying to ..
+Tomaz
+
+
