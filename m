@@ -1,75 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934176AbZFLWOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934469AbZFLWQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934176AbZFLWOE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbZFLWNz
+	id S934469AbZFLWQi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbZFLWQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:13:55 -0400
-Received: from [212.98.175.89] ([212.98.175.89]:47670 "EHLO localdomain.by"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751520AbZFLWNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:13:54 -0400
-Date: Sat, 13 Jun 2009 01:15:09 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Alan Cox <alan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
-Subject: BUG: scheduling while atomic: pptpgw
-Message-ID: <20090612221509.GA3888@localdomain.by>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 12 Jun 2009 18:16:30 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:26807 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbZFLWQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:16:29 -0400
+Subject: Re: [PATCH V4: 3/3] pci: Provide Multiple Error Received support
+ on AER
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1244776118.2560.321.camel@ymzhang>
+References: <1244776118.2560.321.camel@ymzhang>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Jun 2009 22:16:28 +0000
+Message-Id: <1244844988.19708.115.camel@grinch>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Alan.
+On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
+> ﻿﻿﻿﻿﻿When a root port receive the same errors more than once before kernel
+>  process them, the Multiple Error Messages Received flags are set by
+> hardware. Because root port could only save one kind of correctable
+> error source id and another uncorrectable error source id at the same
+> time, so the second message sender id is lost if the 2 messages are
+> sent from 2 different devices. Below patch searches all devices under
+> the root port when multiple messages are received.
+> 
+> ﻿﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> 
+> ---
+> 
+> diff -Nraup linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv_core.c
+> --- linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:39:24.000000000 +0800
+> +++ linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:45:15.000000000 +0800
+> @@ -145,13 +145,22 @@ static void set_downstream_devices_error
+>  	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
+>  }
+>  
+> +static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
+> +{
+> +	if (e_info->error_dev_num < AER_MAX_MULTI_ERR_DEVICES) {
+> +		e_info->dev[e_info->error_dev_num ++] = dev;
 
-As I can see you've patched tty recently.
----
-commit c9b3976e3fec266be25c5001a70aa0a890b6c476
-Author: Alan Cox <alan@redhat.com>
-Date:   Fri Jan 2 13:44:56 2009 +0000
+checkpatch reports:
+ERROR: space prohibited before that '++' (ctx:WxB)
+#46: FILE: drivers/pci/pcie/aer/aerdrv_core.c:151:
++		e_info->dev[e_info->error_dev_num ++] = dev;
 
-    tty: Fix PPP hang under load
-    
-    Signed-off-by: Alan Cox <alan@redhat.com>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
+Personally I would prefer:
+		e_info->dev[e_info->error_dev_num] = dev;
+		e_info->error_dev_num++;
 
-I have some problems in tty + ppp.
-Part of syslog (the rest is in attach):
-
-[ 8506.042498] BUG: scheduling while atomic: pptpgw/3167/0x00000400
-[ 8506.042504] Modules linked in: ppp_deflate zlib_deflate ppp_async crc_ccitt ppp_generic slhc ipv6 fuse sbp2 loop snd_hda_codec_si3054 snd_hda_codec_realtek snd_hda_intel
-snd_hda_codec snd_pcm snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore pcspkr i2c_i801 rng_core snd_page_alloc psmouse asus_laptop
-serio_raw evdev led_class usbhid hid sg sd_mod sr_mod cdrom ata_generic pata_acpi ata_piix ide_pci_generic ohci1394 ieee1394 r8169 mii uhci_hcd ehci_hcd usbcore
-[ 8506.042563] 
-[ 8506.042568] Pid: 3167, comm: pptpgw Tainted: G        W  (2.6.30-nv-git3 #7) F3JC                
-[ 8506.042572] EIP: 0060:[<c13e4386>] EFLAGS: 00200246 CPU: 0
-[ 8506.042580] EIP is at _spin_unlock_irqrestore+0x16/0x30
-[ 8506.042583] EAX: c1660040 EBX: 00200246 ECX: 00000000 EDX: 00200246
-[ 8506.042586] ESI: f66b97e0 EDI: 00000001 EBP: f22ebe5c ESP: f22ebe58
-[ 8506.042590]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-[ 8506.042593] CR0: 8005003b CR2: b753c000 CR3: 36a91000 CR4: 000006d0
-[ 8506.042596] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-[ 8506.042599] DR6: ffff0ff0 DR7: 00000400
-[ 8506.042601] Call Trace:
-[ 8506.042609]  [<c12b92cb>] tty_ldisc_deref+0x5b/0x90
-[ 8506.042615]  [<c12b2699>] tty_wakeup+0x79/0x90
-[ 8506.042620]  [<c12baa23>] pty_unthrottle+0x23/0x50
-[ 8506.042624]  [<c12b75f0>] tty_unthrottle+0x40/0x70
-[ 8506.042628]  [<c12b571f>] n_tty_read+0x47f/0x720
-[ 8506.042636]  [<c103a020>] ? default_wake_function+0x0/0x40
-[ 8506.042640]  [<c12b0a28>] tty_read+0x98/0xe0
-[ 8506.042644]  [<c12b52a0>] ? n_tty_read+0x0/0x720
-[ 8506.042651]  [<c10e5dfb>] vfs_read+0xbb/0x1c0
-[ 8506.042655]  [<c12b0990>] ? tty_read+0x0/0xe0
-[ 8506.042659]  [<c10e6008>] sys_read+0x58/0xa0
-[ 8506.042665]  [<c100320b>] sysenter_do_call+0x12/0x22
+> +		return 1;
+> +	} else
+> +		return 0;
+> +}
+> +
 
 
-	Sergey
+This function is now doing more than just comparing device ID's.
+Perhaps you could rename it or put call add_error_device after
+compare_device_id in find_device_iter?
+>  static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
+>  {
+>  	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
+>  		/*
+>  		 * Device ID match
+>  		 */
+> -		e_info->dev = dev;
+> +		add_error_device(e_info, dev);
+>  		return 1;
+>  	}
+>  
+> @@ -166,20 +175,38 @@ static int find_device_iter(struct pci_d
+>  	u32 status;
+>  	u32 mask;
+>  	u16 reg16;
+> +	int result;
+>  	struct aer_err_info *e_info = (struct aer_err_info *)data;
+>  
+>  	/*
+>  	 * When bus id is equal to 0, it might be a bad id
+>  	 * reported by root port.
+>  	 */
+> -	if (!nosourceid && (PCI_BUS(e_info->id) != 0))
+> -		return compare_device_id(dev, e_info);
+> +	if (!nosourceid && (PCI_BUS(e_info->id) != 0)) {
+> +		result = compare_device_id(dev, e_info);
+> +		/*
+> +		 * If there is no multiple error, we stop
+> +		 * or continue based on the id comparing.
+> +		 */
+> +		if (!(e_info->flags & AER_MULTI_ERROR_VALID_FLAG))
+> +			return result;
+> +
+> +		/*
+> +		 * If there are multiple errors and id does match,
+> +		 * We need continue to search other devices under
+> +		 * the root port. Return 0 means that.
+> +		 */
+> +		if (result)
+> +			return 0;
+> +	}
+>  
+>  	/*
+> -	 * Next is to check when bus id is equal to 0 or
+> -	 * nosourceid==y. Some ports might lose the bus
+> -	 * id of error source id. We check AER status
+> -	 * registers to find the initial reporter.
+> +	 * When either
+> +	 * 	1) nosourceid==y;
+> +	 * 	2) bus id is equal to 0. Some ports might lose the bus
+> +	 * 		id of error source id;
+> +	 * 	3) There are multiple errors and prior id comparing fails;
+> +	 * We check AER status registers to find the initial reporter.
+>  	 */
+>  	if (atomic_read(&dev->enable_cnt) == 0)
+>  		return 0;
+> @@ -208,8 +235,8 @@ static int find_device_iter(struct pci_d
+>  				pos + PCI_ERR_COR_MASK,
+>  				&mask);
+>  		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
+> -			e_info->dev = dev;
+> -			return 1;
+> +			add_error_device(e_info, dev);
+> +			goto added;
+>  		}
+>  	} else {
+>  		pci_read_config_dword(dev,
+> @@ -219,12 +246,18 @@ static int find_device_iter(struct pci_d
+>  				pos + PCI_ERR_UNCOR_MASK,
+>  				&mask);
+>  		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
+> -			e_info->dev = dev;
+> -			return 1;
+> +			add_error_device(e_info, dev);
+> +			goto added;
+>  		}
+>  	}
+>  
+>  	return 0;
+> +
+> +added:
+> +	if (e_info->flags & AER_MULTI_ERROR_VALID_FLAG) {
+> +		return 0;
+> +	} else
+> +		return 1;
 
-p.s.
-Reported :http://bugzilla.kernel.org/show_bug.cgi?id=13522
+checkpatch reports:
+WARNING: braces {} are not necessary for any arm of this statement
+#133: FILE: drivers/pci/pcie/aer/aerdrv_core.c:257:
++	if (e_info->flags & AER_MULTI_ERROR_VALID_FLAG) {
+[...]
++	} else
+[...]
+
+
+>  }
+>  
+>  /**
+> @@ -705,6 +738,30 @@ static int get_device_error_info(struct 
+>  	return AER_SUCCESS;
+>  }
+>  
+> +static inline void aer_process_err_devices(struct pcie_device *p_device,
+> +			struct aer_err_info *e_info)
+> +{
+> +	int i;
+> +
+> +	if (e_info->dev[0] == NULL) {
+Minor not. Can we use 
+          if (!e_info->dev[0]) {
+
+> +		printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+> +				__func__, e_info->id);
+
+I suspect we don't want to embed the function name here, and use
+dev_printk.
+
+> +	}
+> +
+> +	for (i = 0; i < e_info->error_dev_num; i ++) {
+checkpatch reports:
+ERROR: space prohibited before that '++' (ctx:WxB)
+#154: FILE: drivers/pci/pcie/aer/aerdrv_core.c:751:
++	for (i = 0; i < e_info->error_dev_num; i +
+
+
+> +		if (e_info->dev[i] == NULL)
+again		  if (!e_info->dev[i])
+
+You could also put this check in the for loop.
+
+
+> +			break;
+> +
+> +		if (get_device_error_info(e_info->dev[i], e_info) ==
+> +				AER_SUCCESS) {
+> +			aer_print_error(e_info->dev[i], e_info);
+> +			handle_error_source(p_device,
+> +					e_info->dev[i],
+> +					e_info);
+> +		}
+> +	}
+> +}
+> +
+>  /**
+>   * aer_isr_one_error - consume an error detected by root port
+>   * @p_device: pointer to error root port service device
+> @@ -747,18 +804,7 @@ static void aer_isr_one_error(struct pci
+>  			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
+>  
+>  		find_source_device(p_device->port, e_info);
+> -		if (e_info->dev == NULL) {
+> -			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+> -				__func__, e_info->id);
+> -			continue;
+> -		}
+> -		if (get_device_error_info(e_info->dev, e_info) ==
+> -				AER_SUCCESS) {
+> -			aer_print_error(e_info->dev, e_info);
+> -			handle_error_source(p_device,
+> -				e_info->dev,
+> -				e_info);
+> -		}
+> +		aer_process_err_devices(p_device, e_info);
+>  	}
+>  
+>  	kfree(e_info);
+> diff -Nraup linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h
+> --- linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
+> +++ linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:45:15.000000000 +0800
+> @@ -57,8 +57,10 @@ struct header_log_regs {
+>  	unsigned int dw3;
+>  };
+>  
+> +#define AER_MAX_MULTI_ERR_DEVICES	5
+Is this number arbitrary or in the spec somewhere?
+
+
+>  struct aer_err_info {
+> -	struct pci_dev *dev;
+> +	struct pci_dev *dev[AER_MAX_MULTI_ERR_DEVICES];
+> +	int error_dev_num;
+>  	u16 id;
+>  	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
+>  	int flags;
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+-- 
+Andrew Patterson
+Hewlett-Packard
+
