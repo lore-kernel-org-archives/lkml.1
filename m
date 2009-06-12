@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbZFLOZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbZFLO1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762220AbZFLOZl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbZFLOZd
+	id S1764248AbZFLO1G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbZFLO0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:25:33 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:50715 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753325AbZFLOZc (ORCPT
+	Fri, 12 Jun 2009 10:26:54 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:33481 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755100AbZFLO0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:25:32 -0400
-Date: Fri, 12 Jun 2009 10:25:34 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
- [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-In-Reply-To: <200906112143.57361.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906121023010.2915-100000@iolanthe.rowland.org>
+	Fri, 12 Jun 2009 10:26:53 -0400
+Date: Sat, 13 Jun 2009 00:26:45 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] crypto: add optional continuous repetition test to
+	entropy store based rngs
+Message-ID: <20090612142644.GA15644@gondor.apana.org.au>
+References: <20090604195030.GA11300@hmsreliant.think-freely.org> <1244146450.22069.216.camel@calx> <20090605000456.GA10883@localhost.localdomain> <20090605003006.GA5236@gondor.apana.org.au> <20090605014816.GA15462@localhost.localdomain> <20090612142308.GA29341@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090612142308.GA29341@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009, Rafael J. Wysocki wrote:
-
-> > > > It might also be nice to make sure that the driver core autoresumes a 
-> > > > device before probing it and autosuspends a device (after some 
-> > > > reasonable delay) after unbinding its driver.
-> > > 
-> > > Agreed.
+On Fri, Jun 12, 2009 at 10:23:08AM -0400, Neil Horman wrote:
+>
+> > Ok, that seems like a reasonable idea.  new patch below
+> > Change Notes:
 > > 
-> > This is another case where a usage counter comes in handy.  The driver
-> > core resumes the device and increments the counter -- thus preventing
-> > any unwanted autosuspends -- before making the probe and remove calls.
-> 
-> I like this idea.
-> 
-> BTW, where exactly the counter should be increased in that case?
-> 
-> I thought of driver_probe_device(), but is it sufficient?  Or is there a better
-> place?
+> > 1) Moved fips_enabled flag into its own header, included in all the appropriate
+> > places
+> > 
+> > 2) removed flags field from entropy store, keying continuous test on the
+> > non-null status of the last_data pointer
+> > 
+> > 
+> > FIPS-140 requires that all random number generators implement continuous self
+> > tests in which each extracted block of data is compared against the last block
+> > for repetition.  The ansi_cprng implements such a test, but it would be nice if
+> > the hw rng's did the same thing.  Obviously its not something thats always
+> > needed, but it seems like it would be a nice feature to have on occasion. I've
+> > written the below patch which allows individual entropy stores to be flagged as
+> > desiring a continuous test to be run on them as is extracted.  By default this
+> > option is off, but is enabled in the event that fips mode is selected during
+> > bootup.
+> > 
+> > Neil
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > 
+> Ping, I don't see that this got picked up in the crypto tree.  Are there
+> subsequent objections?
 
-That's okay.  Or you could put it in really_probe().  Either one.
+Matt, are you OK with me picking this up or do you want to pick it
+up?
 
-Alan Stern
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
