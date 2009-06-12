@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933740AbZFLKZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbZFLKZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933740AbZFLKZc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbZFLKZW
+	id S1764284AbZFLKZo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbZFLKZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:25:22 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:53482 "EHLO mnementh.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbZFLKZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:25:21 -0400
-Message-ID: <4A322D08.2020807@mnementh.co.uk>
-Date: Fri, 12 Jun 2009 11:25:12 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 12 Jun 2009 06:25:30 -0400
+Received: from firestarter.dermichi.com ([83.64.48.195]:47627 "EHLO
+	firestarter.dermichi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933722AbZFLKZ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 06:25:29 -0400
+X-Greylist: delayed 1699 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 06:25:29 EDT
+Message-ID: <4A32266F.8080607@dermichi.com>
+Date: Fri, 12 Jun 2009 11:57:03 +0200
+From: Michael Weissenbacher <mw@dermichi.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-To: Brian Swetland <swetland@google.com>
-CC: Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, pavel@ucw.cz,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>	<20090611132134.GA11199@atomide.com>	<20090611133736.GP795@n2100.arm.linux.org.uk>	<20090611140038.GB11199@atomide.com>	<20090611140624.GS795@n2100.arm.linux.org.uk>	<alpine.LFD.2.00.0906111314510.31536@xanadu.home>	<4A3175AC.9070100@bluewatersys.com>	<alpine.LFD.2.00.0906112105220.31536@xanadu.home>	<4A31AECA.6070303@bluewatersys.com>	<alpine.LFD.2.00.0906112138090.31536@xanadu.home> <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
-In-Reply-To: <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Felix Blyakher <felixb@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.30: Memory/XFS leak, OOM killer kills many processes
+References: <alpine.DEB.2.00.0906111158470.2563@p34.internal.lan>	<alpine.DEB.2.00.0906111255280.6809@p34.internal.lan>	<4A313F84.20900@sandeen.net>	<96F5FBF8-17B6-4AA9-BAB4-377AF596692C@sgi.com> <alpine.DEB.2.00.0906120420080.26259@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.0906120420080.26259@p34.internal.lan>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Swetland wrote:
->
-> - would having some ifdefs around code using wakelock support be
-> acceptable for the time being?  The wakelock/suspendblock review does
-> seem to be making progress on linux-pm if not super quickly, and I'd
-> rather maintain some ifdefs than maintain two different versions of
-> drivers while it's getting sorted out.
+Hi!
+> 
+> So just goto line ~6086 and add the kmem_free(out); above the return error.
+> 
+> Status:
+> This patch fixes the problem, thanks!
+> 
+Applied here too & fixes the problem. Wow, the fix was provided in <3 hours, kudos to open source.
 
-Personally, I'd say no.
-
-Use git - create a version with them dropped and then you can create a 
-wakelock-dev branch on top of that with your new stuff in, which can be 
-rebased should the underlying branch move on (or get merged with mainline).
-
-Its a problem that wouldnt exist if the original drivers had been 
-submitted long ago...
+Michael
