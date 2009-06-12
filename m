@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763335AbZFLIlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932999AbZFLIlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763335AbZFLIlP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763190AbZFLIk3
+	id S932999AbZFLIlk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932892AbZFLIkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:40:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51388 "EHLO mx2.redhat.com"
+	Fri, 12 Jun 2009 04:40:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51397 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760490AbZFLIk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:40:26 -0400
-Date: Fri, 12 Jun 2009 10:33:49 +0200
+	id S932902AbZFLIkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:40:37 -0400
+Date: Fri, 12 Jun 2009 10:34:03 +0200
 From: Stanislaw Gruszka <sgruszka@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Oleg Nesterov <oleg@redhat.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/2] posix-cpu-timers: random fixes rework -v2
-Message-ID: <20090612103349.456590e5@dhcp-lab-109.englab.brq.redhat.com>
+Subject: [PATCH 1/2] posix-cpu-timers: avoid do_sys_times() races with
+ __exit_signal()
+Message-ID: <20090612103403.2e1d576f@dhcp-lab-109.englab.brq.redhat.com>
 Organization: RedHat
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,13 +27,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two fixes related with posix-cpu-timers
+Protect thread_group_cputime() call by siglock, to avoid possible (but
+to be honest - very improbable) double times accounting of exiting task.
+This is revert of commit 2b5fe6de58276d0b5a7c884d5dbfc300ca47db78
+"thread_group_cputime: move a couple of callsites outside of ->siglock",
+but implementation of thread_group_cputime() was different then.
 
-Things changed in -v2:
-patch 1 - add more exact description what happens 
-patch 2 - fix bug where rcu_read_lock() was used instead of rcu_read_unlock()
+In thread_group_cputime() we loop on all threads within the group to sum 
+they cputimes. After finish loop, we add killed tasks times from tsk->signal.
+If thread (one or more) exit in gap between loop and adding killed tasks
+times, __exit_signal() function add already accounted times to tsk->signal.
 
-Cheers
-Satanislaw
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+---
+ kernel/sys.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/sys.c b/kernel/sys.c
+index e7998cf..0805d08 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -913,8 +913,8 @@ void do_sys_times(struct tms *tms)
+ 	struct task_cputime cputime;
+ 	cputime_t cutime, cstime;
+ 
+-	thread_group_cputime(current, &cputime);
+ 	spin_lock_irq(&current->sighand->siglock);
++	thread_group_cputime(current, &cputime);
+ 	cutime = current->signal->cutime;
+ 	cstime = current->signal->cstime;
+ 	spin_unlock_irq(&current->sighand->siglock);
+-- 
+1.6.0.6
 
