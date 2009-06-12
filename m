@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbZFLJtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932841AbZFLJth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763578AbZFLJtZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbZFLJtQ
+	id S932841AbZFLJth (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbZFLJtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:49:16 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:35867 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753019AbZFLJtQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:49:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=oCD08Z3iGZP//R5rC0Z4rTweZBO3WBHvqm4H726B03BKV2SOthFI1R7ieSsbc1AYw7
-         TccsW1XJAtSSxSg2ieO9UtxAZmA6ztYdrke2ms+MbHA4j0u1GLu5Izs96dATxcO8WKbU
-         l2BPUEheUN9yncIWCZncBJIKWiAKBLBezbz80=
-MIME-Version: 1.0
-In-Reply-To: <20090612091002.GA32052@elte.hu>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
-	 <20090612091002.GA32052@elte.hu>
-Date: Fri, 12 Jun 2009 12:49:17 +0300
-X-Google-Sender-Auth: 0831016c0eb2194f
-Message-ID: <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
-	suspending
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       benh@kernel.crashing.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, torvalds@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Jun 2009 05:49:18 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41499 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754001AbZFLJtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:49:17 -0400
+Date: Fri, 12 Jun 2009 11:49:19 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
+       akpm@linux-foundation.org
+Subject: Re: slab: setup allocators earlier in the boot sequence
+Message-ID: <20090612094918.GH24044@wotan.suse.de>
+References: <20090612075427.GA24044@wotan.suse.de> <1244793592.30512.17.camel@penberg-laptop> <20090612080236.GB24044@wotan.suse.de> <1244793879.30512.19.camel@penberg-laptop> <1244796291.7172.87.camel@pasglop> <84144f020906120149k6cbe5177vef1944d9d216e8b2@mail.gmail.com> <20090612091304.GE24044@wotan.suse.de> <1244798660.7172.102.camel@pasglop> <20090612093046.GG24044@wotan.suse.de> <1244799865.7172.112.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244799865.7172.112.camel@pasglop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 12:10 PM, Ingo Molnar<mingo@elte.hu> wrote:
->> @@ -1548,6 +1548,20 @@ new_slab:
->>               goto load_freelist;
->>       }
->>
->> +     /*
->> +      * Lets not wait if we're booting up or suspending even if the user
->> +      * asks for it.
->> +      */
->> +     if (system_state != SYSTEM_RUNNING)
->> +             gfpflags &= ~__GFP_WAIT;
->
-> Hiding that bug like that is not particularly clean IMO. We should
-> not let system_state hacks spread like that.
->
-> We emit a debug warning but dont crash, so all should be fine and
-> the culprits can then be fixed, right?
+On Fri, Jun 12, 2009 at 07:44:25PM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2009-06-12 at 11:30 +0200, Nick Piggin wrote:
+> > On Fri, Jun 12, 2009 at 07:24:20PM +1000, Benjamin Herrenschmidt wrote:
+> > Yeah but it doesn't do it in the page allocator so it isn't
+> > really useful as a general allocator flags tweak. ATM it only
+> > helps this case of slab allocator hackery.
+> 
+> I though I did it in page_alloc.c too but I'm happy to be told what I
+> missed :-) The intend is certainly do have a general allocator flag
+> tweak.
 
-OK, lets not use system_state then and go with Ben's approach then.
-Again, neither of the patches are about "hiding buggy callers" but
-changing allocation policy wrt. gfp flags during boot (and later on
-during suspend).
+Oh, no I missed that sorry you did. I'd be a bit worried about
+wanting it as a general allocator tweak. Even suspending IO
+for suspend/resume... it would be better to try solving that
+ordering by design and if not then perhaps add something
+to mm/vmscan.c rather than modify gfp flags all the way
+down.
 
-                                 Pekka
+
