@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbZFLBPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763676AbZFLBPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762898AbZFLBPO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 21:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbZFLBPD
+	id S1763676AbZFLBPe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 21:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762877AbZFLBPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 21:15:03 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:56227 "EHLO
-	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756212AbZFLBPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 21:15:01 -0400
-Date: Fri, 12 Jun 2009 11:14:34 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200906120114.n5C1EYNj009715@localhost.localdomain>
-To: torvalds@linux-foundation.org
-Subject: [git pull] m68knommu arch fixes
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
+	Thu, 11 Jun 2009 21:15:11 -0400
+Received: from sh.osrg.net ([192.16.179.4]:36432 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762913AbZFLBPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 21:15:10 -0400
+Date: Fri, 12 Jun 2009 10:14:14 +0900
+To: linux@arm.linux.org.uk
+Cc: bzolnier@gmail.com, joe@perches.com, davem@davemloft.net,
+       swetland@google.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090611164218.GA21128@n2100.arm.linux.org.uk>
+References: <20090611160850.GX795@n2100.arm.linux.org.uk>
+	<200906111837.21944.bzolnier@gmail.com>
+	<20090611164218.GA21128@n2100.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090612101405S.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 12 Jun 2009 10:14:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 11 Jun 2009 17:42:18 +0100
+Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-Hi Linus,
+> On Thu, Jun 11, 2009 at 06:37:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > "No reason given" part was just lovely..
+> > 
+> > After getting a couple of such messages I decided to stay as far away from
+> > linux-arm-kernel list as possible..
+> > 
+> > Before interacting with linux-arm-kernel list I really thought that people
+> > exaggerated the issue and that their complains were unfounded..
+> 
+> I wish people told me about this - it's certainly not my policy nor
+> indeed the policy which should be applied to the list.  I'll find out
+> what's going on when my co-list admin returns from his vacation.
+> 
+> Thanks for bringing it to my attention.
 
-Please pull to get fixes for the m68knommu arch.
 
-Regards
-Greg
+Here's another example that I got (this mail was about a patch that
+touches arm code):
 
+==
+On Tue, 12 May 2009 09:49:58 +0100
+linux-arm-kernel-bounces@lists.arm.linux.org.uk wrote:
 
-
-The following changes since commit 769f3e8c384795cc350e2aae27de2a12374d19d4:
-  Linus Torvalds (1):
-        Merge branch 'printk-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
-
-Greg Ungerer (16):
-      m68knommu: fix system reset for ColdFire 527x family
-      m68knommu: merge system reset for code ColdFire 523x family
-      m68knommu: add CPU reset code for the 5307 ColdFire
-      m68knommu: add CPU reset code for the 5407 ColdFire
-      m68knommu: add CPU reset code for the 5206 ColdFire
-      m68knommu: add CPU reset code for the 5206e ColdFire
-      m68knommu: add CPU reset code for the 5249 ColdFire
-      m68knommu: add CPU reset code for the 532x ColdFire
-      m68knommu: move CPU reset code for the 520x ColdFire into its platform code
-      m68knommu: move CPU reset code for the 523x ColdFire into its platform code
-      m68knommu: move CPU reset code for the 527x ColdFire into its platform code
-      m68knommu: move CPU reset code for the 528x ColdFire into its platform code
-      m68knommu: move CPU reset code for the 5272 ColdFire into its platform code
-      m68knommu: remove obsolete reset code
-      m68knommu: enumerate INIT_THREAD fields properly
-      m68knommu: remove unecessary include of thread_info.h in entry.S
-
-Jaswinder Singh Rajput (1):
-      headers_check fix: m68k, swab.h
-
-Joe Perches (1):
-      arch/m68knommu: Convert #ifdef DEBUG printk(KERN_DEBUG to pr_debug(
-
- arch/m68k/include/asm/m520xsim.h           |    9 +++
- arch/m68k/include/asm/m523xsim.h           |    9 +++
- arch/m68k/include/asm/m527xsim.h           |    9 +++
- arch/m68k/include/asm/m528xsim.h           |    8 ++
- arch/m68k/include/asm/m532xsim.h           |   12 +++
- arch/m68k/include/asm/processor_no.h       |    8 +-
- arch/m68k/include/asm/swab.h               |    2 +-
- arch/m68k/include/asm/system_no.h          |  107 ----------------------------
- arch/m68knommu/kernel/entry.S              |    1 -
- arch/m68knommu/kernel/setup.c              |   16 ++---
- arch/m68knommu/mm/init.c                   |    4 +-
- arch/m68knommu/platform/5206/config.c      |   18 +++--
- arch/m68knommu/platform/5206e/config.c     |   18 +++--
- arch/m68knommu/platform/520x/config.c      |   15 +++--
- arch/m68knommu/platform/523x/config.c      |   14 ++--
- arch/m68knommu/platform/5249/config.c      |   18 +++--
- arch/m68knommu/platform/5272/config.c      |   18 ++++-
- arch/m68knommu/platform/527x/config.c      |   15 +++--
- arch/m68knommu/platform/528x/config.c      |   13 +++-
- arch/m68knommu/platform/5307/config.c      |   16 +++-
- arch/m68knommu/platform/532x/config.c      |   12 +++-
- arch/m68knommu/platform/5407/config.c      |   16 +++-
- arch/m68knommu/platform/coldfire/vectors.c |    7 --
- 23 files changed, 178 insertions(+), 187 deletions(-)
+> Your request to the Linux-arm-kernel mailing list
+> 
+>     Posting of your message titled "Re: [PATCH] remove DMA_nBIT_MASK
+> macro"
+> 
+> has been rejected by the list moderator.  The moderator gave the
+> following reason for rejecting your request:
+> 
+> "Non-members are not allowed to post messages to this list. You have
+> to subscribe before you're allowed to post. "
+> 
+> Any questions or comments should be directed to the list administrator
+> at:
+> 
+>     linux-arm-kernel-owner@lists.arm.linux.org.uk
+> 
+> 
