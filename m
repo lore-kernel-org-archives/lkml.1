@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762545AbZFLXEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZFLXGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762545AbZFLXEl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 19:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZFLXEa
+	id S1755849AbZFLXGr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 19:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZFLXGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 19:04:30 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:38807 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbZFLXE3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 19:04:29 -0400
-Message-ID: <4A32DDC8.7060605@oracle.com>
-Date: Fri, 12 Jun 2009 15:59:20 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 12 Jun 2009 19:06:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60258 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbZFLXGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 19:06:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Sat, 13 Jun 2009 01:06:57 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, dbaryshkov@gmail.com,
-       slapin@ossfans.org, linux-zigbee-devel@lists.sourceforge.net,
-       Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -next] ieee802154: fix kconfig bool/tristate muckup
-References: <20090611191420.1f4d5e4f.sfr@canb.auug.org.au> <4A31869B.3050901@oracle.com>
-In-Reply-To: <4A31869B.3050901@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt003.oracle.com [141.146.116.12]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.4A32DE9D.0133:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200906130106.58464.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Friday 12 June 2009, Alan Stern wrote:
+> On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
+> 
+> > On Friday 12 June 2009, Alan Stern wrote:
+> > > On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > > So, are you suggesting that the core should only check the "all children
+> > > > suspended" condition if special flag is set in dev_pm_info?
+> > > 
+> > > Or rather, check it only if the special flag _isn't_ set.
+> > 
+> > Where the default is unset, I guess?
+> 
+> Yep.
+> 
+> > But then, what about the resuming of the parents before the device is resumed?
+> > Should the parents be resumed regardless of the flag state?
+> 
+> Yes.  In general you should assume a device's parent (and the device
+> itself!) needs to be resumed whenever the kernel wants to do something
+> with the device.  The special flag arises because sometimes it's safe
+> to suspend the parent without suspending the device _if_ the kernel
+> isn't using the device.
+> 
+> Imagine an idle disk at the end of a link.  We might want to 
+> autosuspend the link without spinning down the disk.  When we have to 
+> communicate with the disk again, we autoresume the link.  (Including 
+> the case where the communication is a "spin-down" command.)
+> 
+> >  And if so, what's
+> > the condition for breaking the recurrence?  Surely it's not sufficient to check
+> > if the parent is active, because its parent need not be active if it has this
+> > special flag set.
+> 
+> That's a good question.  Let's assume that situations like this will be 
+> handled by the drivers.
+> 
+> For example, suppose A is the parent of B is the parent of C, and A is
+> suspended but B isn't and C is.  What happens when somebody wants to
+> use C?
+> 
+> An autoresume request is generated for C.  Since C's parent is already
+> resumed, the runtime_resume method in C's driver is called.  The driver
+> has to do some I/O in order to resume C, so it passes an I/O request up
+> to B's driver.  The request then gets passed up to A's driver.  This
+> driver knows that A is suspended, so it starts an autoresume of A and
+> waits for the autoresume to complete before carrying out the request.
+> 
+> Then the I/O can go through, so C gets resumed and everything works 
+> out.
+> 
+> I don't know how often this sort of pattern will arise.  It certainly
+> could be used in usb-storage; there would be no difficulty starting an
+> autoresume when an I/O request arrives from the SCSI layer below.  In
+> fact, that is exactly how some early runtime-PM patches for usb-storage
+> worked.
 
-menuconfig IEEE802154_DRIVERS is a bool that depends on tristate IEEE802154.
-If the IEEE802154 symbol is 'm', the bool becomes 'y'.
-This allows tristate symbols under IEEE802154_DRIVERS to be configured as
-'y' and cause build problems.
-Changing the menuconfig bool to a tristate fixes this.
+So, the conclusion seems to be that we should break the recurrence
+at the point we find an already active device or a device with no parent and
+let the driver(s) handle the more complicated cases.  Is this correct?
 
-drivers/built-in.o: In function `fake_scan_req':
-fakehard.c:(.text+0x46d625): undefined reference to `ieee802154_nl_scan_confirm'
-drivers/built-in.o: In function `fake_disassoc_req':
-fakehard.c:(.text+0x46d66f): undefined reference to `ieee802154_nl_disassoc_confirm'
-drivers/built-in.o: In function `fake_assoc_req':
-fakehard.c:(.text+0x46d6be): undefined reference to `ieee802154_nl_assoc_confirm'
+BTW, is __device_release_driver() the right place for blocking the run-time PM
+temporarily during remove?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-zigbee-devel@lists.sourceforge.net
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Sergey Lapin <slapin@ossfans.org>
----
- drivers/ieee802154/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20090612.orig/drivers/ieee802154/Kconfig
-+++ linux-next-20090612/drivers/ieee802154/Kconfig
-@@ -1,5 +1,5 @@
- menuconfig IEEE802154_DRIVERS
--	bool "IEEE 802.15.4 drivers"
-+	tristate "IEEE 802.15.4 drivers"
- 	depends on NETDEVICES && IEEE802154
- 	default y
- 	---help---
-
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Best,
+Rafael
