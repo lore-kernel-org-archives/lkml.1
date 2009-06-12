@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZFLNCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764235AbZFLNDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbZFLNCw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762689AbZFLM71
+	id S1764235AbZFLNDL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762706AbZFLM72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:59:27 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:59954 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762548AbZFLM7W (ORCPT
+	Fri, 12 Jun 2009 08:59:28 -0400
+Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:12010
+	"EHLO WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1762378AbZFLM7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Jun 2009 08:59:22 -0400
-X-SpamScore: -3
-X-BigFish: VPS-3(zz655Nzz1202hzzz32i17ch43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KL4MQM-03-HW5-01
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i17ch43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KL4MQH-03-HVY-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 12/23] x86/oprofile: fix and cleanup CTRL_SET_* macros
-Date: Fri, 12 Jun 2009 14:35:29 +0200
-Message-ID: <1244810140-20595-13-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 04/23] oprofile: remove irq_flags in struct op_entry
+Date: Fri, 12 Jun 2009 14:35:21 +0200
+Message-ID: <1244810140-20595-5-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
 References: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 12 Jun 2009 12:59:06.0998 (UTC) FILETIME=[91F49160:01C9EB5D]
+X-OriginalArrivalTime: 12 Jun 2009 12:59:05.0670 (UTC) FILETIME=[9129EE60:01C9EB5D]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes missing braces around macro parameters. Macro
-definitions from intel_arch_perfmon.h are used where possible.
+This became obsolete with this commit:
+
+ 304cc6a ring_buffer: remove unused flags parameter, fix
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/op_model_ppro.c |    1 -
- arch/x86/oprofile/op_x86_model.h  |   18 ++++++++++--------
- 2 files changed, 10 insertions(+), 9 deletions(-)
+ include/linux/oprofile.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index 6c5d288..61ee8f6 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -18,7 +18,6 @@
- #include <asm/msr.h>
- #include <asm/apic.h>
- #include <asm/nmi.h>
--#include <asm/intel_arch_perfmon.h>
- 
- #include "op_x86_model.h"
- #include "op_counter.h"
-diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
-index c80ec7d..a207b1c 100644
---- a/arch/x86/oprofile/op_x86_model.h
-+++ b/arch/x86/oprofile/op_x86_model.h
-@@ -11,14 +11,16 @@
- #ifndef OP_X86_MODEL_H
- #define OP_X86_MODEL_H
- 
--#define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
--#define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
--#define CTRL_SET_ACTIVE(n) (n |= (1<<22))
--#define CTRL_SET_ENABLE(val) (val |= 1<<20)
--#define CTRL_SET_INACTIVE(n) (n &= ~(1<<22))
--#define CTRL_SET_KERN(val, k) (val |= ((k & 1) << 17))
--#define CTRL_SET_UM(val, m) (val |= (m << 8))
--#define CTRL_SET_USR(val, u) (val |= ((u & 1) << 16))
-+#include <asm/intel_arch_perfmon.h>
-+
-+#define CTR_IS_RESERVED(msrs, c)	((msrs)->counters[(c)].addr ? 1 : 0)
-+#define CTRL_IS_RESERVED(msrs, c)	((msrs)->controls[(c)].addr ? 1 : 0)
-+#define CTRL_SET_ACTIVE(val)		((val) |= ARCH_PERFMON_EVENTSEL0_ENABLE)
-+#define CTRL_SET_ENABLE(val)		((val) |= ARCH_PERFMON_EVENTSEL_INT)
-+#define CTRL_SET_INACTIVE(val)		((val) &= ~ARCH_PERFMON_EVENTSEL0_ENABLE)
-+#define CTRL_SET_KERN(val, k)		((val) |= ((k) ? ARCH_PERFMON_EVENTSEL_OS : 0))
-+#define CTRL_SET_USR(val, u)		((val) |= ((u) ? ARCH_PERFMON_EVENTSEL_USR : 0))
-+#define CTRL_SET_UM(val, m)		((val) |= ((m) << 8))
- 
- struct op_saved_msr {
- 	unsigned int high;
+diff --git a/include/linux/oprofile.h b/include/linux/oprofile.h
+index 1d9518b..dbbe2db 100644
+--- a/include/linux/oprofile.h
++++ b/include/linux/oprofile.h
+@@ -171,7 +171,6 @@ struct op_sample;
+ struct op_entry {
+ 	struct ring_buffer_event *event;
+ 	struct op_sample *sample;
+-	unsigned long irq_flags;
+ 	unsigned long size;
+ 	unsigned long *data;
+ };
 -- 
 1.6.3.1
 
