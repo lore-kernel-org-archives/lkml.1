@@ -1,96 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764323AbZFLKs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbZFLKvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764323AbZFLKs1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763571AbZFLKsO
+	id S1756239AbZFLKvL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZFLKu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:48:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49311 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762806AbZFLKsM (ORCPT
+	Fri, 12 Jun 2009 06:50:58 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56413 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZFLKu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:48:12 -0400
-Date: Fri, 12 Jun 2009 12:56:10 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] [RFC] HWPOISON incremental fixes
-Message-ID: <20090612105610.GK25568@one.firstfloor.org>
-References: <20090611142239.192891591@intel.com>
-Mime-Version: 1.0
+	Fri, 12 Jun 2009 06:50:57 -0400
+Date: Fri, 12 Jun 2009 12:50:49 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Magnus Damm <damm@igel.co.jp>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Sergio Luis <sergio@larces.uece.br>,
+       Lauro Salmito <laurosalmito@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [PATCH 07/19] x86: unify power/cpu_(32|64).c
+Message-ID: <20090612105049.GI18682@elf.ucw.cz>
+References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl> <S4AoGnG.A.DG.2cYMKB@chimera>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090611142239.192891591@intel.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <S4AoGnG.A.DG.2cYMKB@chimera>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 10:22:39PM +0800, Wu Fengguang wrote:
-> Hi all,
+On Thu 2009-06-11 22:35:11, Rafael J. Wysocki wrote:
+> From: Sergio Luis <sergio@larces.uece.br>
 > 
-> Here are the hwpoison fixes that aims to address Nick and Hugh's concerns.
-> Note that
-> - the early kill option is dropped for .31. It's obscure option and complex
->   code and is not must have for .31. Maybe Andi also aims this option for
->   notifying KVM, but right now KVM is not ready to handle that.
-
-KVM is ready to handle it, patches for that have been submitted and
-are queued.
-
-Also without early kill it's not really possible right now to recover
-in the guest. Also for some other scenarios early kill is much easier
-to handle than late kill: for late kill you always have to bail
-out of your current execution context, while early kill that can be 
-done out of line (e.g. by just dropping a corrupted object similar to 
-what the kernel does). That's a much nicer and gentle model than late
-kill.
-
-Of course very few programs will try to handle this, but if any does
-it's better to make it easier for them. 
-
-That we send too many signals in a few cases is not fatal right now
-I think. Remember always the alternative is to die completely.
-
-So please don't drop that code right now.
+> This is the last unification step. Here we do remove one of the files
+> and rename the left one as cpu.c, as both are now the same.
+> Also update power/Makefile, telling it to build cpu.o, instead of
+> cpu_(32|64).o
+> 
+> Signed-off-by: Sergio Luis <sergio@larces.uece.br>
+> Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
 
-> - It seems that even fsync() processes are not easy to catch, so I abandoned
->   the SIGKILL on fsync() idea. Instead, I choose to fail any attempt to
->   populate the poisoned file with new pages, so that the corrupted page offset
->   won't be repopulated with outdated data. This seems to be a safe way to allow
->   the process to continue running while still be able to promise good (but not
->   complete) data consistency.
+> +#ifdef CONFIG_X86_32
+> +	store_gdt(&ctxt->gdt);
+> +	store_idt(&ctxt->idt);
+> +#else
+> +/* CONFIG_X86_64 */
+> +	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
+> +	store_idt((struct desc_ptr *)&ctxt->idt_limit);
+> +#endif
 
-The fsync() error reporting is already broken anyways, even without hwpoison,
-for metadata errors which also only rely on the address space bit and not the
-page and run into all the same problems.
+I'd slightly prefer /* CONFIG_X86_64 */ to be moved to line above, or
+dropped at all. it seems unneccessarily verbose.
 
-I don't think we need to be better here than normal metadata.
 
-Possibly if metadata can be fixed then hwpoison will be fixed too in the
-same pass. But that's something longer term.
+> +	store_tr(ctxt->tr);
+> +
+> +	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
+> +	/*
+> +	 * segment registers
+> +	 */
+> +#ifdef CONFIG_X86_32
+> +	savesegment(es, ctxt->es);
+> +	savesegment(fs, ctxt->fs);
+> +	savesegment(gs, ctxt->gs);
+> +	savesegment(ss, ctxt->ss);
+> +#else
+> +/* CONFIG_X86_64 */
+> +	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
+> +	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
+> +	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
+> +	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
+> +	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
+> +
+> +	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
+> +	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
+> +	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
+> +	mtrr_save_fixed_ranges(NULL);
+> +
+> +	rdmsrl(MSR_EFER, ctxt->efer);
+> +#endif
 
-> - I didn't implement the PANIC-on-corrupted-data option. Instead, I guess
->   sending uevent notification to user space will be a more flexible scheme?
+Can i386's mtrr_save_fixed_ranges() be moved to similar place?
 
-Normally you can get very aggressive panics by setting the x86 mce tolerant 
-modus to 0 (default is 1); i suspect that will be good enough.
+> +	/*
+> +	 * control registers
+> +	 */
+> +	ctxt->cr0 = read_cr0();
+> +	ctxt->cr2 = read_cr2();
+> +	ctxt->cr3 = read_cr3();
+> +#ifdef CONFIG_X86_32
+> +	ctxt->cr4 = read_cr4_safe();
+> +#else
+> +/* CONFIG_X86_64 */
+> +	ctxt->cr4 = read_cr4();
+> +	ctxt->cr8 = read_cr8();
+> +#endif
 
-If other architectures add hwpoison support presumably they can add
-a similar tunable.
+Could we use read_cr4_safe on x86-64, too? Why the difference?
 
-Doing that in the low level handler is better than in the high level
-VM because there are some corruption cases which are not reported
-to high level (e.g. not affecting memory directly)
+Should we be saving cr8 on 32-bit machines that have it? (That was
+interrupt priority, IIRC?)
 
--Andi
+> +	/* cr4 was introduced in the Pentium CPU */
+> +#ifdef CONFIG_X86_32
+> +	if (ctxt->cr4)
+> +		write_cr4(ctxt->cr4);
+> +#else
 
+Aha, is read_cr4_safe() needed because i486 does not have cr4?
+
+									Pavel
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
