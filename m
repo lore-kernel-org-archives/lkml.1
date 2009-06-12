@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764178AbZFLKZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933740AbZFLKZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764178AbZFLKZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZFLKYw
+	id S933740AbZFLKZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbZFLKZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:24:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38438 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbZFLKYv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:24:51 -0400
-Date: Fri, 12 Jun 2009 12:32:51 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
-Cc: "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Lee.Schermerhorn@hp.com, linux-numa@vger.kernel.org,
-       Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
-       "'Brice Goglin'" <Brice.Goglin@inria.fr>
-Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-Message-ID: <20090612103251.GJ25568@one.firstfloor.org>
-References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de> <87zldjn597.fsf@basil.nowhere.org> <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 12 Jun 2009 06:25:22 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:53482 "EHLO mnementh.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751740AbZFLKZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 06:25:21 -0400
+Message-ID: <4A322D08.2020807@mnementh.co.uk>
+Date: Fri, 12 Jun 2009 11:25:12 +0100
+From: Ian Molton <ian@mnementh.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Brian Swetland <swetland@google.com>
+CC: Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, pavel@ucw.cz,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+References: <20090611111821.GK795@n2100.arm.linux.org.uk>	<20090611132134.GA11199@atomide.com>	<20090611133736.GP795@n2100.arm.linux.org.uk>	<20090611140038.GB11199@atomide.com>	<20090611140624.GS795@n2100.arm.linux.org.uk>	<alpine.LFD.2.00.0906111314510.31536@xanadu.home>	<4A3175AC.9070100@bluewatersys.com>	<alpine.LFD.2.00.0906112105220.31536@xanadu.home>	<4A31AECA.6070303@bluewatersys.com>	<alpine.LFD.2.00.0906112138090.31536@xanadu.home> <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
+In-Reply-To: <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 08:45:29PM +0200, Stefan Lankes wrote:
-> > Your patches seem to have a lot of overlap with
-> > Lee Schermerhorn's old migrate memory on cpu migration patches.
-> > I don't know the status of those.
-> 
-> I analyze Lee Schermerhorn's migrate memory on cpu migration patches
-> (http://free.linux.hp.com/~lts/Patches/PageMigration/). I think that Lee
-> Schermerhorn add similar functionalities to the kernel. He called the
-> "affinity-on-next-touch" functionality "migrate_on_fault" and uses in his
-> patches the normal NUMA memory policies. Therefore, his solution fits better
-> to the Linux kernel. I tested his patches with our test applications and got
-> nearly the same performance results. 
+Brian Swetland wrote:
+>
+> - would having some ifdefs around code using wakelock support be
+> acceptable for the time being?  The wakelock/suspendblock review does
+> seem to be making progress on linux-pm if not super quickly, and I'd
+> rather maintain some ifdefs than maintain two different versions of
+> drivers while it's getting sorted out.
 
-That's great to know.
+Personally, I'd say no.
 
-I didn't think he had a per process setting though, did he?
+Use git - create a version with them dropped and then you can create a 
+wakelock-dev branch on top of that with your new stuff in, which can be 
+rebased should the underlying branch move on (or get merged with mainline).
 
-> I found only patches for the kernel 2.6.25-rc2-mm1. Does someone develop
-> these patches further?
-
-Not to much knowledge. Maybe Lee will pick them up again now that there
-are more use cases.
-
-If he doesn't have time maybe you could update them?
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Its a problem that wouldnt exist if the original drivers had been 
+submitted long ago...
