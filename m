@@ -1,128 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbZFLLEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbZFLLFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbZFLLEd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZFLLEZ
+	id S1760565AbZFLLFX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZFLLFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:04:25 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48692 "EHLO gir.skynet.ie"
+	Fri, 12 Jun 2009 07:05:10 -0400
+Received: from mga09.intel.com ([134.134.136.24]:49419 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751816AbZFLLEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:04:25 -0400
-Date: Fri, 12 Jun 2009 12:04:24 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, riel@redhat.com, cl@linux-foundation.org,
-       fengguang.wu@intel.com, linuxram@us.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring
-	behaviour more in line with expectations V3
-Message-ID: <20090612110424.GD14498@csn.ul.ie>
-References: <1244717273-15176-1-git-send-email-mel@csn.ul.ie> <20090611163006.e985639f.akpm@linux-foundation.org>
+	id S1755192AbZFLLFI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:05:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,209,1243839600"; 
+   d="scan'208";a="523893179"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-tip-commits@vger.kernel.org" 
+	<linux-tip-commits@vger.kernel.org>
+Date: Fri, 12 Jun 2009 12:04:49 +0100
+Subject: RE: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch
+	trace support"
+Thread-Topic: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch
+	trace support"
+Thread-Index: Acnq3W9qc0zQykQwSmmmONQ+SHjnNgAbXFZg
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EBBC65961@irsmsx504.ger.corp.intel.com>
+References: <tip-511b01bdf64ad8a38414096eab283c7784aebfc4@git.kernel.org>
+ <928CFBE8E7CB0040959E56B4EA41A77EBBC6544B@irsmsx504.ger.corp.intel.com>
+ <1244702183.6691.8.camel@laptop> <20090611102159.GA31719@elte.hu>
+ <928CFBE8E7CB0040959E56B4EA41A77EBBC6555D@irsmsx504.ger.corp.intel.com>
+ <20090611214124.GA4133@elte.hu>
+In-Reply-To: <20090611214124.GA4133@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090611163006.e985639f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 04:30:06PM -0700, Andrew Morton wrote:
-> On Thu, 11 Jun 2009 11:47:50 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > The big change with this release is that the patch reintroducing
-> > zone_reclaim_interval has been dropped as Ram reports the malloc() stalls
-> > have been resolved. If this bug occurs again, the counter will be there to
-> > help us identify the situation.
-> 
-> What is the exact relationship between this work and the somewhat
-> mangled "[PATCH for mmotm 0/5] introduce swap-backed-file-mapped count
-> and fix
-> vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch"
-> series?
-> 
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Thursday, June 11, 2009 11:41 PM
+>To: Metzger, Markus T
+>Cc: Peter Zijlstra; linux-kernel@vger.kernel.org; mingo@redhat.com; hpa@zytor.com; oleg@redhat.com;
+>tglx@linutronix.de; linux-tip-commits@vger.kernel.org
+>Subject: Re: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch trace support"
+>
+>
+>* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+>
+>> >-----Original Message-----
+>> >From: Ingo Molnar [mailto:mingo@elte.hu]
+>> >Sent: Thursday, June 11, 2009 12:22 PM
+>> >To: Peter Zijlstra
+>> >Cc: Metzger, Markus T; linux-kernel@vger.kernel.org; mingo@redhat.com; hpa@zytor.com;
+>oleg@redhat.com;
+>> >tglx@linutronix.de; linux-tip-commits@vger.kernel.org
+>> >Subject: Re: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch trace support"
+>> >
+>> >
+>> >* Peter Zijlstra <peterz@infradead.org> wrote:
+>> >
+>> >> On Thu, 2009-06-11 at 07:30 +0100, Metzger, Markus T wrote:
+>> >> > >-----Original Message-----
+>> >> > >From: tip-bot for Ingo Molnar [mailto:mingo@elte.hu]
+>> >> > >Sent: Thursday, June 11, 2009 1:37 AM
+>> >> > >To: linux-tip-commits@vger.kernel.org
+>> >> > >Cc: hpa@zytor.com; mingo@redhat.com; peterz@infradead.org; Metzger, Markus T; oleg@redhat.com;
+>> >> > >tglx@linutronix.de; mingo@elte.hu
+>> >> > >Subject: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch trace support"
+>> >> > >
+>> >> > >Commit-ID:  511b01bdf64ad8a38414096eab283c7784aebfc4
+>> >> > >Gitweb:     http://git.kernel.org/tip/511b01bdf64ad8a38414096eab283c7784aebfc4
+>> >> > >Author:     Ingo Molnar <mingo@elte.hu>
+>> >> > >AuthorDate: Thu, 11 Jun 2009 00:32:00 +0200
+>> >> > >Committer:  Ingo Molnar <mingo@elte.hu>
+>> >> > >CommitDate: Thu, 11 Jun 2009 00:32:00 +0200
+>> >> > >
+>> >> > >Revert "x86, bts: reenable ptrace branch trace support"
+>> >> > >
+>> >> > >This reverts commit 7e0bfad24d85de7cf2202a7b0ce51de11a077b21.
+>> >> > >
+>> >> > >A late objection to the ABI has arrived:
+>> >> > >
+>> >> > >   http://lkml.org/lkml/2009/6/10/253
+>> >> >
+>> >> > I thought that this has been resolved. See for example http://lkml.org/lkml/2009/6/10/257.
+>> >> >
+>> >> > Peters concerns were that Debug Store details are exposed to user space, which is
+>> >> > not the case. Debug Store itself is fully in-kernel and the expectation of a
+>> >> > user-defined buffer can be implemented on top of the Debug Store changes that
+>> >> > Peter expects are needed to support PEBS.
+>> >> >
+>> >> > A user-defined trace buffer size is required to support
+>> >> > different usage models. Some users only need a small amount of
+>> >> > trace, whereas others need a big amount. The interface will have
+>> >> > to reflect that in some way.
+>> >>
+>> >> Right, your last email did explain how we could keep per task
+>> >> in-kernel buffers and fill them from the DS and still have them of
+>> >> user-specified size.
+>> >>
+>> >> That would indeed keep the proposed ABI workable, what I'm still
+>> >> not liking is that this buffer is in-kernel, but I guess that
+>> >> might be something for other people to have an opinion on.
+>> >
+>> > Hm. Wrt. the ABI, wouldnt it make more sense to expose this PMU
+>> > feature via perfcounters: a sampling hw-branch-executions
+>> > counter, with interval=1.
+>> >
+>> > That would give the exact existing semantics, plus a lot lot
+>> > more. Markus?
+>>
+>> What more would we get?
+>
+>There's numerous direct functionality advantages:
+>
+> - We will get all the sampling features of perfcounters such as
+>   timed samples, CPU ID samples. Some will be approximate (timing),
+>   some precise (CPU ID).
+>
+> - We will get the advanced workflow isolation features: we could
+>   sample on a per CPU basis (system-wide BTS), and we could sample
+>   child tasks automatically. The current code is limited to a
+>   single task.
+>
+> - We will sample other types of information into the same outgoing
+>   event buffer: for example branch-miss events, intermixed with BTS
+>   records. This could help not just the narrow purpose of
+>   debugging, but also the purpose of performance analysis.
+>
+> - There's a rich and fast/efficient VFS based APIs to wait for
+>   event overflows: poll(), read(), mmap().
+>
+> - Remote sampling via perfcounters is transparent, while ptrace
+>   sampling can be seen by apps.
+>
+>There's maintenance advantages as well from the x86 architecture and
+>scheduler maintenance point of view:
+>
+> - We would have a single facility handling the Debug Store, and
+>   we'd have almost all pieces in place for PEBS support in
+>   perfcounters as well so there's good synergy.
 
-The patch series "Fix malloc() stall in zone_reclaim() and bring
-behaviour more in line with expectations V3" replaces
-vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch.
+I'm not exactly sure what you are proposing.
 
-Portions of the patch series "Introduce swap-backed-file-mapped count" are
-potentially follow-on work if a failure case can be identified. The series
-brings the kernel behaviour more in line with documentation, but it's easier
-to fix the documentation.
+There currently is a single facility handling Debug Store which is used
+by perfmon for PEBS sampling and by BTS for branch tracing. The ptrace
+interface is a thin layer that allows debuggers to easily access the
+part that is relevant for them.
 
-> That five-patch series had me thinking that it was time to drop 
-> 
-> vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
 
-This patch gets replaced. All the lessons in the new patch are included.
-They could be merged together.
+Are you proposing a single abstraction of sampling and branch tracing events
+using records of different sizes in one big stream?
 
-> vmscan-drop-pf_swapwrite-from-zone_reclaim.patch
+regards,
+markus.
 
-This patch is wrong, but only sortof. It should be dropped or replaced with
-another version. Kosaki, could you resubmit this patch except that you check
-if RECLAIM_SWAP is set in zone_reclaim_mode when deciding whether to set
-PF_SWAPWRITE or not please?
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-Your patch is correct if zone_reclaim_mode 1, but incorrect if it's 7 for
-example.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-> vmscan-zone_reclaim-use-may_swap.patch
-> 
-
-This is a tricky one. Kosaki, I think this patch is a little dangerous. With
-this applied, pages get unmapped whether RECLAIM_SWAP is set or not. This
-means that zone_reclaim() now has more work to do when it's enabled and it
-incurs a number of minor faults for no reason as a result of trying to avoid
-going off-node. I don't believe that is desirable because it would manifest
-as high minor fault counts on NUMA and would be difficult to pin down why
-that was happening.
-
-I think the code makes more sense than the documentation and it's the
-documentation that should be fixed. Our current behaviour is to discard
-clean, swap-backed, unmapped pages that require no further IO. This is
-reasonable behaviour for zone_reclaim_mode == 1 so maybe the patch
-should change the documentation to
-
-        1       = Zone reclaim discards clean unmapped disk-backed pages
-        2       = Zone reclaim writes dirty pages out
-        4       = Zone reclaim unmaps and swaps pages
-
-If you really wanted to strict about the meaning of RECLAIM_SWAP, then
-something like the following would be reasonable;
-
-	.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
-	.may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
-
-because a system administrator is not going to distinguish between
-unmapping and swap. I would assume at least that RECLAIM_SWAP implies
-unmapping pages for swapping but an updated documentation wouldn't hurt
-with
-
-	4       = Zone reclaim unmaps and swaps pages
-
-> (they can be removed cleanly, but I haven't tried compiling the result)
-> 
-> but your series is based on those.
-> 
-
-The patchset only depends on
-vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
-and then only because of merge conflicts. All the lessons in
-vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch are
-incorporated.
-
-> We have 142 MM patches queued, and we need to merge next week.
-> 
-
-I'm sorry my timing for coming out with the zone_reclaim() patches sucks
-and that I failed to spot these patches earlier. Despite the abundance
-of evidence, I'm not trying to be deliberatly awkward :/
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
