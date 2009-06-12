@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760554AbZFLDVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932211AbZFLDWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760554AbZFLDVa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 23:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZFLDVW
+	id S932211AbZFLDWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 23:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZFLDWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 23:21:22 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:30629 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbZFLDVV (ORCPT
+	Thu, 11 Jun 2009 23:22:07 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:49036 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751611AbZFLDWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 23:21:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GLWCTD0pTZm2yiLlWZzWgKJzzSX3OMoOiMtu3KSbhtgvZiKmp8oITqFcKTcVwrfpuV
-         HiYRncflAqN38Y+1jrzN6wUEWtknqQSY5yXHz+BAVlt3TQKowFq6H0LPax51UZ70rKz0
-         TXvjoLWDR1evqwKONav+CYQ2x5WXandTPKyJU=
+	Thu, 11 Jun 2009 23:22:06 -0400
+Message-ID: <4A31C9D6.7070707@davidnewall.com>
+Date: Fri, 12 Jun 2009 12:51:58 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-In-Reply-To: <200906111108.40785.oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
-	 <200906101029.27529.rjw@sisk.pl>
-	 <aec7e5c30906102218j2f8f38dbt5d05a3928ca46c15@mail.gmail.com>
-	 <200906111108.40785.oliver@neukum.org>
-Date: Fri, 12 Jun 2009 12:13:12 +0900
-Message-ID: <aec7e5c30906112013q2d2827feh54192d518156f203@mail.gmail.com>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: 
-	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm@lists.linux-foundation.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+References: <20090611160329.GA3366@elte.hu>  <20090611161714.GA5008@infradead.org>  <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain>  <20090611165226.GV8633@ZenIV.linux.org.uk>  <1244739378.6691.540.camel@laptop>  <20090611170015.GA3651@infradead.org>  <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <84144f020906111059g6e25a090y4434cfd698f84fb4@mail.gmail.com> <4A3148AA.9000007@davidnewall.com> <alpine.LFD.2.01.0906111120100.3573@localhost.localdomain> <4A314F37.2080202@davidnewall.com> <alpine.LFD.2.01.0906111142390.3573@localhost.localdomain> <4A3155E3.3030603@davidnewall.com> <alpine.LFD.2.01.0906111223250.3573@localhost.localdomain> <alpine.LFD.2.01.0906111226130.3573@localhost.localdomain> <4A315C9F.8050908@davidnewall.com> <alpine.LFD.2.01.0906111247270.3535@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906111247270.3535@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oliver,
-
-On Thu, Jun 11, 2009 at 6:08 PM, Oliver Neukum<oliver@neukum.org> wrote:
-> Am Donnerstag, 11. Juni 2009 07:18:46 schrieb Magnus Damm:
->> 3) When all devices in the power domain are suspended the bus code can
->> turn off the power. The reason why I'd like to only autosuspend when
+Linus Torvalds wrote:
+> On Fri, 12 Jun 2009, David Newall wrote:
+>> Linus Torvalds wrote:
+>>     
+>>> To take the oprofile example that decided it for me: the code to actually 
+>>> support new processors was all done by basically kernel developers. And it 
+>>> didn't hit user land for almost a year, because the user-land tools didn't 
+>>> take the patch and propagate it up.
+>>>       
+>> Bad developer, Spot, you only did half the job. Not sure there's much
+>> more one can say.
+>>     
 >
-> So you are saying that you have power dependencies independent
-> of the device tree?
+> Umm. The kernel developer _did_ do the job. The patch to the user land 
+> side was available for that whole year.
 
-I can think of the following power dependencies:
-- hardware bus topology
-- clocks
-- power domains
+I don't know this oprofile problem you had, only what you've said, which
+is that somebody* did the kernel bit and somebody else did the userspace
+bit; and the person doing the userspace bit was unresponsive so good
+stuff got ignored for a year. That situation did not occur because the
+userspace was out-of-tree, it occurred because you let it. You could
+have given the userspace (back) to the kernel developer. That's what
+you'd eventually do if a kernel sub-system maintainer became
+unresponsive, isn't it?
 
->> all devices are idle is simply that we don't get any power savings
->> from the per device autosuspend() callbacks, only from turning off
->> power to the entire per-domain. So bindly autosuspending and
->> autoresuming devices is just pure overhead unless we know we can do it
->> for all devices in the domain.
->
-> Why can't you do this within the framework? You simply suspend when
-> all a domain's devices have been autosuspended.
+*the singular is intended to include the plural and the male to include
+female.
 
-So you mean I should handle that in my arch/bus specific
-dev->bus->pm->autosuspend() code? So instead of calling
-dev->driver->pm->autosuspend() straight away I keep track of the use
-count of the power domain and when the domain is unused I call
-dev->driver->pm->autosuspend() for all devices in the power domain
-before powering off?
 
-I guess hooking in things in dev->bus->pm->autosuspend() is doable,
-but then dev->power.runtime_status will be set to RPM_SUSPENDED even
-though the actual device isn't suspended at all. And RPM_IDLE state
-will be more or less unused since the drivers should pass a delay of
-zero to make sure the bus code gets notified about the idle state
-straight away.
+> Anyway, it's clearly not worth discussing this with you. I've tried. I 
+> give up. Happily, I don't _need_ to convince you.
 
-Basically, for my use case it would make more sense to let the
-bus_type directly decide when a device should be suspended instead of
-using a timeout before calling the bus_type code. I rather let the
-bus_type decide if a timeout should be used or not instead of using it
-for all bus_types.
-
-So I guess the plan is that drivers directly should invoke
-pm_request_suspend() to notify the bus that they are idle? (I guess
-similar to my platform_device_idle()?)
-
-For my use case there is no point in having the delay in
-pm_request_suspend(), we want to notify the bus about the per-device
-idleness straight away. Using a delay in pm_request_suspend() before
-calling the bus type autosuspend will just keep the current per-device
-state away from the bus level and make sure we _cannot_ enter deep
-sleep states. Which I believe will result in worse battery life
-because we spend more time than necessary in not-so-deep sleep states.
-
-So yes, I'd like to do things in dev->bus->pm->autosuspend(), and the
-code is quite close. I can't figure out why anyone would want the
-suspend delay at the current level though, but I guess other busses
-want to use that?
-
-Thanks for your comments,
-
-/ magnus
+Indeed, no, you don't need to convince me, particularly as I've made it
+abundantly clear that I'm entirely happy with your decision. Notice I've
+not argued with you, merely pointed out inconsistencies in what you've
+said. I realise that can be annoying, and acknowledge your absolute
+right to be as consistent or inconsistent as you choose. I wasn't (and
+still aren't) trying to be annoying, but to confirm there was no
+confusion. If you hadn't seen these inconsistencies before, you surely
+do now. That actually should be worth your while. I personally welcome
+being corrected; andconsider that a trait of an open mind.
