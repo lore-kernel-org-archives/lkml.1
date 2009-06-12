@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbZFLUL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbZFLUVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbZFLUL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 16:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZFLULR
+	id S1759653AbZFLUVd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 16:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZFLUVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 16:11:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:21149 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751613AbZFLULQ (ORCPT
+	Fri, 12 Jun 2009 16:21:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53252 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754282AbZFLUVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 16:11:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=d/eW8l9R+HDGtQCJ6dK9P/AeJZvYsJpwZmpYR9kovHhv9+3TMzsViga7g556/f9hpj
-         njqg1zYBfICo0xquCTJmgBq5Az25kheNr9CBlzGfmD4RsJiz3rYWJgKfiJqK75waWE14
-         qYq5JiX+OzJ1ocLFo52ck/UvRC3VTu/FPBePw=
-Date: Sat, 13 Jun 2009 00:11:17 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because
-	there's no local APIC
-Message-ID: <20090612201117.GA29923@lenovo>
-References: <4A329CF8.4050502@goop.org>
+	Fri, 12 Jun 2009 16:21:23 -0400
+Date: Fri, 12 Jun 2009 13:19:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Lauro Salmito <laurosalmito@gmail.com>, Magnus Damm <damm@igel.co.jp>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Sergio Luis <sergio@larces.uece.br>
+Subject: Re: [GIT PULL] PM updates for 2.6.31
+In-Reply-To: <200906122202.08345.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.01.0906121317320.3237@localhost.localdomain>
+References: <200906122202.08345.rjw@sisk.pl>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A329CF8.4050502@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jeremy Fitzhardinge - Fri, Jun 12, 2009 at 11:22:48AM -0700]
-> Parse the ACPI MADT for I/O APIC information, even if the cpu has no
-> (apparent) local APIC (ie, the CPU's APIC feature flag is clear).
->
-> In principle, the local APIC and the I/O APIC are distinct (but related)
-> components, which can be independently present.
->
-> In practice this can happen in a Xen system, where the hypervisor has
-> full control over the local APICs, and delivers interrupts initiated by
-> the I/O APICs via Xen's event channel mechanism.
->
-> (This eliminates the need for any explicit if (xen...) tests in
-> acpi/boot.c)
->
-> Signed-off-by: Jeremy Fitzhardinge<jeremy.fitzhardinge@citrix.com>
->
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index 2410469..19d13e5 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -193,9 +193,6 @@ static int __init acpi_parse_madt(struct acpi_table_header *table)
->  {
->  	struct acpi_table_madt *madt = NULL;
->
-> -	if (!cpu_has_apic)
-> -		return -EINVAL;
-> -
 
-Hi Jeremy,
 
-just for the record -- this removement has a side effect.
-Imagine I've passed "disableapic" so I expect as many as
-possible apic-related code would not pass thru execution.
-Now we would have (say for IBM Summit)
+On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
 
-acpi_parse_madt
-  default_acpi_madt_oem_check
-    summit_acpi_madt_oem_check
-      mark_tsc_unstable
-      setup_summit
+> Hi Linus,
+> 
+> Please pull power management updates for 2.6.31 from:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+> 
+> They are cleanups and code rearrangements mostly, in particular:
+> 
+> * arch/x86/power/cpu_(32|64) unification from Sergio Luis (Ingo saw
+>   these patches and his opinion was that they should better go
+>   through the suspend tree)
+> 
+> * Removal of some unused files and PM callbacks, function renames
+>   from Magnus Damm and Alan Stern
+> 
+> * Rearrangements of the code under kernel/power from me and
+>   Cornelia Huck
+> 
+> * Two patches related to the memory shrinking (for the record, Pavel
+>   doesn't like the "PM/Suspend: Do not shrink memory before suspend"
+>   patch, so please let me know if I should drop it)
+> 
+> * A couple of bug fixes
+> 
+> 
+>  arch/x86/power/cpu.c             |  259 +++++++++++
+>  arch/x86/power/cpu_32.c          |  148 ------
+>  arch/x86/power/cpu_64.c          |  174 -------
+>  kernel/power/disk.c              |  955 --------------------------------------
+>  kernel/power/hibernate.c         |  955 ++++++++++++++++++++++++++++++++++++++
+>  kernel/power/hibernate_nvs.c     |  135 ++++++
+>  35 files changed, 2056 insertions(+), 2194 deletions(-)
 
-Dunno if it harmless or no but it changes kernel behaviour.
-cpu_has_apic cleared if disableapic option (which is early
-param) passed to kernel.
+Please add rename detection to your pull script (and --summary, for that 
+matter). This _should_ have looked like
 
-Just a note. Didn't walk thru all ways.
+ 33 files changed, 984 insertions(+), 1122 deletions(-)
 
-	-- Cyrill
+because it would have detected this:
+
+ rename arch/x86/power/{cpu_64.c => cpu.c} (62%)
+ delete mode 100644 arch/x86/power/cpu_32.c
+ rename kernel/power/{disk.c => hibernate.c} (96%)
+
+instead of counting those as some huge patches that add/remove code.
+
+		Linus
