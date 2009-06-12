@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763061AbZFLJVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763205AbZFLJWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763061AbZFLJVT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760427AbZFLJVJ
+	id S1763205AbZFLJWE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZFLJVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:21:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50812 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759622AbZFLJVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:21:08 -0400
-Date: Fri, 12 Jun 2009 11:20:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, paulus@samba.org,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: origin tree build failure
-Message-ID: <20090612092054.GB32052@elte.hu>
-References: <20090612102427.32582baa.sfr@canb.auug.org.au> <1244768406.7172.1.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244768406.7172.1.camel@pasglop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 12 Jun 2009 05:21:54 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50349 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755568AbZFLJVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:21:54 -0400
+Subject: Possible memory leak via tty_ldisc_try_get
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 12 Jun 2009 10:21:48 +0100
+Message-Id: <1244798508.26670.20.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Jun 2009 09:21:49.0414 (UTC) FILETIME=[36F32060:01C9EB3F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alan,
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+I noticed you pushed some changes to drivers/char/tty_ldisc.c recently.
+I now get about 12 kmemleak reports like below (on an ARM platform):
 
-> On Fri, 2009-06-12 at 10:24 +1000, Stephen Rothwell wrote:
-> 
-> > From: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Date: Fri, 12 Jun 2009 10:14:22 +1000
-> > Subject: [PATCH] perfcounters: remove powerpc definitions of perf_counter_do_pending
-> > 
-> > Commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
-> > unify and fix delayed counter wakeup") added global definitions.
-> > 
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+kmemleak: unreferenced object 0xdfaffd60 (size 32):
+  comm "init", pid 1, jiffies 4294937946
+  backtrace:
+    [<c007b8fc>] kmemleak_alloc+0x14c/0x260
+    [<c0079624>] kmem_cache_alloc+0x90/0x98
+    [<c0147428>] tty_ldisc_try_get+0x14/0xac
+    [<c01475a4>] tty_ldisc_get+0x18/0x40
+    [<c0147850>] tty_ldisc_reinit+0x28/0x5c
+    [<c01478ac>] tty_ldisc_release+0x28/0x3c
+    [<c0143450>] tty_release_dev+0x3cc/0x428
+    [<c01434b8>] tty_release+0xc/0x14
+    [<c007eb60>] __fput+0x104/0x1c4
+    [<c007bb48>] filp_close+0x70/0x7c
+    [<c007bbc8>] sys_close+0x74/0xa8
+    [<c0022dc0>] ret_fast_syscall+0x0/0x2c
+    [<ffffffff>] 0xffffffff
 
-Ah - thanks. The bug was caused by me being a bit too optimistic in 
-applying the shiny-new Power7 support patches on the last day. (nice 
-CPU btw.)
+Could you please check whether the code is leaking memory? Let me know
+if you need more information.
 
-> Linus, please apply. BTW, This is _EXACTLY_ why this should have 
-> been in -next for a few days before being merged :-(
+Thanks.
 
-Not really: for example current upstream is build-broken on x86 due 
-to an integration artifact via the kmemleak tree - despite it having 
-been in linux-next for months.
+-- 
+Catalin
 
-Paulus was building and booting powerpc on a daily basis and i ran 
-cross-builds as well.
-
-Such bugs happen, and they are easy enough to fix. What matters 
-arent the 1-2 short-lived bugs that do happen when a new combination 
-of trees is created, but the long-lived combination bugs and 
-conflicts.
-
-	Ingo
