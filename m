@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934582AbZFLWz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762545AbZFLXEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934582AbZFLWz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZFLWzN
+	id S1762545AbZFLXEl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 19:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZFLXEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:55:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57705 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbZFLWzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:55:12 -0400
-Date: Fri, 12 Jun 2009 15:45:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/87] 2.6.29-stable review
-Message-ID: <20090612224556.GA9051@suse.de>
-References: <20090609094451.GA26439@kroah.com> <b637ec0b0906121211v515833c9l8a7856b4a463d63d@mail.gmail.com>
+	Fri, 12 Jun 2009 19:04:30 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:38807 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbZFLXE3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 19:04:29 -0400
+Message-ID: <4A32DDC8.7060605@oracle.com>
+Date: Fri, 12 Jun 2009 15:59:20 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b637ec0b0906121211v515833c9l8a7856b4a463d63d@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: David Miller <davem@davemloft.net>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, dbaryshkov@gmail.com,
+       slapin@ossfans.org, linux-zigbee-devel@lists.sourceforge.net,
+       Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -next] ieee802154: fix kconfig bool/tristate muckup
+References: <20090611191420.1f4d5e4f.sfr@canb.auug.org.au> <4A31869B.3050901@oracle.com>
+In-Reply-To: <4A31869B.3050901@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A32DE9D.0133:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 09:11:29PM +0200, Fabio Comolli wrote:
-> Hi Greg.
-> 
-> On Tue, Jun 9, 2009 at 11:44 AM, Greg KH<gregkh@suse.de> wrote:
-> >
-> > This is the start of the stable review cycle for the 2.6.29.5 release.
-> > There are 87 patches in this series, all will be posted as a response to
-> > this one.  If anyone has any issues with these being applied, please let
-> > us know.  If anyone is a maintainer of the proper subsystem, and wants
-> > to add a Signed-off-by: line to the patch, please respond with it.
-> >
-> > These patches are sent out with a number of different people on the Cc:
-> > line.  If you wish to be a reviewer, please email stable@kernel.org to
-> > add your name to the list.  If you want to be off the reviewer list,
-> > also email us.
-> >
-> > Responses should be made by June 11 09:00:00 UTC.  Anything received
-> > after that time might be too late.
-> 
-> Are there any problems with this release?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-No, sorry, am traveling at the moment, and didn't have the chance to get
-this out yesterday due to other obligations.  Give me another day or so
-to get it out.
+menuconfig IEEE802154_DRIVERS is a bool that depends on tristate IEEE802154.
+If the IEEE802154 symbol is 'm', the bool becomes 'y'.
+This allows tristate symbols under IEEE802154_DRIVERS to be configured as
+'y' and cause build problems.
+Changing the menuconfig bool to a tristate fixes this.
 
-thanks for your patience,
+drivers/built-in.o: In function `fake_scan_req':
+fakehard.c:(.text+0x46d625): undefined reference to `ieee802154_nl_scan_confirm'
+drivers/built-in.o: In function `fake_disassoc_req':
+fakehard.c:(.text+0x46d66f): undefined reference to `ieee802154_nl_disassoc_confirm'
+drivers/built-in.o: In function `fake_assoc_req':
+fakehard.c:(.text+0x46d6be): undefined reference to `ieee802154_nl_assoc_confirm'
 
-greg k-h
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-zigbee-devel@lists.sourceforge.net
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Sergey Lapin <slapin@ossfans.org>
+---
+ drivers/ieee802154/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next-20090612.orig/drivers/ieee802154/Kconfig
++++ linux-next-20090612/drivers/ieee802154/Kconfig
+@@ -1,5 +1,5 @@
+ menuconfig IEEE802154_DRIVERS
+-	bool "IEEE 802.15.4 drivers"
++	tristate "IEEE 802.15.4 drivers"
+ 	depends on NETDEVICES && IEEE802154
+ 	default y
+ 	---help---
+
+
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
