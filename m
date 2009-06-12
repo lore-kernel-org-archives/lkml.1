@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbZFLPzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760245AbZFLP47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762997AbZFLPzA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757774AbZFLPyw
+	id S1760245AbZFLP47 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbZFLP4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:54:52 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:51349 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754275AbZFLPyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:54:51 -0400
-Cc: Eric Sandeen <sandeen@sandeen.net>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Message-Id: <1FF0104F-7D97-4A6A-B80E-E7EE511AA916@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-In-Reply-To: <alpine.DEB.2.00.0906120420080.26259@p34.internal.lan>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: Kernel 2.6.30: Memory/XFS leak, OOM killer kills many processes
-Date: Fri, 12 Jun 2009 10:54:53 -0500
-References: <alpine.DEB.2.00.0906111158470.2563@p34.internal.lan> <alpine.DEB.2.00.0906111255280.6809@p34.internal.lan> <4A313F84.20900@sandeen.net> <96F5FBF8-17B6-4AA9-BAB4-377AF596692C@sgi.com> <alpine.DEB.2.00.0906120420080.26259@p34.internal.lan>
-X-Mailer: Apple Mail (2.926)
+	Fri, 12 Jun 2009 11:56:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54709 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751697AbZFLP4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 11:56:50 -0400
+Date: Fri, 12 Jun 2009 17:56:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open
+	when supported
+Message-ID: <20090612155641.GB26644@elte.hu>
+References: <20090612121757.GD31845@elte.hu> <8bd0f97a0906120522v51ae0151i48d5f6846ddcff10@mail.gmail.com> <20090612123152.GE31845@elte.hu> <8bd0f97a0906120541x739b7902pe40ff7aa91337bac@mail.gmail.com> <20090612125941.GI31845@elte.hu> <8bd0f97a0906120604o1e90ac93l469e86173224364e@mail.gmail.com> <20090612130949.GJ31845@elte.hu> <8bd0f97a0906120621o609d7489v83cd3efc0102412d@mail.gmail.com> <20090612135603.GF32105@elte.hu> <20090612162529.2fc4d863@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090612162529.2fc4d863@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 12, 2009, at 3:37 AM, Justin Piszcz wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
->
->
-> On Thu, 11 Jun 2009, Felix Blyakher wrote:
->
->>
->> On Jun 11, 2009, at 12:31 PM, Eric Sandeen wrote:
->>
->>> Justin Piszcz wrote:
->>>> On Thu, 11 Jun 2009, Justin Piszcz wrote:
->> The following should fix it:
->>
->> diff --git a/fs/xfs/xfs_bmap.c b/fs/xfs/xfs_bmap.c
->> index 4b0f6ef..7928b99 100644
->> --- a/fs/xfs/xfs_bmap.c
->> +++ b/fs/xfs/xfs_bmap.c
->> @@ -6086,6 +6086,7 @@ xfs_getbmap(
->>                     break;
->>     }
->>
->> +       kmem_free(out);
->>     return error;
->> }
->>
->>
->> Felix
->
-> Just FYI if anyone tries to run the patch it will not work:
->
-> # patch -p1 < ../xfs.patch patching file fs/xfs/xfs_bmap.c
-> patch: **** malformed patch at line 11: }
+> > > On Fri, Jun 12, 2009 at 09:09, Ingo Molnar wrote:
+> > > > * Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > > >> On Fri, Jun 12, 2009 at 08:59, Ingo Molnar wrote:
+> > > >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > > >> >> On Fri, Jun 12, 2009 at 08:31, Ingo Molnar wrote:
+> > > >> >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > > >> >> >> On Fri, Jun 12, 2009 at 08:17, Ingo Molnar wrote:
+> > > >> >> >> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > > >> >> >> >> On Fri, Jun 12, 2009 at 08:05, Ingo Molnar wrote:
+> > > >> >> >> >> > * Mike Frysinger <vapier@gentoo.org> wrote:
+> >
+> 
+> > Anyway, i have no time to teach you about kernel mainteinance basics 
+> > really so i probably wont follow up on future emails.
+> 
+> So yet again you resort to personal attacks when someone objects to the
+> world according to Ingo. [...]
 
-Must have been copy-and-paste problem. The real one is good :)
+You snipped out the proper context. The thing i object to above was 
+a technically completely unacceptable solution proposed by Mike:
 
-> So just goto line ~6086 and add the kmem_free(out); above the return  
-> error.
->
-> Status:
-> This patch fixes the problem, thanks!
+|  #ifndef __NR_perf_counter_open
+|  # error sorry, your arch has not hooked up perf_counter_open syscall yet
+|  #endif
+|
+| is completely unacceptable. We dont propagate build failures via 
+| user-enable config options, we never did. There's a lot of people 
+| doing randconfig builds - if it randomly failed due to your 'fix' 
+| that would upset a lot of testing for no good reason.
 
-Thanks for reporting and verifying the fix!
-It's ready now for the linux-next in the official xfs repo,
-going upstream with the pull request later today and then be
-ready for inclusion in 2.6.30.
+and that opinion still holds. (If you disagree then go try to push 
+such a solution upstream, and please share with me the various 
+replies you will get, it will be an entertaining read.)
 
-Felix
+Mike made valid technical points later on though and i replied to 
+them and accepted most of them. We can certainly annotate out that 
+warning message from scripts/checksyscalls.sh.
 
->
->
-> Justin.
->
-
+	Ingo
