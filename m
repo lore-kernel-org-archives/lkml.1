@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934089AbZFLTJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZFLTLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934089AbZFLTJL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 15:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZFLTI7
+	id S932998AbZFLTLh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 15:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757536AbZFLTL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 15:08:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59422 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752417AbZFLTI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 15:08:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Fri, 12 Jun 2009 21:09:34 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Oliver Neukum <oliver@neukum.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906121027300.2915-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906121027300.2915-100000@iolanthe.rowland.org>
+	Fri, 12 Jun 2009 15:11:29 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:53407 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757520AbZFLTL2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 15:11:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=T3947ETvjQX9z6M9F/M4qdZ5FjNEJ2Le36MDt0ICvldmEz1zUjkGPxkTYNXiexgDh1
+         Yn0bVugyWbcCbl5zj+NkrITzDqFYn74SB1AfHaTLN+GLHg+KUvRR7ZnODFlsvxZIOj89
+         jy5xCem2H6Y9nmWfdlHYKAvQsAn1FFwWnlVsc=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906122109.35589.rjw@sisk.pl>
+In-Reply-To: <20090609094451.GA26439@kroah.com>
+References: <20090609094451.GA26439@kroah.com>
+Date: Fri, 12 Jun 2009 21:11:29 +0200
+Message-ID: <b637ec0b0906121211v515833c9l8a7856b4a463d63d@mail.gmail.com>
+Subject: Re: [patch 00/87] 2.6.29-stable review
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 June 2009, Alan Stern wrote:
-> On Fri, 12 Jun 2009, Oliver Neukum wrote:
-> 
-> > Am Freitag, 12. Juni 2009 04:16:10 schrieb Alan Stern:
-> > > What tree constraint?  You mean that the PM core shouldn't allow
-> > > devices to suspend unless all their children are suspended?  Why
-> > > doesn't it still apply?
-> > 
-> > Because the hardware doesn't need it.
-> 
-> But maybe drivers need it.
-> 
-> > > Remember, when Rafael and I say "suspend" here, we don't mean "go to a
-> > > low-power state".  We mean "the PM core calls the runtime_suspend
-> > > method".  No matter what actions the link hardware may decide to take
-> > > on its own, the PM core will still want to observe the
-> > > all-children-suspended restriction when calling runtime_suspend
-> > > methods.
-> > 
-> > No. The core if it insists all children be suspended will not use
-> > the hardware's full capabilities.
-> 
-> That isn't what I said.  The core does not insist that all children be 
-> suspended, i.e., be in a low-power state.  It insists only that the 
-> children's drivers' runtime_suspend methods have been called.  Those 
-> methods are not obligated to put the children in a low-power state.
-> 
-> > If it leaves such power saving measures to the drivers, latency
-> > accounting will be wrong.
-> > 
-> > > > I think there are devices who can be suspended while children are active
-> > > > and devices which can not be. This is an attribute of the device and
-> > > > should be evaluated by the core.
-> > >
-> > > Clearly it should be decided by the driver.  Should there be a bit for
-> > > it in the dev_pm_info structure?
-> > 
-> > Yes.
-> 
-> That would resolve the issue.
+Hi Greg.
 
-So, are you suggesting that the core should only check the "all children
-suspended" condition if special flag is set in dev_pm_info?
+On Tue, Jun 9, 2009 at 11:44 AM, Greg KH<gregkh@suse.de> wrote:
+>
+> This is the start of the stable review cycle for the 2.6.29.5 release.
+> There are 87 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
+>
+> These patches are sent out with a number of different people on the Cc:
+> line.  If you wish to be a reviewer, please email stable@kernel.org to
+> add your name to the list.  If you want to be off the reviewer list,
+> also email us.
+>
+> Responses should be made by June 11 09:00:00 UTC.  Anything received
+> after that time might be too late.
 
-Best,
-Rafael
+Are there any problems with this release?
+
+>
+> The whole patch series can be found in one patch at:
+>        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.29.5-rc1.gz
+> and the diffstat can be found below.
+>
+>
+> thanks,
+>
+> greg k-h
+>
+>
+
+Regards,
+Fabio
