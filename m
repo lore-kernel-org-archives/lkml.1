@@ -1,241 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZFLEF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZFLEGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbZFLEF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 00:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZFLEFS
+	id S1752667AbZFLEGX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 00:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZFLEGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 00:05:18 -0400
-Received: from vms173007pub.verizon.net ([206.46.173.7]:63425 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115AbZFLEFQ (ORCPT
+	Fri, 12 Jun 2009 00:06:15 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33964 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbZFLEGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 00:05:16 -0400
-Date: Fri, 12 Jun 2009 00:05:13 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: x86@kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH] ACPI, PCI, x86: move MCFG parsing routine from ACPI to PCI file
-Message-id: <alpine.LFD.2.00.0906120002540.4350@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Jun 2009 00:06:15 -0400
+Date: Fri, 12 Jun 2009 05:05:58 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Marcel Holtmann <marcel@holtmann.org>, Ingo Molnar <mingo@elte.hu>,
+       Martin Bligh <mbligh@google.com>, Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+Message-ID: <20090612040558.GD8633@ZenIV.linux.org.uk>
+References: <1244753357.27363.82.camel@violet> <20090611210810.GA9317@uranus.ravnborg.org> <1244755036.27363.93.camel@violet> <20090611212635.GA9446@uranus.ravnborg.org> <4A3182C6.803@gmail.com> <alpine.LFD.2.01.0906111521210.3535@localhost.localdomain> <20090611231952.GX8633@ZenIV.linux.org.uk> <alpine.LFD.2.01.0906111624320.3237@localhost.localdomain> <20090612002634.GY8633@ZenIV.linux.org.uk> <alpine.LFD.2.01.0906111955120.3237@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906111955120.3237@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Thu, Jun 11, 2009 at 07:58:37PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 12 Jun 2009, Al Viro wrote:
+> > 
+> > So could you please clarify the situation?  If the ABI compatibility
+> > requirements remain the same as they used to be, whether the userland code
+> > is in-tree or not, I'm fine with the entire thing.  If they do not (and *ONLY*
+> > in that case), I think we have a real problem.
+> 
+> I think the ABI requirements are the same.
 
-Move acpi_parse_mcfg() from
-arch/x86/kernel/acpi/boot.c to arch/x86/pci/mmconfig-shared.c
-make it static, and re-name it to be pci_parse_mcfg().
+OK, then.
 
-Move associated globals and helper routine with it.
+> That said, I also suspect that as with oprofile itself, we'll end up 
+> having expansions of the ABI that may well be CPU-specific. I also suspect 
+> that there will probably be breakage early on just because things will 
+> inevitably settle. 
+> 
+> And I think that for something like a profiling tool, such breakage is 
+> much more acceptable than for the actual binaries you'd profile. It's not 
+> like we're talking about breaking the boot or functionality of a machine, 
+> as happens when we break the X server (which has happened).
 
-No functional change.
-
-This code move is in preparation for SFI support,
-which will allow the PCI code to find the MCFG table
-on systems which do not support ACPI.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/pci_x86.h |    3 ++
- arch/x86/kernel/acpi/boot.c    |   66 ----------------------------------------
- arch/x86/pci/mmconfig-shared.c |   65 ++++++++++++++++++++++++++++++++++++++-
- include/linux/acpi.h           |    3 --
- 4 files changed, 67 insertions(+), 70 deletions(-)
-
-diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
-index e60fd3e..b399988 100644
---- a/arch/x86/include/asm/pci_x86.h
-+++ b/arch/x86/include/asm/pci_x86.h
-@@ -121,6 +121,9 @@ extern int __init pcibios_init(void);
- extern int __init pci_mmcfg_arch_init(void);
- extern void __init pci_mmcfg_arch_free(void);
- 
-+extern struct acpi_mcfg_allocation *pci_mmcfg_config;
-+extern int pci_mmcfg_config_num;
-+
- /*
-  * AMD Fam10h CPUs are buggy, and cannot access MMIO config space
-  * on their northbrige except through the * %eax register. As such, you MUST
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 723989d..160439c 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -121,72 +121,6 @@ void __init __acpi_unmap_table(char *map, unsigned long size)
- 	early_iounmap(map, size);
- }
- 
--#ifdef CONFIG_PCI_MMCONFIG
--
--static int acpi_mcfg_64bit_base_addr __initdata = FALSE;
--
--/* The physical address of the MMCONFIG aperture.  Set from ACPI tables. */
--struct acpi_mcfg_allocation *pci_mmcfg_config;
--int pci_mmcfg_config_num;
--
--static int __init acpi_mcfg_oem_check(struct acpi_table_mcfg *mcfg)
--{
--	if (!strcmp(mcfg->header.oem_id, "SGI"))
--		acpi_mcfg_64bit_base_addr = TRUE;
--
--	return 0;
--}
--
--int __init acpi_parse_mcfg(struct acpi_table_header *header)
--{
--	struct acpi_table_mcfg *mcfg;
--	unsigned long i;
--	int config_size;
--
--	if (!header)
--		return -EINVAL;
--
--	mcfg = (struct acpi_table_mcfg *)header;
--
--	/* how many config structures do we have */
--	pci_mmcfg_config_num = 0;
--	i = header->length - sizeof(struct acpi_table_mcfg);
--	while (i >= sizeof(struct acpi_mcfg_allocation)) {
--		++pci_mmcfg_config_num;
--		i -= sizeof(struct acpi_mcfg_allocation);
--	};
--	if (pci_mmcfg_config_num == 0) {
--		printk(KERN_ERR PREFIX "MMCONFIG has no entries\n");
--		return -ENODEV;
--	}
--
--	config_size = pci_mmcfg_config_num * sizeof(*pci_mmcfg_config);
--	pci_mmcfg_config = kmalloc(config_size, GFP_KERNEL);
--	if (!pci_mmcfg_config) {
--		printk(KERN_WARNING PREFIX
--		       "No memory for MCFG config tables\n");
--		return -ENOMEM;
--	}
--
--	memcpy(pci_mmcfg_config, &mcfg[1], config_size);
--
--	acpi_mcfg_oem_check(mcfg);
--
--	for (i = 0; i < pci_mmcfg_config_num; ++i) {
--		if ((pci_mmcfg_config[i].address > 0xFFFFFFFF) &&
--		    !acpi_mcfg_64bit_base_addr) {
--			printk(KERN_ERR PREFIX
--			       "MMCONFIG not in low 4GB of memory\n");
--			kfree(pci_mmcfg_config);
--			pci_mmcfg_config_num = 0;
--			return -ENODEV;
--		}
--	}
--
--	return 0;
--}
--#endif				/* CONFIG_PCI_MMCONFIG */
--
- #ifdef CONFIG_X86_LOCAL_APIC
- static int __init acpi_parse_madt(struct acpi_table_header *table)
- {
-diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
-index 8766b0e..712443e 100644
---- a/arch/x86/pci/mmconfig-shared.c
-+++ b/arch/x86/pci/mmconfig-shared.c
-@@ -523,6 +523,69 @@ reject:
- 
- static int __initdata known_bridge;
- 
-+static int acpi_mcfg_64bit_base_addr __initdata = FALSE;
-+
-+/* The physical address of the MMCONFIG aperture.  Set from ACPI tables. */
-+struct acpi_mcfg_allocation *pci_mmcfg_config;
-+int pci_mmcfg_config_num;
-+
-+static int __init acpi_mcfg_oem_check(struct acpi_table_mcfg *mcfg)
-+{
-+	if (!strcmp(mcfg->header.oem_id, "SGI"))
-+		acpi_mcfg_64bit_base_addr = TRUE;
-+
-+	return 0;
-+}
-+
-+static int __init pci_parse_mcfg(struct acpi_table_header *header)
-+{
-+	struct acpi_table_mcfg *mcfg;
-+	unsigned long i;
-+	int config_size;
-+
-+	if (!header)
-+		return -EINVAL;
-+
-+	mcfg = (struct acpi_table_mcfg *)header;
-+
-+	/* how many config structures do we have */
-+	pci_mmcfg_config_num = 0;
-+	i = header->length - sizeof(struct acpi_table_mcfg);
-+	while (i >= sizeof(struct acpi_mcfg_allocation)) {
-+		++pci_mmcfg_config_num;
-+		i -= sizeof(struct acpi_mcfg_allocation);
-+	};
-+	if (pci_mmcfg_config_num == 0) {
-+		printk(KERN_ERR PREFIX "MMCONFIG has no entries\n");
-+		return -ENODEV;
-+	}
-+
-+	config_size = pci_mmcfg_config_num * sizeof(*pci_mmcfg_config);
-+	pci_mmcfg_config = kmalloc(config_size, GFP_KERNEL);
-+	if (!pci_mmcfg_config) {
-+		printk(KERN_WARNING PREFIX
-+		       "No memory for MCFG config tables\n");
-+		return -ENOMEM;
-+	}
-+
-+	memcpy(pci_mmcfg_config, &mcfg[1], config_size);
-+
-+	acpi_mcfg_oem_check(mcfg);
-+
-+	for (i = 0; i < pci_mmcfg_config_num; ++i) {
-+		if ((pci_mmcfg_config[i].address > 0xFFFFFFFF) &&
-+		    !acpi_mcfg_64bit_base_addr) {
-+			printk(KERN_ERR PREFIX
-+			       "MMCONFIG not in low 4GB of memory\n");
-+			kfree(pci_mmcfg_config);
-+			pci_mmcfg_config_num = 0;
-+			return -ENODEV;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static void __init __pci_mmcfg_init(int early)
- {
- 	/* MMCONFIG disabled */
-@@ -543,7 +606,7 @@ static void __init __pci_mmcfg_init(int early)
- 	}
- 
- 	if (!known_bridge)
--		acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
-+		acpi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
- 
- 	pci_mmcfg_reject_broken(early);
- 
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 88be890..73cb141 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -113,9 +113,6 @@ void acpi_irq_stats_init(void);
- extern u32 acpi_irq_handled;
- extern u32 acpi_irq_not_handled;
- 
--extern struct acpi_mcfg_allocation *pci_mmcfg_config;
--extern int pci_mmcfg_config_num;
--
- extern int sbf_port;
- extern unsigned long acpi_realmode_flags;
- 
--- 
-1.6.0.6
-
+Sure.
