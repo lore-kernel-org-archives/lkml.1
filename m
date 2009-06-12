@@ -1,67 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbZFLJBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbZFLJDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763459AbZFLJBA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbZFLJAw
+	id S933100AbZFLJDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759032AbZFLJDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:00:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40275 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754019AbZFLJAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:00:52 -0400
-Date: Fri, 12 Jun 2009 11:00:54 +0200 (CEST)
-From: Jiri Kosina <trivial@kernel.org>
-X-X-Sender: jkosina@wotan.suse.de
-To: Markus Heidelberg <markus.heidelberg@web.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trivial: remove the trivial patch monkey's name from
- SubmittingPatches
-In-Reply-To: <1244761355-1099-1-git-send-email-markus.heidelberg@web.de>
-Message-ID: <alpine.LNX.2.00.0906121100380.7457@wotan.suse.de>
-References: <1244761355-1099-1-git-send-email-markus.heidelberg@web.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Jun 2009 05:03:22 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36984 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758488AbZFLJDV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:03:21 -0400
+Date: Fri, 12 Jun 2009 12:03:22 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       npiggin@suse.de, benh@kernel.crashing.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, torvalds@linux-foundation.org
+Subject: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or suspending
+In-Reply-To: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Markus Heidelberg wrote:
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> It is outdated here and can be found in the MAINTAINERS file. Also
-> remove the URL of the previous maintainer, similar content can be found
-> in the SubmittingPatches file.
-> 
-> Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
-> ---
->  Documentation/SubmittingPatches |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
-> index f309d3c..9534311 100644
-> --- a/Documentation/SubmittingPatches
-> +++ b/Documentation/SubmittingPatches
-> @@ -183,8 +183,9 @@ Even if the maintainer did not respond in step #4, make sure to ALWAYS
->  copy the maintainer when you change their code.
->  
->  For small patches you may want to CC the Trivial Patch Monkey
-> -trivial@kernel.org managed by Jesper Juhl; which collects "trivial"
-> -patches. Trivial patches must qualify for one of the following rules:
-> +trivial@kernel.org which collects "trivial" patches. Have a look
-> +into the MAINTAINERS file for its current manager.
-> +Trivial patches must qualify for one of the following rules:
->   Spelling fixes in documentation
->   Spelling fixes which could break grep(1)
->   Warning fixes (cluttering with useless warnings is bad)
-> @@ -196,7 +197,6 @@ patches. Trivial patches must qualify for one of the following rules:
->   since people copy, as long as it's trivial)
->   Any fix by the author/maintainer of the file (ie. patch monkey
->   in re-transmission mode)
-> -URL: <http://www.kernel.org/pub/linux/kernel/people/juhl/trivial/>
+As explained by Benjamin Herrenschmidt:
 
-Applied, thanks Markus.
+  Oh and btw, your patch alone doesn't fix powerpc, because it's missing
+  a whole bunch of GFP_KERNEL's in the arch code... You would have to
+  grep the entire kernel for things that check slab_is_available() and
+  even then you'll be missing some.
 
+  For example, slab_is_available() didn't always exist, and so in the
+  early days on powerpc, we used a mem_init_done global that is set form
+  mem_init() (not perfect but works in practice). And we still have code
+  using that to do the test.
+
+Therefore, ignore __GFP_WAIT in the slab allocators if we're booting or
+suspending.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+v1 -> v2: fix up some missing cases pointed out by BenH
+
+ mm/slab.c |   19 ++++++++++++++++++-
+ mm/slub.c |   24 ++++++++++++++++++++++--
+ 2 files changed, 40 insertions(+), 3 deletions(-)
+
+diff --git a/mm/slab.c b/mm/slab.c
+index f46b65d..5119c22 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2812,6 +2812,15 @@ static int cache_grow(struct kmem_cache *cachep,
+ 
+ 	offset *= cachep->colour_off;
+ 
++	/*
++	 * Lets not wait if we're booting up or suspending even if the user
++	 * asks for it.
++	 */
++	if (system_state != SYSTEM_RUNNING)
++		local_flags &= ~__GFP_WAIT;
++
++	might_sleep_if(local_flags & __GFP_WAIT);
++
+ 	if (local_flags & __GFP_WAIT)
+ 		local_irq_enable();
+ 
+@@ -3073,7 +3082,6 @@ alloc_done:
+ static inline void cache_alloc_debugcheck_before(struct kmem_cache *cachep,
+ 						gfp_t flags)
+ {
+-	might_sleep_if(flags & __GFP_WAIT);
+ #if DEBUG
+ 	kmem_flagcheck(cachep, flags);
+ #endif
+@@ -3238,6 +3246,15 @@ retry:
+ 
+ 	if (!obj) {
+ 		/*
++		 * Lets not wait if we're booting up or suspending even if the user
++		 * asks for it.
++		 */
++		if (system_state != SYSTEM_RUNNING)
++			local_flags &= ~__GFP_WAIT;
++
++		might_sleep_if(local_flags & __GFP_WAIT);
++
++		/*
+ 		 * This allocation will be performed within the constraints
+ 		 * of the current cpuset / memory policy requirements.
+ 		 * We may trigger various forms of reclaim on the allowed
+diff --git a/mm/slub.c b/mm/slub.c
+index 3964d3c..6387c19 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1548,6 +1548,20 @@ new_slab:
+ 		goto load_freelist;
+ 	}
+ 
++	/*
++	 * Lets not wait if we're booting up or suspending even if the user
++	 * asks for it.
++	 */
++	if (system_state != SYSTEM_RUNNING)
++		gfpflags &= ~__GFP_WAIT;
++
++	/*
++	 * Now that we really know whether or not we're going to sleep or not,
++	 * lets do our debugging checks.
++	 */
++	lockdep_trace_alloc(gfpflags);
++	might_sleep_if(gfpflags & __GFP_WAIT);
++
+ 	if (gfpflags & __GFP_WAIT)
+ 		local_irq_enable();
+ 
+@@ -1595,8 +1609,7 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+ 	unsigned long flags;
+ 	unsigned int objsize;
+ 
+-	lockdep_trace_alloc(gfpflags);
+-	might_sleep_if(gfpflags & __GFP_WAIT);
++	lockdep_trace_alloc(gfpflags & ~__GFP_WAIT);
+ 
+ 	if (should_failslab(s->objsize, gfpflags))
+ 		return NULL;
+@@ -2607,6 +2620,13 @@ static noinline struct kmem_cache *dma_kmalloc_cache(int index, gfp_t flags)
+ 	if (s)
+ 		return s;
+ 
++	/*
++	 * Lets not wait if we're booting up or suspending even if the user
++	 * asks for it.
++	 */
++	if (system_state != SYSTEM_RUNNING)
++		flags &= ~__GFP_WAIT;
++
+ 	/* Dynamically create dma cache */
+ 	if (flags & __GFP_WAIT)
+ 		down_write(&slub_lock);
 -- 
-Jiri Kosina
-SUSE Labs
+1.6.0.4
 
