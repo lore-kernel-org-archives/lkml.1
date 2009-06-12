@@ -1,104 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbZFLNAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbZFLNAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753699AbZFLNAW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762320AbZFLM7E
+	id S1755505AbZFLNAr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762311AbZFLM7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:59:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:34413 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762226AbZFLM7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:59:02 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] lguest -- Now including PAE support!
-Date: Fri, 12 Jun 2009 22:28:59 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Matias Zabaljauregui <zabaljauregui@gmail.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Mark McLoughlin <markmc@redhat.com>, Roel Kluin <roel.kluin@gmail.com>
+	Fri, 12 Jun 2009 08:59:14 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:59404 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761824AbZFLM7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 08:59:12 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i17ch61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KL4MQE-01-LYJ-01
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Robert Richter <robert.richter@amd.com>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: [PATCH 02/23] x86/oprofile: moving arch_perfmon counter setup to op_x86_model_spec.init
+Date: Fri, 12 Jun 2009 14:35:19 +0200
+Message-ID: <1244810140-20595-3-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
+References: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
+X-OriginalArrivalTime: 12 Jun 2009 12:59:05.0389 (UTC) FILETIME=[90FF0DD0:01C9EB5D]
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906122229.00073.rusty@rustcorp.com.au>
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(The odd files are a couple of exports: eventfd_signal/eventfd_fget and
- kick_process.  All GPL-only).
+The function arch_perfmon_init() in nmi_int.c is model specific. This
+patch moves it to op_model_ppro.c by using the init function pointer
+in struct op_x86_model_spec.
 
-The following changes since commit 8ebf975608aaebd7feb33d77f07ba21a6380e086:
-  Randy Dunlap (1):
-        block: fix kernel-doc in recent block/ changes
+Cc: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ arch/x86/oprofile/nmi_int.c       |   21 +++++++++------------
+ arch/x86/oprofile/op_model_ppro.c |    9 ++++++++-
+ arch/x86/oprofile/op_x86_model.h  |    2 --
+ 3 files changed, 17 insertions(+), 15 deletions(-)
 
-are available in the git repository at:
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index 3b285e6..dd85153 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -427,7 +427,7 @@ static int __init ppro_init(char **cpu_type)
+ 		*cpu_type = "i386/core_2";
+ 		break;
+ 	case 26:
+-		arch_perfmon_setup_counters();
++		model = &op_arch_perfmon_spec;
+ 		*cpu_type = "i386/core_i7";
+ 		break;
+ 	case 28:
+@@ -442,16 +442,6 @@ static int __init ppro_init(char **cpu_type)
+ 	return 1;
+ }
+ 
+-static int __init arch_perfmon_init(char **cpu_type)
+-{
+-	if (!cpu_has_arch_perfmon)
+-		return 0;
+-	*cpu_type = "i386/arch_perfmon";
+-	model = &op_arch_perfmon_spec;
+-	arch_perfmon_setup_counters();
+-	return 1;
+-}
+-
+ /* in order to get sysfs right */
+ static int using_nmi;
+ 
+@@ -509,8 +499,15 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+ 			break;
+ 		}
+ 
+-		if (!cpu_type && !arch_perfmon_init(&cpu_type))
++		if (cpu_type)
++			break;
++
++		if (!cpu_has_arch_perfmon)
+ 			return -ENODEV;
++
++		/* use arch perfmon as fallback */
++		cpu_type = "i386/arch_perfmon";
++		model = &op_arch_perfmon_spec;
+ 		break;
+ 
+ 	default:
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index 2a12399..ae58119 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -233,7 +233,7 @@ struct op_x86_model_spec const op_ppro_spec = {
+  * the specific CPU.
+  */
+ 
+-void arch_perfmon_setup_counters(void)
++static void arch_perfmon_setup_counters(void)
+ {
+ 	union cpuid10_eax eax;
+ 
+@@ -253,7 +253,14 @@ void arch_perfmon_setup_counters(void)
+ 	op_arch_perfmon_spec.num_controls = num_counters;
+ }
+ 
++static int arch_perfmon_init(struct oprofile_operations *ignore)
++{
++	arch_perfmon_setup_counters();
++	return 0;
++}
++
+ struct op_x86_model_spec op_arch_perfmon_spec = {
++	.init			= &arch_perfmon_init,
+ 	/* num_counters/num_controls filled in at runtime */
+ 	.fill_in_addresses	= &ppro_fill_in_addresses,
+ 	/* user space does the cpuid check for available events */
+diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
+index 2317149..ed27783 100644
+--- a/arch/x86/oprofile/op_x86_model.h
++++ b/arch/x86/oprofile/op_x86_model.h
+@@ -51,6 +51,4 @@ extern struct op_x86_model_spec const op_p4_ht2_spec;
+ extern struct op_x86_model_spec const op_amd_spec;
+ extern struct op_x86_model_spec op_arch_perfmon_spec;
+ 
+-extern void arch_perfmon_setup_counters(void);
+-
+ #endif /* OP_X86_MODEL_H */
+-- 
+1.6.3.1
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-lguest.git master
-
-Mark McLoughlin (1):
-      lguest: add support for indirect ring entries
-
-Matias Zabaljauregui (6):
-      lguest: Segment selectors are 16-bit long. Fix lg_cpu.ss1 definition.
-      lguest: map switcher with executable page table entries
-      lguest: use native_set_* macros, which properly handle 64-bit entries when PAE is activated
-      lguest: replace hypercall name LHCALL_SET_PMD with LHCALL_SET_PGD
-      lguest: Add support for kvm_hypercall4()
-      lguest: PAE support
-
-Roel Kluin (1):
-      lguest: beyond ARRAY_SIZE of cpu->arch.gdt
-
-Rusty Russell (23):
-      lguest: be paranoid about guest playing with device descriptors.
-      lguest: cleanup passing of /dev/lguest fd around example launcher.
-      lguest: clean up lguest_init_IRQ
-      lguest: get more serious about wmb() in example Launcher code
-      sched: export kick_process
-      lguest: fix lguest wake on guest clock tick, or fd activity
-      lguest: remove invalid interrupt forcing logic.
-      lguest: fix race in halt code
-      lguest: improve interrupt handling, speed up stream networking
-      lguest: optimize by coding restore_flags and irq_enable in assembler.
-      lguest: clean up example launcher compile flags.
-      lguest: clean up length-used value in example launcher
-      lguest: fix writev returning short on console output
-      lguest: PAE fixes
-      lguest: allow any process to send interrupts
-      eventfd: export eventfd_signal and eventfd_fget for lguest
-      lguest: use eventfds for device notification
-      lguest: have example Launcher service all devices in separate threads
-      lguest: remove obsolete LHREQ_BREAK call
-      lguest: implement deferred interrupts in example Launcher
-      lguest: avoid sending interrupts to Guest when no activity occurs.
-      lguest: try to batch interrupts on network receive
-      lguest: suppress notifications in example Launcher
-
- Documentation/lguest/Makefile         |    3 +-
- Documentation/lguest/lguest.c         | 1008 ++++++++++++---------------------
- Documentation/lguest/lguest.txt       |    1 -
- arch/x86/include/asm/lguest.h         |    7 +-
- arch/x86/include/asm/lguest_hcall.h   |   15 +-
- arch/x86/kernel/asm-offsets_32.c      |    1 +
- arch/x86/lguest/Kconfig               |    1 -
- arch/x86/lguest/boot.c                |  158 ++++--
- arch/x86/lguest/i386_head.S           |   60 ++-
- drivers/lguest/Kconfig                |    2 +-
- drivers/lguest/core.c                 |   30 +-
- drivers/lguest/hypercalls.c           |   14 +
- drivers/lguest/interrupts_and_traps.c |   57 ++-
- drivers/lguest/lg.h                   |   28 +-
- drivers/lguest/lguest_user.c          |  127 +++--
- drivers/lguest/page_tables.c          |  396 +++++++++++--
- drivers/lguest/segments.c             |    2 +-
- fs/eventfd.c                          |    3 +
- include/linux/lguest.h                |    4 +
- include/linux/lguest_launcher.h       |    3 +-
- kernel/sched.c                        |    1 +
- 21 files changed, 1103 insertions(+), 818 deletions(-)
 
