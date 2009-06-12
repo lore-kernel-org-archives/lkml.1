@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZFLPRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZFLPR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbZFLPRT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZFLPRL
+	id S1756888AbZFLPR3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZFLPRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:17:11 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:55136 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbZFLPRJ convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 11:17:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39539 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756460AbZFLPRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:17:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=L7mb9xmSeE/ASCfooKTzR/01UPTMDG/q5ISqL3aeUs9UH1ayapdiqZi7e0p47b27ag
-         JKUQcDZwlzIVLRe148cjyS2vgGNYisE6qp6+LAulPj4p5agv9twnSdYj9nqjlvcnbARE
-         JL3k108VZzP/wz1a0qwTaADtLk09s/PeS5TVI=
+	Fri, 12 Jun 2009 11:17:17 -0400
+Date: Fri, 12 Jun 2009 08:16:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
+ suspending
+In-Reply-To: <Pine.LNX.4.64.0906121328030.32274@melkki.cs.Helsinki.FI>
+Message-ID: <alpine.LFD.2.01.0906120809560.3237@localhost.localdomain>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <20090612091002.GA32052@elte.hu> <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com> <20090612100756.GA25185@elte.hu>
+ <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com> <20090612101511.GC13607@wotan.suse.de> <Pine.LNX.4.64.0906121328030.32274@melkki.cs.Helsinki.FI>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <20090612120507.GH16044@elte.hu>
-References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> 
-	<20090612120507.GH16044@elte.hu>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 12 Jun 2009 11:16:52 -0400
-Message-ID: <8bd0f97a0906120816w26d91530nf1e1967470beb99c@mail.gmail.com>
-Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open 
-	when supported
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 08:05, Ingo Molnar wrote:
-> * Mike Frysinger <vapier@gentoo.org> wrote:
->> If the port does not support HAVE_PERF_COUNTERS, then they can't
->> support the perf_counter_open syscall either.  Rather than forcing
->> everyone to add an ignore (or suffer the warning until they get
->> around to implementing support), only whine about the syscall when
->> applicable.
->
-> No, this patch is wrong - it's really easy to add support: just hook
-> up the syscall. This should happen for every architecture really, so
-> the warning is correct and it should not be patched out.
->
-> PMU support is not required to get perfcounters support: if an
-> architecture hooks up the syscall it will get generic software
-> counters and the tools will work as well.
->
-> Profiling falls back to a hrtimer-based sampling method - this is a
-> much better fallback than oprofile's fall-back to the timer tick.
-> This hrtimer based sampling is dynticks/nohz-correct and can go
-> beyond HZ if the architecture supports hrtimers.
 
-these statements are actually incorrect.  the perf counter code
-explicitly requires:
- - asm/perf_counter.h
- - support for atomic64 types (unless i missed something, x86 is the
-only 32bit system that supports these)
- - some perf stubs (like set_perf_counter_pending() -- prototype
-really should be in common perf_counters headers rather than forcing
-the arch to copy & paste the exact same line)
 
-not that any of this is documented ...
--mike
+On Fri, 12 Jun 2009, Pekka J Enberg wrote:
+> 
+> Hmm. This is turning into one epic patch discussion for sure! But here's a 
+> patch to do what you suggested. With the amount of patches I am 
+> generating, I'm bound to hit the right one sooner or later, no?-)
+
+Ok, this one looks pretty good. I like the statics, and I like how it lets 
+each allocator decide what to do.
+
+Small nit: your mm/slab.c patch does an obviously unnecessary mask in:
+
+	cache_alloc_debugcheck_before(cachep, flags & slab_gfp_flags);
+
+but that's stupid, because the bits were already masked earlier.
+
+		Linus
