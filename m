@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbZFLM7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762548AbZFLM7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762608AbZFLM7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 08:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758395AbZFLMzE
+	id S1762548AbZFLM7m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 08:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760002AbZFLMzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:55:04 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52316 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753742AbZFLMyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:54:20 -0400
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr, dedekind1@gmail.com,
-       fweisbec@gmail.com, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 15/15] writeback: use spin_trylock() in bdi_writeback_all() for WB_SYNC_NONE
-Date: Fri, 12 Jun 2009 14:54:15 +0200
-Message-Id: <1244811255-5391-16-git-send-email-jens.axboe@oracle.com>
-X-Mailer: git-send-email 1.6.3.rc0.1.gf800
-In-Reply-To: <1244811255-5391-1-git-send-email-jens.axboe@oracle.com>
-References: <1244811255-5391-1-git-send-email-jens.axboe@oracle.com>
+	Fri, 12 Jun 2009 08:55:53 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:34986 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759964AbZFLMzw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 08:55:52 -0400
+Date: Fri, 12 Jun 2009 14:55:51 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] lis3: add click function
+Message-ID: <20090612125550.GF29236@buzzloop.caiaq.de>
+References: <20090612101805.GC18682@elf.ucw.cz> <1244803042-2913-1-git-send-email-daniel@caiaq.de> <4A323FB4.1090404@tremplin-utc.net> <20090612123156.GE29236@buzzloop.caiaq.de> <4A324F00.7020602@tremplin-utc.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A324F00.7020602@tremplin-utc.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- fs/fs-writeback.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+On Fri, Jun 12, 2009 at 02:50:08PM +0200, Éric Piel wrote:
+> > static struct spi_board_info my_spi_devices[] __initdata = {
+> >         {
+> >                 .modalias       = "lis3lv02d_spi",
+> >                 .max_speed_hz   = 1000000,
+> >                 .bus_num        = 0,
+> >                 .chip_select    = 0,
+> >                 .controller_data = (void *) mfp_to_gpio(GPIO_ACCEL_CS),
+> >                 .platform_data  = &lis3_pdata,
+> >                 .irq            = gpio_to_irq(mfp_to_gpio(GPIO_ACCEL_IRQ)),
+> >         },
+> > 
+> I see. So your platform is not among the one contained in the vanilla
+> kernel? Shouldn't this above code be written somewhere so that people
+> know about it? Some of the values do not seem especially obvious!
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index e15a3fa..98bac71 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -517,9 +517,17 @@ void bdi_writeback_all(struct super_block *sb, struct writeback_control *wbc)
- 	struct bdi_work *work;
- 	LIST_HEAD(list);
- 
--restart:
--	spin_lock(&bdi_lock);
-+	/*
-+	 * If this isn't a data integrity writeback, just drop it if
-+	 * someone is already holding the bdi_lock
-+	 */
-+	if (!spin_trylock(&bdi_lock)) {
-+		if (!must_wait)
-+			return;
-+		spin_lock(&bdi_lock);
-+	}
- 
-+restart:
- 	list_for_each_entry_safe(bdi, tmp, &bdi_list, bdi_list) {
- 		struct bdi_work *work;
- 
-@@ -540,6 +548,7 @@ restart:
- 			spin_unlock(&bdi_lock);
- 			wbc->bdi = bdi;
- 			generic_sync_bdi_inodes(sb, wbc);
-+			spin_lock(&bdi_lock);
- 			goto restart;
- 		}
- 		if (must_wait)
--- 
-1.6.3.rc0.1.gf800
+The platform is currently under development and will be merged at some
+later point. The magics above are just GPIO defintions - everything
+else is just the usual glue logic you add when registering an SPI
+device.
 
+> > We're using the IRQ outputs of that chips directly as source to other
+> > circuity, so there is no userspace logic in the game. If anyone needs
+> > that, a simple callback function would be easy to add at some later
+> > point.
+> I guess that to have the functionality in ACPI, a complete handling of
+> the interruptions, up to the generation of button events would be
+> needed. This can be done later on, whenever someone finds the need...
+
+Ack.
+
+> Acked-by: Eric Piel <eric.piel@tremplin-utc.net>
+
+Thanks :)
+
+Andrew, could you queue that one?
+
+Daniel
