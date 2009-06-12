@@ -1,57 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933574AbZFLSeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbZFLSmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933574AbZFLSeU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765854AbZFLSdy
+	id S1756858AbZFLSmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbZFLSmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:33:54 -0400
-Received: from claw.goop.org ([74.207.240.146]:40012 "EHLO claw.goop.org"
+	Fri, 12 Jun 2009 14:42:10 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58624 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765282AbZFLSdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:33:52 -0400
-Message-ID: <4A329F8D.70906@goop.org>
-Date: Fri, 12 Jun 2009 11:33:49 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's
- no local APIC
-References: <4A329CF8.4050502@goop.org> <20090612192830.16224709@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090612192830.16224709@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750817AbZFLSmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 14:42:09 -0400
+Subject: Re: [PATCH] Convert alpha to use arch_gettimeoffset()
+From: john stultz <johnstul@us.ibm.com>
+To: Richard Henderson <rth7680@gmail.com>
+Cc: ink@jurassic.park.msu.ru, lkml <linux-kernel@vger.kernel.org>,
+       linux-alpha@vger.kernel.org
+In-Reply-To: <4A31FDBE.3030506@gmail.com>
+References: <1244758210.7192.5.camel@localhost.localdomain>
+	 <4A31FDBE.3030506@gmail.com>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 11:41:52 -0700
+Message-Id: <1244832112.7231.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/12/09 11:28, Alan Cox wrote:
->> +		if (error == -EINVAL) {
->> +			/*
->> +			 * The ACPI tables themselves were malformed.
->> +			 * Dell Precision Workstation 410, 610 come here.
->> +			 */
->> +			printk(KERN_ERR PREFIX
->> +			       "Invalid BIOS MADT, disabling ACPI\n");
->> +			disable_acpi();
->> +		} else {
->>      
->
-> This seems a very bad model. On todays systems turning off ACPI renders
-> them basically useless. If the MADT is bogus its far better to pray that
-> they rest of the ACPI is mostly sound and continue by ignoring the only
-> dodgy table.
->    
+On Fri, 2009-06-12 at 00:03 -0700, Richard Henderson wrote:
+> john stultz wrote:
+> > I suspect the alpha arch could even be further improved to provide and
+> > rpcc() based clocksource, but not having the hardware, I don't feel
+> > comfortable attempting the more complicated conversion (but I'd be glad
+> > to help if anyone else is interested).
+> 
+> Unfortunately this isn't possible.  The rpcc value is only 32-bits wide,
+> and so rolls over in approx 3 to 4 seconds.  Thus all the contortions to
+> try and use the truncated value for sub 1 second adjustments.
 
-I didn't make any change there; I just preserved the original behaviour 
-of stopping all ACPI parsing when it returned -EINVAL (with a slightly 
-more helpful comment).  My change was to make it continue to the I/O 
-APICs if it returned something else (ie, -ENODEV).
+That's actually ok. The ACPI PM clocksource on x86 is only 24 bits wide
+and wraps every 5 seconds. The generic timekeeping code handles the
+wrapping and accumulation for you.
 
-     J
+
+> > +	delta_cycles = rpcc() - state.last_time;
+> > +	partial_tick = state.partial_tick;
+> >  	/*
+> >  	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
+> >  	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
+> > @@ -448,62 +437,9 @@ do_gettimeofday(struct timeval *tv)
+> >  	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
+> >  #endif
+> ...
+> > +	return delta_usec * 1000;
+> 
+> If we're going to be computing nsec now, we might as well adjust
+> the computation here.
+> 
+>    nsec = cycles * ticks_per_cycle * 1e9 / HZ
+>         = cycles * s_t_p_c * 1e9 / (2**48 * HZ)
+>         = cycles * s_t_p_c * 1953125 / (2**39 * HZ)
+> 
+>    delta_nsec = delta_cycles*state.scaled_ticks_per_cycle + partial_tick;
+>    delta_nsec *= 1953125
+>    delta_nsec /= HZ << (FIX_SHIFT - 9 - 1);
+>    delta_nsec = (delta_nsec + 1) / 2;
+> 
+> As far as I can tell, the range of the dividend is about 7e17,
+> which still fits in an unsigned long.
+
+That seems like a good optimization, although I'm hesitant to submit
+anything but structural, but equivalent code changes since I don't have
+the hardware to test with.
+
+Might you create a patch that does this conversion and apply it on top
+of mine? 
+
+thanks
+-john
+
