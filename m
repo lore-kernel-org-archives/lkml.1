@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760973AbZFLReW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbZFLRe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760973AbZFLReW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZFLReJ
+	id S1763319AbZFLRe4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763289AbZFLReq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:34:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:37178 "EHLO www.tglx.de"
+	Fri, 12 Jun 2009 13:34:46 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:59190 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751676AbZFLReH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:34:07 -0400
-Date: Fri, 12 Jun 2009 19:31:51 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>
-Subject: [Announce] 2.6.29.4-rt18
-In-Reply-To: <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
- <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain> <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
- <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
- <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1763074AbZFLRem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 13:34:42 -0400
+From: Vikram Pandita <vikram.pandita@ti.com>
+To: linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Vikram Pandita <vikram.pandita@ti.com>
+Subject: [PATCH] serial: 8250: add IRQ trigger support
+Date: Fri, 12 Jun 2009 12:32:51 -0500
+Message-Id: <1244827971-14981-1-git-send-email-vikram.pandita@ti.com>
+X-Mailer: git-send-email 1.6.0.3.613.g9f8f13
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
+There is currently no provision for passing IRQ trigger flags for
+serial IRQs with triggering requirements (such as GPIO IRQs.)
+
+This patch adds UPF_IRQ_TRIG_* flags which map on to IRQF_TRIGGER_*
+flags.
+
+Signed-off-by: Vikram Pandita <vikram.pandita@ti.com>
+Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+---
+ drivers/serial/8250.c       |   10 ++++++++++
+ include/linux/serial_core.h |    4 ++++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index bab115e..8235ef5 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1641,6 +1641,16 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
+ 	struct irq_info *i;
+ 	int ret, irq_flags = up->port.flags & UPF_SHARE_IRQ ? IRQF_SHARED : 0;
  
-     - futex bug fix (tglx)
-     - hwlat latency detector module (Jon Cool Masters)
-
-I have to say it works pretty well when you call someone a Slacker :)
-
-Clark is working on user space tools which help you to use it w/o
-fiddling module parameters. It's going to be in the next rt-tests
-release which has a not yet defined schedule. I wonder whether I
-should try that slacker trick again :)
-
-Download locations:
-
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
-
-Information on the RT patch can be found at:
-
-    http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.29.4-rt18 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.4.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.4-rt18.bz2
-
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-       tglx
++	/* Get IRQ Trigger Flag */
++	if (up->port.flags & UPF_IRQ_TRIG_RISING)
++		irq_flags |= IRQF_TRIGGER_RISING;
++	else if (up->port.flags & UPF_IRQ_TRIG_FALLING)
++		irq_flags |= IRQF_TRIGGER_FALLING;
++	else if (up->port.flags & UPF_IRQ_TRIG_HIGH)
++		irq_flags |= IRQF_TRIGGER_HIGH;
++	else if (up->port.flags & UPF_IRQ_TRIG_LOW)
++		irq_flags |= IRQF_TRIGGER_LOW;
++
+ 	mutex_lock(&hash_mutex);
+ 
+ 	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 57a97e5..07591d5 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -296,7 +296,11 @@ struct uart_port {
+ #define UPF_SPD_WARP		((__force upf_t) (0x1010))
+ #define UPF_SKIP_TEST		((__force upf_t) (1 << 6))
+ #define UPF_AUTO_IRQ		((__force upf_t) (1 << 7))
++#define UPF_IRQ_TRIG_RISING	((__force upf_t) (1 << 8))
++#define UPF_IRQ_TRIG_FALLING	((__force upf_t) (1 << 9))
++#define UPF_IRQ_TRIG_HIGH	((__force upf_t) (1 << 10))
+ #define UPF_HARDPPS_CD		((__force upf_t) (1 << 11))
++#define UPF_IRQ_TRIG_LOW	((__force upf_t) (1 << 12))
+ #define UPF_LOW_LATENCY		((__force upf_t) (1 << 13))
+ #define UPF_BUGGY_UART		((__force upf_t) (1 << 14))
+ #define UPF_NO_TXEN_TEST	((__force upf_t) (1 << 15))
+-- 
+1.6.0.3.613.g9f8f13
 
