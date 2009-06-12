@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764313AbZFLLuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764434AbZFLLvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764313AbZFLLuH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZFLLty
+	id S1764434AbZFLLvb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbZFLLvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:49:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54325 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753528AbZFLLty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:49:54 -0400
-Date: Fri, 12 Jun 2009 13:49:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yong Wang <yong.y.wang@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH -tip] perf_counter/x86: Add a quirk for Atom processors
-Message-ID: <20090612114948.GD16044@elte.hu>
-References: <20090612080855.GA2286@ywang-moblin2.bj.intel.com>
+	Fri, 12 Jun 2009 07:51:20 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:54571 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754014AbZFLLvU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 07:51:20 -0400
+Date: Fri, 12 Jun 2009 12:51:20 +0100
+From: Andy Whitcroft <apw@canonical.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: "sky2: set VPD size" triggers card recognition failure
+Message-ID: <20090612115120.GA13960@shadowen.org>
+References: <20090611122942.GA7554@shadowen.org> <20090611100347.7c4160a4@nehalam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090612080855.GA2286@ywang-moblin2.bj.intel.com>
+In-Reply-To: <20090611100347.7c4160a4@nehalam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 11, 2009 at 10:03:47AM -0700, Stephen Hemminger wrote:
 
-* Yong Wang <yong.y.wang@linux.intel.com> wrote:
+> Some of the chip version have different registers, and some hardware vendors build
+> boards without VPD.  Does this help:
 
-> The fixed-function performance counters do not work on current 
-> Atom processors. Use the general-purpose ones instead.
+Thanks for the patch.  I have built some kernels and pushed them out
+for testing.  Will let you know what comes of it!
 
-ah, nice - applied to tip:perfcounters/core, thanks!
+Thanks.
 
-Does this make your Atom testbox work fine now?
-
-	Ingo
+-apw
