@@ -1,383 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932556AbZFLDJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932559AbZFLDJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932556AbZFLDJA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 23:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbZFLDIv
+	id S932559AbZFLDJQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 23:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932251AbZFLDJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 23:08:51 -0400
-Received: from mga05.intel.com ([192.55.52.89]:27344 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932515AbZFLDIn (ORCPT
+	Thu, 11 Jun 2009 23:09:05 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:44947 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932402AbZFLDJE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 23:08:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,206,1243839600"; 
-   d="scan'208";a="465669312"
-Subject: [PATCH V4: 1/3] pci: Provide Multiple Error Received and no error
-	source id support on AER
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 12 Jun 2009 11:08:29 +0800
-Message-Id: <1244776109.2560.319.camel@ymzhang>
+	Thu, 11 Jun 2009 23:09:04 -0400
+Date: Fri, 12 Jun 2009 11:40:32 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com, mel@csn.ul.ie,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [BUGFIX][PATCH] memcg fix lru rotation in isolate_pages v2
+Message-Id: <20090612114032.a2942948.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090612102821.5dd33523.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090612102644.a3e7ad3a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090612102821.5dd33523.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anyone could help me test it on powerpc? Or at least a compilation
-to see there is any compiling error/warning. I have no powerpc machine.
-Thanks.
+On Fri, 12 Jun 2009 10:28:21 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> This patch tries to fix memcg's lru rotation sanity...make memcg use
+> the same logic as global LRU does.
+> 
+> Now, at __isolate_lru_page() retruns -EBUSY, the page is rotated to
+> the tail of LRU in global LRU's isolate LRU pages. But in memcg,
+> it's not handled. This makes memcg do the same behavior as global LRU
+> and rotate LRU in the page is busy.
+> 
+> Changelog: v1->v2
+>  - adjusted to new beas patch.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+Looks good to me.
 
-Changelog V4:
-	Port the patches to Jesses' linux-next tree (mostly based on
-	2.6.30).
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-﻿﻿Changelog V3:
-        1) Probe devices under the root port when the bus id of
-        the source id is equal to 0; V2 does so when device id is
-        equal to 0;
-        2) Add more comments on critical path of finding devices.
-
-﻿Changelog V2:
-        Version 2 adds nosourceid, a boot parameter. When
-        aerdriver.nosourceid=y, aerdriver doesn't use the source
-        id saved by root port. Instead, it searches the device
-        tree under the root port to find the reporter. So if hardware
-        has errata and root port saves a bad source id, aerdriver
-        still could find the reporter.
-        There are 2 scenarios under which ﻿aerdriver searches the
-        device tree under root port:
-        1) nosourceid=n and error source id is equal to 0;
-        2) nosourceid=y.
-
-﻿Based on PCI Express AER specs, a root port might receive multiple
-TLP errors while it could only save a correctable error source id
-and an uncorrectable error source id at the same time. In addition,
-some root port hardware might be unable to provide a correct source
-id, i.e., the source id, or the bus id part of the source id provided
-by root port might be equal to 0.
-
-The patchset implements the support in kernel by searching the device
-tree under the root port.
-
-Patch 1 changes parameter cb of function pci_walk_bus to return a value.
-When cb return non-zero, pci_walk_bus stops more searching on the
-device tree.
-
-﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-
----
-
-diff -Nraup linux-2.6_next/arch/powerpc/platforms/pseries/eeh_driver.c linux-2.6_next_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c
---- linux-2.6_next/arch/powerpc/platforms/pseries/eeh_driver.c	2009-06-12 05:25:14.000000000 +0800
-+++ linux-2.6_next_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c	2009-06-12 05:28:08.000000000 +0800
-@@ -122,7 +122,7 @@ static void eeh_enable_irq(struct pci_de
-  * passed back in "userdata".
-  */
- 
--static void eeh_report_error(struct pci_dev *dev, void *userdata)
-+static int eeh_report_error(struct pci_dev *dev, void *userdata)
- {
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver = dev->driver;
-@@ -130,19 +130,21 @@ static void eeh_report_error(struct pci_
- 	dev->error_state = pci_channel_io_frozen;
- 
- 	if (!driver)
--		return;
-+		return 0;
- 
- 	eeh_disable_irq(dev);
- 
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->error_detected)
--		return;
-+		return 0;
- 
- 	rc = driver->err_handler->error_detected (dev, pci_channel_io_frozen);
- 
- 	/* A driver that needs a reset trumps all others */
- 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
-+
-+	return 0;
- }
- 
- /**
-@@ -153,7 +155,7 @@ static void eeh_report_error(struct pci_
-  * Cumulative response passed back in "userdata".
-  */
- 
--static void eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
-+static int eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
- {
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver = dev->driver;
-@@ -161,26 +163,28 @@ static void eeh_report_mmio_enabled(stru
- 	if (!driver ||
- 	    !driver->err_handler ||
- 	    !driver->err_handler->mmio_enabled)
--		return;
-+		return 0;
- 
- 	rc = driver->err_handler->mmio_enabled (dev);
- 
- 	/* A driver that needs a reset trumps all others */
- 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
-+
-+	return 0;
- }
- 
- /**
-  * eeh_report_reset - tell device that slot has been reset
-  */
- 
--static void eeh_report_reset(struct pci_dev *dev, void *userdata)
-+static int eeh_report_reset(struct pci_dev *dev, void *userdata)
- {
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver = dev->driver;
- 
- 	if (!driver)
--		return;
-+		return 0;
- 
- 	dev->error_state = pci_channel_io_normal;
- 
-@@ -188,35 +192,39 @@ static void eeh_report_reset(struct pci_
- 
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->slot_reset)
--		return;
-+		return 0;
- 
- 	rc = driver->err_handler->slot_reset(dev);
- 	if ((*res == PCI_ERS_RESULT_NONE) ||
- 	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
- 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
- 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
-+
-+	return 0;
- }
- 
- /**
-  * eeh_report_resume - tell device to resume normal operations
-  */
- 
--static void eeh_report_resume(struct pci_dev *dev, void *userdata)
-+static int eeh_report_resume(struct pci_dev *dev, void *userdata)
- {
- 	struct pci_driver *driver = dev->driver;
- 
- 	dev->error_state = pci_channel_io_normal;
- 
- 	if (!driver)
--		return;
-+		return 0;
- 
- 	eeh_enable_irq(dev);
- 
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->resume)
--		return;
-+		return 0;
- 
- 	driver->err_handler->resume(dev);
-+
-+	return 0;
- }
- 
- /**
-@@ -226,22 +234,24 @@ static void eeh_report_resume(struct pci
-  * dead, and that no further recovery attempts will be made on it.
-  */
- 
--static void eeh_report_failure(struct pci_dev *dev, void *userdata)
-+static int eeh_report_failure(struct pci_dev *dev, void *userdata)
- {
- 	struct pci_driver *driver = dev->driver;
- 
- 	dev->error_state = pci_channel_io_perm_failure;
- 
- 	if (!driver)
--		return;
-+		return 0;
- 
- 	eeh_disable_irq(dev);
- 
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->error_detected)
--		return;
-+		return 0;
- 
- 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
-+
-+	return 0;
- }
- 
- /* ------------------------------------------------------- */
-diff -Nraup linux-2.6_next/drivers/pci/bus.c linux-2.6_next_pciwalk/drivers/pci/bus.c
---- linux-2.6_next/drivers/pci/bus.c	2009-06-12 05:25:43.000000000 +0800
-+++ linux-2.6_next_pciwalk/drivers/pci/bus.c	2009-06-12 05:28:08.000000000 +0800
-@@ -206,13 +206,18 @@ void pci_enable_bridges(struct pci_bus *
-  *  Walk the given bus, including any bridged devices
-  *  on buses under this bus.  Call the provided callback
-  *  on each device found.
-+ *
-+ *  We check the return of @cb each time. If it returns anything
-+ *  other than 0, we break out.
-+ *
-  */
--void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
-+void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
- 		  void *userdata)
- {
- 	struct pci_dev *dev;
- 	struct pci_bus *bus;
- 	struct list_head *next;
-+	int retval;
- 
- 	bus = top;
- 	down_read(&pci_bus_sem);
-@@ -236,8 +241,10 @@ void pci_walk_bus(struct pci_bus *top, v
- 
- 		/* Run device routines with the device locked */
- 		down(&dev->dev.sem);
--		cb(dev, userdata);
-+		retval = cb(dev, userdata);
- 		up(&dev->dev.sem);
-+		if (retval)
-+			break;
- 	}
- 	up_read(&pci_bus_sem);
- }
-diff -Nraup linux-2.6_next/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c
---- linux-2.6_next/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:25:43.000000000 +0800
-+++ linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:31:53.000000000 +0800
-@@ -109,7 +109,7 @@ int pci_cleanup_aer_correct_error_status
- #endif  /*  0  */
- 
- 
--static void set_device_error_reporting(struct pci_dev *dev, void *data)
-+static int set_device_error_reporting(struct pci_dev *dev, void *data)
- {
- 	bool enable = *((bool *)data);
- 
-@@ -124,6 +124,8 @@ static void set_device_error_reporting(s
- 
- 	if (enable)
- 		pcie_set_ecrc_checking(dev);
-+
-+	return 0;
- }
- 
- /**
-@@ -207,7 +209,7 @@ static struct device* find_source_device
- 	return NULL;
- }
- 
--static void report_error_detected(struct pci_dev *dev, void *data)
-+static int report_error_detected(struct pci_dev *dev, void *data)
- {
- 	pci_ers_result_t vote;
- 	struct pci_error_handlers *err_handler;
-@@ -232,16 +234,16 @@ static void report_error_detected(struct
- 				   dev->driver ?
- 				   "no AER-aware driver" : "no driver");
- 		}
--		return;
-+		return 0;
- 	}
- 
- 	err_handler = dev->driver->err_handler;
- 	vote = err_handler->error_detected(dev, result_data->state);
- 	result_data->result = merge_result(result_data->result, vote);
--	return;
-+	return 0;
- }
- 
--static void report_mmio_enabled(struct pci_dev *dev, void *data)
-+static int report_mmio_enabled(struct pci_dev *dev, void *data)
- {
- 	pci_ers_result_t vote;
- 	struct pci_error_handlers *err_handler;
-@@ -251,15 +253,15 @@ static void report_mmio_enabled(struct p
- 	if (!dev->driver ||
- 		!dev->driver->err_handler ||
- 		!dev->driver->err_handler->mmio_enabled)
--		return;
-+		return 0;
- 
- 	err_handler = dev->driver->err_handler;
- 	vote = err_handler->mmio_enabled(dev);
- 	result_data->result = merge_result(result_data->result, vote);
--	return;
-+	return 0;
- }
- 
--static void report_slot_reset(struct pci_dev *dev, void *data)
-+static int report_slot_reset(struct pci_dev *dev, void *data)
- {
- 	pci_ers_result_t vote;
- 	struct pci_error_handlers *err_handler;
-@@ -269,15 +271,15 @@ static void report_slot_reset(struct pci
- 	if (!dev->driver ||
- 		!dev->driver->err_handler ||
- 		!dev->driver->err_handler->slot_reset)
--		return;
-+		return 0;
- 
- 	err_handler = dev->driver->err_handler;
- 	vote = err_handler->slot_reset(dev);
- 	result_data->result = merge_result(result_data->result, vote);
--	return;
-+	return 0;
- }
- 
--static void report_resume(struct pci_dev *dev, void *data)
-+static int report_resume(struct pci_dev *dev, void *data)
- {
- 	struct pci_error_handlers *err_handler;
- 
-@@ -286,11 +288,11 @@ static void report_resume(struct pci_dev
- 	if (!dev->driver ||
- 		!dev->driver->err_handler ||
- 		!dev->driver->err_handler->resume)
--		return;
-+		return 0;
- 
- 	err_handler = dev->driver->err_handler;
- 	err_handler->resume(dev);
--	return;
-+	return 0;
- }
- 
- /**
-@@ -307,7 +309,7 @@ static void report_resume(struct pci_dev
- static pci_ers_result_t broadcast_error_message(struct pci_dev *dev,
- 	enum pci_channel_state state,
- 	char *error_mesg,
--	void (*cb)(struct pci_dev *, void *))
-+	int (*cb)(struct pci_dev *, void *))
- {
- 	struct aer_broadcast_data result_data;
- 
-diff -Nraup linux-2.6_next/include/linux/pci.h linux-2.6_next_pciwalk/include/linux/pci.h
---- linux-2.6_next/include/linux/pci.h	2009-06-12 05:24:32.000000000 +0800
-+++ linux-2.6_next_pciwalk/include/linux/pci.h	2009-06-12 05:28:08.000000000 +0800
-@@ -789,7 +789,7 @@ const struct pci_device_id *pci_match_id
- int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
- 		    int pass);
- 
--void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
-+void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
- 		  void *userdata);
- int pci_cfg_space_size_ext(struct pci_dev *dev);
- int pci_cfg_space_size(struct pci_dev *dev);
-
-
+> ---
+> Index: lumpy-reclaim-trial/mm/vmscan.c
+> ===================================================================
+> --- lumpy-reclaim-trial.orig/mm/vmscan.c
+> +++ lumpy-reclaim-trial/mm/vmscan.c
+> @@ -844,7 +844,6 @@ int __isolate_lru_page(struct page *page
+>  		 */
+>  		ClearPageLRU(page);
+>  		ret = 0;
+> -		mem_cgroup_del_lru(page);
+>  	}
+>  
+>  	return ret;
+> @@ -892,12 +891,14 @@ static unsigned long isolate_lru_pages(u
+>  		switch (__isolate_lru_page(page, mode, file)) {
+>  		case 0:
+>  			list_move(&page->lru, dst);
+> +			mem_cgroup_del_lru(page);
+>  			nr_taken++;
+>  			break;
+>  
+>  		case -EBUSY:
+>  			/* else it is being freed elsewhere */
+>  			list_move(&page->lru, src);
+> +			mem_cgroup_rotate_lru_list(page, page_lru(page));
+>  			continue;
+>  
+>  		default:
+> @@ -938,6 +939,7 @@ static unsigned long isolate_lru_pages(u
+>  				continue;
+>  			if (__isolate_lru_page(cursor_page, mode, file) == 0) {
+>  				list_move(&cursor_page->lru, dst);
+> +				mem_cgroup_del_lru(page);
+>  				nr_taken++;
+>  				scan++;
+>  			}
+> Index: lumpy-reclaim-trial/mm/memcontrol.c
+> ===================================================================
+> --- lumpy-reclaim-trial.orig/mm/memcontrol.c
+> +++ lumpy-reclaim-trial/mm/memcontrol.c
+> @@ -649,6 +649,7 @@ unsigned long mem_cgroup_isolate_pages(u
+>  	int zid = zone_idx(z);
+>  	struct mem_cgroup_per_zone *mz;
+>  	int lru = LRU_FILE * !!file + !!active;
+> +	int ret;
+>  
+>  	BUG_ON(!mem_cont);
+>  	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+> @@ -666,9 +667,19 @@ unsigned long mem_cgroup_isolate_pages(u
+>  			continue;
+>  
+>  		scan++;
+> -		if (__isolate_lru_page(page, mode, file) == 0) {
+> +		ret = __isolate_lru_page(page, mode, file);
+> +		switch (ret) {
+> +		case 0:
+>  			list_move(&page->lru, dst);
+> +			mem_cgroup_del_lru(page);
+>  			nr_taken++;
+> +			break;
+> +		case -EBUSY:
+> +			/* we don't affect global LRU but rotate in our LRU */
+> +			mem_cgroup_rotate_lru_list(page, page_lru(page));
+> +			break;
+> +		default:
+> +			break;
+>  		}
+>  	}
+>  
+> 
