@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbZFLPK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZFLPMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbZFLPK0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZFLPKQ
+	id S1753823AbZFLPMp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZFLPMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:10:16 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46338 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753581AbZFLPKQ (ORCPT
+	Fri, 12 Jun 2009 11:12:37 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:34470 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751780AbZFLPMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:10:16 -0400
-Message-ID: <4A326ECB.3070607@cs.helsinki.fi>
-Date: Fri, 12 Jun 2009 18:05:47 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Fri, 12 Jun 2009 11:12:37 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: tomaz.mertelj@guest.arnes.si
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core	temperature
+Date: Fri, 12 Jun 2009 10:12:34 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+References: <20090612_144621_045117.tomaz.mertelj@guest.arnes.si> <200906120957.27223.lkml@morethan.org>
+In-Reply-To: <200906120957.27223.lkml@morethan.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       npiggin@suse.de, benh@kernel.crashing.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or suspending
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <alpine.LFD.2.01.0906120800450.3237@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906120800450.3237@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906121012.36832.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri June 12 2009, Michael S. Zick wrote:
+> On Fri June 12 2009, tomaz.mertelj@guest.arnes.si wrote:
+> > > > 
+> > > > Ah, 25 degrees C is room temperature - real hard for the junction 
+> > temperature
+> > > > to be 25 degrees C with power applied; lacking an infinitely perfect 
+> > heatsink.
+> > > > 
+> > > > Look for an "off by one" error in shifting or masking the value.
+> > > 
+> > > there is no shifting and the masking is 0xffffffff :)
+> > > 
+> > > it might be that the BIOS is doing something wrong when programming the
+> > > calibration MSR's at early botoup.  I would need the contents of MSR 
+> > > 0x1160 ... 0x116C as well as 0x1152 and 0x1153 to be able to determine 
+> > that.
+> > > 
+> > 
+> > This is what I get on VB7002.. vith C7-D cpu:
+> > 
+> > 
+> > DEBNAS:/home# sensors
+> > 
+> > via-cputemp-isa-0000
+> > Adapter: ISA adapter
+> > Core 0:      +27.0 C 
+> > 
+> > DEBNAS:/home# for r in 0x1160 0x1161 0x1162 0x1163 0x1164 0x1165 0x1166 
+> > 0x1167
+> > 0x1168 0x1169 0x116a 0x116b 0x116c 0x1152 0x1153 ; do ./rdmsr $r ; done
+> > MSR register 0x1160 => 08:04:98:10:b8:0b:6f:f4
+> > MSR register 0x1161 => 08:04:98:10:b8:0a:8f:f4
+> > MSR register 0x1162 => 08:04:98:10:b7:f7:7f:f4
+> > MSR register 0x1163 => 08:04:98:10:b7:f1:1f:f4
+> > MSR register 0x1164 => 08:04:98:10:b7:ee:cf:f4
+> > MSR register 0x1165 => 08:04:98:10:b8:0b:4f:f4
+> > MSR register 0x1166 => 08:04:98:10:b7:f7:7f:f4
+> > MSR register 0x1167 => 08:04:98:10:b7:ef:8f:f4
+> > MSR register 0x1168 => 08:04:98:10:b7:fc:3f:f4
+> > MSR register 0x1169 => 08:04:98:10:b8:0d:6f:f4
+> > MSR register 0x116a => 08:04:98:10:b7:f3:8f:f4
+> > MSR register 0x116b => 08:04:98:10:b8:0b:bf:f4
+> > MSR register 0x116c => 08:04:98:10:b8:00:6f:f4
+> > MSR register 0x1152 => 08:04:98:10:b7:f2:2f:f4
+> > MSR register 0x1153 => 08:04:98:10:b8:0b:3f:f4
+> > DEBNAS:/home#
+> > 
+> >
+> 
+> The author had a problem in that routine -
+> try this one (32bit machines only) -
+> 
 
-Linus Torvalds wrote:
-> 
-> On Fri, 12 Jun 2009, Pekka J Enberg wrote:
->>  
->> +	if (system_state != SYSTEM_RUNNING)
->> +		local_flags &= ~__GFP_WAIT;
->> +
->> +	might_sleep_if(local_flags & __GFP_WAIT);
-> 
-> This is pointless.
-> 
-> You're doing the "might_sleep_if()" way too late. At that point, you've 
-> already lost 99% of all coverage, since now none of the cases of just 
-> finding a free slab entry on the list will ever trigger that 
-> "might_sleep()" case.
-> 
-> So you need to do this _early_, at the entry-point, not late, at cache 
-> re-fill time.
-> 
-> So rather than removing the might_sleep_if() at the early point, and then 
-> moving it to this late stage (because you only do the local_flags fixups 
-> late), you need to move the local-flags fixup early instead, and do the 
-> might_sleep_it() there.
-> 
-> The whole point of "might_sleep()" is that it triggers every time if 
-> something is called in the wrong context - not just for the cases where it 
-> actually _does_ sleep.
+That tool has more than one problem -
+Try installing your distro's msr-tools package instead.
 
-OK, makes sense. So what do you think of this patch then:
+Mike
+> Mike 
+> > Tomaz Mertelj
+> > 
+> > 
+> > 
+> 
+> 
+> 
 
-http://patchwork.kernel.org/patch/29733/
 
-It's what Ben has been proposing all along in a slightly edited form.
-
-			Pekka
