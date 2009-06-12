@@ -1,143 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933478AbZFLNlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbZFLNmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933478AbZFLNlx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764500AbZFLNbN
+	id S1759749AbZFLNmO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761357AbZFLNbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:31:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:55296 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 09:31:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:55304 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764569AbZFLNbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764734AbZFLNbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Jun 2009 09:31:06 -0400
 CC: linux-kernel@vger.kernel.org
-To: Ingo Molnar <mingo@redhat.com>
+To: Hirokazu Takata <takata@linux-m32r.org>
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Fri, 12 Jun 2009 22:33:14 +0930
-Subject: [PATCH 13/13] cpumask: use mm_cpumask() wrapper: x86
-Message-Id: <20090612133107.2FEE1DDDE1@ozlabs.org>
+Date: Fri, 12 Jun 2009 22:32:35 +0930
+Subject: [PATCH 2/7] cpumask: arch_send_call_function_ipi_mask: m32r
+Message-Id: <20090612133108.71A63DDDA1@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Makes code futureproof against the impending change to mm->cpu_vm_mask (to be a pointer).
+We're weaning the core code off handing cpumask's around on-stack.
+This introduces arch_send_call_function_ipi_mask(), and by defining
+it, the old arch_send_call_function_ipi is defined by the core code.
 
-It's also a chance to use the new cpumask_ ops which take a pointer
-(the older ones are deprecated, but there's no hurry for arch code).
+We also take the chance to wean the implementations off the
+obsolescent for_each_cpu_mask(): making send_ipi_mask take the pointer
+seemed the most natural way to ensure all implementations used
+for_each_cpu.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/x86/include/asm/mmu_context.h |    6 +++---
- arch/x86/kernel/ldt.c              |    4 ++--
- arch/x86/mm/tlb.c                  |   15 ++++++++-------
- arch/x86/xen/mmu.c                 |    4 ++--
- 4 files changed, 15 insertions(+), 14 deletions(-)
+ arch/m32r/include/asm/smp.h |    3 ++-
+ arch/m32r/kernel/smp.c      |   22 +++++++++++-----------
+ 2 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/arch/x86/include/asm/mmu_context.h b/arch/x86/include/asm/mmu_context.h
---- a/arch/x86/include/asm/mmu_context.h
-+++ b/arch/x86/include/asm/mmu_context.h
-@@ -37,12 +37,12 @@ static inline void switch_mm(struct mm_s
+diff --git a/arch/m32r/kernel/smp.c b/arch/m32r/kernel/smp.c
+--- a/arch/m32r/kernel/smp.c
++++ b/arch/m32r/kernel/smp.c
+@@ -85,7 +85,7 @@ void smp_local_timer_interrupt(void);
+ void smp_local_timer_interrupt(void);
  
- 	if (likely(prev != next)) {
- 		/* stop flush ipis for the previous mm */
--		cpu_clear(cpu, prev->cpu_vm_mask);
-+		cpumask_clear_cpu(cpu, mm_cpumask(prev));
- #ifdef CONFIG_SMP
- 		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
- 		percpu_write(cpu_tlbstate.active_mm, next);
- #endif
--		cpu_set(cpu, next->cpu_vm_mask);
-+		cpumask_set_cpu(cpu, mm_cpumask(next));
+ static void send_IPI_allbutself(int, int);
+-static void send_IPI_mask(cpumask_t, int, int);
++static void send_IPI_mask(const struct cpumask *, int, int);
+ unsigned long send_IPI_mask_phys(cpumask_t, int, int);
  
- 		/* Re-load page tables */
- 		load_cr3(next->pgd);
-@@ -58,7 +58,7 @@ static inline void switch_mm(struct mm_s
- 		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
- 		BUG_ON(percpu_read(cpu_tlbstate.active_mm) != next);
- 
--		if (!cpu_test_and_set(cpu, next->cpu_vm_mask)) {
-+		if (!cpumask_test_and_set_cpu(cpu, mm_cpumask(next))) {
- 			/* We were in lazy tlb mode and leave_mm disabled
- 			 * tlb flush IPI delivery. We must reload CR3
- 			 * to make sure to use no freed page tables.
-diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
---- a/arch/x86/kernel/ldt.c
-+++ b/arch/x86/kernel/ldt.c
-@@ -67,8 +67,8 @@ static int alloc_ldt(mm_context_t *pc, i
- #ifdef CONFIG_SMP
- 		preempt_disable();
- 		load_LDT(pc);
--		if (!cpus_equal(current->mm->cpu_vm_mask,
--				cpumask_of_cpu(smp_processor_id())))
-+		if (!cpumask_equal(mm_cpumask(current->mm),
-+				   cpumask_of(smp_processor_id())))
- 			smp_call_function(flush_ldt, current->mm, 1);
- 		preempt_enable();
- #else
-diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
---- a/arch/x86/mm/tlb.c
-+++ b/arch/x86/mm/tlb.c
-@@ -59,7 +59,8 @@ void leave_mm(int cpu)
+ /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
+@@ -113,7 +113,7 @@ void smp_send_reschedule(int cpu_id)
+ void smp_send_reschedule(int cpu_id)
  {
- 	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
- 		BUG();
--	cpu_clear(cpu, percpu_read(cpu_tlbstate.active_mm)->cpu_vm_mask);
-+	cpumask_clear_cpu(cpu,
-+			  mm_cpumask(percpu_read(cpu_tlbstate.active_mm)));
- 	load_cr3(swapper_pg_dir);
- }
- EXPORT_SYMBOL_GPL(leave_mm);
-@@ -240,8 +241,8 @@ void flush_tlb_current_task(void)
- 	preempt_disable();
- 
- 	local_flush_tlb();
--	if (cpumask_any_but(&mm->cpu_vm_mask, smp_processor_id()) < nr_cpu_ids)
--		flush_tlb_others(&mm->cpu_vm_mask, mm, TLB_FLUSH_ALL);
-+	if (cpumask_any_but(mm_cpumask(mm), smp_processor_id()) < nr_cpu_ids)
-+		flush_tlb_others(mm_cpumask(mm), mm, TLB_FLUSH_ALL);
- 	preempt_enable();
+ 	WARN_ON(cpu_is_offline(cpu_id));
+-	send_IPI_mask(cpumask_of_cpu(cpu_id), RESCHEDULE_IPI, 1);
++	send_IPI_mask(cpumask_of(cpu_id), RESCHEDULE_IPI, 1);
  }
  
-@@ -255,8 +256,8 @@ void flush_tlb_mm(struct mm_struct *mm)
- 		else
- 			leave_mm(smp_processor_id());
- 	}
--	if (cpumask_any_but(&mm->cpu_vm_mask, smp_processor_id()) < nr_cpu_ids)
--		flush_tlb_others(&mm->cpu_vm_mask, mm, TLB_FLUSH_ALL);
-+	if (cpumask_any_but(mm_cpumask(mm), smp_processor_id()) < nr_cpu_ids)
-+		flush_tlb_others(mm_cpumask(mm), mm, TLB_FLUSH_ALL);
+ /*==========================================================================*
+@@ -168,7 +168,7 @@ void smp_flush_cache_all(void)
+ 	spin_lock(&flushcache_lock);
+ 	mask=cpus_addr(cpumask);
+ 	atomic_set_mask(*mask, (atomic_t *)&flushcache_cpumask);
+-	send_IPI_mask(cpumask, INVALIDATE_CACHE_IPI, 0);
++	send_IPI_mask(&cpumask, INVALIDATE_CACHE_IPI, 0);
+ 	_flush_cache_copyback_all();
+ 	while (flushcache_cpumask)
+ 		mb();
+@@ -424,7 +424,7 @@ static void flush_tlb_others(cpumask_t c
+ 	 * We have to send the IPI only to
+ 	 * CPUs affected.
+ 	 */
+-	send_IPI_mask(cpumask, INVALIDATE_TLB_IPI, 0);
++	send_IPI_mask(&cpumask, INVALIDATE_TLB_IPI, 0);
  
- 	preempt_enable();
+ 	while (!cpus_empty(flush_cpumask)) {
+ 		/* nothing. lockup detection does not belong here */
+@@ -546,14 +546,14 @@ static void stop_this_cpu(void *dummy)
+ 	for ( ; ; );
  }
-@@ -274,8 +275,8 @@ void flush_tlb_page(struct vm_area_struc
- 			leave_mm(smp_processor_id());
- 	}
  
--	if (cpumask_any_but(&mm->cpu_vm_mask, smp_processor_id()) < nr_cpu_ids)
--		flush_tlb_others(&mm->cpu_vm_mask, mm, va);
-+	if (cpumask_any_but(mm_cpumask(mm), smp_processor_id()) < nr_cpu_ids)
-+		flush_tlb_others(mm_cpumask(mm), mm, va);
- 
- 	preempt_enable();
+-void arch_send_call_function_ipi(cpumask_t mask)
++void arch_send_call_function_ipi_mask(const struct cpumask *mask)
+ {
+ 	send_IPI_mask(mask, CALL_FUNCTION_IPI, 0);
  }
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1141,14 +1141,14 @@ static void xen_drop_mm_ref(struct mm_st
- 	/* Get the "official" set of cpus referring to our pagetable. */
- 	if (!alloc_cpumask_var(&mask, GFP_ATOMIC)) {
- 		for_each_online_cpu(cpu) {
--			if (!cpumask_test_cpu(cpu, &mm->cpu_vm_mask)
-+			if (!cpumask_test_cpu(cpu, mm_cpumask(mm))
- 			    && per_cpu(xen_current_cr3, cpu) != __pa(mm->pgd))
- 				continue;
- 			smp_call_function_single(cpu, drop_other_mm_ref, mm, 1);
- 		}
+ 
+ void arch_send_call_function_single_ipi(int cpu)
+ {
+-	send_IPI_mask(cpumask_of_cpu(cpu), CALL_FUNC_SINGLE_IPI, 0);
++	send_IPI_mask(cpumask_of(cpu), CALL_FUNC_SINGLE_IPI, 0);
+ }
+ 
+ /*==========================================================================*
+@@ -729,7 +729,7 @@ static void send_IPI_allbutself(int ipi_
+ 	cpumask = cpu_online_map;
+ 	cpu_clear(smp_processor_id(), cpumask);
+ 
+-	send_IPI_mask(cpumask, ipi_num, try);
++	send_IPI_mask(&cpumask, ipi_num, try);
+ }
+ 
+ /*==========================================================================*
+@@ -752,7 +752,7 @@ static void send_IPI_allbutself(int ipi_
+  * ---------- --- --------------------------------------------------------
+  *
+  *==========================================================================*/
+-static void send_IPI_mask(cpumask_t cpumask, int ipi_num, int try)
++static void send_IPI_mask(const struct cpumask *cpumask, int ipi_num, int try)
+ {
+ 	cpumask_t physid_mask, tmp;
+ 	int cpu_id, phys_id;
+@@ -761,11 +761,11 @@ static void send_IPI_mask(cpumask_t cpum
+ 	if (num_cpus <= 1)	/* NO MP */
  		return;
- 	}
--	cpumask_copy(mask, &mm->cpu_vm_mask);
-+	cpumask_copy(mask, mm_cpumask(mm));
  
- 	/* It's possible that a vcpu may have a stale reference to our
- 	   cr3, because its in lazy mode, and it hasn't yet flushed
+-	cpus_and(tmp, cpumask, cpu_online_map);
+-	BUG_ON(!cpus_equal(cpumask, tmp));
++	cpumask_and(&tmp, cpumask, cpu_online_mask);
++	BUG_ON(!cpumask_equal(cpumask, &tmp));
+ 
+ 	physid_mask = CPU_MASK_NONE;
+-	for_each_cpu_mask(cpu_id, cpumask){
++	for_each_cpu(cpu_id, cpumask) {
+ 		if ((phys_id = cpu_to_physid(cpu_id)) != -1)
+ 			cpu_set(phys_id, physid_mask);
+ 	}
+diff --git a/arch/m32r/include/asm/smp.h b/arch/m32r/include/asm/smp.h
+--- a/arch/m32r/include/asm/smp.h
++++ b/arch/m32r/include/asm/smp.h
+@@ -88,7 +88,8 @@ extern unsigned long send_IPI_mask_phys(
+ extern unsigned long send_IPI_mask_phys(cpumask_t, int, int);
+ 
+ extern void arch_send_call_function_single_ipi(int cpu);
+-extern void arch_send_call_function_ipi(cpumask_t mask);
++extern void arch_send_call_function_ipi_mask(const struct cpumask *mask);
++#define arch_send_call_function_ipi_mask arch_send_call_function_ipi_mask
+ 
+ #endif	/* not __ASSEMBLY__ */
+ 
 
