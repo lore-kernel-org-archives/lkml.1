@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758327AbZFLILD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbZFLILZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758327AbZFLILD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761860AbZFLIKa
+	id S932951AbZFLILZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762886AbZFLIKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:10:30 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:3313 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753362AbZFLIK1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:10:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=fp/GnHawQIWfhppfu6oiN3TABA7H6owbtZg791I234qYBZdsHl7cuPL3cC7Rr8khwy
-         3dfkdwZ7a4KrAfY/0naaW3b5YL0u9bKzMgRM1InaQ/UEK7H7leZ8p369O5s9oe1L2lKH
-         eTO/orsZfNlD9UobRXZZvnzVePdrRcjcjja0E=
-MIME-Version: 1.0
-In-Reply-To: <1244667129-27630-1-git-send-email-vapier@gentoo.org>
-References: <1244623722-6325-2-git-send-email-vapier@gentoo.org> 
-	<1244667129-27630-1-git-send-email-vapier@gentoo.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 12 Jun 2009 04:10:03 -0400
-Message-ID: <8bd0f97a0906120110g3088048fl58270a850ac00f85@mail.gmail.com>
-Subject: Re: [PATCH 2/2 v2] ftrace: document basic ftracer/ftracer graph needs
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Jun 2009 04:10:35 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46743 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762884AbZFLIKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:10:33 -0400
+Date: Fri, 12 Jun 2009 18:10:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, borislav.petkov@amd.com
+Subject: Re: [GIT PULL] AMD64 EDAC module for 2.6.31
+Message-Id: <20090612181022.8accf95b.sfr@canb.auug.org.au>
+In-Reply-To: <20090612080323.GA14669@liondog.tnic>
+References: <20090611103705.GC15454@aftab>
+	<20090612080323.GA14669@liondog.tnic>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 16:52, Mike Frysinger wrote:
-> While implementing ftracer and ftracer graph support, I found the exact
-> arch implementation details to be a bit lacking (and my x86 foo ain't
-> great).  So after pounding out support for the Blackfin arch, start
-> documenting the requirements/details.
+--Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-have you merged this ?  i have a small update to it (remind people to
-export the mcount symbol), but dont know if you'd like a fresh patch
-or one on top of this.
--mike
+Hi Borislav,
+
+On Fri, 12 Jun 2009 10:03:23 +0200 Borislav Petkov <petkovbb@googlemail.com=
+> wrote:
+>
+> now that amd64 EDAC is upstream, I've removed the fox-next branch since
+> the next patch series is not ready yet.
+>=20
+> What is actually the proper way to let you know that I don't have any
+> more patches for linux-next right now and that you don't have to pull
+> from my repo for now?
+
+Just set the for-next branch to point somewhere in Linus' tree (where it
+was would be fine if that is what Linus' merged from you).  That way I
+can still try to fetch it each day and when you have new stuff, you can
+just put it there without bothering to remember to tell me anything.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoyDW4ACgkQjjKRsyhoI8zPbgCfQ/WcD++GSIuhrvOwt3xiZDKx
+jLYAn2HdQqIBQyur34fnyRskcgCw41q5
+=63ax
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__12_Jun_2009_18_10_22_+1000_uMlCf8+wMWK1NI9j--
