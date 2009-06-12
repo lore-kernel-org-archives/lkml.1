@@ -1,117 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbZFLJSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763061AbZFLJVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932994AbZFLJSy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZFLJSr
+	id S1763061AbZFLJVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760427AbZFLJVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:18:47 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:44759 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752674AbZFLJSq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:18:46 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-10.arcor-online.net 92B3228F08F
-Subject: Re: (forw) [bugzilla-daemon@bugzilla.kernel.org: [Bug 12309] Large
- I/O operations result in slow performance and high iowait times]
-From: Thomas Pilarski <thomas.pi@arcor.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Thomas Pilarski <thomas.pi@arcor.de>, Christoph Hellwig <hch@lst.de>,
-       akpm@linux-foundation.org
-In-Reply-To: <20090608204544.GB26832@elte.hu>
-References: <20090608182929.GA26458@Krystal>
-	 <20090608204544.GB26832@elte.hu>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 11:18:44 +0200
-Message-Id: <1244798324.4973.66.camel@balrog.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Jun 2009 05:21:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50812 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759622AbZFLJVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:21:08 -0400
+Date: Fri, 12 Jun 2009 11:20:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, paulus@samba.org,
+       ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: origin tree build failure
+Message-ID: <20090612092054.GB32052@elte.hu>
+References: <20090612102427.32582baa.sfr@canb.auug.org.au> <1244768406.7172.1.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244768406.7172.1.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I have executed some tests and the improvements in kernel 30 are
-gigantic.
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-The time of starting applications during heavy i/o is shorter on kernel
-30 than on kernel 20, which was the fastest kernel for me. The first
-part of the patch from comment #366 @ kernel bug 12309 improves the
-desktop responsiveness in kernel 29 and 30, but kernel 29 was still bad,
-while the kernel 30 was fine during my tests. It must be only one part
-of the bad commit. 
+> On Fri, 2009-06-12 at 10:24 +1000, Stephen Rothwell wrote:
+> 
+> > From: Stephen Rothwell <sfr@canb.auug.org.au>
+> > Date: Fri, 12 Jun 2009 10:14:22 +1000
+> > Subject: [PATCH] perfcounters: remove powerpc definitions of perf_counter_do_pending
+> > 
+> > Commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
+> > unify and fix delayed counter wakeup") added global definitions.
+> > 
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-+ if (cfqd->rq_in_driver && cfq_cfqq_idle_window(cfqq))
-+    return 0;
+Ah - thanks. The bug was caused by me being a bit too optimistic in 
+applying the shiny-new Power7 support patches on the last day. (nice 
+CPU btw.)
 
-The fsync problem still exists. Firefox is unusable during heavy i/o.
-This problem exists in every kernel I have tested (17, 18, 20, 22, 24,
-26, 27, 28, 29 and 30). I could not tests the kernel 15, as I was not
-able to start the X server.
+> Linus, please apply. BTW, This is _EXACTLY_ why this should have 
+> been in -next for a few days before being merged :-(
 
-A high i/o wait time was in every of these kernels too, even in the
-kernel 15. 
+Not really: for example current upstream is build-broken on x86 due 
+to an integration artifact via the kmemleak tree - despite it having 
+been in linux-next for months.
 
-NCQ should be disabled on my test drive, because I have no access to
-read or write the queue_depth file. If I chmod +w queue_depth, I can
-read a one. Write access fails with an i/o error. It's an Ultrabay sata
-drive in my ThinkPad. The main drive shows 31 as queue_depth and it's
-read- and writeable.
+Paulus was building and booting powerpc on a daily basis and i ran 
+cross-builds as well.
 
-For testing I have used 16 concurrent writing dd processes. My tests
-were stating gimp, eclipse, compiling the kernel, switching windows and
-desktops. The desktop performance (starting application / working)
-during heavy i/o on the kernel 30 is really great. Even better than in
-the kernel 20, which was the best kernel for me. But the cpu usage of
-the kernel 30 is higher and I have some short stall (mouse freezes)
-shorter than 1s while updating the screen at 1920x1200 in vesa mode and
-at 800MHz. These stalls exists with the kernel 20 too, but are shorter.
-The freezes disappear on enabling the cpu scaling or setting the cpu to
-max frequency. 
+Such bugs happen, and they are easy enough to fix. What matters 
+arent the 1-2 short-lived bugs that do happen when a new combination 
+of trees is created, but the long-lived combination bugs and 
+conflicts.
 
-The patch improves the start up time e.g. of eclipse from ~2min during
-heavy i/o to ~1:30min in kernel 30. The overall throughput is nearby the
-same, ~70% of disk capacity during 16 writing processes. Every app
-started quick from the same disk, even during loadavg of ~20. There
-where no mouse freezes with the patch. I could even use the input
-assistance of eclipse, although it takes a while (~5s the first time ).
-Gimp started even faster than in kernel 20. Everything was quick and
-without any stall in spite of such a high load (up to 25). I had no
-typing delays in the console. It's really great. I could only not test
-any virtual machines, as the vmware kernel driver does not work with the
-kernel 30, but I have done some quick tests with virtualbox and it looks
-fine. 
-
-I have executed all these tests on a patched and an unpatched kernel 20,
-29 and 30 without smp support and the a final test on the patched kernel
-30 with smp and multicore support to have the direct comparison.
-
-The final tests includes a test with 16 concurrent reading and writing
-processes on the same partition, a test with one reading and writing dd
-process on the same partition and a test with one writing dd process.
-All partitions where ext3, mounted with relatime and data=ordered. The
-partition for the writing processes was formated before every test.
-
-My real installation does not show such a clearly improvement or even a
-regression compared to kernel 29, but I just started to use it and it's
-an installation on a full encrypted lvm drive.
-
-I am not sure, if it's really the source of the problem or it's a lucky
-state, which let's the problem disappear for my machine on my test
-installation. I doubt the seconds case. I don't known how to prove it
-reliable. I have tried the AS with the kernel 30 with smp support too,
-and there seems to be an improvement too. The startup times are in some
-cases better and in some cases worse, but I didn't have any desktop
-freezes at all. 
-
-Thank you all for your work, the results are impressive.
-
-
-Best regard,
-
-Thomas Pilarski
-
+	Ingo
