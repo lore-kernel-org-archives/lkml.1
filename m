@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751099AbZFLKom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbZFLKpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751099AbZFLKom (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 06:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZFLKoZ
+	id S1754326AbZFLKpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 06:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZFLKpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 06:44:25 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:42032 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbZFLKoX (ORCPT
+	Fri, 12 Jun 2009 06:45:36 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:44445 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbZFLKpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 06:44:23 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ulxeDrJ4qHE4CT0VsPxSzNzw0TkJ5ZRewOkltuQvGJr0ZTuJVt2ECv4zM92MJ8JLg
-	LTs8DwlI7eLoEaX/Z7xZw==
+	Fri, 12 Jun 2009 06:45:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=NHWpvTRP4x5Q4DaVbWDT5JIGJkQwLbAMkGcIOIvwC+7h8KKpZcvNOMPLF41yGSSgBV
+         3M2bzaWl+zRCjkiKc2C7BWmYDg9I70XJndOq0gTdpBfUjvVa+E+0EJpNPwrve18u+PE0
+         LMtEdeH5BSkv5SuKr9bu5YojyERKCYPd54A+U=
 MIME-Version: 1.0
-In-Reply-To: <20090612103521.GD18682@elf.ucw.cz>
-References: <20090611132134.GA11199@atomide.com>
-	 <20090611140038.GB11199@atomide.com>
-	 <20090611140624.GS795@n2100.arm.linux.org.uk>
-	 <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
-	 <4A3175AC.9070100@bluewatersys.com>
-	 <alpine.LFD.2.00.0906112105220.31536@xanadu.home>
-	 <4A31AECA.6070303@bluewatersys.com>
-	 <alpine.LFD.2.00.0906112138090.31536@xanadu.home>
-	 <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
-	 <20090612103521.GD18682@elf.ucw.cz>
-Date: Fri, 12 Jun 2009 03:44:21 -0700
-Message-ID: <a55d774e0906120344p57226dd4ve526f274a2bf7c8e@mail.gmail.com>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-From: Brian Swetland <swetland@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, lkml <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
+In-Reply-To: <20090612113830.6c21dfc9@lxorguk.ukuu.org.uk>
+References: <1244802468-13667-1-git-send-email-vapier@gentoo.org> 
+	<20090612113320.73e6f7f1@lxorguk.ukuu.org.uk> <8bd0f97a0906120334v2a1bfabr3af883b5cd1ee3a0@mail.gmail.com> 
+	<20090612113830.6c21dfc9@lxorguk.ukuu.org.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 12 Jun 2009 06:45:17 -0400
+Message-ID: <8bd0f97a0906120345s61c7216cp1925f05f829a1c3a@mail.gmail.com>
+Subject: Re: [PATCH] tty: fix unused warning when TCGETX is not defined
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 3:35 AM, Pavel Machek<pavel@ucw.cz> wrote:
+On Fri, Jun 12, 2009 at 06:38, Alan Cox wrote:
+>> > If I wasn't so nice I'd just make it and the lack of BOTHER definitions
+>> > on platforms error. Really there shouldn't be anyone without the features
+>> > defined ;)
 >>
->> My hope with the msm support is to get buildable, bootable (we're
->> there now), style-clean (we probably have stuff that needs help yet,
+>> if i knew a lick about these extended tty pieces, i'd look at hooking them up
+>>
+>> are these really arch specific ?
 >
-> I still can't get it to boot :-(.
+> The ioctl numbers have to be (although most platforms use the same
+> values), and the "BOTHER" definition for arbitary baud rates depends on
+> the format of struct termios - which again varies by architecture. Its
+> usually the case that CBAUDEX|0 isn't used for anything so we use that
+> for BOTHER.
 
-I think the cupcake userspace and the latest 2.6.29 kernel aren't
-getting along.  I'm putting together instructions for building a
-minimal userspace (what we call tiny android -- and what I use for
-bringup and kernel testing), and once I've had a chance to verify that
-everything works end-to-end with the latest kernel, donut branch, and
-have verified this on ADP1, I'll send an update.  Probably some time
-over the weekend.
+mmm BOTHER is used to get arbitrary speeds right ?  i recall testing
+that on Blackfin already so i'm pretty sure that works ...
 
-Brian
+> Other than the numbering they are not arch specific, so just pick the
+> constants for the platform.
+
+the guys who did the original Blackfin arch port simply copied the x86
+termios stuff (which actually kind of sucks because it means they
+copied the termios2 wart)
+
+wonder if people would get annoyed if i changed the Blackfin headers
+to do #include <asm/../../../x86/include/asm/foo.h> ;)
+
+doing a diff between x86 and Blackfin headers shows that
+termbits/termios are exact copies (ignoring the #ifdef header
+protection) and that the Blackfin ioctls.h is missing:
+TIOCGRS485
+TIOCSRS485
+TCGETX
+TCSETX
+TCSETXF
+TCSETXW
+TIOCGHAYESESP
+TIOCSHAYESESP
+-mike
