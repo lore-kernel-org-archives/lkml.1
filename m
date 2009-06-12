@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763171AbZFLN0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763758AbZFLN0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763171AbZFLN0Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760956AbZFLNZn
+	id S1763758AbZFLN0d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761308AbZFLNZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 12 Jun 2009 09:25:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47963 "EHLO mx2.suse.de"
+Received: from cantor.suse.de ([195.135.220.2]:41670 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759069AbZFLNZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759988AbZFLNZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Jun 2009 09:25:41 -0400
 From: Petr Tesarik <ptesarik@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
        Roland McGrath <roland@redhat.com>, Petr Tesarik <ptesarik@suse.cz>
-Subject: [PATCH 8/8] x86: remove unneeded section from the vDSO
-Date: Fri, 12 Jun 2009 15:25:42 +0200
-Message-Id: <5e9e5ea6462821a4eaea334c357cdeafcfe13612.1244812577.git.ptesarik@suse.cz>
+Subject: [PATCH 5/8] x86: mark altinstr-related sections in vDSO as broken
+Date: Fri, 12 Jun 2009 15:25:39 +0200
+Message-Id: <5c072743e9c6ce70674b54b2a818d592ba715145.1244812577.git.ptesarik@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1244812577.git.ptesarik@suse.cz>
 References: <cover.1244812577.git.ptesarik@suse.cz>
@@ -24,47 +24,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some standard sections are not useful in the resulting binary.
+There are several reasons why this does not work for the vDSO.
 
-.gnu.warning.* is only interesting for the linker.
+1. The alt_instr records are not processed by anybody.
 
-.note.* may be discarded, except:
-  .note.Linux which contains the Linux version
-  .note.gnu.build-id which may be useful for identifying
-    the vDSO
+The .altinstruction sections end up in the vDSO binary, which
+is then incorporated verbatim inside a completely different
+section, so it is not seen by the main kernel.
+
+There is no code to interpret them during vDSO setup either.
+
+2. The pointers in the alt_instr records are wrong.
+
+They point to the instructions and replacements at the prelinked
+addresses, but that's neither where the vDSO blob is located at
+startup, nor where it is copied to by the vDSO setup.
+
+The .altinstr_replacement section is not broken per se, but it is
+useless dead code without the accompanying .alt_instr section.
 
 Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 ---
- arch/x86/vdso/vdso-layout.lds.S |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+ arch/x86/vdso/vdso-layout.lds.S |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
-index ea9ef58..93e0b40 100644
+index 23da4a1..2f0830f 100644
 --- a/arch/x86/vdso/vdso-layout.lds.S
 +++ b/arch/x86/vdso/vdso-layout.lds.S
-@@ -31,7 +31,8 @@ SECTIONS
+@@ -54,13 +54,6 @@ SECTIONS
+ 		*(.bss* .gnu.linkonce.b.*)
  	}
  
- 	.note : {
--		*(.note.*)
-+		*(.note.Linux)
-+		*(.note.gnu.build-id)
- 	} :text :note
- 
- 	.eh_frame_hdr : {
-@@ -98,6 +99,12 @@ SECTIONS
- 		*(.altinstructions)
- 		*(.altinstr_replacement)
+-	.altinstructions : {
+-		*(.altinstructions)
+-	}
+-	.altinstr_replacement : {
+-		*(.altinstr_replacement)
+-	}
+-
+ 	/*
+ 	 * Align the actual code well away from the non-instruction data.
+ 	 * This is the best thing for the I-cache.
+@@ -78,6 +71,11 @@ SECTIONS
+ 	 * if they get used by accident.
+ 	 */
+ 	.broken : {
++		/* The vDSO setup code does not handle alternative
++		 * instructions.
++		 */ 
++		*(.altinstructions)
++		*(.altinstr_replacement)
  	}
-+
-+	/* These sections are not useful to user-space */
-+	/DISCARD/ : {
-+		*(.gnu.warning.*)
-+		*(.note.*)
-+	}
  }
  
- /* This assert is triggered if the linker finds a section in one of its
 -- 
 1.6.0.2
 
