@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765643AbZFLOFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764127AbZFLOGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765643AbZFLOFB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 10:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765414AbZFLOEg
+	id S1764127AbZFLOGV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 10:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbZFLOGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 10:04:36 -0400
-Received: from mga14.intel.com ([143.182.124.37]:46881 "EHLO mga14.intel.com"
+	Fri, 12 Jun 2009 10:06:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56600 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764362AbZFLOEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 10:04:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,209,1243839600"; 
-   d="scan'208";a="153577650"
-Date: Fri, 12 Jun 2009 22:04:26 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 2/5] HWPOISON: fix tasklist_lock/anon_vma locking order
-Message-ID: <20090612140426.GA8481@localhost>
-References: <20090611142239.192891591@intel.com> <20090611144430.540500784@intel.com> <20090612100308.GD25568@one.firstfloor.org> <20090612132714.GB6751@localhost>
+	id S1751613AbZFLOGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 10:06:08 -0400
+Date: Fri, 12 Jun 2009 16:00:44 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] posix-cpu-timers: remove tasklist_lock where we can
+Message-ID: <20090612140044.GB3784@redhat.com>
+References: <20090612103412.3c490e3e@dhcp-lab-109.englab.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090612132714.GB6751@localhost>
+In-Reply-To: <20090612103412.3c490e3e@dhcp-lab-109.englab.brq.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 09:27:14PM +0800, Wu Fengguang wrote:
-> On Fri, Jun 12, 2009 at 06:03:08PM +0800, Andi Kleen wrote:
-> > On Thu, Jun 11, 2009 at 10:22:41PM +0800, Wu Fengguang wrote:
-> > > To avoid possible deadlock. Proposed by Nick Piggin:
-> > 
-> > I disagree with the description. There's no possible deadlock right now.
-> > It would be purely out of paranoia.
-> > 
-> > > 
-> > >   You have tasklist_lock(R) nesting outside i_mmap_lock, and inside anon_vma
-> > >   lock. And anon_vma lock nests inside i_mmap_lock.
-> > > 
-> > >   This seems fragile. If rwlocks ever become FIFO or tasklist_lock changes
-> > 
-> > I was a bit dubious on this reasoning. If rwlocks become FIFO a lot of
-> > stuff will likely break.
-> > 
-> > >   type (maybe -rt kernels do it), then you could have a task holding
-> > 
-> > I think they tried but backed off quickly again
-> > 
-> > It's ok with a less scare-mongering description.
-> 
-> Why not merge it into the original patch and add a simple changelog
-> line there? I tried the last 6.5 patchset and it didn't apply cleanly
-> to the latest -mm tree. And this patch was updated:
+On 06/12, Stanislaw Gruszka wrote:
+>
+> tasklist_lock is not needed to protect find_task_by_vpid() nor
+> thread_group_leader()
 
-Andy, please apply this patch too. It fixed a kernel panic: when
-invalid PFN is feed to the debug injection interface, action_result()
-will try to do a pfn_to_page() on it..
+It does protect thread_group_leader(), unless we use current.
+Please see below.
 
-Thanks,
-Fengguang
+> @@ -398,7 +398,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
+>  	new_timer->it.cpu.incr.sched = 0;
+>  	new_timer->it.cpu.expires.sched = 0;
+>
+> -	read_lock(&tasklist_lock);
+> +	rcu_read_lock();
+>  	if (CPUCLOCK_PERTHREAD(new_timer->it_clock)) {
+>  		if (pid == 0) {
+>  			p = current;
+> @@ -422,7 +422,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
+>  	} else {
+>  		ret = -EINVAL;
+>  	}
+> -	read_unlock(&tasklist_lock);
+> +	rcu_read_unlock();
 
----
- mm/memory-failure.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Suppose that the non-main thread execs. de_thread() does
 
---- sound-2.6.orig/mm/memory-failure.c
-+++ sound-2.6/mm/memory-failure.c
-@@ -439,7 +439,9 @@ void memory_failure(unsigned long pfn, i
- 	struct page *p;
- 
- 	if (!pfn_valid(pfn)) {
--		action_result(pfn, "memory outside kernel control", IGNORED);
-+		printk(KERN_ERR
-+		       "MCE %#lx: memory outside kernel control: Ignored\n",
-+		       pfn);
- 		return;
- 	}
- 
+	attach_pid(tsk, PIDTYPE_PID, task_pid(leader));
+	leader->group_leader = tsk;
+
+under write_lock(tasklist). This means posix_cpu_timer_create() can return
+-EINVAL if it is called in between, or if we found the group leader but
+thread_group_leader() is called after "tsk->group_leader = tsk".
+
+I think the patch is fine, but you should also replace thread_group_leader()
+with has_group_leader_pid().
+
+
+
+This reminds me. !CPUCLOCK_PERTHREAD timers survive after exec, but only
+if ->group_leader execs. Not good.
+
+Oleg.
+
