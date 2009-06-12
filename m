@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764996AbZFLNQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764947AbZFLNQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764996AbZFLNQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 09:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764843AbZFLNQo
+	id S1764947AbZFLNQb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 09:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764672AbZFLNPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 09:16:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:42505 "EHLO ozlabs.org"
+	Fri, 12 Jun 2009 09:15:49 -0400
+Received: from mga03.intel.com ([143.182.124.21]:11422 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764959AbZFLNQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 09:16:43 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/17] cpumask obsolete implementation removal
-Date: Fri, 12 Jun 2009 22:46:41 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+	id S1764894AbZFLNPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 09:15:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,209,1243839600"; 
+   d="scan'208";a="153564563"
+Date: Fri, 12 Jun 2009 21:15:41 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when
+	feature is disabled
+Message-ID: <20090612131541.GA6751@localhost>
+References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612100050.GC25568@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906122246.42041.rusty@rustcorp.com.au>
+In-Reply-To: <20090612100050.GC25568@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some archs have already removed their obsolete versions of these functions,
-but here's a last xmit of the rest before I push them RSN.
+On Fri, Jun 12, 2009 at 06:00:50PM +0800, Andi Kleen wrote:
+> On Thu, Jun 11, 2009 at 10:22:40PM +0800, Wu Fengguang wrote:
+> > So as to eliminate one #ifdef in the c source.
+> > 
+> > Proposed by Nick Piggin.
+> 
+> Some older gccs didn't eliminate string constants for this,
+> please check you don't get the string in the object file with 
+> gcc 3.2 with the CONFIG disabled now.
 
-On the chopping block is:
-pcibus_to_cpumask (alpha, mips, powerpc, sh)
-node_to_cpumask
-CPU_MASK_ALL_PTR
-&CPU_MASK_ALL (mips)
-cpu_mask_all
-struct irqaction -> mask
-set_cpus_allowed (if CONFIG_CPUMASK_OFFSTACK=y)
-smp_call_function_mask
-topology_core_siblings/topology_thread_siblings (generic, sparc, s390, 
-powerpc, ia64)
+Well I don't have gcc 3.2 at hand and it's missing from apt source.. 
 
-Cheers,
-Rusty.
+Thanks,
+Fengguang
+
