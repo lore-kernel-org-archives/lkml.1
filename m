@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbZFLPyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbZFLPzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758157AbZFLPyZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 11:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZFLPyR
+	id S1762997AbZFLPzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 11:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757774AbZFLPyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 11:54:17 -0400
-Received: from mga01.intel.com ([192.55.52.88]:63024 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbZFLPyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 11:54:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,210,1243839600"; 
-   d="scan'208";a="465817675"
-Date: Fri, 12 Jun 2009 08:53:36 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 3/4] PCI: PCIE AER: PCIE AER software error injection
-Message-ID: <20090612085336.08a89d68@jbarnes-g45>
-In-Reply-To: <1244771641.5320.146.camel@yhuang-dev.sh.intel.com>
-References: <1240541127.6842.681.camel@yhuang-dev.sh.intel.com>
-	<20090611115954.294581bb@jbarnes-g45>
-	<1244771641.5320.146.camel@yhuang-dev.sh.intel.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 12 Jun 2009 11:54:52 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:51349 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754275AbZFLPyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 11:54:51 -0400
+Cc: Eric Sandeen <sandeen@sandeen.net>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Message-Id: <1FF0104F-7D97-4A6A-B80E-E7EE511AA916@sgi.com>
+From: Felix Blyakher <felixb@sgi.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+In-Reply-To: <alpine.DEB.2.00.0906120420080.26259@p34.internal.lan>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: Kernel 2.6.30: Memory/XFS leak, OOM killer kills many processes
+Date: Fri, 12 Jun 2009 10:54:53 -0500
+References: <alpine.DEB.2.00.0906111158470.2563@p34.internal.lan> <alpine.DEB.2.00.0906111255280.6809@p34.internal.lan> <4A313F84.20900@sandeen.net> <96F5FBF8-17B6-4AA9-BAB4-377AF596692C@sgi.com> <alpine.DEB.2.00.0906120420080.26259@p34.internal.lan>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009 18:54:01 -0700
-"Huang, Ying" <ying.huang@intel.com> wrote:
 
-> On Fri, 2009-06-12 at 02:59 +0800, Barnes, Jesse wrote:
-> > On Fri, 24 Apr 2009 10:45:27 +0800
-> > Huang Ying <ying.huang@intel.com> wrote:
-> >
-> > > Debugging PCIE AER code can be very difficult because it is hard
-> > > to trigger various real hardware errors. This patch provide a
-> > > software based error injection tool, which can fake various PCIE
-> > > errors with a user space helper tool named "aer-inject". Which
-> > > can be gotten from:
-> > >
-> > >   http://www.kernel.org/pub/linux/kernel/people/yhuang/
-> > >
-> > > The patch fakes AER error by faking some PCIE AER related
-> > > registers and an AER interrupt for specified the PCIE device.
-> > >
-> > > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > >
-> >
-> > This patch got mangled, care to resend?
-> 
-> Sorry. Resend patch follows.
-> 
+On Jun 12, 2009, at 3:37 AM, Justin Piszcz wrote:
 
-This one didn't apply either; can you pull down my linux-next branch
-and diff against that?  Also, cc my personal address,
-jbarnes@virtuousgeek.org, so Exchange doesn't mess up the patch.
+>
+>
+> On Thu, 11 Jun 2009, Felix Blyakher wrote:
+>
+>>
+>> On Jun 11, 2009, at 12:31 PM, Eric Sandeen wrote:
+>>
+>>> Justin Piszcz wrote:
+>>>> On Thu, 11 Jun 2009, Justin Piszcz wrote:
+>> The following should fix it:
+>>
+>> diff --git a/fs/xfs/xfs_bmap.c b/fs/xfs/xfs_bmap.c
+>> index 4b0f6ef..7928b99 100644
+>> --- a/fs/xfs/xfs_bmap.c
+>> +++ b/fs/xfs/xfs_bmap.c
+>> @@ -6086,6 +6086,7 @@ xfs_getbmap(
+>>                     break;
+>>     }
+>>
+>> +       kmem_free(out);
+>>     return error;
+>> }
+>>
+>>
+>> Felix
+>
+> Just FYI if anyone tries to run the patch it will not work:
+>
+> # patch -p1 < ../xfs.patch patching file fs/xfs/xfs_bmap.c
+> patch: **** malformed patch at line 11: }
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Must have been copy-and-paste problem. The real one is good :)
+
+> So just goto line ~6086 and add the kmem_free(out); above the return  
+> error.
+>
+> Status:
+> This patch fixes the problem, thanks!
+
+Thanks for reporting and verifying the fix!
+It's ready now for the linux-next in the official xfs repo,
+going upstream with the pull request later today and then be
+ready for inclusion in 2.6.30.
+
+Felix
+
+>
+>
+> Justin.
+>
+
