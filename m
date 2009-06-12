@@ -1,172 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932734AbZFLSC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764955AbZFLSEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932734AbZFLSC7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbZFLSCp
+	id S1764955AbZFLSEW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765932AbZFLSD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:02:45 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43826 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758544AbZFLSCo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:02:44 -0400
-Message-ID: <4A32980A.2020209@zytor.com>
-Date: Fri, 12 Jun 2009 11:01:46 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Cliff Wickman <cpw@sgi.com>
-CC: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       "Huang, Ying" <ying.huang@intel.com>, pj@sgi.com
-Subject: Re: [PATCH] x86: vendor reserved memory type
-References: <E1MElFX-0007fY-TR@eag09.americas.sgi.com> <4A3123FF.3010803@zytor.com> <20090612133918.GA17557@sgi.com>
-In-Reply-To: <20090612133918.GA17557@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 12 Jun 2009 14:03:59 -0400
+Received: from gate.crashing.org ([63.228.1.57]:32925 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932858AbZFLSD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 14:03:58 -0400
+Cc: Li Yang <leoli@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>,
+       Timur Tabi <timur@freescale.com>, David Hawkins <dwh@ovro.caltech.edu>,
+       Liu Dave-R63238 <DaveLiu@freescale.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Message-Id: <1CD0A367-6F33-4185-A552-E3894E5805DD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Dan Williams <dan.j.williams@intel.com>
+In-Reply-To: <4A329278.3010607@intel.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+Date: Fri, 12 Jun 2009 13:01:42 -0500
+References: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com> <20090427204213.GA4960@ovro.caltech.edu> <49F619C4.20100@freescale.com> <e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com> <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org> <20090611151750.GB9323@ovro.caltech.edu> <2a27d3730906120223w9f30b7ewfd22eb328e3a23d3@mail.gmail.com> <24633D89-D4EC-4C27-8B7F-3992EFE50989@kernel.crashing.org> <4A329278.3010607@intel.com>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai, Huang, Paul: looks good to you [see patch at end]?  Anyone else
-we should have look at this?
 
-	-hpa
+On Jun 12, 2009, at 12:38 PM, Dan Williams wrote:
 
+> Kumar Gala wrote:
+>> On Jun 12, 2009, at 4:23 AM, Li Yang wrote:
+>>> On Thu, Jun 11, 2009 at 11:17 PM, Ira  
+>>> Snyder<iws@ovro.caltech.edu>  wrote:
+>>>> On Wed, Jun 10, 2009 at 09:45:26PM -0500, Kumar Gala wrote:
+>>>>> On Apr 27, 2009, at 3:49 PM, Dan Williams wrote:
+>>>>>
+>>>>>> On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com>
+>>>>>> wrote:
+>>>>>>> Adding Kumar to the CC: list, since he might pick up the patch.
+>>>>>>>
+>>>>>> Acked-by: Dan Williams <dan.j.williams@intel.com>
+>>>>>>
+>>>>>> I agree with taking this through Kumar's tree.
+>>>>> I'm going through patches for .31.. Should I still pick this  
+>>>>> up?   Going
+>>>>> forward should I pick up fsldma patches?
+>>>>>
+>>>> I'm fine with that, but you should probably talk to Li Yang  
+>>>> (added to
+>>>> CC). He's gotten in contact with me a few times recently.
+>>> I am fine with both ways for this patch as it is only related to
+>>> Freescale register details.  But in general I think patches should  
+>>> go
+>>> through functional subsystem, as they usually would need insight of
+>>> the subsystem architecture.  I prefer the way that the patch acked  
+>>> or
+>>> signed-off by Freescale guys and push upstream through Dan's tree as
+>>> most other subsystems did.  Unless Dan prefers to ack the subsystem
+>>> architectural part of each patch and have them pushed other way.
+>> I agree w/this and just wanting to see what Dan's preference is.
+>
+> I'll take fsldma patches through the dmaengine tree with Leo's ack/ 
+> sign-off.  That last request was a one-off because I had nothing  
+> else to push and the discussion was very architecture specific.
 
-Cliff Wickman wrote:
->> There is no difference between that and E820_RESERVED, so there is no
->> reason to distinguish them.  The semantics are exactly the same.
-> 
-> I thought a new type would be clearer, but if it would break an e820
-> standard I withdraw the idea.  All is good as long as the memory gets reserved.
+Sounds good to me.  I expect you to pick up this patch for .31
 
-We *could* add private types with negative numbers if we had to, but
-that means adding some infrastructure, and this doesn't seem justified
-for this case.  There is also a cost involved, since different types
-can't be range-merged.
-
->>
->> The real problem is that this condition is too lenient:
->>
->>                 if (md->attribute & EFI_MEMORY_WB)
->>                         e820_type = E820_RAM;
->>                 else
->>                         e820_type = E820_RESERVED;
->>
->> It really should be something like:
->>
->> 	switch (md->type) {
->> 	case EFI_LOADER_CODE:
->> 	case EFI_LOADER_DATA:
->> 	case EFI_BOOT_SERVICES_CODE:
->> 	case EFI_BOOT_SERVICES_DATA:
->> 	case EFI_CONVENTIONAL_MEMORY:
->>                 if (md->attribute & EFI_MEMORY_WB)
->>                         e820_type = E820_RAM;
->>                 else
->>                         e820_type = E820_RESERVED;
->> 		break;
->> 	case EFI_ACPI_RECLAIM_MEMORY:
->> 		e820_type = E820_ACPI;
->> 		break;
->> 	case EFI_ACPI_MEMORY_NVS:
->> 		e820_type = E820_NVS;
->> 		break;
->> 	case EFI_UNUSABLE_MEMORY:
->> 		e820_type = E820_UNUSUABLE;
->> 		break;
->> 	default:
->> 		e820_type = E820_RESERVED;
->> 		break;
->> 	}
-> 
-> Okay. I buy that as more straightforward.
->  
->> Personally, it's not clear to me if this should do add any non-memory
->> ranges, as the boot loader should have done that, but I guess in this
->> particular case we have already horked out.
->>
->> Another problem is that the comment is wrong.  sanitize_e820_map() will
->> coalesce adjacent entries, as it should.
->>
->> Finally, randomly definiting a standard value in E820 with new semantics
->> isn't going to fly; it's likely to conflict with official allocations.
->>
->> 	-hpa
-> 
-> I propose to submit your code (basically) in the form of the below patch.
-> It works for me.   Does it look okay to you?
-> 
-> 
->  
-> Subject: [PATCH] x86: efi/e820 table merge fix
-> 
-> This patch causes all the EFI_RESERVED_TYPE memory reservations to be recorded
-> in the e820 table as type E820_RESERVED.
-> 
-> Without this patch EFI_RESERVED_TYPE memory reservations may be
-> marked usable in the e820 table. There may be a collision between
-> kernel use and some reserver's use of this memory.
-> 
-> (An example use of this functionality is the UV system, which
->  will access extremely large areas of memory with a memory engine
->  that allows a user to address beyond the processor's range.  Such
->  areas are reserved in the EFI table by the BIOS.
->  Some loaders have a restricted number of entries possible in the e820 table,
->  hence the need to record the reservations in the unrestricted EFI table.)
-> 
-> The call to do_add_efi_memmap() is only made if "add_efi_memmap" is specified
-> on the kernel command line.
-> 
-> Diffed against 2.6.30-rc8
-> 
-> Signed-off-by: Cliff Wickman <cpw@sgi.com>
-> ---
->  arch/x86/kernel/efi.c |   31 ++++++++++++++++++++++++++++---
->  1 file changed, 28 insertions(+), 3 deletions(-)
-> 
-> Index: linux/arch/x86/kernel/efi.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/efi.c
-> +++ linux/arch/x86/kernel/efi.c
-> @@ -240,10 +240,35 @@ static void __init do_add_efi_memmap(voi
->  		unsigned long long size = md->num_pages << EFI_PAGE_SHIFT;
->  		int e820_type;
->  
-> -		if (md->attribute & EFI_MEMORY_WB)
-> -			e820_type = E820_RAM;
-> -		else
-> +		switch (md->type) {
-> +		case EFI_LOADER_CODE:
-> +		case EFI_LOADER_DATA:
-> +		case EFI_BOOT_SERVICES_CODE:
-> +		case EFI_BOOT_SERVICES_DATA:
-> +		case EFI_CONVENTIONAL_MEMORY:
-> +			if (md->attribute & EFI_MEMORY_WB)
-> +				e820_type = E820_RAM;
-> +			else
-> +				e820_type = E820_RESERVED;
-> +			break;
-> +		case EFI_ACPI_RECLAIM_MEMORY:
-> +			e820_type = E820_ACPI;
-> +			break;
-> +		case EFI_ACPI_MEMORY_NVS:
-> +			e820_type = E820_NVS;
-> +			break;
-> +		case EFI_UNUSABLE_MEMORY:
-> +			e820_type = E820_UNUSABLE;
-> +			break;
-> +		default:
-> +			/*
-> +			 * EFI_RESERVED_TYPE EFI_RUNTIME_SERVICES_CODE
-> +			 * EFI_RUNTIME_SERVICES_DATA EFI_MEMORY_MAPPED_IO
-> +			 * EFI_MEMORY_MAPPED_IO_PORT_SPACE EFI_PAL_CODE
-> +			 */
->  			e820_type = E820_RESERVED;
-> +			break;
-> +		}
->  		e820_add_region(start, size, e820_type);
->  	}
->  	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
-> 
-
+- k
