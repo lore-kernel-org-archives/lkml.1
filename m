@@ -1,39 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbZFLGoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZFLGsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755647AbZFLGoj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 02:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZFLGoa
+	id S1754660AbZFLGsb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 02:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZFLGsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 02:44:30 -0400
-Received: from slackware.com ([64.57.102.34]:48756 "EHLO bob.slackware.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbZFLGo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 02:44:29 -0400
-X-Greylist: delayed 3183 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Jun 2009 02:44:29 EDT
-Date: Thu, 11 Jun 2009 22:51:24 -0700 (PDT)
-From: Robby Workman <rworkman@slackware.com>
-To: ilw@linux.intel.com
-cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: iwlagn crash on 2.6.29.4
-Message-ID: <alpine.LNX.1.10.0906112246330.23960@bob.slackware.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 12 Jun 2009 02:48:24 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:33646 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbZFLGsX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 02:48:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=gY5m6WR9xGNbejBn0/YB63AUnlAgqlqtIu7+ewn3a/6YeacmkHVtjIwPuFY9Obl2Nx
+         r0tBII6viUQAMrjL7TIf9WsB96X0n18sStPwjghTQiYfpqYItgkCwS7fxlSsAic3niON
+         x064H9c26l2DymK5BoAvGybV2K9sqyVEuUar0=
+Date: Fri, 12 Jun 2009 08:48:20 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] first block round for 2.6.31
+Message-ID: <20090612064820.GB5209@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
+	Steven Rostedt <srostedt@redhat.com>,
+	Li Zefan <lizf@cn.fujitsu.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20090611111339.GQ11363@kernel.dk> <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2.6.29.4, I just got a crash in iwlagn under heavy network
-throughput.  I was transferring a dvd iso from one box in my
-lan to another, and the following occurred:
+On Thu, Jun 11, 2009 at 11:18:41AM -0700, Linus Torvalds wrote:
+> The ide-tape.c changes also need some expert tender loving checks. I 
+> neither know the code, nor have the hardware to check my fixups.
 
-   http://slackware.com/~rworkman/OOPS
+Yep, this is the result of the slimming exercise and diet pills we've
+put ide-tape on because it'd grown obese over the years and it had its
+own contraptions for buffer and pipeline handling which were clearly too
+much. It had to be taught to behave just like every other ATAPI device
+driver.
 
-It didn't bring the entire system to a halt (thankfully);
-removing and reloading the iwlagn module made everything
-just fine. :-)
+But seriously, I'm testing ide-atapi stuff regularly and I'll take a
+look at the merge result during the weekend just to make sure everything
+went fine.
 
-If any more information is needed, let me know.  I'm more than
-willing to test patches and such...
+> Almost 
+> all the changes are actually by the same person - it's almost all Tejun's 
+> code (and mostly the same patches), just coming in through two different 
+> trees. Not very nice.
 
--RW
+I think this was a one-time-thing only since it required syncing between
+at least three trees so it is possible that somewhere along the way
+things clash. It'll probably happen again when someone decides to change
+block layer/LLDDs interface again but those are very seldom, I hope, for
+the sake of everybody involved :).
+
+-- 
+Regards/Gruss,
+    Boris.
