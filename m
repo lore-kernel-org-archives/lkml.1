@@ -1,252 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762192AbZFLLeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZFLLgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762192AbZFLLeP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 07:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbZFLLeA
+	id S1757933AbZFLLgR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 07:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbZFLLgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 07:34:00 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45326 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756440AbZFLLd7 (ORCPT
+	Fri, 12 Jun 2009 07:36:05 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:39423 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754518AbZFLLgE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 07:33:59 -0400
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or 
- suspending
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <1244805060.7172.126.camel@pasglop>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
-	 <20090612091002.GA32052@elte.hu>
-	 <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com>
-	 <20090612100756.GA25185@elte.hu>
-	 <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com>
-	 <1244805060.7172.126.camel@pasglop>
-Date: Fri, 12 Jun 2009 14:34:00 +0300
-Message-Id: <1244806440.30512.51.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Fri, 12 Jun 2009 07:36:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=H/93RXmwWQbwe3TBuhTdb5/sTK23OFeZjNzP/yegBTr0Oc2ejTJBvWq25OVsOhSylz
+         X7bouMXKJ7Kf03DN41v3dUYx4std8tfNXgF1ZK8zbENmNShLwHriE1Cx0t+BRhOzDNqW
+         GEHdbAzAnuWkq0hBs7ZtJFXpRzwzMaU9TalvE=
+MIME-Version: 1.0
+In-Reply-To: <200906121329.33473.arnd@arndb.de>
+References: <200906121247.50745.arnd@arndb.de> <1244804202-17030-1-git-send-email-vapier@gentoo.org> 
+	<200906121329.33473.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 12 Jun 2009 07:35:46 -0400
+Message-ID: <8bd0f97a0906120435w16a1f46ewd9ad94ee35c04e6e@mail.gmail.com>
+Subject: Re: [PATCH] Blackfin: sync termios header changes with x86
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+On Fri, Jun 12, 2009 at 07:29, Arnd Bergmann wrote:
+> On Friday 12 June 2009, Mike Frysinger wrote:
+>>  #define TIOCMIWAIT   0x545C  /* wait for a change on serial input line(s) */
+>>  #define TIOCGICOUNT  0x545D  /* read serial port inline interrupt counts */
+>> -
+>> -#define FIOQSIZE     0x545E
+>> +#define TIOCGHAYESESP   0x545E  /* Get Hayes ESP configuration */
+>> +#define TIOCSHAYESESP   0x545F  /* Set Hayes ESP configuration */
+>> +#define FIOQSIZE     0x5460
+>
+> This breaks existing applications using FIOQSIZE. You really shouldn't do that.
 
-On Fri, 2009-06-12 at 21:11 +1000, Benjamin Herrenschmidt wrote:
-> > OK, but that means we need to fix up every single caller. I'm fine
-> > with that but Ben is not. As I am unable to test powerpc here, I am
-> > inclined to just merge Ben's patch as "obviously correct".
-> > 
-> > That does not mean we can't introduce GFP_BOOT later on if we want to. Hmm?
-> 
-> Again, you are missing part of the picture. Yes we -can- fix all the
-> -direct- callers that are obviously only be run at boot time. But what
-> about all the indirect ones (or even direct ones) that can be called
-> either at boot time or later. vmalloc() is the perfect example (or more
-> precisely __get_vm_area() which brings in ioremap etc...) but there are
-> many more.
+meh, no one uses that anyways ;)
 
-No, I don't think I am. We can fix up the indirect callers too by making
-sure we pass the proper GFP flag and propagate that all the way down.
-Yes, this is potentially quite a bit of code churn which is why I do see
-your patch being the easy way out.
+>> diff --git a/arch/blackfin/include/asm/termbits.h b/arch/blackfin/include/asm/termbits.h
+>> index f37feb7..faa569f 100644
+>> --- a/arch/blackfin/include/asm/termbits.h
+>> +++ b/arch/blackfin/include/asm/termbits.h
+>
+> This one only changes whitespace, what is the point?
 
-That said, Nick and Ingo seem to think special-casing is questionable
-and I haven't had green light for any of the patches yet. The gfp
-sanitization patch adds some overhead to kmalloc() and page allocator
-paths which is obviously a concern.
+makes diffing easier
 
-So while we continue to discuss this, I'd really like to proceed with
-the patch below. At least it should allow people to boot their kernels
-(although it will produce warnings). I really don't want to keep other
-people waiting for us to reach a resolution on this. Are you OK with
-that?
+>> --- a/arch/blackfin/include/asm/termios.h
+>> +++ b/arch/blackfin/include/asm/termios.h
+>
+> This change fixes one bug but not another:
 
-			Pekka
+better than none at all !
 
->From f6b726dae91cc74fb3a00f192932ec4fe0949875 Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Fri, 12 Jun 2009 14:03:06 +0300
-Subject: [PATCH] slab: don't enable interrupts during early boot
+>> @@ -58,37 +60,55 @@ struct termio {
+>>       *(unsigned short *) &(termios)->x = __tmp; \
+>>  }
+>>
+>> -#define user_termio_to_kernel_termios(termios, termio) \
+>> -({ \
+>> -     SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+>> -     SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+>> -     SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+>> -     SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+>> -     copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+>> -})
+>> +static inline int user_termio_to_kernel_termios(struct ktermios *termios,
+>> +                                             struct termio __user *termio)
+>> +{
+>> +     SET_LOW_TERMIOS_BITS(termios, termio, c_iflag);
+>> +     SET_LOW_TERMIOS_BITS(termios, termio, c_oflag);
+>> +     SET_LOW_TERMIOS_BITS(termios, termio, c_cflag);
+>> +     SET_LOW_TERMIOS_BITS(termios, termio, c_lflag);
+>> +     get_user(termios->c_line, &termio->c_line);
+>> +     return copy_from_user(termios->c_cc, termio->c_cc, NCC);
+>> +}
+>
+> You correctly read termios->c_line now, which was missing previously,
+> but you still don't check the return value of the get_user and
+> copy_from_user functions. The code also has a very ugly property
+> of working only on little-endian architectures (which includes
+> blackfin AFAICT) but should not serve as an example.
 
-As explained by Benjamin Herrenschmidt:
+Blackfin is LE which means the assumption is fine by me
 
-  Oh and btw, your patch alone doesn't fix powerpc, because it's missing
-  a whole bunch of GFP_KERNEL's in the arch code... You would have to
-  grep the entire kernel for things that check slab_is_available() and
-  even then you'll be missing some.
+> If you want a working version of this file, best copy it from avr32
+> or frv. Or just wait for the asm-generic version.
 
-  For example, slab_is_available() didn't always exist, and so in the
-  early days on powerpc, we used a mem_init_done global that is set form
-  mem_init() (not perfect but works in practice). And we still have code
-  using that to do the test.
-
-Therefore, mask out __GFP_WAIT in the slab allocators in early boot code to
-avoid enabling interrupts.
-
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- include/linux/slab.h     |    2 ++
- include/linux/slob_def.h |    5 +++++
- include/linux/slub_def.h |    2 ++
- init/main.c              |    1 +
- mm/slab.c                |   22 ++++++++++++++++++++++
- mm/slub.c                |   18 ++++++++++++++++++
- 6 files changed, 50 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 4880306..219b8fb 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -319,4 +319,6 @@ static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
- 	return kmalloc_node(size, flags | __GFP_ZERO, node);
- }
- 
-+void __init kmem_cache_init_late(void);
-+
- #endif	/* _LINUX_SLAB_H */
-diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
-index 0ec00b3..bb5368d 100644
---- a/include/linux/slob_def.h
-+++ b/include/linux/slob_def.h
-@@ -34,4 +34,9 @@ static __always_inline void *__kmalloc(size_t size, gfp_t flags)
- 	return kmalloc(size, flags);
- }
- 
-+static inline void kmem_cache_init_late(void)
-+{
-+	/* Nothing to do */
-+}
-+
- #endif /* __LINUX_SLOB_DEF_H */
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index be5d40c..4dcbc2c 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -302,4 +302,6 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- }
- #endif
- 
-+void __init kmem_cache_init_late(void);
-+
- #endif /* _LINUX_SLUB_DEF_H */
-diff --git a/init/main.c b/init/main.c
-index b3e8f14..f6204f7 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -640,6 +640,7 @@ asmlinkage void __init start_kernel(void)
- 				 "enabled early\n");
- 	early_boot_irqs_on();
- 	local_irq_enable();
-+	kmem_cache_init_late();
- 
- 	/*
- 	 * HACK ALERT! This is early. We're enabling the console before
-diff --git a/mm/slab.c b/mm/slab.c
-index f46b65d..a785808 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -304,6 +304,12 @@ struct kmem_list3 {
- };
- 
- /*
-+ * The slab allocator is initialized with interrupts disabled. Therefore, make
-+ * sure early boot allocations don't accidentally enable interrupts.
-+ */
-+static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
-+
-+/*
-  * Need this for bootstrapping a per node allocator.
-  */
- #define NUM_INIT_LISTS (3 * MAX_NUMNODES)
-@@ -1654,6 +1660,14 @@ void __init kmem_cache_init(void)
- 	 */
- }
- 
-+void __init kmem_cache_init_late(void)
-+{
-+	/*
-+	 * Interrupts are enabled now so all GFP allocations are safe.
-+	 */
-+	slab_gfp_mask = __GFP_BITS_MASK;
-+}
-+
- static int __init cpucache_init(void)
- {
- 	int cpu;
-@@ -2812,6 +2826,10 @@ static int cache_grow(struct kmem_cache *cachep,
- 
- 	offset *= cachep->colour_off;
- 
-+	/* Lets avoid crashing in early boot code. */
-+	if (WARN_ON_ONCE((local_flags & ~slab_gfp_mask) != 0))
-+		local_flags &= slab_gfp_mask;
-+
- 	if (local_flags & __GFP_WAIT)
- 		local_irq_enable();
- 
-@@ -3237,6 +3255,10 @@ retry:
- 	}
- 
- 	if (!obj) {
-+		/* Lets avoid crashing in early boot code. */
-+		if (WARN_ON_ONCE((local_flags & ~slab_gfp_mask) != 0))
-+			local_flags &= slab_gfp_mask;
-+
- 		/*
- 		 * This allocation will be performed within the constraints
- 		 * of the current cpuset / memory policy requirements.
-diff --git a/mm/slub.c b/mm/slub.c
-index 3964d3c..651bb34 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -178,6 +178,12 @@ static enum {
- 	SYSFS		/* Sysfs up */
- } slab_state = DOWN;
- 
-+/*
-+ * The slab allocator is initialized with interrupts disabled. Therefore, make
-+ * sure early boot allocations don't accidentally enable interrupts.
-+ */
-+static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
-+
- /* A list of all slab caches on the system */
- static DECLARE_RWSEM(slub_lock);
- static LIST_HEAD(slab_caches);
-@@ -1548,6 +1554,10 @@ new_slab:
- 		goto load_freelist;
- 	}
- 
-+	/* Lets avoid crashing in early boot code. */
-+	if (WARN_ON_ONCE((gfpflags & ~slab_gfp_mask) != 0))
-+		gfpflags &= slab_gfp_mask;
-+
- 	if (gfpflags & __GFP_WAIT)
- 		local_irq_enable();
- 
-@@ -3104,6 +3114,14 @@ void __init kmem_cache_init(void)
- 		nr_cpu_ids, nr_node_ids);
- }
- 
-+void __init kmem_cache_init_late(void)
-+{
-+	/*
-+	 * Interrupts are enabled now so all GFP allocations are safe.
-+	 */
-+	slab_gfp_mask = __GFP_BITS_MASK;
-+}
-+
- /*
-  * Find a mergeable slab cache
-  */
--- 
-1.6.0.4
-
-
-
+is asm-generic going to be in 2.6.31 ?  otherwise i'd prefer to have
+Blackfin fixed now rather than 2.6.32+
+-mike
