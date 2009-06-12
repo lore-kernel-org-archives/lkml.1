@@ -1,97 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763789AbZFLVoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbZFLVov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763789AbZFLVoj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 17:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbZFLVob
+	id S933932AbZFLVov (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 17:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760495AbZFLVoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 17:44:31 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:55790 "EHLO mnementh.co.uk"
+	Fri, 12 Jun 2009 17:44:32 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42054 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbZFLVoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 17:44:30 -0400
-Message-ID: <4A32CC36.2070207@mnementh.co.uk>
-Date: Fri, 12 Jun 2009 22:44:22 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Philipp Zabel <philipp.zabel@gmail.com>
-CC: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>
-Subject: Re: [PATCH 6/7] mmc: tmio_mmc: fix SDCLK divider setting
-References: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com> <1244139157-16404-7-git-send-email-philipp.zabel@gmail.com>
-In-Reply-To: <1244139157-16404-7-git-send-email-philipp.zabel@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752903AbZFLVob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 17:44:31 -0400
+Subject: Re: [PATCH 2/3] slab,slub: don't enable interrupts during early
+ boot
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       cl@linux-foundation.org, akpm@linux-foundation.org, npiggin@suse.de
+In-Reply-To: <Pine.LNX.4.64.0906121840550.5491@melkki.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0906121840550.5491@melkki.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Sat, 13 Jun 2009 07:44:13 +1000
+Message-Id: <1244843053.23936.1.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philipp Zabel wrote:
-> Except for the SDCLK = HCLK (divider bypassed) case, the clock
-> setting resulted in double the requested frequency.
-> The smallest possible frequency (f_max/512) is configured with
-> a divider setting 0x80, not 0x40.
+On Fri, 2009-06-12 at 18:41 +0300, Pekka J Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> As explained by Benjamin Herrenschmidt:
+> 
+>   Oh and btw, your patch alone doesn't fix powerpc, because it's missing
+>   a whole bunch of GFP_KERNEL's in the arch code... You would have to
+>   grep the entire kernel for things that check slab_is_available() and
+>   even then you'll be missing some.
+> 
+>   For example, slab_is_available() didn't always exist, and so in the
+>   early days on powerpc, we used a mem_init_done global that is set form
+>   mem_init() (not perfect but works in practice). And we still have code
+>   using that to do the test.
+> 
+> Therefore, mask out __GFP_WAIT in the slab allocators in early boot code to
+> avoid enabling interrupts.
 
-I have (IMO) a better fix, which also removes some crap being written to 
-CTL_SD_CARD_CLK_CTL.
+Ack. I would also like to see that pushed down to page_alloc.c but
+that's another discussion at this stage :-) (suspend/resume will need
+that if we start using the mechanism to mask out FS and IO).
 
-Pierre, please replace patch 6/7 from Philips set with this one.
+Cheers,
+Ben.
 
- From e69efa520b07a688643ce5f8e8d41bef753ff1ed Mon Sep 17 00:00:00 2001
-From: Ian Molton <ian@mnementh.co.uk>
-Date: Fri, 12 Jun 2009 21:53:05 +0100
-Subject: [PATCH] MMC: fix clock setup in tmio_mmc
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  include/linux/gfp.h      |    3 +++
+>  include/linux/slab.h     |    2 ++
+>  include/linux/slob_def.h |    5 +++++
+>  include/linux/slub_def.h |    2 ++
+>  init/main.c              |    1 +
+>  mm/slab.c                |   22 ++++++++++++++++++++++
+>  mm/slub.c                |   16 ++++++++++++++++
+>  7 files changed, 51 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+> index 0bbc15f..ec0fede 100644
+> --- a/include/linux/gfp.h
+> +++ b/include/linux/gfp.h
+> @@ -85,6 +85,9 @@ struct vm_area_struct;
+>  			__GFP_NOWARN|__GFP_REPEAT|__GFP_NOFAIL|\
+>  			__GFP_NORETRY|__GFP_NOMEMALLOC)
+>  
+> +/* Control slab gfp mask during early boot */
+> +#define SLAB_GFP_BOOT_MASK __GFP_BITS_MASK & ~(__GFP_WAIT|__GFP_IO|__GFP_FS);
+> +
+>  /* Control allocation constraints */
+>  #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
+>  
+> diff --git a/include/linux/slab.h b/include/linux/slab.h
+> index 4880306..219b8fb 100644
+> --- a/include/linux/slab.h
+> +++ b/include/linux/slab.h
+> @@ -319,4 +319,6 @@ static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
+>  	return kmalloc_node(size, flags | __GFP_ZERO, node);
+>  }
+>  
+> +void __init kmem_cache_init_late(void);
+> +
+>  #endif	/* _LINUX_SLAB_H */
+> diff --git a/include/linux/slob_def.h b/include/linux/slob_def.h
+> index 0ec00b3..bb5368d 100644
+> --- a/include/linux/slob_def.h
+> +++ b/include/linux/slob_def.h
+> @@ -34,4 +34,9 @@ static __always_inline void *__kmalloc(size_t size, gfp_t flags)
+>  	return kmalloc(size, flags);
+>  }
+>  
+> +static inline void kmem_cache_init_late(void)
+> +{
+> +	/* Nothing to do */
+> +}
+> +
+>  #endif /* __LINUX_SLOB_DEF_H */
+> diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+> index be5d40c..4dcbc2c 100644
+> --- a/include/linux/slub_def.h
+> +++ b/include/linux/slub_def.h
+> @@ -302,4 +302,6 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>  }
+>  #endif
+>  
+> +void __init kmem_cache_init_late(void);
+> +
+>  #endif /* _LINUX_SLUB_DEF_H */
+> diff --git a/init/main.c b/init/main.c
+> index b3e8f14..f6204f7 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -640,6 +640,7 @@ asmlinkage void __init start_kernel(void)
+>  				 "enabled early\n");
+>  	early_boot_irqs_on();
+>  	local_irq_enable();
+> +	kmem_cache_init_late();
+>  
+>  	/*
+>  	 * HACK ALERT! This is early. We're enabling the console before
+> diff --git a/mm/slab.c b/mm/slab.c
+> index cd76964..6c0c4df 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -304,6 +304,12 @@ struct kmem_list3 {
+>  };
+>  
+>  /*
+> + * The slab allocator is initialized with interrupts disabled. Therefore, make
+> + * sure early boot allocations don't accidentally enable interrupts.
+> + */
+> +static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
+> +
+> +/*
+>   * Need this for bootstrapping a per node allocator.
+>   */
+>  #define NUM_INIT_LISTS (3 * MAX_NUMNODES)
+> @@ -1654,6 +1660,14 @@ void __init kmem_cache_init(void)
+>  	 */
+>  }
+>  
+> +void __init kmem_cache_init_late(void)
+> +{
+> +	/*
+> +	 * Interrupts are enabled now so all GFP allocations are safe.
+> +	 */
+> +	slab_gfp_mask = __GFP_BITS_MASK;
+> +}
+> +
+>  static int __init cpucache_init(void)
+>  {
+>  	int cpu;
+> @@ -3237,6 +3251,10 @@ retry:
+>  	}
+>  
+>  	if (!obj) {
+> +		/* Lets avoid crashing in early boot code. */
+> +		if (WARN_ON_ONCE((local_flags & ~slab_gfp_mask) != 0))
+> +			local_flags &= slab_gfp_mask;
+> +
+>  		/*
+>  		 * This allocation will be performed within the constraints
+>  		 * of the current cpuset / memory policy requirements.
+> @@ -3354,6 +3372,8 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
+>  	unsigned long save_flags;
+>  	void *ptr;
+>  
+> +	flags &= slab_gfp_mask;
+> +
+>  	lockdep_trace_alloc(flags);
+>  
+>  	if (slab_should_failslab(cachep, flags))
+> @@ -3434,6 +3454,8 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
+>  	unsigned long save_flags;
+>  	void *objp;
+>  
+> +	flags &= slab_gfp_mask;
+> +
+>  	lockdep_trace_alloc(flags);
+>  
+>  	if (slab_should_failslab(cachep, flags))
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 3964d3c..30354bf 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -178,6 +178,12 @@ static enum {
+>  	SYSFS		/* Sysfs up */
+>  } slab_state = DOWN;
+>  
+> +/*
+> + * The slab allocator is initialized with interrupts disabled. Therefore, make
+> + * sure early boot allocations don't accidentally enable interrupts.
+> + */
+> +static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
+> +
+>  /* A list of all slab caches on the system */
+>  static DECLARE_RWSEM(slub_lock);
+>  static LIST_HEAD(slab_caches);
+> @@ -1595,6 +1601,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+>  	unsigned long flags;
+>  	unsigned int objsize;
+>  
+> +	gfpflags &= slab_gfp_mask;
+> +
+>  	lockdep_trace_alloc(gfpflags);
+>  	might_sleep_if(gfpflags & __GFP_WAIT);
+>  
+> @@ -3104,6 +3112,14 @@ void __init kmem_cache_init(void)
+>  		nr_cpu_ids, nr_node_ids);
+>  }
+>  
+> +void __init kmem_cache_init_late(void)
+> +{
+> +	/*
+> +	 * Interrupts are enabled now so all GFP allocations are safe.
+> +	 */
+> +	slab_gfp_mask = __GFP_BITS_MASK;
+> +}
+> +
+>  /*
+>   * Find a mergeable slab cache
+>   */
 
-This patch fixes the clock setup in tmio_mmc.
-
-  * Incorrect divider setting
-  * Cruft written to the clock registers (seemingly harmless but Not 
-Good (tm))
-
-It also eliminates some unnecessary ifs and tidies the loop syntax.
-
-Thanks to Philipp Zabel who discovered the divider issue, commenting
-
-   "Except for the SDCLK = HCLK (divider bypassed) case, the clock
-    setting resulted in double the requested frequency.
-    The smallest possible frequency (f_max/512) is configured with
-    a divider setting 0x80, not 0x40."
-
-Signed-off-by: Ian Molton <ian@mnementh.co.uk>
----
-  drivers/mmc/host/tmio_mmc.c |   15 +++++----------
-  1 files changed, 5 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
-index fe6d2b6..10951b7 100644
---- a/drivers/mmc/host/tmio_mmc.c
-+++ b/drivers/mmc/host/tmio_mmc.c
-@@ -37,22 +37,17 @@
-
-  static void tmio_mmc_set_clock(struct tmio_mmc_host *host, int new_clock)
-  {
--	u32 clk = 0, clock, f_min = host->mmc->f_min;
-+	u32 clk = 0, clock;
-
-  	if (new_clock) {
--		for (clock = f_min, clk = 0x100; new_clock >= (clock<<1); ) {
-+		for (clock = host->mmc->f_min, clk = 0x80000080;
-+			new_clock >= (clock<<1); clk >>= 1)
-  			clock <<= 1;
--			clk >>= 1;
--		}
--		if (clk & 0x1)
--			clk = 0x20000;
--
--		clk >>= 2;
--		sd_config_write8(host, CNF_SD_CLK_MODE, (clk & 0x8000) ? 0 : 1);
-  		clk |= 0x100;
-  	}
-
--	sd_ctrl_write16(host, CTL_SD_CARD_CLK_CTL, clk);
-+	sd_config_write8(host, CNF_SD_CLK_MODE, clk >> 22);
-+	sd_ctrl_write16(host, CTL_SD_CARD_CLK_CTL, clk & 0x1ff);
-  }
-
-  static void tmio_mmc_clk_stop(struct tmio_mmc_host *host)
--- 
-1.6.3.1
