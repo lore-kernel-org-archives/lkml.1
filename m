@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbZFLIQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbZFLIRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762913AbZFLIQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbZFLIQP
+	id S933080AbZFLIRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZFLIR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:16:15 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:54403 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754508AbZFLIQN (ORCPT
+	Fri, 12 Jun 2009 04:17:28 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39674 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753745AbZFLIR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:16:13 -0400
-Message-ID: <4A320ECC.6000107@in.ibm.com>
-Date: Fri, 12 Jun 2009 13:46:12 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
-MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PowerPC] 2.6.30-git3 build break : perf counters
-References: <4A31ECCD.7030805@in.ibm.com> <1244788494.5554.1.camel@ht.satnam>
-In-Reply-To: <1244788494.5554.1.camel@ht.satnam>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 12 Jun 2009 04:17:27 -0400
+Subject: Re: slab: setup allocators earlier in the boot sequence
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, mingo@elte.hu
+In-Reply-To: <1244792380.7172.77.camel@pasglop>
+References: <200906111959.n5BJxFj9021205@hera.kernel.org>
+	 <1244770230.7172.4.camel@pasglop>  <1244779009.7172.52.camel@pasglop>
+	 <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop>
+	 <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI>
+	 <1244792079.7172.74.camel@pasglop>  <1244792380.7172.77.camel@pasglop>
+Date: Fri, 12 Jun 2009 11:17:28 +0300
+Message-Id: <1244794648.30512.21.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> Please check this patch :
->
-> [PATCH] powerpc: perf_counter fix performance counter event types
->
-> Fix compilation warnings :
->  CC      arch/powerpc/kernel/power7-pmu.o
-> arch/powerpc/kernel/power7-pmu.c:297: error: PERF_COUNT_CPU_CYCLES undeclared here (not in a function)
-> arch/powerpc/kernel/power7-pmu.c:297: error: array index in initializer not of integer type
-> arch/powerpc/kernel/power7-pmu.c:297: error: (near initialization for power7_generic_events)
-> arch/powerpc/kernel/power7-pmu.c:298: error: PERF_COUNT_INSTRUCTIONS undeclared here (not in a function)
-> arch/powerpc/kernel/power7-pmu.c:298: error: array index in initializer not of integer type
-> ......<SNIP>......
->
-> Reported-by: Sachin Sant <sachinp@in.ibm.com>
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->   
-Yes this fixed the build error.
+Hi Ben,
 
-Thanks
--Sachin
+On Fri, 2009-06-12 at 17:39 +1000, Benjamin Herrenschmidt wrote:
+> For example, slab_is_available() didn't always exist, and so in the
+> early days on powerpc, we used a mem_init_done global that is set form
+> mem_init() (not perfect but works in practice). And we still have code
+> using that to do the test.
 
+Looking at powerpc arch code, can we get rid of the *_maybe_bootmem()
+functions now? Or is slab initialization too late still? FWIW, I think
+one simple fix on PPC is to just clear __GFP_NOWAIT in those functions
+(all of them seem to be using GFP_KERNEL which is wrong during boot).
 
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+			Pekka
 
