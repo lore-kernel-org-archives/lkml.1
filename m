@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZFLXGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbZFLXHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZFLXGr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 19:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZFLXGj
+	id S1760804AbZFLXHs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 19:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZFLXHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 19:06:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60258 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbZFLXGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 19:06:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Sat, 13 Jun 2009 01:06:57 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Oliver Neukum <oliver@neukum.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906130106.58464.rjw@sisk.pl>
+	Fri, 12 Jun 2009 19:07:40 -0400
+Received: from ganymede.vroon.org ([195.66.242.11]:53064 "EHLO
+	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbZFLXHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 19:07:39 -0400
+Subject: Re: WARNING: at kernel/smp.c:369
+ smp_call_function_many+0x52/0x1b3() [2.6.30-01557-gb640f04]
+From: Tony Vroon <tony@vroon.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090612153906.GI12431@alberich.amd.com>
+References: <1244753567.3768.2.camel@localhost>
+	 <20090612153906.GI12431@alberich.amd.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-w5JPFhgWNg/tA/G14uZY"
+Date: Sat, 13 Jun 2009 00:07:37 +0100
+Message-Id: <1244848057.4174.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 June 2009, Alan Stern wrote:
-> On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > On Friday 12 June 2009, Alan Stern wrote:
-> > > On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > So, are you suggesting that the core should only check the "all children
-> > > > suspended" condition if special flag is set in dev_pm_info?
-> > > 
-> > > Or rather, check it only if the special flag _isn't_ set.
-> > 
-> > Where the default is unset, I guess?
-> 
-> Yep.
-> 
-> > But then, what about the resuming of the parents before the device is resumed?
-> > Should the parents be resumed regardless of the flag state?
-> 
-> Yes.  In general you should assume a device's parent (and the device
-> itself!) needs to be resumed whenever the kernel wants to do something
-> with the device.  The special flag arises because sometimes it's safe
-> to suspend the parent without suspending the device _if_ the kernel
-> isn't using the device.
-> 
-> Imagine an idle disk at the end of a link.  We might want to 
-> autosuspend the link without spinning down the disk.  When we have to 
-> communicate with the disk again, we autoresume the link.  (Including 
-> the case where the communication is a "spin-down" command.)
-> 
-> >  And if so, what's
-> > the condition for breaking the recurrence?  Surely it's not sufficient to check
-> > if the parent is active, because its parent need not be active if it has this
-> > special flag set.
-> 
-> That's a good question.  Let's assume that situations like this will be 
-> handled by the drivers.
-> 
-> For example, suppose A is the parent of B is the parent of C, and A is
-> suspended but B isn't and C is.  What happens when somebody wants to
-> use C?
-> 
-> An autoresume request is generated for C.  Since C's parent is already
-> resumed, the runtime_resume method in C's driver is called.  The driver
-> has to do some I/O in order to resume C, so it passes an I/O request up
-> to B's driver.  The request then gets passed up to A's driver.  This
-> driver knows that A is suspended, so it starts an autoresume of A and
-> waits for the autoresume to complete before carrying out the request.
-> 
-> Then the I/O can go through, so C gets resumed and everything works 
-> out.
-> 
-> I don't know how often this sort of pattern will arise.  It certainly
-> could be used in usb-storage; there would be no difficulty starting an
-> autoresume when an I/O request arrives from the SCSI layer below.  In
-> fact, that is exactly how some early runtime-PM patches for usb-storage
-> worked.
 
-So, the conclusion seems to be that we should break the recurrence
-at the point we find an already active device or a device with no parent and
-let the driver(s) handle the more complicated cases.  Is this correct?
+--=-w5JPFhgWNg/tA/G14uZY
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-BTW, is __device_release_driver() the right place for blocking the run-time PM
-temporarily during remove?
+On Fri, 2009-06-12 at 17:39 +0200, Andreas Herrmann wrote:
+> On Thu, Jun 11, 2009 at 09:52:47PM +0100, Tony Vroon wrote:
+> > This one is new to me:
+>    ...
+> > ------------[ cut here ]------------
+> > WARNING: at kernel/smp.c:369 smp_call_function_many+0x52/0x1b3()
+>    ...
+> > ---[ end trace 4eaa2a86a8e2da22 ]---
+> > start_kernel(): bug: interrupts were enabled *very* early, fixing it
+>=20
+> Same here with v2.6.30-2327-g8ebf975, e.g.
+>=20
+> Jun 16 04:07:35 polonium ------------[ cut here ]------------
+> Jun 16 04:07:35 polonium WARNING: at kernel/smp.c:369 smp_call_function_m=
+any+0x\
+> 52/0x1b3()
 
-Best,
-Rafael
+Fixed by commit 8429db5c6336083594036c30f49401405d536911, thank you
+Pekka :)
+
+Regards,
+Tony V.
+
+
+--=-w5JPFhgWNg/tA/G14uZY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEABECAAYFAkoy37kACgkQp5vW4rUFj5rR9ACdHe9moqm7nqShubo+yf+GytSm
+whoAoJ8XpTkV05XM88zdfz7qEKLSN+KT
+=Qs63
+-----END PGP SIGNATURE-----
+
+--=-w5JPFhgWNg/tA/G14uZY--
+
