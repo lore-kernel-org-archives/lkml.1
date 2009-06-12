@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbZFLRhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbZFLRiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763606AbZFLRhB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 13:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZFLRgx
+	id S1763136AbZFLRiO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 13:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZFLRh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 13:36:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57678 "EHLO mx3.mail.elte.hu"
+	Fri, 12 Jun 2009 13:37:59 -0400
+Received: from mga01.intel.com ([192.55.52.88]:62570 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755893AbZFLRgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 13:36:53 -0400
-Date: Fri, 12 Jun 2009 19:36:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counters: start documenting HAVE_PERF_COUNTERS
-	requirements
-Message-ID: <20090612173647.GC22015@elte.hu>
-References: <1244827063-24046-1-git-send-email-vapier@gentoo.org> <20090612173031.GA11233@elte.hu> <8bd0f97a0906121032p12710878h14c5013fbec58b91@mail.gmail.com>
+	id S1751834AbZFLRh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 13:37:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,210,1243839600"; 
+   d="scan'208";a="465847387"
+Message-ID: <4A329278.3010607@intel.com>
+Date: Fri, 12 Jun 2009 10:38:00 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0906121032p12710878h14c5013fbec58b91@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Li Yang <leoli@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>,
+       Timur Tabi <timur@freescale.com>, David Hawkins <dwh@ovro.caltech.edu>,
+       Liu Dave-R63238 <DaveLiu@freescale.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+References: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net> <49F608B7.9080409@ovro.caltech.edu> <49F60A3A.4060402@freescale.com> <49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com> <20090427204213.GA4960@ovro.caltech.edu> <49F619C4.20100@freescale.com> <e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com> <09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org> <20090611151750.GB9323@ovro.caltech.edu> <2a27d3730906120223w9f30b7ewfd22eb328e3a23d3@mail.gmail.com> <24633D89-D4EC-4C27-8B7F-3992EFE50989@kernel.crashing.org>
+In-Reply-To: <24633D89-D4EC-4C27-8B7F-3992EFE50989@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Frysinger <vapier.adi@gmail.com> wrote:
-
-> On Fri, Jun 12, 2009 at 13:30, Ingo Molnar wrote:
-> > * Mike Frysinger <vapier@gentoo.org> wrote:
-> >> Help out arch porters who want to support perf counters by listing some
-> >> basic requirements.
-> >>
-> >> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> >> ---
-> >> i imagine more details would be good, but this is a starting point and
-> >> better than nothing
-> >>
-> >>  init/Kconfig          |    2 ++
-> >>  tools/perf/design.txt |   15 +++++++++++++++
-> >>  2 files changed, 17 insertions(+), 0 deletions(-)
-> >>
-> >> diff --git a/init/Kconfig b/init/Kconfig
-> >> index c649657..20f85b1 100644
-> >> --- a/init/Kconfig
-> >> +++ b/init/Kconfig
-> >> @@ -936,6 +936,8 @@ config AIO
-> >>
-> >>  config HAVE_PERF_COUNTERS
-> >>       bool
-> >> +     help
-> >> +       See end of tools/perf/design.txt
-> >>
-> >>  menu "Performance Counters"
-> >
-> > Applied, thanks Mike! I have made a small change: i changed it from
-> > help text into a regular comment. We usually use help texts for
-> > interactive Kconfig options - but this is not one.
+Kumar Gala wrote:
+> On Jun 12, 2009, at 4:23 AM, Li Yang wrote:
 > 
-> yes, but i like the help text because when i use the kconfig 
-> search option, it shows up.  otherwise doing a search for 
-> HAVE_PERF_COUNTERS shows nothing useful.
+>> On Thu, Jun 11, 2009 at 11:17 PM, Ira Snyder<iws@ovro.caltech.edu>  
+>> wrote:
+>>> On Wed, Jun 10, 2009 at 09:45:26PM -0500, Kumar Gala wrote:
+>>>> On Apr 27, 2009, at 3:49 PM, Dan Williams wrote:
+>>>>
+>>>>> On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com>
+>>>>> wrote:
+>>>>>> Adding Kumar to the CC: list, since he might pick up the patch.
+>>>>>>
+>>>>> Acked-by: Dan Williams <dan.j.williams@intel.com>
+>>>>>
+>>>>> I agree with taking this through Kumar's tree.
+>>>> I'm going through patches for .31.. Should I still pick this up?   
+>>>> Going
+>>>> forward should I pick up fsldma patches?
+>>>>
+>>> I'm fine with that, but you should probably talk to Li Yang (added to
+>>> CC). He's gotten in contact with me a few times recently.
+>> I am fine with both ways for this patch as it is only related to
+>> Freescale register details.  But in general I think patches should go
+>> through functional subsystem, as they usually would need insight of
+>> the subsystem architecture.  I prefer the way that the patch acked or
+>> signed-off by Freescale guys and push upstream through Dan's tree as
+>> most other subsystems did.  Unless Dan prefers to ack the subsystem
+>> architectural part of each patch and have them pushed other way.
+> 
+> I agree w/this and just wanting to see what Dan's preference is.
 
-When i did this modification i tried that in 'make menuconfig' and 
-the help didnt show up. Is it only available in certain kconfig 
-methods?
+I'll take fsldma patches through the dmaengine tree with Leo's 
+ack/sign-off.  That last request was a one-off because I had nothing 
+else to push and the discussion was very architecture specific.
 
-	Ingo
+Thanks,
+Dan
