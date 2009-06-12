@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbZFLSEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933688AbZFLSF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759335AbZFLSEr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 14:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933189AbZFLSEM
+	id S933688AbZFLSF3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 14:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933110AbZFLSFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 14:04:12 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:43877 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933160AbZFLSEJ (ORCPT
+	Fri, 12 Jun 2009 14:05:04 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:64603 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758844AbZFLSFC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 14:04:09 -0400
-Date: Fri, 12 Jun 2009 20:06:26 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Petr Tesarik <ptesarik@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH v2 0/8] clean up vdso-layout.lds.S
-Message-ID: <20090612180626.GB18203@uranus.ravnborg.org>
-References: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 12 Jun 2009 14:05:02 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [BUG][2.6.30] Niced processes do not raise CPU frequency with ondemand
+Date: Fri, 12 Jun 2009 20:05:02 +0200
+User-Agent: KMail/1.9.9
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+References: <200906121844.02004.elendil@planet.nl> <200906121925.38693.elendil@planet.nl> <1244828508.4534.1404.camel@localhost.localdomain>
+In-Reply-To: <1244828508.4534.1404.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200906122005.02965.elendil@planet.nl>
+X-OriginalArrivalTime: 12 Jun 2009 18:05:03.0575 (UTC) FILETIME=[4F53EE70:01C9EB88]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 03:40:32PM +0200, Petr Tesarik wrote:
-> The handling of various sections in the VDSO linker script
-> looks pretty haphazard. This patch series cleans it up in
-> these regards:
-> 
->  - improve the coding style
->  - remove superfluous sections
->  - issue a linker error if a section is encountered which
->    is known not to work
->  - check that the .got section is empty, except for the
->    three entries defined by the ABI
->  - discard sections which are not useful to user-space
-> 
-> Petr Tesarik (8):
->   x86: Adjust the coding style of vdso-layout.lds.S
->   x86: Remove .sdata from the vDSO linker script
->   x86: add .broken section to the vDSO linker script
->   x86: mark altinstr-related sections in vDSO as broken
->   x86: mark some standard sections as broken in a vDSO
->   x86: check the size of GOT in vDSO
->   x86: remove unneeded section from the vDSO
-The above looks good.
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+On Friday 12 June 2009, Pallipadi, Venkatesh wrote:
+> On Fri, 2009-06-12 at 10:25 -0700, Frans Pop wrote:
+> > On Friday 12 June 2009, Pallipadi, Venkatesh wrote:
+> > > What does ignore_nice under cpufreq/ondemand say?
+> >
+> > Right, that's 1 (was not aware that existed :-P)
+> > And changing it to 0 solves the problem.
+>
+> OK. Good to know that there are no kernel bugs with honoring
+> ignore_nice_load setting. :)
+>
+> > Next question is: how and why does it get set?
+> > As userland has not changed (AFAIK), my first suspect remains the
+> > kernel.
+>
+> Kernel never sets this. It is initialized to 0 and provides a /sys
+> interface to user. I think it is set by some user app
+> (gnome-power-manager or some other app like that). That explains why it
+> is 0 initially after boot and gets changed later.
+>
+> The support for ignore_nice_load=1 was broken in kernel for a short
+> while (arounf 2.6.28, IIRC). That may be the reason why this behavior
+> was not noticed earlier.
 
-> 
->   x86: Remove .dynbss from the vDSO linker script
-This one I am a little reluctant about as I do not understand
-why ld sometimes adds and sometimes does not add this section.
-At least judging from the arch specific linker scripts some archs
-include it and others do not.
+Thanks for the info. I'll see if I can figure out what's responsible.
+At least I know where to look now.
 
-I grepped the binutils source and bfd/elf64-x86-64.c mentions
-dynbss several times.
-Maybe just adding it to broken would suffice as we would
-then be informed it it is used by some ld versions?
-
-	Sam
+Cheers,
+FJP
