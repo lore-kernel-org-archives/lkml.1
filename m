@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbZFLJWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933379AbZFLJWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342AbZFLJWY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 05:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763168AbZFLJWN
+	id S933379AbZFLJWj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 05:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763168AbZFLJW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 05:22:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51493 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbZFLJWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 05:22:12 -0400
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
- suspending
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20090612091002.GA32052@elte.hu>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
-	 <20090612091002.GA32052@elte.hu>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 19:21:55 +1000
-Message-Id: <1244798515.7172.99.camel@pasglop>
+	Fri, 12 Jun 2009 05:22:29 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53594 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbZFLJW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 05:22:28 -0400
+Date: Fri, 12 Jun 2009 12:22:29 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linux-kernel@vger.kernel.org, npiggin@suse.de, mingo@elte.hu
+Subject: [PATCH] powerpc: don't pass GFP_WAIT to kmalloc() from *_maybe_bootmem()
+Message-ID: <Pine.LNX.4.64.0906121215090.30411@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> We emit a debug warning but dont crash, so all should be fine and 
-> the culprits can then be fixed, right?
+As slab is initialized much earlier now, we must not pass GFP_WAIT to kmalloc()
+from *_maybe_bootmem() functions; otherwise slab allocators will enable
+interrupts.
 
- ... rewind ... :-)
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Ben, while we're discussing the slab side of things, can we go ahead and 
+merge this one? It should fix plenty of cases for powerpc.
 
-Ok so, no, the culprit cannot be all fixed in a satifactory way.
+ arch/powerpc/lib/alloc.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-The main reason is that I believe it's not "right" to have every caller
-of slab around know whether GFP_KERNEL is good to go or it should get
-into GFP_NOWAIT. This depends on many factors (among others us moving
-things around more), and is not actually a good solution for thing that
-can be called both at boot and later, such as get_vm_area().
-
-I really think we are looking for trouble (and a lot of hidden bugs) by
-trying to "fix" all callers, in addition to making some code like
-vmalloc() more failure prone because it's unconditionally changed from
-GFP_KERNEL to GFP_NOWAIT.
-
-It seems a lot more reasonably to me to have sl*b naturally degrade to
-NOWAIT when it's too early to enable interrupts.
-
-In addition, my proposal of having bits to mask off gfp will also be
-useful in fixing similar issues with suspend/resume vs. GFP_NOIO which
-should really become implicit when devices start becoming suspended.
-
-Cheers,
-Ben.
-
+diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
+index f53e09c..56b35e3 100644
+--- a/arch/powerpc/lib/alloc.c
++++ b/arch/powerpc/lib/alloc.c
+@@ -9,7 +9,7 @@
+ void * __init_refok alloc_maybe_bootmem(size_t size, gfp_t mask)
+ {
+ 	if (mem_init_done)
+-		return kmalloc(size, mask);
++		return kmalloc(size, mask & ~__GFP_WAIT);
+ 	else
+ 		return alloc_bootmem(size);
+ }
+@@ -19,7 +19,7 @@ void * __init_refok zalloc_maybe_bootmem(size_t size, gfp_t mask)
+ 	void *p;
+ 
+ 	if (mem_init_done)
+-		p = kzalloc(size, mask);
++		p = kzalloc(size, mask & ~__GFP_WAIT);
+ 	else {
+ 		p = alloc_bootmem(size);
+ 		if (p)
+-- 
+1.6.0.4
 
