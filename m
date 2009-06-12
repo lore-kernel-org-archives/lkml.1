@@ -1,275 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934567AbZFLWql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934593AbZFLWqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934567AbZFLWql (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 18:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932488AbZFLWor
+	id S934593AbZFLWqy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 18:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932145AbZFLWot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 18:44:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55177 "EHLO mx2.redhat.com"
+	Fri, 12 Jun 2009 18:44:49 -0400
+Received: from tichy.grunau.be ([85.131.189.73]:38666 "EHLO tichy.grunau.be"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932614AbZFLWob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 18:44:31 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RESEND][ PATCH -tip -v9 0/7] tracing: kprobe-based event tracer and
-	x86 instruction decoder
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       =?utf-8?q?Przemys=C5=82aw?= =?utf-8?q?Pawe=C5=82czyk?= 
-	<przemyslaw@pawelczyk.it>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Fri, 12 Jun 2009 18:44:47 -0400
-Message-ID: <20090612224447.17311.72404.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	id S932504AbZFLWoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 18:44:37 -0400
+Date: Sat, 13 Jun 2009 00:33:26 +0200
+From: Janne Grunau <j@jannau.net>
+To: acpi4asus-user@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, Corentin Chary <corentincj@iksaif.net>
+Subject: [PATCH 2/2] eeepc-laptop: add rfkill support for the 3G modem in
+	Eee PC 901 Go
+Message-ID: <20090612223326.GF14878@aniel.lan>
+References: <cover.1244845758.git.j@jannau.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cover.1244845758.git.j@jannau.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo and Steven,
-
-Here, I'm resending v9 patches, which is just updated for the latest -tip.
-
-Here are the patches of kprobe-based event tracer for x86, version 9,
-which allows you to probe various kernel events through ftrace interface.
-The tracer supports per-probe filtering which allows you to set filters
-on each probe and shows formats of each probe. I think this is more
-generic integration with ftrace, especially event-tracer.
-
-This patchset also includes x86(-64) instruction decoder which
-supports non-SSE/FP opcodes and includes x86 opcode map. The decoder
-is used for finding the instruction boundaries when inserting new
-kprobes. I think it will be possible to share this opcode map
-with KVM's decoder.
-The decoder is tested when building kernel, the test compares the 
-results of objdump and the decoder right after building vmlinux.
-You can enable that test by CONFIG_X86_DECODER_SELFTEST=y.
-
-This series can be applied on the latest linux-2.6-tip tree.
-
-This supports only x86(-32/-64) (but porting it on other arch
-just needs kprobes/kretprobes and register and stack access APIs).
-
-This patchset includes following changes:
-- Add x86 instruction decoder [1/7]
-- Add x86 instruction decoder selftest [2/7]
-- Check insertion point safety in kprobe [3/7]
-- Cleanup fix_riprel() with insn decoder [4/7]
-- Add arch-dep register and stack fetching functions [5/7]
-- Add dynamic event_call support to ftrace [6/7]
-- Add kprobe-based event tracer [7/7]
-
-
-Enhancement ideas will be added after merging:
-- .init function tracing support.
-- Support primitive types(long, ulong, int, uint, etc) for args.
-
-
-Kprobe-based Event Tracer
-=========================
-
-Overview
---------
-This tracer is similar to the events tracer which is based on Tracepoint
-infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
-and kretprobe). It probes anywhere where kprobes can probe(this means, all
-functions body except for __kprobes functions).
-
-Unlike the function tracer, this tracer can probe instructions inside of
-kernel functions. It allows you to check which instruction has been executed.
-
-Unlike the Tracepoint based events tracer, this tracer can add new probe points
-on the fly.
-
-Similar to the events tracer, this tracer doesn't need to be activated via
-current_tracer, instead of that, just set probe points via
-/sys/kernel/debug/tracing/kprobe_events. And you can set filters on each
-probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
-
-
-Synopsis of kprobe_events
--------------------------
-  p[:EVENT] SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: set a probe
-  r[:EVENT] SYMBOL[+0] [FETCHARGS]			: set a return probe
-
- EVENT			: Event name
- SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted
- MEMADDR		: Address where the probe is inserted
-
- FETCHARGS		: Arguments
-  %REG	: Fetch register REG
-  sN	: Fetch Nth entry of stack (N >= 0)
-  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-  @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
-  aN	: Fetch function argument. (N >= 0)(*)
-  rv	: Fetch return value.(**)
-  ra	: Fetch return address.(**)
-  +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.(***)
-
-  (*) aN may not correct on asmlinkaged functions and at the middle of
-      function body.
-  (**) only for return probe.
-  (***) this is useful for fetching a field of data structures.
-
-
-Per-Probe Event Filtering
--------------------------
- Per-probe event filtering feature allows you to set different filter on each
-probe and gives you what arguments will be shown in trace buffer. If an event
-name is specified right after 'p:' or 'r:' in kprobe_events, the tracer adds
-an event under tracing/events/kprobes/<EVENT>, at the directory you can see
-'id', 'enabled', 'format' and 'filter'.
-
-enabled:
-  You can enable/disable the probe by writing 1 or 0 on it.
-
-format:
-  It shows the format of this probe event. It also shows aliases of arguments
- which you specified to kprobe_events.
-
-filter:
-  You can write filtering rules of this event. And you can use both of aliase
- names and field names for describing filters.
-
-
-Usage examples
---------------
-To add a probe as a new event, write a new definition to kprobe_events
-as below.
-
-  echo p:myprobe do_sys_open a0 a1 a2 a3 > /sys/kernel/debug/tracing/kprobe_events
-
- This sets a kprobe on the top of do_sys_open() function with recording
-1st to 4th arguments as "myprobe" event.
-
-  echo r:myretprobe do_sys_open rv ra >> /sys/kernel/debug/tracing/kprobe_events
-
- This sets a kretprobe on the return point of do_sys_open() function with
-recording return value and return address as "myretprobe" event.
- You can see the format of these events via
-/sys/kernel/debug/tracing/events/kprobes/<EVENT>/format.
-
-  cat /sys/kernel/debug/tracing/events/kprobes/myprobe/format
-name: myprobe
-ID: 23
-format:
-	field:unsigned short common_type;	offset:0;	size:2;
-	field:unsigned char common_flags;	offset:2;	size:1;
-	field:unsigned char common_preempt_count;	offset:3;	size:1;
-	field:int common_pid;	offset:4;	size:4;
-	field:int common_tgid;	offset:8;	size:4;
-
-	field: unsigned long ip;	offset:16;tsize:8;
-	field: int nargs;	offset:24;tsize:4;
-	field: unsigned long arg0;	offset:32;tsize:8;
-	field: unsigned long arg1;	offset:40;tsize:8;
-	field: unsigned long arg2;	offset:48;tsize:8;
-	field: unsigned long arg3;	offset:56;tsize:8;
-
-	alias: a0;	original: arg0;
-	alias: a1;	original: arg1;
-	alias: a2;	original: arg2;
-	alias: a3;	original: arg3;
-
-print fmt: "%lx: 0x%lx 0x%lx 0x%lx 0x%lx", ip, arg0, arg1, arg2, arg3
-
-
- You can see that the event has 4 arguments and alias expressions
-corresponding to it.
-
-  echo > /sys/kernel/debug/tracing/kprobe_events
-
- This clears all probe points. and you can see the traced information via
-/sys/kernel/debug/tracing/trace.
-
-  cat /sys/kernel/debug/tracing/trace
-# tracer: nop
-#
-#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-#              | |       |          |         |
-           <...>-1447  [001] 1038282.286875: do_sys_open+0x0/0xd6: 0x3 0x7fffd1ec4440 0x8000 0x0
-           <...>-1447  [001] 1038282.286878: sys_openat+0xc/0xe <- do_sys_open: 0xfffffffffffffffe 0xffffffff81367a3a
-           <...>-1447  [001] 1038282.286885: do_sys_open+0x0/0xd6: 0xffffff9c 0x40413c 0x8000 0x1b6
-           <...>-1447  [001] 1038282.286915: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
-           <...>-1447  [001] 1038282.286969: do_sys_open+0x0/0xd6: 0xffffff9c 0x4041c6 0x98800 0x10
-           <...>-1447  [001] 1038282.286976: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
-
-
- Each line shows when the kernel hits a probe, and <- SYMBOL means kernel
-returns from SYMBOL(e.g. "sys_open+0x1b/0x1d <- do_sys_open" means kernel
-returns from do_sys_open to sys_open+0x1b).
-
-
-Thank you,
-
+Signed-off-by: Janne Grunau <j@jannau.net>
 ---
+ drivers/platform/x86/eeepc-laptop.c |   56 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 56 insertions(+), 0 deletions(-)
 
-Masami Hiramatsu (7):
-      tracing: add kprobe-based event tracer
-      tracing: ftrace dynamic ftrace_event_call support
-      x86: add pt_regs register and stack access APIs
-      kprobes: cleanup fix_riprel() using insn decoder on x86
-      kprobes: checks probe address is instruction boudary on x86
-      x86: x86 instruction decoder build-time selftest
-      x86: instruction decoder API
-
-
- Documentation/trace/kprobes.txt        |  138 ++++
- arch/x86/Kconfig.debug                 |    9 
- arch/x86/Makefile                      |    3 
- arch/x86/include/asm/inat.h            |  127 +++
- arch/x86/include/asm/insn.h            |  136 ++++
- arch/x86/include/asm/ptrace.h          |  122 +++
- arch/x86/kernel/kprobes.c              |  197 ++---
- arch/x86/kernel/ptrace.c               |   73 ++
- arch/x86/lib/Makefile                  |   13 
- arch/x86/lib/inat.c                    |   82 ++
- arch/x86/lib/insn.c                    |  473 +++++++++++++
- arch/x86/lib/x86-opcode-map.txt        |  711 +++++++++++++++++++
- arch/x86/scripts/Makefile              |   19 +
- arch/x86/scripts/distill.awk           |   42 +
- arch/x86/scripts/gen-insn-attr-x86.awk |  314 ++++++++
- arch/x86/scripts/test_get_len.c        |   99 +++
- arch/x86/scripts/user_include.h        |   49 +
- include/linux/ftrace_event.h           |   13 
- include/trace/ftrace.h                 |   22 -
- kernel/trace/Kconfig                   |   11 
- kernel/trace/Makefile                  |    1 
- kernel/trace/trace.h                   |   22 +
- kernel/trace/trace_event_types.h       |   20 +
- kernel/trace/trace_events.c            |   70 +-
- kernel/trace/trace_export.c            |   27 -
- kernel/trace/trace_kprobe.c            | 1183 ++++++++++++++++++++++++++++++++
- 26 files changed, 3824 insertions(+), 152 deletions(-)
- create mode 100644 Documentation/trace/kprobes.txt
- create mode 100644 arch/x86/include/asm/inat.h
- create mode 100644 arch/x86/include/asm/insn.h
- create mode 100644 arch/x86/lib/inat.c
- create mode 100644 arch/x86/lib/insn.c
- create mode 100644 arch/x86/lib/x86-opcode-map.txt
- create mode 100644 arch/x86/scripts/Makefile
- create mode 100644 arch/x86/scripts/distill.awk
- create mode 100644 arch/x86/scripts/gen-insn-attr-x86.awk
- create mode 100644 arch/x86/scripts/test_get_len.c
- create mode 100644 arch/x86/scripts/user_include.h
- create mode 100644 kernel/trace/trace_kprobe.c
-
+diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
+index 8d1ecc0..288a4c8 100644
+--- a/drivers/platform/x86/eeepc-laptop.c
++++ b/drivers/platform/x86/eeepc-laptop.c
+@@ -132,6 +132,7 @@ struct eeepc_hotk {
+ 	u16 *keycode_map;
+ 	struct rfkill *eeepc_wlan_rfkill;
+ 	struct rfkill *eeepc_bluetooth_rfkill;
++	struct rfkill *eeepc_wwan3g_rfkill;
+ 	struct hotplug_slot *hotplug_slot;
+ };
+ 
+@@ -352,6 +353,23 @@ static void __init eeepc_enable_camera(void)
+ 	set_acpi(CM_ASL_CAMERA, 1);
+ }
+ 
++static int eeepc_wwan3g_rfkill_set(void *data, enum rfkill_state state)
++{
++	if (state == RFKILL_STATE_SOFT_BLOCKED)
++		return set_acpi(CM_ASL_3G, 0);
++	else
++		return set_acpi(CM_ASL_3G, 1);
++}
++
++static int eeepc_wwan3g_rfkill_state(void *data, enum rfkill_state *state)
++{
++	if (get_acpi(CM_ASL_3G) == 1)
++		*state = RFKILL_STATE_UNBLOCKED;
++	else
++		*state = RFKILL_STATE_SOFT_BLOCKED;
++	return 0;
++}
++
+ /*
+  * Sys helpers
+  */
+@@ -869,6 +887,35 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 			goto bluetooth_fail;
+ 	}
+ 
++	if (get_acpi(CM_ASL_3G) != -1) {
++		ehotk->eeepc_wwan3g_rfkill =
++			rfkill_allocate(&device->dev, RFKILL_TYPE_WWAN);
++
++		if (!ehotk->eeepc_wwan3g_rfkill)
++			goto wwan_fail;
++
++		ehotk->eeepc_wwan3g_rfkill->name = "eeepc-3g";
++		ehotk->eeepc_wwan3g_rfkill->toggle_radio =
++			eeepc_wwan3g_rfkill_set;
++		ehotk->eeepc_wwan3g_rfkill->get_state =
++			eeepc_wwan3g_rfkill_state;
++		if (get_acpi(CM_ASL_3G) == 1) {
++			ehotk->eeepc_wwan3g_rfkill->state =
++				RFKILL_STATE_UNBLOCKED;
++			rfkill_set_default(RFKILL_TYPE_WWAN,
++					   RFKILL_STATE_UNBLOCKED);
++		} else {
++			ehotk->eeepc_wwan3g_rfkill->state =
++				RFKILL_STATE_SOFT_BLOCKED;
++			rfkill_set_default(RFKILL_TYPE_WWAN,
++					   RFKILL_STATE_SOFT_BLOCKED);
++		}
++
++		result = rfkill_register(ehotk->eeepc_wwan3g_rfkill);
++		if (result)
++			goto wwan_fail;
++	}
++
+ 	result = eeepc_setup_pci_hotplug();
+ 	/*
+ 	 * If we get -EBUSY then something else is handling the PCI hotplug -
+@@ -882,6 +929,13 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 	return 0;
+ 
+  pci_fail:
++	if (ehotk->eeepc_wwan3g_rfkill)
++		rfkill_unregister(ehotk->eeepc_wwan3g_rfkill);
++wwan_fail:
++	if (ehotk->eeepc_wwan3g_rfkill) {
++		rfkill_free(ehotk->eeepc_wwan3g_rfkill);
++		ehotk->eeepc_wwan3g_rfkill = NULL;
++	}
+ 	if (ehotk->eeepc_bluetooth_rfkill)
+ 		rfkill_unregister(ehotk->eeepc_bluetooth_rfkill);
+  bluetooth_fail:
+@@ -1041,6 +1095,8 @@ static void eeepc_rfkill_exit(void)
+ 		rfkill_unregister(ehotk->eeepc_wlan_rfkill);
+ 	if (ehotk->eeepc_bluetooth_rfkill)
+ 		rfkill_unregister(ehotk->eeepc_bluetooth_rfkill);
++	if (ehotk->eeepc_wwan3g_rfkill)
++		rfkill_unregister(ehotk->eeepc_wwan3g_rfkill);
+ }
+ 
+ static void eeepc_input_exit(void)
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+1.6.0.4
