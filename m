@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbZFLIUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbZFLIZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932968AbZFLIUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 04:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZFLIU3
+	id S1762235AbZFLIZq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 04:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZFLIZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 04:20:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39410 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752998AbZFLIU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 04:20:27 -0400
-Date: Fri, 12 Jun 2009 10:20:29 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, mingo@elte.hu, cl@linux-foundation.org,
-       akpm@linux-foundation.org
-Subject: Re: slab: setup allocators earlier in the boot sequence
-Message-ID: <20090612082029.GC24044@wotan.suse.de>
-References: <1244779009.7172.52.camel@pasglop> <1244780756.7172.58.camel@pasglop> <1244783235.7172.61.camel@pasglop> <Pine.LNX.4.64.0906120913460.26843@melkki.cs.Helsinki.FI> <1244792079.7172.74.camel@pasglop> <1244792745.30512.13.camel@penberg-laptop> <20090612075427.GA24044@wotan.suse.de> <1244793592.30512.17.camel@penberg-laptop> <20090612080236.GB24044@wotan.suse.de> <1244793879.30512.19.camel@penberg-laptop>
-Mime-Version: 1.0
+	Fri, 12 Jun 2009 04:25:32 -0400
+Received: from mga12.intel.com ([143.182.124.36]:32624 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752462AbZFLIZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 04:25:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,208,1243839600"; 
+   d="scan'208";a="153495862"
+Date: Fri, 12 Jun 2009 16:08:55 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] perf_counter/x86: Add a quirk for Atom processors
+Message-ID: <20090612080855.GA2286@ywang-moblin2.bj.intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244793879.30512.19.camel@penberg-laptop>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 11:04:39AM +0300, Pekka Enberg wrote:
-> Hi Nick,
-> 
-> On Fri, 2009-06-12 at 10:02 +0200, Nick Piggin wrote:
-> > Fair enough, but this can be done right down in the synchronous
-> > reclaim path in the page allocator. This will catch more cases
-> > of code using the page allocator directly, and should be not
-> > as hot as the slab allocator.
-> 
-> So you want to push the local_irq_enable() to the page allocator too? We
+The fixed-function performance counters do not work on current Atom
+processors. Use the general-purpose ones instead.
 
-Well it would be nice to expose some page allocator functionality
-at a bit lower level, yes. Like another thing is to avoid atomic
-refcounting when there is no need for it (eg. in allocations for slab).
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
 
+---
+ perf_counter.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-> can certainly do that but I think we ought to wait for Andrew to merge
-> Mel's patches to mainline first, OK?
-
-Sure.
-
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 895c82e..4bba0d8 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -968,6 +968,12 @@ fixed_mode_idx(struct perf_counter *counter, struct hw_perf_counter *hwc)
+ 	if (!x86_pmu.num_counters_fixed)
+ 		return -1;
+ 
++        /* 
++	 * Quirk: IA32_FIXED_CTRs do not work on current Atom processors  
++	 */
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL && boot_cpu_data.x86_model == 28)
++		return -1;
++
+ 	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
+ 
+ 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
