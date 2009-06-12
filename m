@@ -1,68 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762548AbZFLM7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762486AbZFLM77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762548AbZFLM7m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 08:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760002AbZFLMzx
+	id S1762486AbZFLM77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 08:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbZFLM57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 08:55:53 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:34986 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759964AbZFLMzw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 08:55:52 -0400
-Date: Fri, 12 Jun 2009 14:55:51 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] lis3: add click function
-Message-ID: <20090612125550.GF29236@buzzloop.caiaq.de>
-References: <20090612101805.GC18682@elf.ucw.cz> <1244803042-2913-1-git-send-email-daniel@caiaq.de> <4A323FB4.1090404@tremplin-utc.net> <20090612123156.GE29236@buzzloop.caiaq.de> <4A324F00.7020602@tremplin-utc.net>
+	Fri, 12 Jun 2009 08:57:59 -0400
+Received: from mga03.intel.com ([143.182.124.21]:39453 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761557AbZFLM56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 08:57:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,209,1243839600"; 
+   d="scan'208";a="153559658"
+Date: Fri, 12 Jun 2009 20:57:41 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when
+	feature is disabled
+Message-ID: <20090612125741.GA6140@localhost>
+References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A324F00.7020602@tremplin-utc.net>
+In-Reply-To: <20090612112258.GA14123@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 02:50:08PM +0200, Éric Piel wrote:
-> > static struct spi_board_info my_spi_devices[] __initdata = {
-> >         {
-> >                 .modalias       = "lis3lv02d_spi",
-> >                 .max_speed_hz   = 1000000,
-> >                 .bus_num        = 0,
-> >                 .chip_select    = 0,
-> >                 .controller_data = (void *) mfp_to_gpio(GPIO_ACCEL_CS),
-> >                 .platform_data  = &lis3_pdata,
-> >                 .irq            = gpio_to_irq(mfp_to_gpio(GPIO_ACCEL_IRQ)),
-> >         },
+Hi Ingo,
+
+On Fri, Jun 12, 2009 at 07:22:58PM +0800, Ingo Molnar wrote:
+> 
+> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > So as to eliminate one #ifdef in the c source.
 > > 
-> I see. So your platform is not among the one contained in the vanilla
-> kernel? Shouldn't this above code be written somewhere so that people
-> know about it? Some of the values do not seem especially obvious!
+> > Proposed by Nick Piggin.
+> > 
+> > CC: Nick Piggin <npiggin@suse.de>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  arch/x86/mm/fault.c |    3 +--
+> >  include/linux/mm.h  |    7 ++++++-
+> >  2 files changed, 7 insertions(+), 3 deletions(-)
+> > 
+> > --- sound-2.6.orig/arch/x86/mm/fault.c
+> > +++ sound-2.6/arch/x86/mm/fault.c
+> > @@ -819,14 +819,13 @@ do_sigbus(struct pt_regs *regs, unsigned
+> >  	tsk->thread.error_code	= error_code;
+> >  	tsk->thread.trap_no	= 14;
+> >  
+> > -#ifdef CONFIG_MEMORY_FAILURE
+> >  	if (fault & VM_FAULT_HWPOISON) {
+> >  		printk(KERN_ERR
+> >  	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
+> >  			tsk->comm, tsk->pid, address);
+> >  		code = BUS_MCEERR_AR;
+> >  	}
+> > -#endif
+> 
+> Btw., anything like this should happen in close cooperation with the 
+> x86 tree, not as some pure MM feature. I dont see Cc:s and nothing 
+> that indicates that realization. What's going on here?
 
-The platform is currently under development and will be merged at some
-later point. The magics above are just GPIO defintions - everything
-else is just the usual glue logic you add when registering an SPI
-device.
+Ah sorry for the ignorance!  Andi has a nice overview of the big
+picture here: http://lkml.org/lkml/2009/6/3/371
 
-> > We're using the IRQ outputs of that chips directly as source to other
-> > circuity, so there is no userspace logic in the game. If anyone needs
-> > that, a simple callback function would be easy to add at some later
-> > point.
-> I guess that to have the functionality in ACPI, a complete handling of
-> the interruptions, up to the generation of button events would be
-> needed. This can be done later on, whenever someone finds the need...
+In the above chunk, the process is trying to access the already
+corrupted page and thus shall be killed, otherwise it will either
+silently consume corrupted data, or will trigger another (deadly)
+MCE event and bring down the whole machine.
 
-Ack.
+VM_FAULT_HWPOISON is tagged by the hwpoison code to indicate that the
+previously mapped page contains corrupted data, and is unrecoverable
+because there are no valid on-disk copy that can be reloaded.
 
-> Acked-by: Eric Piel <eric.piel@tremplin-utc.net>
+> It is not at all clear to me whether propagating hardware failures 
+> this widely is desired from a general design POV. Most desktop 
+> hardware wont give a damn about this (and if a hardware fault 
+> happens you want to get as far from the crappy hardware as possible) 
+> so i'm not sure how relevant it is and how well tested it will 
+> become in practice.
 
-Thanks :)
+Intel Nehalem-EX will have this feature, and is going to ship in
+volume servers in the coming years. Given that the servers may
+well be equipped with tons of memory, memory failures (especially
+soft errors http://en.wikipedia.org/wiki/Soft_error) become
+un-ignorable.
 
-Andrew, could you queue that one?
+Sunspot Maximum is underway by 2011 and we must be prepared for it ;)
 
-Daniel
+> I.e. really some wider discussion needs to happen on this.
+
+OK.
+
+
+Thanks,
+Fengguang
