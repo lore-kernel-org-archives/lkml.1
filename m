@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933858AbZFLQd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbZFLQeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933858AbZFLQd6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 12:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764839AbZFLQZ2
+	id S933846AbZFLQeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 12:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764926AbZFLQZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 12:25:28 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39104 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764639AbZFLQZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 12:25:13 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 27/27] Blackfin: hook up new rt_tgsigqueueinfo syscall
-Date: Fri, 12 Jun 2009 12:24:45 -0400
-Message-Id: <1244823885-22410-28-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244823885-22410-1-git-send-email-vapier@gentoo.org>
-References: <1244823885-22410-1-git-send-email-vapier@gentoo.org>
+	Fri, 12 Jun 2009 12:25:36 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:23982 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764905AbZFLQZf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 12:25:35 -0400
+X-IronPort-AV: E=Sophos;i="4.42,210,1243814400"; 
+   d="scan'208";a="199114590"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "general\@lists.openfabrics.org" <general@lists.openfabrics.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: mthca double free irqs
+References: <86802c440906111945n2a42dc94mf08bd2b1a252842f@mail.gmail.com>
+	<adafxe51pz9.fsf@cisco.com> <20090612085053.0fbe9731@jbarnes-g45>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 12 Jun 2009 09:25:36 -0700
+In-Reply-To: <20090612085053.0fbe9731@jbarnes-g45> (Jesse Barnes's message of
+	"Fri, 12 Jun 2009 08:50:53 -0700")
+Message-ID: <ada4oul1ksf.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 12 Jun 2009 16:25:36.0898 (UTC) FILETIME=[6AE94620:01C9EB7A]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- arch/blackfin/include/asm/unistd.h |    1 +
- arch/blackfin/mach-common/entry.S  |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/unistd.h b/arch/blackfin/include/asm/unistd.h
-index cf5066d..fac7505 100644
---- a/arch/blackfin/include/asm/unistd.h
-+++ b/arch/blackfin/include/asm/unistd.h
-@@ -380,6 +380,7 @@
- #define __NR_inotify_init1	365
- #define __NR_preadv		366
- #define __NR_pwritev		367
-+#define __NR_rt_tgsigqueueinfo	368
- 
- #define __NR_syscall		368
- #define NR_syscalls		__NR_syscall
-diff --git a/arch/blackfin/mach-common/entry.S b/arch/blackfin/mach-common/entry.S
-index 25c6aa4..31fa313 100644
---- a/arch/blackfin/mach-common/entry.S
-+++ b/arch/blackfin/mach-common/entry.S
-@@ -1608,6 +1608,7 @@ ENTRY(_sys_call_table)
- 	.long _sys_inotify_init1	/* 365 */
- 	.long _sys_preadv
- 	.long _sys_pwritev
-+	.long _sys_rt_tgsigqueueinfo
- 
- 	.rept NR_syscalls-(.-_sys_call_table)/4
- 	.long _sys_ni_syscall
--- 
-1.6.3.1
+ > My linux-next branch has a change to the return value from the MSI-X
+ > allocation function: pci_enable_msix now returns the number of
+ > available entries rather than -EINVAL if the allocation failed.  Would
+ > that cause problems in the mthca driver?
 
+I don't think so in this case ... the driver is getting past enabling
+MSI-X and actually testing the interrupt before it fails.  I'll audit
+the code just to make sure we handle that case though.  But I thought
+pci_enable_msix() always returned the number of entries actually
+available if the allocation failed?
+
+ - R.
