@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbZFLDeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbZFLDi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758332AbZFLDeA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 23:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbZFLDdx
+	id S1758236AbZFLDi2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 23:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbZFLDiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 23:33:53 -0400
-Received: from mga10.intel.com ([192.55.52.92]:29880 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751611AbZFLDdx (ORCPT
+	Thu, 11 Jun 2009 23:38:20 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53348 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbZFLDiU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 23:33:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,206,1243839600"; 
-   d="scan'208";a="698696671"
-Date: Fri, 12 Jun 2009 11:17:06 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
+	Thu, 11 Jun 2009 23:38:20 -0400
+Date: Fri, 12 Jun 2009 04:38:22 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH -tip] perf_counter tools: Remove one L1-data alias
-Message-ID: <20090612031706.GA22126@ywang-moblin2.bj.intel.com>
+Subject: Re: [git pull] vfs patches, part 1
+Message-ID: <20090612033822.GB8633@ZenIV.linux.org.uk>
+References: <20090612014507.GA8633@ZenIV.linux.org.uk> <alpine.LFD.2.01.0906112005510.3237@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906112005510.3237@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Otherwise all L1-instruction aliases will be recognized as L1-data by strcasestr()
-when calling function parse_aliases.
+On Thu, Jun 11, 2009 at 08:13:59PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 12 Jun 2009, Al Viro wrote:
+> >
+> > Please, pull from
+> > git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
+> 
+> Done. Should I be expecting the posix xattr cleanups stuff too, or will 
+> that be for the next merge window?
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Later in this one, after XFS merge.  At least part of that - I've several
+patches sitting in local tree on top of vfs-2.6.git#acl, but I'm still
+not convinced that they are moving in the right direction.  E.g. it's bloody
+tempting to merge the "how to pick ACLs for new object" logics, but
+journalling filesystems want to have handle/transaction id/whatnot for
+what would appear to be natural fs-specific callbacks.  We can deal with
+that in obvious way (pass void *context, basically), but I want to look
+a bit more at the results before deciding if it's worth doing.
 
----
- tools/perf/util/parse-events.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Stuff in vfs-2.6.git#acl probably will go, but it has 3 cherry-picked
+changesets and at least XFS one should go in via XFS tree.
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 9d5f1ca..5a72586 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -75,7 +75,7 @@ static char *sw_event_names[] = {
- #define MAX_ALIASES 8
- 
- static char *hw_cache [][MAX_ALIASES] = {
--	{ "L1-data"		, "l1-d", "l1d", "l1"				},
-+	{ "L1-data"		, "l1-d", "l1d"					},
- 	{ "L1-instruction"	, "l1-i", "l1i"					},
- 	{ "L2"			, "l2"						},
- 	{ "Data-TLB"		, "dtlb", "d-tlb"				},
+There's other pending stuff as well (sysfs ->readdir(), etc.), so there'll
+probably be a couple of merges after this one.
