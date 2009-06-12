@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761568AbZFLGbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZFLGeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761568AbZFLGbX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 02:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759018AbZFLGbF
+	id S1755366AbZFLGeR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 02:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbZFLGeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 02:31:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56696 "EHLO smtps.tip.net.au"
+	Fri, 12 Jun 2009 02:34:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57358 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbZFLGbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 02:31:03 -0400
-Date: Fri, 12 Jun 2009 16:30:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@linux.intel.com>
-Subject: linux-next: tip tree build failure
-Message-Id: <20090612163054.96bff723.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	id S1753629AbZFLGeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 02:34:04 -0400
+Subject: Re: [PowerPC] 2.6.30-git3 build break : perf counters
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4A31ECCD.7030805@in.ibm.com>
+References: <4A31ECCD.7030805@in.ibm.com>
+Content-Type: text/plain
+Date: Fri, 12 Jun 2009 12:04:54 +0530
+Message-Id: <1244788494.5554.1.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__12_Jun_2009_16_30_54_+1000_0/PcVxAoTQ5SJpxJ"
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__12_Jun_2009_16_30_54_+1000_0/PcVxAoTQ5SJpxJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-06-12 at 11:21 +0530, Sachin Sant wrote:
+> 2.6.30-git3 build with CONFIG_PERF_COUNTERS=y failed on a powerpc box.
+> 
+>  CC      arch/powerpc/kernel/power7-pmu.o
+> arch/powerpc/kernel/power7-pmu.c:297: error: PERF_COUNT_CPU_CYCLES undeclared here (not in a function)
+> arch/powerpc/kernel/power7-pmu.c:297: error: array index in initializer not of integer type
+> arch/powerpc/kernel/power7-pmu.c:297: error: (near initialization for power7_generic_events)
+> arch/powerpc/kernel/power7-pmu.c:298: error: PERF_COUNT_INSTRUCTIONS undeclared here (not in a function)
+> arch/powerpc/kernel/power7-pmu.c:298: error: array index in initializer not of integer type
+> ......<SNIP>......
+> 
+> Porbably because of commit 526e9a09d2e2dcb6c75c68710465678bb647e5fe
+> 
 
-Hi all,
+Please check this patch :
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+[PATCH] powerpc: perf_counter fix performance counter event types
 
-arch/x86/kernel/irqinit.c: In function 'apic_intr_init':
-arch/x86/kernel/irqinit.c:191: error: 'MCE_SELF_VECTOR' undeclared (first u=
-se in this function)
-arch/x86/kernel/irqinit.c:191: error: 'mce_self_interrupt' undeclared (firs=
-t use in this function)
+Fix compilation warnings :
+ CC      arch/powerpc/kernel/power7-pmu.o
+arch/powerpc/kernel/power7-pmu.c:297: error: PERF_COUNT_CPU_CYCLES undeclared here (not in a function)
+arch/powerpc/kernel/power7-pmu.c:297: error: array index in initializer not of integer type
+arch/powerpc/kernel/power7-pmu.c:297: error: (near initialization for power7_generic_events)
+arch/powerpc/kernel/power7-pmu.c:298: error: PERF_COUNT_INSTRUCTIONS undeclared here (not in a function)
+arch/powerpc/kernel/power7-pmu.c:298: error: array index in initializer not of integer type
+......<SNIP>......
 
-This code was introduced in a merge
-(940010c5a314a7bd9b498593bc6ba1718ac5aec5) in the perfcounters tree that
-is now in Linus' tree.  The CONFIG variable that allows it to be enabled
-was introduced in commit 4efc0670baf4b14bc95502e54a83ccf639146125 ("x86,
-mce: use 64bit machine check code on 32bit") in the tip/x86 tree.
+Reported-by: Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/powerpc/kernel/power7-pmu.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-The necessary define and function are introduced in commit
-ccc3c3192ae78dd56dcdf5353fd1a9ef5f9a3e2b ("x86, mce: implement
-bootstrapping for machine check wakeups") in the tip/x86/mce3 (mce4)
-branch which is not included in Linus' tree or tip/auto-latest.
+diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
+index b3f7d12..b72e7a1 100644
+--- a/arch/powerpc/kernel/power7-pmu.c
++++ b/arch/powerpc/kernel/power7-pmu.c
+@@ -294,12 +294,12 @@ static void power7_disable_pmc(unsigned int pmc, u64 mmcr[])
+ }
+ 
+ static int power7_generic_events[] = {
+-	[PERF_COUNT_CPU_CYCLES] = 0x1e,
+-	[PERF_COUNT_INSTRUCTIONS] = 2,
+-	[PERF_COUNT_CACHE_REFERENCES] = 0xc880,		/* LD_REF_L1_LSU */
+-	[PERF_COUNT_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1 */
+-	[PERF_COUNT_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN */
+-	[PERF_COUNT_BRANCH_MISSES] = 0x400f6,		/* BR_MPRED */
++	[PERF_COUNT_HW_CPU_CYCLES] = 0x1e,
++	[PERF_COUNT_HW_INSTRUCTIONS] = 2,
++	[PERF_COUNT_HW_CACHE_REFERENCES] = 0xc880,	/* LD_REF_L1_LSU*/
++	[PERF_COUNT_HW_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1	*/
++	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN	*/
++	[PERF_COUNT_HW_BRANCH_MISSES] = 0x400f6,	/* BR_MPRED	*/
+ };
+ 
+ #define C(x)	PERF_COUNT_HW_CACHE_##x
+-- 
+1.6.3.2
 
-I just commented the code out for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Fri__12_Jun_2009_16_30_54_+1000_0/PcVxAoTQ5SJpxJ
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkox9h8ACgkQjjKRsyhoI8yvOACgpCsIMbdhEZxoUsSntQfScxww
-9cUAn0m9sDT+9qKLWE8AwDY6b9J0sb42
-=h2Ae
------END PGP SIGNATURE-----
-
---Signature=_Fri__12_Jun_2009_16_30_54_+1000_0/PcVxAoTQ5SJpxJ--
