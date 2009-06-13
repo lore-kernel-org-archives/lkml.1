@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZFMVi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZFMVoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZFMVi4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 17:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZFMVir
+	id S1754753AbZFMVoW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 17:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZFMVoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 17:38:47 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44740 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbZFMVir (ORCPT
+	Sat, 13 Jun 2009 17:44:15 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:37158 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbZFMVoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 17:38:47 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-rt@pengutronix.de, Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <greg@kroah.com>, Ian Abbott <abbotti@mev.co.uk>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>
-Subject: [PATCH -rt] disable building all staging drivers
-Date: Sat, 13 Jun 2009 23:38:38 +0200
-Message-Id: <1244929118-23326-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.1
+	Sat, 13 Jun 2009 17:44:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=XWgQiRFp+LrKJzBKVO8OAG8X9bUcnEq3gJpyprfVH4QVWTRUyCWFfjcXByQY5hJaMk
+         EQ7KkWKRr0NJeGTqliOgl85KLmGxJN1jhbZkePumOiRfbHCF/dLkbJrgXAec1+0ddMoq
+         +okXfryoefaVGYlScCVWrO9IKyLpB9eAdWoxg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Date: Sat, 13 Jun 2009 18:44:16 -0300
+Message-ID: <afc5d28f0906131444m11eedd4l4477266135cb869c@mail.gmail.com>
+Subject: Scheduler and SMP
+From: Bruno Bauer <bgbauer@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I know that at least COMEDI and RT2870 are broken with -rt, but Thomas
-requested disabling all of staging.  He's the maintainer.
+Hello all,
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Greg Kroah-Hartman <greg@kroah.com>
-Cc: Ian Abbott <abbotti@mev.co.uk>
-Cc: Frank Mori Hess <fmhess@users.sourceforge.net>
----
- drivers/staging/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I'm new in kernel development and i be making tests in scheduler for a
+study course.
+I created a new syscall that set a task for no migrate from cpu (I
+added a new flag no_migrate on task_struct).
+In my tests, a tar/bzip task with no_migrate flag seted run at 5% more fast.
 
-diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index 211af86..3d1a966 100644
---- a/drivers/staging/Kconfig
-+++ b/drivers/staging/Kconfig
-@@ -1,6 +1,7 @@
- menuconfig STAGING
- 	bool "Staging drivers"
- 	default n
-+	depends on BROKEN
- 	---help---
- 	  This option allows you to select a number of drivers that are
- 	  not of the "normal" Linux kernel quality level.  These drivers
--- 
-1.6.3.1
+How do this be explained? Overhead of migration?
 
+My changes are in can_migrate_task and balance_tasks (sched.c) and
+copy_process (fork.c).
+
+Thanks,
+
+PS: Sorry, my English is poor.
+
+--
+Bruno Germano Bauer
