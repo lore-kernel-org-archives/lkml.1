@@ -1,72 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761487AbZFMOOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760708AbZFMOQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761487AbZFMOOi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 10:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZFMOO3
+	id S1760708AbZFMOQu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 10:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbZFMOQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 10:14:29 -0400
-Received: from relay.atmel.no ([80.232.32.139]:63481 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbZFMOO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 10:14:29 -0400
-Date: Sat, 13 Jun 2009 16:14:16 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       AVR32 Linux Kernel <kernel@avr32linux.org>
-Subject: [GIT PULL] AVR32 update
-Message-ID: <20090613161416.0067de9a@hskinnemoen-d830>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Jun 2009 10:16:43 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:25603 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754167AbZFMOQm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 10:16:42 -0400
+X-Trace: 214622559/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.101.221/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.101.221
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAH9RM0pPRWXd/2dsb2JhbACBT88ehA0F
+X-IronPort-AV: E=Sophos;i="4.42,214,1243810800"; 
+   d="scan'208";a="214622559"
+Date: Sat, 13 Jun 2009 15:15:51 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Mike Frysinger <vapier@gentoo.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
+       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ramfs: ignore tmpfs options when we emulate it
+In-Reply-To: <1244872920-13511-1-git-send-email-vapier@gentoo.org>
+Message-ID: <Pine.LNX.4.64.0906131456090.5069@sister.anvils>
+References: <1244872920-13511-1-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sat, 13 Jun 2009, Mike Frysinger wrote:
 
-Please pull
+> On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
+> fail when tmpfs options are used.  This is because tmpfs creates a small
+> wrapper around ramfs which rejects unknown options, and ramfs itself only
+> supports a tiny subset of what tmpfs supports.  This makes it pretty hard
+> to use the same userspace systems across different configuration systems.
+> As such, ramfs should ignore the tmpfs options when tmpfs is merely a
+> wrapper around ramfs.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
+Yes, indeed, thanks a lot for reporting this.
 
-to receive the following updates.
+But I'm uneasy with making ramfs behaviour differ with CONFIG_SHMEM
+(perhaps that's silly: certainly tmpfs behaviour differs with it),
+and uneasy with coding a list of options we need to remember to keep
+in synch with mm/shmem.c.  It's easier to justify ignoring all options,
+than rejecting some while ignoring others yet not respecting them.
 
-Ben Nizette (1):
-      avr32: Fix clash in ATMEL_USART_ flags
+> 
+> This used to work before commit c3b1b1cbf0 as previously, ramfs would
+> ignore all options.  But now, we get:
+> ramfs: bad mount option: size=10M
+> mount: mounting mdev on /dev failed: Invalid argument
 
-Haavard Skinnemoen (2):
-      Merge branch 'avr32-arch' of git://git.kernel.org/.../hskinnemoen/avr32-2.6
-      avr32: Fix oops on unaligned user access
+I rather think the correct response to bugzilla #12843 should have
+been to say, either use chmod 1777 yourself, or use CONFIG_SHMEM=y.
+I fear we'll now get a line of requests for support of uid, gid, ...
+in ramfs; whereas ramfs is about blind simplicity, not feature bloat.
+However, that mode= feature is now in, so I guess we ride with it.
 
-Jonas Larsson (2):
-      atmel-mci: Add support for inverted detect pin
-      avr32: Solves problem with inverted MCI detect pin on Merisc board
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+> another option might be to restore the previous behavior where ramfs simply
+> ignored all unknown mount options ...
 
-Mark Jackson (1):
-      Fix MIMC200 board LCD init
+Yes, that would be my preference, return to the blind simplicity, with
+that one exception for mode=.  Alternative patch suggested at the bottom,
+let's see if Cc's added feel strongly about it one way or another.
 
-Peter Ma (2):
-      avr32: Change Atmel ATNGW100 config to add choice of add-on board
-      avr32: Add support for Mediama RMTx add-on board for ATNGW100
+Thanks,
+Hugh
 
-Thomas Gleixner (1):
-      avr32: remove obsolete hw_interrupt_type
+> 
+>  fs/ramfs/inode.c |   10 ++++++++++
+>  1 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
+> index 3a6b193..57a797c 100644
+> --- a/fs/ramfs/inode.c
+> +++ b/fs/ramfs/inode.c
+> @@ -203,6 +203,16 @@ static int ramfs_parse_options(char *data, struct ramfs_mount_opts *opts)
+>  			opts->mode = option & S_IALLUGO;
+>  			break;
+>  		default:
+> +#ifndef CONFIG_SHMEM
+> +			/* If tmpfs is using us to emulate it, ignore its options */
+> +			if (!strncmp(p, "gid=", 4) ||
+> +			    !strncmp(p, "mpol=", 5) ||
+> +			    !strncmp(p, "nr_blocks=", 10) ||
+> +			    !strncmp(p, "nr_inodes=", 10) ||
+> +			    !strncmp(p, "size=", 5) ||
+> +			    !strncmp(p, "uid=", 4))
+> +				continue;
+> +#endif
+>  			printk(KERN_ERR "ramfs: bad mount option: %s\n", p);
+>  			return -EINVAL;
+>  		}
+> -- 
+> 1.6.3.1
 
- arch/avr32/boards/atngw100/Kconfig          |   27 +-
- arch/avr32/boards/atngw100/Kconfig_mrmt     |   80 ++
- arch/avr32/boards/atngw100/Makefile         |    1 +
- arch/avr32/boards/atngw100/mrmt.c           |  373 ++++++++
- arch/avr32/boards/atngw100/setup.c          |    5 +
- arch/avr32/boards/merisc/setup.c            |    7 +-
- arch/avr32/boards/mimc200/setup.c           |   29 +-
- arch/avr32/configs/atngw100_mrmt_defconfig  | 1363 +++++++++++++++++++++++++++
- arch/avr32/include/asm/hw_irq.h             |    2 +-
- arch/avr32/kernel/traps.c                   |   11 +-
- arch/avr32/mach-at32ap/include/mach/board.h |    2 +-
- drivers/mmc/host/atmel-mci.c                |   12 +-
- include/linux/atmel-mci.h                   |    2 +
- 13 files changed, 1889 insertions(+), 25 deletions(-)
- create mode 100644 arch/avr32/boards/atngw100/Kconfig_mrmt
- create mode 100644 arch/avr32/boards/atngw100/mrmt.c
- create mode 100644 arch/avr32/configs/atngw100_mrmt_defconfig
+[PATCH] ramfs: ignore unknown mount options
+
+From: Mike Frysinger <vapier@gentoo.org>
+
+On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
+fail when tmpfs options are used.  This is because tmpfs creates a small
+wrapper around ramfs which rejects unknown options, and ramfs itself only
+supports a tiny subset of what tmpfs supports.  This makes it pretty hard
+to use the same userspace systems across different configuration systems.
+As such, ramfs should ignore the tmpfs options when tmpfs is merely a
+wrapper around ramfs.
+
+This used to work before commit c3b1b1cbf0 as previously, ramfs would
+ignore all options.  But now, we get:
+ramfs: bad mount option: size=10M
+mount: mounting mdev on /dev failed: Invalid argument
+
+Another option might be to restore the previous behavior, where ramfs
+simply ignored all unknown mount options ... which is what Hugh prefers.
+
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: stable@kernel.org
+---
+
+ fs/ramfs/inode.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+--- 2.6.30/fs/ramfs/inode.c	2009-06-10 04:05:27.000000000 +0100
++++ linux/fs/ramfs/inode.c	2009-06-13 14:45:33.000000000 +0100
+@@ -202,9 +202,12 @@ static int ramfs_parse_options(char *dat
+ 				return -EINVAL;
+ 			opts->mode = option & S_IALLUGO;
+ 			break;
+-		default:
+-			printk(KERN_ERR "ramfs: bad mount option: %s\n", p);
+-			return -EINVAL;
++		/*
++		 * We might like to report bad mount options here;
++		 * but traditionally ramfs has ignored all mount options,
++		 * and as it is used as a !CONFIG_SHMEM simple substitute
++		 * for tmpfs, better continue to ignore other mount options.
++		 */
+ 		}
+ 	}
+ 
