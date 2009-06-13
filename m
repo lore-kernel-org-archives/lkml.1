@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763745AbZFMVGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764043AbZFMVGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763745AbZFMVGk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 17:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZFMVGb
+	id S1764043AbZFMVGv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 17:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbZFMVGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 17:06:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35511 "EHLO mx3.mail.elte.hu"
+	Sat, 13 Jun 2009 17:06:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41427 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752015AbZFMVGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 17:06:31 -0400
-Date: Sat, 13 Jun 2009 23:00:18 +0200
+	id S1756552AbZFMVGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 17:06:35 -0400
+Date: Sat, 13 Jun 2009 22:46:46 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open
-	when supported
-Message-ID: <20090613210018.GA1962@elte.hu>
-References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> <20090612120507.GH16044@elte.hu> <8bd0f97a0906120816w26d91530nf1e1967470beb99c@mail.gmail.com> <20090612152134.GA23483@elte.hu> <8bd0f97a0906120829p628751e9gb557f6a14e98fae2@mail.gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: -git tree build failure =?utf-8?B?IzI6?=
+	=?utf-8?Q?_drivers=2Fnet=2Fcnic=2Ec=3A2520=3A_error=3A_implicit_declarati?=
+	=?utf-8?B?b24gb2YgZnVuY3Rpb24g4oCYX19zeW1ib2xfZ2V04oCZ?=
+Message-ID: <20090613204646.GA10531@elte.hu>
+References: <20090612184343.GA11900@elte.hu> <4A32A1E4.8080708@oracle.com> <20090613062933.GA14034@elte.hu> <alpine.LFD.2.01.0906131309560.3237@localhost.localdomain> <20090613203100.GA14294@elte.hu> <20090613203539.GA9239@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0906120829p628751e9gb557f6a14e98fae2@mail.gmail.com>
+In-Reply-To: <20090613203539.GA9239@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,22 +39,53 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Frysinger <vapier.adi@gmail.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Fri, Jun 12, 2009 at 11:21, Ingo Molnar wrote:
-> > * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> >> the perf counter code explicitly requires:
-> >> ...
-> >> �- support for atomic64 types (unless i missed something, x86 is the
-> >> only 32bit system that supports these)
-> >
-> > A wrapper suffices - should probably be librarized into lib/.
+> I still had the window open that had the build failure:
 > 
-> wonder if we can trick Arnd into doing that ...
+>   LD      sound/pci/snd-es1968.o
+>   CC      fs/btrfs/zlib.o
+> drivers/net/cnic.c: In function ‘init_bnx2_cnic’:
+> drivers/net/cnic.c:2524: error: implicit declaration of function 
+> ‘__symbol_get’
+> drivers/net/cnic.c:2524: warning: assignment makes pointer from 
+> integer without a cast
+> distcc[22461] ERROR: compile drivers/net/cnic.c on ph/32 failed
+> make[2]: *** [drivers/net/cnic.o] Error 1
+> make[2]: *** Waiting for unfinished jobs....
+>   CC      drivers/ide/trm290.o
+>   CC      drivers/scsi/cxgb3i/cxgb3i_ddp.o
+>   LD      sound/pci/snd-fm801.o
+>   CC      net/sched/sch_drr.o
+>   CC      fs/cifs/xattr.o
+>   CC      drivers/scsi/mpt2sas/mpt2sas_base.o
+> 
+> So it's real - even if the fix is bogus. But it's a different 
+> config - i'll now try to figure out which one it is and why the 
+> build fails ...
 
-FYI, Paul has posted the patches for generic atomic64_t today.
+Yes, the bug is real - the fix is not.
 
-So the barrier of entry to perfcounters enablement is really low 
-now, even for 32-bit architectures without 64-bit atomic ops.
+Here is the code:
+
+static struct cnic_dev *init_bnx2_cnic(struct net_device *dev)
+{
+        struct pci_dev *pdev;
+        struct cnic_dev *cdev;
+        struct cnic_local *cp;
+        struct cnic_eth_dev *ethdev = NULL;
+        struct cnic_eth_dev *(*probe)(void *) = NULL;
+
+        probe = __symbol_get("bnx2_cnic_probe");
+        if (probe) {
+                ethdev = (*probe)(dev);
+                symbol_put_addr(probe);
+        }
+
+and that's a very rare use of __symbol_get(). The problem is that 
+the cnic driver can be built into the kernel too (!CONFIG_MODULES) 
+but __symbol_get() is (obviously) a modules-code internal function 
+really. __symbol_get() is only defined in the CONFIG_MODULES section 
+of module.h.
 
 	Ingo
