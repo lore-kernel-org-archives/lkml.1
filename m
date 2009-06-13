@@ -1,628 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbZFMN33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbZFMNhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757843AbZFMN33 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 09:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932161AbZFMN1a
+	id S1761732AbZFMNhj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 09:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758336AbZFMNhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 09:27:30 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:49807 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764099AbZFMN0Y (ORCPT
+	Sat, 13 Jun 2009 09:37:31 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:51307 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756544AbZFMNha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 09:26:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=JIn6fH0xctk0Du0gFfuLL9iq4nLsdtu+bjR5rol2M2RwmEudriAEkDAhgZxNMTebUc
-         xncQ1RH1Rtg4EhxoEwxJ1i92p/SIeT/XpVIskTHCFcz0hqlHznEc+LB6zIhr8fMAMTIM
-         JZOEmTOBdf4pdU43HstY2VfglCs4YXLr8tuzU=
-Message-ID: <4A33A817.5060100@gmail.com>
-Date: Sat, 13 Jun 2009 15:22:31 +0200
-From: Marco <marco.stornelli@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 13 Jun 2009 09:37:30 -0400
+Date: Sat, 13 Jun 2009 09:35:42 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: references to non-existent header files under include/linux
+Message-ID: <alpine.LFD.2.00.0906130932570.16165@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linux FS Devel <linux-fsdevel@vger.kernel.org>
-CC: Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: [PATCH 10/14] Pramfs: Superblock operations
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marco Stornelli <marco.stornelli@gmail.com>
 
-Superblock operations.
+  again, since this output is fairly short, this is a list of
+references throughout the source tree of the form:
 
-Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
----
+  #include <linux/whatever>
 
-diff -uprN linux-2.6.30-orig/fs/pramfs/super.c linux-2.6.30/fs/pramfs/super.c
---- linux-2.6.30-orig/fs/pramfs/super.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.30/fs/pramfs/super.c	2009-06-13 13:07:53.000000000 +0200
-@@ -0,0 +1,580 @@
-+/*
-+ * FILE NAME fs/pramfs/super.c
-+ *
-+ * BRIEF DESCRIPTION
-+ *
-+ * Super block operations.
-+ *
-+ * Copyright 2009 Marco Stornelli <marco.stornelli@gmail.com>
-+ * Copyright 2003 Sony Corporation
-+ * Copyright 2003 Matsushita Electric Industrial Co., Ltd.
-+ * 2003-2004 (c) MontaVista Software, Inc. , Steve Longerbeam
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/slab.h>
-+#include <linux/init.h>
-+#include <linux/blkdev.h>
-+#include <linux/parser.h>
-+#include <linux/vfs.h>
-+#include <linux/uaccess.h>
-+#include <linux/io.h>
-+#include <linux/seq_file.h>
-+#include <linux/mount.h>
-+#include <linux/mm.h>
-+#include <linux/ctype.h>
-+#include <linux/bitops.h>
-+#include "pram_fs.h"
-+
-+static struct super_operations pram_sops;
-+
-+#ifdef CONFIG_PRAMFS_TEST
-+static void *first_pram_super;
-+
-+struct pram_super_block *get_pram_super(void)
-+{
-+	return (struct pram_super_block *)first_pram_super;
-+}
-+EXPORT_SYMBOL(get_pram_super);
-+#endif
-+
-+static void pram_set_blocksize(struct super_block *sb, unsigned long size)
-+{
-+	int bits;
-+
-+	/*
-+	* We've already validated the user input and the value here must be
-+	* between PRAM_MAX_BLOCK_SIZE and PRAM_MIN_BLOCK_SIZE
-+	* and it must be a power of 2.
-+	*/
-+	bits = fls(size) - 1;
-+	sb->s_blocksize_bits = bits;
-+	sb->s_blocksize = (1<<bits);
-+}
-+
-+static inline void *pram_ioremap(phys_addr_t phys_addr, size_t size)
-+{
-+	void *retval;
-+
-+	/*
-+	 * NOTE: Userland may not map this resource, we will mark the region so
-+	 * /dev/mem and the sysfs MMIO access will not be allowed. This
-+	 * restriction depends on STRICT_DEVMEM option. If this option is
-+	 * disabled or not available we mark the region only as busy.
-+	 */
-+	retval = request_mem_region_exclusive(phys_addr, size, "pramfs");
-+	if (!retval)
-+		goto fail;
-+
-+	retval = ioremap_nocache(phys_addr, size);
-+
-+	if (retval)
-+		wrprotect(retval, size);
-+fail:
-+	return retval;
-+}
-+
-+enum {
-+	Opt_addr, Opt_bpi, Opt_size,
-+	Opt_num_inodes, Opt_mode, Opt_uid,
-+	Opt_gid, Opt_blocksize, Opt_err
-+};
-+
-+static const match_table_t tokens = {
-+	{Opt_bpi,	"physaddr=%x"},
-+	{Opt_bpi,	"bpi=%u"},
-+	{Opt_size,	"init=%s"},
-+	{Opt_num_inodes, "N=%u"},
-+	{Opt_mode,	"mode=%o"},
-+	{Opt_uid,	"uid=%u"},
-+	{Opt_gid,	"gid=%u"},
-+	{Opt_blocksize,	"bs=%s"},
-+	{Opt_err,	NULL},
-+};
-+
-+static phys_addr_t get_phys_addr(void **data)
-+{
-+	phys_addr_t phys_addr;
-+	char *options = (char *) *data;
-+
-+	if (!options || strncmp(options, "physaddr=", 9) != 0)
-+		return (phys_addr_t)ULLONG_MAX;
-+	options += 9;
-+	phys_addr = (phys_addr_t)simple_strtoull(options, &options, 0);
-+	if (*options && *options != ',') {
-+		pram_err("Invalid phys addr specification: %s\n",
-+		       (char *) *data);
-+		return (phys_addr_t)ULLONG_MAX;
-+	}
-+	if (phys_addr & (PAGE_SIZE - 1)) {
-+		pram_err("physical address 0x%16llx for pramfs isn't "
-+			  "aligned to a page boundary\n",
-+			  (u64)phys_addr);
-+		return (phys_addr_t)ULLONG_MAX;
-+	}
-+	if (*options == ',')
-+		options++;
-+	*data = (void *) options;
-+	return phys_addr;
-+}
-+
-+static int pram_parse_options(char *options, struct pram_sb_info *sbi)
-+{
-+	char *p, *rest;
-+	substring_t args[MAX_OPT_ARGS];
-+	int option;
-+
-+	if (!options)
-+		return 0;
-+
-+	while ((p = strsep(&options, ",")) != NULL) {
-+		int token;
-+		if (!*p)
-+			continue;
-+
-+		token = match_token(p, tokens, args);
-+		switch (token) {
-+			case Opt_addr: {
-+				/* physaddr managed in get_phys_addr() */
-+				break;
-+			}
-+			case Opt_bpi: {
-+				if (match_int(&args[0], &option))
-+					goto bad_val;
-+				sbi->bpi = option;
-+				break;
-+			}
-+			case Opt_uid: {
-+				if (match_int(&args[0], &option))
-+					goto bad_val;
-+				sbi->uid = option;
-+				break;
-+			}
-+			case Opt_gid: {
-+				if (match_int(&args[0], &option))
-+					goto bad_val;
-+				sbi->gid = option;
-+				break;
-+			}
-+			case Opt_mode: {
-+				if (match_octal(&args[0], &option))
-+					goto bad_val;
-+				sbi->mode = option & 01777U;
-+				break;
-+			}
-+			case Opt_size: {
-+				/* memparse() will accept a K/M/G without a digit */
-+				if (!isdigit(*args[0].from))
-+					goto bad_val;
-+				sbi->initsize = memparse(args[0].from, &rest);
-+				break;
-+			}
-+			case Opt_num_inodes: {
-+				if (match_int(&args[0], &option))
-+					goto bad_val;
-+				sbi->num_inodes = option;
-+				break;
-+			}
-+			case Opt_blocksize: {
-+				/* memparse() will accept a K/M/G without a digit */
-+				if (!isdigit(*args[0].from))
-+					goto bad_val;
-+				sbi->blocksize = memparse(args[0].from, &rest);
-+				if (sbi->blocksize < PRAM_MIN_BLOCK_SIZE ||
-+					sbi->blocksize > PRAM_MAX_BLOCK_SIZE ||
-+					!is_power_of_2(sbi->blocksize))
-+					goto bad_val;
-+				break;
-+			}
-+			default: {
-+				pram_err("Bad mount option: \"%s\"\n", p);
-+				return -EINVAL;
-+				break;
-+			}
-+		}
-+	}
-+
-+	return 0;
-+
-+bad_val:
-+	pram_err("Bad value '%s' for mount option '%s'\n", args[0].from, p);
-+	return -EINVAL;
-+}
-+
-+static struct pram_inode *pram_init(struct super_block *sb, unsigned long size)
-+{
-+	unsigned long bpi, num_inodes, bitmap_size, blocksize, num_blocks;
-+	off_t bitmap_start;
-+	struct pram_inode *root_i;
-+	struct pram_super_block *super;
-+	struct pram_sb_info *sbi = (struct pram_sb_info *)sb->s_fs_info;
-+	unsigned long flags;
-+
-+	flags = 0;
-+
-+	pram_info("creating an empty pramfs of size %lu\n", size);
-+#ifdef CONFIG_PRAMFS_XIP
-+	pram_info("pramfs with xip enabled\n");
-+#endif
-+
-+	sbi->virt_addr = pram_ioremap(sbi->phys_addr, size);
-+	if (!sbi->virt_addr) {
-+		pram_err("ioremap of the pramfs image failed\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+#ifdef CONFIG_PRAMFS_TEST
-+	if (!first_pram_super)
-+		first_pram_super = sbi->virt_addr;
-+#endif
-+
-+	if (!sbi->blocksize)
-+		blocksize = PRAM_DEF_BLOCK_SIZE;
-+	else
-+		blocksize = sbi->blocksize;
-+
-+	pram_set_blocksize(sb, blocksize);
-+	blocksize = sb->s_blocksize;
-+
-+	if (sbi->blocksize && sbi->blocksize != blocksize)
-+		sbi->blocksize = blocksize;
-+
-+	if (size < blocksize) {
-+		pram_err("size smaller then block size\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	if (!sbi->bpi)
-+		/* default is that 5% of the filesystem is
-+		   devoted to the inode table */
-+		bpi = 20 * PRAM_INODE_SIZE;
-+	else
-+		bpi = sbi->bpi;
-+
-+	if (!sbi->num_inodes)
-+		num_inodes = size / bpi;
-+	else
-+		num_inodes = sbi->num_inodes;
-+
-+	/* up num_inodes such that the end of the inode table
-+	   (and start of bitmap) is on a block boundary */
-+	bitmap_start = PRAM_SB_SIZE + (num_inodes<<PRAM_INODE_BITS);
-+	if (bitmap_start & (blocksize - 1))
-+		bitmap_start = (bitmap_start + blocksize) &
-+			~(blocksize-1);
-+	num_inodes = (bitmap_start - PRAM_SB_SIZE) >> PRAM_INODE_BITS;
-+
-+	if (sbi->num_inodes && num_inodes != sbi->num_inodes)
-+		sbi->num_inodes = num_inodes;
-+
-+	num_blocks = (size - bitmap_start) >> sb->s_blocksize_bits;
-+
-+	if (!num_blocks) {
-+		pram_err("num blocks equals to zero\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	/* calc the data blocks in-use bitmap size in bytes */
-+	if (num_blocks & 7)
-+		bitmap_size = ((num_blocks + 8) & ~7) >> 3;
-+	else
-+		bitmap_size = num_blocks >> 3;
-+	/* round it up to the nearest blocksize boundary */
-+	if (bitmap_size & (blocksize - 1))
-+		bitmap_size = (bitmap_size + blocksize) & ~(blocksize-1);
-+
-+	pram_info("blocksize %lu, num inodes %lu, num blocks %lu\n",
-+		  blocksize, num_inodes, num_blocks);
-+	pram_dbg("bitmap start 0x%08x, bitmap size %lu\n",
-+		 (unsigned int)bitmap_start, bitmap_size);
-+	pram_dbg("max name length %d\n", PRAM_NAME_LEN);
-+
-+	super = pram_get_super(sb);
-+	pram_lock_range(super, bitmap_start + bitmap_size, flags);
-+
-+	/* clear out super-block and inode table */
-+	memset(super, 0, bitmap_start);
-+	super->s_size = size;
-+	super->s_blocksize = blocksize;
-+	super->s_inodes_count = num_inodes;
-+	super->s_blocks_count = num_blocks;
-+	super->s_free_inodes_count = num_inodes - 1;
-+	super->s_bitmap_blocks = bitmap_size >> sb->s_blocksize_bits;
-+	super->s_free_blocks_count = num_blocks - super->s_bitmap_blocks;
-+	super->s_free_inode_hint = 1;
-+	super->s_bitmap_start = bitmap_start;
-+	super->s_magic = PRAM_SUPER_MAGIC;
-+	pram_sync_super(super);
-+
-+	root_i = pram_get_inode(sb, PRAM_ROOT_INO);
-+
-+	root_i->i_mode = sbi->mode;
-+	root_i->i_mode |= S_IFDIR;
-+	root_i->i_uid = sbi->uid;
-+	root_i->i_gid = sbi->gid;
-+	root_i->i_links_count = 2;
-+	root_i->i_d.d_parent = PRAM_ROOT_INO;
-+	pram_sync_inode(root_i);
-+
-+	pram_init_bitmap(sb);
-+
-+	pram_unlock_range(super, bitmap_start + bitmap_size, flags);
-+
-+	return root_i;
-+}
-+
-+static int pram_fill_super(struct super_block *sb, void *data, int silent)
-+{
-+	struct pram_super_block *super;
-+	struct pram_inode *root_i;
-+	struct pram_sb_info *sbi = NULL;
-+	off_t root_offset;
-+	unsigned long blocksize, initsize = 0;
-+	int retval = -EINVAL;
-+	unsigned long flags;
-+
-+	flags = 0;
-+
-+	sbi = kzalloc(sizeof(struct pram_sb_info), GFP_KERNEL);
-+	if (!sbi)
-+		return -ENOMEM;
-+	sb->s_fs_info = sbi;
-+
-+	sbi->phys_addr = get_phys_addr(&data);
-+	if (sbi->phys_addr == (phys_addr_t)ULLONG_MAX)
-+		goto out;
-+
-+	/* Init with default values */
-+	sbi->mode = (S_IRWXUGO | S_ISVTX);
-+	sbi->uid = current_fsuid();
-+	sbi->gid = current_fsgid();
-+
-+	if (pram_parse_options(data, sbi))
-+		goto out;
-+
-+	initsize = sbi->initsize;
-+
-+	/* Init a new pramfs istance */
-+	if (initsize) {
-+		root_i = pram_init(sb, initsize);
-+
-+		if (IS_ERR(root_i))
-+			goto out;
-+
-+		super = pram_get_super(sb);
-+
-+		goto setup_sb;
-+	}
-+
-+	pram_dbg("checking physical address 0x%016llx for pramfs image\n",
-+		   (u64)sbi->phys_addr);
-+
-+	/* Map only one page for now. Will remap it when fs size is known. */
-+	initsize = PAGE_SIZE;
-+	sbi->virt_addr = pram_ioremap(sbi->phys_addr, initsize);
-+	if (!sbi->virt_addr) {
-+		pram_err("ioremap of the pramfs image failed\n");
-+		goto out;
-+	}
-+
-+	super = pram_get_super(sb);
-+
-+	/* Do sanity checks on the superblock */
-+	if (super->s_magic != PRAM_SUPER_MAGIC) {
-+		if (!silent)
-+			pram_err("Can't find a valid pramfs partition\n");
-+		goto out;
-+	}
-+
-+	/* Read the superblock */
-+	if (pram_calc_checksum((u32 *)super, PRAM_SB_SIZE>>2)) {
-+		pram_err("checksum error in super block\n");
-+		goto out;
-+	}
-+
-+	blocksize = super->s_blocksize;
-+	pram_set_blocksize(sb, blocksize);
-+
-+	initsize = super->s_size;
-+	pram_info("pramfs image appears to be %lu KB in size\n", initsize>>10);
-+	pram_info("blocksize %lu\n", blocksize);
-+
-+	/* Read the root inode */
-+	root_i = pram_get_inode(sb, PRAM_ROOT_INO);
-+
-+	/* Check that the root inode is in a sane state */
-+	if (pram_calc_checksum((u32 *)root_i, PRAM_INODE_SIZE>>2)) {
-+		pram_err("checksum error in root inode!\n");
-+		goto out;
-+	}
-+
-+	if (root_i->i_d.d_next) {
-+		pram_err("root->next not NULL??!!\n");
-+		goto out;
-+	}
-+
-+	if (!S_ISDIR(root_i->i_mode)) {
-+		pram_err("root is not a directory!\n");
-+		goto out;
-+	}
-+
-+	root_offset = root_i->i_type.dir.head;
-+	if (root_offset == 0)
-+		pram_dbg("empty filesystem\n");
-+
-+	/* Remap the whole filesystem now */
-+	iounmap(sbi->virt_addr);
-+	release_mem_region(sbi->phys_addr, initsize);
-+	sbi->virt_addr = pram_ioremap(sbi->phys_addr, initsize);
-+	if (!sbi->virt_addr) {
-+		pram_err("ioremap of the pramfs image failed\n");
-+		goto out;
-+	}
-+	super = pram_get_super(sb);
-+	root_i = pram_get_inode(sb, PRAM_ROOT_INO);
-+
-+#ifdef CONFIG_PRAMFS_TEST
-+	if (!first_pram_super)
-+		first_pram_super = sbi->virt_addr;
-+#endif
-+
-+	/* Set it all up.. */
-+ setup_sb:
-+	sb->s_magic = super->s_magic;
-+	sb->s_op = &pram_sops;
-+	sb->s_root = d_alloc_root(pram_fill_new_inode(sb, root_i));
-+
-+	retval = 0;
-+ out:
-+	if (retval && sbi->virt_addr) {
-+		iounmap(sbi->virt_addr);
-+		release_mem_region(sbi->phys_addr, initsize);
-+	}
-+
-+	return retval;
-+}
-+
-+int pram_statfs(struct dentry *d, struct kstatfs *buf)
-+{
-+	struct super_block *sb = d->d_sb;
-+	struct pram_super_block *ps = pram_get_super(sb);
-+
-+	buf->f_type = PRAM_SUPER_MAGIC;
-+	buf->f_bsize = sb->s_blocksize;
-+	buf->f_blocks = ps->s_blocks_count;
-+	buf->f_bfree = buf->f_bavail = ps->s_free_blocks_count;
-+	buf->f_files = ps->s_inodes_count;
-+	buf->f_ffree = ps->s_free_inodes_count;
-+	buf->f_namelen = PRAM_NAME_LEN;
-+	return 0;
-+}
-+
-+static int pram_show_options(struct seq_file *seq, struct vfsmount *vfs)
-+{
-+	struct pram_sb_info *sbi = (struct pram_sb_info *)vfs->mnt_sb->s_fs_info;
-+
-+	seq_printf(seq, ",physaddr=0x%016llx", (u64)sbi->phys_addr);
-+	if (sbi->initsize)
-+		seq_printf(seq, ",init=%luk", sbi->initsize >> 10);
-+	if (sbi->blocksize)
-+		seq_printf(seq, ",bs=%lu", sbi->blocksize);
-+	if (sbi->bpi)
-+		seq_printf(seq, ",bpi=%lu", sbi->bpi);
-+	if (sbi->num_inodes)
-+		seq_printf(seq, ",N=%lu", sbi->num_inodes);
-+	if (sbi->mode != (S_IRWXUGO | S_ISVTX))
-+		seq_printf(seq, ",mode=%03o", sbi->mode);
-+	if (sbi->uid != 0)
-+		seq_printf(seq, ",uid=%u", sbi->uid);
-+	if (sbi->gid != 0)
-+		seq_printf(seq, ",gid=%u", sbi->gid);
-+
-+	return 0;
-+}
-+
-+int pram_remount(struct super_block *sb, int *mntflags, char *data)
-+{
-+	struct pram_super_block *ps;
-+	unsigned long flags;
-+
-+	flags = 0;
-+
-+	if ((*mntflags & MS_RDONLY) != (sb->s_flags & MS_RDONLY)) {
-+		ps = pram_get_super(sb);
-+		pram_lock_super(ps, flags);
-+		ps->s_mtime = get_seconds(); /* update mount time */
-+		pram_unlock_super(ps, flags);
-+	}
-+
-+	return 0;
-+}
-+
-+void pram_put_super(struct super_block *sb)
-+{
-+	struct pram_sb_info *sbi = (struct pram_sb_info *)sb->s_fs_info;
-+	struct pram_super_block *ps = pram_get_super(sb);
-+
-+#ifdef CONFIG_PRAMFS_TEST
-+	if (first_pram_super == sbi->virt_addr)
-+		first_pram_super = NULL;
-+#endif
-+
-+	/* It's unmount time, so unmap the pramfs memory */
-+	if (sbi->virt_addr) {
-+		iounmap(sbi->virt_addr);
-+		sbi->virt_addr = NULL;
-+		release_mem_region(sbi->phys_addr, ps->s_size);
-+	}
-+
-+	sb->s_fs_info = NULL;
-+	kfree(sbi);
-+}
-+
-+/*
-+ * the super block writes are all done "on the fly", so the
-+ * super block is never in a "dirty" state, so there's no need
-+ * for write_super.
-+ */
-+static struct super_operations pram_sops = {
-+	.write_inode	= pram_write_inode,
-+	.dirty_inode	= pram_dirty_inode,
-+	.delete_inode	= pram_delete_inode,
-+	.put_super	= pram_put_super,
-+	.statfs		= pram_statfs,
-+	.remount_fs	= pram_remount,
-+	.show_options	= pram_show_options,
-+};
-+
-+static int pram_get_sb(struct file_system_type *fs_type,
-+	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
-+{
-+	return get_sb_nodev(fs_type, flags, data, pram_fill_super, mnt);
-+}
-+
-+static struct file_system_type pram_fs_type = {
-+	.owner          = THIS_MODULE,
-+	.name           = "pramfs",
-+	.get_sb         = pram_get_sb,
-+	.kill_sb        = kill_anon_super,
-+};
-+
-+static int __init init_pram_fs(void)
-+{
-+	return register_filesystem(&pram_fs_type);
-+}
-+
-+static void __exit exit_pram_fs(void)
-+{
-+	unregister_filesystem(&pram_fs_type);
-+}
-+
-+MODULE_AUTHOR("Marco Stornelli <marco.stornelli@gmail.com>");
-+MODULE_DESCRIPTION("Protected/Persistent RAM Filesystem");
-+MODULE_LICENSE("GPL");
-+
-+module_init(init_pram_fs)
-+module_exit(exit_pram_fs)
+where there does not appear to be any such header file.  might be some
+false positives but i'm not going to agonize over it.
 
 
+=== Missing: include/linux/bounds.h ===
+include/linux/mmzone.h:18:#include <linux/bounds.h>
+include/linux/page-flags.h:11:#include <linux/bounds.h>
+=== Missing: include/linux/comedidev.h ===
+drivers/staging/comedi/rt.c:27:#include <linux/comedidev.h>
+=== Missing: include/linux/compile.h ===
+arch/x86/boot/version.c:17:#include <linux/compile.h>
+init/version.c:9:#include <linux/compile.h>
+=== Missing: include/linux/config.h ===
+arch/h8300/kernel/timer/tpu.c:10:#include <linux/config.h>
+=== Missing: include/linux/i2c/adp5588_keys.h ===
+arch/blackfin/mach-bf537/boards/stamp.c:1093:#include <linux/i2c/adp5588_keys.h>
+=== Missing: include/linux/i2c-pnx0105.h ===
+arch/mips/nxp/pnx833x/common/platform.c:38:#include <linux/i2c-pnx0105.h>
+=== Missing: include/linux/ipipe.h ===
+arch/blackfin/mach-common/ints-priority.c:38:#include <linux/ipipe.h>
+=== Missing: include/linux/ipipe_percpu.h ===
+arch/blackfin/include/asm/ipipe.h:31:#include <linux/ipipe_percpu.h>
+=== Missing: include/linux/ipipe_trace.h ===
+arch/blackfin/include/asm/irq.h:36:#include <linux/ipipe_trace.h>
+=== Missing: include/linux/kdb.h ===
+drivers/acpi/osl.c:68:#include <linux/kdb.h>
+=== Missing: include/linux/mfd/adp5520.h ===
+arch/blackfin/mach-bf537/boards/stamp.c:1179:#include <linux/mfd/adp5520.h>
+=== Missing: include/linux/modversions.h ===
+drivers/staging/otus/zdusb.c:28:#include <linux/modversions.h>
+=== Missing: include/linux/r4k-timer.h ===
+arch/mips/kernel/sync-r4k.c:16:#include <linux/r4k-timer.h>
+=== Missing: include/linux/spi/adxl34x.h ===
+arch/blackfin/mach-bf537/boards/stamp.c:612:#include <linux/spi/adxl34x.h>
+arch/blackfin/mach-bf548/boards/ezkit.c:213:#include <linux/spi/adxl34x.h>
+=== Missing: include/linux/tqueue.h ===
+drivers/pcmcia/au1000_xxs1500.c:33:#include <linux/tqueue.h>
+drivers/pcmcia/au1000_pb1x00.c:29:#include <linux/tqueue.h>
+=== Missing: include/linux/usb/isp1362.h ===
+arch/blackfin/mach-bf533/boards/cm_bf533.c:37:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/ezkit.c:38:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/ip0x.c:41:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/H8606.c:39:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/stamp.c:39:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/cm_bf537.c:40:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/tcm_bf537.c:40:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/pnav10.c:39:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/minotaur.c:11:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/stamp.c:42:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf561/boards/ezkit.c:85:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf561/boards/cm_bf561.c:37:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf527/boards/ezkit.c:39:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf527/boards/cm_bf527.c:40:#include <linux/usb/isp1362.h>
+=== Missing: include/linux/usb/isp1760.h ===
+arch/blackfin/mach-bf537/boards/stamp.c:66:#include <linux/usb/isp1760.h>
+arch/blackfin/mach-bf548/boards/ezkit.c:63:#include <linux/usb/isp1760.h>
+arch/blackfin/mach-bf561/boards/ezkit.c:49:#include <linux/usb/isp1760.h>
+arch/blackfin/mach-bf527/boards/ezkit.c:64:#include <linux/usb/isp1760.h>
+arch/blackfin/mach-bf527/boards/cm_bf527.c:65:#include <linux/usb/isp1760.h>
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
