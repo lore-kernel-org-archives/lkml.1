@@ -1,102 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbZFMDVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbZFMDoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752781AbZFMDVq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 23:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZFMDVe
+	id S1752720AbZFMDoN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 23:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZFMDoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 23:21:34 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:41386 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238AbZFMDVc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 23:21:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=AHZ0PctnfdbGzP9aGlzWhm/bjSSgjIeB0BH/uOMAAh0XcO5B2hy/DCHES3Mj1v5EHs
-         VPMzr9Ms7JbHymFwWoxhTQ+3iwDF4NdcLOfllH0DKGVQslbMiwAdILEBfYnFs+pczQQ9
-         a/kFjUoyyR0i8xEj+RbOwHgyiKwlPQ+EWknBY=
+	Fri, 12 Jun 2009 23:44:01 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:45650 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751581AbZFMDoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 23:44:01 -0400
 MIME-Version: 1.0
-In-Reply-To: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
-References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
-Date: Fri, 12 Jun 2009 23:21:34 -0400
-Message-ID: <9e4733910906122021k4568df6rd80fb915b64ac12@mail.gmail.com>
-Subject: Re: [RFC][WIP] IEEE 802.15.4 implementation for Linux v1
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, slapin@ossfans.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18995.8319.322002.917595@cargo.ozlabs.ibm.com>
+Date: Sat, 13 Jun 2009 13:43:59 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: perf_counters: page fault trace record
+In-Reply-To: <4A330022.3070105@linux.vnet.ibm.com>
+References: <4A330022.3070105@linux.vnet.ibm.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 1, 2009 at 10:54 AM, Dmitry
-Eremin-Solenikov<dbaryshkov@gmail.com> wrote:
-> Hi,
->
-> As a part of research activities the Embedded Systems - Open Platform Group
-> from Siemens Corporate Technology we are working on adding support for
-> the IEEE 802.15.4 Wireless Personal Area Networks to the Linux. Our current
-> implementation is neither certified nor even feature complete. However
-> we'd like to present current state of our patchset to the Linux developers
-> community to gain comments, fixes, ideas, etc. This is not yet a pull request,
-> but more like an RFC.
->
-> The project page is available at http://apps.sourceforge.net/trac/linux-zigbee
-> with source code of kernel part available from git at
-> http://zigbee-linux.git.sourceforge.net, mirrored for convenience at
-> git://git.kernel.org/pub/scm/linux/kernel/git/lumag/lowpan.git
->
-> The source code for userspace utils is available from git at
-> http://linux-zigbee.git.sourceforge.net/
+Corey Ashford writes:
 
-The Zigbee alliance requires a minimum of $3,500/yr from any company
-making a product based on the spec. How are you going to reconcile
-this requirement with the GPL? They exempt non-commercial users but
-the GPL doesn't allow code to be free for one purpose and pay for
-another.
+> One of the tools we are working on needs to be able to look not only at counts 
+> of page faults, but where they are occurring (ip and faulting page address).
+> 
+> What would you think about adding a new bit to the config record, something like:
 
-"The ZigBee Specification is available to individuals, companies and
-institutions free of charge for all non-commercial purposes (including
-university research, technical evaluation, and development of
-non-commercial software, tools, or documentation). For ease of use,
-clearly marked errata have been incorporated into this document. These
-errata may not have been subjected to an Intellectual Property review,
-and as such, may contain undeclared Necessary Claims. No part of this
-specification may be used in development of a product for sale without
-becoming a member of ZigBee Alliance. Copyright © ZigBee Alliance,
-Inc. (2005). All rights Reserved. This information within this
-document is the property of the ZigBee Alliance and its use and
-disclosure are restricted.Elements of ZigBee Alliance specifications
-may be subject to third party intellectual property rights, including
-without limitation, patent, copyright or trademark rights (such a
-third party may or may not be a member of ZigBee). ZigBee is not
-responsible and shall not be held responsible in any manner for
-identifying or failing to identify any or all such third party
-intellectual property rights. This document and the information
-contained herein are provided on an “AS IS” basis and ZigBee DISCLAIMS
-ALL WARRANTIES EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO (A)
-ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL NOT INFRINGE
-ANY RIGHTS OF THIRD PARTIES (INCLUDING WITH-OUT LIMITATION ANY
-INTELLECTUAL PROPERTY RIGHTS INCLUDING PATENT, COPYRIGHT OR TRADEMARK
-RIGHTS) OR (B) ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR
-A PARTICULAR PURPOSE, TITLE OR NON-INFRINGEMENT. IN NO EVENT WILL
-ZIGBEE BE LIABLE FOR ANY LOSS OF PROF-ITS, LOSS OF BUSINESS, LOSS OF
-USE OF DATA, INTERRUPTION OF BUSINESS, OR FOR ANY OTHER DIRECT,
-INDIRECT, SPECIAL OR EXEMPLARY, INCIDENTIAL, PUNITIVE OR CONSEQUENTIAL
-DAMAGES OF ANY KIND, IN CONTRACT OR IN TORT, IN CONNECTION WITH THIS
-DOCUMENT OR THE INFORMATION CONTAINED HEREIN, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH LOSS OR DAMAGE. All Company, brand and product
-names may be trademarks that are the sole property of their respective
-owners. <P>The above notice and this paragraph must be included on all
-copies of this document that are made. ZigBee Alliance, Inc.2400
-Camino Ramon, Suite 375San Ramon, CA 94583"
+Can't you do what you need just using a page fault software counter
+with sample_type = PERF_SAMPLE_IP | PERF_SAMPLE_ADDR and
+sample_period = 1?
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Paul.
