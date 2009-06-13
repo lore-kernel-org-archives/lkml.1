@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZFMGCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZFMGQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbZFMGCR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 02:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZFMGCJ
+	id S1756356AbZFMGQI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 02:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZFMGP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 02:02:09 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:54785 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbZFMGCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 02:02:08 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] ramfs: ignore tmpfs options when we emulate it
-Date: Sat, 13 Jun 2009 02:02:00 -0400
-Message-Id: <1244872920-13511-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.1
+	Sat, 13 Jun 2009 02:15:56 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58482 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbZFMGP4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 02:15:56 -0400
+Date: Fri, 12 Jun 2009 23:16:27 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: IO latency - a special case
+Message-ID: <20090612231627.1222f526@infradead.org>
+In-Reply-To: <9b1675090906122251y43476b23wd3593927e3b792c2@mail.gmail.com>
+References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
+	<9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
+	<9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
+	<9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
+	<20090405062626.GA7760@mit.edu>
+	<9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
+	<9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
+	<20090611191152.GD16787@mit.edu>
+	<9b1675090906122048o35698c09x13cc7cf7650ac9ae@mail.gmail.com>
+	<20090612212414.1ae5a284@infradead.org>
+	<9b1675090906122251y43476b23wd3593927e3b792c2@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
-fail when tmpfs options are used.  This is because tmpfs creates a small
-wrapper around ramfs which rejects unknown options, and ramfs itself only
-supports a tiny subset of what tmpfs supports.  This makes it pretty hard
-to use the same userspace systems across different configuration systems.
-As such, ramfs should ignore the tmpfs options when tmpfs is merely a
-wrapper around ramfs.
+On Fri, 12 Jun 2009 23:51:19 -0600
+"Trenton D. Adams" <trenton.d.adams@gmail.com> wrote:
+> 
+> Right now, just during normal system usage, it's showing...
+> Cause                                                Maximum
+> Percentage poll_schedule_timeout do_sys_poll sys_poll sysente  5.0
+> msec         58.0 % futex_wait do_futex compat_sys_futex
+> sysenter_disp  5.0 msec         40.3 % blk_execute_rq scsi_execute
+> scsi_execute_req scsi_  3.9 msec          0.2 % blk_execute_rq
+> scsi_execute scsi_execute_req sd_re  3.5 msec          0.2 %
+> poll_schedule_timeout do_select core_sys_select sy  3.4 msec
+> 0.3 % blk_execute_rq scsi_execute scsi_execute_req sr_te  2.6
+> msec          0.5 % blk_execute_rq scsi_execute scsi_execute_req
+> sr_te  2.2 msec          0.5 % blk_execute_rq scsi_execute
+> sr_do_ioctl sr_packet   0.9 msec          0.1 % blk_execute_rq
+> scsi_execute scsi_execute_req ioctl  0.6 msec          0.0 % release
+> __blkdev_put blkdev_put blkdev_close __fput
 
-This used to work before commit c3b1b1cbf0 as previously, ramfs would
-ignore all options.  But now, we get:
-ramfs: bad mount option: size=10M
-mount: mounting mdev on /dev failed: Invalid argument
+this shows it's not correctly installed....
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-another option might be to restore the previous behavior where ramfs simply
-ignored all unknown mount options ...
+(and it's likely an older version)
 
- fs/ramfs/inode.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
-index 3a6b193..57a797c 100644
---- a/fs/ramfs/inode.c
-+++ b/fs/ramfs/inode.c
-@@ -203,6 +203,16 @@ static int ramfs_parse_options(char *data, struct ramfs_mount_opts *opts)
- 			opts->mode = option & S_IALLUGO;
- 			break;
- 		default:
-+#ifndef CONFIG_SHMEM
-+			/* If tmpfs is using us to emulate it, ignore its options */
-+			if (!strncmp(p, "gid=", 4) ||
-+			    !strncmp(p, "mpol=", 5) ||
-+			    !strncmp(p, "nr_blocks=", 10) ||
-+			    !strncmp(p, "nr_inodes=", 10) ||
-+			    !strncmp(p, "size=", 5) ||
-+			    !strncmp(p, "uid=", 4))
-+				continue;
-+#endif
- 			printk(KERN_ERR "ramfs: bad mount option: %s\n", p);
- 			return -EINVAL;
- 		}
 -- 
-1.6.3.1
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
