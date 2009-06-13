@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbZFMFv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZFMF5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756627AbZFMFv0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 01:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZFMFvS
+	id S1755143AbZFMF5I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 01:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZFMF4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 01:51:18 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:63596 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752070AbZFMFvR convert rfc822-to-8bit (ORCPT
+	Sat, 13 Jun 2009 01:56:54 -0400
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:52576 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752070AbZFMF4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 01:51:17 -0400
+	Sat, 13 Jun 2009 01:56:54 -0400
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Jun 2009 01:56:53 EDT
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WdWZHvGD9P03J55/n15Dyedu+KN4aPKwjXEabwpI57ZEu/316SFupOAkxg/Pfn8CdJ
-         MwyzKTXIvd32mPnjQ09COHn4w3OQvsCxurECZplC4tY8qwRcqt1VPGmo1vjmS65fqfAk
-         gjttNqWqssCAk1vl84bKN/+ewqvYvcxMGftOs=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Lp9y07dPsBrftbhQAxLoNgRjB/eH8feWWwNj3pZV6fizNQ+9WEBfLSxVEay+pFkYqn
+         HbgssLZsnebrwJCvkOZAaJtOdHFbaOkRKAdfHmJ8g2cmxQ490ZMIBBIV5gI1baprwfpy
+         YYXLO/d7sqBuCHFuqS9AIWEILAzth9wbPPKIA=
+Message-ID: <4A333E0D.8050306@gmail.com>
+Date: Fri, 12 Jun 2009 23:50:05 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090612212414.1ae5a284@infradead.org>
-References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
-	 <9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
-	 <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
-	 <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
-	 <20090405062626.GA7760@mit.edu>
-	 <9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
-	 <9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
-	 <20090611191152.GD16787@mit.edu>
-	 <9b1675090906122048o35698c09x13cc7cf7650ac9ae@mail.gmail.com>
-	 <20090612212414.1ae5a284@infradead.org>
-Date: Fri, 12 Jun 2009 23:51:19 -0600
-Message-ID: <9b1675090906122251y43476b23wd3593927e3b792c2@mail.gmail.com>
-Subject: Re: IO latency - a special case
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Sanka Piyaratna <cesanka@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PCIe interface memory memory mapping issue
+References: <233030.36441.qm@web31706.mail.mud.yahoo.com>
+In-Reply-To: <233030.36441.qm@web31706.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 10:24 PM, Arjan van de Ven<arjan@infradead.org> wrote:
-> On Fri, 12 Jun 2009 21:48:41 -0600
-> "Trenton D. Adams" <trenton.d.adams@gmail.com> wrote:
+On 06/12/2009 06:23 AM, Sanka Piyaratna wrote:
+> Hi,
 >
->> Sorry I didn't reply earlier.  I got busy with some server troubles
->> and such.
->> > What sort of process where you typicalling trying to kill using ^C?
->>
->> It's maven, which spawns javac (java compiler), as well as does
->> various other tasks such as making connections to the Internet, local
->> directories, etc.
->
-> I assume you know latencytop and how it might be useful to diagnose
-> such delays ?
+> I have developed a PCI express interface using Xilinx ML555 hardware module. I have implemented Linux kernel mode device drivers and everything works correctly as long as I am using the device within a computer with dual channel DDR arrangement. However, as soon as I pug this device into a core i7 or an older single channel DDR machine, the interface memory mapping does not work any more. As if the register map with in the device does no longer exsists. However, "lspci" utility provides correct information. I am not sure if this has anything to do with the number of DDR memory channels the motherboard has or why that would be a problem for PCI express device. However, this seem to be the common link between the machines that demonstrate this issue.
 
-Your assumption would be incorrect. ;)  Never heard of it before now.
-But, I did have it installed for some reason.
-
-However, when this starts happening, it's dang near impossible to do
-anything on the machine.  I wouldn't be able to run it if I tried,
-though I will try :D.  I barely have enough time to Ctrl-C before the
-machines locks for about 3600 seconds.  And during that time (around
-10-30 seconds), I can't really switch applications, as the latency is
-so high.
-
-Right now, just during normal system usage, it's showing...
-Cause                                                Maximum     Percentage
-poll_schedule_timeout do_sys_poll sys_poll sysente  5.0 msec         58.0 %
-futex_wait do_futex compat_sys_futex sysenter_disp  5.0 msec         40.3 %
-blk_execute_rq scsi_execute scsi_execute_req scsi_  3.9 msec          0.2 %
-blk_execute_rq scsi_execute scsi_execute_req sd_re  3.5 msec          0.2 %
-poll_schedule_timeout do_select core_sys_select sy  3.4 msec          0.3 %
-blk_execute_rq scsi_execute scsi_execute_req sr_te  2.6 msec          0.5 %
-blk_execute_rq scsi_execute scsi_execute_req sr_te  2.2 msec          0.5 %
-blk_execute_rq scsi_execute sr_do_ioctl sr_packet   0.9 msec          0.1 %
-blk_execute_rq scsi_execute scsi_execute_req ioctl  0.6 msec          0.0 %
-release __blkdev_put blkdev_put blkdev_close __fput
+You'll have to give more details on what you mean by "the interface 
+memory mapping does not work any more. As if the register map with in 
+the device does no longer exsists".
