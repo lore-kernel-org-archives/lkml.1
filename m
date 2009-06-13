@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZFMGwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZFMGzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbZFMGwZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 02:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbZFMGwR
+	id S1758650AbZFMGzz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 02:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZFMGzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 02:52:17 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:37063 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755324AbZFMGwR convert rfc822-to-8bit (ORCPT
+	Sat, 13 Jun 2009 02:55:47 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:33273 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbZFMGzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 02:52:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CGvMSPbg6Q/tEFJs27prE254DDzVr3J1z2jdIBXMq8IAfS4cBGrXEy7tPJp9Ks+XO0
-         0nyQlToGnjPego6z3LH4ua4hEZdvafALUP1760dX/e6YLgwre30NUt4hriLY6zZ7mVme
-         yG9Mr2R5LE7p7t0A4BPk7N63qxh36oRYgta2U=
+	Sat, 13 Jun 2009 02:55:46 -0400
+In-Reply-To: <200906092019.06812.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
 MIME-Version: 1.0
-In-Reply-To: <20090612223255.GD14878@aniel.lan>
-References: <20090612223255.GD14878@aniel.lan>
-Date: Sat, 13 Jun 2009 08:52:17 +0200
-Message-ID: <71cd59b00906122352g77e8afdeh235c2a73b323a0d7@mail.gmail.com>
-Subject: Re: [PATCH 0/2] eeepc-laptop: add 3G rfkill support for 901Go
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Janne Grunau <j@jannau.net>
-Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH 00/27] score arch files for linux
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OFFDE0B66A.CCDF7360-ON482575D4.0024FAC6-482575D4.00260499@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Sat, 13 Jun 2009 14:50:47 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/13 ?? 02:50:48,
+	Serialize complete at 2009/06/13 ?? 02:50:48
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5D6uU54011807
 
-On Sat, Jun 13, 2009 at 12:32 AM, Janne Grunau<j@jannau.net> wrote:
-> Hi,
->
-> The asus_acpi module coming with the Eee PC 901 Go can turn the internal
-> 3G modem on and off. I haven't found updated sources for it (only the
-> release from november 2007) but I haven't searched thoroughly nor
-> requested updated sources from Asus.
-> Adding support to eeepc-laptop looking at objdump output was easy enough
-> and probably faster than reply from Asus.
->
-> There remain only two little issues:
-> - the new values are not added to the end of the CM_ASL* enum but before
->  CM_ASL_LID. I don't think it's a problem since it seems to be unused.
-> - The eeepc 1000HE reports 3G control support according to
->  http://wiki.debian.org/DebianEeePC/Models but has no 3G modem. I assume
->  this is an error in the bios.
+Hi Arnd,
 
-Hi,
-First,
-Could you fill http://dev.iksaif.net/projects/acpi4asus/wiki/CMSG with
-your model CMSG ?
+Arnd Bergmann <arnd@arndb.de> Ğ´ÓÚ 2009-06-10 02:19:06:
 
-Then, I was working on a patch to refactor rfkill code in
-eeepc-laptop. With this patch, adding 3g rfkill
-is only 15-20 lines. I'll add it to acpi4asus git tree soon.
->From here:
- - I can rework your patch
-- you can re-send it when rfkill refactoring is here.
+> On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
+> > Hi Arnd, Andrew Morton and linus,
+> > 
+> > According to your comment on score arch code, 
+> > we update score code base on asm-generic#next repository.
+> > use arch microblaze and blackfin as reference.
+> 
+> Ok, just finished looking over the patches and I am generally
+> very happy about their quality, it usually takes much longer
+> for a submission of this size to get into a mergeable shape.
+> 
+> The only thing that I think needs to be fixed before a
+> 2.6.31 release is my comment about unistd.h still containing
+> the __ARCH_WANT_SYSCALL_* #defines. I consider that my fault
+> because I did not make it clear enough what those are meant
+> for in asm-generic/unistd.h.
+> 
+> One more general thought: I noticed that you split the header
+> files by alphabetical ordering. While there is no good way to
+> split a set of interdependent files, a logical grouping
+> (e.g. ABI, memory management, device, cpu) would be nice.
+> 
+> Everything else I found are only polite suggestions of what
+> can still be improved, not issues that I think need to
+> be addressed immediately. I especially love how the work
+> that Remis and I put into the generic header files starts
+> paying off, because it makes reviewing an architecture so
+> much simpler.
+> 
+> Please add my 'Reviewed-by: Arnd Bergmann <arnd@arndb.de>'
+> to your patches.
+> 
 
-as you want =).
+Based on your comments, I use asm-generic/current.h, hardirq.h,
+unaligned.h etc instead of files under arch/include/asm folder.
+It could work in score code.
 
--- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+Best Regards
+Liqin
+--
+
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
