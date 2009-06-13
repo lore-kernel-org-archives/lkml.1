@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbZFMNZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763629AbZFMNZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763457AbZFMNZY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 09:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760918AbZFMNZD
+	id S1763629AbZFMNZv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 09:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763319AbZFMNZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 09:25:03 -0400
+	Sat, 13 Jun 2009 09:25:13 -0400
 Received: from mail-fx0-f216.google.com ([209.85.220.216]:39740 "EHLO
 	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762888AbZFMNY6 (ORCPT
+	with ESMTP id S1763308AbZFMNZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 09:24:58 -0400
+	Sat, 13 Jun 2009 09:25:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=u67unBCZDYOEiINujEWCTVR3LLM1mnT7Uc03cRY6XWKGwoscM9zvbREduWrAgYlOKq
-         n27EEfTqB53+gwYNlfRreNKPpwrdZGJ4v79z/IT2iYFVbRgWpc27dS5yuquiDmPa7l6+
-         MS3Rc2zjRUobkNm9IUsEUAe21VPUnuWBRxIcM=
-Message-ID: <4A33A7BC.1020703@gmail.com>
-Date: Sat, 13 Jun 2009 15:21:00 +0200
+        b=w8xRePP8DVBO4iwAPy8VyVyJdUKx9y2OO4hf7RapnAfdg8zmRRUncy7DbhpNTz2aIl
+         x05njLa9hUAGtxOAM6k9XyWJGwaEfRnemoL1S7JFKC1K2ezSih94nJSAaCFHu54xbOj2
+         6Cz1/gc4sv7iXpYuMy5q3/3a/a+SwugIAg32Q=
+Message-ID: <4A33A7CC.1080205@gmail.com>
+Date: Sat, 13 Jun 2009 15:21:16 +0200
 From: Marco <marco.stornelli@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -26,7 +26,7 @@ To: Linux FS Devel <linux-fsdevel@vger.kernel.org>
 CC: Linux Embedded <linux-embedded@vger.kernel.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: [PATCH 02/14] Pramfs: File operations for directories
+Subject: [PATCH 03/14] Pramfs: Documentation
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,233 +35,240 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Marco Stornelli <marco.stornelli@gmail.com>
 
-File operations for directories.
+Documentation.
 
 Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
 ---
 
-diff -uprN linux-2.6.30-orig/fs/pramfs/dir.c linux-2.6.30/fs/pramfs/dir.c
---- linux-2.6.30-orig/fs/pramfs/dir.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.30/fs/pramfs/dir.c	2009-06-13 12:51:46.000000000 +0200
-@@ -0,0 +1,220 @@
-+/*
-+ * FILE NAME fs/pramfs/dir.c
-+ *
-+ * BRIEF DESCRIPTION
-+ *
-+ * File operations for directories.
-+ *
-+ * Copyright 2009 Marco Stornelli <marco.stornelli@gmail.com>
-+ * Copyright 2003 Sony Corporation
-+ * Copyright 2003 Matsushita Electric Industrial Co., Ltd.
-+ * 2003-2004 (c) MontaVista Software, Inc. , Steve Longerbeam
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ */
+diff -uprN linux-2.6.30-orig/Documentation/filesystems/pramfs.txt linux-2.6.30/Documentation/filesystems/pramfs.txt
+--- linux-2.6.30-orig/Documentation/filesystems/pramfs.txt	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.30/Documentation/filesystems/pramfs.txt	2009-06-13 12:57:32.000000000 +0200
+@@ -0,0 +1,227 @@
 +
-+#include <linux/fs.h>
-+#include <linux/pagemap.h>
-+#include "pram_fs.h"
++PRAMFS Overview
++===============
 +
-+/*
-+ *	Parent is locked.
-+ */
-+int pram_add_link(struct dentry *dentry, struct inode *inode)
-+{
-+	struct inode *dir = dentry->d_parent->d_inode;
-+	struct pram_inode *pidir, *pi, *pitail = NULL;
-+	off_t tail_ino, prev_ino;
-+	unsigned long flags;
++Many embedded systems have a block of non-volatile RAM separate from
++normal system memory, i.e. of which the kernel maintains no memory page
++descriptors. For such systems it would be beneficial to mount a
++fast read/write filesystem over this "I/O memory", for storing frequently
++accessed data that must survive system reboots and power cycles. An
++example usage might be system logs under /var/log, or a user address
++book in a cell phone or PDA.
 +
-+	const char *name = dentry->d_name.name;
-+	int namelen = dentry->d_name.len > PRAM_NAME_LEN ?
-+		PRAM_NAME_LEN : dentry->d_name.len;
++Linux traditionally had no support for a persistent, non-volatile RAM-based
++filesystem, persistent meaning the filesystem survives a system reboot
++or power cycle intact. The RAM-based filesystems such as tmpfs and ramfs
++have no actual backing store but exist entirely in the page and buffer
++caches, hence the filesystem disappears after a system reboot or
++power cycle.
 +
-+	flags = 0;
++A relatively straight-forward solution is to write a simple block driver
++for the non-volatile RAM, and mount over it any disk-based filesystem such
++as ext2/ext3, reiserfs, etc.
 +
-+	pidir = pram_get_inode(dir->i_sb, dir->i_ino);
-+	pi = pram_get_inode(dir->i_sb, inode->i_ino);
++But the disk-based fs over non-volatile RAM block driver approach has
++some drawbacks:
 +
-+	dir->i_mtime = dir->i_ctime = CURRENT_TIME;
++1. Disk-based filesystems such as ext2/ext3 were designed for optimum
++   performance on spinning disk media, so they implement features such
++   as block groups, which attempts to group inode data into a contiguous
++   set of data blocks to minimize disk seeking when accessing files. For
++   RAM there is no such concern; a file's data blocks can be scattered
++   throughout the media with no access speed penalty at all. So block
++   groups in a filesystem mounted over RAM just adds unnecessary
++   complexity. A better approach is to use a filesystem specifically
++   tailored to RAM media which does away with these disk-based features.
++   This increases the efficient use of space on the media, i.e. more
++   space is dedicated to actual file data storage and less to meta-data
++   needed to maintain that file data.
 +
-+	tail_ino = pidir->i_type.dir.tail;
-+	if (tail_ino != 0) {
-+		pitail = pram_get_inode(dir->i_sb, tail_ino);
-+		pram_lock_inode(pitail, flags);
-+		pitail->i_d.d_next = inode->i_ino;
-+		pram_unlock_inode(pitail, flags);
++2. If the backing-store RAM is comparable in access speed to system memory,
++   there's really no point in caching the file I/O data in the page
++   cache. Better to move file data directly between the user buffers
++   and the backing store RAM, i.e. use direct I/O. This prevents the
++   unnecessary populating of the page cache with dirty pages. However
++   direct I/O has to be enabled at every file open. To enable direct
++   I/O at all times for all regular files requires either that
++   applications be modified to include the O_DIRECT flag on all file
++   opens, or that a new filesystem be used that always performs direct
++   I/O by default.
 +
-+		prev_ino = tail_ino;
++The Persistent/Protected RAM Special Filesystem (PRAMFS) is a
++full-featured read/write filesystem that has been designed to address
++these issues. PRAMFS is targeted to fast I/O memory, and if the memory
++is non-volatile, the filesystem will be persistent.
 +
-+		pram_lock_inode(pidir, flags);
-+		pidir->i_type.dir.tail = inode->i_ino;
-+		pidir->i_mtime = dir->i_mtime.tv_sec;
-+		pidir->i_ctime = dir->i_ctime.tv_sec;
-+		pram_unlock_inode(pidir, flags);
-+	} else {
-+		/* the directory is empty */
-+		prev_ino = 0;
++In PRAMFS, direct I/O is enabled across all files in the filesystem, in
++other words the O_DIRECT flag is forced on every open of a PRAMFS file.
++Also, file I/O in the PRAMFS is always synchronous. There is no need
++to block the current process while the transfer to/from the PRAMFS
++is in progress, since one of the requirements of the PRAMFS is that the
++filesystem exist in fast RAM. So file I/O in PRAMFS is always direct,
++synchronous, and never blocks.
 +
-+		pram_lock_inode(pidir, flags);
-+		pidir->i_type.dir.head = pidir->i_type.dir.tail = inode->i_ino;
-+		pidir->i_mtime = dir->i_mtime.tv_sec;
-+		pidir->i_ctime = dir->i_ctime.tv_sec;
-+		pram_unlock_inode(pidir, flags);
-+	}
++The data organization in PRAMFS can be thought of as an extremely
++simplified version of ext2, such that the ratio of data to meta-data is
++very high.
++
++PRAMFS is also write protected. The page table entries that map the
++backing-store RAM are normally marked read-only. Write operations into
++the filesystem temporarily mark the affected pages as writeable, the
++write operation is carried out with locks held, and then the pte is
++marked read-only again. This feature provides some protection against
++filesystem corruption caused by errant writes into the RAM due to
++kernel bugs for instance. In case there are systems where the write
++protection is not possible (for instance the RAM cannot be mapped
++with page tables), this feature can be disabled with the CONFIG_PRAMFS_NOWP
++config option.
++
++In summary, PRAMFS is a light-weight, full-featured, and space-efficient
++special filesystem that is ideal for systems with a block of fast
++non-volatile RAM that need to access data on it using a standard
++filesytem interface.
 +
 +
-+	pram_lock_inode(pi, flags);
-+	pi->i_d.d_prev = prev_ino;
-+	pi->i_d.d_parent = dir->i_ino;
-+	memcpy(pi->i_d.d_name, name, namelen);
-+	pi->i_d.d_name[namelen] = '\0';
-+	pram_unlock_inode(pi, flags);
-+	return 0;
-+}
++Supported mount options
++=======================
 +
-+int pram_remove_link(struct inode *inode)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	struct pram_inode *prev = NULL;
-+	struct pram_inode *next = NULL;
-+	struct pram_inode *pidir, *pi;
-+	unsigned long flags;
++The PRAMFS currently requires one mount option, and there are several
++optional mount options:
 +
-+	flags = 0;
++physaddr=	Required. It tells PRAMFS the physical address of the
++		start of the RAM that makes up the filesystem. The
++		physical address must be located on a page boundary.
 +
-+	pi = pram_get_inode(sb, inode->i_ino);
-+	pidir = pram_get_inode(sb, pi->i_d.d_parent);
-+	if (!pidir)
-+		return -EACCES;
++init=		Optional. It is used to initialize the memory to an
++		empty filesystem. Any data in an existing filesystem
++		will be lost if this option is given. The parameter to
++		"init=" is the RAM in kilo/mega/giga bytes.
 +
-+	if (inode->i_ino == pidir->i_type.dir.head) {
-+		/* first inode in directory */
-+		next = pram_get_inode(sb, pi->i_d.d_next);
++bs=		Optional. It is used to specify a block size. It is
++		ignored if the "init=" option is not specified, since
++		otherwise the block size is read from the PRAMFS
++		super-block. The default blocksize is 2048 bytes,
++		and the allowed block sizes are 512, 1024, 2048, and
++		4096.
 +
-+		if (next) {
-+			pram_lock_inode(next, flags);
-+			next->i_d.d_prev = 0;
-+			pram_unlock_inode(next, flags);
++bpi=		Optional. It is used to specify the bytes per inode
++		ratio, i.e. For every N bytes in the filesystem, an
++		inode will be created. This behaves the same as the "-i"
++		option to mke2fs. It is ignored if the "init=" option is
++		not specified.
 +
-+			pram_lock_inode(pidir, flags);
-+			pidir->i_type.dir.head = pi->i_d.d_next;
-+		} else {
-+			pram_lock_inode(pidir, flags);
-+			pidir->i_type.dir.head = pidir->i_type.dir.tail = 0;
-+		}
-+		pram_unlock_inode(pidir, flags);
-+	} else if (inode->i_ino == pidir->i_type.dir.tail) {
-+		/* last inode in directory */
-+		prev = pram_get_inode(sb, pi->i_d.d_prev);
++N=		Optional. It is used to specify the number of inodes to
++		allocate in the inode table. If the option is not
++		specified, the bytes-per-inode ratio is used the
++		calculate the number of inodes. If neither the "N=" or
++		"bpi=" options are specified, the default behavior is to
++		reserve 5% of the total space in the filesystem for the
++		inode table. This option behaves the same as the "-N"
++		option to mke2fs. It is ignored if the "init=" option is
++		not specified.
 +
-+		pram_lock_inode(prev, flags);
-+		prev->i_d.d_next = 0;
-+		pram_unlock_inode(prev, flags);
++Examples:
 +
-+		pram_lock_inode(pidir, flags);
-+		pidir->i_type.dir.tail = pi->i_d.d_prev;
-+		pram_unlock_inode(pidir, flags);
-+	} else {
-+		/* somewhere in the middle */
-+		prev = pram_get_inode(sb, pi->i_d.d_prev);
-+		next = pram_get_inode(sb, pi->i_d.d_next);
++mount -t pramfs -o physaddr=0x20000000,init=1M,bs=1k none /mnt/pram
 +
-+		if (prev && next) {
-+			pram_lock_inode(prev, flags);
-+			prev->i_d.d_next = pi->i_d.d_next;
-+			pram_unlock_inode(prev, flags);
++This example locates the filesystem at physical address 0x20000000, and
++also requests an empty filesystem be initialized, of total size of one
++megabytes and blocksize of one kilobytes. The mount point is /mnt/pram.
 +
-+			pram_lock_inode(next, flags);
-+			next->i_d.d_prev = pi->i_d.d_prev;
-+			pram_unlock_inode(next, flags);
-+		}
-+	}
++mount -t pramfs -o physaddr=0x20000000 none /mnt/pram
 +
-+	pram_lock_inode(pi, flags);
-+	pi->i_d.d_next = pi->i_d.d_prev = pi->i_d.d_parent = 0;
-+	pram_unlock_inode(pi, flags);
++This example locates the filesystem at physical address 0x20000000 as in
++the first example, but uses the intact filesystem that already exists.
 +
-+	return 0;
-+}
 +
-+#define S_SHIFT 12
-+static unsigned int dtype_by_mode[S_IFMT >> S_SHIFT] = {
-+	[S_IFREG >> S_SHIFT]    DT_REG,
-+	[S_IFDIR >> S_SHIFT]    DT_DIR,
-+	[S_IFCHR >> S_SHIFT]    DT_CHR,
-+	[S_IFBLK >> S_SHIFT]    DT_BLK,
-+	[S_IFIFO >> S_SHIFT]    DT_FIFO,
-+	[S_IFSOCK >> S_SHIFT]   DT_SOCK,
-+	[S_IFLNK >> S_SHIFT]    DT_LNK,
-+};
++Current Limitations
++===================
 +
-+static int
-+pram_readdir(struct file *filp, void *dirent, filldir_t filldir)
-+{
-+	struct inode *inode = filp->f_dentry->d_inode;
-+	struct super_block *sb = inode->i_sb;
-+	struct pram_inode *pi;
-+	int namelen, ret = 0;
-+	char *name;
-+	ino_t ino;
++- The RAM used for PRAMFS must be directly addressable.
 +
-+	if (filp->f_pos >> 32)
-+		return 0;
++- PRAMFS does not support hard links.
 +
-+	pi = pram_get_inode(sb, inode->i_ino);
++- PRAMFS supports only private memory mappings. This allows most
++  executables to run, but programs that attempt shared memory
++  mappings, such as X apps that use X shared memory, will fail.
 +
-+	switch ((unsigned long)filp->f_pos) {
-+	case 0:
-+		ret = filldir(dirent, ".", 1, 0, inode->i_ino, DT_DIR);
-+		filp->f_pos++;
-+		return ret;
-+	case 1:
-+		ret = filldir(dirent, "..", 2, 1, pi->i_d.d_parent, DT_DIR);
-+		ino = pi->i_type.dir.head;
-+		filp->f_pos = ino ? ino : 2;
-+		return ret;
-+	case 2:
-+		ino = pi->i_type.dir.head;
-+		if (ino) {
-+			filp->f_pos = ino;
-+			pi = pram_get_inode(sb, ino);
-+			break;
-+		} else {
-+			/* the directory is empty */
-+			filp->f_pos = 2;
-+			return 0;
-+		}
-+	case 3:
-+		return 0;
-+	default:
-+		ino = filp->f_pos;
-+		pi = pram_get_inode(sb, ino);
-+		break;
-+	}
++Further Documentation
++=====================
 +
-+	while (pi && !pi->i_links_count) {
-+		ino = filp->f_pos = pi->i_d.d_next;
-+		pi = pram_get_inode(sb, ino);
-+	}
++If you are interested in the internal design of PRAMFS, there is
++documentation available at the Sourceforge PRAMFS home page at
++http://pramfs.sourceforge.net.
 +
-+	if (pi) {
-+		name = pi->i_d.d_name;
-+		namelen = strlen(name);
++Please send bug reports/comments/feed back to the pramfs development
++list at sourceforge: pramfs-devel@lists.sourceforge.net.
 +
-+		ret = filldir(dirent, name, namelen,
-+			      filp->f_pos, ino,
-+			      dtype_by_mode[(pi->i_mode & S_IFMT)>>S_SHIFT]);
-+		filp->f_pos = pi->i_d.d_next ? pi->i_d.d_next : 3;
-+	} else
-+		filp->f_pos = 3;
 +
-+	return ret;
-+}
++ChangeLog
++=========
 +
-+struct file_operations pram_dir_operations = {
-+	.read 		= generic_read_dir,
-+	.readdir	= pram_readdir,
-+	.fsync		= simple_sync_file,	
-+};
++1.1.3:
++	- kernel 2.6.30
++	- replaced DQUOT macros with vfs_dq_* functions in inode.c
++
++1.1.2:
++	- kernel 2.6.29
++	- replaced current->fsuid and current->fsgid in inode.c with
++	  current_fsuid() and current_fsgid() macro
++	- replaced pram_fsync with simple_file_sync (deleted fsync.c)
++	- removed ioctl.c
++	- fix the minus inside pram_sync_super and pram_sync_inode
++	  inline functions
++	- now flags must be explicit in pram_lock/unlock_inode,
++	  pram_lock/unlock_super and in pram_lock/unlock_block
++	- fix compiler warning about unused flags variable
++	- now multiple instances of pramfs are allowed
++	- added management of mode, uid and gid mount options
++	- renamed find_pramfs_super() in pram_get_super() and changed its
++	  behaviour to remove the dependecy from a kernel symbol not exported
++	- added superblock operation pram_show_options
++	- added pram_parse_options function
++	- added checks for some mount parameters to avoid kernel crashes
++	- now a physical address of zero is allowed
++	- added the use of request_mem_region_exclusive
++	- now phys_addr in the struct pram_sb_info is phys_addr_t type
++
++1.1.1:
++	- kernel 2.6.28.1
++	- now the code is compliant to kernel coding style
++	- replaced typedef pram_off_t with the standard off_t
++
++1.1.0
++	- kernel 2.6.27
++	- added xip feature.
++
++1.0.4:
++	- kernel 2.6.10
++	- include <asm/tlbflush.h> in wprotect.c for
++	  flush_tlb_kernel_range().
++	- fixed a bug in pram_mknod(). The pramfs inode needs
++	  updating after calling init_special_inode() to update
++	  the rdev.
++1.0.3:
++	- kernel 2.6.9.
++	- __ioremap() definition not consistent across archs, use
++	  ioremap() instead.
++	- flush_tlb_kernel_page() is only available on some archs.
++	- fixed bug in pram_fill_super(): root inode pointer needs
++	  to be recalculated after remapping whole fs.
++1.0.2:
++	- kernel 2.6.4.
++	- use pram_truncate() in pram_delete_inode().
++	- dangling pram_lock_inode() removed in pram_truncate_blocks().
++	- edits to this README
++
++1.0.1:
++	- port to kernel 2.6.3.
++	- implement direct_IO() method instead of custom file read/write
++	  methods.
++	- do away with __ioremap_readonly() requirement.
++	- implement inode truncate() method.
++
++1.0.0:
++	- Started ChangeLog (kernel 2.4.22).
++
++
 
