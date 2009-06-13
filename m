@@ -1,89 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763431AbZFMUxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932752AbZFMVDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763431AbZFMUxy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 16:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762851AbZFMUxq
+	id S932752AbZFMVDS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 17:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932557AbZFMVDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 16:53:46 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:55204 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760702AbZFMUxp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 16:53:45 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH] asm-generic: uaccess: fix up local access_ok() usage
-Date: Sat, 13 Jun 2009 22:53:39 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <1244903447-23579-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1244903447-23579-1-git-send-email-vapier@gentoo.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906132253.39879.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+NMJBXoB+Z1cfvp8iu6OkfB7Ij5hvliowyKyu
- 7Cmr3vJd+m1M0wSmww+9vSuk/U0HyGDzkkrl9ZdgxcMN16m5Je
- ZiUofaIbWET0bivJYJo7Q==
+	Sat, 13 Jun 2009 17:03:07 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36599 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932550AbZFMVDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 17:03:06 -0400
+Date: Sat, 13 Jun 2009 23:02:59 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Samuel Ortiz <sameo@openedhand.com>
+Subject: [GIT PULL] MMC updates for 2.6.31-rc1
+Message-ID: <20090613230259.387dfe4d@mjolnir.ossman.eu>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-29752-1244926986-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 June 2009, Mike Frysinger wrote:
-> There's no reason that I can see to use the short __access_ok() form
-> directly when the access_ok() is clearer in intent and for more people,
-> expands to the same C code (i.e. always specify the first field -- access
-> type).  Not all no-mmu systems lack memory protection, so the read/write
-> could feasibly be checked.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Ah, I didn't consider this. I checked all the architectures and could not
-find a case where access_ok actually evaluates the the first argument, so
-I chose the slightly terser variant. I also don't let you override
-access_ok() at this moment, which means that you don't have a choice
-to use the generic uaccess.h and still differentiate between read and
-write accesses.
+--=_freyr.ossman.eu-29752-1244926986-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-What I really got wrong was the prototype for __access_ok(), as you
-showed in your follow-up. I only tested this with the microblaze
-patch that overrides __access_ok() with an architecture specific
-version that gets this part right.
+Linus, please pull from
 
-Would this simpler patch help you as well?
+        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
+nus
 
---- a/include/asm-generic/uaccess.h
-+++ b/include/asm-generic/uaccess.h
-@@ -37,14 +37,14 @@ static inline void set_fs(mm_segment_t fs)
- #define VERIFY_READ	0
- #define VERIFY_WRITE	1
- 
--#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
-+#define access_ok(type, addr, size) __access_ok((addr), (size))
- 
- /*
-  * The architecture should really override this if possible, at least
-  * doing a check on the get_fs()
-  */
- #ifndef __access_ok
--static inline int __access_ok(unsigned long addr, unsigned long size)
-+static inline int __access_ok(void __user *ptr, unsigned long size)
- {
- 	return 1;
- }
+to receive:
 
-It may not be clearer in intent, but it's what the majority (by a small
-margin) of architecture do anyway.
+	- A new host driver for the ENE CB710 proprietary interface
 
-> Also, the strnlen_user() function was missing a access_ok() check on the
-> pointer given.  We've had cases on Blackfin systems where test cases
-> caused kernel crashes here because userspace passed up a NULL/-1 pointer
-> and the kernel gladly attempted to run strlen() on it.
+	- A platform interface for sdhci. There are no users of this
+	  interface yet, but they are on the way.
 
-Right, well spotted. I'll take this fix as a separate patch, ok?
+	- Initial merging work of atmel-mci and at91_mci
 
-	Arnd <><
+	- A whole bunch of fixes for the recently added tmio_mmc driver
+
+	- The ability for the MMC layer to detect a removal and insertion
+	  in one detection pass (needed on systems which use a "cover"
+	  approach like Nokia 770/810/etc.)
+
+and a whole bunch of other minor bug fixes.
+
+There will (hopefully) be another pull for the MMC stuff during this
+merge window with two more drivers, one for a new Via chip and one for
+Samsung's newer SoCs.
+
+ MAINTAINERS                       |    9 +
+ drivers/mfd/t7l66xb.c             |    5 +
+ drivers/mfd/tc6387xb.c            |    5 +
+ drivers/mfd/tc6393xb.c            |    5 +
+ drivers/misc/Kconfig              |    1 +
+ drivers/misc/Makefile             |    1 +
+ drivers/misc/cb710/Kconfig        |   25 ++
+ drivers/misc/cb710/Makefile       |    8 +
+ drivers/misc/cb710/core.c         |  357 ++++++++++++++++
+ drivers/misc/cb710/debug.c        |  119 ++++++
+ drivers/misc/cb710/sgbuf2.c       |  150 +++++++
+ drivers/mmc/card/block.c          |   16 +-
+ drivers/mmc/core/core.c           |  107 +++--
+ drivers/mmc/host/Kconfig          |   28 ++-
+ drivers/mmc/host/Makefile         |    5 +
+ drivers/mmc/host/atmel-mci-regs.h |   33 ++
+ drivers/mmc/host/cb710-mmc.c      |  804 +++++++++++++++++++++++++++++++++=
+++++
+ drivers/mmc/host/cb710-mmc.h      |  104 +++++
+ drivers/mmc/host/mmc_spi.c        |   23 +-
+ drivers/mmc/host/mxcmmc.c         |    2 -
+ drivers/mmc/host/omap.c           |    3 +-
+ drivers/mmc/host/pxamci.c         |   46 ++-
+ drivers/mmc/host/sdhci-pltfm.c    |  168 ++++++++
+ drivers/mmc/host/sdhci.c          |   58 ++--
+ drivers/mmc/host/sdhci.h          |    2 +-
+ drivers/mmc/host/tmio_mmc.c       |  180 ++++-----
+ drivers/mmc/host/tmio_mmc.h       |   77 ++++-
+ include/linux/cb710.h             |  231 +++++++++++
+ include/linux/mfd/tmio.h          |    7 +
+ include/linux/pci_ids.h           |    1 +
+ 30 files changed, 2377 insertions(+), 203 deletions(-)
+ create mode 100644 drivers/misc/cb710/Kconfig
+ create mode 100644 drivers/misc/cb710/Makefile
+ create mode 100644 drivers/misc/cb710/core.c
+ create mode 100644 drivers/misc/cb710/debug.c
+ create mode 100644 drivers/misc/cb710/sgbuf2.c
+ create mode 100644 drivers/mmc/host/cb710-mmc.c
+ create mode 100644 drivers/mmc/host/cb710-mmc.h
+ create mode 100644 drivers/mmc/host/sdhci-pltfm.c
+ create mode 100644 include/linux/cb710.h
+
+Ben Dooks (2):
+      sdhci: Print ADMA status and pointer on debug
+      mmc_block: do not DMA to stack
+
+Daniel Ribeiro (1):
+      pxamci: add regulator support.
+
+Ian Molton (1):
+      tmio_mmc: fix clock setup
+
+Jorg Schummer (1):
+      mmc: mmc_rescan detects card change in one run
+
+Micha=C5=82 Miros=C5=82aw (2):
+      mmc: Driver for CB710/720 memory card reader (MMC part)
+      cb710: more cleanup for the DEBUG case.
+
+Nicolas Ferre (2):
+      atmel-mci: Integrate AT91 specific definition in header file
+      atmel-mci: add MCI2 register definitions
+
+Philipp Zabel (6):
+      MFD,mmc: tmio_mmc: make HCLK configurable
+      tmio_mmc: add bus_shift support
+      tmio_mmc: don't use set_irq_type
+      tmio_mmc: correct probe return value for num_resources !=3D 3
+      tmio_mmc: map SD control registers after enabling the MFD cell
+      tmio_mmc: allow compilation for ASIC3
+
+Pierre Ossman (5):
+      sdhci: avoid changing voltage needlessly
+      cb710: fix printk format string
+      cb710: add missing parenthesis
+      cb710: handle DEBUG define in Makefile
+      mxcmmc: remove frequency workaround
+
+Richard R=C3=B6jfors (1):
+      sdhci: platform driver for SDHCI
+
+Sascha Hauer (1):
+      MMC core: limit minimum initialization frequency to 400kHz
+
+Uwe Kleine-K=C3=B6nig (1):
+      mmc/omap: make mmci-omap using platform_driver_probe
+
+Wolfgang Muees (2):
+      mmc_spi: speedup for slow cards, less wear-out
+      mmc_spi: don't use EINVAL for possible transmission errors
+
+
+
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-29752-1244926986-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAko0FAkACgkQ7b8eESbyJLjJWgCglz5yHK6A/EYY0xeaS/uqHP4o
+uZkAn2M5cN149HWePkgmvua7kWqAKbuk
+=ymeI
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-29752-1244926986-0001-2--
