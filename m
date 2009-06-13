@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763837AbZFMAXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbZFMAbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763837AbZFMAXt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 20:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbZFMAXk
+	id S1758789AbZFMAbh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 20:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZFMAb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 20:23:40 -0400
-Received: from bhuna.collabora.co.uk ([93.93.131.97]:42854 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZFMAXj convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 20:31:28 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:48440 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750880AbZFMAb1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 20:23:39 -0400
-Date: Fri, 12 Jun 2009 20:23:34 -0400
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Tobias_Mueller@twam.info
-Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       deepak@laptop.org, Takashi Iwai <tiwai@suse.de>,
-       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
-       jordan@cosmicpenguin.net, cjb@laptop.org,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver  
- support
-Message-ID: <20090612202334.62c032ac@mycelium.queued.net>
-In-Reply-To: <17be05570906111435p3d4dfb52p67669e8a82a1ab56@mail.gmail.com>
-References: <20090610001033.27b7f69f@mycelium.queued.net>
-	<17be05570906111152j3ecb0102qfd6f53221c7ae9f9@mail.gmail.com>
-	<20090611160059.6d70f54a@mycelium.queued.net>
-	<17be05570906111311s717f126cyd4edf0847b839eef@mail.gmail.com>
-	<20090611172850.6c418b1d@mycelium.queued.net>
-	<17be05570906111435p3d4dfb52p67669e8a82a1ab56@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Jun 2009 20:31:27 -0400
+Date: Sat, 13 Jun 2009 01:30:16 +0100
+From: Ben Dooks <ben@fluff.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Joe Perches <joe@perches.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090613003016.GB20442@fluff.org.uk>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <1244733310.895.60.camel@Joe-Laptop.home> <20090611182445.GA7658@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611182445.GA7658@uranus.ravnborg.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009 23:35:55 +0200
-Tobias Müller <Tobias_Mueller@twam.info> wrote:
-
-> >> /**
-> >> * Some GPIO pins
-> >> *  31-29,23 : reserved (always mask out)
-> >> *  28       : Power Button
-> >> *  26       : PME#
-> >> *  22-16    : LPC
-> >> *  14,15    : SMBus
-> >> *  9,8      : UART1
-> >> *  7        : PCI INTB
-> >> *  3,4      : UART2/DDC
-> >> *  2        : IDE_IRQ0
-> >> *  1        : AC_BEEP
-> >> *  0        : PCI INTA
-> >> *
-> >> * If a mask was not specified, be conservative and only allow:
-> >> *  1,2,5,6,10-13,24,25,27
-> >> */
-> >>
-> >> I'll add this in my patch to clear it out.
-> >>
-> >
-> > But why are you being conservative in the first place?  If
-> > something's using GPIOs, unless they're unmapped, you should allow
-> > it to use them without requiring a boot arg.
-> >
-> > For example, OLPC uses GPIO 7 for its DCON IRQ.  With the masking
-> > scheme, OLPC will need to set that mask from the default.  I don't
-> > see the point of having the mask at all if other drivers in the
-> > kernel are going to be requesting GPIOs (presumably they know what
-> > they're doing).
-> Hmm... OK, this makes sense. So default mask allow everything exept
-> reserved pins and pin 28 (power button).
+On Thu, Jun 11, 2009 at 08:24:45PM +0200, Sam Ravnborg wrote:
+> On Thu, Jun 11, 2009 at 08:15:10AM -0700, Joe Perches wrote:
+> > On Thu, 2009-06-11 at 13:38 +0100, Russell King - ARM Linux wrote:
+> > > On Thu, Jun 11, 2009 at 05:00:30AM -0700, David Miller wrote:
+> > > > From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+> > > > Date: Thu, 11 Jun 2009 12:49:12 +0100
+> > > > 
+> > > > > I can not keep up with the number of patches that need to be
+> > > > > reviewed and ultimately merged.  I know this, and I freely admit it,
+> > > > > and I have done so on many occasions.
+> > > > 
+> > > > Then split up the responsibilities to other people instead of being
+> > > > the choke point.  Controlling everything isn't so important.
+> > > 
+> > > Don't you think that I've been trying to get other people to be more
+> > > involved?
+> > > 
+> > > - I've been pushing people to send patches to the relevent mailing
+> > >   list(s) and maintainer(s) for years.
+> > > 
+> > > - I've been pushing people to send their ARM patches to the ARM
+> > >   mailing list rather than directly into the patch system for review
+> > >   (it even has a comment telling people this) so that others can get
+> > >   involved in reviewing them, and sharing that work load.
+> > > 
+> > > Do you think either have been anywhere near successful?
+> > []
+> > > I've been trying to get greater participation
+> > > but it's just not happening.
+> > 
+> > I suggest you stop using subscriber-only mailing lists and
+> > use linux-arm@vger.kernel.org.
 > 
-> I think the mask is quite useful if you've critical things on GPIO
-> pins and they should be changeable (especially from userspace and when
-> non-root users are allowed to use userspace gpio).
+> This is main point here is to offload Russell.
+> One way to offload Russell is to have competent people reviewing platform
+> code for ARM. This is best done by other platform people.
+> Me and you - we can helpt. But the people where we need higher
+> involvement are already on the list.
 
-I agree that it would be useful for userspace, just not for
-kernelspace.  Is there a way that you can have it only enforce the
-mask if the request is coming from userspace?
+Personally, I'm not on linux-arm@vger.kernel.org and don't plan on
+being there either. If people are too stupid to read the maintainers
+entry and realise that linux-arm-kernel is moderated and they might
+thus have to subscribe to post there then they can be safely ignored.
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
