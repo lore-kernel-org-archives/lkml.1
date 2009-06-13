@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbZFMDsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbZFMEHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752991AbZFMDsr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 23:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZFMDsj
+	id S1752751AbZFMEHq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 00:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbZFMEHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 23:48:39 -0400
-Received: from mail-px0-f187.google.com ([209.85.216.187]:51554 "EHLO
+	Sat, 13 Jun 2009 00:07:37 -0400
+Received: from mail-px0-f187.google.com ([209.85.216.187]:54886 "EHLO
 	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbZFMDsj convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1750981AbZFMEHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 23:48:39 -0400
+	Sat, 13 Jun 2009 00:07:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=gDIWd68embzacnlmkxnyyWIQKVUqiIpEW/ENwOi6Qa07XBsEQSHzVOjw2wXrkaKAZy
-         +asfY0bbxTu88OpTdOunRpcimmTghHp4gI9MWuSiOHsQ4T9e3fZRQy/eSJ9GFSKy9hvp
-         nIq6NqvzppclmX5OU7la1Ff8oBmqFEMvPllzU=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sgwOWAe1TMMCDyk2sKaDRJFD93DiP1yOQGYGh/tkMKksakoRJxw8saw7R5nPAFURl9
+         j7cur1hKK/yzpsgARyvWcvaY5ecC+3wI7g4MV2GVYbPJraD0O81tFtOajZ9ilq8OlQ6z
+         74ETYKOCrzVK1MNNRQROS/P+J/0LWcTpMpE0M=
+Date: Sat, 13 Jun 2009 12:09:58 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, Tao Ma <tao.ma@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [Patch BUGFIX] kcore: fix its wrong size on x86_64
+Message-ID: <20090613040958.GA2959@cr0>
+References: <4A2A7F33.4030807@oracle.com> <4A2AEBE3.4000100@kernel.org> <20090608015242.GB2596@cr0.nay.redhat.com> <4A2CA96D.3090502@oracle.com> <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com> <4A2CC52B.9010602@oracle.com> <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com> <m1ab4i11zx.fsf@fess.ebiederm.org> <20090611050929.GA2706@cr0.nay.redhat.com> <m11vpqvozl.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <20090611191152.GD16787@mit.edu>
-References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
-	 <9b1675090904041131u28635d8dnc3d13e88000394b4@mail.gmail.com>
-	 <20090405011355.GE7553@mit.edu>
-	 <9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
-	 <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
-	 <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
-	 <20090405062626.GA7760@mit.edu>
-	 <9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
-	 <9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
-	 <20090611191152.GD16787@mit.edu>
-Date: Fri, 12 Jun 2009 21:48:41 -0600
-Message-ID: <9b1675090906122048o35698c09x13cc7cf7650ac9ae@mail.gmail.com>
-Subject: Re: IO latency - a special case
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Theodore Tso <tytso@mit.edu>,
-       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m11vpqvozl.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry I didn't reply earlier.  I got busy with some server troubles and such.
 
-On Thu, Jun 11, 2009 at 1:11 PM, Theodore Tso<tytso@mit.edu> wrote:
-> On Sat, Jun 06, 2009 at 09:14:43PM -0600, Trenton D. Adams wrote:
->> I'm back into doing some Java development, and it's happening again.
->> I'm running 2.6.30-rc7, and I did a SysReq+T, I hope this is helpful.
->> I've attached a txt.gz file, because it's 367K to my
->> /var/log/messages.
->>
->> The important stuff, I believe, is the Java related stuff.  As a quick
->> refresher to this problem, it appears to be related to how my Java IDE
->> saves the file, and perhaps something doesn't release the futex right
->> away?
->
-> Have you checked your memory usage via SysReq-m, or /proc/meminfo or
-> simply using "free".  I'm seeing a lot of processes in do_page_fault,
-> which is interesting, especially in the non-Java processes.
 
-I wasn't even aware of a SysReq-m.  I'll try that next time.  <rant>I
-do wish the Macbook had a hard drive activity light *rolls
-eyes*.</rant>
+Fix wrong /proc/kcore size on x86_64.
 
->
-> Back in April, your vmstat output didn't show much swapping activity,
-> but maybe there was more paging activity that didn't show up there?
+x86_64 uses __va() macro to caculate the virtual address passed to kclist_add()
+but decodes it with its own macro kc_vadd_to_offset(). This is wrong.
 
-Not sure I understand.  Paging without swapping?  I thought they were
-one in the same, please explain; it's been a long time since I studied
-kernel related theory.
+Also, according to Documentation/x86/x86_64/mm.txt, kc_vaddr_to_offset()
+is wrong too.
 
->
->> I've also seen these symptoms previously...
->>
->> 1. Problem arises, I Ctrl-C the process when I notice the system
->> getting really sluggish.
->> 2. Start process again, and it locks up the machine for about an hour
->
-> What sort of process where you typicalling trying to kill using ^C?
+So just remove them, use the generic macro.
 
-It's maven, which spawns javac (java compiler), as well as does
-various other tasks such as making connections to the Internet, local
-directories, etc.
+BTW, the man page for /proc/kcore is wrong, its size can be more than
+the physical memory size, because it also contains memory area of
+vmalloc(), vsyscall etc...
+
+Reported-by: Tao Ma <tao.ma@oracle.com>
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+
+---
+diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
+index abde308..cdbfd1d 100644
+--- a/arch/x86/include/asm/pgtable_64.h
++++ b/arch/x86/include/asm/pgtable_64.h
+@@ -163,12 +163,6 @@ extern void cleanup_highmap(void);
+ #define PAGE_AGP    PAGE_KERNEL_NOCACHE
+ #define HAVE_PAGE_AGP 1
+ 
+-/* fs/proc/kcore.c */
+-#define	kc_vaddr_to_offset(v) ((v) & __VIRTUAL_MASK)
+-#define	kc_offset_to_vaddr(o)				\
+-	(((o) & (1UL << (__VIRTUAL_MASK_SHIFT - 1)))	\
+-	 ? ((o) | ~__VIRTUAL_MASK)			\
+-	 : (o))
+ 
+ #define __HAVE_ARCH_PTE_SAME
+ #endif /* !__ASSEMBLY__ */
