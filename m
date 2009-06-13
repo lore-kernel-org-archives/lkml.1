@@ -1,277 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbZFMQhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932648AbZFMQia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763788AbZFMQhV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 12:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763550AbZFMQdu
+	id S932648AbZFMQia (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 12:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765640AbZFMQiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 12:33:50 -0400
-Received: from mail-fx0-f206.google.com ([209.85.220.206]:39546 "EHLO
-	mail-fx0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754872AbZFMQdn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 12:33:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=lM20ZkCs0pQ5Pn8huu4KuiZZGIhVi8zFcLwRhUp22k0ZhXmrm50qDQeB+WJfPwp7La
-         JHD1Epq6vMqVn+MAJaSN2J11JVcYIfWyL2Mm13rCX4NNy0ujOpyPk5D5dXTaMXgXhFvi
-         IO3Fij6s23+iGNBx0shgGPyR32XMgDhW9IjmU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 4/4] Staging: rtl8192su/ieee80211: switch to use <linux/ieee80211.h>
-Date: Sat, 13 Jun 2009 18:37:33 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612-07181-g84f26e4; KDE/4.2.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Sat, 13 Jun 2009 12:38:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34499 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765559AbZFMQiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 12:38:02 -0400
+Subject: [RFC][PATCH 1/10 -tip] x86: cpu_debug update Kconfig entry
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, x86 maintainers <x86@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>
+In-Reply-To: <1244910436.11733.14.camel@ht.satnam>
+References: <1244910436.11733.14.camel@ht.satnam>
+Content-Type: text/plain
+Date: Sat, 13 Jun 2009 21:58:31 +0530
+Message-Id: <1244910511.11733.16.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906131837.33799.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* s/WLAN_AUTH_LEAP/RTL_WLAN_AUTH_LEAP/g
-* s/struct ieee80211_hdr/struct rtl_ieee80211_hdr/g
-* switch to use <linux/ieee80211.h>
 
-There should be no functional changes caused by this patch.
+cpu_debug needs DEBUG_FS.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Explain basic info to use cpu_debug.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- drivers/staging/rtl8192su/ieee80211/ieee80211.h         |  131 ----------------
- drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c |    5 
- drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c      |    4 
- 3 files changed, 9 insertions(+), 131 deletions(-)
+ arch/x86/Kconfig |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-@@ -33,6 +33,7 @@
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 0c2321d..e5e26b3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -994,9 +994,19 @@ config X86_CPUID
  
- #include <linux/delay.h>
- #include <linux/wireless.h>
-+#include <linux/ieee80211.h>
+ config X86_CPU_DEBUG
+ 	tristate "/sys/kernel/debug/x86/cpu/* - CPU Debug support"
++	select DEBUG_FS
+ 	---help---
+ 	  If you select this option, this will provide various x86 CPUs
+-	  information through debugfs.
++	  information through debugfs. Any user can read these file but writing
++	  needs root privilege.
++
++	  Note: 1. If you compile cpu_debug as a module, it will _not_ be loaded
++	  automatically (like usual drivers). You will need to load it manually
++	  (or add it to list of modules loaded during boot).
++
++	  2. You need debugfs, if you want to mount debugfs automatically
++	  append this line in /etc/fstab:
++	  debugfs	/sys/kernel/debug	debugfs	defaults	0 0
  
- #include "rtl819x_HT.h"
- #include "rtl819x_BA.h"
-@@ -392,62 +393,19 @@ typedef struct ieee_param {
- 
- 
- /* Frame control field constants */
--#define IEEE80211_FCTL_VERS		0x0003
--#define IEEE80211_FCTL_FTYPE		0x000c
--#define IEEE80211_FCTL_STYPE		0x00f0
- #define IEEE80211_FCTL_FRAMETYPE	0x00fc
--#define IEEE80211_FCTL_TODS		0x0100
--#define IEEE80211_FCTL_FROMDS		0x0200
- #define IEEE80211_FCTL_DSTODS		0x0300 //added by david
--#define IEEE80211_FCTL_MOREFRAGS	0x0400
--#define IEEE80211_FCTL_RETRY		0x0800
--#define IEEE80211_FCTL_PM		0x1000
--#define IEEE80211_FCTL_MOREDATA		0x2000
- #define IEEE80211_FCTL_WEP		0x4000
--#define IEEE80211_FCTL_ORDER		0x8000
--
--#define IEEE80211_FTYPE_MGMT		0x0000
--#define IEEE80211_FTYPE_CTL		0x0004
--#define IEEE80211_FTYPE_DATA		0x0008
- 
- /* management */
--#define IEEE80211_STYPE_ASSOC_REQ	0x0000
--#define IEEE80211_STYPE_ASSOC_RESP 	0x0010
--#define IEEE80211_STYPE_REASSOC_REQ	0x0020
--#define IEEE80211_STYPE_REASSOC_RESP	0x0030
--#define IEEE80211_STYPE_PROBE_REQ	0x0040
--#define IEEE80211_STYPE_PROBE_RESP	0x0050
--#define IEEE80211_STYPE_BEACON		0x0080
--#define IEEE80211_STYPE_ATIM		0x0090
--#define IEEE80211_STYPE_DISASSOC	0x00A0
--#define IEEE80211_STYPE_AUTH		0x00B0
--#define IEEE80211_STYPE_DEAUTH		0x00C0
- #define IEEE80211_STYPE_MANAGE_ACT	0x00D0
- 
- /* control */
--#define IEEE80211_STYPE_PSPOLL		0x00A0
--#define IEEE80211_STYPE_RTS		0x00B0
--#define IEEE80211_STYPE_CTS		0x00C0
--#define IEEE80211_STYPE_ACK		0x00D0
--#define IEEE80211_STYPE_CFEND		0x00E0
--#define IEEE80211_STYPE_CFENDACK	0x00F0
- #define IEEE80211_STYPE_BLOCKACK   0x0094
- 
- /* data */
--#define IEEE80211_STYPE_DATA		0x0000
--#define IEEE80211_STYPE_DATA_CFACK	0x0010
--#define IEEE80211_STYPE_DATA_CFPOLL	0x0020
--#define IEEE80211_STYPE_DATA_CFACKPOLL	0x0030
--#define IEEE80211_STYPE_NULLFUNC	0x0040
--#define IEEE80211_STYPE_CFACK		0x0050
--#define IEEE80211_STYPE_CFPOLL		0x0060
--#define IEEE80211_STYPE_CFACKPOLL	0x0070
--#define IEEE80211_STYPE_QOS_DATA	0x0080 //added for WMM 2006/8/2
- #define IEEE80211_STYPE_QOS_NULL	0x00C0
- 
--#define IEEE80211_SCTL_FRAG		0x000F
--#define IEEE80211_SCTL_SEQ		0xFFF0
--
- /* QOS control */
- #define IEEE80211_QCTL_TID              0x000F
- 
-@@ -667,93 +625,12 @@ struct ieee80211_snap_hdr {
- #define WLAN_GET_SEQ_FRAG(seq) ((seq) & IEEE80211_SCTL_FRAG)
- #define WLAN_GET_SEQ_SEQ(seq)  (((seq) & IEEE80211_SCTL_SEQ) >> 4)
- 
--/* Authentication algorithms */
--#define WLAN_AUTH_OPEN 0
--#define WLAN_AUTH_SHARED_KEY 1
--#define WLAN_AUTH_LEAP 2
-+#define RTL_WLAN_AUTH_LEAP 2
- 
- #define WLAN_AUTH_CHALLENGE_LEN 128
- 
- #define WLAN_CAPABILITY_BSS (1<<0)
--#define WLAN_CAPABILITY_IBSS (1<<1)
--#define WLAN_CAPABILITY_CF_POLLABLE (1<<2)
--#define WLAN_CAPABILITY_CF_POLL_REQUEST (1<<3)
--#define WLAN_CAPABILITY_PRIVACY (1<<4)
--#define WLAN_CAPABILITY_SHORT_PREAMBLE (1<<5)
--#define WLAN_CAPABILITY_PBCC (1<<6)
--#define WLAN_CAPABILITY_CHANNEL_AGILITY (1<<7)
--#define WLAN_CAPABILITY_SPECTRUM_MGMT (1<<8)
--#define WLAN_CAPABILITY_QOS (1<<9)
- #define WLAN_CAPABILITY_SHORT_SLOT (1<<10)
--#define WLAN_CAPABILITY_DSSS_OFDM (1<<13)
--
--/* 802.11g ERP information element */
--#define WLAN_ERP_NON_ERP_PRESENT (1<<0)
--#define WLAN_ERP_USE_PROTECTION (1<<1)
--#define WLAN_ERP_BARKER_PREAMBLE (1<<2)
--
--/* Status codes */
--enum ieee80211_statuscode {
--        WLAN_STATUS_SUCCESS = 0,
--        WLAN_STATUS_UNSPECIFIED_FAILURE = 1,
--        WLAN_STATUS_CAPS_UNSUPPORTED = 10,
--        WLAN_STATUS_REASSOC_NO_ASSOC = 11,
--        WLAN_STATUS_ASSOC_DENIED_UNSPEC = 12,
--        WLAN_STATUS_NOT_SUPPORTED_AUTH_ALG = 13,
--        WLAN_STATUS_UNKNOWN_AUTH_TRANSACTION = 14,
--        WLAN_STATUS_CHALLENGE_FAIL = 15,
--        WLAN_STATUS_AUTH_TIMEOUT = 16,
--        WLAN_STATUS_AP_UNABLE_TO_HANDLE_NEW_STA = 17,
--        WLAN_STATUS_ASSOC_DENIED_RATES = 18,
--        /* 802.11b */
--        WLAN_STATUS_ASSOC_DENIED_NOSHORTPREAMBLE = 19,
--        WLAN_STATUS_ASSOC_DENIED_NOPBCC = 20,
--        WLAN_STATUS_ASSOC_DENIED_NOAGILITY = 21,
--        /* 802.11h */
--        WLAN_STATUS_ASSOC_DENIED_NOSPECTRUM = 22,
--        WLAN_STATUS_ASSOC_REJECTED_BAD_POWER = 23,
--        WLAN_STATUS_ASSOC_REJECTED_BAD_SUPP_CHAN = 24,
--        /* 802.11g */
--        WLAN_STATUS_ASSOC_DENIED_NOSHORTTIME = 25,
--        WLAN_STATUS_ASSOC_DENIED_NODSSSOFDM = 26,
--        /* 802.11i */
--        WLAN_STATUS_INVALID_IE = 40,
--        WLAN_STATUS_INVALID_GROUP_CIPHER = 41,
--        WLAN_STATUS_INVALID_PAIRWISE_CIPHER = 42,
--        WLAN_STATUS_INVALID_AKMP = 43,
--        WLAN_STATUS_UNSUPP_RSN_VERSION = 44,
--        WLAN_STATUS_INVALID_RSN_IE_CAP = 45,
--        WLAN_STATUS_CIPHER_SUITE_REJECTED = 46,
--};
--
--/* Reason codes */
--enum ieee80211_reasoncode {
--        WLAN_REASON_UNSPECIFIED = 1,
--        WLAN_REASON_PREV_AUTH_NOT_VALID = 2,
--        WLAN_REASON_DEAUTH_LEAVING = 3,
--        WLAN_REASON_DISASSOC_DUE_TO_INACTIVITY = 4,
--        WLAN_REASON_DISASSOC_AP_BUSY = 5,
--        WLAN_REASON_CLASS2_FRAME_FROM_NONAUTH_STA = 6,
--        WLAN_REASON_CLASS3_FRAME_FROM_NONASSOC_STA = 7,
--        WLAN_REASON_DISASSOC_STA_HAS_LEFT = 8,
--        WLAN_REASON_STA_REQ_ASSOC_WITHOUT_AUTH = 9,
--        /* 802.11h */
--        WLAN_REASON_DISASSOC_BAD_POWER = 10,
--        WLAN_REASON_DISASSOC_BAD_SUPP_CHAN = 11,
--        /* 802.11i */
--        WLAN_REASON_INVALID_IE = 13,
--        WLAN_REASON_MIC_FAILURE = 14,
--        WLAN_REASON_4WAY_HANDSHAKE_TIMEOUT = 15,
--        WLAN_REASON_GROUP_KEY_HANDSHAKE_TIMEOUT = 16,
--        WLAN_REASON_IE_DIFFERENT = 17,
--        WLAN_REASON_INVALID_GROUP_CIPHER = 18,
--        WLAN_REASON_INVALID_PAIRWISE_CIPHER = 19,
--        WLAN_REASON_INVALID_AKMP = 20,
--        WLAN_REASON_UNSUPP_RSN_VERSION = 21,
--        WLAN_REASON_INVALID_RSN_IE_CAP = 22,
--        WLAN_REASON_IEEE8021X_FAILED = 23,
--        WLAN_REASON_CIPHER_SUITE_REJECTED = 24,
--};
- 
- #define IEEE80211_STATMASK_SIGNAL (1<<0)
- #define IEEE80211_STATMASK_RSSI (1<<1)
-@@ -1044,7 +921,7 @@ enum ieee80211_mfie {
- /* Minimal header; can be used for passing 802.11 frames with sufficient
-  * information to determine what type of underlying data type is actually
-  * stored in the data. */
--struct ieee80211_hdr {
-+struct rtl_ieee80211_hdr {
-         __le16 frame_ctl;
-         __le16 duration_id;
-         u8 payload[0];
-@@ -2412,7 +2289,7 @@ extern inline int ieee80211_get_hdrlen(u
- 	return hdrlen;
- }
- 
--static inline u8 *ieee80211_get_payload(struct ieee80211_hdr *hdr)
-+static inline u8 *ieee80211_get_payload(struct rtl_ieee80211_hdr *hdr)
- {
-         switch (ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl))) {
-         case IEEE80211_1ADDR_LEN:
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-@@ -2014,7 +2014,8 @@ void ieee80211_ps_tx_ack(struct ieee8021
- }
- void ieee80211_process_action(struct ieee80211_device* ieee, struct sk_buff* skb)
- {
--	struct ieee80211_hdr* header = (struct ieee80211_hdr*)skb->data;
-+	struct rtl_ieee80211_hdr *header =
-+		(struct rtl_ieee80211_hdr *)skb->data;
- 	u8* act = ieee80211_get_payload(header);
- 	u8 tmp = 0;
- //	IEEE80211_DEBUG_DATA(IEEE80211_DL_DATA|IEEE80211_DL_BA, skb->data, skb->len);
-@@ -3036,7 +3037,7 @@ static int ieee80211_wpa_set_auth_algs(s
- 		ieee->auth_mode = 0;
- 	}
- 	else if (value & AUTH_ALG_LEAP){
--		sec.auth_mode = WLAN_AUTH_LEAP;
-+		sec.auth_mode = RTL_WLAN_AUTH_LEAP;
- 		ieee->open_wep = 1;
- 		ieee->auth_mode = 2;
- 	}
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-@@ -193,11 +193,11 @@ int ieee80211_encrypt_fragment(
- 		return -1;
- 	}
- #ifdef CONFIG_IEEE80211_CRYPT_TKIP
--	struct ieee80211_hdr *header;
-+	struct rtl_ieee80211_hdr *header;
- 
- 	if (ieee->tkip_countermeasures &&
- 	    crypt && crypt->ops && strcmp(crypt->ops->name, "TKIP") == 0) {
--		header = (struct ieee80211_hdr *) frag->data;
-+		header = (struct rtl_ieee80211_hdr *)frag->data;
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
- 			       "TX packet to " MAC_FMT "\n",
+ choice
+ 	prompt "High Memory Support"
+-- 
+1.6.0.6
+
+
+
