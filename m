@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbZFMWEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbZFMWGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759885AbZFMWEp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 18:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZFMWEf
+	id S1759575AbZFMWGi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 18:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZFMWGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 18:04:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34888 "EHLO ogre.sisk.pl"
+	Sat, 13 Jun 2009 18:06:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57793 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072AbZFMWEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 18:04:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Sun, 14 Jun 2009 00:04:41 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Oliver Neukum <oliver@neukum.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906131404160.25619-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906131404160.25619-100000@netrider.rowland.org>
+	id S1752072AbZFMWGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 18:06:30 -0400
+Date: Sat, 13 Jun 2009 21:40:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       rostedt@goodmis.org
+Subject: Re: [PATCH] Bring sparc64 dynamic ftrace up to snuff...
+Message-ID: <20090613194027.GA25439@elte.hu>
+References: <20090613.011020.214065340.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906140004.42223.rjw@sisk.pl>
+In-Reply-To: <20090613.011020.214065340.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0468]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 June 2009, Alan Stern wrote:
-> On Sat, 13 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > So, the conclusion seems to be that we should break the recurrence
-> > at the point we find an already active device or a device with no parent and
-> > let the driver(s) handle the more complicated cases.  Is this correct?
-> 
-> That's right.
 
-OK
+* David Miller <davem@davemloft.net> wrote:
 
-> > BTW, is __device_release_driver() the right place for blocking the run-time PM
-> > temporarily during remove?
-> 
-> It is.
+>  int ftrace_update_ftrace_func(ftrace_func_t func)
+>  {
+>  	unsigned long ip = (unsigned long)(&ftrace_call);
+> -	unsigned char old[MCOUNT_INSN_SIZE], *new;
+> +	u32 old, new;
+>  
+> -	memcpy(old, &ftrace_call, MCOUNT_INSN_SIZE);
+> +	old = *(u32 *) &ftrace_call;
 
-OK
+btw., just one (really stupid) question here: can ftrace_call be 
+misaligned, and is misalignment a problem on Sparc? If it's not a 
+problem then disregard the rest of the mail.
 
-> And for submitting a delayed autosuspend request afterward; we
-> may as well try to suspend devices that don't have drivers.
+I dont see a particular alignment done in mcount.S:
 
-OK, but I'd like to add this functionality if future, when at least one bus
-type starts using the framework.
+ftrace_caller:
+        mov             %i7, %o1
+        mov             %o7, %o0
+        .globl          ftrace_call
+ftrace_call:
+        call            ftrace_stub
 
-I think I have all of the ducks in a row now, so I'm going to post a cleaned-up
-patch in a new thread in a while.
+so replacing an memcpy (which can copy misaligned buffers) with a 
+direct assignment (which cannot) - wont that cause misalignment on 
+Sparc?
 
-Thanks,
-Rafael
+	Ingo
