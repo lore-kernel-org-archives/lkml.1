@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbZFMHEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbZFMHGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761236AbZFMHEh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 03:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760777AbZFMHET
+	id S1762063AbZFMHGJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 03:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbZFMHF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 03:04:19 -0400
-Received: from 60-248-182-106.HINET-IP.hinet.net ([60.248.182.106]:44513 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760871AbZFMHES (ORCPT
+	Sat, 13 Jun 2009 03:05:57 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:15181 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756479AbZFMHF4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 03:04:18 -0400
-In-Reply-To: <20090609191826.GD7181@uranus.ravnborg.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
+	Sat, 13 Jun 2009 03:05:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Mg+Q/zOQLRc6CrQ22MkpEdnV5R+KdW0PSU9yEaWLCH8LN+hgnsWxoGvv0Qjgkc0Bj
+	XwbBWANj5XSAvDV+0YKTw==
 MIME-Version: 1.0
-Subject: Re: [PATCH 19/27] score: create kernel files asm-offsets.c entry.S head.S
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OFC173E4DC.A0C85216-ON482575D4.00260559-482575D4.0026BA67@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Sat, 13 Jun 2009 14:58:33 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/13 ?? 02:58:33,
-	Serialize complete at 2009/06/13 ?? 02:58:33
-Content-Type: text/plain; charset="GB2312"
+In-Reply-To: <a55d774e0906120344p57226dd4ve526f274a2bf7c8e@mail.gmail.com>
+References: <20090611132134.GA11199@atomide.com>
+	 <20090611140624.GS795@n2100.arm.linux.org.uk>
+	 <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
+	 <4A3175AC.9070100@bluewatersys.com>
+	 <alpine.LFD.2.00.0906112105220.31536@xanadu.home>
+	 <4A31AECA.6070303@bluewatersys.com>
+	 <alpine.LFD.2.00.0906112138090.31536@xanadu.home>
+	 <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
+	 <20090612103521.GD18682@elf.ucw.cz>
+	 <a55d774e0906120344p57226dd4ve526f274a2bf7c8e@mail.gmail.com>
+Date: Sat, 13 Jun 2009 00:05:50 -0700
+Message-ID: <a55d774e0906130005v5a35aa60ybabde470ff44cf77@mail.gmail.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, lkml <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5D75Y54011873
 
-Sam Ravnborg <sam@ravnborg.org> Ğ´ÓÚ 2009-06-10 03:18:26:
+On Fri, Jun 12, 2009 at 3:44 AM, Brian Swetland<swetland@google.com> wrote:
+> On Fri, Jun 12, 2009 at 3:35 AM, Pavel Machek<pavel@ucw.cz> wrote:
+>>
+>> I still can't get it to boot :-(.
+>
+> I think the cupcake userspace and the latest 2.6.29 kernel aren't
+> getting along. Â I'm putting together instructions for building a
+> minimal userspace (what we call tiny android -- and what I use for
+> bringup and kernel testing), and once I've had a chance to verify that
+> everything works end-to-end with the latest kernel, donut branch, and
+> have verified this on ADP1, I'll send an update. Â Probably some time
+> over the weekend.
 
-> > new file mode 100644
-> > index 0000000..a7432c1
-> > --- /dev/null
-> > +++ b/arch/score/kernel/head.S
-> > @@ -0,0 +1,70 @@
-> > +#include <asm/asm-offsets.h>
-> > +
-> > +       .extern start_kernel
-> > +       .global init_thread_union
-> > +       .global kernelsp
-> > +
-> > +       .section .init.text, "ax"
-> 
-> Please use section definitions from include/linux/init.h.
-> __INIT in this case.
-> 
-> Other architectures uses __HEAD so they have full control
-> on where to add this code in the final image.
-> 
+For anyone who wants a minimal android userspace image (handy for
+bringup and test on adp1, etc), I've thrown together a small project
+based on the android stack but including only the bare essentials
+(libc, libm, linker, init, shell, some commandline tools, adbd, etc):
+http://github.com/swetland/tinydroid/tree/master
 
-Thanks Sam, I used macro define in linux/init.h instead of 
-the code in all .S files.
+It's a much smaller checkout (~100MB), and builds much faster (~1
+minute or less on a modern, fast box), and will get you a ramdisk.img
+and a minimal system.img that play nicely with the android-msm-2.6.29
+kernel.  Final images turn up in out/target/product/generic.
 
-Best Regards
-Liqin
---
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+I suspect it wouldn't be hard to just get something like a full
+arm-debian distribution booting, but that's not something I've ever
+tried.
+
+Brian
