@@ -1,86 +1,354 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764883AbZFMQfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765640AbZFMQf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764883AbZFMQfm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 12:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762514AbZFMQdk
+	id S1765640AbZFMQf4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 12:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762235AbZFMQdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 12:33:40 -0400
-Received: from mail-fx0-f206.google.com ([209.85.220.206]:52100 "EHLO
+	Sat, 13 Jun 2009 12:33:41 -0400
+Received: from mail-fx0-f206.google.com ([209.85.220.206]:39546 "EHLO
 	mail-fx0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762965AbZFMQde (ORCPT
+	with ESMTP id S1763017AbZFMQdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 12:33:34 -0400
+	Sat, 13 Jun 2009 12:33:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=ForXMjnURAEGk4U8DAKs45ndEkl+nGB7Xk+FpDIAQsfzv0yLg7TfcM1Fa55qJyGGi9
-         2mL2dwtZHLGzB2sQKzqn7N6AiCrB9YY+mCOCrEt/auM4Ampfc0vwN/5eNHVN2eefVtPf
-         ReUNDqI3IYC+1WISM0jDVNVcv0Ea6GHzB3Ayc=
+        h=from:to:subject:date:user-agent:mime-version:content-disposition
+         :message-id:cc:content-type:content-transfer-encoding;
+        b=Qe57kXsNjJviDpMhvr7lu1xqzHvT9Efd8ahMFsTDxWHl47nR+oSUdzMS9dLag/9tue
+         FU7xvcD2zBXPu69aIAqB/OZa2/lmED9lNC9QRRCeqFVVHFvF0jBikziGfC3N5RKR8EfC
+         JSUHWds4LIvIfuLXaFAUs8icSaYBXL3EbY8qM=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 5/6] Staging: rtl8187se/ieee80211: remove unused dump_chnl_map()
-Date: Sat, 13 Jun 2009 18:33:17 +0200
+Subject: [PATCH 6/6] Staging: rtl8187se/ieee80211: remove superfluous JOHN_* ifdefs
+Date: Sat, 13 Jun 2009 18:35:00 +0200
 User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612-07181-g84f26e4; KDE/4.2.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200906131835.00405.bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906131833.18040.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/ieee80211/dot11d.c            |   10 ----------
- drivers/staging/rtl8187se/ieee80211/dot11d.h            |    2 --
- drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |    1 -
- 3 files changed, 13 deletions(-)
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h            |    3 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c |   13 ----
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c |   42 +------------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c  |   12 ---
+ 4 files changed, 10 insertions(+), 60 deletions(-)
 
-Index: b/drivers/staging/rtl8187se/ieee80211/dot11d.c
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 ===================================================================
---- a/drivers/staging/rtl8187se/ieee80211/dot11d.c
-+++ b/drivers/staging/rtl8187se/ieee80211/dot11d.c
-@@ -130,16 +130,6 @@ Dot11d_UpdateCountryIe(
- 	pDot11dInfo->State = DOT11D_STATE_LEARNED;
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+@@ -45,14 +45,11 @@
+ #endif
+ */
+ 
+-//#ifdef JOHN_HWSEC
+ #define KEY_TYPE_NA		0x0
+ #define KEY_TYPE_WEP40 		0x1
+ #define KEY_TYPE_TKIP		0x2
+ #define KEY_TYPE_CCMP		0x4
+ #define KEY_TYPE_WEP104		0x5
+-//#endif
+-
+ 
+ #define aSifsTime					10
+ 
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+@@ -118,7 +118,6 @@ static inline void xor_block(u8 *b, u8 *
+ 		b[i] ^= a[i];
  }
  
--void dump_chnl_map(u8 * channel_map)
--{
--	int i;
--	printk("Channel List:");
--	for(i=1; i<= MAX_CHANNEL_NUMBER; i++)
--		if(channel_map[i] > 0)
--			printk(" %d(%d)", i, channel_map[i]);
--	printk("\n");
--}
--
- u8
- DOT11D_GetMaxTxPwrInDbm(
- 	struct ieee80211_device *dev,
-Index: b/drivers/staging/rtl8187se/ieee80211/dot11d.h
-===================================================================
---- a/drivers/staging/rtl8187se/ieee80211/dot11d.h
-+++ b/drivers/staging/rtl8187se/ieee80211/dot11d.h
-@@ -97,6 +97,4 @@ int ToLegalChannel(
- 	struct ieee80211_device * dev,
- 	u8 channel
- );
--
--void dump_chnl_map(u8 * channel_map);
- #endif // #ifndef __INC_DOT11D_H
-Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-===================================================================
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-@@ -449,7 +449,6 @@ void ieee80211_softmac_scan_syncro(struc
- #endif
- 	down(&ieee->scan_sem);
- //	printk("==================> Sync scan\n");
--//	dump_chnl_map(channel_map);
+-#ifndef JOHN_CCMP
+ static void ccmp_init_blocks(struct crypto_tfm *tfm,
+ 			     struct ieee80211_hdr *hdr,
+ 			     u8 *pn, size_t dlen, u8 *b0, u8 *auth,
+@@ -196,7 +195,6 @@ static void ccmp_init_blocks(struct cryp
+ 	b0[14] = b0[15] = 0;
+ 	ieee80211_ccmp_aes_encrypt(tfm, b0, s0);
+ }
+-#endif
  
- 	while(1)
- 	{
+ static int ieee80211_ccmp_encrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ {
+@@ -204,14 +202,13 @@ static int ieee80211_ccmp_encrypt(struct
+ 	int data_len, i;
+ 	u8 *pos;
+ 	struct ieee80211_hdr *hdr;
+-#ifndef JOHN_CCMP
+ 	int blocks, last, len;
+ 	u8 *mic;
+ 	u8 *b0 = key->tx_b0;
+ 	u8 *b = key->tx_b;
+ 	u8 *e = key->tx_e;
+ 	u8 *s0 = key->tx_s0;
+-#endif
++
+ 	if (skb_headroom(skb) < CCMP_HDR_LEN ||
+ 	    skb_tailroom(skb) < CCMP_MIC_LEN ||
+ 	    skb->len < hdr_len)
+@@ -241,7 +238,6 @@ static int ieee80211_ccmp_encrypt(struct
+ 	*pos++ = key->tx_pn[0];
+ 
+ 	hdr = (struct ieee80211_hdr *) skb->data;
+-#ifndef JOHN_CCMP
+ 	//mic is moved to here by john
+ 	mic = skb_put(skb, CCMP_MIC_LEN);
+ 
+@@ -265,7 +261,7 @@ static int ieee80211_ccmp_encrypt(struct
+ 
+ 	for (i = 0; i < CCMP_MIC_LEN; i++)
+ 		mic[i] = b[i] ^ s0[i];
+-#endif
++
+ 	return 0;
+ }
+ 
+@@ -276,14 +272,13 @@ static int ieee80211_ccmp_decrypt(struct
+ 	u8 keyidx, *pos;
+ 	struct ieee80211_hdr *hdr;
+ 	u8 pn[6];
+-#ifndef JOHN_CCMP
+ 	size_t data_len = skb->len - hdr_len - CCMP_HDR_LEN - CCMP_MIC_LEN;
+ 	u8 *mic = skb->data + skb->len - CCMP_MIC_LEN;
+ 	u8 *b0 = key->rx_b0;
+ 	u8 *b = key->rx_b;
+ 	u8 *a = key->rx_a;
+ 	int i, blocks, last, len;
+-#endif
++
+ 	if (skb->len < hdr_len + CCMP_HDR_LEN + CCMP_MIC_LEN) {
+ 		key->dot11RSNAStatsCCMPFormatErrors++;
+ 		return -1;
+@@ -335,7 +330,6 @@ static int ieee80211_ccmp_decrypt(struct
+ 		return -4;
+ 	}
+ 
+-#ifndef JOHN_CCMP
+ 	ccmp_init_blocks(key->tfm, hdr, pn, data_len, b0, a, b);
+ 	xor_block(mic, b, CCMP_MIC_LEN);
+ 
+@@ -366,7 +360,6 @@ static int ieee80211_ccmp_decrypt(struct
+ 
+ 	memcpy(key->rx_pn, pn, CCMP_PN_LEN);
+ 
+-#endif
+ 	/* Remove hdr and MIC */
+ 	memmove(skb->data + CCMP_HDR_LEN, skb->data, hdr_len);
+ 	skb_pull(skb, CCMP_HDR_LEN);
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+@@ -239,7 +239,6 @@ static inline u16 _S_(u16 v)
+ 	return Sbox[Lo8(v)] ^ ((t << 8) | (t >> 8));
+ }
+ 
+-#ifndef JOHN_TKIP
+ #define PHASE1_LOOP_COUNT 8
+ 
+ static void tkip_mixing_phase1(u16 *TTAK, const u8 *TK, const u8 *TA, u32 IV32)
+@@ -309,7 +308,7 @@ static void tkip_mixing_phase2(u8 *WEPSe
+ 	}
+ #endif
+ }
+-#endif
++
+ static int ieee80211_tkip_encrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ {
+         struct ieee80211_tkip_data *tkey = priv;
+@@ -317,11 +316,9 @@ static int ieee80211_tkip_encrypt(struct
+ 	int len;
+ 	u8  *pos;
+ 	struct ieee80211_hdr *hdr;
+-#ifndef JOHN_TKIP
+ 	u8 rc4key[16],*icv;
+ 	u32 crc;
+ 	struct scatterlist sg;
+-#endif
+ 	int ret;
+ 
+ 	ret = 0;
+@@ -342,7 +339,6 @@ printk("%x|", ((u32*)tkey->key)[6]);
+ printk("%x\n", ((u32*)tkey->key)[7]);
+ #endif
+ 
+-#ifndef JOHN_TKIP
+ 	if (!tkey->tx_phase1_done) {
+ 		tkip_mixing_phase1(tkey->tx_ttak, tkey->key, hdr->addr2,
+ 				   tkey->tx_iv32);
+@@ -350,30 +346,20 @@ printk("%x\n", ((u32*)tkey->key)[7]);
+ 	}
+ 	tkip_mixing_phase2(rc4key, tkey->key, tkey->tx_ttak, tkey->tx_iv16);
+ 
+-#else
+-	tkey->tx_phase1_done = 1;
+-#endif  /*JOHN_TKIP*/
+-
+ 	len = skb->len - hdr_len;
+ 	pos = skb_push(skb, 8);
+ 	memmove(pos, pos + 8, hdr_len);
+ 	pos += hdr_len;
+ 
+-#ifdef JOHN_TKIP
+-	*pos++ = Hi8(tkey->tx_iv16);
+-	*pos++ = (Hi8(tkey->tx_iv16) | 0x20) & 0x7F;
+-	*pos++ = Lo8(tkey->tx_iv16);
+-#else
+ 	*pos++ = rc4key[0];
+ 	*pos++ = rc4key[1];
+ 	*pos++ = rc4key[2];
+-#endif
+ 	*pos++ = (tkey->key_idx << 6) | (1 << 5) /* Ext IV included */;
+ 	*pos++ = tkey->tx_iv32 & 0xff;
+ 	*pos++ = (tkey->tx_iv32 >> 8) & 0xff;
+ 	*pos++ = (tkey->tx_iv32 >> 16) & 0xff;
+ 	*pos++ = (tkey->tx_iv32 >> 24) & 0xff;
+-#ifndef JOHN_TKIP
++
+ 	icv = skb_put(skb, 4);
+ 	crc = ~crc32_le(~0, pos, len);
+ 	icv[0] = crc;
+@@ -383,17 +369,13 @@ printk("%x\n", ((u32*)tkey->key)[7]);
+ 	crypto_blkcipher_setkey(tkey->tx_tfm_arc4, rc4key, 16);
+ 	sg_init_one(&sg, pos, len + 4);
+ 	ret= crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+-#endif
++
+ 	tkey->tx_iv16++;
+ 	if (tkey->tx_iv16 == 0) {
+ 		tkey->tx_phase1_done = 0;
+ 		tkey->tx_iv32++;
+ 	}
+-#ifndef JOHN_TKIP
+ 	   return ret;
+-#else
+-	return 0;
+-#endif
+ }
+ 
+ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
+@@ -404,13 +386,12 @@ static int ieee80211_tkip_decrypt(struct
+ 	u32 iv32;
+ 	u16 iv16;
+ 	struct ieee80211_hdr *hdr;
+-#ifndef JOHN_TKIP
+ 	u8 icv[4];
+ 	u32 crc;
+ 	struct scatterlist sg;
+ 	u8 rc4key[16];
+ 	int plen;
+-#endif
++
+ 	if (skb->len < hdr_len + 8 + 4)
+ 		return -1;
+ 
+@@ -441,7 +422,6 @@ static int ieee80211_tkip_decrypt(struct
+ 	iv16 = (pos[0] << 8) | pos[2];
+ 	iv32 = pos[4] | (pos[5] << 8) | (pos[6] << 16) | (pos[7] << 24);
+ 	pos += 8;
+-#ifndef JOHN_TKIP
+ 
+ 	if (iv32 < tkey->rx_iv32 ||
+ 	    (iv32 == tkey->rx_iv32 && iv16 <= tkey->rx_iv16)) {
+@@ -492,8 +472,6 @@ static int ieee80211_tkip_decrypt(struct
+ 		return -5;
+ 	}
+ 
+-#endif 	/* JOHN_TKIP */
+-
+ 	/* Update real counters only after Michael MIC verification has
+ 	 * completed */
+ 	tkey->rx_iv32_new = iv32;
+@@ -504,18 +482,6 @@ static int ieee80211_tkip_decrypt(struct
+ 	skb_pull(skb, 8);
+ 	skb_trim(skb, skb->len - 4);
+ 
+-//john's test
+-#ifdef JOHN_DUMP
+-if( ((u16*)skb->data)[0] & 0x4000){
+-        printk("@@ rx decrypted skb->data");
+-        int i;
+-        for(i=0;i<skb->len;i++){
+-                if( (i%24)==0 ) printk("\n");
+-                printk("%2x ", ((u8*)skb->data)[i]);
+-        }
+-        printk("\n");
+-}
+-#endif /*JOHN_DUMP*/
+ 	return keyidx;
+ }
+ 
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
+@@ -116,11 +116,10 @@ static int prism2_wep_encrypt(struct sk_
+ 	u32 klen, len;
+ 	u8 key[WEP_KEY_LEN + 3];
+ 	u8 *pos;
+-#ifndef JOHN_HWSEC
+ 	u32 crc;
+ 	u8 *icv;
+ 	struct scatterlist sg;
+-#endif
++
+ 	if (skb_headroom(skb) < 4 || skb_tailroom(skb) < 4 ||
+ 	    skb->len < hdr_len)
+ 		return -1;
+@@ -152,7 +151,6 @@ static int prism2_wep_encrypt(struct sk_
+ 	/* Copy rest of the WEP key (the secret part) */
+ 	memcpy(key + 3, wep->key, wep->key_len);
+ 
+-#ifndef JOHN_HWSEC
+ 	/* Append little-endian CRC32 and encrypt it to produce ICV */
+ 	crc = ~crc32_le(~0, pos, len);
+ 	icv = skb_put(skb, 4);
+@@ -165,8 +163,6 @@ static int prism2_wep_encrypt(struct sk_
+ 	sg_init_one(&sg, pos, len + 4);
+ 
+ 	return crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+-#endif /* JOHN_HWSEC */
+-	return 0;
+ }
+ 
+ 
+@@ -184,11 +180,10 @@ static int prism2_wep_decrypt(struct sk_
+ 	u32 klen, plen;
+ 	u8 key[WEP_KEY_LEN + 3];
+ 	u8 keyidx, *pos;
+-#ifndef JOHN_HWSEC
+ 	u32 crc;
+ 	u8 icv[4];
+ 	struct scatterlist sg;
+-#endif
++
+ 	if (skb->len < hdr_len + 8)
+ 		return -1;
+ 
+@@ -207,7 +202,7 @@ static int prism2_wep_decrypt(struct sk_
+ 
+ 	/* Apply RC4 to data and compute CRC32 over decrypted data */
+ 	plen = skb->len - hdr_len - 8;
+-#ifndef JOHN_HWSEC
++
+ 	crypto_blkcipher_setkey(wep->rx_tfm, key, klen);
+ 	sg_init_one(&sg, pos, plen + 4);
+ 
+@@ -224,7 +219,6 @@ static int prism2_wep_decrypt(struct sk_
+ 		/* ICV mismatch - drop frame */
+ 		return -2;
+ 	}
+-#endif 	/* JOHN_HWSEC */
+ 
+ 	/* Remove IV and ICV */
+ 	memmove(skb->data + 4, skb->data, hdr_len);
