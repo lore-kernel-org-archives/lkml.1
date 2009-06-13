@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZFMJv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZFMJz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbZFMJv7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 05:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZFMJvu
+	id S1756135AbZFMJz7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 05:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZFMJzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 05:51:50 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44908 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbZFMJvt (ORCPT
+	Sat, 13 Jun 2009 05:55:52 -0400
+Received: from yergi.telenet-ops.be ([195.130.132.36]:38733 "EHLO
+	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbZFMJzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 05:51:49 -0400
-Date: Sat, 13 Jun 2009 10:51:14 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ben Dooks <ben@fluff.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
-       swetland@google.com, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090613095114.GA3253@n2100.arm.linux.org.uk>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <1244733310.895.60.camel@Joe-Laptop.home> <20090611182445.GA7658@uranus.ravnborg.org> <20090613003016.GB20442@fluff.org.uk> <20090613090240.GA29484@elf.ucw.cz>
+	Sat, 13 Jun 2009 05:55:51 -0400
+From: "Siemens Award" <sss.alert33@rocketmail.com>
+Importance: Normal
+Sensitivity: Normal
+Message-ID: <W86903921994381244886924@nocme1bl6.telenet-ops.be>
+X-Originating-IP: [65.120.56.2]
+Date: Sat, 13 Jun 2009 09:55:24 +0000
+Subject: Claims Info!!
+Reply-To: sss.alert33@rocketmail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090613090240.GA29484@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 11:02:40AM +0200, Pavel Machek wrote:
-> Sometimes subscribing takes _weeks_!
+You have been approve for a lump sum payout (£750.000.00  GBP),  in the Siemens Award Promotion Please fill the form below and send it to our payment department with the  contact given below.
 
-Pending subscriptions:
-    pavel@ucw.cz (Pavel Machek) Thu Mar 26 23:01:49 2009
+Payment Department Contact Email (sss.alert33@gmail.com)
 
-Date: Sun, 29 Mar 2009 12:25:10 +0100
-Pavel Machek <pavel@ucw.cz> has been successfully subscribed to
-Linux-arm-kernel.
+1.Full Name:..............
+2.Full Address:..........
+3.Occupation:..........
+.4.Phone Number:........
+5.Country:............
 
-Yes, this was longer than desirable, but you could only describe it as
-"weeks" if time passes at a different rate for you.
+Yours faithfully,
+Mrs Megan Daniel
 
-If you want to bash me, do so using facts, not fiction.
+
