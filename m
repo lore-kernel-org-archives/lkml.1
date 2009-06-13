@@ -1,54 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763517AbZFMWol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763718AbZFMWpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763517AbZFMWol (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 18:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbZFMWod
+	id S1763718AbZFMWpW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 18:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbZFMWpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 18:44:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:51131 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753693AbZFMWoc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 18:44:32 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH 01/27] score: create Kconfig Kconfig.debug Makefile
-Date: Sun, 14 Jun 2009 00:44:03 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-References: <OF2086513E.4B4F803C-ON482575D0.0022E294-482575D0.0023688F@sunplusct.com>
-In-Reply-To: <OF2086513E.4B4F803C-ON482575D0.0022E294-482575D0.0023688F@sunplusct.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sat, 13 Jun 2009 18:45:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35073 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756284AbZFMWpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 18:45:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: andi@lisas.de
+Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM capability
+Date: Sun, 14 Jun 2009 00:45:24 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: akpm@linux-foundation.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20090613191931.GA31019@rhlx01.hs-esslingen.de> <200906140028.16025.rjw@sisk.pl>
+In-Reply-To: <200906140028.16025.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906140044.04440.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18Wbu9DJpGUksxqmIpjEgWZxVZVKHo9STLteyc
- QbzxCB5y+PxPv6/4vuev+0wTjBKNCtTrHy4bskS9jkUCOVLOoN
- VOvsO3eHUbs+dlZdcET+3V7Q/0lWdZ4
+Content-Disposition: inline
+Message-Id: <200906140045.25264.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
-> +
-> +config MMU
-> +       bool
-> +       default y
-> +
+On Sunday 14 June 2009, Rafael J. Wysocki wrote:
+> On Saturday 13 June 2009, Andreas Mohr wrote:
+> > Hi all,
+> > 
+> > after having added non-MII PHY card support to e100, I noticed that
+> > the suspend handler rejects power-management non-capable PCI cards,
+> 
+> Well, that means we have a bug somewhere in the PCI PM core.
+> 
+> > causing a S2R request to immediately get back up to the desktop,
+> > losing network access in the process (rtnl mutex deadlock).
+> 
+> That's bad.
+> 
+> > 
+> > ChangeLog:
+> > Support PCI cards which are lacking power management capability
+> > in the e100 suspend handler.
+> > 
+> > 
+> > Frankly I was unsure how to best add this to the driver in a clean way.
+> > Usually drivers use pci_set_power_state(..., pci_choose_state(...))
+> > in order to avoid the rejection of an open-coded
+> > pci_set_power_state(..., PCI_D3hot) in case of a non-PM card,
+> > however pci_choose_state() depends on the _pm-internal_ pm_message_t type,
+> > which was doable in .suspend directly but not at the other e100
+> > driver locations where it was used.
+> > 
+> > Next attempt was to extend __e100_power_off() with a pci_power_t parameter,
+> > however since __e100_power_off() is called by two locations,
+> > that meant that I'd have to use pci_choose_state() at _both_ call sites.
+> > 
+> > Thus I simply resorted to do a brute-force yet most simple
+> > pci_find_capability() check in the __e100_power_off() function.
+> > 
+> > 
+> > Tested on 2.6.30-rc8 and suspending/resuming fine, checkpatch.pl:ed.
+> > Patch against 2.6.30-rc8 with my original non-MII support patch applied.
+> > (should apply fine in any case, I'd think).
+> > Intended for testing in -mmotm or so.
+> > 
+> > Thanks!
+> > 
+> > Signed-off-by: Andreas Mohr <andi@lisas.de>
+> > 
+> > 
+> > --- linux-2.6.30-rc8.e100/drivers/net/e100.c.my_patch_orig	2009-06-13 18:47:53.000000000 +0200
+> > +++ linux-2.6.30-rc8.e100/drivers/net/e100.c	2009-06-13 20:27:46.000000000 +0200
+> > @@ -2897,6 +2897,13 @@ static void __e100_shutdown(struct pci_d
+> >  
+> >  static int __e100_power_off(struct pci_dev *pdev, bool wake)
+> >  {
+> > +	/* some older devices don't support PCI PM
+> > +	 * (e.g. mac_82557_D100_B combo card with 80c24 PHY)
+> > +	 * - skip those! (they most likely won't support WoL either)
+> > +	 */
+> > +	if (!pci_find_capability(pdev, PCI_CAP_ID_PM))
+> > +		return 0;
+> 
+> Devices without PCI_CAP_ID_PM may still be power-manageable by ACPI, so
+> returning 0 at this point is not a general solution.
+> 
+> > +
+> >  	if (wake) {
+> >  		return pci_prepare_to_sleep(pdev);
+> 
+> pci_prepare_to_sleep() is supposed to return 0 for your device.  I'll have a
+> look at it.
 
-After reading through the code again, I came across this defintion, which
-confused me a bit. The source code clearly assumes a NOMMU architecture, but
-this one enables the kernel support for MMU.
+Please check if the appended patch helps.
 
-Is MMU support something that you plan to add later and is possible with
-the hardware, or is this one wrong?
+Best,
+Rafael
 
-	Arnd <><
+---
+ drivers/pci/pci.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1284,15 +1284,14 @@ pci_power_t pci_target_state(struct pci_
+ 		default:
+ 			target_state = state;
+ 		}
++	} else if (!dev->pm_cap) {
++		target_state = PCI_D0;
+ 	} else if (device_may_wakeup(&dev->dev)) {
+ 		/*
+ 		 * Find the deepest state from which the device can generate
+ 		 * wake-up events, make it the target state and enable device
+ 		 * to generate PME#.
+ 		 */
+-		if (!dev->pm_cap)
+-			return PCI_POWER_ERROR;
+-
+ 		if (dev->pme_support) {
+ 			while (target_state
+ 			      && !(dev->pme_support & (1 << target_state)))
