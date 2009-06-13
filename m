@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbZFMNXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762979AbZFMNYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbZFMNXM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 09:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZFMNXE
+	id S1762979AbZFMNYi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 09:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZFMNYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 09:23:04 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:50328 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbZFMNXD (ORCPT
+	Sat, 13 Jun 2009 09:24:33 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:51715 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbZFMNYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 09:23:03 -0400
-Date: Sat, 13 Jun 2009 09:21:14 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Makefiles that contain references to non-existent CONFIG vars
-Message-ID: <alpine.LFD.2.00.0906130918430.15703@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 13 Jun 2009 09:24:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=f0dsBZleUnnh/CbyR8K8Mq8/8xwfMk0VaavG/YLf8xwrUaHgunDr2zbs51KzuFNMuY
+         SkAOunICWJ7FWgFuS+1wlM+CLYss3/kNCVABT+fmbvwQt1IDZnP5YvU5FWQL98rMgV3K
+         BFn2862A4KBD7syW8BDKigcBQE0oN9zRNWwdA=
+Message-ID: <4A33A7A2.1050608@gmail.com>
+Date: Sat, 13 Jun 2009 15:20:34 +0200
+From: Marco <marco.stornelli@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Linux FS Devel <linux-fsdevel@vger.kernel.org>
+CC: Linux Embedded <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a second attempt at mainlining Pramfs. The first attempt was
+back in early 2004 by MontaVista. Since then the kernel code has almost
+been completely rewritten. So my first item on the list was porting the
+code on a recent kernel version. After that I added the XIP support.
 
-  just for the fun of it, here's the (short) result of scanning the
-current tree for Makefiles *only* that contain references to CONFIG
-variables that don't appear to exist.  once -rc1 is out, i'll do this
-again officially and direct to the appropriate people but since it's
-such a short list, i figured i'd post it now and people can take a
-whack at it.
+Now some FAQs:
 
-===== ATHEROS_AR71XX =====
-./drivers/net/wireless/ath9k/Makefile:ath9k-$(CONFIG_ATHEROS_AR71XX) += ahb.o
-===== GENERIC_CSUM =====
-./lib/Makefile:obj-$(CONFIG_GENERIC_CSUM) += checksum.o
-===== HAVE_GPIO_LIB =====
-./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_HAVE_GPIO_LIB) += gpio.o gpio_extended.o
-===== HDPU_FEATURES =====
-./drivers/misc/Makefile:obj-$(CONFIG_HDPU_FEATURES)	+= hdpuftrs/
-./drivers/misc/hdpuftrs/Makefile:obj-$(CONFIG_HDPU_FEATURES) := hdpu_cpustate.o hdpu_nexus.o
-===== IPIPE_TRACE_MCOUNT =====
-./arch/blackfin/kernel/Makefile:obj-$(CONFIG_IPIPE_TRACE_MCOUNT)     += mcount.o
-===== MSPETH =====
-./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_MSPETH) += msp_eth.o
-===== PROFILE =====
-./arch/mn10300/kernel/Makefile:obj-$(CONFIG_PROFILE) += profile.o profile-low.o
-===== USB_MSP71XX =====
-./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_USB_MSP71XX) += msp_usb.o
-===== XFS_TRACE =====
-./fs/xfs/Makefile:xfs-$(CONFIG_XFS_TRACE)		+= xfs_btree_trace.o \
-./fs/xfs/Makefile:xfs-$(CONFIG_XFS_TRACE)		+= support/ktrace.o
-===== XTENSA_VARIANT_LINUX_CUSTOM =====
-./arch/xtensa/Makefile:variant-$(CONFIG_XTENSA_VARIANT_LINUX_CUSTOM)	:= custom
+What is the goal of this filesystem?
+
+Many embedded systems have a block of non-volatile RAM separate from
+normal system memory, i.e. of which the kernel maintains no memory page
+descriptors. For such systems it would be beneficial to mount a
+fast read/write filesystem over this "I/O memory", for storing
+frequently accessed data that must survive system reboots and power
+cycles. An example usage might be system logs under /var/log, or a user
+address book in a cell phone or PDA.
+
+Why this kind of filesystem should be "mainlined"?
+
+Linux traditionally had no support for a persistent, non-volatile
+RAM-based filesystem, persistent meaning the filesystem survives a
+system reboot or power cycle intact. The RAM-based filesystems such as
+tmpfs and ramfs have no actual backing store but exist entirely in the
+page and buffer caches, hence the filesystem disappears after a system
+reboot or power cycle.
+
+Are there any pending patents on this code?
+
+NO, there aren't patents pending on this code. MontaVista had a pending
+patent application but now it has abandoned this way. Daniel Walker can
+confirm that.
 
 
-rday
---
+Marco
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
