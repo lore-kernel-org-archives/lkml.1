@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbZFMEzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZFME5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbZFMEzM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 00:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZFMEzA
+	id S1754743AbZFME5n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 00:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZFME5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 00:55:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33665 "EHLO smtps.tip.net.au"
+	Sat, 13 Jun 2009 00:57:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54026 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbZFMEy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 00:54:59 -0400
-Date: Sat, 13 Jun 2009 14:54:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, paulus@samba.org,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: origin tree build failure
-Message-Id: <20090613145451.07430ad0.sfr@canb.auug.org.au>
-In-Reply-To: <20090612134428.GC32105@elte.hu>
-References: <20090612102427.32582baa.sfr@canb.auug.org.au>
-	<1244768406.7172.1.camel@pasglop>
-	<20090612092054.GB32052@elte.hu>
-	<1244799197.7172.106.camel@pasglop>
-	<20090612125335.GH31845@elte.hu>
-	<1244812224.7172.146.camel@pasglop>
-	<20090612134428.GC32105@elte.hu>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw."
+	id S1751229AbZFME5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 00:57:33 -0400
+Date: Sat, 13 Jun 2009 01:39:51 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, markmc@redhat.com,
+       "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [KVM PATCH v6 2/2] KVM: add iosignalfd support
+Message-ID: <20090613043951.GA3083@amt.cnet>
+References: <20090605154006.18047.41232.stgit@dev.haskins.net> <20090605155508.18047.83818.stgit@dev.haskins.net> <4A29417A.6070706@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A29417A.6070706@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jun 05, 2009 at 12:02:02PM -0400, Gregory Haskins wrote:
+> Hi Marcelo!
+> 
+> Comments about the shutdown path ambiguity are in-line
+> 
+> Gregory Haskins wrote:
+> > iosignalfd is a mechanism to register PIO/MMIO regions to trigger an eventfd
+> > signal when written to by a guest.  Host userspace can register any arbitrary
+> > IO address with a corresponding eventfd and then pass the eventfd to a
+> > +		list_del(&item->list);
+> > +		iosignalfd_item_free(item);
+> > +	}
+> > +
+> > +	list_del(&group->list);
+> > +	kfree(group);
+> > +}
+> >   
+> 
+> So this function is called by the path that executes as we do the last
+> kvm_put_kvm().  I do not do any careful RCU wrangling here because I
+> assume that there cannot possibly be any active MMIO/PIO operations at
+> this time, or the reference would never have dropped.  Let me know if
+> anyone sees any holes in that.
+> 
+> An alternative approach is to do this similar to how irqfd_release()
+> works.   That is: invoke it from the vmfd release() path instead of the
+> the kvm object destructor.  I currently do not think this is necessary,
+> but I will throw that out there in case someone likes it better.
 
-Hi Ingo,
+Gregory,
 
-On Fri, 12 Jun 2009 15:44:28 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
-> In terms of test coverage, at least for our trees, less than 1% of=20
-> the bugs we handle get reported in a linux-next context - and most=20
-> of the bugs that get reported (against say the scheduler tree) are=20
-> related to rare architectures.
-
-I expect that most bugs get reported and fixed before code gets to
-linux-next (in fact one of the prerequisites for being in linux-next is
-that code has been tested as well as possible).
-
-> In fact, i checked, there were _zero_ x86 bugs reported against=20
-> linux-next and solved against it between v2.6.30-rc1 and v2.6.30:
->=20
->    git log --grep=3Dnext -i v2.6.30-rc1..v2.6.30 arch/x86/
->=20
-> Doing it over the full cycle shows one commit altogether - a Xen=20
-> build failure. In fact, i just checked the whole stabilization cycle=20
-> for the whole kernel (v2.6.30-rc1..v2.6.30-final), and there were=20
-> only 5 linux-next originated patches, most of them build failures.
-
-Nice set of figures.  For some other context, between April 6 and June 9
-(2.6.30-rc1 to 2.6.30) I sent 50 emails with subjects like "linux-next:
-xxx tree build failure".  What results from those emails?  I sometimes
-don't even hear back.  Almost all of the failures get fixed.
-
-A lot of these probably also get discovered independently.  I don't
-really care as long as they do get fixed.
-
-One of those failures was a sparc build failure due to a change in the
-tip-core tree (see commit d2de688891909b148efe83a6fc9520a9cd6015f0).
-Another report produced commit 27b19565fe4ca5b0e9d2ae98ce4b81ca728bf445.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkozMRsACgkQjjKRsyhoI8y8tgCcC8NfR2wXQvpqMnNHFnboqJbr
-U/4AnRggiQ30EYELKxNIvJWRXfKSGVnO
-=VQly
------END PGP SIGNATURE-----
-
---Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw.--
+Can't see any problems with it. You might want an upper limit
+in the number of items per group.
