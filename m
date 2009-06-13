@@ -1,71 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZFMSha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZFMSml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZFMSha (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 14:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZFMShX
+	id S1754010AbZFMSml (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 14:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZFMSmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 14:37:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41076 "EHLO hera.kernel.org"
+	Sat, 13 Jun 2009 14:42:33 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:58606 "EHLO mnementh.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbZFMShX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 14:37:23 -0400
-Date: Sat, 13 Jun 2009 18:36:28 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, a.p.zijlstra@chello.nl, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:core/urgent] lockdep: Select frame pointers on x86
-Message-ID: <tip-c3c214ad629f5b34d753a74f01ea850a02974d34@git.kernel.org>
-Git-Commit-ID: c3c214ad629f5b34d753a74f01ea850a02974d34
-X-Mailer: tip-git-log-daemon
+	id S1751013AbZFMSmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 14:42:33 -0400
+Message-ID: <4A33F311.9060204@mnementh.co.uk>
+Date: Sat, 13 Jun 2009 19:42:25 +0100
+From: Ian Molton <ian@mnementh.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 13 Jun 2009 18:36:42 +0000 (UTC)
+To: Pierre Ossman <pierre@ossman.eu>
+CC: Philipp Zabel <philipp.zabel@gmail.com>, linux-kernel@vger.kernel.org,
+       Samuel Ortiz <sameo@openedhand.com>
+Subject: Re: [PATCH 0/7] ASIC3 support for tmio_mmc
+References: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com> <20090613135830.6246d0b8@mjolnir.ossman.eu>
+In-Reply-To: <20090613135830.6246d0b8@mjolnir.ossman.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c3c214ad629f5b34d753a74f01ea850a02974d34
-Gitweb:     http://git.kernel.org/tip/c3c214ad629f5b34d753a74f01ea850a02974d34
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 12 Jun 2009 10:04:01 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 13 Jun 2009 20:32:57 +0200
+Pierre Ossman wrote:
 
-lockdep: Select frame pointers on x86
+> I've queued up everything except patch 7 as I haven't seen Ian's
+> response on that yet.
 
-x86 stack traces are a piece of crap without frame pointers, and its not
-like the 'performance gain' of not having stack pointers matters when you
-selected lockdep.
+Is that using my replacement for patch 6 ? I didnt ack that one since 
+(whilst correct) My solution is simpler and fixes another bug as well.
 
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <new-submission>
-Cc: <stable@kernel.org>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- lib/Kconfig.debug |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 6cdcf38..3be4b7c 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -440,7 +440,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS && !PPC && !ARM_UNWIND && !S390
-+	select FRAME_POINTER if !MIPS && !PPC && !ARM_UNWIND && !S390
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 
+Patch 7 is Acked-by me now that Philipp has explained the idea behind it.
