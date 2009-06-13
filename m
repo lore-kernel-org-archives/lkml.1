@@ -1,86 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbZFMMjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbZFMMwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761577AbZFMMjp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 08:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZFMMjj
+	id S1759328AbZFMMwp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 08:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZFMMwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 08:39:39 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:1833 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbZFMMji (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 08:39:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZrMXcIGyjvHqfXJpGzvefzIXJ6nKJr1tKz1vl8uK2ghNMe9028A4gI9A8lX4vMl3Ox
-         EvJOaqw5jIoz+Tka1uPiecxXGXD6xFLsIhxi6Q7QaWsvPXp74B4d5A/xx1HYf7SmVvmF
-         /AqG88SRXbkmhnIgevk4c0BiD2Ng4HPDIwDbg=
+	Sat, 13 Jun 2009 08:52:37 -0400
+Received: from solo.fdn.fr ([80.67.169.19]:43684 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751759AbZFMMwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 08:52:37 -0400
+Date: Sat, 13 Jun 2009 14:52:33 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: akpm@linux-foundation.org, torvalds@osdl.org
+Cc: linux-kernel@vger.kernel.org, Anton Zinoviev <anton@lml.bas.bg>
+Subject: [PATCH] advertise KT_DEAD2
+Message-ID: <20090613125233.GH5181@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	akpm@linux-foundation.org, torvalds@osdl.org,
+	linux-kernel@vger.kernel.org, Anton Zinoviev <anton@lml.bas.bg>
 MIME-Version: 1.0
-In-Reply-To: <6097c490906122237l2be1836dsd30c3160f1a15ae8@mail.gmail.com>
-References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
-	 <9e4733910906122021k4568df6rd80fb915b64ac12@mail.gmail.com>
-	 <6097c490906122237l2be1836dsd30c3160f1a15ae8@mail.gmail.com>
-Date: Sat, 13 Jun 2009 08:39:39 -0400
-Message-ID: <9e4733910906130539k4af2dde3k1fe85e8932ef563e@mail.gmail.com>
-Subject: Re: [RFC][WIP] IEEE 802.15.4 implementation for Linux v1
-From: Jon Smirl <jonsmirl@gmail.com>
-To: maxim@mox.ru
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, slapin@ossfans.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 1:37 AM, Maxim Osipov<maxim.osipov@gmail.com> wrote:
-> On Sat, Jun 13, 2009 at 7:21 AM, Jon Smirl<jonsmirl@gmail.com> wrote:
->> On Mon, Jun 1, 2009 at 10:54 AM, Dmitry
->> Eremin-Solenikov<dbaryshkov@gmail.com> wrote:
->>> Hi,
->>>
->>> As a part of research activities the Embedded Systems - Open Platform Group
->>> from Siemens Corporate Technology we are working on adding support for
->>> the IEEE 802.15.4 Wireless Personal Area Networks to the Linux. Our current
->>> implementation is neither certified nor even feature complete. However
->>> we'd like to present current state of our patchset to the Linux developers
->>> community to gain comments, fixes, ideas, etc. This is not yet a pull request,
->>> but more like an RFC.
->>>
->>
->> The Zigbee alliance requires a minimum of $3,500/yr from any company
->> making a product based on the spec. How are you going to reconcile
->> this requirement with the GPL? They exempt non-commercial users but
->> the GPL doesn't allow code to be free for one purpose and pay for
->> another.
->>
->
-> For now, we do not release any ZigBee implementation. BTW - could you
-> refer to particular clause of GPL, which doesn't allow user to pay for
-> code?
+In addition to KT_DEAD which has limited support for diacriticals, there
+is KT_DEAD2 that can support 256 criticals, so let's advertise it in
+<linux/keyboard.h>.
 
-    b) You must cause any work that you distribute or publish, that in
-    whole or in part contains or is derived from the Program or any
-    part thereof, to be licensed as a whole at no charge to all third
-    parties under the terms of this License.
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-You can charge a duplication fee when you do the copying. It is fine
-to charge for things like support or the hardware that comes with the
-software.
-
-
->
-> Regards,
-> Maxim
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+diff --git a/include/linux/keyboard.h b/include/linux/keyboard.h
+index a3c984d..33a63f6 100644
+--- a/include/linux/keyboard.h
++++ b/include/linux/keyboard.h
+@@ -56,6 +56,7 @@ extern int unregister_keyboard_notifier(struct notifier_block *nb);
+ #define KT_ASCII	9
+ #define KT_LOCK		10
+ #define KT_SLOCK	12
++#define KT_DEAD2	13
+ #define KT_BRL		14
+ 
+ #define K(t,v)		(((t)<<8)|(v))
