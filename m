@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbZFMADR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbZFMAD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757043AbZFMADR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 20:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbZFMADC
+	id S1761282AbZFMAD3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 20:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbZFMADR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 20:03:02 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:52130 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753283AbZFMADB convert rfc822-to-8bit (ORCPT
+	Fri, 12 Jun 2009 20:03:17 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:58378 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757464AbZFMADQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 20:03:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=eIqC9VGIEpYiqPZb06DutiCv93zmqQE0Hxl1O13res42ZKz7+bLLsxv3QW1ctn8EFW
-         S3MoCcFgHShAKt4PB93mWMUHGT5fI4ePbdhYT9nXrW5BabgQQwDVYcEu0KUsCZn5WORM
-         uIg66VY7tgfUnoh/teZg/rXiUJ837Pqzlyvq4=
-MIME-Version: 1.0
-In-Reply-To: <200906122341.30518.arnd@arndb.de>
-References: <200906121247.50745.arnd@arndb.de> <200906121329.33473.arnd@arndb.de> 
-	<8bd0f97a0906120435w16a1f46ewd9ad94ee35c04e6e@mail.gmail.com> 
-	<200906122341.30518.arnd@arndb.de>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 12 Jun 2009 20:02:43 -0400
-Message-ID: <8bd0f97a0906121702r42e75204sd81c10eaa6be6d27@mail.gmail.com>
-Subject: Re: [PATCH] Blackfin: sync termios header changes with x86
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Jun 2009 20:03:16 -0400
+Subject: Re: -git tree build failure in drivers/net/cnic.c: undefined
+ reference to `ip6_route_output'
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: David Miller <davem@davemloft.net>
+Cc: randy.dunlap@oracle.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       mchan@broadcom.com, torvalds@linux-foundation.org
+In-Reply-To: <20090612.165108.110857018.davem@davemloft.net>
+References: <20090612184343.GA11900@elte.hu> <4A32A1E4.8080708@oracle.com>
+	 <20090612.165108.110857018.davem@davemloft.net>
+Content-Type: text/plain
+Date: Sat, 13 Jun 2009 00:03:13 +0000
+Message-Id: <1244851393.26552.1.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 17:41, Arnd Bergmann wrote:
-> On Friday 12 June 2009, Mike Frysinger wrote:
->> > If you want a working version of this file, best copy it from avr32
->> > or frv. Or just wait for the asm-generic version.
->>
->> is asm-generic going to be in 2.6.31 ?  otherwise i'd prefer to have
->> Blackfin fixed now rather than 2.6.32+
->
-> I certainly hope it does. I've sent the pull request yesterday,
-> so it's probably still in Linus' queue for trees to merge, unless
-> he dropped it.
+On Fri, 2009-06-12 at 16:51 -0700, David Miller wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> Date: Fri, 12 Jun 2009 11:43:48 -0700
+> 
+> > Ingo Molnar wrote:
+> >> today's -git fails to build with ipv6 disabled (x86):
+> >> 
+> >>   drivers/built-in.o: In function `cnic_get_v6_route':
+> >>   cnic.c:(.text+0x104c42): undefined reference to `ip6_route_output'
+> >> 
+> >> introduced by this new driver:
+> >> 
+> >>   a463696: [SCSI] cnic: Add new Broadcom CNIC driver.
+> > 
+> > I just posted a patch for this to netdev and it was acked by its maintainer.
+> > Patch is below.
+> 
+> I was hoping the scsi folks, or Linus directly, would pick this up.
 
-then i'm fine with fixing the header post your pull by switching to
-asm-generic.  thanks!
--mike
+I can, but my first tree's just gone ... the next one won't be going
+until nearer the merge window.
+
+> But I can take it in too if it slips through the cracks.
+
+That's fine by me too ... If you had a net tree ready, that would be
+great ... if not, I'll add it to the next SCSI tree to go.
+
+James
+
+
