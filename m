@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbZFMK5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZFMK6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760860AbZFMK5p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 06:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZFMK5h
+	id S1756738AbZFMK6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 06:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbZFMK6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 06:57:37 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:56256 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbZFMK5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 06:57:36 -0400
-Date: Sat, 13 Jun 2009 12:57:32 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
-Message-ID: <20090613125732.3eca440f@mjolnir.ossman.eu>
-In-Reply-To: <200906100929.49553.wolfgang.mues@auerswald.de>
-References: <200905250243.46984.david-b@pacbell.net>
-	<200905251659.17396.wolfgang.mues@auerswald.de>
-	<20090609200750.2fa38dfe@mjolnir.ossman.eu>
-	<200906100929.49553.wolfgang.mues@auerswald.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-24908-1244890657-0001-2"
+	Sat, 13 Jun 2009 06:58:09 -0400
+Received: from build.ossfans.org ([67.223.233.67]:48424 "EHLO
+	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035AbZFMK6I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 06:58:08 -0400
+Date: Sat, 13 Jun 2009 14:57:54 +0400
+From: Sergey Lapin <slapin@ossfans.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: David Miller <davem@davemloft.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, dbaryshkov@gmail.com,
+       linux-zigbee-devel@lists.sourceforge.net,
+       Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] ieee802154: fix kconfig bool/tristate muckup
+Message-ID: <20090613105753.GB14520@build.ossfans.org>
+References: <20090611191420.1f4d5e4f.sfr@canb.auug.org.au> <4A31869B.3050901@oracle.com> <4A32DDC8.7060605@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A32DDC8.7060605@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Fri, Jun 12, 2009 at 03:59:20PM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> menuconfig IEEE802154_DRIVERS is a bool that depends on tristate IEEE802154.
+> If the IEEE802154 symbol is 'm', the bool becomes 'y'.
+> This allows tristate symbols under IEEE802154_DRIVERS to be configured as
+> 'y' and cause build problems.
+> Changing the menuconfig bool to a tristate fixes this.
+> 
+> drivers/built-in.o: In function `fake_scan_req':
+> fakehard.c:(.text+0x46d625): undefined reference to `ieee802154_nl_scan_confirm'
+> drivers/built-in.o: In function `fake_disassoc_req':
+> fakehard.c:(.text+0x46d66f): undefined reference to `ieee802154_nl_disassoc_confirm'
+> drivers/built-in.o: In function `fake_assoc_req':
+> fakehard.c:(.text+0x46d6be): undefined reference to `ieee802154_nl_assoc_confirm'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: linux-zigbee-devel@lists.sourceforge.net
+> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> Cc: Sergey Lapin <slapin@ossfans.org>
+Ackedy-by: Sergey Lapin <slapin@ossfans.org>
 
---=_freyr.ossman.eu-24908-1244890657-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Thanks a lot!
+S.
 
-On Wed, 10 Jun 2009 09:29:49 +0200
-Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
-
->=20
-> Have you noticed that I have posted a revised revision of the patch named=
-=20
->=20
-> [PATCH] mmc_spi: don't use EINVAL for possible transmission errors
->=20
-> on 26th of May 2009? This was based on the discussion with Matt Flemming=
-=20
-> and David Brownell. (I have changed the name of the patch because the old
-> name was missleading now).
-
-I did not. Thanks for pointing this out.
-
->=20
-> Please queue up the new patch. Patch appended for reference here:
->=20
-
-Done. Thanks for all the work.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-24908-1244890657-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkozhiAACgkQ7b8eESbyJLj9DQCaA8caondmGjcr7yitxmWexmwp
-3ysAoK4++GrS0QcyLj/HVWxq4blJC+s8
-=xQvX
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-24908-1244890657-0001-2--
