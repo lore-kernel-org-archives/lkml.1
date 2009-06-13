@@ -1,102 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761503AbZFMOEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761487AbZFMOOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761503AbZFMOEg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 10:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZFMOE3
+	id S1761487AbZFMOOi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 10:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZFMOO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 10:04:29 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:53219 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752652AbZFMOE2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 10:04:28 -0400
-Date: Sat, 13 Jun 2009 16:06:47 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Marco <marco.stornelli@gmail.com>
-Cc: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 14/14] Pramfs: XIP operations
-Message-ID: <20090613140647.GD30053@uranus.ravnborg.org>
-References: <4A33A841.6080902@gmail.com>
+	Sat, 13 Jun 2009 10:14:29 -0400
+Received: from relay.atmel.no ([80.232.32.139]:63481 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751961AbZFMOO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 10:14:29 -0400
+Date: Sat, 13 Jun 2009 16:14:16 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       AVR32 Linux Kernel <kernel@avr32linux.org>
+Subject: [GIT PULL] AVR32 update
+Message-ID: <20090613161416.0067de9a@hskinnemoen-d830>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A33A841.6080902@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 03:23:13PM +0200, Marco wrote:
-> From: Marco Stornelli <marco.stornelli@gmail.com>
-> 
-> XIP operations.
-> 
-> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
-> ---
-> 
-> diff -uprN linux-2.6.30-orig/fs/pramfs/xip.c linux-2.6.30/fs/pramfs/xip.c
-> --- linux-2.6.30-orig/fs/pramfs/xip.c	1970-01-01 01:00:00.000000000 +0100
-> +++ linux-2.6.30/fs/pramfs/xip.c	2009-06-13 12:54:26.000000000 +0200
-> @@ -0,0 +1,90 @@
-> +/*
-> + * FILE NAME fs/pramfs/xip.c
-> + *
-> + * BRIEF DESCRIPTION
-> + *
-> + * XIP operations.
-> + *
-> + * Copyright 2009 Marco Stornelli <marco.stornelli@gmail.com>
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2. This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + */
-> +
-> +#include <linux/mm.h>
-> +#include <linux/fs.h>
-> +#include <linux/genhd.h>
-> +#include <linux/buffer_head.h>
-> +#include "pram_fs.h"
-> +#include "xip.h"
-> +
-> +static int pram_find_and_alloc_blocks(struct inode *inode, sector_t iblock,
-> +				     sector_t *data_block, int create)
-> +{
-> +	int err = -EIO;
-> +	off_t block;
-> +
-> +	lock_kernel();
+Hi Linus,
 
-Can we find other solutions than taking the BKL?
-We are trying to get rid of it.
+Please pull
 
-> +
-> +	block = pram_find_data_block(inode, iblock);
-> +
-> +	if (!block) {
-> +		if (!create) {
-> +			err = -ENODATA;
-> +			goto err;
-> +		}
-> +
-> +		err = pram_alloc_blocks(inode, iblock, 1);
-> +		if (err)
-> +			goto err;
-> +
-> +		block = pram_find_data_block(inode, iblock);
-> +		if (!block) {
-> +			err = -ENODATA;
-> +			goto err;
-> +		}
-> +	}
-> +
-> +	*data_block = block;
-> +	err = 0;
-> +
-> + err:
-> +	unlock_kernel();
-> +	return err;
-> +}
-> +
+  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
+
+to receive the following updates.
+
+Ben Nizette (1):
+      avr32: Fix clash in ATMEL_USART_ flags
+
+Haavard Skinnemoen (2):
+      Merge branch 'avr32-arch' of git://git.kernel.org/.../hskinnemoen/avr32-2.6
+      avr32: Fix oops on unaligned user access
+
+Jonas Larsson (2):
+      atmel-mci: Add support for inverted detect pin
+      avr32: Solves problem with inverted MCI detect pin on Merisc board
+
+Mark Jackson (1):
+      Fix MIMC200 board LCD init
+
+Peter Ma (2):
+      avr32: Change Atmel ATNGW100 config to add choice of add-on board
+      avr32: Add support for Mediama RMTx add-on board for ATNGW100
+
+Thomas Gleixner (1):
+      avr32: remove obsolete hw_interrupt_type
+
+ arch/avr32/boards/atngw100/Kconfig          |   27 +-
+ arch/avr32/boards/atngw100/Kconfig_mrmt     |   80 ++
+ arch/avr32/boards/atngw100/Makefile         |    1 +
+ arch/avr32/boards/atngw100/mrmt.c           |  373 ++++++++
+ arch/avr32/boards/atngw100/setup.c          |    5 +
+ arch/avr32/boards/merisc/setup.c            |    7 +-
+ arch/avr32/boards/mimc200/setup.c           |   29 +-
+ arch/avr32/configs/atngw100_mrmt_defconfig  | 1363 +++++++++++++++++++++++++++
+ arch/avr32/include/asm/hw_irq.h             |    2 +-
+ arch/avr32/kernel/traps.c                   |   11 +-
+ arch/avr32/mach-at32ap/include/mach/board.h |    2 +-
+ drivers/mmc/host/atmel-mci.c                |   12 +-
+ include/linux/atmel-mci.h                   |    2 +
+ 13 files changed, 1889 insertions(+), 25 deletions(-)
+ create mode 100644 arch/avr32/boards/atngw100/Kconfig_mrmt
+ create mode 100644 arch/avr32/boards/atngw100/mrmt.c
+ create mode 100644 arch/avr32/configs/atngw100_mrmt_defconfig
