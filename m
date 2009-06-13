@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762155AbZFMK7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751530AbZFMLCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762155AbZFMK7a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 06:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbZFMK7X
+	id S1751530AbZFMLCs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 07:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZFMLCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 06:59:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59030 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZFMK7W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 06:59:22 -0400
-Date: Sat, 13 Jun 2009 06:59:06 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ben Dooks <ben@fluff.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       David Miller <davem@davemloft.net>, swetland@google.com,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090613105906.GA28021@infradead.org>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <1244733310.895.60.camel@Joe-Laptop.home> <20090611182445.GA7658@uranus.ravnborg.org> <20090613003016.GB20442@fluff.org.uk> <20090613090240.GA29484@elf.ucw.cz>
+	Sat, 13 Jun 2009 07:02:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56896 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750738AbZFMLCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 07:02:35 -0400
+Date: Sat, 13 Jun 2009 13:02:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 2/2] perfcounters: print a sorted summary of annotated
+	overhead lines
+Message-ID: <20090613110229.GB18924@elte.hu>
+References: <1244844682-12928-1-git-send-email-fweisbec@gmail.com> <1244844682-12928-2-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090613090240.GA29484@elf.ucw.cz>
+In-Reply-To: <1244844682-12928-2-git-send-email-fweisbec@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 11:02:40AM +0200, Pavel Machek wrote:
-> Really? So IDE maintainers have to subscribe before when they want to
-> discuss ARM&CF issues? Sleep maintainers have to subscribe when they
-> want to discuss sleep&ARM?
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> It's can be very annoying to scroll down perf annotated output
+> until we find relevant overhead.
 > 
-> You are offending people by first adding unneccessary & annoying steps
-> to their workflow, and then calling them "too stupid" if they don't
-> follow your stupid rules. (Sometimes subscribing takes _weeks_!)
+> Using the -l option, you can now have a small summary sorted per
+> overhead in the beginning of the output.
+> 
+> Example:
+> 
+> ./perf annotate -l -k ../../vmlinux -s __lock_acquire
+> 
+> Sorted summary for file ../../vmlinux
+> ----------------------------------------------
+> 
+>    12.04 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:1653
+>     4.61 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:1740
+>     3.77 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:1775
+>     3.56 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:1653
+>     2.93 /home/fweisbec/linux/linux-2.6-tip/arch/x86/include/asm/irqflags.h:15
+>     2.83 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:2545
+>     2.30 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:2594
+>     2.20 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:2388
+>     2.20 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:730
+>     2.09 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:730
+>     2.09 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:138
+>     1.88 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:2548
+>     1.47 /home/fweisbec/linux/linux-2.6-tip/arch/x86/include/asm/irqflags.h:15
+>     1.36 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:2594
+>     1.36 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:730
+>     1.26 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:1654
+>     1.26 /home/fweisbec/linux/linux-2.6-tip/kernel/lockdep.c:1653
 
-I'd like to stay out of the other flamewars here, but having a moderated
-mailinglist for a major architecture or subsystem is a royal pain in the
-ass.  As others here I used to get these stupid rejected without reasons
-mail a lot (can't remember if it was mostly the arm list or others), and
-it just freaks me out if I'm supposed to Cc stuff to the relevant
-mailinglist and can't get through.
+Nice!
 
+I'm wondering how hard it would be to add wildcard support to the 
+symbol matching, say:
+
+  perf annotate "sys_*"               # Annotate all syscalls
+  perf annotate "sched*"              # All scheduler functions
+  perf annotate "*"                   # All symbols we know about
+
+It would be slower, obviously - but pretty useful as well.
+
+Also, perhaps an 'annotate top 10 overhead functions':
+
+  perf annotate --top 10
+
+Would be popular too ...
+
+	Ingo
