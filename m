@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762595AbZFMP04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763069AbZFMP1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762595AbZFMP04 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 11:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZFMP0s
+	id S1763069AbZFMP1r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 11:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbZFMP1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 11:26:48 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:59111 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757163AbZFMP0r (ORCPT
+	Sat, 13 Jun 2009 11:27:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47795 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752338AbZFMP1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 11:26:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tg5WtuQYYQ7RnirBPwrZ6u8hgTf9xZRTeLD579EzZYTpGZ2E0zY/HhCq92Lbuw2KH0
-         mggRXFkCQlVQxNHM6YBp+1QG6LtDyMIaTH3MJqKr3YPt4ZALFJlUEQMI/7o+iPdFnW+1
-         Muxu57pB5XCp1BD3a9xu/kGGR25mSi0hJ9Paw=
-Date: Sat, 13 Jun 2009 17:26:46 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/2] perfcounters: Print the filename:line for
-	annotated colored lines
-Message-ID: <20090613152644.GA4911@nowhere>
-References: <1244906732-7521-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244906732-7521-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 13 Jun 2009 11:27:39 -0400
+Date: Sat, 13 Jun 2009 16:28:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Cloos <cloos@jhcloos.com>
+Cc: linux-kernel@vger.kernel.org, "Linux-MIPS" <linux-mips@linux-mips.org>,
+       Florian Fainelli <florian@openwrt.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH 1/8] add lib/gcd.c
+Message-ID: <20090613162802.6c212505@lxorguk.ukuu.org.uk>
+In-Reply-To: <m38wjwz5ur.fsf@lugabout.jhcloos.org>
+References: <200906041615.10467.florian@openwrt.org>
+	<m38wjwz5ur.fsf@lugabout.jhcloos.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 05:25:31PM +0200, Frederic Weisbecker wrote:
-> When we have a colored line in perf annotate, ie a middle/high
-> overhead one, it's sometimes useful to get the matching line
-> and filename from the source file, especially this path prepares
-> to another subsequent one which will print a sorted summary of
-> midle/high overhead lines in the beginning of the output.
+> Would the binary gcd algorithm not be a better fit for the kernel?
 > 
-> Filename:Lines have the same color than the concerned ip lines.
-> 
-> It can be slow because it relies on addr2line. We could also
-> use objdump with -l but that implies we would have to bufferize
-> objdump output and parse it to filter the relevant lines since
-> we want to print a sorted summary in the beginning.
-> 
-> Changes in v2:
-> - fix addr2line on userspace binary
-> - fix string allocation size (missing ending null char room)
-> - fix overflow in symbol extra info
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> It avoids division, using only shifts and subtraction:
 
+Time them both and see. I suspect on a lot of processors the divide based
+one now wins. We also have fls() and ffs() which may mean some platforms
+can implement the first two loops even better.
 
-Forgot to put "v2" in the [PATCH] token. It fixes what you reported
-Ingo, and also some other things.
-
-Thanks.
-
+Could well be the shift based one is better for some processors only.
