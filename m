@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762664AbZFMLET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762946AbZFMLFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762664AbZFMLET (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 07:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbZFMLEE
+	id S1762946AbZFMLFb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 07:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbZFMLFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 07:04:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57106 "EHLO mx2.mail.elte.hu"
+	Sat, 13 Jun 2009 07:05:24 -0400
+Received: from tichy.grunau.be ([85.131.189.73]:33914 "EHLO tichy.grunau.be"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbZFMLEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 07:04:02 -0400
-Date: Sat, 13 Jun 2009 13:03:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2 -tip] x86: perf_counter update AMD hw caching
-	related event table
-Message-ID: <20090613110352.GC18924@elte.hu>
-References: <1244714289.6923.0.camel@ht.satnam> <1244714379.6923.2.camel@ht.satnam> <20090612173520.GB22015@elte.hu> <1244835318.2802.1.camel@ht.satnam> <1244835381.2802.2.camel@ht.satnam>
+	id S1751600AbZFMLFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 07:05:23 -0400
+Date: Sat, 13 Jun 2009 13:06:27 +0200
+From: Janne Grunau <j@jannau.net>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] eeepc-laptop: add 3G rfkill support for 901Go
+Message-ID: <20090613110627.GG14878@aniel.lan>
+References: <20090612223255.GD14878@aniel.lan> <71cd59b00906122352g77e8afdeh235c2a73b323a0d7@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244835381.2802.2.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0336]
+In-Reply-To: <71cd59b00906122352g77e8afdeh235c2a73b323a0d7@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jun 13, 2009 at 08:52:17AM +0200, Corentin Chary wrote:
+> First,
+> Could you fill http://dev.iksaif.net/projects/acpi4asus/wiki/CMSG with
+> your model CMSG ?
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+done, I suspect there's an error for the 701 and 901 in that table.
+CM_ASL_CARDREADER should be 1 instead of CM_ASL_MODEM.
+http://wiki.debian.org/DebianEeePC/Models supports that.
 
-> [PATCH 2/2 -tip] x86: perf_counter update AMD hw caching related event table
+Do you plan to update eeepc-laptop with all CM_ASL bits?
+
+> Then, I was working on a patch to refactor rfkill code in
+> eeepc-laptop. With this patch, adding 3g rfkill
+> is only 15-20 lines.
+
+good, I was too lazy to refactor it.
+
+> I'll add it to acpi4asus git tree soon.
+> From here:
+>  - I can rework your patch
+> - you can re-send it when rfkill refactoring is here.
 > 
-> AMD shares same hw caching related event table.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> as you want =).
 
-> -		[ C(RESULT_ACCESS) ] = 0,
-> -		[ C(RESULT_MISS)   ] = 0,
-> +		[ C(RESULT_ACCESS) ] = 0x0040, /* Data Cache Accesses        */
-> +		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
+Drop me a mail when you're done but doesn't really matter who does it.
 
-How did you get to these numbers and have you tested them? (Such 
-information needs to be in the changelog)
-
-	Ingo
+Janne
