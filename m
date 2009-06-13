@@ -1,150 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbZFMOvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763673AbZFMOvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763508AbZFMOvW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 10:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762240AbZFMOuN
+	id S1763673AbZFMOvf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 10:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762826AbZFMOuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 10:50:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49090 "EHLO hera.kernel.org"
+	Sat, 13 Jun 2009 10:50:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49095 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761851AbZFMOuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 10:50:10 -0400
-Date: Sat, 13 Jun 2009 14:49:33 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+	id S1762821AbZFMOuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 10:50:19 -0400
+Date: Sat, 13 Jun 2009 14:49:44 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
        hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com, robert.richter@amd.com,
        tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       jaswinder@kernel.org, efault@gmx.de, jaswinderrajput@gmail.com,
-       robert.richter@amd.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1244835381.2802.2.camel@ht.satnam>
-References: <1244835381.2802.2.camel@ht.satnam>
-Subject: [tip:perfcounters/core] perf_counter, x86: Update AMD hw caching related event table
-Message-ID: <tip-f4db43a38f7387c3b19c9565124c06ab0c5d6e9a@git.kernel.org>
-Git-Commit-ID: f4db43a38f7387c3b19c9565124c06ab0c5d6e9a
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf stat: Reorganize output
+Message-ID: <tip-44175b6f397a6724121eeaf0f072e2c912a46614@git.kernel.org>
+Git-Commit-ID: 44175b6f397a6724121eeaf0f072e2c912a46614
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 13 Jun 2009 14:49:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 13 Jun 2009 14:49:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f4db43a38f7387c3b19c9565124c06ab0c5d6e9a
-Gitweb:     http://git.kernel.org/tip/f4db43a38f7387c3b19c9565124c06ab0c5d6e9a
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Sat, 13 Jun 2009 01:06:21 +0530
+Commit-ID:  44175b6f397a6724121eeaf0f072e2c912a46614
+Gitweb:     http://git.kernel.org/tip/44175b6f397a6724121eeaf0f072e2c912a46614
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sat, 13 Jun 2009 13:35:00 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 13 Jun 2009 12:58:25 +0200
+CommitDate: Sat, 13 Jun 2009 13:40:03 +0200
 
-perf_counter, x86: Update AMD hw caching related event table
+perf stat: Reorganize output
 
-All AMD models share the same hw caching related event table.
+ - use IPC for the instruction normalization output
+ - CPUs for the CPU utilization factor value.
+ - print out time elapsed like the other rows
+ - tidy up the task-clocks/cpu-clocks printout
 
-Also complete the table with more events.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Robert Richter <robert.richter@amd.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1244835381.2802.2.camel@ht.satnam>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/cpu/perf_counter.c |   36 +++++++++++++++---------------------
- 1 files changed, 15 insertions(+), 21 deletions(-)
+ tools/perf/builtin-stat.c      |   67 ++++++++++++++++++++++++----------------
+ tools/perf/util/parse-events.c |    4 +-
+ 2 files changed, 42 insertions(+), 29 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 3c37c39..77a59a5 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -389,23 +389,23 @@ static u64 intel_pmu_raw_event(u64 event)
- 	return event & CORE_EVNTSEL_MASK;
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index c43e4a9..c128048 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -184,6 +184,40 @@ static void read_counter(int counter)
+ 		runtime_cycles = count[0];
  }
  
--static const u64 amd_0f_hw_cache_event_ids
-+static const u64 amd_hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_MAX]
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
- {
-  [ C(L1D) ] = {
- 	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0040, /* Data Cache Accesses        */
-+		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
- 	},
- 	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0042, /* Data Cache Refills from L2 */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
- 	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0267, /* Data Prefetcher :attempts  */
-+		[ C(RESULT_MISS)   ] = 0x0167, /* Data Prefetcher :cancelled */
- 	},
-  },
-  [ C(L1I ) ] = {
-@@ -418,17 +418,17 @@ static const u64 amd_0f_hw_cache_event_ids
- 		[ C(RESULT_MISS)   ] = -1,
- 	},
- 	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x014B, /* Prefetch Instructions :Load */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
-  },
-  [ C(LL  ) ] = {
- 	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x037D, /* Requests to L2 Cache :IC+DC */
-+		[ C(RESULT_MISS)   ] = 0x037E, /* L2 Cache Misses : IC+DC     */
- 	},
- 	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x017F, /* L2 Fill/Writeback           */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
- 	[ C(OP_PREFETCH) ] = {
-@@ -438,8 +438,8 @@ static const u64 amd_0f_hw_cache_event_ids
-  },
-  [ C(DTLB) ] = {
- 	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
-+		[ C(RESULT_ACCESS) ] = 0x0040, /* Data Cache Accesses        */
-+		[ C(RESULT_MISS)   ] = 0x0046, /* L1 DTLB and L2 DLTB Miss   */
- 	},
- 	[ C(OP_WRITE) ] = {
- 		[ C(RESULT_ACCESS) ] = 0,
-@@ -1465,16 +1465,10 @@ static int amd_pmu_init(void)
++static void nsec_printout(int counter, __u64 *count)
++{
++	double msecs = (double)count[0] / 1000000;
++
++	fprintf(stderr, " %14.6f  %-20s", msecs, event_name(counter));
++
++	if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
++		attrs[counter].config == PERF_COUNT_SW_TASK_CLOCK) {
++
++		if (walltime_nsecs)
++			fprintf(stderr, " # %10.3f CPUs",
++				(double)count[0] / (double)walltime_nsecs);
++	}
++}
++
++static void abs_printout(int counter, __u64 *count)
++{
++	fprintf(stderr, " %14Ld  %-20s", count[0], event_name(counter));
++
++	if (runtime_cycles &&
++		attrs[counter].type == PERF_TYPE_HARDWARE &&
++			attrs[counter].config == PERF_COUNT_HW_INSTRUCTIONS) {
++
++		fprintf(stderr, " # %10.3f IPC",
++			(double)count[0] / (double)runtime_cycles);
++
++		return;
++	}
++
++	if (runtime_nsecs)
++		fprintf(stderr, " # %10.3f M/sec",
++			(double)count[0]/runtime_nsecs*1000.0);
++}
++
+ /*
+  * Print out the results of a single counter:
+  */
+@@ -201,35 +235,15 @@ static void print_counter(int counter)
+ 		return;
+ 	}
  
- 	x86_pmu = amd_pmu;
+-	if (nsec_counter(counter)) {
+-		double msecs = (double)count[0] / 1000000;
+-
+-		fprintf(stderr, " %14.6f  %-20s",
+-			msecs, event_name(counter));
+-		if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
+-			attrs[counter].config == PERF_COUNT_SW_TASK_CLOCK) {
++	if (nsec_counter(counter))
++		nsec_printout(counter, count);
++	else
++		abs_printout(counter, count);
  
--	switch (boot_cpu_data.x86) {
--	case 0x0f:
--	case 0x10:
--	case 0x11:
--		memcpy(hw_cache_event_ids, amd_0f_hw_cache_event_ids,
--		       sizeof(hw_cache_event_ids));
-+	/* Events are common for all AMDs */
-+	memcpy(hw_cache_event_ids, amd_hw_cache_event_ids,
-+	       sizeof(hw_cache_event_ids));
- 
--		pr_cont("AMD Family 0f/10/11 events, ");
--		break;
+-			if (walltime_nsecs)
+-				fprintf(stderr, " # %11.3f CPU utilization factor",
+-					(double)count[0] / (double)walltime_nsecs);
+-		}
+-	} else {
+-		fprintf(stderr, " %14Ld  %-20s",
+-			count[0], event_name(counter));
+-		if (runtime_nsecs)
+-			fprintf(stderr, " # %11.3f M/sec",
+-				(double)count[0]/runtime_nsecs*1000.0);
+-		if (runtime_cycles &&
+-			attrs[counter].type == PERF_TYPE_HARDWARE &&
+-				attrs[counter].config == PERF_COUNT_HW_INSTRUCTIONS) {
+-
+-			fprintf(stderr, " # %1.3f per cycle",
+-				(double)count[0] / (double)runtime_cycles);
+-		}
 -	}
- 	return 0;
+ 	if (scaled)
+ 		fprintf(stderr, "  (scaled from %.2f%%)",
+ 			(double) count[2] / count[1] * 100);
++
+ 	fprintf(stderr, "\n");
  }
  
+@@ -290,8 +304,7 @@ static int do_perf_stat(int argc, const char **argv)
+ 
+ 
+ 	fprintf(stderr, "\n");
+-	fprintf(stderr, " Wall-clock time elapsed: %12.6f msecs\n",
+-			(double)(t1-t0)/1e6);
++	fprintf(stderr, " %14.9f  seconds time elapsed.\n", (double)(t1-t0)/1e9);
+ 	fprintf(stderr, "\n");
+ 
+ 	return 0;
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 5a72586..f0c9f26 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -63,8 +63,8 @@ static char *hw_event_names[] = {
+ };
+ 
+ static char *sw_event_names[] = {
+-	"cpu-clock-ticks",
+-	"task-clock-ticks",
++	"cpu-clock-msecs",
++	"task-clock-msecs",
+ 	"page-faults",
+ 	"context-switches",
+ 	"CPU-migrations",
