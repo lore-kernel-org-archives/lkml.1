@@ -1,143 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934524AbZFMCFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764826AbZFMCQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934524AbZFMCFa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 22:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZFMCFS
+	id S1764826AbZFMCQz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 22:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZFMCQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 22:05:18 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:49307 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752767AbZFMCFR (ORCPT
+	Fri, 12 Jun 2009 22:16:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40261
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751612AbZFMCQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 22:05:17 -0400
-Date: Sat, 13 Jun 2009 12:05:12 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Crypto Update for 2.6.31
-Message-ID: <20090613020512.GA21024@gondor.apana.org.au>
-References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090324044932.GA18245@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 12 Jun 2009 22:16:46 -0400
+Date: Fri, 12 Jun 2009 19:16:48 -0700 (PDT)
+Message-Id: <20090612.191648.181797239.davem@davemloft.net>
+To: ben@fluff.org
+Cc: linux@arm.linux.org.uk, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, ibm@android.com,
+       swetland@google.com, san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090613003849.GC20442@fluff.org.uk>
+References: <20090610194852.GA28787@n2100.arm.linux.org.uk>
+	<20090611.000219.206893038.davem@davemloft.net>
+	<20090613003849.GC20442@fluff.org.uk>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+From: Ben Dooks <ben@fluff.org>
+Date: Sat, 13 Jun 2009 01:38:49 +0100
 
-Here is the crypto update for 2.6.31:
+> On Thu, Jun 11, 2009 at 12:02:19AM -0700, David Miller wrote:
+>> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+>> Date: Wed, 10 Jun 2009 20:48:52 +0100
+>> 
+>> > In short not as far as I know, and I'm very disappointed with the state
+>> > of affairs with google.
+>> 
+>> And of course, this whole android situation has absolutely nothing to
+>> do with how much of a pain in that ass you are to deal with as ARM
+>> maintainer.
+> 
+> If you mean 'pain' as 'having standards', then you're probably right.
 
-* 64-bit VIA crypto/RNG support.
-* More operation modes added for Intel AES.
-* New test vectors for CCM/CTR/RNG.
-* Slight change to the compress API for squashfs.
-* Talitos fixes/clean-ups.
-
-
-Please pull from
-
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Alex Riesen (1):
-      crypto: api - Use formatting of module name
-
-Alexander Clouter (1):
-      hwrng: timeriomem - Fix potential oops (request_mem_region/__devinit)
-
-Frank Seidel (1):
-      crypto: tcrypt - Reduce stack size
-
-Geert Uytterhoeven (3):
-      crypto: testmgr - Kill test_comp() sparse warnings
-      crypto: pcomp - pcompress.c should include crypto/internal/compress.h
-      crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}
-
-Harald Welte (3):
-      hwrng: via_rng - The VIA Hardware RNG driver is for the CPU, not Chipset
-      hwrng: via_rng - Support VIA Nano hardware RNG
-      hwrng: via_rng - Support VIA Nano hardware RNG on X86_64 builds
-
-Herbert Xu (4):
-      crypto: padlock - Restore dependency on x86
-      crypto: testmgr - Dynamically allocate xbuf and axbuf
-      crypto: testmgr - Check all test vector lengths
-      crypto: testmgr - Allow hash test vectors longer than a page
-
-Huang Ying (3):
-      crypto: cryptd - Use nivcipher in cryptd_alloc_ablkcipher
-      crypto: fpu - Add template for blkcipher touching FPU
-      crypto: aes-ni - Add support for more modes
-
-Jarod Wilson (10):
-      crypto: testmgr - Handle AEAD test vectors expected to fail verification
-      crypto: testmgr - Add self-tests for rfc4309(ccm(aes))
-      crypto: testmgr - Add infrastructure for ansi_cprng self-tests
-      crypto: testmgr - Add ansi_cprng test vectors
-      crypto: testmgr - Catch base cipher self-test failures in fips mode
-      crypto: testmgr - Print self-test pass notices in fips mode
-      crypto: testmgr - Add ctr(aes) test vectors
-      crypto: testmgr - Mark algs allowed in fips mode
-      crypto: testmgr - Skip algs not flagged fips_allowed in fips mode
-      crypto: tcrypt - Do not exit on success in fips mode
-
-Johannes Weiner (1):
-      crypto: api - Use kzfree
-
-Kim Phillips (3):
-      crypto: talitos - Whitespace/codingstyle/overrun lines cleanup
-      crypto: talitos - containerof related codingstyle
-      crypto: talitos - Avoid unnecessary decrypt check
-
-Lee Nipper (2):
-      crypto: talitos - scaffolding for new algorithm types
-      crypto: talitos - Add ablkcipher algorithms
-
-Mike Frysinger (1):
-      crypto: hifn_795x - fix __dev{init,exit} markings
-
-Sebastian Andrzej Siewior (1):
-      crypto: padlock - Enable on x86_64
-
-Uwe Kleine-König (1):
-      hwrng: omap - Move probe function to .devinit.text
-
- arch/x86/crypto/Makefile                |    2 +
- arch/x86/crypto/aesni-intel_glue.c      |  267 ++++++++++++-
- arch/x86/crypto/fpu.c                   |  166 +++++++
- crypto/Kconfig                          |   10 +
- crypto/algboss.c                        |   18 +-
- crypto/api.c                            |   14 +-
- crypto/cryptd.c                         |   14 +-
- crypto/internal.h                       |    3 -
- crypto/pcompress.c                      |    1 +
- crypto/tcrypt.c                         |  183 +++++----
- crypto/testmgr.c                        |  470 ++++++++++++++++-----
- crypto/testmgr.h                        |  645 ++++++++++++++++++++++++++++-
- crypto/zlib.c                           |   24 +-
- drivers/char/hw_random/Kconfig          |    2 +-
- drivers/char/hw_random/omap-rng.c       |    2 +-
- drivers/char/hw_random/timeriomem-rng.c |   26 +-
- drivers/char/hw_random/via-rng.c        |   15 +-
- drivers/crypto/Kconfig                  |    2 +-
- drivers/crypto/hifn_795x.c              |    8 +-
- drivers/crypto/padlock-aes.c            |   13 +
- drivers/crypto/talitos.c                |  713 ++++++++++++++++++++++---------
- 21 files changed, 2141 insertions(+), 457 deletions(-)
- 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+No, I meant 'pain' as in unnecessarily difficult.
