@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbZFMWXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbZFMWYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759974AbZFMWXv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 18:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbZFMWXe
+	id S1761458AbZFMWYu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 18:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbZFMWYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 18:23:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64962 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753962AbZFMWXd (ORCPT
+	Sat, 13 Jun 2009 18:24:42 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:45318 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751949AbZFMWYm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 18:23:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH 07/27] score: create head files elf.h emergency-restart.h errno.h
-Date: Sun, 14 Jun 2009 00:23:06 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-References: <OF33B57F6A.69479DBB-ON482575D4.00247552-482575D4.002503BB@sunplusct.com>
-In-Reply-To: <OF33B57F6A.69479DBB-ON482575D4.00247552-482575D4.002503BB@sunplusct.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sat, 13 Jun 2009 18:24:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=t8pRYab03LC0q3xcbjnMYBjsUvms89K/LYH7OAepwtrN5UXBcJ/sgxuSadisWu+Fpp
+         d3j4gKQn6RniXFo4hiaJaVuxialMaCTQimJOXZw7eqvnUzmitCkL6IfqPs1HOWXKF0iT
+         hDQC6Y0REfE/Yt8+ihpRQbsB3qrSPW9HJL+OU=
+Date: Sun, 14 Jun 2009 00:24:41 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2 v2] ftrace: document basic ftracer/ftracer graph
+	needs
+Message-ID: <20090613222440.GA5986@nowhere>
+References: <1244623722-6325-2-git-send-email-vapier@gentoo.org> <1244667129-27630-1-git-send-email-vapier@gentoo.org> <8bd0f97a0906120110g3088048fl58270a850ac00f85@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="gb2312"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906140023.06690.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+hTmGiXlz9IJTx+x7DmZycjB2X5tNNcizR8ZT
- sWIM4ohbXxwDgBLM5QEjLgi03m8+df7vHhhb1j2vS8PkdLp4VY
- GoufKtJZ34epqXnjJ/KkrtXA0RnhGZ4
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0906120110g3088048fl58270a850ac00f85@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 June 2009, liqin.chen@sunplusct.com wrote:
-> > 
-> > EMAXERRNO is mips specific right now. Do you actually need it somewhere?
-> > 
+On Fri, Jun 12, 2009 at 04:10:03AM -0400, Mike Frysinger wrote:
+> On Wed, Jun 10, 2009 at 16:52, Mike Frysinger wrote:
+> > While implementing ftracer and ftracer graph support, I found the exact
+> > arch implementation details to be a bit lacking (and my x86 foo ain't
+> > great).  So after pounding out support for the Blackfin arch, start
+> > documenting the requirements/details.
 > 
-> Yes, I used it in entry.S, maybe I could remove this define latter.
-> 
+> have you merged this ?  i have a small update to it (remind people to
+> export the mcount symbol), but dont know if you'd like a fresh patch
+> or one on top of this.
+> -mike
 
-Ok. Note that the maximum error number that is supposed to get sent back
-to user space is 511. Most architectures check the return value of the
-system call to be between -4095 and zero upon entering user space.
-Checking it in the kernel gives you the chance to override the
-error status from a system call with force_successful_syscall_return().
 
-If that is your intention, you should probably leave the definition in there.
-Powerpc uses _LAST_ERRNO for the same purpose, which is somewhat inconsistent
-with mips and also uses a different value to compare against.
+Hi,
 
-	Arnd <><
+It hasn't been merged, you can safely send a v3.
+
+Thanks.
+
