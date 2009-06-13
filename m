@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbZFMQgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932452AbZFMQg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932332AbZFMQgl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 12:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763512AbZFMQds
+	id S932452AbZFMQg4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 12:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763518AbZFMQdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 12:33:48 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:65319 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762085AbZFMQdi (ORCPT
+	Sat, 13 Jun 2009 12:33:49 -0400
+Received: from mail-fx0-f206.google.com ([209.85.220.206]:52100 "EHLO
+	mail-fx0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762597AbZFMQdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 13 Jun 2009 12:33:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type
          :content-transfer-encoding:content-disposition:message-id;
-        b=hHPwDN0hNjKZKnxfv3xFohYw7E4uOh24iCh0oQ+eH3h78anFfZi5Bg18p59bIFwUdy
-         WAoJGLWHmJ9ejqeVr9EukcJcjMgydPYAdnbf+cP141Lh/B4f/xUXNA0vXoQdVBVDEEX6
-         V1gQDwN5ynHrhVWhKn93/wKXZzg9PH3LLkN9Y=
+        b=Xx8IzdLt15gcwGWn3PEpZq8BpfSSoVTH3WD3u0UD4yAEWAsQrVK4JVs48QdG3/KIbu
+         3TzW5HQiQ2l8Y4Tpjz/RbSNn9k9XEQlgjXzKYP00HTPfCClmJcqvPKsPm7RiFKBQLmkX
+         f89egKQJaAjY2aupJkCktW8bsBfhtYJXxfB4Q=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 2/4] Staging: rtl8192su: remove support for older wireless extensions
-Date: Sat, 13 Jun 2009 18:35:58 +0200
+Subject: [PATCH 3/4] Staging: rtl8192su/ieee80211: remove unused _ReasonCode enums
+Date: Sat, 13 Jun 2009 18:36:47 +0200
 User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612-07181-g84f26e4; KDE/4.2.3; i686; ; )
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -28,368 +28,73 @@ Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906131835.58370.bzolnier@gmail.com>
+Message-Id: <200906131836.47404.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8192su/ieee80211/ieee80211.h            |   16 -----
- drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c |   25 --------
- drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c         |    5 -
- drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c         |   38 -------------
- drivers/staging/rtl8192su/r8192U_core.c                    |   16 -----
- drivers/staging/rtl8192su/r8192U_wx.c                      |   24 --------
- 6 files changed, 7 insertions(+), 117 deletions(-)
+ drivers/staging/rtl8192su/ieee80211/ieee80211.h |   49 ------------------------
+ 1 file changed, 49 deletions(-)
 
 Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
 ===================================================================
 --- a/drivers/staging/rtl8192su/ieee80211/ieee80211.h
 +++ b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-@@ -379,13 +379,11 @@ enum	_ReasonCode{
- #define ieee80211_wx_get_scan		ieee80211_wx_get_scan_rsl
- #define ieee80211_wx_set_encode		ieee80211_wx_set_encode_rsl
- #define ieee80211_wx_get_encode		ieee80211_wx_get_encode_rsl
--#if WIRELESS_EXT >= 18
-+
- #define ieee80211_wx_set_mlme		ieee80211_wx_set_mlme_rsl
- #define ieee80211_wx_set_auth		ieee80211_wx_set_auth_rsl
- #define ieee80211_wx_set_encode_ext	ieee80211_wx_set_encode_ext_rsl
- #define ieee80211_wx_get_encode_ext	ieee80211_wx_get_encode_ext_rsl
--#endif
--
- 
- typedef struct ieee_param {
- 	u32 cmd;
-@@ -416,16 +414,6 @@ typedef struct ieee_param {
- 	} u;
- }ieee_param;
+@@ -214,55 +214,6 @@ typedef struct cb_desc {
+ #define	MGN_MCS14_SG		0x9e
+ #define	MGN_MCS15_SG		0x9f
  
 -
--#if WIRELESS_EXT < 17
--#define IW_QUAL_QUAL_INVALID   0x10
--#define IW_QUAL_LEVEL_INVALID  0x20
--#define IW_QUAL_NOISE_INVALID  0x40
--#define IW_QUAL_QUAL_UPDATED   0x1
--#define IW_QUAL_LEVEL_UPDATED  0x2
--#define IW_QUAL_NOISE_UPDATED  0x4
--#endif
+-//----------------------------------------------------------------------------
+-//		802.11 Management frame Reason Code field
+-//----------------------------------------------------------------------------
+-enum	_ReasonCode{
+-	unspec_reason	= 0x1,
+-	auth_not_valid	= 0x2,
+-	deauth_lv_ss	= 0x3,
+-	inactivity		= 0x4,
+-	ap_overload 	= 0x5,
+-	class2_err		= 0x6,
+-	class3_err		= 0x7,
+-	disas_lv_ss 	= 0x8,
+-	asoc_not_auth	= 0x9,
 -
- #define MSECS(t) msecs_to_jiffies(t)
- #define msleep_interruptible_rsl  msleep_interruptible
- 
-@@ -2552,7 +2540,6 @@ extern int ieee80211_wx_set_encode(struc
- extern int ieee80211_wx_get_encode(struct ieee80211_device *ieee,
- 				   struct iw_request_info *info,
- 				   union iwreq_data *wrqu, char *key);
--#if WIRELESS_EXT >= 18
- extern int ieee80211_wx_get_encode_ext(struct ieee80211_device *ieee,
-                             struct iw_request_info *info,
-                             union iwreq_data* wrqu, char *extra);
-@@ -2565,7 +2552,6 @@ extern int ieee80211_wx_set_auth(struct 
- extern int ieee80211_wx_set_mlme(struct ieee80211_device *ieee,
-                                struct iw_request_info *info,
-                                union iwreq_data *wrqu, char *extra);
--#endif
- extern int ieee80211_wx_set_gen_ie(struct ieee80211_device *ieee, u8 *ie, size_t len);
- 
- /* ieee80211_softmac.c */
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-@@ -615,8 +615,6 @@ static int ieee80211_michael_mic_add(str
- 	return 0;
- }
- 
+-	//----MIC_CHECK
+-	mic_failure 	= 0xe,
+-	//----END MIC_CHECK
 -
--#if WIRELESS_EXT >= 18
- static void ieee80211_michael_mic_failure(struct net_device *dev,
- 				       struct ieee80211_hdr_4addr *hdr,
- 				       int keyidx)
-@@ -637,29 +635,6 @@ static void ieee80211_michael_mic_failur
- 	wrqu.data.length = sizeof(ev);
- 	wireless_send_event(dev, IWEVMICHAELMICFAILURE, &wrqu, (char *) &ev);
- }
--#elif WIRELESS_EXT >= 15
--static void ieee80211_michael_mic_failure(struct net_device *dev,
--				       struct ieee80211_hdr_4addr *hdr,
--				       int keyidx)
--{
--	union iwreq_data wrqu;
--	char buf[128];
+-	// Reason code defined in 802.11i D10.0 p.28.
+-	invalid_IE		= 0x0d,
+-	four_way_tmout	= 0x0f,
+-	two_way_tmout	= 0x10,
+-	IE_dismatch 	= 0x11,
+-	invalid_Gcipher = 0x12,
+-	invalid_Pcipher = 0x13,
+-	invalid_AKMP	= 0x14,
+-	unsup_RSNIEver = 0x15,
+-	invalid_RSNIE	= 0x16,
+-	auth_802_1x_fail= 0x17,
+-	ciper_reject		= 0x18,
 -
--	/* TODO: needed parameters: count, keyid, key type, TSC */
--	sprintf(buf, "MLME-MICHAELMICFAILURE.indication(keyid=%d %scast addr="
--		MAC_FMT ")", keyidx, hdr->addr1[0] & 0x01 ? "broad" : "uni",
--		MAC_ARG(hdr->addr2));
--	memset(&wrqu, 0, sizeof(wrqu));
--	wrqu.data.length = strlen(buf);
--	wireless_send_event(dev, IWEVCUSTOM, &wrqu, buf);
--}
--#else /* WIRELESS_EXT >= 15 */
--static inline void ieee80211_michael_mic_failure(struct net_device *dev,
--					      struct ieee80211_hdr_4addr *hdr,
--					      int keyidx)
--{
--}
--#endif /* WIRELESS_EXT >= 15 */
- 
- static int ieee80211_michael_mic_verify(struct sk_buff *skb, int keyidx,
- 				     int hdr_len, void *priv)
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-@@ -986,7 +986,6 @@ int ieee80211_rx(struct ieee80211_device
- 
- 	//IEEE80211_DEBUG_DATA(IEEE80211_DL_DATA, skb->data, skb->len);
- #ifdef NOT_YET
--#if WIRELESS_EXT > 15
- 	/* Put this code here so that we avoid duplicating it in all
- 	 * Rx paths. - Jean II */
- #ifdef IW_WIRELESS_SPY		/* defined in iw_handler.h */
-@@ -1000,18 +999,16 @@ int ieee80211_rx(struct ieee80211_device
- 		wireless_spy_update(dev, hdr->addr2, &wstats);
- 	}
- #endif /* IW_WIRELESS_SPY */
--#endif /* WIRELESS_EXT > 15 */
- 	hostap_update_rx_stats(local->ap, hdr, rx_stats);
- #endif
- 
--#if WIRELESS_EXT > 15
- 	if (ieee->iw_mode == IW_MODE_MONITOR) {
- 		ieee80211_monitor_rx(ieee, skb, rx_stats);
- 		stats->rx_packets++;
- 		stats->rx_bytes += skb->len;
- 		return 1;
- 	}
--#endif
-+
- 	if (ieee->host_decrypt) {
- 		int idx = 0;
- 		if (skb->len >= hdrlen + 3)
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-@@ -211,37 +211,7 @@ static inline char *rtl819x_translate_sc
- 	iwe.u.data.length = p - custom;
- 	if (iwe.u.data.length)
-             start = iwe_stream_add_point(info, start, stop, &iwe, custom);
--#if (WIRELESS_EXT < 18)
--	if (ieee->wpa_enabled && network->wpa_ie_len){
--		char buf[MAX_WPA_IE_LEN * 2 + 30];
--	//	printk("WPA IE\n");
--		u8 *p = buf;
--		p += sprintf(p, "wpa_ie=");
--		for (i = 0; i < network->wpa_ie_len; i++) {
--			p += sprintf(p, "%02x", network->wpa_ie[i]);
--		}
+-	// Reason code defined in 7.3.1.7, 802.1e D13.0, p.42. Added by Annie, 2005-11-15.
+-	QoS_unspec		= 0x20, // 32
+-	QAP_bandwidth	= 0x21, // 33
+-	poor_condition	= 0x22, // 34
+-	no_facility 	= 0x23, // 35
+-							// Where is 36???
+-	req_declined	= 0x25, // 37
+-	invalid_param	= 0x26, // 38
+-	req_not_honored= 0x27,	// 39
+-	TS_not_created	= 0x2F, // 47
+-	DL_not_allowed	= 0x30, // 48
+-	dest_not_exist	= 0x31, // 49
+-	dest_not_QSTA	= 0x32, // 50
+-};
 -
--		memset(&iwe, 0, sizeof(iwe));
--		iwe.cmd = IWEVCUSTOM;
--		iwe.u.data.length = strlen(buf);
--                start = iwe_stream_add_point(info, start, stop, &iwe, buf);
--        }
- 
--	if (ieee->wpa_enabled && network->rsn_ie_len){
--		char buf[MAX_WPA_IE_LEN * 2 + 30];
 -
--		u8 *p = buf;
--		p += sprintf(p, "rsn_ie=");
--		for (i = 0; i < network->rsn_ie_len; i++) {
--			p += sprintf(p, "%02x", network->rsn_ie[i]);
--		}
 -
--		memset(&iwe, 0, sizeof(iwe));
--		iwe.cmd = IWEVCUSTOM;
--		iwe.u.data.length = strlen(buf);
--                start = iwe_stream_add_point(info, start, stop, &iwe, buf);
--        }
--#else
- 	memset(&iwe, 0, sizeof(iwe));
- 	if (network->wpa_ie_len)
- 	{
-@@ -260,8 +230,6 @@ static inline char *rtl819x_translate_sc
- 		iwe.u.data.length = network->rsn_ie_len;
-                 start = iwe_stream_add_point(info, start, stop, &iwe, buf);
-         }
--#endif
--
+ #define aSifsTime	 (((priv->ieee80211->current_network.mode == IEEE_A)||(priv->ieee80211->current_network.mode == IEEE_N_24G)||(priv->ieee80211->current_network.mode == IEEE_N_5G))? 16 : 10)
  
- 	/* Add EXTRA: Age to display seconds since last beacon/probe response
- 	 * for given network. */
-@@ -548,7 +516,7 @@ int ieee80211_wx_get_encode(struct ieee8
- 
- 	return 0;
- }
--#if (WIRELESS_EXT >= 18)
-+
- int ieee80211_wx_set_encode_ext(struct ieee80211_device *ieee,
-                                struct iw_request_info *info,
-                                union iwreq_data *wrqu, char *extra)
-@@ -869,7 +837,7 @@ int ieee80211_wx_set_auth(struct ieee802
- 
- 	return 0;
- }
--#endif
-+
- #if 1
- int ieee80211_wx_set_gen_ie(struct ieee80211_device *ieee, u8 *ie, size_t len)
- {
-@@ -919,12 +887,10 @@ int ieee80211_wx_set_gen_ie(struct ieee8
- #endif
- 
- EXPORT_SYMBOL(ieee80211_wx_set_gen_ie);
--#if (WIRELESS_EXT >= 18)
- EXPORT_SYMBOL(ieee80211_wx_set_mlme);
- EXPORT_SYMBOL(ieee80211_wx_set_auth);
- EXPORT_SYMBOL(ieee80211_wx_set_encode_ext);
- EXPORT_SYMBOL(ieee80211_wx_get_encode_ext);
--#endif
- EXPORT_SYMBOL(ieee80211_wx_get_scan);
- EXPORT_SYMBOL(ieee80211_wx_set_encode);
- EXPORT_SYMBOL(ieee80211_wx_get_encode);
-Index: b/drivers/staging/rtl8192su/r8192U_core.c
-===================================================================
---- a/drivers/staging/rtl8192su/r8192U_core.c
-+++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -1245,17 +1245,7 @@ static int proc_get_stats_rx(char *page,
- 	*eof = 1;
- 	return len;
- }
--#if 0
--#if WIRELESS_EXT >= 12 && WIRELESS_EXT < 17
--
--static struct iw_statistics *r8192_get_wireless_stats(struct net_device *dev)
--{
--       struct r8192_priv *priv = ieee80211_priv(dev);
- 
--       return &priv->wstats;
--}
--#endif
--#endif
- void rtl8192_proc_module_init(void)
- {
- 	RT_TRACE(COMP_INIT, "Initializing proc filesystem");
-@@ -11874,12 +11864,8 @@ static int __devinit rtl8192_usb_probe(s
- 	dev->netdev_ops = &rtl8192_netdev_ops;
- 
-          //DMESG("Oops: i'm coming\n");
--#if WIRELESS_EXT >= 12
--#if WIRELESS_EXT < 17
--        dev->get_wireless_stats = r8192_get_wireless_stats;
--#endif
-         dev->wireless_handlers = (struct iw_handler_def *) &r8192_wx_handlers_def;
--#endif
-+
- 	dev->type=ARPHRD_ETHER;
- 
- 	dev->watchdog_timeo = HZ*3;	//modified by john, 0805
-Index: b/drivers/staging/rtl8192su/r8192U_wx.c
-===================================================================
---- a/drivers/staging/rtl8192su/r8192U_wx.c
-+++ b/drivers/staging/rtl8192su/r8192U_wx.c
-@@ -548,10 +548,8 @@ static int rtl8180_wx_get_range(struct n
- 	}
- 	range->num_frequency = val;
-         range->num_channels = val;
--#if WIRELESS_EXT > 17
- 	range->enc_capa = IW_ENC_CAPA_WPA|IW_ENC_CAPA_WPA2|
- 			  IW_ENC_CAPA_CIPHER_TKIP|IW_ENC_CAPA_CIPHER_CCMP;
--#endif
- 	tmp->scan_capa = 0x01;
- 	return 0;
- }
-@@ -568,7 +566,7 @@ static int r8192_wx_set_scan(struct net_
- 
- 	if (priv->ieee80211->LinkDetectInfo.bBusyTraffic == true)
- 		return -EAGAIN;
--#if WIRELESS_EXT > 17
-+
- 	if (wrqu->data.flags & IW_SCAN_THIS_ESSID)
- 	{
- 		struct iw_scan_req* req = (struct iw_scan_req*)b;
-@@ -580,7 +578,6 @@ static int r8192_wx_set_scan(struct net_
- 			//printk("=====>network ssid:%s\n", ieee->current_network.ssid);
- 		}
- 	}
--#endif
- 
- 	down(&priv->wx_sem);
- 	if(priv->ieee80211->state != IEEE80211_LINKED){
-@@ -963,7 +960,6 @@ exit:
- 	return err;
- }
- 
--#if (WIRELESS_EXT >= 18)
- #if 0
- static int r8192_wx_get_enc_ext(struct net_device *dev,
-                                         struct iw_request_info *info,
-@@ -1093,7 +1089,7 @@ static int r8192_wx_set_mlme(struct net_
- 	up(&priv->wx_sem);
- 	return ret;
- }
--#endif
-+
- static int r8192_wx_set_gen_ie(struct net_device *dev,
-                                         struct iw_request_info *info,
-                                         union iwreq_data *data, char *extra)
-@@ -1143,11 +1139,7 @@ static iw_handler r8192_wx_handlers[] =
-         NULL,                     /* SIOCWIWTHRSPY */
-         r8192_wx_set_wap,      	  /* SIOCSIWAP */
-         r8192_wx_get_wap,         /* SIOCGIWAP */
--#if (WIRELESS_EXT >= 18)
-         r8192_wx_set_mlme,                     /* MLME-- */
--#else
--	 NULL,
--#endif
-         dummy,                     /* SIOCGIWAPLIST -- depricated */
-         r8192_wx_set_scan,        /* SIOCSIWSCAN */
-         r8192_wx_get_scan,        /* SIOCGIWSCAN */
-@@ -1176,17 +1168,10 @@ static iw_handler r8192_wx_handlers[] =
- 	r8192_wx_set_gen_ie,//NULL, 			/* SIOCSIWGENIE */
- 	NULL, 			/* SIOCSIWGENIE */
- 
--#if (WIRELESS_EXT >= 18)
- 	r8192_wx_set_auth,//NULL, 			/* SIOCSIWAUTH */
- 	NULL,//r8192_wx_get_auth,//NULL, 			/* SIOCSIWAUTH */
- 	r8192_wx_set_enc_ext, 			/* SIOCSIWENCODEEXT */
- 	NULL,//r8192_wx_get_enc_ext,//NULL, 			/* SIOCSIWENCODEEXT */
--#else
--	NULL,
--	NULL,
--	NULL,
--	NULL,
--#endif
- 	NULL, 			/* SIOCSIWPMKSA */
- 	NULL, 			 /*---hole---*/
- 
-@@ -1288,7 +1273,6 @@ static iw_handler r8192_private_handler[
- #endif
- };
- 
--//#if WIRELESS_EXT >= 17
- struct iw_statistics *r8192_get_wireless_stats(struct net_device *dev)
- {
-        struct r8192_priv *priv = ieee80211_priv(dev);
-@@ -1317,8 +1301,6 @@ struct iw_statistics *r8192_get_wireless
- 	wstats->qual.updated = IW_QUAL_ALL_UPDATED| IW_QUAL_DBM;
- 	return wstats;
- }
--//#endif
--
- 
- struct iw_handler_def  r8192_wx_handlers_def={
- 	.standard = r8192_wx_handlers,
-@@ -1326,8 +1308,6 @@ struct iw_handler_def  r8192_wx_handlers
- 	.private = r8192_private_handler,
- 	.num_private = sizeof(r8192_private_handler) / sizeof(iw_handler),
-  	.num_private_args = sizeof(r8192_private_args) / sizeof(struct iw_priv_args),
--#if WIRELESS_EXT >= 17
- 	.get_wireless_stats = r8192_get_wireless_stats,
--#endif
- 	.private_args = (struct iw_priv_args *)r8192_private_args,
- };
+ #define MGMT_QUEUE_NUM 5
