@@ -1,40 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbZFMDoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbZFMDsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752720AbZFMDoN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 23:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZFMDoB
+	id S1752991AbZFMDsr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 23:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZFMDsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 23:44:01 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:45650 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751581AbZFMDoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 23:44:01 -0400
+	Fri, 12 Jun 2009 23:48:39 -0400
+Received: from mail-px0-f187.google.com ([209.85.216.187]:51554 "EHLO
+	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581AbZFMDsj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Jun 2009 23:48:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=gDIWd68embzacnlmkxnyyWIQKVUqiIpEW/ENwOi6Qa07XBsEQSHzVOjw2wXrkaKAZy
+         +asfY0bbxTu88OpTdOunRpcimmTghHp4gI9MWuSiOHsQ4T9e3fZRQy/eSJ9GFSKy9hvp
+         nIq6NqvzppclmX5OU7la1Ff8oBmqFEMvPllzU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18995.8319.322002.917595@cargo.ozlabs.ibm.com>
-Date: Sat, 13 Jun 2009 13:43:59 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: perf_counters: page fault trace record
-In-Reply-To: <4A330022.3070105@linux.vnet.ibm.com>
-References: <4A330022.3070105@linux.vnet.ibm.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+In-Reply-To: <20090611191152.GD16787@mit.edu>
+References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
+	 <9b1675090904041131u28635d8dnc3d13e88000394b4@mail.gmail.com>
+	 <20090405011355.GE7553@mit.edu>
+	 <9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
+	 <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
+	 <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
+	 <20090405062626.GA7760@mit.edu>
+	 <9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
+	 <9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
+	 <20090611191152.GD16787@mit.edu>
+Date: Fri, 12 Jun 2009 21:48:41 -0600
+Message-ID: <9b1675090906122048o35698c09x13cc7cf7650ac9ae@mail.gmail.com>
+Subject: Re: IO latency - a special case
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Theodore Tso <tytso@mit.edu>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corey Ashford writes:
+Sorry I didn't reply earlier.  I got busy with some server troubles and such.
 
-> One of the tools we are working on needs to be able to look not only at counts 
-> of page faults, but where they are occurring (ip and faulting page address).
-> 
-> What would you think about adding a new bit to the config record, something like:
+On Thu, Jun 11, 2009 at 1:11 PM, Theodore Tso<tytso@mit.edu> wrote:
+> On Sat, Jun 06, 2009 at 09:14:43PM -0600, Trenton D. Adams wrote:
+>> I'm back into doing some Java development, and it's happening again.
+>> I'm running 2.6.30-rc7, and I did a SysReq+T, I hope this is helpful.
+>> I've attached a txt.gz file, because it's 367K to my
+>> /var/log/messages.
+>>
+>> The important stuff, I believe, is the Java related stuff.  As a quick
+>> refresher to this problem, it appears to be related to how my Java IDE
+>> saves the file, and perhaps something doesn't release the futex right
+>> away?
+>
+> Have you checked your memory usage via SysReq-m, or /proc/meminfo or
+> simply using "free".  I'm seeing a lot of processes in do_page_fault,
+> which is interesting, especially in the non-Java processes.
 
-Can't you do what you need just using a page fault software counter
-with sample_type = PERF_SAMPLE_IP | PERF_SAMPLE_ADDR and
-sample_period = 1?
+I wasn't even aware of a SysReq-m.  I'll try that next time.  <rant>I
+do wish the Macbook had a hard drive activity light *rolls
+eyes*.</rant>
 
-Paul.
+>
+> Back in April, your vmstat output didn't show much swapping activity,
+> but maybe there was more paging activity that didn't show up there?
+
+Not sure I understand.  Paging without swapping?  I thought they were
+one in the same, please explain; it's been a long time since I studied
+kernel related theory.
+
+>
+>> I've also seen these symptoms previously...
+>>
+>> 1. Problem arises, I Ctrl-C the process when I notice the system
+>> getting really sluggish.
+>> 2. Start process again, and it locks up the machine for about an hour
+>
+> What sort of process where you typicalling trying to kill using ^C?
+
+It's maven, which spawns javac (java compiler), as well as does
+various other tasks such as making connections to the Internet, local
+directories, etc.
