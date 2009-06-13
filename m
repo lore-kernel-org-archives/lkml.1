@@ -1,73 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbZFMLgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758773AbZFMLnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758259AbZFMLgS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 07:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZFMLgF
+	id S1758773AbZFMLnl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 07:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZFMLnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 07:36:05 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:37728 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbZFMLgE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 07:36:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Zh2pzavUtMWZW5OrYtKC/sQLac3kF3JWWXxdZW53l02ex+PKkyZEqRC+63bJijEs5C
-         yOgOceA3Yfdf2x2cP6QFaSBImGKgpXaD/gQ9Is0dwphhWf1dn+bo0dfv9m9Wo1cepxQV
-         DO+Zwr1Q1Xm+afX6A+lr4z4VlL1p0H6FoIuGo=
-MIME-Version: 1.0
-In-Reply-To: <20090613110627.GG14878@aniel.lan>
-References: <20090612223255.GD14878@aniel.lan>
-	 <71cd59b00906122352g77e8afdeh235c2a73b323a0d7@mail.gmail.com>
-	 <20090613110627.GG14878@aniel.lan>
-Date: Sat, 13 Jun 2009 13:36:03 +0200
-Message-ID: <71cd59b00906130436i5024afa7q5b7cb40005014e14@mail.gmail.com>
-Subject: Re: [PATCH 0/2] eeepc-laptop: add 3G rfkill support for 901Go
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Janne Grunau <j@jannau.net>
-Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 13 Jun 2009 07:43:33 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41116 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751138AbZFMLnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 07:43:32 -0400
+Date: Sat, 13 Jun 2009 13:43:28 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Harald Welte <HaraldWelte@viatech.com>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       JosephChan@via.com.tw, Bruce Chang <BruceChang@via.com.tw>
+Subject: Re: [PATCH] mmc: Add new via-sdmmc host controller driver
+Message-ID: <20090613134328.0c168205@mjolnir.ossman.eu>
+In-Reply-To: <20090612075930.GB30843@prithivi.gnumonks.org>
+References: <20090612075930.GB30843@prithivi.gnumonks.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-25441-1244893413-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 1:06 PM, Janne Grunau<j@jannau.net> wrote:
-> On Sat, Jun 13, 2009 at 08:52:17AM +0200, Corentin Chary wrote:
->> First,
->> Could you fill http://dev.iksaif.net/projects/acpi4asus/wiki/CMSG with
->> your model CMSG ?
->
-> done, I suspect there's an error for the 701 and 901 in that table.
-> CM_ASL_CARDREADER should be 1 instead of CM_ASL_MODEM.
-> http://wiki.debian.org/DebianEeePC/Models supports that.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-I'll check that, thanks
+--=_freyr.ossman.eu-25441-1244893413-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> Do you plan to update eeepc-laptop with all CM_ASL bits?
+On Fri, 12 Jun 2009 15:59:30 +0800
+Harald Welte <HaraldWelte@viatech.com> wrote:
 
-All CM_ASL bits found in latest asus_acpi driver, yep.
+> +
+> +#define MMC_STOP_TRANSMISSION	12
 
->> Then, I was working on a patch to refactor rfkill code in
->> eeepc-laptop. With this patch, adding 3g rfkill
->> is only 15-20 lines.
->
-> good, I was too lazy to refactor it.
->
->> I'll add it to acpi4asus git tree soon.
->> From here:
->>  - I can rework your patch
->> - you can re-send it when rfkill refactoring is here.
->>
->> as you want =).
->
-> Drop me a mail when you're done but doesn't really matter who does it.
+This define is no longer used.
 
-Ok
+> +	/* It seems that our DMA can not work normally with 375kHz clock */
+> +	/* FIXME: don't brute-force 8MHz but use PIO at 375kHz !! */
+> +	addrbase =3D host->pcictrl_mmiobase;
+> +	if (readb(addrbase + VIA_CRDR_PCISDCCLK) =3D=3D PCI_CLK_375K) {
+> +		dev_info(host->mmc->parent, "forcing card speed to 8MHz\n");
+> +		writeb(PCI_CLK_8M, addrbase + VIA_CRDR_PCISDCCLK);
+> +	}
 
+This is pretty nasty. Please see if you can provide a workaround some
+time soon.
 
--- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+> +	if (ios->power_mode !=3D MMC_POWER_OFF)
+> +		via_sdc_set_power(host, ios->vdd);
+
+What if we actually do need to power off?
+> +static void __devexit via_sd_remove(struct pci_dev *pcidev)
+> +{
+> +	struct via_crdr_mmc_host *sdhost;
+> +	u8 gatt;
+> +
+> +	pr_info(DRV_NAME
+> +		": VIA SDMMC controller at %s [%04x:%04x] has been removed\n",
+> +		pci_name(pcidev), (int)pcidev->vendor, (int)pcidev->device);
+> +
+> +	sdhost =3D pci_get_drvdata(pcidev);
+> +
+> +	tasklet_kill(&sdhost->finish_tasklet);
+> +
+> +	if (&sdhost->timer)
+> +		del_timer_sync(&sdhost->timer);
+> +
+> +	mmc_remove_host(sdhost->mmc);
+> +
+
+You need to do the removal as the first step and you might need to
+explicitly kill any ongoing requests.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-25441-1244893413-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkozkOQACgkQ7b8eESbyJLjtDACeO3KXmutAvgu001h7QX4fsBpv
+1+IAnj47lMXyG0cetnInPKPXVAY48vpX
+=K7QD
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-25441-1244893413-0001-2--
