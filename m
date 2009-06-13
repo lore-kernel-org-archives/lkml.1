@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763040AbZFMQdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763814AbZFMQeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763040AbZFMQdo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 12:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761224AbZFMQd3
+	id S1763814AbZFMQeA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 12:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761768AbZFMQdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 12:33:29 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:65319 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760932AbZFMQd2 (ORCPT
+	Sat, 13 Jun 2009 12:33:31 -0400
+Received: from mail-fx0-f206.google.com ([209.85.220.206]:65246 "EHLO
+	mail-fx0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759365AbZFMQd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 12:33:28 -0400
+	Sat, 13 Jun 2009 12:33:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
          :message-id:content-type:content-transfer-encoding;
-        b=TC90qUjknWnjqGAkpE+pv/kpzUyrDyGRZ+nZYGZ8zsh8pxWSvZnGkvU3KAgLrthyO4
-         slSLSZtypv5ktAN03mJpwZRDxzj9bnlOH75LYovKZCBLX79K95gf0iMJQrcDPItMSP0w
-         j8GkkGYopNKUkMYKL0gavA+OYjpWg9LWk9ouc=
+        b=oA8traKxr8qLVjQA0diIr3mfBpi2QF649Nr9kElsDHqmaYTDEwEvGpQqpJ3uyivDvb
+         hCg98ic4+mh7OXsFs+6grU/l9BFsK2EtwL7LAJoGuhtemFMVCmpuuyWdSQ9ckCiRN4lx
+         8SN9hhTZquFu60Fz0g7HYVf4jTVsg88o5x6qU=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH] Staging: rtl8187se: remove unused ieee80211_crypt.h
-Date: Sat, 13 Jun 2009 18:30:14 +0200
+Subject: [PATCH] Staging: rtl8192su: remove unused ieee80211_crypt.h
+Date: Sat, 13 Jun 2009 18:30:22 +0200
 User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612-07181-g84f26e4; KDE/4.2.3; i686; ; )
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200906131830.14657.bzolnier@gmail.com>
+Message-Id: <200906131830.23119.bzolnier@gmail.com>
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -35,12 +35,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/ieee80211_crypt.h |   86 ----------------------------
+ drivers/staging/rtl8192su/ieee80211_crypt.h |   86 ----------------------------
  1 file changed, 86 deletions(-)
 
-Index: b/drivers/staging/rtl8187se/ieee80211_crypt.h
+Index: b/drivers/staging/rtl8192su/ieee80211_crypt.h
 ===================================================================
---- a/drivers/staging/rtl8187se/ieee80211_crypt.h
+--- a/drivers/staging/rtl8192su/ieee80211_crypt.h
 +++ /dev/null
 @@ -1,86 +0,0 @@
 -/*
