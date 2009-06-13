@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932452AbZFMQg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbZFMQhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932452AbZFMQg4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 12:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763518AbZFMQdt
+	id S1763788AbZFMQhV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 12:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763550AbZFMQdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 12:33:49 -0400
-Received: from mail-fx0-f206.google.com ([209.85.220.206]:52100 "EHLO
+	Sat, 13 Jun 2009 12:33:50 -0400
+Received: from mail-fx0-f206.google.com ([209.85.220.206]:39546 "EHLO
 	mail-fx0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762597AbZFMQdi (ORCPT
+	with ESMTP id S1754872AbZFMQdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 12:33:38 -0400
+	Sat, 13 Jun 2009 12:33:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type
          :content-transfer-encoding:content-disposition:message-id;
-        b=Xx8IzdLt15gcwGWn3PEpZq8BpfSSoVTH3WD3u0UD4yAEWAsQrVK4JVs48QdG3/KIbu
-         3TzW5HQiQ2l8Y4Tpjz/RbSNn9k9XEQlgjXzKYP00HTPfCClmJcqvPKsPm7RiFKBQLmkX
-         f89egKQJaAjY2aupJkCktW8bsBfhtYJXxfB4Q=
+        b=lM20ZkCs0pQ5Pn8huu4KuiZZGIhVi8zFcLwRhUp22k0ZhXmrm50qDQeB+WJfPwp7La
+         JHD1Epq6vMqVn+MAJaSN2J11JVcYIfWyL2Mm13rCX4NNy0ujOpyPk5D5dXTaMXgXhFvi
+         IO3Fij6s23+iGNBx0shgGPyR32XMgDhW9IjmU=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 3/4] Staging: rtl8192su/ieee80211: remove unused _ReasonCode enums
-Date: Sat, 13 Jun 2009 18:36:47 +0200
+Subject: [PATCH 4/4] Staging: rtl8192su/ieee80211: switch to use <linux/ieee80211.h>
+Date: Sat, 13 Jun 2009 18:37:33 +0200
 User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612-07181-g84f26e4; KDE/4.2.3; i686; ; )
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -28,73 +28,250 @@ Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906131836.47404.bzolnier@gmail.com>
+Message-Id: <200906131837.33799.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* s/WLAN_AUTH_LEAP/RTL_WLAN_AUTH_LEAP/g
+* s/struct ieee80211_hdr/struct rtl_ieee80211_hdr/g
+* switch to use <linux/ieee80211.h>
+
+There should be no functional changes caused by this patch.
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8192su/ieee80211/ieee80211.h |   49 ------------------------
- 1 file changed, 49 deletions(-)
+ drivers/staging/rtl8192su/ieee80211/ieee80211.h         |  131 ----------------
+ drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c |    5 
+ drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c      |    4 
+ 3 files changed, 9 insertions(+), 131 deletions(-)
 
 Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
 ===================================================================
 --- a/drivers/staging/rtl8192su/ieee80211/ieee80211.h
 +++ b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-@@ -214,55 +214,6 @@ typedef struct cb_desc {
- #define	MGN_MCS14_SG		0x9e
- #define	MGN_MCS15_SG		0x9f
+@@ -33,6 +33,7 @@
  
+ #include <linux/delay.h>
+ #include <linux/wireless.h>
++#include <linux/ieee80211.h>
+ 
+ #include "rtl819x_HT.h"
+ #include "rtl819x_BA.h"
+@@ -392,62 +393,19 @@ typedef struct ieee_param {
+ 
+ 
+ /* Frame control field constants */
+-#define IEEE80211_FCTL_VERS		0x0003
+-#define IEEE80211_FCTL_FTYPE		0x000c
+-#define IEEE80211_FCTL_STYPE		0x00f0
+ #define IEEE80211_FCTL_FRAMETYPE	0x00fc
+-#define IEEE80211_FCTL_TODS		0x0100
+-#define IEEE80211_FCTL_FROMDS		0x0200
+ #define IEEE80211_FCTL_DSTODS		0x0300 //added by david
+-#define IEEE80211_FCTL_MOREFRAGS	0x0400
+-#define IEEE80211_FCTL_RETRY		0x0800
+-#define IEEE80211_FCTL_PM		0x1000
+-#define IEEE80211_FCTL_MOREDATA		0x2000
+ #define IEEE80211_FCTL_WEP		0x4000
+-#define IEEE80211_FCTL_ORDER		0x8000
 -
--//----------------------------------------------------------------------------
--//		802.11 Management frame Reason Code field
--//----------------------------------------------------------------------------
--enum	_ReasonCode{
--	unspec_reason	= 0x1,
--	auth_not_valid	= 0x2,
--	deauth_lv_ss	= 0x3,
--	inactivity		= 0x4,
--	ap_overload 	= 0x5,
--	class2_err		= 0x6,
--	class3_err		= 0x7,
--	disas_lv_ss 	= 0x8,
--	asoc_not_auth	= 0x9,
+-#define IEEE80211_FTYPE_MGMT		0x0000
+-#define IEEE80211_FTYPE_CTL		0x0004
+-#define IEEE80211_FTYPE_DATA		0x0008
+ 
+ /* management */
+-#define IEEE80211_STYPE_ASSOC_REQ	0x0000
+-#define IEEE80211_STYPE_ASSOC_RESP 	0x0010
+-#define IEEE80211_STYPE_REASSOC_REQ	0x0020
+-#define IEEE80211_STYPE_REASSOC_RESP	0x0030
+-#define IEEE80211_STYPE_PROBE_REQ	0x0040
+-#define IEEE80211_STYPE_PROBE_RESP	0x0050
+-#define IEEE80211_STYPE_BEACON		0x0080
+-#define IEEE80211_STYPE_ATIM		0x0090
+-#define IEEE80211_STYPE_DISASSOC	0x00A0
+-#define IEEE80211_STYPE_AUTH		0x00B0
+-#define IEEE80211_STYPE_DEAUTH		0x00C0
+ #define IEEE80211_STYPE_MANAGE_ACT	0x00D0
+ 
+ /* control */
+-#define IEEE80211_STYPE_PSPOLL		0x00A0
+-#define IEEE80211_STYPE_RTS		0x00B0
+-#define IEEE80211_STYPE_CTS		0x00C0
+-#define IEEE80211_STYPE_ACK		0x00D0
+-#define IEEE80211_STYPE_CFEND		0x00E0
+-#define IEEE80211_STYPE_CFENDACK	0x00F0
+ #define IEEE80211_STYPE_BLOCKACK   0x0094
+ 
+ /* data */
+-#define IEEE80211_STYPE_DATA		0x0000
+-#define IEEE80211_STYPE_DATA_CFACK	0x0010
+-#define IEEE80211_STYPE_DATA_CFPOLL	0x0020
+-#define IEEE80211_STYPE_DATA_CFACKPOLL	0x0030
+-#define IEEE80211_STYPE_NULLFUNC	0x0040
+-#define IEEE80211_STYPE_CFACK		0x0050
+-#define IEEE80211_STYPE_CFPOLL		0x0060
+-#define IEEE80211_STYPE_CFACKPOLL	0x0070
+-#define IEEE80211_STYPE_QOS_DATA	0x0080 //added for WMM 2006/8/2
+ #define IEEE80211_STYPE_QOS_NULL	0x00C0
+ 
+-#define IEEE80211_SCTL_FRAG		0x000F
+-#define IEEE80211_SCTL_SEQ		0xFFF0
 -
--	//----MIC_CHECK
--	mic_failure 	= 0xe,
--	//----END MIC_CHECK
+ /* QOS control */
+ #define IEEE80211_QCTL_TID              0x000F
+ 
+@@ -667,93 +625,12 @@ struct ieee80211_snap_hdr {
+ #define WLAN_GET_SEQ_FRAG(seq) ((seq) & IEEE80211_SCTL_FRAG)
+ #define WLAN_GET_SEQ_SEQ(seq)  (((seq) & IEEE80211_SCTL_SEQ) >> 4)
+ 
+-/* Authentication algorithms */
+-#define WLAN_AUTH_OPEN 0
+-#define WLAN_AUTH_SHARED_KEY 1
+-#define WLAN_AUTH_LEAP 2
++#define RTL_WLAN_AUTH_LEAP 2
+ 
+ #define WLAN_AUTH_CHALLENGE_LEN 128
+ 
+ #define WLAN_CAPABILITY_BSS (1<<0)
+-#define WLAN_CAPABILITY_IBSS (1<<1)
+-#define WLAN_CAPABILITY_CF_POLLABLE (1<<2)
+-#define WLAN_CAPABILITY_CF_POLL_REQUEST (1<<3)
+-#define WLAN_CAPABILITY_PRIVACY (1<<4)
+-#define WLAN_CAPABILITY_SHORT_PREAMBLE (1<<5)
+-#define WLAN_CAPABILITY_PBCC (1<<6)
+-#define WLAN_CAPABILITY_CHANNEL_AGILITY (1<<7)
+-#define WLAN_CAPABILITY_SPECTRUM_MGMT (1<<8)
+-#define WLAN_CAPABILITY_QOS (1<<9)
+ #define WLAN_CAPABILITY_SHORT_SLOT (1<<10)
+-#define WLAN_CAPABILITY_DSSS_OFDM (1<<13)
 -
--	// Reason code defined in 802.11i D10.0 p.28.
--	invalid_IE		= 0x0d,
--	four_way_tmout	= 0x0f,
--	two_way_tmout	= 0x10,
--	IE_dismatch 	= 0x11,
--	invalid_Gcipher = 0x12,
--	invalid_Pcipher = 0x13,
--	invalid_AKMP	= 0x14,
--	unsup_RSNIEver = 0x15,
--	invalid_RSNIE	= 0x16,
--	auth_802_1x_fail= 0x17,
--	ciper_reject		= 0x18,
+-/* 802.11g ERP information element */
+-#define WLAN_ERP_NON_ERP_PRESENT (1<<0)
+-#define WLAN_ERP_USE_PROTECTION (1<<1)
+-#define WLAN_ERP_BARKER_PREAMBLE (1<<2)
 -
--	// Reason code defined in 7.3.1.7, 802.1e D13.0, p.42. Added by Annie, 2005-11-15.
--	QoS_unspec		= 0x20, // 32
--	QAP_bandwidth	= 0x21, // 33
--	poor_condition	= 0x22, // 34
--	no_facility 	= 0x23, // 35
--							// Where is 36???
--	req_declined	= 0x25, // 37
--	invalid_param	= 0x26, // 38
--	req_not_honored= 0x27,	// 39
--	TS_not_created	= 0x2F, // 47
--	DL_not_allowed	= 0x30, // 48
--	dest_not_exist	= 0x31, // 49
--	dest_not_QSTA	= 0x32, // 50
+-/* Status codes */
+-enum ieee80211_statuscode {
+-        WLAN_STATUS_SUCCESS = 0,
+-        WLAN_STATUS_UNSPECIFIED_FAILURE = 1,
+-        WLAN_STATUS_CAPS_UNSUPPORTED = 10,
+-        WLAN_STATUS_REASSOC_NO_ASSOC = 11,
+-        WLAN_STATUS_ASSOC_DENIED_UNSPEC = 12,
+-        WLAN_STATUS_NOT_SUPPORTED_AUTH_ALG = 13,
+-        WLAN_STATUS_UNKNOWN_AUTH_TRANSACTION = 14,
+-        WLAN_STATUS_CHALLENGE_FAIL = 15,
+-        WLAN_STATUS_AUTH_TIMEOUT = 16,
+-        WLAN_STATUS_AP_UNABLE_TO_HANDLE_NEW_STA = 17,
+-        WLAN_STATUS_ASSOC_DENIED_RATES = 18,
+-        /* 802.11b */
+-        WLAN_STATUS_ASSOC_DENIED_NOSHORTPREAMBLE = 19,
+-        WLAN_STATUS_ASSOC_DENIED_NOPBCC = 20,
+-        WLAN_STATUS_ASSOC_DENIED_NOAGILITY = 21,
+-        /* 802.11h */
+-        WLAN_STATUS_ASSOC_DENIED_NOSPECTRUM = 22,
+-        WLAN_STATUS_ASSOC_REJECTED_BAD_POWER = 23,
+-        WLAN_STATUS_ASSOC_REJECTED_BAD_SUPP_CHAN = 24,
+-        /* 802.11g */
+-        WLAN_STATUS_ASSOC_DENIED_NOSHORTTIME = 25,
+-        WLAN_STATUS_ASSOC_DENIED_NODSSSOFDM = 26,
+-        /* 802.11i */
+-        WLAN_STATUS_INVALID_IE = 40,
+-        WLAN_STATUS_INVALID_GROUP_CIPHER = 41,
+-        WLAN_STATUS_INVALID_PAIRWISE_CIPHER = 42,
+-        WLAN_STATUS_INVALID_AKMP = 43,
+-        WLAN_STATUS_UNSUPP_RSN_VERSION = 44,
+-        WLAN_STATUS_INVALID_RSN_IE_CAP = 45,
+-        WLAN_STATUS_CIPHER_SUITE_REJECTED = 46,
 -};
 -
--
--
- #define aSifsTime	 (((priv->ieee80211->current_network.mode == IEEE_A)||(priv->ieee80211->current_network.mode == IEEE_N_24G)||(priv->ieee80211->current_network.mode == IEEE_N_5G))? 16 : 10)
+-/* Reason codes */
+-enum ieee80211_reasoncode {
+-        WLAN_REASON_UNSPECIFIED = 1,
+-        WLAN_REASON_PREV_AUTH_NOT_VALID = 2,
+-        WLAN_REASON_DEAUTH_LEAVING = 3,
+-        WLAN_REASON_DISASSOC_DUE_TO_INACTIVITY = 4,
+-        WLAN_REASON_DISASSOC_AP_BUSY = 5,
+-        WLAN_REASON_CLASS2_FRAME_FROM_NONAUTH_STA = 6,
+-        WLAN_REASON_CLASS3_FRAME_FROM_NONASSOC_STA = 7,
+-        WLAN_REASON_DISASSOC_STA_HAS_LEFT = 8,
+-        WLAN_REASON_STA_REQ_ASSOC_WITHOUT_AUTH = 9,
+-        /* 802.11h */
+-        WLAN_REASON_DISASSOC_BAD_POWER = 10,
+-        WLAN_REASON_DISASSOC_BAD_SUPP_CHAN = 11,
+-        /* 802.11i */
+-        WLAN_REASON_INVALID_IE = 13,
+-        WLAN_REASON_MIC_FAILURE = 14,
+-        WLAN_REASON_4WAY_HANDSHAKE_TIMEOUT = 15,
+-        WLAN_REASON_GROUP_KEY_HANDSHAKE_TIMEOUT = 16,
+-        WLAN_REASON_IE_DIFFERENT = 17,
+-        WLAN_REASON_INVALID_GROUP_CIPHER = 18,
+-        WLAN_REASON_INVALID_PAIRWISE_CIPHER = 19,
+-        WLAN_REASON_INVALID_AKMP = 20,
+-        WLAN_REASON_UNSUPP_RSN_VERSION = 21,
+-        WLAN_REASON_INVALID_RSN_IE_CAP = 22,
+-        WLAN_REASON_IEEE8021X_FAILED = 23,
+-        WLAN_REASON_CIPHER_SUITE_REJECTED = 24,
+-};
  
- #define MGMT_QUEUE_NUM 5
+ #define IEEE80211_STATMASK_SIGNAL (1<<0)
+ #define IEEE80211_STATMASK_RSSI (1<<1)
+@@ -1044,7 +921,7 @@ enum ieee80211_mfie {
+ /* Minimal header; can be used for passing 802.11 frames with sufficient
+  * information to determine what type of underlying data type is actually
+  * stored in the data. */
+-struct ieee80211_hdr {
++struct rtl_ieee80211_hdr {
+         __le16 frame_ctl;
+         __le16 duration_id;
+         u8 payload[0];
+@@ -2412,7 +2289,7 @@ extern inline int ieee80211_get_hdrlen(u
+ 	return hdrlen;
+ }
+ 
+-static inline u8 *ieee80211_get_payload(struct ieee80211_hdr *hdr)
++static inline u8 *ieee80211_get_payload(struct rtl_ieee80211_hdr *hdr)
+ {
+         switch (ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl))) {
+         case IEEE80211_1ADDR_LEN:
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
+===================================================================
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
+@@ -2014,7 +2014,8 @@ void ieee80211_ps_tx_ack(struct ieee8021
+ }
+ void ieee80211_process_action(struct ieee80211_device* ieee, struct sk_buff* skb)
+ {
+-	struct ieee80211_hdr* header = (struct ieee80211_hdr*)skb->data;
++	struct rtl_ieee80211_hdr *header =
++		(struct rtl_ieee80211_hdr *)skb->data;
+ 	u8* act = ieee80211_get_payload(header);
+ 	u8 tmp = 0;
+ //	IEEE80211_DEBUG_DATA(IEEE80211_DL_DATA|IEEE80211_DL_BA, skb->data, skb->len);
+@@ -3036,7 +3037,7 @@ static int ieee80211_wpa_set_auth_algs(s
+ 		ieee->auth_mode = 0;
+ 	}
+ 	else if (value & AUTH_ALG_LEAP){
+-		sec.auth_mode = WLAN_AUTH_LEAP;
++		sec.auth_mode = RTL_WLAN_AUTH_LEAP;
+ 		ieee->open_wep = 1;
+ 		ieee->auth_mode = 2;
+ 	}
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
+===================================================================
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
+@@ -193,11 +193,11 @@ int ieee80211_encrypt_fragment(
+ 		return -1;
+ 	}
+ #ifdef CONFIG_IEEE80211_CRYPT_TKIP
+-	struct ieee80211_hdr *header;
++	struct rtl_ieee80211_hdr *header;
+ 
+ 	if (ieee->tkip_countermeasures &&
+ 	    crypt && crypt->ops && strcmp(crypt->ops->name, "TKIP") == 0) {
+-		header = (struct ieee80211_hdr *) frag->data;
++		header = (struct rtl_ieee80211_hdr *)frag->data;
+ 		if (net_ratelimit()) {
+ 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
+ 			       "TX packet to " MAC_FMT "\n",
