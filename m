@@ -1,85 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZFMG35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZFMGib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035AbZFMG35 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 02:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZFMG3s
+	id S1754261AbZFMGib (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 02:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZFMGiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 02:29:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54632 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbZFMG3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 02:29:48 -0400
-Date: Sat, 13 Jun 2009 08:29:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Michael Chan <mchan@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: -git tree build failure #2: =?utf-8?Q?driv?=
-	=?utf-8?Q?ers=2Fnet=2Fcnic=2Ec=3A2520=3A_error=3A_implicit_declaration_of?=
-	=?utf-8?B?IGZ1bmN0aW9uIOKAmF9fc3ltYm9sX2dldOKAmQ==?=
-Message-ID: <20090613062933.GA14034@elte.hu>
-References: <20090612184343.GA11900@elte.hu> <4A32A1E4.8080708@oracle.com>
+	Sat, 13 Jun 2009 02:38:22 -0400
+Received: from 60-248-182-106.HINET-IP.hinet.net ([60.248.182.106]:55699 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbZFMGiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 02:38:21 -0400
+X-Greylist: delayed 429 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Jun 2009 02:38:20 EDT
+In-Reply-To: <200906091907.17042.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A32A1E4.8080708@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Subject: Re: [PATCH 05/27] score: create head files cache.h cacheflush.h checksum.h
+ cputime.h current.h
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OF3577968C.E669F4B8-ON482575D4.0023707C-482575D4.0024726F@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Sat, 13 Jun 2009 14:33:38 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/13 ?? 02:33:38,
+	Serialize complete at 2009/06/13 ?? 02:33:38
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5D6dJ54011700
 
+Hi Arnd,
 
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Arnd Bergmann <arnd@arndb.de> Ğ´ÓÚ 2009-06-10 01:07:16:
 
-> Ingo Molnar wrote:
-> > today's -git fails to build with ipv6 disabled (x86):
-> > 
-> >   drivers/built-in.o: In function `cnic_get_v6_route':
-> >   cnic.c:(.text+0x104c42): undefined reference to `ip6_route_output'
-> > 
-> > introduced by this new driver:
-> > 
-> >   a463696: [SCSI] cnic: Add new Broadcom CNIC driver.
+> On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
+> > diff --git a/arch/score/include/asm/cacheflush.h 
+> > b/arch/score/include/asm/cacheflush.h
+> > +extern void (*flush_cache_all)(void);
+> > +extern void (*flush_cache_mm)(struct mm_struct *mm);
+> > +extern void (*flush_cache_range)(struct vm_area_struct *vma,
+> > +                               unsigned long start, unsigned long 
+end);
+> > +extern void (*flush_cache_page)(struct vm_area_struct *vma,
+> > +                               unsigned long page, unsigned long 
+pfn);
+> > +extern void (*flush_cache_sigtramp)(unsigned long addr);
+> > +extern void (*flush_icache_all)(void);
+> > +extern void (*flush_icache_range)(unsigned long start, unsigned long 
+> > end);
+> > +extern void (*flush_data_cache_page)(unsigned long addr);
 > 
-> I just posted a patch for this to netdev and it was acked by its maintainer.
-> Patch is below.
+> This is a somewhat unusual way to express these functions. It seems
+> that you only have one implementation for each of them, so I wonder
+> why you keep them as function pointers. Do you plan to add more CPUs
+> in the future that do these differently?
+> 
 
-This solves the first build failure but there's still a second build 
-failure:
+S+core series have score7 core and score3 core, they use different ISA,
+this patch only include score7 code. We will provide score3 code latter.
 
- drivers/net/cnic.c: In function â€˜init_bnx2_cnicâ€™:
- drivers/net/cnic.c:2520: error: implicit declaration of function â€˜__symbol_getâ€™
- drivers/net/cnic.c:2520: warning: assignment makes pointer from integer without a cast
- make[1]: *** [drivers/net/cnic.o] Error 1
- make: *** [drivers/net/cnic.o] Error 2
+> > --- /dev/null
+> > +++ b/arch/score/include/asm/current.h
+> > @@ -0,0 +1,15 @@
+> > +#ifndef _ASM_SCORE_CURRENT_H
+> > +#define _ASM_SCORE_CURRENT_H
+> > +
+> > +#include <linux/thread_info.h>
+> > +
+> > +struct task_struct;
+> > +
+> > +static inline struct task_struct *get_current(void)
+> > +{
+> > +       return current_thread_info()->task;
+> > +}
+> > +
+> > +#define current        get_current()
+> > +
+> > +#endif /* _ASM_SCORE_CURRENT_H */
+> 
+> This is basically the asm-generic version, so you could just use that
+> instead.
+> 
 
-This too triggers with the config i sent. The patch below solves it 
-- but i havent done more testing.
+Use asm-generic/current.h instead.
 
-	Ingo
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/drivers/net/cnic.c b/drivers/net/cnic.c
-index 8d74037..49135cc 100644
---- a/drivers/net/cnic.c
-+++ b/drivers/net/cnic.c
-@@ -25,6 +25,8 @@
- #include <linux/delay.h>
- #include <linux/ethtool.h>
- #include <linux/if_vlan.h>
-+#include <linux/module.h>
-+
- #if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
- #define BCM_VLAN 1
- #endif
+Best Regards
+Liqin
+--
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
