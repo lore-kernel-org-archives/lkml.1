@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762670AbZFMASV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763837AbZFMAXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762670AbZFMASV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Jun 2009 20:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbZFMASM
+	id S1763837AbZFMAXt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Jun 2009 20:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbZFMAXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Jun 2009 20:18:12 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:27112 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbZFMASM (ORCPT
+	Fri, 12 Jun 2009 20:23:40 -0400
+Received: from bhuna.collabora.co.uk ([93.93.131.97]:42854 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbZFMAXj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Jun 2009 20:18:12 -0400
-Date: Fri, 12 Jun 2009 20:18:02 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: Re: [GIT PULL] Btrfs updates for 2.6.31-rc
-Message-ID: <20090613001802.GM4808@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-References: <20090611204456.GA3834@think> <alpine.LFD.2.01.0906121450530.3237@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906121450530.3237@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.4A32F03C.00A8:SCFSTAT5015188,ss=1,fgs=0
+	Fri, 12 Jun 2009 20:23:39 -0400
+Date: Fri, 12 Jun 2009 20:23:34 -0400
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: Tobias_Mueller@twam.info
+Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       deepak@laptop.org, Takashi Iwai <tiwai@suse.de>,
+       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
+       jordan@cosmicpenguin.net, cjb@laptop.org,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver  
+ support
+Message-ID: <20090612202334.62c032ac@mycelium.queued.net>
+In-Reply-To: <17be05570906111435p3d4dfb52p67669e8a82a1ab56@mail.gmail.com>
+References: <20090610001033.27b7f69f@mycelium.queued.net>
+	<17be05570906111152j3ecb0102qfd6f53221c7ae9f9@mail.gmail.com>
+	<20090611160059.6d70f54a@mycelium.queued.net>
+	<17be05570906111311s717f126cyd4edf0847b839eef@mail.gmail.com>
+	<20090611172850.6c418b1d@mycelium.queued.net>
+	<17be05570906111435p3d4dfb52p67669e8a82a1ab56@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 02:55:33PM -0700, Linus Torvalds wrote:
+On Thu, 11 Jun 2009 23:35:55 +0200
+Tobias Müller <Tobias_Mueller@twam.info> wrote:
+
+> >> /**
+> >> * Some GPIO pins
+> >> *  31-29,23 : reserved (always mask out)
+> >> *  28       : Power Button
+> >> *  26       : PME#
+> >> *  22-16    : LPC
+> >> *  14,15    : SMBus
+> >> *  9,8      : UART1
+> >> *  7        : PCI INTB
+> >> *  3,4      : UART2/DDC
+> >> *  2        : IDE_IRQ0
+> >> *  1        : AC_BEEP
+> >> *  0        : PCI INTA
+> >> *
+> >> * If a mask was not specified, be conservative and only allow:
+> >> *  1,2,5,6,10-13,24,25,27
+> >> */
+> >>
+> >> I'll add this in my patch to clear it out.
+> >>
+> >
+> > But why are you being conservative in the first place?  If
+> > something's using GPIOs, unless they're unmapped, you should allow
+> > it to use them without requiring a boot arg.
+> >
+> > For example, OLPC uses GPIO 7 for its DCON IRQ.  With the masking
+> > scheme, OLPC will need to set that mask from the default.  I don't
+> > see the point of having the mask at all if other drivers in the
+> > kernel are going to be requesting GPIOs (presumably they know what
+> > they're doing).
+> Hmm... OK, this makes sense. So default mask allow everything exept
+> reserved pins and pin 28 (power button).
 > 
-> 
-> On Thu, 11 Jun 2009, Chris Mason wrote:
-> > 
-> > Existing filesystems will be upgraded to the new format on the first
-> > mount.  All of your old data will still be there and still work
-> > properly, but I strongly recommend a full backup before going to the new
-> > code.
-> 
-> Auugh.
-> 
-> This is horrible. I just screwed up my system by booting a kernel on this: 
-> it worked beatifully, but due to other reasons I then wanted to bisect a 
-> totally unrelated issue. While having _totally_ forgotten about this 
-> issue, even if I was technically aware of it.
-> 
-> .. so I installed a new kernel, and now it won't boot due to "couldn't 
-> mount because of unsupported optional features (1)". In fact, I have no 
-> kernel available on that system that will boot, since my normal "safe" 
-> fall-back kernels are all distro kernels that can't boot this either.
-> 
-> Ok, so I'll end up booting from a USB stick, and it will all work out in 
-> the end, but this does essentially make it entirely impossible to do any 
-> bisection on any btrfs system.
+> I think the mask is quite useful if you've critical things on GPIO
+> pins and they should be changeable (especially from userspace and when
+> non-root users are allowed to use userspace gpio).
 
-First off, I'm sorry.  I definitely knew this was going to happen to
-some of the btrfs users.  I wanted to get it in as close as possible to
-2.6.30 so that it would be close to the good end of the git bisecting.
-
-My choices were:
-
-1) No backward compatibility at all
-2) Forward rolling (what we did)
-3) Maintain the code to write the old and new formats the way Ted
-suggests.
-
-A number of people argued for #1.  The problem with #3 is that it
-explodes our testing matrix even more, and this is already the most
-complex part of the FS.  For the stage Btrfs is at, I think #2 was the
-best option.
-
-Our future format features will be what Ted is describing, explicitly
-enabled and much more fined grained.
-
-I'll try to find some livecd images for usb sticks that support Btrfs,
-and make links on the btrfs homepage.
-
--chris
-
+I agree that it would be useful for userspace, just not for
+kernelspace.  Is there a way that you can have it only enforce the
+mask if the request is coming from userspace?
