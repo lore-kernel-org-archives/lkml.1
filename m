@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZFMIyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZFMIzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbZFMIyV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 04:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZFMIyK
+	id S1757413AbZFMIzY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 04:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbZFMIzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 04:54:10 -0400
-Received: from mail.bencastricum.nl ([213.84.203.196]:54643 "EHLO
-	bencastricum.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751419AbZFMIyI (ORCPT
+	Sat, 13 Jun 2009 04:55:12 -0400
+Received: from mail-fx0-f216.google.com ([209.85.220.216]:36618 "EHLO
+	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbZFMIzK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 04:54:08 -0400
-X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Jun 2009 04:54:07 EDT
-Message-ID: <89016FA471B043A8878691AD2C7682CF@Seven>
-From: "Ben Castricum" <mail0906@bencastricum.nl>
-To: <linux-kernel@vger.kernel.org>
-Subject: OOPS in 2.6.30-03217-gf3ad116 / unable to handle kernel NULL pointer dereference at 00000004
-Date: Sat, 13 Jun 2009 10:47:17 +0200
+	Sat, 13 Jun 2009 04:55:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=h5mjsWVl9g+fmgZMsOEUo7bCeITRaAqG7L6Wf+uicKfXjlkfJVKglVcJXUgKIdMu0v
+         IaEns/zqbfF8DJCmvuCMzTbErlFrOlFlInJQpyTAhPdVqLb1Z21URauL+iNBisqDguYS
+         yLPM3tQXFy1/bTDdg+MhiQAfvOMU6irKL5LK0=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=response
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+In-Reply-To: <9b2b86520906080824i134ee546v33990176b0d3e618@mail.gmail.com>
+References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
+	 <20090404041813.GA30746@srcf.ucam.org>
+	 <9b2b86520906080824i134ee546v33990176b0d3e618@mail.gmail.com>
+Date: Sat, 13 Jun 2009 10:55:11 +0200
+Message-ID: <71cd59b00906130155u2757ade3t3378685846b80410@mail.gmail.com>
+Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via 
+	the input layer
+From: Corentin Chary <corentin.chary@gmail.com>
+To: alan-jenkins@tuffmail.co.uk
+Cc: Darren Salt <linux@youmustbejoking.demon.co.uk>,
+       linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 8, 2009 at 5:24 PM, Alan
+Jenkins<sourcejedi.lkml@googlemail.com> wrote:
+> On 4/4/09, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+>> On Fri, Apr 03, 2009 at 06:57:50PM +0100, Darren Salt wrote:
+>>> This maps the brightness control events to one of two keys, either
+>>> KEY_BRIGHTNESSDOWN or KEY_BRIGHTNESSUP, as needed.
+>>>
+>>> Some mapping has to be done due to the fact that the BIOS reports them as
+>>> <base value> + <current brightness index>; the selection is done according
+>>> to
+>>> the sign of the change in brightness (if this is 0, no keypress is
+>>> reported).
+>>>
+>>> (Ref.
+>>> http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-April/002001.html)
+>>>
+>>> Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+>>
+>> The reason I didn't do this is that the Eee changes the input brightness
+>> in hardware, which means reporting it via the input layer as well can
+>> cause a single keypress to raise the brightness by two steps - one in
+>> hardware and one triggered by userland's response to the key press. I'd
+>> be a little bit wary of this causing problems.
+>>
+>> On the other hand, the default behaviour of the acpi video driver is to
+>> change the brightness itself and then also to send the even to
+>> userspace, so I guess if it was going to break things it probably would
+>> have done already...
+>
+> Actually, I think userspace has learnt to hack around it but it
+> doesn't work perfectly.  I would like to request that this change be
+> reverted, or otherwise improved.
+>
+> Before this patch (2.6.29.4), gnome-power-manager doesn't interfere
+> with the brightness keys, and they work smoothly.
+>
+> After this patch (2.6.30-rc7), g-p-m produces a "nice" popup in the
+> middle of my tiny netbook screen.  Unfortunately it can't be disabled,
+> but that's not your fault :-).  The brightness controls generally work
+> ok.  It doesn't jump two steps in response to one brightness keypress.
+>  But:
+>
+> 1) If I'm thrashing the SSD.  I get jerky after-effects, where g-p-m
+> seems to take too long to "catch up" with the brightness change.
 
-I got this since I just pulled the current tree. 2.6.30-rc8 didn't had this 
-problem.
+There is the same "lag" problem with sound :/
 
-My config can be found at http://www.bencastricum.nl/.config
+> 2) If I go all the way down from full (holding down the "brightness
+> down" key), and then back up a few steps.  I get a noticable flash
+> where the brightness looks to go up two steps, then down one.  It's
+> probably most noticable here because the step change between the
+> lowest and the second lowest brightness is much more visible than any
+> of the other steps.
+>
+I tried to install gnome-power-manager to test that, but there is no "popup".
+What do I have to install to test that ? entire gnome desktop :/ ?
 
-Hope this helps.
-Ben
+Thanks
 
 
-BUG: unable to handle kernel NULL pointer dereference at 00000004
-IP: [<b0132318>] finish_wait+0x30/0x49
-*pde = 00000000
-Oops: 0002 [#1] SMP
-last sysfs file: /sys/devices/platform/microcode/firmware/microcode/loading
-Modules linked in: ipt_MASQUERADE ipt_REJECT ipt_LOG xt_recent xt_tcpudp 
-xt_state iptable_filter nf_conntrack_ftp iptable_nat ip_tables nf_nat 
-x_tables nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 af_packet 8139too mii 
-tg3 firmware_class libphy cdc_acm uhci_hcd ehci_hcd usbcore lm85 hwmon_vid 
-hwmon i2c_i801 softdog rtc ext4 jbd2 crc16 [last unloaded: microcode]
-
-Pid: 1662, comm: cid Not tainted (2.6.30-03217-gf3ad116 #266) HP d530 
-SFF(PL110ES)
-EIP: 0060:[<b0132318>] EFLAGS: 00010046 CPU: 0
-EIP is at finish_wait+0x30/0x49
-EAX: 00000217 EBX: ee89bdf8 ECX: 00000000 EDX: 00000000
-ESI: ee89be04 EDI: ef056820 EBP: ee89bdd0 ESP: ee89bdc4
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process cid (pid: 1662, ti=ee89b000 task=edd3d320 task.ti=ee89b000)
-Stack:
- ef05680c ef056820 fffffe00 ee89be18 b020a2c4 edc31300 eeb96000 ef056814
- 00000086 00000246 ef056954 ef056954 ee89bdfc 00000000 edd3d320 b0120645
- 00000000 00000000 ef056800 ef056954 ef056954 ee89be44 f3b21cb0 edc31300
-Call Trace:
- [<b020a2c4>] ? tty_port_block_til_ready+0x1a5/0x1e0
- [<b0120645>] ? default_wake_function+0x0/0xd
- [<f3b21cb0>] ? acm_tty_open+0x1ef/0x24b [cdc_acm]
- [<b020578c>] ? tty_open+0x280/0x380
- [<b0168c4a>] ? chrdev_open+0x125/0x13c
- [<b016557f>] ? __dentry_open+0x109/0x1f7
- [<b0165707>] ? nameidata_to_filp+0x2c/0x43
- [<b0168b25>] ? chrdev_open+0x0/0x13c
- [<b016ee80>] ? do_filp_open+0x3b9/0x6db
- [<b0156977>] ? handle_mm_fault+0x1fa/0x451
- [<b01768a7>] ? alloc_fd+0x5b/0xcd
- [<b016539c>] ? do_sys_open+0x44/0xbf
- [<b0165459>] ? sys_open+0x1e/0x26
- [<b0102848>] ? sysenter_do_call+0x12/0x26
-Code: 53 89 c7 89 d3 64 a1 00 90 3c b0 c7 00 00 00 00 00 8d 72 0c 39 72 0c 
-75 05 3b 72 10 74 21 89 f8 e8 3a a2 17 00 8b 4b 0c 8b 53 10 <89> 51 04 89 0a 
-89 73 0c 89 73 10 89 c2 89 f8 e8 f1 a2 17 00 5b
-EIP: [<b0132318>] finish_wait+0x30/0x49 SS:ESP 0068:ee89bdc4
-CR2: 0000000000000004
----[ end trace 95ef613d9edaca65 ]--- 
-
+-- 
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
