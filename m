@@ -1,1309 +1,1804 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763218AbZFMQeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764147AbZFMQee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763218AbZFMQeu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 12:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763021AbZFMQdi
+	id S1764147AbZFMQee (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 12:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761287AbZFMQdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 12:33:38 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:43383 "EHLO
+	Sat, 13 Jun 2009 12:33:36 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:36874 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762223AbZFMQdc (ORCPT
+	with ESMTP id S1760970AbZFMQdb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 12:33:32 -0400
+	Sat, 13 Jun 2009 12:33:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=rQSn/vh4cC4z3fN7Vxc9h2Ru+HpDuFpEiTS3hBrVZRAaOaHqRPN0Gs6smA3j+dJhXd
-         hn8Ch9vuZ97UZCHniErxp58ZNMitfbccUOunXi234AICH/tUTZZaonFG15InOwD4Kqqm
-         gX7YyoAHtcN82/15mue5VQccZWUyyyoCluAEY=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=opIoOZnDo7OwTYetJ+gTtRzoCmY3MMnowAksBaz5CuCpGgz4hJryENxdHsPUVvsxtA
+         4Mb8VR66c30J1V0Xl8WJEg2jSneUMln9zhjI2D0KR43lQ8FsIlFSgvx4awqTsf+GE9nf
+         7U+bvMOGFq7+TJvxpUn9mfYOIbqS5jnigIcME=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 3/6] Staging: rtl8187se/ieee80211: remove dead _RTL8187_EXT_PATCH_ code
-Date: Sat, 13 Jun 2009 18:31:54 +0200
+Subject: [PATCH 1/6] Staging: rtl8187se: remove kernel version compatibility wrappers
+Date: Sat, 13 Jun 2009 18:30:28 +0200
 User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612-07181-g84f26e4; KDE/4.2.3; i686; ; )
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200906131830.28388.bzolnier@gmail.com>
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906131831.55186.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c      |  157 ----
- drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |  540 ----------------
- drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c      |  229 ------
- 3 files changed, 926 deletions(-)
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h            |   67 ----
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c      |    4 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c |   53 ---
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c |  206 +------------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c  |  103 ------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c         |    6 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c    |   98 ------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c |   11 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c         |    8 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c         |   60 ---
+ drivers/staging/rtl8187se/r8180.h                          |    4 
+ drivers/staging/rtl8187se/r8180_core.c                     |  120 -------
+ drivers/staging/rtl8187se/r8180_dm.c                       |   20 -
+ drivers/staging/rtl8187se/r8180_dm.h                       |   18 -
+ 14 files changed, 54 insertions(+), 724 deletions(-)
 
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+@@ -29,10 +29,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/timer.h>
+ #include <linux/sched.h>
+-
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,13))
+ #include <linux/wireless.h>
+-#endif
+ 
+ /*
+ #ifndef bool
+@@ -47,11 +44,7 @@
+ #define false  0
+ #endif
+ */
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+-#ifndef bool
+-typedef enum{false = 0, true} bool;
+-#endif
+-#endif
++
+ //#ifdef JOHN_HWSEC
+ #define KEY_TYPE_NA		0x0
+ #define KEY_TYPE_WEP40 		0x1
+@@ -112,7 +105,6 @@ typedef enum{false = 0, true} bool;
+ 
+ #define	IEEE_CRYPT_ALG_NAME_LEN			16
+ 
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,10))
+ #define ieee80211_wx_get_scan ieee80211_wx_get_scan_rtl
+ #define ieee80211_wx_set_encode ieee80211_wx_set_encode_rtl
+ #define ieee80211_wx_get_encode ieee80211_wx_get_encode_rtl
+@@ -122,7 +114,7 @@ typedef enum{false = 0, true} bool;
+ #define free_ieee80211          free_ieee80211_rtl
+ #define alloc_ieee80211        alloc_ieee80211_rtl
+ ///////////////////////////////
+-#endif
++
+ //error in ubuntu2.6.22,so add these
+ #define ieee80211_wake_queue ieee80211_wake_queue_rtl
+ #define ieee80211_stop_queue ieee80211_stop_queue_rtl
+@@ -205,23 +197,8 @@ typedef struct ieee_param {
+ #define IW_QUAL_NOISE_UPDATED  0x4
+ #endif
+ 
+-// linux under 2.6.9 release may not support it, so modify it for common use
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,9))
+-#define MSECS(t)	(1000 * ((t) / HZ) + 1000 * ((t) % HZ) / HZ)
+-static inline unsigned long msleep_interruptible_rtl(unsigned int msecs)
+-{
+-         unsigned long timeout = MSECS(msecs) + 1;
+-
+-         while (timeout) {
+-                 set_current_state(TASK_UNINTERRUPTIBLE);
+-                 timeout = schedule_timeout(timeout);
+-         }
+-         return timeout;
+-}
+-#else
+ #define MSECS(t) msecs_to_jiffies(t)
+ #define msleep_interruptible_rtl  msleep_interruptible
+-#endif
+ 
+ #define IEEE80211_DATA_LEN		2304
+ /* Maximum size for the MA-UNITDATA primitive, 802.11 standard section
+@@ -1097,22 +1074,6 @@ enum ieee80211_state {
+ #define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
+ #define MAC_ARG(x) ((u8*)(x))[0],((u8*)(x))[1],((u8*)(x))[2],((u8*)(x))[3],((u8*)(x))[4],((u8*)(x))[5]
+ 
+-
+-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11))
+-extern inline int is_multicast_ether_addr(const u8 *addr)
+-{
+-        return ((addr[0] != 0xff) && (0x01 & addr[0]));
+-}
+-#endif
+-
+-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,13))
+-extern inline int is_broadcast_ether_addr(const u8 *addr)
+-{
+-	return ((addr[0] == 0xff) && (addr[1] == 0xff) && (addr[2] == 0xff) &&   \
+-		(addr[3] == 0xff) && (addr[4] == 0xff) && (addr[5] == 0xff));
+-}
+-#endif
+-
+ #define CFG_IEEE80211_RESERVE_FCS (1<<0)
+ #define CFG_IEEE80211_COMPUTE_FCS (1<<1)
+ 
+@@ -1313,7 +1274,6 @@ struct ieee80211_device {
+ 	unsigned long NumRxOkTotal;
+ 	unsigned long NumRxUnicast;//YJ,add,080828,for keep alive
+ 	bool bHwRadioOff;
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
+         struct delayed_work softmac_scan_wq;
+         struct delayed_work associate_retry_wq;
+ 	struct delayed_work hw_wakeup_wq;
+@@ -1329,24 +1289,7 @@ struct ieee80211_device {
+ 
+ //Added for RF power on power off by lizhaoming 080512
+ 	struct delayed_work GPIOChangeRFWorkItem;
+-#else
+ 
+-	struct work_struct start_ibss_wq;
+-        struct work_struct softmac_scan_wq;
+-        struct work_struct associate_retry_wq;
+-	struct work_struct hw_wakeup_wq;
+-	struct work_struct hw_sleep_wq;
+-	struct work_struct watch_dog_wq;
+-	struct work_struct sw_antenna_wq;
+-//by amy for rate adaptive 080312
+-    struct work_struct rate_adapter_wq;
+-//by amy for rate adaptive
+-	struct work_struct hw_dig_wq;
+-	struct work_struct tx_pw_wq;
+-
+-//Added for RF power on power off by lizhaoming 080512
+-	struct work_struct GPIOChangeRFWorkItem;
+-#endif
+ 	struct workqueue_struct *wq;
+ 
+ 	/* Callback functions */
+@@ -1690,12 +1633,8 @@ extern int ieee80211_wx_set_freq(struct 
+ 
+ extern int ieee80211_wx_get_freq(struct ieee80211_device *ieee, struct iw_request_info *a,
+ 			     union iwreq_data *wrqu, char *b);
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++
+ extern void ieee80211_wx_sync_scan_wq(struct work_struct *work);
+-#else
+- extern void ieee80211_wx_sync_scan_wq(struct ieee80211_device *ieee);
+-#endif
+-//extern void ieee80211_wx_sync_scan_wq(struct ieee80211_device *ieee);
+ 
+ extern int ieee80211_wx_set_rawtx(struct ieee80211_device *ieee,
+ 			       struct iw_request_info *info,
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c
+@@ -19,10 +19,6 @@
+ #include <asm/string.h>
+ #include <asm/errno.h>
+ 
+-#if (LINUX_VERSION_CODE<KERNEL_VERSION(2,6,18))
+-#include<linux/config.h>
+-#endif
+-
+ #include "ieee80211.h"
+ 
+ MODULE_AUTHOR("Jouni Malinen");
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+@@ -24,18 +24,8 @@
+ 
+ #include "ieee80211.h"
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
+-#include "rtl_crypto.h"
+-#else
+ #include <linux/crypto.h>
+-#endif
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
+-    #include <asm/scatterlist.h>
+-#else
+-    #include <linux/scatterlist.h>
+-#endif
+-
+-//#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ 
+ MODULE_AUTHOR("Jouni Malinen");
+ MODULE_DESCRIPTION("Host AP crypt: CCMP");
+@@ -77,21 +67,7 @@ struct ieee80211_ccmp_data {
+ void ieee80211_ccmp_aes_encrypt(struct crypto_tfm *tfm,
+ 			     const u8 pt[16], u8 ct[16])
+ {
+-      	#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))||(IN_OPENSUSE_SLED))
+ 	crypto_cipher_encrypt_one((void *)tfm, ct, pt);
+-	#else
+-	struct scatterlist src, dst;
+-
+-	src.page = virt_to_page(pt);
+-	src.offset = offset_in_page(pt);
+-	src.length = AES_BLOCK_LEN;
+-
+-	dst.page = virt_to_page(ct);
+-	dst.offset = offset_in_page(ct);
+-	dst.length = AES_BLOCK_LEN;
+-
+-	crypto_cipher_encrypt(tfm, &dst, &src, AES_BLOCK_LEN);
+-	#endif
+ }
+ 
+ static void * ieee80211_ccmp_init(int key_idx)
+@@ -104,33 +80,20 @@ static void * ieee80211_ccmp_init(int ke
+ 	memset(priv, 0, sizeof(*priv));
+ 	priv->key_idx = key_idx;
+ 
+-       #if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)) && (!IN_OPENSUSE_SLED))
+-	priv->tfm = crypto_alloc_tfm("aes", 0);
+-	if (priv->tfm == NULL) {
+-		printk(KERN_DEBUG "ieee80211_crypt_ccmp: could not allocate "
+-		       "crypto API aes\n");
+-		goto fail;
+-	}
+-       #else
+-       priv->tfm = (void *)crypto_alloc_cipher("aes", 0, CRYPTO_ALG_ASYNC);
++	priv->tfm = (void *)crypto_alloc_cipher("aes", 0, CRYPTO_ALG_ASYNC);
+ 	if (IS_ERR(priv->tfm)) {
+ 		printk(KERN_DEBUG "ieee80211_crypt_ccmp: could not allocate "
+ 		       "crypto API aes\n");
+ 		priv->tfm = NULL;
+ 		goto fail;
+ 	}
+-	#endif
++
+ 	return priv;
+ 
+ fail:
+ 	if (priv) {
+ 		if (priv->tfm)
+-			//#if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
+-       			#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)) && (!IN_OPENSUSE_SLED))
+-			crypto_free_tfm(priv->tfm);
+-                    #else
+ 			crypto_free_cipher((void *)priv->tfm);
+-		      #endif
+ 		kfree(priv);
+ 	}
+ 
+@@ -141,13 +104,9 @@ fail:
+ static void ieee80211_ccmp_deinit(void *priv)
+ {
+ 	struct ieee80211_ccmp_data *_priv = priv;
++
+ 	if (_priv && _priv->tfm)
+-		//#if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
+-       		#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)) && (!IN_OPENSUSE_SLED))
+-		crypto_free_tfm(_priv->tfm);
+-             #else
+ 		crypto_free_cipher((void *)_priv->tfm);
+-		#endif
+ 	kfree(priv);
+ }
+ 
+@@ -522,11 +481,7 @@ void ieee80211_crypto_ccmp_exit(void)
+ }
+ 
+ #if 0
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
+ EXPORT_SYMBOL(ieee80211_ccmp_null);
+-#else
+-EXPORT_SYMBOL_NOVERS(ieee80211_ccmp_null);
+-#endif
+ #endif
+ 
+ //module_init(ieee80211_crypto_ccmp_init);
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+@@ -23,18 +23,8 @@
+ 
+ #include "ieee80211.h"
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
+-#include "rtl_crypto.h"
+-#else
+ #include <linux/crypto.h>
+-#endif
+-//#include <asm/scatterlist.h>
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20))
+-    #include <asm/scatterlist.h>
+-#else
+-    #include <linux/scatterlist.h>
+-#endif
+-
++#include <linux/scatterlist.h>
+ #include <linux/crc32.h>
+ 
+ MODULE_AUTHOR("Jouni Malinen");
+@@ -70,13 +60,10 @@ struct ieee80211_tkip_data {
+ 
+ 	int key_idx;
+ 
+-       #if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))||(IN_OPENSUSE_SLED))
+-	   	struct crypto_blkcipher *rx_tfm_arc4;
+-	       struct crypto_hash *rx_tfm_michael;
+-	       struct crypto_blkcipher *tx_tfm_arc4;
+-	       struct crypto_hash *tx_tfm_michael;
+-       #endif
+-
++	struct crypto_blkcipher *rx_tfm_arc4;
++	struct crypto_hash *rx_tfm_michael;
++	struct crypto_blkcipher *tx_tfm_arc4;
++	struct crypto_hash *tx_tfm_michael;
+ 	struct crypto_tfm *tfm_arc4;
+ 	struct crypto_tfm *tfm_michael;
+ 
+@@ -94,22 +81,6 @@ static void * ieee80211_tkip_init(int ke
+ 	memset(priv, 0, sizeof(*priv));
+ 	priv->key_idx = key_idx;
+ 
+-      #if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	priv->tfm_arc4 = crypto_alloc_tfm("arc4", 0);
+-	if (priv->tfm_arc4 == NULL) {
+-		printk(KERN_DEBUG "ieee80211_crypt_tkip: could not allocate "
+-		       "crypto API arc4\n");
+-		goto fail;
+-	}
+-
+-	priv->tfm_michael = crypto_alloc_tfm("michael_mic", 0);
+-	if (priv->tfm_michael == NULL) {
+-		printk(KERN_DEBUG "ieee80211_crypt_tkip: could not allocate "
+-		       "crypto API michael_mic\n");
+-		goto fail;
+-	}
+-
+-	#else
+ 	priv->tx_tfm_arc4 = crypto_alloc_blkcipher("ecb(arc4)", 0,
+ 						CRYPTO_ALG_ASYNC);
+ 	if (IS_ERR(priv->tx_tfm_arc4)) {
+@@ -145,17 +116,11 @@ static void * ieee80211_tkip_init(int ke
+ 		priv->rx_tfm_michael = NULL;
+ 		goto fail;
+ 	}
+-       #endif
++
+ 	return priv;
+ 
+ fail:
+ 	if (priv) {
+-		#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-		if (priv->tfm_michael)
+-			crypto_free_tfm(priv->tfm_michael);
+-		if (priv->tfm_arc4)
+-			crypto_free_tfm(priv->tfm_arc4);
+-             #else
+ 		if (priv->tx_tfm_michael)
+ 			crypto_free_hash(priv->tx_tfm_michael);
+ 		if (priv->tx_tfm_arc4)
+@@ -164,7 +129,6 @@ fail:
+ 			crypto_free_hash(priv->rx_tfm_michael);
+ 		if (priv->rx_tfm_arc4)
+ 			crypto_free_blkcipher(priv->rx_tfm_arc4);
+-		#endif
+ 		kfree(priv);
+ 	}
+ 
+@@ -175,12 +139,7 @@ fail:
+ static void ieee80211_tkip_deinit(void *priv)
+ {
+ 	struct ieee80211_tkip_data *_priv = priv;
+-	#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	if (_priv && _priv->tfm_michael)
+-		crypto_free_tfm(_priv->tfm_michael);
+-	if (_priv && _priv->tfm_arc4)
+-		crypto_free_tfm(_priv->tfm_arc4);
+-	#else
++
+ 	if (_priv) {
+ 		if (_priv->tx_tfm_michael)
+ 			crypto_free_hash(_priv->tx_tfm_michael);
+@@ -191,7 +150,6 @@ static void ieee80211_tkip_deinit(void *
+ 		if (_priv->rx_tfm_arc4)
+ 			crypto_free_blkcipher(_priv->rx_tfm_arc4);
+ 	}
+-	#endif
+ 	kfree(priv);
+ }
+ 
+@@ -355,9 +313,7 @@ static void tkip_mixing_phase2(u8 *WEPSe
+ static int ieee80211_tkip_encrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ {
+         struct ieee80211_tkip_data *tkey = priv;
+-        #if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))||(IN_OPENSUSE_SLED))
+         struct blkcipher_desc desc = {.tfm = tkey->tx_tfm_arc4};
+-        #endif
+ 	int len;
+ 	u8  *pos;
+ 	struct ieee80211_hdr *hdr;
+@@ -419,32 +375,14 @@ printk("%x\n", ((u32*)tkey->key)[7]);
+ 	*pos++ = (tkey->tx_iv32 >> 24) & 0xff;
+ #ifndef JOHN_TKIP
+ 	icv = skb_put(skb, 4);
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
+ 	crc = ~crc32_le(~0, pos, len);
+-#else
+-	crc = ~ether_crc_le(len, pos);
+-#endif
+ 	icv[0] = crc;
+ 	icv[1] = crc >> 8;
+ 	icv[2] = crc >> 16;
+ 	icv[3] = crc >> 24;
+-      #if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	crypto_cipher_setkey(tkey->tfm_arc4, rc4key, 16);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = len + 4;
+-	crypto_cipher_encrypt(tkey->tfm_arc4, &sg, &sg, len + 4);
+-      #else
+ 	crypto_blkcipher_setkey(tkey->tx_tfm_arc4, rc4key, 16);
+-        #if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+-          sg.page = virt_to_page(pos);
+-          sg.offset = offset_in_page(pos);
+-          sg.length = len + 4;
+-        #else
+-          sg_init_one(&sg, pos, len+4);
+-        #endif
++	sg_init_one(&sg, pos, len + 4);
+ 	ret= crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+-      #endif
+ #endif
+ 	tkey->tx_iv16++;
+ 	if (tkey->tx_iv16 == 0) {
+@@ -452,11 +390,7 @@ printk("%x\n", ((u32*)tkey->key)[7]);
+ 		tkey->tx_iv32++;
+ 	}
+ #ifndef JOHN_TKIP
+-      #if((LINUX_VERSION_CODE <KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	   return 0;
+-      #else
+ 	   return ret;
+-      #endif
+ #else
+ 	return 0;
+ #endif
+@@ -464,10 +398,8 @@ printk("%x\n", ((u32*)tkey->key)[7]);
+ 
+ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ {
+-        struct ieee80211_tkip_data *tkey = priv;
+-        #if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)) ||(IN_OPENSUSE_SLED))
+-        struct blkcipher_desc desc = {.tfm = tkey->rx_tfm_arc4};
+-        #endif
++	struct ieee80211_tkip_data *tkey = priv;
++	struct blkcipher_desc desc = { .tfm = tkey->rx_tfm_arc4 };
+ 	u8 keyidx, *pos;
+ 	u32 iv32;
+ 	u16 iv16;
+@@ -530,21 +462,8 @@ static int ieee80211_tkip_decrypt(struct
+ 	tkip_mixing_phase2(rc4key, tkey->key, tkey->rx_ttak, iv16);
+ 
+ 	plen = skb->len - hdr_len - 12;
+-       #if((LINUX_VERSION_CODE <KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	crypto_cipher_setkey(tkey->tfm_arc4, rc4key, 16);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = plen + 4;
+-	crypto_cipher_decrypt(tkey->tfm_arc4, &sg, &sg, plen + 4);
+-	#else
+ 	crypto_blkcipher_setkey(tkey->rx_tfm_arc4, rc4key, 16);
+-        #if(LINUX_VERSION_CODE <KERNEL_VERSION(2,6,24))
+-          sg.page = virt_to_page(pos);
+-          sg.offset = offset_in_page(pos);
+-          sg.length = plen + 4;
+-        #else
+-          sg_init_one(&sg, pos, plen+4);
+-        #endif
++	sg_init_one(&sg, pos, plen + 4);
+ 	if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4)) {
+ 		if (net_ratelimit()) {
+ 			printk(KERN_DEBUG ": TKIP: failed to decrypt "
+@@ -553,13 +472,8 @@ static int ieee80211_tkip_decrypt(struct
+ 		}
+ 		return -7;
+ 	}
+-	#endif
+ 
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
+ 	crc = ~crc32_le(~0, pos, plen);
+-#else
+-	crc = ~ether_crc_le(plen, pos);
+-#endif
+ 	icv[0] = crc;
+ 	icv[1] = crc >> 8;
+ 	icv[2] = crc >> 16;
+@@ -605,52 +519,6 @@ if( ((u16*)skb->data)[0] & 0x4000){
+ 	return keyidx;
+ }
+ 
+-#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)) && (!IN_OPENSUSE_SLED))
+-static int michael_mic(struct ieee80211_tkip_data *tkey, u8 *key, u8 *hdr,
+-		       u8 *data, size_t data_len, u8 *mic)
+-{
+-	struct scatterlist sg[2];
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
+-	struct hash_desc desc;
+-	int ret=0;
+-#endif
+-	if (tkey->tfm_michael == NULL) {
+-		printk(KERN_WARNING "michael_mic: tfm_michael == NULL\n");
+-		return -1;
+-	}
+-	sg[0].page = virt_to_page(hdr);
+-	sg[0].offset = offset_in_page(hdr);
+-	sg[0].length = 16;
+-
+-	sg[1].page = virt_to_page(data);
+-	sg[1].offset = offset_in_page(data);
+-	sg[1].length = data_len;
+-
+-	//crypto_digest_init(tkey->tfm_michael);
+-	//crypto_digest_setkey(tkey->tfm_michael, key, 8);
+-	//crypto_digest_update(tkey->tfm_michael, sg, 2);
+-	//crypto_digest_final(tkey->tfm_michael, mic);
+-
+-	//return 0;
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
+-	crypto_digest_init(tkey->tfm_michael);
+-	crypto_digest_setkey(tkey->tfm_michael, key, 8);
+-	crypto_digest_update(tkey->tfm_michael, sg, 2);
+-	crypto_digest_final(tkey->tfm_michael, mic);
+-
+-	return 0;
+-#else
+-if (crypto_hash_setkey(tkey->tfm_michael, key, 8))
+-		return -1;
+-
+-//	return 0;
+-	desc.tfm = tkey->tfm_michael;
+-	desc.flags = 0;
+-	ret = crypto_hash_digest(&desc, sg, data_len + 16, mic);
+-	return ret;
+-#endif
+-}
+-#else
+ static int michael_mic(struct crypto_hash *tfm_michael, u8 * key, u8 * hdr,
+                        u8 * data, size_t data_len, u8 * mic)
+ {
+@@ -661,18 +529,10 @@ static int michael_mic(struct crypto_has
+                 printk(KERN_WARNING "michael_mic: tfm_michael == NULL\n");
+                 return -1;
+         }
+-        #if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+-          sg[0].page = virt_to_page(hdr);
+-          sg[0].offset = offset_in_page(hdr);
+-          sg[0].length = 16;
+-          sg[1].page = virt_to_page(data);
+-          sg[1].offset = offset_in_page(data);
+-          sg[1].length = data_len;
+-        #else
+-          sg_init_table(sg, 2);
+-          sg_set_buf(&sg[0], hdr, 16);
+-          sg_set_buf(&sg[1], data, data_len);
+-        #endif
++
++	sg_init_table(sg, 2);
++	sg_set_buf(&sg[0], hdr, 16);
++	sg_set_buf(&sg[1], data, data_len);
+ 
+         if (crypto_hash_setkey(tfm_michael, key, 8))
+                 return -1;
+@@ -681,9 +541,6 @@ static int michael_mic(struct crypto_has
+         desc.flags = 0;
+         return crypto_hash_digest(&desc, sg, data_len + 16, mic);
+ }
+-#endif
+-
+-
+ 
+ static void michael_mic_hdr(struct sk_buff *skb, u8 *hdr)
+ {
+@@ -740,13 +597,9 @@ static int ieee80211_michael_mic_add(str
+ 	}
+ 	// }
+ 	pos = skb_put(skb, 8);
+-        #if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	if (michael_mic(tkey, &tkey->key[16], tkey->tx_hdr,
++
++	if (michael_mic(tkey->tx_tfm_michael, &tkey->key[16], tkey->tx_hdr,
+ 			skb->data + hdr_len, skb->len - 8 - hdr_len, pos))
+-        #else
+-        if (michael_mic(tkey->tx_tfm_michael, &tkey->key[16], tkey->tx_hdr,
+-                        skb->data + hdr_len, skb->len - 8 - hdr_len, pos))
+-        #endif
+ 		return -1;
+ 
+ 	return 0;
+@@ -818,14 +671,11 @@ static int ieee80211_michael_mic_verify(
+ 		tkey->rx_hdr[12] = *(skb->data + hdr_len - 2) & 0x07;
+ 	}
+ 	// }
+-        #if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	if (michael_mic(tkey, &tkey->key[24], tkey->rx_hdr,
+-			skb->data + hdr_len, skb->len - 8 - hdr_len, mic))
+-        #else
++
+ 	if (michael_mic(tkey->rx_tfm_michael, &tkey->key[24], tkey->rx_hdr,
+-                        skb->data + hdr_len, skb->len - 8 - hdr_len, mic))
+-        #endif
+-            	return -1;
++			skb->data + hdr_len, skb->len - 8 - hdr_len, mic))
++		return -1;
++
+ 	if (memcmp(mic, skb->data + skb->len - 8, 8) != 0) {
+ 		struct ieee80211_hdr *hdr;
+ 		hdr = (struct ieee80211_hdr *) skb->data;
+@@ -854,29 +704,19 @@ static int ieee80211_tkip_set_key(void *
+ {
+ 	struct ieee80211_tkip_data *tkey = priv;
+ 	int keyidx;
+-	#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	struct crypto_tfm *tfm = tkey->tfm_michael;
+-	struct crypto_tfm *tfm2 = tkey->tfm_arc4;
+-	#else
+ 	struct crypto_hash *tfm = tkey->tx_tfm_michael;
+ 	struct crypto_blkcipher *tfm2 = tkey->tx_tfm_arc4;
+ 	struct crypto_hash *tfm3 = tkey->rx_tfm_michael;
+ 	struct crypto_blkcipher *tfm4 = tkey->rx_tfm_arc4;
+-	#endif
+ 
+ 	keyidx = tkey->key_idx;
+ 	memset(tkey, 0, sizeof(*tkey));
+ 	tkey->key_idx = keyidx;
+ 
+-	#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	tkey->tfm_michael = tfm;
+-	tkey->tfm_arc4 = tfm2;
+-       #else
+ 	tkey->tx_tfm_michael = tfm;
+ 	tkey->tx_tfm_arc4 = tfm2;
+ 	tkey->rx_tfm_michael = tfm3;
+ 	tkey->rx_tfm_arc4 = tfm4;
+-	#endif
+ 
+ 	if (len == TKIP_KEY_LEN) {
+ 		memcpy(tkey->key, key, TKIP_KEY_LEN);
+@@ -989,11 +829,7 @@ void ieee80211_tkip_null(void)
+ }
+ 
+ #if 0
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
+ EXPORT_SYMBOL(ieee80211_tkip_null);
+-#else
+-EXPORT_SYMBOL_NOVERS(ieee80211_tkip_null);
+-#endif
+ #endif
+ 
+ 
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
+@@ -20,18 +20,8 @@
+ 
+ #include "ieee80211.h"
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
+-#include "rtl_crypto.h"
+-#else
+ #include <linux/crypto.h>
+-#endif
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
+-    #include <asm/scatterlist.h>
+-#else
+-    #include <linux/scatterlist.h>
+-#endif
+-//#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ #include <linux/crc32.h>
+ 
+ MODULE_AUTHOR("Jouni Malinen");
+@@ -51,12 +41,8 @@ struct prism2_wep_data {
+ 	u8 key[WEP_KEY_LEN + 1];
+ 	u8 key_len;
+ 	u8 key_idx;
+-	#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	struct crypto_tfm *tfm;
+-	#else
+ 	struct crypto_blkcipher *tx_tfm;
+ 	struct crypto_blkcipher *rx_tfm;
+-	#endif
+ };
+ 
+ 
+@@ -69,14 +55,6 @@ static void * prism2_wep_init(int keyidx
+ 		goto fail;
+ 	memset(priv, 0, sizeof(*priv));
+ 	priv->key_idx = keyidx;
+-	#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	priv->tfm = crypto_alloc_tfm("arc4", 0);
+-     	if (priv->tfm == NULL) {
+-		printk(KERN_DEBUG "ieee80211_crypt_wep: could not allocate "
+-		       "crypto API arc4\n");
+-		goto fail;
+-	}
+-	#else
+ 	priv->tx_tfm = crypto_alloc_blkcipher("ecb(arc4)", 0, CRYPTO_ALG_ASYNC);
+ 	if (IS_ERR(priv->tx_tfm)) {
+ 		printk(KERN_DEBUG "ieee80211_crypt_wep: could not allocate "
+@@ -91,7 +69,6 @@ static void * prism2_wep_init(int keyidx
+ 		priv->rx_tfm = NULL;
+ 		goto fail;
+ 	}
+-	#endif
+ 
+ 	/* start WEP IV from a random value */
+ 	get_random_bytes(&priv->iv, 4);
+@@ -99,14 +76,6 @@ static void * prism2_wep_init(int keyidx
+ 	return priv;
+ 
+ fail:
+-	//#if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
+-	#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	if (priv) {
+-		if (priv->tfm)
+-			crypto_free_tfm(priv->tfm);
+-		kfree(priv);
+-	}
+-       #else
+ 	if (priv) {
+ 		if (priv->tx_tfm)
+ 			crypto_free_blkcipher(priv->tx_tfm);
+@@ -114,7 +83,7 @@ fail:
+ 			crypto_free_blkcipher(priv->rx_tfm);
+ 		kfree(priv);
+ 	}
+-	#endif
++
+ 	return NULL;
+ }
+ 
+@@ -122,18 +91,14 @@ fail:
+ static void prism2_wep_deinit(void *priv)
+ {
+ 	struct prism2_wep_data *_priv = priv;
+-	//#if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
+-	#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	if (_priv && _priv->tfm)
+-		crypto_free_tfm(_priv->tfm);
+-	#else
++
+ 	if (_priv) {
+ 		if (_priv->tx_tfm)
+ 			crypto_free_blkcipher(_priv->tx_tfm);
+ 		if (_priv->rx_tfm)
+ 			crypto_free_blkcipher(_priv->rx_tfm);
+ 	}
+-        #endif
++
+ 	kfree(priv);
+ }
+ 
+@@ -147,10 +112,7 @@ static void prism2_wep_deinit(void *priv
+ static int prism2_wep_encrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ {
+ 	struct prism2_wep_data *wep = priv;
+-//#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))||(IN_OPENSUSE_SLED))
+-        struct blkcipher_desc desc = {.tfm = wep->tx_tfm};
+-#endif
++	struct blkcipher_desc desc = { .tfm = wep->tx_tfm };
+ 	u32 klen, len;
+ 	u8 key[WEP_KEY_LEN + 3];
+ 	u8 *pos;
+@@ -192,37 +154,17 @@ static int prism2_wep_encrypt(struct sk_
+ 
+ #ifndef JOHN_HWSEC
+ 	/* Append little-endian CRC32 and encrypt it to produce ICV */
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
+ 	crc = ~crc32_le(~0, pos, len);
+-#else
+-	crc = ~ether_crc_le(len, pos);
+-#endif
+ 	icv = skb_put(skb, 4);
+ 	icv[0] = crc;
+ 	icv[1] = crc >> 8;
+ 	icv[2] = crc >> 16;
+ 	icv[3] = crc >> 24;
+ 
+-        //#if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
+-	#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	crypto_cipher_setkey(wep->tfm, key, klen);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = len + 4;
+-	crypto_cipher_encrypt(wep->tfm, &sg, &sg, len + 4);
+-
+-	return 0;
+-	#else
+ 	crypto_blkcipher_setkey(wep->tx_tfm, key, klen);
+-        #if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+-          sg.page = virt_to_page(pos);
+-          sg.offset = offset_in_page(pos);
+-          sg.length = len + 4;
+-        #else
+-          sg_init_one(&sg, pos, len+4);
+-        #endif
++	sg_init_one(&sg, pos, len + 4);
++
+ 	return crypto_blkcipher_encrypt(&desc, &sg, &sg, len + 4);
+-	#endif
+ #endif /* JOHN_HWSEC */
+ 	return 0;
+ }
+@@ -238,10 +180,7 @@ static int prism2_wep_encrypt(struct sk_
+ static int prism2_wep_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ {
+ 	struct prism2_wep_data *wep = priv;
+-        //#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
+-	#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))||(IN_OPENSUSE_SLED))
+-        struct blkcipher_desc desc = {.tfm = wep->rx_tfm};
+-        #endif
++	struct blkcipher_desc desc = { .tfm = wep->rx_tfm };
+ 	u32 klen, plen;
+ 	u8 key[WEP_KEY_LEN + 3];
+ 	u8 keyidx, *pos;
+@@ -269,31 +208,13 @@ static int prism2_wep_decrypt(struct sk_
+ 	/* Apply RC4 to data and compute CRC32 over decrypted data */
+ 	plen = skb->len - hdr_len - 8;
+ #ifndef JOHN_HWSEC
+-//#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))
+-#if((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21))&&(!IN_OPENSUSE_SLED))
+-	crypto_cipher_setkey(wep->tfm, key, klen);
+-	sg.page = virt_to_page(pos);
+-	sg.offset = offset_in_page(pos);
+-	sg.length = plen + 4;
+-	crypto_cipher_decrypt(wep->tfm, &sg, &sg, plen + 4);
+-#else
+ 	crypto_blkcipher_setkey(wep->rx_tfm, key, klen);
+-        #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+-          sg.page = virt_to_page(pos);
+-          sg.offset = offset_in_page(pos);
+-          sg.length = plen + 4;
+-        #else
+-          sg_init_one(&sg, pos, plen+4);
+-        #endif
++	sg_init_one(&sg, pos, plen + 4);
++
+ 	if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4))
+ 		return -7;
+-#endif
+ 
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
+ 	crc = ~crc32_le(~0, pos, plen);
+-#else
+-	crc = ~ether_crc_le(plen, pos);
+-#endif
+ 	icv[0] = crc;
+ 	icv[1] = crc >> 8;
+ 	icv[2] = crc >> 16;
+@@ -384,11 +305,7 @@ void ieee80211_wep_null(void)
+         return;
+ }
+ #if 0
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0))
+ EXPORT_SYMBOL(ieee80211_wep_null);
+-#else
+-EXPORT_SYMBOL_NOVERS(ieee80211_wep_null);
+-#endif
+ #endif
+ //module_init(ieee80211_crypto_wep_init);
+ //module_exit(ieee80211_crypto_wep_exit);
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-@@ -109,13 +109,6 @@ ieee80211_frag_cache_get(struct ieee8021
- 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
- 	u8 tid;
+@@ -55,11 +55,7 @@ static inline void ieee80211_monitor_rx(
+ 	u16 fc = le16_to_cpu(hdr->frame_ctl);
  
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->iw_mode == ieee->iw_ext_mode)
--	{
--		tid = (hdr->addr2[ETH_ALEN-2] ^ hdr->addr2[ETH_ALEN-1]) & IEEE80211_QOS_TID;
--	}
--	else
+ 	skb->dev = ieee->dev;
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22)
+-        skb_reset_mac_header(skb);
+-#else
+-        skb->mac.raw = skb->data;
 -#endif
- 	if (((fc & IEEE80211_FCTL_DSTODS) == IEEE80211_FCTL_DSTODS)&&IEEE80211_QOS_HAS_SEQ(fc)) {
- 	  hdr_4addr_QoS = (struct ieee80211_hdr_QOS *)hdr;
- 	  tid = le16_to_cpu(hdr_4addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
-@@ -183,13 +176,6 @@ static int ieee80211_frag_cache_invalida
- 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
- 	u8 tid;
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->iw_mode == ieee->iw_ext_mode)
--	{
--		tid = (hdr->addr2[ETH_ALEN-2] ^ hdr->addr2[ETH_ALEN-1]) & IEEE80211_QOS_TID;
--	}
--	else
--#endif
- 	if(((fc & IEEE80211_FCTL_DSTODS) == IEEE80211_FCTL_DSTODS)&&IEEE80211_QOS_HAS_SEQ(fc)) {
- 	  hdr_4addr_QoS = (struct ieee80211_hdr_QOS *)hdr;
- 	  tid = le16_to_cpu(hdr_4addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
-@@ -364,13 +350,6 @@ ieee80211_rx_frame_decrypt(struct ieee80
- 		return 0;
- 
- 	hdr = (struct ieee80211_hdr *) skb->data;
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && (ieee->ext_patch_ieee80211_rx_frame_get_hdrlen))
--	{
--		hdrlen = ieee->ext_patch_ieee80211_rx_frame_get_hdrlen(ieee, skb);
--	}
--	else
--#endif
- 	hdrlen = ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl));
- 
- #ifdef CONFIG_IEEE80211_CRYPT_TKIP
-@@ -416,13 +395,6 @@ ieee80211_rx_frame_decrypt_msdu(struct i
- 		return 0;
- 
- 	hdr = (struct ieee80211_hdr *) skb->data;
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && (ieee->ext_patch_ieee80211_rx_frame_get_hdrlen))
--	{
--		hdrlen = ieee->ext_patch_ieee80211_rx_frame_get_hdrlen(ieee, skb);
--	}
--	else
--#endif
- 	hdrlen = ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl));
- 
- 	atomic_inc(&crypt->refcnt);
-@@ -454,13 +426,6 @@ static int is_duplicate_packet(struct ie
- 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
- 	u8 tid;
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->iw_mode == ieee->iw_ext_mode)
--	{
--		tid = (header->addr2[ETH_ALEN-2] ^ header->addr2[ETH_ALEN-1]) & IEEE80211_QOS_TID;
--	}
--	else
--#endif
- 	//TO2DS and QoS
- 	if(((fc & IEEE80211_FCTL_DSTODS) == IEEE80211_FCTL_DSTODS)&&IEEE80211_QOS_HAS_SEQ(fc)) {
- 	  hdr_4addr_QoS = (struct ieee80211_hdr_QOS *)header;
-@@ -515,16 +480,6 @@ static int is_duplicate_packet(struct ie
- 
- 		break;
- 	default:
--#ifdef _RTL8187_EXT_PATCH_
--		if(ieee->iw_mode == ieee->iw_ext_mode)
--		{
--			last_seq = &ieee->last_rxseq_num[tid];
--			last_frag = &ieee->last_rxfrag_num[tid];
--			last_time = &ieee->last_packet_time[tid];
--			break;
--		}
--		else
--#endif
- 		return 0;
- 	}
- 
-@@ -589,11 +544,6 @@ int ieee80211_rx(struct ieee80211_device
- 	struct ieee80211_crypt_data *crypt = NULL;
- 	int keyidx = 0;
- 
--	//Added for mesh by Lawrence.
--#ifdef _RTL8187_EXT_PATCH_
--	u8 status;
--	u32 flags;
--#endif
- 	// cheat the the hdr type
- 	hdr = (struct ieee80211_hdr *)skb->data;
- 	stats = &ieee->stats;
-@@ -628,15 +578,6 @@ int ieee80211_rx(struct ieee80211_device
- 	}
- //YJ,add,080828,for keep alive,end
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && (ieee->ext_patch_ieee80211_rx_frame_get_hdrlen))
--	{
--		hdrlen = ieee->ext_patch_ieee80211_rx_frame_get_hdrlen(ieee, skb);
--		if(skb->len < hdrlen)
--			goto rx_dropped;
--	}
--	else
--#endif
- 	hdrlen = ieee80211_get_hdrlen(fc);
- 
- #ifdef NOT_YET
-@@ -705,11 +646,6 @@ int ieee80211_rx(struct ieee80211_device
- 	if (skb->len < IEEE80211_DATA_HDR3_LEN)
- 		goto rx_dropped;
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if( ieee->iw_mode == ieee->iw_ext_mode && ieee->ext_patch_ieee80211_rx_mgt_update_expire )
--		ieee->ext_patch_ieee80211_rx_mgt_update_expire( ieee, skb );
--#endif
--
- 	// if QoS enabled, should check the sequence for each of the AC
- 	if (is_duplicate_packet(ieee, hdr))
- 		goto rx_dropped;
-@@ -737,15 +673,6 @@ int ieee80211_rx(struct ieee80211_device
- 		else
- 			goto rx_exit;
- 	}
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_rx_on_rx)
--	{
--		if(ieee->ext_patch_ieee80211_rx_on_rx(ieee, skb, rx_stats, type, stype)==0)
--		{
--			goto rx_exit;
--		}
--	}
--#endif
- 
- 	/* Data frame - extract src/dst addresses */
- 	switch (fc & (IEEE80211_FCTL_FROMDS | IEEE80211_FCTL_TODS)) {
-@@ -814,14 +741,6 @@ int ieee80211_rx(struct ieee80211_device
- 	}
- #endif
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_rx_is_valid_framectl)
--	{
--		if(ieee->ext_patch_ieee80211_rx_is_valid_framectl(ieee, fc, type, stype)==0)
--			goto rx_dropped;
--	}
--	else
--#endif
- 	/* Nullfunc frames may have PS-bit set, so they must be passed to
- 	 * hostap_handle_sta_rx() before being dropped here. */
- 	if (stype != IEEE80211_STYPE_DATA &&
-@@ -989,22 +908,6 @@ int ieee80211_rx(struct ieee80211_device
- 	}
- #endif
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_rx_process_dataframe)
--	{
--	//Added for mesh rx interrupt.
--		//spin_lock_irqsave(&ieee->lock,flags);
--		status = ieee->ext_patch_ieee80211_rx_process_dataframe(ieee, skb, rx_stats);
--		//spin_unlock_irqrestore(&ieee->lock,flags);
--
--		if(status)
--//	if(ieee->ext_patch_ieee80211_rx_process_dataframe(ieee, skb, rx_stats))
--			goto rx_exit;
--		else
--			goto rx_dropped;
--	}
--#endif
--
- 	/* convert hdr + possible LLC headers into Ethernet header */
- 	if (skb->len - hdrlen >= 8 &&
- 	    ((memcmp(payload, rfc1042_header, SNAP_SIZE) == 0 &&
-@@ -1095,41 +998,6 @@ int ieee80211_rx(struct ieee80211_device
- 	return 0;
- }
- 
--#ifdef _RTL8187_EXT_PATCH_
--int ieee_ext_skb_p80211_to_ether(struct sk_buff *skb, int hdrlen, u8 *dst, u8 *src)
--{
--	u8 *payload;
--	u16 ethertype;
--
--	/* skb: hdr + (possible reassembled) full plaintext payload */
--	payload = skb->data + hdrlen;
--	ethertype = (payload[6] << 8) | payload[7];
--
--	/* convert hdr + possible LLC headers into Ethernet header */
--	if (skb->len - hdrlen >= 8 &&
--	    ((memcmp(payload, rfc1042_header, SNAP_SIZE) == 0 &&
--	      ethertype != ETH_P_AARP && ethertype != ETH_P_IPX) ||
--	     memcmp(payload, bridge_tunnel_header, SNAP_SIZE) == 0)) {
--		/* remove RFC1042 or Bridge-Tunnel encapsulation and
--		 * replace EtherType */
--		skb_pull(skb, hdrlen + SNAP_SIZE);
--		memcpy(skb_push(skb, ETH_ALEN), src, ETH_ALEN);
--		memcpy(skb_push(skb, ETH_ALEN), dst, ETH_ALEN);
--	} else {
--		u16 len;
--		/* Leave Ethernet header part of hdr and full payload */
--		skb_pull(skb, hdrlen);
--		len = htons(skb->len);
--		memcpy(skb_push(skb, 2), &len, 2);
--		memcpy(skb_push(skb, ETH_ALEN), src, ETH_ALEN);
--		memcpy(skb_push(skb, ETH_ALEN), dst, ETH_ALEN);
--	}
--
--	return 1;
--}
--#endif // _RTL8187_EXT_PATCH_
--
--
- #define MGMT_FRAME_FIXED_PART_LENGTH		0x24
- 
- static inline int ieee80211_is_ofdm_rate(u8 rate)
-@@ -1708,13 +1576,6 @@ inline void ieee80211_process_probe_resp
- 	u8 is_beacon = (WLAN_FC_GET_STYPE(beacon->header.frame_ctl) == IEEE80211_STYPE_BEACON)? 1:0;  //YJ,add,080819,for hidden ap
- 
- 	memset(&network, 0, sizeof(struct ieee80211_network));
--//rz
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_process_probe_response_1) {
--		ieee->ext_patch_ieee80211_process_probe_response_1(ieee, beacon, stats);
--		return;
--	}
--#endif
- 
- 	IEEE80211_DEBUG_SCAN(
- 		"'%s' (" MAC_FMT "): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
-@@ -1879,9 +1740,6 @@ inline void ieee80211_process_probe_resp
- 				     "PROBE RESPONSE" : "BEACON");
- #endif
- 
--#ifdef _RTL8187_EXT_PATCH_
--	network.ext_entry = target->ext_entry;
--#endif
- 		memcpy(target, &network, sizeof(*target));
- 		list_add_tail(&target->list, &ieee->network_list);
- 		if(ieee->softmac_features & IEEE_SOFTMAC_ASSOCIATE)
-@@ -1939,18 +1797,6 @@ void ieee80211_rx_mgt(struct ieee80211_d
- 		ieee80211_process_probe_response(
- 			ieee, (struct ieee80211_probe_response *)header, stats);
- 		break;
--//rz
--#ifdef _RTL8187_EXT_PATCH_
--	case IEEE80211_STYPE_PROBE_REQ:
--		IEEE80211_DEBUG_MGMT("received PROBE REQUEST (%d)\n",
--				     WLAN_FC_GET_STYPE(header->frame_ctl));
--		IEEE80211_DEBUG_SCAN("Probe request\n");
--		///
--		if( ieee->iw_mode == ieee->iw_ext_mode && ieee->ext_patch_ieee80211_rx_mgt_on_probe_req )
--			ieee->ext_patch_ieee80211_rx_mgt_on_probe_req( ieee, (struct ieee80211_probe_request *)header, stats);
--		break;
--#endif // _RTL8187_EXT_PATCH_
--
- 	}
- }
- 
-@@ -1958,7 +1804,4 @@ void ieee80211_rx_mgt(struct ieee80211_d
- EXPORT_SYMBOL(ieee80211_rx_mgt);
- EXPORT_SYMBOL(ieee80211_rx);
- EXPORT_SYMBOL(ieee80211_network_init);
--#ifdef _RTL8187_EXT_PATCH_
--EXPORT_SYMBOL(ieee_ext_skb_p80211_to_ether);
--#endif
- #endif
++	skb_reset_mac_header(skb);
+ 	skb_pull(skb, ieee80211_get_hdrlen(fc));
+ 	skb->pkt_type = PACKET_OTHERHOST;
+ 	skb->protocol = __constant_htons(ETH_P_80211_RAW);
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-@@ -325,27 +325,12 @@ inline struct sk_buff *ieee80211_probe_r
- 	struct sk_buff *skb;
- 	struct ieee80211_probe_request *req;
+@@ -375,15 +375,8 @@ inline struct sk_buff *ieee80211_probe_r
  
--#ifdef _RTL8187_EXT_PATCH_
--	short extMore = 0;
--	if(ieee->ext_patch_ieee80211_probe_req_1)
--		extMore = ieee->ext_patch_ieee80211_probe_req_1(ieee);
--#endif
--
- 	len = ieee->current_network.ssid_len;
+ struct sk_buff *ieee80211_get_beacon_(struct ieee80211_device *ieee);
  
- 	rate_len = ieee80211_MFIE_rate_len(ieee);
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if(!extMore)
--#endif
- 	skb = dev_alloc_skb(sizeof(struct ieee80211_probe_request) +
- 			    2 + len + rate_len);
--#ifdef _RTL8187_EXT_PATCH_
--	else
--		skb = dev_alloc_skb(sizeof(struct ieee80211_probe_request) +
--			    2 + len + rate_len+128); // MESHID + CAP
--#endif
--
- 	if (!skb)
- 		return NULL;
- 
-@@ -366,10 +351,6 @@ inline struct sk_buff *ieee80211_probe_r
- 	ieee80211_MFIE_Brate(ieee,&tag);
- 	ieee80211_MFIE_Grate(ieee,&tag);
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if(extMore)
--		ieee->ext_patch_ieee80211_probe_req_2(ieee, skb, tag);
--#endif
- 	return skb;
- }
- 
-@@ -436,79 +417,10 @@ void ieee80211_send_beacon_cb(unsigned l
- 	spin_unlock_irqrestore(&ieee->beacon_lock, flags);
- }
- 
--#ifdef _RTL8187_EXT_PATCH_
--
--inline struct sk_buff *ieee80211_probe_req_with_SSID(struct ieee80211_device *ieee, char *ssid, int len_ssid)
--{
--	unsigned int len,rate_len;
--	u8 *tag;
--	struct sk_buff *skb;
--	struct ieee80211_probe_request *req;
--
--#ifdef _RTL8187_EXT_PATCH_
--	short extMore = 0;
--	if(ieee->ext_patch_ieee80211_probe_req_1)
--		extMore = ieee->ext_patch_ieee80211_probe_req_1(ieee);
--#endif
--
--	len = len_ssid;
--
--	rate_len = ieee80211_MFIE_rate_len(ieee);
--
--#ifdef _RTL8187_EXT_PATCH_
--	if(!extMore)
--#endif
--	skb = dev_alloc_skb(sizeof(struct ieee80211_probe_request) +
--			    2 + len + rate_len);
--#ifdef _RTL8187_EXT_PATCH_
--	else
--		skb = dev_alloc_skb(sizeof(struct ieee80211_probe_request) +
--			    2 + len + rate_len+128); // MESHID + CAP
--#endif
--
--	if (!skb)
--		return NULL;
--
--	req = (struct ieee80211_probe_request *) skb_put(skb,sizeof(struct ieee80211_probe_request));
--	req->header.frame_ctl = cpu_to_le16(IEEE80211_STYPE_PROBE_REQ);
--	req->header.duration_id = 0; //FIXME: is this OK ?
--
--	memset(req->header.addr1, 0xff, ETH_ALEN);
--	memcpy(req->header.addr2, ieee->dev->dev_addr, ETH_ALEN);
--	memset(req->header.addr3, 0xff, ETH_ALEN);
--
--	tag = (u8 *) skb_put(skb,len+2+rate_len);
--
--	*tag++ = MFIE_TYPE_SSID;
--	*tag++ = len;
--	if(len)
--	{
--		memcpy(tag, ssid, len);
--		tag += len;
--	}
--
--	ieee80211_MFIE_Brate(ieee,&tag);
--	ieee80211_MFIE_Grate(ieee,&tag);
--
--#ifdef _RTL8187_EXT_PATCH_
--	if(extMore)
--		ieee->ext_patch_ieee80211_probe_req_2(ieee, skb, tag);
--#endif
--	return skb;
--}
--
--#endif // _RTL8187_EXT_PATCH_
--
--
- void ieee80211_send_probe(struct ieee80211_device *ieee)
+-//#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
+-//void ext_ieee80211_send_beacon_wq(struct work_struct *work)
+-//{
+-//	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, ext_send_beacon_wq);
+-//#else
+ void ext_ieee80211_send_beacon_wq(struct ieee80211_device *ieee)
  {
+-//#endif
+-
  	struct sk_buff *skb;
  
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->iw_mode == ieee->iw_ext_mode)
--		skb = ieee80211_probe_req_with_SSID(ieee, NULL, 0);
--	else
--#endif
- 	skb = ieee80211_probe_req(ieee);
- 	if (skb){
- 		softmac_mgmt_xmit(skb, ieee);
-@@ -1080,132 +992,6 @@ static struct sk_buff* ieee80211_probe_r
- 	skb->dev = ieee->dev;
- 	return skb;
+ 	//unsigned long flags;
+@@ -716,15 +709,10 @@ void ieee80211_softmac_scan(struct ieee8
  }
--#ifdef _RTL8187_EXT_PATCH_
--struct sk_buff* ieee80211_ext_probe_resp_by_net(struct ieee80211_device *ieee, u8 *dest, struct ieee80211_network *net)
--{
--	u8 *tag;
--	int beacon_size;
--	struct ieee80211_probe_response *beacon_buf;
--	struct sk_buff *skb;
--	int encrypt;
--	int atim_len,erp_len;
--	struct ieee80211_crypt_data* crypt;
--	u8 broadcast_addr[] = {0xff,0xff,0xff,0xff,0xff,0xff};
--	int wpa_ie_len = ieee->wpa_ie_len;
--	char *ssid = net->ssid;
--	int ssid_len = net->ssid_len;
--
--	int rate_len = ieee->current_network.rates_len+2;
--	int rate_ex_len = ieee->current_network.rates_ex_len;
--	if(rate_ex_len > 0) rate_ex_len+=2;
--
--	if( ieee->meshScanMode&4)
--		ieee->current_network.channel = ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel(ieee);
--	if( ieee->meshScanMode&6)
--		queue_work(ieee->wq, &ieee->ext_stop_scan_wq);
--
--	if(ieee->current_network.capability & WLAN_CAPABILITY_IBSS) // use current_network here
--		atim_len = 4;
--	else
--		atim_len = 0;
--
--	if(ieee80211_is_54g(*net))
--		erp_len = 3;
--	else
--		erp_len = 0;
--
--	beacon_size = sizeof(struct ieee80211_probe_response)+
--		ssid_len
--		+3 //channel
--		+rate_len
--		+rate_ex_len
--		+atim_len
--		+erp_len;
--//b
--	skb = dev_alloc_skb(beacon_size+196);
--
--	if (!skb)
-- 		return NULL;
--
--	beacon_buf = (struct ieee80211_probe_response*) skb_put(skb, beacon_size);
--
--	memcpy (beacon_buf->header.addr1, dest,ETH_ALEN);
--	memcpy (beacon_buf->header.addr2, ieee->dev->dev_addr, ETH_ALEN);
--	memcpy (beacon_buf->header.addr3, ieee->current_network.bssid, ETH_ALEN);
--
--	beacon_buf->header.duration_id = 0; //FIXME
--
--	beacon_buf->beacon_interval =
--		cpu_to_le16(ieee->current_network.beacon_interval);  // use current_network here
--	beacon_buf->capability =
--		cpu_to_le16(ieee->current_network.capability & WLAN_CAPABILITY_IBSS);
--
--	if(ieee->short_slot && (ieee->current_network.capability & WLAN_CAPABILITY_SHORT_SLOT))
--		cpu_to_le16((beacon_buf->capability |= WLAN_CAPABILITY_SHORT_SLOT));
--
--	crypt = ieee->crypt[ieee->tx_keyidx];
--
--	encrypt = ieee->host_encrypt && crypt && crypt->ops &&
--		((0 == strcmp(crypt->ops->name, "WEP"))||wpa_ie_len);
--
--	if (encrypt)
--		beacon_buf->capability |= cpu_to_le16(WLAN_CAPABILITY_PRIVACY);
--
--
--	beacon_buf->header.frame_ctl = cpu_to_le16(IEEE80211_STYPE_PROBE_RESP);
--
--	beacon_buf->info_element.id = MFIE_TYPE_SSID;
--	beacon_buf->info_element.len = ssid_len;
--
--	tag = (u8*) beacon_buf->info_element.data;
--
--	// brocad cast / probe rsp
--	if(memcmp(dest, broadcast_addr, ETH_ALEN ))
--		memcpy(tag, ssid, ssid_len);
--	else
--		ssid_len=0;
--
--	tag += ssid_len;
--
--//get_bssrate_set(priv, _SUPPORTEDRATES_IE_, &pbssrate, &bssrate_len);
--//pbuf = set_ie(pbuf, _SUPPORTEDRATES_IE_, bssrate_len, pbssrate, &frlen);
--
--	*(tag++) = MFIE_TYPE_RATES;
--	*(tag++) = rate_len-2;
--	memcpy(tag,ieee->current_network.rates,rate_len-2);
--	tag+=rate_len-2;
--
--	*(tag++) = MFIE_TYPE_DS_SET;
--	*(tag++) = 1;
--	*(tag++) = ieee->current_network.channel;  // use current_network here
--
--
--	if(atim_len){
--		*(tag++) = MFIE_TYPE_IBSS_SET;
--		*(tag++) = 2;
--		*((u16*)(tag)) = cpu_to_le16(ieee->current_network.atim_window); // use current_network here
--		tag+=2;
--	}
--
--	if(erp_len){
--		*(tag++) = MFIE_TYPE_ERP;
--		*(tag++) = 1;
--		*(tag++) = 0;
--	}
--
--	if(rate_ex_len){
--		*(tag++) = MFIE_TYPE_RATES_EX;
--		*(tag++) = rate_ex_len-2;
--		memcpy(tag,ieee->current_network.rates_ex,rate_ex_len-2);
--		tag+=rate_ex_len-2;
--	}
--	if (wpa_ie_len)
--		memcpy(tag, ieee->wpa_ie, ieee->wpa_ie_len);
--
--	skb->dev = ieee->dev;
--	return skb;
--}
--#endif // _RTL8187_EXT_PATCH_
- 
- struct sk_buff* ieee80211_assoc_resp(struct ieee80211_device *ieee, u8 *dest)
+ #endif
+ #ifdef ENABLE_IPS
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_softmac_scan_wq(struct work_struct *work)
  {
-@@ -1278,12 +1064,7 @@ struct sk_buff* ieee80211_auth_resp(stru
- 	auth->transaction = cpu_to_le16(2);
- 	auth->algorithm = cpu_to_le16(WLAN_AUTH_OPEN);
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->iw_mode == ieee->iw_ext_mode)
--		memcpy(auth->header.addr3, dest, ETH_ALEN);
+ 	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork, struct ieee80211_device, softmac_scan_wq);
 -#else
- 	memcpy(auth->header.addr3, ieee->dev->dev_addr, ETH_ALEN);
+-void ieee80211_softmac_scan_wq(struct ieee80211_device *ieee)
+-{
 -#endif
- 	memcpy(auth->header.addr2, ieee->dev->dev_addr, ETH_ALEN);
- 	memcpy(auth->header.addr1, dest, ETH_ALEN);
- 	auth->header.frame_ctl = cpu_to_le16(IEEE80211_STYPE_AUTH);
-@@ -1413,11 +1194,6 @@ inline struct sk_buff *ieee80211_associa
- 		+ wmm_info_len;
- #endif
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->iw_mode == ieee->iw_ext_mode)
--		skb = dev_alloc_skb(len+256); // stanley
--	else
--#endif
- 	skb = dev_alloc_skb(len);
- 
- 	if (!skb)
-@@ -1443,11 +1219,6 @@ inline struct sk_buff *ieee80211_associa
- 	if(ieee->short_slot)
- 		hdr->capability |= cpu_to_le16(WLAN_CAPABILITY_SHORT_SLOT);
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_association_req_1)
--		ieee->ext_patch_ieee80211_association_req_1(hdr);
--#endif
--
- 	hdr->listen_interval = 0xa; //FIXME
- 
- 	hdr->info_element.id = MFIE_TYPE_SSID;
-@@ -1674,11 +1445,6 @@ inline struct sk_buff *ieee80211_associa
-         }
- #endif
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_association_req_2)
--		ieee->ext_patch_ieee80211_association_req_2(ieee, beacon, skb);
--#endif
--
- 	return skb;
+ 	static short watchdog = 0;
+ #ifdef ENABLE_DOT11D
+ 	u8 channel_map[MAX_CHANNEL_NUMBER+1];
+@@ -774,16 +762,10 @@ out:
+ 	return;
  }
- 
-@@ -1725,13 +1491,6 @@ void ieee80211_associate_step1(struct ie
- 	IEEE80211_DEBUG_MGMT("Stopping scan\n");
- 	ieee->softmac_stats.tx_auth_rq++;
- 	skb=ieee80211_authentication_req(beacon, ieee, 0);
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->iw_mode == ieee->iw_ext_mode )	{
--		if(skb)
--			softmac_mgmt_xmit(skb, ieee);
--		return;
--	}else
--#endif
- 	if (!skb){
- 
- 		ieee80211_associate_abort(ieee);
-@@ -1788,105 +1547,6 @@ void ieee80211_auth_challenge(struct iee
- 	kfree(challenge);
- }
- 
--#ifdef _RTL8187_EXT_PATCH_
--
--// based on ieee80211_assoc_resp
--struct sk_buff* ieee80211_assoc_resp_by_net(struct ieee80211_device *ieee, u8 *dest, unsigned short status, struct ieee80211_network *pstat, int pkt_type)
--{
--	struct sk_buff *skb;
--	u8* tag;
--
--	struct ieee80211_crypt_data* crypt;
--	struct ieee80211_assoc_response_frame *assoc;
--	short encrypt;
--
--	unsigned int rate_len = ieee80211_MFIE_rate_len(ieee);
--	int len = sizeof(struct ieee80211_assoc_response_frame) + rate_len;
--
--	if(ieee->iw_mode == ieee->iw_ext_mode)
--		skb = dev_alloc_skb(len+256); // stanley
--	else
--		skb = dev_alloc_skb(len);
--
--	if (!skb)
--		return NULL;
--
--	assoc = (struct ieee80211_assoc_response_frame *)
--		skb_put(skb,sizeof(struct ieee80211_assoc_response_frame));
--
--	assoc->header.frame_ctl = cpu_to_le16(pkt_type);
--
--	memcpy(assoc->header.addr1, dest,ETH_ALEN);
--	memcpy(assoc->header.addr3, ieee->dev->dev_addr, ETH_ALEN);
--	memcpy(assoc->header.addr2, ieee->dev->dev_addr, ETH_ALEN);
--	assoc->capability = cpu_to_le16(ieee->iw_mode == IW_MODE_MASTER ?
--		WLAN_CAPABILITY_BSS : WLAN_CAPABILITY_IBSS);
--
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_assoc_resp_by_net_1)
--		ieee->ext_patch_ieee80211_assoc_resp_by_net_1(assoc);
--
--	if(ieee->short_slot)
--		assoc->capability |= cpu_to_le16(WLAN_CAPABILITY_SHORT_SLOT);
--
--	if (ieee->host_encrypt)
--		crypt = ieee->crypt[ieee->tx_keyidx];
--	else crypt = NULL;
--
--	encrypt = ( crypt && crypt->ops);
--
--	if (encrypt)
--		assoc->capability |= cpu_to_le16(WLAN_CAPABILITY_PRIVACY);
--
--	assoc->status = 0;
--	assoc->aid = cpu_to_le16(ieee->assoc_id);
--	if (ieee->assoc_id == 0x2007) ieee->assoc_id=0;
--	else ieee->assoc_id++;
--
--	assoc->info_element.id = 230; // Stanley, an unused id (just a hot fix)
--	assoc->info_element.len = 0;
--
--	tag = (u8*) skb_put(skb, rate_len);
--
--	ieee80211_MFIE_Brate(ieee, &tag);
--	ieee80211_MFIE_Grate(ieee, &tag);
--
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_assoc_resp_by_net_2)
--		ieee->ext_patch_ieee80211_assoc_resp_by_net_2(ieee, pstat, pkt_type, skb);
--
--	return skb;
--}
--
--// based on ieee80211_resp_to_assoc_rq
--void ieee80211_ext_issue_assoc_rsp(struct ieee80211_device *ieee, u8 *dest, unsigned short status, struct ieee80211_network *pstat, int pkt_type)
--{
--	struct sk_buff *buf = ieee80211_assoc_resp_by_net(ieee, dest, status, pstat, pkt_type);
--
--	if (buf)
--		softmac_mgmt_xmit(buf, ieee);
--}
--
--// based on ieee80211_associate_step2
--void ieee80211_ext_issue_assoc_req(struct ieee80211_device *ieee, struct ieee80211_network *pstat)
--{
--
--	struct sk_buff* skb;
--
--	// printk("@@@@@ ieee80211_ext_issue_assoc_req on channel: %d\n", ieee->current_network.channel);
--
--	ieee->softmac_stats.tx_ass_rq++;
--	skb=ieee80211_association_req(pstat, ieee);
--	if (skb)
--		softmac_mgmt_xmit(skb, ieee);
--}
--
--void ieee80211_ext_issue_disassoc(struct ieee80211_device *ieee, struct ieee80211_network *pstat, int reason, unsigned char extReason)
--{
--	// do nothing
--	// printk("@@@@@ ieee80211_ext_issue_disassoc\n");
--	return;
--}
--#endif // _RTL8187_EXT_PATCH_
--
- void ieee80211_associate_step2(struct ieee80211_device *ieee)
+ #else
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_softmac_scan_wq(struct work_struct *work)
  {
- 	struct sk_buff* skb;
-@@ -1962,45 +1622,6 @@ void ieee80211_associate_procedure_wq(st
- 
- 	up(&ieee->wx_sem);
- }
--#ifdef _RTL8187_EXT_PATCH_
--// based on ieee80211_associate_procedure_wq
--
--void ieee80211_ext_stop_scan_wq(struct work_struct *work)
+ 	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, softmac_scan_wq);
+-#else
+-void ieee80211_softmac_scan_wq(struct ieee80211_device *ieee)
 -{
--	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, ext_stop_scan_wq);
+-#endif
 -
--	if (ieee->scanning == 0) {
--		if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel
--				&& ( ieee->current_network.channel == ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel(ieee) ) )
--		return;
+         short watchdog = 0;
+ #ifdef ENABLE_DOT11D
+ 	u8 channel_map[MAX_CHANNEL_NUMBER+1];
+@@ -826,18 +808,6 @@ out:
+ }
+ 
+ #endif
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
+-void ieee80211_softmac_scan_cb(unsigned long _dev)
+-{
+-	unsigned long flags;
+-	struct ieee80211_device *ieee = (struct ieee80211_device *)_dev;
+-
+-	spin_lock_irqsave(&ieee->lock, flags);
+-	ieee80211_softmac_scan(ieee);
+-	spin_unlock_irqrestore(&ieee->lock, flags);
+-}
+-#endif
+-
+ 
+ void ieee80211_beacons_start(struct ieee80211_device *ieee)
+ {
+@@ -1132,14 +1102,8 @@ struct sk_buff* ieee80211_ext_probe_resp
+ 	if( ieee->meshScanMode&4)
+ 		ieee->current_network.channel = ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel(ieee);
+ 	if( ieee->meshScanMode&6)
+-	{
+-
+-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0)
+ 		queue_work(ieee->wq, &ieee->ext_stop_scan_wq);
+-#else
+-		schedule_task(&ieee->ext_stop_scan_wq);
+-#endif
 -	}
--
--	ieee->sync_scan_hurryup = 1;
--
--	down(&ieee->wx_sem);
--
--	// printk("@@@@@@@@@@ ieee80211_ext_stop_scan_wq\n");
--	if (ieee->data_hard_stop)
--		ieee->data_hard_stop(ieee->dev);
--
--	ieee80211_stop_scan(ieee);
--
--	// set channel
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel)
--		ieee->set_chan(ieee->dev, ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel(ieee));
--	else
--		ieee->set_chan(ieee->dev, ieee->current_network.channel);
--	//
--	up(&ieee->wx_sem);
--}
--
--
--void ieee80211_ext_send_11s_beacon(struct ieee80211_device *ieee)
--{
--	queue_work(ieee->wq, &ieee->ext_send_beacon_wq);
--}
--
--#endif // _RTL8187_EXT_PATCH_
++
+ 	if(ieee->current_network.capability & WLAN_CAPABILITY_IBSS) // use current_network here
+ 		atim_len = 4;
+ 	else
+@@ -1945,14 +1909,10 @@ void ieee80211_associate_step2(struct ie
+ 	}
+ }
  
- inline void ieee80211_softmac_new_net(struct ieee80211_device *ieee, struct ieee80211_network *net)
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_associate_complete_wq(struct work_struct *work)
  {
-@@ -2584,12 +2205,6 @@ associate_complete:
- 					ieee80211_associate_abort(ieee);
- 				}
- 			}
--#ifdef _RTL8187_EXT_PATCH_
--			else if ((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_rx_frame_softmac_on_assoc_rsp)
--			{
--					ieee->ext_patch_ieee80211_rx_frame_softmac_on_assoc_rsp(ieee, skb);
--			}
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, associate_complete_wq);
+-#else
+-void ieee80211_associate_complete_wq(struct ieee80211_device *ieee)
+-{
 -#endif
- 			break;
++
+ 	printk(KERN_INFO "Associated successfully\n");
+ 	if(ieee80211_is_54g(ieee->current_network) &&
+ 		(ieee->modulation & IEEE80211_OFDM_MODULATION)){
+@@ -1984,14 +1944,10 @@ void ieee80211_associate_complete(struct
+ 	queue_work(ieee->wq, &ieee->associate_complete_wq);
+ }
  
- 		case IEEE80211_STYPE_ASSOC_REQ:
-@@ -2599,21 +2214,10 @@ associate_complete:
- 				ieee->iw_mode == IW_MODE_MASTER)
- 
- 				ieee80211_rx_assoc_rq(ieee, skb);
--#ifdef _RTL8187_EXT_PATCH_
--			else if ((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_rx_frame_softmac_on_assoc_req)
--			{
--					ieee->ext_patch_ieee80211_rx_frame_softmac_on_assoc_req(ieee, skb);
--			}
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_associate_procedure_wq(struct work_struct *work)
+ {
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, associate_procedure_wq);
+-#else
+-void ieee80211_associate_procedure_wq(struct ieee80211_device *ieee)
+-{
 -#endif
- 			break;
++
+ 	ieee->sync_scan_hurryup = 1;
+ 	down(&ieee->wx_sem);
  
- 		case IEEE80211_STYPE_AUTH:
+@@ -2009,16 +1965,11 @@ void ieee80211_associate_procedure_wq(st
+ #ifdef _RTL8187_EXT_PATCH_
+ // based on ieee80211_associate_procedure_wq
  
--#ifdef _RTL8187_EXT_PATCH_
--printk("IEEE80211_STYPE_AUTH\n");
--			if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_rx_frame_softmac_on_auth)
--			if( ieee->ext_patch_ieee80211_rx_frame_softmac_on_auth(ieee, skb, rx_stats) );
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
+ void ieee80211_ext_stop_scan_wq(struct work_struct *work)
+ {
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, ext_stop_scan_wq);
+-#else
+-void ieee80211_ext_stop_scan_wq(struct ieee80211_device *ieee)
+-{
 -#endif
- 			if (ieee->softmac_features & IEEE_SOFTMAC_ASSOCIATE){
- 				if (ieee->state == IEEE80211_ASSOCIATING_AUTHENTICATING &&
- 				ieee->iw_mode == IW_MODE_INFRA){
-@@ -2653,11 +2257,6 @@ printk("IEEE80211_STYPE_AUTH\n");
+-	  if (ieee->scanning == 0)
+-	{
++
++	if (ieee->scanning == 0) {
+ 		if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel
+ 				&& ( ieee->current_network.channel == ieee->ext_patch_ieee80211_ext_stop_scan_wq_set_channel(ieee) ) )
+ 		return;
+@@ -2046,12 +1997,7 @@ void ieee80211_ext_stop_scan_wq(struct i
  
- 		case IEEE80211_STYPE_DISASSOC:
- 		case IEEE80211_STYPE_DEAUTH:
--#ifdef _RTL8187_EXT_PATCH_
--printk("IEEE80211_STYPE_DEAUTH\n");
--		if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_rx_frame_softmac_on_deauth)
--		if( ieee->ext_patch_ieee80211_rx_frame_softmac_on_deauth(ieee, skb, rx_stats) )	;
+ void ieee80211_ext_send_11s_beacon(struct ieee80211_device *ieee)
+ {
+-	#if LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0)
+-		queue_work(ieee->wq, &ieee->ext_send_beacon_wq);
+-	#else
+-		schedule_task(&ieee->ext_send_beacon_wq);
+-	#endif
+-
++	queue_work(ieee->wq, &ieee->ext_send_beacon_wq);
+ }
+ 
+ #endif // _RTL8187_EXT_PATCH_
+@@ -2977,15 +2923,11 @@ void ieee80211_start_monitor_mode(struct
+ 		netif_carrier_on(ieee->dev);
+ 	}
+ }
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++
+ void ieee80211_start_ibss_wq(struct work_struct *work)
+ {
+ 	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork, struct ieee80211_device, start_ibss_wq);
+-#else
+-void ieee80211_start_ibss_wq(struct ieee80211_device *ieee)
+-{
 -#endif
- 			/* FIXME for now repeat all the association procedure
- 			* both for disassociation and deauthentication
- 			*/
-@@ -2710,9 +2309,6 @@ void ieee80211_softmac_xmit(struct ieee8
  
+ 	/* iwconfig mode ad-hoc will schedule this and return
+ 	 * on the other hand this will block further iwconfig SET
+@@ -3159,15 +3101,10 @@ void ieee80211_disassociate(struct ieee8
+ 	notify_wx_assoc_event(ieee);
+ 
+ }
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void ieee80211_associate_retry_wq(struct work_struct *work)
+ {
+ 	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork, struct ieee80211_device, associate_retry_wq);
+-#else
+-void ieee80211_associate_retry_wq(struct ieee80211_device *ieee)
+-{
+-#endif
  	unsigned long flags;
- 	int  i;
--#ifdef _RTL8187_EXT_PATCH_
--	int rate = ieee->rate;
+ 	down(&ieee->wx_sem);
+ 	if(!ieee->proto_started)
+@@ -3278,10 +3215,8 @@ void ieee80211_stop_protocol(struct ieee
+ 		ieee->ext_patch_ieee80211_stop_protocol(ieee);
+ //if call queue_delayed_work,can call this,or do nothing..
+ //edit by lawrence,20071118
+-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0)
+ //	cancel_delayed_work(&ieee->ext_stop_scan_wq);
+ //	cancel_delayed_work(&ieee->ext_send_beacon_wq);
 -#endif
+ #endif // _RTL8187_EXT_PATCH_
  
- 	spin_lock_irqsave(&ieee->lock,flags);
- 	#if 0
-@@ -2739,12 +2335,6 @@ void ieee80211_softmac_xmit(struct ieee8
- 	}
- 	#endif
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_ieee80211_softmac_xmit_get_rate && txb->nr_frags)
--	{
--		rate = ieee->ext_patch_ieee80211_softmac_xmit_get_rate(ieee, txb->fragments[0]);
--	}
--#endif
- 	/* called with 2nd parm 0, no tx mgmt lock required */
- 	ieee80211_sta_wakeup(ieee,0);
- 
-@@ -2757,11 +2347,7 @@ void ieee80211_softmac_xmit(struct ieee8
- 		}else{
- 			ieee->softmac_data_hard_start_xmit(
- 				txb->fragments[i],
--#ifdef _RTL8187_EXT_PATCH_
--				ieee->dev, rate);
--#else
- 				ieee->dev,ieee->rate);
--#endif
- 				//(i+1)<txb->nr_frags);
- 			ieee->stats.tx_packets++;
- 			ieee->stats.tx_bytes += txb->fragments[i]->len;
-@@ -3154,16 +2740,7 @@ struct sk_buff *ieee80211_get_beacon_(st
- 	struct sk_buff *skb = NULL;
- 	struct ieee80211_probe_response *b;
- 
--//rz
--#ifdef _RTL8187_EXT_PATCH_
--	if((ieee->iw_mode == ieee->iw_ext_mode) && ieee->ext_patch_get_beacon_get_probersp )
--		skb = ieee->ext_patch_get_beacon_get_probersp(ieee, broadcast_addr, &(ieee->current_network));
--	else
--		skb = ieee80211_probe_resp(ieee, broadcast_addr);
--#else
- 	skb = ieee80211_probe_resp(ieee, broadcast_addr);
--#endif
--//
- 	if (!skb)
- 		return NULL;
- 
-@@ -3210,15 +2787,6 @@ void ieee80211_stop_protocol(struct ieee
- 
- 	ieee->proto_started = 0;
- 
--#ifdef _RTL8187_EXT_PATCH_
--	if(ieee->ext_patch_ieee80211_stop_protocol)
--		ieee->ext_patch_ieee80211_stop_protocol(ieee);
--//if call queue_delayed_work,can call this,or do nothing..
--//edit by lawrence,20071118
--//	cancel_delayed_work(&ieee->ext_stop_scan_wq);
--//	cancel_delayed_work(&ieee->ext_send_beacon_wq);
--#endif // _RTL8187_EXT_PATCH_
--
  	ieee80211_stop_send_beacons(ieee);
- 	if((ieee->iw_mode == IW_MODE_INFRA)&&(ieee->state == IEEE80211_LINKED)) {
- 		SendDisassociation(ieee,NULL,WLAN_REASON_DISASSOC_STA_HAS_LEFT);
-@@ -3303,91 +2871,8 @@ void ieee80211_start_protocol(struct iee
- 			break;
- 
- 		default:
--#ifdef _RTL8187_EXT_PATCH_
--			if((ieee->iw_mode == ieee->iw_ext_mode) &&\
--			    ieee->ext_patch_ieee80211_start_protocol &&\
--                            ieee->ext_patch_ieee80211_start_protocol(ieee)) {
--				queue_work(ieee->wq, &ieee->ext_stop_scan_wq);
--
--				// By default, WMM function will be disabled in
--				// EXTENSION mode
--				ieee->current_network.QoS_Enable = 0;
--
--				if(ieee->modulation & IEEE80211_CCK_MODULATION){
--					ieee->current_network.rates_len = 4;
--					ieee->current_network.rates[0] = \
--                                              IEEE80211_BASIC_RATE_MASK | \
--					      IEEE80211_CCK_RATE_1MB;
--					ieee->current_network.rates[1] = \
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_CCK_RATE_2MB;
--					ieee->current_network.rates[2] = \
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_CCK_RATE_5MB;
--					ieee->current_network.rates[3] = \
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_CCK_RATE_11MB;
--				}else
--					ieee->current_network.rates_len = 0;
--
--				if(ieee->modulation & IEEE80211_OFDM_MODULATION){
--					ieee->current_network.rates_ex_len = 8;
--					ieee->current_network.rates_ex[0] = \
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_OFDM_RATE_6MB;
--					ieee->current_network.rates_ex[1] = \
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_OFDM_RATE_9MB;
--					ieee->current_network.rates_ex[2] = \
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_OFDM_RATE_12MB;
--					ieee->current_network.rates_ex[3] = \
--                                              IEEE80211_BASIC_RATE_MASK | \
--                                              IEEE80211_OFDM_RATE_18MB;
--					ieee->current_network.rates_ex[4] =\
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_OFDM_RATE_24MB;
--					ieee->current_network.rates_ex[5] =\
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_OFDM_RATE_36MB;
--					ieee->current_network.rates_ex[6] = \
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_OFDM_RATE_48MB;
--					ieee->current_network.rates_ex[7] =\
--                                              IEEE80211_BASIC_RATE_MASK |\
--                                              IEEE80211_OFDM_RATE_54MB;
--					ieee->rate = 540;
--				}else{
--					ieee->current_network.rates_ex_len = 0;
--					ieee->rate = 110;
--				}
--
--				/*
--				   spin_lock_irqsave(&ieee->lock, flags);
--				   if (ieee->state == IEEE80211_NOLINK)
--				   ieee80211_start_scan(ieee);
--				// ieee->set_chan(ieee->dev, 8);
--
--				spin_unlock_irqrestore(&ieee->lock, flags);
--				*/
--				memcpy(ieee->current_network.bssid, ieee->dev->dev_addr,\
--				      	 ETH_ALEN);
--				ieee->link_change(ieee->dev);
--				notify_wx_assoc_event(ieee);
--
--				if (ieee->data_hard_resume)
--					ieee->data_hard_resume(ieee->dev);
--
--				netif_carrier_on(ieee->dev);
--			} else {
--				ieee->iw_mode = IW_MODE_INFRA;
--				ieee80211_start_bss(ieee);
--			}
+@@ -3372,9 +3307,8 @@ void ieee80211_start_protocol(struct iee
+ 			if((ieee->iw_mode == ieee->iw_ext_mode) &&\
+ 			    ieee->ext_patch_ieee80211_start_protocol &&\
+                             ieee->ext_patch_ieee80211_start_protocol(ieee)) {
+-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0)
+ 				queue_work(ieee->wq, &ieee->ext_stop_scan_wq);
+-#endif
++
+ 				// By default, WMM function will be disabled in
+ 				// EXTENSION mode
+ 				ieee->current_network.QoS_Enable = 0;
+@@ -3522,7 +3456,6 @@ void ieee80211_softmac_init(struct ieee8
+ #else
+ 	ieee->wq = create_workqueue(DRV_NAME);
+ #endif
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)//added by lawrence,070702
+ 	INIT_DELAYED_WORK(&ieee->start_ibss_wq,(void*) ieee80211_start_ibss_wq);
+ 	INIT_WORK(&ieee->associate_complete_wq,(void*) ieee80211_associate_complete_wq);
+ 	INIT_WORK(&ieee->associate_procedure_wq,(void*) ieee80211_associate_procedure_wq);
+@@ -3536,20 +3469,7 @@ void ieee80211_softmac_init(struct ieee8
+ 	//INIT_WORK(&ieee->ext_send_beacon_wq,(void*) ieee80211_beacons_start,ieee);
+ 	INIT_WORK(&ieee->ext_send_beacon_wq,(void*) ext_ieee80211_send_beacon_wq);
+ #endif //_RTL8187_EXT_PATCH_
 -#else
- 			ieee->iw_mode = IW_MODE_INFRA;
- 			ieee80211_start_bss(ieee);
--
--#endif
- 			break;
- 	}
- }
-@@ -3431,9 +2916,6 @@ void ieee80211_softmac_init(struct ieee8
- 	ieee->beinretry = false;
- 	ieee->bHwRadioOff = false;
- //by amy
+-	INIT_WORK(&ieee->start_ibss_wq,(void*) ieee80211_start_ibss_wq,ieee);
+-	INIT_WORK(&ieee->associate_retry_wq,(void*) ieee80211_associate_retry_wq,ieee);
+-	INIT_WORK(&ieee->associate_complete_wq,(void*) ieee80211_associate_complete_wq,ieee);
+-	INIT_WORK(&ieee->associate_procedure_wq,(void*) ieee80211_associate_procedure_wq,ieee);
+-	INIT_WORK(&ieee->softmac_scan_wq,(void*) ieee80211_softmac_scan_wq,ieee);
+-	INIT_WORK(&ieee->wx_sync_scan_wq,(void*) ieee80211_wx_sync_scan_wq,ieee);
+-//	INIT_WORK(&ieee->watch_dog_wq,(void*) ieee80211_watch_dog_wq,ieee);
 -#ifdef _RTL8187_EXT_PATCH_
--	ieee->iw_ext_mode = 999;
--#endif
- 
- 	init_mgmt_queue(ieee);
- #if 0
-@@ -3463,12 +2945,6 @@ void ieee80211_softmac_init(struct ieee8
- 	INIT_DELAYED_WORK(&ieee->associate_retry_wq,(void*) ieee80211_associate_retry_wq);
- 	INIT_WORK(&ieee->wx_sync_scan_wq,(void*) ieee80211_wx_sync_scan_wq);
- //	INIT_WORK(&ieee->watch_dog_wq,(void*) ieee80211_watch_dog_wq);
--//added by lawrence,20071118
--#ifdef _RTL8187_EXT_PATCH_
--	INIT_WORK(&ieee->ext_stop_scan_wq,(void*) ieee80211_ext_stop_scan_wq);
+-	INIT_WORK(&ieee->ext_stop_scan_wq,(void*) ieee80211_ext_stop_scan_wq,ieee);
 -	//INIT_WORK(&ieee->ext_send_beacon_wq,(void*) ieee80211_beacons_start,ieee);
--	INIT_WORK(&ieee->ext_send_beacon_wq,(void*) ext_ieee80211_send_beacon_wq);
--#endif //_RTL8187_EXT_PATCH_
- 
+-	INIT_WORK(&ieee->ext_send_beacon_wq,(void*) ext_ieee80211_send_beacon_wq,ieee);
+-#endif
+-#endif
++
  	sema_init(&ieee->wx_sem, 1);
  	sema_init(&ieee->scan_sem, 1);
-@@ -3495,10 +2971,6 @@ void ieee80211_softmac_free(struct ieee8
- 	//add for RF power on power of by lizhaoming 080512
- 	cancel_delayed_work(&ieee->GPIOChangeRFWorkItem);
  
--#ifdef _RTL8187_EXT_PATCH_
--	cancel_delayed_work(&ieee->ext_stop_scan_wq);
--	cancel_delayed_work(&ieee->ext_send_beacon_wq);
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
+@@ -270,16 +270,9 @@ out:
+ }
+ 
+ 
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
+ void ieee80211_wx_sync_scan_wq(struct work_struct *work)
+ {
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, wx_sync_scan_wq);
+-#else
+-void ieee80211_wx_sync_scan_wq(struct ieee80211_device *ieee)
+-{
 -#endif
- 	destroy_workqueue(ieee->wq);
- #ifdef ENABLE_DOT11D
- 	if(NULL != ieee->pDot11dInfo)
-@@ -3933,17 +3405,5 @@ EXPORT_SYMBOL(SendDisassociation);
- EXPORT_SYMBOL(ieee80211_disassociate);
- EXPORT_SYMBOL(ieee80211_start_scan);
- EXPORT_SYMBOL(ieee80211_softmac_ips_scan_syncro);
--#ifdef _RTL8187_EXT_PATCH_
--EXPORT_SYMBOL(ieee80211_ext_issue_assoc_req);
--EXPORT_SYMBOL(ieee80211_ext_issue_disassoc);
--EXPORT_SYMBOL(ieee80211_ext_issue_assoc_rsp);
--EXPORT_SYMBOL(softmac_mgmt_xmit);
--EXPORT_SYMBOL(ieee80211_ext_probe_resp_by_net);
--EXPORT_SYMBOL(ieee80211_start_scan);
--EXPORT_SYMBOL(ieee80211_stop_scan);
--EXPORT_SYMBOL(ieee80211_ext_send_11s_beacon);
--EXPORT_SYMBOL(ieee80211_rx_auth_rq);
--EXPORT_SYMBOL(ieee80211_associate_step1);
--#endif // _RTL8187_EXT_PATCH_
- EXPORT_SYMBOL(ieee80211_sta_ps_send_null_frame);
- #endif
+-//void ieee80211_wx_sync_scan_wq(struct ieee80211_device *ieee)
+-//{
+ 	short chan;
+ 
+ 	chan = ieee->current_network.channel;
+@@ -379,11 +372,7 @@ int ieee80211_wx_set_essid(struct ieee80
+ 
+ 	if (wrqu->essid.flags && wrqu->essid.length) {
+ //YJ,modified,080819
+-#if LINUX_VERSION_CODE <  KERNEL_VERSION(2,6,20)
+-		len = ((wrqu->essid.length-1) < IW_ESSID_MAX_SIZE) ? (wrqu->essid.length-1) : IW_ESSID_MAX_SIZE;
+-#else
+ 		len = (wrqu->essid.length < IW_ESSID_MAX_SIZE) ? (wrqu->essid.length) : IW_ESSID_MAX_SIZE;
+-#endif
+ 		memset(ieee->current_network.ssid, 0, ieee->current_network.ssid_len); //YJ,add,080819
+ 		strncpy(ieee->current_network.ssid, extra, len);
+ 		ieee->current_network.ssid_len = len;
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
-@@ -304,216 +304,6 @@ ieee80211_classify(struct sk_buff *skb, 
-   return(wme_UP);
- }
- 
--#ifdef _RTL8187_EXT_PATCH_
--// based on part of ieee80211_xmit. Mainly allocate txb. ieee->lock is held
--struct ieee80211_txb *ieee80211_ext_alloc_txb(struct sk_buff *skb, struct net_device *dev, struct ieee80211_hdr_3addr *header, int hdr_len, u8 isQoS, u16 *pQOS_ctl, int isEncrypt, struct ieee80211_crypt_data* crypt)
--{
--	struct ieee80211_device *ieee = netdev_priv(dev);
--	struct ieee80211_txb *txb = NULL;
--	struct ieee80211_hdr_3addr *frag_hdr;
--	int i, bytes_per_frag, nr_frags, bytes_last_frag, frag_size;
--	int ether_type;
--	int bytes, QOS_ctl;
--	struct sk_buff *skb_frag;
--
--	ether_type = ntohs(((struct ethhdr *)skb->data)->h_proto);
--
--	/* Advance the SKB to the start of the payload */
--	skb_pull(skb, sizeof(struct ethhdr));
--
--	/* Determine total amount of storage required for TXB packets */
--	bytes = skb->len + SNAP_SIZE + sizeof(u16);
--
--	/* Determine fragmentation size based on destination (multicast
--	 * and broadcast are not fragmented) */
--	// if (is_multicast_ether_addr(dest) ||
--	// is_broadcast_ether_addr(dest)) {
--	if (is_multicast_ether_addr(header->addr1) ||
--			is_broadcast_ether_addr(header->addr1)) {
--		frag_size = MAX_FRAG_THRESHOLD;
--		QOS_ctl = QOS_CTL_NOTCONTAIN_ACK;
--	}
--	else {
--		//printk(KERN_WARNING "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&frag_size = %d\n", frag_size);
--		frag_size = ieee->fts;//default:392
--		QOS_ctl = 0;
--	}
--
--	if(isQoS) {
--		QOS_ctl |= skb->priority; //set in the ieee80211_classify
--		*pQOS_ctl = cpu_to_le16(QOS_ctl);
--	}
--	//printk(KERN_WARNING "header size = %d, QOS_ctl = %x\n", hdr_len,QOS_ctl);
--	/* Determine amount of payload per fragment.  Regardless of if
--	 * this stack is providing the full 802.11 header, one will
--	 * eventually be affixed to this fragment -- so we must account for
--	 * it when determining the amount of payload space. */
--	//bytes_per_frag = frag_size - (IEEE80211_3ADDR_LEN + (ieee->current_network->QoS_Enable ? 2:0));
--	bytes_per_frag = frag_size - hdr_len;
--	if (ieee->config &
--			(CFG_IEEE80211_COMPUTE_FCS | CFG_IEEE80211_RESERVE_FCS))
--		bytes_per_frag -= IEEE80211_FCS_LEN;
--
--	/* Each fragment may need to have room for encryptiong pre/postfix */
--	if (isEncrypt)
--		bytes_per_frag -= crypt->ops->extra_prefix_len +
--			crypt->ops->extra_postfix_len;
--
--	/* Number of fragments is the total bytes_per_frag /
--	 * payload_per_fragment */
--	nr_frags = bytes / bytes_per_frag;
--	bytes_last_frag = bytes % bytes_per_frag;
--	if (bytes_last_frag)
--		nr_frags++;
--	else
--		bytes_last_frag = bytes_per_frag;
--
--	/* When we allocate the TXB we allocate enough space for the reserve
--	 * and full fragment bytes (bytes_per_frag doesn't include prefix,
--	 * postfix, header, FCS, etc.) */
--	txb = ieee80211_alloc_txb(nr_frags, frag_size, GFP_ATOMIC);
--	if (unlikely(!txb)) {
--		printk(KERN_WARNING "%s: Could not allocate TXB\n",
--			ieee->dev->name);
--		return NULL;
--	}
--	txb->encrypted = isEncrypt;
--	txb->payload_size = bytes;
--
--	for (i = 0; i < nr_frags; i++) {
--		skb_frag = txb->fragments[i];
--		skb_frag->priority = UP2AC(skb->priority);
--		if (isEncrypt)
--			skb_reserve(skb_frag, crypt->ops->extra_prefix_len);
--
--		frag_hdr = (struct ieee80211_hdr_3addr *)skb_put(skb_frag, hdr_len);
--		memcpy(frag_hdr, (void *)header, hdr_len);
--
--		/* If this is not the last fragment, then add the MOREFRAGS
--		 * bit to the frame control */
--		if (i != nr_frags - 1) {
--			frag_hdr->frame_ctl = cpu_to_le16(
--					header->frame_ctl | IEEE80211_FCTL_MOREFRAGS);
--			bytes = bytes_per_frag;
--
--		} else {
--			/* The last fragment takes the remaining length */
--			bytes = bytes_last_frag;
--		}
--
--		frag_hdr->seq_ctl = cpu_to_le16(ieee->seq_ctrl[0]<<4 | i);
--		//frag_hdr->seq_ctl = cpu_to_le16(ieee->seq_ctrl<<4 | i);
--		//
--
--		/* Put a SNAP header on the first fragment */
--		if (i == 0) {
--			ieee80211_put_snap(
--				skb_put(skb_frag, SNAP_SIZE + sizeof(u16)), ether_type);
--			bytes -= SNAP_SIZE + sizeof(u16);
--		}
--
--		memcpy(skb_put(skb_frag, bytes), skb->data, bytes);
--
--		/* Advance the SKB... */
--		skb_pull(skb, bytes);
--
--		/* Encryption routine will move the header forward in order
--		 * to insert the IV between the header and the payload */
--		if (isEncrypt)
--			ieee80211_encrypt_fragment(ieee, skb_frag, hdr_len);
--		if (ieee->config &
--				(CFG_IEEE80211_COMPUTE_FCS | CFG_IEEE80211_RESERVE_FCS))
--			skb_put(skb_frag, 4);
--	}
--	// Advance sequence number in data frame.
--	//printk(KERN_WARNING "QoS Enalbed? %s\n", ieee->current_network.QoS_Enable?"Y":"N");
--	if (ieee->seq_ctrl[0] == 0xFFF)
--		ieee->seq_ctrl[0] = 0;
--	else
--		ieee->seq_ctrl[0]++;
--	// stanley, just for debug
--/*
--{
--	int j=0;
--	for(j=0;j<nr_frags;j++)
--	{
--			int i;
--		struct sk_buff *skb = txb->fragments[j];
--			printk("send(%d): ", j);
--			for (i=0;i<skb->len;i++)
--				printk("%02X ", skb->data[i]&0xff);
--			printk("\n");
--	}
--}
--*/
--
--	return txb;
--}
--
--
--// based on part of ieee80211_xmit. Mainly allocate txb. ieee->lock is held
--// Assume no encryption, no FCS computing
--struct ieee80211_txb *ieee80211_ext_reuse_txb(struct sk_buff *skb, struct net_device *dev, struct ieee80211_hdr_3addr *header, int hdr_len, u8 isQoS, u16 *pQOS_ctl, int isEncrypt, struct ieee80211_crypt_data* crypt)
--{
--	struct ieee80211_device *ieee = netdev_priv(dev);
--	struct ieee80211_txb *txb = NULL;
--	struct ieee80211_hdr_3addr *frag_hdr;
--	int ether_type;
--	int bytes, QOS_ctl;
--
--	ether_type = ntohs(((struct ethhdr *)skb->data)->h_proto);
--
--	/* Advance the SKB to the start of the payload */
--	skb_pull(skb, sizeof(struct ethhdr));
--
--	/* Determine total amount of storage required for TXB packets */
--	bytes = skb->len + SNAP_SIZE + sizeof(u16);
--
--	if (is_multicast_ether_addr(header->addr1) ||
--			is_broadcast_ether_addr(header->addr1)) {
--		QOS_ctl = QOS_CTL_NOTCONTAIN_ACK;
--	}
--	else {
--		QOS_ctl = 0;
--	}
--
--	if(isQoS) {
--		QOS_ctl |= skb->priority; //set in the ieee80211_classify
--		*pQOS_ctl = cpu_to_le16(QOS_ctl);
--	}
--
--	txb = kmalloc( sizeof(struct ieee80211_txb) + sizeof(u8*), GFP_ATOMIC );
--	if (unlikely(!txb)) {
--		printk(KERN_WARNING "%s: Could not allocate TXB\n",
--			ieee->dev->name);
--		return NULL;
--	}
--
--	txb->nr_frags = 1;
--	txb->frag_size = bytes;
--	txb->encrypted = isEncrypt;
--	txb->payload_size = bytes;
--
--	txb->fragments[0] = skb;
--	ieee80211_put_snap(
--			skb_push(skb, SNAP_SIZE + sizeof(u16)), ether_type);
--	frag_hdr = (struct ieee80211_hdr_3addr *)skb_push(skb, hdr_len);
--	memcpy(frag_hdr, (void *)header, hdr_len);
--	frag_hdr->seq_ctl = cpu_to_le16(ieee->seq_ctrl[0]<<4 | 0);
--	skb->priority = UP2AC(skb->priority);
--
--	// Advance sequence number in data frame.
--	//printk(KERN_WARNING "QoS Enalbed? %s\n", ieee->current_network.QoS_Enable?"Y":"N");
--	if (ieee->seq_ctrl[0] == 0xFFF)
--		ieee->seq_ctrl[0] = 0;
--	else
--		ieee->seq_ctrl[0]++;
--
--	return txb;
--}
--
--#endif // _RTL8187_EXT_PATCH_
--
- /* SKBs are added to the ieee->tx_queue. */
- int ieee80211_xmit(struct sk_buff *skb,
- 		   struct net_device *dev)
-@@ -561,16 +351,6 @@ int ieee80211_xmit(struct sk_buff *skb,
- 			goto success;
- 		}
- 
--
--#ifdef _RTL8187_EXT_PATCH_
--		// note, skb->priority which was set by ieee80211_classify, and used by physical tx
--		if((ieee->iw_mode == ieee->iw_ext_mode) && (ieee->ext_patch_ieee80211_xmit))
--		{
--			txb = ieee->ext_patch_ieee80211_xmit(skb, dev);
--			goto success;
--		}
+@@ -308,11 +308,7 @@ ieee80211_classify(struct sk_buff *skb, 
+ // based on part of ieee80211_xmit. Mainly allocate txb. ieee->lock is held
+ struct ieee80211_txb *ieee80211_ext_alloc_txb(struct sk_buff *skb, struct net_device *dev, struct ieee80211_hdr_3addr *header, int hdr_len, u8 isQoS, u16 *pQOS_ctl, int isEncrypt, struct ieee80211_crypt_data* crypt)
+ {
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0))
+ 	struct ieee80211_device *ieee = netdev_priv(dev);
+-#else
+-	struct ieee80211_device *ieee = (struct ieee80211_device *)dev->priv;
 -#endif
--
- 		ether_type = ntohs(((struct ethhdr *)skb->data)->h_proto);
- 
- 		crypt = ieee->crypt[ieee->tx_keyidx];
-@@ -782,10 +562,6 @@ int ieee80211_xmit(struct sk_buff *skb,
- 
-  success:
- 	spin_unlock_irqrestore(&ieee->lock, flags);
--#ifdef _RTL8187_EXT_PATCH_
--	// Sometimes, extension mode can reuse skb (by txb->fragments[0])
--	if( ! ((ieee->iw_mode == ieee->iw_ext_mode) && txb && (txb->fragments[0] == skb)) )
+ 	struct ieee80211_txb *txb = NULL;
+ 	struct ieee80211_hdr_3addr *frag_hdr;
+ 	int i, bytes_per_frag, nr_frags, bytes_last_frag, frag_size;
+@@ -459,11 +455,7 @@ struct ieee80211_txb *ieee80211_ext_allo
+ // Assume no encryption, no FCS computing
+ struct ieee80211_txb *ieee80211_ext_reuse_txb(struct sk_buff *skb, struct net_device *dev, struct ieee80211_hdr_3addr *header, int hdr_len, u8 isQoS, u16 *pQOS_ctl, int isEncrypt, struct ieee80211_crypt_data* crypt)
+ {
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0))
+ 	struct ieee80211_device *ieee = netdev_priv(dev);
+-#else
+-	struct ieee80211_device *ieee = (struct ieee80211_device *)dev->priv;
 -#endif
- 		dev_kfree_skb_any(skb);
- 	if (txb) {
- 		if (ieee->softmac_features & IEEE_SOFTMAC_TX_QUEUE){
-@@ -812,9 +588,4 @@ int ieee80211_xmit(struct sk_buff *skb,
+ 	struct ieee80211_txb *txb = NULL;
+ 	struct ieee80211_hdr_3addr *frag_hdr;
+ 	int ether_type;
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
+@@ -61,11 +61,7 @@ static inline char *rtl818x_translate_sc
+ 	iwe.cmd = SIOCGIWAP;
+ 	iwe.u.ap_addr.sa_family = ARPHRD_ETHER;
+ 	memcpy(iwe.u.ap_addr.sa_data, network->bssid, ETH_ALEN);
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 	start = iwe_stream_add_event(info, start, stop, &iwe, IW_EV_ADDR_LEN);
+-#else
+-	start = iwe_stream_add_event(start, stop, &iwe, IW_EV_ADDR_LEN);
+-#endif
+ 
+ 	/* Remaining entries will be displayed in the order we provide them */
+ 
+@@ -77,28 +73,16 @@ static inline char *rtl818x_translate_sc
+ 	if (network->ssid_len == 0) {
+ 	//YJ,modified,080903,end
+ 		iwe.u.data.length = sizeof("<hidden>");
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, "<hidden>");
+-#else
+-		start = iwe_stream_add_point(start, stop, &iwe, "<hidden>");
+-#endif
+ 	} else {
+ 		iwe.u.data.length = min(network->ssid_len, (u8)32);
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, network->ssid);
+-#else
+-		start = iwe_stream_add_point(start, stop, &iwe, network->ssid);
+-#endif
+ 	}
+ 	//printk("ESSID: %s\n",network->ssid);
+ 	/* Add the protocol name */
+ 	iwe.cmd = SIOCGIWNAME;
+ 	snprintf(iwe.u.name, IFNAMSIZ, "IEEE 802.11%s", ieee80211_modes[network->mode]);
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 	start = iwe_stream_add_event(info, start, stop, &iwe, IW_EV_CHAR_LEN);
+-#else
+-	start = iwe_stream_add_event(start, stop, &iwe, IW_EV_CHAR_LEN);
+-#endif
+ 
+         /* Add mode */
+         iwe.cmd = SIOCGIWMODE;
+@@ -109,11 +93,7 @@ static inline char *rtl818x_translate_sc
+ 		else
+ 			iwe.u.mode = IW_MODE_ADHOC;
+ 
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_event(info, start, stop, &iwe, IW_EV_UINT_LEN);
+-#else
+-		start = iwe_stream_add_event(start, stop, &iwe, IW_EV_UINT_LEN);
+-#endif
+ 	}
+ 
+         /* Add frequency/channel */
+@@ -123,11 +103,7 @@ static inline char *rtl818x_translate_sc
+ 	iwe.u.freq.m = network->channel;
+ 	iwe.u.freq.e = 0;
+ 	iwe.u.freq.i = 0;
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 	start = iwe_stream_add_event(info, start, stop, &iwe, IW_EV_FREQ_LEN);
+-#else
+-	start = iwe_stream_add_event(start, stop, &iwe, IW_EV_FREQ_LEN);
+-#endif
+ 
+ 	/* Add encryption capability */
+ 	iwe.cmd = SIOCGIWENCODE;
+@@ -136,11 +112,7 @@ static inline char *rtl818x_translate_sc
+ 	else
+ 		iwe.u.data.flags = IW_ENCODE_DISABLED;
+ 	iwe.u.data.length = 0;
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 	start = iwe_stream_add_point(info, start, stop, &iwe, network->ssid);
+-#else
+-	start = iwe_stream_add_point(start, stop, &iwe, network->ssid);
+-#endif
+ 
+ 	/* Add basic and extended rates */
+ 	max_rate = 0;
+@@ -169,20 +141,12 @@ static inline char *rtl818x_translate_sc
+ 	iwe.cmd = SIOCGIWRATE;
+ 	iwe.u.bitrate.fixed = iwe.u.bitrate.disabled = 0;
+ 	iwe.u.bitrate.value = max_rate * 500000;
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 	start = iwe_stream_add_event(info, start, stop, &iwe, IW_EV_PARAM_LEN);
+-#else
+-	start = iwe_stream_add_event(start, stop, &iwe, IW_EV_PARAM_LEN);
+-#endif
+ 
+ 	iwe.cmd = IWEVCUSTOM;
+ 	iwe.u.data.length = p - custom;
+ 	if (iwe.u.data.length)
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, custom);
+-#else
+-		start = iwe_stream_add_point(start, stop, &iwe, custom);
+-#endif
+ 
+ 	/* Add quality statistics */
+ 	/* TODO: Fix these values... */
+@@ -201,22 +165,14 @@ static inline char *rtl818x_translate_sc
+ 	if (!(network->stats.mask & IEEE80211_STATMASK_SIGNAL))
+ 		iwe.u.qual.updated |= IW_QUAL_QUAL_INVALID;
+ 	iwe.u.qual.updated = 7;
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 	start = iwe_stream_add_event(info, start, stop, &iwe, IW_EV_QUAL_LEN);
+-#else
+-	start = iwe_stream_add_event(start, stop, &iwe, IW_EV_QUAL_LEN);
+-#endif
+ 
+ 	iwe.cmd = IWEVCUSTOM;
+ 	p = custom;
+ 
+ 	iwe.u.data.length = p - custom;
+ 	if (iwe.u.data.length)
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, custom);
+-#else
+-		start = iwe_stream_add_point(start, stop, &iwe, custom);
+-#endif
  
  #if 0
- EXPORT_SYMBOL(ieee80211_txb_free);
--#ifdef _RTL8187_EXT_PATCH_
--EXPORT_SYMBOL(ieee80211_alloc_txb);
--EXPORT_SYMBOL(ieee80211_ext_alloc_txb);
--EXPORT_SYMBOL(ieee80211_ext_reuse_txb);
--#endif // _RTL8187_EXT_PATCH_
+ 	if (ieee->wpa_enabled && network->wpa_ie_len){
+@@ -231,11 +187,7 @@ static inline char *rtl818x_translate_sc
+ 		memset(&iwe, 0, sizeof(iwe));
+ 		iwe.cmd = IWEVCUSTOM;
+ 		iwe.u.data.length = strlen(buf);
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, buf);
+-#else
+-		start = iwe_stream_add_point(start, stop, &iwe, buf);
+-#endif
+ 	}
+ 
+ 	if (ieee->wpa_enabled && network->rsn_ie_len){
+@@ -256,11 +208,7 @@ static inline char *rtl818x_translate_sc
+                 memcpy(buf, network->wpa_ie, network->wpa_ie_len);
+                 iwe.cmd = IWEVGENIE;
+                 iwe.u.data.length = network->wpa_ie_len;
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+                 start = iwe_stream_add_point(info, start, stop, &iwe, buf);
+-#else
+-                start = iwe_stream_add_point(start, stop, &iwe, buf);
+-#endif
+         }
+ 
+         memset(&iwe, 0, sizeof(iwe));
+@@ -278,11 +226,7 @@ static inline char *rtl818x_translate_sc
+                 memcpy(buf, network->rsn_ie, network->rsn_ie_len);
+                 iwe.cmd = IWEVGENIE;
+                 iwe.u.data.length = network->rsn_ie_len;
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, buf);
+-#else
+-		start = iwe_stream_add_point(start, stop, &iwe, buf);
+-#endif
+ 	}
+ 
  #endif
+@@ -295,11 +239,7 @@ static inline char *rtl818x_translate_sc
+ 		      " Last beacon: %lums ago", (jiffies - network->last_scanned) / (HZ / 100));
+ 	iwe.u.data.length = p - custom;
+ 	if (iwe.u.data.length)
+-#if((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))||IN_FEDORACORE_9)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, custom);
+-#else
+-		start = iwe_stream_add_point(start, stop, &iwe, custom);
+-#endif
+ 
+ 	return start;
+ }
+Index: b/drivers/staging/rtl8187se/r8180.h
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180.h
++++ b/drivers/staging/rtl8187se/r8180.h
+@@ -750,11 +750,7 @@ void rtl8185b_irq_enable(struct net_devi
+ void fix_rx_fifo(struct net_device *dev);
+ void fix_tx_fifo(struct net_device *dev);
+ void rtl8225z2_SetTXPowerLevel(struct net_device *dev, short ch);
+-#if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
+ void rtl8180_rate_adapter(struct work_struct * work);
+-#else
+-void rtl8180_rate_adapter(struct net_device *dev);
+-#endif
+ //#endif
+ bool MgntActSet_RF_State(struct net_device *dev, RT_RF_POWER_STATE StateToSet, u32 ChangeSource);
+ 
+Index: b/drivers/staging/rtl8187se/r8180_core.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_core.c
++++ b/drivers/staging/rtl8187se/r8180_core.c
+@@ -171,17 +171,10 @@ MODULE_PARM(channels,"i");
+ MODULE_PARM_DESC(channels," Channel bitmask for specific locales. NYI");
+ */
+ 
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 9)
+ module_param(ifname, charp, S_IRUGO|S_IWUSR );
+ module_param(hwseqnum,int, S_IRUGO|S_IWUSR);
+ module_param(hwwep,int, S_IRUGO|S_IWUSR);
+ module_param(channels,int, S_IRUGO|S_IWUSR);
+-#else
+-MODULE_PARM(ifname, "s");
+-MODULE_PARM(hwseqnum,"i");
+-MODULE_PARM(hwwep,"i");
+-MODULE_PARM(channels,"i");
+-#endif
+ 
+ MODULE_PARM_DESC(devname," Net interface name, wlan%d=default");
+ //MODULE_PARM_DESC(devname," Net interface name, ath%d=default");
+@@ -603,21 +596,13 @@ static struct iw_statistics *r8180_get_w
+ void rtl8180_proc_module_init(void)
+ {
+ 	DMESG("Initializing proc filesystem");
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+-        rtl8180_proc=create_proc_entry(RTL8180_MODULE_NAME, S_IFDIR, proc_net);
+-#else
+         rtl8180_proc=create_proc_entry(RTL8180_MODULE_NAME, S_IFDIR, init_net.proc_net);
+-#endif
+ }
+ 
+ 
+ void rtl8180_proc_module_remove(void)
+ {
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+-        remove_proc_entry(RTL8180_MODULE_NAME, proc_net);
+-#else
+         remove_proc_entry(RTL8180_MODULE_NAME, init_net.proc_net);
+-#endif
+ }
+ 
+ 
+@@ -3759,18 +3744,11 @@ void rtl8180_hw_sleep(struct net_device 
+ 
+ 
+ //void rtl8180_wmm_param_update(struct net_device *dev,u8 *ac_param)
+-#if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
+ void rtl8180_wmm_param_update(struct work_struct * work)
+ {
+ 	struct ieee80211_device * ieee = container_of(work, struct ieee80211_device,wmm_param_update_wq);
+ 	//struct r8180_priv *priv = (struct r8180_priv*)(ieee->priv);
+ 	struct net_device *dev = ieee->dev;
+-#else
+-void rtl8180_wmm_param_update(struct ieee80211_device *ieee)
+-{
+-	struct net_device *dev = ieee->dev;
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-#endif
+ 	u8 *ac_param = (u8 *)(ieee->current_network.wmm_param);
+ 	u8 mode = ieee->current_network.mode;
+ 	AC_CODING	eACI;
+@@ -3872,47 +3850,15 @@ void rtl8180_wmm_param_update(struct iee
+ #endif
+ }
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_tx_irq_wq(struct work_struct *work);
+-#else
+-void rtl8180_tx_irq_wq(struct net_device *dev);
+-#endif
+-
+-
+-
+-
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_restart_wq(struct work_struct *work);
+ //void rtl8180_rq_tx_ack(struct work_struct *work);
+-#else
+- void rtl8180_restart_wq(struct net_device *dev);
+-//void rtl8180_rq_tx_ack(struct net_device *dev);
+-#endif
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_watch_dog_wq(struct work_struct *work);
+-#else
+-void rtl8180_watch_dog_wq(struct net_device *dev);
+-#endif
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_hw_wakeup_wq(struct work_struct *work);
+-#else
+-void rtl8180_hw_wakeup_wq(struct net_device *dev);
+-#endif
+-
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_hw_sleep_wq(struct work_struct *work);
+-#else
+-void rtl8180_hw_sleep_wq(struct net_device *dev);
+-#endif
+-
+-
+-
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_sw_antenna_wq(struct work_struct *work);
+-#else
+-void rtl8180_sw_antenna_wq(struct net_device *dev);
+-#endif
+- void rtl8180_watch_dog(struct net_device *dev);
++void rtl8180_watch_dog(struct net_device *dev);
++
+ void watch_dog_adaptive(unsigned long data)
+ {
+     struct r8180_priv* priv = ieee80211_priv((struct net_device *)data);
+@@ -4041,11 +3987,7 @@ static void rtl8180_set_channel_map(u8 c
+ #endif
+ 
+ //Add for RF power on power off by lizhaoming 080512
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void GPIOChangeRFWorkItemCallBack(struct work_struct *work);
+-#else
+-void GPIOChangeRFWorkItemCallBack(struct ieee80211_device *ieee);
+-#endif
+ 
+ //YJ,add,080828
+ static void rtl8180_statistics_init(struct Stats *pstats)
+@@ -4295,7 +4237,6 @@ short rtl8180_init(struct net_device *de
+ 	spin_lock_init(&priv->rf_ps_lock);
+ 	sema_init(&priv->wx_sem,1);
+ 	sema_init(&priv->rf_state,1);
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ 	INIT_WORK(&priv->reset_wq,(void*) rtl8180_restart_wq);
+ 	INIT_WORK(&priv->tx_irq_wq,(void*) rtl8180_tx_irq_wq);
+ 	INIT_DELAYED_WORK(&priv->ieee80211->hw_wakeup_wq,(void*) rtl8180_hw_wakeup_wq);
+@@ -4309,21 +4250,6 @@ short rtl8180_init(struct net_device *de
+ 
+ 	//add for RF power on power off by lizhaoming 080512
+ 	INIT_DELAYED_WORK(&priv->ieee80211->GPIOChangeRFWorkItem,(void*) GPIOChangeRFWorkItemCallBack);
+-#else
+-	INIT_WORK(&priv->reset_wq,(void*) rtl8180_restart_wq,dev);
+-	INIT_WORK(&priv->tx_irq_wq,(void*) rtl8180_tx_irq_wq,dev);
+-	//INIT_WORK(&priv->ieee80211->watch_dog_wq,(void*) rtl8180_watch_dog_wq,dev);
+-	INIT_WORK(&priv->ieee80211->hw_wakeup_wq,(void*) rtl8180_hw_wakeup_wq,dev);
+-	INIT_WORK(&priv->ieee80211->hw_sleep_wq,(void*) rtl8180_hw_sleep_wq,dev);
+-	//INIT_WORK(&priv->ieee80211->sw_antenna_wq,(void*) rtl8180_sw_antenna_wq,dev);
+-	INIT_WORK(&priv->ieee80211->wmm_param_update_wq,(void*) rtl8180_wmm_param_update,priv->ieee80211);
+-    INIT_WORK(&priv->ieee80211->rate_adapter_wq,(void*)rtl8180_rate_adapter,dev);//+by amy 080312
+-	INIT_WORK(&priv->ieee80211->hw_dig_wq,(void*)rtl8180_hw_dig_wq,dev);//+by amy 080312
+-	INIT_WORK(&priv->ieee80211->tx_pw_wq,(void*)rtl8180_tx_pw_wq,dev);//+by amy 080312
+-
+-	//add for RF power on power off by lizhaoming 080512
+-	INIT_WORK(&priv->ieee80211->GPIOChangeRFWorkItem,(void*) GPIOChangeRFWorkItemCallBack, priv->ieee80211);
+-#endif
+ 	//INIT_WORK(&priv->reset_wq,(void*) rtl8180_restart_wq,dev);
+ 
+ 	tasklet_init(&priv->irq_rx_tasklet,
+@@ -5401,7 +5327,7 @@ LeisurePSLeave(
+ 		}
+ 	}
+ }
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++
+ void rtl8180_hw_wakeup_wq (struct work_struct *work)
+ {
+ //	struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+@@ -5410,11 +5336,6 @@ void rtl8180_hw_wakeup_wq (struct work_s
+ 	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_wakeup_wq);
+ 	struct net_device *dev = ieee->dev;
+-#else
+-void rtl8180_hw_wakeup_wq(struct net_device *dev)
+-{
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-#endif
+ 
+ //	printk("dev is %d\n",dev);
+ //	printk("&*&(^*(&(&=========>%s()\n", __func__);
+@@ -5422,7 +5343,6 @@ void rtl8180_hw_wakeup_wq(struct net_dev
+ 
+ }
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_hw_sleep_wq (struct work_struct *work)
+ {
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+@@ -5431,11 +5351,6 @@ void rtl8180_hw_sleep_wq (struct work_st
+ 	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_sleep_wq);
+         struct net_device *dev = ieee->dev;
+-#else
+-void rtl8180_hw_sleep_wq(struct net_device *dev)
+-{
+-        struct r8180_priv *priv = ieee80211_priv(dev);
+-#endif
+ 
+         rtl8180_hw_sleep_down(dev);
+ }
+@@ -5700,16 +5615,11 @@ int rtl8180_down(struct net_device *dev)
+ 	return 0;
+ }
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_restart_wq(struct work_struct *work)
+ {
+ 	struct r8180_priv *priv = container_of(work, struct r8180_priv, reset_wq);
+ 	struct net_device *dev = priv->dev;
+-#else
+-void rtl8180_restart_wq(struct net_device *dev)
+-{
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-#endif
++
+ 	down(&priv->wx_sem);
+ 
+ 	rtl8180_commit(dev);
+@@ -5876,9 +5786,6 @@ static int __devinit rtl8180_pci_probe(s
+ 	priv = ieee80211_priv(dev);
+ 	priv->ieee80211 = netdev_priv(dev);
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+-        SET_MODULE_OWNER(dev);
+-#endif
+ 	pci_set_drvdata(pdev, dev);
+ 	SET_NETDEV_DEV(dev, &pdev->dev);
+ 
+@@ -6117,11 +6024,7 @@ static int __init rtl8180_pci_module_ini
+ 	DMESG("Wireless extensions version %d", WIRELESS_EXT);
+ 	rtl8180_proc_module_init();
+ 
+-#if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
+-      if(0!=pci_module_init(&rtl8180_pci_driver))
+-#else
+       if(0!=pci_register_driver(&rtl8180_pci_driver))
+-#endif
+ 	//if(0!=pci_module_init(&rtl8180_pci_driver))
+ 	{
+ 		DMESG("No device found");
+@@ -6378,7 +6281,6 @@ priv->txnpring)/8);
+ 
+ }
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_tx_irq_wq(struct work_struct *work)
+ {
+ 	//struct r8180_priv *priv = container_of(work, struct r8180_priv, reset_wq);
+@@ -6386,11 +6288,7 @@ void rtl8180_tx_irq_wq(struct work_struc
+ 	struct ieee80211_device * ieee = (struct ieee80211_device*)
+ 	                                       container_of(dwork, struct ieee80211_device, watch_dog_wq);
+ 	struct net_device *dev = ieee->dev;
+-#else
+-void rtl8180_tx_irq_wq(struct net_device *dev)
+-{
+-	//struct r8180_priv *priv = ieee80211_priv(dev);
+-#endif
++
+ 	rtl8180_tx_isr(dev,MANAGE_PRIORITY,0);
+ }
+ irqreturn_t rtl8180_interrupt(int irq, void *netdev, struct pt_regs *regs)
+@@ -6663,19 +6561,12 @@ void rtl8180_irq_rx_tasklet(struct r8180
+ lizhaoming--------------------------- RF power on/power off -----------------
+ *****************************************************************************/
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void GPIOChangeRFWorkItemCallBack(struct work_struct *work)
+ {
+ 	//struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, GPIOChangeRFWorkItem.work);
+ 	struct net_device *dev = ieee->dev;
+ 	struct r8180_priv *priv = ieee80211_priv(dev);
+-#else
+-void GPIOChangeRFWorkItemCallBack(struct ieee80211_device *ieee)
+-{
+-	struct net_device *dev = ieee->dev;
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-#endif
+ 
+ 	//u16 tmp2byte;
+ 	u8 btPSR;
+@@ -6757,7 +6648,6 @@ void GPIOChangeRFWorkItemCallBack(struct
+ 
+ static u8 read_acadapter_file(char *filename)
+ {
+-//#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
+ #if 0
+ 	int fd;
+ 	char buf[1];
+Index: b/drivers/staging/rtl8187se/r8180_dm.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_dm.c
++++ b/drivers/staging/rtl8187se/r8180_dm.c
+@@ -126,7 +126,6 @@ DoTxHighPower(
+ //		Because of some event happend, e.g. CCX TPC, High Power Mechanism,
+ //		We update Tx power of current channel again.
+ //
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_tx_pw_wq (struct work_struct *work)
+ {
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+@@ -135,11 +134,6 @@ void rtl8180_tx_pw_wq (struct work_struc
+ 	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,tx_pw_wq);
+         struct net_device *dev = ieee->dev;
+-#else
+-void rtl8180_tx_pw_wq(struct net_device *dev)
+-{
+-	// struct r8180_priv *priv = ieee80211_priv(dev);
+-#endif
+ 
+ //	printk("----> UpdateTxPowerWorkItemCallback()\n");
+ 
+@@ -308,7 +302,6 @@ DynamicInitGain(
+ 	}
+ }
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_hw_dig_wq (struct work_struct *work)
+ {
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+@@ -317,11 +310,6 @@ void rtl8180_hw_dig_wq (struct work_stru
+ 	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_dig_wq);
+         struct net_device *dev = ieee->dev;
+-#else
+-void rtl8180_hw_dig_wq(struct net_device *dev)
+-{
+-
+-#endif
+ 	struct r8180_priv *priv = ieee80211_priv(dev);
+ 
+ 	// Read CCK and OFDM False Alarm.
+@@ -1245,19 +1233,13 @@ SetInitialGain:
+ 	priv->LastTxThroughput = TxThroughput;
+ 	priv->ieee80211->rate = priv->CurrentOperaRate * 5;
+ }
+-
+ #endif
+-#if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
++
+ void rtl8180_rate_adapter(struct work_struct * work)
+ {
+ 	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,rate_adapter_wq);
+         struct net_device *dev = ieee->dev;
+-#else
+-void rtl8180_rate_adapter(struct net_device *dev)
+-{
+-
+-#endif
+         //struct r8180_priv *priv = ieee80211_priv(dev);
+ //    DMESG("---->rtl8180_rate_adapter");
+         StaRateAdaptive87SE(dev);
+Index: b/drivers/staging/rtl8187se/r8180_dm.h
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_dm.h
++++ b/drivers/staging/rtl8187se/r8180_dm.h
+@@ -11,30 +11,12 @@ void SwAntennaDiversity(struct net_devic
+ void SwAntennaDiversityTimerCallback(struct net_device *dev);
+ bool CheckDig(struct net_device *dev);
+ bool CheckHighPower(struct net_device *dev);
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_hw_dig_wq (struct work_struct *work);
+-#else
+-void rtl8180_hw_dig_wq(struct net_device *dev);
+-#endif
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+ void rtl8180_tx_pw_wq (struct work_struct *work);
+-#else
+-void rtl8180_tx_pw_wq(struct net_device *dev);
+-#endif
+-#if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
+ void rtl8180_rate_adapter(struct work_struct * work);
+-
+-#else
+-void rtl8180_rate_adapter(struct net_device *dev);
+-
+-#endif
+ void TxPwrTracking87SE(struct net_device *dev);
+ bool CheckTxPwrTracking(struct net_device *dev);
+-#if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
+ void rtl8180_rate_adapter(struct work_struct * work);
+-#else
+-void rtl8180_rate_adapter(struct net_device *dev);
+-#endif
+ void timer_rate_adaptive(unsigned long data);
+ 
+ 
