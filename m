@@ -1,135 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZFMSwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbZFMTGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbZFMSwd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 14:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZFMSwZ
+	id S1759176AbZFMTGg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 15:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZFMTGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 14:52:25 -0400
-Received: from waste.org ([66.93.16.53]:50542 "EHLO waste.org"
+	Sat, 13 Jun 2009 15:06:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57356 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbZFMSwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 14:52:24 -0400
-Subject: Re: [PATCH] ramfs: ignore tmpfs options when we emulate it
-From: Matt Mackall <mpm@selenic.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Mike Frysinger <vapier@gentoo.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0906131456090.5069@sister.anvils>
-References: <1244872920-13511-1-git-send-email-vapier@gentoo.org>
-	 <Pine.LNX.4.64.0906131456090.5069@sister.anvils>
-Content-Type: text/plain
-Date: Sat, 13 Jun 2009 13:51:25 -0500
-Message-Id: <1244919085.4496.192.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1753471AbZFMTGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 15:06:30 -0400
+Date: Sat, 13 Jun 2009 20:30:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: [PATCH] Bring sparc64 dynamic ftrace up to snuff...
+Message-ID: <20090613183018.GB5485@elte.hu>
+References: <20090613.011020.214065340.davem@davemloft.net> <alpine.DEB.2.00.0906130950220.16299@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906130950220.16299@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-13 at 15:15 +0100, Hugh Dickins wrote:
-> On Sat, 13 Jun 2009, Mike Frysinger wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> > On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
-> > fail when tmpfs options are used.  This is because tmpfs creates a small
-> > wrapper around ramfs which rejects unknown options, and ramfs itself only
-> > supports a tiny subset of what tmpfs supports.  This makes it pretty hard
-> > to use the same userspace systems across different configuration systems.
-> > As such, ramfs should ignore the tmpfs options when tmpfs is merely a
-> > wrapper around ramfs.
-> 
-> Yes, indeed, thanks a lot for reporting this.
-> 
-> But I'm uneasy with making ramfs behaviour differ with CONFIG_SHMEM
-> (perhaps that's silly: certainly tmpfs behaviour differs with it),
-> and uneasy with coding a list of options we need to remember to keep
-> in synch with mm/shmem.c.  It's easier to justify ignoring all options,
-> than rejecting some while ignoring others yet not respecting them.
+> On Sat, 13 Jun 2009, David Miller wrote:
 > 
 > > 
-> > This used to work before commit c3b1b1cbf0 as previously, ramfs would
-> > ignore all options.  But now, we get:
-> > ramfs: bad mount option: size=10M
-> > mount: mounting mdev on /dev failed: Invalid argument
+> > Do the ftrace maintainers mind if I merge the following in via my
+> > sparc-next-2.6 tree?
 > 
-> I rather think the correct response to bugzilla #12843 should have
-> been to say, either use chmod 1777 yourself, or use CONFIG_SHMEM=y.
-> I fear we'll now get a line of requests for support of uid, gid, ...
-> in ramfs; whereas ramfs is about blind simplicity, not feature bloat.
-> However, that mode= feature is now in, so I guess we ride with it.
-
-Ugh, hadn't noticed that go by.
-
+> Not at all.
+> 
 > > 
-> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> > Thanks!
+> > 
+> > sparc64: Add proper dynamic ftrace support.
+> > 
+> > Signed-off-by: David S. Miller <davem@davemloft.net>
 > > ---
-> > another option might be to restore the previous behavior where ramfs simply
-> > ignored all unknown mount options ...
-> 
-> Yes, that would be my preference, return to the blind simplicity, with
-> that one exception for mode=.  Alternative patch suggested at the bottom,
-> let's see if Cc's added feel strongly about it one way or another.
-
-
-
-> Thanks,
-> Hugh
-> 
+> >  arch/sparc/Kconfig              |    2 +
+> >  arch/sparc/include/asm/ftrace.h |   11 +++++++++
+> >  arch/sparc/kernel/ftrace.c      |   47 ++++++++++++++++++++++++++------------
+> >  scripts/recordmcount.pl         |   20 ++++++++++++++++
+> >  4 files changed, 65 insertions(+), 15 deletions(-)
 > > 
-> >  fs/ramfs/inode.c |   10 ++++++++++
-> >  1 files changed, 10 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
-> > index 3a6b193..57a797c 100644
-> > --- a/fs/ramfs/inode.c
-> > +++ b/fs/ramfs/inode.c
-> > @@ -203,6 +203,16 @@ static int ramfs_parse_options(char *data, struct ramfs_mount_opts *opts)
-> >  			opts->mode = option & S_IALLUGO;
-> >  			break;
-> >  		default:
-> > +#ifndef CONFIG_SHMEM
-> > +			/* If tmpfs is using us to emulate it, ignore its options */
-> > +			if (!strncmp(p, "gid=", 4) ||
-> > +			    !strncmp(p, "mpol=", 5) ||
-> > +			    !strncmp(p, "nr_blocks=", 10) ||
-> > +			    !strncmp(p, "nr_inodes=", 10) ||
-> > +			    !strncmp(p, "size=", 5) ||
-> > +			    !strncmp(p, "uid=", 4))
-> > +				continue;
+> 
+> 
 > > +#endif
-> >  			printk(KERN_ERR "ramfs: bad mount option: %s\n", p);
-> >  			return -EINVAL;
-> >  		}
-> > -- 
-> > 1.6.3.1
+> > +
+> > diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> > index 409596e..e694eaf 100755
+> > --- a/scripts/recordmcount.pl
+> > +++ b/scripts/recordmcount.pl
+> > @@ -213,6 +213,26 @@ if ($arch eq "x86_64") {
+> >      if ($is_module eq "0") {
+> >          $cc .= " -mconstant-gp";
+> >      }
+> > +} elsif ($arch eq "sparc64") {
+> > +    # In the objdump output there are giblets like:
+> > +    # 0000000000000000 <igmp_net_exit-0x18>:
+> > +    # As there's some data blobs that get emitted into the
+> > +    # text section before the first instructions and the first
+> > +    # real symbols.  We don't want to match that, so to combat
+> > +    # this we use '\w' so we'll match just plain symbol names,
+> > +    # and not those that also include hex offsets inside of the
+> > +    # '<>' brackets.  Actually the generic function_regex setting
+> > +    # could safely use this too.
+> > +    $function_regex = "^([0-9a-fA-F]+)\\s+<(\\w*?)>:";
+> > +
+> > +    # Sparc64 calls '_mcount' instead of plain 'mcount'.
+> > +    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
+> > +
+> > +    $alignment = 8;
+> > +    $type = ".xword";
+> > +    $ld .= " -m elf64_sparc";
+> > +    $cc .= " -m64";
+> > +    $objcopy .= " -O elf64-sparc";
+> >  } else {
+> >      die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
+> >  }
 > 
-> [PATCH] ramfs: ignore unknown mount options
+> The only thing outside of arch/sparc is this recordmcount.pl, and 
+> that too is arch specific.
 > 
-> From: Mike Frysinger <vapier@gentoo.org>
+> I'm fine with it.
 > 
-> On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
-> fail when tmpfs options are used.  This is because tmpfs creates a small
-> wrapper around ramfs which rejects unknown options, and ramfs itself only
-> supports a tiny subset of what tmpfs supports.  This makes it pretty hard
-> to use the same userspace systems across different configuration systems.
-> As such, ramfs should ignore the tmpfs options when tmpfs is merely a
-> wrapper around ramfs.
-> 
-> This used to work before commit c3b1b1cbf0 as previously, ramfs would
-> ignore all options.  But now, we get:
-> ramfs: bad mount option: size=10M
-> mount: mounting mdev on /dev failed: Invalid argument
-> 
-> Another option might be to restore the previous behavior, where ramfs
-> simply ignored all unknown mount options ... which is what Hugh prefers.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+Me too - thanks David!
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-
+	Ingo
