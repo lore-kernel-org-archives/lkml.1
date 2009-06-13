@@ -1,111 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759237AbZFMPzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbZFMQAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759237AbZFMPzW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 11:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZFMPzK
+	id S1758934AbZFMQAM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 12:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbZFMP75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 11:55:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52157 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZFMPzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 11:55:08 -0400
-Date: Sat, 13 Jun 2009 15:54:30 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1244907563-7820-1-git-send-email-fweisbec@gmail.com>
-References: <1244907563-7820-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf annotate: Fixes for filename:line displays
-Message-ID: <tip-c17c2db1f3cea41c3543025905d3582c6937dd95@git.kernel.org>
-Git-Commit-ID: c17c2db1f3cea41c3543025905d3582c6937dd95
-X-Mailer: tip-git-log-daemon
+	Sat, 13 Jun 2009 11:59:57 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:56098 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbZFMP74 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 11:59:56 -0400
+Date: Sat, 13 Jun 2009 16:59:57 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Marco <marco.stornelli@gmail.com>
+Cc: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090613155957.GA16220@shareable.org>
+References: <4A33A7A2.1050608@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 13 Jun 2009 15:54:32 +0000 (UTC)
+In-Reply-To: <4A33A7A2.1050608@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c17c2db1f3cea41c3543025905d3582c6937dd95
-Gitweb:     http://git.kernel.org/tip/c17c2db1f3cea41c3543025905d3582c6937dd95
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sat, 13 Jun 2009 17:39:23 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 13 Jun 2009 17:51:00 +0200
+Marco wrote:
+> Linux traditionally had no support for a persistent, non-volatile
+> RAM-based filesystem, persistent meaning the filesystem survives a
+> system reboot or power cycle intact. The RAM-based filesystems such as
+> tmpfs and ramfs have no actual backing store but exist entirely in the
+> page and buffer caches, hence the filesystem disappears after a system
+> reboot or power cycle.
 
-perf annotate: Fixes for filename:line displays
+Why is a ramdisk not sufficient for this?
 
-- fix addr2line on userspace binary: don't only check kernel image.
-- fix string allocation size for path: missing ending null char room
-- fix overflow in symbol extra info
+Why is an entire filesystem needed, instead of simply a block driver
+if the ramdisk driver cannot be used?
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1244907563-7820-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+It just struck me as a lot of code which might be completely
+unnecessary for the desired functionality.
 
-
----
- tools/perf/builtin-annotate.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 7a5b278..94cea67 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -1116,7 +1116,7 @@ parse_line(FILE *file, struct symbol *sym, __u64 start, __u64 len)
- 		if (offset < len)
- 			hits = sym->hist[offset];
- 
--		if (sym_ext) {
-+		if (offset < len && sym_ext) {
- 			path = sym_ext[offset].path;
- 			percent = sym_ext[offset].percent;
- 		} else if (sym->hist_sum)
-@@ -1190,7 +1190,8 @@ static void free_source_line(struct symbol *sym, int len)
- }
- 
- /* Get the filename:line for the colored entries */
--static void get_source_line(struct symbol *sym, __u64 start, int len)
-+static void
-+get_source_line(struct symbol *sym, __u64 start, int len, char *filename)
- {
- 	int i;
- 	char cmd[PATH_MAX * 2];
-@@ -1216,7 +1217,7 @@ static void get_source_line(struct symbol *sym, __u64 start, int len)
- 			continue;
- 
- 		offset = start + i;
--		sprintf(cmd, "addr2line -e %s %016llx", vmlinux, offset);
-+		sprintf(cmd, "addr2line -e %s %016llx", filename, offset);
- 		fp = popen(cmd, "r");
- 		if (!fp)
- 			continue;
-@@ -1224,7 +1225,7 @@ static void get_source_line(struct symbol *sym, __u64 start, int len)
- 		if (getline(&path, &line_len, fp) < 0 || !line_len)
- 			goto next;
- 
--		sym_ext[i].path = malloc(sizeof(char) * line_len);
-+		sym_ext[i].path = malloc(sizeof(char) * line_len + 1);
- 		if (!sym_ext[i].path)
- 			goto next;
- 
-@@ -1285,7 +1286,7 @@ static void annotate_sym(struct dso *dso, struct symbol *sym)
- 	len = sym->end - sym->start;
- 
- 	if (print_line) {
--		get_source_line(sym, start, len);
-+		get_source_line(sym, start, len, filename);
- 		print_summary(filename);
- 	}
- 
+-- Jamie
