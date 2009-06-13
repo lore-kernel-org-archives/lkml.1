@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751689AbZFMEXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZFMEao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751689AbZFMEXr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 00:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZFMEXk
+	id S1754118AbZFMEao (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 00:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZFMEaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 00:23:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45244 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbZFMEXk (ORCPT
+	Sat, 13 Jun 2009 00:30:35 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:35291 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbZFMEae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 00:23:40 -0400
-Date: Fri, 12 Jun 2009 21:24:14 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>,
-       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: IO latency - a special case
-Message-ID: <20090612212414.1ae5a284@infradead.org>
-In-Reply-To: <9b1675090906122048o35698c09x13cc7cf7650ac9ae@mail.gmail.com>
-References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
-	<9b1675090904041131u28635d8dnc3d13e88000394b4@mail.gmail.com>
-	<20090405011355.GE7553@mit.edu>
-	<9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
-	<9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
-	<9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
-	<20090405062626.GA7760@mit.edu>
-	<9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
-	<9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
-	<20090611191152.GD16787@mit.edu>
-	<9b1675090906122048o35698c09x13cc7cf7650ac9ae@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 13 Jun 2009 00:30:34 -0400
+X-IronPort-AV: E=Sophos;i="4.42,213,1243814400"; 
+   d="scan'208";a="199344975"
+From: Roland Dreier <rdreier@cisco.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Barnes\, Jesse" <jesse.barnes@intel.com>, Matthew Wilcox <matthew@wil.cx>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: Re: mthca double free irqs
+References: <86802c440906111945n2a42dc94mf08bd2b1a252842f@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 12 Jun 2009 21:30:34 -0700
+In-Reply-To: <86802c440906111945n2a42dc94mf08bd2b1a252842f@mail.gmail.com>
+	(Yinghai Lu's message of "Thu, 11 Jun 2009 19:45:21 -0700")
+Message-ID: <ada1vpozrf9.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Jun 2009 04:30:36.0308 (UTC) FILETIME=[B2947D40:01C9EBDF]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009 21:48:41 -0600
-"Trenton D. Adams" <trenton.d.adams@gmail.com> wrote:
+Something like this should help -- can you verify this fixes the double
+free of irq?
 
-> Sorry I didn't reply earlier.  I got busy with some server troubles
-> and such.
-> > What sort of process where you typicalling trying to kill using ^C?
-> 
-> It's maven, which spawns javac (java compiler), as well as does
-> various other tasks such as making connections to the Internet, local
-> directories, etc.
+ drivers/infiniband/hw/mthca/mthca_eq.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-I assume you know latencytop and how it might be useful to diagnose
-such delays ?
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff --git a/drivers/infiniband/hw/mthca/mthca_eq.c b/drivers/infiniband/hw/mthca/mthca_eq.c
+index 28f0e0c..90e4e45 100644
+--- a/drivers/infiniband/hw/mthca/mthca_eq.c
++++ b/drivers/infiniband/hw/mthca/mthca_eq.c
+@@ -641,9 +641,11 @@ static void mthca_free_irqs(struct mthca_dev *dev)
+ 	if (dev->eq_table.have_irq)
+ 		free_irq(dev->pdev->irq, dev);
+ 	for (i = 0; i < MTHCA_NUM_EQ; ++i)
+-		if (dev->eq_table.eq[i].have_irq)
++		if (dev->eq_table.eq[i].have_irq) {
+ 			free_irq(dev->eq_table.eq[i].msi_x_vector,
+ 				 dev->eq_table.eq + i);
++			dev->eq_table.eq[i].have_irq = 0;
++		}
+ }
+ 
+ static int mthca_map_reg(struct mthca_dev *dev,
