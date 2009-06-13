@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZFMWLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZFMWQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbZFMWLe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 18:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZFMWL1
+	id S1756925AbZFMWQf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 18:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZFMWQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 18:11:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33931 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751206AbZFMWL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 18:11:27 -0400
-Date: Sat, 13 Jun 2009 21:44:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paulus Mackerras <paulus@samba.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: perfcounters: lockdep warning
-Message-ID: <20090613194447.GA2616@elte.hu>
-References: <1244921989.12341.487.camel@odie.local>
+	Sat, 13 Jun 2009 18:16:28 -0400
+Received: from syd-iport-1.cisco.com ([64.104.193.196]:23092 "EHLO
+	syd-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbZFMWQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 18:16:27 -0400
+X-Greylist: delayed 703 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Jun 2009 18:16:27 EDT
+X-IronPort-AV: E=Sophos;i="4.42,215,1243814400"; 
+   d="scan'208";a="55640596"
+From: Roland Dreier <rdreier@cisco.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Barnes\, Jesse" <jesse.barnes@intel.com>, Matthew Wilcox <matthew@wil.cx>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: Re: mthca double free irqs
+References: <86802c440906111945n2a42dc94mf08bd2b1a252842f@mail.gmail.com>
+	<ada1vpozrf9.fsf@cisco.com>
+	<86802c440906131228y6365f23fi59cd04f381fe92fc@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Sat, 13 Jun 2009 15:04:28 -0700
+In-Reply-To: <86802c440906131228y6365f23fi59cd04f381fe92fc@mail.gmail.com>
+	(Yinghai Lu's message of "Sat, 13 Jun 2009 12:28:29 -0700")
+Message-ID: <adahbyjyemr.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1244921989.12341.487.camel@odie.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.5
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4139]
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Jun 2009 22:04:29.0510 (UTC) FILETIME=[EC816660:01C9EC72]
+Authentication-Results: syd-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/syddkim1002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Simon Holm Thøgersen <odie@cs.aau.dk> wrote:
+ > thanks, that fixes the problem.
 
-> Just tried kicking the tires of performance counters and perf and 
-> got the following warning that doesn't look like have been 
-> reported already.
+Thanks, will merge with your reported-by/tested-by included.
 
-Hm, this looks safe at first sight so you can ignore this for now, 
-we'll annotate it properly - thanks for reporting it. Did you see 
-any lockups/problems?
-
-	Ingo
+ - R.
