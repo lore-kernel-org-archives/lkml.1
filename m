@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbZFMLK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762975AbZFMLNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbZFMLK1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 07:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbZFMLKO
+	id S1762975AbZFMLNK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 07:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZFMLMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 07:10:14 -0400
-Received: from 8bytes.org ([88.198.83.132]:38243 "EHLO 8bytes.org"
+	Sat, 13 Jun 2009 07:12:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43937 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750896AbZFMLKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 07:10:13 -0400
-Date: Sat, 13 Jun 2009 13:10:14 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
-       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-Message-ID: <20090613111014.GA18638@8bytes.org>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <64bb37e0906101341j341f5179o9abfa888a6b96fc3@mail.gmail.com> <20090611081032.GN5139@amd.com> <64bb37e0906111038h1a5b9f17oec6c6368d2fbd36d@mail.gmail.com> <20090612141346.GY5139@amd.com> <64bb37e0906120751u14cac347hfa2356372e1e0a6a@mail.gmail.com>
+	id S1750896AbZFMLMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 07:12:53 -0400
+Date: Sat, 13 Jun 2009 13:12:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/2] perfcounters: Print the filename:line for
+	annotated colored lines
+Message-ID: <20090613111248.GA1355@elte.hu>
+References: <1244844682-12928-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <64bb37e0906120751u14cac347hfa2356372e1e0a6a@mail.gmail.com>
+In-Reply-To: <1244844682-12928-1-git-send-email-fweisbec@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 04:51:01PM +0200, Torsten Kaiser wrote:
-> On Fri, Jun 12, 2009 at 4:13 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
-> > On Thu, Jun 11, 2009 at 07:38:47PM +0200, Torsten Kaiser wrote:
-> >> DMA-API: device driver tries to free DM
-> >> A memory it has not allocated [device address=0x000000011e4c3000]
-> >> [size=4096 bytes]
-> >
-> > Hmm, looking again over the code I've seen that the ref
-> > dma_debug_entries are not alway filled with all necessary information
-> > for best-fit. Can you please try if you still get false warnings when
-> > you apply the two patches attached instead of the one I sent yesterday?
-> 
-> Hmm... There isn't a get_nr_mapped_entries() in 2.6.30.
-> Are these patches again the current linus tree?
 
-Indeed. These patches are against tip/core/iommu but should also apply
-against current linus/master too.
+hm, -l doesnt work so well if a user-space binary (in this case the 
+'git' binary of the Git project) is profiled:
 
-> For unfilled information I wanted to complain that for non-sg mapping
-> sg_call_ents never gets filled. But as dma_entry_alloc() does a
-> memset() to clean the entrys it should not matter.
-> And what about dma_debug_entry.paddr? Should this also be compared?
+aldebaran:~/git> perf record -f ./git gc
+Counting objects: 1148, done.
+Delta compression using up to 16 threads.
+Compressing objects: 100% (450/450), done.
+Writing objects: 100% (1148/1148), done.
+Total 1148 (delta 690), reused 1148 (delta 690)
+[ perf record: Captured and wrote 1.649 MB perf.data (~72032 samples) ]
 
-paddr shouldn't matter. We also can't compare against it because it is
-not a parameter we get in the unmap path (not always).
+aldebaran:~/git> perf annotate -l lookup_object
 
-Joerg
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
+addr2line: 'vmlinux': No such file
 
+------------------------------------------------
+ Percent |      Source code & Disassembly of /home/mingo/git/git-update-server-info
+------------------------------------------------
+         :
+         :      /home/mingo/git/git-update-server-info:     file format elf64-x86-64
+         :
+         :
+         :      Disassembly of section .text:
+         :
+         :      00000000004160f0 <lookup_object>:
+         :              memcpy(&i, sha1, sizeof(unsigned int));
+         :              return (int)(i % obj_hash_size);
+         :      }
+
+	Ingo
