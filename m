@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762861AbZFMLIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbZFMLK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762861AbZFMLIo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 07:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbZFMLIh
+	id S1761255AbZFMLK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 07:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbZFMLKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 07:08:37 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:45096 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751094AbZFMLIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 07:08:36 -0400
-Date: Sat, 13 Jun 2009 13:08:29 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmc_spi: fail gracefully if host or card do not support
- the switch command
-Message-ID: <20090613130829.49216355@mjolnir.ossman.eu>
-In-Reply-To: <200906111713.27504.wolfgang.mues@auerswald.de>
-References: <200906111713.27504.wolfgang.mues@auerswald.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-24991-1244891313-0001-2"
+	Sat, 13 Jun 2009 07:10:14 -0400
+Received: from 8bytes.org ([88.198.83.132]:38243 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbZFMLKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 07:10:13 -0400
+Date: Sat, 13 Jun 2009 13:10:14 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
+       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
+Message-ID: <20090613111014.GA18638@8bytes.org>
+References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <64bb37e0906101341j341f5179o9abfa888a6b96fc3@mail.gmail.com> <20090611081032.GN5139@amd.com> <64bb37e0906111038h1a5b9f17oec6c6368d2fbd36d@mail.gmail.com> <20090612141346.GY5139@amd.com> <64bb37e0906120751u14cac347hfa2356372e1e0a6a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64bb37e0906120751u14cac347hfa2356372e1e0a6a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Fri, Jun 12, 2009 at 04:51:01PM +0200, Torsten Kaiser wrote:
+> On Fri, Jun 12, 2009 at 4:13 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
+> > On Thu, Jun 11, 2009 at 07:38:47PM +0200, Torsten Kaiser wrote:
+> >> DMA-API: device driver tries to free DM
+> >> A memory it has not allocated [device address=0x000000011e4c3000]
+> >> [size=4096 bytes]
+> >
+> > Hmm, looking again over the code I've seen that the ref
+> > dma_debug_entries are not alway filled with all necessary information
+> > for best-fit. Can you please try if you still get false warnings when
+> > you apply the two patches attached instead of the one I sent yesterday?
+> 
+> Hmm... There isn't a get_nr_mapped_entries() in 2.6.30.
+> Are these patches again the current linus tree?
 
---=_freyr.ossman.eu-24991-1244891313-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Indeed. These patches are against tip/core/iommu but should also apply
+against current linus/master too.
 
-On Thu, 11 Jun 2009 16:13:27 +0100
-Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
+> For unfilled information I wanted to complain that for non-sg mapping
+> sg_call_ents never gets filled. But as dma_entry_alloc() does a
+> memset() to clean the entrys it should not matter.
+> And what about dma_debug_entry.paddr? Should this also be compared?
 
-> From: Wolfgang Muees <wolfgang.mues@auerswald.de>
->=20
-> The switch command (typically speed switching from 25 to 50 MHz clock)
-> can be rejected by _both_ the host controller/driver and by the card.
-> Elder revisions of the SD card do not support speed switching.
-> Fail gracefully if the reject is comming from the card.
->=20
-> Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
->=20
+paddr shouldn't matter. We also can't compare against it because it is
+not a parameter we get in the unmap path (not always).
 
-Have you ever seen this in practice? For SD there are several checks
-before the switch command is actually issued. Sounds like there is
-something else wrong here. Have you turned off your EMP thingy? ;)
+Joerg
 
-PS. Please use the @ossman.eu address.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-24991-1244891313-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkoziLEACgkQ7b8eESbyJLhhyACgoM5tDXlCS6icnTlr2hb+ewdN
-mvsAn0ydr2GYfZN0qvV0pz4M7L4CqQmn
-=eOyy
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-24991-1244891313-0001-2--
