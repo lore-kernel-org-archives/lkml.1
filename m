@@ -1,39 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbZFMLYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbZFMLgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbZFMLYO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 07:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZFMLX7
+	id S1758259AbZFMLgS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 07:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZFMLgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 07:23:59 -0400
-Received: from pindarots.xs4all.nl ([80.101.128.228]:59876 "EHLO
-	pindarots.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbZFMLX7 (ORCPT
+	Sat, 13 Jun 2009 07:36:05 -0400
+Received: from mail-fx0-f216.google.com ([209.85.220.216]:37728 "EHLO
+	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbZFMLgE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 07:23:59 -0400
-Message-ID: <4A338C4A.2030406@xs4all.nl>
-Date: Sat, 13 Jun 2009 13:23:54 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sat, 13 Jun 2009 07:36:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Zh2pzavUtMWZW5OrYtKC/sQLac3kF3JWWXxdZW53l02ex+PKkyZEqRC+63bJijEs5C
+         yOgOceA3Yfdf2x2cP6QFaSBImGKgpXaD/gQ9Is0dwphhWf1dn+bo0dfv9m9Wo1cepxQV
+         DO+Zwr1Q1Xm+afX6A+lr4z4VlL1p0H6FoIuGo=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: ACPI: Device needs an ACPI driver
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090613110627.GG14878@aniel.lan>
+References: <20090612223255.GD14878@aniel.lan>
+	 <71cd59b00906122352g77e8afdeh235c2a73b323a0d7@mail.gmail.com>
+	 <20090613110627.GG14878@aniel.lan>
+Date: Sat, 13 Jun 2009 13:36:03 +0200
+Message-ID: <71cd59b00906130436i5024afa7q5b7cb40005014e14@mail.gmail.com>
+Subject: Re: [PATCH 0/2] eeepc-laptop: add 3G rfkill support for 901Go
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Janne Grunau <j@jannau.net>
+Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sat, Jun 13, 2009 at 1:06 PM, Janne Grunau<j@jannau.net> wrote:
+> On Sat, Jun 13, 2009 at 08:52:17AM +0200, Corentin Chary wrote:
+>> First,
+>> Could you fill http://dev.iksaif.net/projects/acpi4asus/wiki/CMSG with
+>> your model CMSG ?
+>
+> done, I suspect there's an error for the 701 and 901 in that table.
+> CM_ASL_CARDREADER should be 1 instead of CM_ASL_MODEM.
+> http://wiki.debian.org/DebianEeePC/Models supports that.
 
-On my VIA EN12000 with 2.6.29.4 I see in dmesg:
+I'll check that, thanks
 
-w83627hf: Found W83697HF chip at 0x290
-ACPI: I/O resource w83627hf [0x295-0x296] conflicts with ACPI region 
-IP__ [0x295-0x296]
-ACPI: Device needs an ACPI driver
+> Do you plan to update eeepc-laptop with all CM_ASL bits?
 
-This is a known issue?
+All CM_ASL bits found in latest asus_acpi driver, yep.
 
-Kind regards,
-Udo
+>> Then, I was working on a patch to refactor rfkill code in
+>> eeepc-laptop. With this patch, adding 3g rfkill
+>> is only 15-20 lines.
+>
+> good, I was too lazy to refactor it.
+>
+>> I'll add it to acpi4asus git tree soon.
+>> From here:
+>>  - I can rework your patch
+>> - you can re-send it when rfkill refactoring is here.
+>>
+>> as you want =).
+>
+> Drop me a mail when you're done but doesn't really matter who does it.
+
+Ok
+
+
+-- 
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
