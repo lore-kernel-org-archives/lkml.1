@@ -1,102 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZFMIzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbZFMJC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbZFMIzY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 04:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbZFMIzM
+	id S1756606AbZFMJC4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 05:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZFMJCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 04:55:12 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:36618 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbZFMIzK convert rfc822-to-8bit (ORCPT
+	Sat, 13 Jun 2009 05:02:48 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50871 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbZFMJCr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 04:55:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=h5mjsWVl9g+fmgZMsOEUo7bCeITRaAqG7L6Wf+uicKfXjlkfJVKglVcJXUgKIdMu0v
-         IaEns/zqbfF8DJCmvuCMzTbErlFrOlFlInJQpyTAhPdVqLb1Z21URauL+iNBisqDguYS
-         yLPM3tQXFy1/bTDdg+MhiQAfvOMU6irKL5LK0=
+	Sat, 13 Jun 2009 05:02:47 -0400
+Date: Sat, 13 Jun 2009 11:02:40 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ben Dooks <ben@fluff.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Joe Perches <joe@perches.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       David Miller <davem@davemloft.net>, swetland@google.com,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090613090240.GA29484@elf.ucw.cz>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <1244733310.895.60.camel@Joe-Laptop.home> <20090611182445.GA7658@uranus.ravnborg.org> <20090613003016.GB20442@fluff.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <9b2b86520906080824i134ee546v33990176b0d3e618@mail.gmail.com>
-References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-	 <20090404041813.GA30746@srcf.ucam.org>
-	 <9b2b86520906080824i134ee546v33990176b0d3e618@mail.gmail.com>
-Date: Sat, 13 Jun 2009 10:55:11 +0200
-Message-ID: <71cd59b00906130155u2757ade3t3378685846b80410@mail.gmail.com>
-Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via 
-	the input layer
-From: Corentin Chary <corentin.chary@gmail.com>
-To: alan-jenkins@tuffmail.co.uk
-Cc: Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090613003016.GB20442@fluff.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 5:24 PM, Alan
-Jenkins<sourcejedi.lkml@googlemail.com> wrote:
-> On 4/4/09, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->> On Fri, Apr 03, 2009 at 06:57:50PM +0100, Darren Salt wrote:
->>> This maps the brightness control events to one of two keys, either
->>> KEY_BRIGHTNESSDOWN or KEY_BRIGHTNESSUP, as needed.
->>>
->>> Some mapping has to be done due to the fact that the BIOS reports them as
->>> <base value> + <current brightness index>; the selection is done according
->>> to
->>> the sign of the change in brightness (if this is 0, no keypress is
->>> reported).
->>>
->>> (Ref.
->>> http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-April/002001.html)
->>>
->>> Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
->>
->> The reason I didn't do this is that the Eee changes the input brightness
->> in hardware, which means reporting it via the input layer as well can
->> cause a single keypress to raise the brightness by two steps - one in
->> hardware and one triggered by userland's response to the key press. I'd
->> be a little bit wary of this causing problems.
->>
->> On the other hand, the default behaviour of the acpi video driver is to
->> change the brightness itself and then also to send the even to
->> userspace, so I guess if it was going to break things it probably would
->> have done already...
->
-> Actually, I think userspace has learnt to hack around it but it
-> doesn't work perfectly.  I would like to request that this change be
-> reverted, or otherwise improved.
->
-> Before this patch (2.6.29.4), gnome-power-manager doesn't interfere
-> with the brightness keys, and they work smoothly.
->
-> After this patch (2.6.30-rc7), g-p-m produces a "nice" popup in the
-> middle of my tiny netbook screen.  Unfortunately it can't be disabled,
-> but that's not your fault :-).  The brightness controls generally work
-> ok.  It doesn't jump two steps in response to one brightness keypress.
->  But:
->
-> 1) If I'm thrashing the SSD.  I get jerky after-effects, where g-p-m
-> seems to take too long to "catch up" with the brightness change.
+nOn Sat 2009-06-13 01:30:16, Ben Dooks wrote:
+> On Thu, Jun 11, 2009 at 08:24:45PM +0200, Sam Ravnborg wrote:
+> > On Thu, Jun 11, 2009 at 08:15:10AM -0700, Joe Perches wrote:
+> > > On Thu, 2009-06-11 at 13:38 +0100, Russell King - ARM Linux wrote:
+> > > > On Thu, Jun 11, 2009 at 05:00:30AM -0700, David Miller wrote:
+> > > > > From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+> > > > > Date: Thu, 11 Jun 2009 12:49:12 +0100
+> > > > > 
+> > > > > > I can not keep up with the number of patches that need to be
+> > > > > > reviewed and ultimately merged.  I know this, and I freely admit it,
+> > > > > > and I have done so on many occasions.
+> > > > > 
+> > > > > Then split up the responsibilities to other people instead of being
+> > > > > the choke point.  Controlling everything isn't so important.
+> > > > 
+> > > > Don't you think that I've been trying to get other people to be more
+> > > > involved?
+> > > > 
+> > > > - I've been pushing people to send patches to the relevent mailing
+> > > >   list(s) and maintainer(s) for years.
+> > > > 
+> > > > - I've been pushing people to send their ARM patches to the ARM
+> > > >   mailing list rather than directly into the patch system for review
+> > > >   (it even has a comment telling people this) so that others can get
+> > > >   involved in reviewing them, and sharing that work load.
+> > > > 
+> > > > Do you think either have been anywhere near successful?
+> > > []
+> > > > I've been trying to get greater participation
+> > > > but it's just not happening.
+> > > 
+> > > I suggest you stop using subscriber-only mailing lists and
+> > > use linux-arm@vger.kernel.org.
+> > 
+> > This is main point here is to offload Russell.
+> > One way to offload Russell is to have competent people reviewing platform
+> > code for ARM. This is best done by other platform people.
+> > Me and you - we can helpt. But the people where we need higher
+> > involvement are already on the list.
+> 
+> Personally, I'm not on linux-arm@vger.kernel.org and don't plan on
+> being there either. If people are too stupid to read the maintainers
+> entry and realise that linux-arm-kernel is moderated and they might
+> thus have to subscribe to post there then they can be safely ignored.
 
-There is the same "lag" problem with sound :/
+Really? So IDE maintainers have to subscribe before when they want to
+discuss ARM&CF issues? Sleep maintainers have to subscribe when they
+want to discuss sleep&ARM?
 
-> 2) If I go all the way down from full (holding down the "brightness
-> down" key), and then back up a few steps.  I get a noticable flash
-> where the brightness looks to go up two steps, then down one.  It's
-> probably most noticable here because the step change between the
-> lowest and the second lowest brightness is much more visible than any
-> of the other steps.
->
-I tried to install gnome-power-manager to test that, but there is no "popup".
-What do I have to install to test that ? entire gnome desktop :/ ?
+You are offending people by first adding unneccessary & annoying steps
+to their workflow, and then calling them "too stupid" if they don't
+follow your stupid rules. (Sometimes subscribing takes _weeks_!)
 
-Thanks
-
-
+Yes, everyone should just join linux-arm@vger.kernel.org. What is the
+_advantage_ of heave heavilly moderated mailing list?
+								Pavel
 -- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
