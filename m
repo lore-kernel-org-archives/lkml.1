@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZFMMFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZFMMVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbZFMMFl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 08:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZFMMFd
+	id S1754673AbZFMMVk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 08:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZFMMVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 08:05:33 -0400
-Received: from ozlabs.org ([203.10.76.45]:35926 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751098AbZFMMFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 08:05:32 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tony Luck <tony.luck@intel.com>
-Subject: Re: [PULL] module and parameter
-Date: Sat, 13 Jun 2009 21:35:31 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Amerigo Wang <amwang@redhat.com>,
-       alex@shark-linux.de, David Miller <davem@davemloft.net>,
-       rth@twiddle.net, sfr@canb.auug.org.au
-References: <200906122205.57362.rusty@rustcorp.com.au> <12c511ca0906121405x5ccd0a60k4b804266a87a7896@mail.gmail.com> <200906131450.16211.rusty@rustcorp.com.au>
-In-Reply-To: <200906131450.16211.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906132135.32552.rusty@rustcorp.com.au>
+	Sat, 13 Jun 2009 08:21:31 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:50527 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbZFMMVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 08:21:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=FRcoVWVD9kt9Gc32cPS8o9A5OHW4DFXPjRvYJTACTdz2KbJ/WxlYaADOKf+m9wt2an
+         4wlY0D7pmoepxzJS/Km8naAefvKLrG+8AuRajOIYs7WUPLmTFKVPmugGpNUly+Lo0CJd
+         1lg78WxjPCJDA4sMdx+thEI4EfZpRDbaiGh0c=
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, Huang Weiyi <weiyi.huang@gmail.com>
+Subject: [PATCH 2/3] x86: remove duplicated #include's
+Date: Sat, 13 Jun 2009 20:21:26 +0800
+Message-Id: <1244895686-2348-1-git-send-email-weiyi.huang@gmail.com>
+X-Mailer: git-send-email 1.6.1.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Jun 2009 02:50:15 pm Rusty Russell wrote:
-> On Sat, 13 Jun 2009 06:35:46 am Tony Luck wrote:
-> > On Fri, Jun 12, 2009 at 5:35 AM, Rusty Russell<rusty@rustcorp.com.au> wrote:
-> > >      module: trim exception table on init free.
-> >
-> > This is causing build errors for ia64:
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+---
+ arch/x86/kernel/apic/probe_32.c  |   11 -----------
+ arch/x86/kernel/apic/summit_32.c |    1 -
+ 2 files changed, 0 insertions(+), 12 deletions(-)
 
-Unfortunately this has gone into Linus' tree already.  I have compile-tested
-my previous patch for ia64, and it fixes compile at least.
-
-> > I note that this commit has been reverted in linux-next.  What's going
-> > on?
-
-kisskb.ellerman.id.au says it's broken there, so it's applied.
-
-While I've got your attention, there was another build break on ia64 in
-linux-next, caused by removal of smp_call_function_mask.
-
-Thanks,
-Rusty.
-
-Subject: ia64: convert last user of smp_call_function_mask
-
-smp_call_function_many is the new version: it takes a pointer.  Also,
-use mm accessor macro while we're changing this.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
---- a/arch/ia64/kernel/smp.c
-+++ b/arch/ia64/kernel/smp.c
-@@ -301,7 +301,7 @@ smp_flush_tlb_mm (struct mm_struct *mm)
- 		return;
- 	}
+diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
+index 440a8bc..0c0182c 100644
+--- a/arch/x86/kernel/apic/probe_32.c
++++ b/arch/x86/kernel/apic/probe_32.c
+@@ -20,23 +20,12 @@
+ #include <asm/apic.h>
+ #include <asm/setup.h>
  
--	smp_call_function_mask(mm->cpu_vm_mask,
-+	smp_call_function_many(mm_cpumask(mm),
- 		(void (*)(void *))local_finish_flush_tlb_mm, mm, 1);
- 	local_irq_disable();
- 	local_finish_flush_tlb_mm(mm);
+-#include <linux/threads.h>
+-#include <linux/cpumask.h>
+-#include <asm/mpspec.h>
+-#include <asm/fixmap.h>
+-#include <asm/apicdef.h>
+-#include <linux/kernel.h>
+-#include <linux/string.h>
+ #include <linux/smp.h>
+-#include <linux/init.h>
+ #include <asm/ipi.h>
+ 
+-#include <linux/smp.h>
+-#include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <asm/acpi.h>
+ #include <asm/e820.h>
+-#include <asm/setup.h>
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ #define DEFAULT_SEND_IPI	(1)
+diff --git a/arch/x86/kernel/apic/summit_32.c b/arch/x86/kernel/apic/summit_32.c
+index 344eee4..eafdfbd 100644
+--- a/arch/x86/kernel/apic/summit_32.c
++++ b/arch/x86/kernel/apic/summit_32.c
+@@ -44,7 +44,6 @@
+ #include <asm/ipi.h>
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+-#include <linux/init.h>
+ #include <linux/gfp.h>
+ #include <linux/smp.h>
+ 
+-- 
+1.6.1.2
 
