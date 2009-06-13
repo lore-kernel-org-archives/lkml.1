@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbZFMN0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932137AbZFMN0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762811AbZFMN0c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 09:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763632AbZFMNZg
+	id S932137AbZFMN0w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 09:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763634AbZFMNZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 09:25:36 -0400
+	Sat, 13 Jun 2009 09:25:51 -0400
 Received: from mail-bw0-f213.google.com ([209.85.218.213]:49807 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763573AbZFMNZa (ORCPT
+	with ESMTP id S1763611AbZFMNZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 09:25:30 -0400
+	Sat, 13 Jun 2009 09:25:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=WLtxmiDxP5B8L8O4+UsgxIHe2M7nl3yKbL6XmGrwB4IGWvZaIpMRtHId4XArilV+so
-         h9RT1US1P1pYuGHIlC2Ze+skY2iecly9l7ISlZxuU31qwT5+GVrbbf22pp7gDBzLNAjH
-         79X41e5SnTgIJWNk3OvdgxcU668XeNZOc1cdA=
-Message-ID: <4A33A7E2.9020803@gmail.com>
-Date: Sat, 13 Jun 2009 15:21:38 +0200
+        b=ZmXKiHtZPktnfw6KEXyG0S7L7ekva4dig20sVX+x2tMh60uctom3QdyrEm/dC05Nd6
+         5x6zBLrRBIcKIhAwgih/q0k0+ZBA5UcZrEu7uk9ZmPXlG5BVKRe0FXJZmGqL1ppARhDv
+         P2wb5FlYeJqT/dVbqaFU9hKiuyLPhTBwlbCHc=
+Message-ID: <4A33A7EC.6070008@gmail.com>
+Date: Sat, 13 Jun 2009 15:21:48 +0200
 From: Marco <marco.stornelli@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -26,7 +26,7 @@ To: Linux FS Devel <linux-fsdevel@vger.kernel.org>
 CC: Linux Embedded <linux-embedded@vger.kernel.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: [PATCH 05/14] Pramfs: File operations for files
+Subject: [PATCH 06/14] Pramfs: Include files
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,21 +35,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Marco Stornelli <marco.stornelli@gmail.com>
 
-File operations for files.
+Include files.
 
 Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
 ---
 
-diff -uprN linux-2.6.30-orig/fs/pramfs/file.c linux-2.6.30/fs/pramfs/file.c
---- linux-2.6.30-orig/fs/pramfs/file.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.30/fs/pramfs/file.c	2009-06-13 12:52:56.000000000 +0200
-@@ -0,0 +1,141 @@
+diff -uprN linux-2.6.30-orig/fs/pramfs/pram_fs.h linux-2.6.30/fs/pramfs/pram_fs.h
+--- linux-2.6.30-orig/fs/pramfs/pram_fs.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.30/fs/pramfs/pram_fs.h	2009-06-13 12:58:49.000000000 +0200
+@@ -0,0 +1,388 @@
 +/*
-+ * FILE NAME fs/pramfs/file.c
++ * FILE NAME include/linux/pram_fs.h
 + *
 + * BRIEF DESCRIPTION
 + *
-+ * File operations for files.
++ * Definitions for the PRAMFS filesystem.
 + *
 + * Copyright 2009 Marco Stornelli <marco.stornelli@gmail.com>
 + * Copyright 2003 Sony Corporation
@@ -59,130 +59,421 @@ diff -uprN linux-2.6.30-orig/fs/pramfs/file.c linux-2.6.30/fs/pramfs/file.c
 + * License version 2. This program is licensed "as is" without any
 + * warranty of any kind, whether express or implied.
 + */
-+#include <linux/fs.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/uio.h>
-+#include <linux/uaccess.h>
-+#include "pram_fs.h"
-+#include "xip.h"
++#ifndef _LINUX_PRAM_FS_H
++#define _LINUX_PRAM_FS_H
 +
-+static int pram_open_file(struct inode *inode, struct file *filp)
-+{
-+#ifndef CONFIG_PRAMFS_XIP
-+	/* Without XIP we force to use Direct IO */
-+	filp->f_flags |= O_DIRECT;
++#include <linux/types.h>
++
++#ifdef __KERNEL__
++#include <linux/sched.h>
++#include <linux/buffer_head.h>
++#include "pram_fs_sb.h"
 +#endif
-+	return generic_file_open(inode, filp);
-+}
 +
 +/*
-+ * Called when an inode is released. Note that this is different
-+ * from pram_open_file: open gets called at every open, but release
-+ * gets called only when /all/ the files are closed.
++ * The PRAM filesystem constants/structures
 + */
-+static int pram_release_file(struct inode *inode, struct file *filp)
-+{
-+	return 0;
-+}
 +
-+ssize_t __pram_direct_IO(int rw, struct kiocb *iocb,
-+		   const struct iovec *iov,
-+		   loff_t offset, unsigned long nr_segs)
-+{
-+	struct file *file = iocb->ki_filp;
-+	struct inode *inode = file->f_mapping->host;
-+	struct super_block *sb = inode->i_sb;
-+	int progress = 0;
-+	ssize_t retval = 0;
-+	struct pram_inode *pi;
-+	void *tmp = NULL;
-+	unsigned long flags;
-+	unsigned long blocknr, blockoff;
-+	int num_blocks, blocksize_mask, blocksize, blocksize_bits;
-+	char __user *buf = iov->iov_base;
-+	size_t length = iov->iov_len;
++/*
++ * Define PRAMFS_DEBUG to produce debug messages
++ */
++#define PRAMFS_DEBUG
 +
-+	flags = 0;
++/*
++ * Debug code
++ */
++#ifdef __KERNEL__
++#define PFX "pramfs"
++#ifdef PRAMFS_DEBUG
++#define pram_dbg(format, arg...) \
++    printk(KERN_DEBUG PFX ": " format , ## arg)
++#else
++#define pram_dbg(format, arg...) do {} while (0)
++#endif
++#define pram_err(format, arg...) \
++    printk(KERN_ERR PFX ": " format , ## arg)
++#define pram_info(format, arg...) \
++    printk(KERN_INFO PFX ": " format , ## arg)
++#define pram_warn(format, arg...) \
++    printk(KERN_WARNING PFX ": " format , ## arg)
++#endif
 +
-+	if (length < 0)
-+		return -EINVAL;
-+	if ((rw == READ) && (offset + length > inode->i_size))
-+		length = inode->i_size - offset;
-+	if (!length)
-+		goto out;
++/*
++ * The PRAM file system magic number
++ */
++#define PRAM_SUPER_MAGIC	0xEFFA
 +
-+	blocksize_bits = inode->i_sb->s_blocksize_bits;
-+	blocksize = 1 << blocksize_bits;
-+	blocksize_mask = blocksize - 1;
++/*
++ * Maximal count of links to a file
++ */
++#define PRAM_LINK_MAX		32000
 +
-+	/* find starting block number to access */
-+	blocknr = offset >> blocksize_bits;
-+	/* find starting offset within starting block */
-+	blockoff = offset & blocksize_mask;
-+	/* find number of blocks to access */
-+	num_blocks = (blockoff + length + blocksize_mask) >> blocksize_bits;
++#define PRAM_MIN_BLOCK_SIZE 512
++#define PRAM_MAX_BLOCK_SIZE 4096
++#define PRAM_DEF_BLOCK_SIZE 2048
 +
-+	if (rw == WRITE) {
-+		/* prepare a temporary buffer to hold a user data block
-+		   for writing. */
-+		tmp = kmalloc(blocksize, GFP_KERNEL);
-+		if (!tmp)
-+			return -ENOMEM;
-+		/* now allocate the data blocks we'll need */
-+		retval = pram_alloc_blocks(inode, blocknr, num_blocks);
-+		if (retval)
-+			goto fail;
-+	}
++#define PRAM_INODE_SIZE 128 /* must be power of two */
++#define PRAM_INODE_BITS   7
 +
-+	pi = pram_get_inode(inode->i_sb, inode->i_ino);
-+
-+	while (length) {
-+		int count;
-+		off_t block = pram_find_data_block(inode, blocknr++);
-+		u8 *bp = (u8 *)pram_get_block(sb, block);
-+		if (!bp)
-+			goto fail;
-+
-+		count = blockoff + length > blocksize ?
-+			blocksize - blockoff : length;
-+
-+		if (rw == READ) {
-+			copy_to_user(buf, &bp[blockoff], count);
-+		} else {
-+			copy_from_user(tmp, buf, count);
-+
-+			pram_lock_block(inode->i_sb, bp, flags);
-+			memcpy(&bp[blockoff], tmp, count);
-+			pram_unlock_block(inode->i_sb, bp, flags);
-+		}
-+
-+		progress += count;
-+		buf += count;
-+		length -= count;
-+		blockoff = 0;
-+	}
-+
-+	retval = progress;
-+ fail:
-+	kfree(tmp);
-+ out:
-+	return retval;
-+}
-+
-+struct file_operations pram_file_operations = {
-+	.llseek		= generic_file_llseek,
-+	.read		= pram_read,
-+	.write		= pram_write,
-+	.aio_read	= pram_aio_read,
-+	.aio_write	= pram_aio_write,
-+	.mmap		= pram_mmap,
-+	.open		= pram_open_file,
-+	.release	= pram_release_file,
-+	.fsync		= simple_sync_file,
++/*
++ * Structure of a directory entry in PRAMFS.
++ * Offsets are to the inode that holds the referenced dentry.
++ */
++struct pram_dentry {
++	off_t d_next;     /* next dentry in this directory */
++	off_t d_prev;     /* previous dentry in this directory */
++	off_t d_parent;   /* parent directory */
++	char       d_name[0];
 +};
 +
-+struct inode_operations pram_file_inode_operations = {
-+	.truncate	= pram_truncate,
++
++/*
++ * Structure of an inode in PRAMFS
++ */
++struct pram_inode {
++	__u32   i_sum;          /* checksum of this inode */
++	__u32	i_uid;		/* Owner Uid */
++	__u32	i_gid;		/* Group Id */
++	__u16	i_mode;		/* File mode */
++	__u16	i_links_count;	/* Links count */
++	__u32	i_blocks;	/* Blocks count */
++	__u32	i_size;		/* Size of data in bytes */
++	__u32	i_atime;	/* Access time */
++	__u32	i_ctime;	/* Creation time */
++	__u32	i_mtime;	/* Modification time */
++	__u32	i_dtime;	/* Deletion Time */
++
++	union {
++		struct {
++			/*
++			 * ptr to row block of 2D block pointer array,
++			 * file block #'s 0 to (blocksize/4)^2 - 1.
++			 */
++			off_t row_block;
++		} reg;   /* regular file or symlink inode */
++		struct {
++			off_t head; /* first entry in this directory */
++			off_t tail; /* last entry in this directory */
++		} dir;
++		struct {
++			__u32 rdev; /* major/minor # */
++		} dev;   /* device inode */
++	} i_type;
++
++	struct pram_dentry i_d;
 +};
++
++#define PRAM_NAME_LEN \
++    (PRAM_INODE_SIZE - offsetof(struct pram_inode, i_d.d_name) - 1)
++
++
++#define PRAM_SB_SIZE 128 /* must be power of two */
++#define PRAM_SB_BITS   7
++
++/*
++ * Structure of the super block in PRAMFS
++ */
++struct pram_super_block {
++	__u32   s_size;         /* total size of fs in bytes */
++	__u32   s_blocksize;    /* blocksize in bytes */
++	__u32	s_inodes_count;	/* total inodes count (used or free) */
++	__u32	s_free_inodes_count;/* free inodes count */
++	__u32   s_free_inode_hint;  /* start hint for locating free inodes */
++	__u32	s_blocks_count;	/* total data blocks count (used or free) */
++	__u32	s_free_blocks_count;/* free data blocks count */
++	__u32	s_free_blocknr_hint;/* free data blocks count */
++	off_t s_bitmap_start; /* data block in-use bitmap location */
++	__u32   s_bitmap_blocks;/* size of bitmap in number of blocks */
++	__u32	s_mtime;	/* Mount time */
++	__u32	s_wtime;	/* Write time */
++	__u16	s_magic;	/* Magic signature */
++	char	s_volume_name[16]; /* volume name */
++	__u32   s_sum;          /* checksum of this sb, including padding */
++};
++
++/* The root inode follows immediately after the redundant super block */
++#define PRAM_ROOT_INO PRAM_SB_SIZE
++
++#ifdef __KERNEL__
++
++/* Function Prototypes */
++
++#ifdef CONFIG_PRAMFS_XIP
++
++#define pram_read	xip_file_read
++#define pram_write	xip_file_write
++#define pram_mmap	xip_file_mmap
++#define pram_aio_read	NULL
++#define pram_aio_write	NULL
++#define pram_readpage	NULL
++#define pram_direct_IO	NULL
++
++#else
++
++#define pram_read	do_sync_read
++#define pram_write	do_sync_write
++#define pram_mmap	generic_file_mmap
++#define pram_aio_read	generic_file_aio_read
++#define pram_aio_write	generic_file_aio_write
++#define pram_direct_IO	__pram_direct_IO
++#define pram_readpage	__pram_readpage
++
++extern int pram_get_and_update_block(struct inode *inode, sector_t iblock,
++				     struct buffer_head *bh, int create);
++
++static inline int __pram_readpage(struct file *file, struct page *page)
++{
++	return block_read_full_page(page, pram_get_and_update_block);
++}
++
++/* file.c */
++extern ssize_t __pram_direct_IO(int rw, struct kiocb *iocb,
++			  const struct iovec *iov,
++			  loff_t offset, unsigned long nr_segs);
++
++
++#endif /* CONFIG_PRAMFS_XIP */
++
++/* balloc.c */
++extern void pram_init_bitmap(struct super_block *sb);
++extern void pram_free_block(struct super_block *sb, int blocknr);
++extern int pram_new_block(struct super_block *sb, int *blocknr, int zero);
++extern unsigned long pram_count_free_blocks(struct super_block *sb);
++
++/* dir.c */
++extern int pram_add_link(struct dentry *dentry, struct inode *inode);
++extern int pram_remove_link(struct inode *inode);
++
++/* inode.c */
++extern int pram_alloc_blocks(struct inode *inode, int file_blocknr, int num);
++extern off_t pram_find_data_block(struct inode *inode,
++					 int file_blocknr);
++extern struct inode *pram_fill_new_inode(struct super_block *sb,
++					   struct pram_inode *raw_inode);
++extern void pram_put_inode(struct inode *inode);
++extern void pram_delete_inode(struct inode *inode);
++extern struct inode *pram_new_inode(const struct inode *dir, int mode);
++extern void pram_read_inode(struct inode *inode);
++extern void pram_truncate(struct inode *inode);
++extern int pram_write_inode(struct inode *inode, int wait);
++extern void pram_dirty_inode(struct inode *inode);
++extern int pram_notify_change(struct dentry *dentry, struct iattr *attr);
++
++/* super.c */
++#ifdef CONFIG_PRAMFS_TEST
++extern struct pram_super_block *get_pram_super(void);
++#endif
++extern struct super_block *pram_read_super(struct super_block *sb,
++					      void *data,
++					      int silent);
++extern int pram_statfs(struct dentry *d, struct kstatfs *buf);
++extern int pram_remount(struct super_block *sb, int *flags, char *data);
++
++/* symlink.c */
++extern int pram_block_symlink(struct inode *inode,
++			       const char *symname, int len);
++
++
++#ifndef CONFIG_PRAMFS_NOWP
++extern void pram_writeable(void *vaddr, unsigned long size, int rw);
++
++#define wrprotect(addr, size) {\
++		spin_lock(&init_mm.page_table_lock);\
++		pram_writeable(addr, size, 0);\
++		spin_unlock(&init_mm.page_table_lock);\
++}
++
++#else
++
++#define wrprotect(addr, size) do {} while (0)
++
++#endif /* CONFIG PRAMFS_NOWP */
++
++/* Inline functions start here */
++
++static inline u32 pram_calc_checksum(u32 *buf, int n)
++{
++	u32 sum = 0;
++	while (n--)
++		sum += *buf++;
++	return sum;
++}
++
++/* If this is part of a read-modify-write of the super block,
++   pram_lock_super() before calling! */
++static inline struct pram_super_block *
++pram_get_super(struct super_block *sb)
++{
++	struct pram_sb_info *sbi = (struct pram_sb_info *)sb->s_fs_info;
++	return (struct pram_super_block *)sbi->virt_addr;
++}
++
++/* pram_lock_super() before calling! */
++static inline void pram_sync_super(struct pram_super_block *ps)
++{
++	ps->s_wtime = get_seconds();
++	ps->s_sum = 0;
++	ps->s_sum -= pram_calc_checksum((u32 *)ps, PRAM_SB_SIZE>>2);
++}
++
++/* pram_lock_inode() before calling! */
++static inline void pram_sync_inode(struct pram_inode *pi)
++{
++	/* pi->i_mtime = CURRENT_TIME; */
++	pi->i_sum = 0;
++	pi->i_sum -= pram_calc_checksum((u32 *)pi, PRAM_INODE_SIZE>>2);
++}
++
++#ifndef CONFIG_PRAMFS_NOWP
++#define pram_lock_range(p, len, flags) {\
++	spin_lock_irqsave(&init_mm.page_table_lock, flags);\
++	pram_writeable((p), (len), 1);\
++}
++
++#define pram_unlock_range(p, len, flags) {\
++	pram_writeable((p), (len), 0);\
++	spin_unlock_irqrestore(&init_mm.page_table_lock, flags);\
++}
++#else
++#define pram_lock_range(p, len, flags) do {} while (0)
++#define pram_unlock_range(p, len, flags) do {} while (0)
++#endif
++
++/* write protection for super block */
++#define pram_lock_super(ps, flags) \
++	pram_lock_range((ps), PRAM_SB_SIZE, flags)
++#define pram_unlock_super(ps, flags) {\
++	pram_sync_super(ps);\
++	pram_unlock_range((ps), PRAM_SB_SIZE, flags);\
++}
++
++/* write protection for inode metadata */
++#define pram_lock_inode(pi, flags) \
++	pram_lock_range((pi), PRAM_INODE_SIZE, flags)
++#define pram_unlock_inode(pi, flags) {\
++	pram_sync_inode(pi);\
++	pram_unlock_range((pi), PRAM_SB_SIZE, flags);\
++}
++
++/* write protection for a data block */
++#define pram_lock_block(sb, bp, flags) \
++	pram_lock_range((bp), (sb)->s_blocksize, flags)
++#define pram_unlock_block(sb, bp, flags) \
++	pram_unlock_range((bp), (sb)->s_blocksize, flags)
++
++static inline void *
++pram_get_bitmap(struct super_block *sb)
++{
++	struct pram_super_block *ps = pram_get_super(sb);
++	return (void *)ps + ps->s_bitmap_start;
++}
++
++/* If this is part of a read-modify-write of the inode metadata,
++   pram_lock_inode() before calling! */
++static inline struct pram_inode *
++pram_get_inode(struct super_block *sb, off_t ino)
++{
++	struct pram_super_block *ps = pram_get_super(sb);
++	return ino ? (struct pram_inode *)((void *)ps + ino) : NULL;
++}
++
++static inline ino_t
++pram_get_inodenr(struct super_block *sb, struct pram_inode *pi)
++{
++	struct pram_super_block *ps = pram_get_super(sb);
++	return (ino_t)((unsigned long)pi - (unsigned long)ps);
++}
++
++static inline off_t
++pram_get_block_off(struct super_block *sb, unsigned long blocknr)
++{
++	struct pram_super_block *ps = pram_get_super(sb);
++	return (off_t)(ps->s_bitmap_start +
++			     (blocknr << sb->s_blocksize_bits));
++}
++
++static inline unsigned long
++pram_get_blocknr(struct super_block *sb, off_t block)
++{
++	struct pram_super_block *ps = pram_get_super(sb);
++	return (block - ps->s_bitmap_start) >> sb->s_blocksize_bits;
++}
++
++/* If this is part of a read-modify-write of the block,
++   pram_lock_block() before calling! */
++static inline void *
++pram_get_block(struct super_block *sb, off_t block)
++{
++	struct pram_super_block *ps = pram_get_super(sb);
++	return block ? ((void *)ps + block) : NULL;
++}
++
++
++/*
++ * Inodes and files operations
++ */
++
++/* dir.c */
++extern struct file_operations pram_dir_operations;
++
++/* file.c */
++extern struct inode_operations pram_file_inode_operations;
++extern struct file_operations pram_file_operations;
++
++/* inode.c */
++extern struct address_space_operations pram_aops;
++
++/* namei.c */
++extern struct inode_operations pram_dir_inode_operations;
++
++/* symlink.c */
++extern struct inode_operations pram_symlink_inode_operations;
++
++#endif	/* __KERNEL__ */
++
++#endif	/* _LINUX_PRAM_FS_H */
+diff -uprN linux-2.6.30-orig/fs/pramfs/pram_fs_sb.h linux-2.6.30/fs/pramfs/pram_fs_sb.h
+--- linux-2.6.30-orig/fs/pramfs/pram_fs_sb.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.30/fs/pramfs/pram_fs_sb.h	2009-06-13 12:59:17.000000000 +0200
+@@ -0,0 +1,40 @@
++/*
++ * FILE NAME include/linux/pram_fs_sb.h
++ *
++ * Definitions for the PRAM filesystem.
++ *
++ * Copyright 2009 Marco Stornelli <marco.stornelli@gmail.com>
++ * Copyright 2003 Sony Corporation
++ * Copyright 2003 Matsushita Electric Industrial Co., Ltd.
++ * 2003-2004 (c) MontaVista Software, Inc. , Steve Longerbeam
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2. This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
++
++#ifndef _LINUX_PRAM_FS_SB
++#define _LINUX_PRAM_FS_SB
++
++/*
++ * PRAM filesystem super-block data in memory
++ */
++struct pram_sb_info {
++	/*
++	 * base physical and virtual address of PRAMFS (which is also
++	 * the pointer to the super block)
++	 */
++	phys_addr_t phys_addr;
++	void *virt_addr;
++
++	/* Mount options */
++	unsigned long bpi;
++	unsigned long num_inodes;
++	unsigned long blocksize;
++	unsigned long initsize;
++	uid_t uid;		    /* Mount uid for root directory */
++	gid_t gid;		    /* Mount gid for root directory */
++	mode_t mode;		    /* Mount mode for root directory */
++};
++
++#endif	/* _LINUX_PRAM_FS_SB */
++
 
