@@ -1,67 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762883AbZFMUcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZFMUmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762883AbZFMUcU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 16:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbZFMUcM
+	id S1759659AbZFMUmk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 16:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZFMUma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 16:32:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64227 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753214AbZFMUcM (ORCPT
+	Sat, 13 Jun 2009 16:42:30 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46349 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754126AbZFMUm3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 16:32:12 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] FRV: Fix interaction with new generic header stuff
-Date: Sat, 13 Jun 2009 22:31:48 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20090613122354.24795.88926.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090613122354.24795.88926.stgit@warthog.procyon.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906132231.49327.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Uy4e0knKcskOZxcH0dZpYk80YJ1BKWdem8q/
- o/PvMjMlnA3gC3zgpCzSmUg7guTWpuRDllzd2MVYOGVfpsjOPD
- F1Jl70/h+ws3d5BioLoVg==
+	Sat, 13 Jun 2009 16:42:29 -0400
+Subject: Re: -git tree build failure #2: drivers/net/cnic.c:2520: error:
+ implicit declaration of function
+ =?UTF-8?Q?=E2=80=98=5F=5Fsymbol=5Fget=E2=80=99?=
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, Michael Chan <mchan@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.01.0906131309560.3237@localhost.localdomain>
+References: <20090612184343.GA11900@elte.hu> <4A32A1E4.8080708@oracle.com>
+	 <20090613062933.GA14034@elte.hu>
+	 <alpine.LFD.2.01.0906131309560.3237@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 13 Jun 2009 15:42:26 -0500
+Message-Id: <1244925747.5323.57.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 June 2009, David Howells wrote:
-> Fix interaction with new generic header stuff as added by:
+On Sat, 2009-06-13 at 13:11 -0700, Linus Torvalds wrote:
 > 
->         commit 6103ec56c65c33774c7c38652c8204120c3c7519
->         Author: Arnd Bergmann <arnd@arndb.de>
->         Date:   Wed May 13 22:56:27 2009 +0000
+> On Sat, 13 Jun 2009, Ingo Molnar wrote:
+> >
+> > > I just posted a patch for this to netdev and it was acked by its maintainer.
+> > > Patch is below.
+> > 
+> > This solves the first build failure but there's still a second build 
+> > failure:
+> > 
+> >  drivers/net/cnic.c: In function ‘init_bnx2_cnic’:
+> >  drivers/net/cnic.c:2520: error: implicit declaration of function ‘__symbol_get’
+> >  drivers/net/cnic.c:2520: warning: assignment makes pointer from integer without a cast
+> >  make[1]: *** [drivers/net/cnic.o] Error 1
+> >  make: *** [drivers/net/cnic.o] Error 2
+> > 
+> > This too triggers with the config i sent. The patch below solves it 
+> > - but i havent done more testing.
+> > 
+> > 	Ingo
+> > 
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > diff --git a/drivers/net/cnic.c b/drivers/net/cnic.c
+> > index 8d74037..49135cc 100644
+> > --- a/drivers/net/cnic.c
+> > +++ b/drivers/net/cnic.c
+> > @@ -25,6 +25,8 @@
+> >  #include <linux/delay.h>
+> >  #include <linux/ethtool.h>
+> >  #include <linux/if_vlan.h>
+> > +#include <linux/module.h>
+> > +
 > 
->             asm-generic: add generic ABI headers
+> That makes no sense. 
 > 
-> The problem is that asm/signal.h has been made to include asm-generic/signal.h,
-> but the redundant stuff from asm/signal.h has not been discarded, leading to
-> multiple redefinitions.
+> Look at the first #include in the file - it already includes 
+> <linux/module.h>.
 > 
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: David Howells <dhowells@redhat.com>
+> Why do we need to do it twice?
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+We don't ... it's the wrong fix.  The actual problem is that
+__symbol_get() is only defined for the modular case.  What it looks to
+be doing is a reflection call on bnx2_cnic_probe().  I'm not sure why
+it's doing this ... other than perhaps cnic wants to avoid an explicit
+bnx2 dependency?  I actually think it's incorrect, since the netdev code
+before it just checked bnx2 is present, so I see no harm in an explicit
+call, so this should fix it.
 
-This was the result of an incorrectly resolved merge conflict on my side,
-after you moved the frv headers around. I fixed the same bug for other
-architectures, but frv has slipped through for some reason.
+If it had a good reason for the reflective call, then symbol_get()
+without the __ should be used.
 
-My intended fix was to simply change #include <asm-generic/signal.h>
-to #include <asm-generic/signal-defs.h>, which would have been guaranteed
-to be non-invasive. Your change of course is the long-term cleanup
-that reuses the asm-generic file.
+Michael Chan, could you confirm?
 
-Sorry about the breakage.
+James
 
-	Arnd <><
+---
+
+diff --git a/drivers/net/bnx2.h b/drivers/net/bnx2.h
+index a1ff739..d49b6da 100644
+--- a/drivers/net/bnx2.h
++++ b/drivers/net/bnx2.h
+@@ -7345,4 +7345,6 @@ struct bnx2_rv2p_fw_file {
+ 
+ #define HOST_VIEW_SHMEM_BASE			0x167c00
+ 
++struct cnic_eth_dev *bnx2_cnic_probe(struct net_device *dev);
++
+ #endif
+diff --git a/drivers/net/cnic.c b/drivers/net/cnic.c
+index 44f77eb..3db64ad 100644
+--- a/drivers/net/cnic.c
++++ b/drivers/net/cnic.c
+@@ -2520,14 +2520,9 @@ static struct cnic_dev *init_bnx2_cnic(struct net_device *dev)
+ 	struct pci_dev *pdev;
+ 	struct cnic_dev *cdev;
+ 	struct cnic_local *cp;
+-	struct cnic_eth_dev *ethdev = NULL;
+-	struct cnic_eth_dev *(*probe)(void *) = NULL;
++	struct cnic_eth_dev *ethdev;
+ 
+-	probe = __symbol_get("bnx2_cnic_probe");
+-	if (probe) {
+-		ethdev = (*probe)(dev);
+-		symbol_put_addr(probe);
+-	}
++	ethdev = bnx2_cnic_probe(dev);
+ 	if (!ethdev)
+ 		return NULL;
+ 
+
+
