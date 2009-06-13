@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZFMGQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZFMG35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbZFMGQI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 02:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZFMGP4
+	id S1758035AbZFMG35 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 02:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZFMG3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 02:15:56 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58482 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbZFMGP4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 02:15:56 -0400
-Date: Fri, 12 Jun 2009 23:16:27 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: IO latency - a special case
-Message-ID: <20090612231627.1222f526@infradead.org>
-In-Reply-To: <9b1675090906122251y43476b23wd3593927e3b792c2@mail.gmail.com>
-References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
-	<9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
-	<9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
-	<9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
-	<20090405062626.GA7760@mit.edu>
-	<9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
-	<9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
-	<20090611191152.GD16787@mit.edu>
-	<9b1675090906122048o35698c09x13cc7cf7650ac9ae@mail.gmail.com>
-	<20090612212414.1ae5a284@infradead.org>
-	<9b1675090906122251y43476b23wd3593927e3b792c2@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 13 Jun 2009 02:29:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54632 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753124AbZFMG3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 02:29:48 -0400
+Date: Sat, 13 Jun 2009 08:29:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Michael Chan <mchan@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: -git tree build failure #2: =?utf-8?Q?driv?=
+	=?utf-8?Q?ers=2Fnet=2Fcnic=2Ec=3A2520=3A_error=3A_implicit_declaration_of?=
+	=?utf-8?B?IGZ1bmN0aW9uIOKAmF9fc3ltYm9sX2dldOKAmQ==?=
+Message-ID: <20090613062933.GA14034@elte.hu>
+References: <20090612184343.GA11900@elte.hu> <4A32A1E4.8080708@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A32A1E4.8080708@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009 23:51:19 -0600
-"Trenton D. Adams" <trenton.d.adams@gmail.com> wrote:
+
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> Ingo Molnar wrote:
+> > today's -git fails to build with ipv6 disabled (x86):
+> > 
+> >   drivers/built-in.o: In function `cnic_get_v6_route':
+> >   cnic.c:(.text+0x104c42): undefined reference to `ip6_route_output'
+> > 
+> > introduced by this new driver:
+> > 
+> >   a463696: [SCSI] cnic: Add new Broadcom CNIC driver.
 > 
-> Right now, just during normal system usage, it's showing...
-> Cause                                                Maximum
-> Percentage poll_schedule_timeout do_sys_poll sys_poll sysente  5.0
-> msec         58.0 % futex_wait do_futex compat_sys_futex
-> sysenter_disp  5.0 msec         40.3 % blk_execute_rq scsi_execute
-> scsi_execute_req scsi_  3.9 msec          0.2 % blk_execute_rq
-> scsi_execute scsi_execute_req sd_re  3.5 msec          0.2 %
-> poll_schedule_timeout do_select core_sys_select sy  3.4 msec
-> 0.3 % blk_execute_rq scsi_execute scsi_execute_req sr_te  2.6
-> msec          0.5 % blk_execute_rq scsi_execute scsi_execute_req
-> sr_te  2.2 msec          0.5 % blk_execute_rq scsi_execute
-> sr_do_ioctl sr_packet   0.9 msec          0.1 % blk_execute_rq
-> scsi_execute scsi_execute_req ioctl  0.6 msec          0.0 % release
-> __blkdev_put blkdev_put blkdev_close __fput
+> I just posted a patch for this to netdev and it was acked by its maintainer.
+> Patch is below.
 
-this shows it's not correctly installed....
+This solves the first build failure but there's still a second build 
+failure:
 
-(and it's likely an older version)
+ drivers/net/cnic.c: In function ‘init_bnx2_cnic’:
+ drivers/net/cnic.c:2520: error: implicit declaration of function ‘__symbol_get’
+ drivers/net/cnic.c:2520: warning: assignment makes pointer from integer without a cast
+ make[1]: *** [drivers/net/cnic.o] Error 1
+ make: *** [drivers/net/cnic.o] Error 2
 
+This too triggers with the config i sent. The patch below solves it 
+- but i havent done more testing.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/drivers/net/cnic.c b/drivers/net/cnic.c
+index 8d74037..49135cc 100644
+--- a/drivers/net/cnic.c
++++ b/drivers/net/cnic.c
+@@ -25,6 +25,8 @@
+ #include <linux/delay.h>
+ #include <linux/ethtool.h>
+ #include <linux/if_vlan.h>
++#include <linux/module.h>
++
+ #if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+ #define BCM_VLAN 1
+ #endif
