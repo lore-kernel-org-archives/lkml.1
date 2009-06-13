@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbZFMN2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764130AbZFMN3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbZFMN2p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 09:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764573AbZFMN07
+	id S1764130AbZFMN3q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 09:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763995AbZFMN0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 09:26:59 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:37936 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932086AbZFMN0y (ORCPT
+	Sat, 13 Jun 2009 09:26:17 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:49807 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763944AbZFMN0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 09:26:54 -0400
+	Sat, 13 Jun 2009 09:26:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=b7O6LSMUkKIJMv9w3K5HujA0aDlPpqb7cYLqV0RyPEw61z5UOOTyw/21bHOoiZqAWA
-         Tg2ZgH2R75mLawIZoPrN8RBUgYZnSXpbxXJWxaUuHU8JIgNs1ru3LRCGut/CDuy2f6hl
-         2URBUc7PoFwj0qF/GKIbjpOdEiAATqAiLrykU=
-Message-ID: <4A33A835.901@gmail.com>
-Date: Sat, 13 Jun 2009 15:23:01 +0200
+        b=Ev/kVSytY0HyDFUURRkGMrcDOPZYcOGglD2N2buRu0GWXyhwRiCPtX/0ln4Kaj2pqn
+         4UFMD8Z2FQoxDJUZRdqsvKdbRcBiVX0FAfC0xwJAz++hXUfrKXJRCADKru8g8C0fJe9o
+         PZe0LFPu0FK+TEwgztyAdk4wIh6e0t2a38mLE=
+Message-ID: <4A33A80C.4080001@gmail.com>
+Date: Sat, 13 Jun 2009 15:22:20 +0200
 From: Marco <marco.stornelli@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -26,7 +26,7 @@ To: Linux FS Devel <linux-fsdevel@vger.kernel.org>
 CC: Linux Embedded <linux-embedded@vger.kernel.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: [PATCH 13/14] Pramfs: Write protection
+Subject: [PATCH 09/14] Pramfs: Inode operations for directories
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,21 +35,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Marco Stornelli <marco.stornelli@gmail.com>
 
-Write protection.
+Inode operations for directories.
 
 Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
 ---
 
-diff -uprN linux-2.6.30-orig/fs/pramfs/wprotect.c linux-2.6.30/fs/pramfs/wprotect.c
---- linux-2.6.30-orig/fs/pramfs/wprotect.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.30/fs/pramfs/wprotect.c	2009-06-13 12:54:16.000000000 +0200
-@@ -0,0 +1,84 @@
+diff -uprN linux-2.6.30-orig/fs/pramfs/namei.c linux-2.6.30/fs/pramfs/namei.c
+--- linux-2.6.30-orig/fs/pramfs/namei.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.30/fs/pramfs/namei.c	2009-06-13 12:53:15.000000000 +0200
+@@ -0,0 +1,328 @@
 +/*
-+ * FILE NAME fs/pramfs/wprotect.c
++ * FILE NAME fs/pramfs/namei.c
 + *
 + * BRIEF DESCRIPTION
 + *
-+ * Write protection for the filesystem pages.
++ * Inode operations for directories.
 + *
 + * Copyright 2009 Marco Stornelli <marco.stornelli@gmail.com>
 + * Copyright 2003 Sony Corporation
@@ -59,74 +59,318 @@ diff -uprN linux-2.6.30-orig/fs/pramfs/wprotect.c linux-2.6.30/fs/pramfs/wprotec
 + * License version 2. This program is licensed "as is" without any
 + * warranty of any kind, whether express or implied.
 + */
-+
-+#include <linux/module.h>
 +#include <linux/fs.h>
-+#include <linux/mm.h>
-+#include <asm/pgtable.h>
-+#include <asm/pgalloc.h>
-+#include <asm/tlbflush.h>
++#include <linux/pagemap.h>
 +#include "pram_fs.h"
 +
-+/* init_mm.page_table_lock must be held before calling! */
-+static void pram_page_writeable(unsigned long addr, int rw)
-+{
-+	pgd_t *pgdp;
-+	pud_t *pudp;
-+	pmd_t *pmdp;
-+	pte_t *ptep;
++/*
++ * Couple of helper functions - make the code slightly cleaner.
++ */
 +
-+	pgdp = pgd_offset_k(addr);
-+	if (!pgd_none(*pgdp)) {
-+		pudp = pud_offset(pgdp, addr);
-+		if (!pud_none(*pudp)) {
-+			pmdp = pmd_offset(pudp, addr);
-+			if (!pmd_none(*pmdp)) {
-+				pte_t pte;
-+				ptep = pte_offset_kernel(pmdp, addr);
-+				pte = *ptep;
-+				if (pte_present(pte)) {
-+					pte = rw ? pte_mkwrite(pte) :
-+						pte_wrprotect(pte);
-+					set_pte(ptep, pte);
-+				}
-+			}
-+		}
++static inline void pram_inc_count(struct inode *inode)
++{
++	inode->i_nlink++;
++	pram_write_inode(inode, 0);
++}
++
++static inline void pram_dec_count(struct inode *inode)
++{
++	if (inode->i_nlink) {
++		inode->i_nlink--;
++		pram_write_inode(inode, 0);
 +	}
 +}
 +
-+/* init_mm.page_table_lock must be held before calling! */
-+void pram_writeable(void *vaddr, unsigned long size, int rw)
++static inline int pram_add_nondir(struct inode *dir,
++				   struct dentry *dentry,
++				   struct inode *inode)
 +{
-+	unsigned long addr = (unsigned long)vaddr & PAGE_MASK;
-+	unsigned long end = (unsigned long)vaddr + size;
-+	unsigned long start = addr;
-+
-+	do {
-+		pram_page_writeable(addr, rw);
-+		addr += PAGE_SIZE;
-+	} while (addr && (addr < end));
-+
-+
-+	/*
-+	 * NOTE: we will always flush just one page (one TLB
-+	 * entry) except possibly in one case: when a new
-+	 * filesystem is initialized at mount time, when pram_read_super
-+	 * calls pram_lock_range to make the super block, inode
-+	 * table, and bitmap writeable.
-+	 */
-+#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_H8300) || \
-+	defined(CONFIG_BLACKFIN)
-+	/*
-+	 * FIXME: so far only these archs have flush_tlb_kernel_page(),
-+	 * for the rest just use flush_tlb_kernel_range(). Not ideal
-+	 * to use _range() because many archs just flush the whole TLB.
-+	 */
-+	if (end <= start + PAGE_SIZE)
-+		flush_tlb_kernel_page(start);
-+	else
-+#endif
-+		flush_tlb_kernel_range(start, end);
++	int err = pram_add_link(dentry, inode);
++	if (!err) {
++		d_instantiate(dentry, inode);
++		return 0;
++	}
++	pram_dec_count(inode);
++	iput(inode);
++	return err;
 +}
++
++/*
++ * Methods themselves.
++ */
++
++static ino_t
++pram_inode_by_name(struct inode *dir,
++		   struct dentry *dentry)
++{
++	struct pram_inode *pi;
++	ino_t ino;
++	int namelen;
++
++	pi = pram_get_inode(dir->i_sb, dir->i_ino);
++	ino = pi->i_type.dir.head;
++
++	while (ino) {
++		pi = pram_get_inode(dir->i_sb, ino);
++
++		if (pi->i_links_count) {
++			namelen = strlen(pi->i_d.d_name);
++
++			if (namelen == dentry->d_name.len &&
++			    !memcmp(dentry->d_name.name,
++				    pi->i_d.d_name, namelen))
++				break;
++		}
++
++		ino = pi->i_d.d_next;
++	}
++
++	return ino;
++}
++
++static struct dentry *
++pram_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
++{
++	struct inode *inode = NULL;
++	ino_t ino;
++
++	if (dentry->d_name.len > PRAM_NAME_LEN)
++		return ERR_PTR(-ENAMETOOLONG);
++
++	ino = pram_inode_by_name(dir, dentry);
++	if (ino) {
++		struct pram_inode *pi = pram_get_inode(dir->i_sb, ino);
++		inode = pram_fill_new_inode(dir->i_sb, pi);
++		if (!inode)
++			return ERR_PTR(-EACCES);
++	}
++
++	d_add(dentry, inode);
++	return NULL;
++}
++
++
++/*
++ * By the time this is called, we already have created
++ * the directory cache entry for the new file, but it
++ * is so far negative - it has no inode.
++ *
++ * If the create succeeds, we fill in the inode information
++ * with d_instantiate().
++ */
++static int pram_create(struct inode *dir, struct dentry *dentry,
++			int mode, struct nameidata *nd)
++{
++	struct inode *inode = pram_new_inode(dir, mode);
++	int err = PTR_ERR(inode);
++	if (!IS_ERR(inode)) {
++
++		inode->i_op = &pram_file_inode_operations;
++		inode->i_fop = &pram_file_operations;
++		inode->i_mapping->a_ops = &pram_aops;
++		err = pram_add_nondir(dir, dentry, inode);
++	}
++	return err;
++}
++
++static int pram_mknod(struct inode *dir, struct dentry *dentry, int mode,
++		       dev_t rdev)
++{
++	struct inode *inode = pram_new_inode(dir, mode);
++	int err = PTR_ERR(inode);
++	if (!IS_ERR(inode)) {
++		init_special_inode(inode, mode, rdev);
++		pram_write_inode(inode, 0); /* update rdev */
++		err = pram_add_nondir(dir, dentry, inode);
++	}
++	return err;
++}
++
++static int pram_symlink(struct inode *dir,
++			  struct dentry *dentry,
++			  const char *symname)
++{
++	struct super_block *sb = dir->i_sb;
++	int err = -ENAMETOOLONG;
++	unsigned len = strlen(symname);
++	struct inode *inode;
++
++	if (len+1 > sb->s_blocksize)
++		goto out;
++
++	inode = pram_new_inode(dir, S_IFLNK | S_IRWXUGO);
++	err = PTR_ERR(inode);
++	if (IS_ERR(inode))
++		goto out;
++
++	inode->i_op = &pram_symlink_inode_operations;
++	inode->i_mapping->a_ops = &pram_aops;
++
++	err = pram_block_symlink(inode, symname, len);
++	if (err)
++		goto out_fail;
++
++	inode->i_size = len;
++	pram_write_inode(inode, 0);
++
++	err = pram_add_nondir(dir, dentry, inode);
++out:
++	return err;
++
++out_fail:
++	pram_dec_count(inode);
++	iput(inode);
++	goto out;
++}
++
++static int pram_link(struct dentry *dest_dentry,
++		       struct inode *dir,
++		       struct dentry *dentry)
++{
++	pram_dbg("hard links not supported\n");
++	return -ENOSYS;
++}
++
++static int pram_unlink(struct inode *dir, struct dentry *dentry)
++{
++	struct inode *inode = dentry->d_inode;
++	inode->i_ctime = dir->i_ctime;
++	pram_dec_count(inode);
++
++	return 0;
++}
++
++static int pram_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	struct inode *inode;
++	struct pram_inode *pi;
++	int err = -EMLINK;
++	unsigned long flags;
++
++	flags = 0;
++
++	if (dir->i_nlink >= PRAM_LINK_MAX)
++		goto out;
++
++	pram_inc_count(dir);
++
++	inode = pram_new_inode(dir, S_IFDIR | mode);
++	err = PTR_ERR(inode);
++	if (IS_ERR(inode))
++		goto out_dir;
++
++	inode->i_op = &pram_dir_inode_operations;
++	inode->i_fop = &pram_dir_operations;
++	inode->i_mapping->a_ops = &pram_aops;
++
++	pram_inc_count(inode);
++
++	/* make the new directory empty */
++	pi = pram_get_inode(dir->i_sb, inode->i_ino);
++	pram_lock_inode(pi, flags);
++	pi->i_type.dir.head = pi->i_type.dir.tail = 0;
++	pram_unlock_inode(pi, flags);
++
++	err = pram_add_link(dentry, inode);
++	if (err)
++		goto out_fail;
++
++	d_instantiate(dentry, inode);
++out:
++	return err;
++
++out_fail:
++	pram_dec_count(inode);
++	pram_dec_count(inode);
++	iput(inode);
++out_dir:
++	pram_dec_count(dir);
++	goto out;
++}
++
++static int pram_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	struct inode *inode = dentry->d_inode;
++	struct pram_inode *pi;
++	int err = -ENOTEMPTY;
++
++	if (!inode)
++		return -ENOENT;
++
++	pi = pram_get_inode(dir->i_sb, inode->i_ino);
++
++	/* directory to delete is empty? */
++	if (pi->i_type.dir.tail == 0) {
++		inode->i_ctime = dir->i_ctime;
++		inode->i_size = 0;
++		inode->i_nlink = 0;
++		pram_write_inode(inode, 0);
++		pram_dec_count(dir);
++		err = 0;
++	} else {
++		pram_dbg("dir not empty\n");
++	}
++
++	return err;
++}
++
++static int pram_rename(struct inode  *old_dir,
++			struct dentry *old_dentry,
++			struct inode  *new_dir,
++			struct dentry *new_dentry)
++{
++	struct inode *old_inode = old_dentry->d_inode;
++	struct inode *new_inode = new_dentry->d_inode;
++	struct pram_inode *pi_new;
++	int err = -ENOENT;
++
++	if (new_inode) {
++		err = -ENOTEMPTY;
++		pi_new = pram_get_inode(new_dir->i_sb, new_inode->i_ino);
++		if (S_ISDIR(old_inode->i_mode)) {
++			if (pi_new->i_type.dir.tail != 0)
++				goto out;
++			if (new_inode->i_nlink)
++				new_inode->i_nlink--;
++		}
++
++		new_inode->i_ctime = CURRENT_TIME;
++		pram_dec_count(new_inode);
++	} else {
++		if (S_ISDIR(old_inode->i_mode)) {
++			err = -EMLINK;
++			if (new_dir->i_nlink >= PRAM_LINK_MAX)
++				goto out;
++			pram_dec_count(old_dir);
++			pram_inc_count(new_dir);
++		}
++	}
++
++	/* unlink the inode from the old directory ... */
++	err = pram_remove_link(old_inode);
++	if (err)
++		goto out;
++
++	/* and link it into the new directory. */
++	err = pram_add_link(new_dentry, old_inode);
++	if (err)
++		goto out;
++
++	err = 0;
++ out:
++	return err;
++}
++
++struct inode_operations pram_dir_inode_operations = {
++	.create		= pram_create,
++	.lookup		= pram_lookup,
++	.link		= pram_link,
++	.unlink		= pram_unlink,
++	.symlink	= pram_symlink,
++	.mkdir		= pram_mkdir,
++	.rmdir		= pram_rmdir,
++	.mknod		= pram_mknod,
++	.rename		= pram_rename,
++};
 
 
