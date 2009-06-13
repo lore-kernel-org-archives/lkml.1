@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbZFMRri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbZFMRts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbZFMRri (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 13:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZFMRr3
+	id S1758800AbZFMRts (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 13:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755311AbZFMRtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 13:47:29 -0400
-Received: from www17.your-server.de ([213.133.104.17]:37187 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752121AbZFMRr3 (ORCPT
+	Sat, 13 Jun 2009 13:49:41 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38864 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755144AbZFMRtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 13:47:29 -0400
-Subject: How to unset CONFIG_SERIO_I8042 on x86?
-From: Thomas Meyer <thomas@m3y3r.de>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sat, 13 Jun 2009 19:47:16 +0200
-Message-Id: <1244915236.3288.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+	Sat, 13 Jun 2009 13:49:40 -0400
+Message-ID: <4A33E6B1.1040203@zytor.com>
+Date: Sat, 13 Jun 2009 10:49:37 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: the right time to run my super-duper, kernel cleanup scripts?
+References: <alpine.LFD.2.00.0906130907070.4074@localhost>
+In-Reply-To: <alpine.LFD.2.00.0906130907070.4074@localhost>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is it possible? Does it make sense?
+Robert P. J. Day wrote:
+>   i figure it's almost time to annoy the crap out of everyone again by
+> running my standard source "cleanup" scripts to track down things
+> like, well, this:
+> 
+> http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
+> 
+>   i'm thinking that the right time is after the chaos of the merge
+> window is mostly over so ... once rc1 is out?  is that about the right
+> time to give any fixes a chance to settle?
+> 
 
-I always get this message at boot up on my macbook pro:
+Yes, run that stuff on -rc1 and then notify people to fix it.
 
-[    0.929828] PNP: No PS/2 controller found. Probing ports directly.
-[    0.930761] i8042.c: No controller found.
-[    0.931038] mice: PS/2 mouse device common for all mice
-
-Or please make these messages warnings only, so I don't see them with
-kernel option quiet.
-
-ciao
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
