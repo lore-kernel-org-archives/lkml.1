@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbZFMW16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbZFMWcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761145AbZFMW16 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 18:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZFMW1s
+	id S1760504AbZFMWcq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 18:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZFMWci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 18:27:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34978 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbZFMW1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 18:27:47 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: andi@lisas.de
-Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM capability
-Date: Sun, 14 Jun 2009 00:28:15 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: akpm@linux-foundation.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20090603063025.GA32600@rhlx01.hs-esslingen.de> <20090613191931.GA31019@rhlx01.hs-esslingen.de>
-In-Reply-To: <20090613191931.GA31019@rhlx01.hs-esslingen.de>
+	Sat, 13 Jun 2009 18:32:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:60609 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbZFMWch (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 18:32:37 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: Re: [PATCH 06/27] score: create head files delay.h device.h div64.h dma-mapping.h dma.h
+Date: Sun, 14 Jun 2009 00:31:54 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+References: <OF676F75F6.AE51CF2E-ON482575D4.00241202-482575D4.0024AEE4@sunplusct.com>
+In-Reply-To: <OF676F75F6.AE51CF2E-ON482575D4.00241202-482575D4.0024AEE4@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906140028.16025.rjw@sisk.pl>
+  charset="gb2312"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200906140031.55091.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18wZLM7Jvd1SmKtEJrGXxs2odDdxEskeBSDGFZ
+ zfrOyANY9V/i8Ki5wbMBcfp0mTafjvim20CuOIbXoOKgZAeV/y
+ E++zZb5Y+jqSM5M0u2jx3w+L81NG98y
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 June 2009, Andreas Mohr wrote:
-> Hi all,
+On Saturday 13 June 2009, liqin.chen@sunplusct.com wrote:
+> Arnd Bergmann <arnd@arndb.de> Ð´ÓÚ 2009-06-10 01:18:20:
 > 
-> after having added non-MII PHY card support to e100, I noticed that
-> the suspend handler rejects power-management non-capable PCI cards,
+> > On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
+> > 
+> > Having a working udelay() function is required for many
+> > drivers that are sensitive to timing, you should probably
+> > implement that at some point in the future.
+> 
+> Add udelay() implement in code.
 
-Well, that means we have a bug somewhere in the PCI PM core.
+so you use 
 
-> causing a S2R request to immediately get back up to the desktop,
-> losing network access in the process (rtnl mutex deadlock).
+static inline void __delay(unsigned long loops)
+{
+        __asm__ __volatile__ (
+                "1:\tsubi\t%0,1\n\t"
+                "cmpz.c\t%0\n\t"
+                "bne\t1b\n\t"
+                : "=r" (loops)
+                : "0" (loops));
+}
 
-That's bad.
+static inline void __udelay(unsigned long usecs)
+{
+        __delay(usecs);
+}
 
-> 
-> ChangeLog:
-> Support PCI cards which are lacking power management capability
-> in the e100 suspend handler.
-> 
-> 
-> Frankly I was unsure how to best add this to the driver in a clean way.
-> Usually drivers use pci_set_power_state(..., pci_choose_state(...))
-> in order to avoid the rejection of an open-coded
-> pci_set_power_state(..., PCI_D3hot) in case of a non-PM card,
-> however pci_choose_state() depends on the _pm-internal_ pm_message_t type,
-> which was doable in .suspend directly but not at the other e100
-> driver locations where it was used.
-> 
-> Next attempt was to extend __e100_power_off() with a pci_power_t parameter,
-> however since __e100_power_off() is called by two locations,
-> that meant that I'd have to use pci_choose_state() at _both_ call sites.
-> 
-> Thus I simply resorted to do a brute-force yet most simple
-> pci_find_capability() check in the __e100_power_off() function.
-> 
-> 
-> Tested on 2.6.30-rc8 and suspending/resuming fine, checkpatch.pl:ed.
-> Patch against 2.6.30-rc8 with my original non-MII support patch applied.
-> (should apply fine in any case, I'd think).
-> Intended for testing in -mmotm or so.
-> 
-> Thanks!
-> 
-> Signed-off-by: Andreas Mohr <andi@lisas.de>
-> 
-> 
-> --- linux-2.6.30-rc8.e100/drivers/net/e100.c.my_patch_orig	2009-06-13 18:47:53.000000000 +0200
-> +++ linux-2.6.30-rc8.e100/drivers/net/e100.c	2009-06-13 20:27:46.000000000 +0200
-> @@ -2897,6 +2897,13 @@ static void __e100_shutdown(struct pci_d
->  
->  static int __e100_power_off(struct pci_dev *pdev, bool wake)
->  {
-> +	/* some older devices don't support PCI PM
-> +	 * (e.g. mac_82557_D100_B combo card with 80c24 PHY)
-> +	 * - skip those! (they most likely won't support WoL either)
-> +	 */
-> +	if (!pci_find_capability(pdev, PCI_CAP_ID_PM))
-> +		return 0;
 
-Devices without PCI_CAP_ID_PM may still be power-manageable by ACPI, so
-returning 0 at this point is not a general solution.
+This is much better than before, but is far from exact in the __udelay()
+case. Please take a look at init/calibrate.c and how other architectures
+use loops_per_jiffy if you don't have an exact time source you can use.
 
-> +
->  	if (wake) {
->  		return pci_prepare_to_sleep(pdev);
+If you have a time source with microsecond resolution or better, just loop
+until the amount of microseconds has expired.
 
-pci_prepare_to_sleep() is supposed to return 0 for your device.  I'll have a
-look at it.
-
-Best,
-Rafael
+	Arnd <><
