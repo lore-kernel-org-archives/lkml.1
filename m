@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZFNCZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZFNDBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbZFNCZQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 22:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZFNCZE
+	id S1755422AbZFNDBT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 23:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZFNDBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 22:25:04 -0400
-Received: from mms2.broadcom.com ([216.31.210.18]:1152 "EHLO mms2.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751474AbZFNCZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 22:25:02 -0400
-X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
-Subject: Re: -git tree build failure #2: drivers/net/cnic.c:2520: error:
- implicit declaration of function
- =?UTF-8?Q?=E2=80=98=5F=5Fsymbol=5Fget=E2=80=99?=
-From: "Michael Chan" <mchan@broadcom.com>
-To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
-cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <1244943216.5323.86.camel@mulgrave.site>
-References: <20090612184343.GA11900@elte.hu>
- <4A32A1E4.8080708@oracle.com> <20090613062933.GA14034@elte.hu>
- <alpine.LFD.2.01.0906131309560.3237@localhost.localdomain>
- <1244925747.5323.57.camel@mulgrave.site> <1244940182.12000.5.camel@HP1>
- <1244943216.5323.86.camel@mulgrave.site>
-Date: Sat, 13 Jun 2009 19:18:05 -0700
-Message-ID: <1244945885.12000.13.camel@HP1>
+	Sat, 13 Jun 2009 23:01:09 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:50085 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbZFNDBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 23:01:08 -0400
+Message-ID: <4A3467EC.50006@oracle.com>
+Date: Sat, 13 Jun 2009 20:01:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
-X-WSS-ID: 662A80F838G5429623-01-01
-Content-Type: text/plain
+To: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] irq.h: fix kernel-doc warnings
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt006.oracle.com [141.146.116.15]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.4A3467ED.001C:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-On Sat, 2009-06-13 at 18:33 -0700, James Bottomley wrote:
-> On Sat, 2009-06-13 at 17:43 -0700, Michael Chan wrote:
-> > On Sat, 2009-06-13 at 13:42 -0700, James Bottomley wrote:
-> > > On Sat, 2009-06-13 at 13:11 -0700, Linus Torvalds wrote:
-> > > > 
-> > > > 
-> > > > That makes no sense. 
-> > > > 
-> > > > Look at the first #include in the file - it already includes 
-> > > > <linux/module.h>.
-> > > > 
-> > > > Why do we need to do it twice?
-> > > 
-> > > We don't ... it's the wrong fix.  The actual problem is that
-> > > __symbol_get() is only defined for the modular case.  What it looks to
-> > > be doing is a reflection call on bnx2_cnic_probe().  I'm not sure why
-> > > it's doing this ... other than perhaps cnic wants to avoid an explicit
-> > > bnx2 dependency?  I actually think it's incorrect, since the netdev code
-> > > before it just checked bnx2 is present, so I see no harm in an explicit
-> > > call, so this should fix it.
-> > > 
-> > > If it had a good reason for the reflective call, then symbol_get()
-> > > without the __ should be used.
-> > > 
-> > > Michael Chan, could you confirm?
-> > > 
-> > Thanks James and Ingo.  We don't want to have a symbol dependency on
-> > bnx2 because this driver eventually will support the 10G bnx2x driver as
-> > well.  So we want the driver to support either or both NIC drivers
-> > without both drivers loaded.  Please use the patch below.
-> 
-> Um, but that's not going to work very well.  When you have your 10G
-> driver, they'll both have to export the symbol name bnx2_cnic_probe
-> which the kernel isn't going to like.  You can differentiate the symbols
-> and add a multiple symbol lookup in init_bnx2_cnic(), but that's getting
-> ugly.
+Fix kernel-doc warnings in linux/irq.h:
 
-Yeah, the plan is to have a bnx2x_cnic_probe() when we add support for
-that.  There will be a separate init_bnx2x_cnic() because the hardware
-interface is not exactly the same.
+Warning(include/linux/irq.h:201): No description found for parameter 'node'
+Warning(include/linux/irq.h:201): Excess struct/union/enum/typedef member 'cpu' description in 'irq_desc'
+Warning(include/linux/irq.h:434): No description found for parameter 'node'
+Warning(include/linux/irq.h:434): Excess function parameter 'cpu' description in 'alloc_desc_masks'
 
-> 
-> What about doing something more standard, like bus matching?  That's how
-> the SCSI upper layer drivers work:  we export a virtual SCSI bus and
-> they bind to it if a supporting device appears.  You could do something
-> similar exporting a virtual cnic bus from your network drivers and get
-> the cnic driver to bind to it.
-> 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/linux/irq.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-This will require some additional infra-structure.  We can look into
-this when we support the 10G driver.  Thanks.
-
-
+--- linux-2.6.30-git7.orig/include/linux/irq.h
++++ linux-2.6.30-git7/include/linux/irq.h
+@@ -157,7 +157,7 @@ struct irq_2_iommu;
+  * @irqs_unhandled:	stats field for spurious unhandled interrupts
+  * @lock:		locking for SMP
+  * @affinity:		IRQ affinity on SMP
+- * @cpu:		cpu index useful for balancing
++ * @node:		node index useful for balancing
+  * @pending_mask:	pending rebalanced interrupts
+  * @threads_active:	number of irqaction threads currently running
+  * @wait_for_threads:	wait queue for sync_irq to wait for threaded handlers
+@@ -423,7 +423,7 @@ extern int set_irq_msi(unsigned int irq,
+ /**
+  * alloc_desc_masks - allocate cpumasks for irq_desc
+  * @desc:	pointer to irq_desc struct
+- * @cpu:	cpu which will be handling the cpumasks
++ * @node:	node which will be handling the cpumasks
+  * @boot:	true if need bootmem
+  *
+  * Allocates affinity and pending_mask cpumask if required.
