@@ -1,91 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbZFNMjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbZFNMlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbZFNMjS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbZFNMjF
+	id S1760170AbZFNMlT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbZFNMlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:39:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:52305 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754257AbZFNMjE (ORCPT
+	Sun, 14 Jun 2009 08:41:06 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53941 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753376AbZFNMlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:39:04 -0400
-Date: Sun, 14 Jun 2009 08:39:03 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 3/3] ring-buffer: add design document
-In-Reply-To: <20090613223636.GB5986@nowhere>
-Message-ID: <alpine.DEB.2.00.0906140837370.16299@gandalf.stny.rr.com>
-References: <20090610195311.767699959@goodmis.org> <20090610195525.429316815@goodmis.org> <20090613015410.GB5234@nowhere> <alpine.DEB.2.00.0906122203100.16299@gandalf.stny.rr.com> <20090613223636.GB5986@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 14 Jun 2009 08:41:05 -0400
+Message-ID: <4A34EFD9.7010303@novell.com>
+Date: Sun, 14 Jun 2009 08:40:57 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, mtosatti@redhat.com
+Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
+References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090614092542.GA4833@redhat.com>
+In-Reply-To: <20090614092542.GA4833@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig0AD5E1A146184A02E3BB6322"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig0AD5E1A146184A02E3BB6322
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, 14 Jun 2009, Frederic Weisbecker wrote:
-> > > > +
-> > > > +Now the writer can update the head page. This is also why the head page must
-> > > > +remain in UPDATE and only reset by the outer most writer. This prevents
-> > > > +the reader from seeing the incorrect head page.
-> > > > +
-> > > > +
-> > > > +(first writer)
-> > > > +
-> > > > +               A        B    tail page
-> > > > +               |        |        |
-> > > > +               v        v        v
-> > > > +    +---+    +---+    +---+    +---+
-> > > > +<---|   |--->|   |--->|   |--->|   |-H->
-> > > > +--->|   |<---|   |<---|   |<---|   |<---
-> > > > +    +---+    +---+    +---+    +---+
-> > > 
-> > > 
-> > > Even more tricky!
-> > > 
-> > > I just have a stupid question: why can't this be done
-> > > only through HEAD and NORMAL flags?
-> > > 
-> > > There is something certainly very obvious that I'm missing
-> > > with the point of the UPDATE flag.
-> > 
-> > If you can demonstrate how to do the above lockless with just HEAD and 
-> > NORMAL, then sure, I'm all ears ;-)
-> > 
-> > When we switch the HEAD to UPDATE, we stop the reader from moving forward 
-> > and being another thing to handle while we move the HEAD forward. A reader 
-> > does a cmpxchg to move the head too, and that cmpxchg will always fail if 
-> > the pointer is has UPDATE set. The reader will just spin until it 
-> > succeeds.
-> 
-> 
-> Aah, so it's here to protect against paralell readers from another cpu
-> reading the current cpu buffer, right?
+Michael S. Tsirkin wrote:
+> On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
+>
+> ...
+>
+>  =20
+>> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+>> +static int
+>> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
+>> +{
+>> +	struct _irqfd *irqfd;
+>> +	struct file *file =3D NULL;
+>> +	int ret;
+>> +
+>> +	irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
+>> +	if (!irqfd)
+>> +		return -ENOMEM;
+>> +
+>> +	irqfd->kvm =3D kvm;
+>> +	irqfd->gsi =3D gsi;
+>> +	INIT_LIST_HEAD(&irqfd->list);
+>> +	INIT_WORK(&irqfd->work, irqfd_inject);
+>> +
+>> +	/*
+>> +	 * Embed the file* lifetime in the irqfd.
+>> +	 */
+>> +	file =3D fget(fd);
+>> +	if (IS_ERR(file)) {
+>> +		ret =3D PTR_ERR(file);
+>> +		goto fail;
+>> +	}
+>> +
+>> +	/*
+>> +	 * Install our own custom wake-up handling so we are notified via
+>> +	 * a callback whenever someone signals the underlying eventfd
+>> +	 */
+>> +	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
+>> +	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
+>> +
+>> +	ret =3D file->f_op->poll(file, &irqfd->pt);
+>> +	if (ret < 0)
+>> +		goto fail;
+>> +
+>> +	irqfd->file =3D file;
+>> +
+>> +	mutex_lock(&kvm->lock);
+>> +	list_add_tail(&irqfd->list, &kvm->irqfds);
+>> +	mutex_unlock(&kvm->lock);
+>> +
+>> +	return 0;
+>> +
+>> +fail:
+>> +	if (irqfd->wqh)
+>> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+>> +
+>> +	if (file && !IS_ERR(file))
+>> +		fput(file);
+>> +
+>> +	kfree(irqfd);
+>> +	return ret;
+>> +}
+>>    =20
+>
+> It seems that this lets the guest assign an unlimited number of fds
+> to the same gsi, potentially using up all of kernel memory.
+>
+> Since we don't need multiple fds assigned to the same gsi (instead,
+> multiple processes can write to the same eventfd to trigger an
+> interrupt) let's simply check that no fd is yet assigned to this gsi.
+>  =20
 
-Not readers, but reader. The reader side uses locks to serialize the
-accesses. The writer side is lockless.  But it is here to protect the 
-writers against a reader on another CPU.
+I think Avi asked for this specific feature during review which is the
+reason why its there today.  However, I agree that it would probably be
+a good idea to put an upper limit on the number of supported aliases
+that can be registered.  Will fix.
 
--- Steve
+Thanks Michael,
+
+-Greg
 
 
-> 
-> 
-> > Then, the rest of the moving of the header is just races with other 
-> > writers that are always on the same CPU, and it becomes a recursive 
-> > problem and not a parallel one.
+
+--------------enig0AD5E1A146184A02E3BB6322
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko079kACgkQlOSOBdgZUxmzbgCgh+bx2v+qs7EXsKYPpM5VlTQl
+Pd0AnAngo+Fcv0+vxA05TAH9cdIy8yHb
+=cNEs
+-----END PGP SIGNATURE-----
+
+--------------enig0AD5E1A146184A02E3BB6322--
