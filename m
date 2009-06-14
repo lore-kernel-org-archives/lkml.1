@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZFNDzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbZFNFkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbZFNDzt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 23:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZFNDzl
+	id S1752139AbZFNFkV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 01:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZFNFkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 23:55:41 -0400
-Received: from e24smtp01.br.ibm.com ([32.104.18.85]:56249 "EHLO
-	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752984AbZFNDzk (ORCPT
+	Sun, 14 Jun 2009 01:40:09 -0400
+Received: from rrcs-71-43-195-114.se.biz.rr.com ([71.43.195.114]:41607 "EHLO
+	mail.ultrawaves.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751232AbZFNFkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 23:55:40 -0400
-Message-ID: <4A3474BD.4000804@linux.vnet.ibm.com>
-Date: Sun, 14 Jun 2009 00:55:41 -0300
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090208)
+	Sun, 14 Jun 2009 01:40:08 -0400
+X-Greylist: delayed 1279 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Jun 2009 01:40:07 EDT
+X-Spam-Check-By: kermit
+Message-ID: <4A348824.1030503@lammerts.org>
+Date: Sun, 14 Jun 2009 01:18:28 -0400
+From: Eric Lammerts <eric@lammerts.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-CC: Shahbaz Khan <shaz.linux@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Debora Velarde <debora@linux.vnet.ibm.com>,
-       tpmdd-devel@lists.sourceforge.net
-Subject: Re: TPM drivers support and Linux Integrity Module for 2.6.30
-References: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com> <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com>
-In-Reply-To: <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com>
+To: kernel list <linux-kernel@vger.kernel.org>, gregkh@suse.de
+Subject: 2.6.30: tun losing ip
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mimi, thanks for copying us.
 
-Shaz,
+Hi,
+I'm having problems with openvpn clients on 2.6.30. I get stuff like this:
 
-If this is the same chip we find in the GM45 boards, iTPM, the upstream 
-driver won't work properly with it.
-Mainly because this iTPM returns the wrong status code when the driver 
-didn't finish sending all bytes required for a specific command.
-As suggested by Seiji Munetoh in the tpmdd-devel sf mailing list, you 
-can modify line 263 of tpm_tis.c as below:
+TUN/TAP device tun0 opened
+TUN/TAP TX queue length set to 100
+/sbin/ifconfig tun0 10.2.222.50 pointopoint 10.2.222.49 mtu 1500
+/sbin/route add -net 10.2.222.0 netmask 255.255.255.0 gw 10.2.222.49
+SIOCADDRT: No such process
 
--		if ((status & TPM_STS_DATA_EXPECT) == 0) {
-+		if ((status & TPM_STS_VALID) == 0) {
+There is something strange going on with tun devices:
+
+# tunctl -t tun1; ifconfig tun1 1.2.3.4; ifconfig tun1; sleep 1; ifconfig 
+tun1
+Set 'tun1' persistent and owned by uid 0
+tun1      Link encap:Ethernet  HWaddr 1E:EF:79:F2:D9:67
+           inet addr:1.2.3.4  Bcast:1.255.255.255  Mask:255.0.0.0
+           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+           collisions:0 txqueuelen:500
+           RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+
+tun1      Link encap:Ethernet  HWaddr 1E:EF:79:F2:D9:67
+           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+           TX packets:0 errors:0 dropped:1 overruns:0 carrier:0
+           collisions:0 txqueuelen:500
+           RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+
+First you see the ip, then you don't...
+
+I traced it back to this commit:
+
+$ git-bisect bad
+05f54c13cd0c33694eec39a265475c5d6cf223cf is first bad commit
+commit 05f54c13cd0c33694eec39a265475c5d6cf223cf
+Author: Hugh Dickins <hugh@veritas.com>
+Date:   Thu Apr 16 21:55:29 2009 +0100
+
+     Revert "kobject: don't block for each kobject_uevent".
 
 
-Then, after compiling it, since it also seems to not support PNP, load 
-it with force option on:
+If I take 2.6.30 and revert that commit, the problem goes away.
 
-modprobe tpm_tis force=1
-
-If modprobe fails the first time, try the second and then it will work.
-
-I'm going to submit a patch to make the upstream driver work with it, 
-making this line depend on a module param too..
-
-Thanks,
-Rajiv
-
-Mimi Zohar wrote:
-> On Fri, 2009-06-12 at 11:59 +0600, Shahbaz Khan wrote:
->   
->> Hi,
->>
->> I am using Intel Q45 Express chipset with TPM version 1.2 specs of
->> TCG. The kernel version is 2.6.30. Problem is that the TPM drivers
->> cannot provide functionality to the TCG TSS giving error message:
->>
->> "TCSD TDDL ERROR: Could not find a device to open!"
->>
->> The device node in /dev is also not being created which should be
->> "/dev/tpm". If created manually then still it does not work.
->>
->> What should be done?
->>
->> Thanks.
->>
->> --
->> Shaz
->>     
->
-> This is a device driver issue. Copying the TPM maintainers and the
-> forum.
->
-> Mimi
->
->   
+Eric
 
