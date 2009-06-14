@@ -1,64 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762429AbZFNRUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZFNRnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762429AbZFNRUc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 13:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbZFNRUV
+	id S1755131AbZFNRnj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 13:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZFNRn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 13:20:21 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:56219 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753676AbZFNRUU (ORCPT
+	Sun, 14 Jun 2009 13:43:29 -0400
+Received: from tau.jukie.net ([216.239.93.128]:58918 "EHLO tau.jukie.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753518AbZFNRn2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 13:20:20 -0400
-Date: Sun, 14 Jun 2009 19:20:22 +0200
-From: Andreas Mohr <andim2@users.sourceforge.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: andi@lisas.de, akpm@linux-foundation.org,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM
-	capability
-Message-ID: <20090614172022.GA22586@rhlx01.hs-esslingen.de>
-Reply-To: andi@lisas.de
-References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <200906141606.29754.rjw@sisk.pl> <20090614164604.GA19746@rhlx01.hs-esslingen.de> <200906141909.46354.rjw@sisk.pl>
+	Sun, 14 Jun 2009 13:43:28 -0400
+Date: Sun, 14 Jun 2009 13:43:30 -0400
+From: Bart Trojanowski <bart@jukie.net>
+To: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Cc: linux-cachefs@redhat.com, linux-nfs@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [v2.6.30 nfs+fscache] swapper: possible circular locking
+	dependency detected
+Message-ID: <20090614174329.GA4721@jukie.net>
+References: <20090613182721.GA24072@jukie.net> <20090614141459.GA5543@jukie.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906141909.46354.rjw@sisk.pl>
-X-Priority: none
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090614141459.GA5543@jukie.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+It's me again.
 
-On Sun, Jun 14, 2009 at 07:09:45PM +0200, Rafael J. Wysocki wrote:
-> On Sunday 14 June 2009, Andreas Mohr wrote:
-> > Couple questions still:
-> > - why do we call pci_wake_from_d3(...false) only!?
-> >   Wouldn't this break WoL after one iteration back and forth,
-> >   due to missing 'true' case?
+I am tyring to decipher the lockdep report...
+
+* Bart Trojanowski <bart@jukie.net> [090614 10:15]:
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.30-kvm3-dirty #4
+> -------------------------------------------------------
+> swapper/0 is trying to acquire lock:
+>  (&cwq->lock){..-...}, at: [<ffffffff80256c37>] __queue_work+0x1d/0x43
 > 
-> The 'true' case is the 'wake = true' one.
-
-OK, so it wasn't an explicit pci_wake_from_d3(...true), but the
-operations done there are the equivalent of it probably.
-
-> > - why do we call netif_device_detach() _after_ doing hardware shutdown
-> >   of the network controller? I'd guess this can cause huge issues?
-> >   Someone told me he had rtnl lock issues upon S2D with e100
-> >   (very similar to my rtnl issues during aborted .suspend),
-> >   and that might possibly be the reason?
+> but task is already holding lock:
+>  (&q->lock){-.-.-.}, at: [<ffffffff80235b6a>] __wake_up+0x27/0x55
 > 
-> I think you're right, but I'm not a network driver expert.
+> which lock already depends on the new lock.
 > 
-> Perhaps you can change the ordering and see if that fixes the rtnl issue
-> (since you're able to reproduce it without my patch, that should be easy to
-> verify).
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&q->lock){-.-.-.}:
+>        [<ffffffff8026b7f6>] __lock_acquire+0x1350/0x16b4
+>        [<ffffffff8026bc21>] lock_acquire+0xc7/0xf3
+>        [<ffffffff805a22e1>] _spin_lock_irqsave+0x4f/0x86
+>        [<ffffffff80235b6a>] __wake_up+0x27/0x55
+>        [<ffffffff8025620b>] insert_work+0x9a/0xa6
+>        [<ffffffff80256c49>] __queue_work+0x2f/0x43
+>        [<ffffffff80256cec>] queue_work_on+0x4a/0x53
+>        [<ffffffff80256e49>] queue_work+0x1f/0x21
+<snip>
 
-I'll test this - later.
+So, here I can see that we take the cwq->lock first, when __queue_work
+does:
 
-Thanks a lot,
+        spin_lock_irqsave(&cwq->lock, flags);
+        insert_work(cwq, work, &cwq->worklist);
+        spin_unlock_irqrestore(&cwq->lock, flags);
 
-Andreas Mohr
+and later take the q->lock when insert_work calls to __wake_up:
+
+        spin_lock_irqsave(&q->lock, flags);
+        __wake_up_common(q, mode, nr_exclusive, 0, key);
+        spin_unlock_irqrestore(&q->lock, flags);
+
+But previously the order was reversed:
+
+> stack backtrace:
+> Pid: 0, comm: swapper Not tainted 2.6.30-kvm3-dirty #4
+> Call Trace:
+>  <IRQ>  [<ffffffff80269ffe>] print_circular_bug_tail+0xc1/0xcc
+>  [<ffffffff8026b52b>] __lock_acquire+0x1085/0x16b4
+>  [<ffffffff802685b4>] ? save_trace+0x3f/0xa6
+>  [<ffffffff8026ba78>] ? __lock_acquire+0x15d2/0x16b4
+>  [<ffffffff8026bc21>] lock_acquire+0xc7/0xf3
+>  [<ffffffff80256c37>] ? __queue_work+0x1d/0x43
+>  [<ffffffff805a22e1>] _spin_lock_irqsave+0x4f/0x86
+>  [<ffffffff80256c37>] ? __queue_work+0x1d/0x43
+>  [<ffffffff80256c37>] __queue_work+0x1d/0x43
+>  [<ffffffff80256cec>] queue_work_on+0x4a/0x53
+>  [<ffffffff80256e49>] queue_work+0x1f/0x21
+>  [<ffffffff80256e66>] schedule_work+0x1b/0x1d
+>  [<ffffffffa00e9268>] fscache_enqueue_operation+0xec/0x11e [fscache]
+>  [<ffffffffa00fd662>] cachefiles_read_waiter+0xee/0x102 [cachefiles]
+>  [<ffffffff80233a55>] __wake_up_common+0x4b/0x7a
+>  [<ffffffff80235b80>] __wake_up+0x3d/0x55
+>  [<ffffffff8025a2f1>] __wake_up_bit+0x31/0x33
+>  [<ffffffff802a52af>] unlock_page+0x27/0x2b
+
+Here the __wake_up happens first, which takes the q->lock, and later the
+__queue_work would take the cwq->lock.
+
+I am guessing that it's not safe for fscache to call out to queue_work
+from this cachefiles_read_waiter() context (more specifically
+fscache_enqueue_operation calls schedule_work).  I don't have much
+experience with lockdep...  does that make any sense?
+
+-Bart
+
+-- 
+				WebSig: http://www.jukie.net/~bart/sig/
