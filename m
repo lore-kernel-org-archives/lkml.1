@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbZFNUfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763413AbZFNUfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763122AbZFNUfH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 16:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbZFNUe5
+	id S1763413AbZFNUfd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 16:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbZFNUfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 16:34:57 -0400
-Received: from www.tglx.de ([62.245.132.106]:45041 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753632AbZFNUe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 16:34:56 -0400
-Date: Sun, 14 Jun 2009 22:34:45 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Wolfram Sang <w.sang@pengutronix.de>,
-       devicetree-discuss@ozlabs.org, Magnus Damm <magnus.damm@gmail.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
-Message-ID: <20090614203444.GH3639@local>
-References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-3-git-send-email-w.sang@pengutronix.de> <20090614122136.GD3639@local> <20090614171406.GA1010@pengutronix.de> <20090614183357.GE3639@local> <20090614190533.GA7387@pengutronix.de> <20090614192359.GG3639@local> <4A355155.4020500@grandegger.com>
+	Sun, 14 Jun 2009 16:35:17 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:56754 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763969AbZFNUfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 16:35:11 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH 3/4] asm-generic: uaccess: fix up local access_ok() usage
+Date: Sun, 14 Jun 2009 22:35:03 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <1244959204-11269-1-git-send-email-vapier@gentoo.org> <1244959204-11269-3-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1244959204-11269-3-git-send-email-vapier@gentoo.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A355155.4020500@grandegger.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906142235.03440.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/pmVQ2z5QkDndvncp0xp4H+japDf8d2QsJoqr
+ sFbrZkCHmClAXhDUfJg5N4goF9sY1sN7o09mPZPA4GSLmt+v8S
+ 99faV7AS/hvdeqh8vMDqTL22GJw/VdV
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 09:36:53PM +0200, Wolfgang Grandegger wrote:
-> >>>> 	if (uioinfo->irq == NO_IRQ)
-> >>>> 		uioinfo->irq = UIO_IRQ_NONE;
-> >>> Sorry for my ignorance, but what is NO_IRQ? If I do
+On Sunday 14 June 2009, Mike Frysinger wrote:
+> There's no reason that I can see to use the short __access_ok() form
+> directly when the access_ok() is clearer in intent and for most people,
+> expands to the same C code (i.e. always specify the first field -- access
+> type).  Not all no-mmu systems lack memory protection, so the read/write
+> could feasibly be checked.
 > 
-> It's 0 on PowerPC but ARM seems still to use -1.
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-Using 0 is simply wrong, especially if people do something like
+Applied, thanks.
 
-if (!irq)
-	return -ERROR;
-
-IRQ number 0 _is_ a valid irq. Maybe not on all platforms, but in generic
-code (like UIO) you have to assume it is.
-
-> 
-> http://lxr.linux.no/linux+v2.6.30/arch/powerpc/include/asm/irq.h#L29
-> 
-> For x86 it's not defined at all. But as this code is for the PowerPC,
-
-No, it isn't. What makes you say that? The Kconfig entry doesn't depend
-on PowerPC. I compiled it on x86...
-
-> where using NO_IRQ seems still to be OK.
-
-No. uio_pdrv_genirq can be used on all platforms, and not all platforms have
-NO_IRQ. NO_IRQ can be used in platform specific code only.
-
-Anyway, if someone fills in an invalid irq in his platform data, he deserves
-to crash. No need for that test. UIO docs state that irq is a _required_
-element. If you forget to set it, it will probably be 0. On most platforms,
-register_irq will fail with that, and you'll notice. If you silently
-replace it with UIO_IRQ_NONE, you simply cover up wrong code.
-
-Thanks,
-Hans
-
-> 
-> Wolfgang.
+	Arnd <><
