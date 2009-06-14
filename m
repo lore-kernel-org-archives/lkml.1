@@ -1,100 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbZFNPvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761721AbZFNPwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762132AbZFNPvp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 11:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZFNPvi
+	id S1761721AbZFNPwV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 11:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZFNPwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 11:51:38 -0400
-Received: from waste.org ([66.93.16.53]:55113 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752968AbZFNPvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 11:51:37 -0400
-Subject: Re: issue with /dev/random? gets depleted very quick
-From: Matt Mackall <mpm@selenic.com>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090614125138.GZ7272@vanheusden.com>
-References: <20090614125138.GZ7272@vanheusden.com>
-Content-Type: text/plain
-Date: Sun, 14 Jun 2009 10:51:09 -0500
-Message-Id: <1244994669.4496.229.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Jun 2009 11:52:07 -0400
+Received: from mail-px0-f187.google.com ([209.85.216.187]:34826 "EHLO
+	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753374AbZFNPwF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 11:52:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=HUQyUhno9S0rY8ZCtbaF/X4Ao9bbJ3Jz9tNXCEdOPZcElULtn9AmBK4AC9WNI79hzv
+         wXttm4aSuPISNaUGaJB4uqz5s+XmvqVG/tOtsl5ajxsEKSWSWo40KiAmqfloDdNWftr0
+         AbXPPRTpggNAM5Uai02jUzF/zhtmATCUeIB+8=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Cc: Wang Liming <liming.wang@windriver.com>, Wu Zhangjin <wuzj@lemote.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH v3] mips static function tracer support
+Date: Sun, 14 Jun 2009 23:51:57 +0800
+Message-Id: <9bf80ad0c891c470c7563df5c38ff5a2e59e678d.1244994151.git.wuzj@lemote.com>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <cover.1244994151.git.wuzj@lemote.com>
+References: <cover.1244994151.git.wuzj@lemote.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc:ed to lkml]
+From: Wu Zhangjin <wuzj@lemote.com>
 
-On Sun, 2009-06-14 at 14:51 +0200, Folkert van Heusden wrote:
-> Hi,
-> 
-> On an idle system (no gui, no daemons, nothing) system, /dev/random gets
-> empty in a matter of 20 seconds with a 2.6.26 kernel.
-> 
-> My test:
-> 
-> add 1000 bits to the device:
-> 
-> zolder:/tmp# cat test-RNDADDENTROPY.c 
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <sys/ioctl.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <asm/types.h>
-> #include <linux/random.h>
-> 
-> int main(int argc, char *argv[])
-> {
->         struct rand_pool_info *output;
->         int fd = open("/dev/random", O_WRONLY);
-> 
->         output = (struct rand_pool_info *)malloc(10000);
->         output -> entropy_count = 1000;
->         output -> buf_size      = 8000;
-> 
->         printf("%d\n", ioctl(fd, RNDADDENTROPY, output));
-> 
->         return 0;
-> }
-> 
-> and then check whayt is in it:
-> 
-> zolder:/tmp# ./a.out ; while true ; do echo `date` `cat /proc/sys/kernel/random/entropy_avail` ; sleep 1 ; done
-> 0
-> Sun Jun 14 14:50:44 CEST 2009 1117
-> Sun Jun 14 14:50:45 CEST 2009 989
-> Sun Jun 14 14:50:46 CEST 2009 925
-> Sun Jun 14 14:50:47 CEST 2009 797
-> Sun Jun 14 14:50:48 CEST 2009 733
-> Sun Jun 14 14:50:49 CEST 2009 605
-> Sun Jun 14 14:50:50 CEST 2009 541
-> Sun Jun 14 14:50:51 CEST 2009 413
-> Sun Jun 14 14:50:52 CEST 2009 349
-> Sun Jun 14 14:50:53 CEST 2009 221
-> Sun Jun 14 14:50:54 CEST 2009 157
-> Sun Jun 14 14:50:55 CEST 2009 157
-> 
-> Is there something wrong with it?
+if -pg of gcc is enabled. a calling to _mcount will be inserted to each
+kernel function. so, there is a possibility to trace the functions in
+_mcount.
 
-Does it go below 128? If not, that's the behavior of something depleting
-the pool down to the anti-starvation threshold via either /dev/urandom
-or get_random_bytes.
+here is the implementation of mips specific _mcount for static function
+tracer.
 
-On my system, I'm seeing that behavior as well. fuser reports a bunch of
-processes hold /dev/urandom open, but stracing them doesn't reveal a
-culprit. Which means there's now probably something in the kernel
-calling get_random_bytes continuously.
+-ffunction-sections option not works with -pg, so disable it if enables
+FUNCTION_TRACER.
 
-Is this a problem? It really shouldn't be. Everyone should be
-using /dev/urandom anyway. And the anti-starvation threshold guarantees
-that if there's entropy being collected, readers of /dev/random can
-always make forward progress.
+Reviewed-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+---
+ arch/mips/Kconfig              |    2 +
+ arch/mips/Makefile             |    2 +
+ arch/mips/include/asm/ftrace.h |   25 ++++++++++-
+ arch/mips/kernel/Makefile      |    7 +++
+ arch/mips/kernel/mcount.S      |   98 ++++++++++++++++++++++++++++++++++++++++
+ arch/mips/kernel/mips_ksyms.c  |    5 ++
+ 6 files changed, 138 insertions(+), 1 deletions(-)
+ create mode 100644 arch/mips/kernel/mcount.S
 
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 25f3b0a..2e2fdbe 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -4,6 +4,8 @@ config MIPS
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+ 	select HAVE_ARCH_KGDB
++	select HAVE_FUNCTION_TRACER
++	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
+ 	# Horrible source of confusion.  Die, die, die ...
+ 	select EMBEDDED
+ 	select RTC_LIB
+diff --git a/arch/mips/Makefile b/arch/mips/Makefile
+index c4cae9e..f86fb15 100644
+--- a/arch/mips/Makefile
++++ b/arch/mips/Makefile
+@@ -48,7 +48,9 @@ ifneq ($(SUBARCH),$(ARCH))
+   endif
+ endif
+ 
++ifndef CONFIG_FUNCTION_TRACER
+ cflags-y := -ffunction-sections
++endif
+ cflags-y += $(call cc-option, -mno-check-zero-division)
+ 
+ ifdef CONFIG_32BIT
+diff --git a/arch/mips/include/asm/ftrace.h b/arch/mips/include/asm/ftrace.h
+index 40a8c17..5f8ebcf 100644
+--- a/arch/mips/include/asm/ftrace.h
++++ b/arch/mips/include/asm/ftrace.h
+@@ -1 +1,24 @@
+-/* empty */
++/*
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive for
++ * more details.
++ *
++ * Copyright (C) 2009 DSLab, Lanzhou University, China
++ * Author: Wu Zhangjin <wuzj@lemote.com>
++ */
++
++#ifndef _ASM_MIPS_FTRACE_H
++#define _ASM_MIPS_FTRACE_H
++
++#ifdef CONFIG_FUNCTION_TRACER
++
++#define MCOUNT_ADDR ((unsigned long)(_mcount))
++#define MCOUNT_INSN_SIZE 4		/* sizeof mcount call */
++
++#ifndef __ASSEMBLY__
++extern void _mcount(void);
++#define mcount _mcount
++
++#endif /* __ASSEMBLY__ */
++#endif /* CONFIG_FUNCTION_TRACER */
++#endif /* _ASM_MIPS_FTRACE_H */
+diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
+index e961221..559a820 100644
+--- a/arch/mips/kernel/Makefile
++++ b/arch/mips/kernel/Makefile
+@@ -8,6 +8,11 @@ obj-y		+= cpu-probe.o branch.o entry.o genex.o irq.o process.o \
+ 		   ptrace.o reset.o setup.o signal.o syscall.o \
+ 		   time.o topology.o traps.o unaligned.o watch.o
+ 
++ifdef CONFIG_FUNCTION_TRACER
++# Do not profile debug and lowlevel utilities
++CFLAGS_REMOVE_early_printk.o = -pg
++endif
++
+ obj-$(CONFIG_CEVT_BCM1480)	+= cevt-bcm1480.o
+ obj-$(CONFIG_CEVT_R4K_LIB)	+= cevt-r4k.o
+ obj-$(CONFIG_MIPS_MT_SMTC)	+= cevt-smtc.o
+@@ -24,6 +29,8 @@ obj-$(CONFIG_SYNC_R4K)		+= sync-r4k.o
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-$(CONFIG_MODULES)		+= mips_ksyms.o module.o
+ 
++obj-$(CONFIG_FUNCTION_TRACER)	+= mcount.o
++
+ obj-$(CONFIG_CPU_LOONGSON2)	+= r4k_fpu.o r4k_switch.o
+ obj-$(CONFIG_CPU_MIPS32)	+= r4k_fpu.o r4k_switch.o
+ obj-$(CONFIG_CPU_MIPS64)	+= r4k_fpu.o r4k_switch.o
+diff --git a/arch/mips/kernel/mcount.S b/arch/mips/kernel/mcount.S
+new file mode 100644
+index 0000000..268724e
+--- /dev/null
++++ b/arch/mips/kernel/mcount.S
+@@ -0,0 +1,98 @@
++/*
++ * the mips-specific _mcount implementation
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive for
++ * more details.
++ *
++ * Copyright (C) 2009 DSLab, Lanzhou University, China
++ * Author: Wu Zhangjin <wuzj@lemote.com>
++ */
++
++#include <asm/regdef.h>
++#include <asm/stackframe.h>
++#include <asm/ftrace.h>
++
++	.text
++	.set noreorder
++	.set noat
++
++	/* since there is a "addiu sp,sp,-8" before "jal _mcount" in 32bit */
++	.macro RESTORE_SP_FOR_32BIT
++#ifdef CONFIG_32BIT
++	PTR_ADDIU	sp, 8
++#endif
++	.endm
++
++	.macro MCOUNT_SAVE_REGS
++	PTR_SUBU	sp, PT_SIZE
++	PTR_S	ra, PT_R31(sp)
++	PTR_S	$1, PT_R1(sp)
++	PTR_S	a0, PT_R4(sp)
++	PTR_S	a1, PT_R5(sp)
++	PTR_S	a2, PT_R6(sp)
++	PTR_S	a3, PT_R7(sp)
++#ifdef CONFIG_64BIT
++	PTR_S	a4, PT_R8(sp)
++	PTR_S	a5, PT_R9(sp)
++	PTR_S	a6, PT_R10(sp)
++	PTR_S	a7, PT_R11(sp)
++#endif
++	.endm
++
++	.macro MCOUNT_RESTORE_REGS
++	PTR_L	ra, PT_R31(sp)
++	PTR_L	$1, PT_R1(sp)
++	PTR_L	a0, PT_R4(sp)
++	PTR_L	a1, PT_R5(sp)
++	PTR_L	a2, PT_R6(sp)
++	PTR_L	a3, PT_R7(sp)
++#ifdef CONFIG_64BIT
++	PTR_L	a4, PT_R8(sp)
++	PTR_L	a5, PT_R9(sp)
++	PTR_L	a6, PT_R10(sp)
++	PTR_L	a7, PT_R11(sp)
++#endif
++	PTR_ADDIU	sp, PT_SIZE
++.endm
++
++	.macro MCOUNT_SET_ARGS
++	move	a0, ra		/* arg1: next ip, selfaddr */
++	move	a1, $1		/* arg2: the caller's next ip, parent */
++	PTR_SUBU a0, MCOUNT_INSN_SIZE
++	.endm
++
++	.macro RETURN_BACK
++	jr ra
++	move ra, $1
++	.endm
++
++NESTED(_mcount, PT_SIZE, ra)
++	RESTORE_SP_FOR_32BIT
++	PTR_L	t0, function_trace_stop
++	bnez	t0, ftrace_stub
++	nop
++
++	PTR_LA	t0, ftrace_stub
++	PTR_L	t1, ftrace_trace_function /* please don't use t1 later, safe? */
++	bne	t0, t1, static_trace
++	nop
++
++	j	ftrace_stub
++	nop
++
++static_trace:
++	MCOUNT_SAVE_REGS
++
++	MCOUNT_SET_ARGS			/* call *ftrace_trace_function */
++	jalr	t1
++	nop
++
++	MCOUNT_RESTORE_REGS
++	.globl ftrace_stub
++ftrace_stub:
++	RETURN_BACK
++	END(_mcount)
++
++	.set at
++	.set reorder
+diff --git a/arch/mips/kernel/mips_ksyms.c b/arch/mips/kernel/mips_ksyms.c
+index 225755d..1d04807 100644
+--- a/arch/mips/kernel/mips_ksyms.c
++++ b/arch/mips/kernel/mips_ksyms.c
+@@ -13,6 +13,7 @@
+ #include <asm/checksum.h>
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
++#include <asm/ftrace.h>
+ 
+ extern void *__bzero(void *__s, size_t __count);
+ extern long __strncpy_from_user_nocheck_asm(char *__to,
+@@ -51,3 +52,7 @@ EXPORT_SYMBOL(csum_partial_copy_nocheck);
+ EXPORT_SYMBOL(__csum_partial_copy_user);
+ 
+ EXPORT_SYMBOL(invalid_pte_table);
++#ifdef CONFIG_FUNCTION_TRACER
++/* _mcount is defined in arch/mips/kernel/mcount.S */
++EXPORT_SYMBOL(_mcount);
++#endif
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
+1.6.0.4
 
