@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZFNJMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbZFNJZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZFNJMh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 05:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZFNJM3
+	id S1756036AbZFNJZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 05:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbZFNJZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 05:12:29 -0400
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:2868
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751260AbZFNJM2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 05:12:28 -0400
-X-Trace: 257160112/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/83.67.11.44/None/tvrtko@ursulin.net
-X-SBRS: None
-X-RemoteIP: 83.67.11.44
-X-IP-MAIL-FROM: tvrtko@ursulin.net
-X-SMTP-AUTH: 
-X-MUA: KMail/1.9.10
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmYFAPtbNEpTQwss/2dsb2JhbACBT88phA0F
-X-IronPort-AV: E=Sophos;i="4.42,217,1243810800"; 
-   d="scan'208";a="257160112"
-X-IP-Direction: IN
-From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-To: linux-acpi@vger.kernel.org
-Subject: Re: [2.6.30][regression] ACPI continuously logging errors and exceptions while reading DVD
-Date: Sun, 14 Jun 2009 10:12:27 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <200906131244.45309.tvrtko@ursulin.net>
-In-Reply-To: <200906131244.45309.tvrtko@ursulin.net>
+	Sun, 14 Jun 2009 05:25:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37092 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933AbZFNJZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 05:25:52 -0400
+Date: Sun, 14 Jun 2009 12:25:42 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, mtosatti@redhat.com
+Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
+Message-ID: <20090614092542.GA4833@redhat.com>
+References: <20090520142234.22285.72274.stgit@dev.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906141012.27676.tvrtko@ursulin.net>
+In-Reply-To: <20090520142234.22285.72274.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 June 2009 12:44:45 Tvrtko A. Ursulin wrote:
-> Hi,
->
-> Just booted up 2.6.30 for the first time on this machine and found this
-> problem.	Hope the attachment goes through because everything is in there.
-> Log is shortened since errors are always the same and repeating constantly
-> while DVD is in use.
+On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
 
-Hm, I am not longer certain this was related to DVD access. At the time I was 
-looking it may have been a wild coincidence, but after that I saw it at other 
-times as well.
+...
 
-What also may be interesting, and what I have only now noticed, is that with a 
-distro kernel (2.6.27.23-0.1-default, openSUSE 11.1), kacpid uses a lot of 
-CPU time at also seemingly random intervals. So far in ~17 hours of uptime it 
-accumulated 70 minutes of CPU time. When it is active it uses from 5-20% of 
-it and load average shoots dramatically up:
+> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+> +static int
+> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
+> +{
+> +	struct _irqfd *irqfd;
+> +	struct file *file = NULL;
+> +	int ret;
+> +
+> +	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
+> +	if (!irqfd)
+> +		return -ENOMEM;
+> +
+> +	irqfd->kvm = kvm;
+> +	irqfd->gsi = gsi;
+> +	INIT_LIST_HEAD(&irqfd->list);
+> +	INIT_WORK(&irqfd->work, irqfd_inject);
+> +
+> +	/*
+> +	 * Embed the file* lifetime in the irqfd.
+> +	 */
+> +	file = fget(fd);
+> +	if (IS_ERR(file)) {
+> +		ret = PTR_ERR(file);
+> +		goto fail;
+> +	}
+> +
+> +	/*
+> +	 * Install our own custom wake-up handling so we are notified via
+> +	 * a callback whenever someone signals the underlying eventfd
+> +	 */
+> +	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
+> +	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
+> +
+> +	ret = file->f_op->poll(file, &irqfd->pt);
+> +	if (ret < 0)
+> +		goto fail;
+> +
+> +	irqfd->file = file;
+> +
+> +	mutex_lock(&kvm->lock);
+> +	list_add_tail(&irqfd->list, &kvm->irqfds);
+> +	mutex_unlock(&kvm->lock);
+> +
+> +	return 0;
+> +
+> +fail:
+> +	if (irqfd->wqh)
+> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+> +
+> +	if (file && !IS_ERR(file))
+> +		fput(file);
+> +
+> +	kfree(irqfd);
+> +	return ret;
+> +}
 
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-root         9  6.9  0.0      0     0 ?        S<   Jun13  70:24 [kacpid]
+It seems that this lets the guest assign an unlimited number of fds
+to the same gsi, potentially using up all of kernel memory.
 
- 10:07am  up  16:49,  2 users,  load average: 2.56, 1.34, 0.80
+Since we don't need multiple fds assigned to the same gsi (instead,
+multiple processes can write to the same eventfd to trigger an
+interrupt) let's simply check that no fd is yet assigned to this gsi.
 
-Tvrtko
+Makes sense?
+
+-- 
+MST
