@@ -1,146 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762386AbZFNQah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbZFNQdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762386AbZFNQah (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 12:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZFNQa2
+	id S1762554AbZFNQdp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 12:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbZFNQde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 12:30:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37508 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754446AbZFNQa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 12:30:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: andi@lisas.de
-Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM capability
-Date: Sun, 14 Jun 2009 18:31:04 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: akpm@linux-foundation.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20090614125128.GA32034@rhlx01.hs-esslingen.de> <200906141606.29754.rjw@sisk.pl>
-In-Reply-To: <200906141606.29754.rjw@sisk.pl>
+	Sun, 14 Jun 2009 12:33:34 -0400
+Received: from smtp-OUT05A.alice.it ([85.33.3.5]:2000 "EHLO
+	smtp-OUT05A.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751530AbZFNQdd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 12:33:33 -0400
+Message-ID: <4A352572.50602@alice.it>
+Date: Sun, 14 Jun 2009 18:29:38 +0200
+From: Marco <firefox82@alice.it>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Marco <marco.stornelli@gmail.com>
+CC: David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 04/14] Pramfs: Mounting as root filesystem
+References: <4A33A7D7.3040008@gmail.com> <200906140104.43463.arnd@arndb.de>	 <4A34B2FD.20701@gmail.com> <1244970445.3468.2732.camel@macbook.infradead.org> <4A351FB0.3060008@gmail.com>
+In-Reply-To: <4A351FB0.3060008@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906141831.05349.rjw@sisk.pl>
+X-OriginalArrivalTime: 14 Jun 2009 16:33:34.0086 (UTC) FILETIME=[DC29E260:01C9ED0D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 June 2009, Rafael J. Wysocki wrote:
-> On Sunday 14 June 2009, Andreas Mohr wrote:
-> > Hi,
-> > 
-> > On Sun, Jun 14, 2009 at 12:28:15AM +0200, Rafael J. Wysocki wrote:
-> > > On Saturday 13 June 2009, Andreas Mohr wrote:
-> > > > Hi all,
-> > > > 
-> > > > after having added non-MII PHY card support to e100, I noticed that
-> > > > the suspend handler rejects power-management non-capable PCI cards,
-> > > 
-> > > Well, that means we have a bug somewhere in the PCI PM core.
-> > 
-> > I don't know. I had shortly investigated the same thing,
-> > but it very much seemed that this is by design, pci_set_power_state()
-> > is documented to reject non-PM cards (in power/pci.txt, and in
-> > pci.c, too). Thus I didn't work in this area.
-> > 
-> > And from a cleanliness point of view pci_set_power_state()
-> > acting on a non-PM card with no special non-PM ACPI support _should_
-> > return an error status I guess.
-> > (especially since docs say that pci_set_power_state() should
-> > be used for PM cards)
-> > 
-> > > > causing a S2R request to immediately get back up to the desktop,
-> > > > losing network access in the process (rtnl mutex deadlock).
-> > > 
-> > > That's bad.
-> > 
-> > Indeed, and I have no idea what the problem was.
-> > rtnl_is_locked() always was false within suspend/resume,
-> > thus it had to be a userspace-triggered effect sometime
-> > _after_ (non-)resume happened
-> > (probably due to the network controller being down and thus inoperable
-> > after .suspend).
-> > 
-> > BTW, after that failed .suspend, .resume was not called. I assume this to
-> > be correct behaviour.
-> > 
-> > > >  static int __e100_power_off(struct pci_dev *pdev, bool wake)
-> > > >  {
-> > > > +	/* some older devices don't support PCI PM
-> > > > +	 * (e.g. mac_82557_D100_B combo card with 80c24 PHY)
-> > > > +	 * - skip those! (they most likely won't support WoL either)
-> > > > +	 */
-> > > > +	if (!pci_find_capability(pdev, PCI_CAP_ID_PM))
-> > > > +		return 0;
-> > > 
-> > > Devices without PCI_CAP_ID_PM may still be power-manageable by ACPI, so
-> > > returning 0 at this point is not a general solution.
-> > 
-> > Oh, interesting.
-> > 
-> > BTW, any idea why we have several drivers doing some seemingly useless
-> > 
-> >         /* Find power-management capability. */
-> >         pm_cap = pci_find_capability(pdev, PCI_CAP_ID_PM);
-> >         if (pm_cap == 0) {
-> >                 printk(KERN_ERR PFX "Cannot find PowerManagement capability, "
-> >                        "aborting.\n");
-> >                 err = -EIO;
-> >                 goto err_out_free_res;
-> >         }
-> > 
-> > ?
-> > 
-> > - it's code bloat
-> > - it needlessly rejects non-PM cards
-> > - it annoys the hell out of users of a non-PM card
-> 
-> No idea.
-> 
-> > > > +
-> > > >  	if (wake) {
-> > > >  		return pci_prepare_to_sleep(pdev);
-> > > 
-> > > pci_prepare_to_sleep() is supposed to return 0 for your device.  I'll have a
-> > > look at it.
-> > 
-> > No, wake is false for my card, thus that's not the branch to
-> > investigate.
-> 
-> Ah.  The problem is, then, that we try to put the device into D3, which it
-> cannot do and error code is correctly returned from pci_set_power_state().
-> 
-> I would use the appended patch.
-
-Or perhaps better this one (functionally equivalent).
-
----
- drivers/net/e100.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/drivers/net/e100.c
-===================================================================
---- linux-2.6.orig/drivers/net/e100.c
-+++ linux-2.6/drivers/net/e100.c
-@@ -2759,12 +2759,13 @@ static void __e100_shutdown(struct pci_d
+David Woodhouse wrote:
+> On Sun, 2009-06-14 at 10:21 +0200, Marco wrote:
+>> Mmm...MEM_MAJOR and RAMDISK_MAJOR have the same value and pramfs works
+>> in memory. We could simply use /dev/null (there was an error in the
+>> submitted kconfig description, my intention was to use /dev/mem). In
+>> that case I can use UNNAMED_MAJOR. PRAMFS root option is not enabled
+>> if it's already enabled the NFS one. What do you think?
+>
+> Why use a major number at all? See how we handle mtd and ubi devices in
+> prepare_namespace() -- can't you do something similar?
+>
  
- static int __e100_power_off(struct pci_dev *pdev, bool wake)
- {
--	if (wake) {
-+	if (wake)
- 		return pci_prepare_to_sleep(pdev);
--	} else {
--		pci_wake_from_d3(pdev, false);
--		return pci_set_power_state(pdev, PCI_D3hot);
--	}
-+
-+	pci_wake_from_d3(pdev, false);
-+	pci_set_power_state(pdev, PCI_D3hot);
-+
-+	return 0;
- }
- 
- #ifdef CONFIG_PM
+Do you suggest me something similar? Why not. I though that mtd and ubi 
+were only special cases.
+
+if (saved_root_name[0]) {
+		root_device_name = saved_root_name;
+		if (!strncmp(root_device_name, "mtd", 3) ||
+		    !strncmp(root_device_name, "ubi", 3) ||
+  -------->         !strncmp(root_device_name, "pram", 4)) {
+			mount_block_root(root_device_name, root_mountflags);
+			goto out;
+		}
+		ROOT_DEV = name_to_dev_t(root_device_name);
+		if (strncmp(root_device_name, "/dev/", 5) == 0)
+			root_device_name += 5;
+	}
