@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763931AbZFNVtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbZFNV5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763931AbZFNVtV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 17:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761086AbZFNVtA
+	id S1764074AbZFNV5u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 17:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbZFNV5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 17:49:00 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:49192 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761821AbZFNVs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 17:48:59 -0400
-Subject: Re: apic: native_apic_write_dummy warning
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <20090614200620.GB24604@lenovo>
-References: <1245006351.5912.174.camel@odie.local>
-	 <20090614192220.GB4851@lenovo> <20090614194017.GA24604@lenovo>
-	 <20090614200620.GB24604@lenovo>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Jun 2009 23:50:16 +0200
-Message-Id: <1245016216.5890.10.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 
-Content-Transfer-Encoding: 8bit
+	Sun, 14 Jun 2009 17:57:41 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:23303 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755725AbZFNV5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 17:57:41 -0400
+X-Trace: 214804769/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.42.252/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.42.252
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ag4CAEcPNUpQKSr8/2dsb2JhbAAI0FSEDQU
+X-IronPort-AV: E=Sophos;i="4.42,218,1243810800"; 
+   d="scan'208";a="214804769"
+Date: Sun, 14 Jun 2009 22:56:48 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Matt Mackall <mpm@selenic.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       Mike Frysinger <vapier@gentoo.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ramfs: ignore unknown mount options
+In-Reply-To: <1244995214.4496.234.camel@calx>
+Message-ID: <Pine.LNX.4.64.0906142250590.6984@sister.anvils>
+References: <1244872920-13511-1-git-send-email-vapier@gentoo.org> 
+ <Pine.LNX.4.64.0906131456090.5069@sister.anvils>  <20090614100110.GA19875@localhost>
+  <Pine.LNX.4.64.0906141119030.13473@sister.anvils> <1244995214.4496.234.camel@calx>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-man, 15 06 2009 kl. 00:06 +0400, skrev Cyrill Gorcunov:
-> [Cyrill Gorcunov - Sun, Jun 14, 2009 at 11:40:17PM +0400]
-> ... 
-> | Neither thermal interrupts nor mce will be functional if apic
-> | is not properly set up (even having kernel compiled that way
-> | it support both). So you may try to pass "lapic" boot option
-> | and check if we're lucky in attempt to enable apic via force
-> | push. Anyway this warn show that the code is to be fixed
-> | (and native_apic_write_dummy done its work great catching
-> |  useless apic->write operation). I'll handle it but a bit later.
-> | 
-> | Andi CC'ed since he is involved in MCE handling just for the
-> | record.
-> | 
-> | 	-- Cyrill
-> 
-> Simon here is a patch I would appreciate if you test.
+From: Mike Frysinger <vapier@gentoo.org>
 
-That was quick work :) No warning with the patch (or lapic).
+On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
+fail when tmpfs options are used.  This is because tmpfs creates a small
+wrapper around ramfs which rejects unknown options, and ramfs itself only
+supports a tiny subset of what tmpfs supports.  This makes it pretty hard
+to use the same userspace systems across different configuration systems.
+As such, ramfs should ignore the tmpfs options when tmpfs is merely a
+wrapper around ramfs.
 
-> ---
-> [PATCH -tip] x86: mce intel -- don't touch THERMAL_APIC_VECTOR if no active APIC
-> 
-> If APIC was disabled for some reason and not even mapped
-> we should not try to enable thermal interrupts at all.
-> 
-> Reported-by: Simon Holm Thøgersen <odie@cs.aau.dk>
+This used to work before commit c3b1b1cbf0 as previously, ramfs would
+ignore all options.  But now, we get:
+ramfs: bad mount option: size=10M
+mount: mounting mdev on /dev failed: Invalid argument
 
-Tested-by: Simon Holm Thøgersen <odie@cs.aau.dk>
+Another option might be to restore the previous behavior, where ramfs
+simply ignored all unknown mount options ... which is what Hugh prefers.
 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> ---
->  arch/x86/kernel/cpu/mcheck/mce_intel.c |   10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.git/arch/x86/kernel/cpu/mcheck/mce_intel.c
-> =====================================================================
-> --- linux-2.6.git.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
-> +++ linux-2.6.git/arch/x86/kernel/cpu/mcheck/mce_intel.c
-> @@ -21,9 +21,15 @@ void intel_init_thermal(struct cpuinfo_x
->  	int tm2 = 0;
->  	u32 l, h;
->  
-> -	/* Thermal monitoring depends on ACPI and clock modulation*/
-> -	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
-> +	/*
-> +	 * Thermal monitoring depends on ACPI, clock modulation
-> +	 * and APIC as well
-> +	 */
-> +	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC) ||
-> +		!cpu_has(c, X86_FEATURE_APIC)) {
-> +		pr_debug("Thermal monitoring disabled\n");
->  		return;
-> +	}
->  
->  	/*
->  	 * First check if its enabled already, in which case there might
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Acked-by: Matt Mackall <mpm@selenic.com>
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+Cc: stable@kernel.org
+---
 
+ fs/ramfs/inode.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+--- 2.6.30/fs/ramfs/inode.c	2009-06-10 04:05:27.000000000 +0100
++++ linux/fs/ramfs/inode.c	2009-06-13 14:45:33.000000000 +0100
+@@ -202,9 +202,12 @@ static int ramfs_parse_options(char *dat
+ 				return -EINVAL;
+ 			opts->mode = option & S_IALLUGO;
+ 			break;
+-		default:
+-			printk(KERN_ERR "ramfs: bad mount option: %s\n", p);
+-			return -EINVAL;
++		/*
++		 * We might like to report bad mount options here;
++		 * but traditionally ramfs has ignored all mount options,
++		 * and as it is used as a !CONFIG_SHMEM simple substitute
++		 * for tmpfs, better continue to ignore other mount options.
++		 */
+ 		}
+ 	}
+ 
