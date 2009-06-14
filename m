@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbZFNXgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbZFNXhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760995AbZFNXgd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 19:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZFNXgZ
+	id S1758196AbZFNXhf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 19:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbZFNXh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 19:36:25 -0400
-Received: from web31702.mail.mud.yahoo.com ([68.142.201.182]:31978 "HELO
-	web31702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752753AbZFNXgZ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 19:36:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=TUpH7fYC+kMxe/Mr6yhXmlFjDILnqlJo7RxqpPwpCC5SWzpkVCO56Ooy7dtaaALARt8dommV/Z4AewzheScSvcPH+RIGVwgXmkecaH/csPSwrpKntesczEN/QFKgesOstBt/Qa0GiA5OHERtMvrtO0hFmOSHxiuiyMxOvRwnjow=;
-Message-ID: <493605.36824.qm@web31702.mail.mud.yahoo.com>
-X-YMail-OSG: hc41AtgVM1k.yATTEQoy28Z3y7uZ8AymaOae_TWxG_D9kVIKt_hIBNXBs1uYW_s4d.sEWEwJyIRDMSgby.J5gKTjnozV6eECTcDv2VVryBSdyiZUdmyaML7kWePj3naAo2THRLImlIOXQVamN0XMJEH.F6YFyugme_t1lYlvfZ0jWp440FIG5rIhiAF3ytk.XAsixswPhj0X6dVtmtTmcWGUPwL89FHhnYSHV6AaoXveqT3qhESEl4ep3hYyqLxyEOoeBy_uV8p0L0AVyTG6XB2WFoNnSNgIpooLZBxePjhB72MwSsnfHHCU1BbEC_jWFoJfDzezUtNoM_pDDhVgfZ761Bje4lU2.45A7TI_VNd6v3xzJbxSFqPc.yhsyo7b
-X-Mailer: YahooMailRC/1357.18 YahooMailWebService/0.7.289.15
-References: <233030.36441.qm@web31706.mail.mud.yahoo.com>  <4A333E0D.8050306@gmail.com>  <19209.93239.qm@web31703.mail.mud.yahoo.com> <51f3faa70906140926p2e34cb47j1ad8e9332c893c0d@mail.gmail.com>
-Date: Sun, 14 Jun 2009 16:36:27 -0700 (PDT)
-From: Sanka Piyaratna <cesanka@yahoo.com>
-Subject: Re: PCIe interface memory memory mapping issue
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <51f3faa70906140926p2e34cb47j1ad8e9332c893c0d@mail.gmail.com>
+	Sun, 14 Jun 2009 19:37:28 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:32816 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754066AbZFNXh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 19:37:27 -0400
+Date: Mon, 15 Jun 2009 00:37:27 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Ryan Hope <rmh3093@gmail.com>
+cc: Jerome Glisse <glisse@freedesktop.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [PATCH 1/3] Re: Radeon kernel modesetting patch (as staging)
+ please review
+In-Reply-To: <48f7fe350906140642i595fa90ep182838e3ad4893fd@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0906150037110.20307@skynet.skynet.ie>
+References: <1244649318.9942.33.camel@earl.localdomain> <48f7fe350906140642i595fa90ep182838e3ad4893fd@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 14 Jun 2009, Ryan Hope wrote:
 
+> commit 85adafcf5d18e58c60d9fdbb718abe9149661736
+> Author: Ryan Hope <rmh3093@gmail.com>
+> Date:   Fri Jun 12 12:17:54 2009 -0400
+> 
+>     fix ttm kconfig
 
+Thanks I've merged this into the patchset.
 
->>>> I have developed a PCI express interface using Xilinx ML555 hardware module. I have implemented Linux kernel >>mode device drivers and everything works correctly as long as I am using the device within a computer with dual >>channel DDR arrangement. However, as soon as I pug this device into a core i7 or an older single channel DDR >>machine, the interface memory mapping does not work any more. As if the register map with in the device does no >>longer exsists. However, "lspci" utility provides correct information. I am not sure if this has anything to do with the >>number of DDR memory channels the motherboard has or why that would be a problem for PCI express device. >>However, this seem to be the common link between the machines that demonstrate this issue.
->>
->>>You'll have to give more details on what you mean by "the interface memory mapping does not work any more. As if >the register map with in the device does no longer exsists".
->>
->> What I mean by this is that, when load the driver, the memory mapping of the hardware memory onto the computer memory does not work. I have a setup where I have all the control registers in BAR5 (512 byte) and I also have 64kB chuck of the FPGA memory mapped using BAR0. I am not able to see the register space when the BAR5 area in the computer memory map. However, I am able to write something to BAR0 memory map and read it back.
+Dave.
 
->How are you getting the register space into the memory map.. ioremap() ?
-
-that's right! I am using  ioremap(address, size). 
-
-
-
-      Need a Holiday? Win a $10,000 Holiday of your choice. Enter now.http://us.lrd.yahoo.com/_ylc=X3oDMTJxN2x2ZmNpBF9zAzIwMjM2MTY2MTMEdG1fZG1lY2gDVGV4dCBMaW5rBHRtX2xuawNVMTEwMzk3NwR0bV9uZXQDWWFob28hBHRtX3BvcwN0YWdsaW5lBHRtX3BwdHkDYXVueg--/SIG=14600t3ni/**http%3A//au.rd.yahoo.com/mail/tagline/creativeholidays/*http%3A//au.docs.yahoo.com/homepageset/%3Fp1=other%26p2=au%26p3=mailtagline
+> 
+> diff --git a/drivers/gpu/drm/ttm/Makefile b/drivers/gpu/drm/ttm/Makefile
+> index 0686829..299a73c 100644
+> --- a/drivers/gpu/drm/ttm/Makefile
+> +++ b/drivers/gpu/drm/ttm/Makefile
+> @@ -6,4 +6,4 @@ ttm-y := ttm_agp_backend.o ttm_memory.o ttm_tt.o ttm_bo.o \
+>         ttm_bo_util.o ttm_bo_vm.o ttm_module.o ttm_global.o
+> 
+> 
+> -obj-m += ttm.o
+> +obj-$(CONFIG_DRM_TTM) += ttm.o
+> 
+> ------------------------------------------------------------------------------
+> Crystal Reports - New Free Runtime and 30 Day Trial
+> Check out the new simplified licensing option that enables unlimited
+> royalty-free distribution of the report engine for externally facing 
+> server and web deployment.
+> http://p.sf.net/sfu/businessobjects
+> --
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/dri-devel
+> 
+> 
