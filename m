@@ -1,110 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762355AbZFNRJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762557AbZFNROS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762355AbZFNRJW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 13:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZFNRJJ
+	id S1762557AbZFNROS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 13:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbZFNROH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 13:09:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37600 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752454AbZFNRJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 13:09:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: andi@lisas.de
-Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM capability
-Date: Sun, 14 Jun 2009 19:09:45 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: akpm@linux-foundation.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <200906141606.29754.rjw@sisk.pl> <20090614164604.GA19746@rhlx01.hs-esslingen.de>
-In-Reply-To: <20090614164604.GA19746@rhlx01.hs-esslingen.de>
+	Sun, 14 Jun 2009 13:14:07 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:51754 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754757AbZFNROG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 13:14:06 -0400
+Date: Sun, 14 Jun 2009 19:14:06 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       devicetree-discuss@ozlabs.org, Magnus Damm <magnus.damm@gmail.com>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+Message-ID: <20090614171406.GA1010@pengutronix.de>
+References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-3-git-send-email-w.sang@pengutronix.de> <20090614122136.GD3639@local>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
 Content-Disposition: inline
-Message-Id: <200906141909.46354.rjw@sisk.pl>
+In-Reply-To: <20090614122136.GD3639@local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 June 2009, Andreas Mohr wrote:
-> Hi,
-> 
-> On Sun, Jun 14, 2009 at 04:06:29PM +0200, Rafael J. Wysocki wrote:
-> > On Sunday 14 June 2009, Andreas Mohr wrote:
-> > > Hi,
-> > > 
-> > > On Sun, Jun 14, 2009 at 12:28:15AM +0200, Rafael J. Wysocki wrote:
-> > > > On Saturday 13 June 2009, Andreas Mohr wrote:
-> > > > > +
-> > > > >  	if (wake) {
-> > > > >  		return pci_prepare_to_sleep(pdev);
-> > > > 
-> > > > pci_prepare_to_sleep() is supposed to return 0 for your device.  I'll have a
-> > > > look at it.
-> > > 
-> > > No, wake is false for my card, thus that's not the branch to
-> > > investigate.
-> > 
-> > Ah.  The problem is, then, that we try to put the device into D3, which it
-> > cannot do and error code is correctly returned from pci_set_power_state().
-> > 
-> > I would use the appended patch in that case and the patch sent previously
-> > is necessary for the 'wake = true' case.
-> 
-> OK, as said I cannot test this right now, but I'm _damn_ sure it would
-> work. Thus I'd say your equivalent patch posted a bit later can be
-> committed already.
-> 
-> But what about the wake = true case?
-> I'm not affected by this since my card doesn't have any wake capa,
-> thus it's your call of whether that pci core code part really was broken
-> and needed fixing.
 
-I think it needs fixing.
+--x+6KMIRAuhnl3hBn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> So, for the patch in your next mail:
-> Acked-by: Andreas Mohr <andi@lisas.de>
-> 
-> 
-> BTW, that patch was (pasted):
-> 
->  static int __e100_power_off(struct pci_dev *pdev, bool wake)
->  {
-> -       if (wake) {
-> +       if (wake)
->                 return pci_prepare_to_sleep(pdev);
-> -       } else {
-> -               pci_wake_from_d3(pdev, false);
-> -               return pci_set_power_state(pdev, PCI_D3hot);
-> -       }
-> +
-> +       pci_wake_from_d3(pdev, false);
-> +       pci_set_power_state(pdev, PCI_D3hot);
-> +
-> +       return 0;
->  }
-> 
-> 
-> Couple questions still:
-> - why do we call pci_wake_from_d3(...false) only!?
->   Wouldn't this break WoL after one iteration back and forth,
->   due to missing 'true' case?
+Hello Hans,
 
-The 'true' case is the 'wake = true' one.
+> > +	uioinfo->irq =3D irq_of_parse_and_map(op->node, 0);
+> > +	if (!uioinfo->irq)
+> > +		uioinfo->irq =3D UIO_IRQ_NONE;
+>=20
+> Please don't do this. It's inconsistent if all other UIO drivers require
+> people to use UIO_IRQ_NONE and you also allow zero. UIO_IRQ_NONE was
+> introduced because 0 may be a legal interrupt number on some platforms.
 
-> - why do we call netif_device_detach() _after_ doing hardware shutdown
->   of the network controller? I'd guess this can cause huge issues?
->   Someone told me he had rtnl lock issues upon S2D with e100
->   (very similar to my rtnl issues during aborted .suspend),
->   and that might possibly be the reason?
+Yes, well, the '0' vs. 'NO_IRQ' thing is still not fully sorted out AFAIK. =
+But
+you are possibly right here, as long as irq_of_parse_and_map does return
+NO_IRQ, I should explicitly check for it, like this:
 
-I think you're right, but I'm not a network driver expert.
+	if (uioinfo->irq =3D=3D NO_IRQ)
+		uioinfo->irq =3D UIO_IRQ_NONE;
 
-Perhaps you can change the ordering and see if that fixes the rtnl issue
-(since you're able to reproduce it without my patch, that should be easy to
-verify).
+> > +/* Match table for of_platform binding */
+> > +static const struct of_device_id __devinitconst uio_of_genirq_match[] =
+=3D {
+>=20
+> checkpatch.pl complains about that. Please check.
 
-Best,
-Rafael
+Did that, it is a false positive. See here:
+
+http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/02780.html
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--x+6KMIRAuhnl3hBn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko1L94ACgkQD27XaX1/VRsKRwCgkV+etCy/P9oVMZy21qFkhDpW
+rlYAoLiY/tAj0womxa/gTg4pkEdXWp/t
+=/oK2
+-----END PGP SIGNATURE-----
+
+--x+6KMIRAuhnl3hBn--
