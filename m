@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbZFNWhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbZFNWkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759101AbZFNWhV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 18:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZFNWhK
+	id S1756675AbZFNWkM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 18:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFNWkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 18:37:10 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:35805 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbZFNWhJ (ORCPT
+	Sun, 14 Jun 2009 18:40:01 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35564 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbZFNWkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 18:37:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=cvaMDI5jQw85oxYl3gda+J2rtxcIiKRsyvqVQ+d4USOpGxUK6w7UEWtp45+HXKV3ds
-         BNF6dfh94UPwXuSag+QFw4F/glgmEnN5YOjyy+1cjxSPAMgsuHCTrvSMuUeiW3KyjL6G
-         fE7CFF8b0K0BdORooLSKxGaJQqd9QFIKZA9O0=
+	Sun, 14 Jun 2009 18:40:00 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 15 Jun 2009 00:38:50 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: core: fix DMA unmapping in iso buffer removal
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.a52095c7211a30e8@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Date: Sun, 14 Jun 2009 15:37:10 -0700
-Message-ID: <dd18b0c30906141537l2edb2002o6fd29dc1ea6c2190@mail.gmail.com>
-Subject: finally no: ACPI: EC: GPE storm detected, disabling EC GPE
-From: Justin Mattock <justinmattock@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After running kernel 2.6.30 for almost a week, Ive noticed
-that the gpe storm being triggered has only gone
-off once, during a cold boot, but after a reboot
-did not return for the rest of the session, and for the last
-two weeks(with 2.6.30-rc7 to linus's 2.6.30)
-prior to that with 2.6.30-rc5 I was receiving this message
-within an hour or so, vary consistent.
+dmap_unmap_page() shall use the same direction as dma_map_page().
 
-The only change that occurred with 2.6.30-rc5 to now
-was I had decided to create a small system for myself,
-but this time leave hal out of the picture.(acpid is present but
-has only one rule "powerbtn" so I can shutdown the system).
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/core-iso.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Could it be possible that hal might have been causing this
-gpe storm to be triggered?(or was this fixed by having a
-new copy of udev?)
-
-In any case thought I would send some info about what I'm
-experiencing over here with 2.6.30.
+Index: linux/drivers/firewire/core-iso.c
+===================================================================
+--- linux.orig/drivers/firewire/core-iso.c
++++ linux/drivers/firewire/core-iso.c
+@@ -71,7 +71,7 @@ int fw_iso_buffer_init(struct fw_iso_buf
+ 	for (j = 0; j < i; j++) {
+ 		address = page_private(buffer->pages[j]);
+ 		dma_unmap_page(card->device, address,
+-			       PAGE_SIZE, DMA_TO_DEVICE);
++			       PAGE_SIZE, direction);
+ 		__free_page(buffer->pages[j]);
+ 	}
+ 	kfree(buffer->pages);
+@@ -108,7 +108,7 @@ void fw_iso_buffer_destroy(struct fw_iso
+ 	for (i = 0; i < buffer->page_count; i++) {
+ 		address = page_private(buffer->pages[i]);
+ 		dma_unmap_page(card->device, address,
+-			       PAGE_SIZE, DMA_TO_DEVICE);
++			       PAGE_SIZE, buffer->direction);
+ 		__free_page(buffer->pages[i]);
+ 	}
+ 
 
 -- 
-Justin P. Mattock
+Stefan Richter
+-=====-==--= -==- -====
+http://arcgraph.de/sr/
+
