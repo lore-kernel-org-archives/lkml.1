@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbZFNKss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZFNKy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbZFNKss (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 06:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbZFNKsl
+	id S1757069AbZFNKy0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 06:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZFNKyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 06:48:41 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60707 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757233AbZFNKsl (ORCPT
+	Sun, 14 Jun 2009 06:54:20 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55472 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755216AbZFNKyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 06:48:41 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 14 Jun 2009 12:48:38 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: What's in linux1394-2.6.git?
-To: linux-kernel@vger.kernel.org
-cc: linux1394-devel@lists.sourceforge.net
-In-Reply-To: <tkrat.70eb865eb2fae29b@s5r6.in-berlin.de>
-Message-ID: <tkrat.92466f507d376cc5@s5r6.in-berlin.de>
-References: <tkrat.70eb865eb2fae29b@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Sun, 14 Jun 2009 06:54:19 -0400
+Date: Sun, 14 Jun 2009 11:54:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: tty_ldisc_try_get(): BUG kmalloc-8: Poison overwritten
+Message-ID: <20090614115428.1127ed2d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090614081052.GA9276@elte.hu>
+References: <20090614081052.GA9276@elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> Batch 2: for-linus..for-next
-> ============================
+On Sun, 14 Jun 2009 10:10:52 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> This contains Jay Fenlason's IPv4-over-1394 driver,
+> Ok, this is one for those who like to look at weird crashes/bugs.
+> 
+> Here's a new regression that popped up in this merge window, there's 
+> some sort of slab corruption going on in tty data structures:
 
-A note to those who pulled linux1394-2.6.git's "net" branch in the last
-few days:  I deleted this branch, and for-next is not an ancestor of it
-requeued the IPv4 patches to after the latest firewire-core updates.
--- 
-Stefan Richter
--=====-==--= -==- -===-
-http://arcgraph.de/sr/
+I split the ldisc and tty apart and redid the ldisc locking so its a fair
+bet I know what changeset is to blame, will just need to hunt it down a
+bit. kmemcheck found one leak case on Friday which I've fixed but not yet
+scribbles.
 
+>  c65c9bc: tty: rewrite the ldisc locking
+
+Almost certainly that one and will investigate on Monday
+
+Alan
