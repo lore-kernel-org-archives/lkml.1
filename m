@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761678AbZFNNxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbZFNNz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761678AbZFNNxV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 09:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZFNNxO
+	id S1758809AbZFNNz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 09:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZFNNzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 09:53:14 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:42907 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753610AbZFNNxO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 09:53:14 -0400
-Date: Sun, 14 Jun 2009 21:51:47 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       JosephChan@via.com.tw, Bruce Chang <BruceChang@via.com.tw>
-Subject: Re: [PATCH] mmc: Add new via-sdmmc host controller driver
-Message-ID: <20090614135147.GQ2854@prithivi.gnumonks.org>
-References: <20090612075930.GB30843@prithivi.gnumonks.org> <20090613134328.0c168205@mjolnir.ossman.eu> <20090614065256.GJ2854@prithivi.gnumonks.org> <20090614125537.065d706a@mjolnir.ossman.eu>
+	Sun, 14 Jun 2009 09:55:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44609 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751426AbZFNNzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 09:55:16 -0400
+Date: Sun, 14 Jun 2009 13:54:36 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf report: Print out raw events in hexa
+Message-ID: <tip-8465b05046652cfde3d47692cab2e8ba962f140f@git.kernel.org>
+Git-Commit-ID: 8465b05046652cfde3d47692cab2e8ba962f140f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090614125537.065d706a@mjolnir.ossman.eu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 14 Jun 2009 13:54:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 12:55:37PM +0200, Pierre Ossman wrote:
+Commit-ID:  8465b05046652cfde3d47692cab2e8ba962f140f
+Gitweb:     http://git.kernel.org/tip/8465b05046652cfde3d47692cab2e8ba962f140f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sun, 14 Jun 2009 14:44:07 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 14 Jun 2009 14:45:12 +0200
 
-> > Also, you stated that mmc_remove_host needs to be the first step.  However,
-> > sdhci first kills the ongoing rquest (if "dead"), and then removes the host.
-> 
-> Right, because the reason you need to end the request is that failure
-> to do so will wedge the MMC system and mmc_remove_host() will never
-> return.
-> 
-> Normally the requests will eventually be completed by interrupts coming
-> from the hardware, but if it got removed then that might not happen.
+perf report: Print out raw events in hexa
 
-Ok, I will copy+paste the snippet from sdhci.c and do some testing, both
-removing the card while continuously issuing requests, as well as removing the
-driver while doing that.
+Print out events in hexa dump format, when -D is specified:
 
-Will submit the result again in two days or so.
-
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
+0x4868 [0x48]: event: 1
