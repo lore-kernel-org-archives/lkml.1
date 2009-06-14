@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbZFNByA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZFNByT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbZFNByA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 21:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZFNBxx
+	id S1754820AbZFNByT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 21:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZFNByD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 21:53:53 -0400
-Received: from host238.190-226-77.telecom.net.ar ([190.226.77.238]:49368 "EHLO
-	burns.springfield.home" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751113AbZFNBxx (ORCPT
+	Sat, 13 Jun 2009 21:54:03 -0400
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:2315 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757267AbZFNByB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 21:53:53 -0400
-X-Greylist: delayed 1301 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Jun 2009 21:53:52 EDT
-Date: Sat, 13 Jun 2009 22:32:11 -0300
-From: Leandro Lucarella <llucax@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Alberto Bertogli <albertito@blitiri.com.ar>
-Subject: NILFS2 get stuck after bio_alloc() fail
-Message-ID: <20090614013211.GA22552@homero.springfield.home>
+	Sat, 13 Jun 2009 21:54:01 -0400
+Date: Sat, 13 Jun 2009 22:52:40 -0300
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Leandro Lucarella <llucax@gmail.com>
+Cc: linux-kernel@vger.kernel.org, konishi.ryusuke@lab.ntt.co.jp,
+       users@nilfs.org
+Subject: Re: NILFS2 get stuck after bio_alloc() fail
+Message-ID: <20090614015240.GW30412@blitiri.com.ar>
+References: <20090614013211.GA22552@homero.springfield.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Paranoid: Just because you're paranoid, don't mean they're not after you.
-User-Agent: mutt-ng/devel-r804 (Debian)
+In-Reply-To: <20090614013211.GA22552@homero.springfield.home>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, Jun 13, 2009 at 10:32:11PM -0300, Leandro Lucarella wrote:
+> Hi!
+> 
+> While testing nilfs2 (using 2.6.30) doing some "cp"s and "rm"s, I noticed
+> sometimes they got stucked in D state, and the kernel had said the
+> following message:
+> 
+>         NILFS: IO error writing segment
+> 
+> A friend gave me a hand and after adding some printk()s we found out that
+> the problem seems to occur when bio_alloc()s inside nilfs_alloc_seg_bio()
+> fail, making it return NULL; but we don't know how that causes the
+> processes to get stucked.
 
-While testing nilfs2 (using 2.6.30) doing some "cp"s and "rm"s, I noticed
-sometimes they got stucked in D state, and the kernel had said the
-following message:
+By the way, those bio_alloc()s are using GFP_NOWAIT but it looks like they
+could use at least GFP_NOIO or GFP_NOFS, since the caller can (and sometimes
+do) sleep. The only caller is nilfs_submit_bh(), which calls
+nilfs_submit_seg_bio() which can sleep calling wait_for_completion(). Is there
+something I'm missing?
 
-        NILFS: IO error writing segment
+Thanks a lot,
+		Alberto
 
-A friend gave me a hand and after adding some printk()s we found out that
-the problem seems to occur when bio_alloc()s inside nilfs_alloc_seg_bio()
-fail, making it return NULL; but we don't know how that causes the
-processes to get stucked.
-
-PS: Please CC me.
-
--- 
-Leandro Lucarella (luca) | Blog colectivo: http://www.mazziblog.com.ar/blog/
-----------------------------------------------------------------------------
-GPG Key: 5F5A8D05 (F8CD F9A7 BF00 5431 4145  104C 949E BFB6 5F5A 8D05)
