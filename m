@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZFNHKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZFNHKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbZFNHKg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 03:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbZFNHKS
+	id S1754348AbZFNHKr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 03:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZFNHKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 03:10:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49700 "EHLO hera.kernel.org"
+	Sun, 14 Jun 2009 03:10:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49708 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753031AbZFNHKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 03:10:16 -0400
-Date: Sun, 14 Jun 2009 07:09:46 GMT
+	id S1753798AbZFNHKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 03:10:30 -0400
+Date: Sun, 14 Jun 2009 07:09:57 GMT
 From: tip-bot for Randy Dunlap <randy.dunlap@oracle.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        tglx@linutronix.de, randy.dunlap@oracle.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        tglx@linutronix.de, randy.dunlap@oracle.com, mingo@elte.hu
-In-Reply-To: <4A3467E6.6010907@oracle.com>
-References: <4A3467E6.6010907@oracle.com>
-Subject: [tip:x86/urgent] x86: atomic_32.h: Fix kernel-doc warnings
-Message-ID: <tip-46e443283891dbd45fba7fa037baab831f5d8f3f@git.kernel.org>
-Git-Commit-ID: 46e443283891dbd45fba7fa037baab831f5d8f3f
+In-Reply-To: <4A3467EC.50006@oracle.com>
+References: <4A3467EC.50006@oracle.com>
+Subject: [tip:irq/urgent] genirq, irq.h: Fix kernel-doc warnings
+Message-ID: <tip-ab33dcff40d7a9a28587e4425621e4cbc4089e03@git.kernel.org>
+Git-Commit-ID: ab33dcff40d7a9a28587e4425621e4cbc4089e03
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 14 Jun 2009 07:09:47 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 14 Jun 2009 07:09:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  46e443283891dbd45fba7fa037baab831f5d8f3f
-Gitweb:     http://git.kernel.org/tip/46e443283891dbd45fba7fa037baab831f5d8f3f
+Commit-ID:  ab33dcff40d7a9a28587e4425621e4cbc4089e03
+Gitweb:     http://git.kernel.org/tip/ab33dcff40d7a9a28587e4425621e4cbc4089e03
 Author:     Randy Dunlap <randy.dunlap@oracle.com>
-AuthorDate: Sat, 13 Jun 2009 20:00:54 -0700
+AuthorDate: Sat, 13 Jun 2009 20:01:00 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 14 Jun 2009 09:06:29 +0200
+CommitDate: Sun, 14 Jun 2009 09:08:30 +0200
 
-x86: atomic_32.h: Fix kernel-doc warnings
+genirq, irq.h: Fix kernel-doc warnings
 
-Fix kernel-doc warnings in atomic_32.h:
+Fix kernel-doc warnings in linux/irq.h:
 
-  Warning(arch/x86/include/asm/atomic_32.h:265): No description found for parameter 'ptr'
-  Warning(arch/x86/include/asm/atomic_32.h:265): Excess function parameter 'v' description in '__atomic64_read'
-  Warning(arch/x86/include/asm/atomic_32.h:305): Excess function parameter 'old_val' description in 'atomic64_xchg'
+  Warning(include/linux/irq.h:201): No description found for parameter 'node'
+  Warning(include/linux/irq.h:201): Excess struct/union/enum/typedef member 'cpu' description in 'irq_desc'
+  Warning(include/linux/irq.h:434): No description found for parameter 'node'
+  Warning(include/linux/irq.h:434): Excess function parameter 'cpu' description in 'alloc_desc_masks'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-LKML-Reference: <4A3467E6.6010907@oracle.com>
+LKML-Reference: <4A3467EC.50006@oracle.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/atomic_32.h |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ include/linux/irq.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index aff9f1f..a6a4b35 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -257,7 +257,7 @@ typedef struct {
- 
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index b7cbeed..0c001c1 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -157,7 +157,7 @@ struct irq_2_iommu;
+  * @irqs_unhandled:	stats field for spurious unhandled interrupts
+  * @lock:		locking for SMP
+  * @affinity:		IRQ affinity on SMP
+- * @cpu:		cpu index useful for balancing
++ * @node:		node index useful for balancing
+  * @pending_mask:	pending rebalanced interrupts
+  * @threads_active:	number of irqaction threads currently running
+  * @wait_for_threads:	wait queue for sync_irq to wait for threaded handlers
+@@ -426,7 +426,7 @@ extern int set_irq_msi(unsigned int irq, struct msi_desc *entry);
  /**
-  * atomic64_read - read atomic64 variable
-- * @v: pointer of type atomic64_t
-+ * @ptr: pointer of type atomic64_t
+  * init_alloc_desc_masks - allocate cpumasks for irq_desc
+  * @desc:	pointer to irq_desc struct
+- * @cpu:	cpu which will be handling the cpumasks
++ * @node:	node which will be handling the cpumasks
+  * @boot:	true if need bootmem
   *
-  * Atomically reads the value of @v.
-  * Doesn't imply a read memory barrier.
-@@ -294,7 +294,6 @@ atomic64_cmpxchg(atomic64_t *ptr, unsigned long long old_val,
-  * atomic64_xchg - xchg atomic64 variable
-  * @ptr:      pointer to type atomic64_t
-  * @new_val:  value to assign
-- * @old_val:  old value that was there
-  *
-  * Atomically xchgs the value of @ptr to @new_val and returns
-  * the old value.
+  * Allocates affinity and pending_mask cpumask if required.
