@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbZFNUN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbZFNUOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760084AbZFNUN7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 16:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZFNUNu
+	id S1759612AbZFNUOy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 16:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZFNUOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 16:13:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:22879 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbZFNUNt (ORCPT
+	Sun, 14 Jun 2009 16:14:46 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:62066 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751407AbZFNUOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 16:13:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=UP3b0Y/vrPic2YetG900vJrX8fERNh4OiofurcE3bs/oHcEQ5Vgsn6VEiRDlxGFZa2
-         CqRZgiwnAMnLjjQeR2SuILfXHadTSoGavj9ZZzaRkYv/am7MOuUfbHku4WhU/aqmUGio
-         ZwTrGEyhYtC6mkwS4OJz51NRcx5VGWChzzM5I=
-Date: Mon, 15 Jun 2009 00:06:20 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: apic: native_apic_write_dummy warning
-Message-ID: <20090614200620.GB24604@lenovo>
-References: <1245006351.5912.174.camel@odie.local> <20090614192220.GB4851@lenovo> <20090614194017.GA24604@lenovo>
+	Sun, 14 Jun 2009 16:14:46 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH 1/4] asm-generic: uaccess: do not expand args multiple times
+Date: Sun, 14 Jun 2009 22:14:39 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <1244959204-11269-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1244959204-11269-1-git-send-email-vapier@gentoo.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-15?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-15?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-15?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-15?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090614194017.GA24604@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906142214.40532.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+2/wkxvqnIJfgwxZLGrYtzfSD8on8F5ubVzyG
+ oRi0R2mntgJIQ0G/oV6zh8kZLRxlgUVC0InKsb+IoiO93KThEb
+ peUWyPss477rnEzg3QMEw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sun, Jun 14, 2009 at 11:40:17PM +0400]
-... 
-| Neither thermal interrupts nor mce will be functional if apic
-| is not properly set up (even having kernel compiled that way
-| it support both). So you may try to pass "lapic" boot option
-| and check if we're lucky in attempt to enable apic via force
-| push. Anyway this warn show that the code is to be fixed
-| (and native_apic_write_dummy done its work great catching
-|  useless apic->write operation). I'll handle it but a bit later.
-| 
-| Andi CC'ed since he is involved in MCE handling just for the
-| record.
-| 
-| 	-- Cyrill
+On Sunday 14 June 2009, Mike Frysinger wrote:
+> While it's debatable whether {get,put}_user() should be called with
+> arguments that have side effects, macro's should be written safely in the
+> first place.  In this case, a slightly off version of put_user() ended up
+> causing random userspace corruption and these things aren't trivial to
+> track down.
+> 
+> While some of these conversions aren't strictly necessary, I think it's
+> better to do all of them so as to be proactive in people accidently
+> screwing it up in the future.
 
-Simon here is a patch I would appreciate if you test.
+I've tried this and failed. This change adds an endless number of sparse
+warnings in put_user and even gcc warnings in get_user. The problem
+is that typeof() carries over the 'const' and '__user' modifiers, both
+of which prevent you from assigning data to the new pointer that you
+constructed.
 
-	-- Cyrill
+I'd love to see a way to do this correctly, but this patch won't cut it.
 
----
-[PATCH -tip] x86: mce intel -- don't touch THERMAL_APIC_VECTOR if no active APIC
-
-If APIC was disabled for some reason and not even mapped
-we should not try to enable thermal interrupts at all.
-
-Reported-by: Simon Holm Thøgersen <odie@cs.aau.dk>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/cpu/mcheck/mce_intel.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.git/arch/x86/kernel/cpu/mcheck/mce_intel.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/mcheck/mce_intel.c
-@@ -21,9 +21,15 @@ void intel_init_thermal(struct cpuinfo_x
- 	int tm2 = 0;
- 	u32 l, h;
- 
--	/* Thermal monitoring depends on ACPI and clock modulation*/
--	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
-+	/*
-+	 * Thermal monitoring depends on ACPI, clock modulation
-+	 * and APIC as well
-+	 */
-+	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC) ||
-+		!cpu_has(c, X86_FEATURE_APIC)) {
-+		pr_debug("Thermal monitoring disabled\n");
- 		return;
-+	}
- 
- 	/*
- 	 * First check if its enabled already, in which case there might
+	Arnd <><
