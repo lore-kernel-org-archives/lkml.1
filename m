@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764443AbZFNUtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbZFNUuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764443AbZFNUtr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 16:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756532AbZFNUtj
+	id S1764675AbZFNUuW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 16:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761312AbZFNUuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 16:49:39 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:39984 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755558AbZFNUtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 16:49:39 -0400
-Date: Sun, 14 Jun 2009 22:49:29 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Harald Welte <HaraldWelte@viatech.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] crypto: padlock-aes: work around Nano CPU errata
-	in ECB mode
-Message-ID: <20090614204929.GA590@Chamillionaire.breakpoint.cc>
-References: <20090610151122.2fcac7d9@dhcp-100-2-144.bos.redhat.com>
+	Sun, 14 Jun 2009 16:50:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47690 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756532AbZFNUuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 16:50:07 -0400
+Date: Sun, 14 Jun 2009 22:50:05 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Meyer <thomas@m3y3r.de>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
+In-Reply-To: <200906142129.08135.rjw@sisk.pl>
+Message-ID: <alpine.LNX.2.00.0906142246120.7457@wotan.suse.de>
+References: <1244996001.8440.10.camel@localhost> <200906142031.38358.elendil@planet.nl> <1245006429.23043.2.camel@localhost> <200906142129.08135.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090610151122.2fcac7d9@dhcp-100-2-144.bos.redhat.com>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chuck Ebbert | 2009-06-10 15:11:22 [-0400]:
+On Sun, 14 Jun 2009, Rafael J. Wysocki wrote:
 
->From: Chuck Ebbert <cebbert@redhat.com>
->crypto: padlock-aes: work around Nano CPU errata in ECB mode
->
->The VIA Nano processor has a bug that makes it prefetch extra data
->during encryption operations, causing spurious page faults. Extend
->existing workarounds for ECB mode to copy the data to an temporary
->buffer to avoid the problem.
->
->Acked-by: HaraldWelte <HaraldWelte@viatech.com>
->Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
->---
->Against cryptodev.git as requested.
+> As for the mouse itself, I don't know.  I'm not even sure if it's 
+> possible at all (CCing Jiri).
 
-thx for the rebase. Those two patches are a nice cleanup of the ifdef
-mess I've made earlier. 
+The main question is whether the mouse really is generating wakeup event 
+even if unused.
 
-Sebastian
+Could you please provide usbmon dumps (Documentation/usb/usbmon.txt) from 
+the failing suspend session?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
