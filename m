@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbZFNMFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761833AbZFNMF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761495AbZFNMFH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbZFNMBm
+	id S1761833AbZFNMF2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758843AbZFNMBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:01:42 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:52687 "EHLO smtp.gentoo.org"
+	Sun, 14 Jun 2009 08:01:43 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:52688 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758587AbZFNMBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:01:40 -0400
+	id S1758593AbZFNMBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:01:41 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 14/17] Blackfin: convert irq/process to asm-generic
-Date: Sun, 14 Jun 2009 08:01:15 -0400
-Message-Id: <1244980878-2124-15-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 15/17] Blackfin: convert types to asm-generic
+Date: Sun, 14 Jun 2009 08:01:16 -0400
+Message-Id: <1244980878-2124-16-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244980878-2124-1-git-send-email-vapier@gentoo.org>
 References: <1244980878-2124-1-git-send-email-vapier@gentoo.org>
@@ -24,170 +24,129 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/include/asm/hardirq.h   |   36 ++------------------------------
- arch/blackfin/include/asm/irq.h       |    5 +---
- arch/blackfin/include/asm/processor.h |   35 ++-----------------------------
- arch/blackfin/kernel/process.c        |   23 +++++++++++++++++++++
- 4 files changed, 30 insertions(+), 69 deletions(-)
+ arch/blackfin/include/asm/posix_types.h |   56 ++++++-------------------------
+ arch/blackfin/include/asm/types.h       |   37 +--------------------
+ 2 files changed, 12 insertions(+), 81 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/hardirq.h b/arch/blackfin/include/asm/hardirq.h
-index 717181a..5a64084 100644
---- a/arch/blackfin/include/asm/hardirq.h
-+++ b/arch/blackfin/include/asm/hardirq.h
-@@ -1,47 +1,17 @@
- #ifndef __BFIN_HARDIRQ_H
- #define __BFIN_HARDIRQ_H
+diff --git a/arch/blackfin/include/asm/posix_types.h b/arch/blackfin/include/asm/posix_types.h
+index 23aa1f8..80c9d64 100644
+--- a/arch/blackfin/include/asm/posix_types.h
++++ b/arch/blackfin/include/asm/posix_types.h
+@@ -1,61 +1,27 @@
+ #ifndef __ARCH_BFIN_POSIX_TYPES_H
+ #define __ARCH_BFIN_POSIX_TYPES_H
  
--#include <linux/cache.h>
--#include <linux/threads.h>
--#include <asm/irq.h>
+-/*
+- * This file is generally used by user-level software, so you need to
+- * be a little careful about namespace pollution etc.  Also, we cannot
+- * assume GCC is being used.
+- */
 -
+-typedef unsigned long __kernel_ino_t;
+ typedef unsigned short __kernel_mode_t;
++#define __kernel_mode_t __kernel_mode_t
++
+ typedef unsigned short __kernel_nlink_t;
+-typedef long __kernel_off_t;
+-typedef int __kernel_pid_t;
++#define __kernel_nlink_t __kernel_nlink_t
++
+ typedef unsigned int __kernel_ipc_pid_t;
+-typedef unsigned int __kernel_uid_t;
+-typedef unsigned int __kernel_gid_t;
++#define __kernel_ipc_pid_t __kernel_ipc_pid_t
++
+ typedef unsigned long __kernel_size_t;
+ typedef long __kernel_ssize_t;
+ typedef int __kernel_ptrdiff_t;
+-typedef long __kernel_time_t;
+-typedef long __kernel_suseconds_t;
+-typedef long __kernel_clock_t;
+-typedef int __kernel_timer_t;
+-typedef int __kernel_clockid_t;
+-typedef int __kernel_daddr_t;
+-typedef char *__kernel_caddr_t;
+-typedef unsigned short __kernel_uid16_t;
+-typedef unsigned short __kernel_gid16_t;
+-typedef unsigned int __kernel_uid32_t;
+-typedef unsigned int __kernel_gid32_t;
++#define __kernel_size_t __kernel_size_t
+ 
+ typedef unsigned short __kernel_old_uid_t;
+ typedef unsigned short __kernel_old_gid_t;
+-typedef unsigned short __kernel_old_dev_t;
+-
+-#ifdef __GNUC__
+-typedef long long __kernel_loff_t;
+-#endif
++#define __kernel_old_uid_t __kernel_old_uid_t
+ 
 -typedef struct {
--	unsigned int __softirq_pending;
--	unsigned int __syscall_count;
--	struct task_struct *__ksoftirqd_task;
--} ____cacheline_aligned irq_cpustat_t;
+-	int val[2];
+-} __kernel_fsid_t;
 -
--#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
+-#if defined(__KERNEL__)
 -
--/*
-- * We put the hardirq and softirq counter into the preemption
-- * counter. The bitmask has the following meaning:
-- *
-- * - bits 0-7 are the preemption count (max preemption depth: 256)
-- * - bits 8-15 are the softirq count (max # of softirqs: 256)
-- * - bits 16-23 are the hardirq count (max # of hardirqs: 256)
-- *
-- * - ( bit 26 is the PREEMPT_ACTIVE flag. )
-- *
-- * PREEMPT_MASK: 0x000000ff
-- * HARDIRQ_MASK: 0x0000ff00
-- * SOFTIRQ_MASK: 0x00ff0000
-- */
+-#undef	__FD_SET
+-#define	__FD_SET(d, set)	((set)->fds_bits[__FDELT(d)] |= __FDMASK(d))
 -
- #if NR_IRQS > 256
- #define HARDIRQ_BITS	9
- #else
- #define HARDIRQ_BITS	8
- #endif
+-#undef	__FD_CLR
+-#define	__FD_CLR(d, set)	((set)->fds_bits[__FDELT(d)] &= ~__FDMASK(d))
+-
+-#undef	__FD_ISSET
+-#define	__FD_ISSET(d, set)	((set)->fds_bits[__FDELT(d)] & __FDMASK(d))
+-
+-#undef	__FD_ZERO
+-#define __FD_ZERO(fdsetp) (memset (fdsetp, 0, sizeof(*(fd_set *)fdsetp)))
++typedef unsigned short __kernel_old_dev_t;
++#define __kernel_old_dev_t __kernel_old_dev_t
  
--#ifdef NR_IRQS
--# if (1 << HARDIRQ_BITS) < NR_IRQS
--# error HARDIRQ_BITS is too low!
--# endif
--#endif
--
- #define __ARCH_IRQ_EXIT_IRQS_DISABLED	1
- 
- extern void ack_bad_irq(unsigned int irq);
-+#define ack_bad_irq ack_bad_irq
-+
-+#include <asm-generic/hardirq.h>
+-#endif				/* defined(__KERNEL__) */
++#include <asm-generic/posix_types.h>
  
  #endif
-diff --git a/arch/blackfin/include/asm/irq.h b/arch/blackfin/include/asm/irq.h
-index 400bdd5..9a7f63a 100644
---- a/arch/blackfin/include/asm/irq.h
-+++ b/arch/blackfin/include/asm/irq.h
-@@ -45,9 +45,6 @@
- 		: "d" (bfin_irq_flags) \
- 	)
- 
--static inline int irq_canonicalize(int irq)
--{
--	return irq;
--}
-+#include <asm-generic/irq.h>
- 
- #endif				/* _BFIN_IRQ_H_ */
-diff --git a/arch/blackfin/include/asm/processor.h b/arch/blackfin/include/asm/processor.h
-index 3040415..d0be99b 100644
---- a/arch/blackfin/include/asm/processor.h
-+++ b/arch/blackfin/include/asm/processor.h
-@@ -7,9 +7,8 @@
-  */
- #define current_text_addr() ({ __label__ _l; _l: &&_l;})
- 
-+#include <asm/ptrace.h>
- #include <asm/blackfin.h>
--#include <asm/segment.h>
--#include <linux/compiler.h>
- 
- static inline unsigned long rdusp(void)
- {
-@@ -59,36 +58,8 @@ struct thread_struct {
- 	PS_S, 0, 0						\
- }
- 
+diff --git a/arch/blackfin/include/asm/types.h b/arch/blackfin/include/asm/types.h
+index 8441cbc..b9e79bc 100644
+--- a/arch/blackfin/include/asm/types.h
++++ b/arch/blackfin/include/asm/types.h
+@@ -1,36 +1 @@
+-#ifndef _BFIN_TYPES_H
+-#define _BFIN_TYPES_H
+-
 -/*
-- * Do necessary setup to start up a newly executed thread.
-- *
-- * pass the data segment into user programs if it exists,
-- * it can't hurt anything as far as I can tell
+- * This file is never included by application software unless
+- * explicitly requested (e.g., via linux/types.h) in which case the
+- * application is Linux specific so (user-) name space pollution is
+- * not a major issue.  However, for interoperability, libraries still
+- * need to be careful to avoid a name clashes.
 - */
--#ifndef CONFIG_SMP
--#define start_thread(_regs, _pc, _usp)					\
--do {									\
--	set_fs(USER_DS);						\
--	(_regs)->pc = (_pc);						\
--	if (current->mm)						\
--		(_regs)->p5 = current->mm->start_data;			\
--	task_thread_info(current)->l1_task_info.stack_start		\
--		= (void *)current->mm->context.stack_start;		\
--	task_thread_info(current)->l1_task_info.lowest_sp = (void *)(_usp); \
--	memcpy(L1_SCRATCH_TASK_INFO, &task_thread_info(current)->l1_task_info, \
--		sizeof(*L1_SCRATCH_TASK_INFO));				\
--	wrusp(_usp);							\
--} while(0)
--#else
--#define start_thread(_regs, _pc, _usp)					\
--do {									\
--	set_fs(USER_DS);						\
--	(_regs)->pc = (_pc);						\
--	if (current->mm)						\
--		(_regs)->p5 = current->mm->start_data;			\
--	wrusp(_usp);							\
--} while (0)
--#endif
-+extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
-+					       unsigned long new_sp);
- 
- /* Forward declaration, a strange C thing */
- struct task_struct;
-diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
-index 30d0843..3e1d86e 100644
---- a/arch/blackfin/kernel/process.c
-+++ b/arch/blackfin/kernel/process.c
-@@ -160,6 +160,29 @@ pid_t kernel_thread(int (*fn) (void *), void *arg, unsigned long flags)
- }
- EXPORT_SYMBOL(kernel_thread);
- 
-+/*
-+ * Do necessary setup to start up a newly executed thread.
-+ *
-+ * pass the data segment into user programs if it exists,
-+ * it can't hurt anything as far as I can tell
-+ */
-+void start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
-+{
-+	set_fs(USER_DS);
-+	regs->pc = new_ip;
-+	if (current->mm)
-+		regs->p5 = current->mm->start_data;
-+#ifdef CONFIG_SMP
-+	task_thread_info(current)->l1_task_info.stack_start =
-+		(void *)current->mm->context.stack_start;
-+	task_thread_info(current)->l1_task_info.lowest_sp = (void *)new_sp;
-+	memcpy(L1_SCRATCH_TASK_INFO, &task_thread_info(current)->l1_task_info,
-+	       sizeof(*L1_SCRATCH_TASK_INFO));
-+#endif
-+	wrusp(new_sp);
-+}
-+EXPORT_SYMBOL_GPL(start_thread);
-+
- void flush_thread(void)
- {
- }
+-#include <asm-generic/int-ll64.h>
+-
+-#ifndef __ASSEMBLY__
+-
+-typedef unsigned short umode_t;
+-
+-#endif				/* __ASSEMBLY__ */
+-/*
+- * These aren't exported outside the kernel to avoid name space clashes
+- */
+-#ifdef __KERNEL__
+-
+-#define BITS_PER_LONG 32
+-
+-#ifndef __ASSEMBLY__
+-
+-/* Dma addresses are 32-bits wide.  */
+-
+-typedef u32 dma_addr_t;
+-typedef u64 dma64_addr_t;
+-
+-#endif				/* __ASSEMBLY__ */
+-
+-#endif				/* __KERNEL__ */
+-
+-#endif				/* _BFIN_TYPES_H */
++#include <asm-generic/types.h>
 -- 
 1.6.3.1
 
