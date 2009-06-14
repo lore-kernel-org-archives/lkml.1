@@ -1,110 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZFNRnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbZFNRvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbZFNRnj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 13:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZFNRn3
+	id S1758006AbZFNRvT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 13:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZFNRvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 13:43:29 -0400
-Received: from tau.jukie.net ([216.239.93.128]:58918 "EHLO tau.jukie.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753518AbZFNRn2 convert rfc822-to-8bit (ORCPT
+	Sun, 14 Jun 2009 13:51:05 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:44636 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbZFNRvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 13:43:28 -0400
-Date: Sun, 14 Jun 2009 13:43:30 -0400
-From: Bart Trojanowski <bart@jukie.net>
-To: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Cc: linux-cachefs@redhat.com, linux-nfs@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [v2.6.30 nfs+fscache] swapper: possible circular locking
-	dependency detected
-Message-ID: <20090614174329.GA4721@jukie.net>
-References: <20090613182721.GA24072@jukie.net> <20090614141459.GA5543@jukie.net>
+	Sun, 14 Jun 2009 13:51:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RvQLMzd53dIlNLlDlQ9CltPfcXhi+CVuJiN1FhwIyWGCZXahu/6gACOFEORJii6gwY
+         vrM0ErjS8FzWGlIU8RZcefOmQ89TcYYUh+Z3hJitNjr7zmAR/W9Op3MOmfLJ3hcu5PRp
+         TwHbg1EuUY1XpbKqsn2tBMYf7UwroIVPsNSpI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090614141459.GA5543@jukie.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A32D1AF.7060107@am.sony.com>
+References: <4A32D1AF.7060107@am.sony.com>
+Date: Sun, 14 Jun 2009 19:51:04 +0200
+Message-ID: <63386a3d0906141051v50cc441fj27f0132fa5c77b80@mail.gmail.com>
+Subject: Re: [PATCH] ftrace,arm: add notrace to ARM sched_clock routines - 
+	resend
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Tim Bird <tim.bird@am.sony.com>, Paul Mundt <lethal@linux-sh.org>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tony Lindgren <tony@atomide.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's me again.
+2009/6/13 Tim Bird <tim.bird@am.sony.com>:
 
-I am tyring to decipher the lockdep report...
+> Add notrace attribute to sched_clock, to avoid
+> recursion with ftrace function tracing.
+>
+> Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+> ---
+>  arch/arm/mach-mmp/time.c       |    2 +-
+>  arch/arm/mach-pxa/time.c       |    2 +-
+>  arch/arm/mach-realview/core.c  |    2 +-
+>  arch/arm/mach-sa1100/generic.c |    2 +-
+>  arch/arm/mach-versatile/core.c |    2 +-
+>  arch/arm/plat-omap/common.c    |    4 ++--
+>  6 files changed, 7 insertions(+), 7 deletions(-)
 
-* Bart Trojanowski <bart@jukie.net> [090614 10:15]:
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.30-kvm3-dirty #4
-> -------------------------------------------------------
-> swapper/0 is trying to acquire lock:
->  (&cwq->lock){..-...}, at: [<ffffffff80256c37>] __queue_work+0x1d/0x43
-> 
-> but task is already holding lock:
->  (&q->lock){-.-.-.}, at: [<ffffffff80235b6a>] __wake_up+0x27/0x55
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #1 (&q->lock){-.-.-.}:
->        [<ffffffff8026b7f6>] __lock_acquire+0x1350/0x16b4
->        [<ffffffff8026bc21>] lock_acquire+0xc7/0xf3
->        [<ffffffff805a22e1>] _spin_lock_irqsave+0x4f/0x86
->        [<ffffffff80235b6a>] __wake_up+0x27/0x55
->        [<ffffffff8025620b>] insert_work+0x9a/0xa6
->        [<ffffffff80256c49>] __queue_work+0x2f/0x43
->        [<ffffffff80256cec>] queue_work_on+0x4a/0x53
->        [<ffffffff80256e49>] queue_work+0x1f/0x21
-<snip>
+And now that Paul Mundt is making it possible to use the default
+sched_clock() with the generic clocksource and the OMAP hack
+will likely go away, should the default implementation in
+kernel/sched_clock.c also be tagged as
+unsigned long long notrace __attribute__((weak)) sched_clock(void)
+or something?
 
-So, here I can see that we take the cwq->lock first, when __queue_work
-does:
+Should it be tagged notrace even if it's the old jiffybased one even?
 
-        spin_lock_irqsave(&cwq->lock, flags);
-        insert_work(cwq, work, &cwq->worklist);
-        spin_unlock_irqrestore(&cwq->lock, flags);
-
-and later take the q->lock when insert_work calls to __wake_up:
-
-        spin_lock_irqsave(&q->lock, flags);
-        __wake_up_common(q, mode, nr_exclusive, 0, key);
-        spin_unlock_irqrestore(&q->lock, flags);
-
-But previously the order was reversed:
-
-> stack backtrace:
-> Pid: 0, comm: swapper Not tainted 2.6.30-kvm3-dirty #4
-> Call Trace:
->  <IRQ>  [<ffffffff80269ffe>] print_circular_bug_tail+0xc1/0xcc
->  [<ffffffff8026b52b>] __lock_acquire+0x1085/0x16b4
->  [<ffffffff802685b4>] ? save_trace+0x3f/0xa6
->  [<ffffffff8026ba78>] ? __lock_acquire+0x15d2/0x16b4
->  [<ffffffff8026bc21>] lock_acquire+0xc7/0xf3
->  [<ffffffff80256c37>] ? __queue_work+0x1d/0x43
->  [<ffffffff805a22e1>] _spin_lock_irqsave+0x4f/0x86
->  [<ffffffff80256c37>] ? __queue_work+0x1d/0x43
->  [<ffffffff80256c37>] __queue_work+0x1d/0x43
->  [<ffffffff80256cec>] queue_work_on+0x4a/0x53
->  [<ffffffff80256e49>] queue_work+0x1f/0x21
->  [<ffffffff80256e66>] schedule_work+0x1b/0x1d
->  [<ffffffffa00e9268>] fscache_enqueue_operation+0xec/0x11e [fscache]
->  [<ffffffffa00fd662>] cachefiles_read_waiter+0xee/0x102 [cachefiles]
->  [<ffffffff80233a55>] __wake_up_common+0x4b/0x7a
->  [<ffffffff80235b80>] __wake_up+0x3d/0x55
->  [<ffffffff8025a2f1>] __wake_up_bit+0x31/0x33
->  [<ffffffff802a52af>] unlock_page+0x27/0x2b
-
-Here the __wake_up happens first, which takes the q->lock, and later the
-__queue_work would take the cwq->lock.
-
-I am guessing that it's not safe for fscache to call out to queue_work
-from this cachefiles_read_waiter() context (more specifically
-fscache_enqueue_operation calls schedule_work).  I don't have much
-experience with lockdep...  does that make any sense?
-
--Bart
-
--- 
-				WebSig: http://www.jukie.net/~bart/sig/
+Linus Walleij
