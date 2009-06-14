@@ -1,115 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbZFNMZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZFNMdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbZFNMZy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbZFNMZq
+	id S1755986AbZFNMdQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbZFNMdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:25:46 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:51641 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752146AbZFNMZp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:25:45 -0400
-Message-ID: <4A34EC47.5090103@novell.com>
-Date: Sun, 14 Jun 2009 08:25:43 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Sun, 14 Jun 2009 08:33:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42283 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753162AbZFNMdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:33:00 -0400
+Date: Sun, 14 Jun 2009 14:32:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: tty_ldisc_try_get(): BUG kmalloc-8: Poison overwritten
+Message-ID: <20090614123251.GA14785@elte.hu>
+References: <20090614081052.GA9276@elte.hu> <4A34B2E2.7080702@cs.helsinki.fi> <20090614083254.GA23149@elte.hu> <20090614083531.GB23149@elte.hu>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, mtosatti@redhat.com
-Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
-References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090611131647.GA15743@redhat.com> <20090611133643.GA16335@redhat.com>
-In-Reply-To: <20090611133643.GA16335@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig90CB5A2BA596489E0A095753"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090614083531.GB23149@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig90CB5A2BA596489E0A095753
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Michael S. Tsirkin wrote:
-> On Thu, Jun 11, 2009 at 04:16:47PM +0300, Michael S. Tsirkin wrote:
->  =20
->>> +
->>> +	ret =3D file->f_op->poll(file, &irqfd->pt);
->>> +	if (ret < 0)
->>> +		goto fail;
->>>      =20
->
-> Looking at it some more, we have:
-> struct file_operations {
-> ....
-> 	unsigned int (*poll) (struct file *, struct poll_table_struct *);
->
-> So the comparison above does not seem to make sense:
-> it seems that the return value from poll can not be negative.
->  =20
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Indeed.  Will fix.
-> Will the callback be executed if someone did a write to eventfd
-> before we attached it? If no, maybe we should call it here
-> if ret !=3D 0.
->  =20
+> --- a/drivers/char/tty_ldisc.c
+> +++ b/drivers/char/tty_ldisc.c
+> @@ -361,6 +361,7 @@ void tty_ldisc_deref(struct tty_ldisc *ld)
+>  	unsigned long flags;
+>  
+>  	BUG_ON(ld == NULL);
+> +	WARN_ON_ONCE(ld->refcount == (int)0xa56b6b6b);
+>  
+>  	spin_lock_irqsave(&tty_ldisc_lock, flags);
 
-I do the cleanup in case the callback has been called, but poll() fails
-somewhere internally afterwards.  Perhaps this is not a realistic
-scenario, but it was my motivation for adding the wqh cleanup.
->
->  =20
->>> +
->>> +	irqfd->file =3D file;
->>> +
->>> +	mutex_lock(&kvm->lock);
->>> +	list_add_tail(&irqfd->list, &kvm->irqfds);
->>> +	mutex_unlock(&kvm->lock);
->>> +
->>> +	return 0;
->>> +
->>> +fail:
->>> +	if (irqfd->wqh)
->>> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
->>>      =20
->> Why are these 2 lines here? Either we might get a callback even though=
+this does trigger:
 
->> poll failed - and then this test without lock is probably racy -
->> or we can't, and then we can replace the above with BUG_ON(irqfd->wqh)=
-=2E
->>
->> Which is it? I think the later ...
->>
->>
->>    =20
->>> +
->>> +	if (file && !IS_ERR(file))
->>> +		fput(file);
->>> +
->>> +	kfree(irqfd);
->>> +	return ret;
->>> +}
->>> +
->>>      =20
+[   70.198553] PM: Adding info for No Bus:vcsa2
+[   70.223956] ------------[ cut here ]------------
+[   70.233266] warning: `sudo' uses deprecated v2 capabilities in a way that may be insecure.
+[   70.242894] WARNING: at drivers/char/tty_ldisc.c:364 tty_ldisc_deref+0x30/0x90()
+[   70.242894] Modules linked in:
+[   70.242894] Pid: 4252, comm: modprobe Not tainted 2.6.30-tip #746
+[   70.242894] Call Trace:
+[   70.242894]  [<413da1b0>] ? tty_ldisc_deref+0x30/0x90
+[   70.242894]  [<41035c79>] warn_slowpath_common+0x49/0x60
+[   70.242894]  [<41035c9d>] warn_slowpath_null+0xd/0x10
+[   70.242894]  [<413da1b0>] tty_ldisc_deref+0x30/0x90
+[   70.242894]  [<413d53ee>] tty_write+0x8e/0xa0
+[   70.242894]  [<413d545f>] redirected_tty_write+0x5f/0x70
+[   70.242894]  [<410b9002>] vfs_write+0x82/0xe0
+[   70.242894]  [<413d5400>] ? redirected_tty_write+0x0/0x70
+[   70.242894]  [<410b90fb>] sys_write+0x3b/0x60
+[   70.242894]  [<4100388f>] sysenter_do_call+0x12/0x3c
+[   70.242894]  [<4104007b>] ? timer_stats_timer_set_start_info+0xb/0x10
+[   70.242894]  [<4104007b>] ? timer_stats_timer_set_start_info+0xb/0x10
+[   70.242894] ---[ end trace 03c5764c731fa31f ]---
+[   71.663044] device: 'vcs7': device_add
 
+i suspect the swarm of mingetty's starting up during bootup is 
+triggering some race.
 
-
---------------enig90CB5A2BA596489E0A095753
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko07EcACgkQlOSOBdgZUxlMxACdEB0F/gOAowuXq3PVOwBGn2uR
-W6UAnjeRSpF6+Ntw34C6TSuuzciJ+Ls3
-=E4nm
------END PGP SIGNATURE-----
-
---------------enig90CB5A2BA596489E0A095753--
+	Ingo
