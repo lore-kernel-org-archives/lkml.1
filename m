@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbZFNAdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763390AbZFNAdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761466AbZFNAdT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 20:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758542AbZFNAdH
+	id S1763390AbZFNAdb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 20:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761817AbZFNAdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 20:33:07 -0400
-Received: from solo.fdn.fr ([80.67.169.19]:33141 "EHLO solo.fdn.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756622AbZFNAdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 20:33:07 -0400
-Date: Sun, 14 Jun 2009 02:33:05 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Anton Zinoviev <anton@lml.bas.bg>
-Subject: Re: [PATCH] advertise KT_DEAD2
-Message-ID: <20090614003305.GL5181@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	Anton Zinoviev <anton@lml.bas.bg>
-References: <20090613125233.GH5181@const.famille.thibault.fr> <alpine.LFD.2.01.0906131707050.3237@localhost.localdomain>
+	Sat, 13 Jun 2009 20:33:12 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:26038 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759072AbZFNAdJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 20:33:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=RedNyINC7S6Zg+KW75CzvWzlRX0Y4bU6qPxKVfSnVCEtlxMTJe20CBkYYKwf2kgrLF
+         //8PLnFaVTaOEyYWu9vcVc74ug2V0mwCrp+/4o8zr43eT9tBfA9T9HlzeP4qUbvDzqAb
+         kl1L2icnFNJxLPrRDm7ML+CJo2dJMXlRYE5KI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.01.0906131707050.3237@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20090613182540.GJ16220@shareable.org>
+References: <1244854869-2563-1-git-send-email-vapier@gentoo.org> 
+	<20090613161323.GC16220@shareable.org> <8bd0f97a0906130940j6b5e578bha8193f59d03c2f05@mail.gmail.com> 
+	<20090613182540.GJ16220@shareable.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sat, 13 Jun 2009 20:32:51 -0400
+Message-ID: <8bd0f97a0906131732v5394eaf5gb0f7862dfe7f58f3@mail.gmail.com>
+Subject: Re: [uClinux-dev] [PATCH/RFC] FDPIC: add hook for arches to customize 
+	program header parsing
+To: Jamie Lokier <jamie@shareable.org>
+Cc: uClinux development list <uclinux-dev@uclinux.org>,
+       linux-kernel@vger.kernel.org, Jie Zhang <jie.zhang@analog.com>,
+       Greg Ungerer <gerg@uclinux.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       David McCullough <davidm@snapgear.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds, le Sat 13 Jun 2009 17:07:31 -0700, a �crit :
-> On Sat, 13 Jun 2009, Samuel Thibault wrote:
-> >
-> > In addition to KT_DEAD which has limited support for diacriticals, there
-> > is KT_DEAD2 that can support 256 criticals, so let's advertise it in
-> > <linux/keyboard.h>.
-> 
-> Can you do more of an explanation for this? KT_DEAD2 does not show up in a 
-> kernel grep, so..
+On Sat, Jun 13, 2009 at 14:25, Jamie Lokier wrote:
+> Mike Frysinger wrote:
+>> On Sat, Jun 13, 2009 at 12:13, Jamie Lokier wrote:
+>> > Mike Frysinger wrote:
+>> >> From: Jie Zhang <jie.zhang@analog.com>
+>> >>
+>> >> The Blackfin port has custom program header flags/addresses for
+>> >> automatically loading regions into the dedicated on-chip SRAM.  So add a
+>> >> hook for ports to leverage.
+>> >
+>> > It looks like a way for certain special executables to load themselves
+>> > into fixed regions of the on-chip SRAM - and promptly crash if another
+>> > executable does the same.  Not so much a general executable format, as
+>> > a hack to load something specific which should only be done once at a
+>> > time.  What am I missing here?
+>>
+>> the addresses are keys, not fixed and/or "real" addresses
+>
+> Oh, I see that is indeed quite nice :-)
+>
+> I see it checks for both flags and special address values.  Are the
+> special address checks mainly historical, as usually flags/types are
+> used to designate special memory types in ELF.
 
-That's precisely why I'm defining it.  Other KT_* aren't usually
-used from the kernel itself, but from userland.  The kernel part is
-the k_dead2 function in drivers/char/keyboard.c, like k_dead is for
-KT_DEAD, the relation being in the K_HANDLERS initializer, sorry for not
-mentioning it in my first mail.
-
-Samuel
+the EF bits are more for smaller/statically linked applications where
+you want to place the entire ELF into SRAM.  the special PHDRs are for
+selectively compiled code -- i.e. you've done a little bit of
+profiling and testing and know which ones are the hot spots.
+-mike
