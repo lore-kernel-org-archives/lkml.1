@@ -1,103 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbZFNHMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZFNHTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754355AbZFNHMu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 03:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZFNHMm
+	id S1754146AbZFNHTo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 03:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZFNHTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 03:12:42 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54971 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752200AbZFNHMl (ORCPT
+	Sun, 14 Jun 2009 03:19:30 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:47489 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753163AbZFNHT2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 03:12:41 -0400
-Date: Sun, 14 Jun 2009 10:12:39 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-In-Reply-To: <alpine.DEB.1.10.0906121317140.23840@gentwo.org>
-Message-ID: <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
- <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
- <alpine.DEB.1.10.0906121317140.23840@gentwo.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 14 Jun 2009 03:19:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=cxgqh1acHAOmRaNCUvYk4ZnqyIYUfCqPVCbKFLfwqUecrS5A/wFu2+dy0QRjqQ1avC
+         OYG7EyOOwjo+R+O4KHCZBoiDESDVSN+nLFk0nMvFuxepZzo5YBSxhGITHOiQXPmFNQoJ
+         vHGIML/R4OWr/XbpUFoXuWx9q3tl29LqwHT1U=
+Message-ID: <4A34A394.5040509@gmail.com>
+Date: Sun, 14 Jun 2009 09:15:32 +0200
+From: Marco <marco.stornelli@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jamie Lokier <jamie@shareable.org>
+CC: Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+References: <4A33A7A2.1050608@gmail.com> <20090613155957.GA16220@shareable.org>
+In-Reply-To: <20090613155957.GA16220@shareable.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009, Christoph Lameter wrote:
-> On Fri, 12 Jun 2009, Pekka J Enberg wrote:
-> 
-> > @@ -3434,6 +3451,8 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
-> >  	unsigned long save_flags;
-> >  	void *objp;
-> >
-> > +	flags &= slab_gfp_mask;
-> > +
-> >  	lockdep_trace_alloc(flags);
-> >
-> >  	if (slab_should_failslab(cachep, flags))
-> 
-> Adds code to hot code path.
-> 
-> > @@ -1595,6 +1601,8 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
-> >  	unsigned long flags;
-> >  	unsigned int objsize;
-> >
-> > +	gfpflags &= slab_gfp_mask;
-> > +
-> >  	lockdep_trace_alloc(gfpflags);
-> >  	might_sleep_if(gfpflags & __GFP_WAIT);
-> >
-> 
-> Adds code to hot code path.
-> 
-> The allocators mask flags passed to the page allocator through
-> GFP_RECLAIM_MASK|GFP_CONSTRAINT_MASK. This is done outside of the critical
-> code paths.
-> 
-> The might_sleep issues may be fixed by adding another check to
-> __might_sleep().
 
-How about something like this? There should be no extra code in fastpaths 
-for production configs with this one.
+Jamie Lokier wrote:
+> Marco wrote:
+>> Linux traditionally had no support for a persistent, non-volatile
+>> RAM-based filesystem, persistent meaning the filesystem survives a
+>> system reboot or power cycle intact. The RAM-based filesystems such as
+>> tmpfs and ramfs have no actual backing store but exist entirely in the
+>> page and buffer caches, hence the filesystem disappears after a system
+>> reboot or power cycle.
+> 
+> Why is a ramdisk not sufficient for this?
+> 
 
-			Pekka
+Simply because the ramdisk was not designed to work in a persistent
+environment. In addition this kind of filesystem has been designed to
+work not only with classic ram. You can think at the situation where you
+have got an external SRAM with a battery for example. With it you can
+"remap" in an easy way the SRAM. Moreover there's the issue of memory
+protection that this filesystem takes care.
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 4d6004c..5e8cea1 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1613,6 +1613,8 @@ another_slab:
- 	deactivate_slab(s, c);
- 
- new_slab:
-+	gfpflags &= slab_gfp_mask;
-+
- 	new = get_partial(s, gfpflags, node);
- 	if (new) {
- 		c->page = new;
-@@ -1668,13 +1670,14 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
- 	struct kmem_cache_cpu *c;
- 	unsigned long flags;
- 	unsigned int objsize;
-+	gfp_t real_gfp;
- 
--	gfpflags &= slab_gfp_mask;
-+	real_gfp = gfpflags & slab_gfp_mask;
- 
--	lockdep_trace_alloc(gfpflags);
--	might_sleep_if(gfpflags & __GFP_WAIT);
-+	lockdep_trace_alloc(real_gfp);
-+	might_sleep_if(real_gfp & __GFP_WAIT);
- 
--	if (should_failslab(s->objsize, gfpflags))
-+	if (should_failslab(s->objsize, real_gfp))
- 		return NULL;
- 
- 	local_irq_save(flags);
+> Why is an entire filesystem needed, instead of simply a block driver
+> if the ramdisk driver cannot be used?
+> 
+
+>From documentation:
+
+"A relatively straight-forward solution is to write a simple block
+driver for the non-volatile RAM, and mount over it any disk-based
+filesystem such as ext2/ext3, reiserfs, etc.
+
+But the disk-based fs over non-volatile RAM block driver approach has
+some drawbacks:
+
+1. Disk-based filesystems such as ext2/ext3 were designed for optimum
+   performance on spinning disk media, so they implement features such
+   as block groups, which attempts to group inode data into a contiguous
+   set of data blocks to minimize disk seeking when accessing files. For
+   RAM there is no such concern; a file's data blocks can be scattered
+   throughout the media with no access speed penalty at all. So block
+   groups in a filesystem mounted over RAM just adds unnecessary
+   complexity. A better approach is to use a filesystem specifically
+   tailored to RAM media which does away with these disk-based features.
+   This increases the efficient use of space on the media, i.e. more
+   space is dedicated to actual file data storage and less to meta-data
+   needed to maintain that file data.
+
+2. If the backing-store RAM is comparable in access speed to system memory,
+   there's really no point in caching the file I/O data in the page
+   cache. Better to move file data directly between the user buffers
+   and the backing store RAM, i.e. use direct I/O. This prevents the
+   unnecessary populating of the page cache with dirty pages. However
+   direct I/O has to be enabled at every file open. To enable direct
+   I/O at all times for all regular files requires either that
+   applications be modified to include the O_DIRECT flag on all file
+   opens, or that a new filesystem be used that always performs direct
+   I/O by default."
+
+On this point I'd like to hear other embedded guys.
+
+> It just struck me as a lot of code which might be completely
+> unnecessary for the desired functionality.
+> 
+> -- Jamie
+> 
+
+
+
+
