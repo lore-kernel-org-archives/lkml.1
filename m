@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZFNGz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbZFNHAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbZFNGz4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 02:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZFNGzt
+	id S1753228AbZFNHAS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 03:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbZFNHAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 02:55:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36980 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752012AbZFNGzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 02:55:48 -0400
-Subject: [GIT-PULL] headers_check fixes
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 14 Jun 2009 12:26:14 +0530
-Message-Id: <1244962574.24224.9.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Jun 2009 03:00:07 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:49570 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbZFNHAG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 03:00:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=VKdGFVPELtxAKUG+g/dS/HuIqNdf6gECOD+T820wkSBdaFWoip3B43f0Zyvsihf/v0
+         xW0VZjRpwxjHKL6nHLfNh8snS79ZtCyw3+hK+Yh4BNOfDcNXM546TIm4juyTzeR3HE4T
+         cCTEQx99h+GlP07nmFTsXehlS32axrj7cuO0I=
+MIME-Version: 1.0
+In-Reply-To: <20090614.153046.25768784.konishi.ryusuke@gmail.com>
+References: <20090614013211.GA22552@homero.springfield.home>
+	 <20090614015240.GW30412@blitiri.com.ar>
+	 <20090614.153046.25768784.konishi.ryusuke@gmail.com>
+Date: Sun, 14 Jun 2009 10:00:06 +0300
+X-Google-Sender-Auth: 091433b8c1377fe9
+Message-ID: <84144f020906140000v7b38f520rc5d9849b8ea8ad7e@mail.gmail.com>
+Subject: Re: NILFS2 get stuck after bio_alloc() fail
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: albertito@blitiri.com.ar, llucax@gmail.com, linux-kernel@vger.kernel.org,
+       users@nilfs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sun, Jun 14, 2009 at 9:30 AM, Ryusuke
+Konishi<konishi.ryusuke@lab.ntt.co.jp> wrote:
+> The original GFP flag was GFP_NOIO, but replaced to GFP_NOWAIT at a
+> preliminary release in February 2008.  It was because a user
+> experienced system memory shortage by the bio_alloc() call.
+>
+> Even though nilfs_alloc_seg_bio() repeatedly calls bio_alloc()
+> reducing the number of bio vectors in case of failure, this fallback
+> did not work well.
+>
+> I'm in two minds whether I should change it back to GFP_NOIO.
+> Or should I switch the gfp as follows?
 
-Please pull headers_check fixes :
+As far as I can tell, the only difference with GFP_NOIO and GFP_NOWAIT
+here is that the former will trigger the mempool_alloc() page reclaim
+path. But I am not sure I understand why switching to GFP_NOWAIT
+helped with memory shortage. What exactly was the problem there?
 
-The following changes since commit 44b7532b8b464f606053562400719c9c21276037:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../jejb/scsi-rc-fixes-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/headers-check-2.6.git master
-
-Jaswinder Singh Rajput (2):
-      headers_check fix: mn10300, ptrace.h
-      headers_check fix: mn10300, setup.h
-
- arch/mn10300/include/asm/ptrace.h |    5 ++---
- arch/mn10300/include/asm/setup.h  |    3 ++-
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-Complete diff :
-
-diff --git a/arch/mn10300/include/asm/ptrace.h b/arch/mn10300/include/asm/ptrace.h
-index 921942e..1b0ba5e 100644
---- a/arch/mn10300/include/asm/ptrace.h
-+++ b/arch/mn10300/include/asm/ptrace.h
-@@ -77,8 +77,6 @@ struct pt_regs {
- };
- #endif
- 
--extern struct pt_regs *__frame; /* current frame pointer */
--
- /* Arbitrarily choose the same ptrace numbers as used by the Sparc code. */
- #define PTRACE_GETREGS            12
- #define PTRACE_SETREGS            13
-@@ -90,6 +88,8 @@ extern struct pt_regs *__frame; /* current frame pointer */
- 
- #if defined(__KERNEL__)
- 
-+extern struct pt_regs *__frame;		/* current frame pointer */
-+
- #if !defined(__ASSEMBLY__)
- struct task_struct;
- 
-@@ -107,5 +107,4 @@ extern void user_disable_single_step(struct task_struct *);
- #define profile_pc(regs) ((regs)->pc)
- 
- #endif  /*  __KERNEL__  */
--
- #endif /* _ASM_PTRACE_H */
-diff --git a/arch/mn10300/include/asm/setup.h b/arch/mn10300/include/asm/setup.h
-index 08356c8..c229d1e 100644
---- a/arch/mn10300/include/asm/setup.h
-+++ b/arch/mn10300/include/asm/setup.h
-@@ -11,7 +11,8 @@
- #ifndef _ASM_SETUP_H
- #define _ASM_SETUP_H
- 
-+#ifdef __KERNEL__
- extern void __init unit_setup(void);
- extern void __init unit_init_IRQ(void);
--
-+#endif
- #endif /* _ASM_SETUP_H */
-
-
+                                 Pekka
