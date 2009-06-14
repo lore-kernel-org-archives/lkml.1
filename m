@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbZFNLuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbZFNLxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758648AbZFNLuJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 07:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZFNLt6
+	id S1756064AbZFNLxd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 07:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZFNLx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 07:49:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46752 "EHLO mx2.redhat.com"
+	Sun, 14 Jun 2009 07:53:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56776 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756037AbZFNLt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 07:49:57 -0400
-Date: Sun, 14 Jun 2009 14:49:41 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davdel@xmailserver.org, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: use POLLHUP to close an irqfd instead
-	of an explicit ioctl
-Message-ID: <20090614114854.GA10269@redhat.com>
-References: <20090604124047.10544.38861.stgit@dev.haskins.net> <20090604124812.10544.5811.stgit@dev.haskins.net>
+	id S1752586AbZFNLxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 07:53:25 -0400
+Message-ID: <4A34E4A5.3040306@redhat.com>
+Date: Sun, 14 Jun 2009 14:53:09 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604124812.10544.5811.stgit@dev.haskins.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
+References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com> <alpine.LFD.2.01.0906131312470.3237@localhost.localdomain> <alpine.LFD.2.01.0906131323270.3237@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906131323270.3237@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 08:48:12AM -0400, Gregory Haskins wrote:
-> +static void
-> +irqfd_disconnect(struct _irqfd *irqfd)
-> +{
-> +	struct kvm *kvm;
-> +
-> +	mutex_lock(&irqfd->lock);
-> +
-> +	kvm = rcu_dereference(irqfd->kvm);
-> +	rcu_assign_pointer(irqfd->kvm, NULL);
-> +
-> +	mutex_unlock(&irqfd->lock);
-> +
-> +	if (!kvm)
-> +		return;
->  
->  	mutex_lock(&kvm->lock);
-> -	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
-> -	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
-> +	list_del(&irqfd->list);
->  	mutex_unlock(&kvm->lock);
-> +
-> +	/*
-> +	 * It is important to not drop the kvm reference until the next grace
-> +	 * period because there might be lockless references in flight up
-> +	 * until then
-> +	 */
-> +	synchronize_srcu(&irqfd->srcu);
-> +	kvm_put_kvm(kvm);
->  }
+Linus Torvalds wrote:
+> On Sat, 13 Jun 2009, Linus Torvalds wrote:
+>   
+>> On Sat, 13 Jun 2009, Paul Mackerras wrote:
+>>     
+>>> Linus, Andrew: OK if this goes in via the powerpc tree?
+>>>       
+>> Ok by me.
+>>     
+>
+> Btw, do 32-bit architectures really necessarily want 64-bit performance 
+> counters? 
+>
+> I realize that 32-bit counters will overflow pretty easily, but I do 
+> wonder about the performance impact of doing things like hashed spinlocks 
+> for 64-bit counters. Maybe the downsides of 64-bit perf counters on such 
+> architectures might outweight the upsides?
+>   
 
-So irqfd object will persist after kvm goes away, until eventfd is closed?
-
->  
->  static int
->  irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
->  {
->  	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
-> +	unsigned long flags = (unsigned long)key;
->  
-> -	/*
-> -	 * The wake_up is called with interrupts disabled.  Therefore we need
-> -	 * to defer the IRQ injection until later since we need to acquire the
-> -	 * kvm->lock to do so.
-> -	 */
-> -	schedule_work(&irqfd->work);
-> +	if (flags & POLLIN)
-> +		/*
-> +		 * The POLLIN wake_up is called with interrupts disabled.
-> +		 * Therefore we need to defer the IRQ injection until later
-> +		 * since we need to acquire the kvm->lock to do so.
-> +		 */
-> +		schedule_work(&irqfd->inject);
-> +
-> +	if (flags & POLLHUP) {
-> +		/*
-> +		 * The POLLHUP is called unlocked, so it theoretically should
-> +		 * be safe to remove ourselves from the wqh using the locked
-> +		 * variant of remove_wait_queue()
-> +		 */
-> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
-> +		flush_work(&irqfd->inject);
-> +		irqfd_disconnect(irqfd);
-> +
-> +		cleanup_srcu_struct(&irqfd->srcu);
-> +		kfree(irqfd);
-> +	}
->  
->  	return 0;
->  }
-
-And it is removed by this function when eventfd is closed.
-But what prevents the kvm module from going away, meanwhile?
+An alternative implementation using 64-bit cmpxchg will recover most of 
+the costs of hashed spinlocks.  I assume most serious 32-bit 
+architectures have them?
 
 -- 
-MST
+error compiling committee.c: too many arguments to function
+
