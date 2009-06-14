@@ -1,109 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbZFNMwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbZFNMxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760380AbZFNMwG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:52:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbZFNMvx
+	id S1760230AbZFNMxg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbZFNMx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:51:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33521 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758627AbZFNMvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:51:52 -0400
-Message-ID: <4A34F262.6000206@redhat.com>
-Date: Sun, 14 Jun 2009 15:51:46 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 14 Jun 2009 08:53:27 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:59758 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbZFNMx0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:53:26 -0400
+Message-ID: <4A34F2B7.1030606@novell.com>
+Date: Sun, 14 Jun 2009 08:53:11 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org,
-       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org
-Subject: Re: [KVM PATCH v2 0/2] irqfd: use POLLHUP notification for close()
-References: <20090604124047.10544.38861.stgit@dev.haskins.net> <20090612040837.GA8862@redhat.com> <4A34EF41.3020301@novell.com>
-In-Reply-To: <4A34EF41.3020301@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davdel@xmailserver.org, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org
+Subject: Re: [KVM PATCH v2 2/2] kvm: use POLLHUP to close an irqfd instead
+ of an explicit ioctl
+References: <20090604124047.10544.38861.stgit@dev.haskins.net> <20090604124812.10544.5811.stgit@dev.haskins.net> <20090614114854.GA10269@redhat.com>
+In-Reply-To: <20090614114854.GA10269@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8FB539ABBA8D8BE3B2CBF49E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
->   
->> [ Resending with correct address for Davide. Pls don't reply
->>   to the original one, you'll get bounces. ]
->>
->> On Thu, Jun 04, 2009 at 08:48:02AM -0400, Gregory Haskins wrote:
->>   
->>     
->>> (Applies to kvm.git/master:25deed73)
->>>
->>> Please see the header for 2/2 for a description.  This patch series has been
->>> fully tested and appears to be working correctly.
->>>
->>> [Review notes:
->>>       *) Paul has looked at the SRCU design and, to my knowledge, didn't find
->>>          any holes.
->>>       *) Michael, Avi, and myself agree that while the removal of the DEASSIGN
->>>          vector is not desirable, the fix on close() is more important in
->>>          the short-term.  We can always add DEASSIGN support again in the
->>> 	 future with a CAP bit.
->>> ]
->>>     
->>>       
->> So, I've been thinking about this, and this approach has another
->> problem: it depends on pollhup on close which is AFAIK an
->> eventfd-specific feature.
->>     
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8FB539ABBA8D8BE3B2CBF49E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Michael S. Tsirkin wrote:
+> On Thu, Jun 04, 2009 at 08:48:12AM -0400, Gregory Haskins wrote:
+>  =20
+>> +static void
+>> +irqfd_disconnect(struct _irqfd *irqfd)
+>> +{
+>> +	struct kvm *kvm;
+>> +
+>> +	mutex_lock(&irqfd->lock);
+>> +
+>> +	kvm =3D rcu_dereference(irqfd->kvm);
+>> +	rcu_assign_pointer(irqfd->kvm, NULL);
+>> +
+>> +	mutex_unlock(&irqfd->lock);
+>> +
+>> +	if (!kvm)
+>> +		return;
+>> =20
+>>  	mutex_lock(&kvm->lock);
+>> -	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
+>> -	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
+>> +	list_del(&irqfd->list);
+>>  	mutex_unlock(&kvm->lock);
+>> +
+>> +	/*
+>> +	 * It is important to not drop the kvm reference until the next grac=
+e
+>> +	 * period because there might be lockless references in flight up
+>> +	 * until then
+>> +	 */
+>> +	synchronize_srcu(&irqfd->srcu);
+>> +	kvm_put_kvm(kvm);
+>>  }
+>>    =20
 >
-> Thats ok with me, as we are already married to eventfd for other reasons
-> (see eventfd_fget()).
+> So irqfd object will persist after kvm goes away, until eventfd is clos=
+ed?
+>  =20
+
+Yep, by design.  It becomes part of the eventfd and is thus associated
+with its lifetime.  Consider it as if we made our own anon-fd
+implementation for irqfd and the lifetime looks similar.  The difference
+is that we are reusing eventfd and its interface semantics.
+>  =20
+>> =20
+>>  static int
+>>  irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>>  {
+>>  	struct _irqfd *irqfd =3D container_of(wait, struct _irqfd, wait);
+>> +	unsigned long flags =3D (unsigned long)key;
+>> =20
+>> -	/*
+>> -	 * The wake_up is called with interrupts disabled.  Therefore we nee=
+d
+>> -	 * to defer the IRQ injection until later since we need to acquire t=
+he
+>> -	 * kvm->lock to do so.
+>> -	 */
+>> -	schedule_work(&irqfd->work);
+>> +	if (flags & POLLIN)
+>> +		/*
+>> +		 * The POLLIN wake_up is called with interrupts disabled.
+>> +		 * Therefore we need to defer the IRQ injection until later
+>> +		 * since we need to acquire the kvm->lock to do so.
+>> +		 */
+>> +		schedule_work(&irqfd->inject);
+>> +
+>> +	if (flags & POLLHUP) {
+>> +		/*
+>> +		 * The POLLHUP is called unlocked, so it theoretically should
+>> +		 * be safe to remove ourselves from the wqh using the locked
+>> +		 * variant of remove_wait_queue()
+>> +		 */
+>> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+>> +		flush_work(&irqfd->inject);
+>> +		irqfd_disconnect(irqfd);
+>> +
+>> +		cleanup_srcu_struct(&irqfd->srcu);
+>> +		kfree(irqfd);
+>> +	}
+>> =20
+>>  	return 0;
+>>  }
+>>    =20
 >
->   
->>  This will prevent us from supporting polling
->> other useful file types, such as sockets and pipes, down the road, with
->> this interface.
->>   
->>     
-> I am thinking that we would add explicit support in the future if there
-> are other fd types that might want to also inject interrupts.  For
-> instance, perhaps POLLHUP is added to pipes if/when they are patched as
-> a valid transport for irqfd.   Or perhaps irqfd is abstracted such that
-> eventfd_fget/POLLHUP are eventfd specific assign/deassign implementation
-> details.
->
-> Another option is that we s/irqfd/irq-eventfd to leave room for other
-> interfaces like irq-pollfd, irq-socketfd, etc.  IOW, there is no reason
-> to make the current irqfd code "one-fd-interface to rule them all" per
-> se.  The real abstraction is the kvm_set_irq() + gsi interface anyway. 
-> The current irqfd code is a thin shim in front of that.  Perhaps each fd
-> type would be better served with code to specifically handle each type,
-> for its hard to predict what the requirements for translating, say, a
-> pipe-write into a gsi-inject will be apriori.
->
->   
+> And it is removed by this function when eventfd is closed.
+> But what prevents the kvm module from going away, meanwhile?
+>  =20
 
-I don't see a reason to avoid a monogamous relationship with eventfd as 
-it exactly captures the essence of an raising an interrupt: events are 
-coalesced and it doesn't block.  Since irqfd will rarely work by itself 
-(need a separate data channel), having things like a tcp socket inject 
-an interrupt are, while exotic, fairly useless.
+Well, we hold a reference to struct kvm until we call
+irqfd_disconnect().  If kvm closes first, we disconnect and disassociate
+all references to kvm leaving irqfd->kvm =3D NULL.  Likewise, if irqfd
+closes first, we disassociate with kvm with the above quoted logic.  In
+either case, we are holding a kvm reference up until that "disconnect"
+point.  Therefore kvm should not be able to disappear before that
+disconnect, and after that point we do not care.  If that is not
+sufficient to prevent kvm.ko from going away in the middle, then IMO
+kvm_get_kvm() has a bug, not irqfd. ;)  However, I believe everything is
+actually ok here.
 
->> I didn't realise these implications when I suggested deassign on close.
->> To me, it now looks like we are better off reverting this patch.
->> We can later add 'deassign on close' support with CAP bit after all :)
->>
->> Avi, Gregory, what's your take?
->>
->>   
->>     
-> I like the design with the single-call close in place, so my vote is to
-> keep it as it is now.
->   
+-Greg
 
-We could work around it by allocating a gsi private to the eventfd, and 
-when we want to mask the gsi, simply drop all its routes.  Hacky.
 
--- 
-error compiling committee.c: too many arguments to function
+--------------enig8FB539ABBA8D8BE3B2CBF49E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko08rcACgkQlOSOBdgZUxltzgCdEyEp/5yD4hEJ6M9FONotgpXI
+mD0An2ifUPKx2Ight1sDMpVxHBLKXojp
+=O0PC
+-----END PGP SIGNATURE-----
+
+--------------enig8FB539ABBA8D8BE3B2CBF49E--
