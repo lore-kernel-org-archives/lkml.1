@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbZFNNQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbZFNNRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbZFNNQd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 09:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZFNNQZ
+	id S1760395AbZFNNRs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 09:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbZFNNRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 09:16:25 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:40533 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755161AbZFNNQZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 09:16:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DBD1scJ7n5/hab8CBOWI9ZaOjxKcp1BU7x8FFI67nwJgFet7H7RIZoCgYjRm6mO4Wx
-         jpOHRjJTBSz9X4yfMjytd40PlD1jIJWUY/8M5bnL4Ti3XV6nyVcfjfzTCDhYuskMrl3J
-         TsQBUHLhdQ0m2Wg25GMtdwykzRed22ed/kxBI=
+	Sun, 14 Jun 2009 09:17:40 -0400
+Received: from www.tglx.de ([62.245.132.106]:42237 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753233AbZFNNRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 09:17:40 -0400
+Date: Sun, 14 Jun 2009 15:17:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+cc: "Benjamin S." <sbenni@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "js@sig21.net" <js@sig21.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: RE: 2.6.30 enabling cpu1 on resume fails after suspend to memory
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC4669244187@orsmsx505.amr.corp.intel.com>
+Message-ID: <alpine.LFD.2.00.0906141514120.2800@localhost.localdomain>
+References: <20090614120950.116536fa@pluto-lenny.milky.way> <200906141400.27331.rjw@sisk.pl> <alpine.LFD.2.00.0906141405450.2800@localhost.localdomain> <200906141415.16949.rjw@sisk.pl> <20090614143708.32ec250c@pluto-lenny.milky.way>
+ <alpine.LFD.2.00.0906141444500.2800@localhost.localdomain> <7E82351C108FA840AB1866AC776AEC4669244187@orsmsx505.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0906101333350.3351@localhost.localdomain>
-References: <b9df5fa10905251820l3783327ek4f6b7014aa167690@mail.gmail.com>
-	 <86802c440905251911h6f6c146eo4c30d306ac8d17d8@mail.gmail.com>
-	 <b9df5fa10905261949j3eb4dc9ft321dba3c46c335db@mail.gmail.com>
-	 <b9df5fa10906100424h98862a8l32951906d06454fb@mail.gmail.com>
-	 <alpine.LFD.2.00.0906101333350.3351@localhost.localdomain>
-Date: Sun, 14 Jun 2009 19:16:27 +0600
-Message-ID: <b9df5fa10906140616y38c74425vcccc639fc288e305@mail.gmail.com>
-Subject: Re: [PATCH] v2: x86,APIC: Detect lapic_is_integrated() once - use on 
-	and on
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, yhlu.kernel@gmail.com,
-       "H. Peter Anvin" <hpa@zytor.com>, macro@linux-mips.org,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 5:34 PM, Thomas Gleixner<tglx@linutronix.de> wrote:
-> On Wed, 10 Jun 2009, Rakib Mullick wrote:
+On Sun, 14 Jun 2009, Pallipadi, Venkatesh wrote:
+> >On Sun, 14 Jun 2009, Benjamin S. wrote:
+> >
+> >This is odd as well:
+> >>            CPU0       CPU1       
+> >>   0:         42          1   IO-APIC-edge      timer
+> >>  24:       4830          0  HPET_MSI-edge      hpet2
+> >> LOC:         42       5070   Local timer interrupts
+> >
+> >So we set up only one hpet channel for CPU0 and CPU1 uses the local
+> >timer interrupt. Need to look at that as well.
+> >
 >
->> Hi Ingo, Thomas and everyone, would you please take a look at this
->> patch and comment ? I think Thomas was agreed with this one. Is there
->> anything that i couldn't deliver? If i'm wrong please notice thus i
->> can fix myself.
+ 
+> Logic in percpu HPET is something like this.
 >
-> The patch is fine, but it lacks a proper patch description.
+> - Number of per cpu HPET channels = total number of HPET channels -
+>   1 (global HPET) - 1 (legacy RTC replacement) - 1 (reserved for
+>   /dev/hpet).
 >
-> Thanks,
+> - So, this number is assigned one per CPU and remaining CPUs use
+>   APIC timer + broadcast logic
 >
-Thanks Thomas. I understatnd my problem. I'm resending the patch with
-proper patch description.
+> Looks like there is a slight problem with the above though. We
+> should start such per cpu assignment from CPU 1 instead of CPU 0,
+> when number of HPET channels is less than number of CPUs. Will send
+> a patch for that. But, this suspend resume problem should not be due
+> to the percpu HPET logic. It will be good to try with hpet=disable
+> to make sure...
 
-Thanks
->        tglx
->
+Benjamin just confirmed that. The logic in disable_device_interrupts()
+already skips interrupts marked with IRQF_TIMER, but I suspect that
+the hpet/MSI interupts are not marked that way.
+
+Thanks,
+
+	tglx
