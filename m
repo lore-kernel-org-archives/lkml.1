@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZFNKy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZFNKzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbZFNKy0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 06:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZFNKyU
+	id S1756652AbZFNKzA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 06:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbZFNKyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 06:54:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55472 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755216AbZFNKyT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 06:54:19 -0400
-Date: Sun, 14 Jun 2009 11:54:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: tty_ldisc_try_get(): BUG kmalloc-8: Poison overwritten
-Message-ID: <20090614115428.1127ed2d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090614081052.GA9276@elte.hu>
-References: <20090614081052.GA9276@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sun, 14 Jun 2009 06:54:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:32976 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754625AbZFNKyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 06:54:52 -0400
+X-Authenticated: #3576790
+X-Provags-ID: V01U2FsdGVkX1/K2etqwPTKZYSagY8nnn/dNi0gDNiGyS5v14ib+g
+	IVwDE2xW73mE1O
+Date: Sun, 14 Jun 2009 12:57:04 +0200
+From: "Benjamin S." <sbenni@gmx.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, js@sig21.net
+Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend to memory
+Message-ID: <20090614125704.2240023d@pluto-lenny.milky.way>
+In-Reply-To: <200906141235.24942.rjw@sisk.pl>
+References: <20090614120950.116536fa@pluto-lenny.milky.way>
+	<200906141235.24942.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Jun 2009 10:10:52 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
+On Sun, 14 Jun 2009 12:35:24 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> Thanks for the report, the problem seems to be related to the chipset, because
+> I'm unable to reproduce it with SB600 and a fairly new AMD CPU.
 > 
-> Ok, this is one for those who like to look at weird crashes/bugs.
-> 
-> Here's a new regression that popped up in this merge window, there's 
-> some sort of slab corruption going on in tty data structures:
+> Does the resume work if you comment out suspend_device_irqs() and
+> resume_device_irqs() in drivers/base/power/main.c ?
 
-I split the ldisc and tty apart and redid the ldisc locking so its a fair
-bet I know what changeset is to blame, will just need to hunt it down a
-bit. kmemcheck found one leak case on Friday which I've fixed but not yet
-scribbles.
+Yes, 2.6.30 without the two lines resumes without problems.
 
->  c65c9bc: tty: rewrite the ldisc locking
 
-Almost certainly that one and will investigate on Monday
-
-Alan
+Benjamin
