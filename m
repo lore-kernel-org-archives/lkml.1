@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbZFNT2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762557AbZFNTev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762873AbZFNT2j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 15:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZFNT2a
+	id S1762557AbZFNTev (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 15:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZFNTen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 15:28:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37895 "EHLO ogre.sisk.pl"
+	Sun, 14 Jun 2009 15:34:43 -0400
+Received: from waste.org ([66.93.16.53]:52746 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbZFNT23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 15:28:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
-Date: Sun, 14 Jun 2009 21:29:07 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, stern@rowland.harvard.edu,
-       Jiri Kosina <jkosina@suse.cz>
-References: <1244996001.8440.10.camel@localhost> <200906142031.38358.elendil@planet.nl> <1245006429.23043.2.camel@localhost>
-In-Reply-To: <1245006429.23043.2.camel@localhost>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+	id S1751403AbZFNTem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 15:34:42 -0400
+Subject: Re: issue with /dev/random? gets depleted very quick
+From: Matt Mackall <mpm@selenic.com>
+To: Folkert van Heusden <folkert@vanheusden.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090614190417.GC7272@vanheusden.com>
+References: <20090614125138.GZ7272@vanheusden.com>
+	 <1244994669.4496.229.camel@calx>  <20090614190417.GC7272@vanheusden.com>
+Content-Type: text/plain
+Date: Sun, 14 Jun 2009 14:34:15 -0500
+Message-Id: <1245008055.4496.255.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906142129.08135.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 June 2009, Thomas Meyer wrote:
-> Am Sonntag, den 14.06.2009, 20:31 +0200 schrieb Frans Pop:
-> > Rafael J. Wysocki wrote:
-> > 
-> > >> 00:02.1 USB Controller: nVidia Corporation MCP55 USB Controller (rev a2) (prog-if 20 [EHCI])
-> > >>       Subsystem: Micro-Star International Co., Ltd. Device 7250
-> > >>       Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-> > >>       Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> > >>       Latency: 0 (750ns min, 250ns max)
-> > >>       Interrupt: pin B routed to IRQ 23
-> > >>       Region 0: Memory at fe9fac00 (32-bit, non-prefetchable) [size=256]
-> > >>       Capabilities: [44] Debug port: BAR=1 offset=0098
-> > >>       Capabilities: [80] Power Management version 2
-> > >>               Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-> > >>               Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-> > >>       Kernel driver in use: ehci_hcd
-> > > 
-> > > PME+ means that the USB EHCI controller will signal a PME as soon as it is
-> > > enabled, so if PME is enabled on the controller before suspend, it will
-> > > wake up the system.
-> > > 
-> > > Please send a boot log.
-> > 
-> > Was already included in the initial message...
-> > 
-> > I wonder if this device could be the cause:
-> > [   40.232873] wlan0: register 'rndis_wlan' at usb-0000:00:02.1-6.1,
-> >                Wireless RNDIS device, BCM4320b based, 00:16:01:cf:56:29
-> > [   40.232907] usbcore: registered new interface driver rndis_wlan
-> > [...]
-> > [   41.705516] rndis_wlan 1-6.1:1.0: rndis media disconnect
+On Sun, 2009-06-14 at 21:04 +0200, Folkert van Heusden wrote:
+> > [cc:ed to lkml]
 > 
-> Good idea. I should have thought of this myself. No, it's not above
-> device. I just tested several constellations and it's seems to be my usb
-> mouse. when the mouse is unplug suspend to ram works reliably.
+> > > On an idle system (no gui, no daemons, nothing) system, /dev/random gets
+> > > empty in a matter of 20 seconds with a 2.6.26 kernel.
+> > > My test:
+> > > add 1000 bits to the device:
+> > > zolder:/tmp# cat test-RNDADDENTROPY.c 
+> ...
+> > > }
+> > > and then check whayt is in it:
+> > > zolder:/tmp# ./a.out ; while true ; do echo `date` `cat /proc/sys/kernel/random/entropy_avail` ; sleep 1 ; done
+> > > 0
+> > > Sun Jun 14 14:50:44 CEST 2009 1117
+> ...
+> > > Sun Jun 14 14:50:55 CEST 2009 157
+> > > Is there something wrong with it?
+> > Does it go below 128? If not, that's the behavior of something depleting
+> > the pool down to the anti-starvation threshold via either /dev/urandom
+> > or get_random_bytes.
 > 
-> how to fix the mouse's behaviour?
+> No, it stays above 128. Sometimes around 13x, sometimes 151, so not
+> always close to 128.
+> 
+> > On my system, I'm seeing that behavior as well. fuser reports a bunch of
+> > processes hold /dev/urandom open, but stracing them doesn't reveal a
+> > culprit. Which means there's now probably something in the kernel
+> > calling get_random_bytes continuously.
+> 
+> Yes. On the systems I tried, nothing had /dev/*random open, also no
+> cronjobs that could use it. And still it gets lower.
+> 
+> > Is this a problem? It really shouldn't be. Everyone should be
+> > using /dev/urandom anyway. And the anti-starvation threshold guarantees
+> 
+> Well, if I understood correctly how /dev/*random works, urandom is fed
+> by /dev/random. So if there's almost nothing left in the main pool and
+> urandom demands bits then we have an issue.
+> Also, if you frequently want to generate keys (thing gpg, ssl), I think
+> you want bits from /dev/random and not urandom.
 
-In principle, you should be able to disable wake-up on the USB controllers.
+There is really no difference.
 
-As for the mouse itself, I don't know.  I'm not even sure if it's possible at
-all (CCing Jiri).
+In an ideal world, we could accurately estimate input entropy and thus
+guarantee that we never output more than we took in. But it's pretty
+clear we don't have a solid theoretical basis for estimating the real
+entropy in most, if not all, of our input devices. In fact, I'm pretty
+sure they're all significantly more observable than we're giving them
+credit for. And without that basis, we can only make handwaving
+arguments about the relative strength of /dev/random vs /dev/urandom.
 
-Best,
-Rafael
+So if you're running into /dev/random blocking, my advice is to delete
+the device and symlink it to /dev/urandom.
+
+Also note that if something in the kernel is rapidly consuming entropy
+but not visibly leaking it to the world, it is effectively not consuming
+it. The simplest case is:
+
+get_random_bytes(...);
+memset(...); /* clear previous result */
+
+In this case, if no one hears the tree fall, it hasn't actually fallen.
+There is exactly as much 'unknown' data in the entropy pool as before.
+If anything, the pool contents are now harder to guess because it's been
+mixed more.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
