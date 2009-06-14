@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbZFNXhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbZFNXqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758196AbZFNXhf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 19:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbZFNXh2
+	id S1758196AbZFNXqN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 19:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbZFNXqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 19:37:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:32816 "EHLO gir.skynet.ie"
+	Sun, 14 Jun 2009 19:46:01 -0400
+Received: from www.tglx.de ([62.245.132.106]:41088 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754066AbZFNXh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 19:37:27 -0400
-Date: Mon, 15 Jun 2009 00:37:27 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Ryan Hope <rmh3093@gmail.com>
-cc: Jerome Glisse <glisse@freedesktop.org>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [PATCH 1/3] Re: Radeon kernel modesetting patch (as staging)
- please review
-In-Reply-To: <48f7fe350906140642i595fa90ep182838e3ad4893fd@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0906150037110.20307@skynet.skynet.ie>
-References: <1244649318.9942.33.camel@earl.localdomain> <48f7fe350906140642i595fa90ep182838e3ad4893fd@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1751475AbZFNXqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 19:46:00 -0400
+Date: Mon, 15 Jun 2009 01:45:46 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Wolfram Sang <w.sang@pengutronix.de>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       devicetree-discuss@ozlabs.org, Magnus Damm <magnus.damm@gmail.com>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+Message-ID: <20090614234546.GJ3639@local>
+References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-3-git-send-email-w.sang@pengutronix.de> <20090614122136.GD3639@local> <20090615001207.1829e7b5@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615001207.1829e7b5@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Jun 2009, Ryan Hope wrote:
+On Mon, Jun 15, 2009 at 12:12:07AM +0100, Alan Cox wrote:
+> > > +	if (!uioinfo->irq)
+> > > +		uioinfo->irq = UIO_IRQ_NONE;
+> > 
+> > Please don't do this. It's inconsistent if all other UIO drivers require
+> > people to use UIO_IRQ_NONE and you also allow zero. UIO_IRQ_NONE was
+> > introduced because 0 may be a legal interrupt number on some platforms.
+> 
+> Zero is not a valid IRQ number in the kernel (except in arch specific
+> depths). IRQ numbers are also *unsigned* so -1 isn't a safe definition.
 
-> commit 85adafcf5d18e58c60d9fdbb718abe9149661736
-> Author: Ryan Hope <rmh3093@gmail.com>
-> Date:   Fri Jun 12 12:17:54 2009 -0400
-> 
->     fix ttm kconfig
-
-Thanks I've merged this into the patchset.
-
-Dave.
+The above uioinfo->irq is a signed long.
 
 > 
-> diff --git a/drivers/gpu/drm/ttm/Makefile b/drivers/gpu/drm/ttm/Makefile
-> index 0686829..299a73c 100644
-> --- a/drivers/gpu/drm/ttm/Makefile
-> +++ b/drivers/gpu/drm/ttm/Makefile
-> @@ -6,4 +6,4 @@ ttm-y := ttm_agp_backend.o ttm_memory.o ttm_tt.o ttm_bo.o \
->         ttm_bo_util.o ttm_bo_vm.o ttm_module.o ttm_global.o
+> Zero means no IRQ. If any old UIO code is assuming otherwise it wants
+> fixing.
+
+It doesn't. It won't complain about IRQ 0 and will pass it on to
+request_irq, which will probably fail if it is as you say.
+
+I did it that way because I saw IRQ 0 in /proc/interrupts on every PC...
+
 > 
+> It is the job of the platform to map a physical IRQ 0 to some other
+> representation if it exists outside of arch specific code.
+
+Funny.
+
+> This was
+> decided some years ago and a large part of the kernel simply doesn't
+> support any notion of a real IRQ 0.
+
+Can you tell me the reason for that decision or point me to some ml archive?
+
+Thanks,
+Hans
+
 > 
-> -obj-m += ttm.o
-> +obj-$(CONFIG_DRM_TTM) += ttm.o
-> 
-> ------------------------------------------------------------------------------
-> Crystal Reports - New Free Runtime and 30 Day Trial
-> Check out the new simplified licensing option that enables unlimited
-> royalty-free distribution of the report engine for externally facing 
-> server and web deployment.
-> http://p.sf.net/sfu/businessobjects
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
-> 
-> 
+> Alan
