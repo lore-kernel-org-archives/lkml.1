@@ -1,88 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZFNT7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbZFNUBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZFNT7D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 15:59:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZFNT6x
+	id S1760084AbZFNUBQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 16:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZFNUBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 15:58:53 -0400
-Received: from keetweej.vanheusden.com ([80.126.110.251]:45289 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbZFNT6x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 15:58:53 -0400
-Date: Sun, 14 Jun 2009 21:58:54 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: issue with /dev/random? gets depleted very quick
-Message-ID: <20090614195854.GD7272@vanheusden.com>
-References: <20090614125138.GZ7272@vanheusden.com> <1244994669.4496.229.camel@calx> <20090614190417.GC7272@vanheusden.com> <1245008055.4496.255.camel@calx>
+	Sun, 14 Jun 2009 16:01:01 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46999 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753009AbZFNUBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 16:01:00 -0400
+Date: Sun, 14 Jun 2009 12:27:07 -0700
+From: Greg KH <gregkh@suse.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+Message-ID: <20090614192707.GA11003@suse.de>
+References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-3-git-send-email-w.sang@pengutronix.de> <20090614122136.GD3639@local> <20090614171406.GA1010@pengutronix.de> <20090614183357.GE3639@local> <20090614190533.GA7387@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1245008055.4496.255.camel@calx>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Tue Jun  9 20:35:32 CEST 2009
-X-Message-Flag: MultiTail - tail on steroids
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090614190533.GA7387@pengutronix.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ /dev/random gets emptied very quickly ]
-...
-> > > Is this a problem? It really shouldn't be. Everyone should be
-> > > using /dev/urandom anyway. And the anti-starvation threshold guarantees
-> > 
-> > Well, if I understood correctly how /dev/*random works, urandom is fed
-> > by /dev/random. So if there's almost nothing left in the main pool and
-> > urandom demands bits then we have an issue.
-> > Also, if you frequently want to generate keys (thing gpg, ssl), I think
-> > you want bits from /dev/random and not urandom.
-> 
-> There is really no difference.
-> In an ideal world, we could accurately estimate input entropy and thus
-> guarantee that we never output more than we took in. But it's pretty
-> clear we don't have a solid theoretical basis for estimating the real
-> entropy in most, if not all, of our input devices. In fact, I'm pretty
-> sure they're all significantly more observable than we're giving them
-> credit for. And without that basis, we can only make handwaving
-> arguments about the relative strength of /dev/random vs /dev/urandom.
-> So if you're running into /dev/random blocking, my advice is to delete
-> the device and symlink it to /dev/urandom.
+On Sun, Jun 14, 2009 at 09:05:33PM +0200, Wolfram Sang wrote:
+> Well, I assume that issues regarding checkpatch do not have the highest
+> priority (especially while the merge-window is open), which is understandable.
 
-Two questions:
-- if the device gets empty constantly, that means that filling
-  applicaties (e.g. the ones that feed /dev/random from /dev/hwrng or
-  from an audio-source or whatever)
-- if we don't know if we're accounting correctly, why doing at all?
-  especially if one should use urandom instead of random
+Hm, the "merge-window" for new stuff like these patches is pretty much
+already closed, as you didn't send them _before_ the merge window opened
+up.  You need to get them to us sooner, so we can test stuff out in the
+-next tree for a while before we can merge them.
 
-> Also note that if something in the kernel is rapidly consuming entropy
-> but not visibly leaking it to the world, it is effectively not consuming
-> it.
+thanks,
 
-Then the counter should not be decreased?
-
-> In this case, if no one hears the tree fall, it hasn't actually fallen.
-> There is exactly as much 'unknown' data in the entropy pool as before.
-> If anything, the pool contents are now harder to guess because it's been
-> mixed more.
-
-
-Folkert van Heusden
-
--- 
-MultiTail ist eine flexible Applikation um Logfiles und Kommando
-Eingaben zu überprüfen. Inkl. Filter, Farben, Zusammenführen,
-Ansichten etc. http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+greg k-h
