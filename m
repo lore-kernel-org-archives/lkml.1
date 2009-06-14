@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbZFNMey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZFNMfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758471AbZFNMey (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZFNMeq
+	id S1757887AbZFNMfK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbZFNMew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:34:46 -0400
-Received: from mail-pz0-f187.google.com ([209.85.222.187]:50155 "EHLO
-	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753609AbZFNMep convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:34:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:message-id:to:cc:subject:from:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=Cgrgl1h+NFO9YvoHnQ7kqItDbi3raW66Ds8bDZS2INAO0RPpXqA6Bc0Uq++tWoV9BL
-         px5FhiOMBWY9d0IztT2Cjqaoe0FQRH6WASe3bdu7lXVWmiui/fJZXPLaE/znUH0YQekP
-         94Derh+/17T397KkRZOYkP0iDd/+nLj/6Nv8Q=
-Date: Sun, 14 Jun 2009 21:34:19 +0900 (JST)
-Message-Id: <20090614.213419.35998061.konishi.ryusuke@gmail.com>
-To: penberg@cs.helsinki.fi
-Cc: konishi.ryusuke@lab.ntt.co.jp, albertito@blitiri.com.ar, llucax@gmail.com,
-       linux-kernel@vger.kernel.org, users@nilfs.org
-Subject: Re: NILFS2 get stuck after bio_alloc() fail
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <84144f020906140000v7b38f520rc5d9849b8ea8ad7e@mail.gmail.com>
-References: <20090614015240.GW30412@blitiri.com.ar>
-	<20090614.153046.25768784.konishi.ryusuke@gmail.com>
-	<84144f020906140000v7b38f520rc5d9849b8ea8ad7e@mail.gmail.com>
-X-Mailer: Mew version 6.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 14 Jun 2009 08:34:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:56961 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758809AbZFNMev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:34:51 -0400
+Date: Sun, 14 Jun 2009 14:34:45 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Greg KH <greg@kroah.com>
+cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       linux-kernel@vger.kernel.org, linux-rt@pengutronix.de,
+       Ian Abbott <abbotti@mev.co.uk>,
+       Frank Mori Hess <fmhess@users.sourceforge.net>
+Subject: Re: [PATCH -rt] disable building all staging drivers
+In-Reply-To: <20090614112802.GA4502@kroah.com>
+Message-ID: <alpine.LFD.2.00.0906141432540.2800@localhost.localdomain>
+References: <1244929118-23326-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090614112802.GA4502@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1506487989-1244982886=:2800"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-On Sun, 14 Jun 2009 10:00:06 +0300, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On Sun, Jun 14, 2009 at 9:30 AM, Ryusuke
-> Konishi<konishi.ryusuke@lab.ntt.co.jp> wrote:
->> The original GFP flag was GFP_NOIO, but replaced to GFP_NOWAIT at a
->> preliminary release in February 2008.  It was because a user
->> experienced system memory shortage by the bio_alloc() call.
->>
->> Even though nilfs_alloc_seg_bio() repeatedly calls bio_alloc()
->> reducing the number of bio vectors in case of failure, this fallback
->> did not work well.
->>
->> I'm in two minds whether I should change it back to GFP_NOIO.
->> Or should I switch the gfp as follows?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-1506487989-1244982886=:2800
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Sun, 14 Jun 2009, Greg KH wrote:
+
+> On Sat, Jun 13, 2009 at 11:38:38PM +0200, Uwe Kleine-König wrote:
+> > I know that at least COMEDI and RT2870 are broken with -rt,
 > 
-> As far as I can tell, the only difference with GFP_NOIO and GFP_NOWAIT
-> here is that the former will trigger the mempool_alloc() page reclaim
-> path. But I am not sure I understand why switching to GFP_NOWAIT
-> helped with memory shortage. What exactly was the problem there?
+> I didn't know this, has anyone sent me a bug report?  What in -rt causes
+> these drivers to break?
 > 
->                                  Pekka
+> > but Thomas requested disabling all of staging.  He's the maintainer.
+> 
+> This seems like a patch to ensure that the staging drivers never get a
+> chance to be fixed for any potential -rt issues.  How about just sending
+> me bug reports instead?
 
-I will confirm the details later.  I cannot dig into the record due to
-planned outage at office now.  The version I replaced GFP_NOIO with
-GFP_NOWAIT is considerably old.  A true problem might have been in
-other places somewhere.
-
-For reference, the retry loop in question is as follows.  It is to
-allocate bio for log writing.
-
-        bio = bio_alloc(GFP_NOWAIT, nr_vecs);
-        if (bio == NULL) {
-                while (!bio && (nr_vecs >>= 1))
-                       bio = bio_alloc(GFP_NOWAIT, nr_vecs);
-        }
-
-where nr_vecs is less than or equal to bio_get_nr_vecs(bdev).
-
+Sorry, my bad. But at least the patch now brought your attention on
+it. I provide you an useful bugreport in the next days.
 
 Thanks,
-Ryusuke Konishi
+
+	tglx
+--8323328-1506487989-1244982886=:2800--
