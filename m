@@ -1,187 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbZFNMPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758985AbZFNMQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759674AbZFNMPr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757396AbZFNMPi
+	id S1758985AbZFNMQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZFNMQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:15:38 -0400
-Received: from www.tglx.de ([62.245.132.106]:41360 "EHLO www.tglx.de"
+	Sun, 14 Jun 2009 08:16:51 -0400
+Received: from mga03.intel.com ([143.182.124.21]:57618 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756259AbZFNMPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:15:37 -0400
-Date: Sun, 14 Jun 2009 14:15:19 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       devicetree-discuss@ozlabs.org, Magnus Damm <magnus.damm@gmail.com>,
-       "Hans J. Koch" <hjk@linutronix.de>, Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 1/2] uio/pdrv_genirq: Refactor probe routine to expose
-	a generic part
-Message-ID: <20090614121519.GC3639@local>
-References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-2-git-send-email-w.sang@pengutronix.de>
+	id S1752560AbZFNMQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:16:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,217,1243839600"; 
+   d="scan'208";a="154096312"
+Date: Sun, 14 Jun 2009 20:16:45 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Mike Frysinger <vapier@gentoo.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ramfs: ignore tmpfs options when we emulate it
+Message-ID: <20090614121645.GB7949@localhost>
+References: <1244872920-13511-1-git-send-email-vapier@gentoo.org> <Pine.LNX.4.64.0906131456090.5069@sister.anvils>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244765062-14144-2-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <Pine.LNX.4.64.0906131456090.5069@sister.anvils>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 02:04:21AM +0200, Wolfram Sang wrote:
-> This patch refactors the probe routine, so that an of-version of a similiar
-> driver can pick it up later.
-
-Looks good to me.
-
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-
+On Sat, Jun 13, 2009 at 10:15:51PM +0800, Hugh Dickins wrote:
+> On Sat, 13 Jun 2009, Mike Frysinger wrote:
 > 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Magnus Damm <magnus.damm@gmail.com>
-> Cc: Hans J. Koch <hjk@linutronix.de>
-> Cc: Greg KH <gregkh@suse.de>
+> > On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
+> > fail when tmpfs options are used.  This is because tmpfs creates a small
+> > wrapper around ramfs which rejects unknown options, and ramfs itself only
+> > supports a tiny subset of what tmpfs supports.  This makes it pretty hard
+> > to use the same userspace systems across different configuration systems.
+> > As such, ramfs should ignore the tmpfs options when tmpfs is merely a
+> > wrapper around ramfs.
+> 
+> Yes, indeed, thanks a lot for reporting this.
+> 
+> But I'm uneasy with making ramfs behaviour differ with CONFIG_SHMEM
+> (perhaps that's silly: certainly tmpfs behaviour differs with it),
+> and uneasy with coding a list of options we need to remember to keep
+> in synch with mm/shmem.c.  It's easier to justify ignoring all options,
+> than rejecting some while ignoring others yet not respecting them.
+> 
+[snip] 
+> [PATCH] ramfs: ignore unknown mount options
+> 
+> From: Mike Frysinger <vapier@gentoo.org>
+> 
+> On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
+> fail when tmpfs options are used.  This is because tmpfs creates a small
+> wrapper around ramfs which rejects unknown options, and ramfs itself only
+> supports a tiny subset of what tmpfs supports.  This makes it pretty hard
+> to use the same userspace systems across different configuration systems.
+> As such, ramfs should ignore the tmpfs options when tmpfs is merely a
+> wrapper around ramfs.
+> 
+> This used to work before commit c3b1b1cbf0 as previously, ramfs would
+> ignore all options.  But now, we get:
+> ramfs: bad mount option: size=10M
+> mount: mounting mdev on /dev failed: Invalid argument
+> 
+> Another option might be to restore the previous behavior, where ramfs
+> simply ignored all unknown mount options ... which is what Hugh prefers.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: stable@kernel.org
 > ---
->  drivers/uio/uio_pdrv_genirq.c   |   60 ++++++++++++++++++++------------------
->  include/linux/uio_pdrv_genirq.h |   13 ++++++++
->  2 files changed, 45 insertions(+), 28 deletions(-)
->  create mode 100644 include/linux/uio_pdrv_genirq.h
 > 
-> diff --git a/drivers/uio/uio_pdrv_genirq.c b/drivers/uio/uio_pdrv_genirq.c
-> index 3f06818..8f8a0f9 100644
-> --- a/drivers/uio/uio_pdrv_genirq.c
-> +++ b/drivers/uio/uio_pdrv_genirq.c
-> @@ -20,15 +20,10 @@
->  #include <linux/bitops.h>
->  #include <linux/interrupt.h>
->  #include <linux/stringify.h>
-> +#include <linux/uio_pdrv_genirq.h>
->  
->  #define DRIVER_NAME "uio_pdrv_genirq"
->  
-> -struct uio_pdrv_genirq_platdata {
-> -	struct uio_info *uioinfo;
-> -	spinlock_t lock;
-> -	unsigned long flags;
-> -};
-> -
->  static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
->  {
->  	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
-> @@ -68,29 +63,18 @@ static int uio_pdrv_genirq_irqcontrol(struct uio_info *dev_info, s32 irq_on)
->  	return 0;
->  }
->  
-> -static int uio_pdrv_genirq_probe(struct platform_device *pdev)
-> +int __uio_pdrv_genirq_probe(struct device *dev, struct uio_info *uioinfo,
-> +		struct resource *resources, unsigned int num_resources)
->  {
-> -	struct uio_info *uioinfo = pdev->dev.platform_data;
->  	struct uio_pdrv_genirq_platdata *priv;
->  	struct uio_mem *uiomem;
-> -	int ret = -EINVAL;
-> -	int i;
-> -
-> -	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
-> -		dev_err(&pdev->dev, "missing platform_data\n");
-> -		goto bad0;
-> -	}
-> -
-> -	if (uioinfo->handler || uioinfo->irqcontrol ||
-> -	    uioinfo->irq_flags & IRQF_SHARED) {
-> -		dev_err(&pdev->dev, "interrupt configuration error\n");
-> -		goto bad0;
-> -	}
-> +	unsigned int i;
-> +	int ret;
->  
->  	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
->  	if (!priv) {
->  		ret = -ENOMEM;
-> -		dev_err(&pdev->dev, "unable to kmalloc\n");
-> +		dev_err(dev, "unable to kmalloc\n");
->  		goto bad0;
->  	}
->  
-> @@ -100,14 +84,14 @@ static int uio_pdrv_genirq_probe(struct platform_device *pdev)
->  
->  	uiomem = &uioinfo->mem[0];
->  
-> -	for (i = 0; i < pdev->num_resources; ++i) {
-> -		struct resource *r = &pdev->resource[i];
-> +	for (i = 0; i < num_resources; ++i) {
-> +		struct resource *r = resources + i;
->  
->  		if (r->flags != IORESOURCE_MEM)
->  			continue;
->  
->  		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
-> -			dev_warn(&pdev->dev, "device has more than "
-> +			dev_warn(dev, "device has more than "
->  					__stringify(MAX_UIO_MAPS)
->  					" I/O memory resources.\n");
+>  fs/ramfs/inode.c |    9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> --- 2.6.30/fs/ramfs/inode.c	2009-06-10 04:05:27.000000000 +0100
+> +++ linux/fs/ramfs/inode.c	2009-06-13 14:45:33.000000000 +0100
+> @@ -202,9 +202,12 @@ static int ramfs_parse_options(char *dat
+>  				return -EINVAL;
+>  			opts->mode = option & S_IALLUGO;
 >  			break;
-> @@ -138,19 +122,39 @@ static int uio_pdrv_genirq_probe(struct platform_device *pdev)
->  	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
->  	uioinfo->priv = priv;
->  
-> -	ret = uio_register_device(&pdev->dev, priv->uioinfo);
-> +	ret = uio_register_device(dev, priv->uioinfo);
->  	if (ret) {
-> -		dev_err(&pdev->dev, "unable to register uio device\n");
-> +		dev_err(dev, "unable to register uio device\n");
->  		goto bad1;
+> -		default:
+> -			printk(KERN_ERR "ramfs: bad mount option: %s\n", p);
+> -			return -EINVAL;
+> +		/*
+> +		 * We might like to report bad mount options here;
+> +		 * but traditionally ramfs has ignored all mount options,
+> +		 * and as it is used as a !CONFIG_SHMEM simple substitute
+> +		 * for tmpfs, better continue to ignore other mount options.
+> +		 */
+>  		}
 >  	}
 >  
-> -	platform_set_drvdata(pdev, priv);
-> +	dev_set_drvdata(dev, priv);
->  	return 0;
->   bad1:
->  	kfree(priv);
->   bad0:
->  	return ret;
->  }
-> +EXPORT_SYMBOL_GPL(__uio_pdrv_genirq_probe);
-> +
-> +static int uio_pdrv_genirq_probe(struct platform_device *pdev)
-> +{
-> +	struct uio_info *uioinfo = pdev->dev.platform_data;
-> +
-> +	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
-> +		dev_err(&pdev->dev, "missing platform_data\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (uioinfo->handler || uioinfo->irqcontrol ||
-> +	    uioinfo->irq_flags & IRQF_SHARED) {
-> +		dev_err(&pdev->dev, "interrupt configuration error\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return __uio_pdrv_genirq_probe(&pdev->dev, uioinfo, pdev->resource,
-> +			pdev->num_resources);
-> +}
->  
->  static int uio_pdrv_genirq_remove(struct platform_device *pdev)
->  {
-> diff --git a/include/linux/uio_pdrv_genirq.h b/include/linux/uio_pdrv_genirq.h
-> new file mode 100644
-> index 0000000..a410390
-> --- /dev/null
-> +++ b/include/linux/uio_pdrv_genirq.h
-> @@ -0,0 +1,13 @@
-> +#ifndef _LINUX_UIO_PDRV_GENIRQ_H
-> +#define _LINUX_UIO_PDRV_GENIRQ_H
-> +
-> +struct uio_pdrv_genirq_platdata {
-> +	struct uio_info *uioinfo;
-> +	spinlock_t lock;
-> +	unsigned long flags;
-> +};
-> +
-> +extern int __uio_pdrv_genirq_probe(struct device *dev, struct uio_info *uioinfo,
-> +	struct resource *resources, unsigned int num_resources);
-> +
-> +#endif
-> -- 
-> 1.6.3.1
+
+Acked-by: Wu Fengguang <fengguang.wu@intel.com> 
