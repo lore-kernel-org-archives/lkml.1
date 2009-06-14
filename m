@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbZFNVbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbZFNVcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763471AbZFNVbn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 17:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756532AbZFNVbf
+	id S1760028AbZFNVcJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 17:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758002AbZFNVby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 17:31:35 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:52594 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756328AbZFNVbe (ORCPT
+	Sun, 14 Jun 2009 17:31:54 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55150 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757142AbZFNVbx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 17:31:34 -0400
-Date: Mon, 15 Jun 2009 06:30:49 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] ftrace,arm: add notrace to ARM sched_clock routines - resend
-Message-ID: <20090614213049.GA15366@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Walleij <linus.ml.walleij@gmail.com>,
-	Tim Bird <tim.bird@am.sony.com>,
-	linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-	linux kernel <linux-kernel@vger.kernel.org>,
-	Russell King <rmk@arm.linux.org.uk>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-	Tony Lindgren <tony@atomide.com>
-References: <4A32D1AF.7060107@am.sony.com> <63386a3d0906141051v50cc441fj27f0132fa5c77b80@mail.gmail.com>
+	Sun, 14 Jun 2009 17:31:53 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jon Masters <jcm@redhat.com>
+Subject: [PATCH -rt] include linux/delay.h in hwlat_detector
+Date: Sun, 14 Jun 2009 23:31:42 +0200
+Message-Id: <1245015102-22057-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <63386a3d0906141051v50cc441fj27f0132fa5c77b80@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 07:51:04PM +0200, Linus Walleij wrote:
-> 2009/6/13 Tim Bird <tim.bird@am.sony.com>:
-> 
-> > Add notrace attribute to sched_clock, to avoid
-> > recursion with ftrace function tracing.
-> >
-> > Signed-off-by: Tim Bird <tim.bird@am.sony.com>
-> > ---
-> >  arch/arm/mach-mmp/time.c       |    2 +-
-> >  arch/arm/mach-pxa/time.c       |    2 +-
-> >  arch/arm/mach-realview/core.c  |    2 +-
-> >  arch/arm/mach-sa1100/generic.c |    2 +-
-> >  arch/arm/mach-versatile/core.c |    2 +-
-> >  arch/arm/plat-omap/common.c    |    4 ++--
-> >  6 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> And now that Paul Mundt is making it possible to use the default
-> sched_clock() with the generic clocksource and the OMAP hack
-> will likely go away, should the default implementation in
-> kernel/sched_clock.c also be tagged as
-> unsigned long long notrace __attribute__((weak)) sched_clock(void)
-> or something?
-> 
-> Should it be tagged notrace even if it's the old jiffybased one even?
-> 
-Thanks for pointing that out. Yes, the new generic version will need the
-notrace attribute as well, I will include this in the next iteration.
+This broke when compiling on i386 without X86_LOCAL_APIC because then
+arch/x86/include/asm/smp.h doesn't include asm/apic.h which in turn includes
+linux/delay.h.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jon Masters <jcm@redhat.com>
+---
+
+diff --git a/drivers/misc/hwlat_detector.c b/drivers/misc/hwlat_detector.c
+index dbd9661..e02d8e1 100644
+--- a/drivers/misc/hwlat_detector.c
++++ b/drivers/misc/hwlat_detector.c
+@@ -49,6 +49,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/uaccess.h>
+ #include <linux/version.h>
++#include <linux/delay.h>
+ 
+ #define BUF_SIZE_DEFAULT	262144UL		/* 8K*(sizeof(entry)) */
+ #define BUF_FLAGS		(RB_FL_OVERWRITE)	/* no block on full */
