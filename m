@@ -1,105 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbZFNLSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZFNLTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbZFNLSv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 07:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbZFNLSn
+	id S1758051AbZFNLTb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 07:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbZFNLTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 07:18:43 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:55529 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756075AbZFNLSm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 07:18:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=XXsahmkAXcE0d5X0Lj3cXEDqLhWhz/eIIKJRdefNim9d3XSdcTv+sCHYpP2DiHjn47
-         4W/RvQRSP0tf3DPjKLPHv39r4DzJ51cVxeZ1+TwcpgZlwFQXivofHaw5HnfDYqx5IqgU
-         ccij8VK8F07hDiHjil8vupYjhDZYf5XbzRxqk=
-From: Florian Fainelli <florian@openwrt.org>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Subject: Re: [PATCH 8/8] 8250: add Texas Instruments AR7 internal UART
-Date: Sun, 14 Jun 2009 13:18:36 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux-MIPS <linux-mips@linux-mips.org>, Ralf Baechle <ralf@linux-mips.org>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-serial@vger.kernel.org
-References: <200906041622.47591.florian@openwrt.org> <200906111028.41222.florian@openwrt.org> <20090611093022.GA14510@alpha.franken.de>
-In-Reply-To: <20090611093022.GA14510@alpha.franken.de>
+	Sun, 14 Jun 2009 07:19:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36457 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756188AbZFNLTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 07:19:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Benjamin S." <sbenni@gmx.de>
+Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend to memory
+Date: Sun, 14 Jun 2009 13:19:40 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, js@sig21.net
+References: <20090614120950.116536fa@pluto-lenny.milky.way> <200906141235.24942.rjw@sisk.pl> <20090614125704.2240023d@pluto-lenny.milky.way>
+In-Reply-To: <20090614125704.2240023d@pluto-lenny.milky.way>
 MIME-Version: 1.0
-Content-Type: text/plain;
+Content-Type: Text/Plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906141318.38376.florian@openwrt.org>
+Message-Id: <200906141319.40536.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Thursday 11 June 2009 11:30:22 Thomas Bogendoerfer, vous avez écrit :
-> On Thu, Jun 11, 2009 at 10:28:39AM +0200, Florian Fainelli wrote:
-> > Le Friday 05 June 2009 00:20:20 Thomas Bogendoerfer, vous avez écrit :
-> > > On Thu, Jun 04, 2009 at 04:22:46PM +0200, Florian Fainelli wrote:
-> > > > We discussed that in private, there are a couple of things
-> > > > to fix in order to get 8250 working properly with TI AR7 HW.
-> > > > If you can still merge that bit, this would ease future work, thanks
-> > > > !
-> > >
-> > > I still have a tree here, which works without any changes to the 8250
-> > > serial driver on a TNETD7300 device.
-> >
-> > Could you show me how you register the 8250 driver ? Without the
-> > 8250-specific
->
-> static struct plat_serial8250_port uart0_data = {
->         .mapbase = AR7_REGS_UART0,
->         .irq = AR7_IRQ_UART0,
->         .regshift = 2,
->         .iotype = UPIO_MEM,
->         .flags = UPF_BOOT_AUTOCONF | UPF_IOREMAP,
-> };
->
->         uart_port[0].type = PORT_16550A;
->         uart_port[0].line = 0;
->         uart_port[0].irq = AR7_IRQ_UART0;
->         uart_port[0].uartclk = ar7_bus_freq() / 2;
->         uart_port[0].iotype = UPIO_MEM;
->         uart_port[0].mapbase = AR7_REGS_UART0 + 3;
->         uart_port[0].membase = ioremap(uart_port[0].mapbase, 256);
->         uart_port[0].regshift = 2;
->         res = early_serial_setup(&uart_port[0]);
->         if (res)
->                 return res;
->
->
-> the +3 comes from the fact, that this machine is configured to run big
-> endian.
->
-> Here is the boot log:
->
-> Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing disabled
-> serial8250: ttyS0 at MMIO 0x8610e03 (irq = 15) is a 16550A
-> console handover: boot [early0] -> real [ttyS0]
-> serial8250: ttyS1 at MMIO 0x8610f00 (irq = 19) is a 16550A
-> loop: module loaded
-> Fixed MDIO Bus: probed
->
->
-> ttyS1 uses the wrong address, but there is nothing connected to
-> that port on the box.
->
-> Do you see the problem on TNETD7200 devices as well ?
+On Sunday 14 June 2009, Benjamin S. wrote:
+> 
+> On Sun, 14 Jun 2009 12:35:24 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Thanks for the report, the problem seems to be related to the chipset, because
+> > I'm unable to reproduce it with SB600 and a fairly new AMD CPU.
+> > 
+> > Does the resume work if you comment out suspend_device_irqs() and
+> > resume_device_irqs() in drivers/base/power/main.c ?
+> 
+> Yes, 2.6.30 without the two lines resumes without problems.\
 
-I no longer have TNETD7200 devices to test on unfortunately.
+Does it help (with the two lines present again) if the kernel is compiled with
+CONFIG_PCI_MSI unset?
 
-What I just found is that TNETD7300GDU revision 5 does not have this bug, 
-while TNETD7300GDU revision 4 has. This seems to confirm the HW bug 
-hypothesis. Let's just clean the serial console registration and we will keep 
-in OpenWrt the 8250 workaround for older TNETD7300 revisions.
--- 
-Best regards, Florian Fainelli
-Email : florian@openwrt.org
-http://openwrt.org
--------------------------------
+Rafael
