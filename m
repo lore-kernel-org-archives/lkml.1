@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbZFNJJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZFNJMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbZFNJJh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 05:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbZFNJJ3
+	id S1755291AbZFNJMh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 05:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZFNJM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 05:09:29 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:35361 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750770AbZFNJJ2 (ORCPT
+	Sun, 14 Jun 2009 05:12:29 -0400
+Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:2868
+	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751260AbZFNJM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 05:09:28 -0400
-Date: Sun, 14 Jun 2009 11:06:21 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090614090621.GD22856@game.jcrosoft.org>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk>
+	Sun, 14 Jun 2009 05:12:28 -0400
+X-Trace: 257160112/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/83.67.11.44/None/tvrtko@ursulin.net
+X-SBRS: None
+X-RemoteIP: 83.67.11.44
+X-IP-MAIL-FROM: tvrtko@ursulin.net
+X-SMTP-AUTH: 
+X-MUA: KMail/1.9.10
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmYFAPtbNEpTQwss/2dsb2JhbACBT88phA0F
+X-IronPort-AV: E=Sophos;i="4.42,217,1243810800"; 
+   d="scan'208";a="257160112"
+X-IP-Direction: IN
+From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+To: linux-acpi@vger.kernel.org
+Subject: Re: [2.6.30][regression] ACPI continuously logging errors and exceptions while reading DVD
+Date: Sun, 14 Jun 2009 10:12:27 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200906131244.45309.tvrtko@ursulin.net>
+In-Reply-To: <200906131244.45309.tvrtko@ursulin.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090611123852.GM795@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Ovh-Tracer-Id: 13710364641485237171
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.500074/N
+Message-Id: <200906141012.27676.tvrtko@ursulin.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-> For the most part, the answer is no.  People concentrate on their own
-> areas, and won't look at someone with a new class of platforms (eg,
-> the STMP or W90x900 stuff).
-Personnaly I do the effort to review other people stuff as I've to do on
-U-Boot for my Maintainer staff specially when I've to review them also for
-U-Boot as example the Nomadidk stuff
-> 
-> I'd absolutely love it if the review load could be shared, but for the
-> most part it just doesn't happen.  Everyone's far too busy with their
-> own stuff to help out (and that's a reason that they'll give if tackled
-> head on about it.)
-> 
-> As I've already said, akpm tried to setup a mutual review between
-> several ARM folk, but as far as I'm aware, it has so far been 
-> unsuccessful (exactly why I don't know.)
-> 
-> So to somehow level an accusation at me that I'm tightly controlling this
-> stuff is way off the mark.  I've been trying to get greater participation
-> but it's just not happening.
-> 
-> > Or, alternatively, experiment with tools that could potentially make
-> > you more efficient (patchwork has worked wonders for me).
-> 
-> If patchwork can replace what my patch system does for me (which is
-> basically to help ensure that patches don't get lost which need
-> applying - that's different from logging every single patch) then
-> I'll gladly look at it.  It will mean that some of the sanity checks
-> on the patch content, which happen automatically with the patch system,
-> will need to be done manually.
-> 
-> If patchwork just gathers up every patch which has ever been seen on
-> a mailing list, then stuff will get lost at a higher rate than today
-> and it will have a negative impact.
-I've try the patchwork system for some month and It's for really the same as
-your patch system but if you configured it correctly it will simplify your
-life. I've start to develop 2 or 3 scripts that I use with mutt to change the
-state on a patch and co, to have something near your patch system
+On Saturday 13 June 2009 12:44:45 Tvrtko A. Ursulin wrote:
+> Hi,
+>
+> Just booted up 2.6.30 for the first time on this machine and found this
+> problem.	Hope the attachment goes through because everything is in there.
+> Log is shortened since errors are always the same and repeating constantly
+> while DVD is in use.
 
-Best Regards,
-J.
+Hm, I am not longer certain this was related to DVD access. At the time I was 
+looking it may have been a wild coincidence, but after that I saw it at other 
+times as well.
+
+What also may be interesting, and what I have only now noticed, is that with a 
+distro kernel (2.6.27.23-0.1-default, openSUSE 11.1), kacpid uses a lot of 
+CPU time at also seemingly random intervals. So far in ~17 hours of uptime it 
+accumulated 70 minutes of CPU time. When it is active it uses from 5-20% of 
+it and load average shoots dramatically up:
+
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         9  6.9  0.0      0     0 ?        S<   Jun13  70:24 [kacpid]
+
+ 10:07am  up  16:49,  2 users,  load average: 2.56, 1.34, 0.80
+
+Tvrtko
