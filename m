@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbZFNSbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbZFNSeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760520AbZFNSbq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 14:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZFNSbi
+	id S1762054AbZFNSeS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 14:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZFNSeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 14:31:38 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:62464 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754562AbZFNSbi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 14:31:38 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
-Date: Sun, 14 Jun 2009 20:31:36 +0200
-User-Agent: KMail/1.9.9
-Cc: thomas@m3y3r.de, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       stern@rowland.harvard.edu
-References: <1244996001.8440.10.camel@localhost> <200906141828.11970.rjw@sisk.pl> <1244997882.8440.13.camel@localhost> <1244997882.8440.13.camel@localhost> <200906141901.46687.rjw@sisk.pl>
-In-reply-To: <200906141901.46687.rjw@sisk.pl>
+	Sun, 14 Jun 2009 14:34:08 -0400
+Received: from www.tglx.de ([62.245.132.106]:58870 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754911AbZFNSeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 14:34:07 -0400
+Date: Sun, 14 Jun 2009 20:33:57 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+Message-ID: <20090614183357.GE3639@local>
+References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-3-git-send-email-w.sang@pengutronix.de> <20090614122136.GD3639@local> <20090614171406.GA1010@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906142031.38358.elendil@planet.nl>
-X-OriginalArrivalTime: 14 Jun 2009 18:31:39.0149 (UTC) FILETIME=[5B30B3D0:01C9ED1E]
+In-Reply-To: <20090614171406.GA1010@pengutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-
->> 00:02.1 USB Controller: nVidia Corporation MCP55 USB Controller (rev a2) (prog-if 20 [EHCI])
->>       Subsystem: Micro-Star International Co., Ltd. Device 7250
->>       Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
->>       Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->>       Latency: 0 (750ns min, 250ns max)
->>       Interrupt: pin B routed to IRQ 23
->>       Region 0: Memory at fe9fac00 (32-bit, non-prefetchable) [size=256]
->>       Capabilities: [44] Debug port: BAR=1 offset=0098
->>       Capabilities: [80] Power Management version 2
->>               Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
->>               Status: D0 PME-Enable- DSel=0 DScale=0 PME+
->>       Kernel driver in use: ehci_hcd
+On Sun, Jun 14, 2009 at 07:14:06PM +0200, Wolfram Sang wrote:
+> Hello Hans,
 > 
-> PME+ means that the USB EHCI controller will signal a PME as soon as it is
-> enabled, so if PME is enabled on the controller before suspend, it will
-> wake up the system.
+> > > +	uioinfo->irq = irq_of_parse_and_map(op->node, 0);
+> > > +	if (!uioinfo->irq)
+> > > +		uioinfo->irq = UIO_IRQ_NONE;
+> > 
+> > Please don't do this. It's inconsistent if all other UIO drivers require
+> > people to use UIO_IRQ_NONE and you also allow zero. UIO_IRQ_NONE was
+> > introduced because 0 may be a legal interrupt number on some platforms.
 > 
-> Please send a boot log.
+> Yes, well, the '0' vs. 'NO_IRQ' thing is still not fully sorted out AFAIK.
 
-Was already included in the initial message...
+A "cat /proc/interrupts" on any common x86 PC shows you that IRQ 0 is used
+there. OK, it's unlikely someone wants to write a UIO driver for that one,
+but that might be different on other platforms.
+Anyway, 0 is a valid IRQ number, so it cannot be used as "no irq".
 
-I wonder if this device could be the cause:
-[   40.232873] wlan0: register 'rndis_wlan' at usb-0000:00:02.1-6.1,
-               Wireless RNDIS device, BCM4320b based, 00:16:01:cf:56:29
-[   40.232907] usbcore: registered new interface driver rndis_wlan
-[...]
-[   41.705516] rndis_wlan 1-6.1:1.0: rndis media disconnect
+> But you are possibly right here, as long as irq_of_parse_and_map does return
+> NO_IRQ, I should explicitly check for it, like this:
+> 
+> 	if (uioinfo->irq == NO_IRQ)
+> 		uioinfo->irq = UIO_IRQ_NONE;
+
+Sorry for my ignorance, but what is NO_IRQ? If I do a
+
+grep -r NO_IRQ include/
+
+I get nothing.
+
+> 
+> > > +/* Match table for of_platform binding */
+> > > +static const struct of_device_id __devinitconst uio_of_genirq_match[] = {
+> > 
+> > checkpatch.pl complains about that. Please check.
+> 
+> Did that, it is a false positive. See here:
+> 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/02780.html
+
+Well, you claim it's a false positive. So far, you did not get any responses,
+AFAICS. I tend to agree with you, but I'd like to avoid patches that don't
+pass checkpatch.pl, whatever the reason. Either the false positive gets
+confirmed and fixed, or you should fix your patch.
+
+Thanks,
+Hans
+
+> 
+> Regards,
+> 
+>    Wolfram
+> 
+> -- 
+> Pengutronix e.K.                           | Wolfram Sang                |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+
