@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbZFNKHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZFNKK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756433AbZFNKHp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 06:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZFNKHi
+	id S1755270AbZFNKK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 06:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZFNKKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 06:07:38 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43752 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751834AbZFNKHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 06:07:37 -0400
-X-Authenticated: #3576790
-X-Provags-ID: V01U2FsdGVkX1/XlesVBunX9ZN/OpwxRRB54F3CKfgCEn0f3OA46U
-	KRrHTI+6a5bc5c
-Date: Sun, 14 Jun 2009 12:09:50 +0200
-From: "Benjamin S." <sbenni@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, js@sig21.net
-Subject: 2.6.30 enabling cpu1 on resume fails after suspend to memory
-Message-ID: <20090614120950.116536fa@pluto-lenny.milky.way>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 14 Jun 2009 06:10:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:62396 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbZFNKKT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 06:10:19 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH] asm-generic: uaccess: fix up local access_ok() usage
+Date: Sun, 14 Jun 2009 12:10:17 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <1244903447-23579-1-git-send-email-vapier@gentoo.org> <200906132253.39879.arnd@arndb.de> <8bd0f97a0906131747odfe851chebfef9a541fa5c58@mail.gmail.com>
+In-Reply-To: <8bd0f97a0906131747odfe851chebfef9a541fa5c58@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
+Message-Id: <200906141210.17922.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+bEJ5axsuZEoXiVkUHfrju2t6z6iYxZ7/+6MZ
+ 85YnpmVHA/7Sdd0iG+CdZkvs7oZN8Z5ceoTbx0O3IChqEMemxT
+ lsvDXa4LhnMDz5sGO1n+g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 14 June 2009, Mike Frysinger wrote:
+> well, if you dont mind a bit of cruft, you can undef it ;)
+> #include <asm-generic/uaccess.h>
+> #undef access_ok
 
-Hi,
+That will only work for the users outside of uaccess.h, so it doesn't
+solve this problem.
 
-I think I have the same problem Johannes has posted there:
+> the Blackfin port does have hardware memory protection (MPU) and it
+> does handle r/w/x bits, but we havent merged this into access_ok yet,
+> just the vma lists
 
-http://marc.info/?l=linux-kernel&m=124475174614672&w=2
+Hmm, if the hardware can catch memory protection errors, why would
+you want to check them again in access_ok()? Are the checks disabled
+in kernel mode? Most implementations of access_ok only check if the
+address is a kernel or user pointer, because the kernel can access
+both on most architectures, and the MMU only protects you from
+passing invalid pointers, not valid kernel pointers.
 
-My motherboard is a Gigabyte GA-MA78G-DS3H rev. 1.0 (chipset SB700 - the 
-same as Johannes' chipset) and my CPU is a AMD 4850e (also the same
-as Johannes' CPU). Thus I see the same error on resume after suspend
-to memory:
+> > What I really got wrong was the prototype for __access_ok(), as you
+> > showed in your follow-up. I only tested this with the microblaze
+> > patch that overrides __access_ok() with an architecture specific
+> > version that gets this part right.
+> 
+> yeah, that looks good, but i'd still like the __access_ok -> access_ok
 
-Initializing CPU#1
-Stuck ??
-Error taking CPU#1 up: -5
+Ok, no problem. I can take that change as well, don't care much either way.
 
-
-After bisecting all revisions between 2.6.29 and 2.6.30 the first bad 
-revision seems to be:
-
-commit 2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Mon Mar 16 22:34:06 2009 +0100
-
-    PM: Rework handling of interrupts during suspend-resume
-
-    Use the functions introduced in by the previous patch,
-    suspend_device_irqs(), resume_device_irqs() and check_wakeup_irqs(),
-    to rework the handling of interrupts during suspend (hibernation) and
-    resume.  Namely, interrupts will only be disabled on the CPU right
-    before suspending sysdevs, while device drivers will be prevented
-    from receiving interrupts, with the help of the new helper function,
-    before their "late" suspend callbacks run (and analogously during
-    resume).
-
-    In addition, since the device interrups are now disabled before the
-    CPU has turned all interrupts off and the CPU will ACK the interrupts
-    setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
-    any wake-up interrupts are pending and abort suspend if that's the
-    case.
-
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Acked-by: Ingo Molnar <mingo@elte.hu>
-
-
-
-Best Regards, 
-
-Benjamin
+	Arnd <><
