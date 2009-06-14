@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761512AbZFNNnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbZFNNuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761512AbZFNNnT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 09:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbZFNNnH
+	id S1760046AbZFNNuH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 09:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbZFNNtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 09:43:07 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:43342 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755331AbZFNNnG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 09:43:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Mks9cGb7COp08mlow+Bpb9bTLh8Qn2B2c0CD+u/oE43tvHMCUt/DHYn6fcIGabOYz/
-         kWbx/TrzEkF0SSqsURNPqWoXUHwhXnVzg78ofo5WIpBOjpW/yQ6v3B5kB59cs0fslYJH
-         3hqeVew94m7BkXrC+fnF9OVvPrepFDH8vFF9A=
+	Sun, 14 Jun 2009 09:49:55 -0400
+Received: from www.tglx.de ([62.245.132.106]:59942 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753930AbZFNNty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 09:49:54 -0400
+Date: Sun, 14 Jun 2009 15:49:34 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+cc: "Benjamin S." <sbenni@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "js@sig21.net" <js@sig21.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: RE: 2.6.30 enabling cpu1 on resume fails after suspend to memory
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC466924418A@orsmsx505.amr.corp.intel.com>
+Message-ID: <alpine.LFD.2.00.0906141548490.2800@localhost.localdomain>
+References: <20090614120950.116536fa@pluto-lenny.milky.way> <200906141400.27331.rjw@sisk.pl> <alpine.LFD.2.00.0906141405450.2800@localhost.localdomain> <200906141415.16949.rjw@sisk.pl> <20090614143708.32ec250c@pluto-lenny.milky.way>
+ <alpine.LFD.2.00.0906141444500.2800@localhost.localdomain> <7E82351C108FA840AB1866AC776AEC4669244187@orsmsx505.amr.corp.intel.com> <alpine.LFD.2.00.0906141514120.2800@localhost.localdomain>
+ <7E82351C108FA840AB1866AC776AEC466924418A@orsmsx505.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1244649318.9942.33.camel@earl.localdomain>
-References: <1244649318.9942.33.camel@earl.localdomain>
-Date: Sun, 14 Jun 2009 09:43:08 -0400
-Message-ID: <48f7fe350906140643o7db4d849jb9139bb2f9e83c23@mail.gmail.com>
-Subject: [PATCH 2/3] Re: Radeon kernel modesetting patch (as staging) please 
-	review
-From: Ryan Hope <rmh3093@gmail.com>
-To: Jerome Glisse <glisse@freedesktop.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 093f1cb1a1850951f86244ada018672885ec4ace
-Author: Ryan Hope <rmh3093@gmail.com>
-Date:   Sun Jun 14 09:36:48 2009 -0400
+On Sun, 14 Jun 2009, Pallipadi, Venkatesh wrote:
+> >Benjamin just confirmed that. The logic in disable_device_interrupts()
+> >already skips interrupts marked with IRQF_TIMER, but I suspect that
+> >the hpet/MSI interupts are not marked that way.
+> >
+> 
+> For percpu hpet at offline we will have
+> - clockevent shutdown which will disable the interrupt
+> - free_irq that will unregister on CPU DEAD
 
-    fix fbcon/radeon initialization order
+Well, the interupt in question is on the boot cpu which is not going
+through CPU DEAD :)
 
-diff --git a/drivers/gpu/drm/radeon/radeon_drv.c
-b/drivers/gpu/drm/radeon/radeon_drv.c
-index f70c351..ff4e052 100644
---- a/drivers/gpu/drm/radeon/radeon_drv.c
-+++ b/drivers/gpu/drm/radeon/radeon_drv.c
-@@ -345,7 +345,11 @@ static void __exit radeon_exit(void)
-        drm_exit(driver);
- }
+Thanks,
 
-+#ifdef MODULE
- module_init(radeon_init);
-+#else
-+late_initcall(radeon_init);
-+#endif
- module_exit(radeon_exit);
-
- MODULE_AUTHOR(DRIVER_AUTHOR);
+	tglx
