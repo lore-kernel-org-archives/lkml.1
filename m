@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759178AbZFNOpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbZFNOvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759178AbZFNOpg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 10:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZFNOp2
+	id S1758804AbZFNOvZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 10:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbZFNOvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 10:45:28 -0400
-Received: from www.tglx.de ([62.245.132.106]:60264 "EHLO www.tglx.de"
+	Sun, 14 Jun 2009 10:51:15 -0400
+Received: from mms2.broadcom.com ([216.31.210.18]:3237 "EHLO mms2.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754849AbZFNOp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 10:45:28 -0400
-Date: Sun, 14 Jun 2009 16:45:10 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-cc: "Benjamin S." <sbenni@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "js@sig21.net" <js@sig21.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
-Subject: RE: 2.6.30 enabling cpu1 on resume fails after suspend to memory
-In-Reply-To: <alpine.LFD.2.00.0906141548490.2800@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0906141644190.2800@localhost.localdomain>
-References: <20090614120950.116536fa@pluto-lenny.milky.way> <200906141400.27331.rjw@sisk.pl> <alpine.LFD.2.00.0906141405450.2800@localhost.localdomain> <200906141415.16949.rjw@sisk.pl> <20090614143708.32ec250c@pluto-lenny.milky.way>
- <alpine.LFD.2.00.0906141444500.2800@localhost.localdomain> <7E82351C108FA840AB1866AC776AEC4669244187@orsmsx505.amr.corp.intel.com> <alpine.LFD.2.00.0906141514120.2800@localhost.localdomain> <7E82351C108FA840AB1866AC776AEC466924418A@orsmsx505.amr.corp.intel.com>
- <alpine.LFD.2.00.0906141548490.2800@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752234AbZFNOvO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 10:51:14 -0400
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
+From: "Michael Chan" <mchan@broadcom.com>
+To: "'James Bottomley'" <James.Bottomley@HansenPartnership.com>
+cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Date: Sun, 14 Jun 2009 07:51:07 -0700
+Subject: Re: -git tree build failure #2: drivers/net/cnic.c:2520: error:
+ implicit declaration of function '__symbol_get'
+Thread-Topic: -git tree build failure #2: drivers/net/cnic.c:2520:
+ error: implicit declaration of function '__symbol_get'
+Thread-Index: Acns+pAjgpEEIrtpTUSqyNajtMClzgACzGkw
+Message-ID: <C27F8246C663564A84BB7AB343977242178EE78068@IRVEXCHCCR01.corp.ad.broadcom.com>
+In-Reply-To: <1244988911.4096.23.camel@mulgrave.site>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-WSS-ID: 662BD1D638G6135635-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin,
+James Bottomley wrote:
 
-On Sun, 14 Jun 2009, Thomas Gleixner wrote:
-> On Sun, 14 Jun 2009, Pallipadi, Venkatesh wrote:
-> > >Benjamin just confirmed that. The logic in disable_device_interrupts()
-> > >already skips interrupts marked with IRQF_TIMER, but I suspect that
-> > >the hpet/MSI interupts are not marked that way.
-> > >
-> > 
-> > For percpu hpet at offline we will have
-> > - clockevent shutdown which will disable the interrupt
-> > - free_irq that will unregister on CPU DEAD
-> 
-> Well, the interupt in question is on the boot cpu which is not going
-> through CPU DEAD :)
+> On Sat, 2009-06-13 at 19:18 -0700, Michael Chan wrote:
+> >
+> > This will require some additional infra-structure.  We can look into
+> > this when we support the 10G driver.  Thanks.
+>
+> So if you're going to redo it for the 10G driver, and without the 10G
+> driver there really seems no need to have a call by
+> reflection in there,
+> why not simply do a direct call until the 10G driver is added?  This
+> will save everyone potential hassle from what is a highly unusual
+> interface.
+>
 
-can you please test the patch below.
+There's an additional usage issue if we switch to a direct call.  The
+cnic driver will now have a permanent reference on the bnx2 driver
+after it is loaded.  Networking users will be unable to unload the
+bnx2 driver once the cnic driver is loaded.
 
-Thanks,
+This may not be a serious issue, but one of the goals of the design is
+to have minmal impact on networking users.  Since kernel 2.6, users
+have been able to unload networking drivers at any time.
 
-	tglx
------------->
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 81408b9..dedc2bd 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -510,7 +510,8 @@ static int hpet_setup_irq(struct hpet_dev *dev)
- {
- 
- 	if (request_irq(dev->irq, hpet_interrupt_handler,
--			IRQF_DISABLED|IRQF_NOBALANCING, dev->name, dev))
-+			IRQF_TIMER | IRQF_DISABLED | IRQF_NOBALANCING,
-+			dev->name, dev))
- 		return -1;
- 
- 	disable_irq(dev->irq);
+Thanks.
+
+
