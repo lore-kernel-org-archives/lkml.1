@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbZFNTYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763886AbZFNTY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762534AbZFNTYS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 15:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759722AbZFNTYJ
+	id S1763886AbZFNTY4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 15:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760374AbZFNTYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 15:24:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:60346 "EHLO www.tglx.de"
+	Sun, 14 Jun 2009 15:24:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37876 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219AbZFNTYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 15:24:08 -0400
-Date: Sun, 14 Jun 2009 21:23:59 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
-Message-ID: <20090614192359.GG3639@local>
-References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-3-git-send-email-w.sang@pengutronix.de> <20090614122136.GD3639@local> <20090614171406.GA1010@pengutronix.de> <20090614183357.GE3639@local> <20090614190533.GA7387@pengutronix.de>
+	id S1755809AbZFNTYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 15:24:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH] PCI PM: Fix handling of devices without PM support by pci_target_state()
+Date: Sun, 14 Jun 2009 21:25:02 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andreas Mohr <andim2@users.sourceforge.net>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090614190533.GA7387@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906142125.03418.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 09:05:33PM +0200, Wolfram Sang wrote:
-> 
-> > Anyway, 0 is a valid IRQ number, so it cannot be used as "no irq".
-> 
-> May I point you to this thread?
-> 
-> http://lkml.org/lkml/2005/11/21/221
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Linus is just plain wrong in this 4 year old mail.
+If a PCI device is not power-manageable either by the platform, or
+with the help of the native PCI PM interface, pci_target_state() will
+return either PCI_D3hot, or PCI_POWER_ERROR for it, depending on
+whether or not the device is configured to wake up the system.  Alas,
+none of these return values is correct, because each of them causes
+pci_prepare_to_sleep() to return error code, although it should
+complete successfully in such a case.
 
-> 
-> (The issue comes up once in a while as some archs still use NO_IRQ, some with
-> 0 some with -1)
-> 
-> > > 	if (uioinfo->irq == NO_IRQ)
-> > > 		uioinfo->irq = UIO_IRQ_NONE;
-> > 
-> > Sorry for my ignorance, but what is NO_IRQ? If I do a
-> > 
-> > grep -r NO_IRQ include/
-> > 
-> > I get nothing.
-> 
-> Try a 'cd arch' before that :)
+Fix this problem by making pci_target_state() always return PCI_D0
+for devices that cannot be power managed.
 
-no such luck in arch/x86/ ...
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+Hi Jesse,
 
-> 
-> > Well, you claim it's a false positive. So far, you did not get any responses,
-> > AFAICS. I tend to agree with you, but I'd like to avoid patches that don't
-> > pass checkpatch.pl, whatever the reason. Either the false positive gets
-> > confirmed and fixed, or you should fix your patch.
-> 
-> Well, I assume that issues regarding checkpatch do not have the highest
-> priority (especially while the merge-window is open), which is understandable.
-> Fixing this bug (I take any bets that this is one ;)) might not be so trivial,
-> as modifying $Attributes can easily have lots of side-effects.
-> 
-> Now, all this does not matter much, as the objections Grant raised are valid
-> and there might be a totally different outcome to bind devices to UIO. But at
-> least, we have some code to discuss...
+I think this is 2.6.31 material, probably -stable too.
 
-OK, I'm looking forward to your next version.
+Best,
+Rafael
 
-Thanks,
-Hans
+---
+ drivers/pci/pci.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-
-> 
-> Regards,
-> 
->    Wolfram
-> 
-> -- 
-> Pengutronix e.K.                           | Wolfram Sang                |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
-
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1288,15 +1288,14 @@ pci_power_t pci_target_state(struct pci_
+ 		default:
+ 			target_state = state;
+ 		}
++	} else if (!dev->pm_cap) {
++		target_state = PCI_D0;
+ 	} else if (device_may_wakeup(&dev->dev)) {
+ 		/*
+ 		 * Find the deepest state from which the device can generate
+ 		 * wake-up events, make it the target state and enable device
+ 		 * to generate PME#.
+ 		 */
+-		if (!dev->pm_cap)
+-			return PCI_POWER_ERROR;
+-
+ 		if (dev->pme_support) {
+ 			while (target_state
+ 			      && !(dev->pme_support & (1 << target_state)))
