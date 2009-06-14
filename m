@@ -1,172 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZFNCYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZFNCZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993AbZFNCYj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 22:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZFNCYa
+	id S1753958AbZFNCZQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 22:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZFNCZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 22:24:30 -0400
-Received: from ey-out-1920.google.com ([74.125.78.146]:61066 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbZFNCYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 22:24:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=iUT1675jh8FdohlXDLYfnP2DhrNR6vaRLhpEaOjyFC8bdIVTbLgcA7OwbbTcYaRlL7
-         uOtcCueheya9SVTdmqujWzak55g5B9rUdbsBvBftJ10M88LdRg4SG3K5gP78PnjEb5fC
-         XzynH8HUDqOey4DNn3JP9KHep5GpYIHarcYfw=
-Date: Sun, 14 Jun 2009 04:24:28 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] ftrace: document basic ftracer/ftracer graph needs
-Message-ID: <20090614022427.GE5986@nowhere>
-References: <20090613222440.GA5986@nowhere> <1244938913-11775-1-git-send-email-vapier@gentoo.org> <20090614012457.GD5986@nowhere> <8bd0f97a0906131852r255a30a5p1d602a6eb7778ff4@mail.gmail.com>
+	Sat, 13 Jun 2009 22:25:04 -0400
+Received: from mms2.broadcom.com ([216.31.210.18]:1152 "EHLO mms2.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbZFNCZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Jun 2009 22:25:02 -0400
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
+Subject: Re: -git tree build failure #2: drivers/net/cnic.c:2520: error:
+ implicit declaration of function
+ =?UTF-8?Q?=E2=80=98=5F=5Fsymbol=5Fget=E2=80=99?=
+From: "Michael Chan" <mchan@broadcom.com>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
+cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <1244943216.5323.86.camel@mulgrave.site>
+References: <20090612184343.GA11900@elte.hu>
+ <4A32A1E4.8080708@oracle.com> <20090613062933.GA14034@elte.hu>
+ <alpine.LFD.2.01.0906131309560.3237@localhost.localdomain>
+ <1244925747.5323.57.camel@mulgrave.site> <1244940182.12000.5.camel@HP1>
+ <1244943216.5323.86.camel@mulgrave.site>
+Date: Sat, 13 Jun 2009 19:18:05 -0700
+Message-ID: <1244945885.12000.13.camel@HP1>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0906131852r255a30a5p1d602a6eb7778ff4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 662A80F838G5429623-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 09:52:18PM -0400, Mike Frysinger wrote:
-> On Sat, Jun 13, 2009 at 21:24, Frederic Weisbecker wrote:
-> > On Sat, Jun 13, 2009 at 08:21:53PM -0400, Mike Frysinger wrote:
-> >> +HAVE_FUNCTION_GRAPH_TRACER
-> >
-> > Should be HAVE_FUNCTION_TRACER, right?
+
+On Sat, 2009-06-13 at 18:33 -0700, James Bottomley wrote:
+> On Sat, 2009-06-13 at 17:43 -0700, Michael Chan wrote:
+> > On Sat, 2009-06-13 at 13:42 -0700, James Bottomley wrote:
+> > > On Sat, 2009-06-13 at 13:11 -0700, Linus Torvalds wrote:
+> > > > 
+> > > > 
+> > > > That makes no sense. 
+> > > > 
+> > > > Look at the first #include in the file - it already includes 
+> > > > <linux/module.h>.
+> > > > 
+> > > > Why do we need to do it twice?
+> > > 
+> > > We don't ... it's the wrong fix.  The actual problem is that
+> > > __symbol_get() is only defined for the modular case.  What it looks to
+> > > be doing is a reflection call on bnx2_cnic_probe().  I'm not sure why
+> > > it's doing this ... other than perhaps cnic wants to avoid an explicit
+> > > bnx2 dependency?  I actually think it's incorrect, since the netdev code
+> > > before it just checked bnx2 is present, so I see no harm in an explicit
+> > > call, so this should fix it.
+> > > 
+> > > If it had a good reason for the reflective call, then symbol_get()
+> > > without the __ should be used.
+> > > 
+> > > Michael Chan, could you confirm?
+> > > 
+> > Thanks James and Ingo.  We don't want to have a symbol dependency on
+> > bnx2 because this driver eventually will support the 10G bnx2x driver as
+> > well.  So we want the driver to support either or both NIC drivers
+> > without both drivers loaded.  Please use the patch below.
 > 
-> yes
-> 
-> > There is one crucial missing thing, I mean "save all state needed by the ABI"
-> > can be more detailed. do_trace _must_
-> > save the scratch and argument registers to the stack because
-> > the traced function may have parameters passed by registers,
-> > initialized things on scratch registers, and this state
-> > must be left intact before calling ftrace_trace_function()
-> 
-> parameters passed by registers, yes, but as for scratch registers,
-> that depends on the toolchain and where the mcount invocation occurs.
-> if it's before the function prolog, then no, it doesnt need to worry
-> about any scratch registers.  if it's after, then yes, it probably
-> needs to worry about those things.  but this is why i have a paragraph
-> saying "go read your abi documentation" and review glibc.
+> Um, but that's not going to work very well.  When you have your 10G
+> driver, they'll both have to export the symbol name bnx2_cnic_probe
+> which the kernel isn't going to like.  You can differentiate the symbols
+> and add a multiple symbol lookup in init_bnx2_cnic(), but that's getting
+> ugly.
 
-
-
-Ok, then in this case, just talk about it as a constraint that
-may be or not handled by the arch specific mcount.
-
-It's really a prerequisite to check on every archs so I think
-it's worth showing this mandatory stage in the recipe.
-
-
- 
-> >> +For information on how to implement prepare_ftrace_return(), simply look at
-> >> +the x86 version.  The only architecture-specific piece in it is the setup of
-> >> +the fault recovery table (the asm(...) code).  The rest should be the same
-> >> +across architectures.
-> >> +
-> >> +Here is the pseudo code for the new return_to_handler assembly function.  Note
-> >> +that the ABI that applies here is different from what applies to the mcount
-> >> +code.  Here you are returning from a function, so you might be able to skimp
-> >> +on things saved/restored.
-> >
-> > It would be nice to add details about that, especially about a constant rule:
-> > return_to_handler must save/restore the return value of the current exiting
-> > function around ftrace_return_to_handler call.
-> >
-> > And this return value might be stored in more than one register for
-> > 64 bits return values.
-> >
-> > But we don't need to save/restore the other scratch  registers because the
-> > traced function is exiting and won't need anymore values stored in them.
-> 
-> i'm not familiar with other architectures and crazy shit that might go
-> down here which is why i kind of skimped on details.  for the Blackfin
-> port, i know what i have to do -- just save/restore the return
-> registers (r0 for 32bits, +r1 for 64bits, +p0 for >64bits).  but i
-> purposefully tried to avoid ABI details because i dont want this
-> turning into "on <arch>, do <whole bunch of details>, on <arch2>, do
-> <whole bunch of details>, ....".
-
-
-
-That's not what I'm suggesting.
-As I explained above, it's about a generic and cross arch constraint.
-
-The details of implementation are only a concern for the developer.
-
+Yeah, the plan is to have a bnx2x_cnic_probe() when we add support for
+that.  There will be a separate init_bnx2x_cnic() because the hardware
+interface is not exactly the same.
 
 > 
-> the scratch register is more because the exit code is coming after the
-> function epilog rather than "exiting it" ...
-
-
-Yeah, that's what I meant by "exiting" :)
-
-
+> What about doing something more standard, like bus matching?  That's how
+> the SCSI upper layer drivers work:  we export a virtual SCSI bus and
+> they bind to it if a supporting device appears.  You could do something
+> similar exporting a virtual cnic bus from your network drivers and get
+> the cnic driver to bind to it.
 > 
-> i dont mind adding tips, but the last thing i want is people
-> complaining that they did what the docs said and now things crashed
-> because they didnt fully grasp the "it's your ABI, so it's your
-> problem".
 
+This will require some additional infra-structure.  We can look into
+this when we support the 10G driver.  Thanks.
 
-
-I'm only talking about generic rules here. Every ABI has conventions
-about calls, scratch registers, etc...
-
-But here we are using tracing code in very fragile paths that have
-common constraints on every archs. Those constraints concern
-common properties of every CPU, the implementation which implement
-these constraints is only a concern of the arch developer.
-
-
-> > Also, we had some problems with return_to_handler in x86-64.
-> > We needed to allocate a large stack room (0x80 bytes) before calling
-> > ftrace_return_to_handler(). The funny thing is that we still don't know
-> > why we needed to do that, but omitting that resulted in crashes :-)
-> 
-> without knowing anything about x86-64 treating of the stack, it does
-> seem weird.  with the Blackfin arch, the called function is
-> responsible for allocating its own space.
-
-
-That's also what does x86, really that's a mystery..
-
-
-> >> +HAVE_FTRACE_SYSCALLS
-> >> +---------------------
-> >> +
-> >> +<details to be filled>
-> >
-> > This part doesn't need more for now because it may change soon
-> > since the syscall tracing is currently reworked.
-> > We'll fill it once it reaches a more established state.
-> >
-> >> +HAVE_DYNAMIC_FTRACE
-> >> +---------------------
-> >> +
-> >> +<details to be filled>
-> >
-> > But this part is important :)
-> 
-> i filled in what i could reverse engineer ... and these two bits
-> looked way more complicated than was worth me trying to figure out.
-> these are what i'd be interested in next though.
-> -mike
-
-
-Never mind, this documentation can be filled through several iterations.
-This patch already provides very useful explanations.
-
-Thanks,
-Frederic.
 
