@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbZFNNEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbZFNNGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbZFNNEy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 09:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZFNNEq
+	id S1758759AbZFNNGS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 09:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbZFNNGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 09:04:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38464 "EHLO mx2.redhat.com"
+	Sun, 14 Jun 2009 09:06:06 -0400
+Received: from www.tglx.de ([62.245.132.106]:53498 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbZFNNEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 09:04:45 -0400
-Message-ID: <4A34F564.2010500@redhat.com>
-Date: Sun, 14 Jun 2009 16:04:36 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1755161AbZFNNGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 09:06:05 -0400
+Date: Sun, 14 Jun 2009 15:05:41 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Benjamin S." <sbenni@gmx.de>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, js@sig21.net,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend to memory
+In-Reply-To: <20090614145910.71c5cd5d@pluto-lenny.milky.way>
+Message-ID: <alpine.LFD.2.00.0906141503160.2800@localhost.localdomain>
+References: <20090614120950.116536fa@pluto-lenny.milky.way> <200906141400.27331.rjw@sisk.pl> <alpine.LFD.2.00.0906141405450.2800@localhost.localdomain> <200906141415.16949.rjw@sisk.pl> <20090614143708.32ec250c@pluto-lenny.milky.way>
+ <alpine.LFD.2.00.0906141440440.2800@localhost.localdomain> <20090614145910.71c5cd5d@pluto-lenny.milky.way>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
-References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>	<alpine.LFD.2.01.0906131312470.3237@localhost.localdomain>	<alpine.LFD.2.01.0906131323270.3237@localhost.localdomain>	<4A34E4A5.3040306@redhat.com> <18996.60235.178618.531664@cargo.ozlabs.ibm.com>
-In-Reply-To: <18996.60235.178618.531664@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Avi Kivity writes:
->
->   
->> An alternative implementation using 64-bit cmpxchg will recover most of 
->> the costs of hashed spinlocks.  I assume most serious 32-bit 
->> architectures have them?
->>     
->
-> Have a 64-bit cmpxchg, you mean?  x86 is the only one I know of, and
-> it already has an atomic64_t implementation using cmpxchg8b (or
-> whatever it's called).
->   
+On Sun, 14 Jun 2009, Benjamin S. wrote:
+> On Sun, 14 Jun 2009 14:43:11 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Sun, 14 Jun 2009, Benjamin S. wrote:
+> > >  19:          0         17   IO-APIC-fasteoi   ehci_hcd:usb4, HDA Intel
+> > >  24:       4830          0  HPET_MSI-edge      hpet2
+> > 
+> > This is probably the culprit. Try booting with hpet=disble and check
+> > whether your resume works.
+> 
+> With this option set resume works.
 
-Yes (and it is cmpxchg8b).  I'm surprised powerpc doesn't have DCAS support.
+That's what I expected.
 
-> My thinking is that the 32-bit non-x86 architectures will be mostly
-> UP, so the overhead is just an interrupt enable/restore.  Those that
-> are SMP I would expect to be small SMP -- mostly just 2 cpus and maybe
-> a few 4-way systems.
->   
+Can you boot w/o that option again and provide the full boot log of
+the machine ? If you sent one alreay just give me a pointer to the
+thread.
 
-The new Nehalems provide 8 logical threads in a single socket.  All 
-those threads share a cache, and they have cmpxchg8b anyway, so this 
-won't matter.
+Can you please provide the output of /proc/timer_list as well ?
 
--- 
-error compiling committee.c: too many arguments to function
+Thanks,
 
+	tglx
