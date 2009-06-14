@@ -1,95 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759718AbZFNMfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbZFNMij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759718AbZFNMfq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbZFNMfA
+	id S1759285AbZFNMij (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZFNMib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:35:00 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54891 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759187AbZFNMe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:34:58 -0400
-X-Authenticated: #3576790
-X-Provags-ID: V01U2FsdGVkX18xrJEu4+8xbLON+4dwYnE+Drt6/YsQDGkkgg+zM6
-	MWB5eww7sbf8+4
-Date: Sun, 14 Jun 2009 14:37:08 +0200
-From: "Benjamin S." <sbenni@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, js@sig21.net,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend to memory
-Message-ID: <20090614143708.32ec250c@pluto-lenny.milky.way>
-In-Reply-To: <200906141415.16949.rjw@sisk.pl>
-References: <20090614120950.116536fa@pluto-lenny.milky.way>
-	<200906141400.27331.rjw@sisk.pl>
-	<alpine.LFD.2.00.0906141405450.2800@localhost.localdomain>
-	<200906141415.16949.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+	Sun, 14 Jun 2009 08:38:31 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42427 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbZFNMia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:38:30 -0400
+Message-ID: <4A34EF41.3020301@novell.com>
+Date: Sun, 14 Jun 2009 08:38:25 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org
+Subject: Re: [KVM PATCH v2 0/2] irqfd: use POLLHUP notification for close()
+References: <20090604124047.10544.38861.stgit@dev.haskins.net> <20090612040837.GA8862@redhat.com>
+In-Reply-To: <20090612040837.GA8862@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig73AA5C42C449B21EC3135320"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Jun 2009 14:15:16 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig73AA5C42C449B21EC3135320
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On Sunday 14 June 2009, Thomas Gleixner wrote:
-> > On Sun, 14 Jun 2009, Rafael J. Wysocki wrote:
-> > > Evidently, the change of the interrupt handling during suspend-resume,
-> > > commit 2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7 (PM: Rework handling of
-> > > interrupts during suspend-resume) broke resume (specifically, the enabling of
-> > > nonboot CPUs) on the Benjamin's machine, but only if MSI support is enabled.
-> > > Also, resume works if suspend_device_irqs() and resume_device_irqs() in
-> > > drivers/base/power/main.c are commented out.
-> > > 
-> > > Is there anything the MSI code does in __enable_irq() and/or __disable_irq()
-> > > that might cause this problem to appear?
-> > 
-> > Not that I'm aware of. Which of the devices is using MSI ? Have to
-> > tried to skip only the MSI ones in suspend/resume_device_irqs() ?
-> 
-> Good idea.
-> 
-> Benjamin, please send /proc/interrupts from your system.
+Michael S. Tsirkin wrote:
+> [ Resending with correct address for Davide. Pls don't reply
+>   to the original one, you'll get bounces. ]
+>
+> On Thu, Jun 04, 2009 at 08:48:02AM -0400, Gregory Haskins wrote:
+>  =20
+>> (Applies to kvm.git/master:25deed73)
+>>
+>> Please see the header for 2/2 for a description.  This patch series ha=
+s been
+>> fully tested and appears to be working correctly.
+>>
+>> [Review notes:
+>>       *) Paul has looked at the SRCU design and, to my knowledge, didn=
+'t find
+>>          any holes.
+>>       *) Michael, Avi, and myself agree that while the removal of the =
+DEASSIGN
+>>          vector is not desirable, the fix on close() is more important=
+ in
+>>          the short-term.  We can always add DEASSIGN support again in =
+the
+>> 	 future with a CAP bit.
+>> ]
+>>    =20
+>
+> So, I've been thinking about this, and this approach has another
+> problem: it depends on pollhup on close which is AFAIK an
+> eventfd-specific feature.
 
-I guess it does not matter if from 2.6.29.2 or from 2.6.30. This 
-is from 2.6.29.2 with CONFIG_PCI_MSI set:
+Thats ok with me, as we are already married to eventfd for other reasons
+(see eventfd_fget()).
 
-           CPU0       CPU1       
-  0:         42          1   IO-APIC-edge      timer
-  1:          0         81   IO-APIC-edge      i8042
-  6:          0          5   IO-APIC-edge      floppy
-  8:          0          1   IO-APIC-edge      rtc0
-  9:          0          0   IO-APIC-fasteoi   acpi
- 14:          0        328   IO-APIC-edge      ide0
- 15:          0          0   IO-APIC-edge      ide1
- 16:          2        408   IO-APIC-fasteoi   ohci_hcd:usb1, ohci_hcd:usb3, HDA Intel
- 17:          0          3   IO-APIC-fasteoi   ehci_hcd:usb2
- 18:          0          0   IO-APIC-fasteoi   ohci_hcd:usb5, ohci_hcd:usb6, ohci_hcd:usb7
- 19:          0         17   IO-APIC-fasteoi   ehci_hcd:usb4, HDA Intel
- 24:       4830          0  HPET_MSI-edge      hpet2
- 26:          0        135   PCI-MSI-edge      eth0
- 27:          0       2855   PCI-MSI-edge      ahci
-NMI:          0          0   Non-maskable interrupts
-LOC:         42       5070   Local timer interrupts
-RES:       2634       2170   Rescheduling interrupts
-CAL:         72        104   Function call interrupts
-TLB:        367        198   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          0
-MIS:          0
+>  This will prevent us from supporting polling
+> other useful file types, such as sockets and pipes, down the road, with=
 
-I am going to compile 2.6.30 with CONFIG_PCI_MSI again to ensure 
-it is the same, but that will take some time.
+> this interface.
+>  =20
+I am thinking that we would add explicit support in the future if there
+are other fd types that might want to also inject interrupts.  For
+instance, perhaps POLLHUP is added to pipes if/when they are patched as
+a valid transport for irqfd.   Or perhaps irqfd is abstracted such that
+eventfd_fget/POLLHUP are eventfd specific assign/deassign implementation
+details.
+
+Another option is that we s/irqfd/irq-eventfd to leave room for other
+interfaces like irq-pollfd, irq-socketfd, etc.  IOW, there is no reason
+to make the current irqfd code "one-fd-interface to rule them all" per
+se.  The real abstraction is the kvm_set_irq() + gsi interface anyway.=20
+The current irqfd code is a thin shim in front of that.  Perhaps each fd
+type would be better served with code to specifically handle each type,
+for its hard to predict what the requirements for translating, say, a
+pipe-write into a gsi-inject will be apriori.
+
+> And there's DEASSIGN issue which is needed for migration
+
+Can you elaborate?  I would think you would need a new fd in the
+migration case anyway and therefore a close()/kvm_irqfd() sequence is
+required.
+
+>  and MSI vector
+> remapping.
+>  =20
+
+I would think this can be worked around with close()/kvm_irqfd()
+workaround unitl the DEASSIGN cap bit is in place, but I may be
+misunderstanding.
+> I didn't realise these implications when I suggested deassign on close.=
+
+> To me, it now looks like we are better off reverting this patch.
+> We can later add 'deassign on close' support with CAP bit after all :)
+>
+> Avi, Gregory, what's your take?
+>
+>  =20
+I like the design with the single-call close in place, so my vote is to
+keep it as it is now.
+
+Thanks Michael,
+-Greg
 
 
-Benjamin
+--------------enig73AA5C42C449B21EC3135320
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko070EACgkQlOSOBdgZUxl08gCeIIw9EcptdjsTpTwLZVxc/Uet
+7ZwAnRbWZbI9ftyprOD2hIN7vEeXLLq8
+=FzT9
+-----END PGP SIGNATURE-----
+
+--------------enig73AA5C42C449B21EC3135320--
