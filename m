@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZFNGkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZFNGxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752987AbZFNGkx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 02:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZFNGkq
+	id S1753308AbZFNGxJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 02:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZFNGw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 02:40:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52612 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbZFNGkp (ORCPT
+	Sun, 14 Jun 2009 02:52:56 -0400
+Received: from mail-px0-f187.google.com ([209.85.216.187]:63934 "EHLO
+	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbZFNGw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 02:40:45 -0400
-Message-ID: <4A349B67.1070603@zytor.com>
-Date: Sat, 13 Jun 2009 23:40:39 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
-References: <20090613230842.GA18347@gallifrey>
-In-Reply-To: <20090613230842.GA18347@gallifrey>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Jun 2009 02:52:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=UkX3I9yNC0A04CYtYZH1TmbR4tWqPTHvF/DTVFSTmOMs3OubWh97KneXk9E3Jyuwjl
+         M90sSTO5I61K3E5qmyTNeOZnz3RxmE4OR4l6cOIdCrSFdNu1N92BFaDKNgFnELVCThGA
+         KneaBEwFFQZ3mdUVo0ASX9/fbHsk6tQPlPjBs=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Linux-MIPS <linux-mips@linux-mips.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Wu Zhangjin <wuzj@lemote.com>
+Subject: [PATCH] tracing: fix undeclared 'PAGE_SIZE' in include/linux/trace_seq.h
+Date: Sun, 14 Jun 2009 14:52:30 +0800
+Message-Id: <1244962350-28702-1-git-send-email-wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dr. David Alan Gilbert wrote:
-> Hi,
->   I've got an old Pentium 90 machine that's been running a 2.4.x
-> kernel for a long time, seems to work OK on a 2.6.18 kernel
-> but doesn't seem to like anything newer.
-> 
-> 2.6.30 no keyboard - but otherwise OK
-> 2.6.28 no keyboard - but otherwise OK
-> 2.6.26 reboots just after parsing ELF (maybe one more line)
-> 2.6.25 reboots almost immediately
-> 2.6.18 works OK
-> 
-> The 2.6.18 and 26 are Debian kernels (etch and lenny), the
-> rest are vanilla from git.
-> 
-> So it looks like something got fixed between 26 and 28 that
-> stops the early reboot.
-> 
-> Attached is the .config from the 2.6.30 and a dmesg from that boot.
-> /proc/interrupts shows 8 interrupts on interrupt 1 from the i8042
-> but it doesn't go up if I type.  I've tried a couple of different
-> keyboards, so I don't think it's just a dislike for the keyboard.
-> 
-> I can see a /sys entry for the i8042 - I just don't get any input.
-> 
-> It has an ISA VGA card (Trident 1M) (I needed the PCI slots
-> for another net card!).
-> 
-> I compiled it on a 64bit Ubuntu machine.
-> 
-> [    0.000000] Linux version 2.6.302.6.30gort1 (dg@davros) (gcc version 4.4.0 (Ubuntu 4.4.0-5ubuntu1) ) #2 Sat Jun 13 18:18:17 BST 2009
+From: Wu Zhangjin <wuzj@lemote.com>
 
-It would be good to try an unmodified 2.6.30 kernel here...
+when compiling linux-mips with kmemtrace enabled, there will be an
+error:
 
-> [    0.000000] KERNEL supported cpus:
-> [    0.000000]   Intel GenuineIntel
-> [    0.000000]   AMD AuthenticAMD
-> [    0.000000]   NSC Geode by NSC
-> [    0.000000]   Cyrix CyrixInstead
-> [    0.000000]   Centaur CentaurHauls
-> [    0.000000]   Transmeta GenuineTMx86
-> [    0.000000]   Transmeta TransmetaCPU
-> [    0.000000]   UMC UMC UMC UMC
-> [    0.000000] BIOS-provided physical RAM map:
-> [    0.000000]  BIOS-88: 0000000000000000 - 000000000009f000 (usable)
-> [    0.000000]  BIOS-88: 0000000000100000 - 0000000004000000 (usable)
+include/linux/trace_seq.h:12: error: 'PAGE_SIZE' undeclared here (not in
+				a function)
 
-Is 64 MB correct for this machine?
+I checked the source code and found trace_seq.h used PAGE_SIZE but not
+included the relative header file, so, fix it via adding the header file
+<asm/page.h>
 
-> [    3.147416] PNP: No PS/2 controller found. Probing ports directly.
-> [    3.174456] serio: i8042 KBD port at 0x60,0x64 irq 1
-> [    3.174961] serio: i8042 AUX port at 0x60,0x64 irq 12
-> [    3.186312] mice: PS/2 mouse device common for all mice
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+---
+ include/linux/trace_seq.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-It does, correctly, identify the keyboard and mode port, so it's
-somewhat odd that it doesn't get used...
-
-	-hpa
+diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
+index c68bccb..c134dd1 100644
+--- a/include/linux/trace_seq.h
++++ b/include/linux/trace_seq.h
+@@ -3,6 +3,8 @@
+ 
+ #include <linux/fs.h>
+ 
++#include <asm/page.h>
++
+ /*
+  * Trace sequences are used to allow a function to call several other functions
+  * to create a string of data to use (up to a max of PAGE_SIZE.
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.0.4
 
