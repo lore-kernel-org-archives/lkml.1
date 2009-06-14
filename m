@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbZFNUqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763195AbZFNUrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764284AbZFNUqj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 16:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757714AbZFNUqb
+	id S1763195AbZFNUrv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 16:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbZFNUro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 16:46:31 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:39427 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757125AbZFNUqb (ORCPT
+	Sun, 14 Jun 2009 16:47:44 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:37538 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753715AbZFNUrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 16:46:31 -0400
-Date: Sun, 14 Jun 2009 22:48:49 +0200
+	Sun, 14 Jun 2009 16:47:43 -0400
+Date: Sun, 14 Jun 2009 22:50:02 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] kbuild: some scripts/config improvements (try 2)
-Message-ID: <20090614204849.GD3187@uranus.ravnborg.org>
-References: <20090525144320.GA22686@sepie.suse.cz> <20090603192520.GC3100@uranus.ravnborg.org> <20090603201645.GG1065@one.firstfloor.org> <20090604054708.GA2241@sepie.suse.cz>
+To: Floris Kraak <randakar@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+Message-ID: <20090614205002.GE3187@uranus.ravnborg.org>
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com> <84144f020905150323m76cdd775p87abec356e355d37@mail.gmail.com> <56e1b5710905150628w912759an21c82efc3fae7f4a@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090604054708.GA2241@sepie.suse.cz>
+In-Reply-To: <56e1b5710905150628w912759an21c82efc3fae7f4a@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 07:47:08AM +0200, Michal Marek wrote:
-> On Wed, Jun 03, 2009 at 10:16:46PM +0200, Andi Kleen wrote:
-> > On Wed, Jun 03, 2009 at 09:25:20PM +0200, Sam Ravnborg wrote:
-> > > On Mon, May 25, 2009 at 04:43:20PM +0200, Michal Marek wrote:
-> > > > Hi,
-> > > > 
-> > > > I simplified the awk script a bit, made it awk ... && mv and removed the
-> > > > --set option.
-> > > > 
-> > > > Michal Marek (3):
-> > > >   kbuild: handle non-existing options in scripts/config
-> > > >   kbuild: simplify argument loop in scripts/config
-> > > >   kbuild: add generic --set-str option to scripts/config
-> > > 
-> > > Andi - do I have your ack on this serie?
-> > 
-> > Reluctantly -- most bits are ok, but the awk change seems quite overcomplicated
-> > and I don't like it particularly.
-> 
-> What about this one? The other two patches apply apply at slightly
-> different offsets.
-> 
-> Subject: [PATCH 1/3] kbuild: handle non-existing options in scripts/config
-> 
-> If an option does not exist in .config, set it at the end of the file.
-> 
-> Signed-off-by: Michal Marek <mmarek@suse.cz>
+On Fri, May 15, 2009 at 03:28:18PM +0200, Floris Kraak wrote:
+> On 5/15/09, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> >
+> > On Wed, Feb 4, 2009 at 5:28 PM, Floris Kraak <randakar@gmail.com> wrote:
+> > > Some distributions have enabled the gcc flag -Wformat-security by default.*
+> > > This results in a number of warnings about format arguments to
+> > > functions, sometimes in cases where fixing the warning is not likely
+> > > to actually fix a bug.
+> > > Instead of hand patching a dozens of places (possibly more) that
+> > > produce warnings that get ignored anyway we just turn off the flag in
+> > > the Makefile.
+> > >
+> >
+> > Is there a reason this patch was not merged? Yes, it's clearly a
+> > distro problem but apparently there's no easy way to turn it off.
+> >
 
-Looked readable - compared to the awk stuff.
-I have applied all three patches.
+I have lost the original patch to disable this check.
+Could you please resend.
 
+Thanks,
 	Sam
