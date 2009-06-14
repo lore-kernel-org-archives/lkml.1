@@ -1,156 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbZFNMxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZFNM5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760230AbZFNMxg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbZFNMx1
+	id S1758261AbZFNM5Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755083AbZFNM5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:53:27 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:59758 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbZFNMx0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:53:26 -0400
-Message-ID: <4A34F2B7.1030606@novell.com>
-Date: Sun, 14 Jun 2009 08:53:11 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davdel@xmailserver.org, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: use POLLHUP to close an irqfd instead
- of an explicit ioctl
-References: <20090604124047.10544.38861.stgit@dev.haskins.net> <20090604124812.10544.5811.stgit@dev.haskins.net> <20090614114854.GA10269@redhat.com>
-In-Reply-To: <20090614114854.GA10269@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8FB539ABBA8D8BE3B2CBF49E"
+	Sun, 14 Jun 2009 08:57:01 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35183 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753819AbZFNM5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:57:00 -0400
+X-Authenticated: #3576790
+X-Provags-ID: V01U2FsdGVkX18E6TUz4LEEdWH92cyu2i5E+5mbb5X1UimIs8O+wI
+	0FWgOPiMkhm9Ty
+Date: Sun, 14 Jun 2009 14:59:10 +0200
+From: "Benjamin S." <sbenni@gmx.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, js@sig21.net,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend to memory
+Message-ID: <20090614145910.71c5cd5d@pluto-lenny.milky.way>
+In-Reply-To: <alpine.LFD.2.00.0906141440440.2800@localhost.localdomain>
+References: <20090614120950.116536fa@pluto-lenny.milky.way>
+	<200906141400.27331.rjw@sisk.pl>
+	<alpine.LFD.2.00.0906141405450.2800@localhost.localdomain>
+	<200906141415.16949.rjw@sisk.pl>
+	<20090614143708.32ec250c@pluto-lenny.milky.way>
+	<alpine.LFD.2.00.0906141440440.2800@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8FB539ABBA8D8BE3B2CBF49E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sun, 14 Jun 2009 14:43:11 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Michael S. Tsirkin wrote:
-> On Thu, Jun 04, 2009 at 08:48:12AM -0400, Gregory Haskins wrote:
->  =20
->> +static void
->> +irqfd_disconnect(struct _irqfd *irqfd)
->> +{
->> +	struct kvm *kvm;
->> +
->> +	mutex_lock(&irqfd->lock);
->> +
->> +	kvm =3D rcu_dereference(irqfd->kvm);
->> +	rcu_assign_pointer(irqfd->kvm, NULL);
->> +
->> +	mutex_unlock(&irqfd->lock);
->> +
->> +	if (!kvm)
->> +		return;
->> =20
->>  	mutex_lock(&kvm->lock);
->> -	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
->> -	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
->> +	list_del(&irqfd->list);
->>  	mutex_unlock(&kvm->lock);
->> +
->> +	/*
->> +	 * It is important to not drop the kvm reference until the next grac=
-e
->> +	 * period because there might be lockless references in flight up
->> +	 * until then
->> +	 */
->> +	synchronize_srcu(&irqfd->srcu);
->> +	kvm_put_kvm(kvm);
->>  }
->>    =20
->
-> So irqfd object will persist after kvm goes away, until eventfd is clos=
-ed?
->  =20
+> On Sun, 14 Jun 2009, Benjamin S. wrote:
+> >  19:          0         17   IO-APIC-fasteoi   ehci_hcd:usb4, HDA Intel
+> >  24:       4830          0  HPET_MSI-edge      hpet2
+> 
+> This is probably the culprit. Try booting with hpet=disble and check
+> whether your resume works.
 
-Yep, by design.  It becomes part of the eventfd and is thus associated
-with its lifetime.  Consider it as if we made our own anon-fd
-implementation for irqfd and the lifetime looks similar.  The difference
-is that we are reusing eventfd and its interface semantics.
->  =20
->> =20
->>  static int
->>  irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
->>  {
->>  	struct _irqfd *irqfd =3D container_of(wait, struct _irqfd, wait);
->> +	unsigned long flags =3D (unsigned long)key;
->> =20
->> -	/*
->> -	 * The wake_up is called with interrupts disabled.  Therefore we nee=
-d
->> -	 * to defer the IRQ injection until later since we need to acquire t=
-he
->> -	 * kvm->lock to do so.
->> -	 */
->> -	schedule_work(&irqfd->work);
->> +	if (flags & POLLIN)
->> +		/*
->> +		 * The POLLIN wake_up is called with interrupts disabled.
->> +		 * Therefore we need to defer the IRQ injection until later
->> +		 * since we need to acquire the kvm->lock to do so.
->> +		 */
->> +		schedule_work(&irqfd->inject);
->> +
->> +	if (flags & POLLHUP) {
->> +		/*
->> +		 * The POLLHUP is called unlocked, so it theoretically should
->> +		 * be safe to remove ourselves from the wqh using the locked
->> +		 * variant of remove_wait_queue()
->> +		 */
->> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
->> +		flush_work(&irqfd->inject);
->> +		irqfd_disconnect(irqfd);
->> +
->> +		cleanup_srcu_struct(&irqfd->srcu);
->> +		kfree(irqfd);
->> +	}
->> =20
->>  	return 0;
->>  }
->>    =20
->
-> And it is removed by this function when eventfd is closed.
-> But what prevents the kvm module from going away, meanwhile?
->  =20
-
-Well, we hold a reference to struct kvm until we call
-irqfd_disconnect().  If kvm closes first, we disconnect and disassociate
-all references to kvm leaving irqfd->kvm =3D NULL.  Likewise, if irqfd
-closes first, we disassociate with kvm with the above quoted logic.  In
-either case, we are holding a kvm reference up until that "disconnect"
-point.  Therefore kvm should not be able to disappear before that
-disconnect, and after that point we do not care.  If that is not
-sufficient to prevent kvm.ko from going away in the middle, then IMO
-kvm_get_kvm() has a bug, not irqfd. ;)  However, I believe everything is
-actually ok here.
-
--Greg
+With this option set resume works.
 
 
---------------enig8FB539ABBA8D8BE3B2CBF49E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko08rcACgkQlOSOBdgZUxltzgCdEyEp/5yD4hEJ6M9FONotgpXI
-mD0An2ifUPKx2Ight1sDMpVxHBLKXojp
-=O0PC
------END PGP SIGNATURE-----
-
---------------enig8FB539ABBA8D8BE3B2CBF49E--
+Benjamin
