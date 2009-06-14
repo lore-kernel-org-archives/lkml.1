@@ -1,112 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZFNKzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZFNK4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757678AbZFNKzu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 06:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbZFNKzm
+	id S1758136AbZFNK4O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 06:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757555AbZFNK4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 06:55:42 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:49698 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755216AbZFNKzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 06:55:42 -0400
-Date: Sun, 14 Jun 2009 12:55:37 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Harald Welte <HaraldWelte@viatech.com>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       JosephChan@via.com.tw, Bruce Chang <BruceChang@via.com.tw>
-Subject: Re: [PATCH] mmc: Add new via-sdmmc host controller driver
-Message-ID: <20090614125537.065d706a@mjolnir.ossman.eu>
-In-Reply-To: <20090614065256.GJ2854@prithivi.gnumonks.org>
-References: <20090612075930.GB30843@prithivi.gnumonks.org>
-	<20090613134328.0c168205@mjolnir.ossman.eu>
-	<20090614065256.GJ2854@prithivi.gnumonks.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-13829-1244976941-0001-2"
+	Sun, 14 Jun 2009 06:56:04 -0400
+Received: from mail-yx0-f171.google.com ([209.85.210.171]:50237 "EHLO
+	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757134AbZFNK4D convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 06:56:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=P8gXHr2lnKshapHZPh3JLVb/76EsXza7UhO1vP3eClnbZ36Rl703jGodOYqv06Uz2o
+         rmEFfCvouazWwWEXiqfK/9T0UV6r9J2QZP1SrMus//Mzwjyl1y/BOaLV63vh+WS2+6OG
+         bT62E+mgRCSLNJXUqAnQeSBX9Ut6QDpdSOnDQ=
+MIME-Version: 1.0
+In-Reply-To: <20090614101111.GG832@linux-sh.org>
+References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> 
+	<8bd0f97a0906130348p474faf57yeb729aa07059c599@mail.gmail.com> 
+	<20090614093725.GD832@linux-sh.org> <8bd0f97a0906140255h295b393dl3165fff4c0a6baf6@mail.gmail.com> 
+	<20090614101111.GG832@linux-sh.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sun, 14 Jun 2009 06:55:45 -0400
+Message-ID: <8bd0f97a0906140355y3661aa89o9a62a89f38fac5a5@mail.gmail.com>
+Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open 
+	when supported
+To: Paul Mundt <lethal@linux-sh.org>, akpm <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Sun, Jun 14, 2009 at 06:11, Paul Mundt wrote:
+> On Sun, Jun 14, 2009 at 05:55:44AM -0400, Mike Frysinger wrote:
+>> On Sun, Jun 14, 2009 at 05:37, Paul Mundt wrote:
+>> >> On Fri, Jun 12, 2009 at 07:29, Mike Frysinger wrote:
+>> >> If the port does not support HAVE_PERF_COUNTERS, then they can't support
+>> >> the perf_counter_open syscall either. ??Rather than forcing everyone to add
+>> >> an ignore (or suffer the warning until they get around to implementing
+>> >> support), only whine about the syscall when applicable.
+>> >
+>> > I fail to see why this is necessary? cond_syscall() takes care of this in
+>> > the not implemented case, the same as every other syscall backing some
+>> > feature that has yet to be implemented.
+>>
+>> i dont think we should go hassling every arch maintainer when a new
+>> syscall is added that requires arch-specific support for optional
+>> features (especially when said features are debug in nature).  if
+>> wiring up the syscall is the only work because the code is all common
+>> (like the pread/pwrite functions), then np of course.
+>
+> Perhaps not, but I do prefer to have the script whine at me when a new
+> syscall pops up, just so I know when I have to start caring about a new
+> feature.
 
---=_freyr.ossman.eu-13829-1244976941-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+assuming you can find any useful info about said feature ;)
 
-On Sun, 14 Jun 2009 14:52:56 +0800
-Harald Welte <HaraldWelte@viatech.com> wrote:
+> If a generic implementation becomes available, then it can be
+> supported without having to backtrack and update place-holders.
 
-> >=20
-> > You need to do the removal as the first step=20
->=20
-> Thanks, I've fixed this in my tree.=20
->=20
-> Looking at other drivers, imxmmc seems to get this wrong, too.
->=20
+this is a good convincing point.  Sam: please drop this patch if you
+did get a chance to queue it up.
 
-Quite right. I suppose someone should have a look at that...
+> These are not things I want to see silenced just because you don't
+> presently feel compelled to wire up the entry on your platform.
 
-> > and you might need to explicitly kill any ongoing requests.
->=20
-> you mean something like the snippet in sdhci.c:
-> =3D=3D=3D=3D=3D=3D
->        if (dead) {
->                 spin_lock_irqsave(&host->lock, flags);
->=20
->                 host->flags |=3D SDHCI_DEVICE_DEAD;
->=20
->                 if (host->mrq) {
->                         printk(KERN_ERR "%s: Controller removed during "
->                                 " transfer!\n", mmc_hostname(host->mmc));
->=20
->                         host->mrq->cmd->error =3D -ENOMEDIUM;
->                         tasklet_schedule(&host->finish_tasklet);
->                 }
->=20
->                 spin_unlock_irqrestore(&host->lock, flags);
->         }
-> =3D=3D=3D=3D=3D=3D
->=20
-> Why is sdhci about the only driver that does it?  What decides if we need
-> to kill ongoing requests or not?
->=20
+i disagree, but i guess it doesnt matter if the arch maintainers dont
+all agree here.
 
-I guess I haven't kept an eye on it so the others are simply buggy.
+> Of course if it had been handled properly then the generic software
+> counters would have been actually implemented generically and
+> subsequently made available from the stub and the HAVE_xxx would be
+> reserved for architecture-specific counters. Unfortunately these days
+> "generic" generally seems to imply "can be made generic if someone else
+> bothers to actually do the work, assuming they can find any documentation
+> in the first place".
 
-> Also, you stated that mmc_remove_host needs to be the first step.  Howeve=
-r,
-> sdhci first kills the ongoing rquest (if "dead"), and then removes the ho=
-st.
->=20
-
-Right, because the reason you need to end the request is that failure
-to do so will wedge the MMC system and mmc_remove_host() will never
-return.
-
-Normally the requests will eventually be completed by interrupts coming
-from the hardware, but if it got removed then that might not happen.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-13829-1244976941-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAko01y0ACgkQ7b8eESbyJLjeYACgprofQm4ssqwIKQkrhMEQYuqn
-X6wAoPxeuboHqBzVKBFuBgpsnBCPkJo1
-=hX8R
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-13829-1244976941-0001-2--
+if we can agree on centralizing arch/Kconfig for HAVE_xxx stubs, we
+could add a checkpatch that errors out if said stub lacks a help line
+-- the assumption being the help text would point to arch details and
+not some other document (design rational, user interface, methodology,
+etc...).  of course, this also relies on the assumption of people
+filtering via checkpatch.pl ...
+-mike
