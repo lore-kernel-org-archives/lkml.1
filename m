@@ -1,149 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbZFNOeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbZFNOlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbZFNOeO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 10:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbZFNOd7
+	id S1761278AbZFNOlA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 10:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbZFNOkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 10:33:59 -0400
-Received: from www.tglx.de ([62.245.132.106]:52480 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755094AbZFNOd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 10:33:59 -0400
-Date: Sun, 14 Jun 2009 16:32:52 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][GIT PULL][PATCH 0/10 -tip] cpu_debug patches 20090613
-In-Reply-To: <1244985598.2451.35.camel@ht.satnam>
-Message-ID: <alpine.LFD.2.00.0906141552220.2800@localhost.localdomain>
-References: <1244910436.11733.14.camel@ht.satnam>  <alpine.LFD.2.00.0906132056540.2800@localhost.localdomain>  <1244957739.2679.42.camel@ht.satnam>  <alpine.LFD.2.00.0906141224550.2800@localhost.localdomain> <1244985598.2451.35.camel@ht.satnam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 14 Jun 2009 10:40:52 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:65486 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755430AbZFNOkv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 10:40:51 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1244765062-14144-3-git-send-email-w.sang@pengutronix.de>
+References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> 
+	<1244765062-14144-3-git-send-email-w.sang@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sun, 14 Jun 2009 08:40:34 -0600
+Message-ID: <fa686aa40906140740m43e9dd8am4d242310f681c95c@mail.gmail.com>
+Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, devicetree-discuss@ozlabs.org,
+       "Hans J. Koch" <hjk@linutronix.de>, Magnus Damm <magnus.damm@gmail.com>,
+       linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder,
+On Thu, Jun 11, 2009 at 6:04 PM, Wolfram Sang<w.sang@pengutronix.de> wrote:
+> Picking up the now exported generic probe function from the
+> platform-variant of this driver, this patch adds an of-version. Also add
+> the binding documentation.
+>
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Cc: Hans J. Koch <hjk@linutronix.de>
+> Cc: Greg KH <gregkh@suse.de>
+> ---
+>
+> In probe, I put the resources-array on the stack to simplify the code. If this
+> is considered too huge for the stack (140 byte for a 32-bit system at the
+> moment), I can also post a version using kzalloc.
+>
+>  Documentation/powerpc/dts-bindings/uio-generic.txt |   16 +++
+>  drivers/uio/Kconfig                                |    6 +
+>  drivers/uio/Makefile                               |    1 +
+>  drivers/uio/uio_of_genirq.c                        |   98 ++++++++++++++++++++
+>  4 files changed, 121 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/uio-generic.txt
+>  create mode 100644 drivers/uio/uio_of_genirq.c
+>
+> diff --git a/Documentation/powerpc/dts-bindings/uio-generic.txt b/Documentation/powerpc/dts-bindings/uio-generic.txt
+> new file mode 100644
+> index 0000000..8ad9861
+> --- /dev/null
+> +++ b/Documentation/powerpc/dts-bindings/uio-generic.txt
+> @@ -0,0 +1,16 @@
+> +UIO for custom devices
+> +
+> +A device which will be mapped using the UIO subsystem.
+> +
+> +Properties:
+> + - compatible : should contain the specific model used, followed by
+> +                "generic-uio".
+> + - reg : address range(s) of the device (up to MAX_UIO_MAPS)
+> + - interrupts : interrupt of the device
+> +
+> +Example:
+> +        c64fpga@0 {
+> +                compatible = "ptx,c64fpga001", "generic-uio";
+> +                reg = <0x0 0x10000>;
+> +                interrupts = <0 0 3>;
+> +        };
 
-On Sun, 14 Jun 2009, Jaswinder Singh Rajput wrote:
-> On Sun, 2009-06-14 at 13:19 +0200, Thomas Gleixner wrote:
-> > > This will be really useful for :
-> > > 1. developer who is porting/developing the kernel or drivers.
-> > 
-> > We can access all this information already with existing tools.
-> > 
-> 
-> Why you are thinking about X86 ?
+Hmmm, I'm not happy about this.  The device tree describes the
+hardware, not the way Linux uses the hardware.  UIO definitely falls
+into the category of Linux implementation detail.
 
-Because I work on it and that code is in the area which I'm
-responsible for. And I want useful code in that area, not something
-which causes a lot of churn for no value at all.
+This should be approached from the other way around.  Either the
+generic-uio of_platform driver should contain an explicit list of
+devices to be handled by UIO, or the OF infrastructure should be
+modified to allow things like force binding of_devices to of_drivers
+at runtime.
 
-> I worked on embedded processors more than 10 year, I never found any
-> tools, and sometimes we get the first lot of the boards.
+g.
 
-I have worked on ARM, MIPS, SH, PPC often enough and I never needed
-such a tool.
-
-> Only tool which I used is printk.
-
-Which is perfectly fine to do low level debugging.
-
-> Even though the code I used in cpu_debug I wrote that code to support :
-> 1. Performance counters for AMD
-> 2. Support Temperature sensor for AMD 11H
-
-And you needed cpu_debug to do this ? 
-
-Sorry, I really do not understand that. Ingo and I wrote the inital
-code of performance counters (both the generic parts and Intel
-support) in a couple of days w/o feeling the need of cpu_debug even
-once.
-
-If you need cpu_debug for doing your work, fine. Maintain it somewhere
-and figure out how many people come along and find it useful. But do
-not impose this on the x86 code base.
-
-> > > In X86 many tools are available which can read many registers but not
-> > > available for many architectures (I CCed some architecture maintainers
-> > > so that they can also specify issues they face when supporting new
-> > > CPU/architecture), they can also take advantage of it if we move
-> > 
-> > I have ported Linux to a couple of new platforms and the problem you
-> > face is that the kernel does not boot at all in the early stage of the
-> > boot process. 
-> > 
-> > How does cpu_debug help in that situation ? It does not help at all.
-> > 
-> I supported functions if you pass seq = NULL then it will print on
-> screen, then you do need any filesystem or debugfs.
-
-Fine. And what is triggering the printout of a particular register ?
-
-You need to hack the kernel to call the print functions in cpu_debug,
-right ?
-
-So where is the value of this? It is ad hoc debugging and there is no
-gain to replace a printk(THE INFO I NEED) with a call to
-cpu_debug().
-
-Actually its worse. If I need the information of an APIC register,
-then I print excaclty this register and not the whole lot of registers,
-which then will scroll the screen with the important information
-away.
-
-Also I need information of a register in context with the content of
-some variables of the code I'm debugging. printk() allows me to add
-sensible and useful information in a compact format. cpu_debug does
-not.
-
-> > > 2. Do not support latest or upcoming hardware
-> > 
-> > All these tools show the raw values, which also covers latest hardware.
-> > 
-> 
-> But when I used them they said processor not supported.
-
-And why didn't you get the source and fix it? Instead of improving an
-existing tool you impose a ridicolous amount of useless code on x86.
-
-> > > 3. You need to mount filesystem and execute some shell to give commands
-> > 
-> > Are you saying that the access to your debugfs based cpu_debug
-> > information does neither require a mounted file system nor a shell nor
-> > commands? It provides the information by telepathy, right?
-> > 
-> 
-> you can call the function, and pass seq as NULL, it will use printk and
-> dump state on screen. I just did this for MSR, I can also support for
-> other registers.
-
-As I said above. There is no gain in doing so. Ad hoc debugging is the
-same with printk and cpu_debug except that cpu_debug is inferior.
-
-> > > So I want to know how can we can make cpu_debug more useful.
-> > 
-> > I have not yet seen a single technical argument for what it is useful
-> > at all.
-> > 
-> 
-> Because your eyes are closed, please open it.
-
-I have my eyes open and I looked at the existing code and the proposed
-patches in detail. I also looked at your arguments which can be boiled
-down to:
-
-1) Jaswinder prefers to have cpu_debug_print_whatever() instead of
-   printk(THE INFO I NEED) for ad hoc debugging.
-
-2) Jaswinder cannot work without cpu_debug.
-
-Both are not really convincing technical arguments. cpu_debug has
-_ZERO_ gain over printk() based debugging and it adds _ZERO_ value
-with its debugfs based interface.
-
-Thanks,
-
-	tglx
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
