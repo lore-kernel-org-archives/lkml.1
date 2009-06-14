@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762001AbZFNMFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbZFNMF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762001AbZFNMFp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbZFNMBo
+	id S1762185AbZFNMF5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbZFNMBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:01:44 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:52696 "EHLO smtp.gentoo.org"
+	Sun, 14 Jun 2009 08:01:45 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:52699 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758823AbZFNMBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:01:42 -0400
+	id S1758852AbZFNMBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:01:43 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 16/17] Blackfin: convert page/tlb to asm-generic
-Date: Sun, 14 Jun 2009 08:01:17 -0400
-Message-Id: <1244980878-2124-17-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 17/17] Blackfin: convert uaccess to asm-generic
+Date: Sun, 14 Jun 2009 08:01:18 -0400
+Message-Id: <1244980878-2124-18-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244980878-2124-1-git-send-email-vapier@gentoo.org>
 References: <1244980878-2124-1-git-send-email-vapier@gentoo.org>
@@ -24,204 +24,305 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/include/asm/io.h       |    1 -
- arch/blackfin/include/asm/page.h     |   85 +---------------------------------
- arch/blackfin/include/asm/tlbflush.h |   57 +----------------------
- arch/blackfin/include/asm/ucontext.h |   18 +-------
- 4 files changed, 4 insertions(+), 157 deletions(-)
+ arch/blackfin/include/asm/segment.h |    8 +-
+ arch/blackfin/include/asm/uaccess.h |  265 ++---------------------------------
+ 2 files changed, 10 insertions(+), 263 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/io.h b/arch/blackfin/include/asm/io.h
-index 3022b5c..37053ec 100644
---- a/arch/blackfin/include/asm/io.h
-+++ b/arch/blackfin/include/asm/io.h
-@@ -222,7 +222,6 @@ extern void blkfin_inv_cache_all(void);
- #define	ioport_unmap(addr)
- 
- /* Pages to physical address... */
--#define page_to_phys(page)      ((page - mem_map) << PAGE_SHIFT)
- #define page_to_bus(page)       ((page - mem_map) << PAGE_SHIFT)
- 
- #define phys_to_virt(vaddr)	((void *) (vaddr))
-diff --git a/arch/blackfin/include/asm/page.h b/arch/blackfin/include/asm/page.h
-index 3ea2016..29dcf75 100644
---- a/arch/blackfin/include/asm/page.h
-+++ b/arch/blackfin/include/asm/page.h
-@@ -1,88 +1,7 @@
- #ifndef _BLACKFIN_PAGE_H
- #define _BLACKFIN_PAGE_H
- 
--/* PAGE_SHIFT determines the page size */
-+#include <asm-generic/page.h>
-+#define MAP_NR(addr) (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
- 
--#define PAGE_SHIFT	12
--#ifdef __ASSEMBLY__
--#define PAGE_SIZE	(1 << PAGE_SHIFT)
--#else
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
- #endif
--#define PAGE_MASK	(~(PAGE_SIZE-1))
+diff --git a/arch/blackfin/include/asm/segment.h b/arch/blackfin/include/asm/segment.h
+index 02cfd09..f1b81e5 100644
+--- a/arch/blackfin/include/asm/segment.h
++++ b/arch/blackfin/include/asm/segment.h
+@@ -1,7 +1 @@
+-#ifndef _BFIN_SEGMENT_H
+-#define _BFIN_SEGMENT_H
 -
--#include <asm/setup.h>
+-#define KERNEL_DS   (0x5)
+-#define USER_DS     (0x1)
 -
--#ifndef __ASSEMBLY__
--
--#define get_user_page(vaddr)		__get_free_page(GFP_KERNEL)
--#define free_user_page(page, addr)	free_page(addr)
--
--#define clear_page(page)	memset((page), 0, PAGE_SIZE)
--#define copy_page(to,from)	memcpy((to), (from), PAGE_SIZE)
--
--#define clear_user_page(page, vaddr,pg)	clear_page(page)
--#define copy_user_page(to, from, vaddr,pg)	copy_page(to, from)
--
--/*
-- * These are used to make use of C type-checking..
-- */
--typedef struct {
--	unsigned long pte;
--} pte_t;
--typedef struct {
--	unsigned long pmd[16];
--} pmd_t;
--typedef struct {
--	unsigned long pgd;
--} pgd_t;
--typedef struct {
--	unsigned long pgprot;
--} pgprot_t;
--typedef struct page *pgtable_t;
--
--#define pte_val(x)	((x).pte)
--#define pmd_val(x)	((&x)->pmd[0])
--#define pgd_val(x)	((x).pgd)
--#define pgprot_val(x)	((x).pgprot)
--
--#define __pte(x)	((pte_t) { (x) } )
--#define __pmd(x)	((pmd_t) { (x) } )
--#define __pgd(x)	((pgd_t) { (x) } )
--#define __pgprot(x)	((pgprot_t) { (x) } )
--
--extern unsigned long memory_start;
--extern unsigned long memory_end;
--
--#endif				/* !__ASSEMBLY__ */
--
--#include <asm/page_offset.h>
--#include <asm/io.h>
--
--#define PAGE_OFFSET		(PAGE_OFFSET_RAW)
--
--#ifndef __ASSEMBLY__
--
--#define __pa(vaddr)		virt_to_phys((void *)(vaddr))
--#define __va(paddr)		phys_to_virt((unsigned long)(paddr))
--
--#define MAP_NR(addr)		(((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
--
--#define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
--#define pfn_to_virt(pfn)	__va((pfn) << PAGE_SHIFT)
--#define virt_to_page(addr)	(mem_map + (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT))
--#define page_to_virt(page)	((((page) - mem_map) << PAGE_SHIFT) + PAGE_OFFSET)
--#define VALID_PAGE(page)	((page - mem_map) < max_mapnr)
--
--#define pfn_to_page(pfn)	virt_to_page(pfn_to_virt(pfn))
--#define page_to_pfn(page)	virt_to_pfn(page_to_virt(page))
--#define pfn_valid(pfn)	        ((pfn) < max_mapnr)
--
--#define	virt_addr_valid(kaddr)	(((void *)(kaddr) >= (void *)PAGE_OFFSET) && \
--				((void *)(kaddr) < (void *)memory_end))
--
--#include <asm-generic/getorder.h>
--
--#endif				/* __ASSEMBLY__ */
--
--#endif				/* _BLACKFIN_PAGE_H */
-diff --git a/arch/blackfin/include/asm/tlbflush.h b/arch/blackfin/include/asm/tlbflush.h
-index 277b400..f1a06c0 100644
---- a/arch/blackfin/include/asm/tlbflush.h
-+++ b/arch/blackfin/include/asm/tlbflush.h
-@@ -1,56 +1 @@
--#ifndef _BLACKFIN_TLBFLUSH_H
--#define _BLACKFIN_TLBFLUSH_H
--
--/*
-- * Copyright (C) 2000 Lineo, David McCullough <davidm@uclinux.org>
-- * Copyright (C) 2000-2002, Greg Ungerer <gerg@snapgear.com>
-- */
--
--#include <asm/setup.h>
--
--/*
-- * flush all user-space atc entries.
-- */
--static inline void __flush_tlb(void)
--{
--	BUG();
--}
--
--static inline void __flush_tlb_one(unsigned long addr)
--{
--	BUG();
--}
--
--#define flush_tlb() __flush_tlb()
--
--/*
-- * flush all atc entries (both kernel and user-space entries).
-- */
--static inline void flush_tlb_all(void)
--{
--	BUG();
--}
--
--static inline void flush_tlb_mm(struct mm_struct *mm)
--{
--	BUG();
--}
--
--static inline void flush_tlb_page(struct vm_area_struct *vma,
--				  unsigned long addr)
--{
--	BUG();
--}
--
--static inline void flush_tlb_range(struct mm_struct *mm,
--				   unsigned long start, unsigned long end)
--{
--	BUG();
--}
--
--static inline void flush_tlb_kernel_page(unsigned long addr)
--{
--	BUG();
--}
--
--#endif
-+#include <asm-generic/tlbflush.h>
-diff --git a/arch/blackfin/include/asm/ucontext.h b/arch/blackfin/include/asm/ucontext.h
-index 4a4e385..9bc07b9 100644
---- a/arch/blackfin/include/asm/ucontext.h
-+++ b/arch/blackfin/include/asm/ucontext.h
-@@ -1,17 +1 @@
--/** Changes made by Tony Kou   Lineo Inc.    May 2001
+-#endif				/* _BFIN_SEGMENT_H */
++#include <asm-generic/segment.h>
+diff --git a/arch/blackfin/include/asm/uaccess.h b/arch/blackfin/include/asm/uaccess.h
+index 8894e9f..6f235e2 100644
+--- a/arch/blackfin/include/asm/uaccess.h
++++ b/arch/blackfin/include/asm/uaccess.h
+@@ -1,268 +1,21 @@
+-/* Changes made by Lineo Inc.    May 2001
 - *
-- *  Based on: include/m68knommu/ucontext.h
+- * Based on: include/asm-m68knommu/uaccess.h
++/*
++ * User space memory access functions
+  */
+ 
+ #ifndef __BLACKFIN_UACCESS_H
+ #define __BLACKFIN_UACCESS_H
+ 
+-/*
+- * User space memory access functions
+- */
+-#include <linux/sched.h>
+-#include <linux/mm.h>
+-#include <linux/string.h>
++#define KERNEL_DS   (0x5)
++#define USER_DS     (0x1)
+ 
+-#include <asm/segment.h>
+ #ifdef CONFIG_ACCESS_CHECK
+-# include <asm/bfin-global.h>
++# define __access_ok(ptr, size) _access_ok((unsigned long)(ptr), size)
++extern int _access_ok(unsigned long ptr, unsigned long size);
+ #endif
+ 
+-#define get_ds()        (KERNEL_DS)
+-#define get_fs()        (current_thread_info()->addr_limit)
+-
+-static inline void set_fs(mm_segment_t fs)
+-{
+-	current_thread_info()->addr_limit = fs;
+-}
+-
+-#define segment_eq(a,b) ((a) == (b))
++#include <asm-generic/uaccess.h>
+ 
+-#define VERIFY_READ	0
+-#define VERIFY_WRITE	1
+-
+-#define access_ok(type, addr, size) _access_ok((unsigned long)(addr), (size))
+-
+-static inline int is_in_rom(unsigned long addr)
+-{
+-	/*
+-	 * What we are really trying to do is determine if addr is
+-	 * in an allocated kernel memory region. If not then assume
+-	 * we cannot free it or otherwise de-allocate it. Ideally
+-	 * we could restrict this to really being in a ROM or flash,
+-	 * but that would need to be done on a board by board basis,
+-	 * not globally.
+-	 */
+-	if ((addr < _ramstart) || (addr >= _ramend))
+-		return (1);
+-
+-	/* Default case, not in ROM */
+-	return (0);
+-}
+-
+-/*
+- * The fs value determines whether argument validity checking should be
+- * performed or not.  If get_fs() == USER_DS, checking is performed, with
+- * get_fs() == KERNEL_DS, checking is bypassed.
+- */
++#undef segment_eq
++#define segment_eq(a, b) ((a) == (b))
+ 
+-#ifndef CONFIG_ACCESS_CHECK
+-static inline int _access_ok(unsigned long addr, unsigned long size) { return 1; }
+-#else
+-extern int _access_ok(unsigned long addr, unsigned long size);
+ #endif
+-
+-/*
+- * The exception table consists of pairs of addresses: the first is the
+- * address of an instruction that is allowed to fault, and the second is
+- * the address at which the program should continue.  No registers are
+- * modified, so it is entirely up to the continuation code to figure out
+- * what to do.
+- *
+- * All the routines below use bits of fixup code that are out of line
+- * with the main instruction path.  This means when everything is well,
+- * we don't even have to jump over them.  Further, they do not intrude
+- * on our cache or tlb entries.
 - */
 -
--#ifndef _BLACKFIN_UCONTEXT_H
--#define _BLACKFIN_UCONTEXT_H
--
--struct ucontext {
--	unsigned long uc_flags;	/* the others are necessary */
--	struct ucontext *uc_link;
--	stack_t uc_stack;
--	struct sigcontext uc_mcontext;
--	sigset_t uc_sigmask;	/* mask last for extensibility */
+-struct exception_table_entry {
+-	unsigned long insn, fixup;
 -};
 -
--#endif				/* _BLACKFIN_UCONTEXT_H */
-+#include <asm-generic/ucontext.h>
+-/*
+- * These are the main single-value transfer routines.  They automatically
+- * use the right size if we just have the right pointer type.
+- */
+-
+-#define put_user(x,p)						\
+-	({							\
+-		int _err = 0;					\
+-		typeof(*(p)) _x = (x);				\
+-		typeof(*(p)) *_p = (p);				\
+-		if (!access_ok(VERIFY_WRITE, _p, sizeof(*(_p)))) {\
+-			_err = -EFAULT;				\
+-		}						\
+-		else {						\
+-		switch (sizeof (*(_p))) {			\
+-		case 1:						\
+-			__put_user_asm(_x, _p, B);		\
+-			break;					\
+-		case 2:						\
+-			__put_user_asm(_x, _p, W);		\
+-			break;					\
+-		case 4:						\
+-			__put_user_asm(_x, _p,  );		\
+-			break;					\
+-		case 8: {					\
+-			long _xl, _xh;				\
+-			_xl = ((long *)&_x)[0];			\
+-			_xh = ((long *)&_x)[1];			\
+-			__put_user_asm(_xl, ((long *)_p)+0, );	\
+-			__put_user_asm(_xh, ((long *)_p)+1, );	\
+-		} break;					\
+-		default:					\
+-			_err = __put_user_bad();		\
+-			break;					\
+-		}						\
+-		}						\
+-		_err;						\
+-	})
+-
+-#define __put_user(x,p) put_user(x,p)
+-static inline int bad_user_access_length(void)
+-{
+-	panic("bad_user_access_length");
+-	return -1;
+-}
+-
+-#define __put_user_bad() (printk(KERN_INFO "put_user_bad %s:%d %s\n",\
+-                           __FILE__, __LINE__, __func__),\
+-                           bad_user_access_length(), (-EFAULT))
+-
+-/*
+- * Tell gcc we read from memory instead of writing: this is because
+- * we do not write to any memory gcc knows about, so there are no
+- * aliasing issues.
+- */
+-
+-#define __ptr(x) ((unsigned long *)(x))
+-
+-#define __put_user_asm(x,p,bhw)				\
+-	__asm__ (#bhw"[%1] = %0;\n\t"			\
+-		 : /* no outputs */			\
+-		 :"d" (x),"a" (__ptr(p)) : "memory")
+-
+-#define get_user(x, ptr)					\
+-({								\
+-	int _err = 0;						\
+-	unsigned long _val = 0;					\
+-	const typeof(*(ptr)) __user *_p = (ptr);		\
+-	const size_t ptr_size = sizeof(*(_p));			\
+-	if (likely(access_ok(VERIFY_READ, _p, ptr_size))) {	\
+-		BUILD_BUG_ON(ptr_size >= 8);			\
+-		switch (ptr_size) {				\
+-		case 1:						\
+-			__get_user_asm(_val, _p, B,(Z));	\
+-			break;					\
+-		case 2:						\
+-			__get_user_asm(_val, _p, W,(Z));	\
+-			break;					\
+-		case 4:						\
+-			__get_user_asm(_val, _p,  , );		\
+-			break;					\
+-		}						\
+-	} else							\
+-		_err = -EFAULT;					\
+-	x = (typeof(*(ptr)))_val;				\
+-	_err;							\
+-})
+-
+-#define __get_user(x,p) get_user(x,p)
+-
+-#define __get_user_bad() (bad_user_access_length(), (-EFAULT))
+-
+-#define __get_user_asm(x, ptr, bhw, option)	\
+-({						\
+-	__asm__ __volatile__ (			\
+-		"%0 =" #bhw "[%1]" #option ";"	\
+-		: "=d" (x)			\
+-		: "a" (__ptr(ptr)));		\
+-})
+-
+-#define __copy_from_user(to, from, n) copy_from_user(to, from, n)
+-#define __copy_to_user(to, from, n) copy_to_user(to, from, n)
+-#define __copy_to_user_inatomic __copy_to_user
+-#define __copy_from_user_inatomic __copy_from_user
+-
+-#define copy_to_user_ret(to,from,n,retval) ({ if (copy_to_user(to,from,n))\
+-				                 return retval; })
+-
+-#define copy_from_user_ret(to,from,n,retval) ({ if (copy_from_user(to,from,n))\
+-                                                   return retval; })
+-
+-static inline unsigned long __must_check
+-copy_from_user(void *to, const void __user *from, unsigned long n)
+-{
+-	if (access_ok(VERIFY_READ, from, n))
+-		memcpy(to, from, n);
+-	else
+-		return n;
+-	return 0;
+-}
+-
+-static inline unsigned long __must_check
+-copy_to_user(void *to, const void __user *from, unsigned long n)
+-{
+-	if (access_ok(VERIFY_WRITE, to, n))
+-		memcpy(to, from, n);
+-	else
+-		return n;
+-	return 0;
+-}
+-
+-/*
+- * Copy a null terminated string from userspace.
+- */
+-
+-static inline long __must_check
+-strncpy_from_user(char *dst, const char *src, long count)
+-{
+-	char *tmp;
+-	if (!access_ok(VERIFY_READ, src, 1))
+-		return -EFAULT;
+-	strncpy(dst, src, count);
+-	for (tmp = dst; *tmp && count > 0; tmp++, count--) ;
+-	return (tmp - dst);
+-}
+-
+-/*
+- * Get the size of a string in user space.
+- *   src: The string to measure
+- *     n: The maximum valid length
+- *
+- * Get the size of a NUL-terminated string in user space.
+- *
+- * Returns the size of the string INCLUDING the terminating NUL.
+- * On exception, returns 0.
+- * If the string is too long, returns a value greater than n.
+- */
+-static inline long __must_check strnlen_user(const char *src, long n)
+-{
+-	if (!access_ok(VERIFY_READ, src, 1))
+-		return 0;
+-	return strnlen(src, n) + 1;
+-}
+-
+-static inline long __must_check strlen_user(const char *src)
+-{
+-	if (!access_ok(VERIFY_READ, src, 1))
+-		return 0;
+-	return strlen(src) + 1;
+-}
+-
+-/*
+- * Zero Userspace
+- */
+-
+-static inline unsigned long __must_check
+-__clear_user(void *to, unsigned long n)
+-{
+-	if (!access_ok(VERIFY_WRITE, to, n))
+-		return n;
+-	memset(to, 0, n);
+-	return 0;
+-}
+-
+-#define clear_user(to, n) __clear_user(to, n)
+-
+-#endif				/* _BLACKFIN_UACCESS_H */
 -- 
 1.6.3.1
 
