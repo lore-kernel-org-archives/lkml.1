@@ -1,146 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbZFNLUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758354AbZFNLUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbZFNLUS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 07:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbZFNLUI
+	id S1758354AbZFNLUy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 07:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbZFNLUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 07:20:08 -0400
-Received: from www.tglx.de ([62.245.132.106]:36270 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756260AbZFNLUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 07:20:06 -0400
-Date: Sun, 14 Jun 2009 13:19:01 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][GIT PULL][PATCH 0/10 -tip] cpu_debug patches 20090613
-In-Reply-To: <1244957739.2679.42.camel@ht.satnam>
-Message-ID: <alpine.LFD.2.00.0906141224550.2800@localhost.localdomain>
-References: <1244910436.11733.14.camel@ht.satnam>  <alpine.LFD.2.00.0906132056540.2800@localhost.localdomain> <1244957739.2679.42.camel@ht.satnam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 14 Jun 2009 07:20:47 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:47227 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756526AbZFNLUr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 07:20:47 -0400
+Date: Sun, 14 Jun 2009 20:20:02 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: akpm <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scripts/checksyscalls.sh: only whine perf_counter_open when supported
+Message-ID: <20090614112002.GA14963@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	akpm <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org
+References: <1244806169-12232-1-git-send-email-vapier@gentoo.org> <8bd0f97a0906130348p474faf57yeb729aa07059c599@mail.gmail.com> <20090614093725.GD832@linux-sh.org> <8bd0f97a0906140255h295b393dl3165fff4c0a6baf6@mail.gmail.com> <20090614101111.GG832@linux-sh.org> <8bd0f97a0906140355y3661aa89o9a62a89f38fac5a5@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0906140355y3661aa89o9a62a89f38fac5a5@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder,
-
-[ I sanitized the cc list to restrict the annoyance to those who have
-to deal with that. Please stop adding people who are not affected by
-this. ]
-
-On Sun, 14 Jun 2009, Jaswinder Singh Rajput wrote:
-
-> On Sun, 2009-06-14 at 00:27 +0200, Thomas Gleixner wrote:
-> > On Sat, 13 Jun 2009, Jaswinder Singh Rajput wrote:
-> > 
-> > > Please let me know how we can improve it and add more features so it
-> > > becomes more useful.
-> > 
-> > I really have to ask, why this is useful at all.
-> > 
+On Sun, Jun 14, 2009 at 06:55:45AM -0400, Mike Frysinger wrote:
+> On Sun, Jun 14, 2009 at 06:11, Paul Mundt wrote:
+> > Perhaps not, but I do prefer to have the script whine at me when a new
+> > syscall pops up, just so I know when I have to start caring about a new
+> > feature.
 > 
-> Currently for X86 I can do :
+> assuming you can find any useful info about said feature ;)
 > 
-> 1. read complete state (dump all registers like for MTRR, APIC)
-> 2. read individual register
-> 3. write to individual register
-> 4. read/write these registers/info with shell through debugfs
-> 5. read these registers/info before getting shell
+> > These are not things I want to see silenced just because you don't
+> > presently feel compelled to wire up the entry on your platform.
 > 
-> And I did this for complete X86 CPU registers and info:
-> 1. Standard Registers
-> 2. Control Registers
-> 3. Debug Registers
-> 4. Descriptor Tables
-> 5. APIC Registers
-> 6. Model specific Register (MSRs)
-> 7. PCI configuration registers (for AMD)
-> 8. Basic cpuinfo
-> 9. CPUID Functions
-
-I did not ask what it can do. I did ask what's the usefulness of
-it. Your answer is the same list on which I commented on already in
-technical detail, but you ignored those comments.
-
-> This will be really useful for :
-> 1. developer who is porting/developing the kernel or drivers.
-
-We can access all this information already with existing tools.
-
-> 2. User who is reading hardware manual and want to see these value on
-> its CPU
-
-Same here.
- 
-> Of course you need a Hardware manual to check address and detail
-> information. I do not want to keep detail for each register.
-
-That's why anyone with common sense will use lspci, cpuid to get the
-information in both raw and decoded format.
- 
-> In X86 many tools are available which can read many registers but not
-> available for many architectures (I CCed some architecture maintainers
-> so that they can also specify issues they face when supporting new
-> CPU/architecture), they can also take advantage of it if we move
-
-I have ported Linux to a couple of new platforms and the problem you
-face is that the kernel does not boot at all in the early stage of the
-boot process. 
-
-How does cpu_debug help in that situation ? It does not help at all.
-
-> cpu_debug architecture independent portion outside X86.
-
-There is nothing x86 independent in cpu_debug.
- 
-> I am not against of any tool but some issues about tools are :
-> 1. Not supported for all architectures
-
-Again cpu_debug can not made generic as it is poking in architecture
-specific hardware.
-
-> 2. Do not support latest or upcoming hardware
-
-All these tools show the raw values, which also covers latest hardware.
-
-> 3. You need to mount filesystem and execute some shell to give commands
-
-Are you saying that the access to your debugfs based cpu_debug
-information does neither require a mounted file system nor a shell nor
-commands? It provides the information by telepathy, right?
-
-> 4. you need different tools to access different registers
-
-Write a wrapper script if that annoys you.
- 
-> So I want to know how can we can make cpu_debug more useful.
-
-I have not yet seen a single technical argument for what it is useful
-at all.
-
-So please stop hand waving about what it might do as long as you can
-not provide a single technical reason why cpu_debug should be in the
-kernel at all.
-
-Go through the kernel.org bugzilla and show me _one_ single bug which
-I debugged with the bug reporter, which could have been resolved
-faster by using cpu_debug. And think careful about it before you
-provide me that information.
-
-> > The reinvention of useful tools like lspci, cpuid, rdmsr, wrmsr inside
-> > of the kernel with a worse user interface and less information
-> > provided is just a waste of time and resources.
-> > 
+> i disagree, but i guess it doesnt matter if the arch maintainers dont
+> all agree here.
 > 
-> what user interface and information you want ?
+That is a secondary issue. For most people the script whining about an
+unimplemented syscall is the first indication that anything new has been
+added that needs to be looked at. This has been an invaluable addition
+and I will oppose any attempts to restrict that functionality. If it
+whines, you do need to look at it, whether you care about supporting it
+or not. This script whines for everyone and requires action by every
+architecture maintainer, and simply disabling it in the script because
+you don't care about it is not helpful.
 
-I'm happy to use the existing tools and their user interface. There is
-no value of having inferior reimplementations of those tools in the
-kernel.
+As far as new features and syscalls go, documentation is the exception,
+rather than the norm. And this is really not an issue, so long as a
+the generic implementation exists and does something useful. You have
+some HAVE_xxx stub for when you have some degree of support beyond what
+it can handle generically.
 
-Thanks,
+This distinction is only blurry in the perf counter subsystem because no
+one bothered devising a generic implementation for it, instead suggesting
+that platforms need to do special enabling logic for something that
+should theoretically be generic. This is a total departure from what the
+HAVE_xx symbols have meant in the past, and I don't like the fact that
+this just happened silently without any discussion. But this also seems
+to be a pretty common occurence for things coming in from -tip when
+applied in a non-x86 context.
 
-	tglx
+> if we can agree on centralizing arch/Kconfig for HAVE_xxx stubs, we
+> could add a checkpatch that errors out if said stub lacks a help line
+> -- the assumption being the help text would point to arch details and
+> not some other document (design rational, user interface, methodology,
+> etc...).  of course, this also relies on the assumption of people
+> filtering via checkpatch.pl ...
+
+arch/Kconfig exists for architecture-specific HAVE_xxx stubs, and ought
+to have some mention of where to look for wiring up said stub. Individual
+features that may or may not be supported by the entire architecture are
+best off defined within the Kconfig they are used in.
+
+Having to hunt down new HAVE_xxx stubs is almost as tedious as having to
+hunt down the required support interface that goes along with them. In
+practice I generally just select HAVE_foo and see where the build blows
+up to figure out what I have to do first. But this of course assumes you
+have some visibility of new HAVE_xxx stubs.
