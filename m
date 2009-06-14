@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbZFNMn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbZFNMnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbZFNMn3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbZFNMnV
+	id S1759505AbZFNMnl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbZFNMn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:43:21 -0400
-Received: from web31703.mail.mud.yahoo.com ([68.142.201.183]:32522 "HELO
-	web31703.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755004AbZFNMnU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:43:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=WPHFringvG6nyDdXIdwEzoWKpAu0cS52qvFHQvtEYRXIqVgOeczjZeQa+y+YoKacElrcVF4W4JFDsdx2zfwAElFJJRXdYDO4CO/Xcs0SUWQSFpfth9WtR8h8tL//rM1ybpczH4fxv+JZMWEAevYfU1zi+t1dUMk00qHp6qtKgPI=;
-Message-ID: <19209.93239.qm@web31703.mail.mud.yahoo.com>
-X-YMail-OSG: pQqFNnwVM1khM9Ux.TultlOk3wlj2RCdPE1V4rksgtCijuBPQgsvFafgCkHYRZWxEMU_oY5ohRwBGKOJ3zRRyZIf2f7xNA782jAGTLvMug3N.Ml.4HpJuGMTQyo8tnUacHTPBKk2WKG5LQfvc86b5oqhS1Ml.tDLPHBmHDJiP.DMxZ1npECzKV34OxfMMU0BmVGvoo2X0L7I8EDEFZpI1XdOvlUzvOc08I89x10rTa6t6g.AUWQyTkXkpLvW_Q3gW.fxEj7jM0UeQ6bVvFBncAIOhOqFaxgwPeuEfjxUG2bZVmKbijmPqD7xtEoTfr6rcHkJh1ejN.YLIxmW5kJFl74rX99H9rA3tccAFLEEK3eakCxEl.I4Lg_dUeuczrye
-X-Mailer: YahooMailRC/1357.18 YahooMailWebService/0.7.289.15
-References: <233030.36441.qm@web31706.mail.mud.yahoo.com> <4A333E0D.8050306@gmail.com>
-Date: Sun, 14 Jun 2009 05:43:22 -0700 (PDT)
-From: Sanka Piyaratna <cesanka@yahoo.com>
-Subject: Re: PCIe interface memory memory mapping issue
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4A333E0D.8050306@gmail.com>
+	Sun, 14 Jun 2009 08:43:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:42525 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760136AbZFNMnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:43:25 -0400
+Date: Sun, 14 Jun 2009 14:43:11 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Benjamin S." <sbenni@gmx.de>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, js@sig21.net,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend to memory
+In-Reply-To: <20090614143708.32ec250c@pluto-lenny.milky.way>
+Message-ID: <alpine.LFD.2.00.0906141440440.2800@localhost.localdomain>
+References: <20090614120950.116536fa@pluto-lenny.milky.way> <200906141400.27331.rjw@sisk.pl> <alpine.LFD.2.00.0906141405450.2800@localhost.localdomain> <200906141415.16949.rjw@sisk.pl> <20090614143708.32ec250c@pluto-lenny.milky.way>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 14 Jun 2009, Benjamin S. wrote:
+>  19:          0         17   IO-APIC-fasteoi   ehci_hcd:usb4, HDA Intel
+>  24:       4830          0  HPET_MSI-edge      hpet2
 
-Hi Robert
+This is probably the culprit. Try booting with hpet=disble and check
+whether your resume works.
 
+Thanks,
 
-Thanks for your reply.
-
->> I have developed a PCI express interface using Xilinx ML555 hardware module. I have implemented Linux kernel >>mode device drivers and everything works correctly as long as I am using the device within a computer with dual >>channel DDR arrangement. However, as soon as I pug this device into a core i7 or an older single channel DDR >>machine, the interface memory mapping does not work any more. As if the register map with in the device does no >>longer exsists. However, "lspci" utility provides correct information. I am not sure if this has anything to do with the >>number of DDR memory channels the motherboard has or why that would be a problem for PCI express device. >>However, this seem to be the common link between the machines that demonstrate this issue.
-
->You'll have to give more details on what you mean by "the interface memory mapping does not work any more. As if >the register map with in the device does no longer exsists".
-
-What I mean by this is that, when load the driver, the memory mapping of the hardware memory onto the computer memory does not work. I have a setup where I have all the control registers in BAR5 (512 byte) and I also have 64kB chuck of the FPGA memory mapped using BAR0. I am not able to see the register space when the BAR5 area in the computer memory map. However, I am able to write something to BAR0 memory map and read it back.
-
-Thanks and regards,
-
-Sanka
-
-
-
-      Need a Holiday? Win a $10,000 Holiday of your choice. Enter now.http://us.lrd.yahoo.com/_ylc=X3oDMTJxN2x2ZmNpBF9zAzIwMjM2MTY2MTMEdG1fZG1lY2gDVGV4dCBMaW5rBHRtX2xuawNVMTEwMzk3NwR0bV9uZXQDWWFob28hBHRtX3BvcwN0YWdsaW5lBHRtX3BwdHkDYXVueg--/SIG=14600t3ni/**http%3A//au.rd.yahoo.com/mail/tagline/creativeholidays/*http%3A//au.docs.yahoo.com/homepageset/%3Fp1=other%26p2=au%26p3=mailtagline
+	tglx
