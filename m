@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbZFNIav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbZFNIcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127AbZFNIav (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 04:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZFNIaf
+	id S1755791AbZFNIcZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 04:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZFNIcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 04:30:35 -0400
-Received: from mail-fx0-f207.google.com ([209.85.220.207]:33189 "EHLO
+	Sun, 14 Jun 2009 04:32:22 -0400
+Received: from mail-fx0-f207.google.com ([209.85.220.207]:46550 "EHLO
 	mail-fx0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755109AbZFNIa2 (ORCPT
+	with ESMTP id S1753183AbZFNIcV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 04:30:28 -0400
-X-Greylist: delayed 309 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Jun 2009 04:30:27 EDT
+	Sun, 14 Jun 2009 04:32:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=dCCdw/ZeFsXNoUcfFTFsj7gyhcp4f0tvb6OvGNzZTPsmmd/gIeIFzmuM43JzPe0OmB
-         Y+ykJt7E701zieMUYOYqBiN5LZZdAEU7ZBcoGu0MUdin1SfrkUA0G3+MyiU1JVlUi3B6
-         xD3bTXKivzI2sLFq9XkjcIwacqPIeY86PxjZo=
-Message-ID: <4A34B2FD.20701@gmail.com>
-Date: Sun, 14 Jun 2009 10:21:17 +0200
-From: Marco <marco.stornelli@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=VpbgHva5Ou5ZQYZqU6IxiXdESO07Un1MIR+2xr/9pr6DG8voKkpqm7b3ZOT9mU3gGu
+         AhXSdq64s9YPfJYazpVQW/fVhtJHTPYiTzs4m42ZN3yiFj/TSIBrNZlMBDmfHtioSokM
+         mPahS09d65VBPXqjG7z0SusmFzs135vQKi78Y=
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 04/14] Pramfs: Mounting as root filesystem
-References: <4A33A7D7.3040008@gmail.com> <200906140104.43463.arnd@arndb.de>
-In-Reply-To: <200906140104.43463.arnd@arndb.de>
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <84144f020906140130w189239c0l56dccad99529aa7@mail.gmail.com>
+References: <20090614081052.GA9276@elte.hu> <4A34B2E2.7080702@cs.helsinki.fi>
+	 <84144f020906140130w189239c0l56dccad99529aa7@mail.gmail.com>
+Date: Sun, 14 Jun 2009 11:32:22 +0300
+X-Google-Sender-Auth: 0c97196f7278c965
+Message-ID: <84144f020906140132s56b5616flf61040553d88c05b@mail.gmail.com>
+Subject: Re: tty_ldisc_try_get(): BUG kmalloc-8: Poison overwritten
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Saturday 13 June 2009, Marco wrote:
->>  void __init mount_root(void)
->>  {
->> +#ifdef CONFIG_ROOT_PRAMFS
->> +       if (MAJOR(ROOT_DEV) == MEM_MAJOR) {
->> +               if (mount_pramfs_root())
->> +                       return;
->> +
->> +               printk(KERN_ERR "VFS: Unable to mount root fs via PRAMFS, trying floppy.\n");
->> +               ROOT_DEV = Root_FD0;
->> +       }
->> +#endif
-> 
-> AFAICT, this will prevent booting from /dev/ram0 with a regular file system,
-> because that also uses MAJOR(ROOT_DEV) == 1.
-> 
-> 	Arnd <><
-> 
+On Sun, Jun 14, 2009 at 11:20 AM, Pekka Enberg<penberg@cs.helsinki.fi> wrote:
+>> You could add something like
+>>
+>>  WARN_ON(ld->refcount == 0x6b)
+>>
+>> to tty_ldisc_deref() to see if that triggers.
 
-Mmm...MEM_MAJOR and RAMDISK_MAJOR have the same value and pramfs works
-in memory. We could simply use /dev/null (there was an error in the
-submitted kconfig description, my intention was to use /dev/mem). In
-that case I can use UNNAMED_MAJOR. PRAMFS root option is not enabled if
-it's already enabled the NFS one. What do you think?
+On Sun, Jun 14, 2009 at 11:30 AM, Pekka Enberg<penberg@cs.helsinki.fi> wrote:
+> Make that
+>
+>    WARN_ON(ld->refcount == (int)0xa56b6b6b)
+>
+> instead.
 
-Marco
+And oh, kmemcheck should be able to catch this too. :-)
