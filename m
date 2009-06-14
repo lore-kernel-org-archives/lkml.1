@@ -1,133 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbZFNMlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbZFNMn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760170AbZFNMlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbZFNMlG
+	id S1758380AbZFNMn3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbZFNMnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:41:06 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53941 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbZFNMlF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:41:05 -0400
-Message-ID: <4A34EFD9.7010303@novell.com>
-Date: Sun, 14 Jun 2009 08:40:57 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Sun, 14 Jun 2009 08:43:21 -0400
+Received: from web31703.mail.mud.yahoo.com ([68.142.201.183]:32522 "HELO
+	web31703.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755004AbZFNMnU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:43:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=WPHFringvG6nyDdXIdwEzoWKpAu0cS52qvFHQvtEYRXIqVgOeczjZeQa+y+YoKacElrcVF4W4JFDsdx2zfwAElFJJRXdYDO4CO/Xcs0SUWQSFpfth9WtR8h8tL//rM1ybpczH4fxv+JZMWEAevYfU1zi+t1dUMk00qHp6qtKgPI=;
+Message-ID: <19209.93239.qm@web31703.mail.mud.yahoo.com>
+X-YMail-OSG: pQqFNnwVM1khM9Ux.TultlOk3wlj2RCdPE1V4rksgtCijuBPQgsvFafgCkHYRZWxEMU_oY5ohRwBGKOJ3zRRyZIf2f7xNA782jAGTLvMug3N.Ml.4HpJuGMTQyo8tnUacHTPBKk2WKG5LQfvc86b5oqhS1Ml.tDLPHBmHDJiP.DMxZ1npECzKV34OxfMMU0BmVGvoo2X0L7I8EDEFZpI1XdOvlUzvOc08I89x10rTa6t6g.AUWQyTkXkpLvW_Q3gW.fxEj7jM0UeQ6bVvFBncAIOhOqFaxgwPeuEfjxUG2bZVmKbijmPqD7xtEoTfr6rcHkJh1ejN.YLIxmW5kJFl74rX99H9rA3tccAFLEEK3eakCxEl.I4Lg_dUeuczrye
+X-Mailer: YahooMailRC/1357.18 YahooMailWebService/0.7.289.15
+References: <233030.36441.qm@web31706.mail.mud.yahoo.com> <4A333E0D.8050306@gmail.com>
+Date: Sun, 14 Jun 2009 05:43:22 -0700 (PDT)
+From: Sanka Piyaratna <cesanka@yahoo.com>
+Subject: Re: PCIe interface memory memory mapping issue
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4A333E0D.8050306@gmail.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, mtosatti@redhat.com
-Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
-References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090614092542.GA4833@redhat.com>
-In-Reply-To: <20090614092542.GA4833@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0AD5E1A146184A02E3BB6322"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0AD5E1A146184A02E3BB6322
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Michael S. Tsirkin wrote:
-> On Wed, May 20, 2009 at 10:30:49AM -0400, Gregory Haskins wrote:
->
-> ...
->
->  =20
->> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
->> +static int
->> +kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
->> +{
->> +	struct _irqfd *irqfd;
->> +	struct file *file =3D NULL;
->> +	int ret;
->> +
->> +	irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
->> +	if (!irqfd)
->> +		return -ENOMEM;
->> +
->> +	irqfd->kvm =3D kvm;
->> +	irqfd->gsi =3D gsi;
->> +	INIT_LIST_HEAD(&irqfd->list);
->> +	INIT_WORK(&irqfd->work, irqfd_inject);
->> +
->> +	/*
->> +	 * Embed the file* lifetime in the irqfd.
->> +	 */
->> +	file =3D fget(fd);
->> +	if (IS_ERR(file)) {
->> +		ret =3D PTR_ERR(file);
->> +		goto fail;
->> +	}
->> +
->> +	/*
->> +	 * Install our own custom wake-up handling so we are notified via
->> +	 * a callback whenever someone signals the underlying eventfd
->> +	 */
->> +	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
->> +	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
->> +
->> +	ret =3D file->f_op->poll(file, &irqfd->pt);
->> +	if (ret < 0)
->> +		goto fail;
->> +
->> +	irqfd->file =3D file;
->> +
->> +	mutex_lock(&kvm->lock);
->> +	list_add_tail(&irqfd->list, &kvm->irqfds);
->> +	mutex_unlock(&kvm->lock);
->> +
->> +	return 0;
->> +
->> +fail:
->> +	if (irqfd->wqh)
->> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
->> +
->> +	if (file && !IS_ERR(file))
->> +		fput(file);
->> +
->> +	kfree(irqfd);
->> +	return ret;
->> +}
->>    =20
->
-> It seems that this lets the guest assign an unlimited number of fds
-> to the same gsi, potentially using up all of kernel memory.
->
-> Since we don't need multiple fds assigned to the same gsi (instead,
-> multiple processes can write to the same eventfd to trigger an
-> interrupt) let's simply check that no fd is yet assigned to this gsi.
->  =20
+Hi Robert
 
-I think Avi asked for this specific feature during review which is the
-reason why its there today.  However, I agree that it would probably be
-a good idea to put an upper limit on the number of supported aliases
-that can be registered.  Will fix.
 
-Thanks Michael,
+Thanks for your reply.
 
--Greg
+>> I have developed a PCI express interface using Xilinx ML555 hardware module. I have implemented Linux kernel >>mode device drivers and everything works correctly as long as I am using the device within a computer with dual >>channel DDR arrangement. However, as soon as I pug this device into a core i7 or an older single channel DDR >>machine, the interface memory mapping does not work any more. As if the register map with in the device does no >>longer exsists. However, "lspci" utility provides correct information. I am not sure if this has anything to do with the >>number of DDR memory channels the motherboard has or why that would be a problem for PCI express device. >>However, this seem to be the common link between the machines that demonstrate this issue.
+
+>You'll have to give more details on what you mean by "the interface memory mapping does not work any more. As if >the register map with in the device does no longer exsists".
+
+What I mean by this is that, when load the driver, the memory mapping of the hardware memory onto the computer memory does not work. I have a setup where I have all the control registers in BAR5 (512 byte) and I also have 64kB chuck of the FPGA memory mapped using BAR0. I am not able to see the register space when the BAR5 area in the computer memory map. However, I am able to write something to BAR0 memory map and read it back.
+
+Thanks and regards,
+
+Sanka
 
 
 
---------------enig0AD5E1A146184A02E3BB6322
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko079kACgkQlOSOBdgZUxmzbgCgh+bx2v+qs7EXsKYPpM5VlTQl
-Pd0AnAngo+Fcv0+vxA05TAH9cdIy8yHb
-=cNEs
------END PGP SIGNATURE-----
-
---------------enig0AD5E1A146184A02E3BB6322--
+      Need a Holiday? Win a $10,000 Holiday of your choice. Enter now.http://us.lrd.yahoo.com/_ylc=X3oDMTJxN2x2ZmNpBF9zAzIwMjM2MTY2MTMEdG1fZG1lY2gDVGV4dCBMaW5rBHRtX2xuawNVMTEwMzk3NwR0bV9uZXQDWWFob28hBHRtX3BvcwN0YWdsaW5lBHRtX3BwdHkDYXVueg--/SIG=14600t3ni/**http%3A//au.rd.yahoo.com/mail/tagline/creativeholidays/*http%3A//au.docs.yahoo.com/homepageset/%3Fp1=other%26p2=au%26p3=mailtagline
