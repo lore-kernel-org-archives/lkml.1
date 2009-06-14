@@ -1,47 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZFNMqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759159AbZFNMvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbZFNMqp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 08:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZFNMqh
+	id S1759159AbZFNMvj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 08:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFNMv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 08:46:37 -0400
-Received: from www.tglx.de ([62.245.132.106]:40045 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753290AbZFNMqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 08:46:37 -0400
-Date: Sun, 14 Jun 2009 14:46:20 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Benjamin S." <sbenni@gmx.de>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, js@sig21.net,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend to memory
-In-Reply-To: <20090614143708.32ec250c@pluto-lenny.milky.way>
-Message-ID: <alpine.LFD.2.00.0906141444500.2800@localhost.localdomain>
-References: <20090614120950.116536fa@pluto-lenny.milky.way> <200906141400.27331.rjw@sisk.pl> <alpine.LFD.2.00.0906141405450.2800@localhost.localdomain> <200906141415.16949.rjw@sisk.pl> <20090614143708.32ec250c@pluto-lenny.milky.way>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 14 Jun 2009 08:51:27 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:56257 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbZFNMv0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 08:51:26 -0400
+Date: Sun, 14 Jun 2009 14:51:28 +0200
+From: Andreas Mohr <andim2@users.sourceforge.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: andi@lisas.de, akpm@linux-foundation.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM
+	capability
+Message-ID: <20090614125128.GA32034@rhlx01.hs-esslingen.de>
+Reply-To: andi@lisas.de
+References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20090603063025.GA32600@rhlx01.hs-esslingen.de> <20090613191931.GA31019@rhlx01.hs-esslingen.de> <200906140028.16025.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906140028.16025.rjw@sisk.pl>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Jun 2009, Benjamin S. wrote:
+Hi,
 
-This is odd as well:
->            CPU0       CPU1       
->   0:         42          1   IO-APIC-edge      timer
->  24:       4830          0  HPET_MSI-edge      hpet2
-> LOC:         42       5070   Local timer interrupts
+On Sun, Jun 14, 2009 at 12:28:15AM +0200, Rafael J. Wysocki wrote:
+> On Saturday 13 June 2009, Andreas Mohr wrote:
+> > Hi all,
+> > 
+> > after having added non-MII PHY card support to e100, I noticed that
+> > the suspend handler rejects power-management non-capable PCI cards,
+> 
+> Well, that means we have a bug somewhere in the PCI PM core.
 
-So we set up only one hpet channel for CPU0 and CPU1 uses the local
-timer interrupt. Need to look at that as well.
+I don't know. I had shortly investigated the same thing,
+but it very much seemed that this is by design, pci_set_power_state()
+is documented to reject non-PM cards (in power/pci.txt, and in
+pci.c, too). Thus I didn't work in this area.
 
-Venki ???
+And from a cleanliness point of view pci_set_power_state()
+acting on a non-PM card with no special non-PM ACPI support _should_
+return an error status I guess.
+(especially since docs say that pci_set_power_state() should
+be used for PM cards)
 
-Thanks,
+> > causing a S2R request to immediately get back up to the desktop,
+> > losing network access in the process (rtnl mutex deadlock).
+> 
+> That's bad.
 
-	tglx
+Indeed, and I have no idea what the problem was.
+rtnl_is_locked() always was false within suspend/resume,
+thus it had to be a userspace-triggered effect sometime
+_after_ (non-)resume happened
+(probably due to the network controller being down and thus inoperable
+after .suspend).
+
+BTW, after that failed .suspend, .resume was not called. I assume this to
+be correct behaviour.
+
+> >  static int __e100_power_off(struct pci_dev *pdev, bool wake)
+> >  {
+> > +	/* some older devices don't support PCI PM
+> > +	 * (e.g. mac_82557_D100_B combo card with 80c24 PHY)
+> > +	 * - skip those! (they most likely won't support WoL either)
+> > +	 */
+> > +	if (!pci_find_capability(pdev, PCI_CAP_ID_PM))
+> > +		return 0;
+> 
+> Devices without PCI_CAP_ID_PM may still be power-manageable by ACPI, so
+> returning 0 at this point is not a general solution.
+
+Oh, interesting.
+
+BTW, any idea why we have several drivers doing some seemingly useless
+
+        /* Find power-management capability. */
+        pm_cap = pci_find_capability(pdev, PCI_CAP_ID_PM);
+        if (pm_cap == 0) {
+                printk(KERN_ERR PFX "Cannot find PowerManagement capability, "
+                       "aborting.\n");
+                err = -EIO;
+                goto err_out_free_res;
+        }
+
+?
+
+- it's code bloat
+- it needlessly rejects non-PM cards
+- it annoys the hell out of users of a non-PM card
+
+
+> > +
+> >  	if (wake) {
+> >  		return pci_prepare_to_sleep(pdev);
+> 
+> pci_prepare_to_sleep() is supposed to return 0 for your device.  I'll have a
+> look at it.
+
+No, wake is false for my card, thus that's not the branch to
+investigate.
+
+And that's probably the reason why the patch in the next mail
+didn't work.
+(I #if 0'ed my e100 changes, and then patched pci.c,
+and it did properly contain the patched parts,
+and the kernel rebuild then failed to suspend)
+
+pci_legacy_suspend(): e100_suspend+0x0/0x20 [e100] returns -5
+pm_op(): pci_pm_suspend+0x0/0xd7 returns -5
+PM: Device 0000:02:07.0 failed to suspend: error -5
+PM: Some devices failed to suspend
+
+Most likely your patch didn't change pci_set_power_state() processing,
+I'd think.
+
+Now what to do next?
+Note that I won't be able to test anything for about a week now,
+unfortunately.
+
+Thanks for your info!
+
+Andreas Mohr
