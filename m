@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbZFNNua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761678AbZFNNxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761577AbZFNNua (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 09:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbZFNNuV
+	id S1761678AbZFNNxV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 09:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZFNNxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 09:50:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46167 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756675AbZFNNuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 09:50:19 -0400
-Date: Sun, 14 Jun 2009 16:50:08 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org,
-       mtosatti@redhat.com
-Subject: Re: [KVM PATCH v10] kvm: add support for irqfd
-Message-ID: <20090614135008.GA12511@redhat.com>
-References: <20090520142234.22285.72274.stgit@dev.haskins.net> <20090614092542.GA4833@redhat.com> <4A34EFD9.7010303@novell.com> <20090614131937.GA10646@redhat.com> <4A34F9D8.5040306@redhat.com> <20090614133035.GD10646@redhat.com> <4A34FDBB.9090100@redhat.com>
+	Sun, 14 Jun 2009 09:53:14 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:42907 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753610AbZFNNxO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 09:53:14 -0400
+Date: Sun, 14 Jun 2009 21:51:47 +0800
+From: Harald Welte <HaraldWelte@viatech.com>
+To: Pierre Ossman <pierre@ossman.eu>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       JosephChan@via.com.tw, Bruce Chang <BruceChang@via.com.tw>
+Subject: Re: [PATCH] mmc: Add new via-sdmmc host controller driver
+Message-ID: <20090614135147.GQ2854@prithivi.gnumonks.org>
+References: <20090612075930.GB30843@prithivi.gnumonks.org> <20090613134328.0c168205@mjolnir.ossman.eu> <20090614065256.GJ2854@prithivi.gnumonks.org> <20090614125537.065d706a@mjolnir.ossman.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A34FDBB.9090100@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090614125537.065d706a@mjolnir.ossman.eu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 04:40:11PM +0300, Avi Kivity wrote:
-> Michael S. Tsirkin wrote:
->
->  
->
->>> I don't want to assume that the eventfds all come from the same source.
->>>
->>> That said, we have a workaround, allocate a new gsi with the same 
->>> routes  and attach the excess eventfds there.
->>>     
->>
->> Right. So you are ok with 1:1 irqfd:gsi requirement for now?
->> This seems nicer than N:1 with an arbitrary N
->
-> Not too happy, but okay.
+On Sun, Jun 14, 2009 at 12:55:37PM +0200, Pierre Ossman wrote:
 
-Is the answer 42:1 then, as usual?
+> > Also, you stated that mmc_remove_host needs to be the first step.  However,
+> > sdhci first kills the ongoing rquest (if "dead"), and then removes the host.
+> 
+> Right, because the reason you need to end the request is that failure
+> to do so will wedge the MMC system and mmc_remove_host() will never
+> return.
+> 
+> Normally the requests will eventually be completed by interrupts coming
+> from the hardware, but if it got removed then that might not happen.
 
+Ok, I will copy+paste the snippet from sdhci.c and do some testing, both
+removing the card while continuously issuing requests, as well as removing the
+driver while doing that.
+
+Will submit the result again in two days or so.
+
+-- 
+- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
+============================================================================
+VIA Free and Open Source Software Liaison
