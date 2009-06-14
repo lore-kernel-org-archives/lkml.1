@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZFNDp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZFNDzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZFNDp3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Jun 2009 23:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZFNDpU
+	id S1756352AbZFNDzt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Jun 2009 23:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZFNDzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Jun 2009 23:45:20 -0400
-Received: from mail-px0-f187.google.com ([209.85.216.187]:36475 "EHLO
-	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbZFNDpU (ORCPT
+	Sat, 13 Jun 2009 23:55:41 -0400
+Received: from e24smtp01.br.ibm.com ([32.104.18.85]:56249 "EHLO
+	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbZFNDzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Jun 2009 23:45:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:message-id:to:cc:subject:from:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=FPS9CM+1XH8jyauWh/A/8QD06Gah5FPxuRGNXs7qBAfO5cMCL3t2IoC3dtmQ3GYLT8
-         AASaUQO9hSjQRg+gnI/ATSqoTPLeBUPpEPA6hadJcdW2Hj9+01DdqkLVTmrikYloU0B+
-         dqrbKUGYfaO+Ru2fCExyprysMMNxRMarYFK1Q=
-Date: Sun, 14 Jun 2009 12:45:17 +0900 (JST)
-Message-Id: <20090614.124517.47505469.konishi.ryusuke@gmail.com>
-To: llucax@gmail.com
-Cc: linux-kernel@vger.kernel.org, albertito@blitiri.com.ar, users@nilfs.org,
-       llucax@gmail.com, konishi.ryusuke@lab.ntt.co.jp
-Subject: Re: NILFS2 get stuck after bio_alloc() fail
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <20090614013211.GA22552@homero.springfield.home>
-References: <20090614013211.GA22552@homero.springfield.home>
-X-Mailer: Mew version 6.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 13 Jun 2009 23:55:40 -0400
+Message-ID: <4A3474BD.4000804@linux.vnet.ibm.com>
+Date: Sun, 14 Jun 2009 00:55:41 -0300
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090208)
+MIME-Version: 1.0
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+CC: Shahbaz Khan <shaz.linux@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Debora Velarde <debora@linux.vnet.ibm.com>,
+       tpmdd-devel@lists.sourceforge.net
+Subject: Re: TPM drivers support and Linux Integrity Module for 2.6.30
+References: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com> <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com>
+In-Reply-To: <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-On Sat, 13 Jun 2009 22:32:11 -0300, Leandro Lucarella wrote:
-> Hi!
-> 
-> While testing nilfs2 (using 2.6.30) doing some "cp"s and "rm"s, I noticed
-> sometimes they got stucked in D state, and the kernel had said the
-> following message:
-> 
->         NILFS: IO error writing segment
-> 
-> A friend gave me a hand and after adding some printk()s we found out that
-> the problem seems to occur when bio_alloc()s inside nilfs_alloc_seg_bio()
-> fail, making it return NULL; but we don't know how that causes the
-> processes to get stucked.
-> 
-> PS: Please CC me.
-> -- 
-> Leandro Lucarella (luca) | Blog colectivo: http://www.mazziblog.com.ar/blog/
+Hi Mimi, thanks for copying us.
 
-Thank you for reporting this issue.
+Shaz,
 
-Could you get stack dump of the stuck nilfs task?
-It is acquirable as follows if you enabled magic sysrq feature:
+If this is the same chip we find in the GM45 boards, iTPM, the upstream 
+driver won't work properly with it.
+Mainly because this iTPM returns the wrong status code when the driver 
+didn't finish sending all bytes required for a specific command.
+As suggested by Seiji Munetoh in the tpmdd-devel sf mailing list, you 
+can modify line 263 of tpm_tis.c as below:
 
- # echo t > /proc/sysrq-trigger
+-		if ((status & TPM_STS_DATA_EXPECT) == 0) {
++		if ((status & TPM_STS_VALID) == 0) {
 
-I will dig into the process how it got stuck.
 
-P.S.
-nilfs.org and the nilfs mailing list is stopping due to planned power
-outage.  They will be back on June 15 0:30 a.m.
+Then, after compiling it, since it also seems to not support PNP, load 
+it with force option on:
 
-A backup site except the list is available on
-http://nilfs.sourceforge.net/en/ during the period.
+modprobe tpm_tis force=1
 
-Regards,
-Ryusuke Konishi
+If modprobe fails the first time, try the second and then it will work.
+
+I'm going to submit a patch to make the upstream driver work with it, 
+making this line depend on a module param too..
+
+Thanks,
+Rajiv
+
+Mimi Zohar wrote:
+> On Fri, 2009-06-12 at 11:59 +0600, Shahbaz Khan wrote:
+>   
+>> Hi,
+>>
+>> I am using Intel Q45 Express chipset with TPM version 1.2 specs of
+>> TCG. The kernel version is 2.6.30. Problem is that the TPM drivers
+>> cannot provide functionality to the TCG TSS giving error message:
+>>
+>> "TCSD TDDL ERROR: Could not find a device to open!"
+>>
+>> The device node in /dev is also not being created which should be
+>> "/dev/tpm". If created manually then still it does not work.
+>>
+>> What should be done?
+>>
+>> Thanks.
+>>
+>> --
+>> Shaz
+>>     
+>
+> This is a device driver issue. Copying the TPM maintainers and the
+> forum.
+>
+> Mimi
+>
+>   
+
