@@ -1,106 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZFNHTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZFNHUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbZFNHTo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 03:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZFNHTa
+	id S1754816AbZFNHUB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 03:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZFNHTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 03:19:30 -0400
+	Sun, 14 Jun 2009 03:19:38 -0400
 Received: from mail-bw0-f213.google.com ([209.85.218.213]:47489 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753163AbZFNHT2 (ORCPT
+	with ESMTP id S1754100AbZFNHTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 03:19:28 -0400
+	Sun, 14 Jun 2009 03:19:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cxgqh1acHAOmRaNCUvYk4ZnqyIYUfCqPVCbKFLfwqUecrS5A/wFu2+dy0QRjqQ1avC
-         OYG7EyOOwjo+R+O4KHCZBoiDESDVSN+nLFk0nMvFuxepZzo5YBSxhGITHOiQXPmFNQoJ
-         vHGIML/R4OWr/XbpUFoXuWx9q3tl29LqwHT1U=
-Message-ID: <4A34A394.5040509@gmail.com>
-Date: Sun, 14 Jun 2009 09:15:32 +0200
+        b=czBQksv5XjGUlLF7Y8AoKxaSZhsB/IAgveKqBR0WAFHdB8VOubqNafv/jYebp/lqc8
+         utdfQW1DspVaT/BQM1cydFVTuZTn95AyAIkuj2Gg2gSiVsGep3ax8YM5/IScSMccP/mS
+         4fCOoNKTy+kWK6v7qvsdR0BhB4CMx02OMOC8Q=
+Message-ID: <4A34A39D.20803@gmail.com>
+Date: Sun, 14 Jun 2009 09:15:41 +0200
 From: Marco <marco.stornelli@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Linux Embedded <linux-embedded@vger.kernel.org>,
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
        Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-References: <4A33A7A2.1050608@gmail.com> <20090613155957.GA16220@shareable.org>
-In-Reply-To: <20090613155957.GA16220@shareable.org>
+Subject: Re: [PATCH 06/14] Pramfs: Include files
+References: <4A33A7EC.6070008@gmail.com> <20090613140459.GC30053@uranus.ravnborg.org>
+In-Reply-To: <20090613140459.GC30053@uranus.ravnborg.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Jamie Lokier wrote:
-> Marco wrote:
->> Linux traditionally had no support for a persistent, non-volatile
->> RAM-based filesystem, persistent meaning the filesystem survives a
->> system reboot or power cycle intact. The RAM-based filesystems such as
->> tmpfs and ramfs have no actual backing store but exist entirely in the
->> page and buffer caches, hence the filesystem disappears after a system
->> reboot or power cycle.
+Sam Ravnborg wrote:
+> On Sat, Jun 13, 2009 at 03:21:48PM +0200, Marco wrote:
+>> From: Marco Stornelli <marco.stornelli@gmail.com>
+>>
+>> +#include <linux/types.h>
+>> +
+>> +#ifdef __KERNEL__
+>> +#include <linux/sched.h>
+>> +#include <linux/buffer_head.h>
+>> +#include "pram_fs_sb.h"
+>> +#endif
 > 
-> Why is a ramdisk not sufficient for this?
+> The only reason to have this header file in include/linux/
+> is that it is used by userspace.
+> So please split it up so we have one header suitable for exporting
+> and another header with all the promfs local stuff.
+> The latter should be in fs/pramsfs/
+
+Yeah you're right. Actually it's not used by userspace so I think I can
+remove the ifdef.
+
 > 
-
-Simply because the ramdisk was not designed to work in a persistent
-environment. In addition this kind of filesystem has been designed to
-work not only with classic ram. You can think at the situation where you
-have got an external SRAM with a battery for example. With it you can
-"remap" in an easy way the SRAM. Moreover there's the issue of memory
-protection that this filesystem takes care.
-
-> Why is an entire filesystem needed, instead of simply a block driver
-> if the ramdisk driver cannot be used?
 > 
-
->From documentation:
-
-"A relatively straight-forward solution is to write a simple block
-driver for the non-volatile RAM, and mount over it any disk-based
-filesystem such as ext2/ext3, reiserfs, etc.
-
-But the disk-based fs over non-volatile RAM block driver approach has
-some drawbacks:
-
-1. Disk-based filesystems such as ext2/ext3 were designed for optimum
-   performance on spinning disk media, so they implement features such
-   as block groups, which attempts to group inode data into a contiguous
-   set of data blocks to minimize disk seeking when accessing files. For
-   RAM there is no such concern; a file's data blocks can be scattered
-   throughout the media with no access speed penalty at all. So block
-   groups in a filesystem mounted over RAM just adds unnecessary
-   complexity. A better approach is to use a filesystem specifically
-   tailored to RAM media which does away with these disk-based features.
-   This increases the efficient use of space on the media, i.e. more
-   space is dedicated to actual file data storage and less to meta-data
-   needed to maintain that file data.
-
-2. If the backing-store RAM is comparable in access speed to system memory,
-   there's really no point in caching the file I/O data in the page
-   cache. Better to move file data directly between the user buffers
-   and the backing store RAM, i.e. use direct I/O. This prevents the
-   unnecessary populating of the page cache with dirty pages. However
-   direct I/O has to be enabled at every file open. To enable direct
-   I/O at all times for all regular files requires either that
-   applications be modified to include the O_DIRECT flag on all file
-   opens, or that a new filesystem be used that always performs direct
-   I/O by default."
-
-On this point I'd like to hear other embedded guys.
-
-> It just struck me as a lot of code which might be completely
-> unnecessary for the desired functionality.
+>> +
+>> +
+>> +/*
+>> + * Debug code
+>> + */
+>> +#ifdef __KERNEL__
+>> +#define PFX "pramfs"
+>> +#ifdef PRAMFS_DEBUG
+>> +#define pram_dbg(format, arg...) \
+>> +    printk(KERN_DEBUG PFX ": " format , ## arg)
+>> +#else
+>> +#define pram_dbg(format, arg...) do {} while (0)
+>> +#endif
+>> +#define pram_err(format, arg...) \
+>> +    printk(KERN_ERR PFX ": " format , ## arg)
+>> +#define pram_info(format, arg...) \
+>> +    printk(KERN_INFO PFX ": " format , ## arg)
+>> +#define pram_warn(format, arg...) \
+>> +    printk(KERN_WARNING PFX ": " format , ## arg)
+>> +#endif
 > 
-> -- Jamie
+> For a typical drivers we have some pr_* to avoid the above.
+> Can they be used for a filesystem too?
+
+Ok, I'll use them.
+
+> 
+>> +
+>> +/*
+>> + * The PRAM file system magic number
+>> + */
+>> +#define PRAM_SUPER_MAGIC	0xEFFA
+> 
+> Move to include/linux/magic.h
 > 
 
+Ok.
+
+>> +
+>> +/*
+>> + * Structure of an inode in PRAMFS
+>> + */
+>> +struct pram_inode {
+>> +	__u32   i_sum;          /* checksum of this inode */
+>> +	__u32	i_uid;		/* Owner Uid */
+>> +	__u32	i_gid;		/* Group Id */
+>> +	__u16	i_mode;		/* File mode */
+>> +	__u16	i_links_count;	/* Links count */
+>> +	__u32	i_blocks;	/* Blocks count */
+>> +	__u32	i_size;		/* Size of data in bytes */
+>> +	__u32	i_atime;	/* Access time */
+>> +	__u32	i_ctime;	/* Creation time */
+>> +	__u32	i_mtime;	/* Modification time */
+>> +	__u32	i_dtime;	/* Deletion Time */
+>> +
+>> +	union {
+>> +		struct {
+>> +			/*
+>> +			 * ptr to row block of 2D block pointer array,
+>> +			 * file block #'s 0 to (blocksize/4)^2 - 1.
+>> +			 */
+>> +			off_t row_block;
+> 
+> It is my understanding that we shall use: __kernel_off_t
+> in exported headers.
+> 
+> The headers are not added to Kbuild - so it is not exported.
+> I assume thats an oversight.
+> 
+> 	Sam
+> 
+
+As I said it shouldn't be an exported header.
+
+Marco
 
 
 
