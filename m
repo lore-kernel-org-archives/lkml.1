@@ -1,104 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbZFOER2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752183AbZFOEZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752721AbZFOER2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 00:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbZFOERV
+	id S1752183AbZFOEZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 00:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZFOEZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 00:17:21 -0400
-Received: from sh.osrg.net ([192.16.179.4]:48645 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbZFOERU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 00:17:20 -0400
-Date: Mon, 15 Jun 2009 13:17:17 +0900 (JST)
-Message-Id: <20090615.131717.43576215.ryusuke@osrg.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [GIT PULL] nilfs2 update for 2.6.31 merge window
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 15 Jun 2009 13:17:18 +0900 (JST)
+	Mon, 15 Jun 2009 00:25:09 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:32784 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbZFOEZI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 00:25:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wHocU8LD+AS19C0B9Jr6Yw38D8jeQrw4QO796XHU4aULcDWqPhEbgLxyUAy3hXUM6U
+         BcHA//gYatqMMwChmZuh0khTbfqIytYUkkiQt24NGHaF/rKAKiNdLdkb7Jnf0pTpXeHD
+         Zira5qm1O+GPFe2VPf3ADHHHVai+KeMxPdOA8=
+MIME-Version: 1.0
+In-Reply-To: <19f34abd0906141603o2edadf22h2d61408b9abdb7a3@mail.gmail.com>
+References: <20090614081052.GA9276@elte.hu> <4A34B2E2.7080702@cs.helsinki.fi>
+	 <84144f020906140130w189239c0l56dccad99529aa7@mail.gmail.com>
+	 <84144f020906140132s56b5616flf61040553d88c05b@mail.gmail.com>
+	 <19f34abd0906141603o2edadf22h2d61408b9abdb7a3@mail.gmail.com>
+Date: Mon, 15 Jun 2009 07:25:08 +0300
+X-Google-Sender-Auth: a08a53232356822c
+Message-ID: <84144f020906142125x206ec93cj2af7cbfebf0ab3b5@mail.gmail.com>
+Subject: Re: tty_ldisc_try_get(): BUG kmalloc-8: Poison overwritten
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, Jun 15, 2009 at 2:03 AM, Vegard Nossum<vegard.nossum@gmail.com> wrote:
+> 2009/6/14 Pekka Enberg <penberg@cs.helsinki.fi>:
+>> On Sun, Jun 14, 2009 at 11:20 AM, Pekka Enberg<penberg@cs.helsinki.fi> wrote:
+>>>> You could add something like
+>>>>
+>>>>  WARN_ON(ld->refcount == 0x6b)
+>>>>
+>>>> to tty_ldisc_deref() to see if that triggers.
+>>
+>> On Sun, Jun 14, 2009 at 11:30 AM, Pekka Enberg<penberg@cs.helsinki.fi> wrote:
+>>> Make that
+>>>
+>>>    WARN_ON(ld->refcount == (int)0xa56b6b6b)
+>>>
+>>> instead.
+>>
+>> And oh, kmemcheck should be able to catch this too. :-)
+>>
+>
+> I was able to get this trace:
+>
+> (none) login: [  867.947401] WARNING: kmemcheck: Caught 32-bit read
+> from freed memory (469e2f44)
+> [  867.962162] 00000000020000000038bf41020000000038bf41020000000038bf4102000000
+> [  868.012078]  i i i i f f f f i i i i i i i i i i i i i i i i i i i i i i i i
+> [  868.061629]          ^
+> [  868.067686]
+> [  868.071709] Pid: 1857, comm: getty Not tainted (2.6.30 #416)
+> [  868.082651] EIP: 0060:[<414772ea>] EFLAGS: 00000002 CPU: 0
+> [  868.095379] EIP is at tty_ldisc_deref+0x1a/0x70
+> [  868.103757] EAX: 00000216 EBX: 469e2f40 ECX: 414772e8 EDX: 41bf3870
+> [  868.115752] ESI: 00000216 EDI: 4766483c EBP: 46f37f3c ESP: 41e22450
+> [  868.131343]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> [  868.141609] CR0: 8005003b CR2: 47806e04 CR3: 06b6b000 CR4: 00000690
+> [  868.155263] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> [  868.167168] DR6: 00004000 DR7: 00000000
+> [  868.175228]  [<4146f26d>] tty_read+0x8d/0xc0
+> [  868.184598]  [<410ca219>] vfs_read+0x99/0x180
+> [  868.196380]  [<410ca3bd>] sys_read+0x3d/0x70
+> [  868.206936]  [<41003a6f>] sysenter_do_call+0x12/0x3c
+> [  868.219746]  [<ffffffff>] 0xffffffff
+>
+> Thats:
+>
+> drivers/char/tty_ldisc.c:366
+> drivers/char/tty_io.c:896
+>
+> I also saw this a couple of times (it's not my printk):
+>
+> [ 1266.934668] tty_ldisc_deref: no references.
+> [ 1267.531655] tty_ldisc_deref: no references.
+> [ 1267.790096] tty_ldisc_deref: no references.
 
-please pull from
+Yup, that's the tty layer complaining that we're trying to
+tty_ldisc_deref() but reference count is zero. Ingo doesn't see this
+because of slab poisoning which is why kmemcheck is able to produce a
+nicer stack trace in this case.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
-
-to receive updates of nilfs:
-
- * Clean-ups of b-tree/block-mapping code
- * Several read performance tuning
- * Error code fix on snapshot delete request
- * Enhance forward compatibility in get-information ioctl commands
- * Clean-ups of removal list of segments
- * A correction in nilfs2.txt
-
-The following changes since commit 07a2039b8eb0af4ff464efd3dfd95de5c02648c6
- Linus Torvalds (1):
-      Linux 2.6.30
-
-Hisashi Hifumi (1):
-      NILFS2: Pagecache usage optimization on NILFS2
-
-Ryusuke Konishi (21):
-      nilfs2: remove nilfs_dat_prepare_free function
-      nilfs2: unify bmap operations starting use of indirect block address
-      nilfs2: add sufile function that can modify multiple segment usages
-      nilfs2: eliminate removal list of segments
-      nilfs2: remove header file for segment list operations
-      nilfs2: remove nilfs_bmap_put_block
-      nilfs2: remove nilfs_bmap_delete_block
-      nilfs2: move get block functions in bmap.c into btree codes
-      nilfs2: remove pointless NULL check of bpop_commit_alloc_ptr function
-      nilfs2: remove useless b_low and b_high fields from nilfs_bmap struct
-      nilfs2: remove bmap pointer operations
-      nilfs2: remove nilfs_direct_operations from direct mapping
-      nilfs2: remove nilfs_btree_operations from btree mapping
-      nilfs2: allow future expansion of metadata read out via get info ioctl
-      nilfs2: set bio unplug flag for the last bio in segment
-      nilfs2: enable sync_page method
-      nilfs2: modify list of unsupported features in caveats
-      nilfs2: return EBUSY against delete request on snapshot
-      nilfs2: use device's backing_dev_info for btree node caches
-      nilfs2: add sync_page method to page caches of meta data
-      nilfs2: support contiguous lookup of blocks
-
- Documentation/filesystems/nilfs2.txt |    5 +-
- fs/nilfs2/bmap.c                     |  272 +++++++------------------
- fs/nilfs2/bmap.h                     |  135 ++++++++-----
- fs/nilfs2/btnode.c                   |    9 +-
- fs/nilfs2/btnode.h                   |    2 +-
- fs/nilfs2/btree.c                    |  366 +++++++++++++++++++---------------
- fs/nilfs2/btree.h                    |   31 +---
- fs/nilfs2/cpfile.c                   |   47 ++---
- fs/nilfs2/cpfile.h                   |    4 +-
- fs/nilfs2/dat.c                      |   36 +---
- fs/nilfs2/dat.h                      |    2 +-
- fs/nilfs2/direct.c                   |  139 +++++++-------
- fs/nilfs2/direct.h                   |   20 +--
- fs/nilfs2/gcinode.c                  |    5 +-
- fs/nilfs2/inode.c                    |   18 +-
- fs/nilfs2/ioctl.c                    |   35 +---
- fs/nilfs2/mdt.c                      |    3 +-
- fs/nilfs2/nilfs.h                    |    1 +
- fs/nilfs2/recovery.c                 |   37 +++--
- fs/nilfs2/segbuf.c                   |    3 +-
- fs/nilfs2/seglist.h                  |   85 --------
- fs/nilfs2/segment.c                  |  130 ++++---------
- fs/nilfs2/segment.h                  |   12 +-
- fs/nilfs2/sufile.c                   |  119 ++++++++++-
- fs/nilfs2/sufile.h                   |   62 ++++--
- fs/nilfs2/super.c                    |    9 +-
- fs/nilfs2/the_nilfs.c                |    1 -
- 27 files changed, 727 insertions(+), 861 deletions(-)
- delete mode 100644 fs/nilfs2/seglist.h
-
-Thanks,
-Ryusuke Konishi
+                                      Pekka
