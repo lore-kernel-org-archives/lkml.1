@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933049AbZFOTMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764028AbZFOTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933049AbZFOTMl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761282AbZFOTMd
+	id S1764028AbZFOTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZFOTPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:12:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58796 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755024AbZFOTMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:12:33 -0400
-Date: Mon, 15 Jun 2009 15:12:23 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: npiggin@suse.de, jblunck@suse.de, linux-kernel@vger.kernel.org,
-       paulmck@us.ibm.com
-Subject: Re: [PATCH] atomic: Fix _atomic_dec_and_lock() deadlock on UP
-Message-ID: <20090615191223.GE352@shell>
-References: <20090615181113.GD352@shell> <20090615114543.80c420b3.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615114543.80c420b3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 15 Jun 2009 15:15:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50767 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbZFOTPQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 15:15:16 -0400
+Message-ID: <4A369CD8.3090505@zytor.com>
+Date: Mon, 15 Jun 2009 12:11:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, paulus@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, efault@gmx.de, jeremy@goop.org,
+       npiggin@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
+ to use NMI-safe methods
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org>	 <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain>	 <20090615171845.GA7664@elte.hu>	 <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain>	 <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal>	 <1245091917.6741.185.camel@laptop>  <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop>
+In-Reply-To: <1245092561.6741.205.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 11:45:43AM -0700, Andrew Morton wrote:
-> On Mon, 15 Jun 2009 14:11:13 -0400
-> Valerie Aurora <vaurora@redhat.com> wrote:
+Peter Zijlstra wrote:
+> On Mon, 2009-06-15 at 14:59 -0400, Mathieu Desnoyers wrote:
+>> * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+>>> On Mon, 2009-06-15 at 14:48 -0400, Mathieu Desnoyers wrote:
+>>>> we should not care that much about the performance hit of
+>>>> saving/restoring the cr2 register at each nmi entry/exit.
+>>> But we do, perf counters very much cares about nmi performance.
+>>>
+>> To a point where it cannot afford a simple register save/restore ?
+>>
+>> There is "caring" and "_caring_". I am tempted to ask what NMI handler
+>> execution frequency you have in mind here to figure out if we are not
+>> trying to optimize sub-nanoseconds per minutes. ;)
 > 
-> > _atomic_dec_and_lock() can deadlock on UP with spinlock debugging
-> > enabled.  Currently, on UP we unconditionally spin_lock() first, which
-> > calls __spin_lock_debug(), which takes the lock unconditionally even
-> > on UP.  This will deadlock in situations in which we call
-> > atomic_dec_and_lock() knowing that the counter won't go to zero
-> > (because we hold another reference) and that we already hold the lock.
-> > Instead, we should use the SMP code path which only takes the lock if
-> > necessary.
+> Ah, well, I have no idea who expensive cr2 is, if its like a regular
+> register then it should be fine. If however its tons more expensive then
+> we should really avoid it.
 > 
-> Yup, I have this queued for 2.6.31 as
-> atomic-only-take-lock-when-the-counter-drops-to-zero-on-up-as-well.patch,
-> with a different changelog:
+> As to the freq, 100kHz would be nice ;-)
 > 
->   _atomic_dec_and_lock() should not unconditionally take the lock before
->   calling atomic_dec_and_test() in the UP case.  For consistency reasons it
->   should behave exactly like in the SMP case.
-> 
->   Besides that this works around the problem that with CONFIG_DEBUG_SPINLOCK
->   this spins in __spin_lock_debug() if the lock is already taken even if the
->   counter doesn't drop to 0.
-> 
->   Signed-off-by: Jan Blunck <jblunck@suse.de>
->   Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->   Acked-by: Nick Piggin <npiggin@suse.de>
->   Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> 
-> 
-> I can't remember why we decided that 2.6.30 doesn't need this.
 
-Great, last I heard the changelog was still a problem.  Thanks,
+Writing control registers is serializing, so it's a lot more expensive
+than writing a normal register; my *guess* is that it will be on the
+order of 100-200 cycles.
 
--VAL
+That is not based on any actual information.
+
+	-hpa
+
