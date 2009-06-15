@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764791AbZFORQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764753AbZFORR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764791AbZFORQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbZFORQm
+	id S1764753AbZFORR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763874AbZFORRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:16:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36310 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764592AbZFORQl (ORCPT
+	Mon, 15 Jun 2009 13:17:21 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:55375 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762585AbZFORRV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:16:41 -0400
-Date: Mon, 15 Jun 2009 10:15:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-In-Reply-To: <84144f020906150827k1b8c0ce4q5ed4d140f7ca869@mail.gmail.com>
-Message-ID: <alpine.LFD.2.01.0906151013080.3305@localhost.localdomain>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>  <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>  <alpine.DEB.1.10.0906121317140.23840@gentwo.org>  <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI> 
- <alpine.DEB.1.10.0906151051240.19931@gentwo.org>  <1245077891.23207.48.camel@penberg-laptop>  <alpine.DEB.1.10.0906151101580.23995@gentwo.org>  <1245078661.23207.50.camel@penberg-laptop> <84144f020906150827k1b8c0ce4q5ed4d140f7ca869@mail.gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 15 Jun 2009 13:17:21 -0400
+Date: Mon, 15 Jun 2009 18:17:20 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] voltage regulator updates for 2.6.31-rc1
+Message-ID: <20090615171720.GH6106@sirena.org.uk>
+References: <1245065061.21421.90.camel@vega.slimlogic.co.uk> <alpine.LFD.2.01.0906150927390.3305@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906150927390.3305@localhost.localdomain>
+X-Cookie: Prunes give you a run for your money.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 15, 2009 at 09:29:54AM -0700, Linus Torvalds wrote:
+> On Mon, 15 Jun 2009, Liam Girdwood wrote:
 
+> >  include/linux/regulator/lp3971.h             |   51 +++
 
-On Mon, 15 Jun 2009, Pekka Enberg wrote:
-> 
-> Actually, there's a slight complication here. If I push gfp mask to
-> __might_sleep(), lockdep_trace_alloc() and so on, the mask is
-> effective _everywhere_ even outside of slab. Yes, it makes sense if we
-> push the masking right down to the page allocator but I wonder if
-> that's something we want to do at this point?
+> Why the heck would "lp3971.h" be under "include/linux"? That makes no 
+> sense what-so-ever. 
 
-This actually doesn't sound like a complication to me, but a potential 
-cleanup.
+> Why isn't it just
 
-Right now we already have that magic "system_state" test in __might_sleep. 
-Maybe we could get rid of that, and replace it with that test for gpf 
-bits. So we'd have just _one_ magic special case, and it's directly 
-related to memory allocation (which is really the reason for that system 
-state thing too).
+> 	drivers/regulator/lp3971.c
+> 	drivers/regulator/lp3971.h
 
-But maybe we have other reasons for that system_state special case, that 
-are independent. I have not checked.
+It defines a platform data structure for the architecture code which
+instantiates the driver to use to pass configuration to the driver.  If
+the header were in drivers/regulator then any system using one of these
+regulators would need to peer into drivers/regulator in order to set up
+the driver.
 
-			Linus
+> instead? There is never any reason for anything but the lp3971 driver to 
+> include its own header file, they should _not_ be split up to be in two 
+> different places.
+
+All the driver-internal definitions are included in the driver itself,
+the regulator drivers have been good about not exposing this.
+
+> In fact, why do we have a "include/linux/regulator/" at all? Does anybody 
+> else ever care? I doubt it.
+
+At the minute the regulator API makes at least some platform data
+mandatory for regulators (in order to tell the API what configuration
+can safely be done on the regulator on a given board).  This could be
+changed but it seems to be working well at the minute and provides a
+fairly simple and direct way of matching the configuration to the
+correct regulator.
+
+Even if the regulator API were reorganised to not require this a
+noticable proportion of regulators require some tuning for things like
+the passive components surrounding the regulator which would need
+platform data.
