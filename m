@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbZFOIOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZFOIPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757152AbZFOIOQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZFOIOF
+	id S1757349AbZFOIPP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZFOIO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:14:05 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:61068 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbZFOIOD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:14:03 -0400
-X-SpamScore: -32
-X-BigFish: VPS-32(zz1432R98dR1447R1805Mzz1202hzzz32i6bh17ch43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KL9TJ9-04-Q1U-01
-Date: Mon, 15 Jun 2009 10:13:55 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
-Subject: Re: dma-debug: check_for_stack background?
-Message-ID: <20090615081355.GA5139@amd.com>
-References: <4A3547DD.2010809@s5r6.in-berlin.de> <20090614212018.GD20442@fluff.org.uk> <4A356F0E.9020809@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+	Mon, 15 Jun 2009 04:14:57 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54075 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750742AbZFOIO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 04:14:56 -0400
+Date: Mon, 15 Jun 2009 10:14:53 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+Message-ID: <20090615081453.GC8665@wotan.suse.de>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A356F0E.9020809@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 15 Jun 2009 08:13:55.0381 (UTC) FILETIME=[39E04650:01C9ED91]
+In-Reply-To: <20090615064447.GA18390@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 11:43:42PM +0200, Stefan Richter wrote:
-> Ben Dooks wrote:
->> On Sun, Jun 14, 2009 at 08:56:29PM +0200, Stefan Richter wrote:
->>> the DMA debug facility warns  about mappings of on-stack memory.  
->>> What's the problem with that?
-> ...
->> I'm not sure if it is possible on all architectures, however the
->> DMA mapping documentation prohibts the use of stack memory.
->
-> Ah, it has all been documented in plain sight for ages.  Thanks for the  
-> pointer.
+On Mon, Jun 15, 2009 at 08:44:47AM +0200, Nick Piggin wrote:
+> Did we verify with filesystem maintainers (eg. btrfs) that the
+> !ISREG test will be enough to prevent oopses?
 
-Problem is that the stack might go away or could be otherwise reused
-while the DMA is in-flight. This could cause really hard to debug
-problems.
+BTW. this is quite a significant change I think and not
+really documented well enough. Previously a filesystem
+will know exactly when and why pagecache in a mapping
+under its control will be truncated (as opposed to
+invalidated).
 
-	Joerg
+They even have opportunity to hold locks such as i_mutex.
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+And depending on what they do, they could do interesting
+things even with ISREG files.
+
+So, I really think this needs review by filesystem
+maintainers and it would be far safer to use invalidate
+until it is known to be safe.
 
