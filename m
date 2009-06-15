@@ -1,103 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbZFOKjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZFOKkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760259AbZFOKjK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 06:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZFOKiz
+	id S1756138AbZFOKkJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 06:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZFOKj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 06:38:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:41110 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753172AbZFOKiy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 06:38:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=waBCnI0p648w8wRCPwN7cdeeurwN2zV7lYDTqk8MI6nBRNvLy8k9m5FFa/0DfpKYgN
-         3JJhejN8/zca1G44VtExtMEB9EFCR1sm8k0/gcINWb1ihQbZ/9dhiiE83+OAXGLak2Mr
-         L/seJQ9hQfkL6ZK941ZpgWtklV99WAd1/Eb84=
+	Mon, 15 Jun 2009 06:39:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:46308 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753021AbZFOKj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 06:39:57 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: rr tree build failure
+Date: Mon, 15 Jun 2009 20:09:56 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+References: <20090615164022.9b06b579.sfr@canb.auug.org.au>
+In-Reply-To: <20090615164022.9b06b579.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <718B5524-9FB1-4835-BAEA-C5B990F78DAC@kernel.crashing.org>
-References: <1242117363-14949-1-git-send-email-leoli@freescale.com>
-	 <90AED712-28A1-4800-978C-125A887D0DA7@kernel.crashing.org>
-	 <3A45394FD742FA419B760BB8D398F9ED483CCD@zch01exm26.fsl.freescale.net>
-	 <5D8775BD-9973-4DE8-B442-91FB15F86ACC@kernel.crashing.org>
-	 <2a27d3730906120627l112030b3wa11ea5aa3fcb1087@mail.gmail.com>
-	 <718B5524-9FB1-4835-BAEA-C5B990F78DAC@kernel.crashing.org>
-Date: Mon, 15 Jun 2009 18:38:56 +0800
-X-Google-Sender-Auth: b66ee1f5bdf3c9db
-Message-ID: <2a27d3730906150338u224126e1yf6fb0b77675a6633@mail.gmail.com>
-Subject: Re: [PATCH 1/6] rapidio: add common mapping APIs for RapidIO memory 
-	access
-From: Li Yang <leoli@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: akpm@linux-foundation.org, davem@davemloft.net,
-       mporter@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-       Zhang Wei <zw@zh-kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906152009.57309.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 9:58 PM, Kumar Gala<galak@kernel.crashing.org> wrote:
+On Mon, 15 Jun 2009 04:10:22 pm Stephen Rothwell wrote:
+> Hi Rusty,
 >
-> On Jun 12, 2009, at 8:27 AM, Li Yang wrote:
+> Today's linux-next build (sparc64 defconfig) failed like this:
 >
->> On Thu, Jun 11, 2009 at 9:32 PM, Kumar Gala<galak@kernel.crashing.org>
->> wrote:
->>>
->>> On Jun 11, 2009, at 4:47 AM, Li Yang-R58472 wrote:
->>>
->>>>> On May 12, 2009, at 3:35 AM, Li Yang wrote:
->>>>>
->>>>>> Add the mapping functions used to support direct IO memory access of
->>>>>> rapidIO.
->>>>>>
->>>>>> Signed-off-by: Zhang Wei <zw@zh-kernel.org>
->>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
->>>>>
->>>>> Use inbnd/outbnd instead of inb/outb which make one think of
->>>>> byte level io accessors.
->>>>>
->>>>> As I look at this I don't think this is the correct API.  I
->>>>> think we should be using the DMA mapping API to hide these
->>>>> details.  The concept of mapping like this seems to be more a
->>>>> function of FSL's Address translation/mapping unit (ATMU) than
->>>>> anything specific to the RIO bus standard.
->>>>
->>>> This is a separate RIO block level ATMU.  Although it looks like the
->>>> system level ATMU, system ATMU doesn't have the knowledge of rapidIO
->>>> target device ID.  The mapping need to be dynamic, as it's easy to have
->>>> more RIO devices than the outbound windows.
->>>
->>> I understand that.  What I'm saying is the RIO block level ATMU is a
->>> Freescale specific detail and not part of any standard RIO bus
->>> programming
->>> model.  We have mapping APIs that we can connect to for this via the DMA
->>> API
->>> layer.
->>
->> Ok, I see your point now. Do you mean dma_map_*() for DMA API layer?
->> But in my understanding the current dma_map_*() APIs are preparing
->> local memory for device to access which is similar to the inbound
->> case.  Is it suitable to also use them for mapping device's space for
->> CPU access?  Can you give an example of using this API for Address
->> Translation and Mapping purpose?
+> arch/sparc/mm/init_64.c: In function 'paging_init':
+> arch/sparc/mm/init_64.c:1802: error: 'CPU_MASK_ALL_PTR' undeclared (first
+> use in this function) arch/sparc/kernel/smp_64.c: In function
+> 'setup_per_cpu_areas':
+> arch/sparc/kernel/smp_64.c:1541: error: 'CPU_MASK_ALL_PTR' undeclared
+> (first use in this function)
 >
-> Yes, I meant the dma_map_*() API.  Any system with a true IOMMU uses the
-> dma_map_ layer as the way to do address translation.
+...
+> Rusty, I assume that there is something that Dave can use in the sparc
+> tree already instead of CPU_MASK_ALL_PTR (cpu_all_mask?).
 
-IOMMU case is not very similar to the RapidIO scenario.  RapidIO
-mapping is more like PCI address space mapping.
+cpu_all_mask, yes.
 
-To be specific, the DMA API return dma_addr_t not the rapidIO address
-type.  And they can only handle inbound mapping not both ways.  I
-don't think the DMA API is competent enough to be used here for RIO
-mapping.  Unless we have a more universal mapping API, it can be
-justified to create its own API.
+I have this great patch someone sent me :)
 
-- Leo
+Thanks,
+Rusty.
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 12 Jun 2009 18:43:54 +1000
+Subject: [PATCH] sparc: replace uses of CPU_MASK_ALL_PTR
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/sparc/kernel/smp_64.c |    2 +-
+ arch/sparc/mm/init_64.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+index 1de47d2..f3a83b0 100644
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -1538,5 +1538,5 @@ void __init setup_per_cpu_areas(void)
+ 
+ 	of_fill_in_cpu_data();
+ 	if (tlb_type == hypervisor)
+-		mdesc_fill_in_cpu_data(CPU_MASK_ALL_PTR);
++		mdesc_fill_in_cpu_data(cpu_all_mask);
+ }
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index b5a5932..ca92e2f 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -1799,7 +1799,7 @@ void __init paging_init(void)
+ 
+ 	if (tlb_type == hypervisor) {
+ 		sun4v_mdesc_init();
+-		mdesc_populate_present_mask(CPU_MASK_ALL_PTR);
++		mdesc_populate_present_mask(cpu_all_mask);
+ 	}
+ 
+ 	/* Once the OF device tree and MDESC have been setup, we know
+-- 
+1.6.3.1
+
