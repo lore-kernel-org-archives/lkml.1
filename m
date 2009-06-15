@@ -1,87 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764665AbZFORjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764028AbZFORmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764665AbZFORjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758456AbZFORjM
+	id S1764028AbZFORmR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbZFORmC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:39:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37761 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755182AbZFORjL (ORCPT
+	Mon, 15 Jun 2009 13:42:02 -0400
+Received: from mail.lippert-at.com ([62.80.22.186]:22230 "EHLO
+	domex.lippertembedded.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752412AbZFORmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:39:11 -0400
-Date: Mon, 15 Jun 2009 10:37:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
-       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
- to use NMI-safe methods
-In-Reply-To: <20090615171845.GA7664@elte.hu>
-Message-ID: <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain>
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 15 Jun 2009 13:42:01 -0400
+X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 13:42:01 EDT
+Message-ID: <4A368600.5030009@LiPPERTEmbedded.de>
+Date: Mon, 15 Jun 2009 19:33:52 +0200
+From: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-parport@lists.infradead.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] parport_pc: after superio probing restore original register
+ values
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jun 2009 17:34:32.0687 (UTC) FILETIME=[8B45D7F0:01C9EDDF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+CONFIG_PARPORT_PC_SUPERIO probes for various superio chips by writing
+byte sequences to a set of different potential I/O ranges.  But the
+probed ranges are not exclusive to parallel ports.  Some of our boards
+just happen to have a watchdog in one of them.  Took us almost a week
+to figure out why some distros reboot without warning after running
+flawlessly for 3 hours.  For exactly 170 = 0xAA minutes, that is ...
 
+Fixed by restoring original values after probing.  Also fixed too small
+request_region() in detect_and_report_it87().
 
-On Mon, 15 Jun 2009, Ingo Molnar wrote:
-> 
-> A simple cr2 corruption would explain all those cc1 SIGSEGVs and 
-> other user-space crashes i saw, with sufficiently intense sampling - 
-> easily.
+Signed-off-by: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+---
 
-Note that we could work around the %cr2 issue, since any corruption is 
-always nicely "nested" (ie there are never any SMP issues with async 
-writes to the register).
+Patch is against Linus' current git tree.
 
-So what we _could_ do is to have a magic value for %cr2, along with a "NMI 
-sequence count", and if we see that value, we just return (without doing 
-anything) from the page fault handler.
-
-Then, the NMI handler would be changed to always write that value to %cr2 
-after it has done the operation that could fault, and do an atomic 
-increment of the NMI sequence count. Then, we can do something like this 
-in the page fault handler:
-
-	if (cr2 == MAGIC_CR2) {
-		static unsigned long my_seqno = -1;
-		if (my_seqno != nmi_seqno) {
-			my_seqno = nmi_seqno;
-			return;
-		}
-	}
-
-where the whole (and only) point of that "seqno" is to protect against 
-user space doing something like
-
-	int i = *(int *)MAGIC_CR2;
-
-and causing infinite faults.
-
-If a real NMI happens, then nmi_seqno will always be different, and we'll 
-just retry the fault (the NMI handler would do something like
-
-	write_cr2(MAGIC_CR2);
-	atomic_inc(&nmi_seqno);
-
-to set it all up).
-
-Anyway, I do think that the _correct_ solution is to not do page faults 
-from within NMI's, but the above is an outline of how we could _try_ to 
-handle it if we really really wanted to. IOW, the fact that cr2 gets 
-corrupted is not insurmountable, exactly because we _could_ always just 
-retrigger the page fault, and thus "re-create' the corrupted %cr2 value.
-
-Hacky, hacky. And I'm not sure how happy CPU's even are to have %cr2 
-written to, so we could hit CPU issues.
-
-			Linus
+--- linux-2.6.30-git8/drivers/parport/parport_pc.c
++++ conservative-superio-probing/drivers/parport/parport_pc.c
+@@ -1471,11 +1471,13 @@ static void __devinit decode_smsc(int ef
+ 
+ static void __devinit winbond_check(int io, int key)
+ {
+-	int devid, devrev, oldid, x_devid, x_devrev, x_oldid;
++	int origval, devid, devrev, oldid, x_devid, x_devrev, x_oldid;
+ 
+ 	if (!request_region(io, 3, __func__))
+ 		return;
+ 
++	origval = inb(io); /* Save original value */
++
+ 	/* First probe without key */
+ 	outb(0x20, io);
+ 	x_devid = inb(io + 1);
+@@ -1495,6 +1497,8 @@ static void __devinit winbond_check(int 
+ 	oldid = inb(io + 1);
+ 	outb(0xaa, io);    /* Magic Seal */
+ 
++	outb(origval, io); /* in case we poked some entirely different hardware */
++
+ 	if ((x_devid == devid) && (x_devrev == devrev) && (x_oldid == oldid))
+ 		goto out; /* protection against false positives */
+ 
+@@ -1505,11 +1509,15 @@ out:
+ 
+ static void __devinit winbond_check2(int io, int key)
+ {
+-	int devid, devrev, oldid, x_devid, x_devrev, x_oldid;
++	int origval[3], devid, devrev, oldid, x_devid, x_devrev, x_oldid;
+ 
+ 	if (!request_region(io, 3, __func__))
+ 		return;
+ 
++	origval[0] = inb(io); /* Save original values */
++	origval[1] = inb(io + 1);
++	origval[2] = inb(io + 2);
++
+ 	/* First probe without the key */
+ 	outb(0x20, io + 2);
+ 	x_devid = inb(io + 2);
+@@ -1528,6 +1536,10 @@ static void __devinit winbond_check2(int
+ 	oldid = inb(io + 2);
+ 	outb(0xaa, io);    /* Magic Seal */
+ 
++	outb(origval[0], io); /* in case we poked some entirely different hardware */
++	outb(origval[1], io + 1);
++	outb(origval[2], io + 2);
++
+ 	if (x_devid == devid && x_devrev == devrev && x_oldid == oldid)
+ 		goto out; /* protection against false positives */
+ 
+@@ -1538,11 +1550,13 @@ out:
+ 
+ static void __devinit smsc_check(int io, int key)
+ {
+-	int id, rev, oldid, oldrev, x_id, x_rev, x_oldid, x_oldrev;
++	int origval, id, rev, oldid, oldrev, x_id, x_rev, x_oldid, x_oldrev;
+ 
+ 	if (!request_region(io, 3, __func__))
+ 		return;
+ 
++	origval = inb(io); /* Save original value */
++
+ 	/* First probe without the key */
+ 	outb(0x0d, io);
+ 	x_oldid = inb(io + 1);
+@@ -1566,6 +1580,8 @@ static void __devinit smsc_check(int io,
+ 	rev = inb(io + 1);
+ 	outb(0xaa, io);    /* Magic Seal */
+ 
++	outb(origval, io); /* in case we poked some entirely different hardware */
++
+ 	if (x_id == id && x_oldrev == oldrev &&
+ 	    x_oldid == oldid && x_rev == rev)
+ 		goto out; /* protection against false positives */
+@@ -1602,11 +1618,12 @@ static void __devinit detect_and_report_
+ static void __devinit detect_and_report_it87(void)
+ {
+ 	u16 dev;
+-	u8 r;
++	u8 origval, r;
+ 	if (verbose_probing)
+ 		printk(KERN_DEBUG "IT8705 Super-IO detection, now testing port 2E ...\n");
+-	if (!request_region(0x2e, 1, __func__))
++	if (!request_region(0x2e, 2, __func__))
+ 		return;
++	origval = inb(0x2e);		/* Save original value */
+ 	outb(0x87, 0x2e);
+ 	outb(0x01, 0x2e);
+ 	outb(0x55, 0x2e);
+@@ -1626,8 +1643,10 @@ static void __devinit detect_and_report_
+ 		outb(r | 8, 0x2F);
+ 		outb(0x02, 0x2E);	/* Lock */
+ 		outb(0x02, 0x2F);
++	} else {
++		outb(origval, 0x2e);	/* Oops, sorry to disturb */
+ 	}
+-	release_region(0x2e, 1);
++	release_region(0x2e, 2);
+ }
+ #endif /* CONFIG_PARPORT_PC_SUPERIO */
+ 
+_
