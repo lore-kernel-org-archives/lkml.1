@@ -1,220 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZFOPiC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbZFOPhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760914AbZFOPiC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:38:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbZFOPho
+	id S1759504AbZFOPhr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757661AbZFOPhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:37:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46022 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761197AbZFOPhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:37:43 -0400
-Date: Mon, 15 Jun 2009 15:37:04 GMT
-From: tip-bot for Lennart Poettering <lennart@poettering.net>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, lennart@poettering.net, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, lennart@poettering.net, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090615152714.GA29092@tango.0pointer.de>
-References: <20090615152714.GA29092@tango.0pointer.de>
-Subject: [tip:sched/core] sched: Introduce SCHED_RESET_ON_FORK scheduling policy flag
-Message-ID: <tip-ca94c442535a44d508c99a77e54f21a59f4fc462@git.kernel.org>
-Git-Commit-ID: ca94c442535a44d508c99a77e54f21a59f4fc462
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 15 Jun 2009 15:37:05 +0000 (UTC)
+	Mon, 15 Jun 2009 11:37:36 -0400
+Received: from www17.your-server.de ([213.133.104.17]:38177 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbZFOPhe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:37:34 -0400
+Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
+From: Thomas Meyer <thomas@m3y3r.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, stern@rowland.harvard.edu
+In-Reply-To: <200906142057.41716.rjw@sisk.pl>
+References: <1244996001.8440.10.camel@localhost>
+	 <200906141901.46687.rjw@sisk.pl> <200906142031.38358.elendil@planet.nl>
+	 <200906142057.41716.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 15 Jun 2009 17:37:35 +0200
+Message-Id: <1245080255.20212.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ca94c442535a44d508c99a77e54f21a59f4fc462
-Gitweb:     http://git.kernel.org/tip/ca94c442535a44d508c99a77e54f21a59f4fc462
-Author:     Lennart Poettering <lennart@poettering.net>
-AuthorDate: Mon, 15 Jun 2009 17:17:47 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 15 Jun 2009 17:31:59 +0200
+Am Sonntag, den 14.06.2009, 20:57 +0200 schrieb Rafael J. Wysocki:
+> On Sunday 14 June 2009, Frans Pop wrote:
+> > Rafael J. Wysocki wrote:
+> > 
+> > >> 00:02.1 USB Controller: nVidia Corporation MCP55 USB Controller (rev a2) (prog-if 20 [EHCI])
+> > >>       Subsystem: Micro-Star International Co., Ltd. Device 7250
+> > >>       Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> > >>       Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> > >>       Latency: 0 (750ns min, 250ns max)
+> > >>       Interrupt: pin B routed to IRQ 23
+> > >>       Region 0: Memory at fe9fac00 (32-bit, non-prefetchable) [size=256]
+> > >>       Capabilities: [44] Debug port: BAR=1 offset=0098
+> > >>       Capabilities: [80] Power Management version 2
+> > >>               Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> > >>               Status: D0 PME-Enable- DSel=0 DScale=0 PME+
+> > >>       Kernel driver in use: ehci_hcd
+> > > 
+> > > PME+ means that the USB EHCI controller will signal a PME as soon as it is
+> > > enabled, so if PME is enabled on the controller before suspend, it will
+> > > wake up the system.
+> > > 
+> > > Please send a boot log.
+> > 
+> > Was already included in the initial message...
+> > 
+> > I wonder if this device could be the cause:
+> > [   40.232873] wlan0: register 'rndis_wlan' at usb-0000:00:02.1-6.1,
+> >                Wireless RNDIS device, BCM4320b based, 00:16:01:cf:56:29
+> > [   40.232907] usbcore: registered new interface driver rndis_wlan
+> > [...]
+> > [   41.705516] rndis_wlan 1-6.1:1.0: rndis media disconnect
+> 
+> Ah, thanks.
+> 
+> Thomas, please check the contents of
+> 
+> /sys/devices/pci0000:00/0000:00:02.1/power/wakeup
+> /sys/devices/pci0000:00/0000:00:02.0/power/wakeup
 
-sched: Introduce SCHED_RESET_ON_FORK scheduling policy flag
-
-This patch introduces a new flag SCHED_RESET_ON_FORK which can be passed
-to the kernel via sched_setscheduler(), ORed in the policy parameter. If
-set this will make sure that when the process forks a) the scheduling
-priority is reset to DEFAULT_PRIO if it was higher and b) the scheduling
-policy is reset to SCHED_NORMAL if it was either SCHED_FIFO or SCHED_RR.
-
-Why have this?
-
-Currently, if a process is real-time scheduled this will 'leak' to all
-its child processes. For security reasons it is often (always?) a good
-idea to make sure that if a process acquires RT scheduling this is
-confined to this process and only this process. More specifically this
-makes the per-process resource limit RLIMIT_RTTIME useful for security
-purposes, because it makes it impossible to use a fork bomb to
-circumvent the per-process RLIMIT_RTTIME accounting.
-
-This feature is also useful for tools like 'renice' which can then
-change the nice level of a process without having this spill to all its
-child processes.
-
-Why expose this via sched_setscheduler() and not other syscalls such as
-prctl() or sched_setparam()?
-
-prctl() does not take a pid parameter. Due to that it would be
-impossible to modify this flag for other processes than the current one.
-
-The struct passed to sched_setparam() can unfortunately not be extended
-without breaking compatibility, since sched_setparam() lacks a size
-parameter.
-
-How to use this from userspace? In your RT program simply replace this:
-
-  sched_setscheduler(pid, SCHED_FIFO, &param);
-
-by this:
-
-  sched_setscheduler(pid, SCHED_FIFO|SCHED_RESET_ON_FORK, &param);
-
-Signed-off-by: Lennart Poettering <lennart@poettering.net>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090615152714.GA29092@tango.0pointer.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Both are set to "disabled".
 
 
----
- include/linux/sched.h |    6 ++++++
- kernel/sched.c        |   49 ++++++++++++++++++++++++++++++++++++++++---------
- 2 files changed, 46 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4896fdf..d4a2c66 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -38,6 +38,8 @@
- #define SCHED_BATCH		3
- /* SCHED_ISO: reserved but not implemented yet */
- #define SCHED_IDLE		5
-+/* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
-+#define SCHED_RESET_ON_FORK     0x40000000
- 
- #ifdef __KERNEL__
- 
-@@ -1209,6 +1211,10 @@ struct task_struct {
- 	unsigned did_exec:1;
- 	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
- 				 * execve */
-+
-+	/* Revert to default priority/policy when forking */
-+	unsigned sched_reset_on_fork:1;
-+
- 	pid_t pid;
- 	pid_t tgid;
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8ec9d13..32e6ede 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2613,12 +2613,28 @@ void sched_fork(struct task_struct *p, int clone_flags)
- 	set_task_cpu(p, cpu);
- 
- 	/*
--	 * Make sure we do not leak PI boosting priority to the child:
-+	 * Revert to default priority/policy on fork if requested. Make sure we
-+	 * do not leak PI boosting priority to the child.
- 	 */
--	p->prio = current->normal_prio;
-+	if (current->sched_reset_on_fork &&
-+			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
-+		p->policy = SCHED_NORMAL;
-+
-+	if (current->sched_reset_on_fork &&
-+			(current->normal_prio < DEFAULT_PRIO))
-+		p->prio = DEFAULT_PRIO;
-+	else
-+		p->prio = current->normal_prio;
-+
- 	if (!rt_prio(p->prio))
- 		p->sched_class = &fair_sched_class;
- 
-+	/*
-+	 * We don't need the reset flag anymore after the fork. It has
-+	 * fulfilled its duty:
-+	 */
-+	p->sched_reset_on_fork = 0;
-+
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
- 	if (likely(sched_info_on()))
- 		memset(&p->sched_info, 0, sizeof(p->sched_info));
-@@ -6094,17 +6110,25 @@ static int __sched_setscheduler(struct task_struct *p, int policy,
- 	unsigned long flags;
- 	const struct sched_class *prev_class = p->sched_class;
- 	struct rq *rq;
-+	int reset_on_fork;
- 
- 	/* may grab non-irq protected spin_locks */
- 	BUG_ON(in_interrupt());
- recheck:
- 	/* double check policy once rq lock held */
--	if (policy < 0)
-+	if (policy < 0) {
-+		reset_on_fork = p->sched_reset_on_fork;
- 		policy = oldpolicy = p->policy;
--	else if (policy != SCHED_FIFO && policy != SCHED_RR &&
--			policy != SCHED_NORMAL && policy != SCHED_BATCH &&
--			policy != SCHED_IDLE)
--		return -EINVAL;
-+	} else {
-+		reset_on_fork = !!(policy & SCHED_RESET_ON_FORK);
-+		policy &= ~SCHED_RESET_ON_FORK;
-+
-+		if (policy != SCHED_FIFO && policy != SCHED_RR &&
-+				policy != SCHED_NORMAL && policy != SCHED_BATCH &&
-+				policy != SCHED_IDLE)
-+			return -EINVAL;
-+	}
-+
- 	/*
- 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
- 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,
-@@ -6148,6 +6172,10 @@ recheck:
- 		/* can't change other user's priorities */
- 		if (!check_same_owner(p))
- 			return -EPERM;
-+
-+		/* Normal users shall not reset the sched_reset_on_fork flag */
-+		if (p->sched_reset_on_fork && !reset_on_fork)
-+			return -EPERM;
- 	}
- 
- 	if (user) {
-@@ -6191,6 +6219,8 @@ recheck:
- 	if (running)
- 		p->sched_class->put_prev_task(rq, p);
- 
-+	p->sched_reset_on_fork = reset_on_fork;
-+
- 	oldprio = p->prio;
- 	__setscheduler(rq, p, policy, param->sched_priority);
- 
-@@ -6307,14 +6337,15 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
- 	if (p) {
- 		retval = security_task_getscheduler(p);
- 		if (!retval)
--			retval = p->policy;
-+			retval = p->policy
-+				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
- 	}
- 	read_unlock(&tasklist_lock);
- 	return retval;
- }
- 
- /**
-- * sys_sched_getscheduler - get the RT priority of a thread
-+ * sys_sched_getparam - get the RT priority of a thread
-  * @pid: the pid in question.
-  * @param: structure containing the RT priority.
-  */
