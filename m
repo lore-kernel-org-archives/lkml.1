@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935711AbZFOVeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935722AbZFOVfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935711AbZFOVeg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 17:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934528AbZFOVea
+	id S935722AbZFOVfm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 17:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934528AbZFOVfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 17:34:30 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:63320 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934479AbZFOVe3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 17:34:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AokFAL9ZNkpMQWQl/2dsb2JhbACBT9NRhA0F
-Date: Mon, 15 Jun 2009 17:34:29 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615213429.GD12919@Krystal>
-References: <20090615184858.GD6520@Krystal> <1245091917.6741.185.camel@laptop> <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop> <4A369CD8.3090505@zytor.com> <20090615192720.GA9056@Krystal> <4A36A1C7.6080005@zytor.com> <20090615210119.GD24554@elte.hu> <20090615211207.GB12919@Krystal> <20090615211605.GC27100@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090615211605.GC27100@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:27:09 up 107 days, 17:53,  3 users,  load average: 0.30, 0.26,
-	0.33
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 15 Jun 2009 17:35:34 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52515 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933185AbZFOVfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 17:35:33 -0400
+Date: Mon, 15 Jun 2009 23:35:31 +0200 (CEST)
+From: Jiri Kosina <trivial@kernel.org>
+X-X-Sender: jkosina@wotan.suse.de
+To: Zygo Blaxell <zygo.blaxell@xandros.com>
+Cc: linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] LIB: remove unmatched write_lock() in gen_pool_destroy
+In-Reply-To: <E1MGFiZ-0006oN-UW@dactyl.ottawa.xandros.ca>
+Message-ID: <alpine.LNX.2.00.0906152333080.7457@wotan.suse.de>
+References: <E1MGFiZ-0006oN-UW@dactyl.ottawa.xandros.ca>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Just for the sake of making NMI handlers less tricky, supporting 
-> > page faults caused by faulting kernel instructions (rather than 
-> > only supporting explicit faulting from get_user_pages_inatomic) 
-> > would be rather nice design-wise if it only costs 2-3 cycles.
-> > 
-> > And I would not want to touch the page fault handler itself to 
-> > write the saved cr2 value before the handler exits, because this 
-> > would add a branch on a very hot path.
-> 
-> _That_ path is not hot at all - it's the 'we are in atomic section 
-> and faulted' rare path (laced with an exception table search - which 
-> is extremely slow compared to other bits of the pagefault path).
-> 
-> But ... it's not an issue: a check can be made in the NMI code too, 
-> as we always know about pagefaults there, by virtue of getting 
-> -EFAULT back from the attempted-user-copy.
+On Fri, 12 Jun 2009, Zygo Blaxell wrote:
 
-As the maintainer of the out-of-tree LTTng tracer, which hooks in the
-page fault handler with tracepoints, and which can build almost entirely
-as modules, I am very tempted to argue that having the nmi-code entirely
-robust wrt in-kernel page faults would be a very-nice-to-have feature.
-
-Requiring that code to be either built-in or to call vmalloc_sync_all()
-after any vmalloc or after module load is just painful and error-prone.
-Plus, tracing is a feature that some users will only use in specific
-occasions. I don't see why it should be built-into the kernel at all.
-That's just a waste of memory in many cases. (I am not talking about
-users who want to do continuous system tracing here, which is a totally
-different scenario).
-
-Mathieu
-
-
+> Fix mismatch between calls to write_lock() and write_unlock() in
+> gen_pool_destroy by removing the write_lock().
 > 
-> 	Ingo
+> Signed-off-by: Zygo Blaxell <zygo.blaxell@xandros.com>
+> ---
+> There is a call to write_lock() in gen_pool_destroy which is not balanced
+> by any corresponding write_unlock().  This causes problems with preemption
+> because the preemption-disable counter is incremented in the write_lock()
+> call, but never decremented by any call to write_unlock().  This bug is
+> difficult to observe in the field because only two in-tree drivers call
+> gen_pool_destroy, and one of them is non-x86 arch-specific code.
+> 
+> To fix this, I have chosen removing the write_lock() over adding a
+> write_unlock() because the lock in question is inside a structure which
+> is being freed.  Any other thread that waited to acquire such a lock
+> while gen_pool_destroy was running would find itself holding a lock
+> in recently-freed or about-to-be-freed memory.  This would result in
+> memory corruption or a crash whether &pool->lock is held or not.
+> 
+> Using a pool while it is in the process of being destroyed is a bug that
+> must be resolved outside of the gen_pool_destroy function.
+> 
+>  lib/genalloc.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/lib/genalloc.c b/lib/genalloc.c
+> index f6d276d..eed2bdb 100644
+> --- a/lib/genalloc.c
+> +++ b/lib/genalloc.c
+> @@ -85,7 +85,6 @@ void gen_pool_destroy(struct gen_pool *pool)
+>  	int bit, end_bit;
+>  
+>  
+> -	write_lock(&pool->lock);
+>  	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
+>  		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
+>  		list_del(&chunk->next_chunk);
+> -- 
+> 1.5.6.5
+> 
+
+Hi Zygo,
+
+this doesn't really qualify for trivial tree, as it introduces a 
+significant code change. Adding some CCs.
+
+Thanks,
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jiri Kosina
+SUSE Labs
+
