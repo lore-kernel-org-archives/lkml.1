@@ -1,61 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZFOC5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbZFODPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbZFOC5w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 22:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZFOC5o
+	id S1753632AbZFODPE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 23:15:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZFODOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 22:57:44 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54278 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbZFOC5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 22:57:44 -0400
-Message-ID: <4A35B905.3090500@cn.fujitsu.com>
-Date: Mon, 15 Jun 2009 10:59:17 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4] tracing/filters: strloc should be unsigned short
-References: <4A35B84B.40904@cn.fujitsu.com>
-In-Reply-To: <4A35B84B.40904@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Jun 2009 23:14:49 -0400
+Received: from mga14.intel.com ([143.182.124.37]:7006 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751030AbZFODOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 23:14:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
+   d="scan'208";a="154267314"
+Message-Id: <20090615031253.148523274@intel.com>
+References: <20090615024520.786814520@intel.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 15 Jun 2009 10:45:26 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
+cc: Ingo Molnar <mingo@elte.hu>
+cc: Mel Gorman <mel@csn.ul.ie>
+cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [PATCH 06/22] HWPOISON: x86: Add VM_FAULT_HWPOISON handling to x86 page fault handler v2
+Content-Disposition: inline; filename=x86-vmfault-poison
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I forgot to update filter code accordingly in
-"tracing/events: change the type of __str_loc_item to unsigned short"
-(commt b0aae68cc5508f3c2fbf728988c954db4c8b8a53)
+From: Andi Kleen <ak@linux.intel.com>
 
-It can cause system crash:
+Add VM_FAULT_HWPOISON handling to the x86 page fault handler. This is 
+very similar to VM_FAULT_OOM, the only difference is that a different
+si_code is passed to user space and the new addr_lsb field is initialized.
 
- # echo 1 > tracing/events/irq/irq_handler_entry/enable
- # echo 'name == eth0' > tracing/events/irq/irq_handler_entry/filter
+v2: Make the printk more verbose/unique
 
-[ Impact: fix crash while filtering on __string() field ]
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/trace_events_filter.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/mm/fault.c |   19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 1d81923..b24ab0e 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -178,7 +178,7 @@ static int filter_pred_string(struct filter_pred *pred, void *event,
- static int filter_pred_strloc(struct filter_pred *pred, void *event,
- 			      int val1, int val2)
- {
--	int str_loc = *(int *)(event + pred->offset);
-+	unsigned short str_loc = *(unsigned short *)(event + pred->offset);
- 	char *addr = (char *)(event + str_loc);
- 	int cmp, match;
+--- sound-2.6.orig/arch/x86/mm/fault.c
++++ sound-2.6/arch/x86/mm/fault.c
+@@ -167,6 +167,7 @@ force_sig_info_fault(int si_signo, int s
+ 	info.si_errno	= 0;
+ 	info.si_code	= si_code;
+ 	info.si_addr	= (void __user *)address;
++	info.si_addr_lsb = si_code == BUS_MCEERR_AR ? PAGE_SHIFT : 0;
  
+ 	force_sig_info(si_signo, &info, tsk);
+ }
+@@ -798,10 +799,12 @@ out_of_memory(struct pt_regs *regs, unsi
+ }
+ 
+ static void
+-do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
++do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
++	  unsigned int fault)
+ {
+ 	struct task_struct *tsk = current;
+ 	struct mm_struct *mm = tsk->mm;
++	int code = BUS_ADRERR;
+ 
+ 	up_read(&mm->mmap_sem);
+ 
+@@ -817,7 +820,15 @@ do_sigbus(struct pt_regs *regs, unsigned
+ 	tsk->thread.error_code	= error_code;
+ 	tsk->thread.trap_no	= 14;
+ 
+-	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
++#ifdef CONFIG_MEMORY_FAILURE
++	if (fault & VM_FAULT_HWPOISON) {
++		printk(KERN_ERR
++	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
++			tsk->comm, tsk->pid, address);
++		code = BUS_MCEERR_AR;
++	}
++#endif
++	force_sig_info_fault(SIGBUS, code, address, tsk);
+ }
+ 
+ static noinline void
+@@ -827,8 +838,8 @@ mm_fault_error(struct pt_regs *regs, uns
+ 	if (fault & VM_FAULT_OOM) {
+ 		out_of_memory(regs, error_code, address);
+ 	} else {
+-		if (fault & VM_FAULT_SIGBUS)
+-			do_sigbus(regs, error_code, address);
++		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON))
++			do_sigbus(regs, error_code, address, fault);
+ 		else
+ 			BUG();
+ 	}
+
 -- 
-1.5.4.rc3
 
