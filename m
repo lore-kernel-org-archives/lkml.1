@@ -1,60 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761636AbZFOPMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbZFOPNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761636AbZFOPMA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbZFOPLv
+	id S1761661AbZFOPNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZFOPN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:11:51 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:39629 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752235AbZFOPLu (ORCPT
+	Mon, 15 Jun 2009 11:13:28 -0400
+Received: from av7-1-sn3.vrr.skanova.net ([81.228.9.181]:36145 "EHLO
+	av7-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbZFOPN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:11:50 -0400
-Subject: Re: linux-next: scsi tree build failure
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090615121716.c5bc0655.sfr@canb.auug.org.au>
-References: <20090615121716.c5bc0655.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 10:11:47 -0500
-Message-Id: <1245078707.3858.0.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 11:13:27 -0400
+Message-ID: <4A366518.3050101@mocean-labs.com>
+Date: Mon, 15 Jun 2009 17:13:28 +0200
+From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: linux-media@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [RESEND][PATCH] video: Initial support for ADV7180
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 12:17 +1000, Stephen Rothwell wrote:
-> Hi James,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> 
-> drivers/scsi/ps3rom.c: In function 'ps3rom_interrupt':
-> drivers/scsi/ps3rom.c:302: error: implicit declaration of function 'ps3_system_bus_get_drvdata'
-> drivers/scsi/ps3rom.c:302: warning: assignment makes pointer from integer without a cast
-> drivers/scsi/ps3rom.c: In function 'ps3rom_probe':
-> drivers/scsi/ps3rom.c:390: error: implicit declaration of function 'ps3_system_bus_set_drvdata'
-> drivers/scsi/ps3rom.c: In function 'ps3rom_remove':
-> drivers/scsi/ps3rom.c:421: warning: initialization makes pointer from integer without a cast
-> 
-> Caused by commit 4381bd58427116cd7689831998771ddd58078af9 ("[SCSI]
-> ps3rom: Use ps3_system_bus_[gs]et_drvdata() instead of direct access").
-> This is number 21 in a series and depends on number 19 which is not yet
-> merged.  If you instead Ack this patch, Ben will merge it through the
-> powerpc tree.
-> 
-> For today, I have used the scsi tree from next-20090612.
+This is an initial driver for Analog Devices ADV7180 Video Decoder.
 
-OK, dumped the offending patch, so it should be safe to take scsi-misc
-again.
+So far it only supports query standard.
 
-I'm so used to merging these type of conversions, I didn't check that it
-was using a ps3 specific wrapper instead of a generic device one.
+Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+---
+Index: linux-2.6.30-rc7/drivers/media/video/adv7180.c
+===================================================================
+--- linux-2.6.30-rc7/drivers/media/video/adv7180.c	(revision 0)
++++ linux-2.6.30-rc7/drivers/media/video/adv7180.c	(revision 867)
+@@ -0,0 +1,221 @@
++/*
++ * adv7180.c Analog Devices ADV7180 video decoder driver
++ * Copyright (c) 2009 Intel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/interrupt.h>
++#include <linux/i2c.h>
++#include <linux/i2c-id.h>
++#include <media/v4l2-ioctl.h>
++#include <linux/videodev2.h>
++#include <media/v4l2-device.h>
++#include <media/v4l2-chip-ident.h>
++#include <media/v4l2-i2c-drv.h>
++
++
++#define ADV7180_INPUT_CONTROL_REG	0x00
++#define ADV7180_INPUT_CONTROL_PAL_BG_NTSC_J_SECAM	0x00
++#define ADV7180_AUTODETECT_ENABLE_REG	0x07
++#define ADV7180_AUTODETECT_DEFAULT	0x7f
++
++
++#define ADV7180_STATUS1_REG 0x10
++#define ADV7180_STATUS1_AUTOD_MASK 0x70
++#define ADV7180_STATUS1_AUTOD_NTSM_M_J	0x00
++#define ADV7180_STATUS1_AUTOD_NTSC_4_43 0x10
++#define ADV7180_STATUS1_AUTOD_PAL_M	0x20
++#define ADV7180_STATUS1_AUTOD_PAL_60	0x30
++#define ADV7180_STATUS1_AUTOD_PAL_B_G	0x40
++#define ADV7180_STATUS1_AUTOD_SECAM	0x50
++#define ADV7180_STATUS1_AUTOD_PAL_COMB	0x60
++#define ADV7180_STATUS1_AUTOD_SECAM_525	0x70
++
++#define ADV7180_IDENT_REG 0x11
++#define ADV7180_ID_7180 0x18
++
++
++static unsigned short normal_i2c[] = { 0x42 >> 1, I2C_CLIENT_END };
++
++I2C_CLIENT_INSMOD;
++
++struct adv7180_state {
++	struct v4l2_subdev sd;
++};
++
++static v4l2_std_id determine_norm(struct i2c_client *client)
++{
++	u8 status1 = i2c_smbus_read_byte_data(client, ADV7180_STATUS1_REG);
++
++	switch (status1 & ADV7180_STATUS1_AUTOD_MASK) {
++	case ADV7180_STATUS1_AUTOD_NTSM_M_J:
++		return V4L2_STD_NTSC_M_JP;
++	case ADV7180_STATUS1_AUTOD_NTSC_4_43:
++		return V4L2_STD_NTSC_443;
++	case ADV7180_STATUS1_AUTOD_PAL_M:
++		return V4L2_STD_PAL_M;
++	case ADV7180_STATUS1_AUTOD_PAL_60:
++		return V4L2_STD_PAL_60;
++	case ADV7180_STATUS1_AUTOD_PAL_B_G:
++		return V4L2_STD_PAL;
++	case ADV7180_STATUS1_AUTOD_SECAM:
++		return V4L2_STD_SECAM;
++	case ADV7180_STATUS1_AUTOD_PAL_COMB:
++		return V4L2_STD_PAL_Nc | V4L2_STD_PAL_N;
++	case ADV7180_STATUS1_AUTOD_SECAM_525:
++		return V4L2_STD_SECAM;
++	default:
++		return V4L2_STD_UNKNOWN;
++	}
++}
++
++static inline struct adv7180_state *to_state(struct v4l2_subdev *sd)
++{
++	return container_of(sd, struct adv7180_state, sd);
++}
++
++static int adv7180_querystd(struct v4l2_subdev *sd, v4l2_std_id *std)
++{
++	struct i2c_client *client = v4l2_get_subdevdata(sd);
++
++	*(v4l2_std_id *)std = determine_norm(client);
++	return 0;
++}
++
++static int adv7180_g_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
++{
++	return -EINVAL;
++}
++
++static int adv7180_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
++{
++	return -EINVAL;
++}
++
++static int adv7180_g_chip_ident(struct v4l2_subdev *sd,
++	struct v4l2_dbg_chip_ident *chip)
++{
++	struct i2c_client *client = v4l2_get_subdevdata(sd);
++
++	return v4l2_chip_ident_i2c_client(client, chip, V4L2_IDENT_ADV7180, 0);
++}
++
++static int adv7180_log_status(struct v4l2_subdev *sd)
++{
++	v4l2_info(sd, "Normal operation\n");
++	return 0;
++}
++
++static irqreturn_t adv7180_irq(int irq, void *devid)
++{
++	return IRQ_NONE;
++}
++
++static const struct v4l2_subdev_video_ops adv7180_video_ops = {
++	.querystd = adv7180_querystd,
++};
++
++static const struct v4l2_subdev_core_ops adv7180_core_ops = {
++	.log_status = adv7180_log_status,
++	.g_chip_ident = adv7180_g_chip_ident,
++	.g_ctrl = adv7180_g_ctrl,
++	.s_ctrl = adv7180_s_ctrl,
++};
++
++static const struct v4l2_subdev_ops adv7180_ops = {
++	.core = &adv7180_core_ops,
++	.video = &adv7180_video_ops,
++};
++
++/*
++ * Generic i2c probe
++ * concerning the addresses: i2c wants 7 bit (without the r/w bit), so '>>1'
++ */
++
++static int adv7180_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
++{
++	struct adv7180_state *state;
++	struct v4l2_subdev *sd;
++
++	/* Check if the adapter supports the needed features */
++	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
++		return -EIO;
++
++	v4l_info(client, "chip found @ 0x%02x (%s)\n",
++			client->addr << 1, client->adapter->name);
++
++	state = kmalloc(sizeof(struct adv7180_state), GFP_KERNEL);
++	if (state == NULL)
++		return -ENOMEM;
++	sd = &state->sd;
++	v4l2_i2c_subdev_init(sd, client, &adv7180_ops);
++
++	/* Initialize adv7180 */
++
++	/* register interrupt, can be used later */
++	if (client->irq > 0) {
++		/* we can use IRQ */
++		int err = request_irq(client->irq, adv7180_irq, IRQF_SHARED,
++			"adv7180", sd);
++		if (err) {
++			printk(KERN_ERR "adv7180: Failed to request IRQ\n");
++			v4l2_device_unregister_subdev(sd);
++			kfree(state);
++			return err;
++		}
++	}
++
++	/* enable autodetection */
++	i2c_smbus_write_byte_data(client, ADV7180_INPUT_CONTROL_REG,
++		ADV7180_INPUT_CONTROL_PAL_BG_NTSC_J_SECAM);
++	i2c_smbus_write_byte_data(client, ADV7180_AUTODETECT_ENABLE_REG,
++		ADV7180_AUTODETECT_DEFAULT);
++	return 0;
++}
++
++static int adv7180_remove(struct i2c_client *client)
++{
++	struct v4l2_subdev *sd = i2c_get_clientdata(client);
++
++	if (client->irq > 0)
++		free_irq(client->irq, sd);
++
++	v4l2_device_unregister_subdev(sd);
++	kfree(to_state(sd));
++	return 0;
++}
++
++static const struct i2c_device_id adv7180_id[] = {
++	{ "adv7180", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, adv7180_id);
++
++static struct v4l2_i2c_driver_data v4l2_i2c_data = {
++	.name = "adv7180",
++	.probe = adv7180_probe,
++	.remove = adv7180_remove,
++	.id_table = adv7180_id,
++};
++
++MODULE_DESCRIPTION("Analog Devices ADV7180 video decoder driver");
++MODULE_AUTHOR("Mocean Laboratories");
++MODULE_LICENSE("GPL v2");
++
+Index: linux-2.6.30-rc7/drivers/media/video/Kconfig
+===================================================================
+--- linux-2.6.30-rc7/drivers/media/video/Kconfig	(revision 861)
++++ linux-2.6.30-rc7/drivers/media/video/Kconfig	(working copy)
+@@ -265,6 +265,15 @@
 
-James
+ comment "Video decoders"
 
++config VIDEO_ADV7180
++	tristate "Analog Devices ADV7180 decoder"
++	depends on VIDEO_V4L2 && I2C
++	---help---
++	  Support for the Analog Devices ADV7180 video decoder.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called adv7180.
++
+ config VIDEO_BT819
+ 	tristate "BT819A VideoStream decoder"
+ 	depends on VIDEO_V4L2 && I2C
+Index: linux-2.6.30-rc7/drivers/media/video/Makefile
+===================================================================
+--- linux-2.6.30-rc7/drivers/media/video/Makefile	(revision 861)
++++ linux-2.6.30-rc7/drivers/media/video/Makefile	(working copy)
+@@ -49,6 +49,7 @@
+ obj-$(CONFIG_VIDEO_SAA7191) += saa7191.o
+ obj-$(CONFIG_VIDEO_ADV7170) += adv7170.o
+ obj-$(CONFIG_VIDEO_ADV7175) += adv7175.o
++obj-$(CONFIG_VIDEO_ADV7180) += adv7180.o
+ obj-$(CONFIG_VIDEO_VPX3220) += vpx3220.o
+ obj-$(CONFIG_VIDEO_BT819) += bt819.o
+ obj-$(CONFIG_VIDEO_BT856) += bt856.o
+Index: linux-2.6.30-rc7/include/media/v4l2-chip-ident.h
+===================================================================
+--- linux-2.6.30-rc7/include/media/v4l2-chip-ident.h	(revision 861)
++++ linux-2.6.30-rc7/include/media/v4l2-chip-ident.h	(working copy)
+@@ -131,6 +131,9 @@
+ 	/* module adv7175: just ident 7175 */
+ 	V4L2_IDENT_ADV7175 = 7175,
+
++	/* module adv7180: just ident 7180 */
++	V4L2_IDENT_ADV7180 = 7180,
++
+ 	/* module saa7185: just ident 7185 */
+ 	V4L2_IDENT_SAA7185 = 7185,
 
