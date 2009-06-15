@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZFONaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZFONaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbZFONaQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZFONaE
+	id S1753320AbZFONaf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbZFONaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:30:04 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52963 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbZFONaD (ORCPT
+	Mon, 15 Jun 2009 09:30:17 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:51604 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752235AbZFONaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:30:03 -0400
-Message-ID: <4A364C74.3040006@zytor.com>
-Date: Mon, 15 Jun 2009 06:28:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 15 Jun 2009 09:30:15 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: [PATCH] asm-generic: add EMAXERRNO
+Date: Mon, 15 Jun 2009 15:30:09 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+References: <OF48364F7F.ED6F93C7-ON482575D6.0042A7E0-482575D6.0043654D@sunplusct.com>
+In-Reply-To: <OF48364F7F.ED6F93C7-ON482575D6.0042A7E0-482575D6.0043654D@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
-References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <Pine.LNX.4.64.0906151341160.25162@sister.anvils> <20090615140019.4e405d37@lxorguk.ukuu.org.uk> <20090615132934.GE31969@one.firstfloor.org>
-In-Reply-To: <20090615132934.GE31969@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="gb2312"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200906151530.10299.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19K1DwfMCfN8iXWQu8WhoOVrddHVFGRgrcHiYj
+ 8N+kGd1Yl0/C48l8RRuST5xHSttn/3/h0+lTTNesnzFjnXD5J1
+ YTgRRxJGkvgxzVb+swTrQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+Some architectures want to flag error returns from a syscall based on
+the return value. The range from zero to -511 is for errors that
+we can return to user space, so add a #define for this to
+include/asm-generic/errno.h.
+
+Reported-by: Chen Liquin <liqin.chen@sunplusct.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ include/asm-generic/errno.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+On Monday 15 June 2009, liqin.chen@sunplusct.com wrote:
+
+> Maybe I can don't use EMAXERRNO in score code. But I think define a 
+> maximum error number in asm-generic/errno.h is better.
 > 
-> That said the real tests of this can be only done with test suites
-> really, these errors tend to not happen quickly. 
-> 
 
-What's far more important, quite frankly, is harmlessness regression
-testing.
+How about this one?
 
-	-hpa
-
+diff --git a/include/asm-generic/errno.h b/include/asm-generic/errno.h
+index e8852c0..16bb31d 100644
+--- a/include/asm-generic/errno.h
++++ b/include/asm-generic/errno.h
+@@ -106,4 +106,8 @@
+ #define	EOWNERDEAD	130	/* Owner died */
+ #define	ENOTRECOVERABLE	131	/* State not recoverable */
+ 
++#ifdef __KERNEL__
++#define	EMAXERRNO	511	/* maximum errno value we return to user */
++#endif
++
+ #endif
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.3.1
+
+ 
 
