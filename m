@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZFOE2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZFOEbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbZFOE2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 00:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZFOE2G
+	id S1753208AbZFOEbR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 00:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZFOEbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 00:28:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:14587 "EHLO mga03.intel.com"
+	Mon, 15 Jun 2009 00:31:03 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:42183 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbZFOE2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 00:28:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
-   d="scan'208";a="154285360"
-Date: Mon, 15 Jun 2009 12:27:53 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
-Message-ID: <20090615042753.GA20788@localhost>
-References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com>
+	id S1750891AbZFOEbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 00:31:02 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A35BD7A.9070208@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18997.52863.576426.501025@cargo.ozlabs.ibm.com>
+Date: Mon, 15 Jun 2009 14:30:55 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Avi Kivity <avi@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       benh@kernel.crashing.org, akpm@linux-foundation.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
+In-Reply-To: <ada4ouixlk2.fsf@cisco.com>
+References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>
+	<alpine.LFD.2.01.0906131312470.3237@localhost.localdomain>
+	<alpine.LFD.2.01.0906131323270.3237@localhost.localdomain>
+	<4A34E4A5.3040306@redhat.com>
+	<18996.60235.178618.531664@cargo.ozlabs.ibm.com>
+	<4A34F564.2010500@redhat.com>
+	<ada4ouixlk2.fsf@cisco.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 11:18:18AM +0800, Balbir Singh wrote:
-> Wu Fengguang wrote:
-> > Hi all,
-> > 
-> > Comments are warmly welcome on the newly introduced uevent code :)
-> > 
-> > I hope we can reach consensus in this round and then be able to post
-> > a final version for .31 inclusion.
-> 
-> Isn't that too aggressive? .31 is already in the merge window.
+Roland Dreier writes:
 
-Yes, a bit aggressive. This is a new feature that involves complex logics.
-However it is basically a no-op when there are no memory errors,
-and when memory corruption does occur, it's better to (possibly) panic
-in this code than to panic unconditionally in the absence of this
-feature (as said by Rik).
+> FWIW, Nehalem EX actually goes to 8 cores/16 threads per socket.  But
+> worrying about 32-bit performance on Nehalem is a little silly -- this
+> simplest solution is simply to run a 64-bit kernel.
 
-So IMHO it's OK for .31 as long as we agree on the user interfaces,
-ie. /proc/sys/vm/memory_failure_early_kill and the hwpoison uevent.
+I'm not worried about ANY x86 processor, 32-bit or 64-bit, in fact,
+since x86 already has an atomic64_t implementation for both 32-bit and
+64-bit.
 
-It comes a long way through numerous reviews, and I believe all the
-important issues and concerns have been addressed. Nick, Rik, Hugh,
-Ingo, ... what are your opinions? Is the uevent good enough to meet
-your request to "die hard" or "die gracefully" or whatever on memory
-failure events?
+It is interesting, though, that arch/x86/include/asm/atomic_32.h
+unconditionally uses cmpxchg8b to implement atomic64_t, but I thought
+that cmpxchg8b didn't exist in processors prior to the Pentium.
+Presumably you can't use perf_counters on a 386 or 486.
 
-Thanks,
-Fengguang
+Paul.
