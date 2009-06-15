@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764886AbZFORrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764965AbZFORsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764886AbZFORrD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763743AbZFORqw
+	id S1764965AbZFORsg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758966AbZFORs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:46:52 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:54822 "EHLO
+	Mon, 15 Jun 2009 13:48:27 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:65196 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752781AbZFORqv (ORCPT
+	with ESMTP id S1754462AbZFORsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:46:51 -0400
+	Mon, 15 Jun 2009 13:48:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=WbFjlutfLCfySS/P26Ax2H6N9TcRzZtfLvWnYl5A+NHE/iaM91V23sT3L8eVJVSZeD
-         MFULkxxtRjSWl5rbjUNndQKQDzmD4vsptC1IE8k0fA+PU3aMmRBILM4Go2WyTE6lnSjG
-         2NaG4vUOsGmg2rMVzTAGn7Hr/2FmFvAa7MZaY=
-Message-ID: <4A36881E.8010009@gmail.com>
-Date: Mon, 15 Jun 2009 19:42:54 +0200
+        b=Eyx08B4YCQKR5PFYOdsnVhW4Q2yHSGYIcV8S5ip+bLQyAwfq7IP4UpQZoPpV/Db6db
+         sQ1KgNPbv3cGXvp4gvHCx/Q1Xf39E9kK3LaRUsY44IO/R5RgNuO2dn3yee/bgZAIWM/5
+         wHtvSng0JaN9vDennjkTRuQ72B2oKCCZCyG80=
+Message-ID: <4A36887C.1050906@gmail.com>
+Date: Mon, 15 Jun 2009 19:44:28 +0200
 From: Marco <marco.stornelli@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Bryan Henderson <hbryan@us.ibm.com>
-CC: Artem Bityutskiy <dedekind1@gmail.com>,
-       Daniel Walker <dwalker@soe.ucsc.edu>,
-       Jamie Lokier <jamie@shareable.org>,
+To: Tim Bird <tim.bird@am.sony.com>
+CC: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
        Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
+       linux-kernel@vger.kernel.org, Daniel Walker <dwalker@soe.ucsc.edu>
 Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-References: <OFD1325B2C.7A926EF9-ON882575D6.00567314-882575D6.00571BC3@us.ibm.com>
-In-Reply-To: <OFD1325B2C.7A926EF9-ON882575D6.00567314-882575D6.00571BC3@us.ibm.com>
-Content-Type: text/plain; charset=US-ASCII
+References: <4A33A7A2.1050608@gmail.com> <4A3681C2.5010508@am.sony.com>
+In-Reply-To: <4A3681C2.5010508@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Henderson wrote:
->> Marco wrote:
->>>    To enable direct
->>>    I/O at all times for all regular files requires either that
->>>    applications be modified to include the O_DIRECT flag on all file
->>>    opens, or that a new filesystem be used that always performs direct
->>>    I/O by default."
->> This could be done as well by just introducing a "direct_io_only"
->> mount option to a file-system which would need this feature.
+Tim Bird wrote:
+> Marco wrote:
+>> This is a second attempt at mainlining Pramfs. The first attempt was
+>> back in early 2004 by MontaVista. Since then the kernel code has almost
+>> been completely rewritten. So my first item on the list was porting the
+>> code on a recent kernel version. After that I added the XIP support.
 > 
-> But it's possible that there's just no advantage to having a block device 
-> in the stack here.  When unix block devices were invented, their main 
-> purpose was that they could reorder reads and writes and do buffering and 
-> caching -- all things essential for disk drives.  We don't want to stretch 
-> the concept too far.
+> It's very nice to see this technology revived.
+> 
+> Is the information at:
+> http://pramfs.sourceforge.net/
+> and
+> http://pramfs.sourceforge.net/pramfs-spec.html
+> still valid - particularly the latter?
+
+Yep. at 99%. I've done some modifications due to the porting and there
+will be some ones due to this review. I tried to talk with Steve
+Longerbeam to update the site but without success. I'd like to update it.
+
+> 
+> It would be very nice to see this get mainlined.  I believe that
+> one of the main uses for this is to store crash information
+> over a reboot so the next kernel (not in crashing state) can have
+> a better chance of dealing with it.  As such, I think
+> it's important to keep the code paths for Pramfs short, synchronous,
+> and unentangled with other kernel systems (block IO, page cache, etc.).
 > 
 
-Yes I agree, we can't in this case talk about read and write reordering,
-buffering and caching because we're talking about something completely
-different from a classic disk. The issues of this kind of fs are more
-similar to the tmpfs issues.
+Yes, I quite agree. I think that this kind of feature would be very
+useful especially for the embedded world.
 
 Marco
