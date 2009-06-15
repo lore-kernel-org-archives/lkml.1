@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbZFPBel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761937AbZFPBmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758945AbZFPBel (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 21:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZFPBed
+	id S1761937AbZFPBmu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 21:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZFPBml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 21:34:33 -0400
-Received: from mga14.intel.com ([143.182.124.37]:13012 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751428AbZFPBec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 21:34:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,225,1243839600"; 
-   d="scan'208";a="154793590"
-Date: Tue, 16 Jun 2009 09:28:48 +0800
-From: Alek Du <alek.du@intel.com>
-To: Ben Dooks <ben-linux@fluff.org>
-CC: Florian Fainelli <florian@openwrt.org>, Ben Dooks <ben-linux@fluff.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
- gpio_alt_func features to GPIOLIB
-Message-ID: <20090616092848.7bb60f21@dxy.sh.intel.com>
-In-Reply-To: <20090615130906.GA14476@trinity.fluff.org>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com>
-	<20090615125146.GC19873@fluff.org.uk>
-	<200906151504.51934.florian@openwrt.org>
-	<20090615130906.GA14476@trinity.fluff.org>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Mon, 15 Jun 2009 21:42:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43141 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbZFPBml (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 21:42:41 -0400
+Date: Mon, 15 Jun 2009 22:47:48 +0800
+From: "Li, Yan" <yanli@infradead.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, greg@kroah.com, yan.i.li@intel.com
+Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
+Message-ID: <20090615144748.GA25734@thyme.bj.intel.com>
+Mail-Followup-To: Matthew Garrett <mjg@redhat.com>,
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, greg@kroah.com, yan.i.li@intel.com
+References: <20090615141613.GA7876@sage.bj.intel.com> <20090615143446.GB19451@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615143446.GB19451@srcf.ucam.org>
+Organization: Intel
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <yanli@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009 21:09:06 +0800
-Ben Dooks <ben-linux@fluff.org> wrote:
-
-> > 
-> > I would expect your architecture IRQ handler to have a set_type callback for 
-> > the GPIO lines capables of generating an interrupt. See how we have beeing 
-> > doing it for rb532 for instance: 
-> > http://www.linux-mips.org/git?p=linux-queue.git;a=blob;f=arch/mips/rb532/irq.c;h=f07882029a90d3d155c17b462812c2936229458c;hb=HEAD#l173
+On Mon, Jun 15, 2009 at 03:34:46PM +0100, Matthew Garrett wrote:
+> On Mon, Jun 15, 2009 at 10:16:13PM +0800, Yan Li wrote:
+> > When testing Moblin on various netbooks, we've got reports that many
+> > MSI Wind clones need the i8042 reset quirks for the keyboard and/or
+> > touchpad's proper function.
 > 
-> Yes, or if the GPIO driver is exporting interrupts, the relevant handler
-> for that chip should have the .set_type method defined.
-> 
+> Why are we not doing this unconditionally?
 
-In the .set_type method, you finally will call the GPIO driver's function to set interrupt trigger mode, right?
-Current GPIOLIB do not provide such an interface. Current driver always exports a separate function to do that --
-that's not good.
-My patch provide a general API to do that.
+For the majority of sane machines this is not necessary.
 
-
-Thanks,
-Alek
+-- 
+Li, Yan
