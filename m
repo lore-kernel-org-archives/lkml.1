@@ -1,117 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbZFOQ7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbZFOQ70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763519AbZFOQ7M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 12:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZFOQ67
+	id S1764138AbZFOQ70 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 12:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763098AbZFOQ7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 12:58:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34036 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752108AbZFOQ66 (ORCPT
+	Mon, 15 Jun 2009 12:59:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52454 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763204AbZFOQ7M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 12:58:58 -0400
-Date: Mon, 15 Jun 2009 09:58:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] WARN(): add a \n to the message printk
-In-Reply-To: <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
-References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 15 Jun 2009 12:59:12 -0400
+Date: Mon, 15 Jun 2009 19:07:26 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+Message-ID: <20090615170726.GI31969@one.firstfloor.org>
+References: <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <Pine.LNX.4.64.0906151341160.25162@sister.anvils> <20090615140019.4e405d37@lxorguk.ukuu.org.uk> <20090615132934.GE31969@one.firstfloor.org> <20090615154832.73c89733@lxorguk.ukuu.org.uk> <20090615152427.GF31969@one.firstfloor.org> <20090615162804.4cb75b30@lxorguk.ukuu.org.uk> <20090615161904.GH31969@one.firstfloor.org> <20090615172816.707bff0a@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615172816.707bff0a@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> But then if you
+> can't sort the resulting mess out because your patches are too limited
+> its not useful yet is it.
 
+With "too limited" you refer to unpoisioning?
 
-On Mon, 15 Jun 2009, Linus Torvalds wrote:
-> 
-> On Mon, 15 Jun 2009, Arjan van de Ven wrote:
-> >  
-> > -	if (args)
-> > +	if (args) {
-> >  		vprintk(args->fmt, args->args);
-> > +		printk("\n");
-> > +	}
-> 
-> I really don't like this. What if the format already does have a '\n'? And 
-> what if some other CPU is printing at the same time?
-> 
-> I'd almost be open to adding a "flags" field to vprintk, and allow setting 
-> things like "finish line with \n" there. Or perhaps even better, have a 
-> "vprintk_line()" function that does it with no dynamic flags. Maybe make 
-> it static, and move all these panic helper funtions into kernel/printk.c 
-> (since this really is a special case).	
-> 
-> I dunno. I'm just throwing out suggestions. I just don't think the above 
-> patch is very nice.
+Again very slowly:
 
-Oh, I actually think I have a preference.
+- If you have a lot of errors you die eventually anyways.
+- If you have a very low rate of errors (which is the normal case) you don't 
+need unpoisioning because the memory lost for each error is miniscule.
+- In the case of a hypervisor it's actually not memory lost, but only
+guest physical address space, which is plenty on a 64bit system. You can 
+eventually replace it by readding memory to a guest, but that's unlikely
+to be needed.
 
-I think we should _always_ cause a line break at the beginning of a new 
-line, unless the new printk() starts with a KERN_CONT thing.
-
-Right now KERN_CONT is "", but we could easily make it an explicit 
-"loglevel" thing. Like this.
-
-NOTE! This is, of course, totally untested. And we're bound to have 
-continuation printk's that don't have the KERN_CONT at front, and need 
-them added, but I think this is generally a saner model than what we have 
-now, or your suggested explicit addition of '\n'.
-
-Basically, it tries to guarantee that new messages always get a newline, 
-unless they _explicitly_ say that they don't want one. Doesn't that make 
-sense?
-
-		Linus
-
----
- include/linux/kernel.h |    2 +-
- kernel/printk.c        |   16 +++++++++++++++-
- 2 files changed, 16 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 883cd44..066bb1e 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -102,7 +102,7 @@ extern const char linux_proc_banner[];
-  * line that had no enclosing \n). Only to be used by core/arch code
-  * during early bootup (a continued line is not SMP-safe otherwise).
-  */
--#define	KERN_CONT	""
-+#define	KERN_CONT	"<c>"
- 
- extern int console_printk[];
- 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 5052b54..6f416fd 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -691,7 +691,21 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	 * Copy the output into log_buf.  If the caller didn't provide
- 	 * appropriate log level tags, we insert them here
- 	 */
--	for (p = printk_buf; *p; p++) {
-+	p = printk_buf;
-+
-+	/* Are we continuing a previous printk? */
-+	if (!new_text_line) {
-+		if (!memcmp(p, KERN_CONT, 3)) {
-+			/* We intended to do that continued printk! */
-+			p += 3;
-+		} else {
-+			/* Force a line break */
-+			emit_log_char('\n');
-+			new_text_line = 1;
-+		}
-+	}
-+
-+	for ( ; *p; p++) {
- 		if (new_text_line) {
- 			/* If a token, set current_log_level and skip over */
- 			if (p[0] == '<' && p[1] >= '0' && p[1] <= '7' &&
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
