@@ -1,39 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761696AbZFOOe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbZFOOkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761696AbZFOOe4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 10:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761560AbZFOOer
+	id S1759579AbZFOOkJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 10:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZFOOj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 10:34:47 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:50824 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761032AbZFOOeq (ORCPT
+	Mon, 15 Jun 2009 10:39:59 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59906 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbZFOOj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 10:34:46 -0400
-Date: Mon, 15 Jun 2009 15:34:46 +0100
-From: Matthew Garrett <mjg@redhat.com>
-To: linux-input@vger.kernel.org, yanli@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, greg@kroah.com
-Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
-Message-ID: <20090615143446.GB19451@srcf.ucam.org>
-References: <20090615141613.GA7876@sage.bj.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615141613.GA7876@sage.bj.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Mon, 15 Jun 2009 10:39:59 -0400
+Subject: Re: [PATCH 0/2] Debug bits for the tty ldisc problem
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20090615153015.4036.76588.stgit@t61.ukuu.org.uk>
+References: <20090615153015.4036.76588.stgit@t61.ukuu.org.uk>
+Content-Type: text/plain
+Date: Mon, 15 Jun 2009 16:39:56 +0200
+Message-Id: <1245076796.6800.488.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 10:16:13PM +0800, Yan Li wrote:
-> When testing Moblin on various netbooks, we've got reports that many
-> MSI Wind clones need the i8042 reset quirks for the keyboard and/or
-> touchpad's proper function.
+On Mon, 2009-06-15 at 16:32 +0100, Alan Cox wrote:
+> I'm not 100% sure the close one is
+> safe for locking but as the lock detector has been busted since 2.6.30 its a
+> bit hard to be sure.
 
-Why are we not doing this unconditionally?
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Would you have some specifics?
+
