@@ -1,504 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761864AbZFORG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbZFORGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761864AbZFORG3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZFORGV
+	id S932356AbZFORGm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZFORGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:06:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45574 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752235AbZFORGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:06:19 -0400
-Date: Mon, 15 Jun 2009 19:05:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, torvalds@linux-foundation.org,
-       vegard.nossum@gmail.com, efault@gmx.de, jeremy@goop.org,
-       npiggin@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615170556.GA25760@elte.hu>
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <20090615161459.GA1280@Krystal>
+	Mon, 15 Jun 2009 13:06:34 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:40360 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761622AbZFORGc convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 13:06:32 -0400
+X-SpamScore: -33
+X-BigFish: VPS-33(zz542N1432R4015L1805M9371Pzz1202hzzz2dh17dh17ch6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615161459.GA1280@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe path
+Date: Mon, 15 Jun 2009 11:06:22 -0600
+In-Reply-To: <20090612175634.12827.12207.stgit@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe path
+Thread-Index: AcnrhzgVpKec9y03QnqT6EGrQ8sUrQCU/r9A
+References: <20090612175634.12827.12207.stgit@localhost.localdomain>
+From: John Linn <John.Linn@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>, <benh@kernel.crashing.org>
+X-OriginalArrivalTime: 15 Jun 2009 17:06:23.0638 (UTC) FILETIME=[9C856B60:01C9EDDB]
+Message-ID: <20090615170624.EDFEDF5006C@mail54-sin.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> * tip-bot for Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> > Commit-ID:  74193ef0ecab92535c8517f082f1f50504526c9b
-> > Gitweb:     http://git.kernel.org/tip/74193ef0ecab92535c8517f082f1f50504526c9b
-> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > AuthorDate: Mon, 15 Jun 2009 13:07:24 +0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Mon, 15 Jun 2009 15:57:53 +0200
-> > 
-> > perf_counter: x86: Fix call-chain support to use NMI-safe methods
-> > 
-> > __copy_from_user_inatomic() isn't NMI safe in that it can trigger
-> > the page fault handler which is another trap and its return path
-> > invokes IRET which will also close the NMI context.
-> > 
-> > Therefore use a GUP based approach to copy the stack frames over.
-> > 
-> > We tried an alternative solution as well: we used a forward ported
-> > version of Mathieu Desnoyers's "NMI safe INT3 and Page Fault" patch
-> > that modifies the exception return path to use an open-coded IRET with
-> > explicit stack unrolling and TF checking.
-> > 
-> > This didnt work as it interacted with faulting user-space instructions,
-> > causing them not to restart properly, which corrupts user-space
-> > registers.
-> > 
-> > Solving that would probably involve disassembling those instructions
-> > and backtracing the RIP. But even without that, the code was deemed
-> > rather complex to the already non-trivial x86 entry assembly code,
-> > so instead we went for this GUP based method that does a
-> > software-walk of the pagetables.
-> > 
+> -----Original Message-----
+> From: Grant Likely [mailto:grant.likely@secretlab.ca]
+> Sent: Friday, June 12, 2009 11:57 AM
+> To: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org;
+benh@kernel.crashing.org; John Linn
+> Subject: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up
+probe path
 > 
-> Hrm, I'm probably missing something. Normally, you should test for 
-> "in_nmi()" upon return from exception, and only in these cases go 
-> for the open-coded IRET with stack unrolling and ret. I really 
-> don't see how you end up messing up the page fault return to 
-> userspace path, as it's impossible to have in_nmi() set.
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> The xilinxfb driver is improperly casting a physical address to a
+> u32, and the probe routine isn't as straight forward as it could be.
+> (discovered by gcc spitting out warnings on most recent change to
+> xilinxfb driver).
+> 
+> This patch fixes the cast and simplifies the probe path.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> 
+> John, can you please test and verify this fix is correct?
 
-here's the (heavily modified) version of your patch that i used.
+After a small fix to get it to compile, I did some quick testing with
+DCR and without and
+it's working fine on the ML507.
 
-	Ingo
+-- John
 
--------------------->
-Subject: x86 NMI-safe INT3 and Page Fault
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Mon, 12 May 2008 21:21:07 +0200
+Here's the small change to get it to compile.
 
-Implements an alternative iret with popf and return so trap and exception
-handlers can return to the NMI handler without issuing iret. iret would cause
-NMIs to be reenabled prematurely. x86_32 uses popf and far return. x86_64 has to
-copy the return instruction pointer to the top of the previous stack, issue a
-popf, loads the previous esp and issue a near return (ret).
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index e3d2992..596157c 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -441,7 +441,7 @@ xilinxfb_of_probe(struct of_device *op, const struct
+of_device_id *match)
+ 		res.start = 0;
+ 		start = dcr_resource_start(op->node, 0);
+ 		drvdata->dcr_len = dcr_resource_len(op->node, 0);
+-		drvdata->dcr_host = dcr_map(op->node, start,
+drvdata->len);
++		drvdata->dcr_host = dcr_map(op->node, start,
+drvdata->dcr_len);
+ 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
+ 			dev_err(&op->dev, "invalid DCR address\n");
+ 			goto err;
+--
 
-It allows placing immediate values (and therefore optimized trace_marks) in NMI
-code since returning from a breakpoint would be valid. Accessing vmalloc'd
-memory, which allows executing module code or accessing vmapped or vmalloc'd
-areas from NMI context, would also be valid. This is very useful to tracers like
-LTTng.
 
-This patch makes all faults, traps and exception safe to be called from NMI
-context *except* single-stepping, which requires iret to restore the TF (trap
-flag) and jump to the return address in a single instruction. Sorry, no kprobes
-support in NMI handlers because of this limitation.  We cannot single-step an
-NMI handler, because iret must set the TF flag and return back to the
-instruction to single-step in a single instruction. This cannot be emulated with
-popf/lret, because lret would be single-stepped. It does not apply to immediate
-values because they do not use single-stepping. This code detects if the TF
-flag is set and uses the iret path for single-stepping, even if it reactivates
-NMIs prematurely.
+> 
+> Thanks,
+> g.
+> 
+>  drivers/video/xilinxfb.c |   59
+++++++++++++++++++----------------------------
+>  1 files changed, 23 insertions(+), 36 deletions(-)
+> 
+> 
+> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> index 7a868bd..b68b331 100644
+> --- a/drivers/video/xilinxfb.c
+> +++ b/drivers/video/xilinxfb.c
+> @@ -124,7 +124,6 @@ struct xilinxfb_drvdata {
+>  						registers */
+> 
+>  	dcr_host_t      dcr_host;
+> -	unsigned int    dcr_start;
+>  	unsigned int    dcr_len;
+> 
+>  	void		*fb_virt;	/* virt. address of the frame
+buffer */
+> @@ -325,8 +324,8 @@ static int xilinxfb_assign(struct device *dev,
+>  					drvdata->regs);
+>  	}
+>  	/* Put a banner in the log (for DEBUG) */
+> -	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
+> -		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
+> +	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
+> +		(unsigned long long)drvdata->fb_phys, drvdata->fb_virt,
+fbsize);
+> 
+>  	return 0;	/* success */
+> 
+> @@ -404,9 +403,7 @@ xilinxfb_of_probe(struct of_device *op, const
+struct of_device_id *match)
+>  	u32 tft_access;
+>  	struct xilinxfb_platform_data pdata;
+>  	struct resource res;
+> -	int size, rc;
+> -	int start = 0, len = 0;
+> -	dcr_host_t dcr_host;
+> +	int size, rc, start;
+>  	struct xilinxfb_drvdata *drvdata;
+> 
+>  	/* Copy with the default pdata (not a ptr reference!) */
+> @@ -414,35 +411,39 @@ xilinxfb_of_probe(struct of_device *op, const
+struct of_device_id *match)
+> 
+>  	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
+> 
+> +	/* Allocate the driver data region */
+> +	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+> +	if (!drvdata) {
+> +		dev_err(&op->dev, "Couldn't allocate device private
+record\n");
+> +		return -ENOMEM;
+> +	}
+> +
+>  	/*
+>  	 * To check whether the core is connected directly to DCR or PLB
+>  	 * interface and initialize the tft_access accordingly.
+>  	 */
+>  	p = (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if",
+NULL);
+> -
+> -	if (p)
+> -		tft_access = *p;
+> -	else
+> -		tft_access = 0;		/* For backward compatibility */
+> +	tft_access = p ? *p : 0;
+> 
+>  	/*
+>  	 * Fill the resource structure if its direct PLB interface
+>  	 * otherwise fill the dcr_host structure.
+>  	 */
+>  	if (tft_access) {
+> +		drvdata->flags |= PLB_ACCESS_FLAG;
+>  		rc = of_address_to_resource(op->node, 0, &res);
+>  		if (rc) {
+>  			dev_err(&op->dev, "invalid address\n");
+> -			return -ENODEV;
+> +			goto err;
+>  		}
+> -
+>  	} else {
+> +		res.start = 0;
+>  		start = dcr_resource_start(op->node, 0);
+> -		len = dcr_resource_len(op->node, 0);
+> -		dcr_host = dcr_map(op->node, start, len);
+> -		if (!DCR_MAP_OK(dcr_host)) {
+> -			dev_err(&op->dev, "invalid address\n");
+> -			return -ENODEV;
+> +		drvdata->dcr_len = dcr_resource_len(op->node, 0);
+> +		drvdata->dcr_host = dcr_map(op->node, start,
+drvdata->len);
+> +		if (!DCR_MAP_OK(drvdata->dcr_host)) {
+> +			dev_err(&op->dev, "invalid DCR address\n");
+> +			goto err;
+>  		}
+>  	}
+> 
+> @@ -467,26 +468,12 @@ xilinxfb_of_probe(struct of_device *op, const
+struct of_device_id *match)
+>  	if (of_find_property(op->node, "rotate-display", NULL))
+>  		pdata.rotate_screen = 1;
+> 
+> -	/* Allocate the driver data region */
+> -	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+> -	if (!drvdata) {
+> -		dev_err(&op->dev, "Couldn't allocate device private
+record\n");
+> -		return -ENOMEM;
+> -	}
+>  	dev_set_drvdata(&op->dev, drvdata);
+> +	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
+> 
+> -	if (tft_access)
+> -		drvdata->flags |= PLB_ACCESS_FLAG;
+> -
+> -	/* Arguments are passed based on the interface */
+> -	if (drvdata->flags & PLB_ACCESS_FLAG) {
+> -		return xilinxfb_assign(&op->dev, drvdata, res.start,
+&pdata);
+> -	} else {
+> -		drvdata->dcr_start = start;
+> -		drvdata->dcr_len = len;
+> -		drvdata->dcr_host = dcr_host;
+> -		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
+> -	}
+> + err:
+> +	kfree(drvdata);
+> +	return -ENODEV;
+>  }
+> 
+>  static int __devexit xilinxfb_of_remove(struct of_device *op)
+> 
 
-Test to detect if nested under a NMI handler is only done upon the return from
-trap/exception to kernel, which is not frequent. Other return paths (return from
-trap/exception to userspace, return from interrupt) keep the exact same behavior
-(no slowdown).
 
-Depends on :
-change-alpha-active-count-bit.patch
-change-avr32-active-count-bit.patch
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
 
-TODO : test with lguest, xen, kvm.
 
-** This patch depends on the "Stringify support commas" patchset **
-** Also depends on fix-x86_64-page-fault-scheduler-race patch **
-
-tested on x86_32 (tests implemented in a separate patch) :
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
-- tested vmalloc faults in NMI handler by placing a non-optimized marker in the
-  NMI handler (so no breakpoint is executed) and connecting a probe which
-  touches every pages of a 20MB vmalloc'd buffer. It executes trough the return
-  path without problem.
-- Tested with and without preemption
-
-tested on x86_64
-- instrumented the return path to export the EIP, CS and EFLAGS values when
-  taken so we know the return path code has been executed.
-- trace_mark, using immediate values, with 10ms delay with the breakpoint
-  activated. Runs well through the return path.
-
-To test on x86_64 :
-- Test without preemption
-- Test vmalloc faults
-- Test on Intel 64 bits CPUs. (AMD64 was fine)
-
-Changelog since v1 :
-- x86_64 fixes.
-Changelog since v2 :
-- fix paravirt build
-Changelog since v3 :
-- Include modifications suggested by Jeremy
-Changelog since v4 :
-- including hardirq.h in entry_32/64.S is a bad idea (non ifndef'd C code),
-  define HARDNMI_MASK in the .S files directly.
-Changelog since v5 :
-- Add HARDNMI_MASK to irq_count() and make die() more verbose for NMIs.
-Changelog since v7 :
-- Implement paravirtualized nmi_return.
-Changelog since v8 :
-- refreshed the patch for asm-offsets. Those were left out of v8.
-- now depends on "Stringify support commas" patch.
-Changelog since v9 :
-- Only test the nmi nested preempt count flag upon return from exceptions, not
-  on return from interrupts. Only the kernel return path has this test.
-- Add Xen, VMI, lguest support. Use their iret pavavirt ops in lieu of
-  nmi_return.
-
--- Ported to sched-devel.git
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@osdl.org
-CC: mingo@elte.hu
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/include/asm/irqflags.h |   56 +++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/dumpstack.c     |    2 +
- arch/x86/kernel/entry_32.S      |   30 +++++++++++++++++++++
- arch/x86/kernel/entry_64.S      |   57 +++++++++++++++++++++++++++++++---------
- include/linux/hardirq.h         |   16 +++++++----
- 5 files changed, 144 insertions(+), 17 deletions(-)
-
-Index: linux/arch/x86/include/asm/irqflags.h
-===================================================================
---- linux.orig/arch/x86/include/asm/irqflags.h
-+++ linux/arch/x86/include/asm/irqflags.h
-@@ -51,6 +51,61 @@ static inline void native_halt(void)
- 
- #endif
- 
-+#ifdef CONFIG_X86_64
-+/*
-+ * Only returns from a trap or exception to a NMI context (intra-privilege
-+ * level near return) to the same SS and CS segments. Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued. It takes care of modifying the eflags, rsp and returning to the
-+ * previous function.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(rsp)  RIP
-+ * 8(rsp)  CS
-+ * 16(rsp) EFLAGS
-+ * 24(rsp) RSP
-+ * 32(rsp) SS
-+ *
-+ * Upon execution :
-+ * Copy EIP to the top of the return stack
-+ * Update top of return stack address
-+ * Pop eflags into the eflags register
-+ * Make the return stack current
-+ * Near return (popping the return address from the return stack)
-+ */
-+#define NATIVE_INTERRUPT_RETURN_NMI_SAFE	pushq %rax;		\
-+						movq %rsp, %rax;	\
-+						movq 24+8(%rax), %rsp;	\
-+						pushq 0+8(%rax);	\
-+						pushq 16+8(%rax);	\
-+						movq (%rax), %rax;	\
-+						popfq;			\
-+						ret
-+#else
-+/*
-+ * Protected mode only, no V8086. Implies that protected mode must
-+ * be entered before NMIs or MCEs are enabled. Only returns from a trap or
-+ * exception to a NMI context (intra-privilege level far return). Should be used
-+ * upon trap or exception return when nested over a NMI context so no iret is
-+ * issued.
-+ *
-+ * The stack, at that point, looks like :
-+ *
-+ * 0(esp) EIP
-+ * 4(esp) CS
-+ * 8(esp) EFLAGS
-+ *
-+ * Upon execution :
-+ * Copy the stack eflags to top of stack
-+ * Pop eflags into the eflags register
-+ * Far return: pop EIP and CS into their register, and additionally pop EFLAGS.
-+ */
-+#define NATIVE_INTERRUPT_RETURN_NMI_SAFE	pushl 8(%esp);	\
-+						popfl;		\
-+						lret $4
-+#endif
-+
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
- #else
-@@ -109,6 +164,7 @@ static inline unsigned long __raw_local_
- 
- #define ENABLE_INTERRUPTS(x)	sti
- #define DISABLE_INTERRUPTS(x)	cli
-+#define INTERRUPT_RETURN_NMI_SAFE	NATIVE_INTERRUPT_RETURN_NMI_SAFE
- 
- #ifdef CONFIG_X86_64
- #define SWAPGS	swapgs
-Index: linux/arch/x86/kernel/dumpstack.c
-===================================================================
---- linux.orig/arch/x86/kernel/dumpstack.c
-+++ linux/arch/x86/kernel/dumpstack.c
-@@ -237,6 +237,8 @@ void __kprobes oops_end(unsigned long fl
- 
- 	if (!signr)
- 		return;
-+	if (in_nmi())
-+		panic("Fatal exception in non-maskable interrupt");
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 	if (panic_on_oops)
-Index: linux/arch/x86/kernel/entry_32.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_32.S
-+++ linux/arch/x86/kernel/entry_32.S
-@@ -80,6 +80,8 @@
- 
- #define nr_syscalls ((syscall_table_size)/4)
- 
-+#define HARDNMI_MASK 0x40000000
-+
- #ifdef CONFIG_PREEMPT
- #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
- #else
-@@ -344,8 +346,32 @@ END(ret_from_fork)
- 	# userspace resumption stub bypassing syscall exit tracing
- 	ALIGN
- 	RING0_PTREGS_FRAME
-+
- ret_from_exception:
- 	preempt_stop(CLBR_ANY)
-+	GET_THREAD_INFO(%ebp)
-+	movl PT_EFLAGS(%esp), %eax	# mix EFLAGS and CS
-+	movb PT_CS(%esp), %al
-+	andl $(X86_EFLAGS_VM | SEGMENT_RPL_MASK), %eax
-+	cmpl $USER_RPL, %eax
-+	jae resume_userspace	# returning to v8086 or userspace
-+	testl $HARDNMI_MASK,TI_preempt_count(%ebp)
-+	jz resume_kernel		/* Not nested over NMI ? */
-+	testw $X86_EFLAGS_TF, PT_EFLAGS(%esp)
-+	jnz resume_kernel		/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	TRACE_IRQS_IRET
-+	RESTORE_REGS
-+	addl $4, %esp			# skip orig_eax/error_code
-+	CFI_ADJUST_CFA_OFFSET -4
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- ret_from_intr:
- 	GET_THREAD_INFO(%ebp)
- check_userspace:
-@@ -851,6 +877,10 @@ ENTRY(native_iret)
- .previous
- END(native_iret)
- 
-+ENTRY(native_nmi_return)
-+	NATIVE_INTERRUPT_RETURN_NMI_SAFE # Should we deal with popf exception ?
-+END(native_nmi_return)
-+
- ENTRY(native_irq_enable_sysexit)
- 	sti
- 	sysexit
-Index: linux/arch/x86/kernel/entry_64.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_64.S
-+++ linux/arch/x86/kernel/entry_64.S
-@@ -53,6 +53,7 @@
- #include <asm/paravirt.h>
- #include <asm/ftrace.h>
- #include <asm/percpu.h>
-+#include <linux/hardirq.h>
- 
- /* Avoid __ASSEMBLER__'ifying <linux/audit.h> just for this.  */
- #include <linux/elf-em.h>
-@@ -875,6 +876,9 @@ ENTRY(native_iret)
- 	.section __ex_table,"a"
- 	.quad native_iret, bad_iret
- 	.previous
-+
-+ENTRY(native_nmi_return)
-+	NATIVE_INTERRUPT_RETURN_NMI_SAFE
- #endif
- 
- 	.section .fixup,"ax"
-@@ -929,6 +933,23 @@ retint_signal:
- 	GET_THREAD_INFO(%rcx)
- 	jmp retint_with_reschedule
- 
-+	/* Returning to kernel space from exception. */
-+	/* rcx:	 threadinfo. interrupts off. */
-+ENTRY(retexc_kernel)
-+	testl $NMI_MASK, TI_preempt_count(%rcx)
-+	jz retint_kernel		/* Not nested over NMI ? */
-+	testw $X86_EFLAGS_TF, EFLAGS-ARGOFFSET(%rsp)	/* trap flag? */
-+	jnz retint_kernel		/*
-+					 * If single-stepping an NMI handler,
-+					 * use the normal iret path instead of
-+					 * the popf/lret because lret would be
-+					 * single-stepped. It should not
-+					 * happen : it will reactivate NMIs
-+					 * prematurely.
-+					 */
-+	RESTORE_ARGS 0, 8, 0
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- #ifdef CONFIG_PREEMPT
- 	/* Returning to kernel space. Check if we need preemption */
- 	/* rcx:	 threadinfo. interrupts off. */
-@@ -1407,34 +1428,46 @@ ENTRY(paranoid_exit)
- 	INTR_FRAME
- 	DISABLE_INTERRUPTS(CLBR_NONE)
- 	TRACE_IRQS_OFF
--	testl %ebx,%ebx				/* swapgs needed? */
-+	testl %ebx, %ebx			/* swapgs needed? */
- 	jnz paranoid_restore
--	testl $3,CS(%rsp)
-+
-+	testl $3, CS(%rsp)
- 	jnz   paranoid_userspace
-+
- paranoid_swapgs:
- 	TRACE_IRQS_IRETQ 0
- 	SWAPGS_UNSAFE_STACK
- 	RESTORE_ALL 8
- 	jmp irq_return
--paranoid_restore:
-+paranoid_restore_no_nmi:
- 	TRACE_IRQS_IRETQ 0
- 	RESTORE_ALL 8
- 	jmp irq_return
-+paranoid_restore:
-+	GET_THREAD_INFO(%rcx)
-+	testl $NMI_MASK, TI_preempt_count(%rcx)
-+	jz paranoid_restore_no_nmi		/* Nested over NMI ? */
-+
-+	testw $X86_EFLAGS_TF, EFLAGS-0(%rsp)	/* trap flag? */
-+	jnz paranoid_restore_no_nmi
-+	RESTORE_ALL 8
-+	INTERRUPT_RETURN_NMI_SAFE
-+
- paranoid_userspace:
- 	GET_THREAD_INFO(%rcx)
--	movl TI_flags(%rcx),%ebx
--	andl $_TIF_WORK_MASK,%ebx
-+	movl TI_flags(%rcx), %ebx
-+	andl $_TIF_WORK_MASK, %ebx
- 	jz paranoid_swapgs
--	movq %rsp,%rdi			/* &pt_regs */
-+	movq %rsp, %rdi				/* &pt_regs */
- 	call sync_regs
--	movq %rax,%rsp			/* switch stack for scheduling */
--	testl $_TIF_NEED_RESCHED,%ebx
-+	movq %rax, %rsp				/* switch stack for scheduling */
-+	testl $_TIF_NEED_RESCHED, %ebx
- 	jnz paranoid_schedule
--	movl %ebx,%edx			/* arg3: thread flags */
-+	movl %ebx, %edx				/* arg3: thread flags */
- 	TRACE_IRQS_ON
- 	ENABLE_INTERRUPTS(CLBR_NONE)
--	xorl %esi,%esi 			/* arg2: oldset */
--	movq %rsp,%rdi 			/* arg1: &pt_regs */
-+	xorl %esi, %esi				/* arg2: oldset */
-+	movq %rsp, %rdi				/* arg1: &pt_regs */
- 	call do_notify_resume
- 	DISABLE_INTERRUPTS(CLBR_NONE)
- 	TRACE_IRQS_OFF
-@@ -1513,7 +1546,7 @@ ENTRY(error_exit)
- 	TRACE_IRQS_OFF
- 	GET_THREAD_INFO(%rcx)
- 	testl %eax,%eax
--	jne retint_kernel
-+	jne  retexc_kernel
- 	LOCKDEP_SYS_EXIT_IRQ
- 	movl TI_flags(%rcx),%edx
- 	movl $_TIF_WORK_MASK,%edi
-Index: linux/include/linux/hardirq.h
-===================================================================
---- linux.orig/include/linux/hardirq.h
-+++ linux/include/linux/hardirq.h
-@@ -1,12 +1,14 @@
- #ifndef LINUX_HARDIRQ_H
- #define LINUX_HARDIRQ_H
- 
-+#ifndef __ASSEMBLY__
- #include <linux/preempt.h>
- #include <linux/smp_lock.h>
- #include <linux/lockdep.h>
- #include <linux/ftrace_irq.h>
- #include <asm/hardirq.h>
- #include <asm/system.h>
-+#endif
- 
- /*
-  * We put the hardirq and softirq counter into the preemption
-@@ -50,17 +52,17 @@
- #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
- #define NMI_SHIFT	(HARDIRQ_SHIFT + HARDIRQ_BITS)
- 
--#define __IRQ_MASK(x)	((1UL << (x))-1)
-+#define __IRQ_MASK(x)	((1 << (x))-1)
- 
- #define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
- #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
- #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
- #define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
- 
--#define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
--#define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
--#define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
--#define NMI_OFFSET	(1UL << NMI_SHIFT)
-+#define PREEMPT_OFFSET	(1 << PREEMPT_SHIFT)
-+#define SOFTIRQ_OFFSET	(1 << SOFTIRQ_SHIFT)
-+#define HARDIRQ_OFFSET	(1 << HARDIRQ_SHIFT)
-+#define NMI_OFFSET	(1 << NMI_SHIFT)
- 
- #if PREEMPT_ACTIVE < (1 << (NMI_SHIFT + NMI_BITS))
- #error PREEMPT_ACTIVE is too low!
-@@ -116,6 +118,8 @@
- # define IRQ_EXIT_OFFSET HARDIRQ_OFFSET
- #endif
- 
-+#ifndef __ASSEMBLY__
-+
- #if defined(CONFIG_SMP) || defined(CONFIG_GENERIC_HARDIRQS)
- extern void synchronize_irq(unsigned int irq);
- #else
-@@ -195,4 +199,6 @@ extern void irq_exit(void);
- 		ftrace_nmi_exit();				\
- 	} while (0)
- 
-+#endif /* !__ASSEMBLY__ */
-+
- #endif /* LINUX_HARDIRQ_H */
