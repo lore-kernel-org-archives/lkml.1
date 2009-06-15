@@ -1,95 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZFOFf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbZFOFl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbZFOFf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 01:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZFOFfS
+	id S1754573AbZFOFl3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 01:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZFOFlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 01:35:18 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:54250 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbZFOFfQ (ORCPT
+	Mon, 15 Jun 2009 01:41:20 -0400
+Received: from mail-fx0-f206.google.com ([209.85.220.206]:57160 "EHLO
+	mail-fx0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155AbZFOFlT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 01:35:16 -0400
+	Mon, 15 Jun 2009 01:41:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=M5KINC5OGqijRuu7hbQyGJLt/6b3j1HsfjYb5jGtppsLLdA/YYeUb1SdeC2brxkrDD
-         bLMEaJXtKVaTExDbgn6wK5IrGkiLwXOVu7sXer+u2/uiWxfPz3vWvXGS4TZDJRAn6pIu
-         x/R0oTZrdg1N9kM1qAdZZAWBwdTAipMvEP3l8=
-Date: Mon, 15 Jun 2009 07:35:14 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: ide tree build failure
-Message-ID: <20090615053514.GA13226@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090615113430.21122e44.sfr@canb.auug.org.au>
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=LGGdDcdh/RUbaPMuIxvoxudzyFSsMTowLQbs8VtWnIBIK8AkGzv1xZR1l1P92bG2Wf
+         ZqMeRsYBNDNlVFNjbOQOFVOW8gjGC2zQYF/5e44TW7uJimLgmf9OR/nXHZQsHapr4Had
+         TBXMxh/F32WaLMe+mzAArF7XNLmlpYWiqe67Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090615113430.21122e44.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4A35DD5B.9050106@cn.fujitsu.com>
+References: <4A35DD5B.9050106@cn.fujitsu.com>
+Date: Mon, 15 Jun 2009 08:41:20 +0300
+X-Google-Sender-Auth: 0af35616ab564e4c
+Message-ID: <84144f020906142241w6be3dd75i4343c226f639246e@mail.gmail.com>
+Subject: Re: [PATCH] sched: remove unneeded __ref tag
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jun 15, 2009 at 8:34 AM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+> Those two functions no longer call alloc_bootmmem_cpumask_var(), so
+> no need to tag them with __init_refok.
+>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-On Mon, Jun 15, 2009 at 11:34:30AM +1000, Stephen Rothwell wrote:
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/ide/ide-tape.c: In function 'idetape_chrdev_open':
-> drivers/ide/ide-tape.c:1515: error: implicit declaration of function 'idetape_read_position'
-> 
-> Caused by commit 55ce3a129ea2e8faba4a11bb5dbc305590d1c20c ("ide-tape: fix
-> READ POSITION cmd handling") interacting with the later merge
-> 8dcce4081305d3d1629190edd112e6473c315cbc ("Merge branch
-> 'bp-remove-pc-buf' into for-next").
-> 
-> I have used the ide tree from next-20090612 for today.
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Ah, the function got renamed in 55ce3a129ea2e8faba4a11bb5dbc305590d1c20c. Here's
-a fix:
+Thanks Li!
 
----
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Mon, 15 Jun 2009 07:32:04 +0200
-Subject: [PATCH] ide-tape: fix build issue
-
-This fixes
-
-drivers/ide/ide-tape.c: In function `idetape_chrdev_open':
-drivers/ide/ide-tape.c:1515: error: implicit declaration of function `idetape_read_position'
-make[1]: *** [drivers/ide/ide-tape.o] Error 1
-
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ide/ide-tape.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index bb71e1e..3a3f10f 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -1512,7 +1512,7 @@ static int idetape_chrdev_open(struct inode *inode, struct file *filp)
- 		goto out_put_tape;
- 	}
- 
--	idetape_read_position(drive);
-+	ide_tape_read_position(drive);
- 	if (!test_bit(ilog2(IDE_AFLAG_ADDRESS_VALID), &drive->atapi_flags))
- 		(void)idetape_rewind_tape(drive);
- 
--- 
-1.6.3.1
-
-
--- 
-Regards/Gruss,
-    Boris.
+> ---
+>  kernel/sched.c        |    2 +-
+>  kernel/sched_cpupri.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 6032f51..54e47bc 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -7828,7 +7828,7 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+>                free_rootdomain(old_rd);
+>  }
+>
+> -static int __init_refok init_rootdomain(struct root_domain *rd, bool bootmem)
+> +static int init_rootdomain(struct root_domain *rd, bool bootmem)
+>  {
+>        gfp_t gfp = GFP_KERNEL;
+>
+> diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
+> index 7deffc9..e6c2517 100644
+> --- a/kernel/sched_cpupri.c
+> +++ b/kernel/sched_cpupri.c
+> @@ -152,7 +152,7 @@ void cpupri_set(struct cpupri *cp, int cpu, int newpri)
+>  *
+>  * Returns: -ENOMEM if memory fails.
+>  */
+> -int __init_refok cpupri_init(struct cpupri *cp, bool bootmem)
+> +int cpupri_init(struct cpupri *cp, bool bootmem)
+>  {
+>        gfp_t gfp = GFP_KERNEL;
+>        int i;
+> --
+> 1.5.4.rc3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
