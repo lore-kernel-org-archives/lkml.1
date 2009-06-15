@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935862AbZFOV7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935867AbZFOWCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935862AbZFOV7n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 17:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbZFOV7h
+	id S935867AbZFOWCS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 18:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbZFOWCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 17:59:37 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:42180 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755979AbZFOV7g (ORCPT
+	Mon, 15 Jun 2009 18:02:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53310 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754947AbZFOWCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 17:59:36 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AokFAMdgNkpMQWQl/2dsb2JhbACBT9MXhA0F
-Date: Mon, 15 Jun 2009 17:54:20 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615215420.GE12919@Krystal>
-References: <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop> <4A369CD8.3090505@zytor.com> <20090615192720.GA9056@Krystal> <4A36A1C7.6080005@zytor.com> <20090615210119.GD24554@elte.hu> <20090615211207.GB12919@Krystal> <20090615211605.GC27100@elte.hu> <20090615213429.GD12919@Krystal> <4A36BF61.10901@zytor.com>
+	Mon, 15 Jun 2009 18:02:05 -0400
+Date: Mon, 15 Jun 2009 15:01:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 2/2] procfs: provide stack information for threads V0.8
+Message-Id: <20090615150121.ce04ba08.akpm@linux-foundation.org>
+In-Reply-To: <1244618442.17616.5.camel@wall-e>
+References: <1238511505.364.61.camel@matrix>
+	<20090401193135.GA12316@elte.hu>
+	<1244618442.17616.5.camel@wall-e>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4A36BF61.10901@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:50:04 up 107 days, 18:16,  3 users,  load average: 0.36, 0.28,
-	0.27
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Mathieu Desnoyers wrote:
-> > 
-> > As the maintainer of the out-of-tree LTTng tracer, which hooks in the
-> > page fault handler with tracepoints, and which can build almost entirely
-> > as modules, I am very tempted to argue that having the nmi-code entirely
-> > robust wrt in-kernel page faults would be a very-nice-to-have feature.
-> > 
+On Wed, 10 Jun 2009 09:20:41 +0200
+Stefani Seibold <stefani@seibold.net> wrote:
+
+> This is the newest version of the formaly named "detailed stack info"
+> patch which give you a better overview of the userland application stack
+> usage, especially for embedded linux.
 > 
-> I doubt that is ever going to be reliable, due to reentrancy issues.
+> Currently you are only able to dump the main process/thread stack usage
+> which is showed in /proc/pid/status by the "VmStk" Value. But you get no
+> information about the consumed stack memory of the the threads.
 > 
-> 	-hpa
+> There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
+> marks the vm mapping where the thread stack pointer reside with "[thread
+> stack xxxxxxxx]". xxxxxxxx is the maximum size of stack. This is a
+> value information, because libpthread doesn't set the start of the stack
+> to the top of the mapped area, depending of the pthread usage.
+> 
+> A sample output of /proc/<pid>/task/<tid>/maps looks like:
+> 
+> 08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
+> 08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
+> 0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
+> a7d12000-a7d13000 ---p 00000000 00:00 0 
+> a7d13000-a7f13000 rw-p 00000000 00:00 0          [thread stack: 001ff4b4]
+> a7f13000-a7f14000 ---p 00000000 00:00 0 
+> a7f14000-a7f36000 rw-p 00000000 00:00 0 
+> a7f36000-a8069000 r-xp 00000000 03:00 4222       /lib/libc.so.6
+> a8069000-a806b000 r--p 00133000 03:00 4222       /lib/libc.so.6
+> a806b000-a806c000 rw-p 00135000 03:00 4222       /lib/libc.so.6
+> a806c000-a806f000 rw-p 00000000 00:00 0 
+> a806f000-a8083000 r-xp 00000000 03:00 14462      /lib/libpthread.so.0
+> a8083000-a8084000 r--p 00013000 03:00 14462      /lib/libpthread.so.0
+> a8084000-a8085000 rw-p 00014000 03:00 14462      /lib/libpthread.so.0
+> a8085000-a8088000 rw-p 00000000 00:00 0 
+> a8088000-a80a4000 r-xp 00000000 03:00 8317       /lib/ld-linux.so.2
+> a80a4000-a80a5000 r--p 0001b000 03:00 8317       /lib/ld-linux.so.2
+> a80a5000-a80a6000 rw-p 0001c000 03:00 8317       /lib/ld-linux.so.2
+> afaf5000-afb0a000 rw-p 00000000 00:00 0          [stack]
+> ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
+> 
+>  
+> Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
+> which will you give the current stack usage in kb.
+> 
+> A sample output of /proc/self/status looks like:
+> 
+> Name:	cat
+> State:	R (running)
+> Tgid:	507
+> Pid:	507
+> .
+> .
+> .
+> CapBnd:	fffffffffffffeff
+> voluntary_ctxt_switches:	0
+> nonvoluntary_ctxt_switches:	0
+> Stack usage:	12 kB
+> 
+> I also fixed stack base address in /proc/<pid>/{task/*,}/stat to the
+> base address of the associated thread stack and not the one of the main
+> process. This makes more sense.
+> 
+>
+> ...
+>
+> --- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
+> +++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
+> @@ -1429,6 +1429,7 @@
+>  	/* state flags for use by tracers */
+>  	unsigned long trace;
+>  #endif
+> +	unsigned long stack_start;
+>  };
+>  
 
-Do you mean the page fault handler code is no ever going to be reliable
-or the tracer code ?
+A `stack_start' in the task_struct.  This is a bit confusing - we
+already have a `void *stack' in there.  Perhaps this should be named
+user_stack_start or something?
 
-I spent a great deal of effort making LTTng lockless and reentrant wrt
-NMIs. It would be great if the low-level kernel exception handlers would
-do the same, therefore I would not have to isolate the tracer from the
-kernel as I currently do. Well, I would still continue to isolate the
-tracer from the kernel, but at least I would not have to spend as much
-effort controlling what exceptions and faults paths the tracer is
-executing.
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
