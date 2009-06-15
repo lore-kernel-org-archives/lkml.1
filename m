@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935752AbZFOVhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935598AbZFOVmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935752AbZFOVhW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 17:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934990AbZFOVhJ
+	id S935598AbZFOVmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 17:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbZFOVmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 17:37:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39555 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934762AbZFOVhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 17:37:08 -0400
-Date: Mon, 15 Jun 2009 23:32:16 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/2] posix-cpu-timers: random fixes rework -v3
-Message-ID: <20090615213216.GA22766@redhat.com>
-References: <20090615103640.4b828cc4@dhcp-lab-109.englab.brq.redhat.com>
+	Mon, 15 Jun 2009 17:42:38 -0400
+Received: from e24smtp05.br.ibm.com ([32.104.18.26]:35076 "EHLO
+	e24smtp05.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752667AbZFOVmh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 17:42:37 -0400
+Message-ID: <4A36C04B.6070204@linux.vnet.ibm.com>
+Date: Mon, 15 Jun 2009 18:42:35 -0300
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090614)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615103640.4b828cc4@dhcp-lab-109.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Eric Paris <eparis@redhat.com>
+CC: =?UTF-8?B?ImRkcyAo4piVKSI=?= <dds@google.com>, seiji.munetoh@gmail.com,
+       tpmdd-devel@lists.sourceforge.net,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Shahbaz Khan <shaz.linux@gmail.com>
+Subject: Re: [tpmdd-devel] TPM drivers support and Linux Integrity Module
+ for 2.6.30
+References: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com> <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com> <4A3474BD.4000804@linux.vnet.ibm.com> <b8394ab90906140015h793aaf51rb9b105910e61fa1@mail.gmail.com> <1245007238.10712.5.camel@blackbox> <1245068894.3247.22.camel@dhcp231-142.rdu.redhat.com> <4A367093.6010206@linux.vnet.ibm.com>
+In-Reply-To: <4A367093.6010206@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/15, Stanislaw Gruszka wrote:
+
+> 2- Forget manufacturer_id and base the decision on the PNP_ID as david
+> suggested. I previously considered it but since it would end up in
+> modifying tpm_tis_init() prototype (struct device * to struct pnp_dev *)
+> and then wouldn't work when loading as a module with force option on, so
+> I moved to the manufacturer_id approach.
 >
-> Two fixes related with posix-cpu-timers
+> I'll get back to #2 meanwhile and post the patch, seems not hard to
+> accomplish though..
+>   
+Yes, it wasn't hard, at all, just get the id with to_pnp_dev(dev)->id.
 
-I think both patches are good.
+However, the chip is buggy, there's no reason to make a compliant
+upstream code modify its behavior just due an 'exception' for a not
+compliant hardware.
+No need to worry about it too though, the workaround is available as I
+pointed earlier (Seiji's)...
 
-But, to avoid the possible confusion, the second one does not fix any bug.
+Thanks,
+Rajiv
 
-Oleg.
 
