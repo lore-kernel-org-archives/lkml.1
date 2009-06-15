@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765984AbZFOSo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765216AbZFOSqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765984AbZFOSo3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763579AbZFOSoR
+	id S1765216AbZFOSqA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZFOSpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:44:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45107 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbZFOSoQ (ORCPT
+	Mon, 15 Jun 2009 14:45:51 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60159 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753010AbZFOSpu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:44:16 -0400
-Message-ID: <4A369573.1060504@zytor.com>
-Date: Mon, 15 Jun 2009 11:39:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
-       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain	support
- to use NMI-safe methods
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <20090615182348.GC11248@elte.hu>
-In-Reply-To: <20090615182348.GC11248@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Jun 2009 14:45:50 -0400
+Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hugh.dickins@tiscali.co.uk, linux-kernel@vger.kernel.org, mingo@redhat.com,
+       hpa@zytor.com, paulus@samba.org, acme@redhat.com, efault@gmx.de,
+       npiggin@suse.de, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org, torvalds@linux-foundation.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <20090615114230.9c9b1e64.akpm@linux-foundation.org>
+References: <tip-3ff0141aa3a03ca3388b40b36167d0a37919f3fd@git.kernel.org>
+	 <1245077165.6800.497.camel@laptop>
+	 <Pine.LNX.4.64.0906151623570.5225@sister.anvils>
+	 <1245080486.6800.561.camel@laptop> <1245089065.13761.19316.camel@twins>
+	 <20090615114230.9c9b1e64.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 15 Jun 2009 20:45:34 +0200
+Message-Id: <1245091534.6741.177.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Mon, 2009-06-15 at 11:42 -0700, Andrew Morton wrote:
+> On Mon, 15 Jun 2009 20:04:25 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
 > 
->> Hrm, would it be possible to save the c2 register upon nmi handler 
->> entry and restore it before iret instead ? This would ensure a 
->> nmi-interrupted page fault handler would continue what it was 
->> doing with a non-corrupted cr2 register after returning from nmi.
->>
->> Plus, this involves no modification to the page fault handler fast 
->> path.
+> > OK, utterly untested, but how does this look?
 > 
-> I guess this kind of nesting would work too - assuming the cr2 can 
-> be written to robustly.
+>  arch/x86/include/asm/kmap_types.h |   11 +-
+>  arch/x86/include/asm/pgtable_32.h |   15 +++
+>  arch/x86/mm/highmem_32.c          |  148 ++++++++++++++++++++++++++++++++++++--
+>  include/linux/highmem.h           |   12 ---
+>  mm/highmem.c                      |   45 -----------
+>  5 files changed, 164 insertions(+), 67 deletions(-)
 > 
-> And i suspect CPU makers pull off a few tricks to stage the cr2 info 
-> away from the page fault entry execution asynchronously, so i'd not 
-> be surprised if writing to it uncovered unknown-so-far side-effects 
-> in CPU implementations.
-> 
+> Did
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/kmap_types-make-most-arches-use-generic-header-file.patch
+> just die a horrid death?
 
-I wouldn't actually expect that, *as long as* there is serialization
-between the cr2 write and the cr2 read.
-
-	-hpa
+hehe, yep, but I can fix that up..
 
