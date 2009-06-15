@@ -1,116 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbZFODTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbZFODTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757234AbZFODTW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 23:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZFODPH
+	id S1757358AbZFODTf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 23:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZFODPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 23:15:07 -0400
+	Sun, 14 Jun 2009 23:15:15 -0400
 Received: from mga03.intel.com ([143.182.124.21]:42714 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbZFODPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 23:15:01 -0400
+	id S1753578AbZFODPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 23:15:04 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
-   d="scan'208";a="154267359"
-Message-Id: <20090615031253.003740564@intel.com>
+   d="scan'208";a="154267405"
+Message-Id: <20090615031254.740121710@intel.com>
 References: <20090615024520.786814520@intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 15 Jun 2009 10:45:25 +0800
+Date: Mon, 15 Jun 2009 10:45:37 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
 cc: Ingo Molnar <mingo@elte.hu>
 cc: Mel Gorman <mel@csn.ul.ie>
-cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 05/22] HWPOISON: Add basic support for poisoned pages in fault handler v3
-Content-Disposition: inline; filename=vm-fault-poison
+Subject: [PATCH 17/22] HWPOISON: introduce struct hwpoison_control
+Content-Disposition: inline; filename=hwpoison-control.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
+Code cleanups to allow passing around more parameters and states.
 
-- Add a new VM_FAULT_HWPOISON error code to handle_mm_fault. Right now
-architectures have to explicitely enable poison page support, so
-this is forward compatible to all architectures. They only need
-to add it when they enable poison page support.
-- Add poison page handling in swap in fault code
-
-v2: Add missing delayacct_clear_flag (Hidehiro Kawai)
-v3: Really use delayacct_clear_flag (Hidehiro Kawai)
-
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- include/linux/mm.h |    3 ++-
- mm/memory.c        |   18 +++++++++++++++---
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ mm/memory-failure.c |   94 ++++++++++++++++++++++++------------------
+ 1 file changed, 54 insertions(+), 40 deletions(-)
 
---- sound-2.6.orig/mm/memory.c
-+++ sound-2.6/mm/memory.c
-@@ -1315,7 +1315,8 @@ int __get_user_pages(struct task_struct 
- 				if (ret & VM_FAULT_ERROR) {
- 					if (ret & VM_FAULT_OOM)
- 						return i ? i : -ENOMEM;
--					else if (ret & VM_FAULT_SIGBUS)
-+					if (ret &
-+					    (VM_FAULT_HWPOISON|VM_FAULT_SIGBUS))
- 						return i ? i : -EFAULT;
- 					BUG();
- 				}
-@@ -2595,8 +2596,15 @@ static int do_swap_page(struct mm_struct
- 		goto out;
+--- sound-2.6.orig/mm/memory-failure.c
++++ sound-2.6/mm/memory-failure.c
+@@ -298,26 +298,32 @@ static void collect_procs(struct page *p
+  * Error handlers for various types of pages.
+  */
  
- 	entry = pte_to_swp_entry(orig_pte);
--	if (is_migration_entry(entry)) {
--		migration_entry_wait(mm, pmd, address);
-+	if (unlikely(non_swap_entry(entry))) {
-+		if (is_migration_entry(entry)) {
-+			migration_entry_wait(mm, pmd, address);
-+		} else if (is_hwpoison_entry(entry)) {
-+			ret = VM_FAULT_HWPOISON;
-+		} else {
-+			print_bad_pte(vma, address, pte, NULL);
-+			ret = VM_FAULT_OOM;
-+		}
- 		goto out;
- 	}
- 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
-@@ -2620,6 +2628,10 @@ static int do_swap_page(struct mm_struct
- 		/* Had to read the page from swap area: Major fault */
- 		ret = VM_FAULT_MAJOR;
- 		count_vm_event(PGMAJFAULT);
-+	} else if (PageHWPoison(page)) {
-+		ret = VM_FAULT_HWPOISON;
-+		delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-+		goto out;
- 	}
+-enum outcome {
++enum hwpoison_outcome {
+ 	FAILED,		/* Error handling failed */
+ 	DELAYED,	/* Will be handled later */
+ 	IGNORED,	/* Error safely ignored */
+ 	RECOVERED,	/* Successfully recovered */
+ };
  
- 	lock_page(page);
---- sound-2.6.orig/include/linux/mm.h
-+++ sound-2.6/include/linux/mm.h
-@@ -700,11 +700,12 @@ static inline int page_mapped(struct pag
- #define VM_FAULT_SIGBUS	0x0002
- #define VM_FAULT_MAJOR	0x0004
- #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
-+#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
+-static const char *action_name[] = {
++static const char *hwpoison_outcome_name[] = {
+ 	[FAILED] = "Failed",
+ 	[DELAYED] = "Delayed",
+ 	[IGNORED] = "Ignored",
+ 	[RECOVERED] = "Recovered",
+ };
  
- #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page */
- #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
- 
--#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS)
-+#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_HWPOISON)
++struct hwpoison_control {
++	unsigned long pfn;
++	struct page *page;
++	int outcome;
++};
++
+ /*
+  * Error hit kernel page.
+  * Do nothing, try to be lucky and not touch this instead. For a few cases we
+  * could be more sophisticated.
+  */
+-static int me_kernel(struct page *p, unsigned long pfn)
++static int me_kernel(struct hwpoison_control *hpc)
+ {
+ 	return DELAYED;
+ }
+@@ -325,7 +331,7 @@ static int me_kernel(struct page *p, uns
+ /*
+  * Already poisoned page.
+  */
+-static int me_ignore(struct page *p, unsigned long pfn)
++static int me_ignore(struct hwpoison_control *hpc)
+ {
+ 	return IGNORED;
+ }
+@@ -333,16 +339,16 @@ static int me_ignore(struct page *p, uns
+ /*
+  * Page in unknown state. Do nothing.
+  */
+-static int me_unknown(struct page *p, unsigned long pfn)
++static int me_unknown(struct hwpoison_control *hpc)
+ {
+-	printk(KERN_ERR "MCE %#lx: Unknown page state\n", pfn);
++	printk(KERN_ERR "MCE %#lx: Unknown page state\n", hpc->pfn);
+ 	return FAILED;
+ }
  
  /*
-  * Can be called by the pagefault handler when it gets a VM_FAULT_OOM.
+  * Free memory
+  */
+-static int me_free(struct page *p, unsigned long pfn)
++static int me_free(struct hwpoison_control *hpc)
+ {
+ 	return DELAYED;
+ }
+@@ -350,9 +356,10 @@ static int me_free(struct page *p, unsig
+ /*
+  * Clean (or cleaned) page cache page.
+  */
+-static int me_pagecache_clean(struct page *p, unsigned long pfn)
++static int me_pagecache_clean(struct hwpoison_control *hpc)
+ {
+ 	struct address_space *mapping;
++	struct page *p = hpc->page;
+ 
+ 	if (!isolate_lru_page(p))
+ 		page_cache_release(p);
+@@ -372,14 +379,14 @@ static int me_pagecache_clean(struct pag
+ 	    !invalidate_complete_page(mapping, p)) {
+ 		printk(KERN_ERR
+ 		       "MCE %#lx: failed to invalidate metadata page\n",
+-			pfn);
++			hpc->pfn);
+ 		return FAILED;
+ 	}
+ 
+ 	truncate_inode_page(mapping, p);
+ 	if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO)) {
+ 		pr_debug(KERN_ERR "MCE %#lx: failed to release buffers\n",
+-			 pfn);
++			 hpc->pfn);
+ 		return FAILED;
+ 	}
+ 	return RECOVERED;
+@@ -390,11 +397,11 @@ static int me_pagecache_clean(struct pag
+  * Issues: when the error hit a hole page the error is not properly
+  * propagated.
+  */
+-static int me_pagecache_dirty(struct page *p, unsigned long pfn)
++static int me_pagecache_dirty(struct hwpoison_control *hpc)
+ {
+-	struct address_space *mapping = page_mapping(p);
++	struct address_space *mapping = page_mapping(hpc->page);
+ 
+-	SetPageError(p);
++	SetPageError(hpc->page);
+ 	/* TBD: print more information about the file. */
+ 	if (mapping) {
+ 		/*
+@@ -434,7 +441,7 @@ static int me_pagecache_dirty(struct pag
+ 		mapping_set_error(mapping, EIO);
+ 	}
+ 
+-	return me_pagecache_clean(p, pfn);
++	return me_pagecache_clean(hpc);
+ }
+ 
+ /*
+@@ -456,8 +463,10 @@ static int me_pagecache_dirty(struct pag
+  * Clean swap cache pages can be directly isolated. A later page fault will
+  * bring in the known good data from disk.
+  */
+-static int me_swapcache_dirty(struct page *p, unsigned long pfn)
++static int me_swapcache_dirty(struct hwpoison_control *hpc)
+ {
++	struct page *p = hpc->page;
++
+ 	ClearPageDirty(p);
+ 	/* Trigger EIO in shmem: */
+ 	ClearPageUptodate(p);
+@@ -468,8 +477,10 @@ static int me_swapcache_dirty(struct pag
+ 	return DELAYED;
+ }
+ 
+-static int me_swapcache_clean(struct page *p, unsigned long pfn)
++static int me_swapcache_clean(struct hwpoison_control *hpc)
+ {
++	struct page *p = hpc->page;
++
+ 	if (!isolate_lru_page(p))
+ 		page_cache_release(p);
+ 
+@@ -489,7 +500,7 @@ static int me_swapcache_clean(struct pag
+  * Should handle free huge pages and dequeue them too, but this needs to
+  * handle huge page accounting correctly.
+  */
+-static int me_huge_page(struct page *p, unsigned long pfn)
++static int me_huge_page(struct hwpoison_control *hpc)
+ {
+ 	return FAILED;
+ }
+@@ -525,7 +536,7 @@ static struct page_state {
+ 	unsigned long mask;
+ 	unsigned long res;
+ 	char *msg;
+-	int (*action)(struct page *p, unsigned long pfn);
++	int (*action)(struct hwpoison_control *hpc);
+ } error_states[] = {
+ 	{ reserved,	reserved,	"reserved kernel",	me_ignore },
+ 	{ buddy,	buddy,		"free kernel",	me_free },
+@@ -567,24 +578,22 @@ static struct page_state {
+ 	{ 0,		0,		"unknown page state",	me_unknown },
+ };
+ 
+-static void action_result(unsigned long pfn, char *msg, int result)
++static void action_result(struct hwpoison_control *hpc, char *msg, int result)
+ {
++	hpc->outcome = result;
+ 	printk(KERN_ERR "MCE %#lx: %s%s page recovery: %s\n",
+-		pfn, PageDirty(pfn_to_page(pfn)) ? "dirty " : "",
+-		msg, action_name[result]);
++		hpc->pfn, PageDirty(hpc->page) ? "dirty " : "",
++		msg, hwpoison_outcome_name[result]);
+ }
+ 
+-static void page_action(struct page_state *ps, struct page *p,
+-			unsigned long pfn)
++static void page_action(struct page_state *ps, struct hwpoison_control *hpc)
+ {
+-	int result;
++	action_result(hpc, ps->msg, ps->action(hpc));
+ 
+-	result = ps->action(p, pfn);
+-	action_result(pfn, ps->msg, result);
+-	if (page_count(p) != 1)
++	if (page_count(hpc->page) != 1)
+ 		printk(KERN_ERR
+ 		       "MCE %#lx: %s page still referenced by %d users\n",
+-		       pfn, ps->msg, page_count(p) - 1);
++		       hpc->pfn, ps->msg, page_count(hpc->page) - 1);
+ 
+ 	/* Could do more checks here if page looks ok */
+ 	atomic_long_add(1, &mce_bad_pages);
+@@ -600,12 +609,12 @@ static void page_action(struct page_stat
+  * Do all that is necessary to remove user space mappings. Unmap
+  * the pages and send SIGBUS to the processes if the data was dirty.
+  */
+-static void hwpoison_user_mappings(struct page *p, unsigned long pfn,
+-				  int trapno)
++static void hwpoison_user_mappings(struct hwpoison_control *hpc, int trapno)
+ {
+ 	enum ttu_flags ttu = TTU_UNMAP | TTU_IGNORE_MLOCK | TTU_IGNORE_ACCESS;
+ 	int kill = sysctl_memory_failure_early_kill;
+ 	struct address_space *mapping;
++	struct page *p = hpc->page;
+ 	LIST_HEAD(tokill);
+ 	int ret;
+ 	int i;
+@@ -625,7 +634,8 @@ static void hwpoison_user_mappings(struc
+ 
+ 	if (PageSwapCache(p)) {
+ 		printk(KERN_ERR
+-		       "MCE %#lx: keeping poisoned page in swap cache\n", pfn);
++		       "MCE %#lx: keeping poisoned page in swap cache\n",
++		       hpc->pfn);
+ 		ttu |= TTU_IGNORE_HWPOISON;
+ 	}
+ 
+@@ -642,7 +652,7 @@ static void hwpoison_user_mappings(struc
+ 			ttu |= TTU_IGNORE_HWPOISON;
+ 			printk(KERN_INFO
+ 	"MCE %#lx: corrupted page was clean: dropped without side effects\n",
+-				pfn);
++				hpc->pfn);
+ 		}
+ 	}
+ 
+@@ -670,12 +680,13 @@ static void hwpoison_user_mappings(struc
+ 		ret = try_to_unmap(p, ttu);
+ 		if (ret == SWAP_SUCCESS)
+ 			break;
+-		pr_debug("MCE %#lx: try_to_unmap retry needed %d\n", pfn,  ret);
++		pr_debug("MCE %#lx: try_to_unmap retry needed %d\n",
++			 hpc->pfn, ret);
+ 	}
+ 
+ 	if (ret != SWAP_SUCCESS)
+ 		printk(KERN_ERR "MCE %#lx: failed to unmap page (mapcount=%d)\n",
+-				pfn, page_mapcount(p));
++				hpc->pfn, page_mapcount(p));
+ 
+ 	/*
+ 	 * Now that the dirty bit has been propagated to the
+@@ -687,7 +698,7 @@ static void hwpoison_user_mappings(struc
+ 	 * any accesses to the poisoned memory.
+ 	 */
+ 	kill_procs_ao(&tokill, !!PageDirty(p), trapno,
+-		      ret != SWAP_SUCCESS, pfn);
++		      ret != SWAP_SUCCESS, hpc->pfn);
+ }
+ 
+ /**
+@@ -711,6 +722,7 @@ void memory_failure(unsigned long pfn, i
+ {
+ 	struct page_state *ps;
+ 	struct page *p;
++	struct hwpoison_control hpc;
+ 
+ 	if (!pfn_valid(pfn)) {
+ 		printk(KERN_ERR
+@@ -720,8 +732,10 @@ void memory_failure(unsigned long pfn, i
+ 	}
+ 
+ 	p = pfn_to_page(pfn);
++	hpc.pfn = pfn;
++	hpc.page = p;
+ 	if (TestSetPageHWPoison(p)) {
+-		action_result(pfn, "already hardware poisoned", IGNORED);
++		action_result(&hpc, "already hardware poisoned", IGNORED);
+ 		return;
+ 	}
+ 
+@@ -737,7 +751,7 @@ void memory_failure(unsigned long pfn, i
+ 	 * that may make page_freeze_refs()/page_unfreeze_refs() mismatch.
+ 	 */
+ 	if (!get_page_unless_zero(compound_head(p))) {
+-		action_result(pfn, "free or high order kernel", IGNORED);
++		action_result(&hpc, "free or high order kernel", IGNORED);
+ 		return;
+ 	}
+ 
+@@ -752,19 +766,19 @@ void memory_failure(unsigned long pfn, i
+ 	/*
+ 	 * Now take care of user space mappings.
+ 	 */
+-	hwpoison_user_mappings(p, pfn, trapno);
++	hwpoison_user_mappings(&hpc, trapno);
+ 
+ 	/*
+ 	 * Torn down by someone else?
+ 	 */
+ 	if (PageLRU(p) && !PageSwapCache(p) && p->mapping == NULL) {
+-		action_result(pfn, "already truncated LRU", IGNORED);
++		action_result(&hpc, "already truncated LRU", IGNORED);
+ 		goto out;
+ 	}
+ 
+ 	for (ps = error_states;; ps++) {
+ 		if ((p->flags & ps->mask) == ps->res) {
+-			page_action(ps, p, pfn);
++			page_action(ps, &hpc);
+ 			break;
+ 		}
+ 	}
 
 -- 
 
