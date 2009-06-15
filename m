@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZFOP4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbZFOP5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbZFOP4h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbZFOP43
+	id S1762616AbZFOP5M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762883AbZFOP44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:56:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34955 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754336AbZFOP42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:56:28 -0400
-Date: Mon, 15 Jun 2009 17:56:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/7] [GIT PULL] updates for 2.6.31
-Message-ID: <20090615155624.GB19529@elte.hu>
-References: <20090615154226.058101204@goodmis.org>
+	Mon, 15 Jun 2009 11:56:56 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:23905 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753553AbZFOP44 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:56:56 -0400
+Message-ID: <4A366E67.4040300@oracle.com>
+Date: Mon, 15 Jun 2009 08:53:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615154226.058101204@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Thomas Meyer <thomas@m3y3r.de>
+CC: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: How to unset CONFIG_SERIO_I8042 on x86?
+References: <1244915236.3288.7.camel@localhost.localdomain>
+In-Reply-To: <1244915236.3288.7.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt002.oracle.com [141.146.116.11]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4A366F32.028C:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas Meyer wrote:
+> Is it possible? Does it make sense?
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Enabled CONFIG_EMBEDDED, then disable KEYBOARD_ATKBD and
+disable MOUSE_PS2, then you can disable SERIO_I8042.
 
-> Hi Ingo,
-> 
-> This patch series are fixes that should get into 2.6.31 (maybe some of
-> them even into stable?).
-> 
-> Please pull the latest tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tracing/ftrace
-> 
-> 
-> Li Zefan (4):
->       tracing: fix a typo in tracing_cpumask_write()
->       tracing: replace a GFP_ATOMIC with GFP_KERNEL allocation
->       tracing/filters: operand can be negative
->       tracing/filters: strloc should be unsigned short
-> 
-> Rusty Russell (1):
->       cpumask: use new operators in kernel/trace
-> 
-> Steven Rostedt (1):
->       ring-buffer: prevent adding write in discarded area
-> 
-> Wu Zhangjin (1):
->       tracing: fix undeclared 'PAGE_SIZE' in include/linux/trace_seq.h
-> 
-> ----
->  include/linux/trace_seq.h          |    2 +
->  kernel/trace/kmemtrace.c           |    2 +-
->  kernel/trace/ring_buffer.c         |   72 +++++++++++++++++++++++++++++-------
->  kernel/trace/trace.c               |    8 ++--
->  kernel/trace/trace_events_filter.c |    9 +++-
->  5 files changed, 72 insertions(+), 21 deletions(-)
 
-Pulled into tracing/urgent - thanks Steve!
+Is the Macbook all USB for input devices?
 
-	Ingo
+
+> I always get this message at boot up on my macbook pro:
+> 
+> [    0.929828] PNP: No PS/2 controller found. Probing ports directly.
+> [    0.930761] i8042.c: No controller found.
+> [    0.931038] mice: PS/2 mouse device common for all mice
+> 
+> Or please make these messages warnings only, so I don't see them with
+> kernel option quiet.
+
+
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
