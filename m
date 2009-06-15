@@ -1,135 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbZFORLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764502AbZFORMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764208AbZFORLT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763653AbZFORK7
+	id S1764502AbZFORMX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763745AbZFORMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:10:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41772 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764136AbZFORK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:10:58 -0400
-Date: Mon, 15 Jun 2009 19:10:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] WARN(): add a \n to the message printk
-Message-ID: <20090615171044.GC25760@elte.hu>
-References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain> <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
+	Mon, 15 Jun 2009 13:12:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40238 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762776AbZFORMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 13:12:14 -0400
+Date: Mon, 15 Jun 2009 10:11:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
+       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       mingo@elte.hu
+cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
+ to use NMI-safe methods
+In-Reply-To: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org>
+Message-ID: <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain>
+References: <new-submission> <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> On Mon, 15 Jun 2009, Linus Torvalds wrote:
-> > 
-> > On Mon, 15 Jun 2009, Arjan van de Ven wrote:
-> > >  
-> > > -	if (args)
-> > > +	if (args) {
-> > >  		vprintk(args->fmt, args->args);
-> > > +		printk("\n");
-> > > +	}
-> > 
-> > I really don't like this. What if the format already does have a '\n'? And 
-> > what if some other CPU is printing at the same time?
-> > 
-> > I'd almost be open to adding a "flags" field to vprintk, and allow setting 
-> > things like "finish line with \n" there. Or perhaps even better, have a 
-> > "vprintk_line()" function that does it with no dynamic flags. Maybe make 
-> > it static, and move all these panic helper funtions into kernel/printk.c 
-> > (since this really is a special case).	
-> > 
-> > I dunno. I'm just throwing out suggestions. I just don't think the above 
-> > patch is very nice.
+On Mon, 15 Jun 2009, tip-bot for Peter Zijlstra wrote:
 > 
-> Oh, I actually think I have a preference.
-> 
-> I think we should _always_ cause a line break at the beginning of a new 
-> line, unless the new printk() starts with a KERN_CONT thing.
-> 
-> Right now KERN_CONT is "", but we could easily make it an explicit 
-> "loglevel" thing. Like this.
-> 
-> NOTE! This is, of course, totally untested. And we're bound to have 
-> continuation printk's that don't have the KERN_CONT at front, and need 
-> them added, but I think this is generally a saner model than what we have 
-> now, or your suggested explicit addition of '\n'.
-> 
-> Basically, it tries to guarantee that new messages always get a newline, 
-> unless they _explicitly_ say that they don't want one. Doesn't that make 
-> sense?
-> 
-> 		Linus
-> 
-> ---
->  include/linux/kernel.h |    2 +-
->  kernel/printk.c        |   16 +++++++++++++++-
->  2 files changed, 16 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index 883cd44..066bb1e 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -102,7 +102,7 @@ extern const char linux_proc_banner[];
->   * line that had no enclosing \n). Only to be used by core/arch code
->   * during early bootup (a continued line is not SMP-safe otherwise).
->   */
-> -#define	KERN_CONT	""
-> +#define	KERN_CONT	"<c>"
->  
->  extern int console_printk[];
->  
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index 5052b54..6f416fd 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -691,7 +691,21 @@ asmlinkage int vprintk(const char *fmt, va_list args)
->  	 * Copy the output into log_buf.  If the caller didn't provide
->  	 * appropriate log level tags, we insert them here
->  	 */
-> -	for (p = printk_buf; *p; p++) {
-> +	p = printk_buf;
-> +
-> +	/* Are we continuing a previous printk? */
-> +	if (!new_text_line) {
-> +		if (!memcmp(p, KERN_CONT, 3)) {
-> +			/* We intended to do that continued printk! */
-> +			p += 3;
-> +		} else {
-> +			/* Force a line break */
-> +			emit_log_char('\n');
-> +			new_text_line = 1;
-> +		}
-> +	}
-> +
+> __copy_from_user_inatomic() isn't NMI safe in that it can trigger
+> the page fault handler which is another trap and its return path
+> invokes IRET which will also close the NMI context.
 
-Nice idea ...
+That's not the only problem.
 
-Puts some pressure on current intentionally 'naked' printks (there's 
-still a few of them) - but that's OK, it's not like KERN_CONT (or 
-pr_cont()) is that hard to add.
+An even more fundamental problem is that the page fault handler is not 
+re-entrant because of simple the value in %cr2. So regardless of any 
+'iret' issues, you *CANNOT* take a page fault in an NMI, because the NMI 
+might happen while we're in the critical region of having taken another 
+page fault, but before we've saved off the value of %cr2 in that old page 
+fault.
 
-( Plus many of our boot printks (where most of the 'naked' printks 
-  are currently occuring) are development leftovers and should 
-  really be removed, so it's good to shake them up a bit. )
+If the NMI handler causes a page fault, it will corrupt the %cr2 of the 
+outer page fault. That's why the page fault is done with an interrupt 
+gate, and why we have that conditional local_irq_enable() in it.
 
-	Ingo
+So page faults are fundamentally only safe wrt normal interrupts, not NMI.
+
+		Linus
