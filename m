@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZFOL2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbZFOLeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753742AbZFOL2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 07:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZFOL20
+	id S1754478AbZFOLeO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 07:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZFOLd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 07:28:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:59440 "EHLO mx1.suse.de"
+	Mon, 15 Jun 2009 07:33:59 -0400
+Received: from mga01.intel.com ([192.55.52.88]:32909 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbZFOL20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 07:28:26 -0400
-Date: Mon, 15 Jun 2009 13:28:28 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       yinghai@kernel.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-Message-ID: <20090615112827.GC6012@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI> <20090615081831.GA5411@osiris.boeblingen.de.ibm.com> <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop> <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop> <20090615112205.GA6012@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615112205.GA6012@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	id S1750908AbZFOLd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 07:33:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,222,1243839600"; 
+   d="scan'208";a="466411892"
+Date: Mon, 15 Jun 2009 19:29:19 +0800
+From: Alek Du <alek.du@intel.com>
+To: Ben Dooks <ben-linux@fluff.org>
+CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
+ gpio_alt_func features to GPIOLIB
+Message-ID: <20090615192919.2cc506a0@dxy.sh.intel.com>
+In-Reply-To: <20090615095023.GA19873@fluff.org.uk>
+References: <20090615171502.2a981bf5@dxy.sh.intel.com>
+	<20090615095023.GA19873@fluff.org.uk>
+Organization: Intel Corp.
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 01:22:05PM +0200, Nick Piggin wrote:
-> On Mon, Jun 15, 2009 at 08:39:48PM +1000, Benjamin Herrenschmidt wrote:
-> But I won't live with having it shit in our nice core code...
-> Well, at least I won't throw up my hands and give up this
-> early.
+On Mon, 15 Jun 2009 17:50:23 +0800
+Ben Dooks <ben-linux@fluff.org> wrote:
 
-Just the principle, btw. The cost of this one load and
-branch (when moved out to the slowpath -- in the fastpath
-then adding a single cycle is like a 1% slowdown you know)
-is not prohibitive, but it's a slipperly slope.
+> > +enum gpio_trigger_t {
+> > +	DETECT_LEVEL_LOW = -2,
+> > +	DETECT_EDGE_FALLING = -1,
+> > +	DETECT_DISABLE = 0,
+> > +	DETECT_EDGE_RISING = 1,
+> > +	DETECT_LEVEL_HIGH = 2,
+> > +	DETECT_EDGE_BOTH = 3,
+> > +};
+> 
+> wny not reuse the IRQ trigger types?
+> 
 
-If a couple of specialised early boot code places have
-to test slab_is_available() to prevent crap leaking into
-our main allocators, then that's quite fine by me.
+Don't know it this is a good reason: the IRQ trigger name IRQ_TYPE_*
+seems not good as DETECT_*. Since not all GPIO device would have IRQ line
+connected to interrupt controller -- some of them just set a trigger bit
+when detection happens.
 
+Thanks,
+Alek
