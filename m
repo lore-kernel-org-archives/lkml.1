@@ -1,142 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765948AbZFOUNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933683AbZFOUOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765948AbZFOUNH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 16:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZFOUMv
+	id S933683AbZFOUOw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 16:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbZFOUOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 16:12:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34198 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754474AbZFOUMu (ORCPT
+	Mon, 15 Jun 2009 16:14:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58202 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755215AbZFOUOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 16:12:50 -0400
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, greg@kroah.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       tshibata@ab.jp.nec.com, "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [RFC] Documentation: add documentation for rc-series and merge window
-Date: Mon, 15 Jun 2009 16:12:51 -0400
-Message-Id: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com>
-X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
+	Mon, 15 Jun 2009 16:14:44 -0400
+Message-ID: <4A36AAC4.9040305@zytor.com>
+Date: Mon, 15 Jun 2009 13:10:44 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
+       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain	support
+ to use NMI-safe methods
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <alpine.LFD.2.01.0906151125320.6276@localhost.localdomain> <20090615183649.GA16999@elte.hu> <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain> <20090615194344.GA12554@elte.hu> <20090615200619.GA10632@Krystal>
+In-Reply-To: <20090615200619.GA10632@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is losely based on previous discussions on linux-kernel [1][2].
+Mathieu Desnoyers wrote:
+> 
+> In the category "crazy ideas one should never express out loud", I could add the
+> following. We could choose to save/restore the cr2 register on the local stack
+> at every interrupt entry/exit, and therefore allow the page fault handler to
+> execute with interrupts enabled.
+> 
+> I have not benchmarked the interrupt disabling overhead of the page fault
+> handler handled by starting an interrupt-gated handler rather than trap-gated 
+> handler, but cli/sti instructions are known to take quite a few cycles on some
+> architectures. e.g. 131 cycles for the pair on P4, 23 cycles on AMD Athlon X2
+> 64, 43 cycles on Intel Core2.
+> 
+> I am tempted to think that taking, say, ~10 cycles on the interrupt path worths
+> it if we save a few tens of cycles on the page fault handler fast path.
+> 
 
-[1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
-[2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
+Doesn't sound all that crazy, I suspect the underlying assumption that
+interrupt gates are slower than trap gates is incorrect.  Disabling
+interrupts itself isn't expensive, it's the synchronization requirements.
 
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
----
-
-I have run into issues when trying to explain this and policies
-for the rc-series, it seems there is no place that documents this
-clearly so here is an attempt based on some previous discussions.
-Not sure if I got it all correct, so feedback is welcomed. I do think
-clarifying this a little should help.
-
-I was also not sure if Documentation/stable_kernel_rules.txt is the best
-splace for this as well, please let me know.
-
-As a side note I'll say that I have noticed that it seems some companies
-like to target getting stuff in by certain kernel releases, and for that
-I think what may help is a heads up for when it seems each subsystem's
-merge window will be closing up by.
-
-I also realize the difficulty in trying to target certain schedules for a
-kernel release but when that release date becomes clearer it would be nicer
-to further communicate that accross the lists. Not sure if anything better
-can be done today other than maybe highlighting more clearer on each rc release
-where it seems we are. I myself try to track this on a google calendar and
-it seems others do too [1]. One way or another as we get closer to a release
-I think it would still be nicer to get more feedback to better predict this.
-
-[1] http://lwn.net/Articles/253955/
-
- Documentation/stable_kernel_rules.txt |   69 +++++++++++++++++++++++++++++++++
- 1 files changed, 69 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/stable_kernel_rules.txt b/Documentation/stable_kernel_rules.txt
-index a452227..494baa5 100644
---- a/Documentation/stable_kernel_rules.txt
-+++ b/Documentation/stable_kernel_rules.txt
-@@ -1,5 +1,74 @@
- Everything you ever wanted to know about Linux 2.6 -stable releases.
- 
-+Stable kernel releases
-+----------------------
-+
-+Stable kernels are released when they are ready. This means there is no
-+strict guidelines for sticking to specific dates for a kernel release.
-+
-+Merge window
-+------------
-+
-+The merge window opens up after the next stable kernel is released.
-+The merge window is when maintainers of different subsystem send pull
-+requests to Linus for code they have been queuing up for the next
-+stable kernel. This is typically now done through respective
-+foo-next-2.6.git trees where foo is your subsystem. Each maintainer
-+queues up patches for the next kernel cycle in this foo-next-2.6.git
-+tree. After the merge window the kernel is worked on through the
-+rc-series of the kernel release.
-+
-+After a maintainer has sent his pull request to Linus during the merge
-+window no further new development will be accepted for that tree and
-+as such it marks the closure of development for that subsystem for that
-+kernel cycle. Developers wishing to target deadlines should simply work
-+on their development without regards or consideration for inclusion to
-+a specific kernel release. Once development is done it should simply be
-+posted. If you insist on targetting a kernel release for deadlines you can
-+try to be aware of the current rc cycle development and how soon it seems
-+the next stable kernel relase will be made. When Linus notes the last rc
-+cycle released may be the last -- that is a good sign you should already
-+have all your development done and merged in the respective development
-+tree. If your code is not ready and merged into the respective maintainers
-+tree prior to the announced last potential rc kernel release chances are
-+you missed getting your code in for the next kernel merge window.
-+Excemptions here are new drivers, covered below.
-+
-+rc-series rules
-+---------------
-+
-+Rules on what kind of patches are accepted after the merge window closes.
-+These are patches targetted for the kernel rc-series of a kernel prior
-+to its release.
-+
-+ - it must fix a reported regression
-+ - if must fix a reported security hole
-+ - if must fix a reported oops/kernel hang
-+
-+This means any small-non-fix code changes, although they mix fix an issue,
-+will not be accepted. If the patch in question is for a driver that has been
-+around for more than a kernel release, then "small fixes" really can't be
-+worth all that much. And "small fixes" may be small and "obvious" they
-+definitely can regress.
-+
-+rc-series new driver excemption rule
-+------------------------------------
-+
-+The very first release a new driver (or filesystem) is special. New drivers
-+are accepted during the rc series. Patches for the same driver then are
-+also accepted uring the same rc series of a kernel as well as fixes as it
-+cannot regress as no previous kernels exists with it.
-+
-+Once drivers are upstream for one kernel release (say on 2.6.29) the target
-+*goal* after the merge window of the next kernel (respectively this would be
-+the 2.6.30 rc-series) is to address address regressions. Kernel oops/hangs
-+and security issues are obviously accepted but the point is these should have
-+also been caught earlier as a general development goal. The rc-series focus
-+should really be to address regressions.
-+
-+Stable kernel rules
-+-------------------
-+
- Rules on what kind of patches are accepted, and which ones are not, into the
- "-stable" tree:
- 
--- 
-1.6.2.2.446.gfbdc0
+	-hpa
 
