@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933685AbZFOTWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933588AbZFOTYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933685AbZFOTWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765136AbZFOTWN
+	id S933588AbZFOTYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZFOTYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:22:13 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43094 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759888AbZFOTWL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:22:11 -0400
-Message-ID: <4A369E74.9060600@zytor.com>
-Date: Mon, 15 Jun 2009 12:18:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, paulus@samba.org,
-       acme@redhat.com, linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
-       vegard.nossum@gmail.com, efault@gmx.de, jeremy@goop.org,
-       npiggin@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
- to use NMI-safe methods
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org>	 <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain>	 <20090615171845.GA7664@elte.hu>	 <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain>	 <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal>	 <1245091917.6741.185.camel@laptop>  <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop> <4A369E00.2090408@redhat.com>
-In-Reply-To: <4A369E00.2090408@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 15:24:13 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:42332 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672AbZFOTYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 15:24:12 -0400
+Date: Mon, 15 Jun 2009 21:24:09 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmc_spi: fail gracefully if host or card do not support
+ the switch command
+Message-ID: <20090615212409.14e7a51b@mjolnir.ossman.eu>
+In-Reply-To: <200906151036.05884.wolfgang.mues@auerswald.de>
+References: <200906111713.27504.wolfgang.mues@auerswald.de>
+	<20090613130829.49216355@mjolnir.ossman.eu>
+	<200906151036.05884.wolfgang.mues@auerswald.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-29012-1245093853-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> On 06/15/2009 10:02 PM, Peter Zijlstra wrote:
->> Ah, well, I have no idea who expensive cr2 is, if its like a regular
->> register then it should be fine. If however its tons more expensive then
->> we should really avoid it.
-> 
-> IIRC it's pretty cheap, I measured it once when tuning the kvm context 
-> switch code.  I don't recall the exact numbers.
-> 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Sounds like a win to me.
+--=_freyr.ossman.eu-29012-1245093853-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-	-hpa
+On Mon, 15 Jun 2009 10:36:05 +0200
+Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
 
+> Am Samstag, 13. Juni 2009 schrieb Pierre Ossman:
+> > For SD there are several checks=20
+> > before the switch command is actually issued.
+>=20
+> But there are two cases not covered by these checks:
+>=20
+> a) the switch command is supported, but the card is not capable of switch=
+ing=20
+> to 50 MHz.
+>=20
+
+But a successful switch command (even if the response is that the card
+cannot do it) should not need the checks you added. The switch data
+structure is checked further down.
+
+> b) the card rejects the switch command in SPI mode, because it is not=20
+> mandatory here.
+
+I cannot see anything in the spec backing up this claim.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-29012-1245093853-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAko2n9wACgkQ7b8eESbyJLhp9ACg6Fw/TCGQS2wA0qZYHGrYAUHA
+E/UAn02FvIPUnzV3WjJDOUYESBj7akgy
+=uBxw
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-29012-1245093853-0001-2--
