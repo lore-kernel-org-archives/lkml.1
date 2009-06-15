@@ -1,96 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbZFOHBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbZFOHB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752658AbZFOHBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZFOHBB
+	id S1756499AbZFOHB3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZFOHBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:01:01 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46312 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbZFOHBA (ORCPT
+	Mon, 15 Jun 2009 03:01:10 -0400
+Received: from mail-fx0-f206.google.com ([209.85.220.206]:51842 "EHLO
+	mail-fx0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754801AbZFOHBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:01:00 -0400
-Date: Mon, 15 Jun 2009 09:09:14 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
-Message-ID: <20090615070914.GC31969@one.firstfloor.org>
-References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de>
-Mime-Version: 1.0
+	Mon, 15 Jun 2009 03:01:09 -0400
+X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 03:01:08 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=tj7At95arrMM0XwJ7V696Sc28yb1RPOimqQK7dnhC583bi4ynuUZICJvazG7AKayzh
+         /JEyMW6BVduZ0gz9x+m9RdpxQXXUj0imP09M1jKKtYRPHxAAvGe8Zlnyv9ycrNmX/I5K
+         s2c3mmBiTOK6QtaXS18le8H4fGdsk1SxZg3rg=
+Date: Mon, 15 Jun 2009 06:53:33 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: Robert Olsson <robert.olsson@its.uu.se>, Yan Zheng <zheng.yan@oracle.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] Re: [BUG] fib_tries related Oops in 2.6.30
+Message-ID: <20090615065333.GA4378@ff.dom.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090615064447.GA18390@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090612072557.GA2761@ami.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 08:44:47AM +0200, Nick Piggin wrote:
-> > 
-> > So IMHO it's OK for .31 as long as we agree on the user interfaces,
-> > ie. /proc/sys/vm/memory_failure_early_kill and the hwpoison uevent.
-> > 
-> > It comes a long way through numerous reviews, and I believe all the
-> > important issues and concerns have been addressed. Nick, Rik, Hugh,
-> > Ingo, ... what are your opinions? Is the uevent good enough to meet
-> > your request to "die hard" or "die gracefully" or whatever on memory
-> > failure events?
+On 12-06-2009 09:25, Jarek Poplawski wrote:
+> Jarek Poplawski wrote, On 06/11/2009 04:39 PM:
 > 
-> Uevent? As in, send a message to userspace? I don't think this
-> would be ideal for a fail-stop/failover situation.
+>> Cc Robert Olsson.
+>>
+>> Jarek P.
+>>
+>> Yan Zheng wrote, On 06/10/2009 06:05 PM:
+>>
+>>> Hello,
+>>>
+>>> I pull linux-2.6.30 from linus-2.6 git tree. I got following oops
+>>> immediately after boot.
+>>>
+>>> # uname -a
+>>> Linux zhyan-cn 2.6.30 #1 SMP PREEMPT Wed Jun 10 23:37:22 CST 2009 i686
+>>> i686 i386 GNU/Linux
+>>>
+>>> ---
+>>> BUG: sleeping function called from invalid context at
+> ...
+> 
+> Robert, probably I miss something, but since I don't understand this
+> last patch with preempt_disable(), I've looked a bit at this place and
+> found this parent update after IMHO possible child destruction quite
+> suspicious, so I wonder if you could check if this patch could change
+> anything with previous oops. (It's mainly to test the idea, not to
+> optimally fix it.)
 
-Agreed.
+Since I'm not sure Robert is working on this, here is a patch which
+I guess should fix this issue more optimally. Alas, until it's tested
+by somebody, I can recommend it only for net-next.
 
-For failover you typically want a application level heartbeat anyways
-to guard against user space software problems and if there's a kill then it
-would catch it. Also again in you want to check against all corruptions you
-have to do it in the low level handler or better watch corrected
-events too to predict failures (but the later is quite hard to do generally). 
-To some extent the first is already implemented on x86, e.g. set
-the tolerance level to 0 will give more aggressive panics.
+Jarek P.
+------------------------->
+ipv4: Fix fib_trie rebalancing
 
-> I can't see a good reason to rush to merge it.
+While doing trie_rebalance(): resize(), inflate(), halve() RCU free
+tnodes before updating their parents. It depends on RCU delaying the
+real destruction, but if RCU readers start after call_rcu() and before
+parent update they could access freed memory.
 
-The low level x86 code for MCA recovery is in, just this high level
-part is missing to kill the correct process. I think it would be good to merge 
-a core now.  The basic code seems to be also as well tested as we can do it 
-right now and exposing it to more users would be good. It's undoubtedly not 
-perfect yet, but that's not a requirement for merge.
+It is currently prevented with preempt_disable() on the update side,
+but it's not safe, except maybe classic RCU, plus it conflicts with
+memory allocations with GFP_KERNEL flag used from these functions.
 
-There's a lot of fancy stuff that could be done in addition,
-but that's not really needed right now and for a lot of the fancy
-ideas (I have enough on my own :) it's dubious they are actually
-worth it.
+This patch explicitly delays freeing of tnodes by adding them to the
+list, which is flushed after the update is finished.
 
-> IMO the userspace-visible changes have maybe not been considered
-> too thoroughly, which is what I'd be most worried about. I probably
-> missed seeing documentation of exact semantics and situations
-> where admins should tune things one way or the other.
+Reported-by: Yan Zheng <zheng.yan@oracle.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+---
 
-There's only a single tunable anyways, early kill vs late kill.
+ net/ipv4/fib_trie.c |   47 +++++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 37 insertions(+), 10 deletions(-)
 
-For KVM you need early kill, for the others it remains to be seen.
-
-> I hope it is going to be merged with an easy-to-use fault injector,
-> because that is the only way Joe kernel developer is ever going to
-> test it.
-
-See patches 13 and 14. In addition there's another low level x86
-injector too.
-
-There's also a test suite available (mce-test on kernel.org git)
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
+index 538d2a9..d1a39b1 100644
+--- a/net/ipv4/fib_trie.c
++++ b/net/ipv4/fib_trie.c
+@@ -123,6 +123,7 @@ struct tnode {
+ 	union {
+ 		struct rcu_head rcu;
+ 		struct work_struct work;
++		struct tnode *tnode_free;
+ 	};
+ 	struct node *child[0];
+ };
+@@ -161,6 +162,8 @@ static void tnode_put_child_reorg(struct tnode *tn, int i, struct node *n,
+ static struct node *resize(struct trie *t, struct tnode *tn);
+ static struct tnode *inflate(struct trie *t, struct tnode *tn);
+ static struct tnode *halve(struct trie *t, struct tnode *tn);
++/* tnodes to free after resize(); protected by RTNL */
++static struct tnode *tnode_free_head;
+ 
+ static struct kmem_cache *fn_alias_kmem __read_mostly;
+ static struct kmem_cache *trie_leaf_kmem __read_mostly;
+@@ -385,6 +388,29 @@ static inline void tnode_free(struct tnode *tn)
+ 		call_rcu(&tn->rcu, __tnode_free_rcu);
+ }
+ 
++static void tnode_free_safe(struct tnode *tn)
++{
++	BUG_ON(IS_LEAF(tn));
++
++	if (node_parent((struct node *) tn)) {
++		tn->tnode_free = tnode_free_head;
++		tnode_free_head = tn;
++	} else {
++		tnode_free(tn);
++	}
++}
++
++static void tnode_free_flush(void)
++{
++	struct tnode *tn;
++
++	while ((tn = tnode_free_head)) {
++		tnode_free_head = tn->tnode_free;
++		tn->tnode_free = NULL;
++		tnode_free(tn);
++	}
++}
++
+ static struct leaf *leaf_new(void)
+ {
+ 	struct leaf *l = kmem_cache_alloc(trie_leaf_kmem, GFP_KERNEL);
+@@ -495,7 +521,7 @@ static struct node *resize(struct trie *t, struct tnode *tn)
+ 
+ 	/* No children */
+ 	if (tn->empty_children == tnode_child_length(tn)) {
+-		tnode_free(tn);
++		tnode_free_safe(tn);
+ 		return NULL;
+ 	}
+ 	/* One child */
+@@ -509,7 +535,7 @@ static struct node *resize(struct trie *t, struct tnode *tn)
+ 
+ 			/* compress one level */
+ 			node_set_parent(n, NULL);
+-			tnode_free(tn);
++			tnode_free_safe(tn);
+ 			return n;
+ 		}
+ 	/*
+@@ -670,7 +696,7 @@ static struct node *resize(struct trie *t, struct tnode *tn)
+ 			/* compress one level */
+ 
+ 			node_set_parent(n, NULL);
+-			tnode_free(tn);
++			tnode_free_safe(tn);
+ 			return n;
+ 		}
+ 
+@@ -756,7 +782,7 @@ static struct tnode *inflate(struct trie *t, struct tnode *tn)
+ 			put_child(t, tn, 2*i, inode->child[0]);
+ 			put_child(t, tn, 2*i+1, inode->child[1]);
+ 
+-			tnode_free(inode);
++			tnode_free_safe(inode);
+ 			continue;
+ 		}
+ 
+@@ -801,9 +827,9 @@ static struct tnode *inflate(struct trie *t, struct tnode *tn)
+ 		put_child(t, tn, 2*i, resize(t, left));
+ 		put_child(t, tn, 2*i+1, resize(t, right));
+ 
+-		tnode_free(inode);
++		tnode_free_safe(inode);
+ 	}
+-	tnode_free(oldtnode);
++	tnode_free_safe(oldtnode);
+ 	return tn;
+ nomem:
+ 	{
+@@ -885,7 +911,7 @@ static struct tnode *halve(struct trie *t, struct tnode *tn)
+ 		put_child(t, newBinNode, 1, right);
+ 		put_child(t, tn, i/2, resize(t, newBinNode));
+ 	}
+-	tnode_free(oldtnode);
++	tnode_free_safe(oldtnode);
+ 	return tn;
+ nomem:
+ 	{
+@@ -989,7 +1015,6 @@ static struct node *trie_rebalance(struct trie *t, struct tnode *tn)
+ 	t_key cindex, key;
+ 	struct tnode *tp;
+ 
+-	preempt_disable();
+ 	key = tn->key;
+ 
+ 	while (tn != NULL && (tp = node_parent((struct node *)tn)) != NULL) {
+@@ -1001,16 +1026,18 @@ static struct node *trie_rebalance(struct trie *t, struct tnode *tn)
+ 				      (struct node *)tn, wasfull);
+ 
+ 		tp = node_parent((struct node *) tn);
++		tnode_free_flush();
+ 		if (!tp)
+ 			break;
+ 		tn = tp;
+ 	}
+ 
+ 	/* Handle last (top) tnode */
+-	if (IS_TNODE(tn))
++	if (IS_TNODE(tn)) {
+ 		tn = (struct tnode *)resize(t, (struct tnode *)tn);
++		tnode_free_flush();
++	}
+ 
+-	preempt_enable();
+ 	return (struct node *)tn;
+ }
+ 
