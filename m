@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbZFOP5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763773AbZFOP52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbZFOP5M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762883AbZFOP44
+	id S1763773AbZFOP52 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763446AbZFOP5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:56:56 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:23905 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753553AbZFOP44 (ORCPT
+	Mon, 15 Jun 2009 11:57:00 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:43907 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763494AbZFOP47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:56:56 -0400
-Message-ID: <4A366E67.4040300@oracle.com>
-Date: Mon, 15 Jun 2009 08:53:11 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: How to unset CONFIG_SERIO_I8042 on x86?
-References: <1244915236.3288.7.camel@localhost.localdomain>
-In-Reply-To: <1244915236.3288.7.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Jun 2009 11:56:59 -0400
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
+       benh@kernel.crashing.org
+In-Reply-To: <alpine.DEB.1.10.0906151148300.11467@gentwo.org>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+	 <alpine.DEB.1.10.0906121317140.23840@gentwo.org>
+	 <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI>
+	 <alpine.DEB.1.10.0906151051240.19931@gentwo.org>
+	 <1245077891.23207.48.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0906151101580.23995@gentwo.org>
+	 <1245078661.23207.50.camel@penberg-laptop>
+	 <84144f020906150827k1b8c0ce4q5ed4d140f7ca869@mail.gmail.com>
+	 <alpine.DEB.1.10.0906151148300.11467@gentwo.org>
+Date: Mon, 15 Jun 2009 18:57:00 +0300
+Message-Id: <1245081420.23207.58.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4A366F32.028C:SCFSTAT5015188,ss=1,fgs=0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer wrote:
-> Is it possible? Does it make sense?
-
-Enabled CONFIG_EMBEDDED, then disable KEYBOARD_ATKBD and
-disable MOUSE_PS2, then you can disable SERIO_I8042.
-
-
-Is the Macbook all USB for input devices?
-
-
-> I always get this message at boot up on my macbook pro:
+On Mon, 2009-06-15 at 11:51 -0400, Christoph Lameter wrote:
+> On Mon, 15 Jun 2009, Pekka Enberg wrote:
 > 
-> [    0.929828] PNP: No PS/2 controller found. Probing ports directly.
-> [    0.930761] i8042.c: No controller found.
-> [    0.931038] mice: PS/2 mouse device common for all mice
+> > > OK, I can clean this up, no problem.
+> >
+> > Actually, there's a slight complication here. If I push gfp mask to
+> > __might_sleep(), lockdep_trace_alloc() and so on, the mask is
+> > effective _everywhere_ even outside of slab. Yes, it makes sense if we
+> > push the masking right down to the page allocator but I wonder if
+> > that's something we want to do at this point?
 > 
-> Or please make these messages warnings only, so I don't see them with
-> kernel option quiet.
+> __might_sleep just should not trigger right? The mask does not need to be
+> passed. __might_sleep may be called uselessly during bootup if __GFP_WAIT
+> is set. But it should not trigger any output. Look at the initial
+> statements of __might_sleep: They are already prepared to simply return in
+> the early boot case.
 
+Oh, yeah, you're right about __might_sleep() so we can just ignore that.
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+But we still have bit of a problem for should_failslab() and
+__lockdep_trace_alloc(). We might be able to deal with the former by
+adding system_state check but for the latter, we need to mask the gfp
+flags. Hmm.
+
+			Pekka
+
