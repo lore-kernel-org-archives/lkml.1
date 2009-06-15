@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932906AbZFOSNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764871AbZFOSNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932906AbZFOSNb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbZFOSNW
+	id S1764871AbZFOSNs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933353AbZFOSNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:13:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42601 "EHLO hera.kernel.org"
+	Mon, 15 Jun 2009 14:13:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42616 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755804AbZFOSNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:13:21 -0400
-Date: Mon, 15 Jun 2009 18:12:50 GMT
-From: tip-bot for Rusty Russell <rusty@rustcorp.com.au>
+	id S933013AbZFOSNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:13:35 -0400
+Date: Mon, 15 Jun 2009 18:13:02 GMT
+From: tip-bot for Wu Zhangjin <wuzj@lemote.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, rusty@rustcorp.com.au, tglx@linutronix.de
+       penberg@cs.helsinki.fi, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, wuzj@lemote.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <200906122115.30787.rusty@rustcorp.com.au>
-References: <200906122115.30787.rusty@rustcorp.com.au>
-Subject: [tip:tracing/urgent] cpumask: use new operators in kernel/trace
-Message-ID: <tip-3f237a79ddeea34dda67e9eedece3a22918df75e@git.kernel.org>
-Git-Commit-ID: 3f237a79ddeea34dda67e9eedece3a22918df75e
+       penberg@cs.helsinki.fi, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, wuzj@lemote.com
+In-Reply-To: <1244962350-28702-1-git-send-email-wuzhangjin@gmail.com>
+References: <1244962350-28702-1-git-send-email-wuzhangjin@gmail.com>
+Subject: [tip:tracing/urgent] tracing: fix undeclared 'PAGE_SIZE' in include/linux/trace_seq.h
+Message-ID: <tip-78be6914cb5c6d648617c51bb99bf81f28471d89@git.kernel.org>
+Git-Commit-ID: 78be6914cb5c6d648617c51bb99bf81f28471d89
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 15 Jun 2009 18:12:53 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 15 Jun 2009 18:13:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3f237a79ddeea34dda67e9eedece3a22918df75e
-Gitweb:     http://git.kernel.org/tip/3f237a79ddeea34dda67e9eedece3a22918df75e
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Fri, 12 Jun 2009 21:15:30 +0930
+Commit-ID:  78be6914cb5c6d648617c51bb99bf81f28471d89
+Gitweb:     http://git.kernel.org/tip/78be6914cb5c6d648617c51bb99bf81f28471d89
+Author:     Wu Zhangjin <wuzj@lemote.com>
+AuthorDate: Sun, 14 Jun 2009 14:52:30 +0800
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Mon, 15 Jun 2009 11:36:42 -0400
+CommitDate: Mon, 15 Jun 2009 11:37:09 -0400
 
-cpumask: use new operators in kernel/trace
+tracing: fix undeclared 'PAGE_SIZE' in include/linux/trace_seq.h
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-LKML-Reference: <200906122115.30787.rusty@rustcorp.com.au>
+when compiling linux-mips with kmemtrace enabled, there will be an
+error:
+
+include/linux/trace_seq.h:12: error: 'PAGE_SIZE' undeclared here (not in
+				a function)
+
+I checked the source code and found trace_seq.h used PAGE_SIZE but not
+included the relative header file, so, fix it via adding the header file
+<asm/page.h>
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+LKML-Reference: <1244962350-28702-1-git-send-email-wuzhangjin@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
 ---
- kernel/trace/kmemtrace.c   |    2 +-
- kernel/trace/ring_buffer.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/trace_seq.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-index 86cdf67..1edaa95 100644
---- a/kernel/trace/kmemtrace.c
-+++ b/kernel/trace/kmemtrace.c
-@@ -186,7 +186,7 @@ static int kmem_trace_init(struct trace_array *tr)
- 	int cpu;
- 	kmemtrace_array = tr;
+diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
+index c68bccb..c134dd1 100644
+--- a/include/linux/trace_seq.h
++++ b/include/linux/trace_seq.h
+@@ -3,6 +3,8 @@
  
--	for_each_cpu_mask(cpu, cpu_possible_map)
-+	for_each_cpu(cpu, cpu_possible_mask)
- 		tracing_reset(tr, cpu);
+ #include <linux/fs.h>
  
- 	kmemtrace_start_probes();
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 2e642b2..9c31c9f 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -3105,7 +3105,7 @@ static int rb_cpu_notify(struct notifier_block *self,
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
--		if (cpu_isset(cpu, *buffer->cpumask))
-+		if (cpumask_test_cpu(cpu, buffer->cpumask))
- 			return NOTIFY_OK;
- 
- 		buffer->buffers[cpu] =
-@@ -3116,7 +3116,7 @@ static int rb_cpu_notify(struct notifier_block *self,
- 			return NOTIFY_OK;
- 		}
- 		smp_wmb();
--		cpu_set(cpu, *buffer->cpumask);
-+		cpumask_set_cpu(cpu, buffer->cpumask);
- 		break;
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
++#include <asm/page.h>
++
+ /*
+  * Trace sequences are used to allow a function to call several other functions
+  * to create a string of data to use (up to a max of PAGE_SIZE.
