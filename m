@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZFOGFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZFOGVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115AbZFOGFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 02:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZFOGFr
+	id S1755814AbZFOGVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 02:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZFOGV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 02:05:47 -0400
-Received: from vm1.die-welt.net ([84.246.122.34]:58827 "EHLO chi.die-welt.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751078AbZFOGFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 02:05:47 -0400
-X-Greylist: delayed 578 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 02:05:47 EDT
-Date: Mon, 15 Jun 2009 07:56:08 +0200
-From: Evgeni Golov <evgeni@debian.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] use the TASK_COMM_LEN macro instead of
-	sizeof(tsk->comm)
-Message-ID: <20090615055608.GH18660@dragonheart.kerker.die-welt.net>
-References: <1244998668-27078-1-git-send-email-sargentd@die-welt.net> <1244998668-27078-2-git-send-email-sargentd@die-welt.net> <20090615001410.24327266@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
+	Mon, 15 Jun 2009 02:21:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34439 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbZFOGV1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 02:21:27 -0400
+Date: Mon, 15 Jun 2009 08:29:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 21/22] HWPOISON: send uevent to report memory corruption
+Message-ID: <20090615062934.GB31969@one.firstfloor.org>
+References: <20090615024520.786814520@intel.com> <20090615031255.278184860@intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090615001410.24327266@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090615031255.278184860@intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 12:14:10AM +0100, Alan Cox wrote:
-> On Sun, 14 Jun 2009 18:57:48 +0200
-> Evgeni Golov <sargentd@die-welt.net> wrote:
+On Mon, Jun 15, 2009 at 10:45:41AM +0800, Wu Fengguang wrote:
+> This allows the user space to do some flexible policies.
+> For example, it may either do emergency sync/shutdown
+> or to schedule reboot at some convenient time, depending
+> on the severeness of the corruption.
 > 
-> > sizeof(tsk->comm) == TASK_COMM_LEN, always, so why not use it?
-> 
-> Because if the size ever changes the existing code will remain correct
-> and your changes will become a dangerous buffer overrun ?
 
-But shouldn't TASK_COMM_LEN change then too?
-Just wondering, in the end it's a cosmetic cange, but looking at the 
-code, we rely on TASK_COMM_LEN in other places often enough to break 
-something when a task->comm is not TASK_COMM_LEM big.
+I don't think it's a good idea to export that much detailed information.
+That would become a stable ABI, but might not be possible to keep
+all these details stable. e.g. map count or reference count are
+internal implementation details that shouldn't be exposed.
+And what is an user space application to do with the inode? Run
+find -inum? 
 
-Regards
-Evgeni
+Also we already report the event using low level logging mechanism.
+in a relatively stable form.
+
+It's also unclear to me what an application would do with that much
+detail.
+
+I would suggest to drop this part and the earlier flags move.
+
+Please only bug fixes are this stage.
+
+-Andi
