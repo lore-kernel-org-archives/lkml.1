@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763958AbZFOR3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbZFORch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763958AbZFOR3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZFOR3G
+	id S932224AbZFORch (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbZFORca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:29:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48458 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754116AbZFOR3E (ORCPT
+	Mon, 15 Jun 2009 13:32:30 -0400
+Received: from www17.your-server.de ([213.133.104.17]:42494 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756448AbZFORca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:29:04 -0400
-Date: Mon, 15 Jun 2009 10:28:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] voltage regulator updates for 2.6.31-rc1
-In-Reply-To: <20090615171720.GH6106@sirena.org.uk>
-Message-ID: <alpine.LFD.2.01.0906151027210.3305@localhost.localdomain>
-References: <1245065061.21421.90.camel@vega.slimlogic.co.uk> <alpine.LFD.2.01.0906150927390.3305@localhost.localdomain> <20090615171720.GH6106@sirena.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 15 Jun 2009 13:32:30 -0400
+Subject: Re: How to unset CONFIG_SERIO_I8042 on x86?
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+In-Reply-To: <4A366E67.4040300@oracle.com>
+References: <1244915236.3288.7.camel@localhost.localdomain>
+	 <4A366E67.4040300@oracle.com>
+Content-Type: text/plain
+Date: Mon, 15 Jun 2009 19:32:29 +0200
+Message-Id: <1245087149.6821.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 15 Jun 2009, Mark Brown wrote:
-
-> On Mon, Jun 15, 2009 at 09:29:54AM -0700, Linus Torvalds wrote:
-> > On Mon, 15 Jun 2009, Liam Girdwood wrote:
+Am Montag, den 15.06.2009, 08:53 -0700 schrieb Randy Dunlap:
+> Thomas Meyer wrote:
+> > Is it possible? Does it make sense?
 > 
-> > >  include/linux/regulator/lp3971.h             |   51 +++
+> Enabled CONFIG_EMBEDDED, then disable KEYBOARD_ATKBD and
+> disable MOUSE_PS2, then you can disable SERIO_I8042.
+
+Thanks. Works. I missed to unset the AT keyboard.
+
 > 
-> > Why the heck would "lp3971.h" be under "include/linux"? That makes no 
-> > sense what-so-ever. 
 > 
-> > Why isn't it just
+> Is the Macbook all USB for input devices?
+
+Mine is.
+
+And in general also, I guess.
+
 > 
-> > 	drivers/regulator/lp3971.c
-> > 	drivers/regulator/lp3971.h
 > 
-> It defines a platform data structure for the architecture code which
-> instantiates the driver to use to pass configuration to the driver.  If
-> the header were in drivers/regulator then any system using one of these
-> regulators would need to peer into drivers/regulator in order to set up
-> the driver.
+> > I always get this message at boot up on my macbook pro:
+> > 
+> > [    0.929828] PNP: No PS/2 controller found. Probing ports directly.
+> > [    0.930761] i8042.c: No controller found.
+> > [    0.931038] mice: PS/2 mouse device common for all mice
+> > 
+> > Or please make these messages warnings only, so I don't see them with
+> > kernel option quiet.
+> 
+> 
 
-A quick grep shows:
-
-	[torvalds@nehalem linux]$ git grep lp3971.h
-	drivers/regulator/lp3971.c:#include <linux/regulator/lp3971.h>
-
-ie _nobody_ includes lp3971.h except for lp3971.c.
-
-So tell me again, why is that lp3971.h file separate from the only driver 
-that uses it?
-
-		Linus
