@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbZFOOZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZFOOaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760594AbZFOOZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 10:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbZFOOZd
+	id S1756978AbZFOOaK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 10:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZFOO37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 10:25:33 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:44734 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZFOOZc (ORCPT
+	Mon, 15 Jun 2009 10:29:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33242 "EHLO
+	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753470AbZFOO37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 10:25:32 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH, RFC] Re: TSC features, ...
-Date: Mon, 15 Jun 2009 09:25:29 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>, Dave Jones <davej@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <alpine.LFD.2.01.0906081128410.6847@localhost.localdomain> <200906150810.15799.lkml@morethan.org>
-In-Reply-To: <200906150810.15799.lkml@morethan.org>
+	Mon, 15 Jun 2009 10:29:59 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] tty: Fix leaks introduced by the shift to separate ldisc
+	objects
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 15 Jun 2009 16:28:29 +0100
+Message-ID: <20090615152829.3915.23655.stgit@t61.ukuu.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906150925.31854.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon June 15 2009, Michael S. Zick wrote:
-> On Mon June 8 2009, Linus Torvalds wrote:
-> > 
-> > Hmm. This all really should be just
-> > 
-> > 	static int check_est_cpu(unsigned int cpuid)
-> > 	{
-> > 		struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
-> > 		return cpu_has(cpu, X86_FEATURE_EST);
-> > 	}
-> > 
-> > I suspect, with no vendor tests. That's the whole _point_ of CPU features, 
-> > after all.
-> > 
-> 
+From: Alan Cox <alan@linux.intel.com>
 
-Like this;
-Let the vendor's cpu setup code be responsible for getting the
-feature flag correct:
+Gold star for the kmemleak detector.
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 10a2d91..daea6a9 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -244,22 +244,12 @@ int acpi_processor_resume(struct acpi_device * device)
- #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- static void tsc_check_state(int state)
- {
--       switch (boot_cpu_data.x86_vendor) {
--       case X86_VENDOR_AMD:
--       case X86_VENDOR_INTEL:
--               /*
--                * AMD Fam10h TSC will tick in all
--                * C/P/S0/S1 states when this bit is set.
--                */
--               if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
--                       return;
-+       if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
-+               return;
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
 
--               /*FALL THROUGH*/
--       default:
--               /* TSC could halt in idle, so notify users */
--               if (state > ACPI_STATE_C1)
--                       mark_tsc_unstable("TSC halts in idle");
--       }
-+       /* TSC could halt in idle, so notify users */
-+       if (state > ACPI_STATE_C1)
-+               mark_tsc_unstable("TSC halts in idle");
+ drivers/char/tty_ldisc.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index 39c8f86..94b3e06 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -148,8 +148,10 @@ static struct tty_ldisc *tty_ldisc_try_get(int disc)
+ 		}
+ 	}
+ 	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
+-	if (err)
++	if (err) {
++		kfree(ld);
+ 		return ERR_PTR(err);
++	}
+ 	return ld;
  }
- #else
- static void tsc_check_state(int state) { return; }
+ 
+@@ -262,7 +264,7 @@ const struct file_operations tty_ldiscs_proc_fops = {
+  *	@ld: line discipline
+  *
+  *	Install an instance of a line discipline into a tty structure. The
+- *	ldisc must have a reference count above zero to ensure it remains/
++ *	ldisc must have a reference count above zero to ensure it remains.
+  *	The tty instance refcount starts at zero.
+  *
+  *	Locking:
 
-Mike
