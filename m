@@ -1,124 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZFOQIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762863AbZFOQJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbZFOQIe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 12:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZFOQIY
+	id S1762863AbZFOQJA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 12:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759291AbZFOQIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 12:08:24 -0400
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:36200 "EHLO
-	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbZFOQIX (ORCPT
+	Mon, 15 Jun 2009 12:08:55 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:58876 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753655AbZFOQIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 12:08:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=I6EqgYECN1n58wlisOHvyJmqHRvVdhdDTzoPAi2IGdxZFSEiZ3vnQg0zzyF8QOPZ9G
-         I8VAR/KsznAqWyMPsWnfUNwgl4FTlTMQXx0yMDVXfQQGzRlWxt3eU6//2GVe2x/cgJlQ
-         AMc10t0nCNuX58N7wBpBrldrC6KUJa8btLQHY=
-Date: Mon, 15 Jun 2009 18:08:01 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: Robert Olsson <robert.olsson@its.uu.se>, Yan Zheng <zheng.yan@oracle.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2/1 v2] Re: [BUG] fib_tries related Oops in 2.6.30
-Message-ID: <20090615160800.GC2767@ami.dom.local>
+	Mon, 15 Jun 2009 12:08:54 -0400
+Date: Mon, 15 Jun 2009 12:08:33 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+In-Reply-To: <1245081420.23207.58.camel@penberg-laptop>
+Message-ID: <alpine.DEB.1.10.0906151208020.10101@gentwo.org>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>  <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>  <alpine.DEB.1.10.0906121317140.23840@gentwo.org>  <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI> 
+ <alpine.DEB.1.10.0906151051240.19931@gentwo.org>  <1245077891.23207.48.camel@penberg-laptop>  <alpine.DEB.1.10.0906151101580.23995@gentwo.org>  <1245078661.23207.50.camel@penberg-laptop>  <84144f020906150827k1b8c0ce4q5ed4d140f7ca869@mail.gmail.com> 
+ <alpine.DEB.1.10.0906151148300.11467@gentwo.org> <1245081420.23207.58.camel@penberg-laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615065333.GA4378@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alas this top tnode needs even more.
+On Mon, 15 Jun 2009, Pekka Enberg wrote:
 
-Sorry/thanks,
-Jarek P.
--------------------> take 2
-ipv4: Fix fib_trie rebalancing, part 2
+> But we still have bit of a problem for should_failslab() and
+> __lockdep_trace_alloc(). We might be able to deal with the former by
+> adding system_state check but for the latter, we need to mask the gfp
+> flags. Hmm.
 
-My previous patch, which explicitly delays freeing of tnodes by adding
-them to the list to flush them after the update is finished, isn't
-strict enough. It treats exceptionally tnodes without parent, assuming
-they are newly created, so "invisible" for the read side yet.
+These issues will appear in multiple places in the core code. Its best to
+fix them within these functions.
 
-But the top tnode doesn't have parent as well, so we have to exclude
-all exceptions (at least until a better way is found). Additionally we
-need to move rcu assignment of this node before flushing, so the
-return type of the trie_rebalance() function is changed.
-
-Reported-by: Yan Zheng <zheng.yan@oracle.com>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
----
-
- net/ipv4/fib_trie.c |   23 ++++++++++-------------
- 1 files changed, 10 insertions(+), 13 deletions(-)
-
-diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index d1a39b1..6188043 100644
---- a/net/ipv4/fib_trie.c
-+++ b/net/ipv4/fib_trie.c
-@@ -391,13 +391,8 @@ static inline void tnode_free(struct tnode *tn)
- static void tnode_free_safe(struct tnode *tn)
- {
- 	BUG_ON(IS_LEAF(tn));
--
--	if (node_parent((struct node *) tn)) {
--		tn->tnode_free = tnode_free_head;
--		tnode_free_head = tn;
--	} else {
--		tnode_free(tn);
--	}
-+	tn->tnode_free = tnode_free_head;
-+	tnode_free_head = tn;
- }
- 
- static void tnode_free_flush(void)
-@@ -1009,7 +1004,7 @@ fib_find_node(struct trie *t, u32 key)
- 	return NULL;
- }
- 
--static struct node *trie_rebalance(struct trie *t, struct tnode *tn)
-+static void trie_rebalance(struct trie *t, struct tnode *tn)
- {
- 	int wasfull;
- 	t_key cindex, key;
-@@ -1033,12 +1028,14 @@ static struct node *trie_rebalance(struct trie *t, struct tnode *tn)
- 	}
- 
- 	/* Handle last (top) tnode */
--	if (IS_TNODE(tn)) {
-+	if (IS_TNODE(tn))
- 		tn = (struct tnode *)resize(t, (struct tnode *)tn);
-+
-+	rcu_assign_pointer(t->trie, (struct node *)tn);
-+	if (IS_TNODE(tn))
- 		tnode_free_flush();
--	}
- 
--	return (struct node *)tn;
-+	return;
- }
- 
- /* only used from updater-side */
-@@ -1186,7 +1183,7 @@ static struct list_head *fib_insert_node(struct trie *t, u32 key, int plen)
- 
- 	/* Rebalance the trie */
- 
--	rcu_assign_pointer(t->trie, trie_rebalance(t, tp));
-+	trie_rebalance(t, tp);
- done:
- 	return fa_head;
- }
-@@ -1605,7 +1602,7 @@ static void trie_leaf_remove(struct trie *t, struct leaf *l)
- 	if (tp) {
- 		t_key cindex = tkey_extract_bits(l->key, tp->pos, tp->bits);
- 		put_child(t, (struct tnode *)tp, cindex, NULL);
--		rcu_assign_pointer(t->trie, trie_rebalance(t, tp));
-+		trie_rebalance(t, tp);
- 	} else
- 		rcu_assign_pointer(t->trie, NULL);
- 
