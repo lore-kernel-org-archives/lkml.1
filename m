@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760611AbZFOMZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbZFOMZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760611AbZFOMZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 08:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbZFOMZH
+	id S1760890AbZFOMZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 08:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757888AbZFOMZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 08:25:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46283 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757683AbZFOMZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 08:25:07 -0400
-Date: Mon, 15 Jun 2009 13:26:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Li, Jiebing" <jiebing.li@intel.com>
-Cc: Pierre Ossman <pierre@ossman.eu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Johnson, Charles F" <charles.f.johnson@intel.com>,
-       "Zhu, Daniel" <daniel.zhu@intel.com>,
-       "Yuan, Hang" <hang.yuan@intel.com>,
-       "Li, Jiebing" <jiebing.li@intel.com>
-Subject: Re: [PATCH 1/1] MMC: SDIO driver for Intel Moorestown  platform
-Message-ID: <20090615132622.45fce509@lxorguk.ukuu.org.uk>
-In-Reply-To: <95608CFE3D0C064B8468DB61F8403BE036C19F9C0E@PDSMSX501.ccr.corp.intel.com>
-References: <95608CFE3D0C064B8468DB61F8403BE036C19F9C0E@PDSMSX501.ccr.corp.intel.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Mon, 15 Jun 2009 08:25:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37180 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757479AbZFOMZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 08:25:33 -0400
+Date: Mon, 15 Jun 2009 14:25:28 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+Message-ID: <20090615122528.GA13256@wotan.suse.de>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615121001.GA10944@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +       /*
-> +        * Read the common CIS tuples.
-> +        */
-> +       err = sdio_read_cccr(card);
-> +       if (err)
-> +               goto remove;
-> +
-> +#ifdef CONFIG_MRST_MMC_WR
-> +       /* restricting to 24MHz for Langwell A0 */
-> +       if (card->cis.max_dtr > 24000000)
-> +               card->cis.max_dtr = 24000000;
-> +#endif
-
-What if you have an SDIO device on a PCI card plugged into the system ?
-You need some kind of card specific "fix up" call as a lot of other
-drivers have I suspect ?
-
-
->
->         for (i = 0;i < host->card->sdio_funcs;i++) {
->                 if (host->card->sdio_func[i]) {
-> +#ifdef CONFIG_SDIO_SUSPEND
-> +                       sdio_remove_sysfs_file(host->card->sdio_func[i]);
-> +#endif
-
-Would be cleaner to always define sdio_remove_sysfs_file() and arrange in
-the header files that this is
-
-#define sdio_remove_sysfs_file(x)  do {} while (0)
-
->  static const struct mmc_bus_ops mmc_sdio_ops = {
->         .remove = mmc_sdio_remove,
->         .detect = mmc_sdio_detect,
-> +       .suspend = mmc_sdio_suspend,
-> +       .resume = mmc_sdio_resume,
->  };
-
-You always expose suspend/resume yet you ifdef other stuff ?
-
+On Mon, Jun 15, 2009 at 08:10:01PM +0800, Wu Fengguang wrote:
+> On Mon, Jun 15, 2009 at 03:19:07PM +0800, Nick Piggin wrote:
+> > > For KVM you need early kill, for the others it remains to be seen.
+> > 
+> > Right. It's almost like you need to do a per-process thing, and
+> > those that can handle things (such as the new SIGBUS or the new
+> > EIO) could get those, and others could be killed.
 > 
-> @@ -323,6 +722,10 @@ int mmc_attach_sdio(struct mmc_host *host, u32 ocr)
->                 goto err;
->         }
+> To send early SIGBUS kills to processes who has called
+> sigaction(SIGBUS, ...)?  KVM will sure do that. For other apps we
+> don't mind they can understand that signal at all.
+
+For apps that hook into SIGBUS for some other means and
+do not understand the new type of SIGBUS signal? What about
+those?
+
+ 
+> > Early-kill for KVM does seem like reasonable justification on the
+> > surface, but when I think more about it, I wonder does the guest
+> > actually stand any better chance to correct the error if it is
+> > reported at time T rather than T+delta? (who knows what the page
+> > will be used for at any given time).
 > 
-> +#ifdef CONFIG_SDIO_SUSPEND
-> +       mutex_init(&card->pm_mutex);
-> +#endif
+> Early kill makes a lot difference for KVM.  Think about the vast
+> amount of clean page cache pages. With early kill the page can be
+> trivially isolated. With late kill the whole virtual machine dies
+> hard.
 
-Again this and the create_sysfs_file one could be hidden more nicely in
-the header
+Why? In both cases it will enter the exception handler and
+attempt to do something about it... in both cases I would
+have thought there is some chance that the page error is not
+recoverable and some chance it is recoverable. Or am I
+missing something?
 
->
+Anyway, I would like to see a basic analysis of those probabilities
+to justify early kill. Not saying there is no justification, but
+it would be helpful to see why.
+
+Thanks,
+Nick
+
+
