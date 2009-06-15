@@ -1,122 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762606AbZFOPjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762560AbZFOPk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762606AbZFOPjo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757416AbZFOPjg
+	id S1762560AbZFOPk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761099AbZFOPkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:39:36 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:63356 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757208AbZFOPjf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:39:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=ceKkKgs1hQhUoVtV69GgPji37331JQdjGpq2Qal8hZQJmKwV3CdGsQXjb759LmsiC2
-         GHIApEqsBDL8VloQqlmktpQHva1zxhsnmdRsuEU88iCL67OfqXzu12COhHWJxQsXasCc
-         DAF+j2ZG22dzvUL/fPJ47apRFuZijZam4lEsY=
-Date: Mon, 15 Jun 2009 17:39:26 +0200
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [PATCH] tty_ldisc: propagate errors from tty_ldisc_release
-Message-ID: <20090615153925.GA27696@damson.getinternet.no>
+	Mon, 15 Jun 2009 11:40:15 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:10936
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757416AbZFOPkO convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:40:14 -0400
+X-SpamScore: -12
+X-BigFish: VPS-12(zz1432R1805Mzz1202hzzz32i6bh17ch43j66h)
+X-Spam-TCS-SCL: 5:0
+X-WSS-ID: 0KLAE6P-02-XU4-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] cpumask: avoid playing with cpus_allowed in powernow-k8.c
+Date: Mon, 15 Jun 2009 10:40:09 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273036209AB@sausexmb4.amd.com>
+In-Reply-To: <200906122055.38203.rusty@rustcorp.com.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] cpumask: avoid playing with cpus_allowed in powernow-k8.c
+Thread-Index: AcnrUI5liU+eNxTnT3KeA1vsY1H6sgCftzFA
+References: <20090611225928.E6FF4DDDA1@ozlabs.org> <20090611232517.GA32486@redhat.com> <200906122055.38203.rusty@rustcorp.com.au>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>, "Dave Jones" <davej@redhat.com>
+CC: <cpufreq@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@redhat.com>
+X-OriginalArrivalTime: 15 Jun 2009 15:40:10.0254 (UTC) FILETIME=[90F1AAE0:01C9EDCF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ea6ee429b1f173e6905c3e6251649a6caf93d533 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Mon, 15 Jun 2009 17:26:35 +0200
-Subject: [PATCH] tty_ldisc: propagate errors from tty_ldisc_release
+> cpumask: avoid playing with cpus_allowed in powernow-k8.c
+>     
+> It's generally a very bad idea to mug some process's cpumask: it could
+> legitimately and reasonably be changed by root, which could break us
+> (if done before our code) or them (if we restore the wrong value).
+>     
+> I did not replace powernowk8_target; it needs fixing, but it grabs a
+> mutex (so no smp_call_function_single here) but Mark points out it can
+> be called multiple times per second, so work_on_cpu is too heavy.
+>     
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> To: davej@redhat.com
+> To: cpufreq@vger.kernel.org
+> Cc: mark.langsdorf@amd.com
 
-This is probably better than just ignoring the errors.
+I ran this over the weekend on a 24 core box without
+any issues.  Please commit.
 
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- drivers/char/tty_ldisc.c |   26 ++++++++++++++++++++------
- include/linux/tty.h      |    2 +-
- 2 files changed, 21 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index 39c8f86..1d39e2b 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -840,17 +840,24 @@ int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
-  *	Called during the final close of a tty/pty pair in order to shut down
-  *	the line discpline layer. On exit the ldisc assigned is N_TTY and the
-  *	ldisc has not been opened.
-+ *
-+ *	Returns 0 on success, negative error code otherwise.
-  */
- 
--void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
-+int tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
- {
-+	int err;
-+
- 	/*
- 	 * Prevent flush_to_ldisc() from rescheduling the work for later.  Then
- 	 * kill any delayed work. As this is the final close it does not
- 	 * race with the set_ldisc code path.
- 	 */
- 
--	tty_ldisc_halt(tty);
-+	err = tty_ldisc_halt(tty);
-+	if (err < 0)
-+		return err;
-+
- 	flush_scheduled_work();
- 
- 	/*
-@@ -859,7 +866,16 @@ void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
- 	 * side is zero.
- 	 */
- 
--	tty_ldisc_wait_idle(tty);
-+	err = tty_ldisc_wait_idle(tty);
-+	if (err < 0)
-+		return err;
-+
-+	/* This will need doing differently if we need to lock */
-+	if (o_tty) {
-+		err = tty_ldisc_release(o_tty, NULL);
-+		if (err < 0)
-+			return err;
-+	}
- 
- 	/*
- 	 * Shutdown the current line discipline, and reset it to N_TTY.
-@@ -868,9 +884,7 @@ void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
- 	 */
- 
- 	tty_ldisc_reinit(tty);
--	/* This will need doing differently if we need to lock */
--	if (o_tty)
--		tty_ldisc_release(o_tty, NULL);
-+	return 0;
- }
- 
- /**
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 1488d8c..474abd6 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -461,7 +461,7 @@ extern int tty_register_ldisc(int disc, struct tty_ldisc_ops *new_ldisc);
- extern int tty_unregister_ldisc(int disc);
- extern int tty_set_ldisc(struct tty_struct *tty, int ldisc);
- extern int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
--extern void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty);
-+extern int tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty);
- extern void tty_ldisc_init(struct tty_struct *tty);
- extern void tty_ldisc_begin(void);
- /* This last one is just for the tty layer internals and shouldn't be used elsewhere */
--- 
-1.6.0.6
+Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Tested-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
