@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZFOCRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZFOC15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZFOCRg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 22:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbZFOCR2
+	id S1753240AbZFOC15 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 22:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZFOC1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 22:17:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50610 "EHLO smtps.tip.net.au"
+	Sun, 14 Jun 2009 22:27:48 -0400
+Received: from kroah.org ([198.145.64.141]:47003 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZFOCR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 22:17:27 -0400
-Date: Mon, 15 Jun 2009 12:17:16 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: linux-next: scsi tree build failure
-Message-Id: <20090615121716.c5bc0655.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__15_Jun_2009_12_17_16_+1000_qYKp9MXQBIxa8VQ3"
+	id S1751089AbZFOC1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 22:27:48 -0400
+Date: Sun, 14 Jun 2009 19:22:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm - fixes + radeon KMS (part 2)
+Message-ID: <20090615022235.GA12905@kroah.com>
+References: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__15_Jun_2009_12_17_16_+1000_qYKp9MXQBIxa8VQ3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jun 15, 2009 at 03:08:56AM +0100, Dave Airlie wrote:
+> 
+> Hi Linus,
+> 
+> Please pull the 'drm-linus' branch from
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+> 
+> This is big. It contains the initial TTM memory manager + ATI radeon KMS 
+> support. Currently the KMS code is part of the DRM radeon driver however 
+> it is very clearly separated internally from the old codepaths. We've 
+> elected to keep the radeon KMS Kconfig build/enable under staging for now 
+> since we may have some ABI tweaks to sort out in this release cycle, 
+> however the code is all in the drm. I don't think this enables crap 
+> tainting, but at least no-one will find kms by accident.
 
-Hi James,
+No, the module loader looks for stuff in drivers/staging/ to cause a
+"taint".
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+But why not just keep the Kconfig stuff in your own directory, and
+depend on CONFIG_STAGING if you want to not have it show up for "normal"
+users?  It seems odd to put anything in drivers/staging/Kconfig for
+something that is not in drivers/staging.
 
-drivers/scsi/ps3rom.c: In function 'ps3rom_interrupt':
-drivers/scsi/ps3rom.c:302: error: implicit declaration of function 'ps3_sys=
-tem_bus_get_drvdata'
-drivers/scsi/ps3rom.c:302: warning: assignment makes pointer from integer w=
-ithout a cast
-drivers/scsi/ps3rom.c: In function 'ps3rom_probe':
-drivers/scsi/ps3rom.c:390: error: implicit declaration of function 'ps3_sys=
-tem_bus_set_drvdata'
-drivers/scsi/ps3rom.c: In function 'ps3rom_remove':
-drivers/scsi/ps3rom.c:421: warning: initialization makes pointer from integ=
-er without a cast
+I'm guessing this Kconfig change was not in linux-next?  Or had it been
+there and I just missed it somehow?
 
-Caused by commit 4381bd58427116cd7689831998771ddd58078af9 ("[SCSI]
-ps3rom: Use ps3_system_bus_[gs]et_drvdata() instead of direct access").
-This is number 21 in a series and depends on number 19 which is not yet
-merged.  If you instead Ack this patch, Ben will merge it through the
-powerpc tree.
+thanks,
 
-For today, I have used the scsi tree from next-20090612.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__15_Jun_2009_12_17_16_+1000_qYKp9MXQBIxa8VQ3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko1rywACgkQjjKRsyhoI8yeNQCfTRc8RQwArnlJIBFdZdA9ean+
-1NMAnR/G1/sdLNKDFvjGKfhZRScPakgH
-=BHZl
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Jun_2009_12_17_16_+1000_qYKp9MXQBIxa8VQ3--
+greg k-h
