@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbZFOP0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762828AbZFOP1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762605AbZFOP0y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZFOP0p
+	id S1762828AbZFOP1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762540AbZFOP12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:26:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:42591 "EHLO mga03.intel.com"
+	Mon, 15 Jun 2009 11:27:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41765 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755022AbZFOP0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:26:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,223,1243839600"; 
-   d="scan'208";a="154519215"
-Date: Mon, 15 Jun 2009 23:26:12 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in
-	try_to_unmap
-Message-ID: <20090615152612.GA11700@localhost>
-References: <20090615024520.786814520@intel.com> <20090615031253.530308256@intel.com> <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+	id S1762468AbZFOP11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:27:27 -0400
+Subject: Re: [PATCH v2 0/8] clean up vdso-layout.lds.S
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
+In-Reply-To: <1245079002.17481.118.camel@nathan.suse.cz>
+References: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>
+	 <20090612180626.GB18203@uranus.ravnborg.org>
+	 <1245079002.17481.118.camel@nathan.suse.cz>
+Content-Type: text/plain; charset="UTF-8"
+Organization: SUSE LINUX
+Date: Mon, 15 Jun 2009 17:27:29 +0200
+Message-Id: <1245079649.17481.121.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 09:09:03PM +0800, Minchan Kim wrote:
-> On Mon, Jun 15, 2009 at 11:45 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > From: Andi Kleen <ak@linux.intel.com>
-> >
-> > When a page has the poison bit set replace the PTE with a poison entry.
-> > This causes the right error handling to be done later when a process runs
-> > into it.
-> >
-> > Also add a new flag to not do that (needed for the memory-failure handler
-> > later)
-> >
-> > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> >
-> > ---
-> >  include/linux/rmap.h |    1 +
-> >  mm/rmap.c            |    9 ++++++++-
-> >  2 files changed, 9 insertions(+), 1 deletion(-)
-> >
-> > --- sound-2.6.orig/mm/rmap.c
-> > +++ sound-2.6/mm/rmap.c
-> > @@ -958,7 +958,14 @@ static int try_to_unmap_one(struct page
-> >        /* Update high watermark before we lower rss */
-> >        update_hiwater_rss(mm);
-> >
-> > -       if (PageAnon(page)) {
-> > +       if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
-> > +               if (PageAnon(page))
-> > +                       dec_mm_counter(mm, anon_rss);
-> > +               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
+Petr Tesarik píše v Po 15. 06. 2009 v 17:16 +0200:
+> [...]
+> An example can probably explain it better:
 > 
-> Isn't it straightforward to use !is_hwpoison_entry ?
+> $ cat >shared.c <<EOF
+> int shared_object[100];
+> EOF
+> $ cat >exe.c <<EOF
+> #include <stdio.h>
+> extern int shared_object[100];
+> int main(void) {
+> 	printf("%p\n", &shared_object); 
+> 	return 0;
+> }
+> EOF
 
-Good catch!  It looks like a redundant check: the
-page_check_address() at the beginning of the function guarantees that 
-!is_migration_entry() or !is_migration_entry() tests will all be TRUE.
+BTW this example demonstrates that there is one section which should be
+included in .data but is not:
 
-So let's do this?
+	*(COMMON)
 
--               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
-+               else
+I'll send a patch later.
 
+Petr Tesarik
 
-Thanks,
-Fengguang
