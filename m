@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbZFOIWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbZFOIXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758705AbZFOIWc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbZFOIWY
+	id S1758021AbZFOIXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZFOIXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:22:24 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53185 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbZFOIWX (ORCPT
+	Mon, 15 Jun 2009 04:23:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45637 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbZFOIW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:22:23 -0400
-Message-ID: <4A3604B7.9020007@jp.fujitsu.com>
-Date: Mon, 15 Jun 2009 17:22:15 +0900
+	Mon, 15 Jun 2009 04:22:59 -0400
+Message-ID: <4A3604D9.8030505@jp.fujitsu.com>
+Date: Mon, 15 Jun 2009 17:22:49 +0900
 From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH 06/16] x86, mce: unify mce.h
+Subject: [PATCH 07/16] x86, mce: make mce_disabled boolean
 References: <4A3601BF.2000201@jp.fujitsu.com>
 In-Reply-To: <4A3601BF.2000201@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-2022-JP
@@ -27,283 +27,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are 2 headers:
-	arch/x86/include/asm/mce.h
-	arch/x86/kernel/cpu/mcheck/mce.h
-and in the latter small header:
-	#include <asm/mce.h>
-
-This patch move all contents in the latter header into the former,
-and fix all files using the latter to include the former instead.
+The mce_disabled on 32bit is a tristate variable [1,0,-1],
+while 64bit version is boolean [0,1].
+This patch makes mce_disabled always boolean, and use mce_p5_enabled
+to indicate the third state instead.
 
 Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- arch/x86/include/asm/mce.h                |   36 +++++++++++++++++++++++++-
- arch/x86/kernel/cpu/mcheck/k7.c           |    3 +-
- arch/x86/kernel/cpu/mcheck/mce.c          |    1 -
- arch/x86/kernel/cpu/mcheck/mce.h          |   38 -----------------------------
- arch/x86/kernel/cpu/mcheck/mce_intel.c    |    3 +-
- arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    2 -
- arch/x86/kernel/cpu/mcheck/non-fatal.c    |    3 +-
- arch/x86/kernel/cpu/mcheck/p4.c           |    3 +-
- arch/x86/kernel/cpu/mcheck/p5.c           |    3 +-
- arch/x86/kernel/cpu/mcheck/p6.c           |    3 +-
- arch/x86/kernel/cpu/mcheck/winchip.c      |    3 +-
- arch/x86/kernel/traps.c                   |    3 +-
- 12 files changed, 42 insertions(+), 59 deletions(-)
- delete mode 100644 arch/x86/kernel/cpu/mcheck/mce.h
+ arch/x86/include/asm/mce.h       |    8 +++-----
+ arch/x86/kernel/cpu/mcheck/mce.c |    8 +++-----
+ arch/x86/kernel/cpu/mcheck/p5.c  |   12 +++++-------
+ 3 files changed, 11 insertions(+), 17 deletions(-)
 
 diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index 540a466..aae6fe2 100644
+index aae6fe2..6568cde 100644
 --- a/arch/x86/include/asm/mce.h
 +++ b/arch/x86/include/asm/mce.h
-@@ -102,10 +102,42 @@ struct mce_log {
+@@ -107,6 +107,7 @@ struct mce_log {
+ #include <asm/atomic.h>
  
- #ifdef __KERNEL__
- 
-+#include <linux/percpu.h>
-+#include <linux/init.h>
-+#include <asm/atomic.h>
-+
  extern int mce_disabled;
++extern int mce_p5_enabled;
  
--#include <asm/atomic.h>
--#include <linux/percpu.h>
-+#ifdef CONFIG_X86_OLD_MCE
-+void amd_mcheck_init(struct cpuinfo_x86 *c);
-+void intel_p4_mcheck_init(struct cpuinfo_x86 *c);
-+void intel_p6_mcheck_init(struct cpuinfo_x86 *c);
-+#endif
-+
-+#ifdef CONFIG_X86_ANCIENT_MCE
-+void intel_p5_mcheck_init(struct cpuinfo_x86 *c);
-+void winchip_mcheck_init(struct cpuinfo_x86 *c);
-+extern int mce_p5_enable;
-+static inline int mce_p5_enabled(void) { return mce_p5_enable; }
-+static inline void enable_p5_mce(void) { mce_p5_enable = 1; }
-+#else
-+static inline void intel_p5_mcheck_init(struct cpuinfo_x86 *c) {}
-+static inline void winchip_mcheck_init(struct cpuinfo_x86 *c) {}
-+static inline int mce_p5_enabled(void) { return 0; }
-+static inline void enable_p5_mce(void) { }
-+#endif
-+
-+/* Call the installed machine check handler for this CPU setup. */
-+extern void (*machine_check_vector)(struct pt_regs *, long error_code);
-+
-+#ifdef CONFIG_X86_OLD_MCE
-+extern int nr_mce_banks;
-+extern void intel_set_thermal_handler(void);
-+#else
-+static inline void intel_set_thermal_handler(void) { }
-+#endif
-+
-+void intel_init_thermal(struct cpuinfo_x86 *c);
- 
- void mce_setup(struct mce *m);
- void mce_log(struct mce *m);
-diff --git a/arch/x86/kernel/cpu/mcheck/k7.c b/arch/x86/kernel/cpu/mcheck/k7.c
-index 89e5104..b945d5d 100644
---- a/arch/x86/kernel/cpu/mcheck/k7.c
-+++ b/arch/x86/kernel/cpu/mcheck/k7.c
-@@ -10,10 +10,9 @@
- 
- #include <asm/processor.h>
- #include <asm/system.h>
-+#include <asm/mce.h>
- #include <asm/msr.h>
- 
--#include "mce.h"
--
- /* Machine Check Handler For AMD Athlon/Duron: */
- static void k7_machine_check(struct pt_regs *regs, long error_code)
- {
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 6b465a6..c184dc7 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -44,7 +44,6 @@
- #include <asm/msr.h>
- 
- #include "mce-internal.h"
--#include "mce.h"
- 
- /* Handle unconfigured int18 (should never happen) */
- static void unexpected_machine_check(struct pt_regs *regs, long error_code)
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.h b/arch/x86/kernel/cpu/mcheck/mce.h
-deleted file mode 100644
-index 84a552b..0000000
---- a/arch/x86/kernel/cpu/mcheck/mce.h
-+++ /dev/null
-@@ -1,38 +0,0 @@
--#include <linux/init.h>
--#include <asm/mce.h>
--
--#ifdef CONFIG_X86_OLD_MCE
--void amd_mcheck_init(struct cpuinfo_x86 *c);
--void intel_p4_mcheck_init(struct cpuinfo_x86 *c);
--void intel_p6_mcheck_init(struct cpuinfo_x86 *c);
--#endif
--
--#ifdef CONFIG_X86_ANCIENT_MCE
--void intel_p5_mcheck_init(struct cpuinfo_x86 *c);
--void winchip_mcheck_init(struct cpuinfo_x86 *c);
+ #ifdef CONFIG_X86_OLD_MCE
+ void amd_mcheck_init(struct cpuinfo_x86 *c);
+@@ -117,14 +118,11 @@ void intel_p6_mcheck_init(struct cpuinfo_x86 *c);
+ #ifdef CONFIG_X86_ANCIENT_MCE
+ void intel_p5_mcheck_init(struct cpuinfo_x86 *c);
+ void winchip_mcheck_init(struct cpuinfo_x86 *c);
 -extern int mce_p5_enable;
 -static inline int mce_p5_enabled(void) { return mce_p5_enable; }
 -static inline void enable_p5_mce(void) { mce_p5_enable = 1; }
--#else
--static inline void intel_p5_mcheck_init(struct cpuinfo_x86 *c) {}
--static inline void winchip_mcheck_init(struct cpuinfo_x86 *c) {}
++static inline void enable_p5_mce(void) { mce_p5_enabled = 1; }
+ #else
+ static inline void intel_p5_mcheck_init(struct cpuinfo_x86 *c) {}
+ static inline void winchip_mcheck_init(struct cpuinfo_x86 *c) {}
 -static inline int mce_p5_enabled(void) { return 0; }
 -static inline void enable_p5_mce(void) { }
--#endif
--
--/* Call the installed machine check handler for this CPU setup. */
--extern void (*machine_check_vector)(struct pt_regs *, long error_code);
--
--#ifdef CONFIG_X86_OLD_MCE
--
--extern int nr_mce_banks;
--
--void intel_set_thermal_handler(void);
--
--#else
--
--static inline void intel_set_thermal_handler(void) { }
--
--#endif
--
--void intel_init_thermal(struct cpuinfo_x86 *c);
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel.c b/arch/x86/kernel/cpu/mcheck/mce_intel.c
-index 2b011d2..475478b 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_intel.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_intel.c
-@@ -11,10 +11,9 @@
- #include <asm/processor.h>
- #include <asm/system.h>
- #include <asm/apic.h>
-+#include <asm/mce.h>
- #include <asm/msr.h>
++static inline void enable_p5_mce(void) {}
+ #endif
  
--#include "mce.h"
--
- void intel_init_thermal(struct cpuinfo_x86 *c)
+ /* Call the installed machine check handler for this CPU setup. */
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index c184dc7..e0d5af0 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1279,8 +1279,7 @@ static void __cpuinit mce_ancient_init(struct cpuinfo_x86 *c)
+ 		return;
+ 	switch (c->x86_vendor) {
+ 	case X86_VENDOR_INTEL:
+-		if (mce_p5_enabled())
+-			intel_p5_mcheck_init(c);
++		intel_p5_mcheck_init(c);
+ 		break;
+ 	case X86_VENDOR_CENTAUR:
+ 		winchip_mcheck_init(c);
+@@ -1995,7 +1994,7 @@ EXPORT_SYMBOL_GPL(nr_mce_banks);	/* non-fatal.o */
+ /* This has to be run for each processor */
+ void mcheck_init(struct cpuinfo_x86 *c)
  {
- 	unsigned int cpu = smp_processor_id();
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-index f2ef695..c548111 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-@@ -16,8 +16,6 @@
- #include <asm/idle.h>
- #include <asm/therm_throt.h>
+-	if (mce_disabled == 1)
++	if (mce_disabled)
+ 		return;
  
--#include "mce.h"
--
- asmlinkage void smp_thermal_interrupt(void)
+ 	switch (c->x86_vendor) {
+@@ -2025,10 +2024,9 @@ void mcheck_init(struct cpuinfo_x86 *c)
+ 
+ static int __init mcheck_enable(char *str)
  {
- 	__u64 msr_val;
-diff --git a/arch/x86/kernel/cpu/mcheck/non-fatal.c b/arch/x86/kernel/cpu/mcheck/non-fatal.c
-index 70b7104..f5f2d6f 100644
---- a/arch/x86/kernel/cpu/mcheck/non-fatal.c
-+++ b/arch/x86/kernel/cpu/mcheck/non-fatal.c
-@@ -17,10 +17,9 @@
- 
- #include <asm/processor.h>
- #include <asm/system.h>
-+#include <asm/mce.h>
- #include <asm/msr.h>
- 
--#include "mce.h"
+-	mce_disabled = -1;
++	mce_p5_enabled = 1;
+ 	return 1;
+ }
 -
- static int		firstbank;
+ __setup("mce", mcheck_enable);
  
- #define MCE_RATE	(15*HZ)	/* timer rate is 15s */
-diff --git a/arch/x86/kernel/cpu/mcheck/p4.c b/arch/x86/kernel/cpu/mcheck/p4.c
-index 82cee10..8d3e40e 100644
---- a/arch/x86/kernel/cpu/mcheck/p4.c
-+++ b/arch/x86/kernel/cpu/mcheck/p4.c
-@@ -12,10 +12,9 @@
- #include <asm/processor.h>
- #include <asm/system.h>
- #include <asm/apic.h>
-+#include <asm/mce.h>
- #include <asm/msr.h>
- 
--#include "mce.h"
--
- /* as supported by the P4/Xeon family */
- struct intel_mce_extended_msrs {
- 	u32 eax;
+ #endif /* CONFIG_X86_OLD_MCE */
 diff --git a/arch/x86/kernel/cpu/mcheck/p5.c b/arch/x86/kernel/cpu/mcheck/p5.c
-index 015f481..747853f 100644
+index 747853f..5c0e653 100644
 --- a/arch/x86/kernel/cpu/mcheck/p5.c
 +++ b/arch/x86/kernel/cpu/mcheck/p5.c
-@@ -10,10 +10,9 @@
- 
- #include <asm/processor.h>
- #include <asm/system.h>
-+#include <asm/mce.h>
+@@ -14,7 +14,7 @@
  #include <asm/msr.h>
  
--#include "mce.h"
--
  /* By default disabled */
- int		mce_p5_enable;
+-int		mce_p5_enable;
++int mce_p5_enabled __read_mostly;
  
-diff --git a/arch/x86/kernel/cpu/mcheck/p6.c b/arch/x86/kernel/cpu/mcheck/p6.c
-index 43c24e6..01e4f81 100644
---- a/arch/x86/kernel/cpu/mcheck/p6.c
-+++ b/arch/x86/kernel/cpu/mcheck/p6.c
-@@ -10,10 +10,9 @@
- 
- #include <asm/processor.h>
- #include <asm/system.h>
-+#include <asm/mce.h>
- #include <asm/msr.h>
- 
--#include "mce.h"
--
- /* Machine Check Handler For PII/PIII */
- static void intel_machine_check(struct pt_regs *regs, long error_code)
+ /* Machine check handler for Pentium class Intel CPUs: */
+ static void pentium_machine_check(struct pt_regs *regs, long error_code)
+@@ -42,15 +42,13 @@ void intel_p5_mcheck_init(struct cpuinfo_x86 *c)
  {
-diff --git a/arch/x86/kernel/cpu/mcheck/winchip.c b/arch/x86/kernel/cpu/mcheck/winchip.c
-index 81b0248..54060f5 100644
---- a/arch/x86/kernel/cpu/mcheck/winchip.c
-+++ b/arch/x86/kernel/cpu/mcheck/winchip.c
-@@ -9,10 +9,9 @@
+ 	u32 l, h;
  
- #include <asm/processor.h>
- #include <asm/system.h>
-+#include <asm/mce.h>
- #include <asm/msr.h>
+-	/* Check for MCE support: */
+-	if (!cpu_has(c, X86_FEATURE_MCE))
++	/* Default P5 to off as its often misconnected: */
++	if (!mce_p5_enabled)
+ 		return;
  
--#include "mce.h"
--
- /* Machine check handler for WinChip C6: */
- static void winchip_machine_check(struct pt_regs *regs, long error_code)
- {
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index 1e1e27b..71f9c74 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -53,6 +53,7 @@
- #include <asm/traps.h>
- #include <asm/desc.h>
- #include <asm/i387.h>
-+#include <asm/mce.h>
+-#ifdef CONFIG_X86_OLD_MCE
+-	/* Default P5 to off as its often misconnected: */
+-	if (mce_disabled != -1)
++	/* Check for MCE support: */
++	if (!cpu_has(c, X86_FEATURE_MCE))
+ 		return;
+-#endif
  
- #include <asm/mach_traps.h>
- 
-@@ -64,8 +65,6 @@
- #include <asm/setup.h>
- #include <asm/traps.h>
- 
--#include "cpu/mcheck/mce.h"
--
- asmlinkage int system_call(void);
- 
- /* Do we ignore FPU interrupts ? */
+ 	machine_check_vector = pentium_machine_check;
+ 	/* Make sure the vector pointer is visible before we enable MCEs: */
 -- 
 1.6.3
 
