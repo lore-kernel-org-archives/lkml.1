@@ -1,153 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbZFOKv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbZFOK5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760734AbZFOKv0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 06:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZFOKvT
+	id S1759323AbZFOK5A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 06:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbZFOK4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 06:51:19 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:47332 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbZFOKvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 06:51:18 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-References: <4A329CF8.4050502@goop.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 15 Jun 2009 03:51:17 -0700
-In-Reply-To: <4A329CF8.4050502@goop.org> (Jeremy Fitzhardinge's message of "Fri\, 12 Jun 2009 11\:22\:48 -0700")
-Message-ID: <m18wjtbwii.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 15 Jun 2009 06:56:52 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49424 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752941AbZFOK4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 06:56:52 -0400
+Date: Mon, 15 Jun 2009 11:56:51 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       cl@linux-foundation.org, fengguang.wu@intel.com, linuxram@us.ibm.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring
+	behaviour more in line with expectations V3
+Message-ID: <20090615105651.GD23198@csn.ul.ie>
+References: <20090611163006.e985639f.akpm@linux-foundation.org> <20090612110424.GD14498@csn.ul.ie> <20090615163018.B43A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: jeremy@goop.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090615163018.B43A.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+On Mon, Jun 15, 2009 at 06:42:37PM +0900, KOSAKI Motohiro wrote:
+> Hi
+> 
+> > On Thu, Jun 11, 2009 at 04:30:06PM -0700, Andrew Morton wrote:
+> > > On Thu, 11 Jun 2009 11:47:50 +0100
+> > > Mel Gorman <mel@csn.ul.ie> wrote:
+> > > 
+> > > > The big change with this release is that the patch reintroducing
+> > > > zone_reclaim_interval has been dropped as Ram reports the malloc() stalls
+> > > > have been resolved. If this bug occurs again, the counter will be there to
+> > > > help us identify the situation.
+> > > 
+> > > What is the exact relationship between this work and the somewhat
+> > > mangled "[PATCH for mmotm 0/5] introduce swap-backed-file-mapped count
+> > > and fix
+> > > vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch"
+> > > series?
+> > > 
+> > 
+> > The patch series "Fix malloc() stall in zone_reclaim() and bring
+> > behaviour more in line with expectations V3" replaces
+> > vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch.
+> > 
+> > Portions of the patch series "Introduce swap-backed-file-mapped count" are
+> > potentially follow-on work if a failure case can be identified. The series
+> > brings the kernel behaviour more in line with documentation, but it's easier
+> > to fix the documentation.
+> 
+> Agreed.
+> 
+> 
+> > > That five-patch series had me thinking that it was time to drop 
+> > > 
+> > > vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
+> > 
+> > This patch gets replaced. All the lessons in the new patch are included.
+> > They could be merged together.
+> 
+> Sure.
+> 
+> 
+> > > vmscan-drop-pf_swapwrite-from-zone_reclaim.patch
+> > 
+> > This patch is wrong, but only sortof. It should be dropped or replaced with
+> > another version. Kosaki, could you resubmit this patch except that you check
+> > if RECLAIM_SWAP is set in zone_reclaim_mode when deciding whether to set
+> > PF_SWAPWRITE or not please?
+> 
+> OK. I'll test it again with your patch.
+> 
+> > Your patch is correct if zone_reclaim_mode 1, but incorrect if it's 7 for
+> > example.
+> 
+> May I ask your worry?
+> 
 
-> Parse the ACPI MADT for I/O APIC information, even if the cpu has no
-> (apparent) local APIC (ie, the CPU's APIC feature flag is clear).
->
-> In principle, the local APIC and the I/O APIC are distinct (but related)
-> components, which can be independently present.
->
-> In practice this can happen in a Xen system, where the hypervisor has
-> full control over the local APICs, and delivers interrupts initiated by
-> the I/O APICs via Xen's event channel mechanism.
->
-> (This eliminates the need for any explicit if (xen...) tests in
-> acpi/boot.c)
->
-> Signed-off-by: Jeremy Fitzhardinge<jeremy.fitzhardinge@citrix.com>
+Simply that I believe the intention of PF_SWAPWRITE here was to allow
+zone_reclaim() to aggressively reclaim memory if the reclaim_mode allowed
+it as it was a statement that off-node accesses are really not desired.
 
-To be very clear.  We have mechanism and policy mixed in the mptable
-and related code today.  While we continue to have that mixed I think
-even attempting to reuse it for Xen dom0 is a horrifically bad move.
+> Parhaps, my patch description was wrong. I should wrote patch effective
+> to separate small and large server.
+> 
+> First, our dirty page limitation is sane. Thus we don't need to care
+> all pages of system are dirty.
+> 
 
-Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+For dirty pages, that seems fair, but what about pages that have been recently
+unmapped and are being written to swap? If PF_SWAPWRITE is not set, then is it
+possible we'll fail to pageout due to IO congestion even though zone_reclaim()
+queues only a small number of pages?
 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index 2410469..19d13e5 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -193,9 +193,6 @@ static int __init acpi_parse_madt(struct acpi_table_header *table)
->  {
->  	struct acpi_table_madt *madt = NULL;
->
-> -	if (!cpu_has_apic)
-> -		return -EINVAL;
-> -
->  	madt = (struct acpi_table_madt *)table;
->  	if (!madt) {
->  		printk(KERN_WARNING PREFIX "Unable to map MADT\n");
-> @@ -1252,9 +1249,6 @@ static int __init acpi_parse_madt_ioapic_entries(void)
->  	if (acpi_disabled || acpi_noirq)
->  		return -ENODEV;
->
-> -	if (!cpu_has_apic)
-> -		return -ENODEV;
-> -
->  	/*
->  	 * if "noapic" boot option, don't look for IO-APICs
->  	 */
-> @@ -1357,6 +1351,16 @@ static void __init acpi_process_madt(void)
->  #ifdef CONFIG_X86_BIGSMP
->  			generic_bigsmp_probe();
->  #endif
-> +		}
-> +		if (error == -EINVAL) {
-> +			/*
-> +			 * The ACPI tables themselves were malformed.
-> +			 * Dell Precision Workstation 410, 610 come here.
-> +			 */
-> +			printk(KERN_ERR PREFIX
-> +			       "Invalid BIOS MADT, disabling ACPI\n");
-> +			disable_acpi();
-> +		} else {
->  			/*
->  			 * Parse MADT IO-APIC entries
->  			 */
-> @@ -1370,14 +1374,6 @@ static void __init acpi_process_madt(void)
->  					apic->setup_apic_routing();
->  			}
->  		}
-> -		if (error == -EINVAL) {
-> -			/*
-> -			 * Dell Precision Workstation 410, 610 come here.
-> -			 */
-> -			printk(KERN_ERR PREFIX
-> -			       "Invalid BIOS MADT, disabling ACPI\n");
-> -			disable_acpi();
-> -		}
->  	} else {
->  		/*
->   		 * ACPI found no MADT, and so ACPI wants UP PIC mode.
-> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-> index c6acce2..d5e3f03 100644
-> --- a/arch/x86/kernel/apic/io_apic.c
-> +++ b/arch/x86/kernel/apic/io_apic.c
-> @@ -1807,6 +1807,10 @@ __apicdebuginit(void) print_all_local_APICs(void)
->  {
->  	int cpu;
->
-> +	/* don't print out if apic is not there */
-> +	if (!cpu_has_apic)
-> +		return;
-> +
->  	preempt_disable();
->  	for_each_online_cpu(cpu)
->  		smp_call_function_single(cpu, print_local_APIC, NULL, 1);
-> @@ -1849,8 +1853,7 @@ __apicdebuginit(int) print_all_ICs(void)
->  {
->  	print_PIC();
->
-> -	/* don't print out if apic is not there */
-> -	if (!cpu_has_apic || disable_apic)
-> +	if (disable_apic)
->  		return 0;
->
->  	print_all_local_APICs();
+> Thus, on large server, turning off PF_SWAPWRITE don't cause off-node allocation.
+> There are always clean and droppable page in system.
+> 
+
+And it would be expected that if the scan-avoidance heuristics are working,
+then we know there are pages that can be reclaimed. However, if the reclaim
+mode is allowing the writing, unmapping and swapping of pages, there could
+still be a lot of IO to generate.
+
+> In the other hand, on small server, we need to concern write-back race because
+> system memory are relatively small.
+> Thus, turning off PF_SWAPWRITE might cause off-node allocation.
+> 
+>   - typically, small servers are latency aware than larger one.
+>   - zone reclaim is not the feature of gurantee no off-node allocation.
+>   - on small server, off-node allocation penalty is not much rather larger
+>     one in many case.
+> 
+> I sitll think this patch is valueable.
+> 
+
+Ok. I am not fully convinced but I'll not block it either if believe it's
+necessary. My current understanding is that this patch only makes a difference
+if the server is IO congested in which case the system is struggling anyway
+and an off-node access is going to be relatively small penalty overall.
+Conceivably, having PF_SWAPWRITE set makes things worse in that situation
+and the patch makes some sense.
+
+> 
+> > > vmscan-zone_reclaim-use-may_swap.patch
+> > > 
+> > 
+> > This is a tricky one. Kosaki, I think this patch is a little dangerous. With
+> > this applied, pages get unmapped whether RECLAIM_SWAP is set or not. This
+> > means that zone_reclaim() now has more work to do when it's enabled and it
+> > incurs a number of minor faults for no reason as a result of trying to avoid
+> > going off-node. I don't believe that is desirable because it would manifest
+> > as high minor fault counts on NUMA and would be difficult to pin down why
+> > that was happening.
+> 
+> (cc to hanns)
+> 
+> First, if this patch should be dropped, commit bd2f6199 
+> (vmscan: respect higher order in zone_reclaim()) should be too. I think.
+> the combination of lumply reclaim and !may_unmap is really ineffective.
+
+Whether it's ineffective or not, it's what the user has asked for. They
+want a high-order page found if possible within the limits of
+zone_reclaim_mode. If it fails, they will enter full direct reclaim
+later in the path and try again.
+
+How effective lumpy reclaim is in this case really depends on what the
+system has been used for in the past. It's impossible to know in advance
+how effective lumpy reclaim will be in every case.
+
+> it might cause isolate neighbor pages and give up unmapping and pages put
+> back tail of lru.
+> it mean to shuffle lru list.
+> 
+> I don't think it is desirable.
+> 
+
+With Kamezawa Hiroyuki's patch that avoids unnecessary shuffles of the LRU
+list due to lumpy reclaim, the situation might be better?
+
+> Second, we did learned that "mapped or not mapped" is not appropriate
+> reclaim boosting between split-lru discussion.
+> So, I think to make consistent is better. if no considerness of may_unmap
+> makes serious performance issue, we need to fix try_to_free_pages() path too.
+> 
+
+I don't understand this paragraph.
+
+If zone_reclaim_mode is set to 1, I don't believe the expected behaviour is
+for pages to be unmapped from page tables. I think it will lead to mysterious
+bug reports of higher numbers of minor faults when running applications on
+NUMA machines in some situations.
+
+> 
+> Third, if we consider MPI program on NUMA, each process only access
+> a part of array data frequently and never touch rest part of array.
+> So, AFAIK "rarely, but access" is rarely, no freqent access is not major performance source.
+> 
+> I have one question. your "difficultness of pinning down" is major issue?
+> 
+
+Yes. If an administrator notices that minor fault rates are higher than
+expected, it's going to be very difficult for them to understand why
+it is happening and why setting reclaim_mode to 0 apparently fixes the
+problem. oprofile for example might just show that a lot of time is being
+spent in the fault paths but not explain why.
+
+> 
+> > 
+> > I think the code makes more sense than the documentation and it's the
+> > documentation that should be fixed. Our current behaviour is to discard
+> > clean, swap-backed, unmapped pages that require no further IO. This is
+> > reasonable behaviour for zone_reclaim_mode == 1 so maybe the patch
+> > should change the documentation to
+> > 
+> >         1       = Zone reclaim discards clean unmapped disk-backed pages
+> >         2       = Zone reclaim writes dirty pages out
+> >         4       = Zone reclaim unmaps and swaps pages
+> > 
+> > If you really wanted to strict about the meaning of RECLAIM_SWAP, then
+> > something like the following would be reasonable;
+> > 
+> > 	.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+> > 	.may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+> > 
+> > because a system administrator is not going to distinguish between
+> > unmapping and swap. I would assume at least that RECLAIM_SWAP implies
+> > unmapping pages for swapping but an updated documentation wouldn't hurt
+> > with
+> > 
+> > 	4       = Zone reclaim unmaps and swaps pages
+> > 
+> > > (they can be removed cleanly, but I haven't tried compiling the result)
+> > > 
+> > > but your series is based on those.
+> > > 
+> > 
+> > The patchset only depends on
+> > vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
+> > and then only because of merge conflicts. All the lessons in
+> > vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch are
+> > incorporated.
+> > 
+> > > We have 142 MM patches queued, and we need to merge next week.
+> > > 
+> > 
+> > I'm sorry my timing for coming out with the zone_reclaim() patches sucks
+> > and that I failed to spot these patches earlier. Despite the abundance
+> > of evidence, I'm not trying to be deliberatly awkward :/
+> > 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
