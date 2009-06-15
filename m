@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759911AbZFONHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZFONJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759911AbZFONHh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZFONH0
+	id S1760763AbZFONJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFONJC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:07:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53767 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752571AbZFONHZ (ORCPT
+	Mon, 15 Jun 2009 09:09:02 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:60244 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbZFONJB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:07:25 -0400
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       yinghai@kernel.org
-In-Reply-To: <Pine.LNX.4.64.0906151329310.24256@sister.anvils>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
-	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
-	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
-	 <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>
-	 <1245059859.23207.16.camel@penberg-laptop>
-	 <20090615102737.GA20461@wotan.suse.de> <1245062727.12400.23.camel@pasglop>
-	 <20090615112355.GB6012@wotan.suse.de>
-	 <Pine.LNX.4.64.0906151329310.24256@sister.anvils>
-Date: Mon, 15 Jun 2009 16:07:25 +0300
-Message-Id: <1245071245.23207.45.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Mon, 15 Jun 2009 09:09:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vpeb3kR5z1gFVI41ysA3Yz/3ylnVqfUCgAZBs5tPvfFps1QvXoymg9PBaaYrP15p54
+         wtOThyQFMcibBOaWmodQsO38BGZ8IxDnpj9y5GP+drn7vDks0mpojgvHAr41RlnAgI+e
+         I6OPHjOecO3DXiLq/YWb7D2KJr3i1d+EzPDD0=
+MIME-Version: 1.0
+In-Reply-To: <20090615031253.530308256@intel.com>
+References: <20090615024520.786814520@intel.com>
+	 <20090615031253.530308256@intel.com>
+Date: Mon, 15 Jun 2009 22:09:03 +0900
+Message-ID: <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com>
+Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in 
+	try_to_unmap
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
+On Mon, Jun 15, 2009 at 11:45 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> From: Andi Kleen <ak@linux.intel.com>
+>
+> When a page has the poison bit set replace the PTE with a poison entry.
+> This causes the right error handling to be done later when a process runs
+> into it.
+>
+> Also add a new flag to not do that (needed for the memory-failure handler
+> later)
+>
+> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+>
+> ---
+>  include/linux/rmap.h |    1 +
+>  mm/rmap.c            |    9 ++++++++-
+>  2 files changed, 9 insertions(+), 1 deletion(-)
+>
+> --- sound-2.6.orig/mm/rmap.c
+> +++ sound-2.6/mm/rmap.c
+> @@ -958,7 +958,14 @@ static int try_to_unmap_one(struct page
+>        /* Update high watermark before we lower rss */
+>        update_hiwater_rss(mm);
+>
+> -       if (PageAnon(page)) {
+> +       if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
+> +               if (PageAnon(page))
+> +                       dec_mm_counter(mm, anon_rss);
+> +               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
 
-On Mon, 2009-06-15 at 13:38 +0100, Hugh Dickins wrote:
-> Fair enough that you jealously defend SL?B code from onslaught, but
-> FWIW I strongly agree with Ben on all this.  I cannot see the point
-> of the pain of moving around SL?B versus bootmem, if we immediately
-> force such a distinction (differently dressed) upon their users again.
+Isn't it straightforward to use !is_hwpoison_entry ?
 
-I'm fine with the current approach but I don't think this is completely
-accurate. Passing a GFP flag from top to bottom (like we do in existing
-code) is pretty natural compared to passing a "boot" boolean or using
-system_state checks to switch between kmalloc() and bootmem_alloc().
 
-So even with a GFP_BOOT flag, I do see advantages in being able to use
-kmalloc() et al almost universally.
-
-			Pekka
-
+-- 
+Kinds regards,
+Minchan Kim
