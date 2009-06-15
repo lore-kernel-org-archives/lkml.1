@@ -1,112 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760714AbZFOKqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbZFOKq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760714AbZFOKqk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 06:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZFOKqc
+	id S1760634AbZFOKq4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 06:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZFOKqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 06:46:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60135 "EHLO mx2.redhat.com"
+	Mon, 15 Jun 2009 06:46:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36417 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752053AbZFOKqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 06:46:31 -0400
-Date: Mon, 15 Jun 2009 06:46:18 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Steve French <smfrench@gmail.com>, <linux-cifs-client@lists.samba.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: cifs tree build failure
-Message-ID: <20090615064618.120a2337@tlielax.poochiereds.net>
-In-Reply-To: <20090615133222.7405743c.sfr@canb.auug.org.au>
-References: <20090615133222.7405743c.sfr@canb.auug.org.au>
+	id S1752688AbZFOKqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 06:46:46 -0400
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       yinghai@kernel.org
+In-Reply-To: <20090615102737.GA20461@wotan.suse.de>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
+	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
+	 <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>
+	 <1245059859.23207.16.camel@penberg-laptop>
+	 <20090615102737.GA20461@wotan.suse.de>
+Content-Type: text/plain
+Date: Mon, 15 Jun 2009 20:45:27 +1000
+Message-Id: <1245062727.12400.23.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/y__V6Y3lSu2NR0Dmy=NHMeO"
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_/y__V6Y3lSu2NR0Dmy=NHMeO
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Mon, 15 Jun 2009 13:32:22 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Steve,
+On Mon, 2009-06-15 at 12:27 +0200, Nick Piggin wrote:
 > 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> > So from code shuffling point of view, it's better to support
+> GFP_KERNEL
+> > (almost) everywhere rather than require special annotations.
 > 
-> fs/cifs/cifsfs.c: In function 'cifs_show_options':
-> fs/cifs/cifsfs.c:357: error: implicit declaration of function 'cifs_show_address'
-> 
-> Caused by commit 8616e0fc1e27295316f9821a883f0e9fa6f8200f ("cifs: remove
-> unneeded NULL checks from cifs_show_options").
-> 
-> I have used the cifs tree from next-20090612 for today.
+> Nor this. We require special allocation annotations *everywhere*
+> according to context. Why is using GFP_KERNEL for unsleeping
+> allocations a good thing if we have GFP_ATOMIC etc?
 
-My fault. That function gets introduced in a later patch and I had a
-bogus call left in here from when I reorganized the series. This
-patch should fix it and a typo that got silently fixed in a patch that
-hasn't been committed yet.
+GFP_ATOMIC is a good point in fact. We -could- make it unnecessary since
+we can pretty much tell nowadays whether we are in atomic context or
+not.
 
-This patch should fix both. Steve F., let me know if you want me to
-respin the series on top of this patch. Note that there's still a
-harmless compiler warning that gets fixed in a later patch in the
-series.
+So where do we put the line ? The subtle differences here are, imho:
 
-Thanks,
--- 
-Jeff Layton <jlayton@redhat.com>
+ - It's good to discourage allocations in atomic contexts. So requiring
+GFP_ATOMIC to some extent helps making people think twice about they are
+doing.
 
---MP_/y__V6Y3lSu2NR0Dmy=NHMeO
-Content-Type: text/x-patch
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename=0001-cifs-fix-problems-with-earlier-patches.patch
+ - Code that requires GFP_ATOMIC is generally code that knows pretty
+well in which context it's running, because most of the time, it's the
+same piece of code or subsystem that is -causing- the context to be
+atomic (because it's an interrupt handler or because it used a
+spinlock). The case of boot time is subtely different. We have a whole
+bunch of things that will be called both at boot time and later, without
+necessarily knowing where they have been called from. IE. The call
+traces are longer if you want in the typical boot context than in the
+typical atomic context.
 
-=46rom c5949e669f4a85c16b3529777f5d550bddea9dd9 Mon Sep 17 00:00:00 2001
-From: Jeff Layton <jlayton@redhat.com>
-Date: Mon, 15 Jun 2009 06:40:23 -0400
-Subject: [PATCH] cifs: fix problems with earlier patches
+It all boils down to a fine line to be found here between the two
+options, and my gut feeling is that we should keep GFP_ATOMIC explicit,
+but avoid the need to provide an explicit API for boot time allocations.
 
-cifs_show_address hasn't been introduced yet, and fix a typo that was
-silently fixed by a later patch in the series.
+> We could also mask off __GFP_WAIT from allocations when we take
+> a spinlock or enter an interrupt, right?
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/cifs/cifsfs.c  |    2 --
- fs/cifs/netmisc.c |    2 +-
- 2 files changed, 1 insertions(+), 3 deletions(-)
+We -could-. Whether we want to is to be debated. Also the overhead of
+doing so would be higher I believe.
 
-diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
-index 8b31570..4b8ec25 100644
---- a/fs/cifs/cifsfs.c
-+++ b/fs/cifs/cifsfs.c
-@@ -354,8 +354,6 @@ cifs_show_options(struct seq_file *s, struct vfsmount *=
-m)
- 	if (tcon->ses->domainName)
- 		seq_printf(s, ",domain=3D%s", tcon->ses->domainName);
-=20
--	cifs_show_address(s, tcon->ses->server);
--
- 	seq_printf(s, ",uid=3D%d", cifs_sb->mnt_uid);
- 	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_OVERR_UID)
- 		seq_printf(s, ",forceuid");
-diff --git a/fs/cifs/netmisc.c b/fs/cifs/netmisc.c
-index 00e6e35..f9a54da 100644
---- a/fs/cifs/netmisc.c
-+++ b/fs/cifs/netmisc.c
-@@ -166,7 +166,7 @@ int
- cifs_convert_address(char *src, void *dst)
- {
- 	struct sockaddr_in *s4 =3D (struct sockaddr_in *) dst;
--	struct sockaddr_in6 *s6 =3D (Struct sockaddr_in6 *) dst;
-+	struct sockaddr_in6 *s6 =3D (struct sockaddr_in6 *) dst;
-=20
- 	if (cifs_inet_pton(AF_INET, src, &s4->sin_addr.s_addr)) {
- 		s4->sin_family =3D AF_INET;
---=20
-1.6.0.6
+> Init code doesn't deserve to be more lazy than anybody else, and
+> part of the reason why such a core piece of code is so crufty
+> is exactly because people have been lazy there.
+
+I think the main problem isn't necessarily init code per se, but the
+pile of -common- code that can be called both at init time and later.
+
+Cheers,
+Ben.
 
 
---MP_/y__V6Y3lSu2NR0Dmy=NHMeO--
