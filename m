@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763892AbZFOQth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763227AbZFOQww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763892AbZFOQth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 12:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761207AbZFOQt0
+	id S1763227AbZFOQww (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 12:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbZFOQwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 12:49:26 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:35402 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760318AbZFOQtZ (ORCPT
+	Mon, 15 Jun 2009 12:52:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45377 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756277AbZFOQwp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 12:49:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=k20ijcBkc11qySt5BlLqKX7+AGiMvcxGa8M5xh5QryX/McSLdLYFsuCoon0o0ebIwM
-         jgh5KWqRQZqW1FhT0wzcYsE22ygIL/FAxJRIy+deiGXqOoMIBvGjqQU3gsBM02j50suD
-         oq5FcxGSprzYupeUJhOVASvOO0/Urt/OOwOkY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: linux-next: ide tree build failure
-Date: Mon, 15 Jun 2009 18:14:12 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090612gcc44-07181-g84f26e4; KDE/4.2.3; i686; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20090615113430.21122e44.sfr@canb.auug.org.au> <20090615053514.GA13226@liondog.tnic>
-In-Reply-To: <20090615053514.GA13226@liondog.tnic>
+	Mon, 15 Jun 2009 12:52:45 -0400
+Message-ID: <4A367C09.80008@zytor.com>
+Date: Mon, 15 Jun 2009 09:51:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906151814.13305.bzolnier@gmail.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+CC: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH v2 0/8] clean up vdso-layout.lds.S
+References: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>	 <20090612180626.GB18203@uranus.ravnborg.org>	 <1245079002.17481.118.camel@nathan.suse.cz> <1245079649.17481.121.camel@nathan.suse.cz>
+In-Reply-To: <1245079649.17481.121.camel@nathan.suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 June 2009 07:35:14 Borislav Petkov wrote:
-> Hi,
+Petr Tesarik wrote:
+> Petr Tesarik píše v Po 15. 06. 2009 v 17:16 +0200:
+>> [...]
+>> An example can probably explain it better:
+>>
+>> $ cat >shared.c <<EOF
+>> int shared_object[100];
+>> EOF
+>> $ cat >exe.c <<EOF
+>> #include <stdio.h>
+>> extern int shared_object[100];
+>> int main(void) {
+>> 	printf("%p\n", &shared_object); 
+>> 	return 0;
+>> }
+>> EOF
 > 
-> On Mon, Jun 15, 2009 at 11:34:30AM +1000, Stephen Rothwell wrote:
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > 
-> > drivers/ide/ide-tape.c: In function 'idetape_chrdev_open':
-> > drivers/ide/ide-tape.c:1515: error: implicit declaration of function 'idetape_read_position'
-> > 
-> > Caused by commit 55ce3a129ea2e8faba4a11bb5dbc305590d1c20c ("ide-tape: fix
-> > READ POSITION cmd handling") interacting with the later merge
-> > 8dcce4081305d3d1629190edd112e6473c315cbc ("Merge branch
-> > 'bp-remove-pc-buf' into for-next").
-> > 
-> > I have used the ide tree from next-20090612 for today.
+> BTW this example demonstrates that there is one section which should be
+> included in .data but is not:
 > 
-> Ah, the function got renamed in 55ce3a129ea2e8faba4a11bb5dbc305590d1c20c. Here's
-> a fix:
+> 	*(COMMON)
 > 
-> ---
-> From: Borislav Petkov <petkovbb@gmail.com>
-> Date: Mon, 15 Jun 2009 07:32:04 +0200
-> Subject: [PATCH] ide-tape: fix build issue
+> I'll send a patch later.
 > 
-> This fixes
-> 
-> drivers/ide/ide-tape.c: In function `idetape_chrdev_open':
-> drivers/ide/ide-tape.c:1515: error: implicit declaration of function `idetape_read_position'
-> make[1]: *** [drivers/ide/ide-tape.o] Error 1
-> 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
-thanks, applied
+*(COMMON) is BSS, not data...
+
+	-hpa
