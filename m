@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZFOIff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZFOIgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbZFOIff (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZFOIf1
+	id S1753392AbZFOIgb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZFOIgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:35:27 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:35338 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbZFOIf1 (ORCPT
+	Mon, 15 Jun 2009 04:36:22 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:17571 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750767AbZFOIgV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:35:27 -0400
-Message-ID: <4A360793.6060000@oracle.com>
-Date: Mon, 15 Jun 2009 16:34:27 +0800
-From: Tao Ma <tao.ma@oracle.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 15 Jun 2009 04:36:21 -0400
+From: Wolfgang =?utf-8?q?M=C3=BCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH] mmc_spi: fail gracefully if host or card do not support the switch command
+Date: Mon, 15 Jun 2009 10:36:05 +0200
+User-Agent: KMail/1.9.10
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <200906111713.27504.wolfgang.mues@auerswald.de> <20090613130829.49216355@mjolnir.ossman.eu>
+In-Reply-To: <20090613130829.49216355@mjolnir.ossman.eu>
 MIME-Version: 1.0
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
-References: <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com> <4A2CC52B.9010602@oracle.com> <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com> <m1ab4i11zx.fsf@fess.ebiederm.org> <20090611050929.GA2706@cr0.nay.redhat.com> <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0> <m17hzg7oil.fsf@fess.ebiederm.org> <20090615021457.GA3388@cr0.nay.redhat.com> <4A35E32C.30609@oracle.com> <20090615070018.GD3544@cr0.nay.redhat.com>
-In-Reply-To: <20090615070018.GD3544@cr0.nay.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A360797.0258:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906151036.05884.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amerigo,
+Hello Pierre,
 
-The wrong number I mean is 131941393240064.
+Am Samstag, 13. Juni 2009 schrieb Pierre Ossman:
+> > The switch command (typically speed switching from 25 to 50 MHz clock)
+> > can be rejected by _both_ the host controller/driver and by the card.
+> > Elder revisions of the SD card do not support speed switching.
+> > Fail gracefully if the reject is comming from the card.
 
-So do you think
-[root@test3 ~]# ls -l /proc/kcore
--r-------- 1 root root 131941393240064 Jun 15 13:39 /proc/kcore
+> Have you ever seen this in practice?
 
-is better than
+Yes, I have. An old 1 GByte SD card.
 
-[taoma@test2 ~]$ ll /proc/kcore
--r-------- 1 root root 281474974617600 Jun 15 15:20 /proc/kcore
-?
+> For SD there are several checks 
+> before the switch command is actually issued.
 
-I don't think so.
+But there are two cases not covered by these checks:
 
-Actually the right result should look like
+a) the switch command is supported, but the card is not capable of switching 
+to 50 MHz.
 
-[root@test8 ~]# ls -l /proc/kcore
--r-------- 1 root root 5301604352 Jun 15 13:35 /proc/kcore
+b) the card rejects the switch command in SPI mode, because it is not 
+mandatory here.
 
-And with your patch I can't get this number.
+So yes, the checks can be improved. But only extending the error codes was a 
+simple, fast and minimal solution.
 
-Regards,
-Tao
+regards
 
-Amerigo Wang wrote:
-> On Mon, Jun 15, 2009 at 01:59:08PM +0800, Tao Ma wrote:
->> Hi Amerigo,
->> 	Just patched my kernel and tested.
->> 	The bad news is that although the number is changed, but it isn't right  
->> either.
-> 
-> Thanks for testing.
-> 
-> What do you mean by saying it isn't right? You think it is wrong only because
-> it is more than phy mem size?
-> 
-> Again, the document of /proc/kcore is wrong, it _can_ be more than phy mem size.
-> 
-> Regards.
-> 
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
