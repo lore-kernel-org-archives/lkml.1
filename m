@@ -1,113 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZFOEZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZFOE2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbZFOEZw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 00:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbZFOEZm
+	id S1754757AbZFOE2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 00:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZFOE2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 00:25:42 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:57522 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbZFOEZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 00:25:41 -0400
-Message-ID: <4A35CD41.20206@novell.com>
-Date: Mon, 15 Jun 2009 00:25:37 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Mon, 15 Jun 2009 00:28:06 -0400
+Received: from mga03.intel.com ([143.182.124.21]:14587 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbZFOE2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 00:28:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
+   d="scan'208";a="154285360"
+Date: Mon, 15 Jun 2009 12:27:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+Message-ID: <20090615042753.GA20788@localhost>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, markmc@redhat.com,
-       "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [KVM PATCH v6 2/2] KVM: add iosignalfd support
-References: <20090605154006.18047.41232.stgit@dev.haskins.net> <20090605155508.18047.83818.stgit@dev.haskins.net> <4A29417A.6070706@novell.com> <20090613043951.GA3083@amt.cnet>
-In-Reply-To: <20090613043951.GA3083@amt.cnet>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig936278FE70A44E04EA618519"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A35BD7A.9070208@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig936278FE70A44E04EA618519
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jun 15, 2009 at 11:18:18AM +0800, Balbir Singh wrote:
+> Wu Fengguang wrote:
+> > Hi all,
+> > 
+> > Comments are warmly welcome on the newly introduced uevent code :)
+> > 
+> > I hope we can reach consensus in this round and then be able to post
+> > a final version for .31 inclusion.
+> 
+> Isn't that too aggressive? .31 is already in the merge window.
 
-Hi Marcelo,
+Yes, a bit aggressive. This is a new feature that involves complex logics.
+However it is basically a no-op when there are no memory errors,
+and when memory corruption does occur, it's better to (possibly) panic
+in this code than to panic unconditionally in the absence of this
+feature (as said by Rik).
 
-Marcelo Tosatti wrote:
-> On Fri, Jun 05, 2009 at 12:02:02PM -0400, Gregory Haskins wrote:
->  =20
->> Hi Marcelo!
->>
->> Comments about the shutdown path ambiguity are in-line
->>
->> Gregory Haskins wrote:
->>    =20
->>> iosignalfd is a mechanism to register PIO/MMIO regions to trigger an =
-eventfd
->>> signal when written to by a guest.  Host userspace can register any a=
-rbitrary
->>> IO address with a corresponding eventfd and then pass the eventfd to =
-a
->>> +		list_del(&item->list);
->>> +		iosignalfd_item_free(item);
->>> +	}
->>> +
->>> +	list_del(&group->list);
->>> +	kfree(group);
->>> +}
->>>  =20
->>>      =20
->> So this function is called by the path that executes as we do the last=
+So IMHO it's OK for .31 as long as we agree on the user interfaces,
+ie. /proc/sys/vm/memory_failure_early_kill and the hwpoison uevent.
 
->> kvm_put_kvm().  I do not do any careful RCU wrangling here because I
->> assume that there cannot possibly be any active MMIO/PIO operations at=
+It comes a long way through numerous reviews, and I believe all the
+important issues and concerns have been addressed. Nick, Rik, Hugh,
+Ingo, ... what are your opinions? Is the uevent good enough to meet
+your request to "die hard" or "die gracefully" or whatever on memory
+failure events?
 
->> this time, or the reference would never have dropped.  Let me know if
->> anyone sees any holes in that.
->>
->> An alternative approach is to do this similar to how irqfd_release()
->> works.   That is: invoke it from the vmfd release() path instead of th=
-e
->> the kvm object destructor.  I currently do not think this is necessary=
-,
->> but I will throw that out there in case someone likes it better.
->>    =20
->
-> Gregory,
->
-> Can't see any problems with it.
-
-Thanks for the review!
-
-
->  You might want an upper limit
-> in the number of items per group.
->  =20
-
-
-Yeah, I agree that is a good idea.  Will fix in v7.
-
-BTW: Did your series get merged while I was away?
-
--Greg
-
-
---------------enig936278FE70A44E04EA618519
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko1zUEACgkQlOSOBdgZUxkOCgCfRiMXmjvviRnyQdd6DTNWjP0c
-3awAn0mG1e7CTXqgrILdVlR3Mc+DxvGJ
-=piPC
------END PGP SIGNATURE-----
-
---------------enig936278FE70A44E04EA618519--
+Thanks,
+Fengguang
