@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765769AbZFOUVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933904AbZFOUXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765769AbZFOUVQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 16:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZFOUVA
+	id S933904AbZFOUXo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 16:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbZFOUXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 16:21:00 -0400
-Received: from 195-23-16-24.net.novis.pt ([195.23.16.24]:52457 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbZFOUVA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 16:21:00 -0400
-Message-ID: <4A36A7ED.2050702@grupopie.com>
-Date: Mon, 15 Jun 2009 20:58:37 +0100
-From: Rui Santos <rsantos@grupopie.com>
-Organization: GrupoPIE, Portugal SA
-User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
+	Mon, 15 Jun 2009 16:23:33 -0400
+Received: from kroah.org ([198.145.64.141]:45389 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751556AbZFOUXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 16:23:32 -0400
+Date: Mon, 15 Jun 2009 13:19:34 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       tshibata@ab.jp.nec.com
+Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
+	window
+Message-ID: <20090615201934.GA12685@kroah.com>
+References: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com>
 MIME-Version: 1.0
-To: Wim Van Sebroeck <wim@iguana.be>
-CC: Stephen Clark <sclark46@earthlink.net>,
-       Denys Fedoryschenko <denys@visp.net.lb>,
-       Johannes Dewender <arch@jonnyjd.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Frans Pop <elendil@planet.nl>,
-       Rutger Nijlunsing <bugzilla.kernel@tux.tmfweb.nl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andriy Gapon <avg@icyb.net.ua>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [WATCHDOG] iTCO_wdt.c - ICH9 reboot issue - testing wanted
-References: <20090430094918.GC4141@infomag.iguana.be> <4A2967F6.2000303@grupopie.com> <20090610081845.GH16090@infomag.iguana.be>
-In-Reply-To: <20090610081845.GH16090@infomag.iguana.be>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wim Van Sebroeck wrote:
-> Hi Rui,
->   
+On Mon, Jun 15, 2009 at 04:12:51PM -0400, Luis R. Rodriguez wrote:
+> This is losely based on previous discussions on linux-kernel [1][2].
+> 
+> [1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
+> [2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
+> 
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> ---
+> 
+> I have run into issues when trying to explain this and policies
+> for the rc-series, it seems there is no place that documents this
+> clearly so here is an attempt based on some previous discussions.
+> Not sure if I got it all correct, so feedback is welcomed. I do think
+> clarifying this a little should help.
+> 
+> I was also not sure if Documentation/stable_kernel_rules.txt is the best
+> splace for this as well, please let me know.
 
-Hi Wim,
+I don't think this is the best place for it, as the stable_* file is for
+describing the rules for the 2.6.x.y releases, not the main 2.6.x
+releases.
 
->   
->> With your patch, the Intel DG35EC board will not allow my distribution
->> reboot or halt the machine. In order to circumvent that problem, I've
->> made a few addition to your previous patch witch allows the restore of
->> the changed Bit 0 to it's previous value if the module is unloaded.
->> My only doubt is if it should be done every time the gbl_smi_en is zero,
->> or in conjunction with nowayout when the value also equals zero. This
->> patch has what I described and a commented gbl_smi_en only.
->>     
->
-> Forget the previous patch. I don't like having this hack in the main iTCO_wdt code.
-> So I added it to the iTCO_vendor_support code with the necessary warnings.
-> Can you test this (please note that the iTCO_vendor_support module needs to be
-> loaded with the vendorsupport=911 module parameter).
->   
+A new file perhaps?  Or an addition to the
+Documentation/development-process/ book?
 
-It's working like a charm. Also, the Bit 0 is changed to its original
-value, so all reboots work.
-I've tested on 2.6.30 and 2.6.27 ( with a few mods... ).
+thanks,
 
-> Thanks in advance,
->   
-
-Thank you,
-
-> Wim.
->   
-
-Rui
-
+greg k-h
