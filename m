@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZFOLCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbZFOLKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbZFOLCt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 07:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZFOLCk
+	id S1757392AbZFOLKw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 07:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZFOLKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 07:02:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39676 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbZFOLCj (ORCPT
+	Mon, 15 Jun 2009 07:10:45 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50073 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752132AbZFOLKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 07:02:39 -0400
-Date: Mon, 15 Jun 2009 07:02:40 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: liqin.chen@sunplusct.com
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 21/27] score: create kernel files ptrace.c setup.c
-Message-ID: <20090615110240.GA16735@infradead.org>
-References: <OF9E916A44.859476BA-ON482575D0.00243015-482575D0.0024A03A@sunplusct.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OF9E916A44.859476BA-ON482575D0.00243015-482575D0.0024A03A@sunplusct.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 15 Jun 2009 07:10:44 -0400
+Subject: Re: [BUGFIX][PATCH] memcg: fix page_cgroup fatal error in FLATMEM
+ v2
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: balbir@linux.vnet.ibm.com
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, hannes@cmpxchg.org, torvalds@linux-foundation.org,
+       yinghai@kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <4A3270FE.4090602@linux.vnet.ibm.com>
+References: <Pine.LNX.4.64.0906110820170.2258@melkki.cs.Helsinki.FI>
+	 <4A31C258.2050404@cn.fujitsu.com>
+	 <20090612115501.df12a457.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090612124408.721ba2ae.kamezawa.hiroyu@jp.fujitsu.com>
+	 <4A31D326.3030206@cn.fujitsu.com>
+	 <20090612143429.76ef2357.kamezawa.hiroyu@jp.fujitsu.com>
+	 <84144f020906112321x9912476sb42b5d811741e646@mail.gmail.com>
+	 <20090612152922.0e7d1221.kamezawa.hiroyu@jp.fujitsu.com>
+	 <4A3270FE.4090602@linux.vnet.ibm.com>
+Date: Mon, 15 Jun 2009 14:10:45 +0300
+Message-Id: <1245064245.23207.28.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 02:35:45PM +0800, liqin.chen@sunplusct.com wrote:
-> +long
-> +arch_ptrace(struct task_struct *child, long request, long addr, long 
-> data)
-> +{
-> +       int ret;
-> +
-> +       if (request == PTRACE_TRACEME) {
-> +               /* are we already being traced? */
-> +               if (current->ptrace & PT_PTRACED)
-> +                       return -EPERM;
-> +
-> +               /* set the ptrace bit in the process flags. */
-> +               current->ptrace |= PT_PTRACED;
-> +               return 0;
-> +       }
-> +
-> +       ret = -ESRCH;
-> +       if (!child)
-> +               return ret;
-> +
-> +       ret = -EPERM;
-> +
-> +       if (request == PTRACE_ATTACH) {
-> +               ret = ptrace_attach(child);
-> +               return ret;
-> +       }
-> +
-> +       ret = ptrace_check_attach(child, request == PTRACE_KILL);
-> +       if (ret < 0)
-> +               return ret;
-> +
+On Fri, 2009-06-12 at 20:45 +0530, Balbir Singh wrote:
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > Now, SLAB is configured in very early stage and it can be used in
+> > init routine now.
+> > 
+> > But replacing alloc_bootmem() in FLAT/DISCONTIGMEM's page_cgroup()
+> > initialization breaks the allocation, now.
+> > (Works well in SPARSEMEM case...it supports MEMORY_HOTPLUG and
+> >  size of page_cgroup is in reasonable size (< 1 << MAX_ORDER.)
+> > 
+> > This patch revive FLATMEM+memory cgroup by using alloc_bootmem.
+> > 
+> > In future,
+> > We stop to support FLATMEM (if no users) or rewrite codes for flatmem
+> > completely.But this will adds more messy codes and overheads.
+> > 
+> > Changelog: v1->v2
+> >  - fixed typos.
+> > 
+> > Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > Tested-by: Li Zefan <lizf@cn.fujitsu.com>
+> > Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> I see you've responded already, Thanks!
+> 
+> The diff is a bit confusing, was Pekka's patch already integrated, in my version
+> of mmotm, I don't see the alloc_pages_node() change in my source base.
 
-All this stuff has been done by generic ptrace code for a long time
-and is not needed at all.
+Yes, my patch hit mainline on Thursday or so and this patch is now in as well.
 
-> +       switch (request) {
-> +       case PTRACE_PEEKTEXT: /* read word at location addr. */
-> +       case PTRACE_PEEKDATA: {
-> +               unsigned long tmp;
-> +               int copied;
-> +
-> +               copied = access_process_vm(child, addr, &tmp, sizeof(tmp), 
-> 0);
-> +               ret = -EIO;
-> +               if (copied != sizeof(tmp))
-> +                       break;
-> +
-> +               ret = put_user(tmp, (unsigned long *) data);
-> +               return ret;
-> +       }
-> +
-
-This also has a generic implementation.  Please take a look at a modern
-ptrace implementation like sh, powerpc or x86 to model yours after.
+			Pekka
 
