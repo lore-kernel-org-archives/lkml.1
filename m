@@ -1,86 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZFOGwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750880AbZFOGwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbZFOGwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 02:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZFOGv5
+	id S1750880AbZFOGwd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 02:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbZFOGwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 02:51:57 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:8250 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756238AbZFOGv4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 02:51:56 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=awTtgmmXc4RD5OcCdPUuaJSQtopOC7J0xpIs1i1P9VIYWug/Qe665uU1IepC3+HyM
-	3qOYYRetpDgKxOuChjblw==
-MIME-Version: 1.0
-In-Reply-To: <20090615064234.GA1221@excalibur.local>
-References: <1245033557-10968-1-git-send-email-swetland@google.com>
-	 <1245033557-10968-2-git-send-email-swetland@google.com>
-	 <1245033557-10968-3-git-send-email-swetland@google.com>
-	 <1245033557-10968-4-git-send-email-swetland@google.com>
-	 <20090615064234.GA1221@excalibur.local>
-Date: Sun, 14 Jun 2009 23:51:53 -0700
-Message-ID: <a55d774e0906142351o67b2388dnf26be72815fc3edf@mail.gmail.com>
-Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream 
-	device
-From: Brian Swetland <swetland@google.com>
-To: Stefan Schmidt <stefan@datenfreihafen.org>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Mon, 15 Jun 2009 02:52:08 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:41019 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756510AbZFOGwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 02:52:05 -0400
+Subject: Re: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64
+	randconfig [drivers/net/ucc_geth.o]
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: Tony Breeds <tony@bakeyournoodle.com>, netdev@vger.kernel.org,
+       michael@ellerman.id.au, Li Yang <leoli@freescale.com>,
+       Nathan Lynch <ntl@pobox.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
+References: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 15 Jun 2009 12:21:58 +0530
+Message-Id: <1245048719.5239.10.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 11:42 PM, Stefan
-Schmidt<stefan@datenfreihafen.org> wrote:
->> +
->> +#include <linux/mtd/nand.h>
->> +#include <linux/mtd/partitions.h>
->
-> I see nothing in this file that needs mtd header files. Leftover from the "big"
-> machine file? Please aslo check if the other header files are needed.
->
->> +#include "devices.h"
->> +#include "board-dream.h"
->> +
->> +static struct resource smc91x_resources[] = {
->> +     [0] = {
->> +             .start  = 0x9C004300,
->> +             .end    = 0x9C004400,
->> +             .flags  = IORESOURCE_MEM,
->> +     },
->> +     [1] = {
->> +             .start  = MSM_GPIO_TO_INT(49),
->> +             .end    = MSM_GPIO_TO_INT(49),
->> +             .flags  = IORESOURCE_IRQ,
->> +     },
->> +};
->> +
->> +static struct platform_device smc91x_device = {
->> +     .name           = "smc91x",
->> +     .id             = 0,
->> +     .num_resources  = ARRAY_SIZE(smc91x_resources),
->> +     .resource       = smc91x_resources,
->> +};
->
-> I'm a bit confused here. The dream is the T-Mobile G1 and the Android dev phone,
-> right? Is there really a network chip connected inside the device? Or is this a
-> leftover from the developer board?
+Hi Li/Nathan,
 
-Oops.  Yeah that's definitely not present on G1.  I did a quick trim
-from the halibut (qualcomm dev board) board file to get to a sane
-starting point, but obviously didn't trim enough.
+On Thu, 2009-06-11 at 09:07 +0530, Subrata Modak wrote: 
+> Hi Nathan,
+> 
+> >On Wed, 2009-06-10 at 21:28 -0500, Nathan Lynch wrote:
+> >Subrata Modak <subrata@linux.vnet.ibm.com> writes:
+> > 
+> > > On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+> > >> Hi Subrata,
+> > >> 
+> > >> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+> > >> >
+> > >> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+> > >> > -	ph = of_get_property(np, "tbi-handle", NULL);
+> > >> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
+> > >> 
+> > >> You don't need this cast because of_get_property() returns "void *".
+> > >
+> > > Stephen,
+> > >
+> > > True. But without this gcc complains:
+> > >
+> > > CC [M]  drivers/net/ucc_geth.o
+> > > drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+> > > drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
+> > > from pointer target type
+> > 
+> > ph should be declared const phandle *.  Look at other uses of
+> > of_get_property.
+> >
+> 
+> Ok fine. Here is a revised patch again.
+> 
+> Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
+> Reference(s):
+> http://lkml.org/lkml/2009/6/4/241,
+> http://lkml.org/lkml/2009/6/10/338,
+> 
+> Fix the following build error:
+> 
+> drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+> drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
+> drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
+> drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
+> drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
+> make[2]: *** [drivers/net/ucc_geth.o] Error 1
+> 
+> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+> ---
 
-Reconstructing the board files a little at a time as peripherals are
-added in various patch sets is going to be tedious, but probably a
-good opportunity to clean them up a bit.
+Is there anything else to be done in this patch. If this is OK, can this
+be applied. I am not sure, but, i find Li Yang as the maintainer for
+this in linux*/MAINTAINERS file. Kindly let me know if this patch needs
+to be revisited for some other issue(s).
 
-Thanks,
+Regards--
+Subrata
 
-Brian
+> 
+> --- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10 11:58:39.000000000 -0500
+> +++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10 22:28:13.000000000 -0500
+> @@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
+> 
+>  static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
+>  {
+> +	struct device_node *mdio;
+> +	const phandle *ph;
+>  	struct device *device = &ofdev->dev;
+>  	struct device_node *np = ofdev->node;
+>  	struct net_device *dev = NULL;
+> 
+> ---
+> Regards--
+> Subrata
+> 
+
