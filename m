@@ -1,113 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751331AbZFOQoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763239AbZFOQof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751331AbZFOQoY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 12:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756191AbZFOQoP
+	id S1763239AbZFOQof (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 12:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760405AbZFOQoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 12:44:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60786 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbZFOQoP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 12:44:15 -0400
-Date: Mon, 15 Jun 2009 12:44:15 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH] asm-generic: drop HARDIRQ_BITS definition from
-	hardirq.h
-Message-ID: <20090615164415.GB14053@goodmis.org>
-References: <1244903447-23579-1-git-send-email-vapier@gentoo.org> <200906132318.19208.arnd@arndb.de> <8bd0f97a0906131725l214007fcpfa90e72b03cad2ac@mail.gmail.com> <200906142243.32409.arnd@arndb.de>
+	Mon, 15 Jun 2009 12:44:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45320 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762889AbZFOQoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 12:44:22 -0400
+Date: Mon, 15 Jun 2009 18:39:23 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] Use copy_wait_opts_to_user() in do_wait()
+Message-ID: <20090615163923.GA7425@redhat.com>
+References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com> <1242048349-2766-4-git-send-email-v.mayatskih@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906142243.32409.arnd@arndb.de>
+In-Reply-To: <1242048349-2766-4-git-send-email-v.mayatskih@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Damn. I am sorry for the huge delay. Finally I have read this series
+carefully.
 
-[ Note: I prefer email to rostedt@goodmis.org over srostedt@redhat.com,
-  just because I don't read my RH email as often. ]
-
-On Sun, Jun 14, 2009 at 10:43:31PM +0200, Arnd Bergmann wrote:
-> linux/hardirq.h contains a fallback for HARDIRQ_BITS to 10
-> if it's not defined, so it is pointless to define a default
-> of 8 in asm/hardirq.h. There does not seem to be a good
-> reason why an architecture would want to limit the number
-> of hardirqs this way.
-
-After reading the thread again (from the beginning) I have a better idea
-of what you are talking about. But the above description is misleading.
-
-The HARDIRQ_BITS has nothing to do with the number of IRQS, it has to
-do with the number of nested irqs allowed. Heck, 8 should be goog enough.
-
-But the only thing I object to about this patch is that discription.
-
-> 
-> Reported-by: Mike Frysinger <vapier@gentoo.org>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  include/asm-generic/hardirq.h |   13 -------------
->  1 files changed, 0 insertions(+), 13 deletions(-)
-> On Sunday 14 June 2009, Mike Frysinger wrote:
-> 
-> Mike Frysinger wrote:
-> > is there any downsides to using a "too large" value ?  i.e. if my
-> > system has less than 256, does it make any difference at all if it's
-> > set to 10 ?
-> > -mike
-> 
-> None that I know of. I'm queuing this patch in my asm-generic tree now,
-> unless Steven or someone else has a better idea.
-> 
-> 	Arnd <><
-> 
-> diff --git a/include/asm-generic/hardirq.h b/include/asm-generic/hardirq.h
-> index 3d5d2c9..23bb4da 100644
-> --- a/include/asm-generic/hardirq.h
-> +++ b/include/asm-generic/hardirq.h
-> @@ -11,19 +11,6 @@ typedef struct {
->  
->  #include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
->  
-> -#ifndef HARDIRQ_BITS
-> -#define HARDIRQ_BITS	8
-> -#endif
+On 05/11, Vitaly Mayatskikh wrote:
+>
+> --- a/kernel/exit.c
+> +++ b/kernel/exit.c
+> @@ -1600,8 +1600,6 @@ end:
+>  	__set_current_state(TASK_RUNNING);
+>  	remove_wait_queue(&current->signal->wait_chldexit,&wait);
+>  	if (wo->wo_info) {
+> -		struct siginfo __user *infop = wo->wo_info;
 > -
-> -/*
-> - * The hardirq mask has to be large enough to have
-> - * space for potentially all IRQ sources in the system
-> - * nesting on a single CPU:
-> - */
-> -#if (1 << HARDIRQ_BITS) < NR_IRQS
-> -# error HARDIRQ_BITS is too low!
-> -#endif
+>  		if (retval > 0)
+>  			retval = 0;
+>  		else {
+> @@ -1610,18 +1608,7 @@ end:
+>  			 * we would set so the user can easily tell the
+>  			 * difference.
+>  			 */
+> -			if (!retval)
+> -				retval = put_user(0, &infop->si_signo);
+> -			if (!retval)
+> -				retval = put_user(0, &infop->si_errno);
+> -			if (!retval)
+> -				retval = put_user(0, &infop->si_code);
+> -			if (!retval)
+> -				retval = put_user(0, &infop->si_pid);
+> -			if (!retval)
+> -				retval = put_user(0, &infop->si_uid);
+> -			if (!retval)
+> -				retval = put_user(0, &infop->si_status);
+> +			retval = copy_wait_opts_to_user(wo, 0, 0, 0, 0, 0, 0);
 
-For the content of the patch:
+This looks wrong.
 
- Acked-by: Steven Rostedt <rostedt@goodmis.org>
+copy_wait_opts_to_user()->getrusage() will OOPS if ->wo_rusage != NULL,
+because we pass p == NULL.
 
-Because it too is misleading.
+Easy to fix, but I am not sure what is the most clean fix...
 
-The only reason I did not remove all arch defined HARDIQR_BITS and just default
-it to 10 or 8, is because one of the archs had that hardcoded in the asm, and
-I did not want to break it.
+Oleg.
 
--- Steve
-
-> -
->  #ifndef ack_bad_irq
->  static inline void ack_bad_irq(unsigned int irq)
->  {
-> -- 
-> 1.6.3.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
