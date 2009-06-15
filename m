@@ -1,463 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761113AbZFOPJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZFOPKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761113AbZFOPJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZFOPJp
+	id S1760948AbZFOPKW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZFOPKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:09:45 -0400
-Received: from av7-2-sn3.vrr.skanova.net ([81.228.9.182]:35280 "EHLO
-	av7-2-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755062AbZFOPJo (ORCPT
+	Mon, 15 Jun 2009 11:10:09 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:53839 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751501AbZFOPKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:09:44 -0400
-Message-ID: <4A366439.70005@mocean-labs.com>
-Date: Mon, 15 Jun 2009 17:09:45 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Mon, 15 Jun 2009 11:10:07 -0400
+Date: Mon, 15 Jun 2009 11:01:41 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       fengguang.wu@intel.com, linuxram@us.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring
+ behaviour more in line with expectations V3
+In-Reply-To: <20090615105651.GD23198@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0906151057270.23995@gentwo.org>
+References: <20090611163006.e985639f.akpm@linux-foundation.org> <20090612110424.GD14498@csn.ul.ie> <20090615163018.B43A.A69D9226@jp.fujitsu.com> <20090615105651.GD23198@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-input@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [RESEND][PATCH] input: Added TSC2003
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Supplied is a driver for the TSC2003. There is actually a driver for TSC2007 which can be used in some cases.
-The platform struct is reused from the TSC2007.
-There is a big difference in the implementation between the drivers, this one does not use HR timers.
-The TSC2007 driver performs synchronous I2C in the timer callback (SW IRQ context) which is bad when
-the I2C driver is interrupt driven.
+On Mon, 15 Jun 2009, Mel Gorman wrote:
 
+> > May I ask your worry?
+> >
+>
+> Simply that I believe the intention of PF_SWAPWRITE here was to allow
+> zone_reclaim() to aggressively reclaim memory if the reclaim_mode allowed
+> it as it was a statement that off-node accesses are really not desired.
 
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
----
-Index: linux-2.6.30-rc7/drivers/input/touchscreen/tsc2003.c
-===================================================================
---- linux-2.6.30-rc7/drivers/input/touchscreen/tsc2003.c	(revision 0)
-+++ linux-2.6.30-rc7/drivers/input/touchscreen/tsc2003.c	(revision 869)
-@@ -0,0 +1,387 @@
-+/*
-+ * tsc2003.c Driver for TI TSC2003 touch screen controller
-+ * Copyright (c) 2009 Intel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+/* Supports:
-+ * TI TSC2003
-+ *
-+ * Inspired by tsc2007, Copyright (c) 2008 MtekVision Co., Ltd.
-+ */
-+#include <linux/module.h>
-+#include <linux/input.h>
-+#include <linux/interrupt.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c/tsc2007.h>
-+#include <linux/kthread.h>
-+#include <linux/semaphore.h>
-+
-+#define TSC2003_DRIVER_NAME		"tsc2003"
-+
-+#define TS_POLL_PERIOD	20		/* ms delay between samples */
-+
-+#define TSC2003_MEASURE_TEMP0		(0x0 << 4)
-+#define TSC2003_MEASURE_AUX		(0x2 << 4)
-+#define TSC2003_MEASURE_TEMP1		(0x4 << 4)
-+#define TSC2003_ACTIVATE_XN		(0x8 << 4)
-+#define TSC2003_ACTIVATE_YN		(0x9 << 4)
-+#define TSC2003_ACTIVATE_YP_XN		(0xa << 4)
-+#define TSC2003_SETUP			(0xb << 4)
-+#define TSC2003_MEASURE_X		(0xc << 4)
-+#define TSC2003_MEASURE_Y		(0xd << 4)
-+#define TSC2003_MEASURE_Z1		(0xe << 4)
-+#define TSC2003_MEASURE_Z2		(0xf << 4)
-+
-+#define TSC2003_POWER_OFF_IRQ_EN	(0x0 << 2)
-+#define TSC2003_ADC_ON_IRQ_DIS0		(0x1 << 2)
-+#define TSC2003_ADC_OFF_IRQ_EN		(0x2 << 2)
-+#define TSC2003_ADC_ON_IRQ_DIS1		(0x3 << 2)
-+
-+#define TSC2003_12BIT			(0x0 << 1)
-+#define TSC2003_8BIT			(0x1 << 1)
-+
-+#define	MAX_12BIT			((1 << 12) - 1)
-+
-+#define ADC_ON_12BIT	(TSC2003_12BIT | TSC2003_ADC_ON_IRQ_DIS0)
-+
-+#define READ_Y		(ADC_ON_12BIT | TSC2003_MEASURE_Y)
-+#define READ_Z1		(ADC_ON_12BIT | TSC2003_MEASURE_Z1)
-+#define READ_Z2		(ADC_ON_12BIT | TSC2003_MEASURE_Z2)
-+#define READ_X		(ADC_ON_12BIT | TSC2003_MEASURE_X)
-+#define PWRDOWN		(TSC2003_12BIT | TSC2003_POWER_OFF_IRQ_EN)
-+
-+struct ts_event {
-+	int	x;
-+	int	y;
-+	int	z1, z2;
-+};
-+
-+struct tsc2003 {
-+	struct input_dev	*input;
-+	char			phys[32];
-+	struct task_struct	*task;
-+	struct ts_event		tc;
-+	struct completion 	penirq_completion;
-+
-+	struct i2c_client	*client;
-+
-+	u16			model;
-+	u16			x_plate_ohms;
-+
-+	unsigned		pendown;
-+};
-+
-+static inline int tsc2003_xfer(struct tsc2003 *tsc, u8 cmd)
-+{
-+	s32 data;
-+	u16 val;
-+
-+	data = i2c_smbus_read_word_data(tsc->client, cmd);
-+	if (data < 0) {
-+		dev_err(&tsc->client->dev, "i2c io error: %d\n", data);
-+		return data;
-+	}
-+
-+	/* The protocol and raw data format from i2c interface:
-+	 * S Addr Wr [A] Comm [A] S Addr Rd [A] [DataLow] A [DataHigh] NA P
-+	 * Where DataLow has [D11-D4], DataHigh has [D3-D0 << 4 | Dummy 4bit].
-+	 */
-+	val = swab16(data) >> 4;
-+
-+	dev_dbg(&tsc->client->dev, "data: 0x%x, val: 0x%x\n", data, val);
-+
-+	return val;
-+}
-+
-+static void tsc2003_send_event(void *tsc)
-+{
-+	struct tsc2003	*ts = tsc;
-+	struct input_dev *input = ts->input;
-+	u32		rt = 0;
-+	u16		x, y, z1, z2;
-+
-+	x = ts->tc.x;
-+	y = ts->tc.y;
-+	z1 = ts->tc.z1;
-+	z2 = ts->tc.z2;
-+
-+	/* range filtering */
-+	if (x == MAX_12BIT)
-+		x = 0;
-+
-+	if (likely(x && z1)) {
-+		/* compute touch pressure resistance using equation #1 */
-+		rt = z2;
-+		rt -= z1;
-+		rt *= x;
-+		rt *= ts->x_plate_ohms;
-+		rt /= z1;
-+		rt = (rt + 2047) >> 12;
-+	}
-+
-+	/* Sample found inconsistent by debouncing or pressure is beyond
-+	 * the maximum. Don't report it to user space, repeat at least
-+	 * once more the measurement
-+	 */
-+	if (rt > MAX_12BIT)
-+		return;
-+
-+	/* NOTE: We can't rely on the pressure to determine the pen down
-+	 * state, even this controller has a pressure sensor.  The pressure
-+	 * value can fluctuate for quite a while after lifting the pen and
-+	 * in some cases may not even settle at the expected value.
-+	 *
-+	 * The only safe way to check for the pen up condition is in the
-+	 * timer by reading the pen signal state (it's a GPIO _and_ IRQ).
-+	 */
-+	if (rt) {
-+		if (!ts->pendown) {
-+			dev_dbg(&ts->client->dev, "DOWN\n");
-+
-+			input_report_key(input, BTN_TOUCH, 1);
-+			ts->pendown = 1;
-+		}
-+
-+		input_report_abs(input, ABS_X, x);
-+		input_report_abs(input, ABS_Y, y);
-+		input_report_abs(input, ABS_PRESSURE, rt);
-+
-+		input_sync(input);
-+
-+		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
-+			x, y, rt);
-+	} else if (ts->pendown) {
-+		/* pen up */
-+		dev_dbg(&ts->client->dev, "UP\n");
-+		input_report_key(input, BTN_TOUCH, 0);
-+		input_report_abs(input, ABS_PRESSURE, 0);
-+		input_sync(input);
-+
-+		ts->pendown = 0;
-+	}
-+}
-+
-+static int tsc2003_power_off_irq_en(struct tsc2003 *tsc)
-+{
-+	/* power down */
-+	return tsc2003_xfer(tsc, PWRDOWN);
-+}
-+
-+static int tsc2003_read_values(struct tsc2003 *tsc)
-+{
-+	/* y- still on; turn on only y+ (and ADC) */
-+	tsc->tc.y = tsc2003_xfer(tsc, READ_Y);
-+	if (tsc->tc.y < 0)
-+		return tsc->tc.y;
-+
-+	/* turn y- off, x+ on, then leave in lowpower */
-+	tsc->tc.x = tsc2003_xfer(tsc, READ_X);
-+	if (tsc->tc.x < 0)
-+		return tsc->tc.x;
-+
-+	/* turn y+ off, x- on; we'll use formula #1 */
-+	tsc->tc.z1 = tsc2003_xfer(tsc, READ_Z1);
-+	if (tsc->tc.z1 < 0)
-+		return tsc->tc.z1;
-+
-+	tsc->tc.z2 = tsc2003_xfer(tsc, READ_Z2);
-+	if (tsc->tc.z2 < 0)
-+		return tsc->tc.z2;
-+
-+	return 0;
-+}
-+
-+
-+static irqreturn_t tsc2003_irq(int irq, void *handle)
-+{
-+	struct tsc2003 *ts = handle;
-+
-+	/* do not call the synced version -> deadlock */
-+	disable_irq_nosync(irq);
-+	/* signal the thread to continue */
-+	complete(&ts->penirq_completion);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int tsc2003_thread(void *d)
-+{
-+	struct tsc2003 *ts = (struct tsc2003 *)d;
-+	int ret;
-+
-+	allow_signal(SIGKILL);
-+
-+	while (!signal_pending(current)) {
-+		/* power down and wait for interrupt */
-+		do {
-+			/* loop because the I2C bus might be busy */
-+			ret = msleep_interruptible(TS_POLL_PERIOD);
-+			if (!ret)
-+				ret = tsc2003_power_off_irq_en(ts);
-+		} while (ret == -EAGAIN && !signal_pending(current));
-+
-+		if (signal_pending(current))
-+			break;
-+
-+		ret = wait_for_completion_interruptible(&ts->penirq_completion);
-+		if (!ret) {
-+			int first = 1;
-+			/* got IRQ, start poll, until pen is up */
-+			while (!ret && !signal_pending(current)
-+				&& (first || ts->pendown)) {
-+				ret = tsc2003_read_values(ts);
-+				if (!ret)
-+					tsc2003_send_event(ts);
-+				ret = msleep_interruptible(TS_POLL_PERIOD);
-+				first = 0;
-+			}
-+
-+			/* we re enable the interrupt */
-+			if (!signal_pending(current))
-+				enable_irq(ts->client->irq);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int tsc2003_probe(struct i2c_client *client,
-+			const struct i2c_device_id *id)
-+{
-+	struct tsc2003 *ts;
-+	struct tsc2007_platform_data *pdata = client->dev.platform_data;
-+	struct input_dev *input_dev;
-+	int err;
-+
-+	if (!pdata) {
-+		dev_err(&client->dev, "platform data is required!\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!i2c_check_functionality(client->adapter,
-+				     I2C_FUNC_SMBUS_READ_WORD_DATA))
-+		return -EIO;
-+
-+	ts = kzalloc(sizeof(struct tsc2003), GFP_KERNEL);
-+	input_dev = input_allocate_device();
-+	if (!ts || !input_dev) {
-+		err = -ENOMEM;
-+		goto err_free_mem;
-+	}
-+
-+	ts->client = client;
-+	i2c_set_clientdata(client, ts);
-+
-+	ts->input = input_dev;
-+
-+	ts->model             = pdata->model;
-+	ts->x_plate_ohms      = pdata->x_plate_ohms;
-+
-+	snprintf(ts->phys, sizeof(ts->phys),
-+		 "%s/input0", dev_name(&client->dev));
-+
-+	input_dev->name = TSC2003_DRIVER_NAME" Touchscreen";
-+	input_dev->phys = ts->phys;
-+	input_dev->id.bustype = BUS_I2C;
-+
-+	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
-+	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
-+
-+	input_set_abs_params(input_dev, ABS_X, 0, MAX_12BIT, 0, 0);
-+	input_set_abs_params(input_dev, ABS_Y, 0, MAX_12BIT, 0, 0);
-+	input_set_abs_params(input_dev, ABS_PRESSURE, 0, MAX_12BIT, 0, 0);
-+
-+	init_completion(&ts->penirq_completion);
-+
-+	ts->task = kthread_run(tsc2003_thread, ts, TSC2003_DRIVER_NAME);
-+	if (IS_ERR(ts->task)) {
-+		err = PTR_ERR(ts->task);
-+		goto err_free_mem;
-+	}
-+
-+	err = request_irq(client->irq, tsc2003_irq, 0,
-+			client->dev.driver->name, ts);
-+	if (err < 0) {
-+		dev_err(&client->dev, "irq %d busy?\n", client->irq);
-+		goto err_free_thread;
-+	}
-+
-+	err = input_register_device(input_dev);
-+	if (err)
-+		goto err_free_irq;
-+
-+	dev_info(&client->dev, "registered with irq (%d)\n", client->irq);
-+
-+	return 0;
-+
-+ err_free_irq:
-+	free_irq(client->irq, ts);
-+ err_free_thread:
-+	kthread_stop(ts->task);
-+ err_free_mem:
-+	input_free_device(input_dev);
-+	kfree(ts);
-+	return err;
-+}
-+
-+static int tsc2003_remove(struct i2c_client *client)
-+{
-+	struct tsc2003 *ts = i2c_get_clientdata(client);
-+
-+	free_irq(client->irq, ts);
-+	send_sig(SIGKILL, ts->task, 1);
-+	kthread_stop(ts->task);
-+	input_unregister_device(ts->input);
-+	kfree(ts);
-+
-+	return 0;
-+}
-+
-+static struct i2c_device_id tsc2003_idtable[] = {
-+	{ TSC2003_DRIVER_NAME, 0 },
-+	{ }
-+};
-+
-+MODULE_DEVICE_TABLE(i2c, tsc2003_idtable);
-+
-+static struct i2c_driver tsc2003_driver = {
-+	.driver = {
-+		.owner	= THIS_MODULE,
-+		.name	= TSC2003_DRIVER_NAME,
-+		.bus = &i2c_bus_type,
-+	},
-+	.id_table	= tsc2003_idtable,
-+	.probe		= tsc2003_probe,
-+	.remove		= tsc2003_remove,
-+};
-+
-+static int __init tsc2003_init(void)
-+{
-+	return i2c_add_driver(&tsc2003_driver);
-+}
-+
-+static void __exit tsc2003_exit(void)
-+{
-+	i2c_del_driver(&tsc2003_driver);
-+}
-+
-+module_init(tsc2003_init);
-+module_exit(tsc2003_exit);
-+
-+MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
-+MODULE_DESCRIPTION("TSC2003 TouchScreen Driver");
-+MODULE_LICENSE("GPL v2");
-+
-Index: linux-2.6.30-rc7/drivers/input/touchscreen/Kconfig
-===================================================================
---- linux-2.6.30-rc7/drivers/input/touchscreen/Kconfig	(revision 861)
-+++ linux-2.6.30-rc7/drivers/input/touchscreen/Kconfig	(revision 869)
-@@ -455,6 +455,17 @@
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called touchit213.
+Right.
 
-+config TOUCHSCREEN_TSC2003
-+	tristate "TSC2003 based touchscreens"
-+	depends on I2C
-+	help
-+	  Say Y here if you have a TSC2003 based touchscreen.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called tsc2003.
-+
- config TOUCHSCREEN_TSC2007
- 	tristate "TSC2007 based touchscreens"
- 	depends on I2C
-Index: linux-2.6.30-rc7/drivers/input/touchscreen/Makefile
-===================================================================
---- linux-2.6.30-rc7/drivers/input/touchscreen/Makefile	(revision 861)
-+++ linux-2.6.30-rc7/drivers/input/touchscreen/Makefile	(revision 869)
-@@ -27,6 +27,7 @@
- obj-$(CONFIG_TOUCHSCREEN_TOUCHIT213)	+= touchit213.o
- obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
- obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
-+obj-$(CONFIG_TOUCHSCREEN_TSC2003)	+= tsc2003.o
- obj-$(CONFIG_TOUCHSCREEN_TSC2007)	+= tsc2007.o
- obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
- obj-$(CONFIG_TOUCHSCREEN_WACOM_W8001)	+= wacom_w8001.o
+> Ok. I am not fully convinced but I'll not block it either if believe it's
+> necessary. My current understanding is that this patch only makes a difference
+> if the server is IO congested in which case the system is struggling anyway
+> and an off-node access is going to be relatively small penalty overall.
+> Conceivably, having PF_SWAPWRITE set makes things worse in that situation
+> and the patch makes some sense.
+
+We could drop support for RECLAIM_SWAP if that simplifies things.
+
