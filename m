@@ -1,309 +1,428 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbZFOCJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbZFOCJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752110AbZFOCJI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 22:09:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbZFOCI5
+	id S1753417AbZFOCJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 22:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZFOCJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 22:08:57 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42086 "EHLO gir.skynet.ie"
+	Sun, 14 Jun 2009 22:09:13 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35830 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbZFOCI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 22:08:56 -0400
-Date: Mon, 15 Jun 2009 03:08:56 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, greg@kroah.com
-cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: [git pull] drm - fixes + radeon KMS (part 2)
-Message-ID: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752732AbZFOCJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 22:09:10 -0400
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Jun 2009 12:08:56 +1000
+Message-Id: <1245031736.19217.15.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus !
 
-Hi Linus,
+Here's the first half of the powerpc merge for 2.6.31. I'll have the
+rest in a couple of days, just dealing with some of my own backlog here
+plus some collisions.
 
-Please pull the 'drm-linus' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+The few things outside of arch/powerpc are powerpc-specific drivers (and
+an addition to pci_ids.h). There's also a cleanup of
+drivers/pci/Makefile removing another unused ppc specific bit.
 
-This is big. It contains the initial TTM memory manager + ATI radeon KMS 
-support. Currently the KMS code is part of the DRM radeon driver however 
-it is very clearly separated internally from the old codepaths. We've 
-elected to keep the radeon KMS Kconfig build/enable under staging for now 
-since we may have some ABI tweaks to sort out in this release cycle, 
-however the code is all in the drm. I don't think this enables crap 
-tainting, but at least no-one will find kms by accident.
+No major highlight this time around. Lots of minor fixes, tweaks and
+cleanups, swiotlb is now available on some crazy embedded platforms (not
+something to be -that- happy about), some new embedded boards, ...
 
-The plan is to remove this from staging area in the next kernel.
+There's a rather big ps3 update queued up for the next batch, but it
+didn't make it here. Pauls atomic64_t for 32-bit platforms is in the
+next batch too. Hopefully I'll have it ready for you in a day or two (I
+want to let it simmer in -next for a couple of days).
 
-This also contains one common memory manager code bug fix, and one pci ids 
-fixup.
+Cheers,
+Ben.
+  
+The following changes since commit 45e3e1935e2857c54783291107d33323b3ef33c8:
+  Linus Torvalds (1):
+        Merge branch 'master' of git://git.kernel.org/.../sam/kbuild-next
 
-Thanks to Thomas and Jerome for doing all the cleanups.
+are available in the git repository at:
 
-Dave.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 
- drivers/gpu/drm/Kconfig                         |   13 +
- drivers/gpu/drm/Makefile                        |    2 +-
- drivers/gpu/drm/drm_mm.c                        |   20 +-
- drivers/gpu/drm/radeon/Kconfig                  |   34 +
- drivers/gpu/drm/radeon/Makefile                 |   12 +-
- drivers/gpu/drm/radeon/ObjectID.h               |  578 +++
- drivers/gpu/drm/radeon/atom-bits.h              |   48 +
- drivers/gpu/drm/radeon/atom-names.h             |  100 +
- drivers/gpu/drm/radeon/atom-types.h             |   42 +
- drivers/gpu/drm/radeon/atom.c                   | 1215 ++++++
- drivers/gpu/drm/radeon/atom.h                   |  149 +
- drivers/gpu/drm/radeon/atombios.h               | 4785 +++++++++++++++++++++++
- drivers/gpu/drm/radeon/atombios_crtc.c          |  695 ++++
- drivers/gpu/drm/radeon/r100.c                   | 1524 ++++++++
- drivers/gpu/drm/radeon/r300.c                   | 1116 ++++++
- drivers/gpu/drm/radeon/r300_reg.h               |   52 +-
- drivers/gpu/drm/radeon/r420.c                   |  223 ++
- drivers/gpu/drm/radeon/r500_reg.h               |  749 ++++
- drivers/gpu/drm/radeon/r520.c                   |  234 ++
- drivers/gpu/drm/radeon/r600.c                   |  169 +
- drivers/gpu/drm/radeon/r600_reg.h               |  114 +
- drivers/gpu/drm/radeon/radeon.h                 |  793 ++++
- drivers/gpu/drm/radeon/radeon_agp.c             |  249 ++
- drivers/gpu/drm/radeon/radeon_asic.h            |  405 ++
- drivers/gpu/drm/radeon/radeon_atombios.c        | 1298 ++++++
- drivers/gpu/drm/radeon/radeon_benchmark.c       |  133 +
- drivers/gpu/drm/radeon/radeon_bios.c            |  390 ++
- drivers/gpu/drm/radeon/radeon_clocks.c          |  833 ++++
- drivers/gpu/drm/radeon/radeon_combios.c         | 2481 ++++++++++++
- drivers/gpu/drm/radeon/radeon_connectors.c      |  603 +++
- drivers/gpu/drm/radeon/radeon_cs.c              |  249 ++
- drivers/gpu/drm/radeon/radeon_cursor.c          |  252 ++
- drivers/gpu/drm/radeon/radeon_device.c          |  813 ++++
- drivers/gpu/drm/radeon/radeon_display.c         |  692 ++++
- drivers/gpu/drm/radeon/radeon_drv.c             |  215 +-
- drivers/gpu/drm/radeon/radeon_encoders.c        | 1708 ++++++++
- drivers/gpu/drm/radeon/radeon_fb.c              |  825 ++++
- drivers/gpu/drm/radeon/radeon_fence.c           |  387 ++
- drivers/gpu/drm/radeon/radeon_fixed.h           |   50 +
- drivers/gpu/drm/radeon/radeon_gart.c            |  233 ++
- drivers/gpu/drm/radeon/radeon_gem.c             |  287 ++
- drivers/gpu/drm/radeon/radeon_i2c.c             |  209 +
- drivers/gpu/drm/radeon/radeon_irq_kms.c         |  158 +
- drivers/gpu/drm/radeon/radeon_kms.c             |  295 ++
- drivers/gpu/drm/radeon/radeon_legacy_crtc.c     | 1276 ++++++
- drivers/gpu/drm/radeon/radeon_legacy_encoders.c | 1288 ++++++
- drivers/gpu/drm/radeon/radeon_mode.h            |  398 ++
- drivers/gpu/drm/radeon/radeon_object.c          |  511 +++
- drivers/gpu/drm/radeon/radeon_object.h          |   45 +
- drivers/gpu/drm/radeon/radeon_reg.h             | 3570 +++++++++++++++++
- drivers/gpu/drm/radeon/radeon_ring.c            |  485 +++
- drivers/gpu/drm/radeon/radeon_ttm.c             |  653 +++
- drivers/gpu/drm/radeon/rs400.c                  |  411 ++
- drivers/gpu/drm/radeon/rs600.c                  |  324 ++
- drivers/gpu/drm/radeon/rs690.c                  |  181 +
- drivers/gpu/drm/radeon/rs780.c                  |  102 +
- drivers/gpu/drm/radeon/rv515.c                  |  504 +++
- drivers/gpu/drm/radeon/rv770.c                  |  124 +
- drivers/gpu/drm/ttm/Makefile                    |    8 +
- drivers/gpu/drm/ttm/ttm_agp_backend.c           |  150 +
- drivers/gpu/drm/ttm/ttm_bo.c                    | 1698 ++++++++
- drivers/gpu/drm/ttm/ttm_bo_util.c               |  561 +++
- drivers/gpu/drm/ttm/ttm_bo_vm.c                 |  454 +++
- drivers/gpu/drm/ttm/ttm_global.c                |  114 +
- drivers/gpu/drm/ttm/ttm_memory.c                |  234 ++
- drivers/gpu/drm/ttm/ttm_module.c                |   50 +
- drivers/gpu/drm/ttm/ttm_tt.c                    |  635 +++
- drivers/staging/Kconfig                         |    2 +
- include/drm/drm_pciids.h                        |    8 +-
- include/drm/radeon_drm.h                        |  130 +
- include/drm/ttm/ttm_bo_api.h                    |  618 +++
- include/drm/ttm/ttm_bo_driver.h                 |  867 ++++
- include/drm/ttm/ttm_memory.h                    |  153 +
- include/drm/ttm/ttm_module.h                    |   58 +
- include/drm/ttm/ttm_placement.h                 |   92 +
- 75 files changed, 41091 insertions(+), 45 deletions(-)
- create mode 100644 drivers/gpu/drm/radeon/Kconfig
- create mode 100644 drivers/gpu/drm/radeon/ObjectID.h
- create mode 100644 drivers/gpu/drm/radeon/atom-bits.h
- create mode 100644 drivers/gpu/drm/radeon/atom-names.h
- create mode 100644 drivers/gpu/drm/radeon/atom-types.h
- create mode 100644 drivers/gpu/drm/radeon/atom.c
- create mode 100644 drivers/gpu/drm/radeon/atom.h
- create mode 100644 drivers/gpu/drm/radeon/atombios.h
- create mode 100644 drivers/gpu/drm/radeon/atombios_crtc.c
- create mode 100644 drivers/gpu/drm/radeon/r100.c
- create mode 100644 drivers/gpu/drm/radeon/r300.c
- create mode 100644 drivers/gpu/drm/radeon/r420.c
- create mode 100644 drivers/gpu/drm/radeon/r500_reg.h
- create mode 100644 drivers/gpu/drm/radeon/r520.c
- create mode 100644 drivers/gpu/drm/radeon/r600.c
- create mode 100644 drivers/gpu/drm/radeon/r600_reg.h
- create mode 100644 drivers/gpu/drm/radeon/radeon.h
- create mode 100644 drivers/gpu/drm/radeon/radeon_agp.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_asic.h
- create mode 100644 drivers/gpu/drm/radeon/radeon_atombios.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_benchmark.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_bios.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_clocks.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_combios.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_connectors.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_cs.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_cursor.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_device.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_display.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_encoders.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_fb.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_fence.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_fixed.h
- create mode 100644 drivers/gpu/drm/radeon/radeon_gart.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_gem.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_i2c.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_irq_kms.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_kms.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_legacy_crtc.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_legacy_encoders.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_mode.h
- create mode 100644 drivers/gpu/drm/radeon/radeon_object.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_object.h
- create mode 100644 drivers/gpu/drm/radeon/radeon_reg.h
- create mode 100644 drivers/gpu/drm/radeon/radeon_ring.c
- create mode 100644 drivers/gpu/drm/radeon/radeon_ttm.c
- create mode 100644 drivers/gpu/drm/radeon/rs400.c
- create mode 100644 drivers/gpu/drm/radeon/rs600.c
- create mode 100644 drivers/gpu/drm/radeon/rs690.c
- create mode 100644 drivers/gpu/drm/radeon/rs780.c
- create mode 100644 drivers/gpu/drm/radeon/rv515.c
- create mode 100644 drivers/gpu/drm/radeon/rv770.c
- create mode 100644 drivers/gpu/drm/ttm/Makefile
- create mode 100644 drivers/gpu/drm/ttm/ttm_agp_backend.c
- create mode 100644 drivers/gpu/drm/ttm/ttm_bo.c
- create mode 100644 drivers/gpu/drm/ttm/ttm_bo_util.c
- create mode 100644 drivers/gpu/drm/ttm/ttm_bo_vm.c
- create mode 100644 drivers/gpu/drm/ttm/ttm_global.c
- create mode 100644 drivers/gpu/drm/ttm/ttm_memory.c
- create mode 100644 drivers/gpu/drm/ttm/ttm_module.c
- create mode 100644 drivers/gpu/drm/ttm/ttm_tt.c
- create mode 100644 include/drm/ttm/ttm_bo_api.h
- create mode 100644 include/drm/ttm/ttm_bo_driver.h
- create mode 100644 include/drm/ttm/ttm_memory.h
- create mode 100644 include/drm/ttm/ttm_module.h
- create mode 100644 include/drm/ttm/ttm_placement.h
+Anton Blanchard (2):
+      powerpc: Improve decrementer accuracy
+      powerpc: Convert RTAS event scan from kernel thread to workqueue
 
-commit 6fe7ac3f5b544703581f3829c8c950dc721d976e
-Author: Alex Deucher <alexdeucher@gmail.com>
-Date:   Fri Jun 12 17:26:08 2009 +0000
+Anton Vorontsov (6):
+      powerpc/85xx: Add PCI IDs for MPC8569 family processors
+      powerpc/85xx: Fix mpc8569emds crypto node to include SNOW unit
+      powerpc/85xx: Fix reg & interrupts for mpc8569emds localbus added NAND
+      powerpc/85xx: Add eSDHC support for MPC8569E-MDS boards
+      powerpc/85xx: Enable Serial RapidIO for MPC85xx MDS boards
+      powerpc/85xx: Add STMicro M25P40 serial flash support for MPC8569E-MDS
 
-    radeon legacy chips: tv dac bg/dac adj updates
-    
-    COMBIOS - fallback to table values if there are no tv dac or lvds bios tables
-    ATOMBIOS - add support for looking up these values from the bios table
-    
-    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Becky Bruce (4):
+      powerpc/86xx: Add 36-bit device tree for mpc8641hpcn
+      powerpc: make dma_window_* in pci_controller struct avail on 32b
+      powerpc: Use sg->dma_length in sg_dma_len() macro on 32-bit
+      powerpc: Add support for swiotlb on 32-bit
 
-commit 771fe6b912fca54f03e8a72eb63058b582775362
-Author: Jerome Glisse <jglisse@redhat.com>
-Date:   Fri Jun 5 14:42:42 2009 +0200
+Benjamin Herrenschmidt (12):
+      Merge branch 'merge' into next
+      powerpc/mm: Fix some SMP issues with MMU context handling
+      powerpc/mm: Fix a AB->BA deadlock scenario with nohash MMU context lock
+      powerpc: Set init_bootmem_done on NUMA platforms as well
+      powerpc: Move VMX and VSX asm code to vector.S
+      powerpc: Introduce CONFIG_PPC_BOOK3S
+      powerpc: Split exception handling out of head_64.S
+      powerpc: Separate PACA fields for server CPUs
+      powerpc: Shield code specific to 64-bit server processors
+      Merge commit 'jwb/next' into next
+      powerpc: Fix bug in move of altivec code to vector.S
+      Merge commit 'origin/master' into next
 
-    drm/radeon: introduce kernel modesetting for radeon hardware
-    
-    Add kernel modesetting support to radeon driver, use the ttm memory
-    manager to manage memory and DRM/GEM to provide userspace API.
-    In order to avoid backward compatibility issue and to allow clean
-    design and code the radeon kernel modesetting use different code path
-    than old radeon/drm driver.
-    
-    When kernel modesetting is enabled the IOCTL of radeon/drm
-    driver are considered as invalid and an error message is printed
-    in the log and they return failure.
-    
-    KMS enabled userspace will use new API to talk with the radeon/drm
-    driver. The new API provide functions to create/destroy/share/mmap
-    buffer object which are then managed by the kernel memory manager
-    (here TTM). In order to submit command to the GPU the userspace
-    provide a buffer holding the command stream, along this buffer
-    userspace have to provide a list of buffer object used by the
-    command stream. The kernel radeon driver will then place buffer
-    in GPU accessible memory and will update command stream to reflect
-    the position of the different buffers.
-    
-    The kernel will also perform security check on command stream
-    provided by the user, we want to catch and forbid any illegal use
-    of the GPU such as DMA into random system memory or into memory
-    not owned by the process supplying the command stream. This part
-    of the code is still incomplete and this why we propose that patch
-    as a staging driver addition, future security might forbid current
-    experimental userspace to run.
-    
-    This code support the following hardware : R1XX,R2XX,R3XX,R4XX,R5XX
-    (radeon up to X1950). Works is underway to provide support for R6XX,
-    R7XX and newer hardware (radeon from HD2XXX to HD4XXX).
-    
-    Authors:
-        Jerome Glisse <jglisse@redhat.com>
-        Dave Airlie <airlied@redhat.com>
-        Alex Deucher <alexdeucher@gmail.com>
-    
-    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Geert Uytterhoeven (1):
+      powerpc: Keep track of emulated instructions
 
-commit ba4e7d973dd09b66912ac4c0856add8b0703a997
-Author: Thomas Hellstrom <thellstrom@vmware.com>
-Date:   Wed Jun 10 15:20:19 2009 +0200
+Geoff Levand (1):
+      powerpc/ps3: Use smp_request_message_ipi
 
-    drm: Add the TTM GPU memory manager subsystem.
-    
-    TTM is a GPU memory manager subsystem designed for use with GPU
-    devices with various memory types (On-card VRAM, AGP,
-    PCI apertures etc.). It's essentially a helper library that assists
-    the DRM driver in creating and managing persistent buffer objects.
-    
-    TTM manages placement of data and CPU map setup and teardown on
-    data movement. It can also optionally manage synchronization of
-    data on a per-buffer-object level.
-    
-    TTM takes care to provide an always valid virtual user-space address
-    to a buffer object which makes user-space sub-allocation of
-    big buffer objects feasible.
-    
-    TTM uses a fine-grained per buffer-object locking scheme, taking
-    care to release all relevant locks when waiting for the GPU.
-    Although this implies some locking overhead, it's probably a big
-    win for devices with multiple command submission mechanisms, since
-    the lock contention will be minimal.
-    
-    TTM can be used with whatever user-space interface the driver
-    chooses, including GEM. It's used by the upcoming Radeon KMS DRM driver
-    and is also the GPU memory management core of various new experimental
-    DRM drivers.
-    
-    Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
-    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Grant Likely (1):
+      powerpc/virtex: refactor intc driver and add support for i8259 cascading
 
-commit e6c03c5b40314d787f7053f631594d6b1bd609e8
-Author: Chris Wilson <chris@chris-wilson.co.uk>
-Date:   Fri May 22 14:14:22 2009 +0100
+Haiying Wang (7):
+      powerpc/85xx: clean up for mpc8568_mds name
+      powerpc/qe: update risc allocation for QE
+      net/ucc_geth: update riscTx and riscRx in ucc_geth
+      powerpc/qe: update QE Serial Number
+      net/ucc_geth: Assign six threads to Rx for UEC
+      powerpc/85xx: Add MPC8569MDS board support
+      powerpc/qe: add new qe properties for QE based chips
 
-    drm: Memory fragmentation from lost alignment blocks
-    
-    If the block needs an alignment but otherwise fits exactly into the tail,
-    then the split-off block from the start would remain marked as non-free.
-    
-    Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-    Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Jan Blunck (1):
+      powerpc/spufs: Remove double check for non-negative dentry
 
-commit 602c11a8ee62d49cddbc5972e5edb876dd415113
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Mon Jun 15 09:24:41 2009 +1000
+John Linn (1):
+      fbdev: Add PLB support and cleanup DCR in xilinxfb driver.
 
-    drm/radeon: fix mobility flags on new PCI IDs.
-    
-    These aren't used that much on r600, but may be needed in the future,
-    so get them correct now.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Josh Boyer (3):
+      powerpc/4xx: Disable PCI_LEGACY
+      powerpc/40x: Convert AMCC Makalu board to ppc40x_simple
+      powerpc/40x: Convert AMCC Kilauea/Halekala boards to ppc40x_simple
+
+Kumar Gala (32):
+      powerpc/fsl: Remove cell-index from PCI nodes
+      powerpc: Refactor board check for PCI quirks on FSL boards with uli1575
+      powerpc/fsl: use of_iomap() for rstcr mapping
+      powerpc/85xx: Add binding for LAWs and ECM
+      powerpc/85xx: Add new LAW & ECM device tree nodes for all 85xx systems
+      powerpc/86xx: Add binding for LAWs and MCM
+      powerpc/86xx: Add new LAW & MCM device tree nodes for all 86xx systems
+      powerpc/cpm: Remove some cruft code and defines
+      powerpc/86xx: clean up smp init code
+      powerpc/fsl: Removed reg property from 85xx/86xx soc node
+      fsldma: Fix compile warnings
+      powerpc/85xx: Add MSI nodes for MPC8568/9 MDS systems
+      powerpc/fsl: Support unique MSI addresses per PCIe Root Complex
+      powerpc/8xxx: Update PCI outbound window addresses for 36-bit configs
+      powerpc/fsl_rio: Fix compile warnings
+      powerpc/fsl: Update FSL esdhc binding
+      powerpc/85xx: Add P2020DS board support
+      powerpc/fsl: Setup PCI inbound window based on actual amount of memory
+      powerpc: Fix up elf_read_implies_exec() usage
+      powerpc/pci: Clean up direct access to sysdata by indirect ops
+      powerpc/pci: Clean up direct access to sysdata by FSL platforms
+      powerpc/pci: Clean up direct access to sysdata by 52xx platforms
+      powerpc/pci: Clean up direct access to sysdata by 4xx platforms
+      powerpc/pci: Clean up direct access to sysdata by CHRP platforms
+      powerpc/pci: Clean up direct access to sysdata on tsi108 platforms
+      powerpc/pci: Clean up direct access to sysdata by powermac platforms
+      powerpc/pci: Clean up direct access to sysdata by RTAS
+      powerpc/pci: Clean up direct access to sysdata by celleb platforms
+      powerpc/pci: Move pseries code into pseries platform specific area
+      powerpc/pci: Cleanup some minor cruft
+      powerpc/pci: Remove redundant pcnet32 fixup
+      powerpc/pci: clean up direct access to sysdata by iseries platform
+
+Li Yang (2):
+      powerpc/fsl_rio: use LAW address from device tree
+      rapidio: fix section mismatch warnings
+
+Michael Ellerman (10):
+      powerpc/oprofile: Remove unused dump_pmcs() in FSL oprofile
+      powerpc/irq: Move #ifdef'ed body of do_IRQ() into a separate function
+      powerpc/irq: Move stack overflow check into a separate function
+      powerpc/irq: Move get_irq() comment into header
+      powerpc/irq: Remove fallback to __do_IRQ()
+      powerpc/powermac: Use generic_handle_irq() in gatwick_action()
+      powerpc/irq: We don't need __do_IRQ() anymore
+      powerpc/ftrace: Use ppc_function_entry() instead of GET_ADDR
+      powerpc/ftrace: Remove unused macros
+      powerpc/ftrace: Use PPC_INST_NOP directly
+
+Michael Neuling (3):
+      powerpc: Cleanup macros in ppc-opcode.h
+      powerpc: Move VSX load/stores into ppc-opcode.h
+      powerpc: Make the NR_CPUS max 8192
+
+Michel Dänzer (1):
+      therm_adt746x: Always clear hardware bit which inverts fan speed range.
+
+Milton Miller (2):
+      powerpc: Enable MMU feature sections for inline asm
+      powerpc: Add 2.06 tlbie mnemonics
+
+Nathan Fontenot (1):
+      powerpc: Display processor virtualization resource allocs in lparcfg
+
+Robert Jennings (1):
+      powerpc/pseries: CMO unused page hinting
+
+Roderick Colenbrander (3):
+      powerpc/virtex: Add support for Xilinx PCI host bridge
+      powerpc/virtex: Add Xilinx ML510 reference design support
+      powerpc/virtex: Add ml510 reference design device tree
+
+Roland McGrath (1):
+      powerpc: Add PTRACE_SINGLEBLOCK support
+
+Sean MacLennan (2):
+      powerpc: Update Warp to use leds-gpio driver
+      i2c: Fix confusing i2c-ibm_iic message
+
+Stefan Roese (1):
+      powerpc/4xx: Sequoia: Enable NAND support
+
+Stephen Rothwell (5):
+      powerpc/pci: Fix annotation of pcibios_claim_one_bus
+      powerpc/pseries: Fix warnings when printing resource_size_t
+      powerpc/xmon: Remove unused variable in xmon.c
+      powerpc: Fix warning when printing a resource_size_t
+      powerpc/spufs: Remove unused error path
+
+Tony Breeds (1):
+      powerpc/mpic: Cleanup mpic_find() implementation
+
+Vinay Sridhar (1):
+      powerpc/xmon: Add dl command to dump contents of __log_buf
+
+roel kluin (1):
+      tape: beyond ARRAY_SIZE of viocd_diskinfo
+
+ Documentation/kernel-parameters.txt                |    7 +
+ Documentation/powerpc/dts-bindings/ecm.txt         |   64 ++
+ .../powerpc/dts-bindings/fsl/cpm_qe/qe.txt         |    3 +
+ Documentation/powerpc/dts-bindings/fsl/esdhc.txt   |    5 +-
+ Documentation/powerpc/dts-bindings/fsl/mcm.txt     |   64 ++
+ arch/powerpc/Kconfig                               |   16 +-
+ arch/powerpc/Kconfig.debug                         |   13 +
+ arch/powerpc/Makefile                              |    1 +
+ arch/powerpc/boot/dts/gef_ppc9a.dts                |   14 +-
+ arch/powerpc/boot/dts/gef_sbc310.dts               |   14 +-
+ arch/powerpc/boot/dts/gef_sbc610.dts               |   14 +-
+ arch/powerpc/boot/dts/ksi8560.dts                  |   13 +
+ arch/powerpc/boot/dts/mpc832x_mds.dts              |    3 +-
+ arch/powerpc/boot/dts/mpc832x_rdb.dts              |    3 +-
+ arch/powerpc/boot/dts/mpc8349emitx.dts             |    2 -
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts           |    1 -
+ arch/powerpc/boot/dts/mpc834x_mds.dts              |    2 -
+ arch/powerpc/boot/dts/mpc836x_mds.dts              |    3 +-
+ arch/powerpc/boot/dts/mpc836x_rdk.dts              |    2 +
+ arch/powerpc/boot/dts/mpc8377_mds.dts              |    1 -
+ arch/powerpc/boot/dts/mpc8378_mds.dts              |    1 -
+ arch/powerpc/boot/dts/mpc8379_mds.dts              |    1 -
+ arch/powerpc/boot/dts/mpc8536ds.dts                |   18 +-
+ arch/powerpc/boot/dts/mpc8540ads.dts               |   15 +-
+ arch/powerpc/boot/dts/mpc8541cds.dts               |   16 +-
+ arch/powerpc/boot/dts/mpc8544ds.dts                |   18 +-
+ arch/powerpc/boot/dts/mpc8548cds.dts               |   17 +-
+ arch/powerpc/boot/dts/mpc8555cds.dts               |   16 +-
+ arch/powerpc/boot/dts/mpc8560ads.dts               |   15 +-
+ arch/powerpc/boot/dts/mpc8568mds.dts               |   51 +-
+ arch/powerpc/boot/dts/mpc8569mds.dts               |  583 +++++++++++
+ arch/powerpc/boot/dts/mpc8572ds.dts                |   17 +-
+ arch/powerpc/boot/dts/mpc8572ds_36b.dts            |   39 +-
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts     |   16 +-
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts     |    2 -
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts             |   16 +-
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts             |   16 +-
+ arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts         |  609 +++++++++++
+ arch/powerpc/boot/dts/p2020ds.dts                  |  704 +++++++++++++
+ arch/powerpc/boot/dts/sbc8349.dts                  |    1 -
+ arch/powerpc/boot/dts/sbc8548.dts                  |   16 +-
+ arch/powerpc/boot/dts/sbc8560.dts                  |   15 +-
+ arch/powerpc/boot/dts/sbc8641d.dts                 |   16 +-
+ arch/powerpc/boot/dts/sequoia.dts                  |   22 +
+ arch/powerpc/boot/dts/socrates.dts                 |   15 +-
+ arch/powerpc/boot/dts/stx_gp3_8560.dts             |   15 +-
+ arch/powerpc/boot/dts/tqm8540.dts                  |   15 +-
+ arch/powerpc/boot/dts/tqm8541.dts                  |   15 +-
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts         |   16 +-
+ arch/powerpc/boot/dts/tqm8548.dts                  |   16 +-
+ arch/powerpc/boot/dts/tqm8555.dts                  |   15 +-
+ arch/powerpc/boot/dts/tqm8560.dts                  |   15 +-
+ arch/powerpc/boot/dts/virtex440-ml510.dts          |  465 +++++++++
+ arch/powerpc/boot/dts/warp.dts                     |   27 +-
+ arch/powerpc/configs/40x/acadia_defconfig          |    2 +-
+ arch/powerpc/configs/40x/ep405_defconfig           |    2 +-
+ arch/powerpc/configs/40x/kilauea_defconfig         |   81 ++-
+ arch/powerpc/configs/40x/makalu_defconfig          |   81 ++-
+ arch/powerpc/configs/40x/virtex_defconfig          |    2 +-
+ arch/powerpc/configs/44x/arches_defconfig          |    2 +-
+ arch/powerpc/configs/44x/bamboo_defconfig          |    2 +-
+ arch/powerpc/configs/44x/canyonlands_defconfig     |    6 +-
+ arch/powerpc/configs/44x/ebony_defconfig           |    2 +-
+ arch/powerpc/configs/44x/katmai_defconfig          |    2 +-
+ arch/powerpc/configs/44x/rainier_defconfig         |    2 +-
+ arch/powerpc/configs/44x/redwood_defconfig         |    2 +-
+ arch/powerpc/configs/44x/sam440ep_defconfig        |    2 +-
+ arch/powerpc/configs/44x/sequoia_defconfig         |  111 ++-
+ arch/powerpc/configs/44x/taishan_defconfig         |    2 +-
+ arch/powerpc/configs/44x/virtex5_defconfig         |    2 +-
+ arch/powerpc/include/asm/cpm2.h                    |    4 -
+ arch/powerpc/include/asm/dma-mapping.h             |   11 +
+ arch/powerpc/include/asm/elf.h                     |    4 +-
+ arch/powerpc/include/asm/emulated_ops.h            |   73 ++
+ arch/powerpc/include/asm/feature-fixups.h          |   25 +-
+ arch/powerpc/include/asm/lppaca.h                  |    6 +
+ arch/powerpc/include/asm/machdep.h                 |    4 +
+ arch/powerpc/include/asm/mmu.h                     |    9 +-
+ arch/powerpc/include/asm/mpc86xx.h                 |   33 -
+ arch/powerpc/include/asm/paca.h                    |   12 +-
+ arch/powerpc/include/asm/page.h                    |    5 +
+ arch/powerpc/include/asm/pci-bridge.h              |   13 +-
+ arch/powerpc/include/asm/pgtable-ppc64.h           |    5 +
+ arch/powerpc/include/asm/ppc-opcode.h              |   25 +-
+ arch/powerpc/include/asm/ppc_asm.h                 |   10 -
+ arch/powerpc/include/asm/ptrace.h                  |    4 +
+ arch/powerpc/include/asm/qe.h                      |   21 +-
+ arch/powerpc/include/asm/scatterlist.h             |    6 +-
+ arch/powerpc/include/asm/swiotlb.h                 |   27 +
+ arch/powerpc/include/asm/system.h                  |    2 +-
+ arch/powerpc/include/asm/xilinx_pci.h              |   21 +
+ arch/powerpc/kernel/Makefile                       |    4 +-
+ arch/powerpc/kernel/align.c                        |   20 +-
+ arch/powerpc/kernel/asm-offsets.c                  |   32 +-
+ arch/powerpc/kernel/cputable.c                     |    6 +-
+ arch/powerpc/kernel/dma-swiotlb.c                  |  163 +++
+ arch/powerpc/kernel/dma.c                          |    2 +-
+ arch/powerpc/kernel/exceptions-64s.S               |  978 +++++++++++++++++
+ arch/powerpc/kernel/ftrace.c                       |   29 +-
+ arch/powerpc/kernel/head_32.S                      |  101 +--
+ arch/powerpc/kernel/head_64.S                      | 1095 +-------------------
+ arch/powerpc/kernel/head_booke.h                   |   10 +-
+ arch/powerpc/kernel/irq.c                          |  127 ++--
+ arch/powerpc/kernel/lparcfg.c                      |   40 +-
+ arch/powerpc/kernel/misc_64.S                      |   92 --
+ arch/powerpc/kernel/paca.c                         |   14 +-
+ arch/powerpc/kernel/pci-common.c                   |    3 +-
+ arch/powerpc/kernel/pci_32.c                       |   19 -
+ arch/powerpc/kernel/pci_64.c                       |   17 +-
+ arch/powerpc/kernel/pci_dn.c                       |   28 +-
+ arch/powerpc/kernel/process.c                      |    2 +-
+ arch/powerpc/kernel/prom.c                         |    2 +-
+ arch/powerpc/kernel/ptrace.c                       |   23 +-
+ arch/powerpc/kernel/rtas_pci.c                     |   10 +-
+ arch/powerpc/kernel/setup_32.c                     |    6 +
+ arch/powerpc/kernel/setup_64.c                     |   11 +-
+ arch/powerpc/kernel/time.c                         |   21 +-
+ arch/powerpc/kernel/traps.c                        |  130 +++-
+ arch/powerpc/kernel/vector.S                       |  210 ++++
+ arch/powerpc/mm/Makefile                           |    7 +-
+ arch/powerpc/mm/hash_native_64.c                   |   13 +-
+ arch/powerpc/mm/init_64.c                          |    2 +
+ arch/powerpc/mm/mmu_context_nohash.c               |   19 +-
+ arch/powerpc/mm/numa.c                             |    2 +
+ arch/powerpc/oprofile/op_model_fsl_emb.c           |   14 -
+ arch/powerpc/platforms/40x/Kconfig                 |    2 +
+ arch/powerpc/platforms/40x/Makefile                |    2 -
+ arch/powerpc/platforms/40x/kilauea.c               |   60 --
+ arch/powerpc/platforms/40x/makalu.c                |   60 --
+ arch/powerpc/platforms/40x/ppc40x_simple.c         |    5 +-
+ arch/powerpc/platforms/40x/virtex.c                |    2 +
+ arch/powerpc/platforms/44x/Kconfig                 |   13 +-
+ arch/powerpc/platforms/44x/Makefile                |    1 +
+ arch/powerpc/platforms/44x/virtex.c                |    2 +
+ arch/powerpc/platforms/44x/virtex_ml510.c          |   29 +
+ arch/powerpc/platforms/44x/warp.c                  |   76 +-
+ arch/powerpc/platforms/52xx/efika.c                |    4 +-
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c          |    4 +-
+ arch/powerpc/platforms/82xx/pq2ads.h               |   13 -
+ arch/powerpc/platforms/85xx/Kconfig                |    1 +
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c           |   43 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c          |   52 +-
+ arch/powerpc/platforms/86xx/gef_ppc9a.c            |    1 -
+ arch/powerpc/platforms/86xx/gef_sbc310.c           |    1 -
+ arch/powerpc/platforms/86xx/gef_sbc610.c           |    1 -
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c         |    1 -
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c         |    1 -
+ arch/powerpc/platforms/86xx/mpc86xx_smp.c          |    8 +-
+ arch/powerpc/platforms/86xx/sbc8641d.c             |    1 -
+ arch/powerpc/platforms/8xx/mpc885ads.h             |    4 -
+ arch/powerpc/platforms/Kconfig                     |    4 +
+ arch/powerpc/platforms/Kconfig.cputype             |   26 +-
+ arch/powerpc/platforms/cell/celleb_pci.c           |   10 +-
+ arch/powerpc/platforms/cell/celleb_scc_epci.c      |   13 +-
+ arch/powerpc/platforms/cell/celleb_scc_pciex.c     |   12 +-
+ arch/powerpc/platforms/cell/spufs/inode.c          |    6 -
+ arch/powerpc/platforms/chrp/pci.c                  |    8 +-
+ arch/powerpc/platforms/fsl_uli1575.c               |   24 +-
+ arch/powerpc/platforms/iseries/iommu.c             |    2 +-
+ arch/powerpc/platforms/iseries/pci.c               |    8 +-
+ arch/powerpc/platforms/powermac/pic.c              |    2 +-
+ arch/powerpc/platforms/powermac/setup.c            |    2 +-
+ arch/powerpc/platforms/ps3/smp.c                   |   16 +-
+ arch/powerpc/platforms/pseries/iommu.c             |    4 +-
+ arch/powerpc/platforms/pseries/lpar.c              |   52 +
+ arch/powerpc/platforms/pseries/rtasd.c             |   76 +-
+ arch/powerpc/platforms/pseries/setup.c             |   25 +
+ arch/powerpc/sysdev/Makefile                       |    1 +
+ arch/powerpc/sysdev/cpm2.c                         |    2 +-
+ arch/powerpc/sysdev/fsl_msi.c                      |    9 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |  138 +++-
+ arch/powerpc/sysdev/fsl_pci.h                      |    6 +-
+ arch/powerpc/sysdev/fsl_rio.c                      |   15 +-
+ arch/powerpc/sysdev/fsl_soc.c                      |   14 +-
+ arch/powerpc/sysdev/indirect_pci.c                 |    4 +-
+ arch/powerpc/sysdev/mpic.c                         |   23 +-
+ arch/powerpc/sysdev/ppc4xx_pci.c                   |    4 +-
+ arch/powerpc/sysdev/qe_lib/qe.c                    |   75 ++-
+ arch/powerpc/sysdev/tsi108_pci.c                   |    4 +-
+ arch/powerpc/sysdev/xilinx_intc.c                  |   81 ++-
+ arch/powerpc/sysdev/xilinx_pci.c                   |  132 +++
+ arch/powerpc/xmon/xmon.c                           |   47 +
+ drivers/char/viotape.c                             |    2 +-
+ drivers/i2c/busses/i2c-ibm_iic.c                   |    6 +-
+ drivers/macintosh/therm_adt746x.c                  |    4 +-
+ drivers/net/ucc_geth.c                             |   24 +-
+ drivers/net/ucc_geth.h                             |    4 +-
+ drivers/of/base.c                                  |    1 +
+ drivers/pci/Makefile                               |    1 -
+ drivers/rapidio/rio-scan.c                         |    6 +-
+ drivers/video/xilinxfb.c                           |  290 +++---
+ include/linux/pci_ids.h                            |    4 +
+ 192 files changed, 6191 insertions(+), 2357 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/ecm.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/mcm.txt
+ create mode 100644 arch/powerpc/boot/dts/mpc8569mds.dts
+ create mode 100644 arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
+ create mode 100644 arch/powerpc/boot/dts/p2020ds.dts
+ create mode 100644 arch/powerpc/boot/dts/virtex440-ml510.dts
+ create mode 100644 arch/powerpc/include/asm/emulated_ops.h
+ delete mode 100644 arch/powerpc/include/asm/mpc86xx.h
+ create mode 100644 arch/powerpc/include/asm/swiotlb.h
+ create mode 100644 arch/powerpc/include/asm/xilinx_pci.h
+ create mode 100644 arch/powerpc/kernel/dma-swiotlb.c
+ create mode 100644 arch/powerpc/kernel/exceptions-64s.S
+ delete mode 100644 arch/powerpc/platforms/40x/kilauea.c
+ delete mode 100644 arch/powerpc/platforms/40x/makalu.c
+ create mode 100644 arch/powerpc/platforms/44x/virtex_ml510.c
+ create mode 100644 arch/powerpc/sysdev/xilinx_pci.c
+
 
