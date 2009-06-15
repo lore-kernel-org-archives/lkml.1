@@ -1,56 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765290AbZFOSZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbZFOS0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765290AbZFOSZs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763692AbZFOSZh
+	id S1760804AbZFOS0L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764880AbZFOSZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:25:37 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:55696 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765216AbZFOSZh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:25:37 -0400
-MIME-Version: 1.0
-In-Reply-To: <4A3674B0.8050004@atmel.com>
-References: <c8284b5b0906121802h3545fbfflf498fbba30fe42be@mail.gmail.com>
-	 <4A3674B0.8050004@atmel.com>
-Date: Mon, 15 Jun 2009 11:17:36 -0700
-X-Google-Sender-Auth: 61bd12cc37d9f83f
-Message-ID: <c8284b5b0906151117j14c0ced0oe7530d9cce33d5bd@mail.gmail.com>
-Subject: Re: [PATCH 5/6] Unified AVR32/AT91 MCI Driver Support for a VCC Pin
-From: Rob Emanuele <poorarm@shoreis.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Andrew Victor <avictor.za@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 14:25:57 -0400
+Received: from cmpxchg.org ([85.214.51.133]:35488 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763692AbZFOSZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:25:56 -0400
+Date: Mon, 15 Jun 2009 20:22:17 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "Barnes, Jesse" <jesse.barnes@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch v3] swap: virtual swap readahead
+Message-ID: <20090615182216.GA1661@cmpxchg.org>
+References: <20090610173249.50e19966.kamezawa.hiroyu@jp.fujitsu.com> <20090610085638.GA32511@localhost> <1244626976.13761.11593.camel@twins> <20090610095950.GA514@localhost> <1244628314.13761.11617.camel@twins> <20090610113214.GA5657@localhost> <20090610102516.08f7300f@jbarnes-x200> <20090611052228.GA20100@localhost> <20090611101741.GA1974@cmpxchg.org> <20090612015927.GA6804@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090612015927.GA6804@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas,
+On Fri, Jun 12, 2009 at 09:59:27AM +0800, Wu Fengguang wrote:
+> On Thu, Jun 11, 2009 at 06:17:42PM +0800, Johannes Weiner wrote:
+> > On Thu, Jun 11, 2009 at 01:22:28PM +0800, Wu Fengguang wrote:
+> > > Unfortunately, after fixing it up the swap readahead patch still performs slow
+> > > (even worse this time):
+> > 
+> > Thanks for doing the tests.  Do you know if the time difference comes
+> > from IO or CPU time?
+> > 
+> > Because one reason I could think of is that the original code walks
+> > the readaround window in two directions, starting from the target each
+> > time but immediately stops when it encounters a hole where the new
+> > code just skips holes but doesn't abort readaround and thus might
+> > indeed read more slots.
+> > 
+> > I have an old patch flying around that changed the physical ra code to
+> > use a bitmap that is able to represent holes.  If the increased time
+> > is waiting for IO, I would be interested if that patch has the same
+> > negative impact.
+> 
+> You can send me the patch :)
 
-On Mon, Jun 15, 2009 at 9:20 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
-> Rob Emanuele :
->> Add support to the atmel-mci driver for a VCC pin in order to conserve
->> power if the MMC interface is powered down.
->
-> Can you elaborate a bit more. In particular, I do not understand the
-> concept of "vcc_pin_act_low".
->
+Okay, attached is a rebase against latest -mmotm.
 
-Like the original at91_mci driver, this patch adds the ability to use
-a pin to toggle 3.3V power going to the SD Card.  In my case the pin
-is tied to a International Rectifier 6420 P-type MOSFET since a port
-pin alone cannot drive the SD Card.  When I pull the vcc_pin low, 3.3V
-can reach the SD Card to power it.  The "vcc_pin_act_low" (pin active
-low) determines which way the pin should be pulled to enable power to
-the SD Card.  If vcc_pin_act_low is true, when the card needs to get
-powered up, it sets the vcc_pin low.  Other board designs may need a
-pin driven high to power the SD Card.
+> But for this patch it is IO bound. The CPU iowait field actually is
+> going up as the test goes on:
 
-Thanks,
+It's probably the larger ra window then which takes away the bandwidth
+needed to load the new executables.  This sucks.  Would be nice to
+have 'optional IO' for readahead that is dropped when normal-priority
+IO requests are coming in...  Oh, we have READA for bios.  But it
+doesn't seem to implement dropping requests on load (or I am blind).
 
-Rob
+	Hannes
+
+---
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index c88b366..119ad43 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -284,7 +284,7 @@ extern swp_entry_t get_swap_page(void);
+ extern swp_entry_t get_swap_page_of_type(int);
+ extern void swap_duplicate(swp_entry_t);
+ extern int swapcache_prepare(swp_entry_t);
+-extern int valid_swaphandles(swp_entry_t, unsigned long *);
++extern pgoff_t valid_swaphandles(swp_entry_t, unsigned long *, unsigned long);
+ extern void swap_free(swp_entry_t);
+ extern void swapcache_free(swp_entry_t, struct page *page);
+ extern int free_swap_and_cache(swp_entry_t);
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 42cd38e..c9f9c97 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -348,10 +348,10 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+ struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+ 			struct vm_area_struct *vma, unsigned long addr)
+ {
+-	int nr_pages;
+-	struct page *page;
++	unsigned long nr_slots = 1 << page_cluster;
++	DECLARE_BITMAP(slots, nr_slots);
+ 	unsigned long offset;
+-	unsigned long end_offset;
++	pgoff_t base;
+ 
+ 	/*
+ 	 * Get starting offset for readaround, and number of pages to read.
+@@ -360,11 +360,15 @@ struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+ 	 * more likely that neighbouring swap pages came from the same node:
+ 	 * so use the same "addr" to choose the same node for each swap read.
+ 	 */
+-	nr_pages = valid_swaphandles(entry, &offset);
+-	for (end_offset = offset + nr_pages; offset < end_offset; offset++) {
+-		/* Ok, do the async read-ahead now */
+-		page = read_swap_cache_async(swp_entry(swp_type(entry), offset),
+-						gfp_mask, vma, addr);
++	base = valid_swaphandles(entry, slots, nr_slots);
++	for (offset = find_first_bit(slots, nr_slots);
++	     offset < nr_slots;
++	     offset = find_next_bit(slots, nr_slots, offset + 1)) {
++		struct page *page;
++		swp_entry_t tmp;
++
++		tmp = swp_entry(swp_type(entry), base + offset);
++		page = read_swap_cache_async(tmp, gfp_mask, vma, addr);
+ 		if (!page)
+ 			break;
+ 		page_cache_release(page);
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index d1ade1a..27771dd 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -2163,25 +2163,28 @@ get_swap_info_struct(unsigned type)
+ 	return &swap_info[type];
+ }
+ 
++static int swap_inuse(unsigned long count)
++{
++	int swapcount = swap_count(count);
++	return swapcount && swapcount != SWAP_MAP_BAD;
++}
++
+ /*
+  * swap_lock prevents swap_map being freed. Don't grab an extra
+  * reference on the swaphandle, it doesn't matter if it becomes unused.
+  */
+-int valid_swaphandles(swp_entry_t entry, unsigned long *offset)
++pgoff_t valid_swaphandles(swp_entry_t entry, unsigned long *slots,
++			unsigned long nr_slots)
+ {
+ 	struct swap_info_struct *si;
+-	int our_page_cluster = page_cluster;
+-	pgoff_t target, toff;
+-	pgoff_t base, end;
+-	int nr_pages = 0;
+-
+-	if (!our_page_cluster)	/* no readahead */
+-		return 0;
++	pgoff_t target, base, end;
+ 
++	bitmap_zero(slots, nr_slots);
+ 	si = &swap_info[swp_type(entry)];
+ 	target = swp_offset(entry);
+-	base = (target >> our_page_cluster) << our_page_cluster;
+-	end = base + (1 << our_page_cluster);
++	base = target & ~(nr_slots - 1);
++	end = base + nr_slots;
++
+ 	if (!base)		/* first page is swap header */
+ 		base++;
+ 
+@@ -2189,28 +2192,10 @@ int valid_swaphandles(swp_entry_t entry, unsigned long *offset)
+ 	if (end > si->max)	/* don't go beyond end of map */
+ 		end = si->max;
+ 
+-	/* Count contiguous allocated slots above our target */
+-	for (toff = target; ++toff < end; nr_pages++) {
+-		/* Don't read in free or bad pages */
+-		if (!si->swap_map[toff])
+-			break;
+-		if (swap_count(si->swap_map[toff]) == SWAP_MAP_BAD)
+-			break;
+-	}
+-	/* Count contiguous allocated slots below our target */
+-	for (toff = target; --toff >= base; nr_pages++) {
+-		/* Don't read in free or bad pages */
+-		if (!si->swap_map[toff])
+-			break;
+-		if (swap_count(si->swap_map[toff]) == SWAP_MAP_BAD)
+-			break;
+-	}
+-	spin_unlock(&swap_lock);
++	while (end-- > base)
++		if (end == target || swap_inuse(si->swap_map[end]))
++			set_bit(end - base, slots);
+ 
+-	/*
+-	 * Indicate starting offset, and return number of pages to get:
+-	 * if only 1, say 0, since there's then no readahead to be done.
+-	 */
+-	*offset = ++toff;
+-	return nr_pages? ++nr_pages: 0;
++	spin_unlock(&swap_lock);
++	return base;
+ }
+
