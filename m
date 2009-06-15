@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZFOLF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZFOLCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbZFOLF5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 07:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZFOLFu
+	id S1754142AbZFOLCt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 07:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZFOLCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 07:05:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:64924 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbZFOLFt (ORCPT
+	Mon, 15 Jun 2009 07:02:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39676 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbZFOLCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 07:05:49 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH 05/17] Blackfin: convert to generic checksum code
-Date: Mon, 15 Jun 2009 13:04:15 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> <1244980878-2124-6-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1244980878-2124-6-git-send-email-vapier@gentoo.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 15 Jun 2009 07:02:39 -0400
+Date: Mon, 15 Jun 2009 07:02:40 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: liqin.chen@sunplusct.com
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 21/27] score: create kernel files ptrace.c setup.c
+Message-ID: <20090615110240.GA16735@infradead.org>
+References: <OF9E916A44.859476BA-ON482575D0.00243015-482575D0.0024A03A@sunplusct.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906151304.16416.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18vnTQBVBjluhuQnKo/F4w5FduagKWjwQYiGJ8
- jTEtsL4zWh37xWcZ0Tv+cofb0wlqwBDpEeGUfSFmwWuMxFRKYq
- 3OE2mdCvuBpIj4jys7bHA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OF9E916A44.859476BA-ON482575D0.00243015-482575D0.0024A03A@sunplusct.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 June 2009, Mike Frysinger wrote:
-> The Blackfin port only implemented an optimized version of the
-> csum_tcpudp_nofold function, so convert everything else to the new
-> generic code.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+On Tue, Jun 09, 2009 at 02:35:45PM +0800, liqin.chen@sunplusct.com wrote:
+> +long
+> +arch_ptrace(struct task_struct *child, long request, long addr, long 
+> data)
+> +{
+> +       int ret;
+> +
+> +       if (request == PTRACE_TRACEME) {
+> +               /* are we already being traced? */
+> +               if (current->ptrace & PT_PTRACED)
+> +                       return -EPERM;
+> +
+> +               /* set the ptrace bit in the process flags. */
+> +               current->ptrace |= PT_PTRACED;
+> +               return 0;
+> +       }
+> +
+> +       ret = -ESRCH;
+> +       if (!child)
+> +               return ret;
+> +
+> +       ret = -EPERM;
+> +
+> +       if (request == PTRACE_ATTACH) {
+> +               ret = ptrace_attach(child);
+> +               return ret;
+> +       }
+> +
+> +       ret = ptrace_check_attach(child, request == PTRACE_KILL);
+> +       if (ret < 0)
+> +               return ret;
+> +
 
-Have you tested this one well? I was as careful as possible with the
-version I added, but it was basically only tested on microblaze, which
-has a different endianess from blackfin. Some areas of the code may be
-sensitive to this.
+All this stuff has been done by generic ptrace code for a long time
+and is not needed at all.
 
-	Arnd <><
+> +       switch (request) {
+> +       case PTRACE_PEEKTEXT: /* read word at location addr. */
+> +       case PTRACE_PEEKDATA: {
+> +               unsigned long tmp;
+> +               int copied;
+> +
+> +               copied = access_process_vm(child, addr, &tmp, sizeof(tmp), 
+> 0);
+> +               ret = -EIO;
+> +               if (copied != sizeof(tmp))
+> +                       break;
+> +
+> +               ret = put_user(tmp, (unsigned long *) data);
+> +               return ret;
+> +       }
+> +
+
+This also has a generic implementation.  Please take a look at a modern
+ptrace implementation like sh, powerpc or x86 to model yours after.
+
