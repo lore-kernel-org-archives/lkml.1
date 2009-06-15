@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbZFOIpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbZFOIwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760054AbZFOIpR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZFOIpG
+	id S1756886AbZFOIwD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZFOIvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:45:06 -0400
-Received: from mail-qy0-f173.google.com ([209.85.221.173]:65031 "EHLO
-	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbZFOIpF (ORCPT
+	Mon, 15 Jun 2009 04:51:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43125 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751165AbZFOIvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:45:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kN59rFDF+Ud4LcgrUh+NQ4UlOvFMBCKbIlR+TNhPD56ezdmh9PxQOb85VuweCso6H+
-         g9CXgRclT8uS/b7qUMgBdGzjZK5eUsy2hdoVzJvt2sHmk2A7b7Kt6LYRBmC8ENZeoUv9
-         gmElMHTEUnVUwr9QARaj74aNkXSAjDeeG8MV8=
-MIME-Version: 1.0
-In-Reply-To: <412e6f7f0906150107h33b271eam7e610d166967ba70@mail.gmail.com>
-References: <412e6f7f0906131829y6e0abb00j85e221f92ab439d2@mail.gmail.com>
-	 <20090615071125.GF3544@cr0.nay.redhat.com>
-	 <412e6f7f0906150107h33b271eam7e610d166967ba70@mail.gmail.com>
-Date: Mon, 15 Jun 2009 16:45:05 +0800
-Message-ID: <2375c9f90906150145u1b8e8a1dve794ecbcebb0c548@mail.gmail.com>
-Subject: Re: memconsole: a virtual console to record the Oops message for 
-	debugging purpose.
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Changli Gao <xiaosuo@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 15 Jun 2009 04:51:52 -0400
+Date: Mon, 15 Jun 2009 09:52:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Brian Swetland <swetland@google.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz, Robert Love <rlove@google.com>,
+       Brian Swetland <swetland@google.com>
+Subject: Re: [PATCH 1/3] [ARM] msm_serial: serial driver for MSM7K onboard
+ serial peripheral.
+Message-ID: <20090615095259.3456de5c@lxorguk.ukuu.org.uk>
+In-Reply-To: <1245033557-10968-2-git-send-email-swetland@google.com>
+References: <1245033557-10968-1-git-send-email-swetland@google.com>
+	<1245033557-10968-2-git-send-email-swetland@google.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/15 Changli Gao <xiaosuo@gmail.com>:
-> On Mon, Jun 15, 2009 at 3:11 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->> On Sun, Jun 14, 2009 at 09:29:48AM +0800, Changli Gao wrote:
->>>
->>>the following code is appended to the file mm/bootmem.c
->>
->>
->> Why not a patch?
->>
->> Your code is a kernel module, why do you append it into
->> a non-module source file?
->>
-> bootmem can't be allocated in modules. :(
+On Sun, 14 Jun 2009 19:39:15 -0700
+Brian Swetland <swetland@google.com> wrote:
 
-Ok, then explain your code below:
+> From: Robert Love <rlove@google.com>
+> 
+> Signed-off-by: Brian Swetland <swetland@google.com>
 
-module_init(init);
-...
-module_exit(fini);
+The set_termios method also needs to properly propogate back the settings
+it actually used (in your case thats mostly the setting the actual speed
+selected).
 
-MODULE_AUTHOR("xiaosuo <xiaosuo@gmail.com>");
-MODULE_LICENSE("GPL");
+The locking on port.tty also wants looking at but thats a general
+drivers/serial project.
