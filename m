@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbZFOHHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbZFOHIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288AbZFOHHh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZFOHHa
+	id S1756607AbZFOHIl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZFOHIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:07:30 -0400
-Received: from sirius.lasnet.de ([78.47.116.19]:53063 "EHLO sirius.lasnet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbZFOHH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:07:29 -0400
-Date: Mon, 15 Jun 2009 09:06:51 +0200
-From: Stefan Schmidt <stefan@datenfreihafen.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, tglx@tglx.de, alan@lxorguk.ukuu.org.uk,
-       rjw@sisk.pl, netdev@vger.kernel.org, mingo@elte.hu, dwmw2@infradead.org,
-       alsa-devel@alsa-project.org, dri-devel@lists.sourceforge.net
-Message-ID: <20090615070651.GB1221@excalibur.local>
-References: <20090614173331.18f01123@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090614173331.18f01123@infradead.org>
-X-Mailer: Mutt http://www.mutt.org/
-X-KeyID: 0xDDF51665
-X-Website: http://www.datenfreihafen.org/
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Subject: Re: kerneloops.org report for the week of June 14 2009
+	Mon, 15 Jun 2009 03:08:34 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50928 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZFOHId convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 03:08:33 -0400
+Date: Mon, 15 Jun 2009 00:08:22 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org
+Subject: [PATCH] WARN(): add a \n to the message printk
+Message-ID: <20090615000822.6e6bf282@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+>From 14cc1a7592e46a8b57081f90d7d54ab274ab7610 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Mon, 15 Jun 2009 00:05:39 -0700
+Subject: [PATCH] WARN(): add a \n to the message printk
 
-On Sun, 2009-06-14 at 17:33, Arjan van de Ven wrote:
-> 
-> Rank 1: i915_gem_set_tiling (warning)
-> 	Reported 830 times (3700 total reports)
-> 	[gem] Failure in the tiling code
-> 	This warning was last seen in version 2.6.30, and first seen in 2.6.29-rc2.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_set_tiling
+many (most) users of WARN() don't have a \n at the end of their string;
+as is understandable from the API usage point of view. But this means
+that the backend needs to add this \n or the warning message
+gets corrupted (as is seen by kerneloops.org).
 
-There seem to be more then one issue. I'm running into one of them here on a
-Lenovo Thinkpad X200s. It's 2.6.30 and I enabled KMS the first time here. So I
-can't tell if it is a regression.
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ kernel/panic.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-http://www.kerneloops.org/oops.php?number=207353
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 984b3ec..08ce451 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -355,8 +355,10 @@ static void warn_slowpath_common(const char *file, int line, void *caller, struc
+ 	if (board)
+ 		printk(KERN_WARNING "Hardware name: %s\n", board);
+ 
+-	if (args)
++	if (args) {
+ 		vprintk(args->fmt, args->args);
++		printk("\n");
++	}
+ 
+ 	print_modules();
+ 	dump_stack();
+-- 
+1.6.0.6
 
-The result is that the EDID data could not be read and the wrong screen size
-set:
-[   45.524589] i2c-adapter i2c-3: unable to read EDID block.
-[   45.588200] i915 0000:00:02.0: DVI-D-2: no EDID data
-[   45.777251] [drm] TMDS-14: set mode 1360x768 13
-[   45.777261] [drm] TMDS-16: set mode 1360x768 13 <= Should be 1280x900 here
 
-Somehow the driver tries to use DVI1 and DVI2 while the display is connected to
-LVDS1.
 
-stefan@excalibur:~$ xrandr
-Screen 0: minimum 320 x 200, current 1360 x 800, maximum 8192 x 8192
-VGA1 disconnected (normal left inverted right x axis y axis)
-LVDS1 connected 1280x800+0+0 (normal left inverted right x axis y axis) 261mm x
-163mm
-   1280x800       60.0*+   50.0  
-DVI1 connected 1360x768+0+0 (normal left inverted right x axis y axis) 0mm x 0mm
-   1360x768       59.8* 
-   1152x864       60.0  
-   1024x768       60.0  
-   800x600        60.3  
-   640x480        59.9  
-DVI2 connected 1360x768+0+0 (normal left inverted right x axis y axis) 0mm x 0mm
-   1360x768       59.8* 
-   1152x864       60.0  
-   1024x768       60.0  
-   800x600        60.3  
-   640x480        59.9
-
-regards
-Stefan Schmidt
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
