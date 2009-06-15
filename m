@@ -1,85 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765455AbZFOSnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765661AbZFOSng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765455AbZFOSnV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765100AbZFOSmz
+	id S1765661AbZFOSng (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765278AbZFOSn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:42:55 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:54982 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765242AbZFOSmy (ORCPT
+	Mon, 15 Jun 2009 14:43:26 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:37624 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765123AbZFOSnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:42:54 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AokFAMsvNkpMQWQl/2dsb2JhbACBT9VwhA0F
-Date: Mon, 15 Jun 2009 14:42:50 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615184250.GB6520@Krystal>
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <20090615182348.GC11248@elte.hu> <20090615182828.GE11248@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 15 Jun 2009 14:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=DQf/wC4GEdV8+eBxKLj6YdpDS7VLO14YfkN+h4cpfnklry+w/KEoH4E+++ZBU3zjH
+	Q6KeOgOJnkcB0SNred35g==
+MIME-Version: 1.0
+In-Reply-To: <20090615183433.GB10490@elf.ucw.cz>
+References: <1245033557-10968-1-git-send-email-swetland@google.com>
+	 <1245033557-10968-2-git-send-email-swetland@google.com>
+	 <1245033557-10968-3-git-send-email-swetland@google.com>
+	 <20090615132018.GA14555@elf.ucw.cz>
+	 <a55d774e0906151130x3892346fx5aa1f62c387b2090@mail.gmail.com>
+	 <20090615183433.GB10490@elf.ucw.cz>
+Date: Mon, 15 Jun 2009 11:43:23 -0700
+Message-ID: <a55d774e0906151143r4181654cje37a9bbcfe092cec@mail.gmail.com>
+Subject: Re: [PATCH 2/3] [ARM] msm: make debugging UART (for DEBUG_LL) 
+	configurable
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090615182828.GE11248@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:39:22 up 107 days, 15:05,  3 users,  load average: 1.20, 1.27,
-	0.97
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > The GUP based method is pretty generic though - and can be used on 
-> > other architectures as well. It's not as fast as direct access 
-> > though.
-> 
-> Another question is: your patch switches over all normal exceptions 
-> from IRET to hand-unroll+RET.
-> 
+On Mon, Jun 15, 2009 at 11:34 AM, Pavel Machek<pavel@ucw.cz> wrote:
+>> > ...and those that do, have it at fixed uart, no?
+>>
+>> Well, I'd like to support the SoC generally, not just Dream -- it's
+>> used in a bunch of different devices, and there's nothing that forces
+>> you to use UART3 everywhere (I certainly have seen some 7k hardware
+>> that uses UART1 as the debug serial port).
+>
+> Aha, ok, I guess that should go to the changelog. (Nice bonus would be
+> if it was automatically/correctly set up when user selects machine
+> type... Actually, how does that work if you support few boards with
+> same kernel...?)
 
-Nope, it actually only switches the exceptions returning from an
-exception handler nested in NMI context to the hand-unroll+RET version.
-Given such exception nesting is expected to be very rare, it should not
-show any performance difference.
+At this point a kernel for multiple boards with different DEBUG_LL
+uarts doesn't work correctly -- I'm not sure this could be done
+without making the debug macro code, etc, a lot messier (since it has
+to write to the physical uart address in early boot and I believe that
+happens before the machine type is determined, though maybe I'm
+wrong).
 
-I also organised the code to make sure I did not add any test to the
-fast paths in my original patch.
+For a shipping kernel that's just including the serial driver and not
+the DEBUG_LL stuff, it doesn't have a problem (since the uart is
+configured from the board file a bit later in boot).
 
-> It would be really nice to benchmark it (via 'perf stat' for example 
-> ;-) whether that's a slowdown or a speedup.
-> 
-> If it's a slowdown then the decision is easy: we dont want this, we 
-> want to push the overhead into the sampling code, away from common 
-> codepaths.
-> 
-
-I did not try to make the "hand unroll + ret" the default. I therefore
-don't know if it is faster or slower than iret. But I prefered to stay
-on the safe side and only modify the exceptions nested within NMI
-handlers.
-
-Mathieu
-
-> [ If on the other hand it's a speedup of a few cycles then we have 
->   the problem of me suddenly liking this patch a whole lot more ;-) ]
-> 
-> 	Ingo
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Brian
