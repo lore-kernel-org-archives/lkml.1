@@ -1,206 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbZFOPcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbZFOPha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762404AbZFOPcI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbZFOPby
+	id S1757352AbZFOPha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZFOPhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:31:54 -0400
-Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:45642 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757279AbZFOPbw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:31:52 -0400
-X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 11:31:52 EDT
-X-SpamScore: -33
-X-BigFish: VPS-33(zz542N1432R4015L1805M9371Pzz1202hzzz2dh17ch17dh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Mon, 15 Jun 2009 11:37:21 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:59183 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZFOPhU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:37:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YeprDAhb6FZGQXGbhKWETrifs+z1BgyVBZUgNLlA4cxqLSRUIB2JBLcFqJnlkJxh6W
+         j1N2RU4JSE9JuX55jDLOMZGFzspd0JxdwEyTHvuaWlnTmNgUBaR0+9C+FsCw/ZQHJLxG
+         ptuu7MltX4SICME5QdXnzvI7Utzmr9LsWV0I8=
+Date: Mon, 15 Jun 2009 17:37:17 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, jiayingz@google.com, bligh@google.com,
+       roland@redhat.com, fche@redhat.com
+Subject: Re: [PATCH 3/7] add syscall tracepoints
+Message-ID: <20090615153715.GB6044@nowhere>
+References: <cover.1244837725.git.jbaron@redhat.com> <0ee4090012cf46f25d8cd8b022746a43b99d5767.1244837725.git.jbaron@redhat.com> <20090612215726.GA9177@Krystal> <20090615141209.GA3126@redhat.com> <20090615152428.GB32010@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe path
-Date: Mon, 15 Jun 2009 09:16:43 -0600
-In-Reply-To: <20090612175634.12827.12207.stgit@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe path
-Thread-Index: AcnrhzgVpKec9y03QnqT6EGrQ8sUrQCRPHsg
-References: <20090612175634.12827.12207.stgit@localhost.localdomain>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>, <benh@kernel.crashing.org>
-X-OriginalArrivalTime: 15 Jun 2009 15:16:44.0989 (UTC) FILETIME=[4B573ED0:01C9EDCC]
-Message-ID: <20090615151646.6ADA0E5805C@mail92-sin.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615152428.GB32010@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Grant Likely [mailto:grant.likely@secretlab.ca]
-> Sent: Friday, June 12, 2009 11:57 AM
-> To: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org;
-benh@kernel.crashing.org; John Linn
-> Subject: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up
-probe path
+On Mon, Jun 15, 2009 at 11:24:28AM -0400, Mathieu Desnoyers wrote:
+> * Jason Baron (jbaron@redhat.com) wrote:
+> > On Fri, Jun 12, 2009 at 05:57:26PM -0400, Mathieu Desnoyers wrote:
+> > > > Introduce a new 'DECLARE_TRACE_REG()' macro, so that tracepoints can associate
+> > > > an external register/unregister function.
+> > > > 
+> > > > 
+> > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > > 
+> > > > ---
+> > > >  include/linux/tracepoint.h |   27 +++++++++++++++++++++++----
+> > > >  1 files changed, 23 insertions(+), 4 deletions(-)
+> > > > 
+> > > > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> > > > index 14df7e6..9a3660b 100644
+> > > > --- a/include/linux/tracepoint.h
+> > > > +++ b/include/linux/tracepoint.h
+> > > > @@ -61,7 +61,7 @@ struct tracepoint {
+> > > >   * not add unwanted padding between the beginning of the section and the
+> > > >   * structure. Force alignment to the same alignment as the section start.
+> > > >   */
+> > > > -#define DECLARE_TRACE(name, proto, args)				\
+> > > > +#define DECLARE_TRACE_REG(name, proto, args, reg, unreg)		\
+> > > >  	extern struct tracepoint __tracepoint_##name;			\
+> > > >  	static inline void trace_##name(proto)				\
+> > > >  	{								\
+> > > > @@ -71,13 +71,29 @@ struct tracepoint {
+> > > >  	}								\
+> > > >  	static inline int register_trace_##name(void (*probe)(proto))	\
+> > > >  	{								\
+> > > > -		return tracepoint_probe_register(#name, (void *)probe);	\
+> > > > +		int ret;						\
+> > > > +		void (*func)(void) = (void (*)(void))reg;		\
+> > > > +									\
+> > > > +		ret = tracepoint_probe_register(#name, (void *)probe);	\
+> > > > +		if (func && !ret)					\
+> > > > +			func();						\
+> > > 
+> > > I don't see why you need to add this weird interface when all you really
+> > > need to do is to call the function to set the TIF flags explicitly in
+> > > reg_event_syscall_enter when registering a tracepoint.
+> > > 
+> > > Mathieu
+> > > 
+> > 
+> > I could enable the TIF flag in reg_event_syscall_enter, however that
+> > would not manage the TIF flag for other users of these traceoints. When
+> > users 'register/unregister' with a tracepoint, they expect the tracepoint
+> > to be enabled/disabled. If we move this functionality to the user, we are
+> > changing how that interface works. Therefore, I associated the
+> > enabling/disabling of the tracepoint, with the tracepoint definition.
+> > 
 > 
-> From: Grant Likely <grant.likely@secretlab.ca>
+> I agree it should be hidden from userspace APIs, but I don't think we
+> should hide it or from the "in kernel" API users, really. People
+> interfacing with this kind of API from the kernel-side expect to have a
+> great level of control on how they use it, and we can expect people to
+> know what they are doing.
 > 
-> The xilinxfb driver is improperly casting a physical address to a
-> u32, and the probe routine isn't as straight forward as it could be.
-> (discovered by gcc spitting out warnings on most recent change to
-> xilinxfb driver).
-> 
-> This patch fixes the cast and simplifies the probe path.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> 
-> John, can you please test and verify this fix is correct?
-
-I will try to test it today.
-
--- John
-
-> 
-> Thanks,
-> g.
-> 
->  drivers/video/xilinxfb.c |   59
-++++++++++++++++++----------------------------
->  1 files changed, 23 insertions(+), 36 deletions(-)
-> 
-> 
-> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-> index 7a868bd..b68b331 100644
-> --- a/drivers/video/xilinxfb.c
-> +++ b/drivers/video/xilinxfb.c
-> @@ -124,7 +124,6 @@ struct xilinxfb_drvdata {
->  						registers */
-> 
->  	dcr_host_t      dcr_host;
-> -	unsigned int    dcr_start;
->  	unsigned int    dcr_len;
-> 
->  	void		*fb_virt;	/* virt. address of the frame
-buffer */
-> @@ -325,8 +324,8 @@ static int xilinxfb_assign(struct device *dev,
->  					drvdata->regs);
->  	}
->  	/* Put a banner in the log (for DEBUG) */
-> -	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
-> -		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
-> +	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
-> +		(unsigned long long)drvdata->fb_phys, drvdata->fb_virt,
-fbsize);
-> 
->  	return 0;	/* success */
-> 
-> @@ -404,9 +403,7 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
->  	u32 tft_access;
->  	struct xilinxfb_platform_data pdata;
->  	struct resource res;
-> -	int size, rc;
-> -	int start = 0, len = 0;
-> -	dcr_host_t dcr_host;
-> +	int size, rc, start;
->  	struct xilinxfb_drvdata *drvdata;
-> 
->  	/* Copy with the default pdata (not a ptr reference!) */
-> @@ -414,35 +411,39 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
-> 
->  	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
-> 
-> +	/* Allocate the driver data region */
-> +	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
-> +	if (!drvdata) {
-> +		dev_err(&op->dev, "Couldn't allocate device private
-record\n");
-> +		return -ENOMEM;
-> +	}
-> +
->  	/*
->  	 * To check whether the core is connected directly to DCR or PLB
->  	 * interface and initialize the tft_access accordingly.
->  	 */
->  	p = (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if",
-NULL);
-> -
-> -	if (p)
-> -		tft_access = *p;
-> -	else
-> -		tft_access = 0;		/* For backward compatibility */
-> +	tft_access = p ? *p : 0;
-> 
->  	/*
->  	 * Fill the resource structure if its direct PLB interface
->  	 * otherwise fill the dcr_host structure.
->  	 */
->  	if (tft_access) {
-> +		drvdata->flags |= PLB_ACCESS_FLAG;
->  		rc = of_address_to_resource(op->node, 0, &res);
->  		if (rc) {
->  			dev_err(&op->dev, "invalid address\n");
-> -			return -ENODEV;
-> +			goto err;
->  		}
-> -
->  	} else {
-> +		res.start = 0;
->  		start = dcr_resource_start(op->node, 0);
-> -		len = dcr_resource_len(op->node, 0);
-> -		dcr_host = dcr_map(op->node, start, len);
-> -		if (!DCR_MAP_OK(dcr_host)) {
-> -			dev_err(&op->dev, "invalid address\n");
-> -			return -ENODEV;
-> +		drvdata->dcr_len = dcr_resource_len(op->node, 0);
-> +		drvdata->dcr_host = dcr_map(op->node, start,
-drvdata->len);
-> +		if (!DCR_MAP_OK(drvdata->dcr_host)) {
-> +			dev_err(&op->dev, "invalid DCR address\n");
-> +			goto err;
->  		}
->  	}
-> 
-> @@ -467,26 +468,12 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
->  	if (of_find_property(op->node, "rotate-display", NULL))
->  		pdata.rotate_screen = 1;
-> 
-> -	/* Allocate the driver data region */
-> -	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
-> -	if (!drvdata) {
-> -		dev_err(&op->dev, "Couldn't allocate device private
-record\n");
-> -		return -ENOMEM;
-> -	}
->  	dev_set_drvdata(&op->dev, drvdata);
-> +	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
-> 
-> -	if (tft_access)
-> -		drvdata->flags |= PLB_ACCESS_FLAG;
-> -
-> -	/* Arguments are passed based on the interface */
-> -	if (drvdata->flags & PLB_ACCESS_FLAG) {
-> -		return xilinxfb_assign(&op->dev, drvdata, res.start,
-&pdata);
-> -	} else {
-> -		drvdata->dcr_start = start;
-> -		drvdata->dcr_len = len;
-> -		drvdata->dcr_host = dcr_host;
-> -		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
-> -	}
-> + err:
-> +	kfree(drvdata);
-> +	return -ENODEV;
->  }
-> 
->  static int __devexit xilinxfb_of_remove(struct of_device *op)
-> 
+> Mathieu
 
 
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+Indeed it's fine to let the user of the tracepoint have a good
+control of what is happening, but actually there is no point in
+registering this one without having the TIF_FLAGS set, so it
+seems legitimate to handle it like Jason did.
+Remember it's a very specific tracepoint that needs these thread
+flags to be activated.
 
+Also this management of thread flags would become fragile once
+you let the user deal with it concurrently with the event
+registering.
+
+I think it's more sane/safe to encapsulate it as it is.
+
+ 
+> 
+> > thanks,
+> > 
+> > -Jason
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
