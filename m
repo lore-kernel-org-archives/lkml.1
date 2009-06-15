@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763227AbZFOQww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763310AbZFOQ5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763227AbZFOQww (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 12:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbZFOQwp
+	id S1763310AbZFOQ5n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 12:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZFOQ5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 12:52:45 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45377 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756277AbZFOQwp (ORCPT
+	Mon, 15 Jun 2009 12:57:36 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:60548 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751849AbZFOQ5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 12:52:45 -0400
-Message-ID: <4A367C09.80008@zytor.com>
-Date: Mon, 15 Jun 2009 09:51:21 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 15 Jun 2009 12:57:35 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: PC speaker beeps in 2.6.30?
+Date: Mon, 15 Jun 2009 18:57:35 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <4A365DA6.8000102@msgid.tls.msk.ru>
+In-reply-To: <4A365DA6.8000102@msgid.tls.msk.ru>
 MIME-Version: 1.0
-To: Petr Tesarik <ptesarik@suse.cz>
-CC: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH v2 0/8] clean up vdso-layout.lds.S
-References: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>	 <20090612180626.GB18203@uranus.ravnborg.org>	 <1245079002.17481.118.camel@nathan.suse.cz> <1245079649.17481.121.camel@nathan.suse.cz>
-In-Reply-To: <1245079649.17481.121.camel@nathan.suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906151857.36576.elendil@planet.nl>
+X-OriginalArrivalTime: 15 Jun 2009 16:57:37.0031 (UTC) FILETIME=[62A39170:01C9EDDA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petr Tesarik wrote:
-> Petr Tesarik píše v Po 15. 06. 2009 v 17:16 +0200:
->> [...]
->> An example can probably explain it better:
->>
->> $ cat >shared.c <<EOF
->> int shared_object[100];
->> EOF
->> $ cat >exe.c <<EOF
->> #include <stdio.h>
->> extern int shared_object[100];
->> int main(void) {
->> 	printf("%p\n", &shared_object); 
->> 	return 0;
->> }
->> EOF
-> 
-> BTW this example demonstrates that there is one section which should be
-> included in .data but is not:
-> 
-> 	*(COMMON)
-> 
-> I'll send a patch later.
-> 
+Michael Tokarev wrote:
+> Anyone know what happened with PC speaker in 2.6.30?
+> Basically, it does not work anymore here, with the
+> config which is very similar to the one used for
+> previous 2.6.29 kernel (where PC speaker worked).
+> At least I don't see any relevant differences and
+> the (seemengly) relevant symbols -- which are
+> INPUT_PCSPKR and PCSPKR_PLATFORM -- are both set
+> to 'y' for both 2.6.29 and 2.6.30.
 
-*(COMMON) is BSS, not data...
+For me the system beep has been replaced by a beep in ALSA with .30.
 
-	-hpa
+Do you have soundcard that uses HDA? Is CONFIG_SND_HDA_INPUT_BEEP set?
+Does alsamixer show a "beep" control? Is that not muted and does it have 
+volume set?
+
+Cheers,
+FJP
