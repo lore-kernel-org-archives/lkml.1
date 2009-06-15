@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbZFOOwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbZFOO4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761359AbZFOOwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 10:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZFOOwM
+	id S1756497AbZFOO4R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 10:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZFOO4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 10:52:12 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:37761 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZFOOwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 10:52:12 -0400
-Message-ID: <4A365FE6.8080908@atmel.com>
-Date: Mon, 15 Jun 2009 16:51:18 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 15 Jun 2009 10:56:06 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:59403 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751083AbZFOO4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 10:56:05 -0400
+Date: Mon, 15 Jun 2009 10:55:47 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+In-Reply-To: <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI>
+Message-ID: <alpine.DEB.1.10.0906151051240.19931@gentwo.org>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI> <alpine.DEB.1.10.0906121317140.23840@gentwo.org> <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-CC: Rob Emanuele <poorarm@shoreis.com>, Andrew Victor <avictor.za@gmail.com>,
-       Joey Oravec <joravec@drewtech.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Subject: Re: [PATCH][Fix] New Unified AVR32/AT91 MCI Driver that supports
- both 	MCI slots used at the same time
-References: <c8284b5b0906101641v586c3487i465263bb6908e3f7@mail.gmail.com>	<20090611095432.2e3a4067@hskinnemoen-d830>	<c8284b5b0906111316p1367a508vdb59ee7c2a8d2ff1@mail.gmail.com>	<4A3219F6.6000300@atmel.com> <20090612112900.4435f70f@hskinnemoen-d830>
-In-Reply-To: <20090612112900.4435f70f@hskinnemoen-d830>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen :
-> Nicolas Ferre wrote:
->>> Well, what is the best way to differentiate it from the at91_mci
->>> driver and keep users from trying to use both drivers?  
->> I propose that we setup a kind of choice sub menu in the Kconfig for
->> those two drivers when they are both supported.
-> 
-> Shouldn't it be enough to simply add
-> 
-> 	depends on !THE_OTHER_DRIVER
-> 
-> to both of them?
+On Sun, 14 Jun 2009, Pekka J Enberg wrote:
 
-It does not seems to work...
+> How about something like this? There should be no extra code in fastpaths
+> for production configs with this one.
 
-> Btw, what are the long-term plans for this? Should the at91_mci driver
-> be phased out once the atmel-mci driver supports all at91 and avr32
-> devices?
+Yes something like that would be good. More comments below.
 
-In my opinion, it is a bit early to tell. My thoughts were that I
-suspect we should keep at91_mci for at91rm9200 and at91sam9261/9261s as
-they contain an older revision of the MCI IP. In the meantime, Rob tend
-to integrate also code to manage those chips (without RDPROOF/WRPROOF
-switch).
+> index 4d6004c..5e8cea1 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1613,6 +1613,8 @@ another_slab:
+>  	deactivate_slab(s, c);
+>
+>  new_slab:
+> +	gfpflags &= slab_gfp_mask;
+> +
 
-So, lets see how far we can go with the atmel-mci on at91 chips and
-then, consider a phase out.
+Move the processing of GFP_RECLAIM_MASK etc up to here from new_slab? Then
+the flow is also more logical. The flags handling is concentrated in one
+spot in the allocator and its more obvious how we handle gfp flags.
 
-Regards,
--- 
-Nicolas Ferre
+> @@ -1668,13 +1670,14 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+>  	struct kmem_cache_cpu *c;
+>  	unsigned long flags;
+>  	unsigned int objsize;
+> +	gfp_t real_gfp;
+>
+> -	gfpflags &= slab_gfp_mask;
+> +	real_gfp = gfpflags & slab_gfp_mask;
+>
+> -	lockdep_trace_alloc(gfpflags);
+> -	might_sleep_if(gfpflags & __GFP_WAIT);
+> +	lockdep_trace_alloc(real_gfp);
+> +	might_sleep_if(real_gfp & __GFP_WAIT);
+>
+> -	if (should_failslab(s->objsize, gfpflags))
+> +	if (should_failslab(s->objsize, real_gfp))
+>  		return NULL;
+>
+>  	local_irq_save(flags);
+
+Dont do it there. Only modify the slow path.
+
+Look at __might_sleep(). It already has an exception for system_state !=
+RUNNING. If it still triggers then add to the condition there.
+
 
