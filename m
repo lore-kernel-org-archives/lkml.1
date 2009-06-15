@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763284AbZFOSzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbZFOS4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763284AbZFOSzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZFOSzg
+	id S933608AbZFOS4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZFOS4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:55:36 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:54936 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751455AbZFOSzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:55:35 -0400
-Date: Mon, 15 Jun 2009 20:56:38 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/8] Fix rt_rq->pushable_tasks initialization in init_rt_rq()
-Message-ID: <20090615185638.GK21741@gandalf.sssup.it>
-References: <cover.1245092261.git.fabio@helm.retis>
-Mime-Version: 1.0
+	Mon, 15 Jun 2009 14:56:06 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:45463 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752035AbZFOS4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:56:04 -0400
+Date: Mon, 15 Jun 2009 11:56:06 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jan Blunck <jblunck@suse.de>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] atomic: Fix _atomic_dec_and_lock() deadlock on UP
+Message-ID: <20090615185606.GJ6924@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090615181113.GD352@shell>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1245092261.git.fabio@helm.retis>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20090615181113.GD352@shell>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-init_rt_rq() initializes only rq->rt.pushable_tasks, and not the
-pushable_tasks field of the passed rt_rq.  The plist is not used
-uninitialized since the only pushable_tasks plists used are the
-ones of root rt_rqs; anyway reinitializing the list on every group
-creation corrupts the root plist, losing its previous contents.
+On Mon, Jun 15, 2009 at 02:11:13PM -0400, Valerie Aurora wrote:
+> From: Jan Blunck <jblunck@suse.de>
+> 
+> _atomic_dec_and_lock() can deadlock on UP with spinlock debugging
+> enabled.  Currently, on UP we unconditionally spin_lock() first, which
+> calls __spin_lock_debug(), which takes the lock unconditionally even
+> on UP.  This will deadlock in situations in which we call
+> atomic_dec_and_lock() knowing that the counter won't go to zero
+> (because we hold another reference) and that we already hold the lock.
+> Instead, we should use the SMP code path which only takes the lock if
+> necessary.
 
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 6032f51..873b252 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9075,7 +9075,7 @@ static void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)
- #ifdef CONFIG_SMP
- 	rt_rq->rt_nr_migratory = 0;
- 	rt_rq->overloaded = 0;
--	plist_head_init(&rq->rt.pushable_tasks, &rq->lock);
-+	plist_head_init(&rt_rq->pushable_tasks, &rq->lock);
- #endif
- 
- 	rt_rq->rt_time = 0;
--- 
-1.6.2.2
-
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
+> ---
+>  lib/dec_and_lock.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/lib/dec_and_lock.c b/lib/dec_and_lock.c
+> index a65c314..e73822a 100644
+> --- a/lib/dec_and_lock.c
+> +++ b/lib/dec_and_lock.c
+> @@ -19,11 +19,10 @@
+>   */
+>  int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
+>  {
+> -#ifdef CONFIG_SMP
+>  	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
+>  	if (atomic_add_unless(atomic, -1, 1))
+>  		return 0;
+> -#endif
+> +
+>  	/* Otherwise do it the slow way */
+>  	spin_lock(lock);
+>  	if (atomic_dec_and_test(atomic))
+> -- 
+> 1.6.0.6
+> 
