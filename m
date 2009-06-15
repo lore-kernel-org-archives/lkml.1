@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761556AbZFOOJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbZFOOKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761556AbZFOOJq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 10:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761336AbZFOOJi
+	id S1760675AbZFOOKm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 10:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZFOOKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 10:09:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46036 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752413AbZFOOJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 10:09:37 -0400
-Date: Mon, 15 Jun 2009 16:09:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: linux-next: tip/perfcounters tree build warning
-Message-ID: <20090615140916.GA29435@elte.hu>
-References: <20090615165559.66c76c58.sfr@canb.auug.org.au>
+	Mon, 15 Jun 2009 10:10:33 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:34532 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbZFOOKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 10:10:33 -0400
+Message-ID: <4A36C6CA.9070507@oracle.com>
+Date: Tue, 16 Jun 2009 06:10:18 +0800
+From: TaoMa <tao.ma@oracle.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615165559.66c76c58.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: ebiederm@xmission.com
+CC: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
+References: <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com>	<4A2CC52B.9010602@oracle.com>	<2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com>	<m1ab4i11zx.fsf@fess.ebiederm.org>	<20090611050929.GA2706@cr0.nay.redhat.com>	<m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0>	<m17hzg7oil.fsf@fess.ebiederm.org>	<20090615021457.GA3388@cr0.nay.redhat.com> <4A35E32C.30609@oracle.com>	<20090615070018.GD3544@cr0.nay.redhat.com>	<4A360793.6060000@oracle.com> <m1ski1g632.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ski1g632.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.4A36564E.0105:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ebiederm@xmission.com wrote:
+> Tao Ma <tao.ma@oracle.com> writes:
+>
+>   
+>> Hi Amerigo,
+>>
+>> The wrong number I mean is 131941393240064.
+>>
+>> So do you think
+>> [root@test3 ~]# ls -l /proc/kcore
+>> -r-------- 1 root root 131941393240064 Jun 15 13:39 /proc/kcore
+>>
+>> is better than
+>>
+>> [taoma@test2 ~]$ ll /proc/kcore
+>> -r-------- 1 root root 281474974617600 Jun 15 15:20 /proc/kcore
+>> ?
+>>
+>> I don't think so.
+>>
+>> Actually the right result should look like
+>>
+>> [root@test8 ~]# ls -l /proc/kcore
+>> -r-------- 1 root root 5301604352 Jun 15 13:35 /proc/kcore
+>>
+>> And with your patch I can't get this number.
+>>     
+>
+> Actually that value is the bug.  It has absolutely nothing
+> to do with the offsets that are valid within /proc/kcore.
+>
+> Why do you prefer the smaller number?
+>   
+Amerigo said in the previous e-mail that " the man page for/proc/kcore 
+is wrong, its size can be more than the physical memory size, because it 
+also contains memory area of vmalloc(), vsyscall etc..."
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+I have 4G memory, and 5301604352 is just a bit larger than 4G and looks 
+sane. So I misunderstand that this number is right.
 
-> Hi all,
-> 
-> Today's linux-next build (powerpc allyesconfig) produced this warning:
-> 
-> arch/powerpc/kernel/perf_counter.c: In function 'record_and_restart':
-> arch/powerpc/kernel/perf_counter.c:1016: warning: unused variable 'addr'
-> 
-> Introduced by commit df1a132bf3d3508f863336c80a27806a2ac947e0
-> ("perf_counter: Introduce struct for sample data").
-> 
-> I checked the tip/master branch and this is not fixed there.
+But if it is also a bug, I am willing to test any of the new patch. ;)
 
-Thanks Stephen for reporting this!
-
-	Ingo
+Regards,
+Tao
