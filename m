@@ -1,78 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761754AbZFORzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbZFOR5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761754AbZFORzd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbZFORz0
+	id S1762711AbZFOR5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbZFOR5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:55:26 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:28168 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203AbZFORzZ (ORCPT
+	Mon, 15 Jun 2009 13:57:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34048 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754116AbZFOR5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:55:25 -0400
-Date: Mon, 15 Jun 2009 19:55:17 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: [GIT PULL] hwmon updates for 2.6.31
-Message-ID: <20090615195517.74b2657d@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 13:57:30 -0400
+Date: Mon, 15 Jun 2009 10:57:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] WARN(): add a \n to the message printk
+In-Reply-To: <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906151048380.6276@localhost.localdomain>
+References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain> <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull hwmon subsystem updates for Linux 2.6.31 from:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git hwmon-for-linus
+On Mon, 15 Jun 2009, Linus Torvalds wrote:
+> 
+> NOTE! This is, of course, totally untested. And we're bound to have 
+> continuation printk's that don't have the KERN_CONT at front, and need 
+> them added, but I think this is generally a saner model than what we have 
+> now, or your suggested explicit addition of '\n'.
 
- Documentation/hwmon/f71882fg        |   12 +-
- Documentation/hwmon/ibmaem          |    2 +-
- Documentation/hwmon/sysfs-interface |   19 +
- Documentation/hwmon/tmp401          |   42 +++
- Documentation/hwmon/w83627ehf       |   11 +-
- drivers/hwmon/Kconfig               |   16 +-
- drivers/hwmon/Makefile              |    1 +
- drivers/hwmon/f71882fg.c            |  250 ++++++++++---
- drivers/hwmon/hwmon.c               |   29 ++
- drivers/hwmon/ibmaem.c              |    1 +
- drivers/hwmon/max6650.c             |   86 +++++-
- drivers/hwmon/sht15.c               |   10 +-
- drivers/hwmon/tmp401.c              |  690 +++++++++++++++++++++++++++++++++++
- drivers/hwmon/w83627ehf.c           |   10 +-
- 14 files changed, 1103 insertions(+), 76 deletions(-)
- create mode 100644 Documentation/hwmon/tmp401
- create mode 100644 drivers/hwmon/tmp401.c
+Ok, it's tested now.
 
----------------
+It works, and yes, it does show cases of insanity: both missing KERN_CONT 
+(common), and _extra_ KERN_CONT (odd).
 
-Andre Prendel (2):
-      hwmon: (tmp401) Add support for TI's TMP411 sensors chip
-      hwmon: (tmp401) Add documentation
+For example, the ACPI printk's seem to have pointless KERN_CONT's in them, 
+an I get printouts like:
 
-Christian Engelmayer (1):
-      hwmon: (max6650) Add support for alarms
+	[    0.000000] <c>ACPI: RSDP 00000000000fe020 00024 (v02 INTEL )
+	[    0.000000] <c>ACPI: XSDT 00000000bf7fe120 0006C (v01 INTEL  DX58SO   0000084F      01000013)
+	[    0.000000] <c>ACPI: FACP 00000000bf7fd000 000F4 (v03 INTEL  DX58SO   0000084F MSFT 0100000D)
+	...
 
-Darrick J. Wong (1):
-      hwmon: (ibmaem) Automatically load on HC10 blade
+where that "<c>" is just because ACPI does something odd and pointless.
 
-Hans de Goede (5):
-      hwmon: (tmp401) Add support for TI's TMP401 sensor chip
-      hwmon: (f71882fg) Cleanup f8000 pwm handling
-      hwmon: (f71882fg) Sanity check f8000 pwm settings
-      hwmon: (f71882fg) Add temp#_fault sysfs attr for f8000
-      hwmon: (f71882fg) Add support for the F71858F
+The lack of KERN_CONT shows up in printouts like
 
-Jean Delvare (3):
-      hwmon: Fix more __devexit_p glitches
-      hwmon: (w83627ehf) Add W83627DHG-P support
-      hwmon: PCI quirk for hwmon access on MSI MS-7031 board
+	[   26.626492] CPU: L1 I cache: 32K
+	[   26.626492] , L1 D cache: 32K
+	...
+	[   26.826201] ACPI: (supports S0
+	[   26.826243]  S5
+	[   26.826326] )
+	...
+	[   26.839617] ACPI: PCI Interrupt Link [LNKA] (IRQs
+	[   26.839660]  3
+	[   26.839741]  4
+	[   26.839823]  5
+	[   26.839904]  6
+	[   26.839985]  7
+	[   26.840067]  9
+	[   26.840148]  10
+	[   26.840230]  *11
+	[   26.840313]  12
+	[   26.840395]  14
+	[   26.840476]  15
+	[   26.840558] )
+	...
+	[   26.964999] ACPI: CPU0 (power states:
+	[   26.965040]  C1[C1]
+	[   26.965123]  C2[C3]
+	[   26.965205] )
+	...
+	[   27.231268] ata_piix 0000:00:1f.5: MAP [
+	[   27.231309]  P0
+	[   27.231390]  --
+	[   27.231472]  P1
+	[   27.231553]  --
+	[   27.231635]  ]
+	...
+	[   28.092534]  sda:
+	[   28.092820]  sda1
+	[   28.092910]  sda2
+	...
 
-Thanks,
--- 
-Jean Delvare
+where the kernel now added a newline because they were separate printk's 
+and didn't have KERN_CONT on the continuation.
+
+But despite seeing these kinds of things, I do think the patch is the 
+right thing to do. It just shows that since KERN_CONT didn't use to _do_ 
+anything, people obviously mis-used it. It's the old "if it wasn't tested, 
+it's buggy" thing, but none of these look in the least like serious 
+problems to the approach.
+
+Comments? We could make it remove the unnecessary '<c>' things (so that 
+you can always add KERN_CONT if you _want_ to), but the patch as-is will 
+show them because I think it's useful to see them. 
+
+			Linus
