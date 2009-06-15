@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbZFOIed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZFOIff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbZFOIed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757589AbZFOIeO
+	id S1757933AbZFOIff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZFOIf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:34:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57907 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757097AbZFOIeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:34:11 -0400
-Date: Mon, 15 Jun 2009 08:33:43 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf record: Fix fast task-exit race
-Message-ID: <tip-613d8602292165f86ba1969784fea01a06d55900@git.kernel.org>
-Git-Commit-ID: 613d8602292165f86ba1969784fea01a06d55900
-X-Mailer: tip-git-log-daemon
+	Mon, 15 Jun 2009 04:35:27 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:35338 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbZFOIf1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 04:35:27 -0400
+Message-ID: <4A360793.6060000@oracle.com>
+Date: Mon, 15 Jun 2009 16:34:27 +0800
+From: Tao Ma <tao.ma@oracle.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 15 Jun 2009 08:33:43 +0000 (UTC)
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
+References: <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com> <4A2CC52B.9010602@oracle.com> <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com> <m1ab4i11zx.fsf@fess.ebiederm.org> <20090611050929.GA2706@cr0.nay.redhat.com> <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0> <m17hzg7oil.fsf@fess.ebiederm.org> <20090615021457.GA3388@cr0.nay.redhat.com> <4A35E32C.30609@oracle.com> <20090615070018.GD3544@cr0.nay.redhat.com>
+In-Reply-To: <20090615070018.GD3544@cr0.nay.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt008.oracle.com [141.146.116.17]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4A360797.0258:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  613d8602292165f86ba1969784fea01a06d55900
-Gitweb:     http://git.kernel.org/tip/613d8602292165f86ba1969784fea01a06d55900
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 15 Jun 2009 08:17:12 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 15 Jun 2009 09:08:31 +0200
+Hi Amerigo,
 
-perf record: Fix fast task-exit race
+The wrong number I mean is 131941393240064.
 
-Recording with -a (or with -p) can race with tasks going away:
+So do you think
+[root@test3 ~]# ls -l /proc/kcore
+-r-------- 1 root root 131941393240064 Jun 15 13:39 /proc/kcore
 
-   couldn't open /proc/8440/maps
+is better than
 
-Causing an early exit() and no recording done.
+[taoma@test2 ~]$ ll /proc/kcore
+-r-------- 1 root root 281474974617600 Jun 15 15:20 /proc/kcore
+?
 
-Do not abort the recording session - instead just skip that task.
+I don't think so.
 
-Also, only print the warnings under -v.
+Actually the right result should look like
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+[root@test8 ~]# ls -l /proc/kcore
+-r-------- 1 root root 5301604352 Jun 15 13:35 /proc/kcore
 
+And with your patch I can't get this number.
 
----
- tools/perf/builtin-record.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+Regards,
+Tao
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index a177a59..e1dfef2 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -202,8 +202,12 @@ static void pid_synthesize_comm_event(pid_t pid, int full)
- 
- 	fd = open(filename, O_RDONLY);
- 	if (fd < 0) {
--		fprintf(stderr, "couldn't open %s\n", filename);
--		exit(EXIT_FAILURE);
-+		/*
-+		 * We raced with a task exiting - just return:
-+		 */
-+		if (verbose)
-+			fprintf(stderr, "couldn't open %s\n", filename);
-+		return;
- 	}
- 	if (read(fd, bf, sizeof(bf)) < 0) {
- 		fprintf(stderr, "couldn't read %s\n", filename);
-@@ -273,8 +277,12 @@ static void pid_synthesize_mmap_samples(pid_t pid)
- 
- 	fp = fopen(filename, "r");
- 	if (fp == NULL) {
--		fprintf(stderr, "couldn't open %s\n", filename);
--		exit(EXIT_FAILURE);
-+		/*
-+		 * We raced with a task exiting - just return:
-+		 */
-+		if (verbose)
-+			fprintf(stderr, "couldn't open %s\n", filename);
-+		return;
- 	}
- 	while (1) {
- 		char bf[BUFSIZ], *pbf = bf;
+Amerigo Wang wrote:
+> On Mon, Jun 15, 2009 at 01:59:08PM +0800, Tao Ma wrote:
+>> Hi Amerigo,
+>> 	Just patched my kernel and tested.
+>> 	The bad news is that although the number is changed, but it isn't right  
+>> either.
+> 
+> Thanks for testing.
+> 
+> What do you mean by saying it isn't right? You think it is wrong only because
+> it is more than phy mem size?
+> 
+> Again, the document of /proc/kcore is wrong, it _can_ be more than phy mem size.
+> 
+> Regards.
+> 
