@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761189AbZFONX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZFONaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761189AbZFONX4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757153AbZFONXr
+	id S1754473AbZFONaQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZFONaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:23:47 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:43952 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755866AbZFONXr (ORCPT
+	Mon, 15 Jun 2009 09:30:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52963 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750977AbZFONaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:23:47 -0400
-Date: Mon, 15 Jun 2009 15:26:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kallsyms broken on ARM by commit 17b1f0d
-Message-ID: <20090615132603.GA13175@uranus.ravnborg.org>
-References: <1245070063.16986.22.camel@pc1117.cambridge.arm.com> <8bd0f97a0906150551o6de9a29fj64f73d4ccfff7e57@mail.gmail.com> <1245071805.16986.33.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245071805.16986.33.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 15 Jun 2009 09:30:03 -0400
+Message-ID: <4A364C74.3040006@zytor.com>
+Date: Mon, 15 Jun 2009 06:28:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <Pine.LNX.4.64.0906151341160.25162@sister.anvils> <20090615140019.4e405d37@lxorguk.ukuu.org.uk> <20090615132934.GE31969@one.firstfloor.org>
+In-Reply-To: <20090615132934.GE31969@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 02:16:45PM +0100, Catalin Marinas wrote:
-> On Mon, 2009-06-15 at 08:51 -0400, Mike Frysinger wrote:
-> > On Mon, Jun 15, 2009 at 08:47, Catalin Marinas wrote:
-> > > With the above commit, kallsyms on ARM no longer show correct
-> > > information. 
-> > 
-> > try this patch (Gentoo mail server is broken atm, so attaching)
+Andi Kleen wrote:
 > 
-> Thanks. This patch fixed the problem.
+> That said the real tests of this can be only done with test suites
+> really, these errors tend to not happen quickly. 
+> 
 
-Quick testing - good.
-I will forward this to Linus tonight.
+What's far more important, quite frankly, is harmlessness regression
+testing.
 
-	Sam
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
