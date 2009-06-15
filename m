@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933345AbZFOSME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932906AbZFOSNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933345AbZFOSME (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbZFOSLy
+	id S932906AbZFOSNb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbZFOSNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:11:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36859 "EHLO mx1.redhat.com"
+	Mon, 15 Jun 2009 14:13:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42601 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754474AbZFOSLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:11:54 -0400
-Date: Mon, 15 Jun 2009 14:11:13 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jan Blunck <jblunck@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul McKenney <paulmck@us.ibm.com>
-Subject: [PATCH] atomic: Fix _atomic_dec_and_lock() deadlock on UP
-Message-ID: <20090615181113.GD352@shell>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755804AbZFOSNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:13:21 -0400
+Date: Mon, 15 Jun 2009 18:12:50 GMT
+From: tip-bot for Rusty Russell <rusty@rustcorp.com.au>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, rusty@rustcorp.com.au, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <200906122115.30787.rusty@rustcorp.com.au>
+References: <200906122115.30787.rusty@rustcorp.com.au>
+Subject: [tip:tracing/urgent] cpumask: use new operators in kernel/trace
+Message-ID: <tip-3f237a79ddeea34dda67e9eedece3a22918df75e@git.kernel.org>
+Git-Commit-ID: 3f237a79ddeea34dda67e9eedece3a22918df75e
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 15 Jun 2009 18:12:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <jblunck@suse.de>
+Commit-ID:  3f237a79ddeea34dda67e9eedece3a22918df75e
+Gitweb:     http://git.kernel.org/tip/3f237a79ddeea34dda67e9eedece3a22918df75e
+Author:     Rusty Russell <rusty@rustcorp.com.au>
+AuthorDate: Fri, 12 Jun 2009 21:15:30 +0930
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Mon, 15 Jun 2009 11:36:42 -0400
 
-_atomic_dec_and_lock() can deadlock on UP with spinlock debugging
-enabled.  Currently, on UP we unconditionally spin_lock() first, which
-calls __spin_lock_debug(), which takes the lock unconditionally even
-on UP.  This will deadlock in situations in which we call
-atomic_dec_and_lock() knowing that the counter won't go to zero
-(because we hold another reference) and that we already hold the lock.
-Instead, we should use the SMP code path which only takes the lock if
-necessary.
+cpumask: use new operators in kernel/trace
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+LKML-Reference: <200906122115.30787.rusty@rustcorp.com.au>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+
 ---
- lib/dec_and_lock.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ kernel/trace/kmemtrace.c   |    2 +-
+ kernel/trace/ring_buffer.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/lib/dec_and_lock.c b/lib/dec_and_lock.c
-index a65c314..e73822a 100644
---- a/lib/dec_and_lock.c
-+++ b/lib/dec_and_lock.c
-@@ -19,11 +19,10 @@
-  */
- int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
- {
--#ifdef CONFIG_SMP
- 	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
- 	if (atomic_add_unless(atomic, -1, 1))
- 		return 0;
--#endif
-+
- 	/* Otherwise do it the slow way */
- 	spin_lock(lock);
- 	if (atomic_dec_and_test(atomic))
--- 
-1.6.0.6
-
+diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
+index 86cdf67..1edaa95 100644
+--- a/kernel/trace/kmemtrace.c
++++ b/kernel/trace/kmemtrace.c
+@@ -186,7 +186,7 @@ static int kmem_trace_init(struct trace_array *tr)
+ 	int cpu;
+ 	kmemtrace_array = tr;
+ 
+-	for_each_cpu_mask(cpu, cpu_possible_map)
++	for_each_cpu(cpu, cpu_possible_mask)
+ 		tracing_reset(tr, cpu);
+ 
+ 	kmemtrace_start_probes();
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 2e642b2..9c31c9f 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -3105,7 +3105,7 @@ static int rb_cpu_notify(struct notifier_block *self,
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		if (cpu_isset(cpu, *buffer->cpumask))
++		if (cpumask_test_cpu(cpu, buffer->cpumask))
+ 			return NOTIFY_OK;
+ 
+ 		buffer->buffers[cpu] =
+@@ -3116,7 +3116,7 @@ static int rb_cpu_notify(struct notifier_block *self,
+ 			return NOTIFY_OK;
+ 		}
+ 		smp_wmb();
+-		cpu_set(cpu, *buffer->cpumask);
++		cpumask_set_cpu(cpu, buffer->cpumask);
+ 		break;
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
