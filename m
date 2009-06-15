@@ -1,92 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbZFOTEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbZFOTEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933805AbZFOTEg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764467AbZFOTE0
+	id S932733AbZFOTEu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933740AbZFOTE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:04:26 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:37752 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763240AbZFOTEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:04:25 -0400
-Date: Mon, 15 Jun 2009 21:05:28 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/8] Fix hrtick handling
-Message-ID: <20090615190528.GL21741@gandalf.sssup.it>
-References: <cover.1245092261.git.fabio@helm.retis>
+	Mon, 15 Jun 2009 15:04:29 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:48237 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933426AbZFOTE2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 15:04:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AokFAA43NkpMQWQl/2dsb2JhbACBT9U+hA0F
+Date: Mon, 15 Jun 2009 14:59:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, paulus@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, efault@gmx.de, jeremy@goop.org,
+       npiggin@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090615185907.GF6520@Krystal>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal> <1245091917.6741.185.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <cover.1245092261.git.fabio@helm.retis>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <1245091917.6741.185.camel@laptop>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:57:04 up 107 days, 15:23,  3 users,  load average: 0.27, 0.56,
+	0.81
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current hrtick implementation can end up asking to the hrtimer code
-to wake up ksoftirqd while holding rq->lock, causing a spinlock recursion.
-This patch uses __hrtimer_start_range_ns() to disable the wakeup in the
-reprogramming path.
+* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> On Mon, 2009-06-15 at 14:48 -0400, Mathieu Desnoyers wrote:
+> > we should not care that much about the performance hit of
+> > saving/restoring the cr2 register at each nmi entry/exit.
+> 
+> But we do, perf counters very much cares about nmi performance.
+> 
 
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
----
- kernel/sched.c |   20 +++++++++++++++++---
- 1 files changed, 17 insertions(+), 3 deletions(-)
+To a point where it cannot afford a simple register save/restore ?
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 873b252..b8d432b 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1090,6 +1090,19 @@ static enum hrtimer_restart hrtick(struct hrtimer *timer)
- }
- 
- #ifdef CONFIG_SMP
-+static void hrtick_restart(struct hrtimer *timer)
-+{
-+	ktime_t hard, soft;
-+	unsigned long delta;
-+
-+	soft = hrtimer_get_softexpires(timer);
-+	hard = hrtimer_get_expires(timer);
-+	delta = ktime_to_ns(ktime_sub(hard, soft));
-+
-+	__hrtimer_start_range_ns(timer, soft, delta,
-+				 HRTIMER_MODE_ABS_PINNED, 0);
-+}
-+
- /*
-  * called from hardirq (IPI) context
-  */
-@@ -1098,7 +1111,7 @@ static void __hrtick_start(void *arg)
- 	struct rq *rq = arg;
- 
- 	spin_lock(&rq->lock);
--	hrtimer_restart(&rq->hrtick_timer);
-+	hrtick_restart(&rq->hrtick_timer);
- 	rq->hrtick_csd_pending = 0;
- 	spin_unlock(&rq->lock);
- }
-@@ -1116,7 +1129,7 @@ static void hrtick_start(struct rq *rq, u64 delay)
- 	hrtimer_set_expires(timer, time);
- 
- 	if (rq == this_rq()) {
--		hrtimer_restart(timer);
-+		hrtick_restart(timer);
- 	} else if (!rq->hrtick_csd_pending) {
- 		__smp_call_function_single(cpu_of(rq), &rq->hrtick_csd, 0);
- 		rq->hrtick_csd_pending = 1;
-@@ -1173,7 +1186,8 @@ static void init_rq_hrtick(struct rq *rq)
- 	rq->hrtick_csd.info = rq;
- #endif
- 
--	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC,
-+				HRTIMER_MODE_REL_PINNED);
- 	rq->hrtick_timer.function = hrtick;
- }
- #else	/* CONFIG_SCHED_HRTICK */
+There is "caring" and "_caring_". I am tempted to ask what NMI handler
+execution frequency you have in mind here to figure out if we are not
+trying to optimize sub-nanoseconds per minutes. ;)
+
+Mathieu
+
+
 -- 
-1.6.2.2
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
