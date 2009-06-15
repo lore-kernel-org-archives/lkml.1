@@ -1,71 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763579AbZFOTmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765602AbZFOTof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763579AbZFOTmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757796AbZFOTmg
+	id S1765602AbZFOTof (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZFOTo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:42:36 -0400
-Received: from iph2.telenor.se ([195.54.127.133]:52998 "EHLO iph2.telenor.se"
+	Mon, 15 Jun 2009 15:44:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48651 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756396AbZFOTmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:42:35 -0400
-X-Greylist: delayed 615 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 15:42:34 EDT
-X-SMTPAUTH: 
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjUDAFI+NkrDNmV4mWdsb2JhbACBT5Z8AQEBAQEICwoHE71SgkuBQgU
-X-IronPort-AV: E=Sophos;i="4.42,224,1243807200"; 
-   d="scan'208";a="20278357"
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjCrAMs+NkpV5HbzPGdsb2JhbACBT5ZyAQEBATe9V4JLgUIF
-X-IronPort-AV: E=Sophos;i="4.42,224,1243807200"; 
-   d="scan'208";a="537411540"
-Message-ID: <4A36A1C2.2060805@mocean-labs.com>
-Date: Mon, 15 Jun 2009 21:32:18 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	id S1751259AbZFOTo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 15:44:27 -0400
+Date: Mon, 15 Jun 2009 21:43:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@redhat.com,
+       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090615194344.GA12554@elte.hu>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <alpine.LFD.2.01.0906151125320.6276@localhost.localdomain> <20090615183649.GA16999@elte.hu> <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain>
 MIME-Version: 1.0
-To: Trilok Soni <soni.trilok@gmail.com>
-CC: linux-input@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
-       Thierry Reding <thierry.reding@avionic-design.de>
-Subject: Re: [RESEND][PATCH] input: Added TSC2003
-References: <4A366439.70005@mocean-labs.com> <5d5443650906151110u3f7d9d1cm1990e767d29a45b6@mail.gmail.com>
-In-Reply-To: <5d5443650906151110u3f7d9d1cm1990e767d29a45b6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-06-15 20.10, Trilok Soni wrote:
-> Hi,
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> > If it's faster, this becomes a legit (albeit complex) 
+> > micro-optimization in a _very_ hot codepath.
 > 
-> On Mon, Jun 15, 2009 at 8:39 PM, Richard
-> Röjfors<richard.rojfors.ext@mocean-labs.com> wrote:
->> Supplied is a driver for the TSC2003. There is actually a driver for TSC2007 which can be used in some cases.
->> The platform struct is reused from the TSC2007.
->> There is a big difference in the implementation between the drivers, this one does not use HR timers.
->> The TSC2007 driver performs synchronous I2C in the timer callback (SW IRQ context) which is bad when
->> the I2C driver is interrupt driven.
->>
-> 
-> Meaning? I think I2C transaction can sleep.
+> I don't think it's all that hot. It's not like it's the return to 
+> user mode.
 
-Yes that's what it means, and that's bad in a HR timer callback.
+Well i guess it depends. For server apps it is true - syscalls are a 
+lot more dominant, MMs are long-running so any startup cost gets 
+amortized and pagefaults are avoided.
 
-> I don't see (right now)
-> need for two drivers. TSC2003 id was added to TSC2007. If you think
-> TSC2007 doesn't provide enough support for it, then please add that in
-> TSC2007 driver itself. We don't need create another driver it seems.
+For something like a kernel build we have 7 times as many pagefaults 
+as syscalls:
 
-The chips are actually compatible (when it comes to the touchscreen functionality).
+aldebaran:~/linux/linux> perf stat -- make -j32 >/dev/null
+[...]
+ Performance counter stats for 'make -j32':
 
-So you are true, the tsc2007 can be modified, I didn't added support for
-the other pins anyway.
+ 1444281.076741  task-clock-msecs     #     14.429 CPUs 
+         219991  context-switches     #      0.000 M/sec
+          18335  CPU-migrations       #      0.000 M/sec
+       38465628  page-faults          #      0.027 M/sec
+  4374762924204  cycles               #   3029.025 M/sec
+  2645979309823  instructions         #      0.605 IPC  
+    42398991227  cache-references     #     29.356 M/sec
+     4371920878  cache-misses         #      3.027 M/sec
 
-Actually I don't have access to any tsc2007, so I can't verify it on the newer chip.
-I will go on and propose a patch.
+  100.097787566  seconds time elapsed.
 
---Richard
+So we have 38465628 page-faults, or one every 68788 instructions, 
+one every 113731 cycles.
+
+10 cycles saved in the page fault costs means 0.01% performance win 
+- or about 10 milliseconds shaven off the kernel build time.
+ 
+100 cycles saved (which is impossible really in the entry/exit path) 
+would mean 0.1% win.
+
+5653639 syscalls (according to strace -c) - which is a factor of 6.8 
+lower. Same goes for shell scripts or most of the clicking we do on 
+a GUI.
+
+It's not a big factor for sure.
+
+Btw., the biggest pagefault cost is in the fault handling itself 
+(the page clearing):
+
+      4.14%  [k] do_page_fault
+      1.20%  [k] sys_write
+      1.10%  [k] sys_open
+      0.63%  [k] sys_exit_group
+      0.48%  [k] smp_apic_timer_interrupt
+      0.37%  [k] sys_read
+      0.37%  [k] sys_execve
+      0.20%  [k] sys_mmap
+      0.18%  [k] sys_close
+      0.14%  [k] sys_munmap
+      0.13%  [k] sys_poll
+      0.09%  [k] sys_newstat
+      0.07%  [k] sys_clone
+      0.06%  [k] sys_newfstat
+
+it totals to 4.14% of the total cost (user-space cycles included) of 
+a kernel build, on a Nehalem box.
+
+	Ingo
