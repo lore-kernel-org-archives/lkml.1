@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934377AbZFOVHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934531AbZFOVJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934377AbZFOVHI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 17:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934318AbZFOVGt
+	id S934531AbZFOVJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 17:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934487AbZFOVI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 17:06:49 -0400
-Received: from claw.goop.org ([74.207.240.146]:45471 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934315AbZFOVGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 17:06:47 -0400
-Message-ID: <4A36B7DE.9000007@goop.org>
-Date: Mon, 15 Jun 2009 14:06:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 15 Jun 2009 17:08:59 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54296 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934479AbZFOVI4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 17:08:56 -0400
+Date: Mon, 15 Jun 2009 17:08:56 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <damm@igel.co.jp>,
+       <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
+ I/O devices
+In-Reply-To: <200906150057.32424.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906151700570.2643-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@redhat.com,
-       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       npiggin@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
- to use NMI-safe methods
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <alpine.LFD.2.01.0906151125320.6276@localhost.localdomain> <20090615183649.GA16999@elte.hu> <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain> <4A36ABB5.1040109@goop.org> <alpine.LFD.2.01.0906151326170.6276@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906151326170.6276@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/15/09 13:27, Linus Torvalds wrote:
-> On Mon, 15 Jun 2009, Jeremy Fitzhardinge wrote:
->    
->> We have to restore the usermode %gs somewhere...
->>      
->
-> None of this is useful for user-mode return _anyway_, since you have to
-> restore %cs/%ss too. At that point, you have to use iret.
->    
+On Mon, 15 Jun 2009, Rafael J. Wysocki wrote:
 
-Ah, right.  I'd even looked at that at one point, when I was 
-investigating optimising kernel->kernel exit paths (I'd decided it 
-wasn't worth it for its own sake, since they simply don't happen that 
-often).
+> On Sunday 14 June 2009, Rafael J. Wysocki wrote:
+> > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > Below is the current version of my "run-time PM for I/O devices" patch.
+> > > 
+> > > I've done my best to address the comments received during the recent
+> > > discussions, but at the same time I've tried to make the patch only contain
+> > > the most essential things.  For this reason, for example, the sysfs interface
+> > > is not there and it's going to be added in a separate patch.
+> > > 
+> > > Please let me know if you want me to change anything in this patch or to add
+> > > anything new to it.  [Magnus, I remember you wanted something like
+> > > ->runtime_wakeup() along with ->runtime_idle(), but I'm not sure it's really
+> > > necessary.  Please let me know if you have any particular usage scenario for
+> > > it.]
+> 
+> Appended is an update of the patch addressing the today's comments from Magnus.
 
-     J
+This is really looking very good.  I'll do a more detailed review
+later.  (In particular, I have not checked the details of the rather
+intricate state machine transitions.)  For now, a couple of things 
+struck my eye:
+
+Shouldn't the calls to complete() really be complete_all()?  There
+might be more than one thread waiting for a suspend or resume callback
+to finish.
+
+Since pm_runtime_resume() takes care of powering up the parent, there's 
+no need for pm_request_resume() to worry about it also.
+
+The documentation should mention that the runtime_suspend method is 
+supposed to enable remote wakeup if it as available and if 
+device_may_wakeup(dev) is true.
+
+Alan Stern
+
