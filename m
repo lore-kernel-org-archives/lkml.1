@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765431AbZFOS0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765484AbZFOS1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765431AbZFOS0p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765218AbZFOS0f
+	id S1765484AbZFOS1k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZFOS1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:26:35 -0400
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:40064 "EHLO
-	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765358AbZFOS0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:26:34 -0400
-X-Greylist: delayed 80416 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 14:26:34 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:content-transfer-encoding:user-agent;
-        b=V5n9zccv0Vkrcpp7J5wS6yqChQWJ0hncVl2O9o3buDqiOLStz+tSO/x2ST5H+WGMx1
-         qfNrVA3oMZa84/LXAiIYuAlEvT7YJ4Sy2m+6cn/2r5v3in8j/qUN7Digyg0fj8m/8rrB
-         Ffrh6SZsIWvlbQEwrIGX+A1hgaIItTuHbNYnA=
-Date: Mon, 15 Jun 2009 22:26:33 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-Subject: [PATCH -tip] x86: mce intel -- don't touch THERMAL_APIC_VECTOR if
-	no active APIC present
-Message-ID: <20090615182633.GA7606@lenovo>
+	Mon, 15 Jun 2009 14:27:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53613 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754462AbZFOS1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:27:31 -0400
+Message-ID: <4A36925D.4090000@redhat.com>
+Date: Mon, 15 Jun 2009 14:26:37 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?B?RnLpppjpp7tpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, rostedt@goodmis.org
+Subject: Re: [Patch] mm tracepoints update - use case.
+References: <1240402037.4682.3.camel@dhcp47-138.lab.bos.redhat.com> <1240428151.11613.46.camel@dhcp-100-19-198.bos.redhat.com> <20090423092933.F6E9.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090423092933.F6E9.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If APIC was disabled (for some reason) and as result
-it's not even mapped we should not try to enable thermal
-interrupts at all.
+KOSAKI Motohiro wrote:
+>> On Wed, 2009-04-22 at 08:07 -0400, Larry Woodman wrote:
 
-Reported-by: Simon Holm Thøgersen <odie@cs.aau.dk>
-Tested-by: Simon Holm Thøgersen <odie@cs.aau.dk>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/cpu/mcheck/mce_intel.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+>> Attached is an example of what the mm tracepoints can be used for:
+> 
+> I have some comment.
+> 
+> 1. Yes, current zone_reclaim have strange behavior. I plan to fix
+>    some bug-like bahavior.
+> 2. your scenario only use the information of "zone_reclaim called".
+>    function tracer already provide it.
+> 3. but yes, you are going to proper direction. we definitely need
+>    some fine grained tracepoint in this area. we are welcome to you.
+>    but in my personal feeling, your tracepoint have worthless argument
+>    a lot. we need more good information.
+>    I think I can help you in this area. I hope to work together.
 
-Index: linux-2.6.git/arch/x86/kernel/cpu/mcheck/mce_intel.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/mcheck/mce_intel.c
-@@ -21,9 +21,15 @@ void intel_init_thermal(struct cpuinfo_x
- 	int tm2 = 0;
- 	u32 l, h;
- 
--	/* Thermal monitoring depends on ACPI and clock modulation*/
--	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
-+	/*
-+	 * Thermal monitoring depends on ACPI, clock modulation
-+	 * and APIC as well
-+	 */
-+	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC) ||
-+		!cpu_has(c, X86_FEATURE_APIC)) {
-+		pr_debug("Thermal monitoring disabled\n");
- 		return;
-+	}
- 
- 	/*
- 	 * First check if its enabled already, in which case there might
+Sorry I am replying to a really old email, but exactly
+what information do you believe would be more useful to
+extract from vmscan.c with tracepoints?
 
+What are the kinds of problems that customer systems
+(which cannot be rebooted into experimental kernels)
+run into, that can be tracked down with tracepoints?
+
+I can think of a few:
+- excessive CPU use in page reclaim code
+- excessive reclaim latency in page reclaim code
+- unbalanced memory allocation between zones/nodes
+- strange balance problems between reclaiming of page
+   cache and swapping out process pages
+
+I suspect we would need fairly fine grained tracepoints
+to track down these kinds of problems, with filtering
+and/or interpretation in userspace, but I am always
+interested in easier ways of tracking down these kinds
+of problems :)
+
+What kinds of tracepoints do you believe we would need?
+
+Or, using Larry's patch as a starting point, what do you
+believe should be changed?
+
+-- 
+All rights reversed.
