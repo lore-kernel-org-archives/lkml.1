@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbZFOJtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZFOJur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758923AbZFOJtY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 05:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758734AbZFOJsz
+	id S1755932AbZFOJur (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 05:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbZFOJuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 05:48:55 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:17534
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758652AbZFOJsy convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 05:48:54 -0400
-X-SpamScore: -5
-X-BigFish: VPS-5(z34a4jz98dRzz1202hzzz32i6bh17ch43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KL9XXD-03-AU8-01
-Date: Mon, 15 Jun 2009 11:48:48 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Chris Wright <chrisw@sous-sol.org>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] amd-iommu: kdump bugfix and couple defensive
-	cleanups
-Message-ID: <20090615094848.GD5139@amd.com>
-References: <20090612030341.GQ20823@sequoia.sous-sol.org>
+	Mon, 15 Jun 2009 05:50:40 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:47755 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753855AbZFOJuj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 05:50:39 -0400
+Date: Mon, 15 Jun 2009 10:50:23 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Alek Du <alek.du@intel.com>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
+	gpio_alt_func features to GPIOLIB
+Message-ID: <20090615095023.GA19873@fluff.org.uk>
+References: <20090615171502.2a981bf5@dxy.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090612030341.GQ20823@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 15 Jun 2009 09:48:48.0901 (UTC) FILETIME=[7B7A7B50:01C9ED9E]
+In-Reply-To: <20090615171502.2a981bf5@dxy.sh.intel.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 08:03:41PM -0700, Chris Wright wrote:
-> The following patches fix a kdump issue and then fix some similar
-> initialization issues that haven't proven to be problematic but make
-> good sense anyway.
+On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
+> >From 7a76916ccea4a376a260ea67fbc79ac4d958757f Mon Sep 17 00:00:00 2001
+> From: Alek Du <alek.du@intel.com>
+> Date: Fri, 8 May 2009 09:46:49 +0800
+> Subject: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and gpio_alt_func features to GPIOLIB
+> 
+> Add some more functions to GPIOLIB, they are:
+> * gpio_detect is to set GPIO interrupt triggering method (edge, level, high,
+>   low, etc.)
+> * gpio_debounce is to set GPIO trigger HW debounce value if GPIO hw supports.
+> * gpio_alt_func is to set pin as alternative function or GPIO.
 
-The patches look good but are based on 2.6.30. For 2.6.31-rc1 they must
-be changed a bit because some functions implemented in these patches
-were already merged for the suspen/resume support in amd-iommu driver.
-I will adapt them for 2.6.31. Do you want to send these patches for
--stable inclusion?
+gpio_alt_func is feature creep, I don't really belive this is the
+best place to put it as it will be difficult to actually make this
+generic for all gpio platforms.
 
-	Joerg
+> +enum gpio_trigger_t {
+> +	DETECT_LEVEL_LOW = -2,
+> +	DETECT_EDGE_FALLING = -1,
+> +	DETECT_DISABLE = 0,
+> +	DETECT_EDGE_RISING = 1,
+> +	DETECT_LEVEL_HIGH = 2,
+> +	DETECT_EDGE_BOTH = 3,
+> +};
+
+wny not reuse the IRQ trigger types?
 
 -- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+Ben (ben@fluff.org, http://www.fluff.org/)
 
+  'a smiley only costs 4 bytes'
