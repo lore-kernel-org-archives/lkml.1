@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765568AbZFOS3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765587AbZFOSaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765568AbZFOS3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZFOS33
+	id S1765587AbZFOSaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZFOSaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:29:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55784 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbZFOS32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:29:28 -0400
-Date: Mon, 15 Jun 2009 20:28:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615182828.GE11248@elte.hu>
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <20090615182348.GC11248@elte.hu>
+	Mon, 15 Jun 2009 14:30:20 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:2794 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761150AbZFOSaT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:30:19 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=jX6mRqBP8Swq/hh/OlwUDJ3Qk8JpWi9w6BlSqo3gZt+mTun6MPvNVw3DYF1lw/WnH
+	ruLan2YamkxLknmPJL0fw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615182348.GC11248@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090615132018.GA14555@elf.ucw.cz>
+References: <1245033557-10968-1-git-send-email-swetland@google.com>
+	 <1245033557-10968-2-git-send-email-swetland@google.com>
+	 <1245033557-10968-3-git-send-email-swetland@google.com>
+	 <20090615132018.GA14555@elf.ucw.cz>
+Date: Mon, 15 Jun 2009 11:30:11 -0700
+Message-ID: <a55d774e0906151130x3892346fx5aa1f62c387b2090@mail.gmail.com>
+Subject: Re: [PATCH 2/3] [ARM] msm: make debugging UART (for DEBUG_LL) 
+	configurable
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 15, 2009 at 6:20 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> Hi!
+>
+>> Signed-off-by: Brian Swetland <swetland@google.com>
+>> ---
+>>  arch/arm/mach-msm/Kconfig                    |   24 ++++++++++++++++++++++++
+>>  arch/arm/mach-msm/include/mach/debug-macro.S |   25 ++++++++++++++++++-------
+>>  arch/arm/mach-msm/include/mach/msm_iomap.h   |   12 ++++++++++++
+>>  arch/arm/mach-msm/include/mach/uncompress.h  |    7 +++++++
+>>  arch/arm/mach-msm/io.c                       |    3 +++
+>>  5 files changed, 64 insertions(+), 7 deletions(-)
+>
+> I'm not sure if this is appropriate for mainline at this point. It
+> seems like few people have debug cable at this point...
+>
+>> +config MSM_DEBUG_UART
+>> +     int
+>> +     default 1 if MSM_DEBUG_UART1
+>> +     default 2 if MSM_DEBUG_UART2
+>> +     default 3 if MSM_DEBUG_UART3
+>
+> ...and those that do, have it at fixed uart, no?
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Well, I'd like to support the SoC generally, not just Dream -- it's
+used in a bunch of different devices, and there's nothing that forces
+you to use UART3 everywhere (I certainly have seen some 7k hardware
+that uses UART1 as the debug serial port).
 
-> The GUP based method is pretty generic though - and can be used on 
-> other architectures as well. It's not as fast as direct access 
-> though.
-
-Another question is: your patch switches over all normal exceptions 
-from IRET to hand-unroll+RET.
-
-It would be really nice to benchmark it (via 'perf stat' for example 
-;-) whether that's a slowdown or a speedup.
-
-If it's a slowdown then the decision is easy: we dont want this, we 
-want to push the overhead into the sampling code, away from common 
-codepaths.
-
-[ If on the other hand it's a speedup of a few cycles then we have 
-  the problem of me suddenly liking this patch a whole lot more ;-) ]
-
-	Ingo
+Brian
