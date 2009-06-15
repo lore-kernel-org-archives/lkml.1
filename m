@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZFONBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbZFONDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbZFONBU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZFONBM
+	id S1758084AbZFONDQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZFONDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:01:12 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43031 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750796AbZFONBL (ORCPT
+	Mon, 15 Jun 2009 09:03:04 -0400
+Received: from legaljet.webserversystems.com ([67.18.134.218]:58472 "EHLO
+	compulab.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbZFONDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:01:11 -0400
-Date: Mon, 15 Jun 2009 14:00:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
-Message-ID: <20090615140019.4e405d37@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0906151341160.25162@sister.anvils>
-References: <20090615024520.786814520@intel.com>
-	<4A35BD7A.9070208@linux.vnet.ibm.com>
-	<20090615042753.GA20788@localhost>
-	<Pine.LNX.4.64.0906151341160.25162@sister.anvils>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Jun 2009 09:03:03 -0400
+X-Greylist: delayed 3638 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 09:03:03 EDT
+Message-ID: <4A363841.5090406@compulab.co.il>
+Date: Mon, 15 Jun 2009 15:02:09 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
+MIME-Version: 1.0
+To: sameo@linux.intel.com
+CC: eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mfd/da903x: initialize PMIC core early
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> My opinion is that it's way too late for .31 - your only chance
-> is that Linus sometimes gets bored with playing safe, and decides
-> to break his rules and try something out regardless - but I'd hope
-> the bootmem business already sated his appetite for danger this time.
+Samuel,
+It'd be great if this can go to 2.6.31
 
-I see no consensus on it being worth merging, no testing, no upstream
-integration shakedown, no builds on non-x86 boxes, no work with other
-arch maintainers who have similar abilities and needs.
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+---
+ drivers/mfd/da903x.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-It belongs in next for a release or two while people work on it, while
-things like PPC64 can plumb into it if they wish and while people work
-out if its actually useful given that for most users it reduces the
-reliability of the services they are providing rather than improving it.
+diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
+index 7283d88..e5ffe56 100644
+--- a/drivers/mfd/da903x.c
++++ b/drivers/mfd/da903x.c
+@@ -561,7 +561,7 @@ static int __init da903x_init(void)
+ {
+ 	return i2c_add_driver(&da903x_driver);
+ }
+-module_init(da903x_init);
++subsys_initcall(da903x_init);
+
+ static void __exit da903x_exit(void)
+ {
+-- 
+1.6.0.6
+
+
+-- 
+Sincerely yours,
+Mike.
 
