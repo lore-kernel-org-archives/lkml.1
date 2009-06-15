@@ -1,138 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbZFOIJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbZFOIKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757072AbZFOIJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbZFOIJG
+	id S1757241AbZFOIKA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZFOIJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:09:06 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:59077 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbZFOIJE (ORCPT
+	Mon, 15 Jun 2009 04:09:45 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46897 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbZFOIJn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:09:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=U9koILBn+gYarGpLuxfOfqO9MRqcdj2/BAQaPqXFH9zGYL45N6HBSelVK0zxmIzpeM
-         CsPP7sP5IrHkmJNzOUiqp8p9df2e7pmKhMRSyZBwXkgWta+UVgHNe3RNBf80U5xPs1xJ
-         IgtJm10b0a0yiCkBG+Sse8iA8UJeGGj4Xncrw=
+	Mon, 15 Jun 2009 04:09:43 -0400
+Message-ID: <4A3601BF.2000201@jp.fujitsu.com>
+Date: Mon, 15 Jun 2009 17:09:35 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <71cd59b00906141226k37b90b9ey7347ed85ec17a17b@mail.gmail.com>
-References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-	 <20090404041813.GA30746@srcf.ucam.org>
-	 <9b2b86520906080824i134ee546v33990176b0d3e618@mail.gmail.com>
-	 <71cd59b00906130155u2757ade3t3378685846b80410@mail.gmail.com>
-	 <4A337251.7010705@tuffmail.co.uk>
-	 <71cd59b00906130306w319c0fc2i376bb03323845b80@mail.gmail.com>
-	 <507032D758%linux@youmustbejoking.demon.co.uk>
-	 <9b2b86520906131051t32183554r8208cf886609e09c@mail.gmail.com>
-	 <71cd59b00906141226k37b90b9ey7347ed85ec17a17b@mail.gmail.com>
-Date: Mon, 15 Jun 2009 09:09:04 +0100
-X-Google-Sender-Auth: 63145fa87ef98d47
-Message-ID: <61b223ba0906150109r3a69e98aq949c7f2df5563c6e@mail.gmail.com>
-Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via 
-	the input layer
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-To: gnome-power-manager-list@gnome.org
-Cc: Corentin Chary <corentin.chary@gmail.com>, linux-kernel@vger.kernel.org,
-       acpi4asus-user@lists.sourceforge.net,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>
+Subject: [PATCH 00/16] last-minute patches for MCE .31
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/06/2009, Corentin Chary <corentin.chary@gmail.com> wrote:
-> CCed gnome-power-manager, as it seems to be the only userspace program
-> concerned.
-> You may be able to help us here.
->
-> You can find the complet discussion here:
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/a7bef6cffb7c2d6b/c732f616555d5180?#c732f616555d5180
+Here are 16 patches for bugfixes and cleanups etc.
+These are against tip/x86/mce3, but today I confirmed that these
+can be applied on Linus's latest, with no errors.
 
-Since this is my complaint, I'll try to summarize.
+Please consider applying these for .31
 
+[1] Bugfix
+      x86, mce: don't init timer if !mce_available
+      x86, mce: call-in should be after updating global_nwo
 
-Summary: g-p-m's reaction to brightness events makes the brightness
-changes less reliable
-Severity: cosmetic; decrease in quality of user experience
+ These bugs are not serious, but should be fixed asap.
 
-Hardware: Asus Eee PC.
-Software: linux kernel, gnome-power-manager
+[2] Misc (requested by Ingo)
+      x86, mce: add __read_mostly
+      x86, mce: rename static variables around trigger
+      x86, mce: sysfs entries for new options
 
-Last working version: linux 2.6.29.4
-First broken version: linux 2.6.30
+ Minor improvements (cleanups), and an enhancement for a feature
+ newly introduced in this merge window (i.e. run-time disablement
+ of cmci).
 
-Root cause:
-1) The eeepc-laptop platform driver added support for brightness
-events.  They occur when the brightness up/down keys are pressed, and
-are exported as normal keypresses (on a specific input device).  This
-is apparently the same thing other kernel drivers do on other systems.
+[3] Cleanups
+      x86, mce: unify mce.h
+      x86, mce: make mce_disabled boolean
+      x86, mce: unify smp_thermal_interrupt, prepare p4
+      x86, mce: unify smp_thermal_interrupt, prepare mce_intel_64
+      x86, mce: unify smp_thermal_interrupt, prepare
+      x86, mce: unify smp_thermal_interrupt
+      x86, mce: squash mce_intel.c into therm_throt.c
+      x86, mce: remove intel_set_thermal_handler()
+      x86, mce: remove therm_throt.h
+      x86, mce: mce.h cleanup
+      x86, mce: rename
 
-2) g-p-m isn't sure whether the firmware is changing the brightness
-when the brightness keys are pressed.  (The EeePc firmware does change
-the brightness, like most laptops).  It has a workaround for this
-problem, but it isn't completely reliable.  In some cases g-p-m gets
-it wrong, and changes the brightness a second time.
+ There are 3 goals:
 
-You can see the problem by looking at the code, and considering what
-happens when more than one input event is buffered at a time:
+ [3-1] unify mce.h
+   There are 2 files named mce.h:
+        arch/x86/include/asm/mce.h
+        arch/x86/kernel/cpu/mcheck/mce.h
+   The latter is small, and in it:
+        #include <asm/mce.h>
+   so we can have a unified one.
 
-	/* check to see if the panel has changed */
-	gpm_brightness_lcd_get_hw (brightness, &current_hw);
+ [3-2] finish unifying thermal codes
+   Now codes for thermal interrupt is distributed for multiple
+   files.  We can gather them in one therm_throt.c file. 
 
-	/* the panel has been updated in firmware */
-	if (current_hw != brightness->priv->last_set_hw) {
-		brightness->priv->last_set_hw = current_hw;
-	} else {
-		[ increment the brightness ]
-	}
+ arch/x86/include/asm/mce.h                |   53 +++++++++------
+ arch/x86/include/asm/therm_throt.h        |    9 ---
+ arch/x86/kernel/cpu/mcheck/Makefile       |    7 +-
+ arch/x86/kernel/cpu/mcheck/mce_intel.c    |   73 --------------------
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |   21 ------
+ arch/x86/kernel/cpu/mcheck/p4.c           |   45 ------------
+ arch/x86/kernel/cpu/mcheck/therm_throt.c  |  106 +++++++++++++++++++++++++++-
+ 7 files changed, 137 insertions(+), 177 deletions(-)
+ delete mode 100644 arch/x86/include/asm/therm_throt.h
+ delete mode 100644 arch/x86/kernel/cpu/mcheck/mce_intel.c
 
-The first event will be ignored as expected.  But on the second event,
-g-p-m will re-apply the brightness change.  It doesn't notice that the
-brightness jumped _several_ steps before it processed the first event.
+   This makes Makefile clean & simple:
+   before:
+     obj-y                            =  mce.o therm_throt.o
+     obj-$(CONFIG_X86_MCE_P4THERMAL)  += mce_intel.o
+     obj-$(CONFIG_X86_MCE_INTEL)      += mce_intel_64.o mce_intel.o
+   after:
+     obj-y                            =  mce.o
+     obj-$(CONFIG_X86_MCE_INTEL)      += mce_intel_64.o
+     obj-$(CONFIG_X86_THERMAL_VECTOR) += therm_throt.o
 
-Symptoms:
-1) When thrashing the EeePC's cheap sold-state drive, the system
-becomes much slower to respond.  If you tap the brightness up key
-three times, you can see the brightness jump more than 3 steps.  The
-first 3 steps are immediate, then g-p-m appears to "catch up", and
-erroneously re-apply the brightness changes.
+ [3-3] rename
+   Rename files that are no longer 64bit specific:
+        mce_amd_64.c    => mce_amd.c
+        mce_intel_64.c  => mce_intel.c
 
-This is a neat way to demonstrate the problem (see upthread for exact
-reproduction steps), but we don't really care too much about it.
-Laggy systems are laggy and strange.  I don't find this surprising and
-I think most users will accept it, even if we could do better.
+Thanks,
+H.Seto
 
-2) Switching quickly between holding "brightness down" and "brightness
-up" can cause a flicker/flash of brightness.  This flash goes away
-when g-p-m is killed (or on older kernels).
+===
 
-More specifically:
-i) Set the screen to maximum brightness
-ii) Hold down "brightness down"
-iii) When brightness is at minimum, immediately release it and hold
-down "brightness up" (or quickly tap it multiple times).
+Hidetoshi Seto (16):
+      x86, mce: don't init timer if !mce_available
+      x86, mce: call-in should be after updating global_nwo
+      x86, mce: add __read_mostly
+      x86, mce: rename static variables around trigger
+      x86, mce: sysfs entries for new options
+      x86, mce: unify mce.h
+      x86, mce: make mce_disabled boolean
+      x86, mce: unify smp_thermal_interrupt, prepare p4
+      x86, mce: unify smp_thermal_interrupt, prepare mce_intel_64
+      x86, mce: unify smp_thermal_interrupt, prepare
+      x86, mce: unify smp_thermal_interrupt
+      x86, mce: squash mce_intel.c into therm_throt.c
+      x86, mce: remove intel_set_thermal_handler()
+      x86, mce: remove therm_throt.h
+      x86, mce: mce.h cleanup
+      x86, mce: rename
 
-What probably happens is that g-p-m "falls behind" during step ii).
-During step ii), all this does is cause the brightness to change a
-little bit faster.  However, it means that in step iii), it's still
-trying to decrease the brightness when the firmware starts to increase
-the brightness.  So during step iii) I think you see the firmware
-increase the brightness, then g-p-m decrease the brightness, and then
-g-p-m catches up and the brightness increases again.
+ arch/x86/include/asm/mce.h                |   63 ++-
+ arch/x86/include/asm/therm_throt.h        |    9 -
+ arch/x86/kernel/cpu/mcheck/Makefile       |    9 +-
+ arch/x86/kernel/cpu/mcheck/k7.c           |    3 +-
+ arch/x86/kernel/cpu/mcheck/mce.c          |  216 ++++++---
+ arch/x86/kernel/cpu/mcheck/mce.h          |   38 --
+ arch/x86/kernel/cpu/mcheck/mce_amd.c      |  703 +++++++++++++++++++++++++++++
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c   |  703 -----------------------------
+ arch/x86/kernel/cpu/mcheck/mce_intel.c    |  249 ++++++++--
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |  248 ----------
+ arch/x86/kernel/cpu/mcheck/non-fatal.c    |    3 +-
+ arch/x86/kernel/cpu/mcheck/p4.c           |   48 +--
+ arch/x86/kernel/cpu/mcheck/p5.c           |   15 +-
+ arch/x86/kernel/cpu/mcheck/p6.c           |    3 +-
+ arch/x86/kernel/cpu/mcheck/therm_throt.c  |  106 +++++-
+ arch/x86/kernel/cpu/mcheck/winchip.c      |    3 +-
+ arch/x86/kernel/traps.c                   |    3 +-
+ 17 files changed, 1220 insertions(+), 1202 deletions(-)
+ delete mode 100644 arch/x86/include/asm/therm_throt.h
+ delete mode 100644 arch/x86/kernel/cpu/mcheck/mce.h
+ create mode 100644 arch/x86/kernel/cpu/mcheck/mce_amd.c
+ delete mode 100644 arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+ delete mode 100644 arch/x86/kernel/cpu/mcheck/mce_intel_64.c
 
-This crosses my annoyance threshold.  That's partly because it's a
-regression, and because I've spent a lot of time tracking down
-brightness-change related regressions which ultimately crashed the
-entire system.  But I do think it's an annoyance in it's own right.
-It's definitely a realistic scenario.  One will often move these small
-laptops around and adjust the brightness to suit different light
-conditions.
-
-Thanks
-Alan
