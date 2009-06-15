@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933344AbZFOSDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933472AbZFOSEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933344AbZFOSDj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932340AbZFOSAd
+	id S933472AbZFOSEJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:04:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933214AbZFOSCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:00:33 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:54798 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932181AbZFOSAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:00:31 -0400
-Message-ID: <4A368C3F.6080105@msgid.tls.msk.ru>
-Date: Mon, 15 Jun 2009 22:00:31 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 15 Jun 2009 14:02:38 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35823 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933176AbZFOSCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:02:37 -0400
+Date: Mon, 15 Jun 2009 20:02:39 +0200
+From: Jan Kara <jack@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, npiggin@suse.de
+Subject: Re: [PATCH 0/10] Fix page_mkwrite() for blocksize < pagesize (version 3)
+Message-ID: <20090615180239.GA3289@atrey.karlin.mff.cuni.cz>
+References: <1245088797-29533-1-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PC speaker beeps in 2.6.30?
-References: <4A365DA6.8000102@msgid.tls.msk.ru> <200906151857.36576.elendil@planet.nl>
-In-Reply-To: <200906151857.36576.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245088797-29533-1-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> Michael Tokarev wrote:
->> Anyone know what happened with PC speaker in 2.6.30?
->> Basically, it does not work anymore here, with the
->> config which is very similar to the one used for
->> previous 2.6.29 kernel (where PC speaker worked).
->> At least I don't see any relevant differences and
->> the (seemengly) relevant symbols -- which are
->> INPUT_PCSPKR and PCSPKR_PLATFORM -- are both set
->> to 'y' for both 2.6.29 and 2.6.30.
 > 
-> For me the system beep has been replaced by a beep in ALSA with .30.
+> patches below are an attempt to solve problems filesystems have with
+> page_mkwrite() when blocksize < pagesize (see the changelog of the second patch
+> for details).
+> 
+> Could someone please review them so that they can get merged - especially the
+> generic VFS/MM part? It fixes observed problems (WARN_ON triggers) for ext4 and
+> makes ext2/ext3 behave more nicely (mmapped write getting page fault instead
+> of silently discarding data).
+> 
+> The series is against Linus's tree from today. The differences against previous
+> version are one bugfix in ext3 delalloc implementation... Please test and review.
+> Thanks.
+  Sorry for the wrong patch numbering [x/11]. There are really just 10
+patches in the series. The eleventh one is just a debugging patch I
+don't want to merge.
 
-Hmm...
-
-> Do you have soundcard that uses HDA? Is CONFIG_SND_HDA_INPUT_BEEP set?
-> Does alsamixer show a "beep" control? Is that not muted and does it have 
-> volume set?
-
-..Yes there is such a control and yes it is muted.  When un-muting it I do
-hear an ugly/scary beep from my soundcard (from the speakers).  But I don't
-have anything connected to the soundcard on any of my servers.
-
-On a similar motherboard with 2.6.29 I've a "PC Speak" control which does
-not do anything, at least not visible (or audible).
-
-But I'd rather get my old good pc speaker back.  One thing is the sound
-card with speakers which are only sometimes on and which produces very
-very bad sound when the 'beeper' control is turned on, and another is the
-old good PC internal speaker with a good "beep" sound.
-
-Thanks!
-
-/mjt
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
