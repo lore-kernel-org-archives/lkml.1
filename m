@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763537AbZFORAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbZFORBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763537AbZFORAZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761556AbZFORAN
+	id S1763416AbZFORBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762194AbZFORBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:00:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52052 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759046AbZFORAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:00:12 -0400
-Date: Mon, 15 Jun 2009 18:55:36 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] Use copy_wait_opts_to_user() in
-	wait_task_continued()
-Message-ID: <20090615165536.GC7425@redhat.com>
-References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com> <1242048349-2766-6-git-send-email-v.mayatskih@gmail.com>
+	Mon, 15 Jun 2009 13:01:08 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54397 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761099AbZFORBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 13:01:07 -0400
+Date: Mon, 15 Jun 2009 19:01:03 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Brian Swetland <swetland@google.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090615170103.GE25040@elf.ucw.cz>
+References: <20090610103131.GB13885@elf.ucw.cz> <20090610194852.GA28787@n2100.arm.linux.org.uk> <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com> <20090610213710.GA8472@elf.ucw.cz> <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com> <20090611082532.GE8592@elf.ucw.cz> <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com> <20090612150504.GA15084@elf.ucw.cz> <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242048349-2766-6-git-send-email-v.mayatskih@gmail.com>
+In-Reply-To: <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/11, Vitaly Mayatskikh wrote:
->
-> --- a/kernel/exit.c
-> +++ b/kernel/exit.c
-> @@ -1416,19 +1416,16 @@ static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
->  	get_task_struct(p);
->  	read_unlock(&tasklist_lock);
->
-> -	if (!wo->wo_info) {
-> -		retval = wo->wo_rusage
-> -			? getrusage(p, RUSAGE_BOTH, wo->wo_rusage) : 0;
-> -		put_task_struct(p);
-> -		if (!retval && wo->wo_stat)
-> -			retval = put_user(0xffff, wo->wo_stat);
-> -		if (!retval)
-> -			retval = pid;
-> -	} else {
-> -		retval = wait_noreap_copyout(wo, p, pid, uid,
-> -					     CLD_CONTINUED, SIGCONT);
-> -		BUG_ON(retval == 0);
-> -	}
-> +	retval = copy_wait_opts_to_user(wo, p, pid, uid,
-> +					CLD_CONTINUED, SIGCONT, SIGCHLD);
-> +	put_task_struct(p);
-> +
-> +	if (!retval && wo->wo_stat)
-> +		retval = put_user(0xffff, wo->wo_stat);
 
-This adds another user-visible change. Before the patch, we ignore
-->wo_stat if ->wo_info != NULL.
+Browsing -msm sources...
 
-This change looks like the fix to me, but again, this should be
-documented/discussed.
+	{
+		.name = "flash",
+		.gpio = TROUT_GPIO_FLASH_EN,
+		.max_timeout = 400,
+	},
 
 
-I could send the fixes for 3 and 4, but unfortunately Vitaly has
-the vacation now. I think it is better to drop
+...in trout... Does dream really support flash?
 
-	wait_task_-cleanups-split-wait_noreap_copyout.patch
-	wait_task_-cleanups-use-copy_wait_opts_to_user-in-wait_task_stopped.patch
-	wait_task_-cleanups-use-copy_wait_opts_to_user-in-do_wait.patch
-	wait_task_-cleanups-use-copy_wait_opts_to_user-in-wait_task_zombie.patch
-	wait_task_-cleanups-use-copy_wait_opts_to_user-in-wait_task_continued.patch
+	{
+		.name = "spotlight",
+		.gpio = TROUT_GPIO_SPOTLIGHT_EN,
+	},
 
-patches, and wait for Vitaly to redo/resend.
+...what is spotlight? I wish dream had some way to produce light in
+dark...
 
-Oleg.
-
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
