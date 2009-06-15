@@ -1,123 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbZFOPha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZFOPiC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757352AbZFOPha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZFOPhV
+	id S1760914AbZFOPiC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:38:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbZFOPho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:37:21 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:59183 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbZFOPhU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:37:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YeprDAhb6FZGQXGbhKWETrifs+z1BgyVBZUgNLlA4cxqLSRUIB2JBLcFqJnlkJxh6W
-         j1N2RU4JSE9JuX55jDLOMZGFzspd0JxdwEyTHvuaWlnTmNgUBaR0+9C+FsCw/ZQHJLxG
-         ptuu7MltX4SICME5QdXnzvI7Utzmr9LsWV0I8=
-Date: Mon, 15 Jun 2009 17:37:17 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, bligh@google.com,
-       roland@redhat.com, fche@redhat.com
-Subject: Re: [PATCH 3/7] add syscall tracepoints
-Message-ID: <20090615153715.GB6044@nowhere>
-References: <cover.1244837725.git.jbaron@redhat.com> <0ee4090012cf46f25d8cd8b022746a43b99d5767.1244837725.git.jbaron@redhat.com> <20090612215726.GA9177@Krystal> <20090615141209.GA3126@redhat.com> <20090615152428.GB32010@Krystal>
+	Mon, 15 Jun 2009 11:37:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46022 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761197AbZFOPhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:37:43 -0400
+Date: Mon, 15 Jun 2009 15:37:04 GMT
+From: tip-bot for Lennart Poettering <lennart@poettering.net>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, lennart@poettering.net, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, lennart@poettering.net, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090615152714.GA29092@tango.0pointer.de>
+References: <20090615152714.GA29092@tango.0pointer.de>
+Subject: [tip:sched/core] sched: Introduce SCHED_RESET_ON_FORK scheduling policy flag
+Message-ID: <tip-ca94c442535a44d508c99a77e54f21a59f4fc462@git.kernel.org>
+Git-Commit-ID: ca94c442535a44d508c99a77e54f21a59f4fc462
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090615152428.GB32010@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 15 Jun 2009 15:37:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 11:24:28AM -0400, Mathieu Desnoyers wrote:
-> * Jason Baron (jbaron@redhat.com) wrote:
-> > On Fri, Jun 12, 2009 at 05:57:26PM -0400, Mathieu Desnoyers wrote:
-> > > > Introduce a new 'DECLARE_TRACE_REG()' macro, so that tracepoints can associate
-> > > > an external register/unregister function.
-> > > > 
-> > > > 
-> > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > > 
-> > > > ---
-> > > >  include/linux/tracepoint.h |   27 +++++++++++++++++++++++----
-> > > >  1 files changed, 23 insertions(+), 4 deletions(-)
-> > > > 
-> > > > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> > > > index 14df7e6..9a3660b 100644
-> > > > --- a/include/linux/tracepoint.h
-> > > > +++ b/include/linux/tracepoint.h
-> > > > @@ -61,7 +61,7 @@ struct tracepoint {
-> > > >   * not add unwanted padding between the beginning of the section and the
-> > > >   * structure. Force alignment to the same alignment as the section start.
-> > > >   */
-> > > > -#define DECLARE_TRACE(name, proto, args)				\
-> > > > +#define DECLARE_TRACE_REG(name, proto, args, reg, unreg)		\
-> > > >  	extern struct tracepoint __tracepoint_##name;			\
-> > > >  	static inline void trace_##name(proto)				\
-> > > >  	{								\
-> > > > @@ -71,13 +71,29 @@ struct tracepoint {
-> > > >  	}								\
-> > > >  	static inline int register_trace_##name(void (*probe)(proto))	\
-> > > >  	{								\
-> > > > -		return tracepoint_probe_register(#name, (void *)probe);	\
-> > > > +		int ret;						\
-> > > > +		void (*func)(void) = (void (*)(void))reg;		\
-> > > > +									\
-> > > > +		ret = tracepoint_probe_register(#name, (void *)probe);	\
-> > > > +		if (func && !ret)					\
-> > > > +			func();						\
-> > > 
-> > > I don't see why you need to add this weird interface when all you really
-> > > need to do is to call the function to set the TIF flags explicitly in
-> > > reg_event_syscall_enter when registering a tracepoint.
-> > > 
-> > > Mathieu
-> > > 
-> > 
-> > I could enable the TIF flag in reg_event_syscall_enter, however that
-> > would not manage the TIF flag for other users of these traceoints. When
-> > users 'register/unregister' with a tracepoint, they expect the tracepoint
-> > to be enabled/disabled. If we move this functionality to the user, we are
-> > changing how that interface works. Therefore, I associated the
-> > enabling/disabling of the tracepoint, with the tracepoint definition.
-> > 
-> 
-> I agree it should be hidden from userspace APIs, but I don't think we
-> should hide it or from the "in kernel" API users, really. People
-> interfacing with this kind of API from the kernel-side expect to have a
-> great level of control on how they use it, and we can expect people to
-> know what they are doing.
-> 
-> Mathieu
+Commit-ID:  ca94c442535a44d508c99a77e54f21a59f4fc462
+Gitweb:     http://git.kernel.org/tip/ca94c442535a44d508c99a77e54f21a59f4fc462
+Author:     Lennart Poettering <lennart@poettering.net>
+AuthorDate: Mon, 15 Jun 2009 17:17:47 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 15 Jun 2009 17:31:59 +0200
+
+sched: Introduce SCHED_RESET_ON_FORK scheduling policy flag
+
+This patch introduces a new flag SCHED_RESET_ON_FORK which can be passed
+to the kernel via sched_setscheduler(), ORed in the policy parameter. If
+set this will make sure that when the process forks a) the scheduling
+priority is reset to DEFAULT_PRIO if it was higher and b) the scheduling
+policy is reset to SCHED_NORMAL if it was either SCHED_FIFO or SCHED_RR.
+
+Why have this?
+
+Currently, if a process is real-time scheduled this will 'leak' to all
+its child processes. For security reasons it is often (always?) a good
+idea to make sure that if a process acquires RT scheduling this is
+confined to this process and only this process. More specifically this
+makes the per-process resource limit RLIMIT_RTTIME useful for security
+purposes, because it makes it impossible to use a fork bomb to
+circumvent the per-process RLIMIT_RTTIME accounting.
+
+This feature is also useful for tools like 'renice' which can then
+change the nice level of a process without having this spill to all its
+child processes.
+
+Why expose this via sched_setscheduler() and not other syscalls such as
+prctl() or sched_setparam()?
+
+prctl() does not take a pid parameter. Due to that it would be
+impossible to modify this flag for other processes than the current one.
+
+The struct passed to sched_setparam() can unfortunately not be extended
+without breaking compatibility, since sched_setparam() lacks a size
+parameter.
+
+How to use this from userspace? In your RT program simply replace this:
+
+  sched_setscheduler(pid, SCHED_FIFO, &param);
+
+by this:
+
+  sched_setscheduler(pid, SCHED_FIFO|SCHED_RESET_ON_FORK, &param);
+
+Signed-off-by: Lennart Poettering <lennart@poettering.net>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20090615152714.GA29092@tango.0pointer.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Indeed it's fine to let the user of the tracepoint have a good
-control of what is happening, but actually there is no point in
-registering this one without having the TIF_FLAGS set, so it
-seems legitimate to handle it like Jason did.
-Remember it's a very specific tracepoint that needs these thread
-flags to be activated.
+---
+ include/linux/sched.h |    6 ++++++
+ kernel/sched.c        |   49 ++++++++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 46 insertions(+), 9 deletions(-)
 
-Also this management of thread flags would become fragile once
-you let the user deal with it concurrently with the event
-registering.
-
-I think it's more sane/safe to encapsulate it as it is.
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 4896fdf..d4a2c66 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -38,6 +38,8 @@
+ #define SCHED_BATCH		3
+ /* SCHED_ISO: reserved but not implemented yet */
+ #define SCHED_IDLE		5
++/* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
++#define SCHED_RESET_ON_FORK     0x40000000
  
-> 
-> > thanks,
-> > 
-> > -Jason
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-
+ #ifdef __KERNEL__
+ 
+@@ -1209,6 +1211,10 @@ struct task_struct {
+ 	unsigned did_exec:1;
+ 	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
+ 				 * execve */
++
++	/* Revert to default priority/policy when forking */
++	unsigned sched_reset_on_fork:1;
++
+ 	pid_t pid;
+ 	pid_t tgid;
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 8ec9d13..32e6ede 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2613,12 +2613,28 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 	set_task_cpu(p, cpu);
+ 
+ 	/*
+-	 * Make sure we do not leak PI boosting priority to the child:
++	 * Revert to default priority/policy on fork if requested. Make sure we
++	 * do not leak PI boosting priority to the child.
+ 	 */
+-	p->prio = current->normal_prio;
++	if (current->sched_reset_on_fork &&
++			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
++		p->policy = SCHED_NORMAL;
++
++	if (current->sched_reset_on_fork &&
++			(current->normal_prio < DEFAULT_PRIO))
++		p->prio = DEFAULT_PRIO;
++	else
++		p->prio = current->normal_prio;
++
+ 	if (!rt_prio(p->prio))
+ 		p->sched_class = &fair_sched_class;
+ 
++	/*
++	 * We don't need the reset flag anymore after the fork. It has
++	 * fulfilled its duty:
++	 */
++	p->sched_reset_on_fork = 0;
++
+ #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+ 	if (likely(sched_info_on()))
+ 		memset(&p->sched_info, 0, sizeof(p->sched_info));
+@@ -6094,17 +6110,25 @@ static int __sched_setscheduler(struct task_struct *p, int policy,
+ 	unsigned long flags;
+ 	const struct sched_class *prev_class = p->sched_class;
+ 	struct rq *rq;
++	int reset_on_fork;
+ 
+ 	/* may grab non-irq protected spin_locks */
+ 	BUG_ON(in_interrupt());
+ recheck:
+ 	/* double check policy once rq lock held */
+-	if (policy < 0)
++	if (policy < 0) {
++		reset_on_fork = p->sched_reset_on_fork;
+ 		policy = oldpolicy = p->policy;
+-	else if (policy != SCHED_FIFO && policy != SCHED_RR &&
+-			policy != SCHED_NORMAL && policy != SCHED_BATCH &&
+-			policy != SCHED_IDLE)
+-		return -EINVAL;
++	} else {
++		reset_on_fork = !!(policy & SCHED_RESET_ON_FORK);
++		policy &= ~SCHED_RESET_ON_FORK;
++
++		if (policy != SCHED_FIFO && policy != SCHED_RR &&
++				policy != SCHED_NORMAL && policy != SCHED_BATCH &&
++				policy != SCHED_IDLE)
++			return -EINVAL;
++	}
++
+ 	/*
+ 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
+ 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,
+@@ -6148,6 +6172,10 @@ recheck:
+ 		/* can't change other user's priorities */
+ 		if (!check_same_owner(p))
+ 			return -EPERM;
++
++		/* Normal users shall not reset the sched_reset_on_fork flag */
++		if (p->sched_reset_on_fork && !reset_on_fork)
++			return -EPERM;
+ 	}
+ 
+ 	if (user) {
+@@ -6191,6 +6219,8 @@ recheck:
+ 	if (running)
+ 		p->sched_class->put_prev_task(rq, p);
+ 
++	p->sched_reset_on_fork = reset_on_fork;
++
+ 	oldprio = p->prio;
+ 	__setscheduler(rq, p, policy, param->sched_priority);
+ 
+@@ -6307,14 +6337,15 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
+ 	if (p) {
+ 		retval = security_task_getscheduler(p);
+ 		if (!retval)
+-			retval = p->policy;
++			retval = p->policy
++				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
+ 	}
+ 	read_unlock(&tasklist_lock);
+ 	return retval;
+ }
+ 
+ /**
+- * sys_sched_getscheduler - get the RT priority of a thread
++ * sys_sched_getparam - get the RT priority of a thread
+  * @pid: the pid in question.
+  * @param: structure containing the RT priority.
+  */
