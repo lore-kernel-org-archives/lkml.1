@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZFOWeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbZFOWju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756088AbZFOWeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 18:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZFOWeN
+	id S1758382AbZFOWju (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 18:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbZFOWjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 18:34:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38364 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbZFOWeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 18:34:12 -0400
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       yinghai@kernel.org
-In-Reply-To: <20090615112827.GC6012@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
-	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
-	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
-	 <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>
-	 <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop>
-	 <20090615112205.GA6012@wotan.suse.de> <20090615112827.GC6012@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 16 Jun 2009 07:32:47 +1000
-Message-Id: <1245101567.12400.38.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 18:39:41 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:61076 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbZFOWjl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 18:39:41 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5647"; a="19453326"
+From: davidb@quicinc.com
+Date: Mon, 15 Jun 2009 15:39:41 -0700
+To: Ben Leslie <benno@benno.id.au>
+Cc: Brian Swetland <swetland@google.com>, Pavel Machek <pavel@ucw.cz>,
+       Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, lkml <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090615223941.GA8974@huya.quicinc.com>
+Mail-Followup-To: Ben Leslie <benno@benno.id.au>,
+	Brian Swetland <swetland@google.com>, Pavel Machek <pavel@ucw.cz>,
+	Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
+	Russell King - ARM Linux <linux@arm.linux.org.uk>,
+	Tony Lindgren <tony@atomide.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	David Miller <davem@davemloft.net>,
+	lkml <linux-kernel@vger.kernel.org>,
+	"linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
+References: <4A3175AC.9070100@bluewatersys.com> <alpine.LFD.2.00.0906112105220.31536@xanadu.home> <4A31AECA.6070303@bluewatersys.com> <alpine.LFD.2.00.0906112138090.31536@xanadu.home> <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com> <20090612103521.GD18682@elf.ucw.cz> <a55d774e0906120344p57226dd4ve526f274a2bf7c8e@mail.gmail.com> <a55d774e0906130005v5a35aa60ybabde470ff44cf77@mail.gmail.com> <20090615162150.GC6842@huya.quicinc.com> <17b28da20906151525q1d8f10daj734faacf5dafda12@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <17b28da20906151525q1d8f10daj734faacf5dafda12@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 13:28 +0200, Nick Piggin wrote:
-> If a couple of specialised early boot code places have
-> to test slab_is_available() to prevent crap leaking into
-> our main allocators, then that's quite fine by me.
+On Mon, Jun 15, 2009 at 03:25:35PM -0700, Ben Leslie wrote:
 
-slab_is_available() will not fix the problem in that case. In fact,
- existing tests of slab_is_available() have been broken because they
-assumed that when it was true, then GFP_KERNEL would work.
+> > The Android busybox
+> > <http://benno.id.au/blog/2007/11/14/android-busybox> mostly
+> > works.  The poster doesn't seem to provide source, even though
+> > busybox requires modification to build for Android (although not
+> > much).
+> 
+> I didn't need to change anything; I just compiled busybox; No changes
+> required. (Note: It is a static binary that includes glibc).
 
-Ben.
+I wonder if it's changed since you built it, then.  I had to hack
+up a few paths since the Android environment doesn't put things
+in normal places.
 
-
+David
