@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZFONJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761107AbZFONJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760763AbZFONJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFONJC
+	id S1761107AbZFONJa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFONJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:09:02 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:60244 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbZFONJB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:09:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vpeb3kR5z1gFVI41ysA3Yz/3ylnVqfUCgAZBs5tPvfFps1QvXoymg9PBaaYrP15p54
-         wtOThyQFMcibBOaWmodQsO38BGZ8IxDnpj9y5GP+drn7vDks0mpojgvHAr41RlnAgI+e
-         I6OPHjOecO3DXiLq/YWb7D2KJr3i1d+EzPDD0=
+	Mon, 15 Jun 2009 09:09:21 -0400
+Received: from trinity.fluff.org ([89.16.178.74]:53482 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760868AbZFONJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 09:09:20 -0400
+Date: Mon, 15 Jun 2009 14:09:06 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Florian Fainelli <florian@openwrt.org>
+Cc: Ben Dooks <ben-linux@fluff.org>, Alek Du <alek.du@intel.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and gpio_alt_func features to GPIOLIB
+Message-ID: <20090615130906.GA14476@trinity.fluff.org>
+References: <20090615171502.2a981bf5@dxy.sh.intel.com> <20090615125146.GC19873@fluff.org.uk> <200906151504.51934.florian@openwrt.org>
 MIME-Version: 1.0
-In-Reply-To: <20090615031253.530308256@intel.com>
-References: <20090615024520.786814520@intel.com>
-	 <20090615031253.530308256@intel.com>
-Date: Mon, 15 Jun 2009 22:09:03 +0900
-Message-ID: <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com>
-Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in 
-	try_to_unmap
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200906151504.51934.florian@openwrt.org>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 11:45 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> From: Andi Kleen <ak@linux.intel.com>
->
-> When a page has the poison bit set replace the PTE with a poison entry.
-> This causes the right error handling to be done later when a process runs
-> into it.
->
-> Also add a new flag to not do that (needed for the memory-failure handler
-> later)
->
-> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
->
-> ---
->  include/linux/rmap.h |    1 +
->  mm/rmap.c            |    9 ++++++++-
->  2 files changed, 9 insertions(+), 1 deletion(-)
->
-> --- sound-2.6.orig/mm/rmap.c
-> +++ sound-2.6/mm/rmap.c
-> @@ -958,7 +958,14 @@ static int try_to_unmap_one(struct page
->        /* Update high watermark before we lower rss */
->        update_hiwater_rss(mm);
->
-> -       if (PageAnon(page)) {
-> +       if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
-> +               if (PageAnon(page))
-> +                       dec_mm_counter(mm, anon_rss);
-> +               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
+On Mon, Jun 15, 2009 at 03:04:50PM +0200, Florian Fainelli wrote:
+> Le Monday 15 June 2009 14:51:46 Ben Dooks, vous avez �crit�:
+> > On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
+> > > >From 7a76916ccea4a376a260ea67fbc79ac4d958757f Mon Sep 17 00:00:00 2001
+> > >
+> > > From: Alek Du <alek.du@intel.com>
+> > > Date: Fri, 8 May 2009 09:46:49 +0800
+> > > Subject: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
+> > > gpio_alt_func features to GPIOLIB
+> > >
+> > > Add some more functions to GPIOLIB, they are:
+> > > * gpio_detect is to set GPIO interrupt triggering method (edge, level,
+> > > high, low, etc.)
+> 
+> The name does not seem to reflect what it does, what about gpio_set_type or 
+> gpio_set_int_type for instance ?
 
-Isn't it straightforward to use !is_hwpoison_entry ?
+You seem to have made the same case as myself to why this call is irrelevant
+to the gpiolib layer.
+ 
+> >
+> > This is the wrong way of doing it, there is as a definit set_type
+> > method in the irq_chip structure which should be used to alter the
+> > way the IRQ is triggered.
+> 
+> I would expect your architecture IRQ handler to have a set_type callback for 
+> the GPIO lines capables of generating an interrupt. See how we have beeing 
+> doing it for rb532 for instance: 
+> http://www.linux-mips.org/git?p=linux-queue.git;a=blob;f=arch/mips/rb532/irq.c;h=f07882029a90d3d155c17b462812c2936229458c;hb=HEAD#l173
 
+Yes, or if the GPIO driver is exporting interrupts, the relevant handler
+for that chip should have the .set_type method defined.
 
 -- 
-Kinds regards,
-Minchan Kim
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
