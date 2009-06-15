@@ -1,89 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbZFOKq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760833AbZFOKsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760634AbZFOKq4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 06:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZFOKqr
+	id S1760833AbZFOKsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 06:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZFOKsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 06:46:47 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36417 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbZFOKqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 06:46:46 -0400
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       yinghai@kernel.org
-In-Reply-To: <20090615102737.GA20461@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
-	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
-	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
-	 <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>
-	 <1245059859.23207.16.camel@penberg-laptop>
-	 <20090615102737.GA20461@wotan.suse.de>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 20:45:27 +1000
-Message-Id: <1245062727.12400.23.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 06:48:05 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:56819 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbZFOKsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 06:48:03 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>
+	<4A35ACB3.9040501@goop.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 15 Jun 2009 03:47:57 -0700
+In-Reply-To: <4A35ACB3.9040501@goop.org> (Jeremy Fitzhardinge's message of "Sun\, 14 Jun 2009 19\:06\:43 -0700")
+Message-ID: <m1k53dbwo2.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: jeremy@goop.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 12:27 +0200, Nick Piggin wrote:
-> 
-> > So from code shuffling point of view, it's better to support
-> GFP_KERNEL
-> > (almost) everywhere rather than require special annotations.
-> 
-> Nor this. We require special allocation annotations *everywhere*
-> according to context. Why is using GFP_KERNEL for unsleeping
-> allocations a good thing if we have GFP_ATOMIC etc?
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-GFP_ATOMIC is a good point in fact. We -could- make it unnecessary since
-we can pretty much tell nowadays whether we are in atomic context or
-not.
+> On 06/12/09 13:35, Eric W. Biederman wrote:
+>> Jeremy Fitzhardinge<jeremy@goop.org>  writes:
+>>
+>>    
+>>> Parse the ACPI MADT for I/O APIC information, even if the cpu has no
+>>> (apparent) local APIC (ie, the CPU's APIC feature flag is clear).
+>>>
+>>> In principle, the local APIC and the I/O APIC are distinct (but related)
+>>> components, which can be independently present.
+>>>
+>>> In practice this can happen in a Xen system, where the hypervisor has
+>>> full control over the local APICs, and delivers interrupts initiated by
+>>> the I/O APICs via Xen's event channel mechanism.
+>>>      
+>>
+>> Xen  is giving us a semi bogus acpi table?
+>>    
+>
+> No, not really.  The guest is reading the real BIOS-provided ACPI tables, but
+> Xen is clobbering the APIC feature in CPUID so the virtual CPU doesn't appear to
+> have a usable local APIC.  Xen itself doesn't care very much about interrupt
+> routing or ACPI, and doesn't make any attempt to read or parse the ACPI data
+> itself (except for very basic things like the APIC addresses).
+>
+>> What is the paravirt configuration model with Xen?  Is it documented
+>> somewhere?
+>>    
+>
+> Not very well.  The basic idea is that Xen owns the local apics, and does things
+> like vector allocation.  The guest kernel is responsible for asking for a
+> vector, and doing the appropriate IO APIC programming, and binding that vector
+> to an event channel.  The interrupt is then delivered via the normal event
+> channel mechanism already in place to deal with all the other event types an
+> unprivileged domain can get.
 
-So where do we put the line ? The subtle differences here are, imho:
+For code reuse and maintainability that is a horrible separation of
+responsibility.  Things looks similar to the existing cases until you
+get up close and you discover all of the fundamental assumptions are
+different so none of the existing code actually works unmodified.
 
- - It's good to discourage allocations in atomic contexts. So requiring
-GFP_ATOMIC to some extent helps making people think twice about they are
-doing.
+The only clean way I can see to handle this is to make xen dom0 it's own
+weird separate subarch that does all of the table parsing of the
+firmware tables in completely separate code.  Then once we have something
+that works factoring out the commonalities into a helper library for
+better long term maintenance.
 
- - Code that requires GFP_ATOMIC is generally code that knows pretty
-well in which context it's running, because most of the time, it's the
-same piece of code or subsystem that is -causing- the context to be
-atomic (because it's an interrupt handler or because it used a
-spinlock). The case of boot time is subtely different. We have a whole
-bunch of things that will be called both at boot time and later, without
-necessarily knowing where they have been called from. IE. The call
-traces are longer if you want in the typical boot context than in the
-typical atomic context.
+As it stands right now what Xen wants and what we need to do for normal
+hardware are radically different, to the point of painful.  Things like
+irq migration, and cpu hotplug require completely different algorithms.
 
-It all boils down to a fine line to be found here between the two
-options, and my gut feeling is that we should keep GFP_ATOMIC explicit,
-but avoid the need to provide an explicit API for boot time allocations.
+I think Xen dom0 has picked the wrong abstraction for this one.  There
+seems to be no gain and a lot of pain asking the slave kernel to
+program the ioapics for it, when Xen presents a wildly different
+abstraction at the cpu level.
 
-> We could also mask off __GFP_WAIT from allocations when we take
-> a spinlock or enter an interrupt, right?
+If what xen was provided looked like an ioapic semantically I would
+suggest setting cpu_has_apic in a different fashion.  We already have
+two local apic variants after all so a 3rd should not be too nasty.
+Except the Xen appears to have totally moved the responsibility around
+in ways that over constrain the problem by taking, making the
+existing code useless.
 
-We -could-. Whether we want to is to be debated. Also the overhead of
-doing so would be higher I believe.
+Please put the Xen dom0 insanity somewhere off in a corner where the rest
+of x86 can ignore it.
 
-> Init code doesn't deserve to be more lazy than anybody else, and
-> part of the reason why such a core piece of code is so crufty
-> is exactly because people have been lazy there.
-
-I think the main problem isn't necessarily init code per se, but the
-pile of -common- code that can be called both at init time and later.
-
-Cheers,
-Ben.
-
-
+Eric
