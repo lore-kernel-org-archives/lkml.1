@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934173AbZFOTKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933049AbZFOTMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934173AbZFOTKu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933773AbZFOTKj
+	id S933049AbZFOTMl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761282AbZFOTMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:10:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39731 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934134AbZFOTKh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:10:37 -0400
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
- support to use NMI-safe methods
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090615190759.GA12778@elte.hu>
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org>
-	 <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain>
-	 <20090615171845.GA7664@elte.hu>
-	 <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain>
-	 <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal>
-	 <1245091917.6741.185.camel@laptop> <20090615185907.GF6520@Krystal>
-	 <20090615190321.GA11641@elte.hu>  <20090615190759.GA12778@elte.hu>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 21:10:11 +0200
-Message-Id: <1245093011.6741.213.camel@laptop>
+	Mon, 15 Jun 2009 15:12:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58796 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755024AbZFOTMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 15:12:33 -0400
+Date: Mon, 15 Jun 2009 15:12:23 -0400
+From: Valerie Aurora <vaurora@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: npiggin@suse.de, jblunck@suse.de, linux-kernel@vger.kernel.org,
+       paulmck@us.ibm.com
+Subject: Re: [PATCH] atomic: Fix _atomic_dec_and_lock() deadlock on UP
+Message-ID: <20090615191223.GE352@shell>
+References: <20090615181113.GD352@shell> <20090615114543.80c420b3.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615114543.80c420b3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 21:07 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Jun 15, 2009 at 11:45:43AM -0700, Andrew Morton wrote:
+> On Mon, 15 Jun 2009 14:11:13 -0400
+> Valerie Aurora <vaurora@redhat.com> wrote:
 > 
-> > > To a point where it cannot afford a simple register save/restore 
-> > > ?
-> > > 
-> > > There is "caring" and "_caring_". I am tempted to ask what NMI 
-> > > handler execution frequency you have in mind here to figure out 
-> > > if we are not trying to optimize sub-nanoseconds per minutes. ;)
-> > 
-> > I routinely run 'perf' with half a million NMIs per second or 
-> > more. ( Why wait 10 seconds for a profile you can get in 1 second? 
-> > ;-)
-> > 
-> > Granted that is over multiple CPUs - but still performance does 
-> > matter here too.
-> > 
-> > Reading cr2 is certainly fast. Writing it - dunno.
+> > _atomic_dec_and_lock() can deadlock on UP with spinlock debugging
+> > enabled.  Currently, on UP we unconditionally spin_lock() first, which
+> > calls __spin_lock_debug(), which takes the lock unconditionally even
+> > on UP.  This will deadlock in situations in which we call
+> > atomic_dec_and_lock() knowing that the counter won't go to zero
+> > (because we hold another reference) and that we already hold the lock.
+> > Instead, we should use the SMP code path which only takes the lock if
+> > necessary.
 > 
-> But one thing is sure: it is certainly going to be faster than the 
-> INVLPG(s!) we have to do with the GUP solution.
+> Yup, I have this queued for 2.6.31 as
+> atomic-only-take-lock-when-the-counter-drops-to-zero-on-up-as-well.patch,
+> with a different changelog:
+> 
+>   _atomic_dec_and_lock() should not unconditionally take the lock before
+>   calling atomic_dec_and_test() in the UP case.  For consistency reasons it
+>   should behave exactly like in the SMP case.
+> 
+>   Besides that this works around the problem that with CONFIG_DEBUG_SPINLOCK
+>   this spins in __spin_lock_debug() if the lock is already taken even if the
+>   counter doesn't drop to 0.
+> 
+>   Signed-off-by: Jan Blunck <jblunck@suse.de>
+>   Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>   Acked-by: Nick Piggin <npiggin@suse.de>
+>   Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> 
+> 
+> I can't remember why we decided that 2.6.30 doesn't need this.
 
-Sure, but we only pay that price when we do the callchain bit, not on
-every NMI.
+Great, last I heard the changelog was still a problem.  Thanks,
 
+-VAL
