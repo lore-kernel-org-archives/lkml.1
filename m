@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZFOGv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZFOGwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbZFOGv6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 02:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFOGvo
+	id S1756592AbZFOGwS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 02:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZFOGv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 02:51:44 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:50757 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756153AbZFOGvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 02:51:42 -0400
-Subject: Re: [PATCH][BUILD FAILURE 03/04] Next June 04:PPC64 randconfig
-	[drivers/net/lance.o]
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-Next <linux-next@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
-References: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Mon, 15 Jun 2009 12:21:38 +0530
-Message-Id: <1245048698.5239.9.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 02:51:57 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:8250 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756238AbZFOGv4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 02:51:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=awTtgmmXc4RD5OcCdPUuaJSQtopOC7J0xpIs1i1P9VIYWug/Qe665uU1IepC3+HyM
+	3qOYYRetpDgKxOuChjblw==
+MIME-Version: 1.0
+In-Reply-To: <20090615064234.GA1221@excalibur.local>
+References: <1245033557-10968-1-git-send-email-swetland@google.com>
+	 <1245033557-10968-2-git-send-email-swetland@google.com>
+	 <1245033557-10968-3-git-send-email-swetland@google.com>
+	 <1245033557-10968-4-git-send-email-swetland@google.com>
+	 <20090615064234.GA1221@excalibur.local>
+Date: Sun, 14 Jun 2009 23:51:53 -0700
+Message-ID: <a55d774e0906142351o67b2388dnf26be72815fc3edf@mail.gmail.com>
+Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream 
+	device
+From: Brian Swetland <swetland@google.com>
+To: Stefan Schmidt <stefan@datenfreihafen.org>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jun 14, 2009 at 11:42 PM, Stefan
+Schmidt<stefan@datenfreihafen.org> wrote:
+>> +
+>> +#include <linux/mtd/nand.h>
+>> +#include <linux/mtd/partitions.h>
+>
+> I see nothing in this file that needs mtd header files. Leftover from the "big"
+> machine file? Please aslo check if the other header files are needed.
+>
+>> +#include "devices.h"
+>> +#include "board-dream.h"
+>> +
+>> +static struct resource smc91x_resources[] = {
+>> +     [0] = {
+>> +             .start  = 0x9C004300,
+>> +             .end    = 0x9C004400,
+>> +             .flags  = IORESOURCE_MEM,
+>> +     },
+>> +     [1] = {
+>> +             .start  = MSM_GPIO_TO_INT(49),
+>> +             .end    = MSM_GPIO_TO_INT(49),
+>> +             .flags  = IORESOURCE_IRQ,
+>> +     },
+>> +};
+>> +
+>> +static struct platform_device smc91x_device = {
+>> +     .name           = "smc91x",
+>> +     .id             = 0,
+>> +     .num_resources  = ARRAY_SIZE(smc91x_resources),
+>> +     .resource       = smc91x_resources,
+>> +};
+>
+> I'm a bit confused here. The dream is the T-Mobile G1 and the Android dev phone,
+> right? Is there really a network chip connected inside the device? Or is this a
+> leftover from the developer board?
 
-On Thu, 2009-06-11 at 09:20 +0530, Subrata Modak wrote: 
-> Hi Benjamin/Paul,
-> 
-> >On Thu, 2009-06-04 at 19:02 +0530, Subrata Modak wrote:
-> >CC      drivers/net/lance.o
-> > drivers/net/lance.c: In function 'lance_probe1':
-> > drivers/net/lance.c:575: error: implicit declaration of function 'isa_virt_to_bus'
-> > drivers/net/lance.c: In function 'lance_rx':
-> > drivers/net/lance.c:1197: error: implicit declaration of function 'isa_bus_to_virt'
-> > make[2]: *** [drivers/net/lance.o] Error 1
-> > make[1]: *** [drivers/net] Error 2
-> > make: *** [drivers] Error 2
-> 
-> Reference: http://lkml.org/lkml/2009/6/4/240,
-> To fix the following build error:
-> 
-> drivers/net/lance.c: In function 'lance_probe1':
-> drivers/net/lance.c:575: error: implicit declaration of function 'isa_virt_to_bus'
-> drivers/net/lance.c: In function 'lance_rx':
-> drivers/net/lance.c:1197: error: implicit declaration of function 'isa_bus_to_virt'
-> make[2]: *** [drivers/net/lance.o] Error 1
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
-> 
-> I would like to propose the following patch. The prototypes for the functions:
-> 'isa_virt_to_bus' & 'isa_virt_to_bus' are existing for some archs like the
-> mips, x86, parisc, arm & alpha, but, is missing for powerpc. Is it safe to
-> introduce the following soultion for powerpc ? It fixes the build problem
-> i reported earlier.
-> 
-> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> ---
+Oops.  Yeah that's definitely not present on G1.  I did a quick trim
+from the halibut (qualcomm dev board) board file to get to a sane
+starting point, but obviously didn't trim enough.
 
-Benjamin,
+Reconstructing the board files a little at a time as peripherals are
+added in various patch sets is going to be tedious, but probably a
+good opportunity to clean them up a bit.
 
-I am not sure whether you liked the following patch to solve the above
-problem. Do, you want me address some other issue(s)/fixes for this ?
+Thanks,
 
-Regards--
-Subrata
-
-> 
-> --- linux-2.6.30-rc8/arch/powerpc/include/asm/io.h.orig	2009-06-10 21:56:49.000000000 -0500
-> +++ linux-2.6.30-rc8/arch/powerpc/include/asm/io.h	2009-06-10 22:21:35.000000000 -0500
-> @@ -680,6 +680,9 @@ extern void __iounmap_at(void *ea, unsig
->  #define mmio_outsw(addr, src, count)	writesw(addr, src, count)
->  #define mmio_outsl(addr, src, count)	writesl(addr, src, count)
-> 
-> +#define isa_virt_to_bus		virt_to_phys
-> +#define isa_bus_to_virt		phys_to_virt
-> +
->  /**
->   *	virt_to_phys	-	map virtual addresses to physical
->   *	@address: address to remap
-> 
-> ---
-> Regards--
-> Subrata
-> 
-
+Brian
