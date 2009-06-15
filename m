@@ -1,100 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbZFONUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbZFONV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753385AbZFONUc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZFONUW
+	id S1760035AbZFONV3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZFONVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:20:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47709 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbZFONUV (ORCPT
+	Mon, 15 Jun 2009 09:21:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59202 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752315AbZFONVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:20:21 -0400
-Date: Mon, 15 Jun 2009 15:20:18 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] [ARM] msm: make debugging UART (for DEBUG_LL)
-	configurable
-Message-ID: <20090615132018.GA14555@elf.ucw.cz>
-References: <1245033557-10968-1-git-send-email-swetland@google.com> <1245033557-10968-2-git-send-email-swetland@google.com> <1245033557-10968-3-git-send-email-swetland@google.com>
-MIME-Version: 1.0
+	Mon, 15 Jun 2009 09:21:19 -0400
+Date: Mon, 15 Jun 2009 15:29:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+Message-ID: <20090615132934.GE31969@one.firstfloor.org>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <Pine.LNX.4.64.0906151341160.25162@sister.anvils> <20090615140019.4e405d37@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245033557-10968-3-git-send-email-swetland@google.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090615140019.4e405d37@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> Signed-off-by: Brian Swetland <swetland@google.com>
-> ---
->  arch/arm/mach-msm/Kconfig                    |   24 ++++++++++++++++++++++++
->  arch/arm/mach-msm/include/mach/debug-macro.S |   25 ++++++++++++++++++-------
->  arch/arm/mach-msm/include/mach/msm_iomap.h   |   12 ++++++++++++
->  arch/arm/mach-msm/include/mach/uncompress.h  |    7 +++++++
->  arch/arm/mach-msm/io.c                       |    3 +++
->  5 files changed, 64 insertions(+), 7 deletions(-)
+I think you're wrong about killing processes decreasing
+reliability. Traditionally we always tried to keep things running if possible
+instead of panicing. That is why ext3 or block does not default to panic
+on each IO error for example. Or oops does not panic by default like
+on BSDs. Your argumentation would be good for a traditional early Unix
+which likes to panic instead of handling errors, but that's not the
+Linux way as I know it.
 
-I'm not sure if this is appropriate for mainline at this point. It
-seems like few people have debug cable at this point...
+Also BTW in many cases (e.g. a lot of file cache pages) there 
+is actually no process kill involved; just a reload of the page from
+disk.
 
-> +config MSM_DEBUG_UART
-> +	int
-> +	default 1 if MSM_DEBUG_UART1
-> +	default 2 if MSM_DEBUG_UART2
-> +	default 3 if MSM_DEBUG_UART3
+Then for example in a cluster you typically have a application level
+heartbeat on the application and restarting the app is faster
+if you don't need to reboot the box too. If you don't have a cluster
+with failover then gracefull degradation is the best. In general
+panic is a very nasty failure mode and should be avoided.
 
-...and those that do, have it at fixed uart, no? 
+That said you can configure it anyways to panic if you want,
+but it would be a very bad default.
 
-> index 1db3c97..ab772cc 100644
-> --- a/arch/arm/mach-msm/include/mach/debug-macro.S
-> +++ b/arch/arm/mach-msm/include/mach/debug-macro.S
-> @@ -14,15 +14,18 @@
->   *
->   */
->  
-> +
-> +
->  #include <mach/hardware.h>
->  #include <mach/msm_iomap.h>
+See also Linus' or hpa's statement on the topic.
 
-It has enough lines, already...
+> no testing, 
 
-> +#ifdef CONFIG_MSM_DEBUG_UART
->  	.macro	addruart,rx
->  	@ see if the MMU is enabled and select appropriate base address
->  	mrc	p15, 0, \rx, c1, c0
->  	tst	\rx, #1
-> -	ldreq	\rx, =MSM_UART1_PHYS
-> -	movne	\rx, #0
-> +	ldreq	\rx, =MSM_DEBUG_UART_PHYS
-> +	ldrne	\rx, =MSM_DEBUG_UART_BASE
->  	.endm
->  
->  	.macro	senduart,rd,rx
-> @@ -32,13 +35,21 @@
->  
->  	.macro	waituart,rd,rx
->  	@ wait for TX_READY
-> -	teq	\rx, #0
-> -	bne	2f
-> -1:	ldr	\rd, [\rx, #0x08]
-> +1001:	ldr	\rd, [\rx, #0x08]
->  	tst	\rd, #0x04
-> -	beq	1b
-> -2:
-> +	beq	1001b
-> +1002:
-> +	.endm
+There's an extensive test suite in mce-test.git 
 
-Is the 1002 label required?
+We did a lot of testing with these separate test suites and also
+some other tests. For much more it needs actual users pounding on it, and that 
+can be only adequately done in mainline.
 
-									Pavel
+That said the real tests of this can be only done with test suites
+really, these errors tend to not happen quickly. 
 
+> integration shakedown, no builds on non-x86 boxes, no work with other
+> arch maintainers who have similar abilities and needs.
+
+We did build tests on ia64 and power and it was reviewed by Tony for IA64.
+The ia64 specific code is not quite ready yet, but will come at some point.
+
+I don't think it's a requirement for merging to have PPC64 support.
+
+-Andi
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ak@linux.intel.com -- Speaking for myself only.
