@@ -1,353 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751629AbZFOBf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751474AbZFOBoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751629AbZFOBf3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 21:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZFOBfU
+	id S1751474AbZFOBoN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 21:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbZFOBn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 21:35:20 -0400
-Received: from mga06.intel.com ([134.134.136.21]:38546 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750832AbZFOBfS (ORCPT
+	Sun, 14 Jun 2009 21:43:59 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:36291 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750832AbZFOBn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 21:35:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,219,1243839600"; 
-   d="scan'208";a="421748062"
-Subject: Re: [PATCH V4: 2/3] pci: Provide aer support when the error source
-	id is bad
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1244843467.19708.91.camel@grinch>
-References: <1244776113.2560.320.camel@ymzhang>
-	 <1244843467.19708.91.camel@grinch>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 15 Jun 2009 09:35:22 +0800
-Message-Id: <1245029722.2560.330.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Sun, 14 Jun 2009 21:43:58 -0400
+Message-ID: <4A35A75C.3090309@snapgear.com>
+Date: Mon, 15 Jun 2009 11:43:56 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Mike Frysinger <vapier@gentoo.org>
+CC: uclinux-dev@uclinux.org, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       David McCullough <davidm@snapgear.com>,
+       Paul Mundt <lethal@linux-sh.org>, Jie Zhang <jie.zhang@analog.com>,
+       Bernd Schmidt <bernds_cb1@t-online.de>
+Subject: Re: [PATCH/RFC] FDPIC: add hook for arches to customize program header
+ parsing
+References: <1244854869-2563-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1244854869-2563-1-git-send-email-vapier@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 21:51 +0000, Andrew Patterson wrote:
-> On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
-> > ﻿﻿﻿When the bus id part of error source id is equal to 0 or nosourceid=1,
-> > kernel probes the AER status registers of all devices under the root port
-> > to find the initial error reporter.
-Thanks Andrew for your kind comments.
 
-> > 
-> > ﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> > 
-> > ---
-> > 
-> > --- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:31:53.000000000 +0800
-> > +++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:39:24.000000000 +0800
-> > @@ -26,7 +26,9 @@
-> >  #include "aerdrv.h"
-> >  
-> >  static int forceload;
-> > +static int nosourceid;
-> >  module_param(forceload, bool, 0);
-> > +module_param(nosourceid, bool, 0);
-> >  
-> >  int pci_enable_pcie_error_reporting(struct pci_dev *dev)
-> >  {
-> > @@ -143,34 +145,82 @@ static void set_downstream_devices_error
-> >  	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
-> >  }
-> >  
-> > -static int find_device_iter(struct device *device, void *data)
-> > +static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
-> >  {
-> > -	struct pci_dev *dev;
-> > -	u16 id = *(unsigned long *)data;
-> > -	u8 secondary, subordinate, d_bus = id >> 8;
-> > -
-> > -	if (device->bus == &pci_bus_type) {
-> > -		dev = to_pci_dev(device);
-> > -		if (id == ((dev->bus->number << 8) | dev->devfn)) {
-> > -			/*
-> > -			 * Device ID match
-> > -			 */
-> > -			*(unsigned long*)data = (unsigned long)device;
-> > -			return 1;
-> > -		}
-> > -
-> > +	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
-> >  		/*
-> > -		 * If device is P2P, check if it is an upstream?
-> > +		 * Device ID match
-> >  		 */
-> > -		if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
-> > -			pci_read_config_byte(dev, PCI_SECONDARY_BUS,
-> > -				&secondary);
-> > -			pci_read_config_byte(dev, PCI_SUBORDINATE_BUS,
-> > -				&subordinate);
-> > -			if (d_bus >= secondary && d_bus <= subordinate) {
-> > -				*(unsigned long*)data = (unsigned long)device;
-> > -				return 1;
-> > -			}
-> > +		e_info->dev = dev;
-> > +		return 1;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +#define	PCI_BUS(x)	(((x) >> 8) & 0xff)
-> > +
-> > +static int find_device_iter(struct pci_dev *dev, void *data)
-> > +{
-> > +	int pos;
-> > +	u32 status;
-> > +	u32 mask;
-> > +	u16 reg16;
-> > +	struct aer_err_info *e_info = (struct aer_err_info *)data;
-> > +
-> > +	/*
-> > +	 * When bus id is equal to 0, it might be a bad id
-> > +	 * reported by root port.
-> > +	 */
-> > +	if (!nosourceid && (PCI_BUS(e_info->id) != 0))
-> > +		return compare_device_id(dev, e_info);
-> > +
-> > +	/*
-> > +	 * Next is to check when bus id is equal to 0 or
-> > +	 * nosourceid==y. Some ports might lose the bus
-> > +	 * id of error source id. We check AER status
-> > +	 * registers to find the initial reporter.
-> > +	 */
-> > +	if (atomic_read(&dev->enable_cnt) == 0)
-> > +		return 0;
-> > +	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
-> > +	if (!pos)
-> > +		return 0;
-> > +	/* Check if AER is enabled */
-> > +	pci_read_config_word(dev, pos+PCI_EXP_DEVCTL, &reg16);
-> > +	if (!(reg16 & (
-> > +		PCI_EXP_DEVCTL_CERE |
-> > +		PCI_EXP_DEVCTL_NFERE |
-> > +		PCI_EXP_DEVCTL_FERE |
-> > +		PCI_EXP_DEVCTL_URRE)))
-> > +		return 0;
-> > +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
-> > +	if (!pos)
-> > +		return 0;
-> > +
-> > +	status = 0;
-> > +	mask = 0;
-> > +	if (e_info->severity == AER_CORRECTABLE) {
-> > +		pci_read_config_dword(dev,
-> > +				pos + PCI_ERR_COR_STATUS,
-> > +				&status);
-> > +		pci_read_config_dword(dev,
-> > +				pos + PCI_ERR_COR_MASK,
-> > +				&mask);
-> > +		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
-> > +			e_info->dev = dev;
-> > +			return 1;
-> > +		}
-> > +	} else {
-> > +		pci_read_config_dword(dev,
-> > +				pos + PCI_ERR_UNCOR_STATUS,
-> > +				&status);
-> > +		pci_read_config_dword(dev,
-> > +				pos + PCI_ERR_UNCOR_MASK,
-> > +				&mask);
-> > +		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
-> > +			e_info->dev = dev;
-> > +			return 1;
-> >  		}
-> >  	}
-> >  
-> > @@ -180,33 +230,23 @@ static int find_device_iter(struct devic
-> >  /**
-> >   * find_source_device - search through device hierarchy for source device
-> >   * @parent: pointer to Root Port pci_dev data structure
-> > - * @id: device ID of agent who sends an error message to this Root Port
-> > + * @err_info: including detailed error information such like id
-> >   *
-> >   * Invoked when error is detected at the Root Port.
-> >   */
-> > -static struct device* find_source_device(struct pci_dev *parent, u16 id)
-> > +static void find_source_device(struct pci_dev *parent,
-> > +		struct aer_err_info *e_info)
-> >  {
-> >  	struct pci_dev *dev = parent;
-> > -	struct device *device;
-> > -	unsigned long device_addr;
-> > -	int status;
-> > +	int result;
-> >  
-> >  	/* Is Root Port an agent that sends error message? */
-> > -	if (id == ((dev->bus->number << 8) | dev->devfn))
-> > -		return &dev->dev;
-> > -
-> > -	do {
-> > -		device_addr = id;
-> > - 		if ((status = device_for_each_child(&dev->dev,
-> > -			&device_addr, find_device_iter))) {
-> > -			device = (struct device*)device_addr;
-> > -			dev = to_pci_dev(device);
-> > -			if (id == ((dev->bus->number << 8) | dev->devfn))
-> > -				return device;
-> > -		}
-> > - 	}while (status);
-> > +	result = find_device_iter(dev, e_info);
-> > +	if (result)
-> > +		return;
-> >  
-> > -	return NULL;
-> > +	pci_walk_bus(parent->subordinate, find_device_iter, e_info);
+Mike Frysinger wrote:
+> From: Jie Zhang <jie.zhang@analog.com>
 > 
-> Minor nit. This return is 
-Yes. I will delete it. Sometimes it can be clearer.
+> The Blackfin port has custom program header flags/addresses for
+> automatically loading regions into the dedicated on-chip SRAM.  So add a
+> hook for ports to leverage.
+> 
+> Signed-off-by: Jie Zhang <jie.zhang@analog.com>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> CC: Bernd Schmidt <bernds_cb1@t-online.de>
 
-> 
-> > +	return;
-> >  }
-> >  
-> 
-> Minor. The e_info goes to pointer changes probably belong in a separate
-> patch.
-Yes. I will double-check it. I really got a headache to create a series of
-small patches. :)
-
-> 
-> >  static int report_error_detected(struct pci_dev *dev, void *data)
-> > @@ -501,12 +541,12 @@ static pci_ers_result_t do_recovery(stru
-> >   */
-> >  static void handle_error_source(struct pcie_device * aerdev,
-> >  	struct pci_dev *dev,
-> > -	struct aer_err_info info)
-> > +	struct aer_err_info *info)
-> >  {
-> >  	pci_ers_result_t status = 0;
-> >  	int pos;
-> >  
-> > -	if (info.severity == AER_CORRECTABLE) {
-> > +	if (info->severity == AER_CORRECTABLE) {
-> >  		/*
-> >  		 * Correctable error does not need software intevention.
-> >  		 * No need to go through error recovery process.
-> > @@ -514,9 +554,9 @@ static void handle_error_source(struct p
-> >  		pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
-> >  		if (pos)
-> >  			pci_write_config_dword(dev, pos + PCI_ERR_COR_STATUS,
-> > -					info.status);
-> > +					info->status);
-> >  	} else {
-> > -		status = do_recovery(aerdev, dev, info.severity);
-> > +		status = do_recovery(aerdev, dev, info->severity);
-> >  		if (status == PCI_ERS_RESULT_RECOVERED) {
-> >  			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
-> >  				   "successfully recovered\n");
-> > @@ -673,10 +713,13 @@ static int get_device_error_info(struct 
-> >  static void aer_isr_one_error(struct pcie_device *p_device,
-> >  		struct aer_err_source *e_src)
-> >  {
-> > -	struct device *s_device;
-> > -	struct aer_err_info e_info = {0, 0, 0,};
-> > +	struct aer_err_info *e_info;
-> >  	int i;
-> > -	u16 id;
-> > +
-> > +	/* struct aer_err_info might be big, so we allocate it with slab */
-> > +	e_info = kmalloc(sizeof(struct aer_err_info), GFP_KERNEL);
-> > +	if (e_info == NULL)
-> > +		return;
-> >  
-> Should we get some sort of warning here? We might be concealing PCIe
-> errors when out of memory.
-I will add a warning.
-
-> 
-> >  	/*
-> >  	 * There is a possibility that both correctable error and
-> > @@ -688,31 +731,37 @@ static void aer_isr_one_error(struct pci
-> >  		if (!(e_src->status & i))
-> >  			continue;
-> >  
-> > +		memset(e_info, 0, sizeof(struct aer_err_info));
-> > +
-> >  		/* Init comprehensive error information */
-> >  		if (i & PCI_ERR_ROOT_COR_RCV) {
-> > -			id = ERR_COR_ID(e_src->id);
-> > -			e_info.severity = AER_CORRECTABLE;
-> > +			e_info->id = ERR_COR_ID(e_src->id);
-> > +			e_info->severity = AER_CORRECTABLE;
-> >  		} else {
-> > -			id = ERR_UNCOR_ID(e_src->id);
-> > -			e_info.severity = ((e_src->status >> 6) & 1);
-> > +			e_info->id = ERR_UNCOR_ID(e_src->id);
-> > +			e_info->severity = ((e_src->status >> 6) & 1);
-> >  		}
-> >  		if (e_src->status &
-> >  			(PCI_ERR_ROOT_MULTI_COR_RCV |
-> >  			 PCI_ERR_ROOT_MULTI_UNCOR_RCV))
-> > -			e_info.flags |= AER_MULTI_ERROR_VALID_FLAG;
-> > -		if (!(s_device = find_source_device(p_device->port, id))) {
-> > +			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
-> > +
-> > +		find_source_device(p_device->port, e_info);
-> > +		if (e_info->dev == NULL) {
-> >  			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
-> > -				__func__, id);
-> > +				__func__, e_info->id);
-> >  			continue;
-> >  		}
-> > -		if (get_device_error_info(to_pci_dev(s_device), &e_info) ==
-> > +		if (get_device_error_info(e_info->dev, e_info) ==
-> >  				AER_SUCCESS) {
-> > -			aer_print_error(to_pci_dev(s_device), &e_info);
-> > +			aer_print_error(e_info->dev, e_info);
-> >  			handle_error_source(p_device,
-> > -				to_pci_dev(s_device),
-> > +				e_info->dev,
-> >  				e_info);
-> >  		}
-> >  	}
-> > +
-> > +	kfree(e_info);
-> >  }
-> >  
-> >  /**
-> > --- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:27:46.000000000 +0800
-> > +++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
-> > @@ -58,6 +58,8 @@ struct header_log_regs {
-> >  };
-> >  
-> >  struct aer_err_info {
-> > +	struct pci_dev *dev;
-> > +	u16 id;
-> >  	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
-> >  	int flags;
-> >  	unsigned int status;		/* COR/UNCOR Error Status */
-> > --- linux-2.6_next_pciwalk/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:27:40.000000000 +0800
-> > +++ linux-2.6_next_aernoid/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:39:24.000000000 +0800
-> > @@ -60,6 +60,8 @@ forceload, a parameter of type bool, cou
-> >  be initiated although firmwares have no _OSC support. To enable the
-> >  walkaround, pls. add aerdriver.forceload=y to kernel boot parameter line
-> >  when booting kernel. Note that forceload=n by default.
-> 
-> 
-> We need a new paragraph here.
-Yes. I will change it.
-
-> > +nosourceid, another parameter of type bool, is used when hardware (mostly
-> > +chipset) has errata that root ports couldn't get error reporting source id.
-> >  
-> 
-> Perhaps ".. can be used when broken hardware (mostly chipsets) has root
-> ports that cannot obtain the reporting source ID."
-Good. I will do.
-
-> 
-> >  2.3 AER error output
-> >  When a PCI-E AER error is captured, an error message will be outputed to
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 
 
+>  arch/blackfin/include/asm/elf.h         |    8 +++
+>  arch/blackfin/kernel/Makefile           |    1 +
+>  arch/blackfin/kernel/binfmt_elf_fdpic.c |   80 +++++++++++++++++++++++++++++++
+>  fs/binfmt_elf_fdpic.c                   |    7 +++
+>  4 files changed, 96 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/blackfin/kernel/binfmt_elf_fdpic.c
+> 
+> diff --git a/arch/blackfin/include/asm/elf.h b/arch/blackfin/include/asm/elf.h
+> index 230e160..aba2506 100644
+> --- a/arch/blackfin/include/asm/elf.h
+> +++ b/arch/blackfin/include/asm/elf.h
+> @@ -124,4 +124,12 @@ do {											\
+>  
+>  #define SET_PERSONALITY(ex) set_personality(PER_LINUX)
+>  
+> +struct mm_struct;
+> +struct elf_fdpic_params;
+> +struct elf32_phdr;
+> +extern int elf_fdpic_plat_process_phdr(struct mm_struct *, struct elf_fdpic_params *,
+> +                                       struct elf32_phdr *, unsigned long *, unsigned long *);
+> +#define ELF_FDPIC_PLAT_PROCESS_PHDR(mm, params, phdr, maddr, disp) \
+> +	elf_fdpic_plat_process_phdr(mm, params, phdr, maddr, disp)
+> +
+>  #endif
+> diff --git a/arch/blackfin/kernel/Makefile b/arch/blackfin/kernel/Makefile
+> index fd4d432..71c2291 100644
+> --- a/arch/blackfin/kernel/Makefile
+> +++ b/arch/blackfin/kernel/Makefile
+> @@ -15,6 +15,7 @@ else
+>      obj-y += time.o
+>  endif
+>  
+> +obj-$(CONFIG_BINFMT_ELF_FDPIC)       += binfmt_elf_fdpic.o
+>  obj-$(CONFIG_IPIPE)                  += ipipe.o
+>  obj-$(CONFIG_IPIPE_TRACE_MCOUNT)     += mcount.o
+>  obj-$(CONFIG_BFIN_GPTIMERS)          += gptimers.o
+> diff --git a/arch/blackfin/kernel/binfmt_elf_fdpic.c b/arch/blackfin/kernel/binfmt_elf_fdpic.c
+> new file mode 100644
+> index 0000000..d8192cf
+> --- /dev/null
+> +++ b/arch/blackfin/kernel/binfmt_elf_fdpic.c
+> @@ -0,0 +1,80 @@
+> +/*
+> + * FDPIC ELF hooks
+> + *
+> + * Copyright (c) 2006-2009 Analog Devices Inc.
+> + * Licensed under the GPL-2 or later.
+> + */
+> +
+> +#include <linux/mm.h>
+> +#include <linux/elf.h>
+> +#include <linux/elf-fdpic.h>
+> +#include <linux/kernel.h>
+> +
+> +#include <asm/cacheflush.h>
+> +#include <asm/dma.h>
+> +
+> +int elf_fdpic_plat_process_phdr(struct mm_struct *mm,
+> +                                struct elf_fdpic_params *params,
+> +                                struct elf32_phdr *phdr,
+> +                                unsigned long *maddr, unsigned long *disp)
+> +{
+> +	/* 0xfeb00000, 0xfec00000, 0xff700000, 0xff800000, 0xff900000
+> +	 * and 0xffa00000 are also used in Dynamic linker and GNU ld.
+> +	 * They need to be kept synchronized.
+> +	 */
+> +	unsigned long flag = 0;
+> +	const char *type = NULL;
+> +
+> +	unsigned int e_flags = params->hdr.e_flags;
+> +	unsigned long p_vaddr = phdr->p_vaddr;
+> +	unsigned long p_flags = phdr->p_flags;
+> +
+> +	if (((e_flags & EF_BFIN_CODE_IN_L1) || p_vaddr == 0xffa00000) &&
+> +	    (p_flags & (PF_W | PF_X)) == PF_X)
+> +	{
+> +		flag = L1_INST_SRAM;
+> +		type = "L1 instruction";
+> +
+> +	} else if (((e_flags & EF_BFIN_DATA_IN_L1) ||
+> +	            p_vaddr == 0xff700000 ||
+> +	            p_vaddr == 0xff800000 ||
+> +	            p_vaddr == 0xff900000) &&
+> +	           (p_flags & (PF_X | PF_W)) == PF_W)
+> +	{
+> +		if (p_vaddr == 0xff800000) {
+> +			flag = L1_DATA_A_SRAM;
+> +			type = "L1 Data A";
+> +		} else if (p_vaddr == 0xff900000) {
+> +			flag = L1_DATA_B_SRAM;
+> +			type = "L1 Data B";
+> +		} else {
+> +			flag = L1_DATA_SRAM;
+> +			type = "L1 Data";
+> +		}
+> +
+> +	} else if (p_vaddr == 0xfeb00000 || p_vaddr == 0xfec00000) {
+> +		flag = L2_SRAM;
+> +		type = "L2";
+> +	}
+> +
+> +	if (flag) {
+> +		void *sram_addr = sram_alloc_with_lsl(phdr->p_memsz, flag);
+> +		if (sram_addr == NULL) {
+> +			printk(KERN_ERR "elf_fdpic: not enough %s sram\n", type);
+> +			return -ENOMEM;
+> +		}
+> +
+> +		if (flag & L1_INST_SRAM)
+> +			safe_dma_memcpy(sram_addr, (const void *)(*maddr + *disp), phdr->p_memsz);
+> +		else
+> +			memcpy(sram_addr, (const void *)(*maddr + *disp), phdr->p_memsz);
+> +
+> +		down_write(&mm->mmap_sem);
+> +		do_munmap(mm, *maddr, phdr->p_memsz + *disp);
+> +		up_write(&mm->mmap_sem);
+> +		*maddr = (unsigned long)sram_addr;
+> +		*disp = 0;
+> +	}
+> +
+> +	return 0;
+> +}
+> diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+> index fdb66fa..1bad16c 100644
+> --- a/fs/binfmt_elf_fdpic.c
+> +++ b/fs/binfmt_elf_fdpic.c
+> @@ -1105,6 +1105,13 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *params,
+>  		    ELF_FDPIC_FLAG_CONTIGUOUS)
+>  			load_addr += PAGE_ALIGN(phdr->p_memsz + disp);
+>  
+> +#ifndef ELF_FDPIC_PLAT_PROCESS_PHDR
+> +# define ELF_FDPIC_PLAT_PROCESS_PHDR(mm, params, phdr, maddr, disp) 0
+> +#endif
+> +		ret = ELF_FDPIC_PLAT_PROCESS_PHDR(mm, params, phdr, &maddr, &disp);
+> +		if (ret)
+> +			return ret;
+> +
+>  		seg->addr = maddr + disp;
+>  		seg->p_vaddr = phdr->p_vaddr;
+>  		seg->p_memsz = phdr->p_memsz;
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
