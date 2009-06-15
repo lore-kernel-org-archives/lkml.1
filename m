@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZFOHEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbZFOHHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbZFOHEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZFOHEQ
+	id S1755288AbZFOHHh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZFOHHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:04:16 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52896 "EHLO mx1.suse.de"
+	Mon, 15 Jun 2009 03:07:30 -0400
+Received: from sirius.lasnet.de ([78.47.116.19]:53063 "EHLO sirius.lasnet.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521AbZFOHEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:04:15 -0400
-Date: Mon, 15 Jun 2009 09:04:14 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when	feature is disabled
-Message-ID: <20090615070414.GD18390@wotan.suse.de>
-References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu> <20090612125741.GA6140@localhost> <20090612131754.GA32105@elte.hu> <alpine.LFD.2.01.0906120827020.3237@localhost.localdomain> <20090612153501.GA5737@elte.hu> <4A328444.3010301@zytor.com>
-Mime-Version: 1.0
+	id S1750738AbZFOHH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 03:07:29 -0400
+Date: Mon, 15 Jun 2009 09:06:51 +0200
+From: Stefan Schmidt <stefan@datenfreihafen.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, tglx@tglx.de, alan@lxorguk.ukuu.org.uk,
+       rjw@sisk.pl, netdev@vger.kernel.org, mingo@elte.hu, dwmw2@infradead.org,
+       alsa-devel@alsa-project.org, dri-devel@lists.sourceforge.net
+Message-ID: <20090615070651.GB1221@excalibur.local>
+References: <20090614173331.18f01123@infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A328444.3010301@zytor.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090614173331.18f01123@infradead.org>
+X-Mailer: Mutt http://www.mutt.org/
+X-KeyID: 0xDDF51665
+X-Website: http://www.datenfreihafen.org/
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Subject: Re: kerneloops.org report for the week of June 14 2009
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 09:37:24AM -0700, H. Peter Anvin wrote:
-> Ingo Molnar wrote:
-> > 
-> > So i think hwpoison simply does not affect our ability to get log 
-> > messages out - but it sure allows crappier hardware to be used.
-> > Am i wrong about that for some reason?
-> > 
+Hello.
+
+On Sun, 2009-06-14 at 17:33, Arjan van de Ven wrote:
 > 
-> Crappy hardware isn't the kind of hardware that is likely to have the
-> hwpoison features, just like crappy hardware generally doesn't even have
-> ECC -- or even basic parity checking (I personally think non-ECC memory
-> should be considered a crime against humanity in this day and age.)
+> Rank 1: i915_gem_set_tiling (warning)
+> 	Reported 830 times (3700 total reports)
+> 	[gem] Failure in the tiling code
+> 	This warning was last seen in version 2.6.30, and first seen in 2.6.29-rc2.
+> 	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_set_tiling
 
-What I would find interesting with this hwpoison would be the probability 
-difference between detecting an uncorrected error, and undetected errors.
+There seem to be more then one issue. I'm running into one of them here on a
+Lenovo Thinkpad X200s. It's 2.6.30 and I enabled KMS the first time here. So I
+can't tell if it is a regression.
 
- 
-> These kinds of features are used when extremely high reliability is
-> required, think for example a telco core router.  A page error may have
-> happened due to stray radiation or through power supply glitches (which
-> happen even in the best of systems), but if they are a pattern, a box
-> needs to be replaced.  *How quickly* a box can be taken out of service
-> and replaced can vary greatly, and its urgency depend on patterns;
-> furthermore, in the meantime the device has to work the best it can.
+http://www.kerneloops.org/oops.php?number=207353
 
-I don't know how much improvements that hwpoison will give. Significant
-amount of RAM cannot be corrected, so especially on like a core router
-or embedded system which does not use a lot of disk/pagecache, then it
-is probably more like 2x improvement rather than an order of magnitude
-improvement.
+The result is that the EDID data could not be read and the wrong screen size
+set:
+[   45.524589] i2c-adapter i2c-3: unable to read EDID block.
+[   45.588200] i915 0000:00:02.0: DVI-D-2: no EDID data
+[   45.777251] [drm] TMDS-14: set mode 1360x768 13
+[   45.777261] [drm] TMDS-16: set mode 1360x768 13 <= Should be 1280x900 here
 
+Somehow the driver tries to use DVI1 and DVI2 while the display is connected to
+LVDS1.
 
-> Consider, for example, a control computer on the Hubble Space Telescope
-> -- the only way to replace it is by space shuttle, and you can safely
-> guarantee that *that* won't happen in a heartbeat.  On the new Herschel
-> Space Observatory, not even the space shuttle can help: if the computers
-> die, *or* if bad data gets fed to its control system, the spacecraft is
-> lost.  As such, it's of paramount importance for the computers to (a)
-> continue to provide service at the level the hardware is capable of
-> doing, (b) as accurately as possible continually assess and report that
-> level of service, and (c) not allow a failure to pass undetected.  A lot
-> of failures are simple one-time events (especially in space, a high-rad
-> environment), others reflect decaying hardware but can be isolated (e.g.
-> a RAM cell which has developed a short circuit, or a CPU core which has
-> a damaged ALU), while others yet reflect a general ill health of the
-> system that cannot be recovered.
+stefan@excalibur:~$ xrandr
+Screen 0: minimum 320 x 200, current 1360 x 800, maximum 8192 x 8192
+VGA1 disconnected (normal left inverted right x axis y axis)
+LVDS1 connected 1280x800+0+0 (normal left inverted right x axis y axis) 261mm x
+163mm
+   1280x800       60.0*+   50.0  
+DVI1 connected 1360x768+0+0 (normal left inverted right x axis y axis) 0mm x 0mm
+   1360x768       59.8* 
+   1152x864       60.0  
+   1024x768       60.0  
+   800x600        60.3  
+   640x480        59.9  
+DVI2 connected 1360x768+0+0 (normal left inverted right x axis y axis) 0mm x 0mm
+   1360x768       59.8* 
+   1152x864       60.0  
+   1024x768       60.0  
+   800x600        60.3  
+   640x480        59.9
 
-I guess most of these examples have to go far beyond this and use
-multiply redundant computation and voting systems and quickly
-reboot members that are kicked out. :)
-
-Not that it is a detrement of hwpoison. If they used Linux I'm
-sure they would like to panic on uncorrected error too (but would
-probably not bother trying to do heuristic recovery).
+regards
+Stefan Schmidt
