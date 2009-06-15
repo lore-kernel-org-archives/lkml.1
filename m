@@ -1,147 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbZFOKbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbZFOKgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760530AbZFOKbx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 06:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbZFOKbp
+	id S1754905AbZFOKgb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 06:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZFOKgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 06:31:45 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57809 "EHLO mx1.suse.de"
+	Mon, 15 Jun 2009 06:36:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33214 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755636AbZFOKbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 06:31:44 -0400
-Date: Mon, 15 Jun 2009 12:31:45 +0200
+	id S1750930AbZFOKgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 06:36:20 -0400
+Date: Mon, 15 Jun 2009 12:36:19 +0200
 From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       lizf@cn.fujitsu.com, mingo@elte.hu, yinghai@kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-Message-ID: <20090615103145.GB20461@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI> <20090615081831.GA5411@osiris.boeblingen.de.ibm.com> <20090615082636.GA30964@wotan.suse.de> <1245054779.23207.6.camel@penberg-laptop> <20090615085209.GB30964@wotan.suse.de> <1245056919.23207.7.camel@penberg-laptop> <20090615102004.GB5411@osiris.boeblingen.de.ibm.com> <1245061304.23207.21.camel@penberg-laptop>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+Message-ID: <20090615103619.GC20461@wotan.suse.de>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615081453.GC8665@wotan.suse.de> <20090615100954.GA7099@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245061304.23207.21.camel@penberg-laptop>
+In-Reply-To: <20090615100954.GA7099@localhost>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 01:21:44PM +0300, Pekka Enberg wrote:
-> On Mon, 2009-06-15 at 12:20 +0200, Heiko Carstens wrote:
-> > > > ---
-> > > >  mm/slub.c |   17 ++++++++++++++---
-> > > >  1 file changed, 14 insertions(+), 3 deletions(-)
-> > > > 
-> > > > Index: linux-2.6/mm/slub.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/mm/slub.c
-> > > > +++ linux-2.6/mm/slub.c
-> > > > @@ -2596,6 +2596,7 @@ static noinline struct kmem_cache *dma_k
-> > > >  	struct kmem_cache *s;
-> > > >  	char *text;
-> > > >  	size_t realsize;
-> > > > +	unsigned long slabflags;
-> > > >  
-> > > >  	s = kmalloc_caches_dma[index];
-> > > >  	if (s)
-> > > > @@ -2617,9 +2618,18 @@ static noinline struct kmem_cache *dma_k
-> > > >  			 (unsigned int)realsize);
-> > > >  	s = kmalloc(kmem_size, flags & ~SLUB_DMA);
-> > > >  
-> > > > +	/*
-> > > > +	 * Must defer sysfs creation to a workqueue because we don't know
-> > > > +	 * what context we are called from. Before sysfs comes up, we don't
-> > > > +	 * need to do anything because slab_sysfs_init will start by
-> > > > +	 * adding all existing slabs to sysfs.
-> > > > +	 */
-> > > > +	slabflags = SLAB_CACHE_DMA;
-> > > > +	if (slab_state >= SYSFS)
-> > > > +		slabflags |= __SYSFS_ADD_DEFERRED;
-> > > > +
-> > > >  	if (!s || !text || !kmem_cache_open(s, flags, text,
-> > > > -			realsize, ARCH_KMALLOC_MINALIGN,
-> > > > -			SLAB_CACHE_DMA|__SYSFS_ADD_DEFERRED, NULL)) {
-> > > > +			realsize, ARCH_KMALLOC_MINALIGN, slabflags, NULL)) {
-> > > >  		kfree(s);
-> > > >  		kfree(text);
-> > > >  		goto unlock_out;
-> > > > @@ -2628,7 +2638,8 @@ static noinline struct kmem_cache *dma_k
-> > > >  	list_add(&s->list, &slab_caches);
-> > > >  	kmalloc_caches_dma[index] = s;
-> > > >  
-> > > > -	schedule_work(&sysfs_add_work);
-> > > > +	if (slab_state >= SYSFS)
-> > > > +		schedule_work(&sysfs_add_work);
-> > > >  
-> > > >  unlock_out:
-> > > >  	up_write(&slub_lock);
-> > > 
-> > > Looks good to me. Heiko, does it fix your case?
+On Mon, Jun 15, 2009 at 06:09:54PM +0800, Wu Fengguang wrote:
+> On Mon, Jun 15, 2009 at 04:14:53PM +0800, Nick Piggin wrote:
+> > On Mon, Jun 15, 2009 at 08:44:47AM +0200, Nick Piggin wrote:
+> > > Did we verify with filesystem maintainers (eg. btrfs) that the
+> > > !ISREG test will be enough to prevent oopses?
 > > 
-> > Yes, works fine. Thanks!
+> > BTW. this is quite a significant change I think and not
+> > really documented well enough. Previously a filesystem
+> > will know exactly when and why pagecache in a mapping
+> > under its control will be truncated (as opposed to
+> > invalidated).
 > > 
-> > Tested-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > They even have opportunity to hold locks such as i_mutex.
+> > 
+> > And depending on what they do, they could do interesting
+> > things even with ISREG files.
+> > 
+> > So, I really think this needs review by filesystem
+> > maintainers and it would be far safer to use invalidate
+> > until it is known to be safe.
 > 
-> Thanks! Nick, care to send a patch with your sign-off? Does SLQB need
-> something like this too (I didn't check)?
+> Nick, we are doing invalidate_complete_page() for !S_ISREG inodes now.
+> Do you mean to do invalidate_complete_page() for all inodes for now?
 
-No, it does not defer DMA slab creation.
---
+That would make me a lot happier. It is obviously correct because
+that is basically what page reclaim and inode reclaim and drop
+caches etc does.
 
-Recent change to use slab allocations earlier exposed a bug where
-SLUB can call schedule_work and try to call sysfs before it is
-safe to do so.
+Note that I still don't like exporting invalidate_complete_page
+fro the same reasons I don't like exporting truncate_complete_page,
+so I will ask if you can do an invalidate_inode_page function
+along the same lines of the truncate_inode_page one please.
 
-Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Tested-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
- mm/slub.c |   17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -2596,6 +2596,7 @@ static noinline struct kmem_cache *dma_k
- 	struct kmem_cache *s;
- 	char *text;
- 	size_t realsize;
-+	unsigned long slabflags;
- 
- 	s = kmalloc_caches_dma[index];
- 	if (s)
-@@ -2617,9 +2618,18 @@ static noinline struct kmem_cache *dma_k
- 			 (unsigned int)realsize);
- 	s = kmalloc(kmem_size, flags & ~SLUB_DMA);
- 
-+	/*
-+	 * Must defer sysfs creation to a workqueue because we don't know
-+	 * what context we are called from. Before sysfs comes up, we don't
-+	 * need to do anything because our sysfs initcall will start by
-+	 * adding all existing slabs to sysfs.
-+	 */
-+	slabflags = SLAB_CACHE_DMA;
-+	if (slab_state >= SYSFS)
-+		slabflags |= __SYSFS_ADD_DEFERRED;
-+
- 	if (!s || !text || !kmem_cache_open(s, flags, text,
--			realsize, ARCH_KMALLOC_MINALIGN,
--			SLAB_CACHE_DMA|__SYSFS_ADD_DEFERRED, NULL)) {
-+			realsize, ARCH_KMALLOC_MINALIGN, slabflags, NULL)) {
- 		kfree(s);
- 		kfree(text);
- 		goto unlock_out;
-@@ -2628,7 +2638,8 @@ static noinline struct kmem_cache *dma_k
- 	list_add(&s->list, &slab_caches);
- 	kmalloc_caches_dma[index] = s;
- 
--	schedule_work(&sysfs_add_work);
-+	if (slab_state >= SYSFS)
-+		schedule_work(&sysfs_add_work);
- 
- unlock_out:
- 	up_write(&slub_lock);
+> That's a good suggestion, it shall be able to do the job for most
+> pages indeed.
+
+Yes I think it will be far far safer while only introducing
+another small class of pages which cannot be recovered (probably
+a much smaller set most of the time than the size of the existing
+set of pages which cannot be recovered).
+
+
