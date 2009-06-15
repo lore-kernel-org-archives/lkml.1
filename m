@@ -1,143 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZFOEhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbZFOEjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbZFOEhp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 00:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbZFOEhh
+	id S1754746AbZFOEjR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 00:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbZFOEjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 00:37:37 -0400
-Received: from mga05.intel.com ([192.55.52.89]:65101 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751078AbZFOEhg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 00:37:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
-   d="scan'208";a="699332829"
-Subject: Re: [PATCH V4: 3/3] pci: Provide Multiple Error Received support
-	on AER
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1245038460.19708.125.camel@grinch>
-References: <1244776118.2560.321.camel@ymzhang>
-	 <1244844988.19708.115.camel@grinch>  <1245030458.2560.343.camel@ymzhang>
-	 <1245038460.19708.125.camel@grinch>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 15 Jun 2009 12:37:41 +0800
-Message-Id: <1245040661.2560.347.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 15 Jun 2009 00:39:03 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:56308 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbZFOEjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 00:39:01 -0400
+Date: Mon, 15 Jun 2009 10:09:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Low overhead patches for the memory cgroup controller (v5)
+Message-ID: <20090615043900.GF23577@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 04:01 +0000, Andrew Patterson wrote:
-> On Mon, 2009-06-15 at 09:47 +0800, Zhang, Yanmin wrote:
-> > On Fri, 2009-06-12 at 22:16 +0000, Andrew Patterson wrote:
-> > > On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
-> > > > ﻿﻿﻿﻿﻿When a root port receive the same errors more than once before kernel
-> > > >  process them, the Multiple Error Messages Received flags are set by
-> > > > hardware. Because root port could only save one kind of correctable
-> > > > error source id and another uncorrectable error source id at the same
-> > > > time, so the second message sender id is lost if the 2 messages are
-> > > > sent from 2 different devices. Below patch searches all devices under
-> > > > the root port when multiple messages are received.
-> > > > 
-> > > > ﻿﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> > > > 
-> > > > +	for (i = 0; i < e_info->error_dev_num; i ++) {
-> > > checkpatch reports:
-> > > ERROR: space prohibited before that '++' (ctx:WxB)
-> > > #154: FILE: drivers/pci/pcie/aer/aerdrv_core.c:751:
-> > > +	for (i = 0; i < e_info->error_dev_num; i +
-> > I will change it.
-> > 
-> > > 
-> > > 
-> > > > +		if (e_info->dev[i] == NULL)
-> > > again		  if (!e_info->dev[i])
-> > Will do.
-> > 
-> > > 
-> > > You could also put this check in the for loop.
-> > I planed to, but one guy helped me test it within a guest OS on XEN and
-> > reported a weired oops of guest OS. She said useing ﻿e_info->error_dev_num
-> > could avoid the oops.
-> 
-> I think something like:
-> 
->   for (i = 0; i < e_info->error_dev_num && e_info->dev[i]; i++)
-> 
-> is functionally equivalent.
-I changed it.
 
-> 
-> > 
-> > > 
-> > > 
-> > > > +			break;
-> > > > +
-> > > > +		if (get_device_error_info(e_info->dev[i], e_info) ==
-> > > > +				AER_SUCCESS) {
-> > > > +			aer_print_error(e_info->dev[i], e_info);
-> > > > +			handle_error_source(p_device,
-> > > > +					e_info->dev[i],
-> > > > +					e_info);
-> > > > +		}
-> > > > +	}
-> > > > +}
-> > > > +
-> > > >  /**
-> > > >   * aer_isr_one_error - consume an error detected by root port
-> > > >   * @p_device: pointer to error root port service device
-> > > > @@ -747,18 +804,7 @@ static void aer_isr_one_error(struct pci
-> > > >  			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
-> > > >  
-> > > >  		find_source_device(p_device->port, e_info);
-> > > > -		if (e_info->dev == NULL) {
-> > > > -			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
-> > > > -				__func__, e_info->id);
-> > > > -			continue;
-> > > > -		}
-> > > > -		if (get_device_error_info(e_info->dev, e_info) ==
-> > > > -				AER_SUCCESS) {
-> > > > -			aer_print_error(e_info->dev, e_info);
-> > > > -			handle_error_source(p_device,
-> > > > -				e_info->dev,
-> > > > -				e_info);
-> > > > -		}
-> > > > +		aer_process_err_devices(p_device, e_info);
-> > > >  	}
-> > > >  
-> > > >  	kfree(e_info);
-> > > > diff -Nraup linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h
-> > > > --- linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
-> > > > +++ linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:45:15.000000000 +0800
-> > > > @@ -57,8 +57,10 @@ struct header_log_regs {
-> > > >  	unsigned int dw3;
-> > > >  };
-> > > >  
-> > > > +#define AER_MAX_MULTI_ERR_DEVICES	5
-> > > Is this number arbitrary or in the spec somewhere?
-> > It's arbitrary and not spec. 
-> 
-> I suspected so.
-> 
-> > The startpoint is it's very rare that there are more
-> > than 5 devices under the same root port reporting errors at the same time. 
-> 
-> Agreed.
-> 
-> > It's hard
-> > to say number 5 is the best. I just don't want the array is big.
-> 
-> I don't have a problem with that decision. But you might add a comment
-> saying so, e.g.,
-> 
-> #define AER_MAX_MULTI_ERR_DEVICES	5    /* Not likely to have more */
-Added.
+Feature: Remove the overhead associated with the root cgroup
 
-Thanks Andrew.
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
 
+Changelog v5 -> v4
+1. Moved back to v3 logic (Daisuke and Kamezawa like that better)
+2. Incorporated changes from Daisuke (remove list_empty() checks)
+3. Updated documentation to reflect that limits cannot be set on root
+   cgroup
+
+Changelog v4 -> v3
+1. Rebase to mmotm 9th june 2009
+2. Remove PageCgroupRoot, we have account LRU flags to indicate that
+   we do only accounting and no reclaim.
+3. pcg_default_flags has been used again, since PCGF_ROOT is gone,
+   we set PCGF_ACCT_LRU only in mem_cgroup_add_lru_list
+4. More LRU functions are aware of PageCgroupAcctLRU
+
+Changelog v3 -> v2
+
+1. Rebase to mmotm 2nd June 2009
+2. Test with some of the test cases recommended by Daisuke-San
+
+Changelog v2 -> v1
+1. Rebase to latest mmotm
+
+This patch changes the memory cgroup and removes the overhead associated
+with accounting all pages in the root cgroup. As a side-effect, we can
+no longer set a memory hard limit in the root cgroup.
+
+A new flag to track whether the page has been accounted or not
+has been added as well. Flags are now set atomically for page_cgroup,
+pcg_default_flags is now obsolete and removed.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+
+ Documentation/cgroups/memory.txt |    4 +++
+ include/linux/page_cgroup.h      |   13 +++++++++
+ mm/memcontrol.c                  |   54 ++++++++++++++++++++++++++++----------
+ 3 files changed, 57 insertions(+), 14 deletions(-)
+
+
+diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
+index 23d1262..9ce27c6 100644
+--- a/Documentation/cgroups/memory.txt
++++ b/Documentation/cgroups/memory.txt
+@@ -179,6 +179,9 @@ The reclaim algorithm has not been modified for cgroups, except that
+ pages that are selected for reclaiming come from the per cgroup LRU
+ list.
+ 
++NOTE: Reclaim does not works for the root cgroup, since we cannot
++set any limits on the root cgroup
++
+ 2. Locking
+ 
+ The memory controller uses the following hierarchy
+@@ -210,6 +213,7 @@ We can alter the memory limit:
+ NOTE: We can use a suffix (k, K, m, M, g or G) to indicate values in kilo,
+ mega or gigabytes.
+ NOTE: We can write "-1" to reset the *.limit_in_bytes(unlimited).
++NOTE: We cannot set limits on the root cgroup anymore.
+ 
+ # cat /cgroups/0/memory.limit_in_bytes
+ 4194304
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 7339c7b..debd8ba 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -26,6 +26,7 @@ enum {
+ 	PCG_LOCK,  /* page cgroup is locked */
+ 	PCG_CACHE, /* charged as cache */
+ 	PCG_USED, /* this object is in use. */
++	PCG_ACCT_LRU, /* page has been accounted for */
+ };
+ 
+ #define TESTPCGFLAG(uname, lname)			\
+@@ -40,11 +41,23 @@ static inline void SetPageCgroup##uname(struct page_cgroup *pc)\
+ static inline void ClearPageCgroup##uname(struct page_cgroup *pc)	\
+ 	{ clear_bit(PCG_##lname, &pc->flags);  }
+ 
++#define TESTCLEARPCGFLAG(uname, lname)			\
++static inline int TestClearPageCgroup##uname(struct page_cgroup *pc)	\
++	{ return test_and_clear_bit(PCG_##lname, &pc->flags);  }
++
+ /* Cache flag is set only once (at allocation) */
+ TESTPCGFLAG(Cache, CACHE)
++CLEARPCGFLAG(Cache, CACHE)
++SETPCGFLAG(Cache, CACHE)
+ 
+ TESTPCGFLAG(Used, USED)
+ CLEARPCGFLAG(Used, USED)
++SETPCGFLAG(Used, USED)
++
++SETPCGFLAG(AcctLRU, ACCT_LRU)
++CLEARPCGFLAG(AcctLRU, ACCT_LRU)
++TESTPCGFLAG(AcctLRU, ACCT_LRU)
++TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
+ 
+ static inline int page_cgroup_nid(struct page_cgroup *pc)
+ {
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 6ceb6f2..bcbbd89 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -43,6 +43,7 @@
+ 
+ struct cgroup_subsys mem_cgroup_subsys __read_mostly;
+ #define MEM_CGROUP_RECLAIM_RETRIES	5
++struct mem_cgroup *root_mem_cgroup __read_mostly;
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ /* Turned on only when memory cgroup is enabled && really_do_swap_account = 1 */
+@@ -200,13 +201,8 @@ enum charge_type {
+ #define PCGF_CACHE	(1UL << PCG_CACHE)
+ #define PCGF_USED	(1UL << PCG_USED)
+ #define PCGF_LOCK	(1UL << PCG_LOCK)
+-static const unsigned long
+-pcg_default_flags[NR_CHARGE_TYPE] = {
+-	PCGF_CACHE | PCGF_USED | PCGF_LOCK, /* File Cache */
+-	PCGF_USED | PCGF_LOCK, /* Anon */
+-	PCGF_CACHE | PCGF_USED | PCGF_LOCK, /* Shmem */
+-	0, /* FORCE */
+-};
++/* Not used, but added here for completeness */
++#define PCGF_ACCT	(1UL << PCG_ACCT)
+ 
+ /* for encoding cft->private value on file */
+ #define _MEM			(0)
+@@ -354,6 +350,11 @@ static int mem_cgroup_walk_tree(struct mem_cgroup *root, void *data,
+ 	return ret;
+ }
+ 
++static inline bool mem_cgroup_is_root(struct mem_cgroup *mem)
++{
++	return (mem == root_mem_cgroup);
++}
++
+ /*
+  * Following LRU functions are allowed to be used without PCG_LOCK.
+  * Operations are called by routine of global LRU independently from memcg.
+@@ -371,22 +372,24 @@ static int mem_cgroup_walk_tree(struct mem_cgroup *root, void *data,
+ void mem_cgroup_del_lru_list(struct page *page, enum lru_list lru)
+ {
+ 	struct page_cgroup *pc;
+-	struct mem_cgroup *mem;
+ 	struct mem_cgroup_per_zone *mz;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return;
+ 	pc = lookup_page_cgroup(page);
+ 	/* can happen while we handle swapcache. */
+-	if (list_empty(&pc->lru) || !pc->mem_cgroup)
++	if (!TestClearPageCgroupAcctLRU(pc))
+ 		return;
++	VM_BUG_ON(!pc->mem_cgroup);
+ 	/*
+ 	 * We don't check PCG_USED bit. It's cleared when the "page" is finally
+ 	 * removed from global LRU.
+ 	 */
+ 	mz = page_cgroup_zoneinfo(pc);
+-	mem = pc->mem_cgroup;
+ 	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
++	if (mem_cgroup_is_root(pc->mem_cgroup))
++		return;
++	VM_BUG_ON(list_empty(&pc->lru));
+ 	list_del_init(&pc->lru);
+ 	return;
+ }
+@@ -410,8 +413,8 @@ void mem_cgroup_rotate_lru_list(struct page *page, enum lru_list lru)
+ 	 * For making pc->mem_cgroup visible, insert smp_rmb() here.
+ 	 */
+ 	smp_rmb();
+-	/* unused page is not rotated. */
+-	if (!PageCgroupUsed(pc))
++	/* unused or root page is not rotated. */
++	if (!PageCgroupUsed(pc) || PageCgroupAcctLRU(pc))
+ 		return;
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	list_move(&pc->lru, &mz->lists[lru]);
+@@ -425,6 +428,7 @@ void mem_cgroup_add_lru_list(struct page *page, enum lru_list lru)
+ 	if (mem_cgroup_disabled())
+ 		return;
+ 	pc = lookup_page_cgroup(page);
++	VM_BUG_ON(PageCgroupAcctLRU(pc));
+ 	/*
+ 	 * Used bit is set without atomic ops but after smp_wmb().
+ 	 * For making pc->mem_cgroup visible, insert smp_rmb() here.
+@@ -435,6 +439,9 @@ void mem_cgroup_add_lru_list(struct page *page, enum lru_list lru)
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
++	SetPageCgroupAcctLRU(pc);
++	if (mem_cgroup_is_root(pc->mem_cgroup))
++		return;
+ 	list_add(&pc->lru, &mz->lists[lru]);
+ }
+ 
+@@ -469,7 +476,7 @@ static void mem_cgroup_lru_add_after_commit_swapcache(struct page *page)
+ 
+ 	spin_lock_irqsave(&zone->lru_lock, flags);
+ 	/* link when the page is linked to LRU but page_cgroup isn't */
+-	if (PageLRU(page) && list_empty(&pc->lru))
++	if (PageLRU(page) && !PageCgroupAcctLRU(pc))
+ 		mem_cgroup_add_lru_list(page, page_lru(page));
+ 	spin_unlock_irqrestore(&zone->lru_lock, flags);
+ }
+@@ -1114,9 +1121,22 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 		css_put(&mem->css);
+ 		return;
+ 	}
++
+ 	pc->mem_cgroup = mem;
+ 	smp_wmb();
+-	pc->flags = pcg_default_flags[ctype];
++	switch (ctype) {
++	case MEM_CGROUP_CHARGE_TYPE_CACHE:
++	case MEM_CGROUP_CHARGE_TYPE_SHMEM:
++		SetPageCgroupCache(pc);
++		SetPageCgroupUsed(pc);
++		break;
++	case MEM_CGROUP_CHARGE_TYPE_MAPPED:
++		ClearPageCgroupCache(pc);
++		SetPageCgroupUsed(pc);
++		break;
++	default:
++		break;
++	}
+ 
+ 	mem_cgroup_charge_statistics(mem, pc, true);
+ 
+@@ -2055,6 +2075,10 @@ static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+ 	name = MEMFILE_ATTR(cft->private);
+ 	switch (name) {
+ 	case RES_LIMIT:
++		if (mem_cgroup_is_root(memcg)) { /* Can't set limit on root */
++			ret = -EINVAL;
++			break;
++		}
+ 		/* This function does all necessary parse...reuse it */
+ 		ret = res_counter_memparse_write_strategy(buffer, &val);
+ 		if (ret)
+@@ -2521,6 +2545,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	if (cont->parent == NULL) {
+ 		enable_swap_cgroup();
+ 		parent = NULL;
++		root_mem_cgroup = mem;
+ 	} else {
+ 		parent = mem_cgroup_from_cont(cont->parent);
+ 		mem->use_hierarchy = parent->use_hierarchy;
+@@ -2549,6 +2574,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	return &mem->css;
+ free_out:
+ 	__mem_cgroup_free(mem);
++	root_mem_cgroup = NULL;
+ 	return ERR_PTR(error);
+ }
+ 
+
+-- 
+	Balbir
