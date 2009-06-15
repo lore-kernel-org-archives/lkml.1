@@ -1,275 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbZFOPHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZFOPIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758807AbZFOPHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZFOPHX
+	id S1758302AbZFOPIa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZFOPIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:07:23 -0400
-Received: from av8-1-sn3.vrr.skanova.net ([81.228.9.183]:35075 "EHLO
-	av8-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbZFOPHW (ORCPT
+	Mon, 15 Jun 2009 11:08:23 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:37177 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752467AbZFOPIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:07:22 -0400
-Message-ID: <4A3663A8.1030508@mocean-labs.com>
-Date: Mon, 15 Jun 2009 17:07:20 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Mon, 15 Jun 2009 11:08:22 -0400
+Date: Mon, 15 Jun 2009 11:05:42 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+In-Reply-To: <1245077891.23207.48.camel@penberg-laptop>
+Message-ID: <alpine.DEB.1.10.0906151101580.23995@gentwo.org>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>  <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>  <alpine.DEB.1.10.0906121317140.23840@gentwo.org>  <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI> 
+ <alpine.DEB.1.10.0906151051240.19931@gentwo.org> <1245077891.23207.48.camel@penberg-laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2] gpio: Added MC33880 driver
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Supplied is a GPIO driver for the Freescale MC33880 High/Low side
-switch
+On Mon, 15 Jun 2009, Pekka Enberg wrote:
 
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
----
-Index: linux-2.6.30-rc7/drivers/gpio/mc33880.c
-===================================================================
---- linux-2.6.30-rc7/drivers/gpio/mc33880.c	(revision 0)
-+++ linux-2.6.30-rc7/drivers/gpio/mc33880.c	(revision 864)
-@@ -0,0 +1,196 @@
-+/*
-+ * mc33880.c MC33880 high-side/low-side switch GPIO driver
-+ * Copyright (c) 2009 Intel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+/* Supports:
-+ * Freescale MC33880 high-side/low-side switch
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/mutex.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/mc33880.h>
-+#include <linux/gpio.h>
-+
-+#define DRIVER_NAME "mc33880"
-+
-+/*
-+ * Pin configurations, see MAX7301 datasheet page 6
-+ */
-+#define PIN_CONFIG_MASK 0x03
-+#define PIN_CONFIG_IN_PULLUP 0x03
-+#define PIN_CONFIG_IN_WO_PULLUP 0x02
-+#define PIN_CONFIG_OUT 0x01
-+
-+#define PIN_NUMBER 8
-+
-+
-+/*
-+ * Some registers must be read back to modify.
-+ * To save time we cache them here in memory
-+ */
-+struct mc33880 {
-+	struct mutex	lock;	/* protect from simultanous accesses */
-+	u8		port_config;
-+	struct gpio_chip chip;
-+	struct spi_device *spi;
-+};
-+
-+static int mc33880_write_config(struct mc33880 *mc)
-+{
-+	return spi_write(mc->spi, &mc->port_config, sizeof(mc->port_config));
-+}
-+
-+
-+static int __mc33880_set(struct mc33880 *mc, unsigned offset, int value)
-+{
-+	if (value)
-+		mc->port_config |= 1 << offset;
-+	else
-+		mc->port_config &= ~(1 << offset);
-+
-+	return mc33880_write_config(mc);
-+}
-+
-+
-+static void mc33880_set(struct gpio_chip *chip, unsigned offset, int value)
-+{
-+	struct mc33880 *mc = container_of(chip, struct mc33880, chip);
-+
-+	mutex_lock(&mc->lock);
-+
-+	__mc33880_set(mc, offset, value);
-+
-+	mutex_unlock(&mc->lock);
-+}
-+
-+static int __devinit mc33880_probe(struct spi_device *spi)
-+{
-+	struct mc33880 *mc;
-+	struct mc33880_platform_data *pdata;
-+	int ret;
-+
-+	pdata = spi->dev.platform_data;
-+	if (!pdata || !pdata->base) {
-+		dev_dbg(&spi->dev, "incorrect or missing platform data\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * bits_per_word cannot be configured in platform data
-+	 */
-+	spi->bits_per_word = 8;
-+
-+	ret = spi_setup(spi);
-+	if (ret < 0)
-+		return ret;
-+
-+	mc = kzalloc(sizeof(struct mc33880), GFP_KERNEL);
-+	if (!mc)
-+		return -ENOMEM;
-+
-+	mutex_init(&mc->lock);
-+
-+	dev_set_drvdata(&spi->dev, mc);
-+
-+	mc->spi = spi;
-+
-+	mc->chip.label = DRIVER_NAME,
-+	mc->chip.set = mc33880_set;
-+	mc->chip.base = pdata->base;
-+	mc->chip.ngpio = PIN_NUMBER;
-+	mc->chip.can_sleep = 1;
-+	mc->chip.dev = &spi->dev;
-+	mc->chip.owner = THIS_MODULE;
-+
-+	mc->port_config = 0x00;
-+	/* write twice, because during initialisation the first setting
-+	 * is just for testing SPI communication, and the second is the
-+	 * "real" configuration
-+	 */
-+	ret = mc33880_write_config(mc);
-+	mc->port_config = 0x00;
-+	if (!ret)
-+		ret = mc33880_write_config(mc);
-+
-+	if (ret) {
-+		printk(KERN_ERR "Failed writing to " DRIVER_NAME ": %d\n", ret);
-+		goto exit_destroy;
-+	}
-+
-+	ret = gpiochip_add(&mc->chip);
-+	if (ret)
-+		goto exit_destroy;
-+
-+	return ret;
-+
-+exit_destroy:
-+	dev_set_drvdata(&spi->dev, NULL);
-+	mutex_destroy(&mc->lock);
-+	kfree(mc);
-+	return ret;
-+}
-+
-+static int mc33880_remove(struct spi_device *spi)
-+{
-+	struct mc33880 *mc;
-+	int ret;
-+
-+	mc = dev_get_drvdata(&spi->dev);
-+	if (mc == NULL)
-+		return -ENODEV;
-+
-+	dev_set_drvdata(&spi->dev, NULL);
-+
-+	ret = gpiochip_remove(&mc->chip);
-+	if (!ret) {
-+		mutex_destroy(&mc->lock);
-+		kfree(mc);
-+	} else
-+		dev_err(&spi->dev, "Failed to remove the GPIO controller: %d\n",
-+			ret);
-+
-+	return ret;
-+}
-+
-+static struct spi_driver mc33880_driver = {
-+	.driver = {
-+		.name		= DRIVER_NAME,
-+		.owner		= THIS_MODULE,
-+	},
-+	.probe		= mc33880_probe,
-+	.remove		= __devexit_p(mc33880_remove),
-+};
-+
-+static int __init mc33880_init(void)
-+{
-+	return spi_register_driver(&mc33880_driver);
-+}
-+/* register after spi postcore initcall and before
-+ * subsys initcalls that may rely on these GPIOs
-+ */
-+subsys_initcall(mc33880_init);
-+
-+static void __exit mc33880_exit(void)
-+{
-+	spi_unregister_driver(&mc33880_driver);
-+}
-+module_exit(mc33880_exit);
-+
-+MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
-+MODULE_LICENSE("GPL v2");
-+
-Index: linux-2.6.30-rc7/drivers/gpio/Kconfig
-===================================================================
---- linux-2.6.30-rc7/drivers/gpio/Kconfig	(revision 861)
-+++ linux-2.6.30-rc7/drivers/gpio/Kconfig	(working copy)
-@@ -176,4 +176,11 @@
- 	  SPI driver for Microchip MCP23S08 I/O expander.  This provides
- 	  a GPIO interface supporting inputs and outputs.
+> > Dont do it there. Only modify the slow path.
+> >
+> > Look at __might_sleep(). It already has an exception for system_state !=
+> > RUNNING. If it still triggers then add to the condition there.
+>
+> But does this matter? When the debugging options are turned off, there
+> are no users for "real_gfp" and thus GCC optimizes everything away. For
+> debugging configs, the extra cacheline load doesn't matter, does it?
 
-+config GPIO_MC33880
-+	tristate "Freescale MC33880 high-side/low-side switch"
-+	depends on SPI_MASTER
-+	help
-+	  SPI driver for Freescale MC33880 high-side/low-side switch.
-+	  This provides GPIO interface supporting inputs and outputs.
-+
- endif
-Index: linux-2.6.30-rc7/drivers/gpio/Makefile
-===================================================================
---- linux-2.6.30-rc7/drivers/gpio/Makefile	(revision 861)
-+++ linux-2.6.30-rc7/drivers/gpio/Makefile	(working copy)
-@@ -12,3 +12,5 @@
- obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
- obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-+obj-$(CONFIG_GPIO_MC33880)	+= mc33880.o
-+
-Index: linux-2.6.30-rc7/include/linux/spi/mc33880.h
-===================================================================
---- linux-2.6.30-rc7/include/linux/spi/mc33880.h	(revision 0)
-+++ linux-2.6.30-rc7/include/linux/spi/mc33880.h	(revision 864)
-@@ -0,0 +1,10 @@
-+#ifndef LINUX_SPI_MC33880_H
-+#define LINUX_SPI_MC33880_H
-+
-+struct mc33880_platform_data {
-+	/* number assigned to the first GPIO */
-+	unsigned	base;
-+};
-+
-+#endif
-+
+It cleaner to have the fastpath as small as possible. Having unused
+variables in there is a bit confusing.
+
+Also the path is performance critical. That may not matter for the debug
+case in some sitiations. But there are people that keep the debugging
+options on. Better to limit the impact as much as possible.
+
+And the "extra cacheline load does not matter" reasoning can only be
+applied so many times. An extra cacheline load increases the cache foot
+print of the fast path after all.
+
+
+
+
 
