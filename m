@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763483AbZFOSmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765395AbZFOSm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763483AbZFOSmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZFOSmb
+	id S1765395AbZFOSm7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760380AbZFOSmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:42:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45065 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbZFOSmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:42:31 -0400
-Message-ID: <4A369508.2090707@zytor.com>
-Date: Mon, 15 Jun 2009 11:38:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 15 Jun 2009 14:42:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38906 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760070AbZFOSmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:42:49 -0400
+Date: Mon, 15 Jun 2009 20:42:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
+Message-ID: <20090615184217.GG11248@elte.hu>
+References: <tip-3ff0141aa3a03ca3388b40b36167d0a37919f3fd@git.kernel.org> <1245077165.6800.497.camel@laptop> <Pine.LNX.4.64.0906151623570.5225@sister.anvils> <1245080486.6800.561.camel@laptop> <1245089065.13761.19316.camel@twins> <20090615181555.GA11248@elte.hu> <1245089943.13761.19334.camel@twins> <20090615182549.GD11248@elte.hu> <1245090608.13761.19349.camel@twins>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
-       mathieu.desnoyers@polymtl.ca, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
- to use NMI-safe methods
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245090608.13761.19349.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 15 Jun 2009, Ingo Molnar wrote:
->> A simple cr2 corruption would explain all those cc1 SIGSEGVs and 
->> other user-space crashes i saw, with sufficiently intense sampling - 
->> easily.
-> 
-> Note that we could work around the %cr2 issue, since any corruption is 
-> always nicely "nested" (ie there are never any SMP issues with async 
-> writes to the register).
-> 
-> So what we _could_ do is to have a magic value for %cr2, along with a "NMI 
-> sequence count", and if we see that value, we just return (without doing 
-> anything) from the page fault handler.
-> 
 
-Wouldn't it be simpler to just require the NMI handler to save and
-restore %cr2 around any potentially faulting references?
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-	-hpa
+> On Mon, 2009-06-15 at 20:25 +0200, Ingo Molnar wrote:
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > but ... look at the APIs i propose above. We dont need _any_ 
+> > 'types'.
+> > 
+> > That type enumeration is basically an open-coded allocator. If we do 
+> > a _real_ allocator (a balanced stack of atomic kmaps) we dont need 
+> > any of those indices, and all the potential for mismatch goes away 
+> > as well - a stack nests trivially with IRQ and NMI and arbitrary 
+> > other contexts.
+> 
+> You want types because:
+>  - they encode the intent, and can be verified
+>  - they help keep track of the max nesting depth
+> 
+> In the proposed implementation all type code basically falls away 
+> no ! CONFIG_DEBUG_VM, but is kept around for robustness.
+
+But much of the fragility of the types (and their clumsiness - for 
+example in highpte ops we have to know at which level of the 
+pagetables we are, and use the right kind of index) is _precisely_ 
+because we have the types ...
+
+Unbalanced unmaps will be detected under CONFIG_DEBUG_VM: kunmap 
+uses 'page' as a parameter which is checked against the pte entry - 
+they must match.
+
+I.e. it becomes a symmetric and expressive API:
+
+	kaddr = kmap_atomic(page);
+	...
+	kunmap_atomic(page);
+
+Hm?
+
+	Ingo
