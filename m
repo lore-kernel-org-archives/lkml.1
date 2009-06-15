@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbZFOKL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbZFOKMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760173AbZFOKL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 06:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757817AbZFOKLQ
+	id S1755100AbZFOKMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 06:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZFOKMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 06:11:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59094
+	Mon, 15 Jun 2009 06:12:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42023
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760048AbZFOKLP (ORCPT
+	by vger.kernel.org with ESMTP id S1751611AbZFOKMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 06:11:15 -0400
-Date: Mon, 15 Jun 2009 03:11:18 -0700 (PDT)
-Message-Id: <20090615.031118.39013273.davem@davemloft.net>
-To: tiwai@suse.de
-Cc: bzolnier@gmail.com, sven.koehler@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: sound skipping regression introduced in 2.6.30-rc8
+	Mon, 15 Jun 2009 06:12:34 -0400
+Date: Mon, 15 Jun 2009 03:12:37 -0700 (PDT)
+Message-Id: <20090615.031237.16489152.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.31-rc1: memory initialization warnings on sparc
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <s5htz2hes3u.wl%tiwai@suse.de>
-References: <20090615.022547.107684868.davem@davemloft.net>
-	<s5hy6rtesjo.wl%tiwai@suse.de>
-	<s5htz2hes3u.wl%tiwai@suse.de>
+In-Reply-To: <a4423d670906150303o353f598dg4eb7b1f181344d8e@mail.gmail.com>
+References: <a4423d670906150303o353f598dg4eb7b1f181344d8e@mail.gmail.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,11 +27,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Takashi Iwai <tiwai@suse.de>
-Date: Mon, 15 Jun 2009 11:58:13 +0200
 
-> Damn, that was buggy again.  The fixed version is below.
+I know about them, I saw these messages too.
 
-This seems to fix the bug and work fine.
+kmalloc() initialization got moved earlier so large swaths of sparc
+early initialization need to move from bootmem to kmalloc or similar.
 
-Thanks!
+It's just a harmless warning as the bootmem code calls kmalloc()
+if that's available already.
