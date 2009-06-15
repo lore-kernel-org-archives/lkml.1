@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761107AbZFONJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbZFONK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761107AbZFONJa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFONJV
+	id S1758784AbZFONK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbZFONKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:09:21 -0400
-Received: from trinity.fluff.org ([89.16.178.74]:53482 "EHLO trinity.fluff.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760868AbZFONJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:09:20 -0400
-Date: Mon, 15 Jun 2009 14:09:06 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Florian Fainelli <florian@openwrt.org>
-Cc: Ben Dooks <ben-linux@fluff.org>, Alek Du <alek.du@intel.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and gpio_alt_func features to GPIOLIB
-Message-ID: <20090615130906.GA14476@trinity.fluff.org>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com> <20090615125146.GC19873@fluff.org.uk> <200906151504.51934.florian@openwrt.org>
+	Mon, 15 Jun 2009 09:10:16 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:33552 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbZFONKP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 09:10:15 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: TSC features, was: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for VIA/Centaur CPUs
+Date: Mon, 15 Jun 2009 08:10:13 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090608102754.GP4106@prithivi.gnumonks.org> <alpine.LFD.2.01.0906081128410.6847@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906081128410.6847@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200906151504.51934.florian@openwrt.org>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Message-Id: <200906150810.15799.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 03:04:50PM +0200, Florian Fainelli wrote:
-> Le Monday 15 June 2009 14:51:46 Ben Dooks, vous avez écrit :
-> > On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
-> > > >From 7a76916ccea4a376a260ea67fbc79ac4d958757f Mon Sep 17 00:00:00 2001
-> > >
-> > > From: Alek Du <alek.du@intel.com>
-> > > Date: Fri, 8 May 2009 09:46:49 +0800
-> > > Subject: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
-> > > gpio_alt_func features to GPIOLIB
-> > >
-> > > Add some more functions to GPIOLIB, they are:
-> > > * gpio_detect is to set GPIO interrupt triggering method (edge, level,
-> > > high, low, etc.)
+On Mon June 8 2009, Linus Torvalds wrote:
 > 
-> The name does not seem to reflect what it does, what about gpio_set_type or 
-> gpio_set_int_type for instance ?
-
-You seem to have made the same case as myself to why this call is irrelevant
-to the gpiolib layer.
- 
+> On Mon, 8 Jun 2009, Harald Welte wrote:
 > >
-> > This is the wrong way of doing it, there is as a definit set_type
-> > method in the irq_chip structure which should be used to alter the
-> > way the IRQ is triggered.
+> > The VIA/Centaur C7, C7-M and Nano CPU's all support ACPI based cpu p-states
+> > using a MSR interface.  The Linux driver just never made use of it, since in
+> > addition to the check for the EST flag it also checked if the vendor is Intel.
+> > 
+> > Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+> > ---
+> >  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > index 208ecf6..ee03585 100644
+> > --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > @@ -90,7 +90,8 @@ static int check_est_cpu(unsigned int cpuid)
+> >  {
+> >  	struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
+> >  
+> > -	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
+> > +	if ((cpu->x86_vendor != X86_VENDOR_INTEL &&
+> > +	     cpu->x86_vendor != X86_VENDOR_CENTAUR) ||
+> >  	    !cpu_has(cpu, X86_FEATURE_EST))
 > 
-> I would expect your architecture IRQ handler to have a set_type callback for 
-> the GPIO lines capables of generating an interrupt. See how we have beeing 
-> doing it for rb532 for instance: 
-> http://www.linux-mips.org/git?p=linux-queue.git;a=blob;f=arch/mips/rb532/irq.c;h=f07882029a90d3d155c17b462812c2936229458c;hb=HEAD#l173
+> Hmm. This all really should be just
+> 
+> 	static int check_est_cpu(unsigned int cpuid)
+> 	{
+> 		struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
+> 		return cpu_has(cpu, X86_FEATURE_EST);
+> 	}
+> 
+> I suspect, with no vendor tests. That's the whole _point_ of CPU features, 
+> after all.
+> 
 
-Yes, or if the GPIO driver is exporting interrupts, the relevant handler
-for that chip should have the .set_type method defined.
+Following that same logic, shouldn't this chunk be based on CPU features also?
+(Spotted while tracking down why the non-stop TSC wasn't being used on VIA):
 
--- 
-Ben
+#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+static void tsc_check_state(int state)
+{
+        switch (boot_cpu_data.x86_vendor) {
+        case X86_VENDOR_AMD:
+        case X86_VENDOR_INTEL:
+                /*
+                 * AMD Fam10h TSC will tick in all
+                 * C/P/S0/S1 states when this bit is set.
+                 */
+                if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
+                        return;
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+                /*FALL THROUGH*/
+        default:
+                /* TSC could halt in idle, so notify users */
+                if (state > ACPI_STATE_C1)
+                        mark_tsc_unstable("TSC halts in idle");
+        }
+}
+#else
+static void tsc_check_state(int state) { return; }
+#endif
 
+Mike
