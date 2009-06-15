@@ -1,79 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765395AbZFOSm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765455AbZFOSnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765395AbZFOSm7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760380AbZFOSmu
+	id S1765455AbZFOSnV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765100AbZFOSmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:42:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38906 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760070AbZFOSmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:42:49 -0400
-Date: Mon, 15 Jun 2009 20:42:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
-Message-ID: <20090615184217.GG11248@elte.hu>
-References: <tip-3ff0141aa3a03ca3388b40b36167d0a37919f3fd@git.kernel.org> <1245077165.6800.497.camel@laptop> <Pine.LNX.4.64.0906151623570.5225@sister.anvils> <1245080486.6800.561.camel@laptop> <1245089065.13761.19316.camel@twins> <20090615181555.GA11248@elte.hu> <1245089943.13761.19334.camel@twins> <20090615182549.GD11248@elte.hu> <1245090608.13761.19349.camel@twins>
-MIME-Version: 1.0
+	Mon, 15 Jun 2009 14:42:55 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:54982 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765242AbZFOSmy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:42:54 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AokFAMsvNkpMQWQl/2dsb2JhbACBT9VwhA0F
+Date: Mon, 15 Jun 2009 14:42:50 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090615184250.GB6520@Krystal>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <20090615182348.GC11248@elte.hu> <20090615182828.GE11248@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1245090608.13761.19349.camel@twins>
+In-Reply-To: <20090615182828.GE11248@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:39:22 up 107 days, 15:05,  3 users,  load average: 1.20, 1.27,
+	0.97
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Mon, 2009-06-15 at 20:25 +0200, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> > but ... look at the APIs i propose above. We dont need _any_ 
-> > 'types'.
-> > 
-> > That type enumeration is basically an open-coded allocator. If we do 
-> > a _real_ allocator (a balanced stack of atomic kmaps) we dont need 
-> > any of those indices, and all the potential for mismatch goes away 
-> > as well - a stack nests trivially with IRQ and NMI and arbitrary 
-> > other contexts.
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> You want types because:
->  - they encode the intent, and can be verified
->  - they help keep track of the max nesting depth
+> > The GUP based method is pretty generic though - and can be used on 
+> > other architectures as well. It's not as fast as direct access 
+> > though.
 > 
-> In the proposed implementation all type code basically falls away 
-> no ! CONFIG_DEBUG_VM, but is kept around for robustness.
+> Another question is: your patch switches over all normal exceptions 
+> from IRET to hand-unroll+RET.
+> 
 
-But much of the fragility of the types (and their clumsiness - for 
-example in highpte ops we have to know at which level of the 
-pagetables we are, and use the right kind of index) is _precisely_ 
-because we have the types ...
+Nope, it actually only switches the exceptions returning from an
+exception handler nested in NMI context to the hand-unroll+RET version.
+Given such exception nesting is expected to be very rare, it should not
+show any performance difference.
 
-Unbalanced unmaps will be detected under CONFIG_DEBUG_VM: kunmap 
-uses 'page' as a parameter which is checked against the pte entry - 
-they must match.
+I also organised the code to make sure I did not add any test to the
+fast paths in my original patch.
 
-I.e. it becomes a symmetric and expressive API:
+> It would be really nice to benchmark it (via 'perf stat' for example 
+> ;-) whether that's a slowdown or a speedup.
+> 
+> If it's a slowdown then the decision is easy: we dont want this, we 
+> want to push the overhead into the sampling code, away from common 
+> codepaths.
+> 
 
-	kaddr = kmap_atomic(page);
-	...
-	kunmap_atomic(page);
+I did not try to make the "hand unroll + ret" the default. I therefore
+don't know if it is faster or slower than iret. But I prefered to stay
+on the safe side and only modify the exceptions nested within NMI
+handlers.
 
-Hm?
+Mathieu
 
-	Ingo
+> [ If on the other hand it's a speedup of a few cycles then we have 
+>   the problem of me suddenly liking this patch a whole lot more ;-) ]
+> 
+> 	Ingo
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
