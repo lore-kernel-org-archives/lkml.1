@@ -1,52 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbZFOJL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757626AbZFOJN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760530AbZFOJL2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 05:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZFOJLT
+	id S1757626AbZFOJN1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 05:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbZFOJNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 05:11:19 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53647 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751358AbZFOJLS (ORCPT
+	Mon, 15 Jun 2009 05:13:20 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:2511 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZFOJNT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 05:11:18 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: tty_ldisc_try_get(): BUG kmalloc-8: Poison overwritten
-References: <20090614081052.GA9276@elte.hu>
-	<20090614115428.1127ed2d@lxorguk.ukuu.org.uk>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Mon, 15 Jun 2009 10:10:05 +0100
-In-Reply-To: <20090614115428.1127ed2d@lxorguk.ukuu.org.uk> (Alan Cox's message of "Sun\, 14 Jun 2009 11\:54\:28 +0100")
-Message-ID: <tnxhbyhuaky.fsf@pc1117.cambridge.arm.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Mon, 15 Jun 2009 05:13:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=vKYozXvWRFR6+n9zeMt2fd8HbR5Kp7ctP7moqXr14s98mbsoPAiMp6YSStawMmr+ET
+         +CgKgtF8y4DgAFl4nKCf0d0MP/0H2RJit3U7jd1w56rmSEuVZP+Asesca7nzbDiDSqhp
+         D5NVTzxx0W8xAIJSvX4fWXVXiUcR3xNy5xBqE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 Jun 2009 09:10:08.0080 (UTC) FILETIME=[14294D00:01C9ED99]
+Date: Mon, 15 Jun 2009 11:07:38 +0200
+Message-ID: <9a518b600906150207l1be4c0e4w6e2ec2ece6b89181@mail.gmail.com>
+Subject: [PATCH] force key-release events for Samsung p560 and r560 laptops in 
+	atkbd.c
+From: Gordon <gkoefner@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=000e0cd29b4cc8c50b046c5f6394
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Sun, 14 Jun 2009 10:10:52 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
->> Ok, this is one for those who like to look at weird crashes/bugs.
->> 
->> Here's a new regression that popped up in this merge window, there's 
->> some sort of slab corruption going on in tty data structures:
->
-> I split the ldisc and tty apart and redid the ldisc locking so its a fair
-> bet I know what changeset is to blame, will just need to hunt it down a
-> bit. kmemcheck found one leak case on Friday which I've fixed but not yet
-> scribbles.
+--000e0cd29b4cc8c50b046c5f6394
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That was kmemleak :-).
+Hi all,
+certain FN keys on the Samsung P560 and R560 laptops do not produce
+"unknown key pressed" events in dmesg. But if I use setkeycodes to
+make them known the keyboard gets 'stuck'. These keys seem to not send
+keyrelease events.
 
--- 
-Catalin
+Attached is a patch for the SAMSUNG P560 laptop, the DMI match just
+needs to be modified to work for the R560 model as well. keycodes are
+afaik (a colleague has the R560) the same for both. I modified an
+existing patch for the NC10 from bugzilla as it is basically the same
+problem.
+
+Thread:
+http://bugzilla.kernel.org/show_bug.cgi?id=3D12021
+
+and here is my bug report:
+https://bugs.launchpad.net/ubuntu/+source/hal-info/+bug/338182
+
+I hope someone can include this patch into newer releases of the kernel :)
+
+with best regards,
+Gordon K=F6fner
+
+--000e0cd29b4cc8c50b046c5f6394
+Content-Type: text/x-patch; charset=US-ASCII; name="atkbd-samsung-p560.patch"
+Content-Disposition: attachment; filename="atkbd-samsung-p560.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fvyy23a40
+
+LS0tIGxpbnV4LTIuNi4yOC1vbGQvZHJpdmVycy9pbnB1dC9rZXlib2FyZC9hdGtiZC5jCTIwMDgt
+MTItMTMgMjM6NTI6MjYuMDAwMDAwMDAwICswMDAwCisrKyBsaW51eC0yLjYuMjgvZHJpdmVycy9p
+bnB1dC9rZXlib2FyZC9hdGtiZC5jCTIwMDgtMTItMTQgMTg6MTY6MjMuMDAwMDAwMDAwICswMDAw
+CkBAIC04ODQsNiArODg0LDIxIEBAIHN0YXRpYyB2b2lkIGF0a2JkX2ludmVudGVjX2tleW1hcF9m
+aXh1cCgKIH0KIAogLyoKKyAqIFNhbXN1bmcgUDU2MCB3aXRoIEZuK0Y/IGtleSByZWxlYXNlIG5v
+dCB3b3JraW5nCisgKi8KK3N0YXRpYyB2b2lkIGF0a2JkX3NhbXN1bmdfa2V5bWFwX2ZpeHVwKHN0
+cnVjdCBhdGtiZCAqYXRrYmQpCit7CisJY29uc3QgdW5zaWduZWQgaW50IGZvcmNlZF9yZWxlYXNl
+X2tleXNbXSA9IHsKKwkJMHg4MiwgMHg4MywgMHg4NCwgMHg4NiwgMHg4OCwgMHg4OSwgMHhiMSwg
+MHhiMywgMHhmNworCX07CisJaW50IGk7CisJaWYgKGF0a2JkLT5zZXQgPT0gMikKKwkJZm9yIChp
+ID0gMDsgaSA8IEFSUkFZX1NJWkUoZm9yY2VkX3JlbGVhc2Vfa2V5cyk7IGkrKykKKwkJCV9fc2V0
+X2JpdChmb3JjZWRfcmVsZWFzZV9rZXlzW2ldLAorCQkJCWF0a2JkLT5mb3JjZV9yZWxlYXNlX21h
+c2spOworfQorCisvKgogICogYXRrYmRfc2V0X2tleWNvZGVfdGFibGUoKSBpbml0aWFsaXplcyBr
+ZXlib2FyZCdzIGtleWNvZGUgdGFibGUKICAqIGFjY29yZGluZyB0byB0aGUgc2VsZWN0ZWQgc2Nh
+bmNvZGUgc2V0CiAgKi8KQEAgLTE0OTMsNiArMTUwOCwxNSBAQCBzdGF0aWMgc3RydWN0IGRtaV9z
+eXN0ZW1faWQgYXRrYmRfZG1pX3F1CiAJCS5jYWxsYmFjayA9IGF0a2JkX3NldHVwX2ZpeHVwLAog
+CQkuZHJpdmVyX2RhdGEgPSBhdGtiZF9pbnZlbnRlY19rZXltYXBfZml4dXAsCiAJfSwKKwl7CisJ
+CS5pZGVudCA9ICJTYW1zdW5nIFA1NjAiLAorCQkubWF0Y2hlcyA9IHsKKwkJCURNSV9NQVRDSChE
+TUlfU1lTX1ZFTkRPUiwgIlNBTVNVTkcgRUxFQ1RST05JQ1MgQ08uLCBMVEQuIiksCisJCQlETUlf
+TUFUQ0goRE1JX1BST0RVQ1RfTkFNRSwgIlA1NjAiKSwKKwkJfSwKKwkJLmNhbGxiYWNrID0gYXRr
+YmRfc2V0dXBfZml4dXAsCisJCS5kcml2ZXJfZGF0YSA9IGF0a2JkX3NhbXN1bmdfa2V5bWFwX2Zp
+eHVwLAorCX0sCiAJeyB9CiB9OwogCg==
+--000e0cd29b4cc8c50b046c5f6394--
