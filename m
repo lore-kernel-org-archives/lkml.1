@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933560AbZFOSyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933656AbZFOSyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933560AbZFOSyX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764528AbZFOSyN
+	id S933656AbZFOSyv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758409AbZFOSym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:54:13 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:49675 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764849AbZFOSyM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:54:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AokFAAcwNkpMQWQl/2dsb2JhbACBT9VwhA0F
-Date: Mon, 15 Jun 2009 14:48:58 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, paulus@samba.org,
-       acme@redhat.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615184858.GD6520@Krystal>
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <4A369508.2090707@zytor.com>
+	Mon, 15 Jun 2009 14:54:42 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:54914 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752212AbZFOSyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:54:41 -0400
+Date: Mon, 15 Jun 2009 20:55:43 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: mingo@elte.hu, a.p.zijlstra@chello.nl
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 0/8] Use EDF to throttle RT task groups
+Message-ID: <cover.1245092261.git.fabio@helm.retis>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A369508.2090707@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:47:15 up 107 days, 15:13,  3 users,  load average: 1.41, 1.44,
-	1.15
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Linus Torvalds wrote:
-> > 
-> > On Mon, 15 Jun 2009, Ingo Molnar wrote:
-> >> A simple cr2 corruption would explain all those cc1 SIGSEGVs and 
-> >> other user-space crashes i saw, with sufficiently intense sampling - 
-> >> easily.
-> > 
-> > Note that we could work around the %cr2 issue, since any corruption is 
-> > always nicely "nested" (ie there are never any SMP issues with async 
-> > writes to the register).
-> > 
-> > So what we _could_ do is to have a magic value for %cr2, along with a "NMI 
-> > sequence count", and if we see that value, we just return (without doing 
-> > anything) from the page fault handler.
-> > 
-> 
-> Wouldn't it be simpler to just require the NMI handler to save and
-> restore %cr2 around any potentially faulting references?
-> 
-> 	-hpa
+This patchset introduces a group level EDF scheduler to extend the
+current throttling mechanism, in order to make it support generic
+period assignments.  With this patch, the rt_runtime and rt_period
+parameters can be used to specify arbitrary CPU reservations for
+RT tasks.
 
-If we require that around the whole NMI handler execution, then we get
-all vmalloc + module text code references handled for free. This would
-be a nice-to-have.a And given nmi-handler is not such a frequent code
-path, we should not care that much about the performance hit of
-saving/restoring the cr2 register at each nmi entry/exit.
+The first two patches fix two problems of the current implementation.
 
-Mathieu
+This is an early RFC, I'm interested in having an idea of what people
+think about this feature, if it's worth working on it, what can be
+improved in the design, etc.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The main design issues involved:
+
+  - It is no more possible to specify RUNTIME_INF for a task group
+    when throttling is enabled.  Rationale: supporting both throttled
+    and unthrottled groups would have required too much extra complexity
+    (I didn't find anything simpler than two parallel runqueues, one for
+    throttled and one for unthrottled groups).
+
+  - Since it is not easy to mix tasks and groups on the same scheduler
+    queue (tasks have no deadlines), the bandwidth reserved to the tasks
+    in a group is controlled with two additional cgroup attributes:
+    rt_task_runtime_us and rt_task_period_us.  These attrinutes control,
+    within a cgroup, how much bandwidth is reserved to the tasks it
+    contains.
+
+  - Shared resources are still handled using boosting.  When a group
+    contains a task inside a critical section it is scheduled according
+    the highest priority among the ones of the tasks it contains.
+    In this way, the same group has two modes: when it is not boosted
+    it is scheduled according to its deadline; when it is boosted, it
+    is scheduled according its priority.  Boosted groups are always
+    favored over non-boosted ones.
+
+  - The old priority array is now gone.  To use only a single data
+    structure for entities using both priorities and deadlines (due
+    to boosting), the only possible choice was to use an rb-tree;
+    the function used to order the keys takes into account the
+    prioritization described above (boosted tasks, ordered by
+    priority are favored to non-boosted tasks, ordered by increasing
+    deadline).
+
+  - Given that the various rt_rq's belonging to the same task group
+    are activated independently, there is the need of a timer per
+    each rt_rq.
+
+The patchset is against sched-devel, and (temporarily) depends on
+CONFIG_RT_GROUP_SCHED.
+
+Any kind of feedback is welcome.
+
+Fabio Checconi (8):
+  Fix rt_rq->pushable_tasks initialization in init_rt_rq()
+  Fix hrtick handling
+  Replace struct prio_array with an RB tree
+  Remove the balancing logic
+  Use EDF to throttle RT tasks hierarchically
+  Modify the curr/next priority tracking
+  Reprogram timers only when necessary
+  Use hrtick when available
+
+ include/linux/init_task.h |    1 -
+ include/linux/sched.h     |    2 +-
+ kernel/sched.c            |  553 +++++++++++++++++++++++++------------
+ kernel/sched_debug.c      |    4 +-
+ kernel/sched_rt.c         |  672 +++++++++++++++++++++++++++------------------
+ 5 files changed, 781 insertions(+), 451 deletions(-)
