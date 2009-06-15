@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935585AbZFOVbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935565AbZFOVdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935585AbZFOVbq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 17:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934528AbZFOVb1
+	id S935565AbZFOVdn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 17:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758092AbZFOVdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 17:31:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44784 "EHLO mx2.redhat.com"
+	Mon, 15 Jun 2009 17:33:37 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44167 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753537AbZFOVb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 17:31:26 -0400
-Date: Mon, 15 Jun 2009 23:26:51 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roland McGrath <roland@redhat.com>,
-       Stanislaw Gruszka <sgruszka@redhat.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] wait_task_zombie: do not use thread_group_cputime()
-Message-ID: <20090615212651.GA22759@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1757700AbZFOVdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 17:33:36 -0400
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       yinghai@kernel.org
+In-Reply-To: <20090615112355.GB6012@wotan.suse.de>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
+	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
+	 <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>
+	 <1245059859.23207.16.camel@penberg-laptop>
+	 <20090615102737.GA20461@wotan.suse.de> <1245062727.12400.23.camel@pasglop>
+	 <20090615112355.GB6012@wotan.suse.de>
+Content-Type: text/plain
+Date: Tue, 16 Jun 2009 07:31:38 +1000
+Message-Id: <1245101498.12400.37.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no reason for thread_group_cputime() in wait_task_zombie(),
-there must be no other threads.
+On Mon, 2009-06-15 at 13:23 +0200, Nick Piggin wrote:
+> > I think the main problem isn't necessarily init code per se, but the
+> > pile of -common- code that can be called both at init time and
+> later.
+> 
+> Just seems bogus argument. Everwhere else that does this (ie.
+> allocations that are called from multiple allocation contexts)
+> passes correct gfp flags down.
 
-This call was previously needed to collect the per-cpu data which
-we do not have any longer.
+So you say we should create new variants of all these APIs that take gfp
+flags as arguments just because they might be called early during boot :
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+ - All the vmalloc interfaces (__get_vm_area() and it's 5 or 6 variants)
+ - Allocation of PCI host bridges data structures in the powerpc code
+ - Allocation of interrupt controller domains in the powerpc code
+ - Page table allocations (oops ... can't change that arch specific,
+would have to be a generic change)
+ - ioremap (which call both __get_vm_area() and page table allocs)
+ - ...
 
---- PTRACE/kernel/exit.c~2_WAIT_NO_TG	2009-06-15 22:26:02.000000000 +0200
-+++ PTRACE/kernel/exit.c	2009-06-15 23:06:45.000000000 +0200
-@@ -1192,7 +1192,6 @@ static int wait_task_zombie(struct wait_
- 	if (likely(!traced) && likely(!task_detached(p))) {
- 		struct signal_struct *psig;
- 		struct signal_struct *sig;
--		struct task_cputime cputime;
- 
- 		/*
- 		 * The resource counters for the group leader are in its
-@@ -1208,23 +1207,20 @@ static int wait_task_zombie(struct wait_
- 		 * need to protect the access to parent->signal fields,
- 		 * as other threads in the parent group can be right
- 		 * here reaping other children at the same time.
--		 *
--		 * We use thread_group_cputime() to get times for the thread
--		 * group, which consolidates times for all threads in the
--		 * group including the group leader.
- 		 */
--		thread_group_cputime(p, &cputime);
- 		spin_lock_irq(&p->real_parent->sighand->siglock);
- 		psig = p->real_parent->signal;
- 		sig = p->signal;
- 		psig->cutime =
- 			cputime_add(psig->cutime,
--			cputime_add(cputime.utime,
--				    sig->cutime));
-+			cputime_add(p->utime,
-+			cputime_add(sig->utime,
-+				    sig->cutime)));
- 		psig->cstime =
- 			cputime_add(psig->cstime,
--			cputime_add(cputime.stime,
--				    sig->cstime));
-+			cputime_add(p->stime,
-+			cputime_add(sig->stime,
-+				    sig->cstime)));
- 		psig->cgtime =
- 			cputime_add(psig->cgtime,
- 			cputime_add(p->gtime,
+Are you just insane ? :-)
+
+Cheers,
+Ben.
+
 
