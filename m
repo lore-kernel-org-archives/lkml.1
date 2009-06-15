@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZFOJur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbZFOJw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbZFOJur (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 05:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbZFOJuk
+	id S1759250AbZFOJw5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 05:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZFOJwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 05:50:40 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:47755 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753855AbZFOJuj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 05:50:39 -0400
-Date: Mon, 15 Jun 2009 10:50:23 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Alek Du <alek.du@intel.com>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
-	gpio_alt_func features to GPIOLIB
-Message-ID: <20090615095023.GA19873@fluff.org.uk>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615171502.2a981bf5@dxy.sh.intel.com>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 15 Jun 2009 05:52:49 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40763 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750738AbZFOJwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 05:52:49 -0400
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       yinghai@kernel.org
+In-Reply-To: <20090615094148.GC1314@wotan.suse.de>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
+	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
+	 <20090615094148.GC1314@wotan.suse.de>
+Content-Type: text/plain
+Date: Mon, 15 Jun 2009 19:51:16 +1000
+Message-Id: <1245059476.12400.7.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
-> >From 7a76916ccea4a376a260ea67fbc79ac4d958757f Mon Sep 17 00:00:00 2001
-> From: Alek Du <alek.du@intel.com>
-> Date: Fri, 8 May 2009 09:46:49 +0800
-> Subject: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and gpio_alt_func features to GPIOLIB
+On Mon, 2009-06-15 at 11:41 +0200, Nick Piggin wrote:
 > 
-> Add some more functions to GPIOLIB, they are:
-> * gpio_detect is to set GPIO interrupt triggering method (edge, level, high,
->   low, etc.)
-> * gpio_debounce is to set GPIO trigger HW debounce value if GPIO hw supports.
-> * gpio_alt_func is to set pin as alternative function or GPIO.
+> > Btw, you should not need to use GFP_NOWAIT anymore and GFP_KERNEL
+> > should be fine even during early boot.
+> 
+> Is this the agreed way forward? 
 
-gpio_alt_func is feature creep, I don't really belive this is the
-best place to put it as it will be difficult to actually make this
-generic for all gpio platforms.
+Yes.
 
-> +enum gpio_trigger_t {
-> +	DETECT_LEVEL_LOW = -2,
-> +	DETECT_EDGE_FALLING = -1,
-> +	DETECT_DISABLE = 0,
-> +	DETECT_EDGE_RISING = 1,
-> +	DETECT_LEVEL_HIGH = 2,
-> +	DETECT_EDGE_BOTH = 3,
-> +};
+> I would like to maybe continue to
+> try having early allocations pass in special flags where possible
+> (it could even be a GFP_BOOT or something). It can make it easier
+> to perhaps reduce branches in core code in future and things can
+> be flagged in warnings....
 
-wny not reuse the IRQ trigger types?
+The whole point of the exercise in removing the need for alloc_bootmem
+in a whole bunch of code is defeated if you now also want specific flags
+passed. I think we can cope reasonably easily.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+> I just like the idea of keeping such annotations.
 
-  'a smiley only costs 4 bytes'
+I think the boot order is too likely to change to make it a sane thing
+to have all call sites "know" at what point they are in the boot
+process. In your example, what does GFP_BOOT would mean ? Before
+scheduler is initialized ? before interrupts are on ?
+
+There's just too much stuff involved and we don't want random
+allocations in various subsystem or arch code to be done with that
+special knowledge of where specifically in that process they are done.
+Especially since it may change.
+
+Additionally, I believe the flag test/masking can be moved easily enough
+out of the fast path... slub shouldn't need it there afaik and if it's
+pushed down into the allocation of new slab's then it shouldn't be a big
+deal.
+
+Cheers,
+Ben.
+
+
