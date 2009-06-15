@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760957AbZFONXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761189AbZFONX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760957AbZFONXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZFONWx
+	id S1761189AbZFONX4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757153AbZFONXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:22:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57235 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756626AbZFONWw (ORCPT
+	Mon, 15 Jun 2009 09:23:47 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:43952 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755866AbZFONXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:22:52 -0400
-Date: Mon, 15 Jun 2009 15:22:48 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream
-	device
-Message-ID: <20090615132248.GB14555@elf.ucw.cz>
-References: <1245033557-10968-1-git-send-email-swetland@google.com> <1245033557-10968-2-git-send-email-swetland@google.com> <1245033557-10968-3-git-send-email-swetland@google.com> <1245033557-10968-4-git-send-email-swetland@google.com>
-MIME-Version: 1.0
+	Mon, 15 Jun 2009 09:23:47 -0400
+Date: Mon, 15 Jun 2009 15:26:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kallsyms broken on ARM by commit 17b1f0d
+Message-ID: <20090615132603.GA13175@uranus.ravnborg.org>
+References: <1245070063.16986.22.camel@pc1117.cambridge.arm.com> <8bd0f97a0906150551o6de9a29fj64f73d4ccfff7e57@mail.gmail.com> <1245071805.16986.33.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245033557-10968-4-git-send-email-swetland@google.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1245071805.16986.33.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Jun 15, 2009 at 02:16:45PM +0100, Catalin Marinas wrote:
+> On Mon, 2009-06-15 at 08:51 -0400, Mike Frysinger wrote:
+> > On Mon, Jun 15, 2009 at 08:47, Catalin Marinas wrote:
+> > > With the above commit, kallsyms on ARM no longer show correct
+> > > information. 
+> > 
+> > try this patch (Gentoo mail server is broken atm, so attaching)
+> 
+> Thanks. This patch fixed the problem.
 
-> Signed-off-by: Brian Swetland <swetland@google.com>
-> ---
->  arch/arm/mach-msm/Kconfig       |    6 ++
->  arch/arm/mach-msm/Makefile      |    1 +
->  arch/arm/mach-msm/board-dream.c |  113 +++++++++++++++++++++++++++++++++++++++
->  arch/arm/mach-msm/board-dream.h |    5 ++
->  4 files changed, 125 insertions(+), 0 deletions(-)
->  create mode 100644 arch/arm/mach-msm/board-dream.c
->  create mode 100644 arch/arm/mach-msm/board-dream.h
+Quick testing - good.
+I will forward this to Linus tonight.
 
-Thanks for renaming the board-* files...
-
-> diff --git a/arch/arm/mach-msm/Kconfig b/arch/arm/mach-msm/Kconfig
-> index 35f2a90..f780086 100644
-> --- a/arch/arm/mach-msm/Kconfig
-> +++ b/arch/arm/mach-msm/Kconfig
-> @@ -34,4 +34,10 @@ config MACH_HALIBUT
->  	help
->  	  Support for the Qualcomm SURF7201A eval board.
->  
-> +config MACH_TROUT
-> +	default y
-> +	bool "HTC Dream (aka trout)"
-> +	help
-> +	  Support for the HTC Dream, T-Mobile G1, Android ADP1 devices.
-> +
->  endif
-
-...but I guess renaming config option makes sense too..
-
-> +static void __init trout_init_irq(void)
-> +{
-> +	msm_init_irq();
-> +}
-
-...and most occurences of trout, here, too... (I'm not sure if some
-are required for compatibility with existing userland?)
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Sam
