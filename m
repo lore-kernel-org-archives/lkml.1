@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZFOIoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbZFOIpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbZFOIoF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbZFOIny
+	id S1760054AbZFOIpR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZFOIpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:43:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35123 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753766AbZFOInx (ORCPT
+	Mon, 15 Jun 2009 04:45:06 -0400
+Received: from mail-qy0-f173.google.com ([209.85.221.173]:65031 "EHLO
+	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752671AbZFOIpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:43:53 -0400
-Date: Mon, 15 Jun 2009 09:44:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Wolfram Sang <w.sang@pengutronix.de>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       devicetree-discuss@ozlabs.org, Magnus Damm <magnus.damm@gmail.com>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
-Message-ID: <20090615094449.04b029f0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090614234546.GJ3639@local>
-References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de>
-	<1244765062-14144-3-git-send-email-w.sang@pengutronix.de>
-	<20090614122136.GD3639@local>
-	<20090615001207.1829e7b5@lxorguk.ukuu.org.uk>
-	<20090614234546.GJ3639@local>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Jun 2009 04:45:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kN59rFDF+Ud4LcgrUh+NQ4UlOvFMBCKbIlR+TNhPD56ezdmh9PxQOb85VuweCso6H+
+         g9CXgRclT8uS/b7qUMgBdGzjZK5eUsy2hdoVzJvt2sHmk2A7b7Kt6LYRBmC8ENZeoUv9
+         gmElMHTEUnVUwr9QARaj74aNkXSAjDeeG8MV8=
+MIME-Version: 1.0
+In-Reply-To: <412e6f7f0906150107h33b271eam7e610d166967ba70@mail.gmail.com>
+References: <412e6f7f0906131829y6e0abb00j85e221f92ab439d2@mail.gmail.com>
+	 <20090615071125.GF3544@cr0.nay.redhat.com>
+	 <412e6f7f0906150107h33b271eam7e610d166967ba70@mail.gmail.com>
+Date: Mon, 15 Jun 2009 16:45:05 +0800
+Message-ID: <2375c9f90906150145u1b8e8a1dve794ecbcebb0c548@mail.gmail.com>
+Subject: Re: memconsole: a virtual console to record the Oops message for 
+	debugging purpose.
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Changli Gao <xiaosuo@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I did it that way because I saw IRQ 0 in /proc/interrupts on every PC...
-> 
-> > 
-> > It is the job of the platform to map a physical IRQ 0 to some other
-> > representation if it exists outside of arch specific code.
-> 
-> Funny.
-> 
-> > This was
-> > decided some years ago and a large part of the kernel simply doesn't
-> > support any notion of a real IRQ 0.
-> 
-> Can you tell me the reason for that decision or point me to some ml archive?
+2009/6/15 Changli Gao <xiaosuo@gmail.com>:
+> On Mon, Jun 15, 2009 at 3:11 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+>> On Sun, Jun 14, 2009 at 09:29:48AM +0800, Changli Gao wrote:
+>>>
+>>>the following code is appended to the file mm/bootmem.c
+>>
+>>
+>> Why not a patch?
+>>
+>> Your code is a kernel module, why do you append it into
+>> a non-module source file?
+>>
+> bootmem can't be allocated in modules. :(
 
-The natural C way to write "No xxx" is if (!xxx) hence
+Ok, then explain your code below:
 
-	if (!dev->irq) {
-		polling_start();
-		return 0;
-	}
+module_init(init);
+...
+module_exit(fini);
 
-The PC "IRQ 0" is the timer - which only appears in the arch code.
-
-Alan
+MODULE_AUTHOR("xiaosuo <xiaosuo@gmail.com>");
+MODULE_LICENSE("GPL");
