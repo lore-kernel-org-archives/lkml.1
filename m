@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbZFOG6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbZFOHBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbZFOG6R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 02:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZFOG6D
+	id S1752658AbZFOHBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZFOHBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 02:58:03 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:2935 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbZFOG6C (ORCPT
+	Mon, 15 Jun 2009 03:01:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46312 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbZFOHBA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 02:58:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oM2BFLJwllK1H5EahpGtkoieFg1ayAVpZs8NuxtoD5xu4isWMrxIb4L3vNNBpPUb/k
-         XEfPPN2IEq1xFzVRcbbjLv0pRWO9oh7uoecZhkjT/tv2r77Yh2fcqCrcL51ccrCOCgD+
-         PPUulDtGWnnULHVvaGodE+qASjNuj22NFpkS4=
-Date: Mon, 15 Jun 2009 15:00:18 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Tao Ma <tao.ma@oracle.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
-Message-ID: <20090615070018.GD3544@cr0.nay.redhat.com>
-References: <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com> <4A2CC52B.9010602@oracle.com> <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com> <m1ab4i11zx.fsf@fess.ebiederm.org> <20090611050929.GA2706@cr0.nay.redhat.com> <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0> <m17hzg7oil.fsf@fess.ebiederm.org> <20090615021457.GA3388@cr0.nay.redhat.com> <4A35E32C.30609@oracle.com>
-MIME-Version: 1.0
+	Mon, 15 Jun 2009 03:01:00 -0400
+Date: Mon, 15 Jun 2009 09:09:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
+Message-ID: <20090615070914.GC31969@one.firstfloor.org>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A35E32C.30609@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090615064447.GA18390@wotan.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 01:59:08PM +0800, Tao Ma wrote:
-> Hi Amerigo,
-> 	Just patched my kernel and tested.
-> 	The bad news is that although the number is changed, but it isn't right  
-> either.
+On Mon, Jun 15, 2009 at 08:44:47AM +0200, Nick Piggin wrote:
+> > 
+> > So IMHO it's OK for .31 as long as we agree on the user interfaces,
+> > ie. /proc/sys/vm/memory_failure_early_kill and the hwpoison uevent.
+> > 
+> > It comes a long way through numerous reviews, and I believe all the
+> > important issues and concerns have been addressed. Nick, Rik, Hugh,
+> > Ingo, ... what are your opinions? Is the uevent good enough to meet
+> > your request to "die hard" or "die gracefully" or whatever on memory
+> > failure events?
+> 
+> Uevent? As in, send a message to userspace? I don't think this
+> would be ideal for a fail-stop/failover situation.
 
-Thanks for testing.
+Agreed.
 
-What do you mean by saying it isn't right? You think it is wrong only because
-it is more than phy mem size?
+For failover you typically want a application level heartbeat anyways
+to guard against user space software problems and if there's a kill then it
+would catch it. Also again in you want to check against all corruptions you
+have to do it in the low level handler or better watch corrected
+events too to predict failures (but the later is quite hard to do generally). 
+To some extent the first is already implemented on x86, e.g. set
+the tolerance level to 0 will give more aggressive panics.
 
-Again, the document of /proc/kcore is wrong, it _can_ be more than phy mem size.
+> I can't see a good reason to rush to merge it.
 
-Regards.
+The low level x86 code for MCA recovery is in, just this high level
+part is missing to kill the correct process. I think it would be good to merge 
+a core now.  The basic code seems to be also as well tested as we can do it 
+right now and exposing it to more users would be good. It's undoubtedly not 
+perfect yet, but that's not a requirement for merge.
+
+There's a lot of fancy stuff that could be done in addition,
+but that's not really needed right now and for a lot of the fancy
+ideas (I have enough on my own :) it's dubious they are actually
+worth it.
+
+> IMO the userspace-visible changes have maybe not been considered
+> too thoroughly, which is what I'd be most worried about. I probably
+> missed seeing documentation of exact semantics and situations
+> where admins should tune things one way or the other.
+
+There's only a single tunable anyways, early kill vs late kill.
+
+For KVM you need early kill, for the others it remains to be seen.
+
+> I hope it is going to be merged with an easy-to-use fault injector,
+> because that is the only way Joe kernel developer is ever going to
+> test it.
+
+See patches 13 and 14. In addition there's another low level x86
+injector too.
+
+There's also a test suite available (mce-test on kernel.org git)
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
