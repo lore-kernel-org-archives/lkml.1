@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbZFODQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbZFODRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755758AbZFODQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 23:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbZFODO5
+	id S1755851AbZFODRS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 23:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZFODO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 23:14:57 -0400
+	Sun, 14 Jun 2009 23:14:58 -0400
 Received: from mga03.intel.com ([143.182.124.21]:4375 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752950AbZFODOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 23:14:51 -0400
+	id S1753197AbZFODOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 23:14:52 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
-   d="scan'208";a="154267307"
-Message-Id: <20090615024520.786814520@intel.com>
+   d="scan'208";a="154267321"
+Message-Id: <20090615031254.168416512@intel.com>
+References: <20090615024520.786814520@intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 15 Jun 2009 10:45:20 +0800
+Date: Mon, 15 Jun 2009 10:45:33 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
 cc: Ingo Molnar <mingo@elte.hu>
 cc: Mel Gorman <mel@csn.ul.ie>
 cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
@@ -27,124 +28,104 @@ cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 00/22] HWPOISON: Intro (v5)
+Subject: [PATCH 13/22] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
+Content-Disposition: inline; filename=mf-inject-madvise
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+From: Andi Kleen <ak@linux.intel.com>
 
-Comments are warmly welcome on the newly introduced uevent code :)
+Impact: optional, useful for debugging
 
-I hope we can reach consensus in this round and then be able to post
-a final version for .31 inclusion.
+Add a new madvice sub command to inject poison for some
+pages in a process' address space.  This is useful for
+testing the poison page handling.
 
-changes since v4:
-- new feature: uevent report (and collect various states for that)
-- early kill cleanups
-- remove unnecessary code in __do_fault()
-- fix compile error when feature not enabled
-- fix kernel oops when invalid pfn is feed to corrupt-pfn
-- make tasklist_lock/anon_vma locking order straight
-- use the safer invalidate page for possible metadata pages
+Open issues:
 
-Patches from previous versions plus some discussed fixes:
- [PATCH 01/22] HWPOISON: Add page flag for poisoned pages
- [PATCH 02/22] HWPOISON: Export some rmap vma locking to outside world
- [PATCH 03/22] HWPOISON: Add support for poison swap entries v2
- [PATCH 04/22] HWPOISON: Add new SIGBUS error codes for hardware poison signals
- [PATCH 05/22] HWPOISON: Add basic support for poisoned pages in fault handler v3
- [PATCH 06/22] HWPOISON: x86: Add VM_FAULT_HWPOISON handling to x86 page fault handler v2
- [PATCH 07/22] HWPOISON: define VM_FAULT_HWPOISON to 0 when feature is disabled
- [PATCH 08/22] HWPOISON: Use bitmask/action code for try_to_unmap behaviour
- [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in try_to_unmap
- [PATCH 10/22] HWPOISON: check and isolate corrupted free pages v2
- [PATCH 11/22] HWPOISON: Refactor truncate to allow direct truncating of page v3
- [PATCH 12/22] HWPOISON: The high level memory error handler in the VM v7
- [PATCH 13/22] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
- [PATCH 14/22] HWPOISON: Add simple debugfs interface to inject hwpoison on arbitary PFNs
+- This patch allows root to tie up arbitary amounts of memory.
+Should this be disabled inside containers?
+- There's a small race window between getting the page and injecting.
+The patch drops the ref count because otherwise memory_failure
+complains about dangling references. In theory with a multi threaded
+injector one could inject poison for a process foreign page this way.
+Not a serious issue right now.
 
-New additions that need reviews:
- [PATCH 15/22] HWPOISON: early kill cleanups and fixes
- [PATCH 16/22] mm: move page flag numbers for user space to page-flags.h
- [PATCH 17/22] HWPOISON: introduce struct hwpoison_control
- [PATCH 18/22] HWPOISON: use compound head page
- [PATCH 19/22] HWPOISON: detect free buddy pages explicitly
- [PATCH 20/22] HWPOISON: collect infos that reflect the impact of the memory corruption
- [PATCH 21/22] HWPOISON: send uevent to report memory corruption
- [PATCH 22/22] HWPOISON: FOR TESTING: Enable memory failure code unconditionally
+v2: Use write flag for get_user_pages to make sure to always get
+a fresh page
+v3: Don't request write mapping (Fengguang Wu)
+
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
-Upcoming Intel CPUs have support for recovering from some memory errors
-(``MCA recovery''). This requires the OS to declare a page "poisoned",
-kill the processes associated with it and avoid using it in the future.
+ include/asm-generic/mman-common.h |    1 
+ mm/madvise.c                      |   36 ++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
 
-This patchkit implements the necessary infrastructure in the VM.
+--- sound-2.6.orig/mm/madvise.c
++++ sound-2.6/mm/madvise.c
+@@ -207,6 +207,38 @@ static long madvise_remove(struct vm_are
+ 	return error;
+ }
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++/*
++ * Error injection support for memory error handling.
++ */
++static int madvise_hwpoison(unsigned long start, unsigned long end)
++{
++	/*
++	 * RED-PEN
++	 * This allows to tie up arbitary amounts of memory.
++	 * Might be a good idea to disable it inside containers even for root.
++	 */
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	for (; start < end; start += PAGE_SIZE) {
++		struct page *p;
++		int ret = get_user_pages(current, current->mm, start, 1,
++						0, 0, &p, NULL);
++		if (ret != 1)
++			return ret;
++		put_page(p);
++		/*
++		 * RED-PEN page can be reused in a short window, but otherwise
++		 * we'll have to fight with the reference count.
++		 */
++		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
++		       page_to_pfn(p), start);
++		memory_failure(page_to_pfn(p), 0);
++	}
++	return 0;
++}
++#endif
++
+ static long
+ madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
+ 		unsigned long start, unsigned long end, int behavior)
+@@ -307,6 +339,10 @@ SYSCALL_DEFINE3(madvise, unsigned long, 
+ 	int write;
+ 	size_t len;
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++	if (behavior == MADV_HWPOISON)
++		return madvise_hwpoison(start, start+len_in);
++#endif
+ 	if (!madvise_behavior_valid(behavior))
+ 		return error;
+ 
+--- sound-2.6.orig/include/asm-generic/mman-common.h
++++ sound-2.6/include/asm-generic/mman-common.h
+@@ -34,6 +34,7 @@
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
++#define MADV_HWPOISON	12		/* poison a page for testing */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
 
-To quote the overview comment:
-
- * High level machine check handler. Handles pages reported by the
- * hardware as being corrupted usually due to a 2bit ECC memory or cache
- * failure.
- *
- * This focusses on pages detected as corrupted in the background.
- * When the current CPU tries to consume corruption the currently
- * running process can just be killed directly instead. This implies
- * that if the error cannot be handled for some reason it's safe to
- * just ignore it because no corruption has been consumed yet. Instead
- * when that happens another machine check will happen.
- *
- * Handles page cache pages in various states. The tricky part
- * here is that we can access any page asynchronous to other VM
- * users, because memory failures could happen anytime and anywhere,
- * possibly violating some of their assumptions. This is why this code
- * has to be extremely careful. Generally it tries to use normal locking
- * rules, as in get the standard locks, even if that means the
- * error handling takes potentially a long time.
- *
- * Some of the operations here are somewhat inefficient and have non
- * linear algorithmic complexity, because the data structures have not
- * been optimized for this case. This is in particular the case
- * for the mapping from a vma to a process. Since this case is expected
- * to be rare we hope we can get away with this.
-
-The code consists of a the high level handler in mm/memory-failure.c,
-a new page poison bit and various checks in the VM to handle poisoned
-pages.
-
-The main target right now is KVM guests, but it works for all kinds
-of applications.
-
-For the KVM use there was need for a new signal type so that
-KVM can inject the machine check into the guest with the proper
-address. This in theory allows other applications to handle
-memory failures too. The expection is that near all applications
-won't do that, but some very specialized ones might.
-
-This is not fully complete yet, in particular there are still ways
-to access poison through various ways (crash dump, /proc/kcore etc.)
-that need to be plugged too.
-Also undoubtedly the high level handler still has bugs and cases
-it cannot recover from. For example nonlinear mappings deadlock right now
-and a few other cases lose references. Huge pages are not supported
-yet. Any additional testing, reviewing etc. welcome.
-
-The patch series requires the earlier x86 MCE feature series for the x86
-specific action optional part. The code can be tested without the x86 specific
-part using the injector, this only requires to enable the Kconfig entry
-manually in some Kconfig file (by default it is implicitely enabled
-by the architecture)
-
-v2: Lots of smaller changes in the series based on review feedback.
-Rename Poison to HWPoison after akpm's request.
-A new pfn based injector based on feedback.
-A lot of improvements mostly from Fengguang Wu
-See comments in the individual patches.
-v3: Various updates, see changelogs in individual patches.
-v4: Various updates, see changelogs in individual patches.
-v5: add uevent notification and some cleanups/fixes.
-
-Thanks,
-Fengguang
 -- 
 
