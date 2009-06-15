@@ -1,126 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbZFOAFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbZFOAGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760704AbZFOAFN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 20:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZFOAFD
+	id S1752553AbZFOAGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 20:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZFOAGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 20:05:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53532 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751629AbZFOAFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 20:05:01 -0400
-Message-ID: <4A35903A.3090508@redhat.com>
-Date: Mon, 15 Jun 2009 03:05:14 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sun, 14 Jun 2009 20:06:01 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:56945 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751749AbZFOAGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 20:06:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OxcaI676n77d8bHa3b3ESNx2VnSnswWjJ3twpnvZDZbFLWzDs8/H7focLjwj4Zsj/s
+         e0BJ0aV259M3ZRQhBa5kSuoSKWojJajPDVeXXwOxVbaH+xFi+gxmVNN2paS/U7QvuHGb
+         9Sa6htrdb7B1gSstXawlwokVZQCakkgeHSShE=
+Date: Mon, 15 Jun 2009 02:05:58 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 3/3] ring-buffer: add design document
+Message-ID: <20090615000557.GB7918@nowhere>
+References: <20090610195311.767699959@goodmis.org> <20090610195525.429316815@goodmis.org> <20090613015410.GB5234@nowhere> <alpine.DEB.2.00.0906122203100.16299@gandalf.stny.rr.com> <20090613223636.GB5986@nowhere> <alpine.DEB.2.00.0906140837370.16299@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] ksm: write protect pages from inside ksm
-References: <1244843100-4128-1-git-send-email-ieidus@redhat.com> <Pine.LNX.4.64.0906142217270.6369@sister.anvils> <4A3576C3.2040500@redhat.com> <4A358DA7.2080305@redhat.com>
-In-Reply-To: <4A358DA7.2080305@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906140837370.16299@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Izik Eidus wrote:
-> Izik Eidus wrote:
->> Hugh Dickins wrote:
->>> On Sat, 13 Jun 2009, Izik Eidus wrote:
->>>  
->>>> Hugh, so untill here we are sync,
->>>>     
->>>
->>> Yes, that fits with what I have here, thanks (or where it didn't
->>> quite fit, e.g. ' versus `, I've adjusted to what you have!).  And
->>> thanks for fixing my *orig_pte = *ptep bug, you did point that out
->>> before, but I misunderstood at first.
->>>
->>>  
->>>> Question is what you want me to do now?,
->>>> (Beacuse we are skipping 2.6.31, It is ok to you to tell me something
->>>>  like: "Shut up and let me see what i can get with this madvise" -
->>>>  that from one side.
->>>>  From another side if you want me to do anything please say.
->>>>     
->>>
->>> I had to get a bit further at my end before answering on that,
->>> but now the answer is clear: please do some testing of your RFC
->>> madvise() version (which is what I'm just tidying up a little),
->>> and let me know any bugfixes you find.  Try with SLAB or SLUB or
->>> SLQB debug on e.g. CONFIG_SLUB=y, CONFIG_SLUB_DEBUG=y and boot
->>> option "slub_debug".
->>>   
->>
->> Sure, let me check it.
->> (You do have Andrea patch that fix the "used after free slab entries" ?)
->
-> How fast is it crush opps to you?, I compiled it and ran it here on 
-> 2.6.30-rc4-mm1 with:
-> "Enable SLQB debugging support" and "SLQB debugging on by default, and 
-> it run and merge (i am using qemu processes to run virtual machines to 
-> merge the pages between them)
->
-> ("SLQB debugging on by defaul" mean i dont have to add boot pareameter 
-> right?)
->
-> Maybe i should try update into newer version of the mm tree? (last 
-> commit here is Jul 22)
+On Sun, Jun 14, 2009 at 08:39:03AM -0400, Steven Rostedt wrote:
+> 
+> On Sun, 14 Jun 2009, Frederic Weisbecker wrote:
+> > > > > +
+> > > > > +Now the writer can update the head page. This is also why the head page must
+> > > > > +remain in UPDATE and only reset by the outer most writer. This prevents
+> > > > > +the reader from seeing the incorrect head page.
+> > > > > +
+> > > > > +
+> > > > > +(first writer)
+> > > > > +
+> > > > > +               A        B    tail page
+> > > > > +               |        |        |
+> > > > > +               v        v        v
+> > > > > +    +---+    +---+    +---+    +---+
+> > > > > +<---|   |--->|   |--->|   |--->|   |-H->
+> > > > > +--->|   |<---|   |<---|   |<---|   |<---
+> > > > > +    +---+    +---+    +---+    +---+
+> > > > 
+> > > > 
+> > > > Even more tricky!
+> > > > 
+> > > > I just have a stupid question: why can't this be done
+> > > > only through HEAD and NORMAL flags?
+> > > > 
+> > > > There is something certainly very obvious that I'm missing
+> > > > with the point of the UPDATE flag.
+> > > 
+> > > If you can demonstrate how to do the above lockless with just HEAD and 
+> > > NORMAL, then sure, I'm all ears ;-)
+> > > 
+> > > When we switch the HEAD to UPDATE, we stop the reader from moving forward 
+> > > and being another thing to handle while we move the HEAD forward. A reader 
+> > > does a cmpxchg to move the head too, and that cmpxchg will always fail if 
+> > > the pointer is has UPDATE set. The reader will just spin until it 
+> > > succeeds.
+> > 
+> > 
+> > Aah, so it's here to protect against paralell readers from another cpu
+> > reading the current cpu buffer, right?
+> 
+> Not readers, but reader. The reader side uses locks to serialize the
+> accesses. The writer side is lockless.  But it is here to protect the 
+> writers against a reader on another CPU.
+> 
+> -- Steve
 
-OK, bug on my side, just got that oppss, will try to fix and send patch.
 
-(Sorry for the noise)
+Ok, my problem is that I've read this doc having in mind that the reader
+we are talking about is always reading the buffer on the current cpu,
+then a writer always preempt it. I forgot that a reader may also read
+from another cpu.
 
->
->>
->>> I'm finding, whether with your RFC or my tidyup, that kksmd
->>> soon oopses in get_next_mmlist (or perhaps find_vma): presumably
->>> accessing a vma or mm which already got freed (if you don't have
->>> slab debugging on, it's liable to hang instead).
->>>
->>> (I've also not seen it actually merging yet: if you register
->>> or madvise a large anon area and memset it, the /dev/ksm version
->>> would merge all its pages, but I've not seen the madvise version
->>> do so yet - though maybe there's something stupidly wrong in my
->>> testing, really I'm more worried about the oopses at present.)
->>>
->>> Note that mmotm includes a patch of Nick's which adds a function
->>> madvise_behavior_valid() - you'll need to add your MADVs into its
->>> list to get it to work at all there.
->>>
->>> Here's a patch I added a month or so ago, when trying to experiment
->>> with KSM on all mms: shouldn't be necessary if your mm refcounting
->>> is right, but might help to avoid extra weirdness when things go
->>> wrong: exit_mmap() leaves stale vma pointers around, reckoning
->>> that nobody can be interested by now; but maybe KSM might peep
->>> so better to tidy them up at least while debugging...
->>>
->>> Thanks,
->>> Hugh
->>>
->>> --- old/mm/mmap.c    2009-05-01 13:47:45.000000000 +0100
->>> +++ new/mm/mmap.c    2009-05-03 11:34:47.000000000 +0100
->>> @@ -2112,6 +2112,14 @@ void exit_mmap(struct mm_struct *mm)
->>>      tlb_finish_mmu(tlb, 0, end);
->>>  
->>>      /*
->>> +     * Make sure get_user_pages() and find_vma() etc. will find 
->>> nothing:
->>> +     * this may be necessary for KSM.
->>> +     */
->>> +    mm->mmap = NULL;
->>> +    mm->mmap_cache = NULL;
->>> +    mm->mm_rb = RB_ROOT;
->>> +
->>> +    /*
->>>       * Walk the list again, actually closing and freeing it,
->>>       * with preemption enabled, without holding any MM locks.
->>>       */
->>>   
->>
->>
->
->
+Now I understand.
+
+Thanks.
 
