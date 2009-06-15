@@ -1,91 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbZFOEfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZFOEhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752721AbZFOEfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 00:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbZFOEe7
+	id S1754900AbZFOEhp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 00:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbZFOEhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 00:34:59 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:50573 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbZFOEe7 (ORCPT
+	Mon, 15 Jun 2009 00:37:37 -0400
+Received: from mga05.intel.com ([192.55.52.89]:65101 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751078AbZFOEhg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 00:34:59 -0400
-Date: Mon, 15 Jun 2009 06:37:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Subject: Re: [kbuild-devel] scripts/kallsyms: extending region checking for Blackfin memory regions
-Message-ID: <20090615043716.GA9900@uranus.ravnborg.org>
-References: <8bd0f97a0906081623h4dc26492kd70c2e07091730d@mail.gmail.com> <20090614204437.GC3187@uranus.ravnborg.org> <200906142159.42280.rgetz@blackfin.uclinux.org> <8bd0f97a0906141905m54958c02l3cae598d0136980b@mail.gmail.com>
+	Mon, 15 Jun 2009 00:37:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
+   d="scan'208";a="699332829"
+Subject: Re: [PATCH V4: 3/3] pci: Provide Multiple Error Received support
+	on AER
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1245038460.19708.125.camel@grinch>
+References: <1244776118.2560.321.camel@ymzhang>
+	 <1244844988.19708.115.camel@grinch>  <1245030458.2560.343.camel@ymzhang>
+	 <1245038460.19708.125.camel@grinch>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 15 Jun 2009 12:37:41 +0800
+Message-Id: <1245040661.2560.347.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0906141905m54958c02l3cae598d0136980b@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 10:05:26PM -0400, Mike Frysinger wrote:
-> On Sun, Jun 14, 2009 at 21:59, Robin Getz wrote:
-> > On Sun 14 Jun 2009 16:44, Sam Ravnborg pondered:
-> >> On Mon, Jun 08, 2009 at 07:23:16PM -0400, Mike Frysinger wrote:
-> >> > intro: the current Blackfin memory architecture is (1) no virtualized
-> >> > memory and (2) distinctly harvard. �that means we cannot create a
-> >> > linear map of start/end text sections. �we end up with distinct
-> >> > regions like so:
-> >> > 00001000 T __stext
-> >> > 000dc4c0 T __etext
-> >> > feb00000 A __etext_l2
-> >> > feb00010 A __stext_l2
-> >> > ffa00000 T __stext_l1
-> >> > ffa0160c T __etext_l1
-> >> > this is because external memory starts at address 0 while on-chip
-> >> > regions have different discontiguous hardcoded addresses (L1
-> >> > instruction in this case starts at 0xffa00000 while L2 starts at
-> >> > 0xfeb00000).
-> >> >
-> >> > the current kallsyms is written to search for the special stext/etext
-> >> > symbols only which means the resulting kallsyms output knows nothing
-> >> > of the Blackfin symbols living in these on-chip regions. �we've
-> >> > written two patches to fix this: the first one is straight forward and
-> >> > simply copies & pastes the existing hardcoded regions. �the second
-> >> > creates an array of text regions which makes it much easier to extend
-> >> > in the future for other people (and can be squashed into the first
-> >> > one).
-> >> >
-> >> > doesnt matter to me which method is picked :)
-> >>
-> >> I added both as I liked the generalization.
-> >> I had to rearrange the "Signed-off-by" in the first patch
-> >> as this patch came in vai you and not Robin.
-> >
-> > I think Mike pulled this from some work I did awhile ago, (and sent to you)
-> > that obviously never got added (since I didn't send it in the proper patch
-> > format).
-> >
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0607.1/0558.html
+On Mon, 2009-06-15 at 04:01 +0000, Andrew Patterson wrote:
+> On Mon, 2009-06-15 at 09:47 +0800, Zhang, Yanmin wrote:
+> > On Fri, 2009-06-12 at 22:16 +0000, Andrew Patterson wrote:
+> > > On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
+> > > > ﻿﻿﻿﻿﻿When a root port receive the same errors more than once before kernel
+> > > >  process them, the Multiple Error Messages Received flags are set by
+> > > > hardware. Because root port could only save one kind of correctable
+> > > > error source id and another uncorrectable error source id at the same
+> > > > time, so the second message sender id is lost if the 2 messages are
+> > > > sent from 2 different devices. Below patch searches all devices under
+> > > > the root port when multiple messages are received.
+> > > > 
+> > > > ﻿﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> > > > 
+> > > > +	for (i = 0; i < e_info->error_dev_num; i ++) {
+> > > checkpatch reports:
+> > > ERROR: space prohibited before that '++' (ctx:WxB)
+> > > #154: FILE: drivers/pci/pcie/aer/aerdrv_core.c:751:
+> > > +	for (i = 0; i < e_info->error_dev_num; i +
+> > I will change it.
+> > 
+> > > 
+> > > 
+> > > > +		if (e_info->dev[i] == NULL)
+> > > again		  if (!e_info->dev[i])
+> > Will do.
+> > 
+> > > 
+> > > You could also put this check in the for loop.
+> > I planed to, but one guy helped me test it within a guest OS on XEN and
+> > reported a weired oops of guest OS. She said useing ﻿e_info->error_dev_num
+> > could avoid the oops.
 > 
-> yeah, the first patch was by Robin ... the "From:" line in the patch
-> should have shown that (and git-am would have respected) ...
+> I think something like:
+> 
+>   for (i = 0; i < e_info->error_dev_num && e_info->dev[i]; i++)
+> 
+> is functionally equivalent.
+I changed it.
 
-So does the patch.
-What I had to change was that the Signed-off-by: lines indicated
-that this patch came in like this:
+> 
+> > 
+> > > 
+> > > 
+> > > > +			break;
+> > > > +
+> > > > +		if (get_device_error_info(e_info->dev[i], e_info) ==
+> > > > +				AER_SUCCESS) {
+> > > > +			aer_print_error(e_info->dev[i], e_info);
+> > > > +			handle_error_source(p_device,
+> > > > +					e_info->dev[i],
+> > > > +					e_info);
+> > > > +		}
+> > > > +	}
+> > > > +}
+> > > > +
+> > > >  /**
+> > > >   * aer_isr_one_error - consume an error detected by root port
+> > > >   * @p_device: pointer to error root port service device
+> > > > @@ -747,18 +804,7 @@ static void aer_isr_one_error(struct pci
+> > > >  			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
+> > > >  
+> > > >  		find_source_device(p_device->port, e_info);
+> > > > -		if (e_info->dev == NULL) {
+> > > > -			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+> > > > -				__func__, e_info->id);
+> > > > -			continue;
+> > > > -		}
+> > > > -		if (get_device_error_info(e_info->dev, e_info) ==
+> > > > -				AER_SUCCESS) {
+> > > > -			aer_print_error(e_info->dev, e_info);
+> > > > -			handle_error_source(p_device,
+> > > > -				e_info->dev,
+> > > > -				e_info);
+> > > > -		}
+> > > > +		aer_process_err_devices(p_device, e_info);
+> > > >  	}
+> > > >  
+> > > >  	kfree(e_info);
+> > > > diff -Nraup linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h
+> > > > --- linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
+> > > > +++ linux-2.6_next_aermultierror/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:45:15.000000000 +0800
+> > > > @@ -57,8 +57,10 @@ struct header_log_regs {
+> > > >  	unsigned int dw3;
+> > > >  };
+> > > >  
+> > > > +#define AER_MAX_MULTI_ERR_DEVICES	5
+> > > Is this number arbitrary or in the spec somewhere?
+> > It's arbitrary and not spec. 
+> 
+> I suspected so.
+> 
+> > The startpoint is it's very rare that there are more
+> > than 5 devices under the same root port reporting errors at the same time. 
+> 
+> Agreed.
+> 
+> > It's hard
+> > to say number 5 is the best. I just don't want the array is big.
+> 
+> I don't have a problem with that decision. But you might add a comment
+> saying so, e.g.,
+> 
+> #define AER_MAX_MULTI_ERR_DEVICES	5    /* Not likely to have more */
+Added.
 
-Robin -> Mike -> Bryan Wu -> Sam
-So I rearranged the signed-off-by: lines so it indicated
-the following order:
+Thanks Andrew.
 
-Robin -> Bryan Wu -> Mike -> Sam
-
-
-I trust that Bryan really did add his sob, and it
-was only a mistake that Mike added his sob before
-that of Bryans.
-
-	Sam
