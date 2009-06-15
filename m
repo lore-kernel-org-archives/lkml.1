@@ -1,177 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbZFOOUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZFOOWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753655AbZFOOUQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 10:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbZFOOUF
+	id S1754303AbZFOOWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 10:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZFOOWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 10:20:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39341 "EHLO mx3.mail.elte.hu"
+	Mon, 15 Jun 2009 10:22:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47399 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752401AbZFOOUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 10:20:01 -0400
-Date: Mon, 15 Jun 2009 16:19:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paulus Mackerras <paulus@samba.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: perfcounters: lockdep warning
-Message-ID: <20090615141956.GB29435@elte.hu>
-References: <1244921989.12341.487.camel@odie.local> <1245052475.6800.35.camel@laptop> <1245068061.5781.31.camel@odie.local>
+	id S1751636AbZFOOWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 10:22:14 -0400
+Date: Mon, 15 Jun 2009 14:21:43 GMT
+From: tip-bot for Paul Mackerras <paulus@samba.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       vapier.adi@gmail.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, vapier.adi@gmail.com, mingo@elte.hu
+In-Reply-To: <18998.13388.920691.523227@cargo.ozlabs.ibm.com>
+References: <18998.13388.920691.523227@cargo.ozlabs.ibm.com>
+Subject: [tip:perfcounters/core] perf_counter: Make set_perf_counter_pending() declaration common
+Message-ID: <tip-9974458e2f9a11dbd2f4bd14fab5a79af4907b41@git.kernel.org>
+Git-Commit-ID: 9974458e2f9a11dbd2f4bd14fab5a79af4907b41
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1245068061.5781.31.camel@odie.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 15 Jun 2009 14:21:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  9974458e2f9a11dbd2f4bd14fab5a79af4907b41
+Gitweb:     http://git.kernel.org/tip/9974458e2f9a11dbd2f4bd14fab5a79af4907b41
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Mon, 15 Jun 2009 21:45:16 +1000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 15 Jun 2009 16:12:26 +0200
 
-* Simon Holm Thøgersen <odie@cs.aau.dk> wrote:
+perf_counter: Make set_perf_counter_pending() declaration common
 
-> man, 15 06 2009 kl. 09:54 +0200, skrev Peter Zijlstra:
-> > On Sat, 2009-06-13 at 21:39 +0200, Simon Holm Thøgersen wrote:
-> > > Just tried kicking the tires of performance counters and perf and got
-> > > the following warning that doesn't look like have been reported already.
-> > > 
-> > > [ 7765.594591] [ INFO: possible circular locking dependency detected ]
-> > > [ 7765.594602] 2.6.30debug-03217-gf3ad116 #47
-> > > [ 7765.594609] -------------------------------------------------------
-> > > [ 7765.594619] perf/14176 is trying to acquire lock:
-> > > [ 7765.594628]  (&ctx->mutex){+.+.+.}, at: [<c016f366>] perf_counter_for_each_sibling+0x50/0x7e
-> > > [ 7765.594660] 
-> > > [ 7765.594663] but task is already holding lock:
-> > > [ 7765.594672]  (&counter->child_mutex){+.+...}, at: [<c0172180>] perf_ioctl+0x184/0x1de
-> > > [ 7765.594696] 
-> > > [ 7765.594699] which lock already depends on the new lock.
-> > > [ 7765.594703] 
-> > > [ 7765.594711] 
-> > > [ 7765.594714] the existing dependency chain (in reverse order) is:
-> > > [ 7765.594723] 
-> > > [ 7765.594726] -> #1 (&counter->child_mutex){+.+...}:
-> > > [ 7765.594744]        [<c0146f79>] __lock_acquire+0x9a5/0xb11
-> > > [ 7765.594765]        [<c014719e>] lock_acquire+0xb9/0xdb
-> > > [ 7765.594779]        [<c0340664>] __mutex_lock_common+0x42/0x3c8
-> > > [ 7765.594798]        [<c0340a82>] mutex_lock_nested+0x2e/0x36
-> > > [ 7765.594814]        [<c016f8ad>] inherit_counter+0xdb/0x112
-> > > [ 7765.594830]        [<c01705bd>] perf_counter_init_task+0x15b/0x23f
-> > > [ 7765.594847]        [<c0124338>] copy_process+0x4fb/0xfc8
-> > > [ 7765.594865]        [<c0124f1c>] do_fork+0x117/0x2b4
-> > > [ 7765.594881]        [<c0101f4f>] sys_clone+0x29/0x30
-> > > [ 7765.594897]        [<c01032e8>] sysenter_do_call+0x12/0x3c
-> > > [ 7765.594913]        [<ffffffff>] 0xffffffff
-> > > [ 7765.594967] 
-> > > [ 7765.594970] -> #0 (&ctx->mutex){+.+.+.}:
-> > > [ 7765.594987]        [<c0146e8c>] __lock_acquire+0x8b8/0xb11
-> > > [ 7765.595004]        [<c014719e>] lock_acquire+0xb9/0xdb
-> > > [ 7765.595018]        [<c0340664>] __mutex_lock_common+0x42/0x3c8
-> > > [ 7765.595035]        [<c0340a82>] mutex_lock_nested+0x2e/0x36
-> > > [ 7765.595050]        [<c016f366>] perf_counter_for_each_sibling+0x50/0x7e
-> > > [ 7765.595067]        [<c0172189>] perf_ioctl+0x18d/0x1de
-> > > [ 7765.595083]        [<c019fa6e>] vfs_ioctl+0x27/0x6e
-> > > [ 7765.595100]        [<c019ff4f>] do_vfs_ioctl+0x45a/0x48c
-> > > [ 7765.595116]        [<c019ffb2>] sys_ioctl+0x31/0x4a
-> > > [ 7765.595132]        [<c01032e8>] sysenter_do_call+0x12/0x3c
-> > > [ 7765.595147]        [<ffffffff>] 0xffffffff
-> > > [ 7765.595163] 
-> > > [ 7765.595166] other info that might help us debug this:
-> > > [ 7765.595170] 
-> > > [ 7765.595180] 1 lock held by perf/14176:
-> > > [ 7765.595188]  #0:  (&counter->child_mutex){+.+...}, at: [<c0172180>] perf_ioctl+0x184/0x1de
-> > > [ 7765.595215] 
-> > > [ 7765.595218] stack backtrace:
-> > > [ 7765.595230] Pid: 14176, comm: perf Not tainted 2.6.30debug-03217-gf3ad116 #47
-> > > [ 7765.595240] Call Trace:
-> > > [ 7765.595254]  [<c033f7f9>] ? printk+0x14/0x16
-> > > [ 7765.595271]  [<c0146310>] print_circular_bug_tail+0x5c/0x67
-> > > [ 7765.595289]  [<c0146e8c>] __lock_acquire+0x8b8/0xb11
-> > > [ 7765.595306]  [<c014719e>] lock_acquire+0xb9/0xdb
-> > > [ 7765.595322]  [<c016f366>] ? perf_counter_for_each_sibling+0x50/0x7e
-> > > [ 7765.595338]  [<c0340664>] __mutex_lock_common+0x42/0x3c8
-> > > [ 7765.595354]  [<c016f366>] ? perf_counter_for_each_sibling+0x50/0x7e
-> > > [ 7765.595371]  [<c034099b>] ? __mutex_lock_common+0x379/0x3c8
-> > > [ 7765.595387]  [<c0340a82>] mutex_lock_nested+0x2e/0x36
-> > > [ 7765.595402]  [<c016f366>] ? perf_counter_for_each_sibling+0x50/0x7e
-> > > [ 7765.595419]  [<c016f366>] perf_counter_for_each_sibling+0x50/0x7e
-> > > [ 7765.595434]  [<c0170f78>] ? perf_counter_enable+0x0/0xad
-> > > [ 7765.595449]  [<c0171ffc>] ? perf_ioctl+0x0/0x1de
-> > > [ 7765.595464]  [<c0170f78>] ? perf_counter_enable+0x0/0xad
-> > > [ 7765.595479]  [<c0172189>] perf_ioctl+0x18d/0x1de
-> > > [ 7765.595494]  [<c0171ffc>] ? perf_ioctl+0x0/0x1de
-> > > [ 7765.595509]  [<c019fa6e>] vfs_ioctl+0x27/0x6e
-> > > [ 7765.595525]  [<c019ff4f>] do_vfs_ioctl+0x45a/0x48c
-> > > [ 7765.595540]  [<c0107003>] ? native_sched_clock+0x45/0x5e
-> > > [ 7765.595556]  [<c0144a37>] ? put_lock_stats+0x1e/0x29
-> > > [ 7765.595572]  [<c0144af8>] ? lock_release_holdtime+0xb6/0xbb
-> > > [ 7765.595589]  [<c0105e7b>] ? sys_mmap2+0x67/0x7f
-> > > [ 7765.595604]  [<c0103321>] ? sysenter_exit+0xf/0x1a
-> > > [ 7765.595620]  [<c019ffb2>] sys_ioctl+0x31/0x4a
-> > > [ 7765.595635]  [<c01032e8>] sysenter_do_call+0x12/0x3c
-> > 
-> > Right, good catch ;-)
-> 
-> Full credit goes to lockdep, I merely tried perf record <cmd> :-)
-> 
-> > Does this fix it?
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> > diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-> > index e914daf..35fa30b 100644
-> > --- a/kernel/perf_counter.c
-> > +++ b/kernel/perf_counter.c
-> > @@ -1658,14 +1658,18 @@ static void perf_counter_for_each_child(struct perf_counter *counter,
-> >  static void perf_counter_for_each(struct perf_counter *counter,
-> >  				  void (*func)(struct perf_counter *))
-> >  {
-> > -	struct perf_counter *child;
-> > +	struct perf_counter_context *ctx = counter->ctx;
-> > +	struct perf_counter *sibling;
-> >  
-> > -	WARN_ON_ONCE(counter->ctx->parent_ctx);
-> > -	mutex_lock(&counter->child_mutex);
-> > -	perf_counter_for_each_sibling(counter, func);
-> > -	list_for_each_entry(child, &counter->child_list, child_list)
-> > -		perf_counter_for_each_sibling(child, func);
-> > -	mutex_unlock(&counter->child_mutex);
-> > +	WARN_ON_ONCE(ctx->parent_ctx);
-> > +	mutex_lock(&ctx->mutex);
-> > +	counter = counter->group_leader;
-> > +
-> > +	perf_counter_for_each_child(counter, func)
-> 
->                   missing ; goes here               ^
-> 
-> > +	func(counter);
-> > +	list_for_each_entry(sibling, &counter->sibling_list, list_entry)
-> > +		perf_counter_for_each_child(counter, func)
-> 
->                   and here                                  ^
-> 
-> > +	mutex_unlock(&ctx->mutex);
-> >  }
-> >  
-> >  static int perf_counter_period(struct perf_counter *counter, u64 __user *arg)
-> 
-> It also introduces the following warning:
-> 
-> kernel/perf_counter.c:1625: warning: 'perf_counter_for_each_sibling'
-> defined but not used
-> 
-> but otherwise it is good and you can add
-> 
-> Reported-by: Simon Holm Thøgersen <odie@cs.aau.dk>
-> Tested-by: Simon Holm Thøgersen <odie@cs.aau.dk>
+At present, every architecture that supports perf_counters has to
+declare set_perf_counter_pending() in its arch-specific headers.
+This consolidates the declarations into a single declaration in one
+common place, include/linux/perf_counter.h.  On powerpc, we continue
+to provide a static inline definition of set_perf_counter_pending()
+in the powerpc hw_irq.h.
 
-Thanks guys, applied.
+Also, this removes from the x86 perf_counter.h the unused null
+definitions of {test,clear}_perf_counter_pending.
 
-	Ingo
+Reported-by: Mike Frysinger <vapier.adi@gmail.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: benh@kernel.crashing.org
+LKML-Reference: <18998.13388.920691.523227@cargo.ozlabs.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/powerpc/include/asm/hw_irq.h       |    1 -
+ arch/powerpc/include/asm/perf_counter.h |    2 ++
+ arch/x86/include/asm/perf_counter.h     |    5 -----
+ include/linux/perf_counter.h            |    1 +
+ 4 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 5351237..1974cf1 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -163,7 +163,6 @@ static inline unsigned long test_perf_counter_pending(void)
+ 	return 0;
+ }
+ 
+-static inline void set_perf_counter_pending(void) {}
+ static inline void clear_perf_counter_pending(void) {}
+ #endif /* CONFIG_PERF_COUNTERS */
+ 
+diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
+index cc7c887..b398a84 100644
+--- a/arch/powerpc/include/asm/perf_counter.h
++++ b/arch/powerpc/include/asm/perf_counter.h
+@@ -10,6 +10,8 @@
+  */
+ #include <linux/types.h>
+ 
++#include <asm/hw_irq.h>
++
+ #define MAX_HWCOUNTERS		8
+ #define MAX_EVENT_ALTERNATIVES	8
+ #define MAX_LIMITED_HWCOUNTERS	2
+diff --git a/arch/x86/include/asm/perf_counter.h b/arch/x86/include/asm/perf_counter.h
+index 876ed97..5fb33e1 100644
+--- a/arch/x86/include/asm/perf_counter.h
++++ b/arch/x86/include/asm/perf_counter.h
+@@ -84,11 +84,6 @@ union cpuid10_edx {
+ #define MSR_ARCH_PERFMON_FIXED_CTR2			0x30b
+ #define X86_PMC_IDX_FIXED_BUS_CYCLES			(X86_PMC_IDX_FIXED + 2)
+ 
+-extern void set_perf_counter_pending(void);
+-
+-#define clear_perf_counter_pending()	do { } while (0)
+-#define test_perf_counter_pending()	(0)
+-
+ #ifdef CONFIG_PERF_COUNTERS
+ extern void init_hw_perf_counters(void);
+ extern void perf_counters_lapic_init(void);
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 1b3118a..eccae43 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -604,6 +604,7 @@ extern void perf_counter_task_tick(struct task_struct *task, int cpu);
+ extern int perf_counter_init_task(struct task_struct *child);
+ extern void perf_counter_exit_task(struct task_struct *child);
+ extern void perf_counter_free_task(struct task_struct *task);
++extern void set_perf_counter_pending(void);
+ extern void perf_counter_do_pending(void);
+ extern void perf_counter_print_debug(void);
+ extern void __perf_disable(void);
