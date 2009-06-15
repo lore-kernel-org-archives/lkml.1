@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZFONiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbZFONtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbZFONiY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZFONiO
+	id S1756552AbZFONtU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZFONtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:38:14 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:48554 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbZFONiN (ORCPT
+	Mon, 15 Jun 2009 09:49:12 -0400
+Received: from mga05.intel.com ([192.55.52.89]:55841 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751689AbZFONtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:38:13 -0400
-In-Reply-To: <200906151530.10299.arnd@arndb.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-arch-owner@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
+	Mon, 15 Jun 2009 09:49:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,222,1243839600"; 
+   d="scan'208";a="699456157"
+Date: Mon, 15 Jun 2009 15:51:18 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mfd/da903x: initialize PMIC core early
+Message-ID: <20090615135117.GC4094@sortiz.org>
+References: <4A363841.5090406@compulab.co.il>
 MIME-Version: 1.0
-Subject: Re: [PATCH] asm-generic: add EMAXERRNO
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF3F5B9A42.51E93417-ON482575D6.004A27E1-482575D6.004AE1D9@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Mon, 15 Jun 2009 21:33:21 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/15 ?? 09:33:21,
-	Serialize complete at 2009/06/15 ?? 09:33:21
-Content-Type: text/plain; charset="GB2312"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A363841.5090406@compulab.co.il>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5FDd154012487
 
-linux-arch-owner@vger.kernel.org Ð´ÓÚ 2009-06-15 21:30:09:
+Hi Mike,
 
-> Some architectures want to flag error returns from a syscall based on
-> the return value. The range from zero to -511 is for errors that
-> we can return to user space, so add a #define for this to
-> include/asm-generic/errno.h.
-> 
-> Reported-by: Chen Liquin <liqin.chen@sunplusct.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Mon, Jun 15, 2009 at 03:02:09PM +0300, Mike Rapoport wrote:
+> Samuel,
+> It'd be great if this can go to 2.6.31
+Sure. Care to explain why this needs to be called earlier ?
+
+Cheers,
+Samuel.
+
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 > ---
->  include/asm-generic/errno.h |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
+>  drivers/mfd/da903x.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> On Monday 15 June 2009, liqin.chen@sunplusct.com wrote:
+> diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
+> index 7283d88..e5ffe56 100644
+> --- a/drivers/mfd/da903x.c
+> +++ b/drivers/mfd/da903x.c
+> @@ -561,7 +561,7 @@ static int __init da903x_init(void)
+>  {
+>  	return i2c_add_driver(&da903x_driver);
+>  }
+> -module_init(da903x_init);
+> +subsys_initcall(da903x_init);
 > 
-> > Maybe I can don't use EMAXERRNO in score code. But I think define a 
-> > maximum error number in asm-generic/errno.h is better.
-> > 
-> 
-> How about this one?
-> 
-> diff --git a/include/asm-generic/errno.h b/include/asm-generic/errno.h
-> index e8852c0..16bb31d 100644
-> --- a/include/asm-generic/errno.h
-> +++ b/include/asm-generic/errno.h
-> @@ -106,4 +106,8 @@
->  #define   EOWNERDEAD   130   /* Owner died */
->  #define   ENOTRECOVERABLE   131   /* State not recoverable */
-> 
-> +#ifdef __KERNEL__
-> +#define   EMAXERRNO   511   /* maximum errno value we return to user */
-> +#endif
-> +
->  #endif
+>  static void __exit da903x_exit(void)
+>  {
 > -- 
-OK, it is easy to use.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> 1.6.0.6
+> 
+> 
+> -- 
+> Sincerely yours,
+> Mike.
+> 
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
