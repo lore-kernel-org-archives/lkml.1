@@ -1,119 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbZFOF7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZFOGDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbZFOF7f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 01:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZFOF70
+	id S1755692AbZFOGDk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 02:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZFOGDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 01:59:26 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:33307 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbZFOF70 (ORCPT
+	Mon, 15 Jun 2009 02:03:32 -0400
+Received: from mga10.intel.com ([192.55.52.92]:59692 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751078AbZFOGDc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 01:59:26 -0400
-Message-ID: <4A35E32C.30609@oracle.com>
-Date: Mon, 15 Jun 2009 13:59:08 +0800
-From: Tao Ma <tao.ma@oracle.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
-References: <20090608015242.GB2596@cr0.nay.redhat.com> <4A2CA96D.3090502@oracle.com> <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com> <4A2CC52B.9010602@oracle.com> <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com> <m1ab4i11zx.fsf@fess.ebiederm.org> <20090611050929.GA2706@cr0.nay.redhat.com> <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0> <m17hzg7oil.fsf@fess.ebiederm.org> <20090615021457.GA3388@cr0.nay.redhat.com>
-In-Reply-To: <20090615021457.GA3388@cr0.nay.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4A35E331.00A0:SCFSTAT5015188,ss=1,fgs=0
+	Mon, 15 Jun 2009 02:03:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
+   d="scan'208";a="466335792"
+Subject: Re: Bug: fio traps into kernel without exiting because futex has a
+	deadloop
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhltc@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0906121036220.3369@localhost.localdomain>
+References: <1244689688.2560.268.camel@ymzhang>
+	 <1244699756.6691.4.camel@laptop>  <1244701128.6691.5.camel@laptop>
+	 <1244709196.2560.287.camel@ymzhang>  <1244720183.6691.214.camel@laptop>
+	 <1244768378.2560.297.camel@ymzhang>
+	 <alpine.LFD.2.00.0906121010210.3369@localhost.localdomain>
+	 <alpine.LFD.2.00.0906121036220.3369@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 15 Jun 2009 14:03:37 +0800
+Message-Id: <1245045817.2560.363.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amerigo,
-	Just patched my kernel and tested.
-	The bad news is that although the number is changed, but it isn't right 
-either.
+On Fri, 2009-06-12 at 10:39 +0200, Thomas Gleixner wrote:
+> On Fri, 12 Jun 2009, Thomas Gleixner wrote:
+> > On Fri, 12 Jun 2009, Zhang, Yanmin wrote:
+> > > On Thu, 2009-06-11 at 13:36 +0200, Peter Zijlstra wrote:
+> > > > FWIW, using a private futex on a shm section is wrong in and of itself.
+> > >
+> > > What I mean is it could be used as a DOS attack.
+> > 
+> > Right. Fix is on the way.
+> >  
+> > > Did you try my test case? Could you kill it when it runs?
+> > 
+> > No, you can not kill it. That's why it needs a proper fix. Will send
+> > out today.
+> 
+> Can you please verify the patch below ? It's against 2.6.30.
+I tested it with my test case and it doesn't hang again. But I still
+have considerations.
 
-Here is the output.
-[root@test3 ~]# ls -l /proc/kcore
--r-------- 1 root root 131941393240064 Jun 15 13:39 /proc/kcore
+> 
+> Thanks,
+> 
+> 	tglx
+> 
+> -------------->
+> futex: Fix the write access fault problem for real
+>     
+> commit 64d1304a64 (futex: setup writeable mapping for futex ops which
+> modify user space data) did address only half of the problem of write
+> access faults.
+>     
+> The patch was made on two wrong assumptions:
+>     
+> 1) access_ok(VERIFY_WRITE,...) would actually check write access.
+>   
+>    On x86 it does _NOT_. It's a pure address range check.
+>     
+> 2) a RW mapped region can not go away under us.
+>     
+>    That's wrong as well. Nobody can prevent another thread to call
+>    mprotect(PROT_READ) on that region where the futex resides. If that
+>    call hits between the get_user_pages_fast() verification and the
+>    actual write access in the atomic region we are toast again.
+>     
+>    The solution is to not rely on access_ok and get_user() for any write
+>    access related fault on private and shared futexes. Instead we need to
+>    go through get_user_pages_fast() in the fault path to avoid any of the
+>    above pitfalls. If get_user_pages_fast() returns -EFAULT we know that
+>    we can not fix it anymore and need to bail out to user space.
+>     
+>    Remove a bunch of confusing comments on this issue as well.
+>     
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  kernel/futex.c |   48 +++++++++++++++++++++++++++++-------------------
+>  1 file changed, 29 insertions(+), 19 deletions(-)
+> 
+> Index: linux-2.6-tip/kernel/futex.c
+> ===================================================================
+> --- linux-2.6-tip.orig/kernel/futex.c
+> +++ linux-2.6-tip/kernel/futex.c
+> @@ -278,6 +278,31 @@ void put_futex_key(int fshared, union fu
+>  	drop_futex_key_refs(key);
+>  }
+>  
+> +/*
+> + * get_user_writeable - get user page and verify RW access
+> + * @uaddr:	pointer to faulting user space address
+> + *
+> + * We cannot write to the user space address and get_user just faults
+> + * the page in, but does not tell us whether the mapping is writeable.
+> + *
+> + * We can not rely on access_ok() for private futexes as it is just a
+> + * range check and we can neither rely on get_user_pages() as there
+> + * might be a mprotect(PROT_READ) for that mapping after
+> + * get_user_pages() and before the fault in the atomic write access.
+> + */
+> +static int get_user_writeable(u32 __user *uaddr)
+> +{
+> +	unsigned long addr = (unsigned long)uaddr;
+> +	struct page *page;
+> +	int ret;
+> +
+> +	ret = get_user_pages_fast(addr, 1, 1, &page);
+I checked function ﻿get_user_pages_fast. It might return negative, 0, or
+positive value. 0 means it doesn't pin any page. So why does below statement
+use (!ret) to put_page?
 
-But your patch does change something. I just try your commands in 
-another box which show the right value after reboot. And the result is:
+I changed my test case and run it for unlimited times. It seems memory
+leak is big.
 
-[root@test8 ~]# ls -l /proc/kcore
--r-------- 1 root root 5301604352 Jun 15 13:35 /proc/kcore
-[root@test8 ~]# readelf -l /proc/kcore
+get_user_pages_fast is used by get_futex_key with the similiar issue.
 
-Elf file type is CORE (Core file)
-Entry point 0x0
-There are 6 program headers, starting at offset 64
+> +	if (!ret)
+> +		put_page(page);
+> +
+> +	return ret;
+> +}
+> +
+>  static u32 cmpxchg_futex_value_locked(u32 __user *uaddr, u32 uval, u32 newval)
+>  {
+>  	u32 curval;
+> @@ -739,7 +764,6 @@ retry:
+>  retry_private:
+>  	op_ret = futex_atomic_op_inuser(op, uaddr2);
+>  	if (unlikely(op_ret < 0)) {
+> -		u32 dummy;
+>  
+>  		double_unlock_hb(hb1, hb2);
+>  
+> @@ -757,7 +781,7 @@ retry_private:
+>  			goto out_put_keys;
+>  		}
+>  
+> -		ret = get_user(dummy, uaddr2);
+> +		ret = get_user_writeable(uaddr2);
+>  		if (ret)
+>  			goto out_put_keys;
+>  
+> @@ -1097,7 +1121,7 @@ retry:
+>  handle_fault:
+>  	spin_unlock(q->lock_ptr);
+>  
+> -	ret = get_user(uval, uaddr);
+> +	ret = get_user_writeable(uaddr);
+>  
+>  	spin_lock(q->lock_ptr);
+>  
+> @@ -1552,16 +1576,9 @@ out:
+>  	return ret;
+>  
+>  uaddr_faulted:
+> -	/*
+> -	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
+> -	 * atomically.  Therefore, if we continue to fault after get_user()
+> -	 * below, we need to handle the fault ourselves, while still holding
+> -	 * the mmap_sem.  This can occur if the uaddr is under contention as
+> -	 * we have to drop the mmap_sem in order to call get_user().
+> -	 */
+>  	queue_unlock(&q, hb);
+>  
+> -	ret = get_user(uval, uaddr);
+> +	ret = get_user_writeable(uaddr);
+X86 pte entry has no READABLE flag. Other platforms might have. If their pte
+only set WRITE flag, Is it poosible to create a similiar DOS attack with
+WRITEONLY area on such platforms?
 
-Program Headers:
-   Type           Offset             VirtAddr           PhysAddr
-                  FileSiz            MemSiz              Flags  Align
-   NOTE           0x0000000000000190 0x0000000000000000 0x0000000000000000
-                  0x00000000000008bc 0x0000000000000000         0
-   LOAD           0x000077ffff601000 0xffffffffff600000 0x0000000000000000
-                  0x0000000000800000 0x0000000000800000  RWE    1000
-   LOAD           0x000077ffa0001000 0xffffffffa0000000 0x0000000000000000
-                  0x000000005f000000 0x000000005f000000  RWE    1000
-   LOAD           0x000077ff8200a000 0xffffffff82009000 0x0000000000000000
-                  0x00000000006ceb50 0x00000000006ceb50  RWE    1000
-   LOAD           0x00003a0000001000 0xffffc20000000000 0x0000000000000000
-                  0x00001fffffffffff 0x00001fffffffffff  RWE    1000
-   LOAD           0x0000000000001000 0xffff880000000000 0x0000000000000000
-                  0x000000013c000000 0x000000013c000000  RWE    1000
-[root@test8 ~]# ls -l /proc/kcore
--r-------- 1 root root 131941393240064 Jun 15 13:35 /proc/kcore
+>  	if (ret)
+>  		goto out_put_key;
+>  
+> @@ -1657,17 +1674,10 @@ out:
+>  	return ret;
+>  
+>  pi_faulted:
+> -	/*
+> -	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
+> -	 * atomically.  Therefore, if we continue to fault after get_user()
+> -	 * below, we need to handle the fault ourselves, while still holding
+> -	 * the mmap_sem.  This can occur if the uaddr is under contention as
+> -	 * we have to drop the mmap_sem in order to call get_user().
+> -	 */
+>  	spin_unlock(&hb->lock);
+>  	put_futex_key(fshared, &key);
+>  
+> -	ret = get_user(uval, uaddr);
+> +	ret = get_user_writeable(uaddr);
+>  	if (!ret)
+>  		goto retry;
+>  
 
-So you see, the second "ls -l" will show the wrong value.
-
-Regards,
-Tao
-
-Amerigo Wang wrote:
-> On Fri, Jun 12, 2009 at 09:20:50PM -0700, Eric W. Biederman wrote:
->> Amerigo Wang <xiyou.wangcong@gmail.com> writes:
->>
->>> Fix wrong /proc/kcore size on x86_64.
->> How does that change anything?
-> 
-> Please check the description below.
-> 
->>> x86_64 uses __va() macro to caculate the virtual address passed to kclist_add()
->>> but decodes it with its own macro kc_vadd_to_offset(). This is wrong.
->>>
->>> Also, according to Documentation/x86/x86_64/mm.txt, kc_vaddr_to_offset()
->>> is wrong too.
->>>
->>> So just remove them, use the generic macro.
->>>
->>> BTW, the man page for /proc/kcore is wrong, its size can be more than
->>> the physical memory size, because it also contains memory area of
->>> vmalloc(), vsyscall etc...
->> The set of offsets that are usable sure.
-> 
-> We have generic kc_vaddr_to_offset() etc. in fs/proc/kcore.c.
-> 
-> 
->> However the size from stat is:
->>          proc_root_kcore->size = (size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
->>
->> Which can not be different than the physical memory size.
-> 
-> I never say this is not different, of course they are same, but what Tao
-> reported is the wrong size after a read operation, please try the following:
-> 
-> #ls -l /proc/kcore
-> #readelf -l /proc/kcore
-> #ls -l /proc/kcore
-> 
-> You will find the *second* 'ls -l /proc/kcore' reports a size much more
-> than the physical mem size.
-> 
-> And you will notice the difference of it after this patch applied.
-> 
-> 
