@@ -1,62 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751255AbZFOBen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751629AbZFOBf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751255AbZFOBen (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 21:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbZFOBef
+	id S1751629AbZFOBf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 21:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZFOBfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 21:34:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52068 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832AbZFOBee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 21:34:34 -0400
-Date: Mon, 15 Jun 2009 11:34:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: ide tree build failure
-Message-Id: <20090615113430.21122e44.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Sun, 14 Jun 2009 21:35:20 -0400
+Received: from mga06.intel.com ([134.134.136.21]:38546 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750832AbZFOBfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 21:35:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,219,1243839600"; 
+   d="scan'208";a="421748062"
+Subject: Re: [PATCH V4: 2/3] pci: Provide aer support when the error source
+	id is bad
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1244843467.19708.91.camel@grinch>
+References: <1244776113.2560.320.camel@ymzhang>
+	 <1244843467.19708.91.camel@grinch>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 15 Jun 2009 09:35:22 +0800
+Message-Id: <1245029722.2560.330.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__15_Jun_2009_11_34_30_+1000_d0I1JT_cMBc0ciLP"
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__15_Jun_2009_11_34_30_+1000_d0I1JT_cMBc0ciLP
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-06-12 at 21:51 +0000, Andrew Patterson wrote:
+> On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
+> > ﻿﻿﻿When the bus id part of error source id is equal to 0 or nosourceid=1,
+> > kernel probes the AER status registers of all devices under the root port
+> > to find the initial error reporter.
+Thanks Andrew for your kind comments.
 
-Hi Bart,
+> > 
+> > ﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> > 
+> > ---
+> > 
+> > --- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:31:53.000000000 +0800
+> > +++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-12 05:39:24.000000000 +0800
+> > @@ -26,7 +26,9 @@
+> >  #include "aerdrv.h"
+> >  
+> >  static int forceload;
+> > +static int nosourceid;
+> >  module_param(forceload, bool, 0);
+> > +module_param(nosourceid, bool, 0);
+> >  
+> >  int pci_enable_pcie_error_reporting(struct pci_dev *dev)
+> >  {
+> > @@ -143,34 +145,82 @@ static void set_downstream_devices_error
+> >  	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
+> >  }
+> >  
+> > -static int find_device_iter(struct device *device, void *data)
+> > +static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
+> >  {
+> > -	struct pci_dev *dev;
+> > -	u16 id = *(unsigned long *)data;
+> > -	u8 secondary, subordinate, d_bus = id >> 8;
+> > -
+> > -	if (device->bus == &pci_bus_type) {
+> > -		dev = to_pci_dev(device);
+> > -		if (id == ((dev->bus->number << 8) | dev->devfn)) {
+> > -			/*
+> > -			 * Device ID match
+> > -			 */
+> > -			*(unsigned long*)data = (unsigned long)device;
+> > -			return 1;
+> > -		}
+> > -
+> > +	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
+> >  		/*
+> > -		 * If device is P2P, check if it is an upstream?
+> > +		 * Device ID match
+> >  		 */
+> > -		if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
+> > -			pci_read_config_byte(dev, PCI_SECONDARY_BUS,
+> > -				&secondary);
+> > -			pci_read_config_byte(dev, PCI_SUBORDINATE_BUS,
+> > -				&subordinate);
+> > -			if (d_bus >= secondary && d_bus <= subordinate) {
+> > -				*(unsigned long*)data = (unsigned long)device;
+> > -				return 1;
+> > -			}
+> > +		e_info->dev = dev;
+> > +		return 1;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +#define	PCI_BUS(x)	(((x) >> 8) & 0xff)
+> > +
+> > +static int find_device_iter(struct pci_dev *dev, void *data)
+> > +{
+> > +	int pos;
+> > +	u32 status;
+> > +	u32 mask;
+> > +	u16 reg16;
+> > +	struct aer_err_info *e_info = (struct aer_err_info *)data;
+> > +
+> > +	/*
+> > +	 * When bus id is equal to 0, it might be a bad id
+> > +	 * reported by root port.
+> > +	 */
+> > +	if (!nosourceid && (PCI_BUS(e_info->id) != 0))
+> > +		return compare_device_id(dev, e_info);
+> > +
+> > +	/*
+> > +	 * Next is to check when bus id is equal to 0 or
+> > +	 * nosourceid==y. Some ports might lose the bus
+> > +	 * id of error source id. We check AER status
+> > +	 * registers to find the initial reporter.
+> > +	 */
+> > +	if (atomic_read(&dev->enable_cnt) == 0)
+> > +		return 0;
+> > +	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+> > +	if (!pos)
+> > +		return 0;
+> > +	/* Check if AER is enabled */
+> > +	pci_read_config_word(dev, pos+PCI_EXP_DEVCTL, &reg16);
+> > +	if (!(reg16 & (
+> > +		PCI_EXP_DEVCTL_CERE |
+> > +		PCI_EXP_DEVCTL_NFERE |
+> > +		PCI_EXP_DEVCTL_FERE |
+> > +		PCI_EXP_DEVCTL_URRE)))
+> > +		return 0;
+> > +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+> > +	if (!pos)
+> > +		return 0;
+> > +
+> > +	status = 0;
+> > +	mask = 0;
+> > +	if (e_info->severity == AER_CORRECTABLE) {
+> > +		pci_read_config_dword(dev,
+> > +				pos + PCI_ERR_COR_STATUS,
+> > +				&status);
+> > +		pci_read_config_dword(dev,
+> > +				pos + PCI_ERR_COR_MASK,
+> > +				&mask);
+> > +		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
+> > +			e_info->dev = dev;
+> > +			return 1;
+> > +		}
+> > +	} else {
+> > +		pci_read_config_dword(dev,
+> > +				pos + PCI_ERR_UNCOR_STATUS,
+> > +				&status);
+> > +		pci_read_config_dword(dev,
+> > +				pos + PCI_ERR_UNCOR_MASK,
+> > +				&mask);
+> > +		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
+> > +			e_info->dev = dev;
+> > +			return 1;
+> >  		}
+> >  	}
+> >  
+> > @@ -180,33 +230,23 @@ static int find_device_iter(struct devic
+> >  /**
+> >   * find_source_device - search through device hierarchy for source device
+> >   * @parent: pointer to Root Port pci_dev data structure
+> > - * @id: device ID of agent who sends an error message to this Root Port
+> > + * @err_info: including detailed error information such like id
+> >   *
+> >   * Invoked when error is detected at the Root Port.
+> >   */
+> > -static struct device* find_source_device(struct pci_dev *parent, u16 id)
+> > +static void find_source_device(struct pci_dev *parent,
+> > +		struct aer_err_info *e_info)
+> >  {
+> >  	struct pci_dev *dev = parent;
+> > -	struct device *device;
+> > -	unsigned long device_addr;
+> > -	int status;
+> > +	int result;
+> >  
+> >  	/* Is Root Port an agent that sends error message? */
+> > -	if (id == ((dev->bus->number << 8) | dev->devfn))
+> > -		return &dev->dev;
+> > -
+> > -	do {
+> > -		device_addr = id;
+> > - 		if ((status = device_for_each_child(&dev->dev,
+> > -			&device_addr, find_device_iter))) {
+> > -			device = (struct device*)device_addr;
+> > -			dev = to_pci_dev(device);
+> > -			if (id == ((dev->bus->number << 8) | dev->devfn))
+> > -				return device;
+> > -		}
+> > - 	}while (status);
+> > +	result = find_device_iter(dev, e_info);
+> > +	if (result)
+> > +		return;
+> >  
+> > -	return NULL;
+> > +	pci_walk_bus(parent->subordinate, find_device_iter, e_info);
+> 
+> Minor nit. This return is 
+Yes. I will delete it. Sometimes it can be clearer.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> > +	return;
+> >  }
+> >  
+> 
+> Minor. The e_info goes to pointer changes probably belong in a separate
+> patch.
+Yes. I will double-check it. I really got a headache to create a series of
+small patches. :)
 
-drivers/ide/ide-tape.c: In function 'idetape_chrdev_open':
-drivers/ide/ide-tape.c:1515: error: implicit declaration of function 'ideta=
-pe_read_position'
+> 
+> >  static int report_error_detected(struct pci_dev *dev, void *data)
+> > @@ -501,12 +541,12 @@ static pci_ers_result_t do_recovery(stru
+> >   */
+> >  static void handle_error_source(struct pcie_device * aerdev,
+> >  	struct pci_dev *dev,
+> > -	struct aer_err_info info)
+> > +	struct aer_err_info *info)
+> >  {
+> >  	pci_ers_result_t status = 0;
+> >  	int pos;
+> >  
+> > -	if (info.severity == AER_CORRECTABLE) {
+> > +	if (info->severity == AER_CORRECTABLE) {
+> >  		/*
+> >  		 * Correctable error does not need software intevention.
+> >  		 * No need to go through error recovery process.
+> > @@ -514,9 +554,9 @@ static void handle_error_source(struct p
+> >  		pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+> >  		if (pos)
+> >  			pci_write_config_dword(dev, pos + PCI_ERR_COR_STATUS,
+> > -					info.status);
+> > +					info->status);
+> >  	} else {
+> > -		status = do_recovery(aerdev, dev, info.severity);
+> > +		status = do_recovery(aerdev, dev, info->severity);
+> >  		if (status == PCI_ERS_RESULT_RECOVERED) {
+> >  			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
+> >  				   "successfully recovered\n");
+> > @@ -673,10 +713,13 @@ static int get_device_error_info(struct 
+> >  static void aer_isr_one_error(struct pcie_device *p_device,
+> >  		struct aer_err_source *e_src)
+> >  {
+> > -	struct device *s_device;
+> > -	struct aer_err_info e_info = {0, 0, 0,};
+> > +	struct aer_err_info *e_info;
+> >  	int i;
+> > -	u16 id;
+> > +
+> > +	/* struct aer_err_info might be big, so we allocate it with slab */
+> > +	e_info = kmalloc(sizeof(struct aer_err_info), GFP_KERNEL);
+> > +	if (e_info == NULL)
+> > +		return;
+> >  
+> Should we get some sort of warning here? We might be concealing PCIe
+> errors when out of memory.
+I will add a warning.
 
-Caused by commit 55ce3a129ea2e8faba4a11bb5dbc305590d1c20c ("ide-tape: fix
-READ POSITION cmd handling") interacting with the later merge
-8dcce4081305d3d1629190edd112e6473c315cbc ("Merge branch
-'bp-remove-pc-buf' into for-next").
+> 
+> >  	/*
+> >  	 * There is a possibility that both correctable error and
+> > @@ -688,31 +731,37 @@ static void aer_isr_one_error(struct pci
+> >  		if (!(e_src->status & i))
+> >  			continue;
+> >  
+> > +		memset(e_info, 0, sizeof(struct aer_err_info));
+> > +
+> >  		/* Init comprehensive error information */
+> >  		if (i & PCI_ERR_ROOT_COR_RCV) {
+> > -			id = ERR_COR_ID(e_src->id);
+> > -			e_info.severity = AER_CORRECTABLE;
+> > +			e_info->id = ERR_COR_ID(e_src->id);
+> > +			e_info->severity = AER_CORRECTABLE;
+> >  		} else {
+> > -			id = ERR_UNCOR_ID(e_src->id);
+> > -			e_info.severity = ((e_src->status >> 6) & 1);
+> > +			e_info->id = ERR_UNCOR_ID(e_src->id);
+> > +			e_info->severity = ((e_src->status >> 6) & 1);
+> >  		}
+> >  		if (e_src->status &
+> >  			(PCI_ERR_ROOT_MULTI_COR_RCV |
+> >  			 PCI_ERR_ROOT_MULTI_UNCOR_RCV))
+> > -			e_info.flags |= AER_MULTI_ERROR_VALID_FLAG;
+> > -		if (!(s_device = find_source_device(p_device->port, id))) {
+> > +			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
+> > +
+> > +		find_source_device(p_device->port, e_info);
+> > +		if (e_info->dev == NULL) {
+> >  			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+> > -				__func__, id);
+> > +				__func__, e_info->id);
+> >  			continue;
+> >  		}
+> > -		if (get_device_error_info(to_pci_dev(s_device), &e_info) ==
+> > +		if (get_device_error_info(e_info->dev, e_info) ==
+> >  				AER_SUCCESS) {
+> > -			aer_print_error(to_pci_dev(s_device), &e_info);
+> > +			aer_print_error(e_info->dev, e_info);
+> >  			handle_error_source(p_device,
+> > -				to_pci_dev(s_device),
+> > +				e_info->dev,
+> >  				e_info);
+> >  		}
+> >  	}
+> > +
+> > +	kfree(e_info);
+> >  }
+> >  
+> >  /**
+> > --- linux-2.6_next_pciwalk/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:27:46.000000000 +0800
+> > +++ linux-2.6_next_aernoid/drivers/pci/pcie/aer/aerdrv.h	2009-06-12 05:39:24.000000000 +0800
+> > @@ -58,6 +58,8 @@ struct header_log_regs {
+> >  };
+> >  
+> >  struct aer_err_info {
+> > +	struct pci_dev *dev;
+> > +	u16 id;
+> >  	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
+> >  	int flags;
+> >  	unsigned int status;		/* COR/UNCOR Error Status */
+> > --- linux-2.6_next_pciwalk/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:27:40.000000000 +0800
+> > +++ linux-2.6_next_aernoid/Documentation/PCI/pcieaer-howto.txt	2009-06-12 05:39:24.000000000 +0800
+> > @@ -60,6 +60,8 @@ forceload, a parameter of type bool, cou
+> >  be initiated although firmwares have no _OSC support. To enable the
+> >  walkaround, pls. add aerdriver.forceload=y to kernel boot parameter line
+> >  when booting kernel. Note that forceload=n by default.
+> 
+> 
+> We need a new paragraph here.
+Yes. I will change it.
 
-I have used the ide tree from next-20090612 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> > +nosourceid, another parameter of type bool, is used when hardware (mostly
+> > +chipset) has errata that root ports couldn't get error reporting source id.
+> >  
+> 
+> Perhaps ".. can be used when broken hardware (mostly chipsets) has root
+> ports that cannot obtain the reporting source ID."
+Good. I will do.
 
---Signature=_Mon__15_Jun_2009_11_34_30_+1000_d0I1JT_cMBc0ciLP
-Content-Type: application/pgp-signature
+> 
+> >  2.3 AER error output
+> >  When a PCI-E AER error is captured, an error message will be outputed to
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAko1pSYACgkQjjKRsyhoI8yD9wCfSZsN8CDe8weESLLFnQFJ/pkH
-YYUAni+krUpzr3WQfgYAY8c1NOe5KYqa
-=mQjJ
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Jun_2009_11_34_30_+1000_d0I1JT_cMBc0ciLP--
