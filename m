@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933963AbZFOTIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933938AbZFOTIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933963AbZFOTIi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933932AbZFOTIH
+	id S933938AbZFOTIy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933917AbZFOTIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:08:07 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:58758 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933880AbZFOTIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:08:06 -0400
-Date: Mon, 15 Jun 2009 21:09:09 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 8/8] Use hrtick when available
-Message-ID: <20090615190909.GR21741@gandalf.sssup.it>
-References: <cover.1245092261.git.fabio@helm.retis>
-Mime-Version: 1.0
+	Mon, 15 Jun 2009 15:08:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37561 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763683AbZFOTIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 15:08:18 -0400
+Date: Mon, 15 Jun 2009 21:07:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090615190759.GA12778@elte.hu>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal> <1245091917.6741.185.camel@laptop> <20090615185907.GF6520@Krystal> <20090615190321.GA11641@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1245092261.git.fabio@helm.retis>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20090615190321.GA11641@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To have a more precise budget enforcement, use the hrtick when available.
-This comes at the cost of additional overhead; anyway it is disabled by
-default.
----
- kernel/sched_rt.c |   32 +++++++++++++++++++++++++++++++-
- 1 files changed, 31 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index a9db16b..38a7be0 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1150,14 +1150,41 @@ static struct task_struct *_pick_next_task_rt(struct rq *rq)
- 	return p;
- }
- 
-+static void rt_start_hrtick(struct rq *rq, struct task_struct *p)
-+{
-+	struct sched_rt_entity *rt_se = &p->rt;
-+	struct rt_rq *rt_rq;
-+	s64 delta, expires = global_rt_period();
-+
-+	for_each_sched_rt_entity(rt_se) {
-+		rt_rq = rt_rq_of_se(rt_se);
-+		delta = rt_rq->rt_runtime - rt_rq->rt_time;
-+		expires = min(expires, delta);
-+	}
-+
-+	/*
-+	 * Given the current handling of hrtick in sched_fair, this
-+	 * may interfere with sched_fair tasks, generating a spurious
-+	 * tick when switching from an RT to a SCHED_OTHER task.
-+	 * This is due to the fact that sched_fair reprograms the
-+	 * hrtick only in its enqueue/dequeue codepaths.
-+	 */
-+	if (expires > 10000)
-+		hrtick_start(rq, expires);
-+}
-+
- static struct task_struct *pick_next_task_rt(struct rq *rq)
- {
- 	struct task_struct *p = _pick_next_task_rt(rq);
- 
- 	/* The running task is never eligible for pushing */
--	if (p)
-+	if (p) {
- 		dequeue_pushable_task(rq, p);
- 
-+		if (hrtick_enabled(rq))
-+			rt_start_hrtick(rq, p);
-+	}
-+
- 	return p;
- }
- 
-@@ -1794,6 +1821,9 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
- {
- 	update_curr_rt(rq);
- 
-+	if (queued)
-+		return;
-+
- 	watchdog(rq, p);
- 
- 	/*
--- 
-1.6.2.2
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > To a point where it cannot afford a simple register save/restore 
+> > ?
+> > 
+> > There is "caring" and "_caring_". I am tempted to ask what NMI 
+> > handler execution frequency you have in mind here to figure out 
+> > if we are not trying to optimize sub-nanoseconds per minutes. ;)
+> 
+> I routinely run 'perf' with half a million NMIs per second or 
+> more. ( Why wait 10 seconds for a profile you can get in 1 second? 
+> ;-)
+> 
+> Granted that is over multiple CPUs - but still performance does 
+> matter here too.
+> 
+> Reading cr2 is certainly fast. Writing it - dunno.
+
+But one thing is sure: it is certainly going to be faster than the 
+INVLPG(s!) we have to do with the GUP solution.
+
+	Ingo
