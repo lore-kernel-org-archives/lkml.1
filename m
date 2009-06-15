@@ -1,122 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764903AbZFORqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764886AbZFORrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764903AbZFORqh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZFORq3
+	id S1764886AbZFORrD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763743AbZFORqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:46:29 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:46678 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbZFORq2 convert rfc822-to-8bit (ORCPT
+	Mon, 15 Jun 2009 13:46:52 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:54822 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752781AbZFORqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:46:28 -0400
+	Mon, 15 Jun 2009 13:46:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=WbFjlutfLCfySS/P26Ax2H6N9TcRzZtfLvWnYl5A+NHE/iaM91V23sT3L8eVJVSZeD
+         MFULkxxtRjSWl5rbjUNndQKQDzmD4vsptC1IE8k0fA+PU3aMmRBILM4Go2WyTE6lnSjG
+         2NaG4vUOsGmg2rMVzTAGn7Hr/2FmFvAa7MZaY=
+Message-ID: <4A36881E.8010009@gmail.com>
+Date: Mon, 15 Jun 2009 19:42:54 +0200
+From: Marco <marco.stornelli@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <4A366631.6090904@atmel.com>
-References: <c8284b5b0906121802l4c944581r83e55d199f9a5b05@mail.gmail.com>
-	 <4A366631.6090904@atmel.com>
-Date: Mon, 15 Jun 2009 10:46:30 -0700
-X-Google-Sender-Auth: 82c1a15feb8979c3
-Message-ID: <c8284b5b0906151046g1e2787f3w76510bc22660219f@mail.gmail.com>
-Subject: Re: [PATCH 1/6] Unified AVR32/AT91 MCI Driver
-From: Rob Emanuele <poorarm@shoreis.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Andrew Victor <avictor.za@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Bryan Henderson <hbryan@us.ibm.com>
+CC: Artem Bityutskiy <dedekind1@gmail.com>,
+       Daniel Walker <dwalker@soe.ucsc.edu>,
+       Jamie Lokier <jamie@shareable.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+References: <OFD1325B2C.7A926EF9-ON882575D6.00567314-882575D6.00571BC3@us.ibm.com>
+In-Reply-To: <OFD1325B2C.7A926EF9-ON882575D6.00567314-882575D6.00571BC3@us.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nicolas,
+Bryan Henderson wrote:
+>> Marco wrote:
+>>>    To enable direct
+>>>    I/O at all times for all regular files requires either that
+>>>    applications be modified to include the O_DIRECT flag on all file
+>>>    opens, or that a new filesystem be used that always performs direct
+>>>    I/O by default."
+>> This could be done as well by just introducing a "direct_io_only"
+>> mount option to a file-system which would need this feature.
+> 
+> But it's possible that there's just no advantage to having a block device 
+> in the stack here.  When unix block devices were invented, their main 
+> purpose was that they could reorder reads and writes and do buffering and 
+> caching -- all things essential for disk drives.  We don't want to stretch 
+> the concept too far.
+> 
 
-> First of all thank you for this splitting effort. It is definitively the
-> good way of presenting things and ease reading a lot.
+Yes I agree, we can't in this case talk about read and write reordering,
+buffering and caching because we're talking about something completely
+different from a classic disk. The issues of this kind of fs are more
+similar to the tmpfs issues.
 
-My pleasure.
-
->> ---
->>  drivers/mmc/host/Kconfig     |   16 ++++++++++++----
->>  drivers/mmc/host/atmel-mci.c |   33 +++++++++++++++++++++++++++++----
->>  2 files changed, 41 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
->> index b4cf691..6e2f52b 100644
->> --- a/drivers/mmc/host/Kconfig
->> +++ b/drivers/mmc/host/Kconfig
->> @@ -124,6 +124,12 @@ config MMC_AU1X
->>
->>         If unsure, say N.
->>
->> +choice
->> +     prompt "Atmel MMC Driver"
->> +     default MMC_ATMELMCI
->> +     help
->> +       Choose which driver to use for the Atmel MCI Silicon
->
-> I suggest :
->
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index b4cf691..e779049 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -124,6 +124,12 @@ config MMC_AU1X
->
->          If unsure, say N.
->
-> +choice
-> +       prompt "Atmel SD/MMC Driver"
-> +       default MMC_ATMELMCI if AVR32
-> +       help
-> +         Choose which driver to use for the Atmel MCI Silicon
-> +
->  config MMC_AT91
->        tristate "AT91 SD/MMC Card Interface support"
->        depends on ARCH_AT91
->
-> It will keep present default configuration for both AVR32 and AT91.
->
-
-Fine with me.
-
->> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
->> index cf6a100..497dd51 100644
->> --- a/drivers/mmc/host/atmel-mci.c
->> +++ b/drivers/mmc/host/atmel-mci.c
->> @@ -2,11 +2,13 @@
->>   * Atmel MultiMedia Card Interface driver
->>   *
->>   * Copyright (C) 2004-2008 Atmel Corporation
->> + * Copyright (C) 2009 Rob Emanuele
->
-> I think you can add your copyright on a file that you create or copy and
-> modify from another file.
-
-Noted for future reference.  I wasn't sure what the ettiquete was.
-Just wanted to make sure that if there were questions about the
-changes I introduced people could find me.  Now that I know more about
-the maintaining process I see that is unnecessary.
-
->>
->> -#define ATMCI_DATA_ERROR_FLAGS       (MCI_DCRCE | MCI_DTOE | MCI_OVRE | MCI_UNRE)
->> +#define ATMCI_DATA_ERROR_FLAGS       (MCI_RINDE | MCI_RDIRE | MCI_RCRCE  \
->> +                              | MCI_RENDE | MCI_RTOE | MCI_DCRCE \
->> +                              | MCI_DTOE | MCI_OVRE | MCI_UNRE)
->
-> We will have to consider what Haavard said: some are not data errors.
-> But indeed, if you experienced errors not beeing addressed, we have to
-> deal with them.
->
-
-We'll have to keep looking into this.  Would someone on the AVR side
-be able to evaluate the effects of this on their platform?
-
-I appreciate your time looking this over.  Will you need me to further
-revise this patch or will you incorporate the parts that your
-comfortable with?
-
-Thank you,
-
-Rob Emanuele
+Marco
