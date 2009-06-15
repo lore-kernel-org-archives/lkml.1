@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765587AbZFOSaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765625AbZFOSap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765587AbZFOSaa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZFOSaU
+	id S1765625AbZFOSap (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765328AbZFOSa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:30:20 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:2794 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761150AbZFOSaT convert rfc822-to-8bit (ORCPT
+	Mon, 15 Jun 2009 14:30:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59682 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765048AbZFOSaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:30:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=jX6mRqBP8Swq/hh/OlwUDJ3Qk8JpWi9w6BlSqo3gZt+mTun6MPvNVw3DYF1lw/WnH
-	ruLan2YamkxLknmPJL0fw==
-MIME-Version: 1.0
-In-Reply-To: <20090615132018.GA14555@elf.ucw.cz>
-References: <1245033557-10968-1-git-send-email-swetland@google.com>
-	 <1245033557-10968-2-git-send-email-swetland@google.com>
-	 <1245033557-10968-3-git-send-email-swetland@google.com>
-	 <20090615132018.GA14555@elf.ucw.cz>
-Date: Mon, 15 Jun 2009 11:30:11 -0700
-Message-ID: <a55d774e0906151130x3892346fx5aa1f62c387b2090@mail.gmail.com>
-Subject: Re: [PATCH 2/3] [ARM] msm: make debugging UART (for DEBUG_LL) 
-	configurable
-From: Brian Swetland <swetland@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Mon, 15 Jun 2009 14:30:25 -0400
+Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090615182549.GD11248@elte.hu>
+References: <tip-3ff0141aa3a03ca3388b40b36167d0a37919f3fd@git.kernel.org>
+	 <1245077165.6800.497.camel@laptop>
+	 <Pine.LNX.4.64.0906151623570.5225@sister.anvils>
+	 <1245080486.6800.561.camel@laptop> <1245089065.13761.19316.camel@twins>
+	 <20090615181555.GA11248@elte.hu> <1245089943.13761.19334.camel@twins>
+	 <20090615182549.GD11248@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 15 Jun 2009 20:30:08 +0200
+Message-Id: <1245090608.13761.19349.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 6:20 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> Hi!
->
->> Signed-off-by: Brian Swetland <swetland@google.com>
->> ---
->>  arch/arm/mach-msm/Kconfig                    |   24 ++++++++++++++++++++++++
->>  arch/arm/mach-msm/include/mach/debug-macro.S |   25 ++++++++++++++++++-------
->>  arch/arm/mach-msm/include/mach/msm_iomap.h   |   12 ++++++++++++
->>  arch/arm/mach-msm/include/mach/uncompress.h  |    7 +++++++
->>  arch/arm/mach-msm/io.c                       |    3 +++
->>  5 files changed, 64 insertions(+), 7 deletions(-)
->
-> I'm not sure if this is appropriate for mainline at this point. It
-> seems like few people have debug cable at this point...
->
->> +config MSM_DEBUG_UART
->> +     int
->> +     default 1 if MSM_DEBUG_UART1
->> +     default 2 if MSM_DEBUG_UART2
->> +     default 3 if MSM_DEBUG_UART3
->
-> ...and those that do, have it at fixed uart, no?
+On Mon, 2009-06-15 at 20:25 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
 
-Well, I'd like to support the SoC generally, not just Dream -- it's
-used in a bunch of different devices, and there's nothing that forces
-you to use UART3 everywhere (I certainly have seen some 7k hardware
-that uses UART1 as the debug serial port).
+> but ... look at the APIs i propose above. We dont need _any_ 
+> 'types'.
+> 
+> That type enumeration is basically an open-coded allocator. If we do 
+> a _real_ allocator (a balanced stack of atomic kmaps) we dont need 
+> any of those indices, and all the potential for mismatch goes away 
+> as well - a stack nests trivially with IRQ and NMI and arbitrary 
+> other contexts.
 
-Brian
+You want types because:
+ - they encode the intent, and can be verified
+ - they help keep track of the max nesting depth
+
+In the proposed implementation all type code basically falls away no !
+CONFIG_DEBUG_VM, but is kept around for robustness.
