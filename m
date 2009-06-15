@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZFOWtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbZFOWzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbZFOWtU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 18:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbZFOWtJ
+	id S1757839AbZFOWzk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 18:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZFOWzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 18:49:09 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:54378 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751208AbZFOWtI (ORCPT
+	Mon, 15 Jun 2009 18:55:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55328 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751372AbZFOWzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 18:49:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AokFAEZoNkpMQWQl/2dsb2JhbACBT9JVhA0F
-Date: Mon, 15 Jun 2009 18:49:08 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615224908.GA16661@Krystal>
-References: <4A36A1C7.6080005@zytor.com> <20090615210119.GD24554@elte.hu> <20090615211207.GB12919@Krystal> <20090615211605.GC27100@elte.hu> <20090615213429.GD12919@Krystal> <4A36BF61.10901@zytor.com> <20090615215420.GE12919@Krystal> <4A36C953.8060906@zytor.com> <20090615223038.GA15903@Krystal> <4A36CCFC.8070908@zytor.com>
+	Mon, 15 Jun 2009 18:55:31 -0400
+Date: Mon, 15 Jun 2009 15:54:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: trivial@kernel.org, zygo.blaxell@xandros.com, linux-kernel@vger.kernel.org,
+       Jes Sorensen <jes@trained-monkey.org>
+Subject: Re: [PATCH] LIB: remove unmatched write_lock() in gen_pool_destroy
+Message-Id: <20090615155424.14ad5c6a.akpm@linux-foundation.org>
+In-Reply-To: <4A36CB88.1080300@opengridcomputing.com>
+References: <E1MGFiZ-0006oN-UW@dactyl.ottawa.xandros.ca>
+	<alpine.LNX.2.00.0906152333080.7457@wotan.suse.de>
+	<20090615152608.7f4f6548.akpm@linux-foundation.org>
+	<4A36CB88.1080300@opengridcomputing.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4A36CCFC.8070908@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:47:10 up 107 days, 19:13,  4 users,  load average: 0.41, 0.84,
-	0.70
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> Mathieu Desnoyers wrote:
-> > 
-> > I'm just thinking that touching or not vmalloc'd areas should not be the
-> > first thing that comes into the mind of someone willing to write a
-> > nmi-hooking tracer or oprofile module.
-> > 
+On Mon, 15 Jun 2009 17:30:32 -0500
+Steve Wise <swise@opengridcomputing.com> wrote:
+
+> Andrew Morton wrote:
+> > On Mon, 15 Jun 2009 23:35:31 +0200 (CEST)
+> > Jiri Kosina <trivial@kernel.org> wrote:
+> >
+> >   
+> >>> -	write_lock(&pool->lock);
+> >>>  	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
+> >>>  		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
+> >>>  		list_del(&chunk->next_chunk);
+> >>> -- 
+> >>> 1.5.6.5
+> >>>
+> >>>       
+> >> Hi Zygo,
+> >>
+> >> this doesn't really qualify for trivial tree, as it introduces a 
+> >> significant code change. Adding some CCs.
+> >>     
+> >
+> > yep, I merged it, thanks.
+> >
+> > I wonder why drivers/infiniband/hw/cxgb3 users never noticed this.
+> >   
 > 
-> But is HAS to be.  Otherwise you're in deadlock city anyway.
+> I seem to remember trying to get this removed a few years ago and the 
+> owner didn't want it removed...
 > 
 
-Where is the kernel page fault handler grabbing any lock to service
-in-kernel page faults exactly ?
+void gen_pool_destroy(struct gen_pool *pool)
+{
+	struct list_head *_chunk, *_next_chunk;
+	struct gen_pool_chunk *chunk;
+	int order = pool->min_alloc_order;
+	int bit, end_bit;
 
-Those are usually considered as utterly simple page table fixups,
-nothing more.
 
-Mathieu
+	write_lock(&pool->lock);
+	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
+		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
+		list_del(&chunk->next_chunk);
 
-> 	-hpa
-> 
+		end_bit = (chunk->end_addr - chunk->start_addr) >> order;
+		bit = find_next_bit(chunk->bits, end_bit, 0);
+		BUG_ON(bit < end_bit);
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+		kfree(chunk);
+	}
+	kfree(pool);
+	return;
+}
+
+The write_lock is unneeded and wrong.  Because if any other thread of
+control is concurrently playing with this pool, it will sometimes do a
+use-after-free.
+
+So no other thread of control should have access to this pool, so
+there's no need for the write_lock().
