@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZFOUCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765992AbZFOUFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbZFOUCI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 16:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZFOUB4
+	id S1765992AbZFOUFQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 16:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757560AbZFOUFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 16:01:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45639 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751259AbZFOUBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 16:01:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices
-Date: Mon, 15 Jun 2009 22:02:30 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
-       Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-References: <200906140023.36147.rjw@sisk.pl> <200906150057.32424.rjw@sisk.pl> <20090614161850.01435082@infradead.org>
-In-Reply-To: <20090614161850.01435082@infradead.org>
+	Mon, 15 Jun 2009 16:05:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55531 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756815AbZFOUFD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 16:05:03 -0400
+Date: Mon, 15 Jun 2009 13:04:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@redhat.com,
+       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
+ to use NMI-safe methods
+In-Reply-To: <20090615194344.GA12554@elte.hu>
+Message-ID: <alpine.LFD.2.01.0906151302200.6276@localhost.localdomain>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal>
+ <alpine.LFD.2.01.0906151125320.6276@localhost.localdomain> <20090615183649.GA16999@elte.hu> <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain> <20090615194344.GA12554@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906152202.32094.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 June 2009, Arjan van de Ven wrote:
-> On Mon, 15 Jun 2009 00:57:31 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+
+On Mon, 15 Jun 2009, Ingo Molnar wrote:
 > 
-> > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
-> > > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
-> > > > Hi,
-> > > > 
-> > > > Below is the current version of my "run-time PM for I/O devices"
-> > > > patch.
-> > > > 
-> > > > I've done my best to address the comments received during the
-> > > > recent discussions, but at the same time I've tried to make the
-> > > > patch only contain the most essential things.  For this reason,
-> > > > for example, the sysfs interface is not there and it's going to
-> > > > be added in a separate patch.
-> > > > 
-> > > > Please let me know if you want me to change anything in this
-> > > > patch or to add anything new to it.  [Magnus, I remember you
-> > > > wanted something like ->runtime_wakeup() along with
-> > > > ->runtime_idle(), but I'm not sure it's really necessary.  Please
-> > > > let me know if you have any particular usage scenario for it.]
-> > 
-> > Appended is an update of the patch addressing the today's comments
-> > from Magnus.
+> Well i guess it depends. For server apps it is true - syscalls are a 
+> lot more dominant, MMs are long-running so any startup cost gets 
+> amortized and pagefaults are avoided.
 > 
-> few comments from me
-> 
-> 1) For the usecases for upcoming hw from Intel (where you really can't talk to the hw while it's in powersave mode); the locking needs to be
->    IRQ safe. Think of it like this:
->    Lets assume you get a (shared) interrupt from your device. In the handler you need to make 100% sure that 
->     1) you're not suspended at this point .. basically do a forced wakeup right there and then
->     2) assure that you're not about to suspend
+> For something like a kernel build we have 7 times as many pagefaults 
+> as syscalls:
 
-Does it mean we need to use spin_[un]lock_irq[save|restore]() everywhere in the
-framework?
+Ingo - calm down.
 
-> 2) You use jiffies in the API; I would suggest exposing milliseconds instead and internally convert to jiffies;
->    milliseconds tends to be a much more natural unit for this sort of thing
+This is not about page faults.
 
-OK
+This is purely about taps FROM KERNEL SPACE.
 
-Best,
-Rafael
+Yes, for the kernel build we have 7 times as many page faults as system 
+calls, BUT I BET 99.9% of them are from user mode!
+
+The whole "open-code iret" only works for exceptions that happened in 
+kernel mode. That's a _vanishingly_ small number (outside of device 
+interrupts that happen during idle).
+
+		Linus
