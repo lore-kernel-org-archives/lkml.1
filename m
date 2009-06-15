@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZFOHeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZFOHgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbZFOHeO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbZFOHeA
+	id S1756570AbZFOHgw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbZFOHgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:34:00 -0400
-Received: from web36707.mail.mud.yahoo.com ([209.191.85.41]:33145 "HELO
-	web36707.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751374AbZFOHd7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:33:59 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 03:33:59 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type;
-  b=HNLsK1uEJ2X2bj6E146X8ckLGyzyo6Bpy8N8Bvbx+9BcxbGZfo65kdmvOZE8wHqEWLE2+N0RtjJfGd1deI+gpl3FD7sj6f9PevDvApi0jG7rDiOFQNMcYdnAnHGzEJQIAPnQfTAbQRGrh13o56OpbUOBYijVoAG4LF9ZTcWE508=;
-Message-ID: <801926.84487.qm@web36707.mail.mud.yahoo.com>
-X-YMail-OSG: YZ6AHfMVM1kfU47jLOCqYlN3zBTypUBki4boPwlewgLtBshrHKJaCfFchBODgq4dmYmGvehvn_4yZZ0mFZjzCTvaGF5qq3PISa3HeNW2IRNMZy_zoUbfnSlRso9WOaoTBpDknGzRqzSdE85YnSfYYAC7MwEgwexSdX2NJU1EvVFTdeGPujLxDjHL.SYLYENdTiix.2CJEnRSGkjo_UHPZgFFcsEdAx52ZCAxtSWjcIMwwsBsQoc7YTGj.eOY66SHf7c0W.UXijUYV_JLHbz3Gd8mCIDa_aWnysPkfcn0OnPGeVOvk9TXlqPTQs07IqBRNRV84w--
-X-Mailer: YahooMailClassic/5.4.12 YahooMailWebService/0.7.289.15
-Date: Mon, 15 Jun 2009 00:27:21 -0700 (PDT)
-From: Jan Naceradsky <naceradsky@yahoo.com>
-Subject: Re: [uClinux-dev] NIOS2 and TSE Marvell 88E1111
-To: Mike Frysinger <vapier@gentoo.org>,
-       uClinux development list <uclinux-dev@uclinux.org>
-Cc: uclinux-dev@uclinux.org, linux-kernel@vger.kernel.org,
-       Jie Zhang <jie.zhang@analog.com>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       David McCullough <davidm@snapgear.com>
+	Mon, 15 Jun 2009 03:36:44 -0400
+Received: from rosi.naasa.net ([212.8.0.13]:43699 "EHLO rosi.naasa.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750796AbZFOHgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 03:36:43 -0400
+From: Joerg Platte <jplatte@naasa.net>
+Reply-To: jplatte@naasa.net
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [2.6.30] Kernel bug with dock driver
+Date: Mon, 15 Jun 2009 09:36:39 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; i686; ; )
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200906142100.48621.jplatte@naasa.net> <20090615020226.GA30720@khazad-dum.debian.net>
+In-Reply-To: <20090615020226.GA30720@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200906150936.41983.jplatte@naasa.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Monday, 15. June 2009 schrieb Henrique de Moraes Holschuh:
+> Do it in single user mode with udev helpers *killed*, but just release
 
-Hello,
-have you somebody uClinux running on StratixIII DSP kit with TSE Marvell 88E1111 ethernet chip ? 
-When i use the 
-/>ifconfig eth0 hw ether 00:07:ed:ff:4a:d7
-/>ifconfig eth0 192.168.1.234
-/>ifconfig eth0 up
-/>route add default gw 192.168.1.254
-linux report - Trying 10/HALF - in this moment i don`t know what it does ?
-After this when i try ping to my pc, it finish by request timeout (and tx led on board don`t blink). 
-Where could be mistake ? The example of webserver work fine and simple socket server too.
+Today I tried to reproduce the bug in runlevel 2 (Debian based system) without 
+success, even after a suspend to disk. In the past this was one method to 
+trigger bugs with the bay.
 
-Thank you.
+> the lever, _don't_ pull the drive off the bay, unless you do verify that
+> the bay LED went off.
+>
+> ***NEVER*** remove an Ultrabay device with the Ultrabay LED still lit,
+> especially if it is a PATA device.
 
+I did this accidentally some times before and the bay is still working. But 
+I'll try to not to do it again :)
 
-      
+> If the bug cannot be reproduced in that condition, it is happening
+> because userspace is trapping the lever release event (as it should),
+> and doing something the kernel doesn't like with it (which is a bug
+> in the kernel in any case).  That might help you track down a better
+> way to reproduce the issue.
+
+Userspace scripts are written by me (based on some information from 
+thinkwiki). 
+The udev rule looks like this:
+ATTR{type}=="ata_bay", ATTR{docked}=="1", KERNEL=="dock.*", ACTION=="change", 
+SUBSYSTEM=="platform", RUN+="/usr/local/sbin/ultrabay_open"
+
+and ultrabay_open contains the following lines of shell code:
+#!/bin/bash
+ULTRABAY_SYSDIR='/sys/class/scsi_device/1:0:0:0/device'
+shopt -s nullglob
+
+if [ -d $ULTRABAY_SYSDIR ]; then
+        sync
+        echo 1 > $ULTRABAY_SYSDIR/delete
+        logger "removed $ULTRABAY_SYSDIR"
+fi
+sync
+# Turn off power to the UltraBay:
+if [ -f /sys/devices/platform/dock.2/undock ]; then
+        echo 1 > /sys/devices/platform/dock.2/undock
+        logger "/sys/devices/platform/dock.2/undock"
+else
+        echo eject > /proc/acpi/ibm/bay
+fi
+# Tell the user we're OK
+logger "/proc/acpi/ibm/beep"
+echo 12 > /proc/acpi/ibm/beep
+
+What I discovered today after modifying ultrabay_open was that in some cases 
+the script is called again directly after inserting a drive to the bay. But 
+only, if the execution of this script takes some more time (I added a sleep 2 
+after the second sync to be able to see which command might trigger the bug).
+
+So maybe yesterday this script was called twice and the kernel does not like 
+to undock a device while it is in the process of being undocked? How should I 
+modify the udev rule to prevent another execution each time a drive is 
+inserted into the bay?
+
+regards,
+Jörg
+
