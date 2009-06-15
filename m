@@ -1,115 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZFOHTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZFOHWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbZFOHTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZFOHTM
+	id S1754279AbZFOHWJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZFOHVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:19:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56691 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbZFOHTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:19:11 -0400
-Date: Mon, 15 Jun 2009 09:19:07 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
-Message-ID: <20090615071907.GA8665@wotan.suse.de>
-References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org>
+	Mon, 15 Jun 2009 03:21:54 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:47240 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbZFOHVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 03:21:53 -0400
+Subject: Re: [PATCH][BUILD FAILURE 03/04] Next June 04:PPC64 randconfig
+	[drivers/net/lance.o]
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <1245049899.19217.56.camel@pasglop>
+References: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
+	 <1245048698.5239.9.camel@subratamodak.linux.ibm.com>
+	 <1245049899.19217.56.camel@pasglop>
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 15 Jun 2009 12:51:49 +0530
+Message-Id: <1245050509.5239.11.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615070914.GC31969@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 09:09:14AM +0200, Andi Kleen wrote:
-> On Mon, Jun 15, 2009 at 08:44:47AM +0200, Nick Piggin wrote:
-> > > 
-> > > So IMHO it's OK for .31 as long as we agree on the user interfaces,
-> > > ie. /proc/sys/vm/memory_failure_early_kill and the hwpoison uevent.
-> > > 
-> > > It comes a long way through numerous reviews, and I believe all the
-> > > important issues and concerns have been addressed. Nick, Rik, Hugh,
-> > > Ingo, ... what are your opinions? Is the uevent good enough to meet
-> > > your request to "die hard" or "die gracefully" or whatever on memory
-> > > failure events?
+On Mon, 2009-06-15 at 17:11 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-06-15 at 12:21 +0530, Subrata Modak wrote:
+> 
+> > Benjamin,
 > > 
-> > Uevent? As in, send a message to userspace? I don't think this
-> > would be ideal for a fail-stop/failover situation.
+> > I am not sure whether you liked the following patch to solve the above
+> > problem. Do, you want me address some other issue(s)/fixes for this ?
 > 
-> Agreed.
+> I suppose ... in fact some old PReP machines can even have ISA slots
+> iirc, but it's not going to do good with machines that have an iommu...
 > 
-> For failover you typically want a application level heartbeat anyways
-> to guard against user space software problems and if there's a kill then it
-> would catch it. Also again in you want to check against all corruptions you
-> have to do it in the low level handler or better watch corrected
-> events too to predict failures (but the later is quite hard to do generally). 
-> To some extent the first is already implemented on x86, e.g. set
-> the tolerance level to 0 will give more aggressive panics.
-> 
-> > I can't see a good reason to rush to merge it.
-> 
-> The low level x86 code for MCA recovery is in, just this high level
-> part is missing to kill the correct process. I think it would be good to merge 
-> a core now.  The basic code seems to be also as well tested as we can do it 
-> right now and exposing it to more users would be good. It's undoubtedly not 
-> perfect yet, but that's not a requirement for merge.
-> 
-> There's a lot of fancy stuff that could be done in addition,
-> but that's not really needed right now and for a lot of the fancy
-> ideas (I have enough on my own :) it's dubious they are actually
-> worth it.
+> IE. Nobody should use that crap, period.
 
-Just my opinion. Normally it takes a lot longer for VM patches
-like this to go through, but it's not really up to me anyway.
-If Andrew or Linus has it in their head to merge it in 2.6.31,
-it's going to get merged ;) 
+Great,
 
- 
-> > IMO the userspace-visible changes have maybe not been considered
-> > too thoroughly, which is what I'd be most worried about. I probably
-> > missed seeing documentation of exact semantics and situations
-> > where admins should tune things one way or the other.
+Can you please make some changes at drivers/net/Kconfig so that this guy
+does not build for the PPC64 systems ?
+
+Regards--
+Subrata
+
 > 
-> There's only a single tunable anyways, early kill vs late kill.
+> Cheers,
+> Ben.
 > 
-> For KVM you need early kill, for the others it remains to be seen.
-
-Right. It's almost like you need to do a per-process thing, and
-those that can handle things (such as the new SIGBUS or the new
-EIO) could get those, and others could be killed.
-
-Early-kill for KVM does seem like reasonable justification on the
-surface, but when I think more about it, I wonder does the guest
-actually stand any better chance to correct the error if it is
-reported at time T rather than T+delta? (who knows what the page
-will be used for at any given time).
-
-
-> > I hope it is going to be merged with an easy-to-use fault injector,
-> > because that is the only way Joe kernel developer is ever going to
-> > test it.
+> Cheers,
+> Ben.
 > 
-> See patches 13 and 14. In addition there's another low level x86
-> injector too.
+> > Regards--
+> > Subrata
+> > 
+> > > 
+> > > --- linux-2.6.30-rc8/arch/powerpc/include/asm/io.h.orig	2009-06-10 21:56:49.000000000 -0500
+> > > +++ linux-2.6.30-rc8/arch/powerpc/include/asm/io.h	2009-06-10 22:21:35.000000000 -0500
+> > > @@ -680,6 +680,9 @@ extern void __iounmap_at(void *ea, unsig
+> > >  #define mmio_outsw(addr, src, count)	writesw(addr, src, count)
+> > >  #define mmio_outsl(addr, src, count)	writesl(addr, src, count)
+> > > 
+> > > +#define isa_virt_to_bus		virt_to_phys
+> > > +#define isa_bus_to_virt		phys_to_virt
+> > > +
+> > >  /**
+> > >   *	virt_to_phys	-	map virtual addresses to physical
+> > >   *	@address: address to remap
+> > > 
+> > > ---
+> > > Regards--
+> > > Subrata
+> > > 
 > 
-> There's also a test suite available (mce-test on kernel.org git)
 
-OK, I probably saw some "FOR TETSING" things and wrongly assumed the
-injector was not supposed to be merged.
-
-Thanks,
-Nick
