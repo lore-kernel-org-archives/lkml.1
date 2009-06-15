@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933588AbZFOTYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933581AbZFOT1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933588AbZFOTYU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZFOTYN
+	id S933581AbZFOT1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZFOT1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:24:13 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:42332 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbZFOTYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:24:12 -0400
-Date: Mon, 15 Jun 2009 21:24:09 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmc_spi: fail gracefully if host or card do not support
- the switch command
-Message-ID: <20090615212409.14e7a51b@mjolnir.ossman.eu>
-In-Reply-To: <200906151036.05884.wolfgang.mues@auerswald.de>
-References: <200906111713.27504.wolfgang.mues@auerswald.de>
-	<20090613130829.49216355@mjolnir.ossman.eu>
-	<200906151036.05884.wolfgang.mues@auerswald.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+	Mon, 15 Jun 2009 15:27:30 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:42546 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753110AbZFOT13 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 15:27:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AokFAKE6NkpMQWQl/2dsb2JhbACBT9UbhA0F
+Date: Mon, 15 Jun 2009 15:27:20 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, paulus@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, efault@gmx.de, jeremy@goop.org,
+       npiggin@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090615192720.GA9056@Krystal>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal> <1245091917.6741.185.camel@laptop> <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop> <4A369CD8.3090505@zytor.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-29012-1245093853-0001-2"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4A369CD8.3090505@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:24:07 up 107 days, 15:50,  3 users,  load average: 0.65, 0.48,
+	0.46
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Peter Zijlstra wrote:
+> > On Mon, 2009-06-15 at 14:59 -0400, Mathieu Desnoyers wrote:
+> >> * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> >>> On Mon, 2009-06-15 at 14:48 -0400, Mathieu Desnoyers wrote:
+> >>>> we should not care that much about the performance hit of
+> >>>> saving/restoring the cr2 register at each nmi entry/exit.
+> >>> But we do, perf counters very much cares about nmi performance.
+> >>>
+> >> To a point where it cannot afford a simple register save/restore ?
+> >>
+> >> There is "caring" and "_caring_". I am tempted to ask what NMI handler
+> >> execution frequency you have in mind here to figure out if we are not
+> >> trying to optimize sub-nanoseconds per minutes. ;)
+> > 
+> > Ah, well, I have no idea who expensive cr2 is, if its like a regular
+> > register then it should be fine. If however its tons more expensive then
+> > we should really avoid it.
+> > 
+> > As to the freq, 100kHz would be nice ;-)
+> > 
+> 
+> Writing control registers is serializing, so it's a lot more expensive
+> than writing a normal register; my *guess* is that it will be on the
+> order of 100-200 cycles.
+> 
+> That is not based on any actual information.
+> 
 
---=_freyr.ossman.eu-29012-1245093853-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Then how about just writing to the cr2 register *if* it has changed
+while the NMI handler was running ?
 
-On Mon, 15 Jun 2009 10:36:05 +0200
-Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
+if (unlikely(read_cr2() != saved_cr2)))
+	write_cr2(saved_cr2)
 
-> Am Samstag, 13. Juni 2009 schrieb Pierre Ossman:
-> > For SD there are several checks=20
-> > before the switch command is actually issued.
->=20
-> But there are two cases not covered by these checks:
->=20
-> a) the switch command is supported, but the card is not capable of switch=
-ing=20
-> to 50 MHz.
->=20
+Mathieu
 
-But a successful switch command (even if the response is that the card
-cannot do it) should not need the checks you added. The switch data
-structure is checked further down.
+> 	-hpa
+> 
 
-> b) the card rejects the switch command in SPI mode, because it is not=20
-> mandatory here.
-
-I cannot see anything in the spec backing up this claim.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-29012-1245093853-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAko2n9wACgkQ7b8eESbyJLhp9ACg6Fw/TCGQS2wA0qZYHGrYAUHA
-E/UAn02FvIPUnzV3WjJDOUYESBj7akgy
-=uBxw
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-29012-1245093853-0001-2--
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
