@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbZFOMsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZFOMvC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753513AbZFOMsh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 08:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbZFOMs2
+	id S1757019AbZFOMvC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 08:51:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZFOMuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 08:48:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51791 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbZFOMs1 (ORCPT
+	Mon, 15 Jun 2009 08:50:52 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:40230 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753777AbZFOMuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 08:48:27 -0400
-Date: Mon, 15 Jun 2009 08:48:27 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] tracing: some fixes for 2.6.31
-In-Reply-To: <20090615122152.GA6044@nowhere>
-Message-ID: <alpine.DEB.2.00.0906150848100.16299@gandalf.stny.rr.com>
-References: <4A35B84B.40904@cn.fujitsu.com> <20090615122152.GA6044@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 15 Jun 2009 08:50:52 -0400
+Date: Mon, 15 Jun 2009 13:50:25 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, Alek Du <alek.du@intel.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
+	gpio_alt_func features to GPIOLIB
+Message-ID: <20090615125025.GB19873@fluff.org.uk>
+References: <20090615171502.2a981bf5@dxy.sh.intel.com> <20090615095023.GA19873@fluff.org.uk> <20090615100253.GC6106@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615100253.GC6106@sirena.org.uk>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 15 Jun 2009, Frederic Weisbecker wrote:
-
-> On Mon, Jun 15, 2009 at 10:56:11AM +0800, Li Zefan wrote:
-> > Some small but not trival fixes for 2.6.31:
-> > 
-> > [PATCH 1/4] tracing: fix a typo in tracing_cpumask_write()
-> > [PATCH 2/4] tracing: replace a GFP_ATOMIC with GFP_KERNEL allocation
-> > [PATCH 3/4] tracing/filters: operand can be negative
-> > [PATCH 4/4] tracing/filters: strloc should be unsigned short
-> > ---
-> >  kernel/trace/trace.c               |    8 ++++----
-> >  kernel/trace/trace_events_filter.c |    9 +++++++--
-> >  2 files changed, 11 insertions(+), 6 deletions(-)
-> > 
-> > 
+On Mon, Jun 15, 2009 at 11:02:53AM +0100, Mark Brown wrote:
+> On Mon, Jun 15, 2009 at 10:50:23AM +0100, Ben Dooks wrote:
+> > On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
 > 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com> for
-> the whole series. Thanks!
+> > > * gpio_alt_func is to set pin as alternative function or GPIO.
+> 
+> > gpio_alt_func is feature creep, I don't really belive this is the
+> > best place to put it as it will be difficult to actually make this
+> > generic for all gpio platforms.
+> 
+> Since the proposed API just passes a value through to the driver for the
+> GPIO chip it looks generic enough - each chip can define whatever set of
+> constants it likes.  I'd expect a large proportion of driver specific
+> APIs would end up just the same.
+> 
+> Given the number of manufacturers that don't use a separate term like
+> the PXA MFP for the alternative functions of their GPIOs it makes sense
+> to have a gpiolib API for this.  Without one you end up having each
+> driver needing to add its own API, and since the pins are just referred
+> to as GPIOs in the documentation the API will have that in the name and
+> look like it ought to be connected with gpiolib.
 
-Yeah, I got a few patches over the weekend, I'll go and pull these and the 
-others in.
+Yes, however I can see some horrible problems ahead as soon as people
+try and then try and standardise the values passed through this. The
+GPIO API was meant to be a lightweight way of allowing drivers at
+GPIOs, now everyone seems to want to push whatever they feel like in.
 
-Thanks,
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
--- Steve
-
+  'a smiley only costs 4 bytes'
