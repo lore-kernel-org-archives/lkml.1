@@ -1,37 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765194AbZFOSAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbZFOSAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765194AbZFOSAW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765046AbZFOR75
+	id S932155AbZFOSAo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765071AbZFOR76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:59:57 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46682 "EHLO mx1.suse.de"
+	Mon, 15 Jun 2009 13:59:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50050 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764723AbZFOR75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765024AbZFOR75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 15 Jun 2009 13:59:57 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, npiggin@suse.de
-Subject: [PATCH 0/10] Fix page_mkwrite() for blocksize < pagesize (version 3)
-Date: Mon, 15 Jun 2009 19:59:47 +0200
-Message-Id: <1245088797-29533-1-git-send-email-jack@suse.cz>
+Cc: linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, npiggin@suse.de,
+       Jan Kara <jack@suse.cz>
+Subject: [PATCH 07/11] vfs: Unmap underlying metadata of new data buffers only when buffer is mapped
+Date: Mon, 15 Jun 2009 19:59:54 +0200
+Message-Id: <1245088797-29533-8-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1245088797-29533-1-git-send-email-jack@suse.cz>
+References: <1245088797-29533-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When we do delayed allocation of some buffer, we want to signal to VFS that
+the buffer is new (set buffer_new) so that it properly zeros out everything.
+But we don't have the buffer mapped yet so we cannot really unmap underlying
+metadata in this state. Make VFS avoid doing unmapping of metadata when the
+buffer is not yet mapped.
 
-patches below are an attempt to solve problems filesystems have with
-page_mkwrite() when blocksize < pagesize (see the changelog of the second patch
-for details).
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/buffer.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-Could someone please review them so that they can get merged - especially the
-generic VFS/MM part? It fixes observed problems (WARN_ON triggers) for ext4 and
-makes ext2/ext3 behave more nicely (mmapped write getting page fault instead
-of silently discarding data).
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 80e2630..7eb1710 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1683,8 +1683,9 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 			if (buffer_new(bh)) {
+ 				/* blockdev mappings never come here */
+ 				clear_buffer_new(bh);
+-				unmap_underlying_metadata(bh->b_bdev,
+-							bh->b_blocknr);
++				if (buffer_mapped(bh))
++					unmap_underlying_metadata(bh->b_bdev,
++						bh->b_blocknr);
+ 			}
+ 		}
+ 		bh = bh->b_this_page;
+@@ -1869,8 +1870,9 @@ static int __block_prepare_write(struct inode *inode, struct page *page,
+ 			if (err)
+ 				break;
+ 			if (buffer_new(bh)) {
+-				unmap_underlying_metadata(bh->b_bdev,
+-							bh->b_blocknr);
++				if (buffer_mapped(bh))
++					unmap_underlying_metadata(bh->b_bdev,
++						bh->b_blocknr);
+ 				if (PageUptodate(page)) {
+ 					clear_buffer_new(bh);
+ 					set_buffer_uptodate(bh);
+@@ -2683,7 +2685,7 @@ int nobh_write_begin(struct file *file, struct address_space *mapping,
+ 			goto failed;
+ 		if (!buffer_mapped(bh))
+ 			is_mapped_to_disk = 0;
+-		if (buffer_new(bh))
++		if (buffer_new(bh) && buffer_mapped(bh))
+ 			unmap_underlying_metadata(bh->b_bdev, bh->b_blocknr);
+ 		if (PageUptodate(page)) {
+ 			set_buffer_uptodate(bh);
+-- 
+1.6.0.2
 
-The series is against Linus's tree from today. The differences against previous
-version are one bugfix in ext3 delalloc implementation... Please test and review.
-Thanks.
-
-									Honza
