@@ -1,111 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935867AbZFOWCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935695AbZFOWDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935867AbZFOWCS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 18:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbZFOWCG
+	id S935695AbZFOWDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 18:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbZFOWDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 18:02:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53310 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754947AbZFOWCF (ORCPT
+	Mon, 15 Jun 2009 18:03:15 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:51406 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755729AbZFOWDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 18:02:05 -0400
-Date: Mon, 15 Jun 2009 15:01:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2/2] procfs: provide stack information for threads V0.8
-Message-Id: <20090615150121.ce04ba08.akpm@linux-foundation.org>
-In-Reply-To: <1244618442.17616.5.camel@wall-e>
-References: <1238511505.364.61.camel@matrix>
-	<20090401193135.GA12316@elte.hu>
-	<1244618442.17616.5.camel@wall-e>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Jun 2009 18:03:14 -0400
+Message-ID: <4A36C55F.6060002@opengridcomputing.com>
+Date: Mon, 15 Jun 2009 17:04:15 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Jiri Kosina <trivial@kernel.org>
+CC: Zygo Blaxell <zygo.blaxell@xandros.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] LIB: remove unmatched write_lock() in gen_pool_destroy
+References: <E1MGFiZ-0006oN-UW@dactyl.ottawa.xandros.ca> <alpine.LNX.2.00.0906152333080.7457@wotan.suse.de>
+In-Reply-To: <alpine.LNX.2.00.0906152333080.7457@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009 09:20:41 +0200
-Stefani Seibold <stefani@seibold.net> wrote:
 
-> This is the newest version of the formaly named "detailed stack info"
-> patch which give you a better overview of the userland application stack
-> usage, especially for embedded linux.
-> 
-> Currently you are only able to dump the main process/thread stack usage
-> which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-> information about the consumed stack memory of the the threads.
-> 
-> There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-> marks the vm mapping where the thread stack pointer reside with "[thread
-> stack xxxxxxxx]". xxxxxxxx is the maximum size of stack. This is a
-> value information, because libpthread doesn't set the start of the stack
-> to the top of the mapped area, depending of the pthread usage.
-> 
-> A sample output of /proc/<pid>/task/<tid>/maps looks like:
-> 
-> 08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
-> 08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
-> 0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
-> a7d12000-a7d13000 ---p 00000000 00:00 0 
-> a7d13000-a7f13000 rw-p 00000000 00:00 0          [thread stack: 001ff4b4]
-> a7f13000-a7f14000 ---p 00000000 00:00 0 
-> a7f14000-a7f36000 rw-p 00000000 00:00 0 
-> a7f36000-a8069000 r-xp 00000000 03:00 4222       /lib/libc.so.6
-> a8069000-a806b000 r--p 00133000 03:00 4222       /lib/libc.so.6
-> a806b000-a806c000 rw-p 00135000 03:00 4222       /lib/libc.so.6
-> a806c000-a806f000 rw-p 00000000 00:00 0 
-> a806f000-a8083000 r-xp 00000000 03:00 14462      /lib/libpthread.so.0
-> a8083000-a8084000 r--p 00013000 03:00 14462      /lib/libpthread.so.0
-> a8084000-a8085000 rw-p 00014000 03:00 14462      /lib/libpthread.so.0
-> a8085000-a8088000 rw-p 00000000 00:00 0 
-> a8088000-a80a4000 r-xp 00000000 03:00 8317       /lib/ld-linux.so.2
-> a80a4000-a80a5000 r--p 0001b000 03:00 8317       /lib/ld-linux.so.2
-> a80a5000-a80a6000 rw-p 0001c000 03:00 8317       /lib/ld-linux.so.2
-> afaf5000-afb0a000 rw-p 00000000 00:00 0          [stack]
-> ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
-> 
->  
-> Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-> which will you give the current stack usage in kb.
-> 
-> A sample output of /proc/self/status looks like:
-> 
-> Name:	cat
-> State:	R (running)
-> Tgid:	507
-> Pid:	507
-> .
-> .
-> .
-> CapBnd:	fffffffffffffeff
-> voluntary_ctxt_switches:	0
-> nonvoluntary_ctxt_switches:	0
-> Stack usage:	12 kB
-> 
-> I also fixed stack base address in /proc/<pid>/{task/*,}/stat to the
-> base address of the associated thread stack and not the one of the main
-> process. This makes more sense.
-> 
+Jiri Kosina wrote:
+> On Fri, 12 Jun 2009, Zygo Blaxell wrote:
 >
-> ...
+>   
+>> Fix mismatch between calls to write_lock() and write_unlock() in
+>> gen_pool_destroy by removing the write_lock().
+>>
+>> Signed-off-by: Zygo Blaxell <zygo.blaxell@xandros.com>
+>> ---
+>> There is a call to write_lock() in gen_pool_destroy which is not balanced
+>> by any corresponding write_unlock().  This causes problems with preemption
+>> because the preemption-disable counter is incremented in the write_lock()
+>> call, but never decremented by any call to write_unlock().  This bug is
+>> difficult to observe in the field because only two in-tree drivers call
+>> gen_pool_destroy, and one of them is non-x86 arch-specific code.
+>>
+>> To fix this, I have chosen removing the write_lock() over adding a
+>> write_unlock() because the lock in question is inside a structure which
+>> is being freed.  Any other thread that waited to acquire such a lock
+>> while gen_pool_destroy was running would find itself holding a lock
+>> in recently-freed or about-to-be-freed memory.  This would result in
+>> memory corruption or a crash whether &pool->lock is held or not.
+>>
+>> Using a pool while it is in the process of being destroyed is a bug that
+>> must be resolved outside of the gen_pool_destroy function.
+>>
+>>  lib/genalloc.c |    1 -
+>>  1 files changed, 0 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/lib/genalloc.c b/lib/genalloc.c
+>> index f6d276d..eed2bdb 100644
+>> --- a/lib/genalloc.c
+>> +++ b/lib/genalloc.c
+>> @@ -85,7 +85,6 @@ void gen_pool_destroy(struct gen_pool *pool)
+>>  	int bit, end_bit;
+>>  
+>>  
+>> -	write_lock(&pool->lock);
+>>  	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
+>>  		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
+>>  		list_del(&chunk->next_chunk);
+>> -- 
+>> 1.5.6.5
+>>
+>>     
 >
-> --- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
-> +++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
-> @@ -1429,6 +1429,7 @@
->  	/* state flags for use by tracers */
->  	unsigned long trace;
->  #endif
-> +	unsigned long stack_start;
->  };
->  
+> Hi Zygo,
+>
+> this doesn't really qualify for trivial tree, as it introduces a 
+> significant code change. Adding some CCs.
+>
+>   
 
-A `stack_start' in the task_struct.  This is a bit confusing - we
-already have a `void *stack' in there.  Perhaps this should be named
-user_stack_start or something?
+Looks ok to me.  Its dumb to aquire the lock you're gonna free anyway.  
+Maybe some BUG_ON() that sez nobody better be holding this lock?
+
 
 
