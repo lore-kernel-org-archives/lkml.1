@@ -1,56 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZFOIPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZFOIQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbZFOIPP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZFOIO5
+	id S1757128AbZFOIQY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 04:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZFOIQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:14:57 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54075 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbZFOIO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:14:56 -0400
-Date: Mon, 15 Jun 2009 10:14:53 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Mon, 15 Jun 2009 04:16:14 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49633 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbZFOIQM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 04:16:12 -0400
+Date: Mon, 15 Jun 2009 10:15:16 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Oskar Schirmer <os@emlix.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
-Message-ID: <20090615081453.GC8665@wotan.suse.de>
-References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 7/9 -v2] imx: serial: use rational library function
+Message-ID: <20090615081516.GB31396@pengutronix.de>
+References: <1244635716-23315-1-git-send-email-os@emlix.com> <1244635716-23315-8-git-send-email-os@emlix.com> <20090612071649.GA31396@pengutronix.de> <20090615074032.GB3984@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090615064447.GA18390@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090615074032.GB3984@emlix.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 10:14:29 up 34 days, 22:38, 18 users,  load average: 6.56, 6.25,
+	4.79
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 08:44:47AM +0200, Nick Piggin wrote:
-> Did we verify with filesystem maintainers (eg. btrfs) that the
-> !ISREG test will be enough to prevent oopses?
+On Mon, Jun 15, 2009 at 09:40:33AM +0200, Oskar Schirmer wrote:
+> On Fri, Jun 12, 2009 at 09:16:49 +0200, Sascha Hauer wrote:
+> > Hi Oskar,
+> > 
+> > On Wed, Jun 10, 2009 at 02:08:34PM +0200, Oskar Schirmer wrote:
+> > > for calculation of numerator and denominator
+> > > used in baud rate setting, use generic library function
+> > > for optimum settings.
+> > > 
+> > > Signed-off-by: Oskar Schirmer <os@emlix.com>
+> > > ---
+> > >  drivers/serial/Kconfig |    1 +
+> > >  drivers/serial/imx.c   |   30 ++++++++++--------------------
+> > >  2 files changed, 11 insertions(+), 20 deletions(-)
+> > > 
+> > > diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+> > > index 343e3a3..0ecb4c4 100644
+> > > --- a/drivers/serial/Kconfig
+> > > +++ b/drivers/serial/Kconfig
+> > > @@ -833,6 +833,7 @@ config SERIAL_IMX
+> > >  	bool "IMX serial port support"
+> > >  	depends on ARM && (ARCH_IMX || ARCH_MXC)
+> > >  	select SERIAL_CORE
+> > > +	select RATIONAL
+> > >  	help
+> > >  	  If you have a machine based on a Motorola IMX CPU you
+> > >  	  can enable its onboard serial port by enabling this option.
+> > > diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
+> > > index 60892a2..11f93e2 100644
+> > > --- a/drivers/serial/imx.c
+> > > +++ b/drivers/serial/imx.c
+> > > @@ -41,6 +41,7 @@
+> > >  #include <linux/serial_core.h>
+> > >  #include <linux/serial.h>
+> > >  #include <linux/clk.h>
+> > > +#include <linux/rational.h>
+> > >  
+> > >  #include <asm/io.h>
+> > >  #include <asm/irq.h>
+> > > @@ -670,7 +671,8 @@ imx_set_termios(struct uart_port *port, struct ktermios *termios,
+> > >  	unsigned long flags;
+> > >  	unsigned int ucr2, old_ucr1, old_txrxen, baud, quot;
+> > >  	unsigned int old_csize = old ? old->c_cflag & CSIZE : CS8;
+> > > -	unsigned int div, num, denom, ufcr;
+> > > +	unsigned int div, ufcr;
+> > > +	unsigned long num, denom;
+> > >  
+> > >  	/*
+> > >  	 * If we don't support modem control lines, don't allow
+> > > @@ -772,32 +774,20 @@ imx_set_termios(struct uart_port *port, struct ktermios *termios,
+> > >  	if (!div)
+> > >  		div = 1;
+> > >  
+> > > -	num = baud;
+> > > -	denom = port->uartclk / div / 16;
+> > > +	rational_best_approximation(16 * div * baud, sport->port.uartclk,
+> > > +		1 << 16, 1 << 16, &num, &denom);
+> > 
+> > Reading the example you have given for rational_best_approximation() in
+> > the last patch this should be (1 << 16) - 1, right?
+> 
+> No, the registers hold values minus one, e.g.
+> to select numerator = 14, set UBIR = 13.
+> Thus, the maximum value for rate calculation
+> is 1 << 16, not 0xFFFF. For the "minus 1", see below.
 
-BTW. this is quite a significant change I think and not
-really documented well enough. Previously a filesystem
-will know exactly when and why pagecache in a mapping
-under its control will be truncated (as opposed to
-invalidated).
+Ah, I see.
+I'm fine with this patch and the rest of the series. so applied to
+mxc-master.
 
-They even have opportunity to hold locks such as i_mutex.
+Sascha
 
-And depending on what they do, they could do interesting
-things even with ISREG files.
+> 
+> > 
+> > >  
+> > > -	/* shift num and denom right until they fit into 16 bits */
+> > > -	while (num > 0x10000 || denom > 0x10000) {
+> > > -		num >>= 1;
+> > > -		denom >>= 1;
+> > > -	}
+> > > -	if (num > 0)
+> > > -		num -= 1;
+> > > -	if (denom > 0)
+> > > -		denom -= 1;
+> > > -
+> > > -	writel(num, sport->port.membase + UBIR);
+> > > -	writel(denom, sport->port.membase + UBMR);
+> > > -
+> > > -	if (div == 7)
+> > > -		div = 6; /* 6 in RFDIV means divide by 7 */
+> > > -	else
+> > > -		div = 6 - div;
+> > > +	num -= 1;
+> > > +	denom -= 1;
+> 
+> This is where rate calculation values are
+> decreased for register purpose.
+> 
+> > >  
+> > >  	ufcr = readl(sport->port.membase + UFCR);
+> > >  	ufcr = (ufcr & (~UFCR_RFDIV)) |
+> > >  	    (div << 7);
+> > >  	writel(ufcr, sport->port.membase + UFCR);
+> > >  
+> > > +	writel(num, sport->port.membase + UBIR);
+> > > +	writel(denom, sport->port.membase + UBMR);
+> > > +
+> > >  #ifdef ONEMS
+> > >  	writel(sport->port.uartclk / div / 1000, sport->port.membase + ONEMS);
+> > >  #endif
+> > > -- 
+> > > 1.5.3.7
+> > > 
+> > > 
+> > 
+> > -- 
+> > Pengutronix e.K.                           |                             |
+> > Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> > Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> > Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> > 
+> 
+> -- 
+> oskar schirmer, emlix gmbh, http://www.emlix.com
+> fon +49 551 30664-0, fax -11, bahnhofsallee 1b, 37081 göttingen, germany
+> geschäftsführung: dr. uwe kracke, dr. cord seele, ust-idnr.: de 205 198 055
+> sitz der gesellschaft: göttingen, amtsgericht göttingen hr b 3160
+> 
+> emlix - your embedded linux partner
+> 
 
-So, I really think this needs review by filesystem
-maintainers and it would be far safer to use invalidate
-until it is known to be safe.
-
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
