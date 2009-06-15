@@ -1,53 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbZFODVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZFODVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbZFODVV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 23:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZFODRA
+	id S1756254AbZFODVe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 23:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZFODRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 23:17:00 -0400
-Received: from mail.renesas.com ([202.234.163.13]:58610 "EHLO
-	mail02.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755538AbZFODQ7 (ORCPT
+	Sun, 14 Jun 2009 23:17:06 -0400
+Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:56547
+	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755806AbZFODRD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 23:16:59 -0400
-X-AuditID: ac140385-00000008000002de-11-4a35bd275d42
-Date: Mon, 15 Jun 2009 12:16:54 +0900
-From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Subject: [PATCH] cpumask: Remove mask field from comments
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: rusty@rustcorp.com.au
-Message-id: <4A35BD26.1090906@renesas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-2022-JP
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-X-Brightmail-Tracker: AAAAAA==
+	Sun, 14 Jun 2009 23:17:03 -0400
+Message-ID: <4A35BD7F.3020803@bluewatersys.com>
+Date: Mon, 15 Jun 2009 15:18:23 +1200
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Brian Swetland <swetland@google.com>
+CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz, Robert Love <rlove@google.com>
+Subject: Re: [PATCH 1/3] [ARM] msm_serial: serial driver for MSM7K onboard
+ serial	peripheral.
+References: <1245033557-10968-1-git-send-email-swetland@google.com> <1245033557-10968-2-git-send-email-swetland@google.com>
+In-Reply-To: <1245033557-10968-2-git-send-email-swetland@google.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 1/2] cpumask: Remove mask field from comments
+Brian Swetland wrote:
+> From: Robert Love <rlove@google.com>
+> 
+> Signed-off-by: Brian Swetland <swetland@google.com>
 
-By 7be23e278f, mask field was deleted by irqaction. However, it was not
-deleted from comment.
+Hi Brian, some comments below:
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
----
- include/linux/interrupt.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> +
+> +struct msm_port {
+> +	struct uart_port	uart;
+> +	char			name[16];
+> +	struct clk		*clk;
+> +	unsigned int		imr;
+> +};
+> +
+> +#define UART_TO_MSM(uart_port)	((struct msm_port *) uart_port)
 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 90ee0a8..80b7768 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -77,7 +77,6 @@ typedef irqreturn_t (*irq_handler_t)(int, void *);
-  * struct irqaction - per interrupt action descriptor
-  * @handler:	interrupt handler function
-  * @flags:	flags (see IRQF_* above)
-- * @mask:	no comment as it is useless and about to be removed
-  * @name:	name of the device
-  * @dev_id:	cookie to identify the device
-  * @next:	pointer to the next irqaction for shared interrupts
+Should this be:
+
+#define to_msm_uart(up) container_of(up, msm_port, uart_port)
+
+Container conversion macros are usually lower case.
+
+> +static int msm_startup(struct uart_port *port)
+> +{
+> +	struct msm_port *msm_port = UART_TO_MSM(port);
+> +	unsigned int data, rfr_level;
+> +	int ret;
+> +
+> +	snprintf(msm_port->name, sizeof(msm_port->name),
+> +		 "msm_serial%d", port->line);
+> +
+> +	ret = request_irq(port->irq, msm_irq, IRQF_TRIGGER_HIGH,
+> +			  msm_port->name, port);
+> +	if (unlikely(ret))
+> +		return ret;
+
+Not sure that you need the likely/unlikely macros here or in the other
+startup/release functions. They are usually for hot-path code. They
+aren't strictly wrong, its just probably not necessary.
+
+> +
+> +static struct uart_ops msm_uart_pops = {
+> +	.tx_empty = msm_tx_empty,
+> +	.set_mctrl = msm_set_mctrl,
+> +	.get_mctrl = msm_get_mctrl,
+> +	.stop_tx = msm_stop_tx,
+> +	.start_tx = msm_start_tx,
+> +	.stop_rx = msm_stop_rx,
+> +	.enable_ms = msm_enable_ms,
+> +	.break_ctl = msm_break_ctl,
+> +	.startup = msm_startup,
+> +	.shutdown = msm_shutdown,
+> +	.set_termios = msm_set_termios,
+> +	.type = msm_type,
+> +	.release_port = msm_release_port,
+> +	.request_port = msm_request_port,
+> +	.config_port = msm_config_port,
+> +	.verify_port = msm_verify_port,
+> +	.pm = msm_power,
+> +};
+
+Tab-delimit this to make it look nicer, ie:
+
+	.tx_empty	= msm_tx_empty,
+	.set_mctrl	= msm_set_mctrl,
+	...
+
+> +
+> +static struct msm_port msm_uart_ports[] = {
+> +	{
+> +		.uart = {
+> +			.iotype = UPIO_MEM,
+> +			.ops = &msm_uart_pops,
+> +			.flags = UPF_BOOT_AUTOCONF,
+> +			.fifosize = 512,
+> +			.line = 0,
+> +		},
+
+Same here, and all the other struct initialisations.
+
+> +
+> +static int __init msm_console_setup(struct console *co, char *options)
+> +{
+> +	struct uart_port *port;
+> +	int baud, flow, bits, parity;
+> +
+> +	if (unlikely(co->index >= UART_NR || co->index < 0))
+> +		return -ENXIO;
+> +
+> +	port = get_port_from_line(co->index);
+> +
+> +	if (unlikely(!port->membase))
+> +		return -ENXIO;
+> +
+> +	port->cons = co;
+> +
+> +	msm_init_clock(port);
+> +
+> +	if (options)
+> +		uart_parse_options(options, &baud, &parity, &bits, &flow);
+> +
+> +	bits = 8;
+> +	parity = 'n';
+> +	flow = 'n';
+> +	msm_write(port, UART_MR2_BITS_PER_CHAR_8 | UART_MR2_STOP_BIT_LEN_ONE,
+> +		  UART_MR2);	/* 8N1 */
+> +
+> +	if (baud < 300 || baud > 115200)
+> +		baud = 115200;
+
+return -EINVAL?
+
+> +	msm_set_baud_rate(port, baud);
+> +
+> +	msm_reset(port);
+> +
+> +	printk(KERN_INFO "msm_serial: console setup on port #%d\n", port->line);
+
+pr_info? Also, this may just be noise, IIRC, the serial sub-system
+prints information about the uarts anyway.
+
+~Ryan
+
 -- 
-1.6.3.1
+Bluewater Systems Ltd - ARM Technology Solution Centre
+
+       Ryan Mallon                              Unit 5, Amuri Park
+       Phone: +64 3 3779127                     404 Barbadoes St
+       Fax:   +64 3 3779135                     PO Box 13 889
+       Email: ryan@bluewatersys.com             Christchurch, 8013
+       Web:   http://www.bluewatersys.com       New Zealand
+       Freecall Australia  1800 148 751         USA 1800 261 2934
