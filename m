@@ -1,107 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbZFOR5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764883AbZFOR65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762711AbZFOR5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbZFOR5b
+	id S1764883AbZFOR65 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbZFOR6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:57:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34048 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754116AbZFOR5a (ORCPT
+	Mon, 15 Jun 2009 13:58:47 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:5580 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbZFOR6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:57:30 -0400
-Date: Mon, 15 Jun 2009 10:57:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] WARN(): add a \n to the message printk
-In-Reply-To: <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0906151048380.6276@localhost.localdomain>
-References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain> <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 15 Jun 2009 13:58:46 -0400
+X-SpamScore: -35
+X-BigFish: VPS-35(zz1418M1432R98dR1805M1b0bMzz1202hzzz2fh17ch6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4A368BC8.3010006@am.sony.com>
+Date: Mon, 15 Jun 2009 10:58:32 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marco <marco.stornelli@gmail.com>
+CC: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+References: <4A33A7A2.1050608@gmail.com> <4A3681C2.5010508@am.sony.com> <4A36887C.1050906@gmail.com>
+In-Reply-To: <4A36887C.1050906@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jun 2009 17:58:33.0281 (UTC) FILETIME=[E5EF0B10:01C9EDE2]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 15 Jun 2009, Linus Torvalds wrote:
+Marco wrote:
+> Tim Bird wrote:
+>> Marco wrote:
+>>> This is a second attempt at mainlining Pramfs. The first attempt was
+>>> back in early 2004 by MontaVista. Since then the kernel code has almost
+>>> been completely rewritten. So my first item on the list was porting the
+>>> code on a recent kernel version. After that I added the XIP support.
+>> It's very nice to see this technology revived.
+>>
+>> Is the information at:
+>> http://pramfs.sourceforge.net/
+>> and
+>> http://pramfs.sourceforge.net/pramfs-spec.html
+>> still valid - particularly the latter?
 > 
-> NOTE! This is, of course, totally untested. And we're bound to have 
-> continuation printk's that don't have the KERN_CONT at front, and need 
-> them added, but I think this is generally a saner model than what we have 
-> now, or your suggested explicit addition of '\n'.
+> Yep. at 99%. I've done some modifications due to the porting and there
+> will be some ones due to this review. I tried to talk with Steve
+> Longerbeam to update the site but without success. I'd like to update it.
+> 
+>> It would be very nice to see this get mainlined.  I believe that
+>> one of the main uses for this is to store crash information
+>> over a reboot so the next kernel (not in crashing state) can have
+>> a better chance of dealing with it.  As such, I think
+>> it's important to keep the code paths for Pramfs short, synchronous,
+>> and unentangled with other kernel systems (block IO, page cache, etc.).
+>>
+> 
+> Yes, I quite agree. I think that this kind of feature would be very
+> useful especially for the embedded world.
 
-Ok, it's tested now.
+Just FYI - we have an "exception monitor" at Sony
+which is used in several projects, that records application and
+kernel crash information into the file system, for subsequent
+(often in-field) analysis.  However, the data currently gets written
+to a flash filesystem and the logs sometimes get truncated or otherwise
+corrupted.  This seems like a perfect match for what we're trying
+to do.
+ -- Tim
 
-It works, and yes, it does show cases of insanity: both missing KERN_CONT 
-(common), and _extra_ KERN_CONT (odd).
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
-For example, the ACPI printk's seem to have pointless KERN_CONT's in them, 
-an I get printouts like:
-
-	[    0.000000] <c>ACPI: RSDP 00000000000fe020 00024 (v02 INTEL )
-	[    0.000000] <c>ACPI: XSDT 00000000bf7fe120 0006C (v01 INTEL  DX58SO   0000084F      01000013)
-	[    0.000000] <c>ACPI: FACP 00000000bf7fd000 000F4 (v03 INTEL  DX58SO   0000084F MSFT 0100000D)
-	...
-
-where that "<c>" is just because ACPI does something odd and pointless.
-
-The lack of KERN_CONT shows up in printouts like
-
-	[   26.626492] CPU: L1 I cache: 32K
-	[   26.626492] , L1 D cache: 32K
-	...
-	[   26.826201] ACPI: (supports S0
-	[   26.826243]  S5
-	[   26.826326] )
-	...
-	[   26.839617] ACPI: PCI Interrupt Link [LNKA] (IRQs
-	[   26.839660]  3
-	[   26.839741]  4
-	[   26.839823]  5
-	[   26.839904]  6
-	[   26.839985]  7
-	[   26.840067]  9
-	[   26.840148]  10
-	[   26.840230]  *11
-	[   26.840313]  12
-	[   26.840395]  14
-	[   26.840476]  15
-	[   26.840558] )
-	...
-	[   26.964999] ACPI: CPU0 (power states:
-	[   26.965040]  C1[C1]
-	[   26.965123]  C2[C3]
-	[   26.965205] )
-	...
-	[   27.231268] ata_piix 0000:00:1f.5: MAP [
-	[   27.231309]  P0
-	[   27.231390]  --
-	[   27.231472]  P1
-	[   27.231553]  --
-	[   27.231635]  ]
-	...
-	[   28.092534]  sda:
-	[   28.092820]  sda1
-	[   28.092910]  sda2
-	...
-
-where the kernel now added a newline because they were separate printk's 
-and didn't have KERN_CONT on the continuation.
-
-But despite seeing these kinds of things, I do think the patch is the 
-right thing to do. It just shows that since KERN_CONT didn't use to _do_ 
-anything, people obviously mis-used it. It's the old "if it wasn't tested, 
-it's buggy" thing, but none of these look in the least like serious 
-problems to the approach.
-
-Comments? We could make it remove the unnecessary '<c>' things (so that 
-you can always add KERN_CONT if you _want_ to), but the patch as-is will 
-show them because I think it's useful to see them. 
-
-			Linus
