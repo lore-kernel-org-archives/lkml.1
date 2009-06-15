@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZFOHqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZFOHsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbZFOHqY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZFOHqQ
+	id S1756571AbZFOHsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbZFOHsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:46:16 -0400
-Received: from 8bytes.org ([88.198.83.132]:55929 "EHLO 8bytes.org"
+	Mon, 15 Jun 2009 03:48:08 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:41352 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbZFOHqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:46:16 -0400
-Date: Mon, 15 Jun 2009 09:46:17 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
-       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-Message-ID: <20090615074616.GD18638@8bytes.org>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <64bb37e0906101341j341f5179o9abfa888a6b96fc3@mail.gmail.com> <20090611081032.GN5139@amd.com> <64bb37e0906111038h1a5b9f17oec6c6368d2fbd36d@mail.gmail.com> <20090612141346.GY5139@amd.com> <64bb37e0906131008x59b25b94u501fc2192cc28be0@mail.gmail.com>
+	id S1750767AbZFOHsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 03:48:07 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Jan Naceradsky <naceradsky@yahoo.com>
+Subject: Re: [uClinux-dev] NIOS2 and TSE Marvell 88E1111
+Date: Mon, 15 Jun 2009 03:47:56 -0400
+User-Agent: KMail/1.11.3 (Linux/2.6.29.4; KDE/4.2.3; x86_64; ; )
+Cc: uClinux development list <uclinux-dev@uclinux.org>,
+       linux-kernel@vger.kernel.org, Jie Zhang <jie.zhang@analog.com>,
+       David McCullough <davidm@snapgear.com>
+References: <801926.84487.qm@web36707.mail.mud.yahoo.com>
+In-Reply-To: <801926.84487.qm@web36707.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0906131008x59b25b94u501fc2192cc28be0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed;
+  boundary="nextPart1939031.2ufnKdWreN";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906150347.58452.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 07:08:01PM +0200, Torsten Kaiser wrote:
-> On Fri, Jun 12, 2009 at 4:13 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
-> > On Thu, Jun 11, 2009 at 07:38:47PM +0200, Torsten Kaiser wrote:
-> >> DMA-API: device driver tries to free DM
-> >> A memory it has not allocated [device address=0x000000011e4c3000]
-> >> [size=4096 bytes]
-> >
-> > Hmm, looking again over the code I've seen that the ref
-> > dma_debug_entries are not alway filled with all necessary information
-> > for best-fit. Can you please try if you still get false warnings when
-> > you apply the two patches attached instead of the one I sent yesterday?
-> 
-> I tested these patches
-> (0001-dma-debug-check-for-sg_call_ents-in-best-fit-algorit.patch and
-> 0002-dma-debug-be-more-careful-when-building-reference-en.patch)
-> against 2.6.30-git6 and did not see any warnings.
-> 
-> I can't be 100% sure about the fix, because I do not have a reliable
-> trigger, but it looks quite good.
+--nextPart1939031.2ufnKdWreN
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Ok cool, I will push these two patches upstream then and will send them
-to -stable too. So we get this fixed in a 30.x release too. Thanks a lot
-for your testing.
+On Monday 15 June 2009 03:27:21 Jan Naceradsky wrote:
+> have you somebody uClinux running on StratixIII DSP kit with TSE Marvell
+> 88E1111 ethernet chip ?
 
-	Joerg
+not sure why you e-mailed a whole bunch of Blackfin people when you arent=20
+using a Blackfin system.  would make more sense to spam the NIOS guys ...
+=2Dmike
 
+--nextPart1939031.2ufnKdWreN
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJKNfyuAAoJEEFjO5/oN/WBRNcQANnaFn52tizCctjgfFqXK5B7
+qd4WWFytYDEaso+0Su+qD3sy3gzuqccO8sNByw5l4kLhVU4EV2aQ7lSn56C8CY/1
+axNzRJ/6nacFFR0W9pnv9n8iW+Fd0Gixi8NhJ5e9Vz9ROqJ6D7HG/G038EkJfe1W
+8pExCDT/4D8YutZ4kybty/LqE5CAkYX1jxoRSB5X2yCDpoXquxYkanbpRaFjztFA
+uG/RovgPmdpw0rEiwa88Fg/0Ut0fOCfaviueKwjNUdjU6ClzgAx7bwcnDfvABSnH
+0vHZQhIA3q6lnD6YSOd1iXAw2jJNarg0glWiM9oGz9R9MQkZJpT9miMpeghaJitc
++m3inGGemfJN7R8orocUnNRQlePGHiLQJwjrafS9PNeyD3T5csBsPYcb6BJTG7sa
+iKdGOWOiXA9KvGO4OrDwrPx4rS0oZ2mWKCv32hSi+Wu2q/VEQOPzWnhpxmgLG3eT
++l/kWhhqGGttMny3Urk/e0TX3CqAbBt95EDUj73cObp958btIWAKWLABXrDYcpYy
+QCGtsr13WBPfhWTjHZiWGb96EkpeW8SHkOgVwHUGojk4C+/v7tetV9YSg+UjYQkj
+2ILywjcME1VsepaW3RlHkhDVrt/vJxDYPYzxlrTsoKVQHh+VPE6TbJC6e3PPsXqt
+Zj6G9Kaaeb/j+OVs2RSC
+=lOMb
+-----END PGP SIGNATURE-----
+
+--nextPart1939031.2ufnKdWreN--
