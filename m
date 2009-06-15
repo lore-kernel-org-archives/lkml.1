@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZFOJkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbZFOJlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbZFOJkF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 05:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZFOJjz
+	id S1755132AbZFOJlz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 05:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZFOJls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 05:39:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50163 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbZFOJjz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 05:39:55 -0400
-Date: Mon, 15 Jun 2009 05:39:41 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>, Pavel Machek <pavel@ucw.cz>,
-       Ben Dooks <ben@fluff.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
-       swetland@google.com, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090615093941.GA3307@infradead.org>
-References: <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <1244733310.895.60.camel@Joe-Laptop.home> <20090611182445.GA7658@uranus.ravnborg.org> <20090613003016.GB20442@fluff.org.uk> <20090613090240.GA29484@elf.ucw.cz> <20090613105906.GA28021@infradead.org> <20090613193641.GA13810@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 15 Jun 2009 05:41:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56306 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbZFOJlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 05:41:47 -0400
+Date: Mon, 15 Jun 2009 11:41:48 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, yinghai@kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+Message-ID: <20090615094148.GC1314@wotan.suse.de>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI> <20090615081831.GA5411@osiris.boeblingen.de.ibm.com> <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090613193641.GA13810@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 08:36:41PM +0100, Russell King - ARM Linux wrote:
-> I assume you're talking about these messages, which are listed in the
-> archives:
+On Mon, Jun 15, 2009 at 12:10:01PM +0300, Pekka Enberg wrote:
+> On Mon, Jun 15, 2009 at 11:18 AM, Heiko
+> Carstens<heiko.carstens@de.ibm.com> wrote:
+> > I didn't look any deeper into this, but looks to me like doing something like
+> > schedule_work() this early isn't ok.
+> >
+> > This is the conversion that leads to the crash:
+> >
+> > -               alloc_bootmem_low(sizeof(struct raw3215_info));
+> > +               kzalloc(sizeof(struct raw3215_info), GFP_NOWAIT | GFP_DMA);
+> >
+> > Might be that I missed something. Maybe some special flag?
+> 
+> Btw, you should not need to use GFP_NOWAIT anymore and GFP_KERNEL
+> should be fine even during early boot.
 
-I defintively had tons of posting rejected from moderated mailing lists,
-and if that happens it's fucking annoying, especially if it's rejected
-without reason.
+Is this the agreed way forward? I would like to maybe continue to
+try having early allocations pass in special flags where possible
+(it could even be a GFP_BOOT or something). It can make it easier
+to perhaps reduce branches in core code in future and things can
+be flagged in warnings....
 
-As I wrote above I can't remember if this actually happened recently for
-me on the arm list, but having this happen to people who want to
-contribute patches is just extremly rude and demotivating.
+I just like the idea of keeping such annotations.
