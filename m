@@ -1,228 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbZFORGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763297AbZFORHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932356AbZFORGm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZFORGe
+	id S1763297AbZFORHO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758463AbZFORG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:06:34 -0400
-Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:40360 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761622AbZFORGc convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:06:32 -0400
-X-SpamScore: -33
-X-BigFish: VPS-33(zz542N1432R4015L1805M9371Pzz1202hzzz2dh17dh17ch6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Mon, 15 Jun 2009 13:06:59 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58611 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757155AbZFORG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 13:06:59 -0400
+Date: Mon, 15 Jun 2009 19:06:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Brian Swetland <swetland@google.com>
+Cc: Ian Molton <ian@mnementh.co.uk>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090615170655.GF25040@elf.ucw.cz>
+References: <20090610213710.GA8472@elf.ucw.cz> <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com> <20090611082532.GE8592@elf.ucw.cz> <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com> <20090612150504.GA15084@elf.ucw.cz> <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com> <4A32D079.9030707@mnementh.co.uk> <a55d774e0906121527n16019225q81084945a38bb97e@mail.gmail.com> <20090612223141.GF17688@elf.ucw.cz> <a55d774e0906121536m41715207td0cab3ba41d03bf2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe path
-Date: Mon, 15 Jun 2009 11:06:22 -0600
-In-Reply-To: <20090612175634.12827.12207.stgit@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe path
-Thread-Index: AcnrhzgVpKec9y03QnqT6EGrQ8sUrQCU/r9A
-References: <20090612175634.12827.12207.stgit@localhost.localdomain>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>, <benh@kernel.crashing.org>
-X-OriginalArrivalTime: 15 Jun 2009 17:06:23.0638 (UTC) FILETIME=[9C856B60:01C9EDDB]
-Message-ID: <20090615170624.EDFEDF5006C@mail54-sin.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a55d774e0906121536m41715207td0cab3ba41d03bf2@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Grant Likely [mailto:grant.likely@secretlab.ca]
-> Sent: Friday, June 12, 2009 11:57 AM
-> To: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org;
-benh@kernel.crashing.org; John Linn
-> Subject: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up
-probe path
-> 
-> From: Grant Likely <grant.likely@secretlab.ca>
-> 
-> The xilinxfb driver is improperly casting a physical address to a
-> u32, and the probe routine isn't as straight forward as it could be.
-> (discovered by gcc spitting out warnings on most recent change to
-> xilinxfb driver).
-> 
-> This patch fixes the cast and simplifies the probe path.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> 
-> John, can you please test and verify this fix is correct?
 
-After a small fix to get it to compile, I did some quick testing with
-DCR and without and
-it's working fine on the ML507.
+> > Actually I agree with Brian here, this is better done at kernel level.
+> >
+> > OTOH, at least initially, it does not need to be done at all. It will
+> > make battery readings less reliable but hey... the battery meter does
+> > not work reliably anyway and estimating capacity left from voltage
+> > acceptably on other platforms...
+> 
+> I'd agree.  This stuff can wait until the core support is solid.  I'd
+> fight harder for conditional support for wakelocks since that has a
+> much bigger impact on battery life (being able to know when it's safe
+> to power collapse in idle, etc), whereas this just improves the
+> accuracy of the battery gauging.
 
--- John
+Yes, wakelocks are more important than battery gauging... but they
+need core support :-(; and they can wait, too.
 
-Here's the small change to get it to compile.
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index e3d2992..596157c 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -441,7 +441,7 @@ xilinxfb_of_probe(struct of_device *op, const struct
-of_device_id *match)
- 		res.start = 0;
- 		start = dcr_resource_start(op->node, 0);
- 		drvdata->dcr_len = dcr_resource_len(op->node, 0);
--		drvdata->dcr_host = dcr_map(op->node, start,
-drvdata->len);
-+		drvdata->dcr_host = dcr_map(op->node, start,
-drvdata->dcr_len);
- 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
- 			dev_err(&op->dev, "invalid DCR address\n");
- 			goto err;
---
-
-
-> 
-> Thanks,
-> g.
-> 
->  drivers/video/xilinxfb.c |   59
-++++++++++++++++++----------------------------
->  1 files changed, 23 insertions(+), 36 deletions(-)
-> 
-> 
-> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-> index 7a868bd..b68b331 100644
-> --- a/drivers/video/xilinxfb.c
-> +++ b/drivers/video/xilinxfb.c
-> @@ -124,7 +124,6 @@ struct xilinxfb_drvdata {
->  						registers */
-> 
->  	dcr_host_t      dcr_host;
-> -	unsigned int    dcr_start;
->  	unsigned int    dcr_len;
-> 
->  	void		*fb_virt;	/* virt. address of the frame
-buffer */
-> @@ -325,8 +324,8 @@ static int xilinxfb_assign(struct device *dev,
->  					drvdata->regs);
->  	}
->  	/* Put a banner in the log (for DEBUG) */
-> -	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
-> -		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
-> +	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
-> +		(unsigned long long)drvdata->fb_phys, drvdata->fb_virt,
-fbsize);
-> 
->  	return 0;	/* success */
-> 
-> @@ -404,9 +403,7 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
->  	u32 tft_access;
->  	struct xilinxfb_platform_data pdata;
->  	struct resource res;
-> -	int size, rc;
-> -	int start = 0, len = 0;
-> -	dcr_host_t dcr_host;
-> +	int size, rc, start;
->  	struct xilinxfb_drvdata *drvdata;
-> 
->  	/* Copy with the default pdata (not a ptr reference!) */
-> @@ -414,35 +411,39 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
-> 
->  	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
-> 
-> +	/* Allocate the driver data region */
-> +	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
-> +	if (!drvdata) {
-> +		dev_err(&op->dev, "Couldn't allocate device private
-record\n");
-> +		return -ENOMEM;
-> +	}
-> +
->  	/*
->  	 * To check whether the core is connected directly to DCR or PLB
->  	 * interface and initialize the tft_access accordingly.
->  	 */
->  	p = (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if",
-NULL);
-> -
-> -	if (p)
-> -		tft_access = *p;
-> -	else
-> -		tft_access = 0;		/* For backward compatibility */
-> +	tft_access = p ? *p : 0;
-> 
->  	/*
->  	 * Fill the resource structure if its direct PLB interface
->  	 * otherwise fill the dcr_host structure.
->  	 */
->  	if (tft_access) {
-> +		drvdata->flags |= PLB_ACCESS_FLAG;
->  		rc = of_address_to_resource(op->node, 0, &res);
->  		if (rc) {
->  			dev_err(&op->dev, "invalid address\n");
-> -			return -ENODEV;
-> +			goto err;
->  		}
-> -
->  	} else {
-> +		res.start = 0;
->  		start = dcr_resource_start(op->node, 0);
-> -		len = dcr_resource_len(op->node, 0);
-> -		dcr_host = dcr_map(op->node, start, len);
-> -		if (!DCR_MAP_OK(dcr_host)) {
-> -			dev_err(&op->dev, "invalid address\n");
-> -			return -ENODEV;
-> +		drvdata->dcr_len = dcr_resource_len(op->node, 0);
-> +		drvdata->dcr_host = dcr_map(op->node, start,
-drvdata->len);
-> +		if (!DCR_MAP_OK(drvdata->dcr_host)) {
-> +			dev_err(&op->dev, "invalid DCR address\n");
-> +			goto err;
->  		}
->  	}
-> 
-> @@ -467,26 +468,12 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
->  	if (of_find_property(op->node, "rotate-display", NULL))
->  		pdata.rotate_screen = 1;
-> 
-> -	/* Allocate the driver data region */
-> -	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
-> -	if (!drvdata) {
-> -		dev_err(&op->dev, "Couldn't allocate device private
-record\n");
-> -		return -ENOMEM;
-> -	}
->  	dev_set_drvdata(&op->dev, drvdata);
-> +	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
-> 
-> -	if (tft_access)
-> -		drvdata->flags |= PLB_ACCESS_FLAG;
-> -
-> -	/* Arguments are passed based on the interface */
-> -	if (drvdata->flags & PLB_ACCESS_FLAG) {
-> -		return xilinxfb_assign(&op->dev, drvdata, res.start,
-&pdata);
-> -	} else {
-> -		drvdata->dcr_start = start;
-> -		drvdata->dcr_len = len;
-> -		drvdata->dcr_host = dcr_host;
-> -		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
-> -	}
-> + err:
-> +	kfree(drvdata);
-> +	return -ENODEV;
->  }
-> 
->  static int __devexit xilinxfb_of_remove(struct of_device *op)
-> 
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-
-
+Getting serial support & board-dream upstream are very good first
+steps (thanks!). I'm currently trying to get 2.6.30 + your series of 3
++ framebuffer changes to boot.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
