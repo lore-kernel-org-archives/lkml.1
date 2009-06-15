@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbZFOUA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZFOUCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764859AbZFOUA1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 16:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbZFOUAR
+	id S1758027AbZFOUCI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 16:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZFOUB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 16:00:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59667 "EHLO mx3.mail.elte.hu"
+	Mon, 15 Jun 2009 16:01:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45639 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751259AbZFOUAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 16:00:15 -0400
-Date: Mon, 15 Jun 2009 21:59:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615195954.GA19483@elte.hu>
-References: <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal> <1245091917.6741.185.camel@laptop> <20090615185907.GF6520@Krystal> <20090615190321.GA11641@elte.hu> <20090615190759.GA12778@elte.hu> <1245093011.6741.213.camel@laptop>
+	id S1751259AbZFOUBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 16:01:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices
+Date: Mon, 15 Jun 2009 22:02:30 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+References: <200906140023.36147.rjw@sisk.pl> <200906150057.32424.rjw@sisk.pl> <20090614161850.01435082@infradead.org>
+In-Reply-To: <20090614161850.01435082@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1245093011.6741.213.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200906152202.32094.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Mon, 2009-06-15 at 21:07 +0200, Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > > To a point where it cannot afford a simple register save/restore 
-> > > > ?
-> > > > 
-> > > > There is "caring" and "_caring_". I am tempted to ask what NMI 
-> > > > handler execution frequency you have in mind here to figure out 
-> > > > if we are not trying to optimize sub-nanoseconds per minutes. ;)
-> > > 
-> > > I routinely run 'perf' with half a million NMIs per second or 
-> > > more. ( Why wait 10 seconds for a profile you can get in 1 second? 
-> > > ;-)
-> > > 
-> > > Granted that is over multiple CPUs - but still performance does 
-> > > matter here too.
-> > > 
-> > > Reading cr2 is certainly fast. Writing it - dunno.
-> > 
-> > But one thing is sure: it is certainly going to be faster than the 
-> > INVLPG(s!) we have to do with the GUP solution.
+On Monday 15 June 2009, Arjan van de Ven wrote:
+> On Mon, 15 Jun 2009 00:57:31 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Sure, but we only pay that price when we do the callchain bit, not 
-> on every NMI.
+> > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
+> > > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > > 
+> > > > Below is the current version of my "run-time PM for I/O devices"
+> > > > patch.
+> > > > 
+> > > > I've done my best to address the comments received during the
+> > > > recent discussions, but at the same time I've tried to make the
+> > > > patch only contain the most essential things.  For this reason,
+> > > > for example, the sysfs interface is not there and it's going to
+> > > > be added in a separate patch.
+> > > > 
+> > > > Please let me know if you want me to change anything in this
+> > > > patch or to add anything new to it.  [Magnus, I remember you
+> > > > wanted something like ->runtime_wakeup() along with
+> > > > ->runtime_idle(), but I'm not sure it's really necessary.  Please
+> > > > let me know if you have any particular usage scenario for it.]
+> > 
+> > Appended is an update of the patch addressing the today's comments
+> > from Magnus.
+> 
+> few comments from me
+> 
+> 1) For the usecases for upcoming hw from Intel (where you really can't talk to the hw while it's in powersave mode); the locking needs to be
+>    IRQ safe. Think of it like this:
+>    Lets assume you get a (shared) interrupt from your device. In the handler you need to make 100% sure that 
+>     1) you're not suspended at this point .. basically do a forced wakeup right there and then
+>     2) assure that you're not about to suspend
 
-same goes for the CR2 save/restore trick - it only has to be done 
-around the code where we expect to generate a #PF. I.e. in the 
-call-graph bits.
+Does it mean we need to use spin_[un]lock_irq[save|restore]() everywhere in the
+framework?
 
-	Ingo
+> 2) You use jiffies in the API; I would suggest exposing milliseconds instead and internally convert to jiffies;
+>    milliseconds tends to be a much more natural unit for this sort of thing
+
+OK
+
+Best,
+Rafael
