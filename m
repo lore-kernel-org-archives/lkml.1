@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZFOHMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbZFOHPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZFOHMP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZFOHL7
+	id S1754316AbZFOHPp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZFOHPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:11:59 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47076 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751296AbZFOHL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:11:58 -0400
-Subject: Re: [PATCH][BUILD FAILURE 03/04] Next June 04:PPC64 randconfig
- [drivers/net/lance.o]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: subrata@linux.vnet.ibm.com
-Cc: netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-Next <linux-next@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <1245048698.5239.9.camel@subratamodak.linux.ibm.com>
-References: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
-	 <1245048698.5239.9.camel@subratamodak.linux.ibm.com>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 17:11:39 +1000
-Message-Id: <1245049899.19217.56.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 03:15:37 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:35910 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbZFOHPg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 03:15:36 -0400
+X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 03:15:36 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FYsK2tzuIr+KEJMnUBIw/cyy4nLI2IyxgJFqZDaC0s3ev8F4ygevh3s3hlj7oUva3C
+         HXpLwX9A4Vhpj4w7HTFnVknhAz48JW0iCrZWon5PhXC3rxQERpkADlm9USR4y1n09pvw
+         k+GWzK1FPLIez+CMuyW/zmwGwIGue+g9BkJK0=
+Date: Mon, 15 Jun 2009 15:11:25 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Changli Gao <xiaosuo@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: memconsole: a virtual console to record the Oops message for
+	debugging purpose.
+Message-ID: <20090615071125.GF3544@cr0.nay.redhat.com>
+References: <412e6f7f0906131829y6e0abb00j85e221f92ab439d2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <412e6f7f0906131829y6e0abb00j85e221f92ab439d2@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 12:21 +0530, Subrata Modak wrote:
+On Sun, Jun 14, 2009 at 09:29:48AM +0800, Changli Gao wrote:
+>
+>the following code is appended to the file mm/bootmem.c
 
-> Benjamin,
-> 
-> I am not sure whether you liked the following patch to solve the above
-> problem. Do, you want me address some other issue(s)/fixes for this ?
 
-I suppose ... in fact some old PReP machines can even have ISA slots
-iirc, but it's not going to do good with machines that have an iommu...
+Why not a patch?
 
-IE. Nobody should use that crap, period.
-
-Cheers,
-Ben.
-
-Cheers,
-Ben.
-
-> Regards--
-> Subrata
-> 
-> > 
-> > --- linux-2.6.30-rc8/arch/powerpc/include/asm/io.h.orig	2009-06-10 21:56:49.000000000 -0500
-> > +++ linux-2.6.30-rc8/arch/powerpc/include/asm/io.h	2009-06-10 22:21:35.000000000 -0500
-> > @@ -680,6 +680,9 @@ extern void __iounmap_at(void *ea, unsig
-> >  #define mmio_outsw(addr, src, count)	writesw(addr, src, count)
-> >  #define mmio_outsl(addr, src, count)	writesl(addr, src, count)
-> > 
-> > +#define isa_virt_to_bus		virt_to_phys
-> > +#define isa_bus_to_virt		phys_to_virt
-> > +
-> >  /**
-> >   *	virt_to_phys	-	map virtual addresses to physical
-> >   *	@address: address to remap
-> > 
-> > ---
-> > Regards--
-> > Subrata
-> > 
-
+Your code is a kernel module, why do you append it into
+a non-module source file?
