@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbZFOB4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbZFOCBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751299AbZFOB4q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 21:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbZFOB4i
+	id S1752496AbZFOCBc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 22:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbZFOCBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 21:56:38 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:37310 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbZFOB4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 21:56:37 -0400
-X-IronPort-AV: E=Sophos;i="4.42,219,1243828800"; 
-   d="scan'208";a="93886"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: scripts/kallsyms: extending region checking for Blackfin memory regions
-Date: Sun, 14 Jun 2009 21:59:42 -0400
-User-Agent: KMail/1.9.5
-CC: "Mike Frysinger" <vapier.adi@gmail.com>,
-       kbuild-devel@lists.sourceforge.net,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "uclinux-dist-devel" <uclinux-dist-devel@blackfin.uclinux.org>
-References: <8bd0f97a0906081623h4dc26492kd70c2e07091730d@mail.gmail.com> <20090614204437.GC3187@uranus.ravnborg.org>
-In-Reply-To: <20090614204437.GC3187@uranus.ravnborg.org>
+	Sun, 14 Jun 2009 22:01:25 -0400
+Received: from claw.goop.org ([74.207.240.146]:60377 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbZFOCBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 22:01:24 -0400
+Message-ID: <4A35AB6C.7090605@goop.org>
+Date: Sun, 14 Jun 2009 19:01:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because	there's
+ no local APIC
+References: <4A329CF8.4050502@goop.org> <20090612201117.GA29923@lenovo>
+In-Reply-To: <20090612201117.GA29923@lenovo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200906142159.42280.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 15 Jun 2009 01:56:37.0043 (UTC) FILETIME=[84600830:01C9ED5C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 14 Jun 2009 16:44, Sam Ravnborg pondered:
-> On Mon, Jun 08, 2009 at 07:23:16PM -0400, Mike Frysinger wrote:
-> > intro: the current Blackfin memory architecture is (1) no virtualized
-> > memory and (2) distinctly harvard.  that means we cannot create a
-> > linear map of start/end text sections.  we end up with distinct
-> > regions like so:
-> > 00001000 T __stext
-> > 000dc4c0 T __etext
-> > feb00000 A __etext_l2
-> > feb00010 A __stext_l2
-> > ffa00000 T __stext_l1
-> > ffa0160c T __etext_l1
-> > this is because external memory starts at address 0 while on-chip
-> > regions have different discontiguous hardcoded addresses (L1
-> > instruction in this case starts at 0xffa00000 while L2 starts at
-> > 0xfeb00000).
-> > 
-> > the current kallsyms is written to search for the special stext/etext
-> > symbols only which means the resulting kallsyms output knows nothing
-> > of the Blackfin symbols living in these on-chip regions.  we've
-> > written two patches to fix this: the first one is straight forward and
-> > simply copies & pastes the existing hardcoded regions.  the second
-> > creates an array of text regions which makes it much easier to extend
-> > in the future for other people (and can be squashed into the first
-> > one).
-> > 
-> > doesnt matter to me which method is picked :)
-> 
-> I added both as I liked the generalization.
-> I had to rearrange the "Signed-off-by" in the first patch
-> as this patch came in vai you and not Robin.
+On 06/12/09 13:11, Cyrill Gorcunov wrote:
+> just for the record -- this removement has a side effect.
+> Imagine I've passed "disableapic" so I expect as many as
+> possible apic-related code would not pass thru execution.
+> Now we would have (say for IBM Summit)
+>
+> acpi_parse_madt
+>    default_acpi_madt_oem_check
+>      summit_acpi_madt_oem_check
+>        mark_tsc_unstable
+>        setup_summit
+>
+> Dunno if it harmless or no but it changes kernel behaviour.
+> cpu_has_apic cleared if disableapic option (which is early
+> param) passed to kernel.
+>
+> Just a note. Didn't walk thru all ways.
+>    
 
-I think Mike pulled this from some work I did awhile ago, (and sent to you) 
-that obviously never got added (since I didn't send it in the proper patch 
-format).
+Yeah, that occured to me over the weekend.  Some of those cpu_has_apic 
+tests should probably be replaced with explicit tests to see if noapic 
+was specified.  I'll go over it with that in mind.
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0607.1/0558.html
-
+Thanks,
+     J
