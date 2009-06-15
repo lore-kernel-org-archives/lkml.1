@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZFOLjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbZFOLls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbZFOLjM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 07:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZFOLis
+	id S1756743AbZFOLls (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 07:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFOLlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 07:38:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35234 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754324AbZFOLir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 07:38:47 -0400
-Date: Mon, 15 Jun 2009 13:38:48 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       yinghai@kernel.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-Message-ID: <20090615113848.GA23377@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI> <20090615081831.GA5411@osiris.boeblingen.de.ibm.com> <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop> <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop> <20090615112205.GA6012@wotan.suse.de> <20090615112827.GC6012@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615112827.GC6012@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	Mon, 15 Jun 2009 07:41:40 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:56609 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbZFOLlj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 07:41:39 -0400
+In-Reply-To: <20090615112628.GA26150@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+MIME-Version: 1.0
+Subject: Re: [GIT PULL] new files for score architecture
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OF28F09400.68D4B737-ON482575D6.003FA1F3-482575D6.00403088@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Mon, 15 Jun 2009 19:36:33 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/15 ?? 07:36:33,
+	Serialize complete at 2009/06/15 ?? 07:36:33
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5FBgO54011576
 
-On Mon, Jun 15, 2009 at 01:28:28PM +0200, Nick Piggin wrote:
-> On Mon, Jun 15, 2009 at 01:22:05PM +0200, Nick Piggin wrote:
-> > On Mon, Jun 15, 2009 at 08:39:48PM +1000, Benjamin Herrenschmidt wrote:
-> > But I won't live with having it shit in our nice core code...
-> > Well, at least I won't throw up my hands and give up this
-> > early.
+Hi Christoph Hellwig,
+
+Christoph Hellwig <hch@infradead.org> Ğ´ÓÚ 2009-06-15 19:26:28:
+
+> On Mon, Jun 15, 2009 at 11:21:01AM +0800, liqin.chen@sunplusct.com 
+wrote:
+> > Hi Linus,
+> > 
+> > This pack contains initial pack for S+core CPU.
+> > The patches are reviewed by Arnd and many people.
+> > Because I have not get the git repository now, 
+> > So Arnd kindly commit score patch into 
+> > git/arnd/asm-generic.git.
 > 
-> Just the principle, btw.
+> As mentioned before the ptrace implementation is badly wrong as it's
+> been copy and pasted from a years old stage of some other architecture
+> and just munged enough to compile.
+> 
 
-I have the same opinion for suspend/resume too, although
-in that case I know less about the issues and if we
-found that it indeed does make a random driver writers
-life easier[*] then it might be a reason to do this. But
-I still don't think that would give boot code a license to
-just revert back to "I don't know or care, GFP_KERNEL pelase"
+Thanks your comment, I had removed unused code from ptrace.
 
-[*] and note that being unaware of your context I don't
-think is making life easier automatically.
-
-
-
+Best Regards
+Liqin
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
