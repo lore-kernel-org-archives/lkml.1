@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934728AbZFOWZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935935AbZFOWZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934728AbZFOWZO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 18:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbZFOWZC
+	id S935935AbZFOWZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 18:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760226AbZFOWZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 18:25:02 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44356 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022AbZFOWZA (ORCPT
+	Mon, 15 Jun 2009 18:25:35 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:1386 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755729AbZFOWZe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 18:25:00 -0400
-Message-ID: <4A36C953.8060906@zytor.com>
-Date: Mon, 15 Jun 2009 15:21:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 15 Jun 2009 18:25:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=o/yOFMG7L9hSSYwjc14YM03DoZkRz2Ae0BbUxpWH/z+M0lEWrh3KdXc4a3QD+HuFHT
+         hWvbTexC9MIQOTkGUJXx/ob5fXQrAxHTCoV4Dm5hDfJhn5WjOZ0wZAt88/jAcDCWf2w0
+         JL3xfgOFUsb1h6mr/Jxtw9JyMtkKVTe3XBOEQ=
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain	support
- to use NMI-safe methods
-References: <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop> <4A369CD8.3090505@zytor.com> <20090615192720.GA9056@Krystal> <4A36A1C7.6080005@zytor.com> <20090615210119.GD24554@elte.hu> <20090615211207.GB12919@Krystal> <20090615211605.GC27100@elte.hu> <20090615213429.GD12919@Krystal> <4A36BF61.10901@zytor.com> <20090615215420.GE12919@Krystal>
-In-Reply-To: <20090615215420.GE12919@Krystal>
+In-Reply-To: <20090615162150.GC6842@huya.quicinc.com>
+References: <20090611140624.GS795@n2100.arm.linux.org.uk>
+	 <4A3175AC.9070100@bluewatersys.com>
+	 <alpine.LFD.2.00.0906112105220.31536@xanadu.home>
+	 <4A31AECA.6070303@bluewatersys.com>
+	 <alpine.LFD.2.00.0906112138090.31536@xanadu.home>
+	 <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com>
+	 <20090612103521.GD18682@elf.ucw.cz>
+	 <a55d774e0906120344p57226dd4ve526f274a2bf7c8e@mail.gmail.com>
+	 <a55d774e0906130005v5a35aa60ybabde470ff44cf77@mail.gmail.com>
+	 <20090615162150.GC6842@huya.quicinc.com>
+Date: Tue, 16 Jun 2009 08:25:35 +1000
+X-Google-Sender-Auth: 42f534900f2793ad
+Message-ID: <17b28da20906151525q1d8f10daj734faacf5dafda12@mail.gmail.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: Ben Leslie <benno@benno.id.au>
+To: Brian Swetland <swetland@google.com>, Pavel Machek <pavel@ucw.cz>,
+       Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, lkml <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * H. Peter Anvin (hpa@zytor.com) wrote:
->> Mathieu Desnoyers wrote:
->>> As the maintainer of the out-of-tree LTTng tracer, which hooks in the
->>> page fault handler with tracepoints, and which can build almost entirely
->>> as modules, I am very tempted to argue that having the nmi-code entirely
->>> robust wrt in-kernel page faults would be a very-nice-to-have feature.
->>>
->> I doubt that is ever going to be reliable, due to reentrancy issues.
->>
->> 	-hpa
-> 
-> Do you mean the page fault handler code is no ever going to be reliable
-> or the tracer code ?
-> 
-> I spent a great deal of effort making LTTng lockless and reentrant wrt
-> NMIs. It would be great if the low-level kernel exception handlers would
-> do the same, therefore I would not have to isolate the tracer from the
-> kernel as I currently do. Well, I would still continue to isolate the
-> tracer from the kernel, but at least I would not have to spend as much
-> effort controlling what exceptions and faults paths the tracer is
-> executing.
-> 
+On Tue, Jun 16, 2009 at 2:21 AM, <davidb@quicinc.com> wrote:
+> On Sat, Jun 13, 2009 at 12:05:50AM -0700, Brian Swetland wrote:
+>
+>> I suspect it wouldn't be hard to just get something like a full
+>> arm-debian distribution booting, but that's not something I've ever
+>> tried.
+>
+> We built a userspace around ptxdist.  We're still in the process
+> of releasing it, but part of it is at
+> <https://www.codeaurora.org/gitweb/quic/le/>
+>
+> The Android busybox
+> <http://benno.id.au/blog/2007/11/14/android-busybox> mostly
+> works.  The poster doesn't seem to provide source, even though
+> busybox requires modification to build for Android (although not
+> much).
 
-So instead you want to core kernel to do your work for you?
+I didn't need to change anything; I just compiled busybox; No changes
+required. (Note: It is a static binary that includes glibc).
 
-	-hpa
+Cheers,
 
+Benno
