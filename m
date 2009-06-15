@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbZFOWzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbZFOXG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757839AbZFOWzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 18:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZFOWzc
+	id S1759232AbZFOXG2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 19:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZFOXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 18:55:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55328 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751372AbZFOWzb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 18:55:31 -0400
-Date: Mon, 15 Jun 2009 15:54:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: trivial@kernel.org, zygo.blaxell@xandros.com, linux-kernel@vger.kernel.org,
-       Jes Sorensen <jes@trained-monkey.org>
-Subject: Re: [PATCH] LIB: remove unmatched write_lock() in gen_pool_destroy
-Message-Id: <20090615155424.14ad5c6a.akpm@linux-foundation.org>
-In-Reply-To: <4A36CB88.1080300@opengridcomputing.com>
-References: <E1MGFiZ-0006oN-UW@dactyl.ottawa.xandros.ca>
-	<alpine.LNX.2.00.0906152333080.7457@wotan.suse.de>
-	<20090615152608.7f4f6548.akpm@linux-foundation.org>
-	<4A36CB88.1080300@opengridcomputing.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 19:06:14 -0400
+Received: from kroah.org ([198.145.64.141]:47251 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751274AbZFOXGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 19:06:13 -0400
+Date: Mon, 15 Jun 2009 15:32:06 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@bombadil.infradead.org>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, tshibata@ab.jp.nec.com
+Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
+	window
+Message-ID: <20090615223206.GA4966@kroah.com>
+References: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com> <20090615201934.GA12685@kroah.com> <20090615214735.GE23972@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615214735.GE23972@bombadil.infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009 17:30:32 -0500
-Steve Wise <swise@opengridcomputing.com> wrote:
-
-> Andrew Morton wrote:
-> > On Mon, 15 Jun 2009 23:35:31 +0200 (CEST)
-> > Jiri Kosina <trivial@kernel.org> wrote:
-> >
-> >   
-> >>> -	write_lock(&pool->lock);
-> >>>  	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
-> >>>  		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
-> >>>  		list_del(&chunk->next_chunk);
-> >>> -- 
-> >>> 1.5.6.5
-> >>>
-> >>>       
-> >> Hi Zygo,
-> >>
-> >> this doesn't really qualify for trivial tree, as it introduces a 
-> >> significant code change. Adding some CCs.
-> >>     
-> >
-> > yep, I merged it, thanks.
-> >
-> > I wonder why drivers/infiniband/hw/cxgb3 users never noticed this.
-> >   
+On Mon, Jun 15, 2009 at 05:47:35PM -0400, Luis R. Rodriguez wrote:
+> From: Luis R. Rodriguez <lrodriguez@atheros.com>
+> Subject: [PATCH] Documentation: add documentation summary for rc-series and merge window
 > 
-> I seem to remember trying to get this removed a few years ago and the 
-> owner didn't want it removed...
+> This is losely based on previous discussions on linux-kernel [1][2].
+> Lets also refer people reading the stable rules to
+> Documentation/development-process/.
 > 
+> [1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
+> [2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
+> 
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> ---
+>  Documentation/development-process/2.Process |   66 +++++++++++++++++++++++++++
+>  Documentation/stable_kernel_rules.txt       |    5 ++
+>  2 files changed, 71 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/development-process/2.Process b/Documentation/development-process/2.Process
+> index d750321..e023db6 100644
+> --- a/Documentation/development-process/2.Process
+> +++ b/Documentation/development-process/2.Process
 
-void gen_pool_destroy(struct gen_pool *pool)
-{
-	struct list_head *_chunk, *_next_chunk;
-	struct gen_pool_chunk *chunk;
-	int order = pool->min_alloc_order;
-	int bit, end_bit;
+You should cc: the author of this document, when modifying it.
 
+> @@ -7,6 +7,72 @@ course of one year, the kernel has since had to evolve a number of
+>  processes to keep development happening smoothly.  A solid understanding of
+>  how the process works is required in order to be an effective part of it.
+>  
+> +2.0 SUMMARY
+> +
+> +This section provides a brief summary of the new kernel release rules.
+> +
+> +2.0.0 NEW KERNEL RELEASE RULES
 
-	write_lock(&pool->lock);
-	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
-		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
-		list_del(&chunk->next_chunk);
+"New"?  We've been doing this for many many years now, what is "new"
+about it?
 
-		end_bit = (chunk->end_addr - chunk->start_addr) >> order;
-		bit = find_next_bit(chunk->bits, end_bit, 0);
-		BUG_ON(bit < end_bit);
+And why are you starting a series with "0"?  Just to keep from having to
+modify all of the other numbers?  None of the other files in this
+directory start at 0...
 
-		kfree(chunk);
-	}
-	kfree(pool);
-	return;
-}
+thanks,
 
-The write_lock is unneeded and wrong.  Because if any other thread of
-control is concurrently playing with this pool, it will sometimes do a
-use-after-free.
-
-So no other thread of control should have access to this pool, so
-there's no need for the write_lock().
+greg k-h
