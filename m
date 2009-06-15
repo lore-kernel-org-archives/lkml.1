@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751863AbZFOCFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZFOCG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751863AbZFOCFw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 22:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZFOCFp
+	id S1753219AbZFOCG7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 22:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbZFOCGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 22:05:45 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:17931 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbZFOCFo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 22:05:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=BAo/BHJ+hHiSHf+5fD4n86x2AXg1H4F2quZmM0/6OIwtcv6Bhtg7ATy5rAvzB/QZrv
-         e6cMl8u9x8ldpY/Ak2/SfmO6j5H1ra90cv+XwTieuvpN+15819ucGoNWhFE0PjAUvsPA
-         3x8wFi3P3RA4Cxhas+K8ocFy7VGDtOGxlUyWQ=
+	Sun, 14 Jun 2009 22:06:52 -0400
+Received: from claw.goop.org ([74.207.240.146]:46150 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbZFOCGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 22:06:51 -0400
+Message-ID: <4A35ACB3.9040501@goop.org>
+Date: Sun, 14 Jun 2009 19:06:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <200906142159.42280.rgetz@blackfin.uclinux.org>
-References: <8bd0f97a0906081623h4dc26492kd70c2e07091730d@mail.gmail.com> 
-	<20090614204437.GC3187@uranus.ravnborg.org> <200906142159.42280.rgetz@blackfin.uclinux.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sun, 14 Jun 2009 22:05:26 -0400
-Message-ID: <8bd0f97a0906141905m54958c02l3cae598d0136980b@mail.gmail.com>
-Subject: Re: scripts/kallsyms: extending region checking for Blackfin memory 
-	regions
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, kbuild-devel@lists.sourceforge.net,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's
+ no local APIC
+References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>
+In-Reply-To: <m1d499yyug.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 21:59, Robin Getz wrote:
-> On Sun 14 Jun 2009 16:44, Sam Ravnborg pondered:
->> On Mon, Jun 08, 2009 at 07:23:16PM -0400, Mike Frysinger wrote:
->> > intro: the current Blackfin memory architecture is (1) no virtualized
->> > memory and (2) distinctly harvard.  that means we cannot create a
->> > linear map of start/end text sections.  we end up with distinct
->> > regions like so:
->> > 00001000 T __stext
->> > 000dc4c0 T __etext
->> > feb00000 A __etext_l2
->> > feb00010 A __stext_l2
->> > ffa00000 T __stext_l1
->> > ffa0160c T __etext_l1
->> > this is because external memory starts at address 0 while on-chip
->> > regions have different discontiguous hardcoded addresses (L1
->> > instruction in this case starts at 0xffa00000 while L2 starts at
->> > 0xfeb00000).
->> >
->> > the current kallsyms is written to search for the special stext/etext
->> > symbols only which means the resulting kallsyms output knows nothing
->> > of the Blackfin symbols living in these on-chip regions.  we've
->> > written two patches to fix this: the first one is straight forward and
->> > simply copies & pastes the existing hardcoded regions.  the second
->> > creates an array of text regions which makes it much easier to extend
->> > in the future for other people (and can be squashed into the first
->> > one).
->> >
->> > doesnt matter to me which method is picked :)
+On 06/12/09 13:35, Eric W. Biederman wrote:
+> Jeremy Fitzhardinge<jeremy@goop.org>  writes:
+>
+>    
+>> Parse the ACPI MADT for I/O APIC information, even if the cpu has no
+>> (apparent) local APIC (ie, the CPU's APIC feature flag is clear).
 >>
->> I added both as I liked the generalization.
->> I had to rearrange the "Signed-off-by" in the first patch
->> as this patch came in vai you and not Robin.
+>> In principle, the local APIC and the I/O APIC are distinct (but related)
+>> components, which can be independently present.
+>>
+>> In practice this can happen in a Xen system, where the hypervisor has
+>> full control over the local APICs, and delivers interrupts initiated by
+>> the I/O APICs via Xen's event channel mechanism.
+>>      
 >
-> I think Mike pulled this from some work I did awhile ago, (and sent to you)
-> that obviously never got added (since I didn't send it in the proper patch
-> format).
->
-> http://lkml.indiana.edu/hypermail/linux/kernel/0607.1/0558.html
+> Xen  is giving us a semi bogus acpi table?
+>    
 
-yeah, the first patch was by Robin ... the "From:" line in the patch
-should have shown that (and git-am would have respected) ...
--mike
+No, not really.  The guest is reading the real BIOS-provided ACPI 
+tables, but Xen is clobbering the APIC feature in CPUID so the virtual 
+CPU doesn't appear to have a usable local APIC.  Xen itself doesn't care 
+very much about interrupt routing or ACPI, and doesn't make any attempt 
+to read or parse the ACPI data itself (except for very basic things like 
+the APIC addresses).
+> What is the paravirt configuration model with Xen?  Is it documented
+> somewhere?
+>    
+
+Not very well.  The basic idea is that Xen owns the local apics, and 
+does things like vector allocation.  The guest kernel is responsible for 
+asking for a vector, and doing the appropriate IO APIC programming, and 
+binding that vector to an event channel.  The interrupt is then 
+delivered via the normal event channel mechanism already in place to 
+deal with all the other event types an unprivileged domain can get.
+
+     J
