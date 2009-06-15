@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761649AbZFOP7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763720AbZFOP7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761649AbZFOP7G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbZFOP64
+	id S1763720AbZFOP7j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbZFOP7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:58:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57140 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753128AbZFOP6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:58:55 -0400
-Date: Mon, 15 Jun 2009 17:58:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 4/7] tracing: replace a GFP_ATOMIC with GFP_KERNEL
-	allocation
-Message-ID: <20090615155850.GC19529@elte.hu>
-References: <20090615154226.058101204@goodmis.org> <20090615154411.136115951@goodmis.org>
+	Mon, 15 Jun 2009 11:59:30 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:56306 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbZFOP7a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:59:30 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [RFC] Load cache_aligned sections, cache aligned (VIA, some Intel, others?)
+Date: Mon, 15 Jun 2009 10:59:21 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090615154411.136115951@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200906151059.25242.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The expected size of the processor cache line size is set
+in the Kbuild menu by selection of the processor (sort-of).
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+How about telling the loader to cache-line align the cache_aligned sections?
+This define comes in via (no pun intended): arch/x86/include/asm/cache.h
 
-> From: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> Atomic allocation is not needed here.
-> 
-> [ Impact: clean up of memory alloction type ]
+diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
+index 62ad500..26f68a5 100644
+--- a/arch/x86/kernel/vmlinux_32.lds.S
++++ b/arch/x86/kernel/vmlinux_32.lds.S
+@@ -82,7 +82,7 @@ SECTIONS
+        *(.data.idt)
+   }
 
-Note, the impact line was probably not needed here - and if we add 
-one then the correct one would be:
+-  . = ALIGN(32);
++  . = ALIGN(L1_CACHE_BYTES);
+   .data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+        *(.data.cacheline_aligned)
+   }
 
- [ Impact: use less failure-prone (non-atomic) allocations ]
-
-	Ingo
+Mike
