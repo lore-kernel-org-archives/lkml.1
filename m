@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765125AbZFOSv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbZFOSwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765125AbZFOSv2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZFOSvV
+	id S1765325AbZFOSwP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761282AbZFOSv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:51:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46427 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbZFOSvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:51:20 -0400
-Date: Mon, 15 Jun 2009 20:50:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090615185046.GJ11248@elte.hu>
-References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <20090615182348.GC11248@elte.hu> <20090615183840.GA6520@Krystal>
+	Mon, 15 Jun 2009 14:51:59 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:38815 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759064AbZFOSv6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:51:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=fNAGrNpZTX1XBgiunKZI9VcwNIFw/w0VffgroekKDnyXXWhngpMpTzoGy45e/wa7X
+	VcxuxIh/8Onhq70Rb0PeA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615183840.GA6520@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090615182850.GA10490@elf.ucw.cz>
+References: <1245033557-10968-1-git-send-email-swetland@google.com>
+	 <1245033557-10968-2-git-send-email-swetland@google.com>
+	 <1245033557-10968-3-git-send-email-swetland@google.com>
+	 <1245033557-10968-4-git-send-email-swetland@google.com>
+	 <20090615132248.GB14555@elf.ucw.cz>
+	 <a55d774e0906151125h36ee7c36yb9ecf5fb3fb8e41b@mail.gmail.com>
+	 <20090615182850.GA10490@elf.ucw.cz>
+Date: Mon, 15 Jun 2009 11:51:57 -0700
+Message-ID: <a55d774e0906151151p223895b1pc01be38e1d0e9358@mail.gmail.com>
+Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream 
+	device
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 15, 2009 at 11:28 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> (Now... I'm trying to figure out how leds are set up. It seems that
+> there are two classes -- leds-gpio, which is backlights, and 4colored
+> led. I'd like to use 4colored led for debugging... Unfortunately
+> drivers/leds/leds-cpld.c is quite "interesting" (and really abuses
+> interface at least with "blink" file). Is there easy way to turn some
+> light manually, best something that works early and can be used for
+> debugging?)
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+The 4color LED is controlled by an I2C led controller, so it's a bit
+of a pain to interact with very early on.
 
-> I guess. However, having the ability to call module code in NMI 
-> handler context [...]
+There are LED backlights behind the keyboard and the buttons on the
+"chin" of the device, controlled by the CPLD (see
+TROUT_GPIO_QTKEY_LED_EN and TROUT_GPIO_UI_LED_EN and and the cpld gpio
+stuff in board-trout-gpio.c).
 
-I dont think we really want to execute module-provided code from NMI 
-handlers. NMI context is pretty tricky to begin with. (Yes, i know 
-it's possible via nmi notifiers or modular oprofile but it's a 
-really bad practice IMHO.)
+This is actually another reason why I'd actually prefer to stick with
+trout at least inside the board-dream-* files... just a lot of code
+that uses this name that's we've been working with for a year or so.
+Renaming the files is trivial and updating the config options is easy
+too, but it gets to be a lot of shuffling around to keep changing the
+names internally.  A lot of hardware has names used be the
+developers/manufacturers/etc that don't match the product names (HTC
+calls "magic" sapphire, for example, and the board files reflect
+that), and of course these devices have different names in different
+markets too.
 
-	Ingo
+Brian
