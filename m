@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934773AbZFOVOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934712AbZFOVRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934773AbZFOVOV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 17:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934821AbZFOVN5
+	id S934712AbZFOVRG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 17:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934947AbZFOVQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 17:13:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46215 "EHLO mx3.mail.elte.hu"
+	Mon, 15 Jun 2009 17:16:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36186 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934816AbZFOVNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 17:13:55 -0400
-Date: Mon, 15 Jun 2009 23:13:19 +0200
+	id S934719AbZFOVQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 17:16:40 -0400
+Date: Mon, 15 Jun 2009 23:16:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@redhat.com,
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
        paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
-       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
        linux-tip-commits@vger.kernel.org
 Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
 	support to use NMI-safe methods
-Message-ID: <20090615211319.GB27100@elte.hu>
-References: <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <alpine.LFD.2.01.0906151125320.6276@localhost.localdomain> <20090615183649.GA16999@elte.hu> <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain> <4A36ABB5.1040109@goop.org> <alpine.LFD.2.01.0906151326170.6276@localhost.localdomain> <4A36B238.5020203@zytor.com> <20090615205911.GC24554@elte.hu> <4A36B746.4050001@zytor.com>
+Message-ID: <20090615211605.GC27100@elte.hu>
+References: <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal> <1245091917.6741.185.camel@laptop> <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop> <4A369CD8.3090505@zytor.com> <20090615192720.GA9056@Krystal> <4A36A1C7.6080005@zytor.com> <20090615210119.GD24554@elte.hu> <20090615211207.GB12919@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A36B746.4050001@zytor.com>
+In-Reply-To: <20090615211207.GB12919@Krystal>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -40,32 +39,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> Ingo Molnar wrote:
-> > 
-> > hm, does this really work? Using sysret there would be quite 
-> > tempting. Does anyone know the rough cycle count difference between 
-> > IRET and SYSRET on contemporary hardware?
-> > 
-> > Also, is SYSRET NMI-invariant? If yes then this would be a quite 
-> > clean all-around solution: on modern hw we'd standardize on doing 
-> > SYSRET from pretty much all the contexts. We'd get a nice speedup 
-> > and also the NMI nested pagefaults fix.
-> > 
-> > Oh, compat mode. Doesnt SYSRET on Intel CPUs have the problem of not 
-> > being able to switch back to 32-bit user-space?
-> > 
+> Just for the sake of making NMI handlers less tricky, supporting 
+> page faults caused by faulting kernel instructions (rather than 
+> only supporting explicit faulting from get_user_pages_inatomic) 
+> would be rather nice design-wise if it only costs 2-3 cycles.
 > 
-> Not sure.  SYSRET/SYSEXIT are *not* general return to userspace 
-> solutions in either case; any kind of complex modes and they 
-> can't.
-> 
-> And they are, of course, only applicable for returning to 
-> userspace.  As such, I don't understand the "NMI invariant" 
-> comment.
+> And I would not want to touch the page fault handler itself to 
+> write the saved cr2 value before the handler exits, because this 
+> would add a branch on a very hot path.
 
-Yeah - it makes no sense for the NMI return indeed, as the target 
-CS/SS is hardcoded indeed.
+_That_ path is not hot at all - it's the 'we are in atomic section 
+and faulted' rare path (laced with an exception table search - which 
+is extremely slow compared to other bits of the pagefault path).
+
+But ... it's not an issue: a check can be made in the NMI code too, 
+as we always know about pagefaults there, by virtue of getting 
+-EFAULT back from the attempted-user-copy.
 
 	Ingo
