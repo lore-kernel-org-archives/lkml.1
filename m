@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZFOBsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbZFOB4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbZFOBsT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 21:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZFOBsL
+	id S1751299AbZFOB4q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 21:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbZFOB4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 21:48:11 -0400
-Received: from mga05.intel.com ([192.55.52.89]:58027 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750832AbZFOBsK (ORCPT
+	Sun, 14 Jun 2009 21:56:38 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:37310 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750838AbZFOB4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 21:48:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,219,1243839600"; 
-   d="scan'208";a="699301495"
-Subject: Re: [PATCH V4: 1/3] pci: Provide Multiple Error Received and no
-	error source id support on AER
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1244845057.19708.116.camel@grinch>
-References: <1244776109.2560.319.camel@ymzhang>
-	 <1244845057.19708.116.camel@grinch>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 15 Jun 2009 09:48:15 +0800
-Message-Id: <1245030495.2560.344.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Sun, 14 Jun 2009 21:56:37 -0400
+X-IronPort-AV: E=Sophos;i="4.42,219,1243828800"; 
+   d="scan'208";a="93886"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: scripts/kallsyms: extending region checking for Blackfin memory regions
+Date: Sun, 14 Jun 2009 21:59:42 -0400
+User-Agent: KMail/1.9.5
+CC: "Mike Frysinger" <vapier.adi@gmail.com>,
+       kbuild-devel@lists.sourceforge.net,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "uclinux-dist-devel" <uclinux-dist-devel@blackfin.uclinux.org>
+References: <8bd0f97a0906081623h4dc26492kd70c2e07091730d@mail.gmail.com> <20090614204437.GC3187@uranus.ravnborg.org>
+In-Reply-To: <20090614204437.GC3187@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-ID: <200906142159.42280.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 15 Jun 2009 01:56:37.0043 (UTC) FILETIME=[84600830:01C9ED5C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-12 at 22:17 +0000, Andrew Patterson wrote:
-> On Fri, 2009-06-12 at 11:08 +0800, Zhang, Yanmin wrote:
-> > Anyone could help me test it on powerpc? Or at least a compilation
-> > to see there is any compiling error/warning. I have no powerpc machine.
-> > Thanks.
+On Sun 14 Jun 2009 16:44, Sam Ravnborg pondered:
+> On Mon, Jun 08, 2009 at 07:23:16PM -0400, Mike Frysinger wrote:
+> > intro: the current Blackfin memory architecture is (1) no virtualized
+> > memory and (2) distinctly harvard.  that means we cannot create a
+> > linear map of start/end text sections.  we end up with distinct
+> > regions like so:
+> > 00001000 T __stext
+> > 000dc4c0 T __etext
+> > feb00000 A __etext_l2
+> > feb00010 A __stext_l2
+> > ffa00000 T __stext_l1
+> > ffa0160c T __etext_l1
+> > this is because external memory starts at address 0 while on-chip
+> > regions have different discontiguous hardcoded addresses (L1
+> > instruction in this case starts at 0xffa00000 while L2 starts at
+> > 0xfeb00000).
 > > 
-> > Changelog V4:
-> > 	Port the patches to Jesses' linux-next tree (mostly based on
-> > 	2.6.30).
+> > the current kallsyms is written to search for the special stext/etext
+> > symbols only which means the resulting kallsyms output knows nothing
+> > of the Blackfin symbols living in these on-chip regions.  we've
+> > written two patches to fix this: the first one is straight forward and
+> > simply copies & pastes the existing hardcoded regions.  the second
+> > creates an array of text regions which makes it much easier to extend
+> > in the future for other people (and can be squashed into the first
+> > one).
 > > 
-> > ﻿﻿Changelog V3:
-> >         1) Probe devices under the root port when the bus id of
-> >         the source id is equal to 0; V2 does so when device id is
-> >         equal to 0;
-> >         2) Add more comments on critical path of finding devices.
-> > 
-> > ﻿Changelog V2:
-> >         Version 2 adds nosourceid, a boot parameter. When
-> >         aerdriver.nosourceid=y, aerdriver doesn't use the source
-> >         id saved by root port. Instead, it searches the device
-> >         tree under the root port to find the reporter. So if hardware
-> >         has errata and root port saves a bad source id, aerdriver
-> >         still could find the reporter.
-> >         There are 2 scenarios under which ﻿aerdriver searches the
-> >         device tree under root port:
-> >         1) nosourceid=n and error source id is equal to 0;
-> >         2) nosourceid=y.
-> > 
-> > ﻿Based on PCI Express AER specs, a root port might receive multiple
-> > TLP errors while it could only save a correctable error source id
-> > and an uncorrectable error source id at the same time. In addition,
-> > some root port hardware might be unable to provide a correct source
-> > id, i.e., the source id, or the bus id part of the source id provided
-> > by root port might be equal to 0.
-> > 
-> > The patchset implements the support in kernel by searching the device
-> > tree under the root port.
-> > 
-> > Patch 1 changes parameter cb of function pci_walk_bus to return a value.
-> > When cb return non-zero, pci_walk_bus stops more searching on the
-> > device tree.
-> > 
-> > ﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-> > 
+> > doesnt matter to me which method is picked :)
 > 
-> This one looks fine to me. 
-> 
-> Reviewed-by: Andrew Patterson <andrew.patterson@hp.com>
-Thanks for helping review the patches.
+> I added both as I liked the generalization.
+> I had to rearrange the "Signed-off-by" in the first patch
+> as this patch came in vai you and not Robin.
 
-Yanmin
+I think Mike pulled this from some work I did awhile ago, (and sent to you) 
+that obviously never got added (since I didn't send it in the proper patch 
+format).
 
+http://lkml.indiana.edu/hypermail/linux/kernel/0607.1/0558.html
 
