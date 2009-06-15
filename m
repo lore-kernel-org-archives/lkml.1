@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZFOHos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZFOHqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbZFOHos (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 03:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbZFOHok
+	id S1756603AbZFOHqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 03:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZFOHqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 03:44:40 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58466 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZFOHoj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 03:44:39 -0400
-Date: Mon, 15 Jun 2009 08:44:23 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 1/13] cpumask: Use accessors for cpu_*_mask: arm
-Message-ID: <20090615074422.GA2009@flint.arm.linux.org.uk>
-References: <20090612133100.765C2DDDA0@ozlabs.org> <20090612190303.GA7976@flint.arm.linux.org.uk> <200906132225.12855.rusty@rustcorp.com.au> <20090613134922.GA23433@flint.arm.linux.org.uk>
+	Mon, 15 Jun 2009 03:46:16 -0400
+Received: from 8bytes.org ([88.198.83.132]:55929 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750877AbZFOHqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 03:46:16 -0400
+Date: Mon, 15 Jun 2009 09:46:17 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
+       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
+Message-ID: <20090615074616.GD18638@8bytes.org>
+References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <64bb37e0906101341j341f5179o9abfa888a6b96fc3@mail.gmail.com> <20090611081032.GN5139@amd.com> <64bb37e0906111038h1a5b9f17oec6c6368d2fbd36d@mail.gmail.com> <20090612141346.GY5139@amd.com> <64bb37e0906131008x59b25b94u501fc2192cc28be0@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090613134922.GA23433@flint.arm.linux.org.uk>
+In-Reply-To: <64bb37e0906131008x59b25b94u501fc2192cc28be0@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 13, 2009 at 02:49:22PM +0100, Russell King wrote:
-> Commit 8266810 "[ARM] smp: fix cpumask usage in ARM SMP code" (in my tree
-> since May 17th) fixes some of the areas which your patch touches.  See:
+On Sat, Jun 13, 2009 at 07:08:01PM +0200, Torsten Kaiser wrote:
+> On Fri, Jun 12, 2009 at 4:13 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
+> > On Thu, Jun 11, 2009 at 07:38:47PM +0200, Torsten Kaiser wrote:
+> >> DMA-API: device driver tries to free DM
+> >> A memory it has not allocated [device address=0x000000011e4c3000]
+> >> [size=4096 bytes]
+> >
+> > Hmm, looking again over the code I've seen that the ref
+> > dma_debug_entries are not alway filled with all necessary information
+> > for best-fit. Can you please try if you still get false warnings when
+> > you apply the two patches attached instead of the one I sent yesterday?
 > 
-> http://ftp.arm.linux.org.uk/git/gitweb.cgi?p=linux-2.6-arm.git;a=shortlog;h=refs/heads/smp
+> I tested these patches
+> (0001-dma-debug-check-for-sg_call_ents-in-best-fit-algorit.patch and
+> 0002-dma-debug-be-more-careful-when-building-reference-en.patch)
+> against 2.6.30-git6 and did not see any warnings.
 > 
-> I suggest hanging fire on this until the ARM tree is merged into mainline.
+> I can't be 100% sure about the fix, because I do not have a reliable
+> trigger, but it looks quite good.
 
-... which has now happened.
+Ok cool, I will push these two patches upstream then and will send them
+to -stable too. So we get this fixed in a 30.x release too. Thanks a lot
+for your testing.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	Joerg
+
