@@ -1,54 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764280AbZFORK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbZFORLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764280AbZFORK7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZFORKw
+	id S1764208AbZFORLT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763653AbZFORK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:10:52 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:40114 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbZFORKw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:10:52 -0400
-Message-ID: <4A36809D.9070700@billgatliff.com>
-Date: Mon, 15 Jun 2009 12:10:53 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 15 Jun 2009 13:10:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41772 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764136AbZFORK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 13:10:58 -0400
+Date: Mon, 15 Jun 2009 19:10:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] WARN(): add a \n to the message printk
+Message-ID: <20090615171044.GC25760@elte.hu>
+References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain> <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Brian Swetland <swetland@google.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-References: <20090610103131.GB13885@elf.ucw.cz>	<20090610194852.GA28787@n2100.arm.linux.org.uk>	<a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com>	<20090610213710.GA8472@elf.ucw.cz>	<a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com>	<20090611082532.GE8592@elf.ucw.cz>	<a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com>	<20090612150504.GA15084@elf.ucw.cz>	<a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com> <20090615170103.GE25040@elf.ucw.cz>
-In-Reply-To: <20090615170103.GE25040@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> ...in trout... Does dream really support flash?
->
-> 	{
-> 		.name = "spotlight",
-> 		.gpio = TROUT_GPIO_SPOTLIGHT_EN,
-> 	},
->
-> ...what is spotlight? I wish dream had some way to produce light in
-> dark...
->
->   
 
-I can't sleep, much less dream, if it's too bright.    :)
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+> On Mon, 15 Jun 2009, Linus Torvalds wrote:
+> > 
+> > On Mon, 15 Jun 2009, Arjan van de Ven wrote:
+> > >  
+> > > -	if (args)
+> > > +	if (args) {
+> > >  		vprintk(args->fmt, args->args);
+> > > +		printk("\n");
+> > > +	}
+> > 
+> > I really don't like this. What if the format already does have a '\n'? And 
+> > what if some other CPU is printing at the same time?
+> > 
+> > I'd almost be open to adding a "flags" field to vprintk, and allow setting 
+> > things like "finish line with \n" there. Or perhaps even better, have a 
+> > "vprintk_line()" function that does it with no dynamic flags. Maybe make 
+> > it static, and move all these panic helper funtions into kernel/printk.c 
+> > (since this really is a special case).	
+> > 
+> > I dunno. I'm just throwing out suggestions. I just don't think the above 
+> > patch is very nice.
+> 
+> Oh, I actually think I have a preference.
+> 
+> I think we should _always_ cause a line break at the beginning of a new 
+> line, unless the new printk() starts with a KERN_CONT thing.
+> 
+> Right now KERN_CONT is "", but we could easily make it an explicit 
+> "loglevel" thing. Like this.
+> 
+> NOTE! This is, of course, totally untested. And we're bound to have 
+> continuation printk's that don't have the KERN_CONT at front, and need 
+> them added, but I think this is generally a saner model than what we have 
+> now, or your suggested explicit addition of '\n'.
+> 
+> Basically, it tries to guarantee that new messages always get a newline, 
+> unless they _explicitly_ say that they don't want one. Doesn't that make 
+> sense?
+> 
+> 		Linus
+> 
+> ---
+>  include/linux/kernel.h |    2 +-
+>  kernel/printk.c        |   16 +++++++++++++++-
+>  2 files changed, 16 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index 883cd44..066bb1e 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -102,7 +102,7 @@ extern const char linux_proc_banner[];
+>   * line that had no enclosing \n). Only to be used by core/arch code
+>   * during early bootup (a continued line is not SMP-safe otherwise).
+>   */
+> -#define	KERN_CONT	""
+> +#define	KERN_CONT	"<c>"
+>  
+>  extern int console_printk[];
+>  
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 5052b54..6f416fd 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -691,7 +691,21 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+>  	 * Copy the output into log_buf.  If the caller didn't provide
+>  	 * appropriate log level tags, we insert them here
+>  	 */
+> -	for (p = printk_buf; *p; p++) {
+> +	p = printk_buf;
+> +
+> +	/* Are we continuing a previous printk? */
+> +	if (!new_text_line) {
+> +		if (!memcmp(p, KERN_CONT, 3)) {
+> +			/* We intended to do that continued printk! */
+> +			p += 3;
+> +		} else {
+> +			/* Force a line break */
+> +			emit_log_char('\n');
+> +			new_text_line = 1;
+> +		}
+> +	}
+> +
 
-b.g.
+Nice idea ...
 
--- 
-Bill Gatliff
-bgat@billgatliff.com
+Puts some pressure on current intentionally 'naked' printks (there's 
+still a few of them) - but that's OK, it's not like KERN_CONT (or 
+pr_cont()) is that hard to add.
 
+( Plus many of our boot printks (where most of the 'naked' printks 
+  are currently occuring) are development leftovers and should 
+  really be removed, so it's good to shake them up a bit. )
+
+	Ingo
