@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZFOJ71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbZFOKDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbZFOJ71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 05:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZFOJ7T
+	id S1754601AbZFOKDF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 06:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZFOKCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 05:59:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60347 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbZFOJ7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 05:59:19 -0400
-Date: Mon, 15 Jun 2009 11:59:20 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       lizf@cn.fujitsu.com, mingo@elte.hu, yinghai@kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-Message-ID: <20090615095920.GA10294@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI> <20090615081831.GA5411@osiris.boeblingen.de.ibm.com> <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> <20090615094148.GC1314@wotan.suse.de> <1245059324.23207.13.camel@penberg-laptop>
-Mime-Version: 1.0
+	Mon, 15 Jun 2009 06:02:55 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:43183 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbZFOKCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 06:02:54 -0400
+Date: Mon, 15 Jun 2009 11:02:53 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Alek Du <alek.du@intel.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
+	gpio_alt_func features to GPIOLIB
+Message-ID: <20090615100253.GC6106@sirena.org.uk>
+References: <20090615171502.2a981bf5@dxy.sh.intel.com> <20090615095023.GA19873@fluff.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245059324.23207.13.camel@penberg-laptop>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090615095023.GA19873@fluff.org.uk>
+X-Cookie: Prunes give you a run for your money.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 12:48:44PM +0300, Pekka Enberg wrote:
-> Hi Nick,
-> 
-> On Mon, Jun 15, 2009 at 11:18 AM, Heiko Carstens<heiko.carstens@de.ibm.com> wrote:
-> > > > I didn't look any deeper into this, but looks to me like doing something like
-> > > > schedule_work() this early isn't ok.
-> > > >
-> > > > This is the conversion that leads to the crash:
-> > > >
-> > > > -               alloc_bootmem_low(sizeof(struct raw3215_info));
-> > > > +               kzalloc(sizeof(struct raw3215_info), GFP_NOWAIT | GFP_DMA);
-> > > >
-> > > > Might be that I missed something. Maybe some special flag?
-> 
-> On Mon, Jun 15, 2009 at 12:10:01PM +0300, Pekka Enberg wrote:
-> > > Btw, you should not need to use GFP_NOWAIT anymore and GFP_KERNEL
-> > > should be fine even during early boot.
-> 
-> On Mon, 2009-06-15 at 11:41 +0200, Nick Piggin wrote:
-> > Is this the agreed way forward? I would like to maybe continue to
-> > try having early allocations pass in special flags where possible
-> > (it could even be a GFP_BOOT or something). It can make it easier
-> > to perhaps reduce branches in core code in future and things can
-> > be flagged in warnings....
-> > 
-> > I just like the idea of keeping such annotations.
-> 
-> I don't know if we agreed or not but Linus expressed his liking to the
-> masking patch (that is merged now).
+On Mon, Jun 15, 2009 at 10:50:23AM +0100, Ben Dooks wrote:
+> On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
 
-Yes I do like your patch, but more as the implementation of the
-workaround for slab rather than being able to use it to mask
-of random bits.
+> > * gpio_alt_func is to set pin as alternative function or GPIO.
 
+> gpio_alt_func is feature creep, I don't really belive this is the
+> best place to put it as it will be difficult to actually make this
+> generic for all gpio platforms.
 
-> I was more on the GFP_BOOT side also but I am beginning to like the fact
-> that we can just do GFP_KERNEL and expect that to work in a sane way
-> during boot (and perhaps later on during suspend). We can probably shave
+Since the proposed API just passes a value through to the driver for the
+GPIO chip it looks generic enough - each chip can define whatever set of
+constants it likes.  I'd expect a large proportion of driver specific
+APIs would end up just the same.
 
-I'd just not like to give up on it right away. I'm not convinced
-that it is a "too hard" problem to have callers figure out the
-right context (they do it for all other problems like whether
-they can sleep and whether they hold specific types of locks
-or whether they can be called in reclaim path etc etc etc).
-
-And it is pretty trivial to add warnings to catch any of these
-conditions. So while auditing might not be trivial, we would
-likely be able to mop up remainders with some runtime warnings.
-
+Given the number of manufacturers that don't use a separate term like
+the PXA MFP for the alternative functions of their GPIOs it makes sense
+to have a gpiolib API for this.  Without one you end up having each
+driver needing to add its own API, and since the pins are just referred
+to as GPIOs in the documentation the API will have that in the name and
+look like it ought to be connected with gpiolib.
