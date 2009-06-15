@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764794AbZFORSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763041AbZFORTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764794AbZFORSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbZFORSG
+	id S1763041AbZFORTW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbZFORTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:18:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56198 "EHLO mx2.redhat.com"
+	Mon, 15 Jun 2009 13:19:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57888 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753995AbZFORSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:18:04 -0400
-Date: Mon, 15 Jun 2009 19:13:25 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] Use copy_wait_opts_to_user() in
-	wait_task_continued()
-Message-ID: <20090615171325.GA8711@redhat.com>
-References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com> <1242048349-2766-6-git-send-email-v.mayatskih@gmail.com> <20090615165536.GC7425@redhat.com>
+	id S1762283AbZFORTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 13:19:08 -0400
+Date: Mon, 15 Jun 2009 19:18:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
+       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090615171845.GA7664@elte.hu>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090615165536.GC7425@redhat.com>
+In-Reply-To: <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/15, Oleg Nesterov wrote:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Mon, 15 Jun 2009, tip-bot for Peter Zijlstra wrote:
+> > 
+> > __copy_from_user_inatomic() isn't NMI safe in that it can trigger
+> > the page fault handler which is another trap and its return path
+> > invokes IRET which will also close the NMI context.
+> 
+> That's not the only problem.
+> 
+> An even more fundamental problem is that the page fault handler is 
+> not re-entrant because of simple the value in %cr2. So regardless 
+> of any 'iret' issues, you *CANNOT* take a page fault in an NMI, 
+> because the NMI might happen while we're in the critical region of 
+> having taken another page fault, but before we've saved off the 
+> value of %cr2 in that old page fault.
 >
-> On 05/11, Vitaly Mayatskikh wrote:
-> >
-> > --- a/kernel/exit.c
-> > +++ b/kernel/exit.c
-> > @@ -1416,19 +1416,16 @@ static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
-> >  	get_task_struct(p);
-> >  	read_unlock(&tasklist_lock);
-> >
-> > -	if (!wo->wo_info) {
-> > -		retval = wo->wo_rusage
-> > -			? getrusage(p, RUSAGE_BOTH, wo->wo_rusage) : 0;
-> > -		put_task_struct(p);
-> > -		if (!retval && wo->wo_stat)
-> > -			retval = put_user(0xffff, wo->wo_stat);
-> > -		if (!retval)
-> > -			retval = pid;
-> > -	} else {
-> > -		retval = wait_noreap_copyout(wo, p, pid, uid,
-> > -					     CLD_CONTINUED, SIGCONT);
-> > -		BUG_ON(retval == 0);
-> > -	}
-> > +	retval = copy_wait_opts_to_user(wo, p, pid, uid,
-> > +					CLD_CONTINUED, SIGCONT, SIGCHLD);
-> > +	put_task_struct(p);
-> > +
-> > +	if (!retval && wo->wo_stat)
-> > +		retval = put_user(0xffff, wo->wo_stat);
->
-> This adds another user-visible change. Before the patch, we ignore
-> ->wo_stat if ->wo_info != NULL.
+> If the NMI handler causes a page fault, it will corrupt the %cr2 
+> of the outer page fault. That's why the page fault is done with an 
+> interrupt gate, and why we have that conditional 
+> local_irq_enable() in it.
+> 
+> So page faults are fundamentally only safe wrt normal interrupts, 
+> not NMI.
 
-Ugh! sorry I was wrong.
+ahhh ... a light goes up. Indeed.
 
-->wo_info != NULL means waitid() which sets ->wo_stat = NULL, so this
-change is correct.
+I was suspecting something much more complex: like the CPU somehow 
+having shadow state for attempted-fault which gets confused by 
+NMI->fault.
 
-> I could send the fixes for 3 and 4, but unfortunately Vitaly has
-> the vacation now. I think it is better to drop
->
-> 	wait_task_-cleanups-split-wait_noreap_copyout.patch
-> 	wait_task_-cleanups-use-copy_wait_opts_to_user-in-wait_task_stopped.patch
-> 	wait_task_-cleanups-use-copy_wait_opts_to_user-in-do_wait.patch
-> 	wait_task_-cleanups-use-copy_wait_opts_to_user-in-wait_task_zombie.patch
-> 	wait_task_-cleanups-use-copy_wait_opts_to_user-in-wait_task_continued.patch
->
-> patches, and wait for Vitaly to redo/resend.
+A simple cr2 corruption would explain all those cc1 SIGSEGVs and 
+other user-space crashes i saw, with sufficiently intense sampling - 
+easily.
 
-Still I think this would be right :/
+The thing is, that __copy_user_inatomic() has been in 
+arch/x86/oprofile/backtrace.c for years, i didnt even suspect some 
+simple, fundamental flaw like this. Apparently nobody uses it.
 
+This is really good news in a sense: i really hate that additional 
+entry*.S mucking in the exception path in the dont-IRET patch. We 
+want less entry*.S magic, not more.
 
-Unless Vitaly can see my emails and reply.
-
-Oleg.
-
+	Ingo
