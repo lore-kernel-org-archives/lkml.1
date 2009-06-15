@@ -1,330 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbZFOI7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbZFOJCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758397AbZFOI7A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 04:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758009AbZFOI6s
+	id S1757702AbZFOJCe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 05:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbZFOJC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 04:58:48 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57375 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758503AbZFOI6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 04:58:44 -0400
-Message-ID: <4A360CD2.8060707@cn.fujitsu.com>
-Date: Mon, 15 Jun 2009 16:56:50 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 04/19] io-controller: Modify cfq to make use of flat elevator
- fair queuing
-References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-5-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1244513342-11758-5-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 15 Jun 2009 05:02:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34777 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751694AbZFOJC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 05:02:26 -0400
+Date: Mon, 15 Jun 2009 10:55:42 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH] posix-cpu-timers: optimize calling
+ thread_group_cputime()
+Message-ID: <20090615105542.2d9f76c7@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <20090612142546.GC3784@redhat.com>
+References: <20090612123903.37cfd868@dhcp-lab-109.englab.brq.redhat.com>
+	<1244804986.6691.1224.camel@laptop>
+	<20090612132008.0c6f3e93@dhcp-lab-109.englab.brq.redhat.com>
+	<20090612142546.GC3784@redhat.com>
+Organization: RedHat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> This patch changes cfq to use fair queuing code from elevator layer.
+On Fri, 12 Jun 2009 16:25:46 +0200
+Oleg Nesterov <oleg@redhat.com> wrote:
+
+> To clarify, I am not arguing against this patch, just a queston.
 > 
-> Signed-off-by: Nauman Rafique <nauman@google.com>
-> Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-> Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  block/Kconfig.iosched     |    3 +-
->  block/cfq-iosched.c       | 1097 +++++++++------------------------------------
->  include/linux/iocontext.h |    4 -
->  3 files changed, 219 insertions(+), 885 deletions(-)
+> On 06/12, Stanislaw Gruszka wrote:
+> >
+> > On Fri, 12 Jun 2009 13:09:46 +0200
+> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >
+> > > On Fri, 2009-06-12 at 12:39 +0200, Stanislaw Gruszka wrote:
+> > > > -               times->utime = cputime_add(times->utime, t->utime);
+> > > > -               times->stime = cputime_add(times->stime, t->stime);
+> > > > -               times->sum_exec_runtime += t->se.sum_exec_runtime;
+> > > > +               if (mask & TG_CPUCLOCK_UTIME)
+> > > > +                       times->utime = cputime_add(times->utime, t->utime);
+> > > > +               if (mask & TG_CPUCLOCK_STIME)
+> > > > +                       times->stime = cputime_add(times->stime, t->stime);
+> > > > +               if (mask & TG_CPUCLOCK_SCHED)
+> > > > +                       times->sum_exec_runtime += t->se.sum_exec_runtime;
+> > >
+> > > Does adding 3 branches really make it faster?
+> > Actually I did not any benchmarking yet, so I don't know what is the real
+> > impact of the patch. I hope it make things taster but the result can be
+> > opposite from my expectations.
 > 
-> diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-> index 3398134..dd5224d 100644
-> --- a/block/Kconfig.iosched
-> +++ b/block/Kconfig.iosched
-> @@ -3,7 +3,7 @@ if BLOCK
->  menu "IO Schedulers"
->  
->  config ELV_FAIR_QUEUING
-> -	bool "Elevator Fair Queuing Support"
-> +	bool
->  	default n
->  	---help---
->  	  Traditionally only cfq had notion of multiple queues and it did
-> @@ -46,6 +46,7 @@ config IOSCHED_DEADLINE
->  
->  config IOSCHED_CFQ
->  	tristate "CFQ I/O scheduler"
-> +	select ELV_FAIR_QUEUING
->  	default y
->  	---help---
->  	  The CFQ I/O scheduler tries to distribute bandwidth equally
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index a55a9bd..f90c534 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -12,7 +12,6 @@
->  #include <linux/rbtree.h>
->  #include <linux/ioprio.h>
->  #include <linux/blktrace_api.h>
-> -
->  /*
->   * tunables
->   */
-> @@ -23,15 +22,7 @@ static const int cfq_fifo_expire[2] = { HZ / 4, HZ / 8 };
->  static const int cfq_back_max = 16 * 1024;
->  /* penalty of a backwards seek */
->  static const int cfq_back_penalty = 2;
-> -static const int cfq_slice_sync = HZ / 10;
-> -static int cfq_slice_async = HZ / 25;
->  static const int cfq_slice_async_rq = 2;
-> -static int cfq_slice_idle = HZ / 125;
-> -
-> -/*
-> - * offset from end of service tree
-> - */
-> -#define CFQ_IDLE_DELAY		(HZ / 5)
->  
->  /*
->   * below this threshold, we consider thinktime immediate
-> @@ -43,7 +34,7 @@ static int cfq_slice_idle = HZ / 125;
->  
->  #define RQ_CIC(rq)		\
->  	((struct cfq_io_context *) (rq)->elevator_private)
-> -#define RQ_CFQQ(rq)		(struct cfq_queue *) ((rq)->elevator_private2)
-> +#define RQ_CFQQ(rq)	(struct cfq_queue *) (ioq_sched_queue((rq)->ioq))
->  
->  static struct kmem_cache *cfq_pool;
->  static struct kmem_cache *cfq_ioc_pool;
-> @@ -53,8 +44,6 @@ static struct completion *ioc_gone;
->  static DEFINE_SPINLOCK(ioc_gone_lock);
->  
->  #define CFQ_PRIO_LISTS		IOPRIO_BE_NR
-> -#define cfq_class_idle(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_IDLE)
-> -#define cfq_class_rt(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_RT)
->  
->  #define sample_valid(samples)	((samples) > 80)
->  
-> @@ -75,12 +64,6 @@ struct cfq_rb_root {
->   */
->  struct cfq_data {
->  	struct request_queue *queue;
-> -
-> -	/*
-> -	 * rr list of queues with requests and the count of them
-> -	 */
-> -	struct cfq_rb_root service_tree;
-> -
->  	/*
->  	 * Each priority tree is sorted by next_request position.  These
->  	 * trees are used when determining if two or more queues are
-> @@ -88,39 +71,10 @@ struct cfq_data {
->  	 */
->  	struct rb_root prio_trees[CFQ_PRIO_LISTS];
->  
-> -	unsigned int busy_queues;
-> -	/*
-> -	 * Used to track any pending rt requests so we can pre-empt current
-> -	 * non-RT cfqq in service when this value is non-zero.
-> -	 */
-> -	unsigned int busy_rt_queues;
-> -
-> -	int rq_in_driver;
->  	int sync_flight;
->  
-> -	/*
-> -	 * queue-depth detection
-> -	 */
-> -	int rq_queued;
-> -	int hw_tag;
-> -	int hw_tag_samples;
-> -	int rq_in_driver_peak;
-> -
-> -	/*
-> -	 * idle window management
-> -	 */
-> -	struct timer_list idle_slice_timer;
-> -	struct work_struct unplug_work;
-> -
-> -	struct cfq_queue *active_queue;
->  	struct cfq_io_context *active_cic;
->  
-> -	/*
-> -	 * async queue for each priority case
-> -	 */
-> -	struct cfq_queue *async_cfqq[2][IOPRIO_BE_NR];
-> -	struct cfq_queue *async_idle_cfqq;
-> -
->  	sector_t last_position;
->  	unsigned long last_end_request;
->  
-> @@ -131,9 +85,7 @@ struct cfq_data {
->  	unsigned int cfq_fifo_expire[2];
->  	unsigned int cfq_back_penalty;
->  	unsigned int cfq_back_max;
-> -	unsigned int cfq_slice[2];
->  	unsigned int cfq_slice_async_rq;
-> -	unsigned int cfq_slice_idle;
->  
->  	struct list_head cic_list;
->  };
-> @@ -142,16 +94,11 @@ struct cfq_data {
->   * Per process-grouping structure
->   */
->  struct cfq_queue {
-> -	/* reference count */
-> -	atomic_t ref;
-> +	struct io_queue *ioq;
->  	/* various state flags, see below */
->  	unsigned int flags;
->  	/* parent cfq_data */
->  	struct cfq_data *cfqd;
-> -	/* service_tree member */
-> -	struct rb_node rb_node;
-> -	/* service_tree key */
-> -	unsigned long rb_key;
->  	/* prio tree member */
->  	struct rb_node p_node;
->  	/* prio tree root we belong to, if any */
-> @@ -167,33 +114,23 @@ struct cfq_queue {
->  	/* fifo list of requests in sort_list */
->  	struct list_head fifo;
->  
-> -	unsigned long slice_end;
-> -	long slice_resid;
->  	unsigned int slice_dispatch;
->  
->  	/* pending metadata requests */
->  	int meta_pending;
-> -	/* number of requests that are on the dispatch list or inside driver */
-> -	int dispatched;
->  
->  	/* io prio of this group */
-> -	unsigned short ioprio, org_ioprio;
-> -	unsigned short ioprio_class, org_ioprio_class;
-> +	unsigned short org_ioprio;
-> +	unsigned short org_ioprio_class;
->  
->  	pid_t pid;
->  };
->  
->  enum cfqq_state_flags {
-> -	CFQ_CFQQ_FLAG_on_rr = 0,	/* on round-robin busy list */
-> -	CFQ_CFQQ_FLAG_wait_request,	/* waiting for a request */
-> -	CFQ_CFQQ_FLAG_must_dispatch,	/* must be allowed a dispatch */
->  	CFQ_CFQQ_FLAG_must_alloc,	/* must be allowed rq alloc */
->  	CFQ_CFQQ_FLAG_must_alloc_slice,	/* per-slice must_alloc flag */
->  	CFQ_CFQQ_FLAG_fifo_expire,	/* FIFO checked in this slice */
-> -	CFQ_CFQQ_FLAG_idle_window,	/* slice idling enabled */
->  	CFQ_CFQQ_FLAG_prio_changed,	/* task priority has changed */
-> -	CFQ_CFQQ_FLAG_slice_new,	/* no requests dispatched in slice */
-> -	CFQ_CFQQ_FLAG_sync,		/* synchronous queue */
->  	CFQ_CFQQ_FLAG_coop,		/* has done a coop jump of the queue */
->  };
->  
-> @@ -211,16 +148,10 @@ static inline int cfq_cfqq_##name(const struct cfq_queue *cfqq)		\
->  	return ((cfqq)->flags & (1 << CFQ_CFQQ_FLAG_##name)) != 0;	\
->  }
->  
-> -CFQ_CFQQ_FNS(on_rr);
-> -CFQ_CFQQ_FNS(wait_request);
-> -CFQ_CFQQ_FNS(must_dispatch);
->  CFQ_CFQQ_FNS(must_alloc);
->  CFQ_CFQQ_FNS(must_alloc_slice);
->  CFQ_CFQQ_FNS(fifo_expire);
-> -CFQ_CFQQ_FNS(idle_window);
->  CFQ_CFQQ_FNS(prio_changed);
-> -CFQ_CFQQ_FNS(slice_new);
-> -CFQ_CFQQ_FNS(sync);
->  CFQ_CFQQ_FNS(coop);
->  #undef CFQ_CFQQ_FNS
->  
-> @@ -259,66 +190,32 @@ static inline int cfq_bio_sync(struct bio *bio)
->  	return 0;
->  }
->  
-> -/*
-> - * scheduler run of queue, if there are requests pending and no one in the
-> - * driver that will restart queueing
-> - */
-> -static inline void cfq_schedule_dispatch(struct cfq_data *cfqd)
-> +static inline struct io_group *cfqq_to_io_group(struct cfq_queue *cfqq)
->  {
-> -	if (cfqd->busy_queues) {
-> -		cfq_log(cfqd, "schedule dispatch");
-> -		kblockd_schedule_work(cfqd->queue, &cfqd->unplug_work);
-> -	}
-> +	return ioq_to_io_group(cfqq->ioq);
->  }
->  
-> -static int cfq_queue_empty(struct request_queue *q)
-> +static inline int cfq_class_idle(struct cfq_queue *cfqq)
->  {
-> -	struct cfq_data *cfqd = q->elevator->elevator_data;
-> -
-> -	return !cfqd->busy_queues;
-> +	return elv_ioq_class_idle(cfqq->ioq);
->  }
->  
-> -/*
-> - * Scale schedule slice based on io priority. Use the sync time slice only
-> - * if a queue is marked sync and has sync io queued. A sync queue with async
-> - * io only, should not get full sync slice length.
-> - */
-> -static inline int cfq_prio_slice(struct cfq_data *cfqd, int sync,
-> -				 unsigned short prio)
-> -{
-> -	const int base_slice = cfqd->cfq_slice[sync];
-> -
-> -	WARN_ON(prio >= IOPRIO_BE_NR);
-> -
-> -	return base_slice + (base_slice/CFQ_SLICE_SCALE * (4 - prio));
-> -}
-> -
-> -static inline int
-> -cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-> +static inline int cfq_class_rt(struct cfq_queue *cfqq)
->  {
-> -	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
-> +	return elv_ioq_class_rt(cfqq->ioq);
->  }
+> I agree with Peter, if we complicate the code it would be nice to know
+> this really makes it faster. Besides, thread_group_cputime() should not
+> be called that often.
 
-Hi Vivek,
+I did some benchmarking, I don't think further the patch is good, it not get
+speed up I expected for clock_gettime(). 
 
-cfq_class_rt isn't needed now, clean it up.
+First was measurement of thread_group_cycles() [1] with standart usage when is
+called from posix_cpu_timers_exit_group():
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/cfq-iosched.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+Without patch:
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 705e7ba..23b24b9 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -234,11 +234,6 @@ static inline int cfq_class_idle(struct cfq_queue *cfqq)
- 	return elv_ioq_class_idle(cfqq->ioq);
+tg_cputime_cycles 1524672
+tg_cputime_n 6246
+average: 244 cycles
+
+With patch:
+
+tg_cputime_cycles 1593876
+tg_cputime_n 6368
+average: 250 cycles
+
+Second benchmark measure time of 250 thread process which do lots of
+clock_gettime(), here are results:
+
+Without patch:
+
+[stasiu@dhcp-lab-195 Work]$ ./bench_getclock
+CLK_PROF: 0.387411
+CLK_VIRT: 0.371487
+CLK_SCHED: 0.396650
+
+With patch:
+
+[stasiu@dhcp-lab-195 Work]$ ./bench_getclock
+CLK_PROF: 0.336056
+CLK_VIRT: 0.305781
+CLK_SCHED: 0.339739
+
+[1] Patch to measure thread_group_cputime() cycles:
+
+diff --git a/fs/proc/stat.c b/fs/proc/stat.c
+index 81e4eb6..14021e8 100644
+--- a/fs/proc/stat.c
++++ b/fs/proc/stat.c
+@@ -22,6 +22,9 @@
+ #define arch_idle_time(cpu) 0
+ #endif
+ 
++extern unsigned long long tg_cputime_cycles;
++extern unsigned long tg_cputime_n;
++
+ static int show_stat(struct seq_file *p, void *v)
+ {
+ 	int i, j;
+@@ -108,12 +111,16 @@ static int show_stat(struct seq_file *p, void *v)
+ 		"btime %lu\n"
+ 		"processes %lu\n"
+ 		"procs_running %lu\n"
+-		"procs_blocked %lu\n",
++		"procs_blocked %lu\n"
++		"tg_cputime_cycles %llu\n"
++		"tg_cputime_n %lu\n",
+ 		nr_context_switches(),
+ 		(unsigned long)jif,
+ 		total_forks,
+ 		nr_running(),
+-		nr_iowait());
++		nr_iowait(),
++		tg_cputime_cycles,
++		tg_cputime_n);
+ 
+ 	return 0;
+ }
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index b5f1b44..6ff946c 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -230,13 +230,20 @@ static int cpu_clock_sample(const clockid_t which_clock, struct task_struct *p,
+ 	return 0;
  }
  
--static inline int cfq_class_rt(struct cfq_queue *cfqq)
--{
--	return elv_ioq_class_rt(cfqq->ioq);
--}
--
- static inline int cfq_cfqq_sync(struct cfq_queue *cfqq)
++unsigned long long tg_cputime_cycles;
++unsigned long tg_cputime_n;
++
+ void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times,
+ 			  int mask)
  {
- 	return elv_ioq_sync(cfqq->ioq);
--- 
-1.5.4.rc3
+ 	struct sighand_struct *sighand;
+ 	struct signal_struct *sig;
+ 	struct task_struct *t;
++	unsigned long long xstart, xend;
+ 
++	xstart = get_cycles();
++	barrier();
++ 
+ 	*times = INIT_CPUTIME;
+ 
+ 	rcu_read_lock();
+@@ -266,6 +273,11 @@ void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times,
+ 		times->sum_exec_runtime += sig->sum_sched_runtime;
+ out:
+ 	rcu_read_unlock();
++
++	barrier();
++	xend = get_cycles();
++	tg_cputime_cycles += xend - xstart;
++	tg_cputime_n++;
+ }
+ 
+ static void update_gt_cputime(struct task_cputime *a, struct task_cputime *b)
 
 
+[2] Benchmark multithread process clock_gettime():
+
+#include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#define CPUCLOCK_PROF		0
+#define CPUCLOCK_VIRT		1
+#define CPUCLOCK_SCHED		2
+
+#define MAKE_PROCESS_CPUCLOCK(pid, clock) \
+	((~(clockid_t) (pid) << 3) | (clockid_t) (clock))
+
+#define CLK_PROF	MAKE_PROCESS_CPUCLOCK(0, CPUCLOCK_PROF)
+#define CLK_VIRT	MAKE_PROCESS_CPUCLOCK(0, CPUCLOCK_VIRT)
+#define CLK_SCHED	MAKE_PROCESS_CPUCLOCK(0, CPUCLOCK_SCHED)
+
+#define NTHREADS 250
+
+void *thread_main(void *dummy)
+{
+	while (1)
+		sleep(100);
+}                     
+
+void create_threads(void)
+{
+	int i, rc;
+	pthread_t tid;
+	pthread_attr_t attr;
+
+	pthread_attr_init(&attr);
+
+	for (i = 0; i < NTHREADS; i++) {
+		rc = pthread_create(&tid, &attr, thread_main, NULL);
+  		if (rc) {              
+    			printf("ERROR; return code from pthread_create() is %d\n", rc);
+    			exit(-1);
+    		}
+	}
+}
+
+double timeval_diff(const struct timeval *start, const struct timeval *end)
+{
+	return (end->tv_sec - start->tv_sec) + (end->tv_usec - start->tv_usec)/1000000.0;
+}
+
+void bench(clockid_t cid, char *str)
+{
+	int i;
+	struct timespec ts;
+	struct timeval start, end;
+	double t;
+
+	gettimeofday(&start, NULL);
+	for (i = 0; i < 100000; i++)
+		clock_gettime(cid, &ts);
+	gettimeofday(&end, NULL);
+	
+	t = timeval_diff(&start, &end);
+	printf("%s: %f\n", str, t);
+}
+
+int main(void)
+{
+	create_threads();
+	bench(CLK_PROF, "CLK_PROF");
+	bench(CLK_VIRT, "CLK_VIRT");
+	bench(CLK_SCHED, "CLK_SCHED");
+	return 0;
+}
