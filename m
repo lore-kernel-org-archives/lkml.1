@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765484AbZFOS1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765460AbZFOS2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765484AbZFOS1k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 14:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZFOS1c
+	id S1765460AbZFOS2j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 14:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZFOS2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 14:27:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53613 "EHLO mx2.redhat.com"
+	Mon, 15 Jun 2009 14:28:30 -0400
+Received: from mga01.intel.com ([192.55.52.88]:18106 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754462AbZFOS1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 14:27:31 -0400
-Message-ID: <4A36925D.4090000@redhat.com>
-Date: Mon, 15 Jun 2009 14:26:37 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1752126AbZFOS23 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 14:28:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,224,1243839600"; 
+   d="scan'208";a="699550446"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <amwang@redhat.com>,
+       "alex@shark-linux.de" <alex@shark-linux.de>,
+       David Miller <davem@davemloft.net>, "rth@twiddle.net" <rth@twiddle.net>,
+       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
+Date: Mon, 15 Jun 2009 11:28:31 -0700
+Subject: RE: [PULL] module and parameter
+Thread-Topic: [PULL] module and parameter
+Thread-Index: AcnsH040VscD5zRBQl6OJzijwee2WQBx5BsA
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3A8A79A2A@orsmsx505.amr.corp.intel.com>
+References: <200906122205.57362.rusty@rustcorp.com.au>
+ <12c511ca0906121405x5ccd0a60k4b804266a87a7896@mail.gmail.com>
+ <200906131450.16211.rusty@rustcorp.com.au>
+ <200906132135.32552.rusty@rustcorp.com.au>
+In-Reply-To: <200906132135.32552.rusty@rustcorp.com.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?RnLpppjpp7tpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rostedt@goodmis.org
-Subject: Re: [Patch] mm tracepoints update - use case.
-References: <1240402037.4682.3.camel@dhcp47-138.lab.bos.redhat.com> <1240428151.11613.46.camel@dhcp-100-19-198.bos.redhat.com> <20090423092933.F6E9.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090423092933.F6E9.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
->> On Wed, 2009-04-22 at 08:07 -0400, Larry Woodman wrote:
+> While I've got your attention, there was another build break on ia64 in
+> linux-next, caused by removal of smp_call_function_mask.
 
->> Attached is an example of what the mm tracepoints can be used for:
-> 
-> I have some comment.
-> 
-> 1. Yes, current zone_reclaim have strange behavior. I plan to fix
->    some bug-like bahavior.
-> 2. your scenario only use the information of "zone_reclaim called".
->    function tracer already provide it.
-> 3. but yes, you are going to proper direction. we definitely need
->    some fine grained tracepoint in this area. we are welcome to you.
->    but in my personal feeling, your tracepoint have worthless argument
->    a lot. we need more good information.
->    I think I can help you in this area. I hope to work together.
+Your fix made it into next-20090615 ... so I didn't ever see this problem.
 
-Sorry I am replying to a really old email, but exactly
-what information do you believe would be more useful to
-extract from vmscan.c with tracepoints?
-
-What are the kinds of problems that customer systems
-(which cannot be rebooted into experimental kernels)
-run into, that can be tracked down with tracepoints?
-
-I can think of a few:
-- excessive CPU use in page reclaim code
-- excessive reclaim latency in page reclaim code
-- unbalanced memory allocation between zones/nodes
-- strange balance problems between reclaiming of page
-   cache and swapping out process pages
-
-I suspect we would need fairly fine grained tracepoints
-to track down these kinds of problems, with filtering
-and/or interpretation in userspace, but I am always
-interested in easier ways of tracking down these kinds
-of problems :)
-
-What kinds of tracepoints do you believe we would need?
-
-Or, using Larry's patch as a starting point, what do you
-believe should be changed?
-
--- 
-All rights reversed.
+-Tony
