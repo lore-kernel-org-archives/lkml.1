@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbZFODRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZFODRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755851AbZFODRS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 23:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZFODO6
+	id S1756018AbZFODRb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 23:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZFODO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 23:14:58 -0400
-Received: from mga03.intel.com ([143.182.124.21]:4375 "EHLO mga03.intel.com"
+	Sun, 14 Jun 2009 23:14:59 -0400
+Received: from mga03.intel.com ([143.182.124.21]:55125 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753197AbZFODOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 23:14:52 -0400
+	id S1752996AbZFODOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 23:14:51 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
-   d="scan'208";a="154267321"
-Message-Id: <20090615031254.168416512@intel.com>
+   d="scan'208";a="154267317"
+Message-Id: <20090615031252.821591566@intel.com>
 References: <20090615024520.786814520@intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 15 Jun 2009 10:45:33 +0800
+Date: Mon, 15 Jun 2009 10:45:24 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
@@ -28,104 +28,76 @@ cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 13/22] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
-Content-Disposition: inline; filename=mf-inject-madvise
+Subject: [PATCH 04/22] HWPOISON: Add new SIGBUS error codes for hardware poison signals
+Content-Disposition: inline; filename=poison-signal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
+Add new SIGBUS codes for reporting machine checks as signals. When 
+the hardware detects an uncorrected ECC error it can trigger these
+signals.
 
-Impact: optional, useful for debugging
+This is needed for telling KVM's qemu about machine checks that happen to
+guests, so that it can inject them, but might be also useful for other programs.
+I find it useful in my test programs.
 
-Add a new madvice sub command to inject poison for some
-pages in a process' address space.  This is useful for
-testing the poison page handling.
+This patch merely defines the new types.
 
-Open issues:
+- Define two new si_codes for SIGBUS.  BUS_MCEERR_AO and BUS_MCEERR_AR
+* BUS_MCEERR_AO is for "Action Optional" machine checks, which means that some
+corruption has been detected in the background, but nothing has been consumed
+so far. The program can ignore those if it wants (but most programs would
+already get killed)
+* BUS_MCEERR_AR is for "Action Required" machine checks. This happens
+when corrupted data is consumed or the application ran into an area
+which has been known to be corrupted earlier. These require immediate
+action and cannot just returned to. Most programs would kill themselves.
+- They report the address of the corruption in the user address space
+in si_addr.
+- Define a new si_addr_lsb field that reports the extent of the corruption
+to user space. That's currently always a (small) page. The user application
+cannot tell where in this page the corruption happened.
 
-- This patch allows root to tie up arbitary amounts of memory.
-Should this be disabled inside containers?
-- There's a small race window between getting the page and injecting.
-The patch drops the ref count because otherwise memory_failure
-complains about dangling references. In theory with a multi threaded
-injector one could inject poison for a process foreign page this way.
-Not a serious issue right now.
+AK: I plan to write a man page update before anyone asks.
 
-v2: Use write flag for get_user_pages to make sure to always get
-a fresh page
-v3: Don't request write mapping (Fengguang Wu)
-
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/asm-generic/mman-common.h |    1 
- mm/madvise.c                      |   36 ++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+)
+ include/asm-generic/siginfo.h |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- sound-2.6.orig/mm/madvise.c
-+++ sound-2.6/mm/madvise.c
-@@ -207,6 +207,38 @@ static long madvise_remove(struct vm_are
- 	return error;
- }
+--- sound-2.6.orig/include/asm-generic/siginfo.h
++++ sound-2.6/include/asm-generic/siginfo.h
+@@ -82,6 +82,7 @@ typedef struct siginfo {
+ #ifdef __ARCH_SI_TRAPNO
+ 			int _trapno;	/* TRAP # which caused the signal */
+ #endif
++			short _addr_lsb; /* LSB of the reported address */
+ 		} _sigfault;
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+/*
-+ * Error injection support for memory error handling.
-+ */
-+static int madvise_hwpoison(unsigned long start, unsigned long end)
-+{
-+	/*
-+	 * RED-PEN
-+	 * This allows to tie up arbitary amounts of memory.
-+	 * Might be a good idea to disable it inside containers even for root.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+	for (; start < end; start += PAGE_SIZE) {
-+		struct page *p;
-+		int ret = get_user_pages(current, current->mm, start, 1,
-+						0, 0, &p, NULL);
-+		if (ret != 1)
-+			return ret;
-+		put_page(p);
-+		/*
-+		 * RED-PEN page can be reused in a short window, but otherwise
-+		 * we'll have to fight with the reference count.
-+		 */
-+		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
-+		       page_to_pfn(p), start);
-+		memory_failure(page_to_pfn(p), 0);
-+	}
-+	return 0;
-+}
-+#endif
-+
- static long
- madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
- 		unsigned long start, unsigned long end, int behavior)
-@@ -307,6 +339,10 @@ SYSCALL_DEFINE3(madvise, unsigned long, 
- 	int write;
- 	size_t len;
+ 		/* SIGPOLL */
+@@ -112,6 +113,7 @@ typedef struct siginfo {
+ #ifdef __ARCH_SI_TRAPNO
+ #define si_trapno	_sifields._sigfault._trapno
+ #endif
++#define si_addr_lsb	_sifields._sigfault._addr_lsb
+ #define si_band		_sifields._sigpoll._band
+ #define si_fd		_sifields._sigpoll._fd
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+	if (behavior == MADV_HWPOISON)
-+		return madvise_hwpoison(start, start+len_in);
-+#endif
- 	if (!madvise_behavior_valid(behavior))
- 		return error;
+@@ -192,7 +194,11 @@ typedef struct siginfo {
+ #define BUS_ADRALN	(__SI_FAULT|1)	/* invalid address alignment */
+ #define BUS_ADRERR	(__SI_FAULT|2)	/* non-existant physical address */
+ #define BUS_OBJERR	(__SI_FAULT|3)	/* object specific hardware error */
+-#define NSIGBUS		3
++/* hardware memory error consumed on a machine check: action required */
++#define BUS_MCEERR_AR	(__SI_FAULT|4)
++/* hardware memory error detected in process but not consumed: action optional*/
++#define BUS_MCEERR_AO	(__SI_FAULT|5)
++#define NSIGBUS		5
  
---- sound-2.6.orig/include/asm-generic/mman-common.h
-+++ sound-2.6/include/asm-generic/mman-common.h
-@@ -34,6 +34,7 @@
- #define MADV_REMOVE	9		/* remove these pages & resources */
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
-+#define MADV_HWPOISON	12		/* poison a page for testing */
- 
- /* compatibility flags */
- #define MAP_FILE	0
+ /*
+  * SIGTRAP si_codes
 
 -- 
 
