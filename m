@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935743AbZFOVf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935752AbZFOVhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935743AbZFOVf4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 17:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933516AbZFOVfs
+	id S935752AbZFOVhW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 17:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934990AbZFOVhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 17:35:48 -0400
-Received: from monster.nessie.de ([84.200.20.120]:42806 "EHLO
-	monster.nessie.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934528AbZFOVfr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 17:35:47 -0400
-From: Michael Roth <mroth@nessie.de>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 5/6] Unified AVR32/AT91 MCI Driver Support for a VCC Pin
-Date: Mon, 15 Jun 2009 23:35:34 +0200
-User-Agent: KMail/1.9.10
-Cc: Rob Emanuele <poorarm@shoreis.com>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Andrew Victor <avictor.za@gmail.com>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org,
-       drzeus-mmc@drzeus.cx
-References: <c8284b5b0906121802h3545fbfflf498fbba30fe42be@mail.gmail.com>
-In-Reply-To: <c8284b5b0906121802h3545fbfflf498fbba30fe42be@mail.gmail.com>
+	Mon, 15 Jun 2009 17:37:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39555 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934762AbZFOVhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 17:37:08 -0400
+Date: Mon, 15 Jun 2009 23:32:16 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/2] posix-cpu-timers: random fixes rework -v3
+Message-ID: <20090615213216.GA22766@redhat.com>
+References: <20090615103640.4b828cc4@dhcp-lab-109.englab.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906152335.48926.mroth@nessie.de>
+In-Reply-To: <20090615103640.4b828cc4@dhcp-lab-109.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-> index 1c1a4b3..a639b93 100644
-> --- a/drivers/mmc/host/atmel-mci.c
-> +++ b/drivers/mmc/host/atmel-mci.c
-> @@ -214,6 +214,8 @@ struct atmel_mci_slot {
+On 06/15, Stanislaw Gruszka wrote:
 >
->  	int			detect_pin;
->  	int			wp_pin;
-> +	int			vcc_pin;
-> +	bool			vcc_pin_act_low;
+> Two fixes related with posix-cpu-timers
 
-Maybe, just 'vcc_active_low' is more clear?
+I think both patches are good.
 
-Most other kernel code use 'active_low' or 'xyz_active_low' as far as I can 
-see.
+But, to avoid the possible confusion, the second one does not fix any bug.
+
+Oleg.
 
