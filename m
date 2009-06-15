@@ -1,124 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZFODPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZFODP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZFODPq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Jun 2009 23:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZFODOx
+	id S1754882AbZFODP6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Jun 2009 23:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZFODOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Jun 2009 23:14:53 -0400
-Received: from mga03.intel.com ([143.182.124.21]:4375 "EHLO mga03.intel.com"
+	Sun, 14 Jun 2009 23:14:54 -0400
+Received: from mga03.intel.com ([143.182.124.21]:55125 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbZFODOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Jun 2009 23:14:49 -0400
+	id S1752269AbZFODOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Jun 2009 23:14:50 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,220,1243839600"; 
-   d="scan'208";a="154267296"
-Message-Id: <20090615031254.293225180@intel.com>
+   d="scan'208";a="154267299"
+Message-Id: <20090615031253.275704587@intel.com>
 References: <20090615024520.786814520@intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 15 Jun 2009 10:45:34 +0800
+Date: Mon, 15 Jun 2009 10:45:27 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Wu Fengguang <fengguang.wu@intel.com>
 cc: Ingo Molnar <mingo@elte.hu>
 cc: Mel Gorman <mel@csn.ul.ie>
-cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 14/22] HWPOISON: Add simple debugfs interface to inject hwpoison on arbitary PFNs
-Content-Disposition: inline; filename=pfn-inject
+Subject: [PATCH 07/22] HWPOISON: define VM_FAULT_HWPOISON to 0 when feature is disabled
+Content-Disposition: inline; filename=hwpoison-remove-ifdef.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-Useful for some testing scenarios, although specific testing is often
-done better through MADV_POISON
+So as to eliminate one #ifdef in the c source.
 
-This can be done with the x86 level MCE injector too, but this interface
-allows it to do independently from low level x86 changes.
+Proposed by Nick Piggin.
 
-Open issues: 
-Should be disabled for cgroups.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
+Acked-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/Kconfig           |    4 ++++
- mm/Makefile          |    1 +
- mm/hwpoison-inject.c |   41 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 46 insertions(+)
+ arch/x86/mm/fault.c |    3 +--
+ include/linux/mm.h  |    7 ++++++-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
---- /dev/null
-+++ sound-2.6/mm/hwpoison-inject.c
-@@ -0,0 +1,41 @@
-+/* Inject a hwpoison memory failure on a arbitary pfn */
-+#include <linux/module.h>
-+#include <linux/debugfs.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+
-+static struct dentry *hwpoison_dir, *corrupt_pfn;
-+
-+static int hwpoison_inject(void *data, u64 val)
-+{
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
-+	memory_failure(val, 18);
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
-+
-+static void pfn_inject_exit(void)
-+{
-+	if (hwpoison_dir)
-+		debugfs_remove_recursive(hwpoison_dir);
-+}
-+
-+static int pfn_inject_init(void)
-+{
-+	hwpoison_dir = debugfs_create_dir("hwpoison", NULL);
-+	if (hwpoison_dir == NULL)
-+		return -ENOMEM;
-+	corrupt_pfn = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
-+					  NULL, &hwpoison_fops);
-+	if (corrupt_pfn == NULL) {
-+		pfn_inject_exit();
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+module_init(pfn_inject_init);
-+module_exit(pfn_inject_exit);
---- sound-2.6.orig/mm/Kconfig
-+++ sound-2.6/mm/Kconfig
-@@ -242,6 +242,10 @@ config KSM
- config MEMORY_FAILURE
- 	bool
+--- sound-2.6.orig/arch/x86/mm/fault.c
++++ sound-2.6/arch/x86/mm/fault.c
+@@ -820,14 +820,13 @@ do_sigbus(struct pt_regs *regs, unsigned
+ 	tsk->thread.error_code	= error_code;
+ 	tsk->thread.trap_no	= 14;
  
-+config HWPOISON_INJECT
-+	tristate "Poison pages injector"
-+	depends on MEMORY_FAILURE && DEBUG_KERNEL
+-#ifdef CONFIG_MEMORY_FAILURE
+ 	if (fault & VM_FAULT_HWPOISON) {
+ 		printk(KERN_ERR
+ 	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
+ 			tsk->comm, tsk->pid, address);
+ 		code = BUS_MCEERR_AR;
+ 	}
+-#endif
 +
- config NOMMU_INITIAL_TRIM_EXCESS
- 	int "Turn on mmap() excess space trimming before booting"
- 	depends on !MMU
---- sound-2.6.orig/mm/Makefile
-+++ sound-2.6/mm/Makefile
-@@ -43,5 +43,6 @@ endif
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
- obj-$(CONFIG_MEMORY_FAILURE) += memory-failure.o
-+obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
- obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
- obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
+ 	force_sig_info_fault(SIGBUS, code, address, tsk);
+ }
+ 
+--- sound-2.6.orig/include/linux/mm.h
++++ sound-2.6/include/linux/mm.h
+@@ -700,11 +700,16 @@ static inline int page_mapped(struct pag
+ #define VM_FAULT_SIGBUS	0x0002
+ #define VM_FAULT_MAJOR	0x0004
+ #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
+-#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
+ 
+ #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page */
+ #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
++#else
++#define VM_FAULT_HWPOISON 0
++#endif
++
+ #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_HWPOISON)
+ 
+ /*
 
 -- 
 
