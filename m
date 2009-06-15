@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbZFOOHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbZFOOHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbZFOOHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 10:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZFOOHJ
+	id S1753572AbZFOOHt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 10:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZFOOHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 10:07:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:50184 "EHLO www.tglx.de"
+	Mon, 15 Jun 2009 10:07:21 -0400
+Received: from www.tglx.de ([62.245.132.106]:50201 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757262AbZFOOHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 10:07:08 -0400
-Date: Mon, 15 Jun 2009 16:06:34 +0200 (CEST)
+	id S1759754AbZFOOHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 10:07:20 -0400
+Date: Mon, 15 Jun 2009 16:06:45 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT pull] clocksource updates for 2.6.31
-Message-ID: <alpine.LFD.2.00.0906151453310.2800@localhost.localdomain>
+Subject: [GIT pull] clockevents updates for 2.6.31
+Message-ID: <alpine.LFD.2.00.0906151454510.2800@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,115 +25,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest timers-for-linus-clocksource git tree from:
+Please pull the latest timers-for-linus-clockevents git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-for-linus-clocksource
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-for-linus-clockevents
 
 Thanks,
 
 	tglx
 
 ------------------>
-John Stultz (1):
-      clocksource: sanity check sysfs clocksource changes
+Dmitri Vorobiev (1):
+      clockevents: tick_broadcast_device can become static
 
-Thomas Gleixner (1):
-      clocksource: prevent selection of low resolution clocksourse also for nohz=on
+Magnus Damm (1):
+      clockevent: export register_device and delta2ns
 
 
- include/linux/tick.h       |    3 +++
- kernel/time/clocksource.c  |   20 +++++++++++++++++++-
- kernel/time/tick-oneshot.c |   17 +++++++++++++++++
- 3 files changed, 39 insertions(+), 1 deletions(-)
+ kernel/time/clockevents.c    |    2 ++
+ kernel/time/tick-broadcast.c |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 469b82d..0482229 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -97,10 +97,12 @@ extern void tick_clock_notify(void);
- extern int tick_check_oneshot_change(int allow_nohz);
- extern struct tick_sched *tick_get_tick_sched(int cpu);
- extern void tick_check_idle(int cpu);
-+extern int tick_oneshot_mode_active(void);
- # else
- static inline void tick_clock_notify(void) { }
- static inline int tick_check_oneshot_change(int allow_nohz) { return 0; }
- static inline void tick_check_idle(int cpu) { }
-+static inline int tick_oneshot_mode_active(void) { return 0; }
- # endif
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index d13be21..3948fa6 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -54,6 +54,7 @@ unsigned long clockevent_delta2ns(unsigned long latch,
  
- #else /* CONFIG_GENERIC_CLOCKEVENTS */
-@@ -109,6 +111,7 @@ static inline void tick_cancel_sched_timer(int cpu) { }
- static inline void tick_clock_notify(void) { }
- static inline int tick_check_oneshot_change(int allow_nohz) { return 0; }
- static inline void tick_check_idle(int cpu) { }
-+static inline int tick_oneshot_mode_active(void) { return 0; }
- #endif /* !CONFIG_GENERIC_CLOCKEVENTS */
- 
- # ifdef CONFIG_NO_HZ
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 80189f6..592bf58 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -509,6 +509,18 @@ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
- 		}
- 	}
- 
-+	/*
-+	 * Check to make sure we don't switch to a non-highres capable
-+	 * clocksource if the tick code is in oneshot mode (highres or nohz)
-+	 */
-+	if (tick_oneshot_mode_active() &&
-+	    !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
-+		printk(KERN_WARNING "%s clocksource is not HRT compatible. "
-+			"Cannot switch while in HRT/NOHZ mode\n", ovr->name);
-+		ovr = NULL;
-+		override_name[0] = 0;
-+	}
-+
- 	/* Reselect, when the override name has changed */
- 	if (ovr != clocksource_override) {
- 		clocksource_override = ovr;
-@@ -537,7 +549,13 @@ sysfs_show_available_clocksources(struct sys_device *dev,
- 
- 	spin_lock_irq(&clocksource_lock);
- 	list_for_each_entry(src, &clocksource_list, list) {
--		count += snprintf(buf + count,
-+		/*
-+		 * Don't show non-HRES clocksource if the tick code is
-+		 * in one shot mode (highres=on or nohz=on)
-+		 */
-+		if (!tick_oneshot_mode_active() ||
-+		    (src->flags & CLOCK_SOURCE_VALID_FOR_HRES))
-+			count += snprintf(buf + count,
- 				  max((ssize_t)PAGE_SIZE - count, (ssize_t)0),
- 				  "%s ", src->name);
- 	}
-diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
-index 2e8de67..a96c0e2 100644
---- a/kernel/time/tick-oneshot.c
-+++ b/kernel/time/tick-oneshot.c
-@@ -128,6 +128,23 @@ int tick_switch_to_oneshot(void (*handler)(struct clock_event_device *))
- 	return 0;
+ 	return (unsigned long) clc;
  }
++EXPORT_SYMBOL_GPL(clockevent_delta2ns);
  
-+/**
-+ * tick_check_oneshot_mode - check whether the system is in oneshot mode
-+ *
-+ * returns 1 when either nohz or highres are enabled. otherwise 0.
-+ */
-+int tick_oneshot_mode_active(void)
-+{
-+	unsigned long flags;
-+	int ret;
-+
-+	local_irq_save(flags);
-+	ret = __get_cpu_var(tick_cpu_device).mode == TICKDEV_MODE_ONESHOT;
-+	local_irq_restore(flags);
-+
-+	return ret;
-+}
-+
- #ifdef CONFIG_HIGH_RES_TIMERS
  /**
-  * tick_init_highres - switch to high resolution mode
+  * clockevents_set_mode - set the operating mode of a clock event device
+@@ -187,6 +188,7 @@ void clockevents_register_device(struct clock_event_device *dev)
+ 
+ 	spin_unlock(&clockevents_lock);
+ }
++EXPORT_SYMBOL_GPL(clockevents_register_device);
+ 
+ /*
+  * Noop handler when we shut down an event device
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index 118a3b3..877dbed 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -27,7 +27,7 @@
+  * timer stops in C3 state.
+  */
+ 
+-struct tick_device tick_broadcast_device;
++static struct tick_device tick_broadcast_device;
+ /* FIXME: Use cpumask_var_t. */
+ static DECLARE_BITMAP(tick_broadcast_mask, NR_CPUS);
+ static DECLARE_BITMAP(tmpmask, NR_CPUS);
