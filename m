@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763620AbZFORhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764665AbZFORjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763620AbZFORhy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 13:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZFORhr
+	id S1764665AbZFORjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 13:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758456AbZFORjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 13:37:47 -0400
-Received: from SMTP.ANDREW.CMU.EDU ([128.2.11.95]:49133 "EHLO
-	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbZFORhq (ORCPT
+	Mon, 15 Jun 2009 13:39:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37761 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755182AbZFORjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 13:37:46 -0400
-X-Greylist: delayed 526 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 13:37:46 EDT
-Date: Mon, 15 Jun 2009 13:29:02 -0400 (EDT)
-From: Andrew Michael Wesie <awesie@andrew.cmu.edu>
-To: linux-kernel@vger.kernel.org
-Subject: futex and shared memory
-Message-ID: <Pine.LNX.4.64-044.0906151305370.4173@unix31.andrew.cmu.edu>
+	Mon, 15 Jun 2009 13:39:11 -0400
+Date: Mon, 15 Jun 2009 10:37:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
+       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain support
+ to use NMI-safe methods
+In-Reply-To: <20090615171845.GA7664@elte.hu>
+Message-ID: <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain>
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-PMX-Version: 5.5.5.374460, Antispam-Engine: 2.7.1.369594, Antispam-Data: 2009.6.15.171634
-X-SMTP-Spam-Clean: 8% (
- BODY_SIZE_1400_1499 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, TO_NO_NAME 0, __CP_NAME_BODY 0, __CT 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __TO_MALFORMED_2 0)
-X-SMTP-Spam-Score: 8%
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a set of LWPs with non-shared page tables (no CLONE_VM flag) and am 
-also using the CLONE_CHILD_CLEARTID flag. The ctid variable points to a 
-memory that has been mmap'd MAP_SHARED, so that it will be shared with 
-both the parent and the child. When the child exits, the expected behavior 
-is for the memory pointed to by ctid to be cleared. From what I could 
-tell, this wasn't happening.
-
-After looking at mm_release in fork.c, which is responsible for clearing 
-the tid variable, it looks like this doesn't work since mm_release checks 
-if there is more than one "user" of the memory space. I am including a 
-patch to take out the check, but am not confident that this is the 
-problem. It would help if I had a clearer understanding of what mm_user 
-actually represented.
-
-A patch for 2.6.30 follows.
-
---
-Andrew Wesie
-awesie@andrew.cmu.edu
 
 
---- linux-2.6.30/kernel/fork.c.orig     2009-06-15 13:25:52.000000000 
--0400
-+++ linux-2.6.30/kernel/fork.c  2009-06-15 13:26:25.000000000 -0400
-@@ -569,8 +569,7 @@ void mm_release(struct task_struct *tsk,
-          * trouble otherwise.  Userland only wants this done for a 
-sys_exit.
-          */
-         if (tsk->clear_child_tid
--           && !(tsk->flags & PF_SIGNALED)
--           && atomic_read(&mm->mm_users) > 1) {
-+           && !(tsk->flags & PF_SIGNALED)) {
-                 u32 __user * tidptr = tsk->clear_child_tid;
-                 tsk->clear_child_tid = NULL;
+On Mon, 15 Jun 2009, Ingo Molnar wrote:
+> 
+> A simple cr2 corruption would explain all those cc1 SIGSEGVs and 
+> other user-space crashes i saw, with sufficiently intense sampling - 
+> easily.
 
+Note that we could work around the %cr2 issue, since any corruption is 
+always nicely "nested" (ie there are never any SMP issues with async 
+writes to the register).
+
+So what we _could_ do is to have a magic value for %cr2, along with a "NMI 
+sequence count", and if we see that value, we just return (without doing 
+anything) from the page fault handler.
+
+Then, the NMI handler would be changed to always write that value to %cr2 
+after it has done the operation that could fault, and do an atomic 
+increment of the NMI sequence count. Then, we can do something like this 
+in the page fault handler:
+
+	if (cr2 == MAGIC_CR2) {
+		static unsigned long my_seqno = -1;
+		if (my_seqno != nmi_seqno) {
+			my_seqno = nmi_seqno;
+			return;
+		}
+	}
+
+where the whole (and only) point of that "seqno" is to protect against 
+user space doing something like
+
+	int i = *(int *)MAGIC_CR2;
+
+and causing infinite faults.
+
+If a real NMI happens, then nmi_seqno will always be different, and we'll 
+just retry the fault (the NMI handler would do something like
+
+	write_cr2(MAGIC_CR2);
+	atomic_inc(&nmi_seqno);
+
+to set it all up).
+
+Anyway, I do think that the _correct_ solution is to not do page faults 
+from within NMI's, but the above is an outline of how we could _try_ to 
+handle it if we really really wanted to. IOW, the fact that cr2 gets 
+corrupted is not insurmountable, exactly because we _could_ always just 
+retrigger the page fault, and thus "re-create' the corrupted %cr2 value.
+
+Hacky, hacky. And I'm not sure how happy CPU's even are to have %cr2 
+written to, so we could hit CPU issues.
+
+			Linus
