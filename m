@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbZFOOXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbZFOOZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbZFOOXC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 10:23:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbZFOOWv
+	id S1760594AbZFOOZk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 10:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbZFOOZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 10:22:51 -0400
-Received: from mga14.intel.com ([143.182.124.37]:41098 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760553AbZFOOWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 10:22:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,222,1243839600"; 
-   d="scan'208";a="154488311"
-Date: Mon, 15 Jun 2009 22:22:25 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 00/22] HWPOISON: Intro (v5)
-Message-ID: <20090615142225.GA11167@localhost>
-References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de>
+	Mon, 15 Jun 2009 10:25:33 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:44734 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbZFOOZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 10:25:32 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH, RFC] Re: TSC features, ...
+Date: Mon, 15 Jun 2009 09:25:29 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>, Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <alpine.LFD.2.01.0906081128410.6847@localhost.localdomain> <200906150810.15799.lkml@morethan.org>
+In-Reply-To: <200906150810.15799.lkml@morethan.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090615122528.GA13256@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906150925.31854.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 08:25:28PM +0800, Nick Piggin wrote:
-> On Mon, Jun 15, 2009 at 08:10:01PM +0800, Wu Fengguang wrote:
-> > On Mon, Jun 15, 2009 at 03:19:07PM +0800, Nick Piggin wrote:
-> > > > For KVM you need early kill, for the others it remains to be seen.
-> > > 
-> > > Right. It's almost like you need to do a per-process thing, and
-> > > those that can handle things (such as the new SIGBUS or the new
-> > > EIO) could get those, and others could be killed.
+On Mon June 15 2009, Michael S. Zick wrote:
+> On Mon June 8 2009, Linus Torvalds wrote:
 > > 
-> > To send early SIGBUS kills to processes who has called
-> > sigaction(SIGBUS, ...)?  KVM will sure do that. For other apps we
-> > don't mind they can understand that signal at all.
-> 
-> For apps that hook into SIGBUS for some other means and
-
-Yes I was referring to the sigaction(SIGBUS) apps, others will
-be late killed anyway.
-
-> do not understand the new type of SIGBUS signal? What about
-> those?
-
-We introduced two new SIGBUS codes:
-        BUS_MCEERR_AO=5         for early kill
-        BUS_MCEERR_AR=4         for late  kill
-I'd assume a legacy application will handle them in the same way (both
-are unexpected code to the application).
-
-We don't care whether the application can be killed by BUS_MCEERR_AO
-or BUS_MCEERR_AR depending on its SIGBUS handler implementation.
-But (in the rare case) if the handler
-- refused to die on BUS_MCEERR_AR, it may create a busy loop and
-  flooding of SIGBUS signals, which is a bug of the application.
-  BUS_MCEERR_AO is one time and won't lead to busy loops.
-- does something that hurts itself (ie. data safety) on BUS_MCEERR_AO,
-  it may well hurt the same way on BUS_MCEERR_AR. The latter one is
-  unavoidable, so the application must be fixed anyway.
-
->  
-> > > Early-kill for KVM does seem like reasonable justification on the
-> > > surface, but when I think more about it, I wonder does the guest
-> > > actually stand any better chance to correct the error if it is
-> > > reported at time T rather than T+delta? (who knows what the page
-> > > will be used for at any given time).
+> > Hmm. This all really should be just
 > > 
-> > Early kill makes a lot difference for KVM.  Think about the vast
-> > amount of clean page cache pages. With early kill the page can be
-> > trivially isolated. With late kill the whole virtual machine dies
-> > hard.
+> > 	static int check_est_cpu(unsigned int cpuid)
+> > 	{
+> > 		struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
+> > 		return cpu_has(cpu, X86_FEATURE_EST);
+> > 	}
+> > 
+> > I suspect, with no vendor tests. That's the whole _point_ of CPU features, 
+> > after all.
+> > 
 > 
-> Why? In both cases it will enter the exception handler and
-> attempt to do something about it... in both cases I would
-> have thought there is some chance that the page error is not
-> recoverable and some chance it is recoverable. Or am I
-> missing something?
 
-The early kill / late kill to KVM from the POV of host kernel matches
-the MCE AO/AR events inside the KVM guest kernel. The key difference
-between AO/AR is, whether the page is _being_ consumed.
+Like this;
+Let the vendor's cpu setup code be responsible for getting the
+feature flag correct:
 
-It's a lot harder (if possible) to try to stop an active consumer.
-For example, the clean cache pages can be consumed in many ways:
-- be accessed by read()/write() or mapped read/write
-- be reclaimed and then allocated for whatever new usage, for example,
-  be zeroed by __GFP_ZERO, or be insert into another file and start
-  read/write IO and be accessed by disk driver via DMA, or even be
-  allocated for kernel slabs..
-Frankly speaking I don't know how to stop all the above consumers.
-We now simply die on AR events.
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 10a2d91..daea6a9 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -244,22 +244,12 @@ int acpi_processor_resume(struct acpi_device * device)
+ #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+ static void tsc_check_state(int state)
+ {
+-       switch (boot_cpu_data.x86_vendor) {
+-       case X86_VENDOR_AMD:
+-       case X86_VENDOR_INTEL:
+-               /*
+-                * AMD Fam10h TSC will tick in all
+-                * C/P/S0/S1 states when this bit is set.
+-                */
+-               if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
+-                       return;
++       if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
++               return;
 
-> Anyway, I would like to see a basic analysis of those probabilities
-> to justify early kill. Not saying there is no justification, but
-> it would be helpful to see why.
+-               /*FALL THROUGH*/
+-       default:
+-               /* TSC could halt in idle, so notify users */
+-               if (state > ACPI_STATE_C1)
+-                       mark_tsc_unstable("TSC halts in idle");
+-       }
++       /* TSC could halt in idle, so notify users */
++       if (state > ACPI_STATE_C1)
++               mark_tsc_unstable("TSC halts in idle");
+ }
+ #else
+ static void tsc_check_state(int state) { return; }
 
-That's fine. I'd be glad if the above explanation paves way to
-solutions for AR events :)
-
-Thanks,
-Fengguang
+Mike
