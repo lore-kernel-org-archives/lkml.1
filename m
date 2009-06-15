@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933031AbZFOTcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbZFOThG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933031AbZFOTcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 15:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZFOTcF
+	id S1762596AbZFOThG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 15:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZFOTg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 15:32:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50388 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751382AbZFOTcE (ORCPT
+	Mon, 15 Jun 2009 15:36:56 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52010 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbZFOTgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 15:32:04 -0400
-Date: Mon, 15 Jun 2009 12:31:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: npiggin@suse.de, jblunck@suse.de, linux-kernel@vger.kernel.org,
-       paulmck@us.ibm.com
-Subject: Re: [PATCH] atomic: Fix _atomic_dec_and_lock() deadlock on UP
-Message-Id: <20090615123144.fb0a2296.akpm@linux-foundation.org>
-In-Reply-To: <20090615191223.GE352@shell>
-References: <20090615181113.GD352@shell>
-	<20090615114543.80c420b3.akpm@linux-foundation.org>
-	<20090615191223.GE352@shell>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Jun 2009 15:36:55 -0400
+Message-ID: <4A36A1C7.6080005@zytor.com>
+Date: Mon, 15 Jun 2009 12:32:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, paulus@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, efault@gmx.de, jeremy@goop.org,
+       npiggin@suse.de, tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain	support
+ to use NMI-safe methods
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <4A369508.2090707@zytor.com> <20090615184858.GD6520@Krystal> <1245091917.6741.185.camel@laptop> <20090615185907.GF6520@Krystal> <1245092561.6741.205.camel@laptop> <4A369CD8.3090505@zytor.com> <20090615192720.GA9056@Krystal>
+In-Reply-To: <20090615192720.GA9056@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009 15:12:23 -0400
-Valerie Aurora <vaurora@redhat.com> wrote:
-
-> On Mon, Jun 15, 2009 at 11:45:43AM -0700, Andrew Morton wrote:
-> > On Mon, 15 Jun 2009 14:11:13 -0400
-> > Valerie Aurora <vaurora@redhat.com> wrote:
-> > 
-> > > _atomic_dec_and_lock() can deadlock on UP with spinlock debugging
-> > > enabled.  Currently, on UP we unconditionally spin_lock() first, which
-> > > calls __spin_lock_debug(), which takes the lock unconditionally even
-> > > on UP.  This will deadlock in situations in which we call
-> > > atomic_dec_and_lock() knowing that the counter won't go to zero
-> > > (because we hold another reference) and that we already hold the lock.
-> > > Instead, we should use the SMP code path which only takes the lock if
-> > > necessary.
-> > 
-> > Yup, I have this queued for 2.6.31 as
-> > atomic-only-take-lock-when-the-counter-drops-to-zero-on-up-as-well.patch,
-> > with a different changelog:
-> > 
-> >   _atomic_dec_and_lock() should not unconditionally take the lock before
-> >   calling atomic_dec_and_test() in the UP case.  For consistency reasons it
-> >   should behave exactly like in the SMP case.
-> > 
-> >   Besides that this works around the problem that with CONFIG_DEBUG_SPINLOCK
-> >   this spins in __spin_lock_debug() if the lock is already taken even if the
-> >   counter doesn't drop to 0.
-> > 
-> >   Signed-off-by: Jan Blunck <jblunck@suse.de>
-> >   Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> >   Acked-by: Nick Piggin <npiggin@suse.de>
-> >   Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > 
-> > 
-> > I can't remember why we decided that 2.6.30 doesn't need this.
+Mathieu Desnoyers wrote:
+>>>
+>> Writing control registers is serializing, so it's a lot more expensive
+>> than writing a normal register; my *guess* is that it will be on the
+>> order of 100-200 cycles.
+>>
+>> That is not based on any actual information.
+>>
 > 
-> Great, last I heard the changelog was still a problem.  Thanks,
+> Then how about just writing to the cr2 register *if* it has changed
+> while the NMI handler was running ?
+> 
+> if (unlikely(read_cr2() != saved_cr2)))
+> 	write_cr2(saved_cr2)
+> 
+> Mathieu
 > 
 
-<goes back and checks>
+That works fine, obviously, and although it's probably overkill it's
+also a trivially cheap optimization.
 
-OK, I decided that we didn't need this in 2.6.30 or earlier because
-Jan's union mount code is the only known triggerer of the problem.
-
-However the patch is clearly a suitable thing for -stable.  Opinions
-are sought..
+	-hpa
 
