@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761722AbZFOP0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbZFOP1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761722AbZFOP0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759159AbZFOP0K
+	id S1762621AbZFOP1U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762390AbZFOP1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:26:10 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:40764 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761390AbZFOP0J (ORCPT
+	Mon, 15 Jun 2009 11:27:09 -0400
+Received: from mail-fx0-f207.google.com ([209.85.220.207]:48327 "EHLO
+	mail-fx0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762374AbZFOP1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:26:09 -0400
+	Mon, 15 Jun 2009 11:27:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=qVn4XwIt2letohY1EaXAEGGXtmq76hJSO1jOq7giAP6miq/K0oZ3iGj2FkNJQnqm9E
-         1K1x/09fr8HdhyXHibsP6gkAoZ8+sHfSYuf7wecM0TrVMTiRdPbFSHm2fNWeaT6Hkh7U
-         JFD2umyv74oP0KCIZboDA/X1uuxmGz1do9Vqo=
-Date: Mon, 15 Jun 2009 17:25:42 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: Robert Olsson <robert.olsson@its.uu.se>, Yan Zheng <zheng.yan@oracle.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2/1] Re: [BUG] fib_tries related Oops in 2.6.30
-Message-ID: <20090615152542.GB2767@ami.dom.local>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=SSnOb5jY8ZRYfR6nIKS6jC7/NP5grDqOAxLlATYcAQcgWXb8RsN9P/6X7tH8EZVsDl
+         P2tvadkpfKyxQsPxggF9nSavPDfYMG5XD86Mq7GO1H0uMYZniTBWxqC1lk5Zt8fo/tLK
+         DNTCQwIUvEw28O78kkP/6ASeFKaoUuc8smk3w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615065333.GA4378@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1245078661.23207.50.camel@penberg-laptop>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+	 <alpine.DEB.1.10.0906121317140.23840@gentwo.org>
+	 <Pine.LNX.4.64.0906141011280.8507@melkki.cs.Helsinki.FI>
+	 <alpine.DEB.1.10.0906151051240.19931@gentwo.org>
+	 <1245077891.23207.48.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0906151101580.23995@gentwo.org>
+	 <1245078661.23207.50.camel@penberg-laptop>
+Date: Mon, 15 Jun 2009 18:27:08 +0300
+X-Google-Sender-Auth: 3fc30e31fb1df3e4
+Message-ID: <84144f020906150827k1b8c0ce4q5ed4d140f7ca869@mail.gmail.com>
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, npiggin@suse.de, yinghai@kernel.org,
+       benh@kernel.crashing.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ipv4: Fix fib_trie rebalancing, part 2
+Hi Christoph,
 
-My previous patch, which explicitly delays freeing of tnodes by adding
-them to the list to flushe them after the update is finished, isn't
-strict enough. It treats exceptionally tnodes without parent, assuming
-they are newly created, so "invisible" for the read side yet. But the
-top tnode doesn't have parent as well, so we have to exclude all
-exceptions (at least until a better way is found).
+On Mon, Jun 15, 2009 at 6:11 PM, Pekka Enberg<penberg@cs.helsinki.fi> wrote:
+>> > But does this matter? When the debugging options are turned off, there
+>> > are no users for "real_gfp" and thus GCC optimizes everything away. For
+>> > debugging configs, the extra cacheline load doesn't matter, does it?
+>>
+>> It cleaner to have the fastpath as small as possible. Having unused
+>> variables in there is a bit confusing.
+>
+> OK, I can clean this up, no problem.
 
-Reported-by: Yan Zheng <zheng.yan@oracle.com>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
----
+Actually, there's a slight complication here. If I push gfp mask to
+__might_sleep(), lockdep_trace_alloc() and so on, the mask is
+effective _everywhere_ even outside of slab. Yes, it makes sense if we
+push the masking right down to the page allocator but I wonder if
+that's something we want to do at this point?
 
- net/ipv4/fib_trie.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
-
-diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index d1a39b1..64395b0 100644
---- a/net/ipv4/fib_trie.c
-+++ b/net/ipv4/fib_trie.c
-@@ -391,13 +391,8 @@ static inline void tnode_free(struct tnode *tn)
- static void tnode_free_safe(struct tnode *tn)
- {
- 	BUG_ON(IS_LEAF(tn));
--
--	if (node_parent((struct node *) tn)) {
--		tn->tnode_free = tnode_free_head;
--		tnode_free_head = tn;
--	} else {
--		tnode_free(tn);
--	}
-+	tn->tnode_free = tnode_free_head;
-+	tnode_free_head = tn;
- }
- 
- static void tnode_free_flush(void)
+                                Pekka
