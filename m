@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbZFONFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbZFONFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760152AbZFONFE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 09:05:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZFONEz
+	id S1760771AbZFONFX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 09:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbZFONFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 09:04:55 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:47785 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbZFONEy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 09:04:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=EsWDXi3uWSSEdbcBNjKCbst+KVcCoDJeaZUuhW6Z+hCReduik047BO7r8zwMPHavo3
-         woLrN0FsUAj3xWJW1Wp1b6hgmMyKIshgt7PK/nzeQ8sQ5x+HIT2st5wKj/QjqmdQjo5v
-         f0v7WoPdOHLVF3z+CPn8U8Qtkxn6ePSbzeC4o=
-From: Florian Fainelli <florian@openwrt.org>
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and gpio_alt_func features to GPIOLIB
-Date: Mon, 15 Jun 2009 15:04:50 +0200
-User-Agent: KMail/1.9.9
-Cc: Alek Du <alek.du@intel.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com> <20090615125146.GC19873@fluff.org.uk>
-In-Reply-To: <20090615125146.GC19873@fluff.org.uk>
+	Mon, 15 Jun 2009 09:05:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38814 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760603AbZFONE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 09:04:59 -0400
+Date: Mon, 15 Jun 2009 09:02:25 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 04/19] io-controller: Modify cfq to make use of flat
+	elevator fair queuing
+Message-ID: <20090615130225.GB5717@redhat.com>
+References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-5-git-send-email-vgoyal@redhat.com> <4A360CD2.8060707@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906151504.51934.florian@openwrt.org>
+In-Reply-To: <4A360CD2.8060707@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Monday 15 June 2009 14:51:46 Ben Dooks, vous avez écrit :
-> On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
-> > >From 7a76916ccea4a376a260ea67fbc79ac4d958757f Mon Sep 17 00:00:00 2001
-> >
-> > From: Alek Du <alek.du@intel.com>
-> > Date: Fri, 8 May 2009 09:46:49 +0800
-> > Subject: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
-> > gpio_alt_func features to GPIOLIB
-> >
-> > Add some more functions to GPIOLIB, they are:
-> > * gpio_detect is to set GPIO interrupt triggering method (edge, level,
-> > high, low, etc.)
+On Mon, Jun 15, 2009 at 04:56:50PM +0800, Gui Jianfeng wrote:
+> > -static inline int
+> > -cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+> > +static inline int cfq_class_rt(struct cfq_queue *cfqq)
+> >  {
+> > -	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
+> > +	return elv_ioq_class_rt(cfqq->ioq);
+> >  }
+> 
+> Hi Vivek,
+> 
+> cfq_class_rt isn't needed now, clean it up.
+> 
 
-The name does not seem to reflect what it does, what about gpio_set_type or 
-gpio_set_int_type for instance ?
+Thanks Gui. Queued up for next posting.
 
->
-> This is the wrong way of doing it, there is as a definit set_type
-> method in the irq_chip structure which should be used to alter the
-> way the IRQ is triggered.
+Vivek
 
-I would expect your architecture IRQ handler to have a set_type callback for 
-the GPIO lines capables of generating an interrupt. See how we have beeing 
-doing it for rb532 for instance: 
-http://www.linux-mips.org/git?p=linux-queue.git;a=blob;f=arch/mips/rb532/irq.c;h=f07882029a90d3d155c17b462812c2936229458c;hb=HEAD#l173
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/cfq-iosched.c |    5 -----
+>  1 files changed, 0 insertions(+), 5 deletions(-)
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 705e7ba..23b24b9 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -234,11 +234,6 @@ static inline int cfq_class_idle(struct cfq_queue *cfqq)
+>  	return elv_ioq_class_idle(cfqq->ioq);
+>  }
+>  
+> -static inline int cfq_class_rt(struct cfq_queue *cfqq)
+> -{
+> -	return elv_ioq_class_rt(cfqq->ioq);
+> -}
+> -
+>  static inline int cfq_cfqq_sync(struct cfq_queue *cfqq)
+>  {
+>  	return elv_ioq_sync(cfqq->ioq);
+> -- 
+> 1.5.4.rc3
+> 
