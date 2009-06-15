@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbZFOJZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751991AbZFOJcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752674AbZFOJZx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 05:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbZFOJZp
+	id S1751991AbZFOJcP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 05:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZFOJcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 05:25:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56760
+	Mon, 15 Jun 2009 05:32:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59914
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752053AbZFOJZo (ORCPT
+	by vger.kernel.org with ESMTP id S1750918AbZFOJb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 05:25:44 -0400
-Date: Mon, 15 Jun 2009 02:25:47 -0700 (PDT)
-Message-Id: <20090615.022547.107684868.davem@davemloft.net>
-To: tiwai@suse.de
-Cc: bzolnier@gmail.com, sven.koehler@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: sound skipping regression introduced in 2.6.30-rc8
+	Mon, 15 Jun 2009 05:31:59 -0400
+Date: Mon, 15 Jun 2009 02:32:02 -0700 (PDT)
+Message-Id: <20090615.023202.245678744.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: robert.olsson@its.uu.se, zheng.yan@oracle.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Re: [BUG] fib_tries related Oops in 2.6.30
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <s5h63exevqh.wl%tiwai@suse.de>
-References: <200906121344.26139.bzolnier@gmail.com>
-	<s5h7hzdew6u.wl%tiwai@suse.de>
-	<s5h63exevqh.wl%tiwai@suse.de>
+In-Reply-To: <20090615065333.GA4378@ff.dom.local>
+References: <20090612072557.GA2761@ami.dom.local>
+	<20090615065333.GA4378@ff.dom.local>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,20 +28,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Takashi Iwai <tiwai@suse.de>
-Date: Mon, 15 Jun 2009 10:39:50 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Mon, 15 Jun 2009 06:53:33 +0000
 
-> If that patch also doesn't work, we need to track the position update
-> sequence in more details.
-> The patch below will dump the each position update (CAUTION: it can be
-> long logs!).  Please apply it instead of the previous one, run with
-> xrun_debug=5 on 2.6.31 (or xrun_debug=1 on 2.6.30), and give the
-> outputs around a skip occurs.
+> ipv4: Fix fib_trie rebalancing
+> 
+> While doing trie_rebalance(): resize(), inflate(), halve() RCU free
+> tnodes before updating their parents. It depends on RCU delaying the
+> real destruction, but if RCU readers start after call_rcu() and before
+> parent update they could access freed memory.
+> 
+> It is currently prevented with preempt_disable() on the update side,
+> but it's not safe, except maybe classic RCU, plus it conflicts with
+> memory allocations with GFP_KERNEL flag used from these functions.
+> 
+> This patch explicitly delays freeing of tnodes by adding them to the
+> list, which is flushed after the update is finished.
+> 
+> Reported-by: Yan Zheng <zheng.yan@oracle.com>
+> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 
-The patch doesn't work.
-
-I put up a debugging log at:
-
-	http://vger.kernel.org/~davem/asound.log
-
-there is a "PCM: hw_ptr skipping! ..." message near the end.
+Applied to net-next-2.6
