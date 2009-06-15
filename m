@@ -1,107 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbZFOPYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbZFOPZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761001AbZFOPYk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZFOPYc
+	id S1761538AbZFOPZu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZFOPZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:24:32 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:53094 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751331AbZFOPYb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:24:31 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnsFAM/+NUpMQWTN/2dsb2JhbACBT9QZhA0F
-Date: Mon, 15 Jun 2009 11:24:28 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       jiayingz@google.com, bligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 3/7] add syscall tracepoints
-Message-ID: <20090615152428.GB32010@Krystal>
-References: <cover.1244837725.git.jbaron@redhat.com> <0ee4090012cf46f25d8cd8b022746a43b99d5767.1244837725.git.jbaron@redhat.com> <20090612215726.GA9177@Krystal> <20090615141209.GA3126@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 11:25:43 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48325 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751331AbZFOPZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 11:25:42 -0400
+Date: Mon, 15 Jun 2009 16:25:43 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       fengguang.wu@intel.com, linuxram@us.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring
+	behaviour more in line with expectations V3
+Message-ID: <20090615152543.GF23198@csn.ul.ie>
+References: <20090611163006.e985639f.akpm@linux-foundation.org> <20090612110424.GD14498@csn.ul.ie> <20090615163018.B43A.A69D9226@jp.fujitsu.com> <20090615105651.GD23198@csn.ul.ie> <alpine.DEB.1.10.0906151057270.23995@gentwo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090615141209.GA3126@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:22:00 up 107 days, 11:48,  3 users,  load average: 0.56, 1.19,
-	1.02
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.1.10.0906151057270.23995@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jason Baron (jbaron@redhat.com) wrote:
-> On Fri, Jun 12, 2009 at 05:57:26PM -0400, Mathieu Desnoyers wrote:
-> > > Introduce a new 'DECLARE_TRACE_REG()' macro, so that tracepoints can associate
-> > > an external register/unregister function.
-> > > 
-> > > 
-> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > 
-> > > ---
-> > >  include/linux/tracepoint.h |   27 +++++++++++++++++++++++----
-> > >  1 files changed, 23 insertions(+), 4 deletions(-)
-> > > 
-> > > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> > > index 14df7e6..9a3660b 100644
-> > > --- a/include/linux/tracepoint.h
-> > > +++ b/include/linux/tracepoint.h
-> > > @@ -61,7 +61,7 @@ struct tracepoint {
-> > >   * not add unwanted padding between the beginning of the section and the
-> > >   * structure. Force alignment to the same alignment as the section start.
-> > >   */
-> > > -#define DECLARE_TRACE(name, proto, args)				\
-> > > +#define DECLARE_TRACE_REG(name, proto, args, reg, unreg)		\
-> > >  	extern struct tracepoint __tracepoint_##name;			\
-> > >  	static inline void trace_##name(proto)				\
-> > >  	{								\
-> > > @@ -71,13 +71,29 @@ struct tracepoint {
-> > >  	}								\
-> > >  	static inline int register_trace_##name(void (*probe)(proto))	\
-> > >  	{								\
-> > > -		return tracepoint_probe_register(#name, (void *)probe);	\
-> > > +		int ret;						\
-> > > +		void (*func)(void) = (void (*)(void))reg;		\
-> > > +									\
-> > > +		ret = tracepoint_probe_register(#name, (void *)probe);	\
-> > > +		if (func && !ret)					\
-> > > +			func();						\
-> > 
-> > I don't see why you need to add this weird interface when all you really
-> > need to do is to call the function to set the TIF flags explicitly in
-> > reg_event_syscall_enter when registering a tracepoint.
-> > 
-> > Mathieu
-> > 
+On Mon, Jun 15, 2009 at 11:01:41AM -0400, Christoph Lameter wrote:
+> On Mon, 15 Jun 2009, Mel Gorman wrote:
 > 
-> I could enable the TIF flag in reg_event_syscall_enter, however that
-> would not manage the TIF flag for other users of these traceoints. When
-> users 'register/unregister' with a tracepoint, they expect the tracepoint
-> to be enabled/disabled. If we move this functionality to the user, we are
-> changing how that interface works. Therefore, I associated the
-> enabling/disabling of the tracepoint, with the tracepoint definition.
+> > > May I ask your worry?
+> > >
+> >
+> > Simply that I believe the intention of PF_SWAPWRITE here was to allow
+> > zone_reclaim() to aggressively reclaim memory if the reclaim_mode allowed
+> > it as it was a statement that off-node accesses are really not desired.
+> 
+> Right.
+> 
+> > Ok. I am not fully convinced but I'll not block it either if believe it's
+> > necessary. My current understanding is that this patch only makes a difference
+> > if the server is IO congested in which case the system is struggling anyway
+> > and an off-node access is going to be relatively small penalty overall.
+> > Conceivably, having PF_SWAPWRITE set makes things worse in that situation
+> > and the patch makes some sense.
+> 
+> We could drop support for RECLAIM_SWAP if that simplifies things.
 > 
 
-I agree it should be hidden from userspace APIs, but I don't think we
-should hide it or from the "in kernel" API users, really. People
-interfacing with this kind of API from the kernel-side expect to have a
-great level of control on how they use it, and we can expect people to
-know what they are doing.
+I don't think that is necessary. While I expect it's very rarely used, I
+imagine a situation where it would be desirable on a system that had large
+amounts of tmpfs pages but where it wasn't critical they remain in-memory.
 
-Mathieu
-
-
-> thanks,
-> 
-> -Jason
+Removing PF_SWAPWRITE would make it less aggressive and if you were
+happy with that, then that would be good enough for me.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
