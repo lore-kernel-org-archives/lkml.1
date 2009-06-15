@@ -1,142 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761713AbZFOP0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761722AbZFOP0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761713AbZFOP0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 11:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZFOP0C
+	id S1761722AbZFOP0c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 11:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759159AbZFOP0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 11:26:02 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:55306
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753178AbZFOP0A (ORCPT
+	Mon, 15 Jun 2009 11:26:10 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:40764 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761390AbZFOP0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 11:26:00 -0400
-X-Greylist: delayed 888 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Jun 2009 11:26:00 EDT
-Subject: [PATCH] n_hdlc add buffer flushing
-From: Paul Fulghum <paulkf@microgate.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 10:11:18 -0500
-Message-Id: <1245078678.5511.8.camel@x2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 11:26:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=qVn4XwIt2letohY1EaXAEGGXtmq76hJSO1jOq7giAP6miq/K0oZ3iGj2FkNJQnqm9E
+         1K1x/09fr8HdhyXHibsP6gkAoZ8+sHfSYuf7wecM0TrVMTiRdPbFSHm2fNWeaT6Hkh7U
+         JFD2umyv74oP0KCIZboDA/X1uuxmGz1do9Vqo=
+Date: Mon, 15 Jun 2009 17:25:42 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: Robert Olsson <robert.olsson@its.uu.se>, Yan Zheng <zheng.yan@oracle.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH 2/1] Re: [BUG] fib_tries related Oops in 2.6.30
+Message-ID: <20090615152542.GB2767@ami.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615065333.GA4378@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add flush_buffer tty callback to flush rx buffers.
-Add TCFLSH ioctl processing to flush tx buffers.
-Increase default tx buffers from 1 to 3.
-Remove unneeded flush_buffer call in open callback.
-Remove vendor specific CVS version string.
+ipv4: Fix fib_trie rebalancing, part 2
 
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+My previous patch, which explicitly delays freeing of tnodes by adding
+them to the list to flushe them after the update is finished, isn't
+strict enough. It treats exceptionally tnodes without parent, assuming
+they are newly created, so "invisible" for the read side yet. But the
+top tnode doesn't have parent as well, so we have to exclude all
+exceptions (at least until a better way is found).
 
---- a/drivers/char/n_hdlc.c	2009-06-09 22:05:27.000000000 -0500
-+++ b/drivers/char/n_hdlc.c	2009-06-12 13:16:54.000000000 -0500
-@@ -10,7 +10,6 @@
-  *	Paul Mackerras <Paul.Mackerras@cs.anu.edu.au>
-  *
-  * Original release 01/11/99
-- * $Id: n_hdlc.c,v 4.8 2003/05/06 21:18:51 paulkf Exp $
-  *
-  * This code is released under the GNU General Public License (GPL)
-  *
-@@ -79,7 +78,6 @@
-  */
- 
- #define HDLC_MAGIC 0x239e
--#define HDLC_VERSION "$Revision: 4.8 $"
- 
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -114,7 +112,7 @@
- #define MAX_HDLC_FRAME_SIZE 65535 
- #define DEFAULT_RX_BUF_COUNT 10
- #define MAX_RX_BUF_COUNT 60
--#define DEFAULT_TX_BUF_COUNT 1
-+#define DEFAULT_TX_BUF_COUNT 3
- 
- struct n_hdlc_buf {
- 	struct n_hdlc_buf *link;
-@@ -199,6 +197,31 @@ static void n_hdlc_tty_wakeup(struct tty
- #define tty2n_hdlc(tty)	((struct n_hdlc *) ((tty)->disc_data))
- #define n_hdlc2tty(n_hdlc)	((n_hdlc)->tty)
- 
-+static void flush_rx_queue(struct tty_struct *tty)
-+{
-+	struct n_hdlc *n_hdlc = tty2n_hdlc(tty);
-+	struct n_hdlc_buf *buf;
-+
-+	while ((buf = n_hdlc_buf_get(&n_hdlc->rx_buf_list)))
-+		n_hdlc_buf_put(&n_hdlc->rx_free_buf_list, buf);
-+}
-+
-+static void flush_tx_queue(struct tty_struct *tty)
-+{
-+	struct n_hdlc *n_hdlc = tty2n_hdlc(tty);
-+	struct n_hdlc_buf *buf;
-+	unsigned long flags;
-+
-+	while ((buf = n_hdlc_buf_get(&n_hdlc->tx_buf_list)))
-+		n_hdlc_buf_put(&n_hdlc->tx_free_buf_list, buf);
-+ 	spin_lock_irqsave(&n_hdlc->tx_buf_list.spinlock, flags);
-+	if (n_hdlc->tbuf) {
-+		n_hdlc_buf_put(&n_hdlc->tx_free_buf_list, n_hdlc->tbuf);
-+		n_hdlc->tbuf = NULL;
-+	}
-+	spin_unlock_irqrestore(&n_hdlc->tx_buf_list.spinlock, flags);
-+}
-+
- static struct tty_ldisc_ops n_hdlc_ldisc = {
- 	.owner		= THIS_MODULE,
- 	.magic		= TTY_LDISC_MAGIC,
-@@ -211,6 +234,7 @@ static struct tty_ldisc_ops n_hdlc_ldisc
- 	.poll		= n_hdlc_tty_poll,
- 	.receive_buf	= n_hdlc_tty_receive,
- 	.write_wakeup	= n_hdlc_tty_wakeup,
-+	.flush_buffer   = flush_rx_queue,
- };
- 
- /**
-@@ -341,10 +365,7 @@ static int n_hdlc_tty_open (struct tty_s
- 	set_bit(TTY_NO_WRITE_SPLIT,&tty->flags);
- #endif
- 	
--	/* Flush any pending characters in the driver and discipline. */
--	if (tty->ldisc.ops->flush_buffer)
--		tty->ldisc.ops->flush_buffer(tty);
+Reported-by: Yan Zheng <zheng.yan@oracle.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+---
+
+ net/ipv4/fib_trie.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
+index d1a39b1..64395b0 100644
+--- a/net/ipv4/fib_trie.c
++++ b/net/ipv4/fib_trie.c
+@@ -391,13 +391,8 @@ static inline void tnode_free(struct tnode *tn)
+ static void tnode_free_safe(struct tnode *tn)
+ {
+ 	BUG_ON(IS_LEAF(tn));
 -
-+	/* flush receive data from driver */
- 	tty_driver_flush_buffer(tty);
- 		
- 	if (debuglevel >= DEBUG_LEVEL_INFO)	
-@@ -763,6 +784,14 @@ static int n_hdlc_tty_ioctl(struct tty_s
- 		error = put_user(count, (int __user *)arg);
- 		break;
+-	if (node_parent((struct node *) tn)) {
+-		tn->tnode_free = tnode_free_head;
+-		tnode_free_head = tn;
+-	} else {
+-		tnode_free(tn);
+-	}
++	tn->tnode_free = tnode_free_head;
++	tnode_free_head = tn;
+ }
  
-+	case TCFLSH:
-+		switch (arg) {
-+		case TCIOFLUSH:
-+		case TCOFLUSH:
-+			flush_tx_queue(tty);
-+		}
-+		/* fall through to default */
-+
- 	default:
- 		error = n_tty_ioctl_helper(tty, file, cmd, arg);
- 		break;
-@@ -919,8 +948,7 @@ static struct n_hdlc_buf* n_hdlc_buf_get
- }	/* end of n_hdlc_buf_get() */
- 
- static char hdlc_banner[] __initdata =
--	KERN_INFO "HDLC line discipline: version " HDLC_VERSION
--	", maxframe=%u\n";
-+	KERN_INFO "HDLC line discipline maxframe=%u\n";
- static char hdlc_register_ok[] __initdata =
- 	KERN_INFO "N_HDLC line discipline registered.\n";
- static char hdlc_register_fail[] __initdata =
-
-
+ static void tnode_free_flush(void)
