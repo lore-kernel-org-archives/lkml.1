@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764427AbZFPUoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764560AbZFPUo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764427AbZFPUoF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbZFPUkg
+	id S1764560AbZFPUo1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762983AbZFPUkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:40:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59625 "EHLO mx2.redhat.com"
+	Tue, 16 Jun 2009 16:40:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59626 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762998AbZFPUk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762995AbZFPUk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Jun 2009 16:40:28 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 16/17] KEYS: Add a function by which the contents of a keyring
-	can be enumerated
+Subject: [PATCH 17/17] AFS: Implement the PGetTokens pioctl
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-afs@lists.infradead.org,
        linux-fsdevel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Date: Tue, 16 Jun 2009 21:40:08 +0100
-Message-ID: <20090616204008.4526.31983.stgit@warthog.procyon.org.uk>
+Date: Tue, 16 Jun 2009 21:40:13 +0100
+Message-ID: <20090616204013.4526.32291.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20090616203845.4526.60013.stgit@warthog.procyon.org.uk>
 References: <20090616203845.4526.60013.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,165 +30,251 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a function by which the contents of a keyring can be enumerated.
+Implement the PGetTokens pioctl for AFS.  This will get the security tokens
+cached for a user for security index 2 tokens.
 
-This allows AFS's VIOCGETTOK/PGetTokens pioctl to list the AFS RxRPC keys on
-behalf of userspace.
+This can be tested with the OpenAFS userspace tools by doing:
 
-The following text is added to Documentation/keys.txt:
+	tokens
 
-(*) The contents of a keyring may be enumerated by the following function:
+which should return something like:
 
-	typedef bool (*keyring_enum_filter_t)(const struct key *key,
-					      void *filter_data);
-	key_ref_t keyring_enum(key_ref_t keyring_ref,
-			       unsigned skip,
-			       keyring_enum_filter_t filter,
- 			       void *filter_data,
-			       key_perm_t perm)
+	[root@andromeda ~]# echo password | klog admin -pipe
+	[root@andromeda ~]# keyctl show
+	Session Keyring
+	       -3 --alswrv      0     0  keyring: _ses
+	237984081 --alswrv      0    -1   \_ keyring: _uid.0
+	978861311 --als--v      0     0   \_ rxrpc: cambridge.redhat.com
+	[root@andromeda ~]# tokens
 
-    This scans the keyring in question for keys for which the caller has the
-    specified permissions and that match the filter provided.  It returns a
-    reference to the first of those keys, after the specified quantity of them
-    have been skipped.  If no key is found error ENOKEY will be returned.
+	Tokens held by the Cache Manager:
 
-    If the keyring is invalid or unsearchable, error ENOTDIR or EACCES will be
-    returned.
-
-    The filter function should return true if the key it is passed is a match,
-    and false if it is not.  The filter_data passed to keyring_enum() will be
-    passed on to the filter function.
+	User's (AFS ID 10143) tokens for afs@cambridge.redhat.com [Expires Jun 16 16:10]
+	   --End of list--
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- Documentation/keys.txt  |   23 +++++++++++++++++
- include/linux/key.h     |    5 ++++
- security/keys/keyring.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 93 insertions(+), 0 deletions(-)
+ fs/afs/pioctl.c         |  174 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/afscall.h |    1 
+ include/linux/venus.h   |    1 
+ 3 files changed, 176 insertions(+), 0 deletions(-)
 
 
-diff --git a/Documentation/keys.txt b/Documentation/keys.txt
-index 35618d1..77bbe07 100644
---- a/Documentation/keys.txt
-+++ b/Documentation/keys.txt
-@@ -947,6 +947,29 @@ payload contents" for more information.
-     reference pointer if successful.
+diff --git a/fs/afs/pioctl.c b/fs/afs/pioctl.c
+index e6ea69f..d097745 100644
+--- a/fs/afs/pioctl.c
++++ b/fs/afs/pioctl.c
+@@ -392,6 +392,175 @@ invalid:
+ }
  
- 
-+(*) The contents of a keyring may be enumerated by the following function:
-+
-+	typedef bool (*keyring_enum_filter_t)(const struct key *key,
-+					      void *filter_data);
-+	key_ref_t keyring_enum(key_ref_t keyring_ref,
-+			       unsigned skip,
-+			       keyring_enum_filter_t filter,
-+ 			       void *filter_data,
-+			       key_perm_t perm)
-+
-+    This scans the keyring in question for keys for which the caller has the
-+    specified permissions and that match the filter provided.  It returns a
-+    reference to the first of those keys, after the specified quantity of them
-+    have been skipped.  If no key is found error ENOKEY will be returned.
-+
-+    If the keyring is invalid or unsearchable, error ENOTDIR or EACCES will be
-+    returned.
-+
-+    The filter function should return true if the key it is passed is a match,
-+    and false if it is not.  The filter_data passed to keyring_enum() will be
-+    passed on to the filter function.
-+
-+
- (*) To check the validity of a key, this function can be called:
- 
- 	int validate_key(struct key *key);
-diff --git a/include/linux/key.h b/include/linux/key.h
-index 4d8cc1e..6d41a4e 100644
---- a/include/linux/key.h
-+++ b/include/linux/key.h
-@@ -273,6 +273,11 @@ extern key_ref_t keyring_search(key_ref_t keyring,
- extern int keyring_add_key(struct key *keyring,
- 			   struct key *key);
- 
-+typedef bool (*keyring_enum_filter_t)(const struct key *key, void *data);
-+extern key_ref_t keyring_enum(key_ref_t keyring_r, unsigned skip,
-+			      keyring_enum_filter_t filter, void *filter_data,
-+			      key_perm_t perm);
-+
- extern struct key *key_lookup(key_serial_t id);
- 
- static inline key_serial_t key_serial(struct key *key)
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index 97529ab..c83ab26 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -1000,3 +1000,68 @@ static void keyring_revoke(struct key *keyring)
- 	}
- 
- } /* end keyring_revoke() */
-+
-+/**
-+ * keyring_enum -  Allow enumeration of a keyring
-+ * @keyring_ref: The keyring to search
-+ * @skip: Number of matching keys to skip
-+ * @filter: A function to filter out unwanted matches
-+ * @filter_data: Data to be passed to filter()
-+ * @perm: The permissions desired on the key
-+ *
-+ * Allow the caller to enumerate a keyring by getting the (skip+1)'th
-+ * permissible key that matched a particular filter.
-+ *
-+ * The caller must lock the keyring if they don't want the contents to change
-+ * between calls.
+ /*
++ * filter tickets by security index when enumerating
 + */
-+key_ref_t keyring_enum(key_ref_t keyring_ref, unsigned skip,
-+		       keyring_enum_filter_t filter, void *filter_data,
-+		       key_perm_t perm)
++bool afs_enum_filter(const struct key *key, void *data)
 +{
-+	struct keyring_list *klist;
-+	unsigned long possessed;
-+	struct key *keyring, *key;
++	unsigned long security_index = (unsigned long) data;
++
++	return key->type == &key_type_rxrpc &&
++		key->type_data.x[0] == security_index &&
++		memcmp(key->description, "afs@", 4) == 0;
++}
++
++/*
++ * Get a user's authentication rxkad tokens
++ */
++static long afs_PGetTokens(struct vice_ioctl *arg)
++{
++	struct rxrpc_key_payload *upayload;
++	struct clear_token details;
++	struct afs_cell *root_cell;
++	struct key *key;
++	key_ref_t keyring_r, key_r = NULL;
++	size_t out_size;
++	void *out, *out_next;
 +	long ret;
-+	int loop;
++	int skip;
++	u32 tmp, ticket_len;
 +
-+	key_check(keyring);
++	_enter("");
 +
-+	/* top keyring must have search permission to begin the search */
-+        ret = key_permission(keyring_ref, WANT_KEY_SEARCH);
-+	if (ret < 0)
-+		return ERR_PTR(ret);
++	/* find out which key we're being asked for */
++	if (arg->in_size == 0) {
++		skip = -1;
++	} else if (arg->in_size == sizeof(skip)) {
++		memcpy(&skip, arg->in, sizeof(skip));
++		if (skip < 0) {
++			_leave(" = -EINVAL [inval iter]");
++			return -EINVAL;
++		}
++	} else {
++		_leave(" = -EINVAL [bad arg size]");
++		return -EINVAL;
++	}
 +
-+	keyring = key_ref_to_ptr(keyring_ref);
-+	if (keyring->type != &key_type_keyring)
-+		return ERR_PTR(-ENOTDIR);
++	_debug("iterator: %d", skip);
 +
-+	possessed = is_key_possessed(keyring_ref);
++	/* we're going to look through the session keyring */
++	keyring_r = lookup_user_key(KEY_SPEC_SESSION_KEYRING, 1, 0,
++				    WANT_KEY_SEARCH);
++	if (IS_ERR(keyring_r)) {
++		_leave(" = %ld [keyring]", PTR_ERR(keyring_r));
++		return PTR_ERR(keyring_r);
++	}
 +
-+	rcu_read_lock();
++	root_cell = afs_get_root_cell();
++	ASSERT(root_cell != NULL);
 +
-+	klist = rcu_dereference(keyring->payload.subscriptions);
-+	if (klist) {
-+		for (loop = 0; loop < klist->nkeys; loop++) {
-+			key = klist->keys[loop];
-+
-+			if (!filter(key, filter_data) ||
-+			    key_permission(make_key_ref(key, possessed),
-+					   perm) != 0 ||
-+			    test_bit(KEY_FLAG_REVOKED, &key->flags))
-+				continue;
-+			if (skip == 0)
-+				goto found;
-+			skip--;
++	/* if there's no input argument, then we return the tokens for the root
++	 * cell; if there is an argument, then we're being asked for the nth
++	 * key belonging to this session */
++	if (skip >= 0) {
++		key_r = keyring_enum(keyring_r, skip,
++				     afs_enum_filter,
++				     (void *) RXRPC_SECURITY_RXKAD,
++				     WANT_KEY_SEARCH);
++		if (key_r == ERR_PTR(-ENOKEY)) {
++			ret = -EDOM;
++			goto error_no_key;
++		}
++	} else {
++		/* find key for the root cell */
++		key_r = keyring_search(keyring_r, &key_type_rxrpc,
++				       root_cell->anonymous_key->description);
++		if (key_r == ERR_PTR(-ENOKEY)) {
++			ret = -ENOTCONN;
++			goto error_no_key;
 +		}
 +	}
 +
-+	rcu_read_unlock();
-+	return ERR_PTR(-ENOKEY);
++	key_ref_put(keyring_r);
++	keyring_r = NULL;
 +
-+ found:
-+	atomic_inc(&key->usage);
-+	rcu_read_unlock();
-+	return make_key_ref(key, possessed);
++	if (IS_ERR(key_r)) {
++		if (key_r == ERR_PTR(-EACCES))
++			ret = -EACCES;
++		else
++			ret = -EIO;
++		goto error_no_key;
++	}
++
++	key = key_ref_to_ptr(key_r);
++	upayload = key->payload.data;
++
++	_debug("key serial: %x", key->serial);
++
++	/* pass the contents of the key back to userspace */
++#define CHECK(n)				\
++	do {					\
++		if (out_size < (n)) {		\
++			ret = -EINVAL;		\
++			goto error;		\
++		}				\
++		out = out_next;			\
++		out_size -= (n);		\
++		out_next += (n);		\
++	} while(0)
++
++#define ENCODE(from)					\
++	do {						\
++		CHECK(sizeof(*(from)));			\
++		memcpy(out, from, sizeof(*(from)));	\
++	} while(0)
++
++	out_next = arg->out;
++	out_size = arg->out_size;
++
++	/* pass the ticket in at least 56 bytes of space */
++	ticket_len = upayload->k.ticket_len;
++	tmp = min(ticket_len, 56U);
++	ENCODE(&tmp);
++	CHECK(tmp);
++	memcpy(out, upayload->k.ticket, ticket_len);
++	if (ticket_len < tmp)
++		memset(out + ticket_len, 0, tmp - ticket_len);
++
++	tmp = sizeof(details);
++	ENCODE(&tmp);
++	details.vice_id		= upayload->k.vice_id;
++	details.begin_timestamp	= upayload->k.start;
++	details.end_timestamp	= upayload->k.expiry;
++	details.auth_handle	= upayload->k.kvno;
++	memcpy(details.session_key, upayload->k.session_key, 8);
++	ENCODE(&details);
++
++	/* if we were given an iterator, then there's more stuff we must
++	 * return */
++	if (arg->in_size > 0) {
++		struct afs_cell *cell;
++		size_t cellname_size;
++
++		cellname_size = strlen(key->description + 4);
++		cell = afs_cell_lookup(key->description + 4, cellname_size);
++		tmp = (cell == root_cell) ? 1 : 0;
++		if (!IS_ERR(cell))
++			afs_put_cell(cell);
++		ENCODE(&tmp);
++		CHECK(cellname_size + 1);
++		memcpy(out, key->description + 4, cellname_size + 1);
++	}
++
++#undef ENCODE
++#undef CHECK
++
++	arg->out_size = (char *) out_next - arg->out;
++
++	key_ref_put(key_r);
++	afs_put_cell(root_cell);
++	_leave(" = 0");
++	return 0;
++
++error:
++	key_ref_put(key_r);
++error_no_key:
++	key_ref_put(keyring_r);
++	afs_put_cell(root_cell);
++	_leave(" = %ld", ret);
++	return ret;
 +}
-+EXPORT_SYMBOL(keyring_enum);
++
++/*
+  * The AFS pathless pioctl handler
+  */
+ long afs_pathless_pioctl(int cmd, struct vice_ioctl *arg)
+@@ -408,6 +577,11 @@ long afs_pathless_pioctl(int cmd, struct vice_ioctl *arg)
+ 		ret = afs_PSetTokens(arg);
+ 		break;
+ 
++
++	case VIOC_COMMAND(PGetTokens):
++		ret = afs_PGetTokens(arg);
++		break;
++
+ 	default:
+ 		printk(KERN_DEBUG "AFS: Unsupported pioctl command %x\n", cmd);
+ 		ret = -EOPNOTSUPP;
+diff --git a/include/linux/afscall.h b/include/linux/afscall.h
+index 7635aab..bdff9a0 100644
+--- a/include/linux/afscall.h
++++ b/include/linux/afscall.h
+@@ -18,6 +18,7 @@
+ /* pioctl commands */
+ #define PSetTokens	3		/* get authentication tokens for user */
+ #define PGetVolStat	4		/* get volume status */
++#define PGetTokens	8		/* get authentication tokens for user */
+ #define PWhereIs	14		/* find out where a volume is located */
+ #define PGetFID		22		/* get file ID */
+ #define PFlushCB	25		/* flush callback only */
+diff --git a/include/linux/venus.h b/include/linux/venus.h
+index b90e5f2..7a3ae08 100644
+--- a/include/linux/venus.h
++++ b/include/linux/venus.h
+@@ -19,6 +19,7 @@
+  */
+ #define VIOCSETTOK		_VICEIOCTL(PSetTokens)
+ #define VIOCGETVOLSTAT		_VICEIOCTL(PGetVolStat)
++#define VIOCGETTOK		_VICEIOCTL(PGetTokens)
+ #define VIOCWHEREIS		_VICEIOCTL(PWhereIs)
+ #define VIOCGETFID		_VICEIOCTL(PGetFID)
+ #define VIOCFLUSHCB		_VICEIOCTL(PFlushCB)
 
