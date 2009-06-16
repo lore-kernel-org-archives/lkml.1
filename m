@@ -1,136 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZFPOQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZFPORx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbZFPOQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 10:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZFPOQ3
+	id S1755337AbZFPORx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 10:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZFPORo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 10:16:29 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:49625 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbZFPOQ3 convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 10:17:44 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:59890 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750977AbZFPORo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 10:16:29 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Chris Pringle <chris.pringle@oxtel.com>
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-Date: Tue, 16 Jun 2009 09:16:25 -0500
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <4A37A503.3030209@oxtel.com>
-In-Reply-To: <4A37A503.3030209@oxtel.com>
+	Tue, 16 Jun 2009 10:17:44 -0400
+Message-ID: <4A37A984.5000705@novell.com>
+Date: Tue, 16 Jun 2009 10:17:40 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200906160916.28430.lkml@morethan.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based	notifier
+ interface
+References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com>
+In-Reply-To: <20090616140240.GA9401@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE1F040A84E0BFA175CEE32AF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue June 16 2009, Chris Pringle wrote:
-> Hello All,
-> 
-> We're developing on a Freescale MPC8272 and are having some nasty 
-> problems with PCI bus mastering and data corruption.
-> 
-> We have some custom hardware that is bus mastering, reading data from 
-> the CPUs memory for it's own use. Most of the time, the data is correct, 
-> however occasionally we are seeing data that appears to be from 
-> somewhere else in memory (usually memory that has already been read by 
-> the PCI device). The problem looks like stale data on the PCI bridge 
-> prefetch buffers or a cache coherency problem, but we've been unable to 
-> come up with a solution to our problem. It is my understanding that it 
-> shouldn't be a cache coherency problem as the CPU cache should be 
-> snooped as the data is read from memory. Even if it were an issue, the 
-> pci_map_sg* functions should have sorted out any cache coherency issues 
-> before the DMA operation started.
-> 
-> I've not been able to find anything on the Freescale data sheet that 
-> provides any way of flushing the prefetch cache on the PCI bridge. We've 
-> done a bit of experimenting, and found that turning off prefetch appears 
-> to solve (or possibly mask?) the problem (at the expensive of massive 
-> performance problems). I've also tried DMA'ing two adjacent userspace 
-> buffers in memory (from the same page), and see corruption on the second 
-> buffer. If I populate both buffers, then DMA them both, the data is 
-> fine. If I populate the first, DMA the first, then populate the second 
-> and DMA the second, corruption occurs at the start of the second buffer. 
-> If I add 8-32 bytes of padding between the buffers, the problem goes away.
-> 
-> The PCI spec says that the PCI bridge is supposed to flush any data from 
-> it's prefetch buffers that are not read by the bus master, so 
-> technically, this isn't supposed to happen.
-> 
-> I've tried making sure that buffers are cache line (and page) aligned, 
-> and are multiples of cache lines, but it's made no difference. PIO mode 
-> works fine, and I've checked the data with the CPU just before, and 
-> immediately after the DMA and the driver sees no data integrity issues. 
-> There are memory write barriers just before the DMA start, so all the 
-> registers should be correct before the DMA starts.
-> 
-> For background info, the device doing the bus mastering is a Xilinx 
-> Virtex 5 FPGA. We've monitored the data as it comes off the PCI bus 
-> using ChipScope - so the firmware should not be manipulating the data in 
-> any way.
-> 
-> We have some hardware/firmware/drivers that has a lot of common code 
-> that runs on an x86 platform (as opposed to powerpc), and that works 
-> without any issues whatsoever.
-> 
-> Has anyone got any ideas what this might be? Does anyone of know issues 
-> with PCI bridges on the PowerPC platform? Is there extra things that 
-> need to be done from the driver when DMAing on PowerPC (I've looked at 
-> other drivers and there's nothing obvious). The chip errata doesn't have 
-> anything on it that looks like it could cause this.
-> 
-> I'm really hoping this is something that we're doing wrong in the driver 
-> or the firmware, but we've been through both the firmware and drivers 
-> countless times and are unable to see anything wrong.
-> 
-> Any thoughts/ideas would be much appreciated!
-> 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE1F040A84E0BFA175CEE32AF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Did you actually check the load image for proper alignment?
-Like in:
+Michael S. Tsirkin wrote:
+> On Mon, Jun 15, 2009 at 10:29:56PM -0400, Gregory Haskins wrote:
+>  =20
+>> irqfd and its underlying implementation, eventfd, currently utilize
+>> the embedded wait-queue in eventfd for signal notification.  The nice =
+thing
+>> about this design decision is that it re-uses the existing
+>> eventfd/wait-queue code and it generally works well....with several
+>> limitations.
+>>
+>> One of the limitations is that notification callbacks are always calle=
+d
+>> inside a spin_lock_irqsave critical section.  Another limitation is
+>> that it is very difficult to build a system that can recieve release
+>> notification without being racy.
+>>
+>> Therefore, we introduce a new registration interface that is SRCU base=
+d
+>> instead of wait-queue based, and implement the internal wait-queue
+>> infrastructure in terms of this new interface.  We then convert irqfd
+>> to use this new interface instead of the existing wait-queue code.
+>>
+>> The end result is that we now have the opportunity to run the interrup=
+t
+>> injection code serially to the callback (when the signal is raised fro=
+m
+>> process-context, at least) instead of always deferring the injection t=
+o a
+>> work-queue.
+>>
+>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>> CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>> CC: Davide Libenzi <davidel@xmailserver.org>
+>> ---
+>>
+>>  fs/eventfd.c            |  115 ++++++++++++++++++++++++++++++++++++++=
++++++----
+>>  include/linux/eventfd.h |   30 ++++++++++++
+>>  virt/kvm/eventfd.c      |  114 +++++++++++++++++++++-----------------=
+---------
+>>  3 files changed, 188 insertions(+), 71 deletions(-)
+>>
+>> diff --git a/fs/eventfd.c b/fs/eventfd.c
+>> index 72f5f8d..505d5de 100644
+>> --- a/fs/eventfd.c
+>> +++ b/fs/eventfd.c
+>> @@ -30,8 +30,47 @@ struct eventfd_ctx {
+>>  	 */
+>>  	__u64 count;
+>>  	unsigned int flags;
+>> +	struct srcu_struct srcu;
+>> +	struct list_head nh;
+>> +	struct eventfd_notifier notifier;
+>>  };
+>> =20
+>> +static void _eventfd_wqh_notify(struct eventfd_notifier *en)
+>> +{
+>> +	struct eventfd_ctx *ctx =3D container_of(en,
+>> +					       struct eventfd_ctx,
+>> +					       notifier);
+>> +
+>> +	if (waitqueue_active(&ctx->wqh))
+>> +		wake_up_poll(&ctx->wqh, POLLIN);
+>> +}
+>> +
+>> +static void _eventfd_notify(struct eventfd_ctx *ctx)
+>> +{
+>> +	struct eventfd_notifier *en;
+>> +	int idx;
+>> +
+>> +	idx =3D srcu_read_lock(&ctx->srcu);
+>> +
+>> +	/*
+>> +	 * The goal here is to allow the notification to be preemptible
+>> +	 * as often as possible.  We cannot achieve this with the basic
+>> +	 * wqh mechanism because it requires the wqh->lock.  Therefore
+>> +	 * we have an internal srcu list mechanism of which the wqh is
+>> +	 * a client.
+>> +	 *
+>> +	 * Not all paths will invoke this function in process context.
+>> +	 * Callers should check for suitable state before assuming they
+>> +	 * can sleep (such as with preemptible()).  Paul McKenney assures
+>> +	 * me that srcu_read_lock is compatible with in-atomic, as long as
+>> +	 * the code within the critical section is also compatible.
+>> +	 */
+>> +	list_for_each_entry_rcu(en, &ctx->nh, list)
+>> +		en->ops->signal(en);
+>> +
+>> +	srcu_read_unlock(&ctx->srcu, idx);
+>> +}
+>> +
+>>  /*
+>>   * Adds "n" to the eventfd counter "count". Returns "n" in case of
+>>   * success, or a value lower then "n" in case of coutner overflow.
+>>    =20
+>
+> This is ugly, isn't it? With CONFIG_PREEMPT=3Dno preemptible() is alway=
+s false.
+>  =20
 
-gen2-32 compressed # objdump -x vmlinux.bin
-- - - - -
-Sections:
-Idx Name          Size      VMA       LMA       File off  Algn
-- - - - -
- 21 .data.page_aligned 00001800  c068a000  0068a000  0058b000  2**12
-                  CONTENTS, ALLOC, LOAD, DATA
- 22 .data.cacheline_aligned 000026c0  c068b800  0068b800  0058c800  2**6
-                  CONTENTS, ALLOC, LOAD, DATA
- 23 .data.read_mostly 00001e98  c068dec0  0068dec0  0058eec0  2**6
-                  CONTENTS, ALLOC, LOAD, DATA
+As an aside, this is something I would like to address.  I keep running
+into this pattern where I could do something in-line if I had a
+"can_sleep()" context.  Otherwise, I have to punt to something like a
+workqueue which adds latency.  The closest thing I have to "can_sleep()"
+is preemptible(), which, as you correctly pointed out is limited to only
+working with CONFIG_PREEMPT=3Dy.
 
-= = = =
-
-I had to make this change to the x86 loader script to get alignment for VIA:
-
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index 62ad500..26f68a5 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -82,7 +82,7 @@ SECTIONS
-        *(.data.idt)
-   }
-
--  . = ALIGN(32);
-+  . = ALIGN(L1_CACHE_BYTES);
-   .data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
-        *(.data.cacheline_aligned)
-   }
-
-= = = =
-
-Eyeball your loader script if you haven't already done so.
-
-Mike
-> Regards,
-> Chris
-> 
+Its been a while since I looked into it, but one of the barriers that
+would need to be overcome is the fact that the preempt_count stuff gets
+compiled away with CONFIG_PREEMPT=3Dn.  It is conceivable that we could
+make the preempt_count logic an independent config variable from
+CONFIG_PREEMPT to provide a can_sleep() macro without requiring
+full-blow preemption to be enabled.  So my questions would be as follows:=
 
 
+a) Is the community conducive to such an idea?
+b) Are there other things to consider/fix besides the lack of
+preempt_count in order to implement such a beast?
+
+-Greg
+
+
+
+--------------enigE1F040A84E0BFA175CEE32AF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko3qYQACgkQlOSOBdgZUxkAHgCeM8D2ZviB2tn5mqeSnrFzRem4
+ZHoAnjoovHnW7gPL/h20orIn073rDO4g
+=N595
+-----END PGP SIGNATURE-----
+
+--------------enigE1F040A84E0BFA175CEE32AF--
