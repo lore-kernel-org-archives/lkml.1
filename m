@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbZFPQT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbZFPQTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759165AbZFPQT2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbZFPQTV
+	id S1759612AbZFPQTw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbZFPQTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:19:21 -0400
-Received: from mtoichi14.ns.itscom.net ([219.110.2.184]:41496 "EHLO
-	mtoichi14.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754263AbZFPQTV (ORCPT
+	Tue, 16 Jun 2009 12:19:41 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50575 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755431AbZFPQTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:19:21 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: [git pull] vfs patches, part 1 
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090612014507.GA8633@ZenIV.linux.org.uk>
-References: <20090612014507.GA8633@ZenIV.linux.org.uk>
-Date: Wed, 17 Jun 2009 01:19:09 +0900
-Message-ID: <11056.1245169149@jrobl>
+	Tue, 16 Jun 2009 12:19:40 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A37C602.4050104@s5r6.in-berlin.de>
+Date: Tue, 16 Jun 2009 18:19:14 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090523 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: Jouni Malinen <j@w1.fi>
+CC: "Luis R. Rodriguez" <lrodriguez@atheros.com>, Greg KH <greg@kroah.com>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "corbet@lwn.net" <corbet@lwn.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>,
+       "mcgrof@gmail.com" <mcgrof@gmail.com>
+Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
+ window
+References: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com> <20090615201934.GA12685@kroah.com> <20090615214735.GE23972@bombadil.infradead.org> <20090615223206.GA4966@kroah.com> <20090616004122.GC5492@tesla> <20090616021011.GF23972@bombadil.infradead.org> <20090616032034.GA17932@kroah.com> <20090616042113.GA5680@tesla> <20090616093401.GA11602@jm.kir.nu>
+In-Reply-To: <20090616093401.GA11602@jm.kir.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jouni Malinen wrote:
+> If it
+> weren't now allowed in during the rc-phase, it may not go into a stable
+> release either (assuming the rc/stable rules are more or less the same)
 
-Al Viro:
-> * more pushing of lock_super() and BKL down into fs (by now only ->get_sb()
->   has the latter held by caller and nothing in VFS touches the former) (me,
->   hch, Alessio Igor Bogani)
-	:::
-> Al Viro (36):
-	:::
->       Push BKL down into do_remount_sb()
-	:::
-> Alessio Igor Bogani (1):
->       Push BKL down into ->remount_fs()
+They aren't.
 
-These two patches conflict, or are unmatched.
-Al's patch adds one lock_kernel() call and several unlock_kernel() into
-do_remount_sb(), and then Alessio's patch removes only single pair of
-lock/unlock_kernel().
-Finally a few unlock_kernel() are left in do_remount_sb().
-
-I guess Alessio's base was different from Al's.
-
-
-J. R. Okajima
-
-commit 8219ce0904f57cd0893092369fbde39471cfb5a7
-Author: J. R. Okajima <hooanon05@yahoo.co.jp>
-Date:   Wed Jun 17 01:16:50 2009 +0900
-
-    remove unlock_kernel() left accidentally
-    
-    commit 337eb00a2c3a421999c39c94ce7e33545ee8baa7
-    Push BKL down into ->remount_fs()
-    and
-    commit 4aa98cf768b6f2ea4b204620d949a665959214f6
-    Push BKL down into do_remount_sb()
-    
-    were uncorrectly merged.
-    The former removes one pair of lock/unlock_kernel(), but the latter adds
-    several unlock_kernel(). Finally a few unlock_kernel() calls left.
-    
-    Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
-
-diff --git a/fs/super.c b/fs/super.c
-index 83b4741..d40d53a 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -545,24 +545,18 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
- 	if ((flags & MS_RDONLY) && !(sb->s_flags & MS_RDONLY)) {
- 		if (force)
- 			mark_files_ro(sb);
--		else if (!fs_may_remount_ro(sb)) {
--			unlock_kernel();
-+		else if (!fs_may_remount_ro(sb))
- 			return -EBUSY;
--		}
- 		retval = vfs_dq_off(sb, 1);
--		if (retval < 0 && retval != -ENOSYS) {
--			unlock_kernel();
-+		if (retval < 0 && retval != -ENOSYS)
- 			return -EBUSY;
--		}
- 	}
- 	remount_rw = !(flags & MS_RDONLY) && (sb->s_flags & MS_RDONLY);
- 
- 	if (sb->s_op->remount_fs) {
- 		retval = sb->s_op->remount_fs(sb, &flags, data);
--		if (retval) {
--			unlock_kernel();
-+		if (retval)
- 			return retval;
--		}
- 	}
- 	sb->s_flags = (sb->s_flags & ~MS_RMT_MASK) | (flags & MS_RMT_MASK);
- 	if (remount_rw)
+Just compare shortlogs between -RCs with shortlogs between .Ys and 
+everything becomes almost obvious.  :-)
+-- 
+Stefan Richter
+-=====-==--= -==- =----
+http://arcgraph.de/sr/
