@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbZFPQTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759730AbZFPQVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbZFPQTw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbZFPQTl
+	id S1759730AbZFPQVY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbZFPQVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:19:41 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50575 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755431AbZFPQTk (ORCPT
+	Tue, 16 Jun 2009 12:21:16 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:58210 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754263AbZFPQVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:19:40 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A37C602.4050104@s5r6.in-berlin.de>
-Date: Tue, 16 Jun 2009 18:19:14 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090523 SeaMonkey/1.1.16
+	Tue, 16 Jun 2009 12:21:16 -0400
+Date: Tue, 16 Jun 2009 11:21:14 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Chris Pringle <chris.pringle@oxtel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
+Message-ID: <20090616162114.GA5051@loki.buserror.net>
+References: <4A37A503.3030209@oxtel.com>
 MIME-Version: 1.0
-To: Jouni Malinen <j@w1.fi>
-CC: "Luis R. Rodriguez" <lrodriguez@atheros.com>, Greg KH <greg@kroah.com>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "corbet@lwn.net" <corbet@lwn.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>,
-       "mcgrof@gmail.com" <mcgrof@gmail.com>
-Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
- window
-References: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com> <20090615201934.GA12685@kroah.com> <20090615214735.GE23972@bombadil.infradead.org> <20090615223206.GA4966@kroah.com> <20090616004122.GC5492@tesla> <20090616021011.GF23972@bombadil.infradead.org> <20090616032034.GA17932@kroah.com> <20090616042113.GA5680@tesla> <20090616093401.GA11602@jm.kir.nu>
-In-Reply-To: <20090616093401.GA11602@jm.kir.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A37A503.3030209@oxtel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jouni Malinen wrote:
-> If it
-> weren't now allowed in during the rc-phase, it may not go into a stable
-> release either (assuming the rc/stable rules are more or less the same)
+On Tue, Jun 16, 2009 at 02:58:27PM +0100, Chris Pringle wrote:
+> We're developing on a Freescale MPC8272 and are having some nasty  
+> problems with PCI bus mastering and data corruption.
 
-They aren't.
+What kernel version?  What firmware?  Custom board, or one in upstream
+(which one)?
 
-Just compare shortlogs between -RCs with shortlogs between .Ys and 
-everything becomes almost obvious.  :-)
--- 
-Stefan Richter
--=====-==--= -==- =----
-http://arcgraph.de/sr/
+> We have some custom hardware that is bus mastering, reading data from  
+> the CPUs memory for it's own use. Most of the time, the data is correct,  
+> however occasionally we are seeing data that appears to be from  
+> somewhere else in memory (usually memory that has already been read by  
+> the PCI device). The problem looks like stale data on the PCI bridge  
+> prefetch buffers or a cache coherency problem, but we've been unable to  
+> come up with a solution to our problem. It is my understanding that it  
+> shouldn't be a cache coherency problem as the CPU cache should be  
+> snooped as the data is read from memory. Even if it were an issue, the  
+> pci_map_sg* functions should have sorted out any cache coherency issues  
+> before the DMA operation started.
+
+Cache coherency on PCI DMA requires that the memory be mapped with the M
+attribute on this chip, but that should be happening based on detection of
+the core.
+
+Also make sure that you park the bus on PCI and raise its arbitration
+priority, as done at the end of fixup_pci in arch/powerpc/boot/cuboot-pq2.c.
+
+BTW, you may want to post to linuxppc-dev@lists.ozlabs.org for
+powerpc-specific issues, especially this kind of hardware issue.
+
+-Scott
