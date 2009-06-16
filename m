@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbZFPQoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbZFPQqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760121AbZFPQoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZFPQnw
+	id S1759086AbZFPQqw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZFPQqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:43:52 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:60679 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbZFPQnw (ORCPT
+	Tue, 16 Jun 2009 12:46:45 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:62872 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbZFPQqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:43:52 -0400
-Date: Tue, 16 Jun 2009 17:43:51 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, greg@kroah.com, yan.i.li@intel.com
-Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
-Message-ID: <20090616164351.GA14353@srcf.ucam.org>
-References: <20090615141613.GA7876@sage.bj.intel.com> <20090615143446.GB19451@srcf.ucam.org> <20090615144748.GA25734@thyme.bj.intel.com> <20090616154200.GA12715@srcf.ucam.org> <20090616173618.353901ee@lxorguk.ukuu.org.uk>
+	Tue, 16 Jun 2009 12:46:44 -0400
+Message-ID: <4A37CC72.3060709@freescale.com>
+Date: Tue, 16 Jun 2009 11:46:42 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616173618.353901ee@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Chris Pringle <chris.pringle@oxtel.com>
+CC: linux-kernel@vger.kernel.org,
+       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
+References: <4A37A503.3030209@oxtel.com> <20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
+In-Reply-To: <4A37C97A.5050508@oxtel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 05:36:18PM +0100, Alan Cox wrote:
-> > So? If the alternative is machines that don't work until they're added 
-> > to a blacklist, then the correct thing to do is to do it 
-> > unconditionally.
-> 
-> I would disagree: that breaks a whole pile of other machines
+Chris Pringle wrote:
+> The kernel version is 2.6.26. Firmware is custom on a custom board.
+>> Cache coherency on PCI DMA requires that the memory be mapped with the M
+>> attribute on this chip, but that should be happening based on 
+>> detection of
+>> the core.
+>>   
+> I'm not sure where to look to verify this?
 
-I was under the impression that this was the reset path that Windows 
-followed. If not then that suggests that we're fixing it wrong in the 
-first place?
+Check asm/cputable.h for CPU_FTR_NEED_COHERENT.  Make sure that 
+CONFIG_8260 is one of the #ifdefs that turns that on.  It looks like 
+that was in place by 2.6.26 in arch/powerpc.  I'm not sure what to look 
+for in arch/ppc.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+>> Also make sure that you park the bus on PCI and raise its arbitration
+>> priority, as done at the end of fixup_pci in 
+>> arch/powerpc/boot/cuboot-pq2.c.
+>>   
+> Since this is a reasonably recent kernel,
+
+Not really, there was a fair amount of 82xx work in the mid-2.6.20s. 
+The addition of CPU_FTR_NEED_COHERENT to 82xx was somewhere in that time.
+
+Can you try 2.6.30?
+
+> I'd guess that both of these 
+> things are correct. I've had a quick look in that file and there is code 
+> in there raising arbitartion priority and parking the bus.
+
+Just because the code is there doesn't mean you're using it -- are you 
+using cuImage?  Are you using arch/ppc or arch/powerpc?
+
+Typically this would be done by firmware; it's only in cuboot because 
+u-boot wasn't doing it.
+
+>> BTW, you may want to post to linuxppc-dev@lists.ozlabs.org for
+>> powerpc-specific issues, especially this kind of hardware issue.
+>>
+>>   
+> I've just posted there :-)
+
+Doh, sorry. :-)
+
+> Interestingly, I've just turned off cache snooping and the problem has 
+> got much worse. This has surprised me as I thought that part of the job 
+> done by pci_map_sg was to flush the CPU cache
+
+It only flushes the cache on hardware that doesn't do coherent DMA.
+
+-Scott
+
