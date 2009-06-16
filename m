@@ -1,317 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbZFPIwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZFPIxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbZFPIwz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 04:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbZFPIw3
+	id S1755098AbZFPIxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZFPIxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 04:52:29 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:44095 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755111AbZFPIw1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 04:52:27 -0400
-X-SpamScore: -4
-X-BigFish: VPS-4(z78cMzzz1202hzzz32i17ch63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0KLBPZ4-02-3FT-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/2] dma-debug: be more careful when building reference entries
-Date: Tue, 16 Jun 2009 10:52:10 +0200
-Message-ID: <1245142330-7067-3-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1245142330-7067-1-git-send-email-joerg.roedel@amd.com>
-References: <1245142330-7067-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 16 Jun 2009 08:52:15.0030 (UTC) FILETIME=[BEFC9D60:01C9EE5F]
+	Tue, 16 Jun 2009 04:53:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53290 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751617AbZFPIxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 04:53:33 -0400
+Message-ID: <4A375D6B.3000105@redhat.com>
+Date: Tue, 16 Jun 2009 11:52:59 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
+       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain	support
+ to use NMI-safe methods
+References: <tip-74193ef0ecab92535c8517f082f1f50504526c9b@git.kernel.org> <alpine.LFD.2.01.0906151007560.3305@localhost.localdomain> <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <20090615182348.GC11248@elte.hu> <4A369573.1060504@zytor.com> <20090615184536.GH11248@elte.hu> <4A369914.4010903@zytor.com> <4A369ADF.2050305@redhat.com> <20090616083635.GE16229@elte.hu>
+In-Reply-To: <20090616083635.GE16229@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current code is not very careful when it builds reference
-dma_debug_entries which get passed to hash_bucket_find(). But since this
-function changed to a best-fit algorithm these entries have to be more
-acurate. This patch adds this higher level of accuracy.
+On 06/16/2009 11:36 AM, Ingo Molnar wrote:
+>
+>>> I can try to find out internally what Intel's position on writing
+>>> %cr2 is, but it'll take a while; however, KVM should be able to
+>>> tell you if any random OS uses %cr2 writes (as should a static
+>>> disassembly of their kernel.)
+>>>        
+>> Linux is one such OS.  When acting as a hypervisor it writes cr2
+>> to present its guests with their expected environment (any
+>> hypervisor that uses virtualization extensions will of course need
+>> to do this).
+>>      
+>
+> Ah, it does save/restore it in svm_vcpu_run. VMX can do this via its
+> context structure (without explicit CR manipulations in host space),
+> right?
+>    
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- lib/dma-debug.c |  134 +++++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 91 insertions(+), 43 deletions(-)
+It's the other way around.  svm switches the guest cr2 in hardware 
+(through svm->vmcb->save.cr2).  The code you're referring to saves and 
+restores the host cr2, which is completely unnecessary.  I'm currently 
+in the middle of dropping it :)
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index c71e2dd..3b93129 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -874,72 +874,68 @@ static void check_for_illegal_area(struct device *dev, void *addr, u64 size)
- 				"[addr=%p] [size=%llu]\n", addr, size);
- }
- 
--static void check_sync(struct device *dev, dma_addr_t addr,
--		       u64 size, u64 offset, int direction, bool to_cpu)
-+static void check_sync(struct device *dev,
-+		       struct dma_debug_entry *ref,
-+		       bool to_cpu)
- {
--	struct dma_debug_entry ref = {
--		.dev            = dev,
--		.dev_addr       = addr,
--		.size           = size,
--		.direction      = direction,
--	};
- 	struct dma_debug_entry *entry;
- 	struct hash_bucket *bucket;
- 	unsigned long flags;
- 
--	bucket = get_hash_bucket(&ref, &flags);
-+	bucket = get_hash_bucket(ref, &flags);
- 
--	entry = hash_bucket_find(bucket, &ref);
-+	entry = hash_bucket_find(bucket, ref);
- 
- 	if (!entry) {
- 		err_printk(dev, NULL, "DMA-API: device driver tries "
- 				"to sync DMA memory it has not allocated "
- 				"[device address=0x%016llx] [size=%llu bytes]\n",
--				(unsigned long long)addr, size);
-+				(unsigned long long)ref->dev_addr, ref->size);
- 		goto out;
- 	}
- 
--	if ((offset + size) > entry->size) {
-+	if (ref->size > entry->size) {
- 		err_printk(dev, entry, "DMA-API: device driver syncs"
- 				" DMA memory outside allocated range "
- 				"[device address=0x%016llx] "
--				"[allocation size=%llu bytes] [sync offset=%llu] "
--				"[sync size=%llu]\n", entry->dev_addr, entry->size,
--				offset, size);
-+				"[allocation size=%llu bytes] "
-+				"[sync offset+size=%llu]\n",
-+				entry->dev_addr, entry->size,
-+				ref->size);
- 	}
- 
--	if (direction != entry->direction) {
-+	if (ref->direction != entry->direction) {
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"DMA memory with different direction "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
--				(unsigned long long)addr, entry->size,
-+				(unsigned long long)ref->dev_addr, entry->size,
- 				dir2name[entry->direction],
--				dir2name[direction]);
-+				dir2name[ref->direction]);
- 	}
- 
- 	if (entry->direction == DMA_BIDIRECTIONAL)
- 		goto out;
- 
- 	if (to_cpu && !(entry->direction == DMA_FROM_DEVICE) &&
--		      !(direction == DMA_TO_DEVICE))
-+		      !(ref->direction == DMA_TO_DEVICE))
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"device read-only DMA memory for cpu "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
--				(unsigned long long)addr, entry->size,
-+				(unsigned long long)ref->dev_addr, entry->size,
- 				dir2name[entry->direction],
--				dir2name[direction]);
-+				dir2name[ref->direction]);
- 
- 	if (!to_cpu && !(entry->direction == DMA_TO_DEVICE) &&
--		       !(direction == DMA_FROM_DEVICE))
-+		       !(ref->direction == DMA_FROM_DEVICE))
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"device write-only DMA memory to device "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
--				(unsigned long long)addr, entry->size,
-+				(unsigned long long)ref->dev_addr, entry->size,
- 				dir2name[entry->direction],
--				dir2name[direction]);
-+				dir2name[ref->direction]);
- 
- out:
- 	put_hash_bucket(bucket, &flags);
-@@ -1037,19 +1033,16 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
- }
- EXPORT_SYMBOL(debug_dma_map_sg);
- 
--static int get_nr_mapped_entries(struct device *dev, struct scatterlist *s)
-+static int get_nr_mapped_entries(struct device *dev,
-+				 struct dma_debug_entry *ref)
- {
--	struct dma_debug_entry *entry, ref;
-+	struct dma_debug_entry *entry;
- 	struct hash_bucket *bucket;
- 	unsigned long flags;
- 	int mapped_ents;
- 
--	ref.dev      = dev;
--	ref.dev_addr = sg_dma_address(s);
--	ref.size     = sg_dma_len(s),
--
--	bucket       = get_hash_bucket(&ref, &flags);
--	entry        = hash_bucket_find(bucket, &ref);
-+	bucket       = get_hash_bucket(ref, &flags);
-+	entry        = hash_bucket_find(bucket, ref);
- 	mapped_ents  = 0;
- 
- 	if (entry)
-@@ -1084,7 +1077,7 @@ void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 			break;
- 
- 		if (!i)
--			mapped_ents = get_nr_mapped_entries(dev, s);
-+			mapped_ents = get_nr_mapped_entries(dev, &ref);
- 
- 		check_unmap(&ref);
- 	}
-@@ -1139,10 +1132,19 @@ EXPORT_SYMBOL(debug_dma_free_coherent);
- void debug_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
- 				   size_t size, int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, 0, direction, true);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, true);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_for_cpu);
- 
-@@ -1150,10 +1152,19 @@ void debug_dma_sync_single_for_device(struct device *dev,
- 				      dma_addr_t dma_handle, size_t size,
- 				      int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, 0, direction, false);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, false);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_for_device);
- 
-@@ -1162,10 +1173,19 @@ void debug_dma_sync_single_range_for_cpu(struct device *dev,
- 					 unsigned long offset, size_t size,
- 					 int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, offset, direction, true);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = offset + size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, true);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_range_for_cpu);
- 
-@@ -1174,10 +1194,19 @@ void debug_dma_sync_single_range_for_device(struct device *dev,
- 					    unsigned long offset,
- 					    size_t size, int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, offset, direction, false);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = offset + size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, false);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_range_for_device);
- 
-@@ -1191,14 +1220,24 @@ void debug_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
- 		return;
- 
- 	for_each_sg(sg, s, nelems, i) {
-+
-+		struct dma_debug_entry ref = {
-+			.type           = dma_debug_sg,
-+			.dev            = dev,
-+			.paddr          = sg_phys(s),
-+			.dev_addr       = sg_dma_address(s),
-+			.size           = sg_dma_len(s),
-+			.direction      = direction,
-+			.sg_call_ents   = nelems,
-+		};
-+
- 		if (!i)
--			mapped_ents = get_nr_mapped_entries(dev, s);
-+			mapped_ents = get_nr_mapped_entries(dev, &ref);
- 
- 		if (i >= mapped_ents)
- 			break;
- 
--		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
--			   direction, true);
-+		check_sync(dev, &ref, true);
- 	}
- }
- EXPORT_SYMBOL(debug_dma_sync_sg_for_cpu);
-@@ -1213,14 +1252,23 @@ void debug_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
- 		return;
- 
- 	for_each_sg(sg, s, nelems, i) {
-+
-+		struct dma_debug_entry ref = {
-+			.type           = dma_debug_sg,
-+			.dev            = dev,
-+			.paddr          = sg_phys(s),
-+			.dev_addr       = sg_dma_address(s),
-+			.size           = sg_dma_len(s),
-+			.direction      = direction,
-+			.sg_call_ents   = nelems,
-+		};
- 		if (!i)
--			mapped_ents = get_nr_mapped_entries(dev, s);
-+			mapped_ents = get_nr_mapped_entries(dev, &ref);
- 
- 		if (i >= mapped_ents)
- 			break;
- 
--		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
--			   direction, false);
-+		check_sync(dev, &ref, false);
- 	}
- }
- EXPORT_SYMBOL(debug_dma_sync_sg_for_device);
+vmx has no hardware support for switching cr2, so vmx_vcpu_run() 
+switches it using mov cr2.  Given that it's pretty expensive, I've 
+switched it to write-if-changed, which dropped 70 cycles from the vmexit 
+latency.
+
 -- 
-1.6.3.1
-
+error compiling committee.c: too many arguments to function
 
