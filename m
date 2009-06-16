@@ -1,20 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936262AbZFPFx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbZFPFyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936262AbZFPFx7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 01:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933524AbZFPFvA
+	id S934319AbZFPFyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 01:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760268AbZFPFvC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:51:00 -0400
-Received: from kroah.org ([198.145.64.141]:48321 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:51:02 -0400
+Received: from kroah.org ([198.145.64.141]:48324 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761233AbZFPFvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:51:00 -0400
+	id S1761603AbZFPFvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:51:01 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH 12/64] debugfs: fix docbook error
-Date: Mon, 15 Jun 2009 22:46:01 -0700
-Message-Id: <1245131213-24168-12-git-send-email-gregkh@suse.de>
+Cc: Shaohua Li <shaohua.li@intel.com>, Arjan van de Ven <arjan@infradead.org>,
+       Dmitry Torokhov <dtor@mail.ru>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 13/64] driver core: synchronize device shutdown
+Date: Mon, 15 Jun 2009 22:46:02 -0700
+Message-Id: <1245131213-24168-13-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -22,30 +26,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jonathan Corbet <corbet@lwn.net>
+From: Shaohua Li <shaohua.li@intel.com>
 
-Fix an error in debugfs_create_blob's docbook description
+A patch series to make .shutdown execute asynchronously.  Some drivers's
+shutdown can take a lot of time.  The patches can help save some shutdown
+time.  The patches use Arjan's async API.
 
-It cannot actually be used to write a binary blob.
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+This patch:
+
+synchronize all tasks submitted by .shutdown
+
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Dmitry Torokhov <dtor@mail.ru>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/debugfs/file.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/base/core.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index 33a9012..39a619c 100644
---- a/fs/debugfs/file.c
-+++ b/fs/debugfs/file.c
-@@ -419,7 +419,7 @@ static const struct file_operations fops_blob = {
- };
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 1977d4b..7e8576d 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -22,6 +22,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/semaphore.h>
+ #include <linux/mutex.h>
++#include <linux/async.h>
  
- /**
-- * debugfs_create_blob - create a debugfs file that is used to read and write a binary blob
-+ * debugfs_create_blob - create a debugfs file that is used to read a binary blob
-  * @name: a pointer to a string containing the name of the file to create.
-  * @mode: the permission that the file should have
-  * @parent: a pointer to the parent dentry for this file.  This should be a
+ #include "base.h"
+ #include "power/power.h"
+@@ -1665,4 +1666,5 @@ void device_shutdown(void)
+ 	kobject_put(sysfs_dev_char_kobj);
+ 	kobject_put(sysfs_dev_block_kobj);
+ 	kobject_put(dev_kobj);
++	async_synchronize_full();
+ }
 -- 
 1.6.3.2
 
