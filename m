@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbZFPSz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbZFPS41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761924AbZFPSz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 14:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759661AbZFPSzT
+	id S1762014AbZFPS41 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 14:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761024AbZFPS4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 14:55:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53473 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759604AbZFPSzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 14:55:18 -0400
-Message-ID: <4A37EA92.7050509@redhat.com>
-Date: Tue, 16 Jun 2009 14:55:14 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
-Subject: Re: running get_user_pages() from kernel thread
-References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random> <Pine.LNX.4.64.0906161930050.24878@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0906161930050.24878@sister.anvils>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Jun 2009 14:56:20 -0400
+Received: from stz-softwaretechnik.de ([217.160.223.211]:2005 "EHLO
+	stlx01.stz-softwaretechnik.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751581AbZFPS4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 14:56:19 -0400
+Date: Tue, 16 Jun 2009 20:56:00 +0200
+From: Ralf Gross <rg@stz-softwaretechnik.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: io-scheduler tuning for better read/write ratio
+Message-ID: <20090616185600.GC7043@p15145560.pureserver.info>
+References: <20090616154342.GA7043@p15145560.pureserver.info> <4A37CB2A.6010209@davidnewall.com> <20090616184027.GB7043@p15145560.pureserver.info> <4A37E7DB.7030100@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A37E7DB.7030100@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Tue, 16 Jun 2009, Andrea Arcangeli wrote:
->> On Tue, Jun 16, 2009 at 09:05:27PM +0300, Izik Eidus wrote:
->>> So the question is: is this thing is by desgin? (that kernel thread cant 
->>> call get_user_pages???), should i use something like switch_mm()??
->> I think switch_mm trick should be used for page faults, but gup
->> shouldn't require it because it gets the 'mm' as parameter and the
->> current->mm has to be irrelevant. current->mm is only relevant for
->> gup-fast (obviously :). So I think the only bit that needs fixing is
->> grab_swap_token to not run if current->mm is null.
+Casey Dahlin schrieb:
+> On 06/16/2009 02:40 PM, Ralf Gross wrote:
+> > David Newall schrieb:
+> >> Ralf Gross wrote:
+> >>> write throughput is much higher than the read throughput (40 MB/s
+> >>> read, 90 MB/s write).
+> > 
+> > Hm, but I get higher read throughput (160-200 MB/s) if I don't write
+> > to the device at the same time.
+> > 
+> > Ralf
 > 
-> Looks like Izik and I hit the same problem (otherwise running well):
-> I too decided we needn't do more than avoid the issue in grab_swap_token.
-> (I've a feeling someone has hit this issue before with some other thread,
-> though I've no idea which - does RHEL include a patch like this perhaps?).
+> How specifically are you testing? It could depend a lot on the
+> particular access patterns you're using to test.
 
-It looks very familiar, indeed.
+I did the basic tests with tiobench. The real test is a test backup
+(bacula) with 2 jobs that create 2 30 GB spool files on that device.
+The jobs partially write to the device in parallel. Depending which
+spool file reaches the 30 GB first, one starts reading from that file
+and writing to tape, while to other is still spooling.
 
-RHEL 4 and 5 both have code like this in the swap token
-code. I seem to remember submitting such code upstream,
-too.
-
-I have no idea why it never got upstream, maybe I was
-drowned in Xen work at the time, or maybe the bug simply
-didn't happen upstream for whatever reason.
-
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-Acked-by: Rik van Riel <riel@redhat.com>
-
--- 
-All rights reversed.
+Ralf
