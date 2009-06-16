@@ -1,104 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbZFPIOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbZFPIPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752036AbZFPIOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 04:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZFPIOK
+	id S1753075AbZFPIPA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZFPIOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 04:14:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55717 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751455AbZFPIOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 04:14:08 -0400
-Date: Tue, 16 Jun 2009 10:13:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
-Message-ID: <20090616081348.GC16229@elte.hu>
-References: <1245080486.6800.561.camel@laptop> <1245089065.13761.19316.camel@twins> <20090615181555.GA11248@elte.hu> <1245089943.13761.19334.camel@twins> <20090615182549.GD11248@elte.hu> <1245090608.13761.19349.camel@twins> <20090615184217.GG11248@elte.hu> <1245091674.6741.180.camel@laptop> <20090615185259.GK11248@elte.hu> <1245092433.6741.201.camel@laptop>
+	Tue, 16 Jun 2009 04:14:46 -0400
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:32025 "EHLO
+	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752561AbZFPIOo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 04:14:44 -0400
+X-SpamScore: -31
+X-BigFish: VPS-31(zz1432R98dR1447R1805M873fizz1202hzzz32i6bh17ch43j)
+X-WSS-ID: 0KLBO85-01-0VJ-01
+Date: Tue, 16 Jun 2009 10:14:28 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: stefanr@s5r6.in-berlin.de, ben-linux@fluff.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: dma-debug: check_for_stack background?
+Message-ID: <20090616081428.GH5139@amd.com>
+References: <20090614212018.GD20442@fluff.org.uk> <4A356F0E.9020809@s5r6.in-berlin.de> <20090615081355.GA5139@amd.com> <20090616151628V.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <1245092433.6741.201.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090616151628V.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 Jun 2009 08:14:29.0243 (UTC) FILETIME=[7878F4B0:01C9EE5A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Mon, 2009-06-15 at 20:52 +0200, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
+On Tue, Jun 16, 2009 at 03:16:37PM +0900, FUJITA Tomonori wrote:
+> On Mon, 15 Jun 2009 10:13:55 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > On Sun, Jun 14, 2009 at 11:43:42PM +0200, Stefan Richter wrote:
+> > > Ben Dooks wrote:
+> > >> On Sun, Jun 14, 2009 at 08:56:29PM +0200, Stefan Richter wrote:
+> > >>> the DMA debug facility warns  about mappings of on-stack memory.  
+> > >>> What's the problem with that?
+> > > ...
+> > >> I'm not sure if it is possible on all architectures, however the
+> > >> DMA mapping documentation prohibts the use of stack memory.
+> > >
+> > > Ah, it has all been documented in plain sight for ages.  Thanks for the  
+> > > pointer.
 > > 
-> > > On Mon, 2009-06-15 at 20:42 +0200, Ingo Molnar wrote:
-> > > > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > > 
-> > > > > On Mon, 2009-06-15 at 20:25 +0200, Ingo Molnar wrote:
-> > > > > > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > > > 
-> > > > > > but ... look at the APIs i propose above. We dont need _any_ 
-> > > > > > 'types'.
-> > > > > > 
-> > > > > > That type enumeration is basically an open-coded allocator. If we do 
-> > > > > > a _real_ allocator (a balanced stack of atomic kmaps) we dont need 
-> > > > > > any of those indices, and all the potential for mismatch goes away 
-> > > > > > as well - a stack nests trivially with IRQ and NMI and arbitrary 
-> > > > > > other contexts.
-> > > > > 
-> > > > > You want types because:
-> > > > >  - they encode the intent, and can be verified
-> > > > >  - they help keep track of the max nesting depth
-> > > > > 
-> > > > > In the proposed implementation all type code basically falls away 
-> > > > > no ! CONFIG_DEBUG_VM, but is kept around for robustness.
-> > > > 
-> > > > But much of the fragility of the types (and their clumsiness - for 
-> > > > example in highpte ops we have to know at which level of the 
-> > > > pagetables we are, and use the right kind of index) is _precisely_ 
-> > > > because we have the types ...
-> > > 
-> > > How will you manage the max depth?
-> > 
-> > 	if (++depth == MAX_DEPTH) {
-> > 		print_all_entries_and_nasty_warning();
-> > 		 /* hope we'll live long enough for the syslog to touch disk */
-> > 		depth = 0;
-> > 	}
+> > Problem is that the stack might go away or could be otherwise reused
+> > while the DMA is in-flight. This could cause really hard to debug
+> > problems.
 > 
-> That will only trigger if we hit it, which will be _very_ rare.
-> 
-> > unbalanced kmap is a bad bug - the easier we make it to catch, 
-> > the better. The system wouldnt survive anyway.
-> 
-> My proposed patch validates strict balance of types. But I can 
-> easily add the above as well.
-> 
-> By removing the types it becomes very difficult to verify the max 
-> depth. I really don't like removing them.
+> Not true. Even if you use the stack buffer for DMA synchronously, it
+> doesn't work (we had the bad code like starting dma and waiting for
+> the completion).
 
-The fact that it implies an atomic section pretty much limits its 
-depth in practice, doesnt it?
+I've not written that this is the only problem. I know that there may be
+others like the one you experienced. But what I wrote could also happen
+and is a problem :)
 
-All we need to track in the debug code is 
-max-{syscall,softirq,hardirq,nmi}. The sum of these 4 counts must be 
-smaller than the max - even if (as you are right to point out) we 
-dont hit that magic combo that truly maximizes the depth.
+Joerg
 
-And note that in practice many of the current types are exclusive to 
-each other - so using the stack would _reduce_ the amount of 
-kmap-atomic space we need.
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
-	Ingo
