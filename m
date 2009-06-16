@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbZFPJ01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbZFPJ0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbZFPJ01 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 05:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZFPJ0S
+	id S1756610AbZFPJ0v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 05:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZFPJ0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:26:18 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39211
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750961AbZFPJ0R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:26:17 -0400
-Date: Tue, 16 Jun 2009 02:26:20 -0700 (PDT)
-Message-Id: <20090616.022620.61989153.davem@davemloft.net>
-To: apw@canonical.com
-Cc: shemminger@vyatta.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: "sky2: set VPD size" triggers card recognition failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090615101753.GB13761@shadowen.org>
-References: <20090611100347.7c4160a4@nehalam>
-	<20090612115120.GA13960@shadowen.org>
-	<20090615101753.GB13761@shadowen.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Jun 2009 05:26:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51788 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751831AbZFPJ0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 05:26:40 -0400
+Date: Tue, 16 Jun 2009 11:26:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20090616092635.GB4184@elte.hu>
+References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.022131.267374816.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616.022131.267374816.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andy Whitcroft <apw@canonical.com>
-Date: Mon, 15 Jun 2009 11:17:53 +0100
 
-> On Fri, Jun 12, 2009 at 12:51:20PM +0100, Andy Whitcroft wrote:
->> On Thu, Jun 11, 2009 at 10:03:47AM -0700, Stephen Hemminger wrote:
->> 
->> > Some of the chip version have different registers, and some hardware vendors build
->> > boards without VPD.  Does this help:
->> 
->> Thanks for the patch.  I have built some kernels and pushed them out
->> for testing.  Will let you know what comes of it!
-> 
-> Ok, that tests out good as well.
-> 
-> Tested-by: Andy Whitcroft <apw@canonical.com>
+* David Miller <davem@davemloft.net> wrote:
 
-Applied, thanks everyone.
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 16 Jun 2009 11:15:38 +0200
+> 
+> > BUG: sleeping function called from invalid context at net/core/sock.c:1851
+> 
+> This line in my tree (and Linus's) reads:
+> 
+> 	if (sk->sk_lock.owned)
+> 
+> what gives? :-)
+
+hmmm - i have to declare the small kmemcheck annotation attached 
+below :-)
+
+(kmemcheck is off in the config so it shouldnt matter)
+
+So the line is:
+
+        might_sleep();
+
+Lemme dig.
+
+	Ingo
+
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 06e26b7..b0ba569 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -945,6 +945,8 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
+ 		sk = kmalloc(prot->obj_size, priority);
+ 
+ 	if (sk != NULL) {
++		kmemcheck_annotate_bitfield(sk, flags);
++
+ 		if (security_sk_alloc(sk, family, priority))
+ 			goto out_free;
+ 
