@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZFPHg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZFPHjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbZFPHg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 03:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbZFPHgv
+	id S1756504AbZFPHjD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 03:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbZFPHiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 03:36:51 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:55082 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752053AbZFPHgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 03:36:50 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH/RFC] new pr_xxx macros for init/devinit functions
-Date: Tue, 16 Jun 2009 03:36:40 -0400
-Message-Id: <1245137800-5376-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.1
+	Tue, 16 Jun 2009 03:38:55 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:58361 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753493AbZFPHiy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 03:38:54 -0400
+Message-Id: <200906160738.n5G7cs9r007216@www262.sakura.ne.jp>
+Subject: [x86] Build error at arch/x86/boot/bioscall.S
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Date: Tue, 16 Jun 2009 16:38:54 +0900
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 16062009 #2124512, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The strings used in init/devinit functions normally stick around forever
-even though the rest of the code/data was freed.  So create a new set of
-pr_xxx macros which automatically place the strings used into the related
-const sections so that when the regions get freed, the strings go as well.
+Hello.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- include/linux/kernel.h |   31 +++++++++++++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
+I tried to build 03347e2592078a90df818670fddf97a33eec70fb and got this error.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 883cd44..988d474 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -377,6 +377,37 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
- #define pr_cont(fmt, ...) \
- 	printk(KERN_CONT fmt, ##__VA_ARGS__)
- 
-+/*
-+ * Do a printk, but store the format string in a different section from the
-+ * default one so that we can free the string memory when we're done with it.
-+ */
-+#define __pr_init(section, lvl, fmt, ...) do { \
-+	static const __##section##const char __fmt[] = KERN_##lvl pr_fmt(fmt); \
-+	printk(__fmt, ##__VA_ARGS__); \
-+	} while (0)
-+
-+/* These are pr_xxx() variants that should be used in __init functions */
-+#define _pr_init(lvl, fmt, ...)  __pr_init(init, lvl, fmt, ##__VA_ARGS__)
-+#define pr_emerg_init(fmt, ...)   _pr_init(EMERG, fmt, ##__VA_ARGS__)
-+#define pr_alert_init(fmt, ...)   _pr_init(ALERT, fmt, ##__VA_ARGS__)
-+#define pr_crit_init(fmt, ...)    _pr_init(CRIT, fmt, ##__VA_ARGS__)
-+#define pr_err_init(fmt, ...)     _pr_init(ERR, fmt, ##__VA_ARGS__)
-+#define pr_warning_init(fmt, ...) _pr_init(WARNING, fmt, ##__VA_ARGS__)
-+#define pr_notice_init(fmt, ...)  _pr_init(NOTICE, fmt, ##__VA_ARGS__)
-+#define pr_info_init(fmt, ...)    _pr_init(INFO, fmt, ##__VA_ARGS__)
-+#define pr_cont_init(fmt, ...)    _pr_init(CONT, fmt, ##__VA_ARGS__)
-+
-+/* These are pr_xxx() variants that should be used in __devinit functions */
-+#define _pr_devinit(lvl, fmt, ...)  __pr_init(devinit, lvl, fmt, ##__VA_ARGS__)
-+#define pr_emerg_devinit(fmt, ...)   _pr_devinit(EMERG, fmt, ##__VA_ARGS__)
-+#define pr_alert_devinit(fmt, ...)   _pr_devinit(ALERT, fmt, ##__VA_ARGS__)
-+#define pr_crit_devinit(fmt, ...)    _pr_devinit(CRIT, fmt, ##__VA_ARGS__)
-+#define pr_err_devinit(fmt, ...)     _pr_devinit(ERR, fmt, ##__VA_ARGS__)
-+#define pr_warning_devinit(fmt, ...) _pr_devinit(WARNING, fmt, ##__VA_ARGS__)
-+#define pr_notice_devinit(fmt, ...)  _pr_devinit(NOTICE, fmt, ##__VA_ARGS__)
-+#define pr_info_devinit(fmt, ...)    _pr_devinit(INFO, fmt, ##__VA_ARGS__)
-+#define pr_cont_devinit(fmt, ...)    _pr_devinit(CONT, fmt, ##__VA_ARGS__)
-+
- /* pr_devel() should produce zero code unless DEBUG is defined */
- #ifdef DEBUG
- #define pr_devel(fmt, ...) \
--- 
-1.6.3.1
+(...snipped...)
+WARNING: modpost: Found 2 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+/usr/src/all/linux/kernel/git/torvalds/linux-2.6.git/usr/include/linux/netfilter/xt_osf.h:40: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/usr/src/all/linux/kernel/git/torvalds/linux-2.6.git/usr/include/mtd/jffs2-user.h:21: userspace cannot call function or variable defined in the kernel
+Documentation/accounting/getdelays.c: In function `main':
+Documentation/accounting/getdelays.c:249: warning: `cmd_type' might be used uninitialized in this function
+Documentation/spi/spidev_fdx.c: In function `do_msg':
+Documentation/spi/spidev_fdx.c:61: warning: cast from pointer to integer of different size
+Documentation/spi/spidev_fdx.c:64: warning: cast from pointer to integer of different size
+arch/x86/boot/bioscall.S: Assembler messages:
+arch/x86/boot/bioscall.S:68: Error: `68(%esp)' is not a valid 16 bit base/index expression
+make[1]: *** [arch/x86/boot/bioscall.o] Error 1
+make: *** [bzImage] Error 2
 
+# gcc --version
+gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
+Copyright (C) 2003 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Regards.
