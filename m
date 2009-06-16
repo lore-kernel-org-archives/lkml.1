@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762920AbZFPVzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763302AbZFPV4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762920AbZFPVzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 17:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZFPVzH
+	id S1763302AbZFPV4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZFPV4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 17:55:07 -0400
-Received: from cmpxchg.org ([85.214.51.133]:53277 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753377AbZFPVzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 17:55:06 -0400
-Date: Tue, 16 Jun 2009 23:52:00 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       nickpiggin@yahoo.com.au
-Subject: Re: running get_user_pages() from kernel thread
-Message-ID: <20090616215200.GA19781@cmpxchg.org>
-References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random> <Pine.LNX.4.64.0906161930050.24878@sister.anvils> <20090616200852.GA16265@cmpxchg.org> <Pine.LNX.4.64.0906162152250.12770@sister.anvils>
+	Tue, 16 Jun 2009 17:56:00 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:14392 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895AbZFPV4A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 17:56:00 -0400
+Date: Tue, 16 Jun 2009 16:56:24 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jens.axboe@oracle.com, james.bottomley@hansenpartnership.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/1] cciss: use timeout to ensure scan thread exits
+Message-ID: <20090616215624.GB29502@beardog.cca.cpqcorp.net>
+References: <20090616204325.GA29502@beardog.cca.cpqcorp.net> <20090616141007.9b3852e7.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906162152250.12770@sister.anvils>
+In-Reply-To: <20090616141007.9b3852e7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added Andrew on Cc]
-
-On Tue, Jun 16, 2009 at 09:57:30PM +0100, Hugh Dickins wrote:
-> On Tue, 16 Jun 2009, Johannes Weiner wrote:
+On Tue, Jun 16, 2009 at 02:10:07PM -0700, Andrew Morton wrote:
+> On Tue, 16 Jun 2009 15:43:25 -0500
+> "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> 
+> > Patch 1 of 1
 > > 
-> > Did you have a particular reason not to pass in the faulting mm
-> > instead?
+> > This patch implements wait_for_completion_interruptible_timeout in the
+> > scan_thread function to ensure it will exit cleanly during rmmod. Calling
+> > complete in cciss_remove_one caused a race condition. Using the wait with a
+> > timeout seems to work around that but it does fire the thread. The overhead
+> > should be minimal.
+> > 
+> > Changelog:
+> > Replace wait_for_completion_interruptible with
+> > wait_for_completion_interruptible_timeout in scan_thread().
+> > Use 5 second timeout value to avoid race.
+> > 
+> > Signed-off-by: Mike Miller
+> > 
+> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> > index 4d4d5e0..76e7c10 100644
+> > --- a/drivers/block/cciss.c
+> > +++ b/drivers/block/cciss.c
+> > @@ -3043,7 +3043,7 @@ static int scan_thread(void *data)
+> >  	h->rescan_wait = &wait;
+> >  
+> >  	for (;;) {
+> > -		rc = wait_for_completion_interruptible(&wait);
+> > +		rc = wait_for_completion_interruptible_timeout(&wait, 5);
+> >  		if (kthread_should_stop())
+> >  			break;
+> >  		if (!rc)
 > 
-> No good reason.
+> c'mon Mike, that's a hack.
 
-Okay.
+I'm open to suggestions. Calling complete in cciss_remove_one does not
+resolve the issue. Other things I've tried may work once or twice but always
+results in the hang.
+Something I noticed in the trace was 2 calls to rebuild_lun_table when
+trying to rmmod. Then it would get into the scheduler and just hang. During
+rmmod I don't want to call rebuild_lun_table, just kill the thread and exit.
 
-> > As the swap token should only care about the faulting address space
-> > leading to swap io and not about the running process anyway, we could
-> > do it like below and remove all those pesky current->derefs in the
-> > same go.  What do you think?
-> 
-> I think we'll have to claim joint authorship.
+Ideas, suggestions, flames? Anyone???? 
 
-That's for sure, I just didn't want to plant it on you :)
-
-> But I win by one checkpatch point, and a few minutes ;)
-
-Checkpatch compatibility restored, now back to the time machine!
+-- mikem
