@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763971AbZFPUTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763755AbZFPUTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763971AbZFPUTh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761625AbZFPUQU
+	id S1763755AbZFPUTE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760299AbZFPUQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:16:20 -0400
-Received: from claw.goop.org ([74.207.240.146]:40608 "EHLO claw.goop.org"
+	Tue, 16 Jun 2009 16:16:18 -0400
+Received: from claw.goop.org ([74.207.240.146]:40600 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760712AbZFPUQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:16:10 -0400
+	id S1756179AbZFPUQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:16:09 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 10/16] x86/ioapic.c: move lost comment to what seems like appropriate place
-Date: Tue, 16 Jun 2009 13:15:49 -0700
-Message-Id: <1245183355-25808-11-git-send-email-jeremy@goop.org>
+       Catalin Marinas <catalin.marinas@arm.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 02/16] x86: Provide _sdata in the vmlinux.lds.S file
+Date: Tue, 16 Jun 2009 13:15:41 -0700
+Message-Id: <1245183355-25808-3-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.2.2
 In-Reply-To: <1245183355-25808-1-git-send-email-jeremy@goop.org>
 References: <1245183355-25808-1-git-send-email-jeremy@goop.org>
@@ -24,47 +24,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
 
-The comment got separated from its subject, so move it to what
-appears to be the right place, and update to describe the current
-structure.
+_sdata is a common symbol defined by many architectures and made
+available to the kernel via asm-generic/sections.h. Kmemleak uses this
+symbol when scanning the data sections.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+[ Impact: add new global symbol ]
+
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+LKML-Reference: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/apic/io_apic.c |   12 +++++-------
- 1 files changed, 5 insertions(+), 7 deletions(-)
+ arch/x86/kernel/vmlinux.lds.S |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index ce5e888..089a4e4 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -116,13 +116,6 @@ static int __init parse_noapic(char *str)
- }
- early_param("noapic", parse_noapic);
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 4c85b2e..367e878 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -108,6 +108,8 @@ SECTIONS
+ 	/* Data */
+ 	. = ALIGN(PAGE_SIZE);
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
++		/* Start of data section */
++		_sdata = .;
+ 		DATA_DATA
+ 		CONSTRUCTORS
  
--/*
-- * This is performance-critical, we want to do it O(1)
-- *
-- * the indexing order of this array favors 1:1 mappings
-- * between pins and IRQs.
-- */
--
- struct irq_pin_list {
- 	int apic, pin;
- 	struct irq_pin_list *next;
-@@ -137,6 +130,11 @@ static struct irq_pin_list *get_one_free_irq_2_pin(int node)
- 	return pin;
- }
- 
-+/*
-+ * This is performance-critical, we want to do it O(1)
-+ *
-+ * Most irqs are mapped 1:1 with pins.
-+ */
- struct irq_cfg {
- 	struct irq_pin_list *irq_2_pin;
- 	cpumask_var_t domain;
 -- 
 1.6.2.2
 
