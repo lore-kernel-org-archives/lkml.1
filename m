@@ -1,39 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZFPQhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760576AbZFPQh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760067AbZFPQhK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZFPQg6
+	id S1760576AbZFPQh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760510AbZFPQhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:36:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37072 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751866AbZFPQg6 (ORCPT
+	Tue, 16 Jun 2009 12:37:04 -0400
+Received: from tomts46.bellnexxia.net ([209.226.175.190]:54682 "EHLO
+	tomts46-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759911AbZFPQhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:36:58 -0400
-Date: Tue, 16 Jun 2009 17:38:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: <braddo@tranceaddict.net>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: PAT support (or lack of) for Pentium 3 CPU's
-Message-ID: <20090616173817.3956e220@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090616080904.CCA17C3A@resin11.mta.everyone.net>
-References: <20090616080904.CCA17C3A@resin11.mta.everyone.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Jun 2009 12:37:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AicRAE9QN0rR4q+H/2dsb2JhbAASrG2oRIN5BQ
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [200.65.129.2]
+From: =?ISO-8859-1?B?rldFQg==?= DRAW <rubberlubbers@bellnet.ca>
+Reply-To: bnl_office11@y7mail.com
+To: <info@co.uk>
+Subject: ***You Won***
+Date: Tue, 16 Jun 2009 10:59:56 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090616150005.ZPSQ22814.tomts31-srv.bellnexxia.net@toip36-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009 08:09:04 -0700
-"Brad Allen" <braddo@tranceaddict.net> wrote:
+1,500,000GBP has been award to you in the PROMO,send us yourNames/Tel/Address/Country:redeemaward11@btinternet.com
 
-> It has come to my attention that PAT support has been disabled for P3 CPU's in kernel versions 2.6.30 and later due to a bug in the CPU. 
-> 
-> I have attempted to get the NVIDIA proprietary drivers working with these kernel versions and 3 different Pentium 3 motherboards, all have failed. The drivers seem to require PAT support in order to work correctly, each board has in fact produced a different error when using only MTRR.
-> 
-> Can a kernel option be added to enable/disable PAT for P3 CPU's? Or is there any possible workaround for the bug?
-
-Please ask Nvidia for support on their proprietary products. Only they
-have all the code.
