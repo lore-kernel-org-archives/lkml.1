@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZFPLa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbZFPLav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbZFPLa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 07:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZFPLaU
+	id S1757873AbZFPLav (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 07:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZFPLam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 07:30:20 -0400
-Received: from www.tglx.de ([62.245.132.106]:45437 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbZFPLaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 07:30:19 -0400
-Date: Tue, 16 Jun 2009 13:29:49 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: john stultz <johnstul@us.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 16 Jun 2009 07:30:42 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:17242 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753248AbZFPLal (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 07:30:41 -0400
+X-Trace: 212182289/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.73.120/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.73.120
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al0FANoeN0pPRUl4/2dsb2JhbACBT9ByhA0F
+X-IronPort-AV: E=Sophos;i="4.42,228,1243810800"; 
+   d="scan'208";a="212182289"
+Date: Tue, 16 Jun 2009 12:29:45 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Miroslav Lichvar <mlichvar@redhat.com>
-Subject: Re: [GIT pull] ntp updates for 2.6.31
-In-Reply-To: <20090616090647.GD13771@elte.hu>
-Message-ID: <alpine.LFD.2.00.0906161322330.2800@localhost.localdomain>
-References: <alpine.LFD.2.00.0906151452000.2800@localhost.localdomain> <1f1b08da0906151316s7d25f8ceraa1bc967a8abe172@mail.gmail.com> <1f1b08da0906151641u4cd964e6vf1a61afe50cc1d90@mail.gmail.com> <20090616090647.GD13771@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 10/22] HWPOISON: check and isolate corrupted free pages
+ v2
+In-Reply-To: <20090616003440.GA7329@localhost>
+Message-ID: <Pine.LNX.4.64.0906161220070.31597@sister.anvils>
+References: <20090615024520.786814520@intel.com> <20090615031253.715406280@intel.com>
+ <20090615184112.ed8e2f03.kamezawa.hiroyu@jp.fujitsu.com> <20090615101620.GA7216@localhost>
+ <20090616085222.1545cc05.kamezawa.hiroyu@jp.fujitsu.com> <20090616003440.GA7329@localhost>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Ingo Molnar wrote:
-> Each OS should converge back to the correct time _as fast as 
-> physically possible_. If this is a problem and if someone wants 
-> crappy time and longer periods of convergence for some odd reason 
-> then that header file change can be edited by hand even. It's not 
-> like it's that hard to change, if there's genuine interest.
+On Tue, 16 Jun 2009, Wu Fengguang wrote:
 > 
-> So i'm against any revert on this basis. If another basis comes up 
-> we can reconsider of course. What do you think?
+> Right.  Then the original __ClearPageBuddy() call in bad_page() is
+> questionable, I guess this line was there just for the sake of safety
+> (ie. the buddy allocator itself goes wrong):
+> 
+> sound-2.6/mm/page_alloc.c
+> 
+>         @@ -269,7 +269,6 @@ static void bad_page(struct page *page)
+>                 dump_stack();
+>          out:
+>                 /* Leave bad fields for debug, except PageBuddy could make trouble */
+> ===>            __ClearPageBuddy(page);
+>                 add_taint(TAINT_BAD_PAGE);
+>          }
 
-I completely agree. 
+I didn't put that in for the case of the buddy allocator going wrong
+(not sure if there could be such a case - I don't mean that the buddy
+allocator is provably perfect! but how would it get here if it were
+wrong?).  No, I put that in for the case when the flag bits in struct
+page have themselves got corrupted somehow, and hence we arrive at
+bad_page(): most of the bits are best left as they are, to provide
+maximum debug info; but leaving PageBuddy set there might conceivably
+allow this corrupted struct page to get paired up with its buddy later,
+and so freed for reuse, when we're trying to make sure it's never reused.
 
-Consistent convergence across different OSs is a wet dream. 
-
-We see even different behaviour across kernel versions :) Also I
-recently looked at an embedded system running the same kernel version
-as a PC in the same network. Same version of user space tools. Main
-difference aside the arch was HZ (100 vs. 1000). The PC convergence
-time was about 40% higher than the embedded systems.
-
-Thanks,
-
-	tglx
+Hugh
