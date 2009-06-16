@@ -1,77 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764596AbZFPUom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760906AbZFPUo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764596AbZFPUom (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760299AbZFPUk6
+	id S1760906AbZFPUo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763314AbZFPUlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:40:58 -0400
-Received: from bar.sig21.net ([80.81.252.164]:56551 "EHLO bar.sig21.net"
+	Tue, 16 Jun 2009 16:41:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35498 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759783AbZFPUkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:40:51 -0400
-Date: Tue, 16 Jun 2009 22:40:39 +0200
-From: Johannes Stezenbach <js@sig21.net>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "rjw@sisk.pl" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "davej@redhat.com" <davej@redhat.com>, "pavel@ucw.cz" <pavel@ucw.cz>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: 2.6.30: hibernation/swsusp lockup due to acpi-cpufreq
-Message-ID: <20090616204039.GA13399@sig21.net>
-References: <20090615232709.GA6059@sig21.net> <200906160216.29537.rjw@sisk.pl> <20090616142217.GA5548@sig21.net> <20090616115540.ceb67a30.akpm@linux-foundation.org> <20090616195750.GA12814@sig21.net> <20090616202558.GA5423@linux-os.sc.intel.com>
+	id S1763279AbZFPUlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:41:09 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 11/17] AFS: Implement the PFlushCB pioctl
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-afs@lists.infradead.org,
+       linux-fsdevel@vger.kernel.org, Wang Lei <wang840925@gmail.com>,
+       David Howells <dhowells@redhat.com>
+Date: Tue, 16 Jun 2009 21:39:42 +0100
+Message-ID: <20090616203942.4526.93942.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090616203845.4526.60013.stgit@warthog.procyon.org.uk>
+References: <20090616203845.4526.60013.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616202558.GA5423@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-21-Score: -3.5 (---)
-X-Spam-21-Report: No, score=-3.5 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.855,BAYES_00=-2.599 autolearn=no
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 01:25:58PM -0700, Pallipadi, Venkatesh wrote:
-> 
-> Can you try the patch below (your changes + a warnon). That should give
-> the stack trace with successful suspend-resume.
-> 
-> acpi-cpufreq will not directly disable interrupt and call these routines.
-> So, it will be interesting to see how we are ending up in this state.
+From: Wang Lei <wang840925@gmail.com>
 
-Yes, I actually had the same idea and just did it ;-)
-I also found this:
-http://lkml.org/lkml/2007/7/17/674
+Implement the PFlushCB pioctl for AFS.  This flushes the callback of the
+specified file, indicating to the server we're no longer interested in
+notifications of changes to that file.
 
-------------[ cut here ]------------                                                                            
-WARNING: at kernel/up.c:18 smp_call_function_single+0x45/0x60()                                                 
-Hardware name: 2373Y4M                                                                                          
-Modules linked in: ath5k mac80211 cfg80211 uhci_hcd ehci_hcd                                                    
-Pid: 4139, comm: bash Not tainted 2.6.30 #8                                                                     
-Call Trace:                                                                                                     
- [<c011ea0d>] warn_slowpath_common+0x60/0x90                                                                    
- [<c010d86c>] ? do_drv_read+0x0/0x31                                                                            
- [<c011ea4a>] warn_slowpath_null+0xd/0x10                                                                       
- [<c013acc1>] smp_call_function_single+0x45/0x60                                                                
- [<c010d4e5>] get_cur_val+0x62/0x6c                                                                             
- [<c010d72f>] get_cur_freq_on_cpu+0x35/0x58                                                                     
- [<c03786e9>] cpufreq_suspend+0x76/0xd9                                                                         
- [<c0136c3b>] ? clockevents_notify+0x1e/0x68                                                                    
- [<c02ff570>] sysdev_suspend+0x4e/0x182                                                                         
- [<c013fd28>] hibernation_snapshot+0x89/0x16b                                                                   
- [<c013fe99>] hibernate+0x8f/0x147                                                                              
- [<c013ec82>] ? state_store+0x0/0xa2                                                                            
- [<c013ecd7>] state_store+0x55/0xa2                                                                             
- [<c013ec82>] ? state_store+0x0/0xa2                                                                            
- [<c024dff5>] kobj_attr_store+0x1a/0x22                                                                         
- [<c01a7164>] sysfs_write_file+0xb4/0xdf                                                                        
- [<c01a70b0>] ? sysfs_write_file+0x0/0xdf                                                                       
- [<c0170cf2>] vfs_write+0x8a/0x12c                                                                              
- [<c0170e2d>] sys_write+0x3b/0x60                                                                               
- [<c01028f4>] sysenter_do_call+0x12/0x26                                                                        
----[ end trace 1c2172bce3982a59 ]---                                                                            
+Signed-off-by: Wang Lei <wang840925@gmail.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ fs/afs/pioctl.c         |   26 ++++++++++++++++++++++++++
+ include/linux/afscall.h |    1 +
+ include/linux/venus.h   |    1 +
+ 3 files changed, 28 insertions(+), 0 deletions(-)
 
 
-Johannes
+diff --git a/fs/afs/pioctl.c b/fs/afs/pioctl.c
+index 5f6beeb..ffbec0c 100644
+--- a/fs/afs/pioctl.c
++++ b/fs/afs/pioctl.c
+@@ -144,6 +144,28 @@ long afs_PWhereIs(struct dentry *dentry, struct vice_ioctl *arg,
+ }
+ 
+ /*
++ * Flush callback only
++ */
++long afs_PFlushCB(struct dentry *dentry, struct vice_ioctl *arg,
++		  struct key *key)
++{
++	struct afs_vnode *vnode = AFS_FS_I(dentry->d_inode);
++	struct afs_volume *volume = vnode->volume;
++
++	_enter("");
++
++	/* file servers do not grant callbacks on files from read-only
++	 * volumes */
++	if (volume->type != AFSVL_ROVOL && vnode->cb_promised) {
++		afs_give_up_callback(vnode);
++		afs_flush_callback_breaks(vnode->server);
++	}
++
++	_leave(" = 0");
++	return 0;
++}
++
++/*
+  * The AFS path-based I/O control operation
+  */
+ long afs_pioctl(struct dentry *dentry, int cmd, struct vice_ioctl *arg)
+@@ -181,6 +203,10 @@ long afs_pioctl(struct dentry *dentry, int cmd, struct vice_ioctl *arg)
+ 		ret = afs_PWhereIs(dentry, arg, key);
+ 		break;
+ 
++	case VIOC_COMMAND(PFlushCB):
++		ret = afs_PFlushCB(dentry, arg, key);
++		break;
++
+ 	default:
+ 		_debug("fallback to pathless: %x", cmd);
+ 		ret = afs_pathless_pioctl(cmd, arg);
+diff --git a/include/linux/afscall.h b/include/linux/afscall.h
+index 0a60cd1..00054f0 100644
+--- a/include/linux/afscall.h
++++ b/include/linux/afscall.h
+@@ -17,6 +17,7 @@
+ #define PGetVolStat	4		/* get volume status */
+ #define PWhereIs	14		/* find out where a volume is located */
+ #define PGetFID		22		/* get file ID */
++#define PFlushCB	25		/* flush callback only */
+ #define PGetFileCell	30		/* get the cell a file inhabits */
+ 
+ #define AFS_MAXHOSTS	8		/* the maximum of hosts number */
+diff --git a/include/linux/venus.h b/include/linux/venus.h
+index 78cbf47..ea8e468 100644
+--- a/include/linux/venus.h
++++ b/include/linux/venus.h
+@@ -20,6 +20,7 @@
+ #define VIOCGETVOLSTAT		_VICEIOCTL(PGetVolStat)
+ #define VIOCWHEREIS		_VICEIOCTL(PWhereIs)
+ #define VIOCGETFID		_VICEIOCTL(PGetFID)
++#define VIOCFLUSHCB		_VICEIOCTL(PFlushCB)
+ #define VIOC_FILE_CELL_NAME	_VICEIOCTL(PGetFileCell)
+ 
+ #endif /* _LINUX_VENUS_H */
+
