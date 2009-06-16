@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZFPJ1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZFPJ2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbZFPJ1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 05:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbZFPJ1i
+	id S1756881AbZFPJ2v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 05:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZFPJ2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:27:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38278 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbZFPJ1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:27:37 -0400
-Date: Tue, 16 Jun 2009 11:27:38 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org
-Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
-In-Reply-To: <20090614122734.GA1499@gallifrey>
-Message-ID: <alpine.LRH.2.00.0906161126330.31685@twin.jikos.cz>
-References: <20090613230842.GA18347@gallifrey> <4A349B67.1070603@zytor.com> <20090614122734.GA1499@gallifrey>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 16 Jun 2009 05:28:42 -0400
+Received: from mail-pz0-f187.google.com ([209.85.222.187]:61203 "EHLO
+	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbZFPJ2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 05:28:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=s5MF6hnx4lUf04627AlKgvWhUjpKJP4hCD09Tofa8uMgTUQ/bQXHpJd4z5prI3uC/v
+         x35cERpLKKxhzPH/ciQQmri08kjk5aufxiSFNihAc74KkZiMDmWB4dN5dWT7gW4h6AP7
+         ZUjiQquYoL6noS/mO2XAGpJw1YolUD31QL3T4=
+Date: Tue, 16 Jun 2009 17:30:56 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: xiyou.wangcong@gmail.com, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [x86] Build error at arch/x86/boot/bioscall.S
+Message-ID: <20090616093056.GD6270@cr0.nay.redhat.com>
+References: <200906160738.n5G7cs9r007216@www262.sakura.ne.jp> <20090616081445.GB6270@cr0.nay.redhat.com> <200906160825.n5G8PYRu020230@www262.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906160825.n5G8PYRu020230@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Jun 2009, Dr. David Alan Gilbert wrote:
+On Tue, Jun 16, 2009 at 05:25:34PM +0900, Tetsuo Handa wrote:
+>Amerigo Wang wrote:
+>> How about:
+>> 
+>> - movw 68(%esp), %di
+>> + movzwl %sp, %ebx
+>> + movw 68(%ebx), %di
+>> 
+>> ? Does this work?
+>No.
+>
+>arch/x86/boot/bioscall.S: Assembler messages:
+>arch/x86/boot/bioscall.S:69: Error: `68(%ebx)' is not a valid 16 bit base/index expression
+>make[1]: *** [arch/x86/boot/bioscall.o] Error 1
+>make: *** [bzImage] Error 2
 
-> > > [    3.147416] PNP: No PS/2 controller found. Probing ports directly.
-> > > [    3.174456] serio: i8042 KBD port at 0x60,0x64 irq 1
-> > > [    3.174961] serio: i8042 AUX port at 0x60,0x64 irq 12
-> > > [    3.186312] mice: PS/2 mouse device common for all mice
-> > It does, correctly, identify the keyboard and mode port, so it's
-> > somewhat odd that it doesn't get used...
-> Indeed. The only other observation in the older kernel that works
-> it detects the AUX port first.
+Ok, how about:
 
-Booting with 'i8042.debug' will spit some more output into dmesg, which 
-might help us to see if i8042 is really properly initialized, or something 
-strange is going on during initialization.
+- movw 68(%esp), %di
++ addl $68, %esp
++ popw %di
++ subl $66, %esp
 
--- 
-Jiri Kosina
-SUSE Labs
-
+?
