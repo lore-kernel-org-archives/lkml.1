@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZFPPYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZFPP3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbZFPPYn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZFPPYf
+	id S1758676AbZFPP3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZFPP3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:24:35 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:54638 "EHLO
-	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754463AbZFPPYf convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 11:29:16 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:20660 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835AbZFPP3Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:24:35 -0400
-X-SpamScore: -22
-X-BigFish: VPS-22(zz1432R98dR1805Mzz1202hzzz32i6bh17ch43j)
-X-FB-SS: 5,
-X-WSS-ID: 0KLC84L-03-QPS-01
-Date: Tue, 16 Jun 2009 17:24:21 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in tty ldisc and friends
-Message-ID: <20090616152421.GM5139@amd.com>
-References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com> <20090616093741.0d5b36bc@lxorguk.ukuu.org.uk> <20090616085028.GA13771@elte.hu> <20090616095706.36f01282@lxorguk.ukuu.org.uk> <20090616100015.GD6432@elte.hu> <20090616110419.14bc9485@lxorguk.ukuu.org.uk> <20090616101240.GB28204@elte.hu> <20090616102509.GA32717@elte.hu> <20090616102910.GA11011@elte.hu> <20090616103606.GA3497@elte.hu>
+	Tue, 16 Jun 2009 11:29:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CEq6yvtBsdimwlejpWAuocrVkJx27GxvKD4EwG66Xc7XU+59stvvVm2zaW1b8slUJu
+         1CcsTLUYU/na1kAJHJwvfczFkHzxL7rhyctXfwnMCOBNo/1b4PPK8/JGEbhXTuRaN4jN
+         R2xAL51AYy/ZmyuTSAhMycR+OvOcM5frgjcb8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090616103606.GA3497@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <m17hzdhkr8.fsf@fess.ebiederm.org>
+References: <4A2A7F33.4030807@oracle.com> <4A2CA96D.3090502@oracle.com>
+	 <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com>
+	 <4A2CC52B.9010602@oracle.com>
+	 <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com>
+	 <m1ab4i11zx.fsf@fess.ebiederm.org>
+	 <20090611050929.GA2706@cr0.nay.redhat.com>
+	 <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0>
+	 <m17hzdhkr8.fsf@fess.ebiederm.org>
+Date: Tue, 16 Jun 2009 23:29:18 +0800
+Message-ID: <2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
+Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tao Ma <tao.ma@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 16 Jun 2009 15:24:22.0485 (UTC) FILETIME=[86715850:01C9EE96]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 12:36:06PM +0200, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > This is something we noticed recently: dma-debug uses a lot of 
-> > lock classes and thus creates a really large lock-graph, depleting 
-> > the reserves quickly.
-> 
-> yep, i think dma-debug is the culprit. It has:
-> 
->  #define HASH_SIZE       1024ULL
-> 
-> each hash entry has a separate lock.
-> 
-> But this should be easily to solve: a special lock-class for these 
-> locks. Patch below (warning: utterly untested!).
-> 
-> (Btw., that SPIN_LOCK_UNLOCKED init method should really be 
-> deprecated for real.)
-> 
-> 	Ingo
-> 
-> diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-> index 3b93129..012c240 100644
-> --- a/lib/dma-debug.c
-> +++ b/lib/dma-debug.c
-> @@ -62,6 +62,8 @@ struct dma_debug_entry {
->  #endif
->  };
->  
-> +static struct lock_class_key hash_bucket_class;
-> +
->  struct hash_bucket {
->  	struct list_head list;
->  	spinlock_t lock;
-> @@ -716,7 +718,8 @@ void dma_debug_init(u32 num_entries)
->  
->  	for (i = 0; i < HASH_SIZE; ++i) {
->  		INIT_LIST_HEAD(&dma_entry_hash[i].list);
-> -		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
-> +		spin_lock_init(&dma_entry_hash[i].lock);
-> +		lockdep_set_lock_class(&dma_entry_hash[i].lock, &hash_bucket_class);
-                ^^^^^^^^^^^^^^^^^^^^^^
-Ok, this function is called lockdep_set_class. Otherwise the test went
-fine. I queued the patch.
+On Mon, Jun 15, 2009 at 6:08 PM, Eric W. Biederman<ebiederm@xmission.com> wrote:
+> Amerigo Wang <xiyou.wangcong@gmail.com> writes:
+>
+>> Fix wrong /proc/kcore size on x86_64.
+>>
+>> x86_64 uses __va() macro to caculate the virtual address passed to kclist_add()
+>> but decodes it with its own macro kc_vadd_to_offset(). This is wrong.
+>
+> Ok. Â I finally understand what is going on here, and no kc_vaddr_to_offset
+> is not wrong when applied to a virtual address. Â In fact I expect the current
+> definition makes things a bit more predictable.
+>
+> And yes kclist_add is must be given a virtual address
+>
+>> Also, according to Documentation/x86/x86_64/mm.txt, kc_vaddr_to_offset()
+>> is wrong too.
+>
+> How so? Â The file offset is a number space that is different from both
+> physical and virtual addresses.
 
-	Joerg
+Why? They _do_ have some calculated relations.
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+>
+>> So just remove them, use the generic macro.
+>
+> I think a case can be made either way. Â In practice neither answer
+> gives us a dense offset space on x86_64 so I think I prefer the
+> current definition which sets or clears the high bits as opposed
+> to something that mangles the address more.
+>
 
+I am trying to dig more... There must be something wrong there.
+
+>
+> It uses get_kcore_size and (size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
+> The second definition being bogus as it has nothing to do with which
+> offsets are accepted.
+
+Agreed. Maybe we can just remove the second one and update the doc?
