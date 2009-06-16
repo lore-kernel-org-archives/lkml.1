@@ -1,39 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZFPGkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZFPGlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbZFPGkl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZFPGkc
+	id S1755673AbZFPGlt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZFPGll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 02:40:32 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:51087 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750816AbZFPGkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 02:40:32 -0400
-Date: Tue, 16 Jun 2009 08:40:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: unsik Kim <donari75@gmail.com>
-Cc: tj@kernel.org, linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       joerg@dorchain.net, geert@linux-m68k.org, davem@davemloft.net,
-       jdike@linux.intel.com, benh@kernel.crashing.org, Laurent@lvivier.info
-Subject: Re: [PATCH] mg_disk: seperate mg_disk.h again
-Message-ID: <20090616064033.GK11363@kernel.dk>
-References: <1245131994-21518-1-git-send-email-donari75@gmail.com>
+	Tue, 16 Jun 2009 02:41:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:16512 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbZFPGll convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 02:41:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hEgSrCaicb0ekVoFBI19wnTyAz2aN7TcOfvnxSEXod8ojsL6hqYFvxtTPN3z81fSu2
+         THpYv8LNFGQNE0oyzR62W9DeUPxkf/El3hJkKlvkDq9/b5xDH3KOEEOjBqwEB6JryYxI
+         8A9M26kewBosJvF+zwDI8a+4aN0eXMlvNXF58=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245131994-21518-1-git-send-email-donari75@gmail.com>
+In-Reply-To: <20090616151628V.fujita.tomonori@lab.ntt.co.jp>
+References: <20090614212018.GD20442@fluff.org.uk>
+	 <4A356F0E.9020809@s5r6.in-berlin.de> <20090615081355.GA5139@amd.com>
+	 <20090616151628V.fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 16 Jun 2009 14:41:43 +0800
+Message-ID: <d82e647a0906152341u57e170f7v41b6c6e5b9698211@mail.gmail.com>
+Subject: Re: dma-debug: check_for_stack background?
+From: Ming Lei <tom.leiming@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joerg.roedel@amd.com, stefanr@s5r6.in-berlin.de, ben-linux@fluff.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16 2009, unsik Kim wrote:
-> eec9462088a26c046d4db3100796a340a50890b8 fold mg_disk.h into mg_disk.c,
-> but mg_disk platform driver needs private data for operation. This also
-> make mg_disk.c as machine independent. Seperate only needed structure and
-> defines to mg_disk.h
+2009/6/16 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>:
+> On Mon, 15 Jun 2009 10:13:55 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+>
+>> On Sun, Jun 14, 2009 at 11:43:42PM +0200, Stefan Richter wrote:
+>> > Ben Dooks wrote:
+>> >> On Sun, Jun 14, 2009 at 08:56:29PM +0200, Stefan Richter wrote:
+>> >>> the DMA debug facility warns  about mappings of on-stack memory.
+>> >>> What's the problem with that?
+>> > ...
+>> >> I'm not sure if it is possible on all architectures, however the
+>> >> DMA mapping documentation prohibts the use of stack memory.
+>> >
+>> > Ah, it has all been documented in plain sight for ages.  Thanks for the
+>> > pointer.
+>>
+>> Problem is that the stack might go away or could be otherwise reused
+>> while the DMA is in-flight. This could cause really hard to debug
+>> problems.
+>
+> Not true. Even if you use the stack buffer for DMA synchronously, it
+> doesn't work (we had the bad code like starting dma and waiting for
+> the completion).
 
-Applied
+Yes, there is cache alignement problem for stack buffer also.
+
+>
+> On some architectures, we can't use the stack buffer for DMA. That's
+> why the DMA mapping documentation prohibits the use of stack memory
+> for DMA.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
 
 -- 
-Jens Axboe
-
+Lei Ming
