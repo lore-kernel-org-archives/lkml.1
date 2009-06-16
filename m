@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZFPKAD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751378AbZFPKAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752075AbZFPKAD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:00:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZFPJ7x
+	id S1751378AbZFPKAc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZFPKAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:59:53 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:35288 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbZFPJ7w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:59:52 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [x86] Build error at arch/x86/boot/bioscall.S
-Date: Tue, 16 Jun 2009 04:59:50 -0500
-User-Agent: KMail/1.9.9
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-References: <200906160738.n5G7cs9r007216@www262.sakura.ne.jp> <200906160825.n5G8PYRu020230@www262.sakura.ne.jp> <20090616093056.GD6270@cr0.nay.redhat.com>
-In-Reply-To: <20090616093056.GD6270@cr0.nay.redhat.com>
+	Tue, 16 Jun 2009 06:00:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45506 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbZFPKAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 06:00:21 -0400
+Date: Tue, 16 Jun 2009 12:00:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: bug in tty ldisc and friends
+Message-ID: <20090616100015.GD6432@elte.hu>
+References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com> <20090616093741.0d5b36bc@lxorguk.ukuu.org.uk> <20090616085028.GA13771@elte.hu> <20090616095706.36f01282@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906160459.53065.lkml@morethan.org>
+In-Reply-To: <20090616095706.36f01282@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue June 16 2009, Amerigo Wang wrote:
-> On Tue, Jun 16, 2009 at 05:25:34PM +0900, Tetsuo Handa wrote:
-> >Amerigo Wang wrote:
-> >> How about:
-> >> 
-> >> - movw 68(%esp), %di
-> >> + movzwl %sp, %ebx
-> >> + movw 68(%ebx), %di
-> >> 
-> >> ? Does this work?
-> >No.
-> >
-> >arch/x86/boot/bioscall.S: Assembler messages:
-> >arch/x86/boot/bioscall.S:69: Error: `68(%ebx)' is not a valid 16 bit base/index expression
-> >make[1]: *** [arch/x86/boot/bioscall.o] Error 1
-> >make: *** [bzImage] Error 2
-> 
-> Ok, how about:
-> 
-> - movw 68(%esp), %di
-> + addl $68, %esp
-> + popw %di
-> + subl $66, %esp
-> 
 
-I do hope you have interrupts disabled around that chunk.
-Just how old is the toolchain (some didn't do 16bit worth a sh..)?
+got the debug data off-list (it's large):
 
-Mike
+ lock-classes:                         1763 [max: 8191]
+ direct dependencies:                  9104 [max: 16384]
+ indirect dependencies:              129622
+ all direct dependencies:           1129624
+ dependency chains:                    9781 [max: 32768]
+ dependency chain hlocks:             27553 [max: 163840]
+ in-hardirq chains:                    1573
+ in-softirq chains:                     131
+ in-process chains:                    8077
+ stack-trace entries:                262144 [max: 262144]
 
-> ?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+stack-trace entries ran out. And it seems like you didnt quadruple 
+MAX_STACK_TRACE_ENTRIES to 1 million entries.
 
+Do we run out of entries right during bootup? Are you 
+loading/unloading modules a lot perhaps? Could you send your .config 
+please? (assuming a plain bootup triggers it - that should make it 
+reproducible to me too)
 
+Thanks,
+
+	Ingo
