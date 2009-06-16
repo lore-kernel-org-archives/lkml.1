@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZFPI4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZFPI4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbZFPI4J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 04:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZFPIz5
+	id S1754951AbZFPI4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZFPI4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 04:55:57 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43124 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750942AbZFPIz5 (ORCPT
+	Tue, 16 Jun 2009 04:56:24 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:53616 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755256AbZFPI4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 04:55:57 -0400
-Date: Tue, 16 Jun 2009 09:57:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Tue, 16 Jun 2009 04:56:23 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i17ch43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KLBQ5T-02-3JY-01
+From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in tty ldisc and friends
-Message-ID: <20090616095706.36f01282@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090616085028.GA13771@elte.hu>
-References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com>
-	<20090616093741.0d5b36bc@lxorguk.ukuu.org.uk>
-	<20090616085028.GA13771@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [git pull][PATCH 0/6] amd-iommu fixes
+Date: Tue, 16 Jun 2009 10:56:09 +0200
+Message-ID: <1245142575-7166-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.3.1
+X-OriginalArrivalTime: 16 Jun 2009 08:56:17.0553 (UTC) FILETIME=[4F8AB010:01C9EE60]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hm, have you tried the patch i sent to you that extends the 
-> number-lock-locks-tracked limit you have run into? It is trivial.
+Hi Ingo,
 
-I tried upping the number of locks a while ago - it has no effect, which
-checking on irc seems to fit the general pattern of the reports against
-Fedora.
+The following changes since commit 92db1e6af747faa129e236d68386af26a0efc12b:
+  Ingo Molnar (1):
+        Merge branch 'amd-iommu/fixes' of git://git.kernel.org/.../joro/linux-2.6-iommu into core/iommu
 
-The good thing is I trigger this at boot time reliably - so if you've got
-some debug stuff you want to stick in I can do that
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
+
+Chris Wright (3):
+      amd-iommu: flush domain tlb when attaching a new device
+      amd-iommu: disable cmd buffer and evt logging before reprogramming iommu
+      amd-iommu: resume cleanup
+
+Joerg Roedel (3):
+      amd-iommu: disable IOMMU hardware on shutdown
+      x86: disable IOMMUs on kernel crash
+      amd-iommu: set event buffer head and tail to 0 manually
+
+ arch/x86/include/asm/amd_iommu.h |    2 ++
+ arch/x86/kernel/amd_iommu.c      |   16 ++++++++++++++++
+ arch/x86/kernel/amd_iommu_init.c |   26 +++++++++++++++++++-------
+ arch/x86/kernel/crash.c          |    6 ++++++
+ arch/x86/kernel/pci-dma.c        |    2 ++
+ 5 files changed, 45 insertions(+), 7 deletions(-)
+
+These patches mostly fixes issues in the AMD IOMMU driver with kexec and
+kdump. Another fix is to disable the IOMMU hardware on shutdown and
+crash to get out of the way for the BIOS. This fixed power-off on my
+test machine. Please pull.
+
+	Joerg
 
 
-Alan
