@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZFPU1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbZFPUat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035AbZFPU1f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbZFPU11
+	id S1758278AbZFPUat (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZFPUal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:27:27 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:40651 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756800AbZFPU11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:27:27 -0400
-Date: Tue, 16 Jun 2009 15:27:26 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, rja@sgi.com
-Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when feature is disabled
-Message-ID: <20090616202726.GB31443@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu> <20090612125741.GA6140@localhost> <20090612131754.GA32105@elte.hu> <alpine.LFD.2.01.0906120827020.3237@localhost.localdomain> <20090612153501.GA5737@elte.hu> <20090615065232.GC18390@wotan.suse.de>
-Mime-Version: 1.0
+	Tue, 16 Jun 2009 16:30:41 -0400
+Received: from thunk.org ([69.25.196.29]:49523 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752885AbZFPUak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:30:40 -0400
+Date: Tue, 16 Jun 2009 16:30:34 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: linux-next: ext4 tree build failure
+Message-ID: <20090616203034.GB14788@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	Christoph Lameter <cl@linux-foundation.org>
+References: <20090616144413.50e975f9.sfr@canb.auug.org.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090615065232.GC18390@wotan.suse.de>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090616144413.50e975f9.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 08:52:32AM +0200, Nick Piggin wrote:
-> On Fri, Jun 12, 2009 at 05:35:01PM +0200, Ingo Molnar wrote:
-> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > On Fri, 12 Jun 2009, Ingo Molnar wrote:
-> > > > 
-> > > > This seems like trying to handle a failure mode that cannot be 
-> > > > and shouldnt be 'handled' really. If there's an 'already 
-> > > > corrupted' page then the box should go down hard and fast, and 
-> > > > we should not risk _even more user data corruption_ by trying to 
-> > > > 'continue' in the hope of having hit some 'harmless' user 
-> > > > process that can be killed ...
-> > > 
-> > > No, the box should _not_ go down hard-and-fast. That's the last 
-> > > thing we should *ever* do.
-> > > 
-> > > We need to log it. Often at a user level (ie we want to make sure 
-> > > it actually hits syslog, possibly goes out the network, maybe pops 
-> > > up a window, whatever).
-> > > 
-> > > Shutting down the machine is the last thing we ever want to do.
-> > > 
-> > > The whole "let's panic" mentality is a disease.
-> > 
-> > No doubt about that - and i'm removing BUG_ON()s and panic()s 
-> > wherever i can and havent added a single new one myself in the past 
-> > 5 years or so, its a disease.
+On Tue, Jun 16, 2009 at 02:44:13PM +1000, Stephen Rothwell wrote:
+> Hi Ted,
 > 
-> In HA failover systems you often do want to panic ASAP (after logging
-> to serial cosole I guess) if anything like this happens so the system
-> can be rebooted with minimal chance of data corruption spreading.
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this after
+> the slab tree was merged:
+> 
+> In file included from fs/jbd2/checkpoint.c:26:
+> include/trace/events/jbd2.h:11: error: expected ')' before '(' token
+> include/trace/events/jbd2.h:31: error: expected ')' before '(' token
 
-The whole point of hardware data poisoning is to avoid having to 
-panic the system due to the potential of undetected data corruption,
-because the corrupt data is always marked bad.  This has worked
-well on ia64 where applications that encounter bad data are killed
-and the memory poisoned and not reallocated, avoiding a system panic.
+Hmm... I wonder why the slab tree would be messing with tracing
+include files.
 
-This has been used at customer sites for a few years.  The type
-customers that really check their data.  It is nice to see
-the hardware poison feature moving to the x86 "mainstream".
+Which slab tree is it?  Is it Pekka's?
 
+      git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
 
-
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+					- Ted
