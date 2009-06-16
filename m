@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935908AbZFPGRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbZFPGUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935908AbZFPGRh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZFPGR0
+	id S1760693AbZFPGUu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZFPGUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 02:17:26 -0400
-Received: from www84.your-server.de ([213.133.104.84]:38562 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758021AbZFPGRZ (ORCPT
+	Tue, 16 Jun 2009 02:20:40 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:63868 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbZFPGUj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 02:17:25 -0400
-Subject: Re: + procfs-provide-stack-information-for-threads-v08.patch added
- to -mm tree
-From: Stefani Seibold <stefani@seibold.net>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, ebiederm@xmission.com, mingo@elte.hu
-In-Reply-To: <20090615223333.GA8734@x200.localdomain>
-References: <200906152202.n5FM25VD021536@imap1.linux-foundation.org>
-	 <20090615223333.GA8734@x200.localdomain>
-Content-Type: text/plain
-Date: Tue, 16 Jun 2009 08:17:06 +0200
-Message-Id: <1245133026.17989.2.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Tue, 16 Jun 2009 02:20:39 -0400
+Date: Tue, 16 Jun 2009 08:20:44 +0200
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: Richard =?utf-8?Q?R=C3=B6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org
+Subject: Re: [RESEND][PATCH] input: Added TSC2003
+Message-ID: <20090616062044.GA20209@avionic-design.de>
+References: <4A366439.70005@mocean-labs.com> <5d5443650906151110u3f7d9d1cm1990e767d29a45b6@mail.gmail.com> <4A36A1C2.2060805@mocean-labs.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4A36A1C2.2060805@mocean-labs.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-Provags-ID: V01U2FsdGVkX1/1tL9BO5HcuB9LaaPK+aZ9L/EcMQzp0i+iAlf
+ AtUeqjU8gBQmQ50JHgp6n6NqE5Ma2PjnsWtgE9i848mKv1UcVg
+ eBOA1Xg7i4trCshVHBHCQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, den 16.06.2009, 02:33 +0400 schrieb Alexey Dobriyan:
-> On Mon, Jun 15, 2009 at 03:02:05PM -0700, akpm@linux-foundation.org wrote:
-> >      procfs-provide-stack-information-for-threads-v08.patch
-> > --- a/fs/proc/array.c~procfs-provide-stack-information-for-threads-v08
+* Richard Röjfors wrote:
+> On 09-06-15 20.10, Trilok Soni wrote:
+> > Hi,
+> > 
+> > On Mon, Jun 15, 2009 at 8:39 PM, Richard
+> > Röjfors<richard.rojfors.ext@mocean-labs.com> wrote:
+> >> Supplied is a driver for the TSC2003. There is actually a driver for TSC2007 which can be used in some cases.
+> >> The platform struct is reused from the TSC2007.
+> >> There is a big difference in the implementation between the drivers, this one does not use HR timers.
+> >> The TSC2007 driver performs synchronous I2C in the timer callback (SW IRQ context) which is bad when
+> >> the I2C driver is interrupt driven.
+> >>
+> > 
+> > Meaning? I think I2C transaction can sleep.
 > 
-> > +++ a/fs/proc/array.c
-> > @@ -321,6 +321,54 @@ static inline void task_context_switch_c
-> >  			p->nivcsw);
-> >  }
-> >  
-> > +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-> > +					struct task_struct *p)
-> > +{
-> > +	unsigned long	i;
-> > +	struct page	*page;
-> > +	unsigned long	stkpage;
-> > +
-> > +	stkpage = KSTK_ESP(p) & PAGE_MASK;
-> > +
-> > +#ifdef CONFIG_STACK_GROWSUP
-> > +	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
-> > +
-> > +		page = follow_page(vma, i-PAGE_SIZE, 0);
-> 
-> How can this work?
-> 
-> If stack page got swapped out, you'll get smaller than actual result.
-> 
+> Yes that's what it means, and that's bad in a HR timer callback.
 
-If you tell me how to do it in the right way, i can fix it!
+Note that my patch to the tsc2007 to support the tsc2003 exactly fixes this
+problem. It moves the actual I2C transfers into a workqueue, so no sleeping
+functions are called from the hrtimer callback.
 
-
+Thierry
