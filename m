@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761869AbZFPU6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbZFPVBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761869AbZFPU6i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbZFPU6a
+	id S1758286AbZFPVBM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbZFPVA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:58:30 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:46807 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760178AbZFPU6a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:58:30 -0400
-X-Trace: 216389553/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.95.160/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.95.160
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlEGAL+jN0pQKV+g/2dsb2JhbACBT9NkhAsF
-X-IronPort-AV: E=Sophos;i="4.42,231,1243810800"; 
-   d="scan'208";a="216389553"
-Date: Tue, 16 Jun 2009 21:57:30 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Johannes Weiner <hannes@cmpxchg.org>
-cc: Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       nickpiggin@yahoo.com.au
-Subject: Re: running get_user_pages() from kernel thread
-In-Reply-To: <20090616200852.GA16265@cmpxchg.org>
-Message-ID: <Pine.LNX.4.64.0906162152250.12770@sister.anvils>
-References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random>
- <Pine.LNX.4.64.0906161930050.24878@sister.anvils> <20090616200852.GA16265@cmpxchg.org>
+	Tue, 16 Jun 2009 17:00:58 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33156 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751666AbZFPVA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 17:00:58 -0400
+Date: Tue, 16 Jun 2009 14:00:59 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
+       Nathan Lynch <ntl@pobox.com>, Ingo Molnar <mingo@elte.hu>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
+Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
+Message-ID: <20090616210059.GL6842@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com> <20090615232318.74b099a6.akpm@linux-foundation.org> <20090616080715.GB7961@dirshya.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616080715.GB7961@dirshya.in.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Johannes Weiner wrote:
+On Tue, Jun 16, 2009 at 01:37:15PM +0530, Vaidyanathan Srinivasan wrote:
+> * Andrew Morton <akpm@linux-foundation.org> [2009-06-15 23:23:18]:
 > 
-> Did you have a particular reason not to pass in the faulting mm
-> instead?
-
-No good reason.
-
+> > On Tue, 16 Jun 2009 11:08:39 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+> > 
+> > > Currently on a ppc64 box with 16 CPUs, the time taken for
+> > > a individual cpu-hotplug operation is as follows.
+> > > 
+> > > 	# time echo 0 > /sys/devices/system/cpu/cpu2/online
+> > > 	real    0m0.025s
+> > > 	user    0m0.000s
+> > > 	sys     0m0.002s
+> > > 
+> > > 	# time echo 1 > /sys/devices/system/cpu/cpu2/online
+> > > 	real    0m0.021s
+> > > 	user    0m0.000s
+> > > 	sys     0m0.000s
+> > 
+> > Surprised.  Do people really online and offline CPUs frequently enough
+> > for this to be a problem?
 > 
-> As the swap token should only care about the faulting address space
-> leading to swap io and not about the running process anyway, we could
-> do it like below and remove all those pesky current->derefs in the
-> same go.  What do you think?
+> Certainly not for hardware faults or hardware replacement, but
+> cpu-hotplug interface is useful for changing system configuration to
+> meet different objectives like
+> 
+> * Reduce system capacity to reduce average power and reduce heat
+> 
+> * Increasing number of cores and threads in a CPU package is leading
+>   to multiple cpu offline/online operations for any perceivable effect
+> 
+> * Dynamically change CPU configurations in virtualized environments
 
-I think we'll have to claim joint authorship.
-But I win by one checkpatch point, and a few minutes ;)
+Perhaps also reducing boot-up time?  If I am correctly interpreting the
+above numbers, an eight-CPU system would be consuming 175 milliseconds
+bringing up the seven non-boot CPUs.  Reducing this by 150 milliseconds
+might be of interest to some people.  ;-)
 
-Hugh
+							Thanx, Paul
+
+> Ref:
+> 
+> [1] Saving power by cpu evacuation sched_max_capacity_pct=n
+>     http://lkml.org/lkml/2009/5/13/173
+> 
+> [2] Make offline cpus to go to deepest idle state using
+>     http://lkml.org/lkml/2009/5/22/431
+> 
+> [3] cpuset: add new API to change cpuset top group's cpus
+>     http://lkml.org/lkml/2009/5/19/54        
+> 
+> For getting stuff off a certain CPU, cpu-hotplug framework seems to do
+> the right thing.  Identifying bottlenecks in the framework can
+> significantly help other use cases.
+> 
+> --Vaidy
+> 
