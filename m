@@ -1,141 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbZFPQ6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbZFPQ6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760088AbZFPQ6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZFPQ6B
+	id S1760417AbZFPQ6u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZFPQ6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:58:01 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:45582 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752818AbZFPQ6A (ORCPT
+	Tue, 16 Jun 2009 12:58:43 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:34850 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754763AbZFPQ6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:58:00 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 16 Jun 2009 09:51:05 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch] epoll - fix nested calls support
-Message-ID: <alpine.DEB.1.10.0906160941030.25664@makko.or.mcafeemobile.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 16 Jun 2009 12:58:42 -0400
+Date: Tue, 16 Jun 2009 09:57:32 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: [GIT PULL] ocfs2 updates for 2.6.31
+Message-ID: <20090616165732.GA10257@mail.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A37CF2C.00F0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, Greg, this fixes a regression in 2.6.30.
-I unfortunately accepted a patch time ago, to drop the "current" usage 
-from possible IRQ context, w/out proper thought over it.
-The patch switched to using the CPU id by bounding the nested call 
-callback with a get_cpu()/put_cpu().
-Unfortunately the ep_call_nested() function can be called with a callback 
-that grabs sleepy locks (from own f_op->poll()), that results in epic fails.
-The following patch uses the proper "context" depending on the path where 
-it is called, and on the kind of callback.
-This has been reported by Stefan Richter, that has also verified the patch 
-is his previously failing environment.
-Greg, this should go in -stable too.
+Linus, et al,
+	Here are the ocfs2 updates for 2.6.31.  It's a quiet cycle,
+almost completely composed of fixes.  There is a nice performance
+improvement from Hisashi Hifumi for fdatasync.  Please pull.
+
+Joel
 
 
+The following changes since commit b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://oss.sgi.com/xfs/xfs
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/jlbec/ocfs2.git upstream-linus
 
-- Davide
+Coly Li (1):
+      ocfs2: update comments in masklog.h
 
+Hisashi Hifumi (1):
+      ocfs2: fdatasync should skip unimportant metadata writeout
 
----
- fs/eventpoll.c |   21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+Jan Kara (5):
+      ocfs2: Fix possible deadlock in ocfs2_global_read_dquot()
+      ocfs2: Fix lock inversion in ocfs2_local_read_info()
+      ocfs2: Fix possible deadlock with quotas in ocfs2_setattr()
+      ocfs2: Fix possible deadlock in quota recovery
+      ocfs2: Correct ordering of ip_alloc_sem and localloc locks for directories
 
-Index: linux-2.6.mod/fs/eventpoll.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventpoll.c	2009-06-15 19:27:05.000000000 -0700
-+++ linux-2.6.mod/fs/eventpoll.c	2009-06-15 21:30:19.000000000 -0700
-@@ -98,7 +98,7 @@ struct epoll_filefd {
- struct nested_call_node {
- 	struct list_head llink;
- 	void *cookie;
--	int cpu;
-+	void *ctx;
- };
- 
- /*
-@@ -317,17 +317,17 @@ static void ep_nested_calls_init(struct 
-  * @nproc: Nested call core function pointer.
-  * @priv: Opaque data to be passed to the @nproc callback.
-  * @cookie: Cookie to be used to identify this nested call.
-+ * @ctx: This instance context.
-  *
-  * Returns: Returns the code returned by the @nproc callback, or -1 if
-  *          the maximum recursion limit has been exceeded.
-  */
- static int ep_call_nested(struct nested_calls *ncalls, int max_nests,
- 			  int (*nproc)(void *, void *, int), void *priv,
--			  void *cookie)
-+			  void *cookie, void *ctx)
- {
- 	int error, call_nests = 0;
- 	unsigned long flags;
--	int this_cpu = get_cpu();
- 	struct list_head *lsthead = &ncalls->tasks_call_list;
- 	struct nested_call_node *tncur;
- 	struct nested_call_node tnode;
-@@ -340,7 +340,7 @@ static int ep_call_nested(struct nested_
- 	 * very much limited.
- 	 */
- 	list_for_each_entry(tncur, lsthead, llink) {
--		if (tncur->cpu == this_cpu &&
-+		if (tncur->ctx == ctx &&
- 		    (tncur->cookie == cookie || ++call_nests > max_nests)) {
- 			/*
- 			 * Ops ... loop detected or maximum nest level reached.
-@@ -352,7 +352,7 @@ static int ep_call_nested(struct nested_
- 	}
- 
- 	/* Add the current task and cookie to the list */
--	tnode.cpu = this_cpu;
-+	tnode.ctx = ctx;
- 	tnode.cookie = cookie;
- 	list_add(&tnode.llink, lsthead);
- 
-@@ -364,10 +364,9 @@ static int ep_call_nested(struct nested_
- 	/* Remove the current task from the list */
- 	spin_lock_irqsave(&ncalls->lock, flags);
- 	list_del(&tnode.llink);
-- out_unlock:
-+out_unlock:
- 	spin_unlock_irqrestore(&ncalls->lock, flags);
- 
--	put_cpu();
- 	return error;
- }
- 
-@@ -408,8 +407,12 @@ static int ep_poll_wakeup_proc(void *pri
-  */
- static void ep_poll_safewake(wait_queue_head_t *wq)
- {
-+	int this_cpu = get_cpu();
-+
- 	ep_call_nested(&poll_safewake_ncalls, EP_MAX_NESTS,
--		       ep_poll_wakeup_proc, NULL, wq);
-+		       ep_poll_wakeup_proc, NULL, wq, (void *) (long) this_cpu);
-+
-+	put_cpu();
- }
- 
- /*
-@@ -663,7 +666,7 @@ static unsigned int ep_eventpoll_poll(st
- 	 * could re-enter here.
- 	 */
- 	pollflags = ep_call_nested(&poll_readywalk_ncalls, EP_MAX_NESTS,
--				   ep_poll_readyevents_proc, ep, ep);
-+				   ep_poll_readyevents_proc, ep, ep, current);
- 
- 	return pollflags != -1 ? pollflags : 0;
- }
+Joel Becker (1):
+      ocfs2: Add statistics for the checksum and ecc operations.
+
+Srinivas Eeda (2):
+      ocfs2: timer to queue scan of all orphan slots
+      ocfs2 patch to track delayed orphan scan timer statistics
+
+Sunil Mushran (1):
+      ocfs2/net: Use wait_event() in o2net_send_message_vec()
+
+Tao Ma (3):
+      ocfs2: Don't printk the error when listing too many xattrs.
+      ocfs2: Remove redundant gotos in ocfs2_mount_volume()
+      ocfs2: Adjust rightmost path in ocfs2_add_branch.
+
+ fs/ocfs2/alloc.c           |   80 ++++++++++++++++++-
+ fs/ocfs2/blockcheck.c      |  184 ++++++++++++++++++++++++++++++++++++++++++--
+ fs/ocfs2/blockcheck.h      |   29 +++++++-
+ fs/ocfs2/cluster/masklog.h |   35 ++++----
+ fs/ocfs2/cluster/tcp.c     |    7 +-
+ fs/ocfs2/dir.c             |   21 +++---
+ fs/ocfs2/dlmglue.c         |   51 ++++++++++++
+ fs/ocfs2/dlmglue.h         |   11 +++
+ fs/ocfs2/file.c            |   56 ++++++++------
+ fs/ocfs2/journal.c         |  111 ++++++++++++++++++++++++++
+ fs/ocfs2/journal.h         |    4 +
+ fs/ocfs2/ocfs2.h           |   16 ++++
+ fs/ocfs2/ocfs2_lockid.h    |    5 +
+ fs/ocfs2/quota_global.c    |    4 +-
+ fs/ocfs2/quota_local.c     |   21 ++++--
+ fs/ocfs2/super.c           |   66 ++++++++++++----
+ fs/ocfs2/xattr.c           |    5 +-
+ 17 files changed, 610 insertions(+), 96 deletions(-)
+
+-- 
+
+Life's Little Instruction Book #99
+
+	"Think big thoughts, but relish small pleasures."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
