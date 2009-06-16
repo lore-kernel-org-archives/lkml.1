@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763151AbZFPVDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763561AbZFPVEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763151AbZFPVDz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 17:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758063AbZFPVDo
+	id S1763561AbZFPVEM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763021AbZFPVD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 17:03:44 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:33837 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761821AbZFPVDn (ORCPT
+	Tue, 16 Jun 2009 17:03:59 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:31157 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763175AbZFPVD5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 17:03:43 -0400
-X-Trace: 213089703/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.95.160/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.95.160
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlEGAOqkN0pQKV+g/2dsb2JhbACBT9NuhAsF
-X-IronPort-AV: E=Sophos;i="4.42,231,1243810800"; 
-   d="scan'208";a="213089703"
-Date: Tue, 16 Jun 2009 22:02:48 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrea Arcangeli <aarcange@redhat.com>
-cc: Rik van Riel <riel@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
-Subject: Re: running get_user_pages() from kernel thread
-In-Reply-To: <20090616203844.GE23969@random.random>
-Message-ID: <Pine.LNX.4.64.0906162158100.12770@sister.anvils>
-References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random>
- <Pine.LNX.4.64.0906161930050.24878@sister.anvils> <4A37EA92.7050509@redhat.com>
- <Pine.LNX.4.64.0906162035240.2933@sister.anvils> <20090616203844.GE23969@random.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 16 Jun 2009 17:03:57 -0400
+X-YMail-OSG: cKCKM2EVM1mgmIOe_WUP1FYsr_I89UbZpjef4l.8SL0ov1EFlF6m5xavU300Fr.2WPvVXCZQ1.8QpFSkYOMylAYMhSKhBlIXUgOUS.4I4C92flSrH1cYMIDGe3H4ohZEY_mOOyrCbsDJocwB.5.7HB3XpSNsEjUDtMQLLeaDRGThpjVVJwvXBnhyMeGcPGUB5nCeUccJXDDU.4YJAPHY_l658GEU0X4OWMhRuFHFP.62BYZSpuvawVVgWkQVWEsxjVstDbUV5PuJGGugPK6feyfX4mE4Pa22AHy4T3ZFBvrO1QIjQdtXAvEAS4.9pCDK1kFTuGAGoz6nW5C1kCcuqk.3iqz77fo1OWU0zMCMGWNKrAgAJlP6y4jmC9dXUbI-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [ANNOUNCE] lio-utils.git v3.0 configfs HOWTO for v2.6.30 released
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       kvm-devel <kvm@vger.kernel.org>
+Cc: Joel Becker <joel.becker@oracle.com>,
+       Leonid Grossman <leonid.grossman@neterion.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       Florian Haas <florian.haas@linbit.com>, Avi Kivity <avi@redhat.com>,
+       "J.H." <warthog9@kernel.org>, Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+Content-Type: text/plain
+Date: Tue, 16 Jun 2009 13:57:17 -0700
+Message-Id: <1245185837.4232.179.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Andrea Arcangeli wrote:
-> On Tue, Jun 16, 2009 at 08:45:05PM +0100, Hugh Dickins wrote:
-> > liking the below better - what do you think?  If you approve, I'll send
-> > it in to Andrew for mmotm: I can't quite justify it without KSM.
-> 
-> I think it's definitely better to fix gup to be safe from kernel
-> thread even without KSM so this can go in mainline well before KSM.
-> Unless gup requires a swapin fault it won't ever trigger.
+Grettings all,
 
-Yes, you're right, it should go into 2.6.31, no reason not.
+The Linux-iSCSI.org Target v3.0 HOWTO using the new configfs enabled
+generic target subsystem python CLI has been released and is up and
+running on v2.6.30 of the Linux Kernel in x86_64 KVM (Debian), x86_64
+bare-metal (SLES) and PPC64 (Fedora PS3) hosts!  The HOWTO entry can be
+found at:
 
-Hugh
+http://linux-iscsi.org/index.php/Howto
+
+The v3.0 howto is a WIP and currently expects that the reader is fimilar
+with building and installing their own LIO target modules within a linux
+kernel source.  There is currently work being done to integrate this
+into virtual machines imagines ot make the v3.0 LIO CLI more accessable
+for end users.  We are expecting the v3.0 work to be available in a
+couple of different forms soon.  Until then, interested folks should
+have a look at the v3.0 howto and the lio-utils.git source tree for
+usage information and towards build their own copy from source.
+
+So far using the lio-utils.git tools for the Generic Target Core v3.0
+with LIO-Target configfs enabled symlinks, the code has been able to
+scale to 10000 unique Virtual HBA+FILEIO LUNs with SCSI 3 emulation <->
+10000 unique LIO-Target v3.0 Endpoints inside of a 4GB memory x86_64 KVM
+guest on recent x86_64 hardware.  Each of these HBA+LUNs and iSCSI
+Target Endpoints are designed (using the TCM+LIO configfs kernel
+infrastructure) to be configured completely independent of one another,
+so that creating/changing one does not effect the real-time configfs ops
+of another.
+
+The configs CLI commands to reproduce the running setup can be dumped at
+any time for the entire running setup using tcm_dump.py and lio_dump.py.
+The lio-utils.git source repository is for v3.0 target_core_mod
++iscsi_target_mod configfs enabled code in lio-core-2.6.git:
+
+http://git.kernel.org/?p=linux/storage/lio/lio-utils.git;a=summary
+
+Additional information can be found here:
+
+http://linux-iscsi.org/index.php/Lio-utils
+
+Questions can be asked via the LIO-Devel or LIO-Users:
+
+http://groups.google.com/group/linux-iscsi-target-dev
+http://groups.google.com/group/linux-iscsi-target-users
+
+The former is where most folks today (devels+users) are doing most of
+their work, and thanks to the many people has been helping improve the
+code!  I would like to encourage new end users to start posting in
+linux-iscsi-targets-users as they get their v3.0 LIO-Target with
+tcm_node.py + lio_node.py setups up and running with general questions
+and comments.  
+
+Also a special thanks to the kernel.org folks (warthog9 and hpa)
+assitance with getting the lio-utils.git source repository up and
+running, it would not be possible without their help.  Thank you!
+
+--nab
+
+
+
+
+
+
+
+
+
+
+
