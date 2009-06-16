@@ -1,171 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbZFPWkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbZFPWls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760033AbZFPWkx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 18:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbZFPWkq
+	id S1762554AbZFPWls (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 18:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbZFPWlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 18:40:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44306 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756215AbZFPWkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 18:40:45 -0400
-Message-ID: <4A381F8A.8020105@redhat.com>
-Date: Tue, 16 Jun 2009 18:41:14 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Tim Abbott <tabbott@ksplice.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Anders Kaseorg <andersk@ksplice.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [RFC][ PATCH -tip 0/6] kprobes: Kprobes jump optimization support
-References: <20090612224925.17825.49637.stgit@localhost.localdomain> <alpine.DEB.1.10.0906131031570.29895@vinegar-pot.mit.edu>
-In-Reply-To: <alpine.DEB.1.10.0906131031570.29895@vinegar-pot.mit.edu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Jun 2009 18:41:37 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44845 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753774AbZFPWlg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 18:41:36 -0400
+Message-Id: <1245192098.31604.1320729303@webmail.messagingengine.com>
+X-Sasl-Enc: JeSMlxln6r5YNKsGovG8B+jcCROleXUB6K/+AnWVwB/g 1245192098
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Stas Sergeev" <stsp@aknet.ru>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Cyrill Gorcunov" <gorcunov@gmail.com>, "Tejun Heo" <tj@kernel.org>,
+       "Zachary Amsden" <zach@vmware.com>,
+       "Chuck Ebbert" <76306.1226@compuserve.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1244378557-5455-1-git-send-email-heukelum@fastmail.fm>
+ <1245182594.27756.1320705931@webmail.messagingengine.com>
+ <4A380C49.6050206@aknet.ru>
+Subject: Re: Ping: Re: [PATCH 0/2] i386: espfix fixes
+In-Reply-To: <4A380C49.6050206@aknet.ru>
+Date: Wed, 17 Jun 2009 00:41:38 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tim,
-
-Thank you for your comment!
-
-Tim Abbott wrote:
-> On Fri, 12 Jun 2009, Masami Hiramatsu wrote:
+On Wed, 17 Jun 2009 01:19:05 +0400, "Stas Sergeev" <stsp@aknet.ru> said:
+> Hi.
 > 
->>  - Safety check
-> [...]
->>   Next, Kprobes decodes whole body of probed function and checks there is
->>  NO indirect jump, and near jump which jumps into the optimized region (except
->>  the 1st byte of jump), because if some jump instruction jumps into the middle
->>  of another instruction, it causes unexpected results too.
-> 
-> Hi Masami,
-> 
-> I think your safety check algorithm is wrong.
-> 
-> There are several ways in which the kernel might jump into the optimized 
-> region that cannot be detected by examining just the probed function:
-> 
-> (1) The compiler is allowed to do cross-function optimization within a 
-> compilation unit where code in one function jumps into the middle of 
-> another function.
+> 17.06.2009 00:03, Alexander van Heukelum wrote:
+> > Just wanted to get a little attention for the espfix fixes...
+> >
+> > http://lkml.org/lkml/2009/6/7/106 : fix return to 16-bit stack from NMI
+> > http://lkml.org/lkml/2009/6/7/109 : fix/simplify espfix, move it into
+> > assembly
+> >
+> > Any objections against those?
+> Well, the dynamic limits were advocated
+> by Zach and Chuck, so lets ask them first
+> (added CCs).
 
-Hmm, right. This is a real problem. I think I have 2 options for this
-issue. I counted the cross-function jumps on my kernel roughly, and
-I found there were about 856 jumps jump into 158 functions (it might be
-incorrect, I just used 'objdump -d', and it also disassembles data
-section...)
+Hi!
 
-- Making a blacklist of target functions or addresses which cross-function
-  jumps jump into. This will be done by disassembling kernel when starting up
-  kernel and loading modules.(or, at build-time)
+I see...
 
-- Just disables cross-function optimization by adding --param
-  min-crossjump-insns=XXXX where XXXX is enough big number, when
-  CONFIG_OPTPROBES=y
+On http://lkml.indiana.edu/hypermail/linux/kernel/0608.0/0162.html:
+> > > - .quad 0x0000920000000000 /* 0xd0 - ESPFIX 16-bit SS */
+> > > + .quad 0x00cf92000000ffff /* 0xd0 - ESPFIX SS */
+> > 
+> > Seems a bit dangerous to allow access to full 4GB through this.
+> > Can you tighten the limit any? I suppose not, because the high
+> > bits in %esp really could be anything. But it might be nice to
+> > try setting the limit to regs->esp + THREAD_SIZE. Of course, this
+> > is not strictly necessary, just an extra paranoid protection
+> > mechanism. 
+> Since, when calculating the base, I do &-THREAD_SIZE, I guess the
+> minimal safe limit is regs->esp + THREAD_SIZE*2... Well, may just
+> I not do that please? :) For what, btw? There are no such a things
+> for __KERNEL_DS or anything, so I just don't see the necessity.
 
+In the normal case user-esp would be between 0 and 65535, and in
+that case the memory range in the ESPFIX stack segment would be
+pretty small. But userspace can set esp to just about anything if
+it really wants to, and in that case the reduction of the memory
+range is pretty much wothless (kernel stacks are allocated way
+above the code). As you said: may we just not do that, please?
 
-> (2) If you have a switch statement that looks like:
-> 
-> 	switch (foo) {
-> 	case 1:
-> 		printk("a1");
-> 		break;
-> 	case 2:
-> 		printk("a2");
-> 		break;
-> 	case 3:
-> 		printk("a3");
-> 		break;
-> 	case 4:
-> 		printk("a4");
-> 		break;
-> 	case 5:
-> 		printk("a5");
-> 		break;
-> 	}
-> 
-> (i.e. a large number of cases indexed by a small range of integers; 
-> depending on your compiler you may need more cases), gcc will implement it 
-> using a jump table in the .rodata section.  On x86_32, the generated 
-> assembly for the switch will read from the jump table at an offset of 
-> 4 * (foo - 1) and then jump to that address to reach the code for the 
-> appropriate case.  These jump tables can result in jumps from within the 
-> probed function into the optimized region in a way that your algorithm 
-> would not detect.
+> For the rest:
+> Acked-by: Stas Sergeev <stsp@aknet.ru>
 
-These jumps are uses indirect jumps. As I wrote in the document,
-Kprobes doesn't optimize a probe which probes the function including
-indirect jump instructions.
+Thanks, very much appreciated!
 
-> (3) If the code that you're overwriting can throw an exception, it might 
-> be that that there is a jump from the .fixup section back into the probed 
-> function that overlaps the optimized region.
+> In particular, I am asking now myself why
+> have I used THREAD_SIZE there, and can't
+> recall the reason...
 
-Sorry, I forgot to describe this case on the document. When the addresses
-of optimized instructions are listed on .fixup section, kprobes also
-doesn't optimize it.
+Other parts of the complete fix were not massochistic enough?
+( http://lkml.indiana.edu/hypermail/linux/kernel/0608.0/0858.html )
 
-
-> The other comment I have about this approach is that it seems you've 
-> written a completely new x86 disassembler in order to do binary code 
-> analysis in the kernel.
-> 
-> Ksplice has been using the udis86 disassembler for this purpose: 
-> <http://udis86.sourceforge.net/>.  udis86 is intended for binary code 
-> analysis and is designed to be embedded into kernels and other 
-> applications.
-
-I know, when I asked about udis86, I heard that ksplice just uses it
-for supporting old kernels and new kernel implementation doesn't need it.
-So, I made a new decoder.
-
-> udis86 generates all its instruction table data from an XML opcode file, 
-> which is I think what H. Peter Anvin was suggesting you should do in this 
-> previous thread on your instruction decoder: 
-> <http://lkml.indiana.edu/hypermail/linux/kernel/0904.0/01929.html> 
-> Compared to e.g. libopcodes it is still quite small -- there's a total of 
-> about 3000 lines of C, plus some instruction tables that are automatically 
-> generated from an XML description of the instructions.
-
-I'm not so sure about udis86. Can I use it in exception path (and kprobes)?
-Is that XML things enough easy to be maintained?
-
-If so, and the maintainer of udis86 is eager to push it in the
-kernel and he will maintain his code etc., it might be acceptable,
-aah, after rewriting it according to linux c style:)
-
-> 
-> The upstream developer has merged patches from Anders Kaseorg and myself 
-> that make it build as part of the core Linux kernel without any changes 
-> other than adding a kernel Makefile.  I think if we're going to putting an 
-> x86 disassembler into the kernel, it might be better to use something like 
-> udis86 that provides a little more information about the instructions 
-> being disassembled and is more data-driven.
-
-
-Thank you,
-
-> 
-> 	-Tim Abbott
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Greetings,
+    Alexander
