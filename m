@@ -1,89 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbZFPJFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZFPJFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752903AbZFPJFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 05:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZFPJFL
+	id S1755593AbZFPJFi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 05:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbZFPJFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:05:11 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57078 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbZFPJFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:05:10 -0400
-Date: Tue, 16 Jun 2009 10:05:10 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, riel@redhat.com, cl@linux-foundation.org,
-       fengguang.wu@intel.com, linuxram@us.ibm.com, linux-mm@kvack.org,
+	Tue, 16 Jun 2009 05:05:22 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55128 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753575AbZFPJFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 05:05:18 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18MIdNQXaEMzS0dz/BhzS6qUXFEajppji+FkNIeBc
+	7XYxSL8lR/jsg2
+Subject: Re: [PATCH] scheduler: introduce SCHED_RESET_ON_FORK scheduling
+ policy flag, fourth try
+From: Mike Galbraith <efault@gmx.de>
+To: Lennart Poettering <lennart@poettering.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Count the number of times zone_reclaim() scans and
-	fails
-Message-ID: <20090616090509.GA14241@csn.ul.ie>
-References: <1244717273-15176-1-git-send-email-mel@csn.ul.ie> <1244717273-15176-4-git-send-email-mel@csn.ul.ie> <20090615141912.878168ca.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090615141912.878168ca.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090615152714.GA29092@tango.0pointer.de>
+References: <20090615152714.GA29092@tango.0pointer.de>
+Content-Type: text/plain
+Date: Tue, 16 Jun 2009 11:05:08 +0200
+Message-Id: <1245143108.6038.10.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 02:19:12PM -0700, Andrew Morton wrote:
-> On Thu, 11 Jun 2009 11:47:53 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
+On Mon, 2009-06-15 at 17:27 +0200, Lennart Poettering wrote: 
+> (this is the fourth version of the patch, only change is that I added
+> the missing Signed-off-by line, as Ingo requested)
 > 
-> > +		PGSCAN_ZONERECLAIM_FAILED,
-> > @@ -2492,6 +2492,9 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> > +	"zreclaim_failed",
+> This patch introduces a new flag SCHED_RESET_ON_FORK which can be passed
+> to the kernel via sched_setscheduler(), ORed in the policy parameter. If
+> set this will make sure that when the process forks a) the scheduling
+> priority is reset to DEFAULT_PRIO if it was higher and b) the scheduling
+> policy is reset to SCHED_NORMAL if it was either SCHED_FIFO or SCHED_RR.
 > 
-> So we have "zonereclaim", "zone_reclaim" and "zreclaim", which isn't
-> terribly developer-friendly.
+> Why have this?
 > 
+> Currently, if a process is real-time scheduled this will 'leak' to all
+> its child processes. For security reasons it is often (always?) a good
+> idea to make sure that if a process acquires RT scheduling this is
+> confined to this process and only this process. More specifically this
+> makes the per-process resource limit RLIMIT_RTTIME useful for security
+> purposes, because it makes it impossible to use a fork bomb to
+> circumvent the per-process RLIMIT_RTTIME accounting.
 > 
-> This?
-> 
+> This feature is also useful for tools like 'renice' which can then
+> change the nice level of a process without having this spill to all its
+> child processes.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+That didn't work for me, reniced tasks with the flag set retained their
+-nice status.  See patchlet and comments below. 
 
-> --- a/include/linux/vmstat.h~vmscan-count-the-number-of-times-zone_reclaim-scans-and-fails-fix
-> +++ a/include/linux/vmstat.h
-> @@ -37,7 +37,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
->  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
->  		FOR_ALL_ZONES(PGSCAN_DIRECT),
->  #ifdef CONFIG_NUMA
-> -		PGSCAN_ZONERECLAIM_FAILED,
-> +		PGSCAN_ZONE_RECLAIM_FAILED,
->  #endif
->  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
->  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-> diff -puN mm/vmscan.c~vmscan-count-the-number-of-times-zone_reclaim-scans-and-fails-fix mm/vmscan.c
-> --- a/mm/vmscan.c~vmscan-count-the-number-of-times-zone_reclaim-scans-and-fails-fix
-> +++ a/mm/vmscan.c
-> @@ -2520,7 +2520,7 @@ int zone_reclaim(struct zone *zone, gfp_
->  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 8ec9d13..1db3e4a 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2613,12 +2613,26 @@ void sched_fork(struct task_struct *p, int clone_flags)
+>  	set_task_cpu(p, cpu);
 >  
->  	if (!ret)
-> -		count_vm_event(PGSCAN_ZONERECLAIM_FAILED);
-> +		count_vm_event(PGSCAN_ZONE_RECLAIM_FAILED);
->  
->  	return ret;
->  }
-> diff -puN mm/vmstat.c~vmscan-count-the-number-of-times-zone_reclaim-scans-and-fails-fix mm/vmstat.c
-> --- a/mm/vmstat.c~vmscan-count-the-number-of-times-zone_reclaim-scans-and-fails-fix
-> +++ a/mm/vmstat.c
-> @@ -674,7 +674,7 @@ static const char * const vmstat_text[] 
->  	TEXTS_FOR_ZONES("pgscan_direct")
->  
->  #ifdef CONFIG_NUMA
-> -	"zreclaim_failed",
-> +	"zone_reclaim_failed",
->  #endif
->  	"pginodesteal",
->  	"slabs_scanned",
-> _
-> 
+>  	/*
+> -	 * Make sure we do not leak PI boosting priority to the child:
+> +	 * Revert to default priority/policy on fork if requested. Make sure we
+> +	 * do not leak PI boosting priority to the child.
+>  	 */
+> -	p->prio = current->normal_prio;
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Nit: that comment/assignment was placed there to make sure that readers
+knew that this specific line was critical to PI.  Now, it's mixed in
+with something unrelated.
+ 
+> +	if (current->sched_reset_on_fork &&
+> +			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
+> +		p->policy = SCHED_NORMAL;
+> +
+> +	if (current->sched_reset_on_fork &&
+> +			(current->normal_prio < DEFAULT_PRIO))
+> +		p->prio = DEFAULT_PRIO;
+> +	else
+> +		p->prio = current->normal_prio;
+> +
+
+I think it's cleaner to keep reset_on_fork functionality separate.
+Thoughts on the below?
+
+Make SCHED_RESET_ON_FORK to DTRT for reniced tasks, and make the sched_fork()
+SCHED_RESET_ON_FORK bits a self-contained unlikely code block.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+
+ kernel/sched.c |   39 +++++++++++++++++++++++----------------
+ 1 files changed, 23 insertions(+), 16 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 80636ed..cb6bbc6 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2613,28 +2613,35 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 	set_task_cpu(p, cpu);
+ 
+ 	/*
+-	 * Revert to default priority/policy on fork if requested. Make sure we
+-	 * do not leak PI boosting priority to the child.
++	 * Make sure we do not leak PI boosting priority to the child.
+ 	 */
+-	if (current->sched_reset_on_fork &&
+-			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
+-		p->policy = SCHED_NORMAL;
++	p->prio = current->normal_prio;
+ 
+-	if (current->sched_reset_on_fork &&
+-			(current->normal_prio < DEFAULT_PRIO))
+-		p->prio = DEFAULT_PRIO;
+-	else
+-		p->prio = current->normal_prio;
++	/*
++	 * Revert to default priority/policy on fork if requested.
++	 */
++	if (unlikely(p->sched_reset_on_fork)) {
++		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR)
++			p->policy = SCHED_NORMAL;
++
++		if (p->normal_prio < DEFAULT_PRIO)
++			p->prio = DEFAULT_PRIO;
++
++		if (PRIO_TO_NICE(p->static_prio) < 0) {
++			p->static_prio = NICE_TO_PRIO(0);
++			set_load_weight(p);
++		}
++
++		/*
++		 * We don't need the reset flag anymore after the fork. It has
++		 * fulfilled its duty:
++		 */
++		p->sched_reset_on_fork = 0;
++	}
+ 
+ 	if (!rt_prio(p->prio))
+ 		p->sched_class = &fair_sched_class;
+ 
+-	/*
+-	 * We don't need the reset flag anymore after the fork. It has
+-	 * fulfilled its duty:
+-	 */
+-	p->sched_reset_on_fork = 0;
+-
+ #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+ 	if (likely(sched_info_on()))
+ 		memset(&p->sched_info, 0, sizeof(p->sched_info));
+
+
