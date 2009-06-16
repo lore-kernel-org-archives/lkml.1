@@ -1,151 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZFPMXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZFPMYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbZFPMXu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 08:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZFPMXm
+	id S1757570AbZFPMYc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 08:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZFPMYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 08:23:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36934
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750908AbZFPMXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 08:23:41 -0400
-Date: Tue, 16 Jun 2009 05:23:44 -0700 (PDT)
-Message-Id: <20090616.052344.242315717.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Jun 2009 08:24:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60973 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751998AbZFPMYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 08:24:21 -0400
+Date: Tue, 16 Jun 2009 14:24:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20090616122415.GA16630@elte.hu>
+References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616105304.GA3579@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Sparc updates for 2.6.31:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-1) Use dynamic per-cpu allocator on sparc64.
+> 
+> * David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Ingo Molnar <mingo@elte.hu>
+> > Date: Tue, 16 Jun 2009 11:15:38 +0200
+> > 
+> > > 
+> > > hm, FYI, these bits caused widespread scheduling-while-atomic 
+> > > problems on most of my test-systems:
+> > > 
+> > > BUG: sleeping function called from invalid context at net/core/sock.c:1851
+> > > in_atomic(): 1, irqs_disabled(): 0, pid: 544, name: rcu_torture_rea
+> > > 1 lock held by rcu_torture_rea/544:
+> > >  #0:  (&sk->sk_timer){......}, at: [<ffffffff81060560>] run_timer_softirq+0x120/0x2e0
+> > > Pid: 544, comm: rcu_torture_rea Tainted: G        W  2.6.30-tip #54067
+> > > Call Trace:
+> > >  [<ffffffff810820c3>] ? __debug_show_held_locks+0x13/0x30
+> > >  [<ffffffff810489e6>] __might_sleep+0xf6/0x120
+> > >  [<ffffffff81b3921d>] lock_sock_nested+0x3d/0x120
+> > >  [<ffffffff81c1a7d2>] x25_destroy_socket+0x22/0x180
+> > 
+> > Please give this patch a try.
+> 
+> Started testing it - thanks David!
 
-2) Wire up new syscall.
+With several dozen test-cycles (and [a]x25 reactivated) it looks 
+good and stable so far.
 
-3) sparc64 FTRACE touchups
+Thanks,
 
-4) SBUS video driver cleanups and fixups from Krzystof Helt
-
-5) DMA interface consolidation from FUJITA Tomonori
-
-6) of_device layer commonization from Robert Reif
-
-7) cpumask usage fixup from Stephen Rothwell
-
-Please pull, thanks a lot!
-
-The following changes since commit 03347e2592078a90df818670fddf97a33eec70fb:
-  Linus Torvalds (1):
-        Merge branch 'release' of git://git.kernel.org/.../aegl/linux-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git master
-
-David S. Miller (16):
-      sparc64: Reclaim trap_block[]->hdesc
-      sparc64: Move trap_block[] definitions into a new header file.
-      sparc64: Store per-cpu offset in trap_block[]
-      sparc64: Use BUILD_BUG_ON() in trap_init().
-      sparc64: Refactor OBP cpu scanning code using an iterator.
-      sparc64: Refactor MDESC cpu scanning code using an iterator.
-      sparc: Call OF and MD cpu scanning explicitly from paging_init()
-      sparc64: Make mdesc_fill_in_cpu_data take a cpumask_t pointer.
-      sparc64: Defer cpu_data() setup until end of per-cpu data initialization.
-      sparc64: Get rid of real_setup_per_cpu_areas().
-      sparc64: Only allocate per-cpu areas for possible cpus.
-      sparc64: Use new dynamic per-cpu allocator.
-      sparc64: Add proper dynamic ftrace support.
-      openprom: Squelch useless GCC warning.
-      sparc: Wire up sys_rt_tgsigqueueinfo().
-      sparc64: Update defconfig.
-
-FUJITA Tomonori (4):
-      sparc: move the duplication in dma-mapping_{32|64}.h to dma-mapping.h
-      sparc: add sync_single_for_device and sync_sg_for_device to struct dma_ops
-      sparc: use dma_map_page instead of dma_map_single
-      sparc: remove dma-mapping_{32|64}.h
-
-Hong H. Pham (1):
-      sparc64: fix and optimize irq distribution
-
-Krzysztof Helt (6):
-      bw2: use standard fields for framebuffer physical address and length
-      cg14: use standard fields for framebuffer physical address and length
-      cg3: use standard fields for framebuffer physical address and length
-      cg6: use standard fields for framebuffer physical address and length
-      leo: use standard fields for framebuffer physical address and length
-      p9100: use standard fields for framebuffer physical address and length
-
-Robert P. J. Day (1):
-      sparc: Simplify code using is_power_of_2() routine.
-
-Robert Reif (1):
-      sparc: move of_device common code to of_device_common
-
-Stephen Rothwell (1):
-      sparc: replace uses of CPU_MASK_ALL_PTR
-
- arch/sparc/Kconfig                      |    5 +
- arch/sparc/configs/sparc64_defconfig    |   63 ++++--
- arch/sparc/include/asm/cpudata_64.h     |  197 +--------------
- arch/sparc/include/asm/dma-mapping.h    |  168 ++++++++++++-
- arch/sparc/include/asm/dma-mapping_32.h |   60 -----
- arch/sparc/include/asm/dma-mapping_64.h |  154 -----------
- arch/sparc/include/asm/ftrace.h         |   11 +
- arch/sparc/include/asm/mdesc.h          |    3 +-
- arch/sparc/include/asm/percpu_64.h      |    8 +-
- arch/sparc/include/asm/prom.h           |    2 +
- arch/sparc/include/asm/trap_block.h     |  207 +++++++++++++++
- arch/sparc/include/asm/unistd.h         |    3 +-
- arch/sparc/kernel/Makefile              |    2 +
- arch/sparc/kernel/cpumap.c              |  431 +++++++++++++++++++++++++++++++
- arch/sparc/kernel/cpumap.h              |   16 ++
- arch/sparc/kernel/dma.c                 |  127 +++-------
- arch/sparc/kernel/ds.c                  |    3 +-
- arch/sparc/kernel/ftrace.c              |   47 +++-
- arch/sparc/kernel/head_64.S             |   22 --
- arch/sparc/kernel/iommu.c               |   15 +-
- arch/sparc/kernel/irq_64.c              |   29 +--
- arch/sparc/kernel/mdesc.c               |  149 +++++++-----
- arch/sparc/kernel/of_device_32.c        |  195 +--------------
- arch/sparc/kernel/of_device_64.c        |  188 +-------------
- arch/sparc/kernel/of_device_common.c    |  174 +++++++++++++
- arch/sparc/kernel/of_device_common.h    |   36 +++
- arch/sparc/kernel/pci_sun4v.c           |   15 +-
- arch/sparc/kernel/prom.h                |    1 -
- arch/sparc/kernel/prom_64.c             |  232 +++++++++--------
- arch/sparc/kernel/prom_common.c         |    2 -
- arch/sparc/kernel/smp_64.c              |  196 ++++++++++++--
- arch/sparc/kernel/systbls_32.S          |    4 +-
- arch/sparc/kernel/systbls_64.S          |    6 +-
- arch/sparc/kernel/traps_64.c            |  170 +++++++------
- arch/sparc/mm/init_32.c                 |    1 +
- arch/sparc/mm/init_64.c                 |   16 +-
- arch/sparc/mm/srmmu.c                   |    3 +-
- drivers/sbus/char/openprom.c            |    2 +-
- drivers/video/bw2.c                     |   20 +-
- drivers/video/cg14.c                    |   19 +-
- drivers/video/cg3.c                     |   20 +-
- drivers/video/cg6.c                     |   25 +-
- drivers/video/leo.c                     |   14 +-
- drivers/video/p9100.c                   |   20 +-
- scripts/recordmcount.pl                 |   20 ++
- 45 files changed, 1751 insertions(+), 1350 deletions(-)
- delete mode 100644 arch/sparc/include/asm/dma-mapping_32.h
- delete mode 100644 arch/sparc/include/asm/dma-mapping_64.h
- create mode 100644 arch/sparc/include/asm/trap_block.h
- create mode 100644 arch/sparc/kernel/cpumap.c
- create mode 100644 arch/sparc/kernel/cpumap.h
- create mode 100644 arch/sparc/kernel/of_device_common.c
- create mode 100644 arch/sparc/kernel/of_device_common.h
+	Ingo
