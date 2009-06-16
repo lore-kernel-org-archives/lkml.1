@@ -1,125 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbZFPNuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZFPN7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758249AbZFPNuN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 09:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbZFPNuD
+	id S1752551AbZFPN7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 09:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZFPN7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 09:50:03 -0400
-Received: from mga14.intel.com ([143.182.124.37]:5350 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751516AbZFPNuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 09:50:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,228,1243839600"; 
-   d="scan'208";a="155110417"
-Date: Tue, 16 Jun 2009 21:49:44 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in
-	try_to_unmap
-Message-ID: <20090616134944.GB7524@localhost>
-References: <20090615024520.786814520@intel.com> <20090615031253.530308256@intel.com> <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com> <20090615152612.GA11700@localhost> <20090616090308.bac3b1f7.minchan.kim@barrios-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090616090308.bac3b1f7.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Jun 2009 09:59:00 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:35006 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751023AbZFPN67 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 09:58:59 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=us-ascii
+X-IronPort-AV: E=Sophos;i="4.42,228,1243807200";   d="scan'208";a="8278659"
+From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+To: "'Lee Schermerhorn'" <Lee.Schermerhorn@hp.com>
+Cc: "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       "'Brice Goglin'" <Brice.Goglin@inria.fr>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+ <87zldjn597.fsf@basil.nowhere.org>
+ <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+ <20090612103251.GJ25568@one.firstfloor.org>
+ <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+ <1245119977.6724.40.camel@lts-notebook>
+In-reply-to: <1245119977.6724.40.camel@lts-notebook>
+Subject: RE: [RFC PATCH 0/4]: affinity-on-next-touch
+Date: Tue, 16 Jun 2009 15:58:57 +0200
+Organization: Chair for Operating Systems, RWTH Aachen University
+Message-id: <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-index: AcnuK7joXUArn5CyTaOZHz9Xl7JmowAXXYzA
+Content-language: de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 08:03:08AM +0800, Minchan Kim wrote:
-> On Mon, 15 Jun 2009 23:26:12 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> > On Mon, Jun 15, 2009 at 09:09:03PM +0800, Minchan Kim wrote:
-> > > On Mon, Jun 15, 2009 at 11:45 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > > > From: Andi Kleen <ak@linux.intel.com>
-> > > >
-> > > > When a page has the poison bit set replace the PTE with a poison entry.
-> > > > This causes the right error handling to be done later when a process runs
-> > > > into it.
-> > > >
-> > > > Also add a new flag to not do that (needed for the memory-failure handler
-> > > > later)
-> > > >
-> > > > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > > >
-> > > > ---
-> > > >  include/linux/rmap.h |    1 +
-> > > >  mm/rmap.c            |    9 ++++++++-
-> > > >  2 files changed, 9 insertions(+), 1 deletion(-)
-> > > >
-> > > > --- sound-2.6.orig/mm/rmap.c
-> > > > +++ sound-2.6/mm/rmap.c
-> > > > @@ -958,7 +958,14 @@ static int try_to_unmap_one(struct page
-> > > >        /* Update high watermark before we lower rss */
-> > > >        update_hiwater_rss(mm);
-> > > >
-> > > > -       if (PageAnon(page)) {
-> > > > +       if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
-> > > > +               if (PageAnon(page))
-> > > > +                       dec_mm_counter(mm, anon_rss);
-> > > > +               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
-> > > 
-> > > Isn't it straightforward to use !is_hwpoison_entry ?
-> > 
-> > Good catch!  It looks like a redundant check: the
-> > page_check_address() at the beginning of the function guarantees that 
-> > !is_migration_entry() or !is_migration_entry() tests will all be TRUE.
-> > So let's do this?
-> It seems you expand my sight :)
+> I would like to get these patches working with latest mmotm to test on
+> some newer hardware where I think they will help more.  And I would
+> welcome your support.  However, I think we'll need to get Balbir and
+> Kamezawa-san involved to sort out the interaction with memory control
+> group.
 > 
-> I don't know migration well.
-> How page_check_address guarantee it's not migration entry ? 
-
-page_check_address() calls pte_present() which returns the
-(_PAGE_PRESENT | _PAGE_PROTNONE) bits. While x86-64 defines
-
-#define __swp_entry(type, offset)       ((swp_entry_t) { \
-                                         ((type) << (_PAGE_BIT_PRESENT + 1)) \
-                                         | ((offset) << SWP_OFFSET_SHIFT) })
-
-where SWP_OFFSET_SHIFT is defined to the bigger one of
-max(_PAGE_BIT_PROTNONE + 1, _PAGE_BIT_FILE + 1) = max(8+1, 6+1) = 9.
-
-So __swp_entry(type, offset) := (type << 1) | (offset << 9)
-
-We know that the swap type is 5 bits. So the bit 0 _PAGE_PRESENT and bit 8
-_PAGE_PROTNONE will all be zero for swap entries.
- 
-
-> In addtion, If the page is poison while we are going to
-> migration((PAGE_MIGRATION && migration) == TRUE), we should decrease
-> file_rss ?
-
-It will die on trying to migrate the poisoned page so we don't care
-the accounting. But normally the poisoned page shall already be
-isolated so we don't care that die either.
-
-Thanks,
-Fengguang
-
-> > 
-> > -               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
-> > +               else
-> > 
-> > 
-> > Thanks,
-> > Fengguang
+> I can send you the more recent rebase that I've done.  This is getting
+> pretty old now:  2.6.28-rc4-mmotm-081110-081117.  I'll try to rebase to
+> the most recent mmotm [that boots on my platforms], at least so that we
+> can build and boot with migrate-on-fault disabled, within the next
+> couple of weeks.
 > 
-> 
-> -- 
-> Kinds Regards
-> Minchan Kim
+
+Sounds good! Send me your last version and I will try to reconstruct your
+problems. Afterwards, we could try to solve these problems.
+
+Regards,
+
+Stefan
+
