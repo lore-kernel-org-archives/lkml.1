@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbZFPWUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbZFPWdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759462AbZFPWUD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 18:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbZFPWTy
+	id S1758828AbZFPWdD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 18:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZFPWct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 18:19:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52223 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755900AbZFPWTx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 18:19:53 -0400
-Date: Tue, 16 Jun 2009 15:19:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Patterson <andrew.patterson@hp.com>
-cc: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
- trees
-In-Reply-To: <20090616220419.14021.84524.stgit@bob.kio>
-Message-ID: <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain>
-References: <20090616220419.14021.84524.stgit@bob.kio>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 16 Jun 2009 18:32:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52355 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753500AbZFPWct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 18:32:49 -0400
+Date: Wed, 17 Jun 2009 00:27:10 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Eugene Teo <eugene@redhat.com>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       solar@openwall.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] send_sigio_to_task: sanitize the usage of fown->signum
+Message-ID: <20090616222710.GA7620@redhat.com>
+References: <4A36532E.3050006@redhat.com> <20090615174544.GA10467@redhat.com> <4A36E555.80206@redhat.com> <20090616183829.GA10027@redhat.com> <alpine.LFD.2.01.0906161224110.3282@localhost.localdomain> <20090616204941.GB28663@redhat.com> <alpine.LFD.2.01.0906161433270.16802@localhost.localdomain> <20090616215103.GA4853@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616215103.GA4853@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+send_sigio_to_task() reads fown->signum several times, we can race with
+F_SETSIG which changes ->signum lockless. In theory, this can fool security
+checks or we can call group_send_sig_info() with the wrong ->si_signo which
+does not match "int sig".
 
+Change the code to cache ->signum.
 
-On Tue, 16 Jun 2009, Andrew Patterson wrote:
->
-> I recently ran into a resource collision problem where PCI hot-plug
-> operations are failing for certain PCI topologies.  One case
-> illustrating the problem is using a QLogic PCIe HBA in a slot with a
-> PCIe root port as its parent bus.  Here is an abbreviated lspci output
-> for this topology:
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-I think the problem is real, but the fix is wrong.
+--- a/fs/fcntl.c~signum	2009-06-16 21:41:18.000000000 +0200
++++ b/fs/fcntl.c	2009-06-17 00:11:38.000000000 +0200
+@@ -426,14 +426,20 @@ static inline int sigio_perm(struct task
+ }
+ 
+ static void send_sigio_to_task(struct task_struct *p,
+-			       struct fown_struct *fown, 
++			       struct fown_struct *fown,
+ 			       int fd,
+ 			       int reason)
+ {
+-	if (!sigio_perm(p, fown, fown->signum))
++	/*
++	 * F_SETSIG can change ->signum lockless in parallel, make
++	 * sure we read it once and use the same value throughout.
++	 */
++	int signum = ACCESS_ONCE(fown->signum);
++
++	if (!sigio_perm(p, fown, signum))
+ 		return;
+ 
+-	switch (fown->signum) {
++	switch (signum) {
+ 		siginfo_t si;
+ 		default:
+ 			/* Queue a rt signal with the appropriate fd as its
+@@ -442,7 +448,7 @@ static void send_sigio_to_task(struct ta
+ 			   delivered even if we can't queue.  Failure to
+ 			   queue in this case _should_ be reported; we fall
+ 			   back to SIGIO in that case. --sct */
+-			si.si_signo = fown->signum;
++			si.si_signo = signum;
+ 			si.si_errno = 0;
+ 		        si.si_code  = reason;
+ 			/* Make sure we are called with one of the POLL_*
+@@ -454,7 +460,7 @@ static void send_sigio_to_task(struct ta
+ 			else
+ 				si.si_band = band_table[reason - POLL_IN];
+ 			si.si_fd    = fd;
+-			if (!group_send_sig_info(fown->signum, &si, p))
++			if (!group_send_sig_info(signum, &si, p))
+ 				break;
+ 		/* fall-through: fall back on the old plain SIGIO signal */
+ 		case 0:
 
-> After boot, the resource tree looks like:
-> 
-> f0000000-fdffffff : PCI Bus 0000:c3
->   f0000000-fdffffff : PCI Bus 0000:c2
-
-So the problem is 9if I get this correctly) that c3 should be _inside_ c2. 
-No?
-
-But you fix it by making find_resource always go as deep as it can (if I 
-read the code correctly). Which is not necessarily always what we want 
-either - we've had this kind of confusion before, and the problem is that 
-different users of find_resource simply want different things.
-
-The deeper problem (I think) is that the whole "find c3 resource" thing 
-should not have started from the root IN THE FIRST PLACE. I think it 
-should have started from its parent resources (and then, as a special 
-case, if the parent is transparent, look into the parent of the parent, 
-etc - in which case it can easily end up in the root in the end, but only 
-if it couldn't fit things in a parent window).
-
-And I'm almost certain that I've seen that patch from Ivan at some point, 
-but it was after the merge window closed so it didn't get merged.
-
-Ivan? Or anybody else who remembers the patch?
-
-		Linus
