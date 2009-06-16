@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757790AbZFPKhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbZFPKih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757790AbZFPKhY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZFPKhN
+	id S1757668AbZFPKih (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZFPKi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 06:37:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46413 "EHLO mx1.redhat.com"
+	Tue, 16 Jun 2009 06:38:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55371 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752052AbZFPKhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 06:37:11 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751866AbZFPKi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 06:38:28 -0400
+Date: Tue, 16 Jun 2009 06:38:23 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Steve French <sfrench@us.ibm.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: cifs tree build warning
+Message-ID: <20090616063823.688c93c2@tlielax.poochiereds.net>
+In-Reply-To: <20090616160751.4acfdf1d.sfr@canb.auug.org.au>
+References: <20090616160751.4acfdf1d.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Petr Tesarik <ptesarik@suse.cz>
-X-Fcc: ~/Mail/linus
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH v2 0/8] clean up vdso-layout.lds.S
-In-Reply-To: Petr Tesarik's message of  Tuesday, 16 June 2009 11:55:01 +0200 <1245146101.17481.202.camel@nathan.suse.cz>
-References: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>
-	<20090616084015.5D2E44B6FD@magilla.sf.frob.com>
-	<1245146101.17481.202.camel@nathan.suse.cz>
-X-Zippy-Says: ..  Now I think I just reached the state of HYPERTENSION that comes
-    JUST BEFORE you see the TOTAL at the SAFEWAY CHECKOUT COUNTER!
-Message-Id: <20090616103445.A3008D56E@magilla.sf.frob.com>
-Date: Tue, 16 Jun 2009 03:34:45 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Upfront, thank you very much for reviewing the series, Roland!
+On Tue, 16 Jun 2009 16:07:51 +1000
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-I'm glad to help.
+> Hi Steve,
+> 
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+> 
+> fs/cifs/dns_resolve.c: In function 'is_ip':
+> fs/cifs/dns_resolve.c:42: warning: passing argument 1 of 'cifs_convert_address' discards qualifiers from pointer target type
+> fs/cifs/cifsproto.h:77: note: expected 'char *' but argument is of type 'const char *'
+> 
+> Introduced by commit 1e68b2b2756fc3488ecbade5ad5f13302b3aaafc ("cifs: add
+> new routine for converting AF_INET and AF_INET6 addrs").
+> 
 
-> And there currently isn't one. But the writability of the vDSO is a bit
-> more complicated. True, the VMA is initially mapped read-only, but it is
-> possible to make it writable using mprotect(). 
+Known problem. The warning is pretty harmless (that variable doesn't
+ever get changed). Once Steve commits the last patch in that series
+the warning will go away.
 
-Except for CONFIG_COMPAT_VDSO on X86_32.
-
-> You may also set an
-> INT3-style breakpoint in the vDSO area. So, it's all about policy. If
-> there were any demand to make the vDSO writable, it could be done with a
-> trivial patch.
-
-There's a big difference between "writable" and "might be written".
-
-> If we do not _WANT_ to make it writable, then we can simply add .data
-> and .bss to .broken.
-
-That is the correct thing to do.
-
-> Yes, all .rel* sections should be in .broken, I guess.
-
-You can toss an "void *x = &x;" into the vdso sources to verify that this
-setup makes that explode gracefully.
-
-> This was an attempt to discard .note.GNU-stack, which is what the
-> default linker script does, but it appears that all .note.GNU-stack
-> sections are zero-size, so this change does not make any difference.
-
-Indeed it does not.
-
-
-Thanks,
-Roland
+-- 
+Jeff Layton <jlayton@redhat.com>
