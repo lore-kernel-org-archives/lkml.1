@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZFPHjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759804AbZFPHkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbZFPHjD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 03:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbZFPHiz
+	id S1759804AbZFPHkL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 03:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbZFPHkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 03:38:55 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:58361 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbZFPHiy (ORCPT
+	Tue, 16 Jun 2009 03:40:00 -0400
+Received: from av7-1-sn3.vrr.skanova.net ([81.228.9.181]:39725 "EHLO
+	av7-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752751AbZFPHj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 03:38:54 -0400
-Message-Id: <200906160738.n5G7cs9r007216@www262.sakura.ne.jp>
-Subject: [x86] Build error at arch/x86/boot/bioscall.S
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
+	Tue, 16 Jun 2009 03:39:59 -0400
+Message-ID: <4A374C50.1000508@mocean-labs.com>
+Date: Tue, 16 Jun 2009 09:40:00 +0200
+From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org
+Subject: Re: [RESEND][PATCH] input: Added TSC2003
+References: <4A366439.70005@mocean-labs.com> <5d5443650906151110u3f7d9d1cm1990e767d29a45b6@mail.gmail.com> <4A36A1C2.2060805@mocean-labs.com> <20090616062044.GA20209@avionic-design.de>
+In-Reply-To: <20090616062044.GA20209@avionic-design.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Date: Tue, 16 Jun 2009 16:38:54 +0900
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 16062009 #2124512, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On 09-06-16 08.20, Thierry Reding wrote:
+>>>>
+>>> Meaning? I think I2C transaction can sleep.
+>> Yes that's what it means, and that's bad in a HR timer callback.
+> 
+> Note that my patch to the tsc2007 to support the tsc2003 exactly fixes this
+> problem. It moves the actual I2C transfers into a workqueue, so no sleeping
+> functions are called from the hrtimer callback.
 
-I tried to build 03347e2592078a90df818670fddf97a33eec70fb and got this error.
+Ah good! The IRQ is disabled no sync too.
+We actually don't have the possibility to implement a pen down state callback,
+so I need to modify the code slightly to work even without one. (but not be
+as accurate when the callback is not available)
 
-(...snipped...)
-WARNING: modpost: Found 2 section mismatch(es).
-To see full details build your kernel with:
-'make CONFIG_DEBUG_SECTION_MISMATCH=y'
-/usr/src/all/linux/kernel/git/torvalds/linux-2.6.git/usr/include/linux/netfilter/xt_osf.h:40: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/usr/src/all/linux/kernel/git/torvalds/linux-2.6.git/usr/include/mtd/jffs2-user.h:21: userspace cannot call function or variable defined in the kernel
-Documentation/accounting/getdelays.c: In function `main':
-Documentation/accounting/getdelays.c:249: warning: `cmd_type' might be used uninitialized in this function
-Documentation/spi/spidev_fdx.c: In function `do_msg':
-Documentation/spi/spidev_fdx.c:61: warning: cast from pointer to integer of different size
-Documentation/spi/spidev_fdx.c:64: warning: cast from pointer to integer of different size
-arch/x86/boot/bioscall.S: Assembler messages:
-arch/x86/boot/bioscall.S:68: Error: `68(%esp)' is not a valid 16 bit base/index expression
-make[1]: *** [arch/x86/boot/bioscall.o] Error 1
-make: *** [bzImage] Error 2
+Your patch where it schedules work rather than calling the I2C function directly
+isn't in mainline.
+I saw a patch where you added the work scheduling, and a later patch where you
+fixed some spinlock stuff, have you resent the patch for the work scheduling?
 
-# gcc --version
-gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
-Copyright (C) 2003 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-Regards.
+--Richard
