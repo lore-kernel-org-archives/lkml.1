@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbZFPQWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZFPQXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbZFPQWJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbZFPQV5
+	id S1760115AbZFPQXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbZFPQXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:21:57 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:59156 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756949AbZFPQV5 convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 12:23:14 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:56163 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbZFPQXN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:21:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sH2/04o/hiEXW7wfR7czHzeLRxw8b1ikoLNMQyEHjjrxcivUTFs/L58Y7IoZgiBOJP
-         +AzRhzelJ9WhRkuS5eK+XMWvFFl5naFI+Ksq1R0mG4Ka3WqNsMbKMh4YGTDsar4NzNhG
-         xb4I9c+Mu498RLd0pQ3F022bjdw7v0L0m/e2E=
+	Tue, 16 Jun 2009 12:23:13 -0400
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
+       Paul E McKenney <paulmck@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
+Subject: Re: [RFD PATCH 2/4] cpu: sysfs interface for hotplugging bunch of
+ CPUs.
+References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com>
+ <20090616053849.30891.17453.stgit@sofia.in.ibm.com>
+From: Nathan Lynch <ntl@pobox.com>
+Date: Tue, 16 Jun 2009 11:22:56 -0500
+In-Reply-To: <20090616053849.30891.17453.stgit@sofia.in.ibm.com> (Gautham R.
+ Shenoy's message of "Tue\, 16 Jun 2009 11\:08\:49 +0530")
+Message-ID: <m3iqiwup0f.fsf@pobox.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090615145933.GA26856@damson.getinternet.no>
-References: <alpine.LFD.2.01.0906120933120.3237@localhost.localdomain>
-	 <20090615145933.GA26856@damson.getinternet.no>
-Date: Tue, 16 Jun 2009 19:21:57 +0300
-X-Google-Sender-Auth: e9d94a6a5a76270e
-Message-ID: <84144f020906160921s234b0095k654c75e2e6bfe6dd@mail.gmail.com>
-Subject: Re: [GIT PULL] kmemcheck for mainline
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: FEA98BBE-5A91-11DE-8672-97731A10BFE7-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 5:59 PM, Vegard Nossum<vegard.nossum@gmail.com> wrote:
-> I redid the tree by rebasing. I've backported and incorporated fixes except
-> in the (few) cases where multiple authors were involved, in order to preserve
-> authorship information. I rebased against the same version that the previous
-> pull request was merged to; this allows us to easily view the difference
-> between the two pull requests (minus the top commit, which is a merge with
-> your latest tree):
+Gautham R Shenoy <ego@in.ibm.com> writes:
+> echo 2,3 > /sys/devices/system/cpu/offline #Offlines CPUs 2 and 3
+> echo 4 > /sys/devices/sytem/cpu/offline    #Offlines CPU 4
+> echo 2-4 > /sys/devices/system/cpu/online  #Onlines CPU 2,3,4
 >
->  $ git diff kmemcheck/for-linus..kmemcheck/for-linus2^
+> This patch changes the permissions of these sysfs files from 0444 to 0644.
+> It provides a dummy store function, which currently parses the input
+> provided by the user and copies them to another debug cpumask structure,
+> which can be accessed using the sysfs interfaces:
+> 	/sys/devices/system/cpu/debug_offline
+> and
+> 	/sys/devices/system/cpu/debug_online
 >
-> and account for any discrepancies (see the bottom of this e-mail). I've
-> tested the new tree on x86 and x86_64 with and without kmemcheck.
+> Thus on performing a
+> 	echo 2,3 > /sys/devices/system/cpu/offline
+> the operation
+> 	cat /sys/devices/system/cpu/debug_offline
+> should yield
+> 	2-3
+> as the result.
 
-Looks good to me. Ingo, if Linus doesn't pull this for -rc1, I think
-you should nuke the kmemcheck branch in -tip and use this instead,
-right?
-
-                                Pekka
+These debug_(on|off)line attributes aren't intended to be in the final
+result, are they?  They don't seem useful beyond the development phase
+of this feature...
