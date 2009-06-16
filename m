@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761352AbZFPTIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbZFPTMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761352AbZFPTIg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 15:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760418AbZFPTI0
+	id S1757488AbZFPTMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 15:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbZFPTMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 15:08:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48095
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759965AbZFPTI0 (ORCPT
+	Tue, 16 Jun 2009 15:12:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47637 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751043AbZFPTME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 15:08:26 -0400
-Date: Tue, 16 Jun 2009 12:08:29 -0700 (PDT)
-Message-Id: <20090616.120829.182011393.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: eric.dumazet@gmail.com, mingo@elte.hu, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.01.0906161155400.3282@localhost.localdomain>
-References: <4A37A058.1030701@gmail.com>
-	<4A37AA0C.40507@gmail.com>
-	<alpine.LFD.2.01.0906161155400.3282@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Jun 2009 15:12:04 -0400
+Date: Tue, 16 Jun 2009 12:10:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       yinghai@kernel.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+In-Reply-To: <alpine.DEB.1.10.0906161104480.26093@gentwo.org>
+Message-ID: <alpine.LFD.2.01.0906161208100.3282@localhost.localdomain>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>  <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>  <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>  <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> 
+ <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>  <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop>  <20090615112205.GA6012@wotan.suse.de> <20090615112827.GC6012@wotan.suse.de> <1245101567.12400.38.camel@pasglop>
+ <alpine.DEB.1.10.0906161104480.26093@gentwo.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 16 Jun 2009 11:59:34 -0700 (PDT)
 
-> At the very least, add a helper function for "do I actually have 
-> outstanding allocations" or something like that. IOW, do a 
-> 
-> 	/*
-> 	 * Comment here about that magical "1"
-> 	 */
-> 	static inline int sk_has_allocations(struct sock *sk)
-> 	{
-> 		return atomic_read(&sk->sk_wmem_alloc) > 1 ||
-> 			atomic_read(&sk->sk_rmem_alloc);
-> 	}
-> 
-> and then make the various network protocols use that, rather than 
-> open-coding some random internal implementation magic.
 
-I agree, this should be handled with a helper function
-abstraction rather than putting "1" checks all over the place.
+On Tue, 16 Jun 2009, Christoph Lameter wrote:
+
+> On Tue, 16 Jun 2009, Benjamin Herrenschmidt wrote:
+> 
+> > On Mon, 2009-06-15 at 13:28 +0200, Nick Piggin wrote:
+> > > If a couple of specialised early boot code places have
+> > > to test slab_is_available() to prevent crap leaking into
+> > > our main allocators, then that's quite fine by me.
+> >
+> > slab_is_available() will not fix the problem in that case. In fact,
+> >  existing tests of slab_is_available() have been broken because they
+> > assumed that when it was true, then GFP_KERNEL would work.
+> 
+> Can we get rid of slab_is_available for that purpose? AFAICT: There needs
+> to be something that tells us that the page allocator is available or that
+> the mm subsystem is fully operational.
+> 
+> Could we add more bootup states to enum system_states?
+
+I'd rather get rid of the whole slab_is_available() thing entirely.
+
+All the recent init ordering changes should mean that the slab allocator 
+is available _much_ earlier - to the point that hopefully any code that 
+runs before slab is initialized should know very deep down that it's 
+special, and uses the bootmem allocator without doing any conditionals 
+what-so-ever.
+
+If that isn't true yet, then we should make it more true.
+
+IOW, we should strive for not having any code that is at all confused 
+about whether it can do slab allocations or not.
+
+			Linus
