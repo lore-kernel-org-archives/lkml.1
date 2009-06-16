@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765516AbZFPGRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935908AbZFPGRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765516AbZFPGRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZFPGRM
+	id S935908AbZFPGRh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZFPGR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 02:17:12 -0400
-Received: from sh.osrg.net ([192.16.179.4]:33898 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbZFPGRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 02:17:11 -0400
-Date: Tue, 16 Jun 2009 15:16:37 +0900
-To: joerg.roedel@amd.com
-Cc: stefanr@s5r6.in-berlin.de, ben-linux@fluff.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: dma-debug: check_for_stack background?
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090615081355.GA5139@amd.com>
-References: <20090614212018.GD20442@fluff.org.uk>
-	<4A356F0E.9020809@s5r6.in-berlin.de>
-	<20090615081355.GA5139@amd.com>
+	Tue, 16 Jun 2009 02:17:26 -0400
+Received: from www84.your-server.de ([213.133.104.84]:38562 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758021AbZFPGRZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 02:17:25 -0400
+Subject: Re: + procfs-provide-stack-information-for-threads-v08.patch added
+ to -mm tree
+From: Stefani Seibold <stefani@seibold.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, ebiederm@xmission.com, mingo@elte.hu
+In-Reply-To: <20090615223333.GA8734@x200.localdomain>
+References: <200906152202.n5FM25VD021536@imap1.linux-foundation.org>
+	 <20090615223333.GA8734@x200.localdomain>
+Content-Type: text/plain
+Date: Tue, 16 Jun 2009 08:17:06 +0200
+Message-Id: <1245133026.17989.2.camel@wall-e>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.2 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090616151628V.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 16 Jun 2009 15:16:38 +0900 (JST)
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009 10:13:55 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Sun, Jun 14, 2009 at 11:43:42PM +0200, Stefan Richter wrote:
-> > Ben Dooks wrote:
-> >> On Sun, Jun 14, 2009 at 08:56:29PM +0200, Stefan Richter wrote:
-> >>> the DMA debug facility warns  about mappings of on-stack memory.  
-> >>> What's the problem with that?
-> > ...
-> >> I'm not sure if it is possible on all architectures, however the
-> >> DMA mapping documentation prohibts the use of stack memory.
-> >
-> > Ah, it has all been documented in plain sight for ages.  Thanks for the  
-> > pointer.
+Am Dienstag, den 16.06.2009, 02:33 +0400 schrieb Alexey Dobriyan:
+> On Mon, Jun 15, 2009 at 03:02:05PM -0700, akpm@linux-foundation.org wrote:
+> >      procfs-provide-stack-information-for-threads-v08.patch
+> > --- a/fs/proc/array.c~procfs-provide-stack-information-for-threads-v08
 > 
-> Problem is that the stack might go away or could be otherwise reused
-> while the DMA is in-flight. This could cause really hard to debug
-> problems.
+> > +++ a/fs/proc/array.c
+> > @@ -321,6 +321,54 @@ static inline void task_context_switch_c
+> >  			p->nivcsw);
+> >  }
+> >  
+> > +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
+> > +					struct task_struct *p)
+> > +{
+> > +	unsigned long	i;
+> > +	struct page	*page;
+> > +	unsigned long	stkpage;
+> > +
+> > +	stkpage = KSTK_ESP(p) & PAGE_MASK;
+> > +
+> > +#ifdef CONFIG_STACK_GROWSUP
+> > +	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
+> > +
+> > +		page = follow_page(vma, i-PAGE_SIZE, 0);
+> 
+> How can this work?
+> 
+> If stack page got swapped out, you'll get smaller than actual result.
+> 
 
-Not true. Even if you use the stack buffer for DMA synchronously, it
-doesn't work (we had the bad code like starting dma and waiting for
-the completion).
+If you tell me how to do it in the right way, i can fix it!
 
-On some architectures, we can't use the stack buffer for DMA. That's
-why the DMA mapping documentation prohibits the use of stack memory
-for DMA.
+
