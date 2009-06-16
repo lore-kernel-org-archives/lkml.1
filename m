@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbZFPSu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbZFPSxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761585AbZFPSu4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 14:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761282AbZFPSur
+	id S1761772AbZFPSxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 14:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbZFPSxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 14:50:47 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34751 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752338AbZFPSuq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 14:50:46 -0400
-Date: Tue, 16 Jun 2009 14:50:48 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Thomas Meyer <thomas@m3y3r.de>
-cc: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Frans Pop <elendil@planet.nl>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
-In-Reply-To: <1245174438.9269.5.camel@localhost>
-Message-ID: <Pine.LNX.4.44L0.0906161429060.5125-100000@iolanthe.rowland.org>
+	Tue, 16 Jun 2009 14:53:41 -0400
+Received: from kroah.org ([198.145.64.141]:50442 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754209AbZFPSxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 14:53:41 -0400
+Date: Tue, 16 Jun 2009 11:49:43 -0700
+From: Greg KH <greg@kroah.com>
+To: Stefan Bader <stefan.bader@canonical.com>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, Tim Gardner <tim.gardner@canonical.com>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Volunteering for stable patch review process
+Message-ID: <20090616184943.GA28969@kroah.com>
+References: <43e72e890906152230j7bd91086y26f3ab7fb3c0cfa7@mail.gmail.com> <20090616053718.GE30071@sequoia.sous-sol.org> <43e72e890906161132m4bfcf2cbpdf46712f1b7afeb5@mail.gmail.com> <4A37E7D1.7060109@canonical.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A37E7D1.7060109@canonical.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Thomas Meyer wrote:
-
-> Yes. These patches make usbmon stop abending.
+On Tue, Jun 16, 2009 at 08:43:29PM +0200, Stefan Bader wrote:
+> Luis R. Rodriguez wrote:
+> > On Mon, Jun 15, 2009 at 10:37 PM, Chris Wright<chrisw@sous-sol.org> wrote:
+> >> * Luis R. Rodriguez (mcgrof@gmail.com) wrote:
+> >>> I'm curious what the process is to join the group of volunteers to
+> >>> review stable patches. Can't seem to find the docs for it. The only
+> >>> excerpt I see is:
+> >>>
+> >>> Review committee:
+> >>>
+> >>>  - This is made up of a number of kernel developers who have volunteered for
+> >>>    this task, and a few that haven't.
+> >> Just send a note (you just did) and we'll put you on the review list
+> >> (I just did).
+> > 
+> > OK thanks, I wasn't particularly looking to volunteer but to get info
+> > as to how to do it. But since you've already added me, lets go through
+> > with it -- I may at least be able to help review wireless stuff.
+> > 
+> >   Luis
 > 
-> Successful suspend -> stay in S3 -> resume cylce:
+> Ok, thanks for checking out that, Luis. I'd be interested in getting in 
+> participating. Which was the part that made Luis ask. Could you add me too?
 
-Unfortunately this log is uninterpretable, thanks largely to the two 
-mass-storage devices at addresses 9 and 10.  I can't tell what they
-are because they don't appear to be listed in the dmesg log you
-posted.
+Now added.
 
-The device at address 10 isn't working at all.  It apparently has 4
-LUNs but it replies to all commands for all LUNs with an error code
-saying that the LUN isn't supported.
+Hm, we now have 17 people on the list.  This might be getting a bit
+messy for some email systems to have such a large CC: list, perhaps we
+should look into setting up an email list, like the stable-commits list
+is used.
 
-The device at address 9 is working, but its I/O clutters up the log.
+Or perhaps we should just use the stable-commits list instead?  Chris,
+any thoughts?
 
-There's also something at address 4; perhaps an HID device, I can't
-tell.
+thanks,
 
-Can you run the test again, this time with no extraneous USB devices 
-plugged in?  (That includes hubs.)  And before starting the test, 
-collect the contents of /sys/kernel/debug/usb/devices (you'll probably 
-have to mount /sys/kernel/debug first).
-
-Alan Stern
-
+greg k-h
