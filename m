@@ -1,42 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZFPNPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZFPNcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758130AbZFPNPG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 09:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZFPNO5
+	id S1756712AbZFPNcS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 09:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZFPNcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 09:14:57 -0400
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:44279 "EHLO
-	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753881AbZFPNO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 09:14:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TO+6CU8BaNHDLBvWSs3Z/unsEW6t4r8D5ape2mzqRgLlbbdRfWA9vsFQiOXiPZBnTH
-         kO3LEYIT0wBR04Vp0Zfr6A6f7F3TRlpho5rHOT5OZjqPfiwxTjYrmGQOW6XuoiXjZwgl
-         M3gGbY708+M8tplbGu2spW6i1VdJA3pNFiu/c=
-Date: Tue, 16 Jun 2009 17:14:54 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org
-Subject: Re: 2.6.29.4: softlockup at find_get_page() et al
-Message-ID: <20090616131454.GA6168@x200.localdomain>
-References: <20090616110051.GA4864@x200.localdomain> <20090616130833.GA27925@wotan.suse.de>
+	Tue, 16 Jun 2009 09:32:06 -0400
+Received: from tichy.grunau.be ([85.131.189.73]:43368 "EHLO tichy.grunau.be"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753778AbZFPNcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 09:32:05 -0400
+Date: Tue, 16 Jun 2009 15:33:11 +0200
+From: Janne Grunau <j@jannau.net>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] eeepc-laptop: add 3G rfkill support for 901Go
+Message-ID: <20090616133311.GB8052@aniel.lan>
+References: <20090612223255.GD14878@aniel.lan> <71cd59b00906122352g77e8afdeh235c2a73b323a0d7@mail.gmail.com> <20090613110627.GG14878@aniel.lan> <71cd59b00906130436i5024afa7q5b7cb40005014e14@mail.gmail.com> <71cd59b00906150448k64ae335ah597e194180048c46@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090616130833.GA27925@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <71cd59b00906150448k64ae335ah597e194180048c46@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 03:08:33PM +0200, Nick Piggin wrote:
-> Thanks. Is it rebooted? It would be interesting to know what other
-> CPUs are doing (and even what other tasks are doing) if it is
-> still up.
+On Mon, Jun 15, 2009 at 01:48:03PM +0200, Corentin Chary wrote:
+> 
+> You can find the patch here,
+> http://git.iksaif.net/?p=acpi4asus.git;a=shortlog;h=refs/heads/eeepc-laptop
 
-It was rebooted, sorry.
+Thanks, rfkill for the 3g modem works as expected. But the wlan hotkey
+Fn + F1 doesn't work. I haven't had time to look at it.
+
+Janne
