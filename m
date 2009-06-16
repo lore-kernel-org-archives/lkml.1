@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937399AbZFPGHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937335AbZFPGHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937399AbZFPGHt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936036AbZFPFwK
+	id S937335AbZFPGHI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935994AbZFPFwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:52:10 -0400
-Received: from kroah.org ([198.145.64.141]:48431 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:52:04 -0400
+Received: from kroah.org ([198.145.64.141]:48460 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935913AbZFPFvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:51:32 -0400
+	id S935845AbZFPFvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:51:39 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-pcmcia@lists.infradead.org,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 46/64] pcmcia: remove driver_data direct access of struct device
-Date: Mon, 15 Jun 2009 22:46:35 -0700
-Message-Id: <1245131213-24168-46-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       openipmi-developer@lists.sourceforge.net
+Subject: [PATCH 53/64] ipmi: remove driver_data direct access of struct device
+Date: Mon, 15 Jun 2009 22:46:42 -0700
+Message-Id: <1245131213-24168-53-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -29,54 +29,34 @@ dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
 have been around since the beginning, so are backwards compatible with
 all older kernel versions.
 
-
-Cc: linux-pcmcia@lists.infradead.org
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: openipmi-developer@lists.sourceforge.net
+Acked-by: Corey Minyard <minyard@acm.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/pcmcia/ds.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/char/ipmi/ipmi_si_intf.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pcmcia/ds.c b/drivers/pcmcia/ds.c
-index 8f2bb01..304ff6d 100644
---- a/drivers/pcmcia/ds.c
-+++ b/drivers/pcmcia/ds.c
-@@ -394,7 +394,7 @@ static int pcmcia_device_probe(struct device * dev)
- 	p_drv = to_pcmcia_drv(dev->driver);
- 	s = p_dev->socket;
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index 2596446..d2e6980 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -2375,14 +2375,14 @@ static int __devinit ipmi_of_probe(struct of_device *dev,
+ 		info->io.addr_data, info->io.regsize, info->io.regspacing,
+ 		info->irq);
  
--	/* The PCMCIA code passes the match data in via dev->driver_data
-+	/* The PCMCIA code passes the match data in via dev_set_drvdata(dev)
- 	 * which is an ugly hack. Once the driver probe is called it may
- 	 * and often will overwrite the match data so we must save it first
- 	 *
-@@ -404,7 +404,7 @@ static int pcmcia_device_probe(struct device * dev)
- 	 * call which will then check whether there are two
- 	 * pseudo devices, and if not, add the second one.
- 	 */
--	did = p_dev->dev.driver_data;
-+	did = dev_get_drvdata(&p_dev->dev);
+-	dev->dev.driver_data = (void *) info;
++	dev_set_drvdata(&dev->dev, info);
  
- 	ds_dev_dbg(1, dev, "trying to bind to %s\n", p_drv->drv.name);
- 
-@@ -499,7 +499,7 @@ static int pcmcia_device_remove(struct device * dev)
- 	 * pseudo multi-function card, we need to unbind
- 	 * all devices
- 	 */
--	did = p_dev->dev.driver_data;
-+	did = dev_get_drvdata(&p_dev->dev);
- 	if (did && (did->match_flags & PCMCIA_DEV_ID_MATCH_DEVICE_NO) &&
- 	    (p_dev->socket->device_count != 0) &&
- 	    (p_dev->device_no == 0))
-@@ -978,7 +978,7 @@ static inline int pcmcia_devmatch(struct pcmcia_device *dev,
- 			return 0;
- 	}
- 
--	dev->dev.driver_data = (void *) did;
-+	dev_set_drvdata(&dev->dev, did);
- 
- 	return 1;
+ 	return try_smi_init(info);
  }
+ 
+ static int __devexit ipmi_of_remove(struct of_device *dev)
+ {
+-	cleanup_one_si(dev->dev.driver_data);
++	cleanup_one_si(dev_get_drvdata(&dev->dev));
+ 	return 0;
+ }
+ 
 -- 
 1.6.3.2
 
