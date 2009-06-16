@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759804AbZFPHkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbZFPHmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759804AbZFPHkL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 03:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbZFPHkA
+	id S1761438AbZFPHmf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 03:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZFPHm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 03:40:00 -0400
-Received: from av7-1-sn3.vrr.skanova.net ([81.228.9.181]:39725 "EHLO
-	av7-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbZFPHj7 (ORCPT
+	Tue, 16 Jun 2009 03:42:27 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:39159 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752126AbZFPHm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 03:39:59 -0400
-Message-ID: <4A374C50.1000508@mocean-labs.com>
-Date: Tue, 16 Jun 2009 09:40:00 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Tue, 16 Jun 2009 03:42:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LiqQmOXLc4POwLVBH27GR6zOhZ3LkPzP409BaMAjZpbmCK57RS4CgBLcOC5TKmNQ8TZcRISIa/bYOP2TGVKJjVciHKPeGH/dQlXNetxy4JUW+044yhxDIRuxFHEfk/PnY0WtuwcjjMfM7ZrokYIBQPwXpbRs4pBRZhaTluy1iDU=  ;
+X-YMail-OSG: FIQZ1RAVM1k1snBDQadxFWPJxqx8qBN3HyghtkmFvN5ZjSj4vcpSsoNyEMqRZWkH4PPbENKAMT7up4QZGrMFcrZU28a3lOabFKM8rUOEQUYqEYjUEQFVMDOkCo0QxepyzgHYh7.9vjhkzVQMu8qZ9Wvo0mOCnmF8d8JshyqJFzkMOqvwQ6KAYo.8Uf709TCbuSVanLWRmQsAI3ny_9rLzLvBlkU3W1AC.XyeQVPp1oJq6e1rbw7w2A8qGad7CqDoBjULqROB9.iRNA.JMcMTHJWEbQBZkcnYjCZgm42x20V8Qu0Pe3MPCXzdDDyig8.qYfQAbhAGU1_ZSUOHcSTmt7FvsM2J
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Baruch Siach <baruch@tkos.co.il>
+Subject: Re: [PATCH v5] gpio: driver for PrimeCell PL061 GPIO controller
+Date: Tue, 16 Jun 2009 00:42:28 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+References: <1244708976-22122-1-git-send-email-baruch@tkos.co.il> <200906151629.11350.david-b@pacbell.net> <20090616042008.GA2794@jasper.tkos.co.il>
+In-Reply-To: <20090616042008.GA2794@jasper.tkos.co.il>
 MIME-Version: 1.0
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org
-Subject: Re: [RESEND][PATCH] input: Added TSC2003
-References: <4A366439.70005@mocean-labs.com> <5d5443650906151110u3f7d9d1cm1990e767d29a45b6@mail.gmail.com> <4A36A1C2.2060805@mocean-labs.com> <20090616062044.GA20209@avionic-design.de>
-In-Reply-To: <20090616062044.GA20209@avionic-design.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200906160042.28932.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-06-16 08.20, Thierry Reding wrote:
->>>>
->>> Meaning? I think I2C transaction can sleep.
->> Yes that's what it means, and that's bad in a HR timer callback.
+On Monday 15 June 2009, Baruch Siach wrote:
+>
+> > > +static unsigned int pl061_irq_startup(unsigned irq)
+> > > +{
+> > > +       if (gpio_request(irq_to_gpio(irq), "IRQ") == 0)
+> > > +               pr_warning("%s: warning: GPIO%d has not been requested\n",
+> > > +                               __func__, irq_to_gpio(irq));
+> > 
+> > No, that's the responsibility of whoever is setting this up.
 > 
-> Note that my patch to the tsc2007 to support the tsc2003 exactly fixes this
-> problem. It moves the actual I2C transfers into a workqueue, so no sleeping
-> functions are called from the hrtimer callback.
+> The gpio_request() here is only for warning. It is expected to fail. Should I 
+> remove it? Shouldn't there be an is_gpio_requested() as part of gpiolib?
 
-Ah good! The IRQ is disabled no sync too.
-We actually don't have the possibility to implement a pen down state callback,
-so I need to modify the code slightly to work even without one. (but not be
-as accurate when the callback is not available)
+As I said elsewhere:  yes, remove it; and no, such a call
+would be pointless since it's conceptually broken in threaded
+environments, like inside the Linux kernel.
 
-Your patch where it schedules work rather than calling the I2C function directly
-isn't in mainline.
-I saw a patch where you added the work scheduling, and a later patch where you
-fixed some spinlock stuff, have you resent the patch for the work scheduling?
 
---Richard
+> > Normally, platform setup code would request the GPIO since it's
+> > being dedicated to some task on the board ... and then pass the
+> > gpio_to_irq() value as a device resource, or maybe the GPIO itself
+> > (if the driver had to deal with GPIOs per se).
+> > 
+> > Also, irq_to_gpio() can be problematic in some systems; avoid it.
+> 
+> I use irq_to_gpio() extensively to implement the enable/disable etc. methods 
+> of irq_chip. Is there a way to implement them without irq_to_gpio()?
+
+If it works on your systems, so be it ... it's highly
+system-specific whether it works.  But this driver is
+not supposed to be system-specific, and shouldn't use it.
+(And it doesn't need to use it, as noted.)
+  
+
+> > > +
+> > > +       pl061_irq_enable(irq);
+> > > +
+> > > +       return 0;
+> > > +}
+> > 
+> > Remove that gpio_request(), and the irq_to_gpio(), and you get:
+> > 
+> > Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> Thanks,
+> 
+> Baruch
+> 
+> -- 
+>                                                      ~. .~   Tk Open Systems
+> =}------------------------------------------------ooO--U--Ooo------------{=
+>    - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+> 
+> 
+
+
