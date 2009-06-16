@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbZFPLav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbZFPLjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbZFPLav (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 07:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZFPLam
+	id S1757596AbZFPLjm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 07:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZFPLjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 07:30:42 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:17242 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753248AbZFPLal (ORCPT
+	Tue, 16 Jun 2009 07:39:33 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:29051 "EHLO
+	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbZFPLjd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 07:30:41 -0400
-X-Trace: 212182289/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.73.120/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.73.120
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Al0FANoeN0pPRUl4/2dsb2JhbACBT9ByhA0F
-X-IronPort-AV: E=Sophos;i="4.42,228,1243810800"; 
-   d="scan'208";a="212182289"
-Date: Tue, 16 Jun 2009 12:29:45 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Wu Fengguang <fengguang.wu@intel.com>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Tue, 16 Jun 2009 07:39:33 -0400
+X-SpamScore: -22
+X-BigFish: VPS-22(zz1432R98dR1805Mzz1202hzzz32i17ch6bh43j)
+X-FB-SS: 5,13,
+X-WSS-ID: 0KLBXPE-03-FKU-01
+Date: Tue, 16 Jun 2009 13:39:13 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 10/22] HWPOISON: check and isolate corrupted free pages
- v2
-In-Reply-To: <20090616003440.GA7329@localhost>
-Message-ID: <Pine.LNX.4.64.0906161220070.31597@sister.anvils>
-References: <20090615024520.786814520@intel.com> <20090615031253.715406280@intel.com>
- <20090615184112.ed8e2f03.kamezawa.hiroyu@jp.fujitsu.com> <20090615101620.GA7216@localhost>
- <20090616085222.1545cc05.kamezawa.hiroyu@jp.fujitsu.com> <20090616003440.GA7329@localhost>
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: bug in tty ldisc and friends
+Message-ID: <20090616113913.GJ5139@amd.com>
+References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com> <20090616093741.0d5b36bc@lxorguk.ukuu.org.uk> <20090616085028.GA13771@elte.hu> <20090616095706.36f01282@lxorguk.ukuu.org.uk> <20090616100015.GD6432@elte.hu> <20090616110419.14bc9485@lxorguk.ukuu.org.uk> <20090616101240.GB28204@elte.hu> <20090616102509.GA32717@elte.hu> <20090616102910.GA11011@elte.hu> <20090616103606.GA3497@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090616103606.GA3497@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 Jun 2009 11:39:13.0692 (UTC) FILETIME=[12931DC0:01C9EE77]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Wu Fengguang wrote:
+On Tue, Jun 16, 2009 at 12:36:06PM +0200, Ingo Molnar wrote:
 > 
-> Right.  Then the original __ClearPageBuddy() call in bad_page() is
-> questionable, I guess this line was there just for the sake of safety
-> (ie. the buddy allocator itself goes wrong):
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> sound-2.6/mm/page_alloc.c
+> > This is something we noticed recently: dma-debug uses a lot of 
+> > lock classes and thus creates a really large lock-graph, depleting 
+> > the reserves quickly.
 > 
->         @@ -269,7 +269,6 @@ static void bad_page(struct page *page)
->                 dump_stack();
->          out:
->                 /* Leave bad fields for debug, except PageBuddy could make trouble */
-> ===>            __ClearPageBuddy(page);
->                 add_taint(TAINT_BAD_PAGE);
->          }
+> yep, i think dma-debug is the culprit. It has:
+> 
+>  #define HASH_SIZE       1024ULL
+> 
+> each hash entry has a separate lock.
+> 
+> But this should be easily to solve: a special lock-class for these 
+> locks. Patch below (warning: utterly untested!).
+> 
+> (Btw., that SPIN_LOCK_UNLOCKED init method should really be 
+> deprecated for real.)
+> 
+> 	Ingo
+> 
+> diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+> index 3b93129..012c240 100644
+> --- a/lib/dma-debug.c
+> +++ b/lib/dma-debug.c
+> @@ -62,6 +62,8 @@ struct dma_debug_entry {
+>  #endif
+>  };
+>  
+> +static struct lock_class_key hash_bucket_class;
+> +
+>  struct hash_bucket {
+>  	struct list_head list;
+>  	spinlock_t lock;
+> @@ -716,7 +718,8 @@ void dma_debug_init(u32 num_entries)
+>  
+>  	for (i = 0; i < HASH_SIZE; ++i) {
+>  		INIT_LIST_HEAD(&dma_entry_hash[i].list);
+> -		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
+> +		spin_lock_init(&dma_entry_hash[i].lock);
+> +		lockdep_set_lock_class(&dma_entry_hash[i].lock, &hash_bucket_class);
+>  	}
+>  
+>  	if (dma_debug_fs_init() != 0) {
 
-I didn't put that in for the case of the buddy allocator going wrong
-(not sure if there could be such a case - I don't mean that the buddy
-allocator is provably perfect! but how would it get here if it were
-wrong?).  No, I put that in for the case when the flag bits in struct
-page have themselves got corrupted somehow, and hence we arrive at
-bad_page(): most of the bits are best left as they are, to provide
-maximum debug info; but leaving PageBuddy set there might conceivably
-allow this corrupted struct page to get paired up with its buddy later,
-and so freed for reuse, when we're trying to make sure it's never reused.
+Ok, cool. I would apply it but I don't know enough about lockdep
+internals to write a meaningful commit message. Can you please provide
+one so I can commit this?
 
-Hugh
+	Joerg
+
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
+
