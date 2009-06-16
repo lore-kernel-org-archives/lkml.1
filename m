@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764797AbZFPUqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764311AbZFPUqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764797AbZFPUqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764383AbZFPUnt
+	id S1764311AbZFPUqf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764716AbZFPUpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:43:49 -0400
-Received: from bar.sig21.net ([80.81.252.164]:36656 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764103AbZFPUnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:43:47 -0400
-Date: Tue, 16 Jun 2009 22:44:02 +0200
-From: Johannes Stezenbach <js@sig21.net>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "rjw@sisk.pl" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "davej@redhat.com" <davej@redhat.com>, "pavel@ucw.cz" <pavel@ucw.cz>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: 2.6.30: hibernation/swsusp lockup due to acpi-cpufreq
-Message-ID: <20090616204402.GB13399@sig21.net>
-References: <20090615232709.GA6059@sig21.net> <200906160216.29537.rjw@sisk.pl> <20090616142217.GA5548@sig21.net> <20090616115540.ceb67a30.akpm@linux-foundation.org> <20090616195750.GA12814@sig21.net> <20090616202558.GA5423@linux-os.sc.intel.com>
+	Tue, 16 Jun 2009 16:45:38 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:37372 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764126AbZFPUph convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:45:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ij4spJV5VPrQQTiHgCFgKJlmFmNyCSUus2JhF+7rJTmxV6D3MqmOu2HKLVECPevLDV
+         Jh3jiZcFdfSOq9heNAiyNvHcT2Xfi+tmRmTcmGY7yssk/962DgaiTB2URgMJ1fqcs9Pm
+         M3sXINgPd/RUIjvr1tQKJaVTqNFoTK47Rj03A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616202558.GA5423@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-21-Score: -3.5 (---)
-X-Spam-21-Report: No, score=-3.5 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.851,BAYES_00=-2.599 autolearn=no
+In-Reply-To: <alpine.LFD.2.01.0906161119500.3282@localhost.localdomain>
+References: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie>
+	 <20090615022235.GA12905@kroah.com>
+	 <21d7e9970906141943s8dd6e27sd4308413601d65e3@mail.gmail.com>
+	 <48f7fe350906160853m41f43fe5i892a4057b5eae319@mail.gmail.com>
+	 <alpine.LFD.2.01.0906161119500.3282@localhost.localdomain>
+Date: Wed, 17 Jun 2009 06:45:39 +1000
+Message-ID: <21d7e9970906161345q6e826d18q3a197643e370156c@mail.gmail.com>
+Subject: Re: [git pull] drm - fixes + radeon KMS (part 2)
+From: Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ryan Hope <rmh3093@gmail.com>, Greg KH <greg@kroah.com>,
+       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 01:25:58PM -0700, Pallipadi, Venkatesh wrote:
-> 
-> diff --git a/kernel/up.c b/kernel/up.c
-> index 1ff27a2..a4318ff 100644
-> --- a/kernel/up.c
-> +++ b/kernel/up.c
-> @@ -10,11 +10,15 @@
->  int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
->  				int wait)
->  {
-> +	unsigned long flags;
-> +
->  	WARN_ON(cpu != 0);
->  
-> -	local_irq_disable();
-> +	WARN_ON(irqs_disabled());
-> +
-> +	local_irq_save(flags);
->  	(func)(info);
-> -	local_irq_enable();
-> +	local_irq_restore(flags);
->  
->  	return 0;
->  }
-> 
+On Wed, Jun 17, 2009 at 4:20 AM, Linus
+Torvalds<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Tue, 16 Jun 2009, Ryan Hope wrote:
+>>
+>> +#ifdef MODULE
+>>  module_init(radeon_init);
+>> +#else
+>> +late_initcall(radeon_init);
+>> +#endif
+>
+>
+> You should never need something like that.
+>
+> Just do
+>
+>        late_initcall(radeon_init);
 
-PS: It seems like a good idea to apply this patch with
-the warning even if the root cause of the hibernate problem
-is elsewhere, for better debuggability of such issues?
+I actually don't think we need either of them, the ordering shuoldn't
+matter, its just a bug we need to fix
+in the radeon code during staging I expect, in theory you should be
+able to load fbcon before/after radeon.
 
+I don't think the intel code suffers from this issue.
 
-Johannes
+Linus can you pull this tree?
+
+Dave.
