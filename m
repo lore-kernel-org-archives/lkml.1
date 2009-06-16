@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbZFPO3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbZFPOab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759130AbZFPO3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 10:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZFPO3j
+	id S1759206AbZFPOab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 10:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZFPOaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 10:29:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48120 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbZFPO3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 10:29:38 -0400
-Message-ID: <4A37AC54.2000607@redhat.com>
-Date: Tue, 16 Jun 2009 10:29:40 -0400
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 16 Jun 2009 10:30:19 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55770 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752911AbZFPOaS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 10:30:18 -0400
+Date: Tue, 16 Jun 2009 10:30:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <damm@igel.co.jp>,
+       <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
+ I/O devices
+In-Reply-To: <200906160121.40843.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906161028480.3740-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] scripts: allow docproc invocation from external
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch appears to be adversely affect the documentation build in the kernel
-source directory. When trying "make htmldocs" in the source directory of the
-kernel this git commit causes the make to fail with:
+On Tue, 16 Jun 2009, Rafael J. Wysocki wrote:
 
-$ make htmldocs V=1make -f scripts/Makefile.build obj=scripts/basic
-make -f scripts/Makefile.build obj=Documentation/DocBook htmldocs
-  SRCTREE=/home/wcohen/kernel/mingo/linux.trees.git/
-/home/wcohen/kernel/mingo/linux.trees.git/scripts/basic/docproc doc
-Documentation/DocBook/alsa-driver-api.tmpl
-> >Documentation/DocBook/alsa-driver-api.xml
-exec /scripts/kernel-doc: No such file or directory
-exec /scripts/kernel-doc: No such file or directory
-...
+> > Since pm_runtime_resume() takes care of powering up the parent, there's 
+> > no need for pm_request_resume() to worry about it also.
+> 
+> But still it won't hurt to do it IMO, because the parents are then going to be
+> resumed before our pm_runtime_resume() is called.
 
--Will
+It's extra code that isn't needed.  In essence, you are trading code
+space for a shorter runtime stack.
+
+> > The documentation should mention that the runtime_suspend method is 
+> > supposed to enable remote wakeup if it as available and if 
+> > device_may_wakeup(dev) is true.
+> 
+> Well, I thought that was obvious. :-)
+
+Sometimes it doesn't hurt to state the obvious!  :-)
+
+Alan Stern
 
