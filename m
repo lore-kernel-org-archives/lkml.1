@@ -1,170 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZFPOlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZFPOm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZFPOlU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 10:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZFPOlM
+	id S1755776AbZFPOm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 10:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZFPOmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 10:41:12 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:42424 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221AbZFPOlL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 10:41:11 -0400
-Message-ID: <4A37AEF7.7070203@novell.com>
-Date: Tue, 16 Jun 2009 10:40:55 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 16 Jun 2009 10:42:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51889 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751516AbZFPOmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 10:42:16 -0400
+Date: Tue, 16 Jun 2009 16:42:17 +0200
+From: Jan Kara <jack@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, npiggin@suse.de
+Subject: Re: [PATCH 0/10] Fix page_mkwrite() for blocksize < pagesize
+	(version 3)
+Message-ID: <20090616144217.GA18063@duck.suse.cz>
+References: <1245088797-29533-1-git-send-email-jack@suse.cz> <20090616143424.GA22002@infradead.org>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based notifier
- interface
-References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com>
-In-Reply-To: <20090616140240.GA9401@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig86AF6CDAD570166C519777E7"
+Content-Type: multipart/mixed; boundary="VS++wcV0S1rZb1Fb"
+Content-Disposition: inline
+In-Reply-To: <20090616143424.GA22002@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig86AF6CDAD570166C519777E7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Michael S. Tsirkin wrote:
-> On Mon, Jun 15, 2009 at 10:29:56PM -0400, Gregory Haskins wrote:
->  =20
->> irqfd and its underlying implementation, eventfd, currently utilize
->> the embedded wait-queue in eventfd for signal notification.  The nice =
-thing
->> about this design decision is that it re-uses the existing
->> eventfd/wait-queue code and it generally works well....with several
->> limitations.
->>
->> One of the limitations is that notification callbacks are always calle=
-d
->> inside a spin_lock_irqsave critical section.  Another limitation is
->> that it is very difficult to build a system that can recieve release
->> notification without being racy.
->>
->> Therefore, we introduce a new registration interface that is SRCU base=
-d
->> instead of wait-queue based, and implement the internal wait-queue
->> infrastructure in terms of this new interface.  We then convert irqfd
->> to use this new interface instead of the existing wait-queue code.
->>
->> The end result is that we now have the opportunity to run the interrup=
-t
->> injection code serially to the callback (when the signal is raised fro=
-m
->> process-context, at least) instead of always deferring the injection t=
-o a
->> work-queue.
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->> CC: Davide Libenzi <davidel@xmailserver.org>
->> ---
->>
->>  fs/eventfd.c            |  115 ++++++++++++++++++++++++++++++++++++++=
-+++++----
->>  include/linux/eventfd.h |   30 ++++++++++++
->>  virt/kvm/eventfd.c      |  114 +++++++++++++++++++++-----------------=
----------
->>  3 files changed, 188 insertions(+), 71 deletions(-)
->>
->> diff --git a/fs/eventfd.c b/fs/eventfd.c
->> index 72f5f8d..505d5de 100644
->> --- a/fs/eventfd.c
->> +++ b/fs/eventfd.c
->> @@ -30,8 +30,47 @@ struct eventfd_ctx {
->>  	 */
->>  	__u64 count;
->>  	unsigned int flags;
->> +	struct srcu_struct srcu;
->> +	struct list_head nh;
->> +	struct eventfd_notifier notifier;
->>  };
->> =20
->> +static void _eventfd_wqh_notify(struct eventfd_notifier *en)
->> +{
->> +	struct eventfd_ctx *ctx =3D container_of(en,
->> +					       struct eventfd_ctx,
->> +					       notifier);
->> +
->> +	if (waitqueue_active(&ctx->wqh))
->> +		wake_up_poll(&ctx->wqh, POLLIN);
->> +}
->> +
->> +static void _eventfd_notify(struct eventfd_ctx *ctx)
->> +{
->> +	struct eventfd_notifier *en;
->> +	int idx;
->> +
->> +	idx =3D srcu_read_lock(&ctx->srcu);
->> +
->> +	/*
->> +	 * The goal here is to allow the notification to be preemptible
->> +	 * as often as possible.  We cannot achieve this with the basic
->> +	 * wqh mechanism because it requires the wqh->lock.  Therefore
->> +	 * we have an internal srcu list mechanism of which the wqh is
->> +	 * a client.
->> +	 *
->> +	 * Not all paths will invoke this function in process context.
->> +	 * Callers should check for suitable state before assuming they
->> +	 * can sleep (such as with preemptible()).  Paul McKenney assures
->> +	 * me that srcu_read_lock is compatible with in-atomic, as long as
->> +	 * the code within the critical section is also compatible.
->> +	 */
->> +	list_for_each_entry_rcu(en, &ctx->nh, list)
->> +		en->ops->signal(en);
->> +
->> +	srcu_read_unlock(&ctx->srcu, idx);
->> +}
->> +
->>  /*
->>   * Adds "n" to the eventfd counter "count". Returns "n" in case of
->>   * success, or a value lower then "n" in case of coutner overflow.
->>    =20
->
-> This is ugly, isn't it? With CONFIG_PREEMPT=3Dno preemptible() is alway=
-s false.
->
-> Further, to do useful things it might not be enough that you can sleep:=
+--VS++wcV0S1rZb1Fb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> with iofd you also want to access current task with e.g. copy from user=
-=2E
->  =20
+On Tue 16-06-09 10:34:24, Christoph Hellwig wrote:
+> On Mon, Jun 15, 2009 at 07:59:47PM +0200, Jan Kara wrote:
+> > 
+> > patches below are an attempt to solve problems filesystems have with
+> > page_mkwrite() when blocksize < pagesize (see the changelog of the second patch
+> > for details).
+> 
+> It would be useful if you had a test case reproducing these issues,
+> so that I can verify how well your patches work in various scenarios.
+  Good point, I should have mentioned in the changelog: fsx-linux is able
+to trigger the problem quite quickly.
+  I have also written a simple program for initial testing of the fix
+(works only for 1K blocksize and 4K pagesize) - it's attached.
 
-Something else to consider:  For iosignalfd, we can assume we will
-always be called from vcpu process context so we might not really need
-official affirmation from the system.  For irqfd, we cannot predict who
-may be injecting the interrupt (for instance, it might be a
-PCI-passthrough hard-irq context).  I am not sure if this knowledge
-actually helps to simplify the problem space, but I thought I should
-mention it.
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
 
--Greg
+--VS++wcV0S1rZb1Fb
+Content-Type: text/x-c++src; charset=us-ascii
+Content-Disposition: attachment; filename="test-mkwrite.c"
 
+#define _XOPEN_SOURCE 500
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
+#define MMAP_THREADS 4
 
---------------enig86AF6CDAD570166C519777E7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+void map_file(int fd)
+{
+	char *addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	int i;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+	if (addr == MAP_FAILED) {
+		perror("mmap");
+		exit(1);
+	}
+	while (1) {
+		for (i = 0; i < 128; i++)
+			addr[i + 1024] = 'c';
+	}
+}
 
-iEYEARECAAYFAko3rvcACgkQlOSOBdgZUxmhAACfUF2Vuwp6K/jervgoYZdPam9A
-e+IAnA2NOZDZGmzbjQolNqUU+j8AeXuo
-=g4x6
------END PGP SIGNATURE-----
+char buf2[4096] __attribute__ ((aligned (4096)));
 
---------------enig86AF6CDAD570166C519777E7--
+int main(int argc, char **argv)
+{
+	int i;
+	int ret;
+	int fd;
+	char buf[1024];
+
+	if (argc != 2) {
+		printf("Usage: test-mkwrite <file>\n");
+		return 1;
+	}
+	fd = open(argv[1], O_RDWR | O_CREAT | O_TRUNC, 0644);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
+	memset(buf, 'a', sizeof(buf));
+	pwrite(fd, buf, sizeof(buf), 0);
+
+	for (i = 0; i < MMAP_THREADS; i++) {
+		ret = fork();
+		if (ret < 0) {
+			perror("fork");
+			return 1;
+		} else if (ret == 0)
+			map_file(fd);
+	}
+	close(fd);
+
+	memset(buf2, 'b', sizeof(buf2));
+	fd = open(argv[1], O_RDWR | O_DIRECT);
+	if (fd < 0) {
+		perror("dopen");
+		return 1;
+	}
+	while (1) {
+		if (pwrite(fd, buf2, 4096, 4096) < 0)
+			perror("pwrite");
+		usleep(10000000);
+		ftruncate(fd, 1024);
+		usleep(10000000);
+	}
+	
+	return 0;
+}
+
+--VS++wcV0S1rZb1Fb--
