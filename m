@@ -1,143 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764071AbZFPUTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZFPUUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764071AbZFPUTv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761853AbZFPUQV
+	id S1755484AbZFPUUF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761944AbZFPUQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:16:21 -0400
-Received: from claw.goop.org ([74.207.240.146]:40602 "EHLO claw.goop.org"
+	Tue, 16 Jun 2009 16:16:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51192 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760125AbZFPUQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:16:09 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 08/16] x86/ioapic.c: remove #ifdef for 82093AA workaround
-Date: Tue, 16 Jun 2009 13:15:47 -0700
-Message-Id: <1245183355-25808-9-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.2.2
-In-Reply-To: <1245183355-25808-1-git-send-email-jeremy@goop.org>
-References: <1245183355-25808-1-git-send-email-jeremy@goop.org>
+	id S1761170AbZFPUQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:16:17 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Ralf Gross <rg@stz-softwaretechnik.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: io-scheduler tuning for better read/write ratio
+References: <20090616154342.GA7043@p15145560.pureserver.info>
+	<4A37CB2A.6010209@davidnewall.com>
+	<20090616184027.GB7043@p15145560.pureserver.info>
+	<4A37E7DB.7030100@redhat.com>
+	<20090616185600.GC7043@p15145560.pureserver.info>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 16 Jun 2009 16:16:07 -0400
+In-Reply-To: <20090616185600.GC7043@p15145560.pureserver.info> (Ralf Gross's
+	message of "Tue, 16 Jun 2009 20:56:00 +0200")
+Message-ID: <x49d494c4u0.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Ralf Gross <rg@stz-softwaretechnik.com> writes:
 
-While no 64-bit hardware will have a version 0x11 I/O APIC which needs
-the level/edge bug workaround, that's not a particular reason to use
-CONFIG_X86_32 to #ifdef the code out.  Most 32-bit machines will no
-longer need the workaround either, so the test to see whether it is
-necessary should be more fine-grained than "32-bit=yes, 64-bit=no".
+> Casey Dahlin schrieb:
+>> On 06/16/2009 02:40 PM, Ralf Gross wrote:
+>> > David Newall schrieb:
+>> >> Ralf Gross wrote:
+>> >>> write throughput is much higher than the read throughput (40 MB/s
+>> >>> read, 90 MB/s write).
+>> > 
+>> > Hm, but I get higher read throughput (160-200 MB/s) if I don't write
+>> > to the device at the same time.
+>> > 
+>> > Ralf
+>> 
+>> How specifically are you testing? It could depend a lot on the
+>> particular access patterns you're using to test.
+>
+> I did the basic tests with tiobench. The real test is a test backup
+> (bacula) with 2 jobs that create 2 30 GB spool files on that device.
+> The jobs partially write to the device in parallel. Depending which
+> spool file reaches the 30 GB first, one starts reading from that file
+> and writing to tape, while to other is still spooling.
 
-(Also fix formatting of block comment.)
+We are missing a lot of details, here.  I guess the first thing I'd try
+would be bumping up the max_readahead_kb parameter, since I'm guessing
+that your backup application isn't driving very deep queue depths.  If
+that doesn't work, then please provide exact invocations of tiobench
+that reprduce the problem or some blktrace output for your real test.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/kernel/apic/io_apic.c |   47 ++++++++++++++++-----------------------
- 1 files changed, 19 insertions(+), 28 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index e767bcb..54ec66d 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -593,7 +593,6 @@ static void __mask_IO_APIC_irq(struct irq_cfg *cfg)
- 	io_apic_modify_irq(cfg, ~0, IO_APIC_REDIR_MASKED, &io_apic_sync);
- }
- 
--#ifdef CONFIG_X86_32
- static void __mask_and_edge_IO_APIC_irq(struct irq_cfg *cfg)
- {
- 	io_apic_modify_irq(cfg, ~IO_APIC_REDIR_LEVEL_TRIGGER,
-@@ -605,7 +604,6 @@ static void __unmask_and_level_IO_APIC_irq(struct irq_cfg *cfg)
- 	io_apic_modify_irq(cfg, ~IO_APIC_REDIR_MASKED,
- 			IO_APIC_REDIR_LEVEL_TRIGGER, NULL);
- }
--#endif /* CONFIG_X86_32 */
- 
- static void mask_IO_APIC_irq_desc(struct irq_desc *desc)
- {
-@@ -2508,11 +2506,8 @@ atomic_t irq_mis_count;
- static void ack_apic_level(unsigned int irq)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
--
--#ifdef CONFIG_X86_32
- 	unsigned long v;
- 	int i;
--#endif
- 	struct irq_cfg *cfg;
- 	int do_unmask_irq = 0;
- 
-@@ -2525,31 +2520,28 @@ static void ack_apic_level(unsigned int irq)
- 	}
- #endif
- 
--#ifdef CONFIG_X86_32
- 	/*
--	* It appears there is an erratum which affects at least version 0x11
--	* of I/O APIC (that's the 82093AA and cores integrated into various
--	* chipsets).  Under certain conditions a level-triggered interrupt is
--	* erroneously delivered as edge-triggered one but the respective IRR
--	* bit gets set nevertheless.  As a result the I/O unit expects an EOI
--	* message but it will never arrive and further interrupts are blocked
--	* from the source.  The exact reason is so far unknown, but the
--	* phenomenon was observed when two consecutive interrupt requests
--	* from a given source get delivered to the same CPU and the source is
--	* temporarily disabled in between.
--	*
--	* A workaround is to simulate an EOI message manually.  We achieve it
--	* by setting the trigger mode to edge and then to level when the edge
--	* trigger mode gets detected in the TMR of a local APIC for a
--	* level-triggered interrupt.  We mask the source for the time of the
--	* operation to prevent an edge-triggered interrupt escaping meanwhile.
--	* The idea is from Manfred Spraul.  --macro
--	*/
-+	 * It appears there is an erratum which affects at least version 0x11
-+	 * of I/O APIC (that's the 82093AA and cores integrated into various
-+	 * chipsets).  Under certain conditions a level-triggered interrupt is
-+	 * erroneously delivered as edge-triggered one but the respective IRR
-+	 * bit gets set nevertheless.  As a result the I/O unit expects an EOI
-+	 * message but it will never arrive and further interrupts are blocked
-+	 * from the source.  The exact reason is so far unknown, but the
-+	 * phenomenon was observed when two consecutive interrupt requests
-+	 * from a given source get delivered to the same CPU and the source is
-+	 * temporarily disabled in between.
-+	 *
-+	 * A workaround is to simulate an EOI message manually.  We achieve it
-+	 * by setting the trigger mode to edge and then to level when the edge
-+	 * trigger mode gets detected in the TMR of a local APIC for a
-+	 * level-triggered interrupt.  We mask the source for the time of the
-+	 * operation to prevent an edge-triggered interrupt escaping meanwhile.
-+	 * The idea is from Manfred Spraul.  --macro
-+	 */
- 	cfg = desc->chip_data;
- 	i = cfg->vector;
--
- 	v = apic_read(APIC_TMR + ((i & ~0x1f) >> 1));
--#endif
- 
- 	/*
- 	 * We must acknowledge the irq before we move it or the acknowledge will
-@@ -2591,7 +2583,7 @@ static void ack_apic_level(unsigned int irq)
- 		unmask_IO_APIC_irq_desc(desc);
- 	}
- 
--#ifdef CONFIG_X86_32
-+	/* Tail end of version 0x11 I/O APIC bug workaround */
- 	if (!(v & (1 << (i & 0x1f)))) {
- 		atomic_inc(&irq_mis_count);
- 		spin_lock(&ioapic_lock);
-@@ -2599,7 +2591,6 @@ static void ack_apic_level(unsigned int irq)
- 		__unmask_and_level_IO_APIC_irq(cfg);
- 		spin_unlock(&ioapic_lock);
- 	}
--#endif
- }
- 
- #ifdef CONFIG_INTR_REMAP
--- 
-1.6.2.2
-
+Cheers,
+Jeff
