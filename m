@@ -1,137 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbZFPC1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZFPCaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603AbZFPC1S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 22:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZFPC1G
+	id S1755367AbZFPCaS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 22:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZFPCaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 22:27:06 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47873 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821AbZFPC1F (ORCPT
+	Mon, 15 Jun 2009 22:30:00 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42572 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbZFPC37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 22:27:05 -0400
-Message-ID: <4A3702CF.9070303@gmail.com>
-Date: Tue, 16 Jun 2009 04:26:23 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 15 Jun 2009 22:29:59 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM-RFC PATCH 0/2] eventfd enhancements for irqfd/iosignalfd
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, mst@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com
+Date: Mon, 15 Jun 2009 22:29:51 -0400
+Message-ID: <20090616022041.23890.90120.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: starlight@binnacle.cx
-CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org, hugh.dickins@tiscali.co.uk, Lee.Schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, ebmunson@us.ibm.com, agl@us.ibm.com,
-       apw@canonical.com, wli@movementarian.org
-Subject: Re: QUESTION: can netdev_alloc_skb() errors be reduced by  tuning?
-References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie> <20090527131437.5870e342.akpm@linux-foundation.org> <20090527231949.GB30002@elte.hu> <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
-In-Reply-To: <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 16 Jun 2009 04:26:28 +0200 (CEST)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-starlight@binnacle.cx a écrit :
-> Hello,
-> 
-> I submitted testcase for a hugepages bug that has been 
-> successfully resolved.  Have an apparently obscure question 
-> related to MM, and so I am asking anyone who might have some idea 
-> on this.  Nothing much turned up via Google and digging into
-> the KMEM code looks daunting.
-> 
-> Running Intel 82598/ixgbe 10 gig Ethernet under heavy stress. 
-> Generally is working well after tuning IRQ affinities, but a 
-> fair number of buffer allocation failures are occurring in the 
-> 'ixgbe' device driver and are reported via 'ethtool' statistics. 
->  This may be causing data loss.
-> 
-> The kernel primitive returning the error is netdev_alloc_skb().
-> 
-> Are any tuneable parameters available that can reduce or 
-> eliminate these allocation failures?  Have about eleven 
-> gigabytes of free memory, though most of that is consumed 
-> by non-dirty file cache data.  Total system memory is 16GB with 
-> 4GB allocated to hugepages.  Zero swap usage and activity though
-> swap is enabled.  Most application memory is hugepage or is
-> 'mlock()'ed.
-> 
-> Thank you.
-> 
-> 
-> 
-> 
-> 
-> System rebooted before test run.
-> 
-> Dual Xeon E5430, 16GB FB-DIMM RAM.
-> 
-> 
-> $ cat /proc/meminfo
-> MemTotal:     16443828 kB
-> MemFree:        281176 kB
-> Buffers:         53896 kB
-> Cached:       11331924 kB
-> SwapCached:          0 kB
-> Active:         200740 kB
-> Inactive:     11284312 kB
-> HighTotal:           0 kB
-> HighFree:            0 kB
-> LowTotal:     16443828 kB
-> LowFree:        281176 kB
-> SwapTotal:     2031608 kB
-> SwapFree:      2031400 kB
-> Dirty:               4 kB
-> Writeback:           0 kB
-> AnonPages:      104464 kB
-> Mapped:          14644 kB
-> Slab:           440452 kB
-> PageTables:       4032 kB
-> NFS_Unstable:        0 kB
-> Bounce:              0 kB
-> CommitLimit:   8156368 kB
-> Committed_AS:   122452 kB
-> VmallocTotal: 34359738367 kB
-> VmallocUsed:    266872 kB
-> VmallocChunk: 34359471043 kB
-> HugePages_Total:  2048
-> HugePages_Free:    735
-> HugePages_Rsvd:      0
-> Hugepagesize:     2048 kB
-> 
-> 
-> # ethtool -S eth2 | egrep -v ': 0$'
-> NIC statistics:
->      rx_packets: 724246449
->      tx_packets: 229847
->      rx_bytes: 152691992335
->      tx_bytes: 10573426
->      multicast: 725997241
->      broadcast: 6
->      rx_csum_offload_good: 723051776
->      alloc_rx_buff_failed: 7119
->      tx_queue_0_packets: 229847
->      tx_queue_0_bytes: 10573426
->      rx_queue_0_packets: 340698332
->      rx_queue_0_bytes: 70844299683
->      rx_queue_1_packets: 385298923
->      rx_queue_1_bytes: 82276167594
-> 
-> 
-> ixgbe driver fragment
-> =====================
->     struct sk_buff *skb = netdev_alloc_skb(adapter->netdev, bufsz);
-> 
->     if (!skb) {
->         adapter->alloc_rx_buff_failed++;
->         goto no_buffers;
->     }
-> 
+(Applies to kvm.git/master:c27b64a0)
 
-152691992335/724246449 = 210 bytes per rx packet in average
+For more details, please read the patch headers.  This series adds
+a new feature to eventfd (explicit notifications) which addresses
+wqh based limitations, as well as provides fixes for several issues
+in irqfd pointed out by Michael Tsirkin.  You can find reference to these
+issues here:
 
-It could make sense to add copybreak feature in this driver to reduce memory needs,
-but that also would consume more cpu cycles, and slow down forwarding setups.
+http://lkml.org/lkml/2009/6/15/218
+http://lkml.org/lkml/2009/6/11/249
 
-Maybe this packet trimming could be done generically in UDP stack input path,
-before queueing packet into a receive queue, if amount of available memory
-is under a given threshold.
+This series has been tested against the kvm-eventfd unit test, and
+appears to be functioning properly.  You can download this test here:
+
+ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
+
+---
+
+Gregory Haskins (2):
+      eventfd: add module reference counting support for registered notifiers
+      eventfd: add an explicit srcu based notifier interface
+
+
+ fs/eventfd.c            |  123 ++++++++++++++++++++++++++++++++++++++++++++---
+ include/linux/eventfd.h |   33 +++++++++++++
+ virt/kvm/eventfd.c      |  114 ++++++++++++++++++++------------------------
+ 3 files changed, 199 insertions(+), 71 deletions(-)
+
+-- 
+Signature
