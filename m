@@ -1,130 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZFPM6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZFPNFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbZFPM6J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 08:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbZFPM5z
+	id S1757095AbZFPNFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 09:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZFPNEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 08:57:55 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46578 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758718AbZFPM5y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 08:57:54 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring behaviour more in line with expectations V3
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       riel@redhat.com, cl@linux-foundation.org, fengguang.wu@intel.com,
-       linuxram@us.ibm.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Johannes Weiner <hannes@cmpxchg.org>
-In-Reply-To: <20090615105651.GD23198@csn.ul.ie>
-References: <20090615163018.B43A.A69D9226@jp.fujitsu.com> <20090615105651.GD23198@csn.ul.ie>
-Message-Id: <20090616202157.99AF.A69D9226@jp.fujitsu.com>
+	Tue, 16 Jun 2009 09:04:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45301 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752468AbZFPNEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 09:04:48 -0400
+Date: Tue, 16 Jun 2009 09:02:27 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 02/19] io-controller: Common flat fair queuing code in
+	elevaotor layer
+Message-ID: <20090616130227.GA10730@redhat.com>
+References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-3-git-send-email-vgoyal@redhat.com> <4A37175C.80906@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 16 Jun 2009 21:57:53 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A37175C.80906@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-
-> > > > vmscan-zone_reclaim-use-may_swap.patch
-> > > > 
-> > > 
-> > > This is a tricky one. Kosaki, I think this patch is a little dangerous. With
-> > > this applied, pages get unmapped whether RECLAIM_SWAP is set or not. This
-> > > means that zone_reclaim() now has more work to do when it's enabled and it
-> > > incurs a number of minor faults for no reason as a result of trying to avoid
-> > > going off-node. I don't believe that is desirable because it would manifest
-> > > as high minor fault counts on NUMA and would be difficult to pin down why
-> > > that was happening.
-> > 
-> > (cc to hanns)
-> > 
-> > First, if this patch should be dropped, commit bd2f6199 
-> > (vmscan: respect higher order in zone_reclaim()) should be too. I think.
-> > the combination of lumply reclaim and !may_unmap is really ineffective.
+On Tue, Jun 16, 2009 at 11:54:04AM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> ...
+> > +
+> > +int elv_nr_busy_rt_ioq(struct elevator_queue *e)
+> > +{
+> > +	return e->efqd.busy_rt_queues;
+> > +}
+> > +EXPORT_SYMBOL(elv_nr_busy_rt_ioq);
 > 
-> Whether it's ineffective or not, it's what the user has asked for. They
-> want a high-order page found if possible within the limits of
-> zone_reclaim_mode. If it fails, they will enter full direct reclaim
-> later in the path and try again.
+> This function is no need now.
 > 
-> How effective lumpy reclaim is in this case really depends on what the
-> system has been used for in the past. It's impossible to know in advance
-> how effective lumpy reclaim will be in every case.
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 
-In general, performance discussion need to concern typical use-case.
-Almost zone-reclaim enabled machine is not file server. Thus unmapped file
-page are not so high ratio.
+Thanks Gui. Queued for next posting.
 
-I have pessimistic suspection of successful rate of lumpy reclaim in those server.
-Of cource, it don't make allocation failure, it only make full direct reclaim.
+Thanks
+Vivek
 
-but I don't hope strange and unnecessary lru shuffling. Also I don't think
-it makes performance improvement.
-
-
-> > it might cause isolate neighbor pages and give up unmapping and pages put
-> > back tail of lru.
-> > it mean to shuffle lru list.
-> > 
-> > I don't think it is desirable.
-> > 
+> ---
+>  block/elevator-fq.c |    6 ------
+>  block/elevator-fq.h |    1 -
+>  2 files changed, 0 insertions(+), 7 deletions(-)
 > 
-> With Kamezawa Hiroyuki's patch that avoids unnecessary shuffles of the LRU
-> list due to lumpy reclaim, the situation might be better?
-
-I still my_unmap is better choice, but if we use it, I agree with adding
-may_unmap and page_mapped() condition to isolate_pages_global() is better and
-good choice.
-
-nice idea.
-
-> > Second, we did learned that "mapped or not mapped" is not appropriate
-> > reclaim boosting between split-lru discussion.
-> > So, I think to make consistent is better. if no considerness of may_unmap
-> > makes serious performance issue, we need to fix try_to_free_pages() path too.
-> > 
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index f33155c..912ac6a 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -2553,12 +2553,6 @@ int elv_nr_busy_ioq(struct elevator_queue *e)
+>  }
+>  EXPORT_SYMBOL(elv_nr_busy_ioq);
+>  
+> -int elv_nr_busy_rt_ioq(struct elevator_queue *e)
+> -{
+> -	return e->efqd.busy_rt_queues;
+> -}
+> -EXPORT_SYMBOL(elv_nr_busy_rt_ioq);
+> -
+>  int elv_hw_tag(struct elevator_queue *e)
+>  {
+>  	return e->efqd.hw_tag;
+> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+> index 0939735..285a1ff 100644
+> --- a/block/elevator-fq.h
+> +++ b/block/elevator-fq.h
+> @@ -711,7 +711,6 @@ extern void io_group_set_async_queue(struct io_group *iog, int ioprio_class,
+>  extern struct io_group *io_get_io_group(struct request_queue *q,
+>  					struct bio *bio, int create);
+>  extern int elv_nr_busy_ioq(struct elevator_queue *e);
+> -extern int elv_nr_busy_rt_ioq(struct elevator_queue *e);
+>  extern struct io_queue *elv_alloc_ioq(struct request_queue *q, gfp_t gfp_mask);
+>  extern void elv_free_ioq(struct io_queue *ioq);
+>  
+> -- 
+> 1.5.4.rc3
 > 
-> I don't understand this paragraph.
-> 
-> If zone_reclaim_mode is set to 1, I don't believe the expected behaviour is
-> for pages to be unmapped from page tables. I think it will lead to mysterious
-> bug reports of higher numbers of minor faults when running applications on
-> NUMA machines in some situations.
-
-AFAIK, 99.9% user read documentation, not actual code. and documentatin
-didn't describe so.
-I don't think this is expected behavior.
-
-That's my point.
-
-
-> > Third, if we consider MPI program on NUMA, each process only access
-> > a part of array data frequently and never touch rest part of array.
-> > So, AFAIK "rarely, but access" is rarely, no freqent access is not major performance source.
-> > 
-> > I have one question. your "difficultness of pinning down" is major issue?
-> > 
-> 
-> Yes. If an administrator notices that minor fault rates are higher than
-> expected, it's going to be very difficult for them to understand why
-> it is happening and why setting reclaim_mode to 0 apparently fixes the
-> problem. oprofile for example might just show that a lot of time is being
-> spent in the fault paths but not explain why.
-
-I don't understand this paragraph a bit. I feel this is only theorical issue.
-successing of try_to_unmap_one() mean the pte don't have accessed bit.
-it's obvious sign to be able to unmap pte.
-
-if we convice MPI program, long time untouched pages often mean never touched again.
-Am I missing anything? or you don't talk about non-hpc workload?
-
-
-
-
