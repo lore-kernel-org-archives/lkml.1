@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbZFPTgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZFPTia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761201AbZFPTgf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 15:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZFPTg2
+	id S1758669AbZFPTia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 15:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZFPTiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 15:36:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34393 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbZFPTg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 15:36:27 -0400
-Date: Tue, 16 Jun 2009 21:36:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/5] [GIT PULL] tracing/filters/ringbuffer: updates for
-	2.6.31
-Message-ID: <20090616193621.GA21246@elte.hu>
-References: <20090616175133.317996432@goodmis.org> <20090616192821.GA12699@elte.hu>
+	Tue, 16 Jun 2009 15:38:19 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:37954 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753623AbZFPTiS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 15:38:18 -0400
+Message-ID: <4A37F495.9030101@gmail.com>
+Date: Tue, 16 Jun 2009 21:37:57 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+To: David Miller <davem@davemloft.net>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+References: <4A37A058.1030701@gmail.com>	<4A37AA0C.40507@gmail.com>	<alpine.LFD.2.01.0906161155400.3282@localhost.localdomain> <20090616.120829.182011393.davem@davemloft.net>
+In-Reply-To: <20090616.120829.182011393.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090616192821.GA12699@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0210]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 16 Jun 2009 21:38:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller a �crit :
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Tue, 16 Jun 2009 11:59:34 -0700 (PDT)
+> 
+>> At the very least, add a helper function for "do I actually have 
+>> outstanding allocations" or something like that. IOW, do a 
+>>
+>> 	/*
+>> 	 * Comment here about that magical "1"
+>> 	 */
+>> 	static inline int sk_has_allocations(struct sock *sk)
+>> 	{
+>> 		return atomic_read(&sk->sk_wmem_alloc) > 1 ||
+>> 			atomic_read(&sk->sk_rmem_alloc);
+>> 	}
+>>
+>> and then make the various network protocols use that, rather than 
+>> open-coding some random internal implementation magic.
+> 
+> I agree, this should be handled with a helper function
+> abstraction rather than putting "1" checks all over the place.
 
-hm, there's a new build failure with this lot:
+Fair enough, I'll submit an updated patch in following hour.
 
-kernel/trace/ring_buffer.c:1298: error: ‘event’ undeclared (first use in this function)
-kernel/trace/ring_buffer.c:1298: error: (Each undeclared identifier is reported only once
-kernel/trace/ring_buffer.c:1298: error: for each function it appears in.)
-
-	Ingo
+Thank you
