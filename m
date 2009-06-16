@@ -1,143 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZFPMj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZFPMrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbZFPMj5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 08:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZFPMjr
+	id S1754749AbZFPMrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 08:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZFPMrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 08:39:47 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:44935 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753772AbZFPMjq (ORCPT
+	Tue, 16 Jun 2009 08:47:08 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:44832 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbZFPMrH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 08:39:46 -0400
-X-Trace: 212856105/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.117.171/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.117.171
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Al0FANAvN0pQKXWr/2dsb2JhbACBT9FLgkuBQgU
-X-IronPort-AV: E=Sophos;i="4.42,228,1243810800"; 
-   d="scan'208";a="212856105"
-Date: Tue, 16 Jun 2009 13:38:43 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
-In-Reply-To: <20090616081348.GC16229@elte.hu>
-Message-ID: <Pine.LNX.4.64.0906161312440.552@sister.anvils>
-References: <1245080486.6800.561.camel@laptop> <1245089065.13761.19316.camel@twins>
- <20090615181555.GA11248@elte.hu> <1245089943.13761.19334.camel@twins>
- <20090615182549.GD11248@elte.hu> <1245090608.13761.19349.camel@twins>
- <20090615184217.GG11248@elte.hu> <1245091674.6741.180.camel@laptop>
- <20090615185259.GK11248@elte.hu> <1245092433.6741.201.camel@laptop>
- <20090616081348.GC16229@elte.hu>
+	Tue, 16 Jun 2009 08:47:07 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090616090435.GA21321@pengutronix.de>
+References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> 
+	<1244765062-14144-3-git-send-email-w.sang@pengutronix.de> 
+	<fa686aa40906140740m43e9dd8am4d242310f681c95c@mail.gmail.com> 
+	<20090616090435.GA21321@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 16 Jun 2009 06:46:47 -0600
+Message-ID: <fa686aa40906160546q73765b66h204334e3ca081de0@mail.gmail.com>
+Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, devicetree-discuss@ozlabs.org,
+       "Hans J. Koch" <hjk@linutronix.de>, Magnus Damm <magnus.damm@gmail.com>,
+       linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Mon, 2009-06-15 at 20:52 +0200, Ingo Molnar wrote:
-> > > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > > On Mon, 2009-06-15 at 20:42 +0200, Ingo Molnar wrote:
-> > > > > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > > > > On Mon, 2009-06-15 at 20:25 +0200, Ingo Molnar wrote:
-> > > > > > > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > > > > 
-> > > > > > > but ... look at the APIs i propose above. We dont need _any_ 
-> > > > > > > 'types'.
-> > > > > > > 
-> > > > > > > That type enumeration is basically an open-coded allocator. If we do 
-> > > > > > > a _real_ allocator (a balanced stack of atomic kmaps) we dont need 
-> > > > > > > any of those indices, and all the potential for mismatch goes away 
-> > > > > > > as well - a stack nests trivially with IRQ and NMI and arbitrary 
-> > > > > > > other contexts.
-> > > > > > 
-> > > > > > You want types because:
-> > > > > >  - they encode the intent, and can be verified
-> > > > > >  - they help keep track of the max nesting depth
-> > > > > > 
-> > > > > > In the proposed implementation all type code basically falls away 
-> > > > > > no ! CONFIG_DEBUG_VM, but is kept around for robustness.
-> > > > > 
-> > > > > But much of the fragility of the types (and their clumsiness - for 
-> > > > > example in highpte ops we have to know at which level of the 
-> > > > > pagetables we are, and use the right kind of index) is _precisely_ 
-> > > > > because we have the types ...
-> > > > 
-> > > > How will you manage the max depth?
-> > > 
-> > > 	if (++depth == MAX_DEPTH) {
-> > > 		print_all_entries_and_nasty_warning();
-> > > 		 /* hope we'll live long enough for the syslog to touch disk */
-> > > 		depth = 0;
-> > > 	}
-> > 
-> > That will only trigger if we hit it, which will be _very_ rare.
-> > 
-> > > unbalanced kmap is a bad bug - the easier we make it to catch, 
-> > > the better. The system wouldnt survive anyway.
-> > 
-> > My proposed patch validates strict balance of types. But I can 
-> > easily add the above as well.
-> > 
-> > By removing the types it becomes very difficult to verify the max 
-> > depth. I really don't like removing them.
-> 
-> The fact that it implies an atomic section pretty much limits its 
-> depth in practice, doesnt it?
-> 
-> All we need to track in the debug code is 
-> max-{syscall,softirq,hardirq,nmi}. The sum of these 4 counts must be 
-> smaller than the max - even if (as you are right to point out) we 
-> dont hit that magic combo that truly maximizes the depth.
-> 
-> And note that in practice many of the current types are exclusive to 
-> each other - so using the stack would _reduce_ the amount of 
-> kmap-atomic space we need.
+On Tue, Jun 16, 2009 at 3:04 AM, Wolfram Sang<w.sang@pengutronix.de> wrote:
+>
+>> > diff --git a/Documentation/powerpc/dts-bindings/uio-generic.txt b/Documentation/powerpc/dts-bindings/uio-generic.txt
+>> > new file mode 100644
+>> > index 0000000..8ad9861
+>> > --- /dev/null
+>> > +++ b/Documentation/powerpc/dts-bindings/uio-generic.txt
+>> > @@ -0,0 +1,16 @@
+>> > +UIO for custom devices
+>> > +
+>> > +A device which will be mapped using the UIO subsystem.
+>> > +
+>> > +Properties:
+>> > + - compatible : should contain the specific model used, followed by
+>> > +                "generic-uio".
+>> > + - reg : address range(s) of the device (up to MAX_UIO_MAPS)
+>> > + - interrupts : interrupt of the device
+>> > +
+>> > +Example:
+>> > +        c64fpga@0 {
+>> > +                compatible = "ptx,c64fpga001", "generic-uio";
+>> > +                reg = <0x0 0x10000>;
+>> > +                interrupts = <0 0 3>;
+>> > +        };
+>>
+>> Hmmm, I'm not happy about this.  The device tree describes the
+>> hardware, not the way Linux uses the hardware.  UIO definitely falls
+>> into the category of Linux implementation detail.
+>
+> Yes, I am aware of that. I just started with the mechanisms which are available
+> today and hoped we could find some compatible-value which will suit all needs.
 
-I'll briefly resurface into the discussion before submerging again ;)
+Trouble is a value that suits all needs today probably won't a year
+from now.  :-)
 
-I like very much the direction you're taking this, Ingo.
+>> This should be approached from the other way around.  Either the
+>> generic-uio of_platform driver should contain an explicit list of
+>> devices to be handled by UIO,
+>
+> Well, that could lead to a quite huge match_table over time.
+>
+>> or the OF infrastructure should be modified to allow things like force
+>> binding of_devices to of_drivers at runtime.
+>
+> That is an interesting idea. I could imagine something like a 'new_compatible"
+> entry in the sysfs-section of the driver similar to 'new_id' for PCI. After
+> writing a new compatible-string into it, matching will triggered again with the
+> new entry added. That could (should?) also be placed at the of-core-level. Or
+> did you have something else in mind?
 
-Yes, that is how I've sometimes thought we should go - though when
-making the kmap_push/kmap_pop suggestion to Peter yesterday, I wasn't
-expecting him to make that revolution, just provide a way to save a
-current KM_type mapping and restore it later, so he can safely use
-the standard primitives like pte_offset_map() within.
+Yeah, that sounds appropriate.
 
-I wasn't expecting in_nmi() and in_irq() tests still to be there,
-even if only when debug.  I can understand Peter's lockdep background
-wanting to retain the checking and KM_types, but if we're actually
-going to overhaul this area, I'd love just to get rid of them.
+g.
 
-Yes, that should reduce the amount of kmap_atomic space needed;
-though I've not thought how we keep track of the maximum needed
-as the kernel goes on developing.
-
-There might be a very few places where we expect to kmap_atomic A,
-kmap_atomic B, kunmap_atomic A, kunmap_atomic B?
-
-Something else to throw in: what if they were not just atomic,
-but also replaced the current sleeping kmaps? i.e. a task context
-carries around its own stack of these.
-
-I've always rejected that as introducing a pretty terrible overhead
-just where we don't want it; but maybe you're ingenious enough to
-devise ways of amortizing that cost.
-
-It would be nice to delete mm/highmem.c is we could.  Ah, but there
-are probably places where one task passes a kmap address to another?
-
-Hugh
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
