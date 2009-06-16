@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763515AbZFPVa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764073AbZFPVas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763515AbZFPVa1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 17:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763245AbZFPV37
+	id S1764073AbZFPVas (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763021AbZFPVaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 17:29:59 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:47766 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762875AbZFPV36 convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 17:30:09 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:15744 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762393AbZFPVaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 17:29:58 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: Greg KH <gregkh@suse.de>
-Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based cards
-Date: Tue, 16 Jun 2009 18:30:01 -0300
-User-Agent: KMail/1.11.90 (Linux/2.6.30-desktop-1mnb; KDE/4.2.90; i686; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Gianluca Palli <gpalli@deis.unibo.it>,
-       David Schleef <ds@schleef.org>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>,
-       Ian Abbott <abbotti@mev.co.uk>
-References: <200906161701.45234.herton@mandriva.com.br> <20090616205121.GB2810@suse.de>
-In-Reply-To: <20090616205121.GB2810@suse.de>
+	Tue, 16 Jun 2009 17:30:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DL1QryvSp7mMh/qnkElknRc6SFLBHy1e5slOlMuV64z3PsvUuY89ZsPfxtwie2EaBw
+         FKKPXIoJMpnsp2gJCyhbt/cXYLQuffLabgrkEznULRHFdpV2G8xvSneXm85Us6lENHX1
+         QOJWrFebelJBAqqXnzHfVP5lrhy7CgheKkmYg=
+Date: Wed, 17 Jun 2009 01:30:04 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Stefani Seibold <stefani@seibold.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, mingo@elte.hu
+Subject: Re: + procfs-provide-stack-information-for-threads-v08.patch added
+	to -mm tree
+Message-ID: <20090616213004.GA6687@x200.localdomain>
+References: <200906152202.n5FM25VD021536@imap1.linux-foundation.org> <20090615223333.GA8734@x200.localdomain> <1245133026.17989.2.camel@wall-e> <m1ski03r4f.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200906161830.02308.herton@mandriva.com.br>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ski03r4f.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Terça-feira 16 Junho 2009, às 17:51:21, Greg KH escreveu:
-> On Tue, Jun 16, 2009 at 05:01:44PM -0300, Herton Ronaldo Krzesinski wrote:
-> > Hi,
+On Tue, Jun 16, 2009 at 12:39:28PM -0700, Eric W. Biederman wrote:
+> Stefani Seibold <stefani@seibold.net> writes:
+> 
+> > Am Dienstag, den 16.06.2009, 02:33 +0400 schrieb Alexey Dobriyan:
+> >> On Mon, Jun 15, 2009 at 03:02:05PM -0700, akpm@linux-foundation.org wrote:
+> >> >      procfs-provide-stack-information-for-threads-v08.patch
+> >> > --- a/fs/proc/array.c~procfs-provide-stack-information-for-threads-v08
+> >> 
+> >> > +++ a/fs/proc/array.c
+> >> > @@ -321,6 +321,54 @@ static inline void task_context_switch_c
+> >> >  			p->nivcsw);
+> >> >  }
+> >> >  
+> >> > +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
+> >> > +					struct task_struct *p)
+> >> > +{
+> >> > +	unsigned long	i;
+> >> > +	struct page	*page;
+> >> > +	unsigned long	stkpage;
+> >> > +
+> >> > +	stkpage = KSTK_ESP(p) & PAGE_MASK;
+> >> > +
+> >> > +#ifdef CONFIG_STACK_GROWSUP
+> >> > +	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
+> >> > +
+> >> > +		page = follow_page(vma, i-PAGE_SIZE, 0);
+> >> 
+> >> How can this work?
+> >> 
+> >> If stack page got swapped out, you'll get smaller than actual result.
+> >> 
 > >
-> > The s626 (comedi) driver in staging conflicts with philips SAA7146
-> > media/dvb based cards, because it claims the same vendor:device pci id
-> > for all subdevice/subvendor ids. What happens is that for people that
-> > have a philips SAA7146 based card, s626 if available gets loaded by udev
-> > and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
->
-> So a PCI device that does different things has the same device ids?
-> ick, stupid vendors...
->
-> > Looks like s626 shouldn't claim all 1131:7146 devices, either by
-> > specifying specific subdevice/subvendor ids specific to s626 devices or
-> > doing additional checks in its probe/attach function.
->
-> If you can propose the proper sub ids, or the needed checks, please send
-> a patch.
+> > If you tell me how to do it in the right way, i can fix it!
+> 
+> You are attempting to answer two questions here.
+> 1) Where do the thread stacks reside.
 
-Can't propose proper sub ids here etc., as I don't know about/don't have s626 
-device, s626 author is CC'ed here to check this. But I could send a patch to 
-disable just the build of s626 if acceptable/desired for the moment.
+Kernel doesn't know. Application stack is somewhere below/above
+some SP register.
 
->
-> thanks,
->
-> greg k-h
-
---
-[]'s
-Herton
+> 2) What is the maximum stack space that has been used.
+> 
+> Just listing the thread stacks seems like a small O(1) change.
+> 
+> Computing how much stack space has been used looks trickier.
+> Perhaps you could map them with MAP_GROWSDOWN?  Of course that
+> has the problem that you don't stop growing your stack until
+> it bumps into something else.  Not ideal for a thread stack.
