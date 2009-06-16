@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762901AbZFPUQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762931AbZFPUQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762901AbZFPUQo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759414AbZFPUQI
+	id S1762931AbZFPUQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760067AbZFPUQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:16:08 -0400
-Received: from claw.goop.org ([74.207.240.146]:40567 "EHLO claw.goop.org"
+	Tue, 16 Jun 2009 16:16:09 -0400
+Received: from claw.goop.org ([74.207.240.146]:40571 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756179AbZFPUQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755324AbZFPUQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Jun 2009 16:16:06 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH 01/16] x86/oprofile: add module parameter option to force a core 2 cpu
-Date: Tue, 16 Jun 2009 13:15:40 -0700
-Message-Id: <1245183355-25808-2-git-send-email-jeremy@goop.org>
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 06/16] x86/ioapic.c: ioapic_modify_irq is too large to inline
+Date: Tue, 16 Jun 2009 13:15:45 -0700
+Message-Id: <1245183355-25808-7-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.2.2
 In-Reply-To: <1245183355-25808-1-git-send-email-jeremy@goop.org>
 References: <1245183355-25808-1-git-send-email-jeremy@goop.org>
@@ -26,82 +24,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robert Richter <robert.richter@amd.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-The current userland does not yet fully support all cpu types
-implemented in the kernel. With the module parameter:
+If ioapic_modify_irq() is marked inline, it gets inlined several times.
+Un-inlining it saves around 200 bytes in .text for me.
 
- oprofile.cpu_type=core_2
-
-the kernel reports a core_2 cpu to the userland on an Intel system and
-thus makes oprofile usable with current distros.
-
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Robert Richter <robert.richter@amd.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- Documentation/kernel-parameters.txt |    3 ++-
- arch/x86/oprofile/nmi_int.c         |   17 ++++++++++++++---
- 2 files changed, 16 insertions(+), 4 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 6ce5f48..ea7ead3 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1653,10 +1653,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 	oprofile.cpu_type=	Force an oprofile cpu type
- 			This might be useful if you have an older oprofile
- 			userland or if you want common events.
--			Format: { archperfmon }
-+			Format: { archperfmon | core_2 }
- 			archperfmon: [X86] Force use of architectural
- 				perfmon on Intel CPUs instead of the
- 				CPU specific event set.
-+			core_2: [X86] On Intel systems: report core_2 CPU.
- 
- 	osst=		[HW,SCSI] SCSI Tape Driver
- 			Format: <buffer_size>,<write_threshold>
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 3b285e6..d7348a2 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -386,12 +386,20 @@ static int __init p4_init(char **cpu_type)
- 	return 0;
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 1946fac..01aa429 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -553,9 +553,9 @@ static void __init replace_pin_at_irq_node(struct irq_cfg *cfg, int node,
+ 		add_pin_to_irq_node(cfg, node, newapic, newpin);
  }
  
--static int force_arch_perfmon;
-+static enum {
-+	NONE = 0,
-+	ARCH_PERFMON,
-+	CORE_2,
-+} forced_cpu;
-+
- static int force_cpu_type(const char *str, struct kernel_param *kp)
+-static inline void io_apic_modify_irq(struct irq_cfg *cfg,
+-				int mask_and, int mask_or,
+-				void (*final)(struct irq_pin_list *entry))
++static void io_apic_modify_irq(struct irq_cfg *cfg,
++			       int mask_and, int mask_or,
++			       void (*final)(struct irq_pin_list *entry))
  {
- 	if (!strcmp(str, "archperfmon")) {
--		force_arch_perfmon = 1;
-+		forced_cpu = ARCH_PERFMON;
- 		printk(KERN_INFO "oprofile: forcing architectural perfmon\n");
-+	} else if (!strcmp(str, "core_2")) {
-+		forced_cpu = CORE_2;
-+		printk(KERN_INFO "oprofile: forcing core_2\n");
- 	}
- 
- 	return 0;
-@@ -402,9 +410,12 @@ static int __init ppro_init(char **cpu_type)
- {
- 	__u8 cpu_model = boot_cpu_data.x86_model;
- 
--	if (force_arch_perfmon && cpu_has_arch_perfmon)
-+	if (forced_cpu == ARCH_PERFMON && cpu_has_arch_perfmon)
- 		return 0;
- 
-+	if (forced_cpu == CORE_2)
-+		cpu_model = 15;
-+
- 	switch (cpu_model) {
- 	case 0 ... 2:
- 		*cpu_type = "i386/ppro";
+ 	int pin;
+ 	struct irq_pin_list *entry;
 -- 
 1.6.2.2
 
