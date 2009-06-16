@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936560AbZFPF50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936567AbZFPF5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936560AbZFPF50 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 01:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759898AbZFPFvR
+	id S936567AbZFPF5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 01:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935628AbZFPFvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:51:17 -0400
-Received: from kroah.org ([198.145.64.141]:48366 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:51:18 -0400
+Received: from kroah.org ([198.145.64.141]:48373 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934949AbZFPFvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:51:12 -0400
+	id S934783AbZFPFvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:51:14 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 25/64] Driver Core: add nodename callbacks
-Date: Mon, 15 Jun 2009 22:46:14 -0700
-Message-Id: <1245131213-24168-25-git-send-email-gregkh@suse.de>
+Subject: [PATCH 27/64] Driver Core: usb: add nodename support for usb drivers.
+Date: Mon, 15 Jun 2009 22:46:16 -0700
+Message-Id: <1245131213-24168-27-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -25,118 +25,220 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
-This adds the nodename callback for struct class, struct device_type and
-struct device, to allow drivers to send userspace hints on the device
-name and subdirectory that should be used for it.
+This adds support for USB drivers to report their requested nodename to
+userspace.  It also updates a number of USB drivers to provide the
+needed subdirectory and device name to be used for them.
 
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c    |   51 +++++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/device.h |    3 ++
- 2 files changed, 53 insertions(+), 1 deletions(-)
+ drivers/hid/usbhid/hiddev.c     |    7 ++++++-
+ drivers/media/video/dabusb.c    |    6 ++++++
+ drivers/usb/class/usblp.c       |    6 ++++++
+ drivers/usb/core/file.c         |   13 ++++++++++++-
+ drivers/usb/core/usb.c          |   11 +++++++++++
+ drivers/usb/misc/iowarrior.c    |    6 ++++++
+ drivers/usb/misc/legousbtower.c |    6 ++++++
+ include/linux/usb.h             |    3 +++
+ 8 files changed, 56 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 4d59975..7ecb193 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -162,10 +162,18 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
- 	struct device *dev = to_dev(kobj);
- 	int retval = 0;
+diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
+index e9b436d..9e94215 100644
+--- a/drivers/hid/usbhid/hiddev.c
++++ b/drivers/hid/usbhid/hiddev.c
+@@ -850,8 +850,14 @@ static const struct file_operations hiddev_fops = {
+ #endif
+ };
  
--	/* add the major/minor if present */
-+	/* add device node properties if present */
- 	if (MAJOR(dev->devt)) {
-+		const char *tmp;
-+		const char *name;
-+
- 		add_uevent_var(env, "MAJOR=%u", MAJOR(dev->devt));
- 		add_uevent_var(env, "MINOR=%u", MINOR(dev->devt));
-+		name = device_get_nodename(dev, &tmp);
-+		if (name) {
-+			add_uevent_var(env, "DEVNAME=%s", name);
-+			kfree(tmp);
-+		}
- 	}
- 
- 	if (dev->type && dev->type->name)
-@@ -1129,6 +1137,47 @@ static struct device *next_device(struct klist_iter *i)
- }
- 
- /**
-+ * device_get_nodename - path of device node file
-+ * @dev: device
-+ * @tmp: possibly allocated string
-+ *
-+ * Return the relative path of a possible device node.
-+ * Non-default names may need to allocate a memory to compose
-+ * a name. This memory is returned in tmp and needs to be
-+ * freed by the caller.
-+ */
-+const char *device_get_nodename(struct device *dev, const char **tmp)
++static char *hiddev_nodename(struct device *dev)
 +{
-+	char *s;
-+
-+	*tmp = NULL;
-+
-+	/* the device type may provide a specific name */
-+	if (dev->type && dev->type->nodename)
-+		*tmp = dev->type->nodename(dev);
-+	if (*tmp)
-+		return *tmp;
-+
-+	/* the class may provide a specific name */
-+	if (dev->class && dev->class->nodename)
-+		*tmp = dev->class->nodename(dev);
-+	if (*tmp)
-+		return *tmp;
-+
-+	/* return name without allocation, tmp == NULL */
-+	if (strchr(dev_name(dev), '!') == NULL)
-+		return dev_name(dev);
-+
-+	/* replace '!' in the name with '/' */
-+	*tmp = kstrdup(dev_name(dev), GFP_KERNEL);
-+	if (!*tmp)
-+		return NULL;
-+	while ((s = strchr(*tmp, '!')))
-+		s[0] = '/';
-+	return *tmp;
++	return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev));
 +}
 +
-+/**
-  * device_for_each_child - device child iterator.
-  * @parent: parent struct device.
-  * @data: data for the callback.
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 4410464..ed4e39f 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -194,6 +194,7 @@ struct class {
- 	struct kobject			*dev_kobj;
+ static struct usb_class_driver hiddev_class = {
+ 	.name =		"hiddev%d",
++	.nodename =	hiddev_nodename,
+ 	.fops =		&hiddev_fops,
+ 	.minor_base =	HIDDEV_MINOR_BASE,
+ };
+@@ -955,7 +961,6 @@ static int hiddev_usbd_probe(struct usb_interface *intf,
+ 	return -ENODEV;
+ }
  
- 	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
-+	char *(*nodename)(struct device *dev);
+-
+ static /* const */ struct usb_driver hiddev_driver = {
+ 	.name =		"hiddev",
+ 	.probe =	hiddev_usbd_probe,
+diff --git a/drivers/media/video/dabusb.c b/drivers/media/video/dabusb.c
+index ba3709b..ec2f45d 100644
+--- a/drivers/media/video/dabusb.c
++++ b/drivers/media/video/dabusb.c
+@@ -747,8 +747,14 @@ static const struct file_operations dabusb_fops =
+ 	.release =	dabusb_release,
+ };
  
- 	void (*class_release)(struct class *class);
- 	void (*dev_release)(struct device *dev);
-@@ -289,6 +290,7 @@ struct device_type {
- 	const char *name;
- 	struct attribute_group **groups;
- 	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
-+	char *(*nodename)(struct device *dev);
- 	void (*release)(struct device *dev);
++static char *dabusb_nodename(struct device *dev)
++{
++	return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev));
++}
++
+ static struct usb_class_driver dabusb_class = {
+ 	.name =		"dabusb%d",
++	.nodename =	dabusb_nodename,
+ 	.fops =		&dabusb_fops,
+ 	.minor_base =	DABUSB_MINOR,
+ };
+diff --git a/drivers/usb/class/usblp.c b/drivers/usb/class/usblp.c
+index d2747a4..26c09f0 100644
+--- a/drivers/usb/class/usblp.c
++++ b/drivers/usb/class/usblp.c
+@@ -1057,8 +1057,14 @@ static const struct file_operations usblp_fops = {
+ 	.release =	usblp_release,
+ };
  
- 	struct dev_pm_ops *pm;
-@@ -488,6 +490,7 @@ extern struct device *device_find_child(struct device *dev, void *data,
- extern int device_rename(struct device *dev, char *new_name);
- extern int device_move(struct device *dev, struct device *new_parent,
- 		       enum dpm_order dpm_order);
-+extern const char *device_get_nodename(struct device *dev, const char **tmp);
++static char *usblp_nodename(struct device *dev)
++{
++	return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev));
++}
++
+ static struct usb_class_driver usblp_class = {
+ 	.name =		"lp%d",
++	.nodename =	usblp_nodename,
+ 	.fops =		&usblp_fops,
+ 	.minor_base =	USBLP_MINOR_BASE,
+ };
+diff --git a/drivers/usb/core/file.c b/drivers/usb/core/file.c
+index 997e659..5cef889 100644
+--- a/drivers/usb/core/file.c
++++ b/drivers/usb/core/file.c
+@@ -67,6 +67,16 @@ static struct usb_class {
+ 	struct class *class;
+ } *usb_class;
  
++static char *usb_nodename(struct device *dev)
++{
++	struct usb_class_driver *drv;
++
++	drv = dev_get_drvdata(dev);
++	if (!drv || !drv->nodename)
++		return NULL;
++	return drv->nodename(dev);
++}
++
+ static int init_usb_class(void)
+ {
+ 	int result = 0;
+@@ -90,6 +100,7 @@ static int init_usb_class(void)
+ 		kfree(usb_class);
+ 		usb_class = NULL;
+ 	}
++	usb_class->class->nodename = usb_nodename;
+ 
+ exit:
+ 	return result;
+@@ -198,7 +209,7 @@ int usb_register_dev(struct usb_interface *intf,
+ 	else
+ 		temp = name;
+ 	intf->usb_dev = device_create(usb_class->class, &intf->dev,
+-				      MKDEV(USB_MAJOR, minor), NULL,
++				      MKDEV(USB_MAJOR, minor), class_driver,
+ 				      "%s", temp);
+ 	if (IS_ERR(intf->usb_dev)) {
+ 		down_write(&minor_rwsem);
+diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+index 7eee400..927a27d 100644
+--- a/drivers/usb/core/usb.c
++++ b/drivers/usb/core/usb.c
+@@ -305,10 +305,21 @@ static struct dev_pm_ops usb_device_pm_ops = {
+ 
+ #endif	/* CONFIG_PM */
+ 
++
++static char *usb_nodename(struct device *dev)
++{
++	struct usb_device *usb_dev;
++
++	usb_dev = to_usb_device(dev);
++	return kasprintf(GFP_KERNEL, "bus/usb/%03d/%03d",
++			 usb_dev->bus->busnum, usb_dev->devnum);
++}
++
+ struct device_type usb_device_type = {
+ 	.name =		"usb_device",
+ 	.release =	usb_release_dev,
+ 	.uevent =	usb_dev_uevent,
++	.nodename = 	usb_nodename,
+ 	.pm =		&usb_device_pm_ops,
+ };
+ 
+diff --git a/drivers/usb/misc/iowarrior.c b/drivers/usb/misc/iowarrior.c
+index a4ef77e..3c5fe5c 100644
+--- a/drivers/usb/misc/iowarrior.c
++++ b/drivers/usb/misc/iowarrior.c
+@@ -726,12 +726,18 @@ static const struct file_operations iowarrior_fops = {
+ 	.poll = iowarrior_poll,
+ };
+ 
++static char *iowarrior_nodename(struct device *dev)
++{
++	return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev));
++}
++
  /*
-  * Root device objects for grouping under /sys/devices
+  * usb class driver info in order to get a minor number from the usb core,
+  * and to have the device registered with devfs and the driver core
+  */
+ static struct usb_class_driver iowarrior_class = {
+ 	.name = "iowarrior%d",
++	.nodename = iowarrior_nodename,
+ 	.fops = &iowarrior_fops,
+ 	.minor_base = IOWARRIOR_MINOR_BASE,
+ };
+diff --git a/drivers/usb/misc/legousbtower.c b/drivers/usb/misc/legousbtower.c
+index ab0f322..c1e2433 100644
+--- a/drivers/usb/misc/legousbtower.c
++++ b/drivers/usb/misc/legousbtower.c
+@@ -266,12 +266,18 @@ static const struct file_operations tower_fops = {
+ 	.llseek =	tower_llseek,
+ };
+ 
++static char *legousbtower_nodename(struct device *dev)
++{
++	return kasprintf(GFP_KERNEL, "usb/%s", dev_name(dev));
++}
++
+ /*
+  * usb class driver info in order to get a minor number from the usb core,
+  * and to have the device registered with the driver core
+  */
+ static struct usb_class_driver tower_class = {
+ 	.name =		"legousbtower%d",
++	.nodename = 	legousbtower_nodename,
+ 	.fops =		&tower_fops,
+ 	.minor_base =	LEGO_USB_TOWER_MINOR_BASE,
+ };
+diff --git a/include/linux/usb.h b/include/linux/usb.h
+index 3aa2cd1..34cdfca 100644
+--- a/include/linux/usb.h
++++ b/include/linux/usb.h
+@@ -869,6 +869,8 @@ struct usb_driver {
+  * struct usb_device_driver - identifies USB device driver to usbcore
+  * @name: The driver name should be unique among USB drivers,
+  *	and should normally be the same as the module name.
++ * @nodename: Callback to provide a naming hint for a possible
++ *	device node to create.
+  * @probe: Called to see if the driver is willing to manage a particular
+  *	device.  If it is, probe returns zero and uses dev_set_drvdata()
+  *	to associate driver-specific data with the device.  If unwilling
+@@ -912,6 +914,7 @@ extern struct bus_type usb_bus_type;
+  */
+ struct usb_class_driver {
+ 	char *name;
++	char *(*nodename)(struct device *dev);
+ 	const struct file_operations *fops;
+ 	int minor_base;
+ };
 -- 
 1.6.3.2
 
