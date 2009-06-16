@@ -1,86 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbZFPAla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZFPAnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756672AbZFPAla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 20:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZFPAlS
+	id S1757430AbZFPAnV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 20:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZFPAnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 20:41:18 -0400
-Received: from mail.atheros.com ([12.36.123.2]:38755 "EHLO mail.atheros.com"
+	Mon, 15 Jun 2009 20:43:13 -0400
+Received: from mx.binnacle.cx ([74.95.187.105]:61248 "EHLO mx.binnacle.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbZFPAlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 20:41:17 -0400
-Date: Mon, 15 Jun 2009 17:41:22 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Greg KH <greg@kroah.com>, <corbet@lwn.net>
-CC: "Luis R. Rodriguez" <mcgrof@bombadil.infradead.org>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
-Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
-	window
-Message-ID: <20090616004122.GC5492@tesla>
-References: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com> <20090615201934.GA12685@kroah.com> <20090615214735.GE23972@bombadil.infradead.org> <20090615223206.GA4966@kroah.com>
-MIME-Version: 1.0
+	id S1751600AbZFPAnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 20:43:12 -0400
+Message-Id: <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
+X-Mailer: QUALCOMM Windows Eudora Version 6.2.5.6
+Date: Mon, 15 Jun 2009 20:19:33 -0400
+To: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org, hugh.dickins@tiscali.co.uk, Lee.Schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, ebmunson@us.ibm.com, agl@us.ibm.com,
+       apw@canonical.com, wli@movementarian.org
+From: starlight@binnacle.cx
+Subject: QUESTION: can netdev_alloc_skb() errors be reduced by
+  tuning?
+In-Reply-To: <20090527231949.GB30002@elte.hu>
+References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
+ <20090527131437.5870e342.akpm@linux-foundation.org>
+ <20090527231949.GB30002@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090615223206.GA4966@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 03:32:06PM -0700, Greg KH wrote:
-> On Mon, Jun 15, 2009 at 05:47:35PM -0400, Luis R. Rodriguez wrote:
-> > From: Luis R. Rodriguez <lrodriguez@atheros.com>
-> > Subject: [PATCH] Documentation: add documentation summary for rc-series and merge window
-> >
-> > This is losely based on previous discussions on linux-kernel [1][2].
-> > Lets also refer people reading the stable rules to
-> > Documentation/development-process/.
-> >
-> > [1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
-> > [2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
-> >
-> > Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> > ---
-> >  Documentation/development-process/2.Process |   66 +++++++++++++++++++++++++++
-> >  Documentation/stable_kernel_rules.txt       |    5 ++
-> >  2 files changed, 71 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/Documentation/development-process/2.Process b/Documentation/development-process/2.Process
-> > index d750321..e023db6 100644
-> > --- a/Documentation/development-process/2.Process
-> > +++ b/Documentation/development-process/2.Process
-> 
-> You should cc: the author of this document, when modifying it.
+Hello,
 
-Added.
+I submitted testcase for a hugepages bug that has been 
+successfully resolved.  Have an apparently obscure question 
+related to MM, and so I am asking anyone who might have some idea 
+on this.  Nothing much turned up via Google and digging into
+the KMEM code looks daunting.
 
-> > @@ -7,6 +7,72 @@ course of one year, the kernel has since had to evolve a number of
-> >  processes to keep development happening smoothly.  A solid understanding of
-> >  how the process works is required in order to be an effective part of it.
-> >
-> > +2.0 SUMMARY
-> > +
-> > +This section provides a brief summary of the new kernel release rules.
-> > +
-> > +2.0.0 NEW KERNEL RELEASE RULES
-> 
-> "New"?  We've been doing this for many many years now, what is "new"
-> about it?
+Running Intel 82598/ixgbe 10 gig Ethernet under heavy stress. 
+Generally is working well after tuning IRQ affinities, but a 
+fair number of buffer allocation failures are occurring in the 
+'ixgbe' device driver and are reported via 'ethtool' statistics. 
+ This may be causing data loss.
 
-New as in the next kernel release, sorry. Didn't mean as in "this is a
-new process".
+The kernel primitive returning the error is netdev_alloc_skb().
 
-> And why are you starting a series with "0"?  Just to keep from having to
-> modify all of the other numbers?  None of the other files in this
-> directory start at 0...
+Are any tuneable parameters available that can reduce or 
+eliminate these allocation failures?  Have about eleven 
+gigabytes of free memory, though most of that is consumed 
+by non-dirty file cache data.  Total system memory is 16GB with 
+4GB allocated to hugepages.  Zero swap usage and activity though
+swap is enabled.  Most application memory is hugepage or is
+'mlock()'ed.
 
-Heh yeah.
+Thank you.
 
-  Luis
+
+
+
+
+System rebooted before test run.
+
+Dual Xeon E5430, 16GB FB-DIMM RAM.
+
+
+$ cat /proc/meminfo
+MemTotal:     16443828 kB
+MemFree:        281176 kB
+Buffers:         53896 kB
+Cached:       11331924 kB
+SwapCached:          0 kB
+Active:         200740 kB
+Inactive:     11284312 kB
+HighTotal:           0 kB
+HighFree:            0 kB
+LowTotal:     16443828 kB
+LowFree:        281176 kB
+SwapTotal:     2031608 kB
+SwapFree:      2031400 kB
+Dirty:               4 kB
+Writeback:           0 kB
+AnonPages:      104464 kB
+Mapped:          14644 kB
+Slab:           440452 kB
+PageTables:       4032 kB
+NFS_Unstable:        0 kB
+Bounce:              0 kB
+CommitLimit:   8156368 kB
+Committed_AS:   122452 kB
+VmallocTotal: 34359738367 kB
+VmallocUsed:    266872 kB
+VmallocChunk: 34359471043 kB
+HugePages_Total:  2048
+HugePages_Free:    735
+HugePages_Rsvd:      0
+Hugepagesize:     2048 kB
+
+
+# ethtool -S eth2 | egrep -v ': 0$'
+NIC statistics:
+     rx_packets: 724246449
+     tx_packets: 229847
+     rx_bytes: 152691992335
+     tx_bytes: 10573426
+     multicast: 725997241
+     broadcast: 6
+     rx_csum_offload_good: 723051776
+     alloc_rx_buff_failed: 7119
+     tx_queue_0_packets: 229847
+     tx_queue_0_bytes: 10573426
+     rx_queue_0_packets: 340698332
+     rx_queue_0_bytes: 70844299683
+     rx_queue_1_packets: 385298923
+     rx_queue_1_bytes: 82276167594
+
+
+ixgbe driver fragment
+=====================
+    struct sk_buff *skb = netdev_alloc_skb(adapter->netdev, bufsz);
+
+    if (!skb) {
+        adapter->alloc_rx_buff_failed++;
+        goto no_buffers;
+    }
+
