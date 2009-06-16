@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZFPJA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbZFPJCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZFPJA3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 05:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZFPJAW
+	id S1753660AbZFPJCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 05:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZFPJCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:00:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40464 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752096AbZFPJAU (ORCPT
+	Tue, 16 Jun 2009 05:02:24 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:45095 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbZFPJCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:00:20 -0400
-Date: Tue, 16 Jun 2009 10:00:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [bug] WARNING: at drivers/char/tty_io.c:1266
- tty_open+0x1ea/0x388()
-Message-ID: <20090616100052.038f9d24@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090616084952.GA18263@elte.hu>
-References: <20090614081052.GA9276@elte.hu>
-	<20090614115428.1127ed2d@lxorguk.ukuu.org.uk>
-	<20090616071057.GA29862@elte.hu>
-	<20090616094430.75bbbee2@lxorguk.ukuu.org.uk>
-	<20090616084952.GA18263@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Jun 2009 05:02:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=jrHlwyVXUXlUo6Y+z3AjcBQOldjNf7cVQ4TIsTzYiJxI7zweCrf90HkEKnGkNhFauU
+         RoBvv8ItV6M10adiY+x4zJpfKJtXfWG8Q+t/ON1G3HSZrNsgtueSfAbF79SAN6oFcD+B
+         ngAeFWUHr6o8qMZKwRI3TDxBQymVM4Tj/dxlU=
+MIME-Version: 1.0
+Date: Tue, 16 Jun 2009 17:02:24 +0800
+Message-ID: <a8e1da0906160202r7124b8a7x29ace04cd910df52@mail.gmail.com>
+Subject: [PATCH] printk boot_delay: use loops_per_msec instead of 
+	printk_delay_msec
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm wondering, how long have these patches been in linux-next? Has 
-> no-one reported an easy (or easier) reproducer than a plain bootup 
-> (which really doesnt hit the tty code intentionally hard)?
+Sorry, should post this firstly because the previous printk_delay
+patch depends on this,
+please review, thanks.
+--
 
-Quite a while - and the open side stuff hasn't changed in the post 2.6.30
-patches at all. Your box seems to show stuff up that most users just
-don't hit.
- 
-> You should probably also write testcases and stress-tests if you 
-> modify code in this area.
+Use loops_per_msec instead of printk_delay_msec for boot printk delay.
 
-I did - they hang the tty layers in 2.6.30 and earlier in about 60
-seconds, it then corrupts the module counts and dies shortly after. I've
-not published them because they can obviously be seriously misused.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+---
+kernel/printk.c |   10 ++++------
+1 file changed, 4 insertions(+), 6 deletions(-)
 
-I don't have the luxury of building on solid foundations trying to sort
-the tty layer out - its been broken since 2.1.x when the lock_kernel
-logic stopped applying to IRQ handlers.
+--- linux-2.6.orig/kernel/printk.c	2009-06-15 10:53:10.000000000 +0800
++++ linux-2.6/kernel/printk.c	2009-06-15 13:17:13.000000000 +0800
+@@ -198,12 +198,11 @@ __setup("log_buf_len=", log_buf_len_setu
+ #ifdef CONFIG_BOOT_PRINTK_DELAY
 
-Alan
+ static unsigned int boot_delay; /* msecs delay after each printk
+during bootup */
+-static unsigned long long printk_delay_msec; /* per msec, based on
+boot_delay */
++static unsigned long long loops_per_msec;
+
+ static int __init boot_delay_setup(char *str)
+ {
+ 	unsigned long lpj;
+-	unsigned long long loops_per_msec;
+
+ 	lpj = preset_lpj ? preset_lpj : 1000000;	/* some guess */
+ 	loops_per_msec = (unsigned long long)lpj / 1000 * HZ;
+@@ -212,10 +211,9 @@ static int __init boot_delay_setup(char
+ 	if (boot_delay > 10 * 1000)
+ 		boot_delay = 0;
+
+-	printk_delay_msec = loops_per_msec;
+ 	printk(KERN_DEBUG "boot_delay: %u, preset_lpj: %ld, lpj: %lu, "
+-		"HZ: %d, printk_delay_msec: %llu\n",
+-		boot_delay, preset_lpj, lpj, HZ, printk_delay_msec);
++		"HZ: %d, loops_per_msec: %llu\n",
++		boot_delay, preset_lpj, lpj, HZ, loops_per_msec);
+ 	return 1;
+ }
+ __setup("boot_delay=", boot_delay_setup);
+@@ -228,7 +226,7 @@ static void boot_delay_msec(void)
+ 	if (boot_delay == 0 || system_state != SYSTEM_BOOTING)
+ 		return;
+
+-	k = (unsigned long long)printk_delay_msec * boot_delay;
++	k = (unsigned long long)loops_per_msec * boot_delay;
+
+ 	timeout = jiffies + msecs_to_jiffies(boot_delay);
+ 	while (k) {
