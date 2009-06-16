@@ -1,117 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbZFPPRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbZFPPTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758871AbZFPPRI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZFPPQy
+	id S1759587AbZFPPTd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZFPPTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:16:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44820 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbZFPPQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:16:53 -0400
-Date: Tue, 16 Jun 2009 18:16:22 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, mingo@elte.hu
-Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based
-	notifier interface
-Message-ID: <20090616151622.GA2469@redhat.com>
-References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com> <4A37A7FC.4090403@novell.com> <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com> <4A37B224.1070804@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A37B224.1070804@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Jun 2009 11:19:23 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:55212 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbZFPPTW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 11:19:22 -0400
+To: vaurora@redhat.com
+CC: miklos@szeredi.hu, jblunck@suse.de, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
+In-reply-to: <20090608194404.GC4363@fsbox> (message from Valerie Aurora on
+	Mon, 8 Jun 2009 12:44:04 -0700)
+Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <E1M6LvU-0000mN-HN@pomaz-ex.szeredi.hu> <20090519172327.GB722@shell> <E1M6hjr-00032A-EX@pomaz-ex.szeredi.hu> <20090608194404.GC4363@fsbox>
+Message-Id: <E1MGaRG-0005z5-BR@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 16 Jun 2009 17:19:06 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 10:54:28AM -0400, Gregory Haskins wrote:
-> >>>>> +static void _eventfd_notify(struct eventfd_ctx *ctx)
-> >>>>> +{
-> >>>>> +	struct eventfd_notifier *en;
-> >>>>> +	int idx;
-> >>>>> +
-> >>>>> +	idx = srcu_read_lock(&ctx->srcu);
-> >>>>> +
-> >>>>> +	/*
-> >>>>> +	 * The goal here is to allow the notification to be preemptible
-> >>>>> +	 * as often as possible.  We cannot achieve this with the basic
-> >>>>> +	 * wqh mechanism because it requires the wqh->lock.  Therefore
-> >>>>> +	 * we have an internal srcu list mechanism of which the wqh is
-> >>>>> +	 * a client.
-> >>>>> +	 *
-> >>>>> +	 * Not all paths will invoke this function in process context.
-> >>>>> +	 * Callers should check for suitable state before assuming they
-> >>>>> +	 * can sleep (such as with preemptible()).  Paul McKenney assures
-> >>>>> +	 * me that srcu_read_lock is compatible with in-atomic, as long as
-> >>>>> +	 * the code within the critical section is also compatible.
-> >>>>> +	 */
-> >>>>> +	list_for_each_entry_rcu(en, &ctx->nh, list)
-> >>>>> +		en->ops->signal(en);
-> >>>>> +
-> >>>>> +	srcu_read_unlock(&ctx->srcu, idx);
-> >>>>> +}
-> >>>>> +
-> >>>>>  /*
-> >>>>>   * Adds "n" to the eventfd counter "count". Returns "n" in case of
-> >>>>>   * success, or a value lower then "n" in case of coutner overflow.
-> >>>>>     
-> >>>>>         
-> >>>>>           
-> >>>> This is ugly, isn't it? With CONFIG_PREEMPT=no preemptible() is always false.
-> >>>>
-> >>>> Further, to do useful things it might not be enough that you can sleep:
-> >>>> with iofd you also want to access current task with e.g. copy from user.
-> >>>>
-> >>>> Here's an idea: let's pass a flag to ->signal, along the lines of
-> >>>> signal_is_task, that tells us that it is safe to use current, and add
-> >>>> eventfd_signal_task() which is the same as eventfd_signal but lets everyone
-> >>>> know that it's safe to both sleep and use current->mm.
-> >>>>
-> >>>> Makes sense?
-> >>>>   
-> >>>>       
-> >>>>         
-> >>> It does make sense, yes.  What I am not clear on is how would eventfd
-> >>> detect this state such as to populate such flags, and why cant the
-> >>> ->signal() CB do the same?
-> >>>
-> >>> Thanks Michael,
-> >>> -Greg
-> >>>
-> >>>     
-> >>>       
-> >> eventfd can't detect this state. But the callers know in what context they are.
-> >> So the *caller* of eventfd_signal_task makes sure of this: if you are in a task,
-> >> you can call eventfd_signal_task() if not, you must call eventfd_signal.
-> >>
-> >>
-> >>   
-> >>     
-> > Hmm, this is an interesting idea, but I think it would be problematic in
-> > real-world applications for the long-term.  For instance, the -rt tree
-> > and irq-threads .config option in the process of merging into mainline
-> > changes context types for established code.  Therefore, what might be
-> > "hardirq/softirq" logic today may execute in a kthread tomorrow.  I
-> > think its dangerous to try to solve the problem with caller provided
-> > info:  the caller may be ignorant of its true state.
-> 
-> Also, we need to consider that a process context can still be in-atomic
-> if the user did something like disabled interrupts, preemption, used a
-> spinlock, etc, before calling the eventfd_signal_task() function. 
-> Perhaps we can put a stake in the ground that says you must not call
-> this from atomic context,
+On Mon, 8 Jun 2009, Valerie Aurora wrote:
+> On Wed, May 20, 2009 at 11:05:27AM +0200, Miklos Szeredi wrote:
 
-That's the ticket.
+> > The big reason why kernel impementation of readdir is hard is that
+> > unswappable kernel memory needs to be used for caching directory
+> > contents while the directory is open.  Well, tmpfs does the same,
+> > dentries and inodes are _not_ swappable, and they gobble up memory.
+> 
+> That's a good point.  It seemed to me that it wouldn't be too
+> difficult to make those entries evictable - drop a reference count and
+> set the ->d_release to mark the directory as needing rebuilding.  What
+> do you think?
 
-> but I still prefer just being able to detect
-> this from our state.
-> 
-> -Greg
-> 
-> 
+AFAICS, there are nontrivial problems to deal with:
 
--- 
-MST
+If directory is still open, child dentries must not go away.
+
+If directory is closed, and at least one child is evicted, then the
+whole directory is unusable and needs to be rebuilt on next readdir.
+
+If we can solve those in a non-racy way than it might work.  I suspect
+however, that some additional code in union-mounts that adds all this
+functionality without reusing tmpfs would actually be simpler to
+implement.
+
+Thanks,
+Miklos
