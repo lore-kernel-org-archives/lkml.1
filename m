@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936792AbZFPF73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936831AbZFPF7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936792AbZFPF73 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 01:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935173AbZFPFvZ
+	id S936831AbZFPF7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 01:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935862AbZFPFv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:51:25 -0400
-Received: from kroah.org ([198.145.64.141]:48400 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:51:26 -0400
+Received: from kroah.org ([198.145.64.141]:48401 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935845AbZFPFvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S935852AbZFPFvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Jun 2009 01:51:24 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 37/64] eisa: remove driver_data direct access of struct device
-Date: Mon, 15 Jun 2009 22:46:26 -0700
-Message-Id: <1245131213-24168-37-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux1394-devel@lists.sourceforge.net,
+       Kristian Hoegsberg <krh@redhat.com>
+Subject: [PATCH 38/64] firewire: remove driver_data direct access of struct device
+Date: Mon, 15 Jun 2009 22:46:27 -0700
+Message-Id: <1245131213-24168-38-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -28,63 +29,45 @@ dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
 have been around since the beginning, so are backwards compatible with
 all older kernel versions.
 
-
+Cc: linux1394-devel@lists.sourceforge.net
+Acked-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Kristian Hoegsberg <krh@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/eisa/pci_eisa.c     |    2 +-
- drivers/eisa/virtual_root.c |    2 +-
- include/linux/eisa.h        |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/firewire/fw-sbp2.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/eisa/pci_eisa.c b/drivers/eisa/pci_eisa.c
-index 74edb1d..0dd0f63 100644
---- a/drivers/eisa/pci_eisa.c
-+++ b/drivers/eisa/pci_eisa.c
-@@ -31,11 +31,11 @@ static int __init pci_eisa_init(struct pci_dev *pdev,
- 	}
+diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
+index 2bcf515..a70e66e 100644
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -1125,7 +1125,7 @@ static int sbp2_probe(struct device *dev)
+ 		return -ENOMEM;
  
- 	pci_eisa_root.dev              = &pdev->dev;
--	pci_eisa_root.dev->driver_data = &pci_eisa_root;
- 	pci_eisa_root.res	       = pdev->bus->resource[0];
- 	pci_eisa_root.bus_base_addr    = pdev->bus->resource[0]->start;
- 	pci_eisa_root.slots	       = EISA_MAX_SLOTS;
- 	pci_eisa_root.dma_mask         = pdev->dma_mask;
-+	dev_set_drvdata(pci_eisa_root.dev, &pci_eisa_root);
- 
- 	if (eisa_root_register (&pci_eisa_root)) {
- 		printk (KERN_ERR "pci_eisa : Could not register EISA root\n");
-diff --git a/drivers/eisa/virtual_root.c b/drivers/eisa/virtual_root.c
-index 3074879..535e4f9 100644
---- a/drivers/eisa/virtual_root.c
-+++ b/drivers/eisa/virtual_root.c
-@@ -57,7 +57,7 @@ static int __init virtual_eisa_root_init (void)
- 
- 	eisa_bus_root.force_probe = force_probe;
- 	
--	eisa_root_dev.dev.driver_data = &eisa_bus_root;
-+	dev_set_drvdata(&eisa_root_dev.dev, &eisa_bus_root);
- 
- 	if (eisa_root_register (&eisa_bus_root)) {
- 		/* A real bridge may have been registered before
-diff --git a/include/linux/eisa.h b/include/linux/eisa.h
-index e61c0be..6925249 100644
---- a/include/linux/eisa.h
-+++ b/include/linux/eisa.h
-@@ -78,12 +78,12 @@ static inline void eisa_driver_unregister (struct eisa_driver *edrv) { }
- /* Mimics pci.h... */
- static inline void *eisa_get_drvdata (struct eisa_device *edev)
+ 	tgt = (struct sbp2_target *)shost->hostdata;
+-	unit->device.driver_data = tgt;
++	dev_set_drvdata(&unit->device, tgt);
+ 	tgt->unit = unit;
+ 	kref_init(&tgt->kref);
+ 	INIT_LIST_HEAD(&tgt->lu_list);
+@@ -1180,7 +1180,7 @@ static int sbp2_probe(struct device *dev)
+ static int sbp2_remove(struct device *dev)
  {
--        return edev->dev.driver_data;
-+        return dev_get_drvdata(&edev->dev);
- }
+ 	struct fw_unit *unit = fw_unit(dev);
+-	struct sbp2_target *tgt = unit->device.driver_data;
++	struct sbp2_target *tgt = dev_get_drvdata(&unit->device);
  
- static inline void eisa_set_drvdata (struct eisa_device *edev, void *data)
+ 	sbp2_target_put(tgt);
+ 	return 0;
+@@ -1240,7 +1240,7 @@ static void sbp2_reconnect(struct work_struct *work)
+ 
+ static void sbp2_update(struct fw_unit *unit)
  {
--        edev->dev.driver_data = data;
-+        dev_set_drvdata(&edev->dev, data);
- }
+-	struct sbp2_target *tgt = unit->device.driver_data;
++	struct sbp2_target *tgt = dev_get_drvdata(&unit->device);
+ 	struct sbp2_logical_unit *lu;
  
- /* The EISA root device. There's rumours about machines with multiple
+ 	fw_device_enable_phys_dma(fw_device(unit->device.parent));
 -- 
 1.6.3.2
 
