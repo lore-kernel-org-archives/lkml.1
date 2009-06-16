@@ -1,338 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZFPEQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbZFPER2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbZFPEQS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 00:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZFPEQK
+	id S1752967AbZFPER2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZFPERV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 00:16:10 -0400
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:46428
-	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750824AbZFPEQI (ORCPT
+	Tue, 16 Jun 2009 00:17:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40120 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750737AbZFPERV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 00:16:08 -0400
-Message-ID: <4A371CDF.3070407@bluewatersys.com>
-Date: Tue, 16 Jun 2009 16:17:35 +1200
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 16 Jun 2009 00:17:21 -0400
+Date: Mon, 15 Jun 2009 21:16:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] WARN(): add a \n to the message printk
+In-Reply-To: <alpine.LFD.2.01.0906152055580.3282@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906152114070.3282@localhost.localdomain>
+References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain> <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain> <20090615171044.GC25760@elte.hu>
+ <alpine.LFD.2.01.0906152055580.3282@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org
-Subject: [PATCH] ds2782 battery gas gauge driver
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for the the ds2782 standalone I2C gas-gauge.
 
-Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
+
+On Mon, 15 Jun 2009, Linus Torvalds wrote:
+> 
+> And no, this does not necessarily fix Arjan's problem: it only adds the 
+> newline before printk's that _do_ have a KERN_<lvl> format. So now, in 
+> order to get the extra '\n' after the WARN_ON() line, somebody needs to 
+> make sure that the printk's in the warning printing have loglevels.
+> 
+> Arjan?
+
+The "print_modules()" function needs a KERN_WARNING in front of it.
+
+Or something like this (on top of the patch I just sent out), which allows 
+you to specify loglevel that is just the default one, whatever that 
+happens to be. Using KERN_DEFAULT, of course.
+
+Hmm?
+
+		Linus
 
 ---
+ include/linux/kernel.h |    2 ++
+ kernel/module.c        |    2 +-
+ kernel/printk.c        |    2 ++
+ 3 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 33da112..b9c818f 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -43,6 +43,13 @@ config BATTERY_DS2760
- 	help
- 	  Say Y here to enable support for batteries with ds2760 chip.
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 066bb1e..1b2e174 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -97,6 +97,8 @@ extern const char linux_proc_banner[];
+ #define	KERN_INFO	"<6>"	/* informational			*/
+ #define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
  
-+config BATTERY_DS2782
-+	tristate "DS2782 standalone gas-gauge"
-+	depends on I2C
-+	help
-+	  Say Y here to enable support for the DS2782 standalone battery
-+	  gas-gauge.
-+
- config BATTERY_PMU
- 	tristate "Apple PMU battery"
- 	depends on PPC32 && ADB_PMU
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 2fcf41d..ad1ac61 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -19,6 +19,7 @@ obj-$(CONFIG_APM_POWER)		+= apm_power.o
- obj-$(CONFIG_WM8350_POWER)	+= wm8350_power.o
++/* Use the default kernel loglevel */
++#define KERN_DEFAULT	"<d>"
+ /*
+  * Annotation for a "continued" line of log printout (only done after a
+  * line that had no enclosing \n). Only to be used by core/arch code
+diff --git a/kernel/module.c b/kernel/module.c
+index e4ab36c..215aaab 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2899,7 +2899,7 @@ void print_modules(void)
+ 	struct module *mod;
+ 	char buf[8];
  
- obj-$(CONFIG_BATTERY_DS2760)	+= ds2760_battery.o
-+obj-$(CONFIG_BATTERY_DS2782)	+= ds2782_battery.o
- obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
- obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
- obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
-diff --git a/drivers/power/ds2782_battery.c b/drivers/power/ds2782_battery.c
-new file mode 100644
-index 0000000..8697891
---- /dev/null
-+++ b/drivers/power/ds2782_battery.c
-@@ -0,0 +1,269 @@
-+/*
-+ * drivers/power/ds2782_battery.c
-+ *
-+ * I2C client/driver for the Maxim/Dallas DS2782 Stand-Alone Fuel Gauge IC
-+ *
-+ * Copyright (C) 2009 Bluewater Systems Ltd
-+ * Author: Ryan Mallon <ryan@bluewatersys.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/i2c.h>
-+#include <linux/idr.h>
-+#include <linux/power_supply.h>
-+
-+#define DS2782_REG_RARC		0x06	/* Remaining active relative capacity */
-+
-+#define DS2782_REG_VOLT_MSB	0x0c
-+#define DS2782_REG_TEMP_MSB	0x0a
-+#define DS2782_REG_CURRENT_MSB	0x0e
-+
-+/* EEPROM Block */
-+#define DS2782_REG_RSNSP	0x69	/* Sense resistor value */
-+
-+/* Current unit measurement in uA for a 1 milli-ohm sense resistor */
-+#define DS2782_CURRENT_UNITS	1563
-+
-+#define to_ds2782_info(x) container_of(x, struct ds2782_info, battery)
-+
-+struct ds2782_info {
-+	struct i2c_client	*client;
-+	struct power_supply	battery;
-+	int			id;
-+};
-+
-+static DEFINE_IDR(battery_id);
-+static DEFINE_MUTEX(battery_lock);
-+
-+static inline u8 ds2782_read_reg(struct ds2782_info *info, int reg)
-+{
-+	return i2c_smbus_read_byte_data(info->client, reg);
-+}
-+
-+static inline u16 ds2782_read_reg16(struct ds2782_info *info, int reg_msb)
-+{
-+	u8 msb, lsb;
-+
-+	msb = ds2782_read_reg(info, reg_msb);
-+	lsb = ds2782_read_reg(info, reg_msb + 1);
-+
-+	return (msb << 8) | lsb;
-+}
-+
-+static int ds2782_get_temp(struct ds2782_info *info)
-+{
-+	u16 raw;
-+	s16 temp;
-+
-+	/* Temperature is measured in units of 0.125 degrees celcius */
-+	raw = ds2782_read_reg16(info, DS2782_REG_TEMP_MSB);
-+	temp = (raw >> 5) & 0x7ff;
-+	if (raw & (1 << 15))
-+		temp |= 0xf800;
-+	return (temp * 125) / 100;
-+}
-+
-+static int ds2782_get_current(struct ds2782_info *info)
-+{
-+	s16 current_uA;
-+	int sense_res;
-+
-+	/*
-+	 * The units of measurement for current are dependent on the value of
-+	 * the sense resistor.
-+	 */
-+	sense_res = 1000 / ds2782_read_reg(info, DS2782_REG_RSNSP);
-+	dev_dbg(&info->client->dev, "sense resistor = %d milli-ohms\n",
-+		sense_res);
-+	current_uA = ds2782_read_reg16(info, DS2782_REG_CURRENT_MSB);
-+	return current_uA * (DS2782_CURRENT_UNITS / sense_res);
-+}
-+
-+static int ds2782_get_voltage(struct ds2782_info *info)
-+{
-+	u16 raw;
-+	s16 voltage_uA;
-+
-+	/* Voltage is measured in units of 4.88mV */
-+	raw = ds2782_read_reg16(info, DS2782_REG_VOLT_MSB);
-+	voltage_uA = (raw >> 5) & 0x7ff;
-+	if (raw & (1 << 15))
-+		voltage_uA |= 0xf800;
-+	return voltage_uA * 4880;
-+}
-+
-+static int ds2782_get_status(struct ds2782_info *info)
-+{
-+	int current_uA, capacity;
-+
-+	current_uA = ds2782_get_current(info);
-+	capacity = ds2782_read_reg(info, DS2782_REG_RARC);
-+
-+	if (capacity == 100)
-+		return POWER_SUPPLY_STATUS_FULL;
-+	else if (current_uA == 0)
-+		return POWER_SUPPLY_STATUS_NOT_CHARGING;
-+	else if (current_uA < 0)
-+		return POWER_SUPPLY_STATUS_DISCHARGING;
-+	else
-+		return POWER_SUPPLY_STATUS_CHARGING;
-+}
-+
-+static int ds2782_battery_get_property(struct power_supply *psy,
-+				       enum power_supply_property prop,
-+				       union power_supply_propval *val)
-+{
-+	struct ds2782_info *info = to_ds2782_info(psy);
-+
-+	switch (prop) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		val->intval = ds2782_get_status(info);
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		val->intval = ds2782_read_reg(info, DS2782_REG_RARC);
-+		break;
-+
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		val->intval = ds2782_get_voltage(info);
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		val->intval = ds2782_get_current(info);
-+		break;
-+
-+	case POWER_SUPPLY_PROP_TEMP:
-+		val->intval = ds2782_get_temp(info);
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static enum power_supply_property ds2782_battery_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_TEMP,
-+};
-+
-+static void ds2782_power_supply_init(struct power_supply *battery)
-+{
-+	battery->type			= POWER_SUPPLY_TYPE_BATTERY;
-+	battery->properties		= ds2782_battery_props;
-+	battery->num_properties		= ARRAY_SIZE(ds2782_battery_props);
-+	battery->get_property		= ds2782_battery_get_property;
-+	battery->external_power_changed	= NULL;
-+}
-+
-+static int ds2782_battery_remove(struct i2c_client *client)
-+{
-+	struct ds2782_info *info = i2c_get_clientdata(client);
-+
-+	power_supply_unregister(&info->battery);
-+	kfree(info->battery.name);
-+
-+	mutex_lock(&battery_lock);
-+	idr_remove(&battery_id, info->id);
-+	mutex_unlock(&battery_lock);
-+
-+	kfree(info);
-+	return 0;
-+}
-+
-+static int ds2782_battery_probe(struct i2c_client *client,
-+				const struct i2c_device_id *id)
-+{
-+	struct ds2782_info *info;
-+	int ret, num;
-+
-+	/* Get an ID for this battery */
-+	ret = idr_pre_get(&battery_id, GFP_KERNEL);
-+	if (ret == 0) {
-+		ret = -ENOMEM;
-+		goto fail_id;
-+	}
-+
-+	mutex_lock(&battery_lock);
-+	ret = idr_get_new(&battery_id, client, &num);
-+	mutex_unlock(&battery_lock);
-+	if (ret < 0)
-+		return ret;
-+
-+	info = kzalloc(sizeof(struct ds2782_info), GFP_KERNEL);
-+	if (!info) {
-+		ret = -ENOMEM;
-+		goto fail_info;
-+	}
-+
-+	info->battery.name = kasprintf(GFP_KERNEL, "ds2782-%d", num);
-+	if (!info->battery.name) {
-+		ret = -ENOMEM;
-+		goto fail_name;
-+	}
-+
-+	i2c_set_clientdata(client, info);
-+	info->client = client;
-+	ds2782_power_supply_init(&info->battery);
-+
-+	ret = power_supply_register(&client->dev, &info->battery);
-+	if (ret) {
-+		dev_err(&client->dev, "failed to register battery\n");
-+		goto fail_register;
-+	}
-+
-+	return 0;
-+
-+fail_register:
-+	kfree(info->battery.name);
-+fail_name:
-+	kfree(info);
-+fail_info:
-+	mutex_lock(&battery_lock);
-+	idr_remove(&battery_id, num);
-+	mutex_unlock(&battery_lock);
-+fail_id:
-+	return ret;
-+}
-+
-+static const struct i2c_device_id ds2782_id[] = {
-+	{"ds2782", 0},
-+	{},
-+};
-+
-+static struct i2c_driver ds2782_battery_driver = {
-+	.driver 	= {
-+		.name	= "ds2782-battery",
-+	},
-+	.probe		= ds2782_battery_probe,
-+	.remove		= ds2782_battery_remove,
-+	.id_table	= ds2782_id,
-+};
-+
-+static int __init ds2782_init(void)
-+{
-+	return i2c_add_driver(&ds2782_battery_driver);
-+}
-+
-+static void __exit ds2782_exit(void)
-+{
-+	i2c_del_driver(&ds2782_battery_driver);
-+}
-+
-+module_init(ds2782_init);
-+module_exit(ds2782_exit);
-+
-+MODULE_AUTHOR("Ryan Mallon <ryan@bluewatersys.com>");
-+MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC driver");
-+MODULE_LICENSE("GPL");
-+
-
+-	printk("Modules linked in:");
++	printk(KERN_DEFAULT "Modules linked in:");
+ 	/* Most callers should already have preempt disabled, but make sure */
+ 	preempt_disable();
+ 	list_for_each_entry_rcu(mod, &modules, list)
+diff --git a/kernel/printk.c b/kernel/printk.c
+index a87770c..b4d97b5 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -696,6 +696,8 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 			switch (c) {
+ 			case '0' ... '7': /* loglevel */
+ 				current_log_level = c - '0';
++			/* Fallthrough - make sure we're on a new line */
++			case 'd': /* KERN_DEFAULT */
+ 				if (!new_text_line) {
+ 					emit_log_char('\n');
+ 					new_text_line = 1;
