@@ -1,83 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbZFPOYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbZFPOZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757086AbZFPOYN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 10:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZFPOX6
+	id S1759006AbZFPOZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 10:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbZFPOZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 10:23:58 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:45638 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752385AbZFPOX5 (ORCPT
+	Tue, 16 Jun 2009 10:25:18 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:58431 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750930AbZFPOZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 10:23:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=AzgR3xSXFUDUaDu4cHhNVPddgUFnyX8uSItqfzCPFxRbv30GULuz77FQx7QewlH0IW
-         KInSW7Hk4y2hXEO+h088h95a0a6rD1D/qpPMEcXX7qhO/Qa4H2dquIkKKWGDbj7FkKl8
-         fFmJxIBugeToTWhCQkn63DkNWDLRHliD9aJQo=
-MIME-Version: 1.0
-Date: Tue, 16 Jun 2009 10:23:59 -0400
-Message-ID: <deaa866a0906160723k78c3c54bv35e2e2406e3d13d1@mail.gmail.com>
-Subject: Scheduler fails to allow for "niceness" with new/fast processes
-From: Robert Bradbury <robert.bradbury@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Jun 2009 10:25:17 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al0FAEBCN0pMQWi1/2dsb2JhbACBT9J5hA0F
+Date: Tue, 16 Jun 2009 10:19:56 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090616141956.GB6541@Krystal>
+References: <20090615213429.GD12919@Krystal> <4A36BF61.10901@zytor.com> <20090615215420.GE12919@Krystal> <4A36C953.8060906@zytor.com> <20090615223038.GA15903@Krystal> <4A36CCFC.8070908@zytor.com> <20090615224908.GA16661@Krystal> <4A36F520.6020604@zytor.com> <20090616030522.GA22162@Krystal> <20090616083343.GD16229@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090616083343.GD16229@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:15:33 up 108 days, 10:41,  3 users,  load average: 0.62, 0.46,
+	0.45
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I primarily use my system (Gentoo) for 3 tasks: (a) Browsing the web
-related to biomedical research (I may often have dozens of windows and
-hundreds of tabs open in several browsers); (b) Running fairly CPU &
-Disk I/O intensive genetics programs; (c) Performing low priority
-rebuilds of various packages (Gentoo packages, firefox/chrome
-releases, etc.
+* Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > I am not asking for the pf handler to handle every possible kind 
+> > of fault recursively. Just to keep the in-kernel page fault 
+> > related code for vmalloc (and possibly for prefetch ?) paths 
+> > NMI-reentrant :
+> > 
+> > void do_page_fault(struct pt_regs *regs, unsigned long error_code)
+> > 
+> >   address = read_cr2();
+> 
+> Why would this be needed? We read the cr2 as the first thing in 
+> do_page_fault(). It can be destroyed and re-faulted at will after 
+> that point, it wont matter a bit - we have already read it.
+> 
 
-Now (a) is my top priority -- I want my active browser to get all of
-the CPU if it requires it (fast window/tab opens, quick page reloads &
-redraws, etc.);  (b) is of lesser priority and (c) is lowest priority.
- This is on a 2.8 GHz Pentium IV (Prescott) with 3GB of RAM and 12GB
-of swap on two drives.
+With respect to cr2, yes, this is the only window we care about.
+However, the rest of vmalloc_fault() must be audited for other non
+nmi-suitable data structure use (e.g. "current"), which I did in the
+past.
 
-Now I normally run (c) processes at nice -n 19 to (in theory) get the
-least CPU allocation.  But it would appear that this does not work.  I
-often experience extremely poor user (esp. browser) performance when
-running package builds.  In monitoring the package builds I find that
-they seem to be stopping at nothing, presumably because the build
-tools, directories, etc. are all cached in memory as are most of the
-header files (Gentoo ebuilds have a cache for this).  If the package
-source files are small or disk read-ahead is working or the source
-files are entirely cached (many packages which have just been unpacked
-during the build preparation process are presumably still in the
-system buffer cache) -- there is no I/O required for them to build.
+My intent was just to respond to Peter's concerns by showing that the
+part of page fault handler which needs to be NMI-reentrant is really not
+that big.
 
-I believe I glanced at an IBM technical report a number of months ago
-that suggested something to the effect that ongoing "handoffs" to
-newly started processes could be a way to bypass the regulation of
-process priorities by the kernel.  This being due to some bias in how
-the scheduler works in that one has to accumulate some minimum amount
-of CPU time in order for process "niceness" to have any effect.  (One
-could imagine setting up a shared memory region to retain any data in
-memory and continually execing new processes which attach to the
-memory and avoid any sysadmin imposed CPU use restrictions).
+Mathieu
 
-So my questions are:
-1) Are people aware of this problem (CPU intensive cached programs
-severely impact User Interface program performance and nicing the CPU
-intensive programs (if they execute quickly) fails to correct the
-problem)?
-2) Can this be resolved in any way by altering the scheduler or its
-parameters in Linux configuration?
-3) Is there any quick "hack" to the kernel (sched.c?) which forces it
-to more strongly favor UI programs over niced background tasks (to the
-extent that if the UI programs, e.g. firefox-bin, X, bash, etc. *want*
-the CPU or disk (or network even) then they immediately get it by
-preempting niced processes.  I.e. UI programs always preferentially go
-to the head of various queues?
+> The only window to be careful about wrt. cr2 is the small window 
+> starting at <page_fault>, leading into <do_page_fault>:
+> 
+> ffffffff8154085f <do_page_fault>:
+> ffffffff8154085f:	55                   	push   %rbp
+> ffffffff81540860:	48 89 e5             	mov    %rsp,%rbp
+> ffffffff81540863:	41 57                	push   %r15
+> ffffffff81540865:	41 56                	push   %r14
+> ffffffff81540867:	49 89 f6             	mov    %rsi,%r14
+> ffffffff8154086a:	41 55                	push   %r13
+> ffffffff8154086c:	49 89 fd             	mov    %rdi,%r13
+> ffffffff8154086f:	41 54                	push   %r12
+> ffffffff81540871:	53                   	push   %rbx
+> ffffffff81540872:	48 83 ec 18          	sub    $0x18,%rsp
+> ffffffff81540876:	65 4c 8b 3c 25 00 b0 	mov    %gs:0xb000,%r15
+> ffffffff8154087d:	00 00 
+> ffffffff8154087f:	49 8b 87 48 02 00 00 	mov    0x248(%r15),%rax
+> ffffffff81540886:	48 89 45 d0          	mov    %rax,-0x30(%rbp)
+> ffffffff8154088a:	48 83 c0 60          	add    $0x60,%rax
+> ffffffff8154088e:	48 89 45 c8          	mov    %rax,-0x38(%rbp)
+> ffffffff81540892:	0f 18 08             	prefetcht0 (%rax)
+> ffffffff81540895:	41 0f 20 d4          	mov    %cr2,%r12
+> 
+> Look how early we read out cr2 - after trapping we read it after 
+> about 40 straight instructions, with no other function call 
+> inbetween. Only an NMI (or an MCE and similar deep-atomic contexts) 
+> can get in that window.
+> 
+> ( Btw., a sidenote: the prefetcht0 right before the cr2 read is a 
+>   real bug. Prefetches can sometimes generate false faults and thus
+>   destroy the value cr2. I'll send a patch for that soon. )
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-The trend seems to be to migrate towards multi-core CPU's rather than
-fix the scheduler so that "nice" *really* means "only run this if you
-have nothing else to do".
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
