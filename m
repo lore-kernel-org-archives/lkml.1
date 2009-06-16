@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZFPRo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbZFPRp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbZFPRo3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 13:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758387AbZFPRoW
+	id S1761025AbZFPRp3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 13:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759086AbZFPRpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 13:44:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:60297 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756807AbZFPRoW (ORCPT
+	Tue, 16 Jun 2009 13:45:20 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:2018 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758387AbZFPRpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 13:44:22 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-Date: Tue, 16 Jun 2009 19:43:38 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: Scott Wood <scottwood@freescale.com>,
-       Chris Pringle <chris.pringle@oxtel.com>, linux-kernel@vger.kernel.org
-References: <4A37A503.3030209@oxtel.com> <4A37CF02.5080906@oxtel.com> <4A37D073.6020802@freescale.com>
-In-Reply-To: <4A37D073.6020802@freescale.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 16 Jun 2009 13:45:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=EIGjQIgZpLlr4f2KIWKTegBpCYt7DocmZ5LT0VtayNg4T7KCfSYLrvGzJUwd6xC3dH
+         BYYSgyEPLuoe9442LKXIX2IcW5cBxAAoCBJq4YT6FJM10OjyD3ZQTFEMCyQpxQux8njV
+         Oa61UL7Htv4tOeSLz4ZaA6G71hFsFgaW9ZSUs=
+Message-ID: <4A37DA2C.8020106@gmail.com>
+Date: Tue, 16 Jun 2009 10:45:16 -0700
+From: Richard Henderson <rth7680@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: john stultz <johnstul@us.ibm.com>
+CC: ink@jurassic.park.msu.ru, lkml <linux-kernel@vger.kernel.org>,
+       linux-alpha@vger.kernel.org
+Subject: Re: [PATCH] Convert alpha to use arch_gettimeoffset()
+References: <1244758210.7192.5.camel@localhost.localdomain>	 <4A31FDBE.3030506@gmail.com> <1244832112.7231.3.camel@localhost.localdomain>
+In-Reply-To: <1244832112.7231.3.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906161943.38764.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18E9as+/a/3GzdD1RYMPZfXdTbgGsXOQw2gNDw
- djt35U8P7R0Fb6hUUsei/xlBSlNYqVRAMY5a9Zf1lti+W4hZiY
- x5/953kDUNz6xEjBJkPaS2wNblXxCmt
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 June 2009, Scott Wood wrote:
-> Chris Pringle wrote:
-> > Ah right - that would explain what we're seeing then... Doh. Thought I 
-> > might have been onto something then. Is there any way to force a cache 
-> > flush? That'd at least prove it was a caching issue if it resolved the 
-> > problem.
-> 
-> You could enable CONFIG_NOT_COHERENT_CACHE.
+john stultz wrote:
+> On Fri, 2009-06-12 at 00:03 -0700, Richard Henderson wrote:
+>   
+>> john stultz wrote:
+>>     
+>>> I suspect the alpha arch could even be further improved to provide and
+>>> rpcc() based clocksource, but not having the hardware, I don't feel
+>>> comfortable attempting the more complicated conversion (but I'd be glad
+>>> to help if anyone else is interested).
+>>>       
+>> Unfortunately this isn't possible.  The rpcc value is only 32-bits wide,
+>> and so rolls over in approx 3 to 4 seconds.  Thus all the contortions to
+>> try and use the truncated value for sub 1 second adjustments.
+>>     
+>
+> That's actually ok. The ACPI PM clocksource on x86 is only 24 bits wide
+> and wraps every 5 seconds. The generic timekeeping code handles the
+> wrapping and accumulation for you.
+>   
+Interesting.
+> Might you create a patch that does this conversion and apply it on top
+> of mine? 
+Unfortunately I don't have working hardware anymore.  Perhaps Ivan will 
+be able to help here.
 
-If the whole system is noncoherent, that is the right solution. If the
-device is the only one, you can also use dma_alloc_noncoherent() and
-flush explicitly with dma_cache_sync().
 
-	Arnd <><
+r~
