@@ -1,62 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbZFPPEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbZFPPGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759842AbZFPPEv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbZFPPEl
+	id S1759426AbZFPPGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbZFPPGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:04:41 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44053 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759720AbZFPPEj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:04:39 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 9/9] imx: Check for NULL pointer deref before calling
-	tty_encode_baud_rate
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Tue, 16 Jun 2009 17:02:15 +0100
-Message-ID: <20090616160208.10041.85297.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090616155552.10041.63479.stgit@t61.ukuu.org.uk>
-References: <20090616155552.10041.63479.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 16 Jun 2009 11:06:10 -0400
+Received: from [124.193.126.98] ([124.193.126.98]:47611 "EHLO dyn.soulinfo.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757331AbZFPPGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 11:06:09 -0400
+X-Greylist: delayed 405 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 11:06:08 EDT
+X-Antivirus-MYDOMAIN-Mail-From: hugang@bj.soulinfo.com via bj
+X-Antivirus-MYDOMAIN: 2.02st (Clear:RC:0(222.131.57.99):SA:0(3.2/5.0):. Processed in 7.550193 secs Process 24531)
+Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=default; d=bj.soulinfo.com;
+  b=j6FwhtDJdZcuk8x14lSVaT6dBgF45gd9VVBVJdA3J3hwFqs4i60rBfr6t/yohoariaoZpED9oNp/1+zDQ+EJyGtVZtB2oMcagBsIOAvpVral+97l7V5DyF+9kAMtwO26  ;
+Date: Tue, 16 Jun 2009 22:59:14 +0800
+From: Hu Gang <hugang@bj.soulinfo.com>
+To: Chris Pringle <chris.pringle@oxtel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
+Message-ID: <20090616225914.029ef8d9@hugang-macbook>
+In-Reply-To: <4A37A503.3030209@oxtel.com>
+References: <4A37A503.3030209@oxtel.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sascha Hauer <s.hauer@pengutronix.de>
+On Tue, 16 Jun 2009 14:58:27 +0100
+Chris Pringle <chris.pringle@oxtel.com> wrote:
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+> Hello All,
+> 
+> We're developing on a Freescale MPC8272 and are having some nasty 
+> problems with PCI bus mastering and data corruption.
+> 
+> We have some custom hardware that is bus mastering, reading data from 
+> the CPUs memory for it's own use. Most of the time, the data is correct, 
+> however occasionally we are seeing data that appears to be from 
+> somewhere else in memory (usually memory that has already been read by 
+> the PCI device). The problem looks like stale data on the PCI bridge 
+> prefetch buffers or a cache coherency problem, but we've been unable to 
+> come up with a solution to our problem. It is my understanding that it 
+> shouldn't be a cache coherency problem as the CPU cache should be 
+> snooped as the data is read from memory. Even if it were an issue, the 
+> pci_map_sg* functions should have sorted out any cache coherency issues 
+> before the DMA operation started.
+> 
+> I've not been able to find anything on the Freescale data sheet that 
+> provides any way of flushing the prefetch cache on the PCI bridge. We've 
+> done a bit of experimenting, and found that turning off prefetch appears 
+> to solve (or possibly mask?) the problem (at the expensive of massive 
+> performance problems). I've also tried DMA'ing two adjacent userspace 
+> buffers in memory (from the same page), and see corruption on the second 
+> buffer. If I populate both buffers, then DMA them both, the data is 
+> fine. If I populate the first, DMA the first, then populate the second 
+> and DMA the second, corruption occurs at the start of the second buffer. 
+> If I add 8-32 bytes of padding between the buffers, the problem goes away.
+> 
+> The PCI spec says that the PCI bridge is supposed to flush any data from 
+> it's prefetch buffers that are not read by the bus master, so 
+> technically, this isn't supposed to happen.
+> 
+> I've tried making sure that buffers are cache line (and page) aligned, 
+> and are multiples of cache lines, but it's made no difference. PIO mode 
+> works fine, and I've checked the data with the CPU just before, and 
+> immediately after the DMA and the driver sees no data integrity issues. 
+> There are memory write barriers just before the DMA start, so all the 
+> registers should be correct before the DMA starts.
+> 
+> For background info, the device doing the bus mastering is a Xilinx 
+> Virtex 5 FPGA. We've monitored the data as it comes off the PCI bus 
+> using ChipScope - so the firmware should not be manipulating the data in 
+> any way.
+> 
+> We have some hardware/firmware/drivers that has a lot of common code 
+> that runs on an x86 platform (as opposed to powerpc), and that works 
+> without any issues whatsoever.
+> 
+> Has anyone got any ideas what this might be? Does anyone of know issues 
+> with PCI bridges on the PowerPC platform? Is there extra things that 
+> need to be done from the driver when DMAing on PowerPC (I've looked at 
+> other drivers and there's nothing obvious). The chip errata doesn't have 
+> anything on it that looks like it could cause this.
+> 
+> I'm really hoping this is something that we're doing wrong in the driver 
+> or the firmware, but we've been through both the firmware and drivers 
+> countless times and are unable to see anything wrong.
+> 
+> Any thoughts/ideas would be much appreciated!
+> 
+> Regards,
+> Chris
 
- drivers/serial/imx.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+Can you try allocate the data buffer using dma_alloc_coherent, that can making
+the data coherency.
 
+I got the similar issues in the arm cpu with a dma device base on spartan3, using
+the dma_alloc_coherent making it works well.
 
-diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
-index 285b414..5d7b58f 100644
---- a/drivers/serial/imx.c
-+++ b/drivers/serial/imx.c
-@@ -924,11 +924,13 @@ imx_set_termios(struct uart_port *port, struct ktermios *termios,
- 	rational_best_approximation(16 * div * baud, sport->port.uartclk,
- 		1 << 16, 1 << 16, &num, &denom);
- 
--	tdiv64 = sport->port.uartclk;
--	tdiv64 *= num;
--	do_div(tdiv64, denom * 16 * div);
--	tty_encode_baud_rate(sport->port.info->port.tty,
--		(speed_t)tdiv64, (speed_t)tdiv64);
-+	if (port->info && port->info->port.tty) {
-+		tdiv64 = sport->port.uartclk;
-+		tdiv64 *= num;
-+		do_div(tdiv64, denom * 16 * div);
-+		tty_encode_baud_rate(sport->port.info->port.tty,
-+				(speed_t)tdiv64, (speed_t)tdiv64);
-+	}
- 
- 	num -= 1;
- 	denom -= 1;
+hope this help. 
 
+thanks.
+-- 
+steve
