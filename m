@@ -1,89 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZFPPes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbZFPPge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbZFPPes (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZFPPei
+	id S1759435AbZFPPge (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZFPPg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:34:38 -0400
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:41318 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754245AbZFPPeh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:34:37 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i17ch6bh43j)
-X-WSS-ID: 0KLC8L4-04-6I6-01
-Date: Tue, 16 Jun 2009 17:34:17 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: jesse.brandeburg@intel.com
-CC: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: dma-debug warning with ixgbe
-Message-ID: <20090616153417.GN5139@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 16 Jun 2009 15:34:18.0076 (UTC) FILETIME=[E97151C0:01C9EE97]
+	Tue, 16 Jun 2009 11:36:27 -0400
+Received: from mx.binnacle.cx ([74.95.187.105]:12684 "EHLO mx.binnacle.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754186AbZFPPg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 11:36:26 -0400
+Message-Id: <6.2.5.6.2.20090616111535.05b5e4b0@binnacle.cx>
+X-Mailer: QUALCOMM Windows Eudora Version 6.2.5.6
+Date: Tue, 16 Jun 2009 11:25:29 -0400
+To: Mel Gorman <mel@csn.ul.ie>
+From: starlight@binnacle.cx
+Subject: Re: QUESTION: can netdev_alloc_skb() errors be reduced
+  by tuning?
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       hugh.dickins@tiscali.co.uk, Lee.Schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, ebmunson@us.ibm.com, agl@us.ibm.com,
+       apw@canonical.com, wli@movementarian.org
+In-Reply-To: <20090616091932.GB14241@csn.ul.ie>
+References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
+ <20090527131437.5870e342.akpm@linux-foundation.org>
+ <20090527231949.GB30002@elte.hu>
+ <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
+ <20090616091932.GB14241@csn.ul.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+At 10:19 AM 6/16/2009 +0100, Mel Gorman wrote:
 
-today I got this dma-debug warning with the ixgbe driver with a kernel
-near 2.6.30-rc8.
+>Can you give an example of an allocation failure? Specifically, I want to
+>see what sort of allocation it was and what order.
 
-------------[ cut here ]------------
-WARNING: at /data/repos/linux-2.6-iommu/lib/dma-debug.c:806
-check_unmap+0x214/0x5c3()
-Hardware name: Toonie
-ixgbe 0000:02:00.0: DMA-API: device driver frees DMA memory with
-different size [device address=0x0000000000045c12] [map size=258
-bytes] [unmap size=256 bytes]
-Modules linked in: loop i2c_piix4 tpm_infineon rtc_cmos tpm
-tpm_bios rtc_core rtc_lib button ata_generic pata_acpi usbhid
-pata_atiixp ixgbe hid dca bnx2
-Pid: 4391, comm: ifconfig Not tainted 2.6.30-rc81 #1
-Call Trace:
- [<ffffffff8039125a>] ? check_unmap+0x214/0x5c3
- [<ffffffff80238d72>] warn_slowpath_common+0x77/0xa4
- [<ffffffff80238e14>] warn_slowpath_fmt+0x64/0x66
- [<ffffffff80391134>] ? check_unmap+0xee/0x5c3
- [<ffffffff8058970b>] ? _spin_lock_irqsave+0x3f/0x4b
- [<ffffffff80391134>] ? check_unmap+0xee/0x5c3
- [<ffffffff8039125a>] check_unmap+0x214/0x5c3
- [<ffffffff80391813>] debug_dma_unmap_page+0x51/0x53
- [<ffffffffa002e29c>] ixgbe_clean_rx_ring+0xb9/0x1e4 [ixgbe]
- [<ffffffffa002f2f6>] ixgbe_down+0x2f8/0x34e [ixgbe]
- [<ffffffffa00307a8>] ixgbe_reinit_locked+0x59/0x70 [ixgbe]
- [<ffffffffa0030837>] ixgbe_change_mtu+0x78/0x82 [ixgbe]
- [<ffffffff804f56b5>] dev_set_mtu+0x3a/0x69
- [<ffffffff804f688c>] dev_ifsioc+0xcf/0x2cc
- [<ffffffff804f7018>] dev_ioctl+0x58f/0x647
- [<ffffffff80351978>] ? avc_has_perm+0x4e/0x60
- [<ffffffff804e4e7f>] sock_ioctl+0x21f/0x231
- [<ffffffff802cb478>] vfs_ioctl+0x2a/0x78
- [<ffffffff802cb934>] do_vfs_ioctl+0x46e/0x4aa
- [<ffffffff80250521>] ? up_read+0x26/0x2b
- [<ffffffff802cb9c5>] sys_ioctl+0x55/0x77
- [<ffffffff8020afab>] system_call_fastpath+0x16/0x1b
----[ end trace f560e4a00a9d5d32 ]---
-Mapped at:
- [<ffffffff80391bca>] debug_dma_map_page+0x7c/0x11f
- [<ffffffffa002b3ba>] ixgbe_alloc_rx_buffers+0x247/0x316 [ixgbe]
- [<ffffffffa002bc5a>] ixgbe_configure+0x7d1/0x7e3 [ixgbe]
- [<ffffffffa002ffb9>] ixgbe_open+0xed/0x63b [ixgbe]
- [<ffffffff804f5d48>] dev_open+0x7c/0xc2
+I think it's just the basic buffer allocation for
+Ethernet frames arriving in the 'ixgbe' driver.  Seems
+like it's one allocation per frame.  Per the original
+message the allocations are made with the 'netdev_alloc_skb()'
+kernel call.  The function where this code appears is
+named 'ixgbe_alloc_rx_buffers()' and the comment is
+"Replace used receive buffers."
 
-Joerg
+The code path in question does not generate an error.  It just
+increments the 'alloc_rx_buff_failed' counter for the ethX
+device.  In addition it appears that the frame is dropped
+only if the PCIe hardware ring-queue associated with each
+interface is full.  So on the next interrupt the allocation
+is retried and appears to be successful 99% of the time.
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+>For reliable protocols, an allocation failure should recover and the
+>data get through but obviously there is a drop in network performance
+>when this happens.
+
+This is for a specialized high-volume UDP multicast application
+where data loss of any kind is unacceptable.
+
+>If the allocations are high-order and atomic, increasing min_free_kbytes
+>can help, particularly in situations where there is a burst of network
+>traffic. I won't know if they are atomic until I see an error message
+>though.
+
+Doesn't the use of 'netdev_alloc_skb()' kernel primitive
+imply what the nature of the allocation is?  I followed the
+call graph down into "kmem" land, but it's a complex place
+and so I abandoned the review.
+
+My impression is that 'min_free_kbytes' relates mainly to systems
+where significant paging pressure exists.  The servers have zero
+paging pressure and lots of free memory, though mostly in the
+form of instantly discardable file data cache pages.  In the
+past disabling the program that generates the cache pressure
+has had no effect on data loss, though I haven't tried it in
+relation this specific issue.
+
+Tried increasing a few /proc/slabinfo tuneable parameters today
+and this appears to have fixed the issue so far today.
 
