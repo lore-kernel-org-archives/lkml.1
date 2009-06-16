@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZFPJ2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbZFPJaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756881AbZFPJ2v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 05:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZFPJ2m
+	id S1756333AbZFPJaI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 05:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZFPJ3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:28:42 -0400
-Received: from mail-pz0-f187.google.com ([209.85.222.187]:61203 "EHLO
-	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbZFPJ2l (ORCPT
+	Tue, 16 Jun 2009 05:29:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37280
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750942AbZFPJ3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:28:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=s5MF6hnx4lUf04627AlKgvWhUjpKJP4hCD09Tofa8uMgTUQ/bQXHpJd4z5prI3uC/v
-         x35cERpLKKxhzPH/ciQQmri08kjk5aufxiSFNihAc74KkZiMDmWB4dN5dWT7gW4h6AP7
-         ZUjiQquYoL6noS/mO2XAGpJw1YolUD31QL3T4=
-Date: Tue, 16 Jun 2009 17:30:56 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: xiyou.wangcong@gmail.com, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [x86] Build error at arch/x86/boot/bioscall.S
-Message-ID: <20090616093056.GD6270@cr0.nay.redhat.com>
-References: <200906160738.n5G7cs9r007216@www262.sakura.ne.jp> <20090616081445.GB6270@cr0.nay.redhat.com> <200906160825.n5G8PYRu020230@www262.sakura.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906160825.n5G8PYRu020230@www262.sakura.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Jun 2009 05:29:54 -0400
+Date: Tue, 16 Jun 2009 02:29:57 -0700 (PDT)
+Message-Id: <20090616.022957.92922351.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-next-2.6 2009-06-15
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090615203643.GJ2729@tuxdriver.com>
+References: <20090615203643.GJ2729@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 05:25:34PM +0900, Tetsuo Handa wrote:
->Amerigo Wang wrote:
->> How about:
->> 
->> - movw 68(%esp), %di
->> + movzwl %sp, %ebx
->> + movw 68(%ebx), %di
->> 
->> ? Does this work?
->No.
->
->arch/x86/boot/bioscall.S: Assembler messages:
->arch/x86/boot/bioscall.S:69: Error: `68(%ebx)' is not a valid 16 bit base/index expression
->make[1]: *** [arch/x86/boot/bioscall.o] Error 1
->make: *** [bzImage] Error 2
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 15 Jun 2009 16:36:44 -0400
 
-Ok, how about:
+> This is a batch of (mostly) fixes instended for 2.6.31.  Most of them
+> are fixes, many with references to bug reports.  Most of the rest is
+> fall-out and stragglers related to the rfkill rework.  There is also
+> the addition of a debugfs file to aid debugging.
+> 
+> Please let me know if there are problems!
 
-- movw 68(%esp), %di
-+ addl $68, %esp
-+ popw %di
-+ subl $66, %esp
-
-?
+Pulled, thanks a lot John.
