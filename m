@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbZFPTmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbZFPTnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761772AbZFPTmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 15:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbZFPTmN
+	id S1762165AbZFPTnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 15:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbZFPTnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 15:42:13 -0400
-Received: from sous-sol.org ([216.99.217.87]:47056 "EHLO sequoia.sous-sol.org"
+	Tue, 16 Jun 2009 15:43:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57578 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755484AbZFPTmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 15:42:12 -0400
-Date: Tue, 16 Jun 2009 12:42:05 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Alessio Igor Bogani <abogani@texware.it>, linux-kernel@vger.kernel.org
-Subject: [PATCH] fs/super.c BKL push down fixup
-Message-ID: <20090616194205.GH30071@sequoia.sous-sol.org>
+	id S1751798AbZFPTno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 15:43:44 -0400
+Date: Tue, 16 Jun 2009 21:43:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] WARNING: at drivers/char/tty_io.c:1266
+	tty_open+0x1ea/0x388()
+Message-ID: <20090616194332.GC12699@elte.hu>
+References: <20090614081052.GA9276@elte.hu> <20090614115428.1127ed2d@lxorguk.ukuu.org.uk> <20090616071057.GA29862@elte.hu> <20090616094430.75bbbee2@lxorguk.ukuu.org.uk> <20090616084952.GA18263@elte.hu> <20090616100052.038f9d24@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090616100052.038f9d24@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$ sudo mount -oremount,ro /
-[44126.724760] ------------[ cut here ]------------
-[44126.725188] kernel BUG at lib/kernel_lock.c:126!
 
-Commit "337eb00: Push BKL down into ->remount_fs()" does not completely
-push BKL down, leaving a few stray unlock_kernel() calls behind on error
-paths.
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- fs/super.c |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
+> > I'm wondering, how long have these patches been in linux-next? 
+> > Has no-one reported an easy (or easier) reproducer than a plain 
+> > bootup (which really doesnt hit the tty code intentionally 
+> > hard)?
+> 
+> Quite a while - and the open side stuff hasn't changed in the post 
+> 2.6.30 patches at all. Your box seems to show stuff up that most 
+> users just don't hit.
 
-diff --git a/fs/super.c b/fs/super.c
-index 83b4741..0b494b5 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -545,24 +545,19 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
- 	if ((flags & MS_RDONLY) && !(sb->s_flags & MS_RDONLY)) {
- 		if (force)
- 			mark_files_ro(sb);
--		else if (!fs_may_remount_ro(sb)) {
--			unlock_kernel();
-+		else if (!fs_may_remount_ro(sb))
- 			return -EBUSY;
--		}
-+
- 		retval = vfs_dq_off(sb, 1);
--		if (retval < 0 && retval != -ENOSYS) {
--			unlock_kernel();
-+		if (retval < 0 && retval != -ENOSYS)
- 			return -EBUSY;
--		}
- 	}
- 	remount_rw = !(flags & MS_RDONLY) && (sb->s_flags & MS_RDONLY);
- 
- 	if (sb->s_op->remount_fs) {
- 		retval = sb->s_op->remount_fs(sb, &flags, data);
--		if (retval) {
--			unlock_kernel();
-+		if (retval)
- 			return retval;
--		}
- 	}
- 	sb->s_flags = (sb->s_flags & ~MS_RMT_MASK) | (flags & MS_RMT_MASK);
- 	if (remount_rw)
+Another box has triggered that too btw. But with your two fixes:
+
+ 69e8fd4: tty: fix sanity check
+ 9f7a9ce: ldisc: Make sure the ldisc isn't active when we close it
+
+i havent seen any new tty warnings today. (testing is a bit spotty 
+due to other bugs though - this is typical of the merge window.)
+
+Also, the only warning that remained after your fix was the new 
+warning you added to catch an old bug - that's not a regression 
+really.
+
+> > You should probably also write testcases and stress-tests if you 
+> > modify code in this area.
+> 
+> I did - they hang the tty layers in 2.6.30 and earlier in about 60 
+> seconds, it then corrupts the module counts and dies shortly 
+> after. I've not published them because they can obviously be 
+> seriously misused.
+
+Too bad - i could have ran them in the test mix.
+
+> I don't have the luxury of building on solid foundations trying to 
+> sort the tty layer out - its been broken since 2.1.x when the 
+> lock_kernel logic stopped applying to IRQ handlers.
+
+No complaints from me at all! You are doing fantastic cleanups and 
+fixes in the TTY code.
+
+	Ingo
