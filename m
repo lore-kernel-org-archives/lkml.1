@@ -1,53 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbZFPTOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZFPTOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762050AbZFPTOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 15:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZFPTOK
+	id S1757213AbZFPTOe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 15:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZFPTO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 15:14:10 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:33381 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbZFPTOJ (ORCPT
+	Tue, 16 Jun 2009 15:14:26 -0400
+Received: from mail-fx0-f211.google.com ([209.85.220.211]:47981 "EHLO
+	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754078AbZFPTOZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 15:14:09 -0400
-To: torvalds@linux-foundation.org
-Subject: [GIT PULL] jfs update
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Message-Id: <20090616191410.D14714CA49E@norville.austin.ibm.com>
-Date: Tue, 16 Jun 2009 14:14:10 -0500 (CDT)
-From: shaggy@linux.vnet.ibm.com
+	Tue, 16 Jun 2009 15:14:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RW76vBArs+XxdFTtW6PCXJKm/yQCVAb+h42uKfA2jJdDKBi+jhS9AegCbzGbfiSWMY
+         8h5yzzRLC4W4aAeix16tLx0zU8EsJAZvfczHutZLrQeYSSJ6mXlalY1oh8IedgXwmyME
+         Z5gWYx20GhbNtf8EhmBGLt24ffwtvb82ueQmY=
+MIME-Version: 1.0
+In-Reply-To: <1245177592.14543.1.camel@wall-e>
+References: <1245177592.14543.1.camel@wall-e>
+Date: Tue, 16 Jun 2009 21:14:26 +0200
+Message-ID: <36ca99e90906161214u6624014q3f3dc4e234bdf772@mail.gmail.com>
+Subject: Re: [RFC] set the thread name
+From: Bert Wesarg <bert.wesarg@googlemail.com>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Hi,
 
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
+On Tue, Jun 16, 2009 at 20:39, Stefani Seibold<stefani@seibold.net> wrote:
+> Currently it is not easy to identify a thread in linux, because there is
+> no thread name like in some other OS.
+>
+> If there were are thread name then we could extend a kernel segv message
+> and the /proc/<pid>/task/<tid>/... entries by a TName value like this:
+prctl(PR_SET_NAME, ...) works perfectly here.
 
-This fixes a regression introduced in 2.6.30.  I'll send it to stable as well.
+Bert
 
-This will update the following files:
+/* -*- c -*- */
 
- fs/jfs/jfs_extent.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <math.h>
+#include <pthread.h>
+#include <sys/prctl.h>
 
-through these ChangeSets:
+void *
+thread(void *arg)
+{
+    unsigned long i = (unsigned long)arg;
+    char comm[16];
+    snprintf(comm, sizeof comm, "task %02lu", i);
+    prctl(PR_SET_NAME, comm, 0l, 0l, 0l);
 
-commit f7c52fd17a7dda42fc9e88c2b2678403419bfe63
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Date:   Tue Jun 16 13:43:22 2009 -0500
+    sleep(10);
 
-    jfs: fix regression preventing coalescing of extents
-    
-    Commit fec1878fe952b994125a3be7c94b1322db586f3b caused a regression in
-    which contiguous blocks being allocated to the end of an extent were
-    getting a new extent created.  This typically results in files entirely
-    made up of 1-block extents even though the blocks are contiguous on
-    disk.
-    
-    Apparently grub doesn't handle a jfs file being fragmented into too many
-    extents, since it refuses to boot a kernel from jfs that was created by
-    the 2.6.30 kernel.
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-    Reported-by: Alex <alevkovich@tut.by>
+    return NULL;
+}
+
+int
+main(int ac, char *av[])
+{
+    pthread_t thr;
+    unsigned long i, n = 10;
+    char comm[16];
+
+    printf("%u\n", getpid());
+    sleep(5);
+    snprintf(comm, sizeof comm, "master");
+    prctl(PR_SET_NAME, comm, 0l, 0l, 0l);
+    sleep(5);
+
+    for (i = 0; i < n; i++)
+        pthread_create(&thr, NULL, thread, (void *)i);
+
+    pthread_join(thr, NULL);
+
+    return 0;
+}
+
+>
+> Greetings,
+> Stefani
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
