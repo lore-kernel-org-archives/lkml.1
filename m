@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759825AbZFPPWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZFPPYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759825AbZFPPWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757798AbZFPPW0
+	id S1755729AbZFPPYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZFPPYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:22:26 -0400
-Received: from mailhost19.gawab.com ([66.220.20.19]:50942 "HELO
-	info33.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757768AbZFPPWZ (ORCPT
+	Tue, 16 Jun 2009 11:24:35 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:54638 "EHLO
+	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754463AbZFPPYf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:22:25 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: Linux 2.6.29.5
-Date: Tue, 16 Jun 2009 18:02:43 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-References: <20090615200304.GA2003@kroah.com> <200906160733.57322.a1426z@gawab.com> <20090616051415.GA30708@suse.de>
-In-Reply-To: <20090616051415.GA30708@suse.de>
+	Tue, 16 Jun 2009 11:24:35 -0400
+X-SpamScore: -22
+X-BigFish: VPS-22(zz1432R98dR1805Mzz1202hzzz32i6bh17ch43j)
+X-FB-SS: 5,
+X-WSS-ID: 0KLC84L-03-QPS-01
+Date: Tue, 16 Jun 2009 17:24:21 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: bug in tty ldisc and friends
+Message-ID: <20090616152421.GM5139@amd.com>
+References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com> <20090616093741.0d5b36bc@lxorguk.ukuu.org.uk> <20090616085028.GA13771@elte.hu> <20090616095706.36f01282@lxorguk.ukuu.org.uk> <20090616100015.GD6432@elte.hu> <20090616110419.14bc9485@lxorguk.ukuu.org.uk> <20090616101240.GB28204@elte.hu> <20090616102509.GA32717@elte.hu> <20090616102910.GA11011@elte.hu> <20090616103606.GA3497@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906161802.43349.a1426z@gawab.com>
+In-Reply-To: <20090616103606.GA3497@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 Jun 2009 15:24:22.0485 (UTC) FILETIME=[86715850:01C9EE96]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Jun 16, 2009 at 07:33:57AM +0300, Al Boldi wrote:
-> > > > It may be a good idea to also allow pulling patches over email.
-> > >
-> > > I'm confused as to why you would want this.  kernel.org is mirrored all
-> > > around the world, so the tree can be found through ftp and http
-> > > everywhere.
-> >
-> > Sometimes the only ports open are 110 and 25.
->
-> That would not sound like an environment in which kernel development can
-> happen very easily.
->
-> > > > Majordomo has such a facility via the "index" and "get" commands.
-> > >
-> > > Majordomo is not used here for email delivery.
-> >
-> > Strange, vger.kernel.org sends via majordomo.
->
-> For subscribing to lists only, not for email delivery.
+On Tue, Jun 16, 2009 at 12:36:06PM +0200, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > This is something we noticed recently: dma-debug uses a lot of 
+> > lock classes and thus creates a really large lock-graph, depleting 
+> > the reserves quickly.
+> 
+> yep, i think dma-debug is the culprit. It has:
+> 
+>  #define HASH_SIZE       1024ULL
+> 
+> each hash entry has a separate lock.
+> 
+> But this should be easily to solve: a special lock-class for these 
+> locks. Patch below (warning: utterly untested!).
+> 
+> (Btw., that SPIN_LOCK_UNLOCKED init method should really be 
+> deprecated for real.)
+> 
+> 	Ingo
+> 
+> diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+> index 3b93129..012c240 100644
+> --- a/lib/dma-debug.c
+> +++ b/lib/dma-debug.c
+> @@ -62,6 +62,8 @@ struct dma_debug_entry {
+>  #endif
+>  };
+>  
+> +static struct lock_class_key hash_bucket_class;
+> +
+>  struct hash_bucket {
+>  	struct list_head list;
+>  	spinlock_t lock;
+> @@ -716,7 +718,8 @@ void dma_debug_init(u32 num_entries)
+>  
+>  	for (i = 0; i < HASH_SIZE; ++i) {
+>  		INIT_LIST_HEAD(&dma_entry_hash[i].list);
+> -		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
+> +		spin_lock_init(&dma_entry_hash[i].lock);
+> +		lockdep_set_lock_class(&dma_entry_hash[i].lock, &hash_bucket_class);
+                ^^^^^^^^^^^^^^^^^^^^^^
+Ok, this function is called lockdep_set_class. Otherwise the test went
+fine. I queued the patch.
 
-Right, so the infrastructure is in place to support pulling patches via email 
-by simply sending the line "get linux-kernel patch-2.6.29.5.bz2" in
-the body of a message to majordomo@vger.kernel.org.
+	Joerg
 
-All that is needed now is to populate those dirs.
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
-
-Thanks!
-
---
-Al
