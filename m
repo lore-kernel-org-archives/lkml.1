@@ -1,146 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751850AbZFPEF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZFPEOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751850AbZFPEF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 00:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZFPEFS
+	id S1754624AbZFPEOs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZFPEOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 00:05:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50021 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750798AbZFPEFR (ORCPT
+	Tue, 16 Jun 2009 00:14:38 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50732 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbZFPEOh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 00:05:17 -0400
-Date: Mon, 15 Jun 2009 21:04:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Arjan van de Ven <arjan@infradead.org>,
+	Tue, 16 Jun 2009 00:14:37 -0400
+Date: Tue, 16 Jun 2009 01:14:29 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Richard =?ISO-8859-1?B?UvZqZm9ycw==?= 
+	<richard.rojfors.ext@mocean-labs.com>
+Cc: linux-media@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] WARN(): add a \n to the message printk
-In-Reply-To: <20090615171044.GC25760@elte.hu>
-Message-ID: <alpine.LFD.2.01.0906152055580.3282@localhost.localdomain>
-References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain> <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain> <20090615171044.GC25760@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RESEND][PATCH] video: Initial support for ADV7180
+Message-ID: <20090616011429.37314af6@pedra.chehab.org>
+In-Reply-To: <4A366518.3050101@mocean-labs.com>
+References: <4A366518.3050101@mocean-labs.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Mon, 15 Jun 2009 17:13:28 +0200
+Richard Röjfors  <richard.rojfors.ext@mocean-labs.com> escreveu:
 
-
-On Mon, 15 Jun 2009, Ingo Molnar wrote:
+> This is an initial driver for Analog Devices ADV7180 Video Decoder.
 > 
-> Nice idea ...
+> So far it only supports query standard.
+
+Hmm... it seems too preliminar for merging. Also, as this is an i2c ancillary
+driver, it would be interesting if you could send it together with the bridge
+or platform driver that uses it.
+
+Cheers,
+Mauro.
+
 > 
-> Puts some pressure on current intentionally 'naked' printks (there's 
-> still a few of them) - but that's OK, it's not like KERN_CONT (or 
-> pr_cont()) is that hard to add.
+> Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+> ---
+> Index: linux-2.6.30-rc7/drivers/media/video/adv7180.c
+> ===================================================================
+> --- linux-2.6.30-rc7/drivers/media/video/adv7180.c	(revision 0)
+> +++ linux-2.6.30-rc7/drivers/media/video/adv7180.c	(revision 867)
+> @@ -0,0 +1,221 @@
+> +/*
+> + * adv7180.c Analog Devices ADV7180 video decoder driver
+> + * Copyright (c) 2009 Intel Corporation
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/errno.h>
+> +#include <linux/kernel.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/i2c.h>
+> +#include <linux/i2c-id.h>
+> +#include <media/v4l2-ioctl.h>
+> +#include <linux/videodev2.h>
+> +#include <media/v4l2-device.h>
+> +#include <media/v4l2-chip-ident.h>
+> +#include <media/v4l2-i2c-drv.h>
+> +
+> +
+> +#define ADV7180_INPUT_CONTROL_REG	0x00
+> +#define ADV7180_INPUT_CONTROL_PAL_BG_NTSC_J_SECAM	0x00
+> +#define ADV7180_AUTODETECT_ENABLE_REG	0x07
+> +#define ADV7180_AUTODETECT_DEFAULT	0x7f
+> +
+> +
+> +#define ADV7180_STATUS1_REG 0x10
+> +#define ADV7180_STATUS1_AUTOD_MASK 0x70
+> +#define ADV7180_STATUS1_AUTOD_NTSM_M_J	0x00
+> +#define ADV7180_STATUS1_AUTOD_NTSC_4_43 0x10
+> +#define ADV7180_STATUS1_AUTOD_PAL_M	0x20
+> +#define ADV7180_STATUS1_AUTOD_PAL_60	0x30
+> +#define ADV7180_STATUS1_AUTOD_PAL_B_G	0x40
+> +#define ADV7180_STATUS1_AUTOD_SECAM	0x50
+> +#define ADV7180_STATUS1_AUTOD_PAL_COMB	0x60
+> +#define ADV7180_STATUS1_AUTOD_SECAM_525	0x70
+> +
+> +#define ADV7180_IDENT_REG 0x11
+> +#define ADV7180_ID_7180 0x18
+> +
+> +
+> +static unsigned short normal_i2c[] = { 0x42 >> 1, I2C_CLIENT_END };
+> +
+> +I2C_CLIENT_INSMOD;
+> +
+> +struct adv7180_state {
+> +	struct v4l2_subdev sd;
+> +};
+> +
+> +static v4l2_std_id determine_norm(struct i2c_client *client)
+> +{
+> +	u8 status1 = i2c_smbus_read_byte_data(client, ADV7180_STATUS1_REG);
+> +
+> +	switch (status1 & ADV7180_STATUS1_AUTOD_MASK) {
+> +	case ADV7180_STATUS1_AUTOD_NTSM_M_J:
+> +		return V4L2_STD_NTSC_M_JP;
+> +	case ADV7180_STATUS1_AUTOD_NTSC_4_43:
+> +		return V4L2_STD_NTSC_443;
+> +	case ADV7180_STATUS1_AUTOD_PAL_M:
+> +		return V4L2_STD_PAL_M;
+> +	case ADV7180_STATUS1_AUTOD_PAL_60:
+> +		return V4L2_STD_PAL_60;
+> +	case ADV7180_STATUS1_AUTOD_PAL_B_G:
+> +		return V4L2_STD_PAL;
+> +	case ADV7180_STATUS1_AUTOD_SECAM:
+> +		return V4L2_STD_SECAM;
+> +	case ADV7180_STATUS1_AUTOD_PAL_COMB:
+> +		return V4L2_STD_PAL_Nc | V4L2_STD_PAL_N;
+> +	case ADV7180_STATUS1_AUTOD_SECAM_525:
+> +		return V4L2_STD_SECAM;
+> +	default:
+> +		return V4L2_STD_UNKNOWN;
+> +	}
+> +}
+> +
+> +static inline struct adv7180_state *to_state(struct v4l2_subdev *sd)
+> +{
+> +	return container_of(sd, struct adv7180_state, sd);
+> +}
+> +
+> +static int adv7180_querystd(struct v4l2_subdev *sd, v4l2_std_id *std)
+> +{
+> +	struct i2c_client *client = v4l2_get_subdevdata(sd);
+> +
+> +	*(v4l2_std_id *)std = determine_norm(client);
+> +	return 0;
+> +}
+> +
+> +static int adv7180_g_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
+> +{
+> +	return -EINVAL;
+> +}
+> +
+> +static int adv7180_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
+> +{
+> +	return -EINVAL;
+> +}
+> +
+> +static int adv7180_g_chip_ident(struct v4l2_subdev *sd,
+> +	struct v4l2_dbg_chip_ident *chip)
+> +{
+> +	struct i2c_client *client = v4l2_get_subdevdata(sd);
+> +
+> +	return v4l2_chip_ident_i2c_client(client, chip, V4L2_IDENT_ADV7180, 0);
+> +}
+> +
+> +static int adv7180_log_status(struct v4l2_subdev *sd)
+> +{
+> +	v4l2_info(sd, "Normal operation\n");
+> +	return 0;
+> +}
+> +
+> +static irqreturn_t adv7180_irq(int irq, void *devid)
+> +{
+> +	return IRQ_NONE;
+> +}
+> +
+> +static const struct v4l2_subdev_video_ops adv7180_video_ops = {
+> +	.querystd = adv7180_querystd,
+> +};
+> +
+> +static const struct v4l2_subdev_core_ops adv7180_core_ops = {
+> +	.log_status = adv7180_log_status,
+> +	.g_chip_ident = adv7180_g_chip_ident,
+> +	.g_ctrl = adv7180_g_ctrl,
+> +	.s_ctrl = adv7180_s_ctrl,
+> +};
+> +
+> +static const struct v4l2_subdev_ops adv7180_ops = {
+> +	.core = &adv7180_core_ops,
+> +	.video = &adv7180_video_ops,
+> +};
+> +
+> +/*
+> + * Generic i2c probe
+> + * concerning the addresses: i2c wants 7 bit (without the r/w bit), so '>>1'
+> + */
+> +
+> +static int adv7180_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *id)
+> +{
+> +	struct adv7180_state *state;
+> +	struct v4l2_subdev *sd;
+> +
+> +	/* Check if the adapter supports the needed features */
+> +	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
+> +		return -EIO;
+> +
+> +	v4l_info(client, "chip found @ 0x%02x (%s)\n",
+> +			client->addr << 1, client->adapter->name);
+> +
+> +	state = kmalloc(sizeof(struct adv7180_state), GFP_KERNEL);
+> +	if (state == NULL)
+> +		return -ENOMEM;
+> +	sd = &state->sd;
+> +	v4l2_i2c_subdev_init(sd, client, &adv7180_ops);
+> +
+> +	/* Initialize adv7180 */
+> +
+> +	/* register interrupt, can be used later */
+> +	if (client->irq > 0) {
+> +		/* we can use IRQ */
+> +		int err = request_irq(client->irq, adv7180_irq, IRQF_SHARED,
+> +			"adv7180", sd);
+> +		if (err) {
+> +			printk(KERN_ERR "adv7180: Failed to request IRQ\n");
+> +			v4l2_device_unregister_subdev(sd);
+> +			kfree(state);
+> +			return err;
+> +		}
+> +	}
+> +
+> +	/* enable autodetection */
+> +	i2c_smbus_write_byte_data(client, ADV7180_INPUT_CONTROL_REG,
+> +		ADV7180_INPUT_CONTROL_PAL_BG_NTSC_J_SECAM);
+> +	i2c_smbus_write_byte_data(client, ADV7180_AUTODETECT_ENABLE_REG,
+> +		ADV7180_AUTODETECT_DEFAULT);
+> +	return 0;
+> +}
+> +
+> +static int adv7180_remove(struct i2c_client *client)
+> +{
+> +	struct v4l2_subdev *sd = i2c_get_clientdata(client);
+> +
+> +	if (client->irq > 0)
+> +		free_irq(client->irq, sd);
+> +
+> +	v4l2_device_unregister_subdev(sd);
+> +	kfree(to_state(sd));
+> +	return 0;
+> +}
+> +
+> +static const struct i2c_device_id adv7180_id[] = {
+> +	{ "adv7180", 0 },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(i2c, adv7180_id);
+> +
+> +static struct v4l2_i2c_driver_data v4l2_i2c_data = {
+> +	.name = "adv7180",
+> +	.probe = adv7180_probe,
+> +	.remove = adv7180_remove,
+> +	.id_table = adv7180_id,
+> +};
+> +
+> +MODULE_DESCRIPTION("Analog Devices ADV7180 video decoder driver");
+> +MODULE_AUTHOR("Mocean Laboratories");
+> +MODULE_LICENSE("GPL v2");
+> +
+> Index: linux-2.6.30-rc7/drivers/media/video/Kconfig
+> ===================================================================
+> --- linux-2.6.30-rc7/drivers/media/video/Kconfig	(revision 861)
+> +++ linux-2.6.30-rc7/drivers/media/video/Kconfig	(working copy)
+> @@ -265,6 +265,15 @@
+> 
+>  comment "Video decoders"
+> 
+> +config VIDEO_ADV7180
+> +	tristate "Analog Devices ADV7180 decoder"
+> +	depends on VIDEO_V4L2 && I2C
+> +	---help---
+> +	  Support for the Analog Devices ADV7180 video decoder.
+> +
+> +	  To compile this driver as a module, choose M here: the
+> +	  module will be called adv7180.
+> +
+>  config VIDEO_BT819
+>  	tristate "BT819A VideoStream decoder"
+>  	depends on VIDEO_V4L2 && I2C
+> Index: linux-2.6.30-rc7/drivers/media/video/Makefile
+> ===================================================================
+> --- linux-2.6.30-rc7/drivers/media/video/Makefile	(revision 861)
+> +++ linux-2.6.30-rc7/drivers/media/video/Makefile	(working copy)
+> @@ -49,6 +49,7 @@
+>  obj-$(CONFIG_VIDEO_SAA7191) += saa7191.o
+>  obj-$(CONFIG_VIDEO_ADV7170) += adv7170.o
+>  obj-$(CONFIG_VIDEO_ADV7175) += adv7175.o
+> +obj-$(CONFIG_VIDEO_ADV7180) += adv7180.o
+>  obj-$(CONFIG_VIDEO_VPX3220) += vpx3220.o
+>  obj-$(CONFIG_VIDEO_BT819) += bt819.o
+>  obj-$(CONFIG_VIDEO_BT856) += bt856.o
+> Index: linux-2.6.30-rc7/include/media/v4l2-chip-ident.h
+> ===================================================================
+> --- linux-2.6.30-rc7/include/media/v4l2-chip-ident.h	(revision 861)
+> +++ linux-2.6.30-rc7/include/media/v4l2-chip-ident.h	(working copy)
+> @@ -131,6 +131,9 @@
+>  	/* module adv7175: just ident 7175 */
+>  	V4L2_IDENT_ADV7175 = 7175,
+> 
+> +	/* module adv7180: just ident 7180 */
+> +	V4L2_IDENT_ADV7180 = 7180,
+> +
+>  	/* module saa7185: just ident 7185 */
+>  	V4L2_IDENT_SAA7185 = 7185,
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-I looked some more, and there's a _ton_ of these naked printk's in the 
-partition handling code.
 
-So while I think the patch was a good idea, I don't feel like exposing 
-quite that many old printk's and forcing people to use KERN_CONT. Here's 
-an alternate patch that has a somewhat similar approach, but tries much 
-harder to leave naked printk's as-is.
 
-So instead of always adding a '\n' if it doesn't say KERN_CONT, it just 
-adds '\n' if it has a KERN_xyz level. It also modifies the code to _only_ 
-look at the beginning of the printk - if you have a multi-line printk, 
-it will take the log-level from the beginning of the printk, and nowhere 
-else.
 
-And it will take the log-level from the beginning of the printk 
-*regardless* of whether it thinks you're at the beginning of a line or 
-not.
-
-So with this, KERN_CONT is not as important, but it_is_ meaningful: if you 
-want to print out something like "<%d>", then you _have_ to have a 
-KERN_xyz header, and if you don't want to force a new line, you have to do
-
-	printk(KERN_CONT "<%d>", n);
-
-because otherwise the printk code will think that what you want to print 
-out is the loglevel.
-
-But for all the traditional printk()'s that don't have KERN_CONT (or other 
-loglevel info), and print out strings that are not of that "<.>" form, 
-they'll still work as they used to.
-
-And no, this does not necessarily fix Arjan's problem: it only adds the 
-newline before printk's that _do_ have a KERN_<lvl> format. So now, in 
-order to get the extra '\n' after the WARN_ON() line, somebody needs to 
-make sure that the printk's in the warning printing have loglevels.
-
-Arjan?
-
-		Linus
-
----
- include/linux/kernel.h |    2 +-
- kernel/printk.c        |   31 ++++++++++++++++++++++---------
- 2 files changed, 23 insertions(+), 10 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 883cd44..066bb1e 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -102,7 +102,7 @@ extern const char linux_proc_banner[];
-  * line that had no enclosing \n). Only to be used by core/arch code
-  * during early bootup (a continued line is not SMP-safe otherwise).
-  */
--#define	KERN_CONT	""
-+#define	KERN_CONT	"<c>"
- 
- extern int console_printk[];
- 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 5052b54..a87770c 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -687,20 +687,33 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 				  sizeof(printk_buf) - printed_len, fmt, args);
- 
- 
-+	p = printk_buf;
-+
-+	/* Do we have a loglevel in the string? */
-+	if (p[0] == '<') {
-+		unsigned char c = p[1];
-+		if (c && p[2] == '>') {
-+			switch (c) {
-+			case '0' ... '7': /* loglevel */
-+				current_log_level = c - '0';
-+				if (!new_text_line) {
-+					emit_log_char('\n');
-+					new_text_line = 1;
-+				}
-+			/* Fallthrough - skip the loglevel */
-+			case 'c': /* KERN_CONT */
-+				p += 3;
-+				break;
-+			}
-+		}
-+	}
-+
- 	/*
- 	 * Copy the output into log_buf.  If the caller didn't provide
- 	 * appropriate log level tags, we insert them here
- 	 */
--	for (p = printk_buf; *p; p++) {
-+	for ( ; *p; p++) {
- 		if (new_text_line) {
--			/* If a token, set current_log_level and skip over */
--			if (p[0] == '<' && p[1] >= '0' && p[1] <= '7' &&
--			    p[2] == '>') {
--				current_log_level = p[1] - '0';
--				p += 3;
--				printed_len -= 3;
--			}
--
- 			/* Always output the token */
- 			emit_log_char('<');
- 			emit_log_char(current_log_level + '0');
+Cheers,
+Mauro
