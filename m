@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935210AbZFPFjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935575AbZFPFjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935210AbZFPFjj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 01:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933639AbZFPFiw
+	id S935575AbZFPFjw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 01:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934703AbZFPFi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:38:52 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:42708 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765394AbZFPFiv (ORCPT
+	Tue, 16 Jun 2009 01:38:57 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:42159 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933663AbZFPFi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:38:51 -0400
-Subject: [RFD PATCH 2/4] cpu: sysfs interface for hotplugging bunch of CPUs.
+	Tue, 16 Jun 2009 01:38:56 -0400
+Subject: [RFD PATCH 3/4] cpu: Define new functions cpu_down_mask and
+	cpu_up_mask
 To: linux-kernel@vger.kernel.org
 From: Gautham R Shenoy <ego@in.ibm.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
@@ -21,8 +22,8 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
        Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
-Date: Tue, 16 Jun 2009 11:08:49 +0530
-Message-ID: <20090616053849.30891.17453.stgit@sofia.in.ibm.com>
+Date: Tue, 16 Jun 2009 11:08:54 +0530
+Message-ID: <20090616053854.30891.16480.stgit@sofia.in.ibm.com>
 In-Reply-To: <20090616053431.30891.18682.stgit@sofia.in.ibm.com>
 References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com>
 User-Agent: StGit/0.14.3.384.g9ab0
@@ -33,148 +34,211 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The user can currently view the online and offline CPUs in the system through
-the sysfs files named "online" and "offline" respectively which
-are present in the directory /sys/devices/system/cpu/. These files currently
-have 0444 permissions.
+Currently cpu-hotplug operation is carried out on a single processor at any
+given time. We create two functions which will enable us to offline/online
+multiple CPUs in a single go.
 
-For the purpose of evacuation of a bunch of CPUs, we propose to extend this
-same interface and make it 0644, by which the user can use the same interface
-to bring a bunch of CPUs online or take a bunch of CPUs offline.
+These functions are:
+	int cpu_down_mask(cpumask_var_t cpus_to_offline);
+	int cpu_up_mask(cpumask_var_t cpus_to_online);
 
-To do this, the user is required to echo the cpu-list which is expected to be
-hotplugged.
+In this patch, these functions serially invoke the  _cpu_down() and _cpu_up()
+functions for each of the CPUs in the cpumask.
 
-Eg:
-
-echo 2,3 > /sys/devices/system/cpu/offline #Offlines CPUs 2 and 3
-echo 4 > /sys/devices/sytem/cpu/offline    #Offlines CPU 4
-echo 2-4 > /sys/devices/system/cpu/online  #Onlines CPU 2,3,4
-
-This patch changes the permissions of these sysfs files from 0444 to 0644.
-It provides a dummy store function, which currently parses the input
-provided by the user and copies them to another debug cpumask structure,
-which can be accessed using the sysfs interfaces:
-	/sys/devices/system/cpu/debug_offline
-and
-	/sys/devices/system/cpu/debug_online
-
-Thus on performing a
-	echo 2,3 > /sys/devices/system/cpu/offline
-the operation
-	cat /sys/devices/system/cpu/debug_offline
-should yield
-	2-3
-as the result.
+The idea is to make the CPU-hotplug notifiers work on cpumasks so that they
+can optimize for hotplugging multiple CPUs.
 
 Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
- drivers/base/cpu.c |   72 ++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 67 insertions(+), 5 deletions(-)
+ drivers/base/cpu.c  |    4 ++
+ include/linux/cpu.h |    2 +
+ kernel/cpu.c        |   92 +++++++++++++++++++++++++++++++++++++--------------
+ 3 files changed, 73 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index e62a4cc..7a15e7b 100644
+index 7a15e7b..1a382da 100644
 --- a/drivers/base/cpu.c
 +++ b/drivers/base/cpu.c
-@@ -116,18 +116,54 @@ static ssize_t print_cpus_map(char *buf, const struct cpumask *map)
- 	return n;
+@@ -154,6 +154,8 @@ static ssize_t store_cpus_online(struct sysdev_class *dev_class,
+ 
+ 	cpumask_copy(cpu_debug_online_mask, store_cpus_online_mask);
+ 
++	ret = cpu_up_mask(store_cpus_online_mask);
++
+ out:
+ 	free_cpumask_var(store_cpus_online_mask);
+ 	if (ret >= 0)
+@@ -221,6 +223,8 @@ static ssize_t store_cpus_offline(struct sysdev_class *dev_class,
+ 
+ 	cpumask_copy(cpu_debug_offline_mask, store_cpus_offline_mask);
+ 
++	ret = cpu_down_mask(store_cpus_offline_mask);
++
+ out:
+ 	free_cpumask_var(store_cpus_offline_mask);
+ 	if (ret >= 0)
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 2643d84..4769ff6 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -68,6 +68,7 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+ #endif
+ 
+ int cpu_up(unsigned int cpu);
++int cpu_up_mask(const cpumask_var_t cpus_to_online);
+ void notify_cpu_starting(unsigned int cpu);
+ extern void cpu_hotplug_init(void);
+ extern void cpu_maps_update_begin(void);
+@@ -112,6 +113,7 @@ extern void put_online_cpus(void);
+ #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+ #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+ int cpu_down(unsigned int cpu);
++int cpu_down_mask(const cpumask_var_t cpus_to_offline);
+ 
+ #else		/* CONFIG_HOTPLUG_CPU */
+ 
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 395b697..2b5d4e0 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -267,9 +267,10 @@ out_release:
+ 	return err;
  }
  
--#define	print_cpus_func(type) \
-+#define show_cpus_func(type)						\
- static ssize_t print_cpus_##type(struct sysdev_class *class, char *buf)	\
- {									\
- 	return print_cpus_map(buf, cpu_##type##_mask);			\
--}									\
--static struct sysdev_class_attribute attr_##type##_map = 		\
-+}
-+
-+#define print_cpus_func(type)						\
-+show_cpus_func(type);							\
-+static struct sysdev_class_attribute attr_##type##_map =		\
- 	_SYSDEV_CLASS_ATTR(type, 0444, print_cpus_##type, NULL)
+-int __ref cpu_down(unsigned int cpu)
++int __ref cpu_down_mask(const cpumask_var_t cpus_to_offline)
+ {
+ 	int err;
++	unsigned int cpu;
  
--print_cpus_func(online);
- print_cpus_func(possible);
- print_cpus_func(present);
+ 	err = stop_machine_create();
+ 	if (err)
+@@ -281,28 +282,48 @@ int __ref cpu_down(unsigned int cpu)
+ 		goto out;
+ 	}
  
-+static struct cpumask debug_offline_mask_data;
-+static struct cpumask debug_online_mask_data;
-+static struct cpumask *cpu_debug_offline_mask = &debug_offline_mask_data;
-+static struct cpumask *cpu_debug_online_mask = &debug_online_mask_data;
-+print_cpus_func(debug_offline);
-+print_cpus_func(debug_online);
-+
-+show_cpus_func(online);
-+static ssize_t store_cpus_online(struct sysdev_class *dev_class,
-+					const char *buf, size_t count)
-+{
-+	ssize_t ret = count;
-+	cpumask_var_t store_cpus_online_mask;
-+
-+	if (!alloc_cpumask_var(&store_cpus_online_mask, GFP_KERNEL))
-+		return count;
-+
-+	ret = cpulist_parse(buf, store_cpus_online_mask);
-+
-+	if (ret < 0)
-+		goto out;
-+
-+	cpumask_copy(cpu_debug_online_mask, store_cpus_online_mask);
-+
-+out:
-+	free_cpumask_var(store_cpus_online_mask);
-+	if (ret >= 0)
-+		ret = count;
-+	return ret;
-+}
-+static struct sysdev_class_attribute attr_online_map =
-+	_SYSDEV_CLASS_ATTR(online, 0644, print_cpus_online,
-+						store_cpus_online);
-+
- /*
-  * Print values for NR_CPUS and offlined cpus
-  */
-@@ -168,7 +204,31 @@ static ssize_t print_cpus_offline(struct sysdev_class *class, char *buf)
- 	n += snprintf(&buf[n], len - n, "\n");
- 	return n;
+-	set_cpu_active(cpu, false);
++	for_each_cpu(cpu, cpus_to_offline) {
++		set_cpu_active(cpu, false);
+ 
+-	/*
+-	 * Make sure the all cpus did the reschedule and are not
+-	 * using stale version of the cpu_active_mask.
+-	 * This is not strictly necessary becuase stop_machine()
+-	 * that we run down the line already provides the required
+-	 * synchronization. But it's really a side effect and we do not
+-	 * want to depend on the innards of the stop_machine here.
+-	 */
+-	synchronize_sched();
++		/*
++		 * Make sure the all cpus did the reschedule and are not
++		 * using stale version of the cpu_active_mask.
++		 * This is not strictly necessary becuase stop_machine()
++		 * that we run down the line already provides the required
++		 * synchronization. But it's really a side effect and we do not
++		 * want to depend on the innards of the stop_machine here.
++		 */
++		synchronize_sched();
+ 
+-	err = _cpu_down(cpu, 0);
++		err = _cpu_down(cpu, 0);
+ 
+-	if (cpu_online(cpu))
+-		set_cpu_active(cpu, true);
++		if (cpu_online(cpu))
++			set_cpu_active(cpu, true);
++	}
+ 
+ out:
+ 	cpu_maps_update_done();
+ 	stop_machine_destroy();
+ 	return err;
  }
--static SYSDEV_CLASS_ATTR(offline, 0444, print_cpus_offline, NULL);
 +
-+static ssize_t store_cpus_offline(struct sysdev_class *dev_class,
-+					const char *buf, size_t count)
++int __ref cpu_down(unsigned int cpu)
 +{
-+	ssize_t ret = count;
-+	cpumask_var_t store_cpus_offline_mask;
++	int err;
++	cpumask_var_t cpus_to_offline;
 +
-+	if (!alloc_cpumask_var(&store_cpus_offline_mask, GFP_KERNEL))
-+		return count;
++	if (!alloc_cpumask_var(&cpus_to_offline, GFP_KERNEL))
++		return -ENOMEM;
 +
-+	ret = cpulist_parse(buf, store_cpus_offline_mask);
++	cpumask_clear(cpus_to_offline);
++	cpumask_set_cpu(cpu, cpus_to_offline);
 +
-+	if (ret < 0)
-+		goto out;
++	err = cpu_down_mask(cpus_to_offline);
 +
-+	cpumask_copy(cpu_debug_offline_mask, store_cpus_offline_mask);
++	free_cpumask_var(cpus_to_offline);
 +
-+out:
-+	free_cpumask_var(store_cpus_offline_mask);
-+	if (ret >= 0)
-+		ret = count;
-+	return ret;
++	return err;
 +}
-+static SYSDEV_CLASS_ATTR(offline, 0644, print_cpus_offline,
-+						store_cpus_offline);
+ EXPORT_SYMBOL(cpu_down);
+ #endif /*CONFIG_HOTPLUG_CPU*/
  
- static struct sysdev_class_attribute *cpu_state_attr[] = {
- 	&attr_online_map,
-@@ -176,6 +236,8 @@ static struct sysdev_class_attribute *cpu_state_attr[] = {
- 	&attr_present_map,
- 	&attr_kernel_max,
- 	&attr_offline,
-+	&attr_debug_online_map,
-+	&attr_debug_offline_map,
- };
+@@ -347,33 +368,54 @@ out_notify:
+ 	return ret;
+ }
  
- static int cpu_states_init(void)
+-int __cpuinit cpu_up(unsigned int cpu)
++int __cpuinit cpu_up_mask(const cpumask_var_t cpus_to_online)
+ {
+ 	int err = 0;
+-	if (!cpu_possible(cpu)) {
+-		printk(KERN_ERR "can't online cpu %d because it is not "
+-			"configured as may-hotadd at boot time\n", cpu);
++	unsigned int cpu;
++
++	cpu_maps_update_begin();
++	for_each_cpu(cpu, cpus_to_online) {
++		if (!cpu_possible(cpu)) {
++			printk(KERN_ERR "can't online cpu %d because it is not"
++			" configured as may-hotadd at boot time\n", cpu);
+ #if defined(CONFIG_IA64) || defined(CONFIG_X86_64)
+-		printk(KERN_ERR "please check additional_cpus= boot "
+-				"parameter\n");
++			printk(KERN_ERR "please check additional_cpus= boot "
++					"parameter\n");
+ #endif
+-		return -EINVAL;
++			err = -EINVAL;
++			goto out;
++		}
+ 	}
+ 
+-	cpu_maps_update_begin();
+-
+ 	if (cpu_hotplug_disabled) {
+ 		err = -EBUSY;
+ 		goto out;
+ 	}
+-
+-	err = _cpu_up(cpu, 0);
++	for_each_cpu(cpu, cpus_to_online)
++		err = _cpu_up(cpu, 0);
+ 
+ out:
+ 	cpu_maps_update_done();
+ 	return err;
+ }
+ 
++int __cpuinit cpu_up(unsigned int cpu)
++{
++	int err = 0;
++	cpumask_var_t cpus_to_online;
++
++	if (!alloc_cpumask_var(&cpus_to_online, GFP_KERNEL))
++		return -ENOMEM;
++
++	cpumask_clear(cpus_to_online);
++	cpumask_set_cpu(cpu, cpus_to_online);
++
++	err = cpu_up_mask(cpus_to_online);
++
++	free_cpumask_var(cpus_to_online);
++
++	return err;
++}
+ #ifdef CONFIG_PM_SLEEP_SMP
+ static cpumask_var_t frozen_cpus;
+ 
 
