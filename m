@@ -1,175 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZFPORx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbZFPOUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZFPORx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 10:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZFPORo
+	id S1758787AbZFPOUz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 10:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbZFPOUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 10:17:44 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:59890 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbZFPORo (ORCPT
+	Tue, 16 Jun 2009 10:20:44 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:42428 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484AbZFPOUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 10:17:44 -0400
-Message-ID: <4A37A984.5000705@novell.com>
-Date: Tue, 16 Jun 2009 10:17:40 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 16 Jun 2009 10:20:43 -0400
+Message-ID: <4A37AA0C.40507@gmail.com>
+Date: Tue, 16 Jun 2009 16:19:56 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based	notifier
- interface
-References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com>
-In-Reply-To: <20090616140240.GA9401@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE1F040A84E0BFA175CEE32AF"
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: David Miller <davem@davemloft.net>, mingo@elte.hu,
+       alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+References: <20090616094813.GA1686@elte.hu>	<20090616.025659.224075454.davem@davemloft.net>	<20090616101132.GA28204@elte.hu> <20090616.033554.102149558.davem@davemloft.net> <4A37A058.1030701@gmail.com>
+In-Reply-To: <4A37A058.1030701@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 16 Jun 2009 16:19:57 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE1F040A84E0BFA175CEE32AF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Michael S. Tsirkin wrote:
-> On Mon, Jun 15, 2009 at 10:29:56PM -0400, Gregory Haskins wrote:
->  =20
->> irqfd and its underlying implementation, eventfd, currently utilize
->> the embedded wait-queue in eventfd for signal notification.  The nice =
-thing
->> about this design decision is that it re-uses the existing
->> eventfd/wait-queue code and it generally works well....with several
->> limitations.
+Eric Dumazet a écrit :
+> David Miller a écrit :
+>> From: Ingo Molnar <mingo@elte.hu>
+>> Date: Tue, 16 Jun 2009 12:11:32 +0200
 >>
->> One of the limitations is that notification callbacks are always calle=
-d
->> inside a spin_lock_irqsave critical section.  Another limitation is
->> that it is very difficult to build a system that can recieve release
->> notification without being racy.
+>>> sure, here you go (i also added a stack dump, just in case it's some 
+>>> kernel-internal socket open):
+>>>
+>>>  [ifconfig:3516]: Creates X25 socket.
+>>>
+>>> so plain ifconfig. Part of the ~1.5 years old net-tools-1.60-84.fc8.
+>> Ok, ifconfig seems to open one of every socket type when it starts up.
+>> That explains why an X25 socket is openned and then closed.
 >>
->> Therefore, we introduce a new registration interface that is SRCU base=
-d
->> instead of wait-queue based, and implement the internal wait-queue
->> infrastructure in terms of this new interface.  We then convert irqfd
->> to use this new interface instead of the existing wait-queue code.
+>> Now the question is why is the X25 socket released by a timer?  This
+>> should only happen if some socket memory is still pending in the
+>> socket buffers.
 >>
->> The end result is that we now have the opportunity to run the interrup=
-t
->> injection code serially to the callback (when the signal is raised fro=
-m
->> process-context, at least) instead of always deferring the injection t=
-o a
->> work-queue.
+>> Wait, I know why this is triggering now.  It's Eric Dumazet's SKB
+>> accounting optimizations.
 >>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->> CC: Davide Libenzi <davidel@xmailserver.org>
->> ---
+>> So, I'll fix the X25 timer bug.  It's always been there, but
+>> beforehand this deferred-via-timer x25 socket destruction path almost
+>> never triggers.  So we never saw it.  Now it happens every time.
 >>
->>  fs/eventfd.c            |  115 ++++++++++++++++++++++++++++++++++++++=
-+++++----
->>  include/linux/eventfd.h |   30 ++++++++++++
->>  virt/kvm/eventfd.c      |  114 +++++++++++++++++++++-----------------=
----------
->>  3 files changed, 188 insertions(+), 71 deletions(-)
+>> Eric can you sniff around and see what you think about this unforseen
+>> (at least for me) consequence of your changes?  Socket layers that use
+>> the current sk_wmem_alloc/sk_rmem_alloc value at destroy time to
+>> determine if a socket can be killed immediately, or need to be killed
+>> later via timer, will always see that dummy one byte allocation you
+>> now put there.
 >>
->> diff --git a/fs/eventfd.c b/fs/eventfd.c
->> index 72f5f8d..505d5de 100644
->> --- a/fs/eventfd.c
->> +++ b/fs/eventfd.c
->> @@ -30,8 +30,47 @@ struct eventfd_ctx {
->>  	 */
->>  	__u64 count;
->>  	unsigned int flags;
->> +	struct srcu_struct srcu;
->> +	struct list_head nh;
->> +	struct eventfd_notifier notifier;
->>  };
->> =20
->> +static void _eventfd_wqh_notify(struct eventfd_notifier *en)
->> +{
->> +	struct eventfd_ctx *ctx =3D container_of(en,
->> +					       struct eventfd_ctx,
->> +					       notifier);
->> +
->> +	if (waitqueue_active(&ctx->wqh))
->> +		wake_up_poll(&ctx->wqh, POLLIN);
->> +}
->> +
->> +static void _eventfd_notify(struct eventfd_ctx *ctx)
->> +{
->> +	struct eventfd_notifier *en;
->> +	int idx;
->> +
->> +	idx =3D srcu_read_lock(&ctx->srcu);
->> +
->> +	/*
->> +	 * The goal here is to allow the notification to be preemptible
->> +	 * as often as possible.  We cannot achieve this with the basic
->> +	 * wqh mechanism because it requires the wqh->lock.  Therefore
->> +	 * we have an internal srcu list mechanism of which the wqh is
->> +	 * a client.
->> +	 *
->> +	 * Not all paths will invoke this function in process context.
->> +	 * Callers should check for suitable state before assuming they
->> +	 * can sleep (such as with preemptible()).  Paul McKenney assures
->> +	 * me that srcu_read_lock is compatible with in-atomic, as long as
->> +	 * the code within the critical section is also compatible.
->> +	 */
->> +	list_for_each_entry_rcu(en, &ctx->nh, list)
->> +		en->ops->signal(en);
->> +
->> +	srcu_read_unlock(&ctx->srcu, idx);
->> +}
->> +
->>  /*
->>   * Adds "n" to the eventfd counter "count". Returns "n" in case of
->>   * success, or a value lower then "n" in case of coutner overflow.
->>    =20
->
-> This is ugly, isn't it? With CONFIG_PREEMPT=3Dno preemptible() is alway=
-s false.
->  =20
+>> Can you look into that?
+>>
+>> Thanks.
+> 
+> 
+> Sure I can look if a layer uses sk_wmem_alloc as you describe.
+> 
+> (I take you refer to commit 2b85a34e911bf483c27cfdd124aeb1605145dc80 :
+> net: No more expensive sock_hold()/sock_put() on each tx)
+> 
+> So there is no impact for sk_rmem_alloc AFAIK
+> 
 
-As an aside, this is something I would like to address.  I keep running
-into this pattern where I could do something in-line if I had a
-"can_sleep()" context.  Otherwise, I have to punt to something like a
-workqueue which adds latency.  The closest thing I have to "can_sleep()"
-is preemptible(), which, as you correctly pointed out is limited to only
-working with CONFIG_PREEMPT=3Dy.
+Here is first patch to take into account this initial offset in sk_wmem_alloc
 
-Its been a while since I looked into it, but one of the barriers that
-would need to be overcome is the fact that the preempt_count stuff gets
-compiled away with CONFIG_PREEMPT=3Dn.  It is conceivable that we could
-make the preempt_count logic an independent config variable from
-CONFIG_PREEMPT to provide a can_sleep() macro without requiring
-full-blow preemption to be enabled.  So my questions would be as follows:=
+(Only compiled, not tested)
 
+A second patch will follow to correct /prov/net/udp and other PROC_FS files, and
+also SIOCOUTQ/TIOCOUTQ, as we currently give off-by-one values, it certainly can
+break some apps.
 
-a) Is the community conducive to such an idea?
-b) Are there other things to consider/fix besides the lack of
-preempt_count in order to implement such a beast?
+Thank you
 
--Greg
+[PATCH] net: sk_wmem_alloc has initial value of one, not zero
 
+commit 2b85a34e911bf483c27cfdd124aeb1605145dc80 
+(net: No more expensive sock_hold()/sock_put() on each tx)
+changed initial sk_wmem_alloc value.
 
+Some protocols check sk_wmem_alloc value to determine if a timer
+must delay socket deallocation. We must take care of the sk_wmem_alloc
+value being one instead of zero.
 
---------------enigE1F040A84E0BFA175CEE32AF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Reported by Ingo Molnar, and full diagnostic from David Miller.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+ net/appletalk/ddp.c    |    4 ++--
+ net/ax25/af_ax25.c     |    2 +-
+ net/econet/af_econet.c |    4 ++--
+ net/netrom/af_netrom.c |    2 +-
+ net/rose/af_rose.c     |    2 +-
+ net/x25/af_x25.c       |    2 +-
+ 6 files changed, 8 insertions(+), 8 deletions(-)
 
-iEYEARECAAYFAko3qYQACgkQlOSOBdgZUxkAHgCeM8D2ZviB2tn5mqeSnrFzRem4
-ZHoAnjoovHnW7gPL/h20orIn073rDO4g
-=N595
------END PGP SIGNATURE-----
-
---------------enigE1F040A84E0BFA175CEE32AF--
+diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
+index b603cba..048cfd0 100644
+--- a/net/appletalk/ddp.c
++++ b/net/appletalk/ddp.c
+@@ -162,7 +162,7 @@ static void atalk_destroy_timer(unsigned long data)
+ {
+ 	struct sock *sk = (struct sock *)data;
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
++	if (atomic_read(&sk->sk_wmem_alloc) > 1 ||
+ 	    atomic_read(&sk->sk_rmem_alloc)) {
+ 		sk->sk_timer.expires = jiffies + SOCK_DESTROY_TIME;
+ 		add_timer(&sk->sk_timer);
+@@ -175,7 +175,7 @@ static inline void atalk_destroy_socket(struct sock *sk)
+ 	atalk_remove_socket(sk);
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
++	if (atomic_read(&sk->sk_wmem_alloc) > 1 ||
+ 	    atomic_read(&sk->sk_rmem_alloc)) {
+ 		setup_timer(&sk->sk_timer, atalk_destroy_timer,
+ 				(unsigned long)sk);
+diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
+index fd9d06f..2e81b1d 100644
+--- a/net/ax25/af_ax25.c
++++ b/net/ax25/af_ax25.c
+@@ -330,7 +330,7 @@ void ax25_destroy_socket(ax25_cb *ax25)
+ 	}
+ 
+ 	if (ax25->sk != NULL) {
+-		if (atomic_read(&ax25->sk->sk_wmem_alloc) ||
++		if (atomic_read(&ax25->sk->sk_wmem_alloc) > 1 ||
+ 		    atomic_read(&ax25->sk->sk_rmem_alloc)) {
+ 			/* Defer: outstanding buffers */
+ 			setup_timer(&ax25->dtimer, ax25_destroy_timer,
+diff --git a/net/econet/af_econet.c b/net/econet/af_econet.c
+index 8121bf0..051dcb6 100644
+--- a/net/econet/af_econet.c
++++ b/net/econet/af_econet.c
+@@ -540,7 +540,7 @@ static void econet_destroy_timer(unsigned long data)
+ {
+ 	struct sock *sk=(struct sock *)data;
+ 
+-	if (!atomic_read(&sk->sk_wmem_alloc) &&
++	if (atomic_read(&sk->sk_wmem_alloc) <= 1 &&
+ 	    !atomic_read(&sk->sk_rmem_alloc)) {
+ 		sk_free(sk);
+ 		return;
+@@ -580,7 +580,7 @@ static int econet_release(struct socket *sock)
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 
+ 	if (atomic_read(&sk->sk_rmem_alloc) ||
+-	    atomic_read(&sk->sk_wmem_alloc)) {
++	    atomic_read(&sk->sk_wmem_alloc) > 1) {
+ 		sk->sk_timer.data     = (unsigned long)sk;
+ 		sk->sk_timer.expires  = jiffies + HZ;
+ 		sk->sk_timer.function = econet_destroy_timer;
+diff --git a/net/netrom/af_netrom.c b/net/netrom/af_netrom.c
+index 3be0e01..8126bd4 100644
+--- a/net/netrom/af_netrom.c
++++ b/net/netrom/af_netrom.c
+@@ -286,7 +286,7 @@ void nr_destroy_socket(struct sock *sk)
+ 		kfree_skb(skb);
+ 	}
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
++	if (atomic_read(&sk->sk_wmem_alloc) > 1 ||
+ 	    atomic_read(&sk->sk_rmem_alloc)) {
+ 		/* Defer: outstanding buffers */
+ 		sk->sk_timer.function = nr_destroy_timer;
+diff --git a/net/rose/af_rose.c b/net/rose/af_rose.c
+index 877a7f6..0ab0f4d 100644
+--- a/net/rose/af_rose.c
++++ b/net/rose/af_rose.c
+@@ -356,7 +356,7 @@ void rose_destroy_socket(struct sock *sk)
+ 		kfree_skb(skb);
+ 	}
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
++	if (atomic_read(&sk->sk_wmem_alloc) > 1 ||
+ 	    atomic_read(&sk->sk_rmem_alloc)) {
+ 		/* Defer: outstanding buffers */
+ 		setup_timer(&sk->sk_timer, rose_destroy_timer,
+diff --git a/net/x25/af_x25.c b/net/x25/af_x25.c
+index c51f309..57dd5d3 100644
+--- a/net/x25/af_x25.c
++++ b/net/x25/af_x25.c
+@@ -372,7 +372,7 @@ static void __x25_destroy_socket(struct sock *sk)
+ 		kfree_skb(skb);
+ 	}
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
++	if (atomic_read(&sk->sk_wmem_alloc) > 1 ||
+ 	    atomic_read(&sk->sk_rmem_alloc)) {
+ 		/* Defer: outstanding buffers */
+ 		sk->sk_timer.expires  = jiffies + 10 * HZ;
