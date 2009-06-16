@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbZFPPDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbZFPPEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759489AbZFPPDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZFPPDc
+	id S1759538AbZFPPEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759027AbZFPPDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:03:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44045 "EHLO
+	Tue, 16 Jun 2009 11:03:53 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44049 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756172AbZFPPDb (ORCPT
+	with ESMTP id S1759029AbZFPPDw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:03:31 -0400
+	Tue, 16 Jun 2009 11:03:52 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 5/9] pty: Narrow the race on ldisc locking
+Subject: [PATCH 6/9] tty: fix sanity check
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Tue, 16 Jun 2009 17:01:13 +0100
-Message-ID: <20090616160108.10041.3646.stgit@t61.ukuu.org.uk>
+Date: Tue, 16 Jun 2009 17:01:33 +0100
+Message-ID: <20090616160118.10041.47059.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090616155552.10041.63479.stgit@t61.ukuu.org.uk>
 References: <20090616155552.10041.63479.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -27,112 +27,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-The pty code has always been buggy on its ldisc handling. The recent
-changes made the window for the race much bigger. Pending fixing it
-properly which is not at all trivial, at least make the race small again so
-we don't disrupt other dev work.
+The WARN_ON() that was added to tty_reopen can be triggered in the specific
+case of a hangup occurring during a re-open of a tty which is not in the
+middle of being otherwise closed.
+
+In that case however the WARN() is bogus as we don't hold the neccessary
+locks to make a correct decision.
+
+The case we should be checking is "if the ldisc is not changing and reopen
+is occuring". We could drop the WARN_ON but for the moment the debug is more
+valuable even if it means taking a mutex as it will find any other cases.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/pty.c |   53 +++++++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 40 insertions(+), 13 deletions(-)
+ drivers/char/tty_io.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-index 5acd29e..daebe1b 100644
---- a/drivers/char/pty.c
-+++ b/drivers/char/pty.c
-@@ -95,23 +95,34 @@ static void pty_unthrottle(struct tty_struct *tty)
-  * a count.
-  *
-  * FIXME: Our pty_write method is called with our ldisc lock held but
-- * not our partners. We can't just take the other one blindly without
-- * risking deadlocks.
-+ * not our partners. We can't just wait on the other one blindly without
-+ * risking deadlocks. At some point when everything has settled down we need
-+ * to look into making pty_write at least able to sleep over an ldisc change.
-+ *
-+ * The return on no ldisc is a bit counter intuitive but the logic works
-+ * like this. During an ldisc change the other end will flush its buffers. We
-+ * thus return the full length which is identical to the case where we had
-+ * proper locking and happened to queue the bytes just before the flush during
-+ * the ldisc change.
-  */
- static int pty_write(struct tty_struct *tty, const unsigned char *buf,
- 								int count)
- {
- 	struct tty_struct *to = tty->link;
--	int	c;
-+	struct tty_ldisc *ld;
-+	int c = count;
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 939e198..a3afa0c 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1263,7 +1263,9 @@ static int tty_reopen(struct tty_struct *tty)
+ 	tty->count++;
+ 	tty->driver = driver; /* N.B. why do this every time?? */
  
- 	if (!to || tty->stopped)
- 		return 0;
--
--	c = to->receive_room;
--	if (c > count)
--		c = count;
--	to->ldisc->ops->receive_buf(to, buf, NULL, c);
--
-+	ld = tty_ldisc_ref(to);
-+
-+	if (ld) {
-+		c = to->receive_room;
-+		if (c > count)
-+			c = count;
-+		ld->ops->receive_buf(to, buf, NULL, c);
-+		tty_ldisc_deref(ld);
-+	}
- 	return c;
++	mutex_lock(&tty->ldisc_mutex);
+ 	WARN_ON(!test_bit(TTY_LDISC, &tty->flags));
++	mutex_unlock(&tty->ldisc_mutex);
+ 
+ 	return 0;
  }
- 
-@@ -145,14 +156,23 @@ static int pty_write_room(struct tty_struct *tty)
- static int pty_chars_in_buffer(struct tty_struct *tty)
- {
- 	struct tty_struct *to = tty->link;
--	int count;
-+	struct tty_ldisc *ld;
-+	int count = 0;
- 
- 	/* We should get the line discipline lock for "tty->link" */
--	if (!to || !to->ldisc->ops->chars_in_buffer)
-+	if (!to)
-+		return 0;
-+	/* We cannot take a sleeping reference here without deadlocking with
-+	   an ldisc change - but it doesn't really matter */
-+	ld = tty_ldisc_ref(to);
-+	if (ld == NULL)
- 		return 0;
- 
- 	/* The ldisc must report 0 if no characters available to be read */
--	count = to->ldisc->ops->chars_in_buffer(to);
-+	if (ld->ops->chars_in_buffer)
-+		count = ld->ops->chars_in_buffer(to);
-+
-+	tty_ldisc_deref(ld);
- 
- 	if (tty->driver->subtype == PTY_TYPE_SLAVE)
- 		return count;
-@@ -182,12 +202,19 @@ static void pty_flush_buffer(struct tty_struct *tty)
- {
- 	struct tty_struct *to = tty->link;
- 	unsigned long flags;
-+	struct tty_ldisc *ld;
- 
- 	if (!to)
- 		return;
-+	ld = tty_ldisc_ref(to);
-+
-+	/* The other end is changing discipline */
-+	if (!ld)
-+		return;
- 
--	if (to->ldisc->ops->flush_buffer)
-+	if (ld->ops->flush_buffer)
- 		to->ldisc->ops->flush_buffer(to);
-+	tty_ldisc_deref(ld);
- 
- 	if (to->packet) {
- 		spin_lock_irqsave(&tty->ctrl_lock, flags);
 
