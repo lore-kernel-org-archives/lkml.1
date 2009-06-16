@@ -1,81 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbZFPQqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbZFPQsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbZFPQqw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZFPQqp
+	id S1760037AbZFPQsS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZFPQsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:46:45 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:62872 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbZFPQqo (ORCPT
+	Tue, 16 Jun 2009 12:48:10 -0400
+Received: from tango.0pointer.de ([85.214.72.216]:50183 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141AbZFPQsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:46:44 -0400
-Message-ID: <4A37CC72.3060709@freescale.com>
-Date: Tue, 16 Jun 2009 11:46:42 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 16 Jun 2009 12:48:09 -0400
+Date: Tue, 16 Jun 2009 18:47:42 +0200
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scheduler: introduce SCHED_RESET_ON_FORK scheduling
+	policy flag, fourth try
+Message-ID: <20090616164742.GA21385@tango.0pointer.de>
+References: <20090615152714.GA29092@tango.0pointer.de> <1245143108.6038.10.camel@marge.simson.net>
 MIME-Version: 1.0
-To: Chris Pringle <chris.pringle@oxtel.com>
-CC: linux-kernel@vger.kernel.org,
-       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-References: <4A37A503.3030209@oxtel.com> <20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
-In-Reply-To: <4A37C97A.5050508@oxtel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAWE=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245143108.6038.10.camel@marge.simson.net>
+Organization: Red Hat, Inc.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Pringle wrote:
-> The kernel version is 2.6.26. Firmware is custom on a custom board.
->> Cache coherency on PCI DMA requires that the memory be mapped with the M
->> attribute on this chip, but that should be happening based on 
->> detection of
->> the core.
->>   
-> I'm not sure where to look to verify this?
+On Tue, 16.06.09 11:05, Mike Galbraith (efault@gmx.de) wrote:
 
-Check asm/cputable.h for CPU_FTR_NEED_COHERENT.  Make sure that 
-CONFIG_8260 is one of the #ifdefs that turns that on.  It looks like 
-that was in place by 2.6.26 in arch/powerpc.  I'm not sure what to look 
-for in arch/ppc.
+> I think it's cleaner to keep reset_on_fork functionality separate.
+> Thoughts on the below?
 
->> Also make sure that you park the bus on PCI and raise its arbitration
->> priority, as done at the end of fixup_pci in 
->> arch/powerpc/boot/cuboot-pq2.c.
->>   
-> Since this is a reasonably recent kernel,
+Looks good to me!
 
-Not really, there was a fair amount of 82xx work in the mid-2.6.20s. 
-The addition of CPU_FTR_NEED_COHERENT to 82xx was somewhere in that time.
+Lennart
 
-Can you try 2.6.30?
+> Make SCHED_RESET_ON_FORK to DTRT for reniced tasks, and make the sched_fork()
+> SCHED_RESET_ON_FORK bits a self-contained unlikely code block.
+> 
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> 
+>  kernel/sched.c |   39 +++++++++++++++++++++++----------------
+>  1 files changed, 23 insertions(+), 16 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 80636ed..cb6bbc6 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2613,28 +2613,35 @@ void sched_fork(struct task_struct *p, int clone_flags)
+>  	set_task_cpu(p, cpu);
+>  
+>  	/*
+> -	 * Revert to default priority/policy on fork if requested. Make sure we
+> -	 * do not leak PI boosting priority to the child.
+> +	 * Make sure we do not leak PI boosting priority to the child.
+>  	 */
+> -	if (current->sched_reset_on_fork &&
+> -			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
+> -		p->policy = SCHED_NORMAL;
+> +	p->prio = current->normal_prio;
+>  
+> -	if (current->sched_reset_on_fork &&
+> -			(current->normal_prio < DEFAULT_PRIO))
+> -		p->prio = DEFAULT_PRIO;
+> -	else
+> -		p->prio = current->normal_prio;
+> +	/*
+> +	 * Revert to default priority/policy on fork if requested.
+> +	 */
+> +	if (unlikely(p->sched_reset_on_fork)) {
+> +		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR)
+> +			p->policy = SCHED_NORMAL;
+> +
+> +		if (p->normal_prio < DEFAULT_PRIO)
+> +			p->prio = DEFAULT_PRIO;
+> +
+> +		if (PRIO_TO_NICE(p->static_prio) < 0) {
+> +			p->static_prio = NICE_TO_PRIO(0);
+> +			set_load_weight(p);
+> +		}
+> +
+> +		/*
+> +		 * We don't need the reset flag anymore after the fork. It has
+> +		 * fulfilled its duty:
+> +		 */
+> +		p->sched_reset_on_fork = 0;
+> +	}
+>  
+>  	if (!rt_prio(p->prio))
+>  		p->sched_class = &fair_sched_class;
+>  
+> -	/*
+> -	 * We don't need the reset flag anymore after the fork. It has
+> -	 * fulfilled its duty:
+> -	 */
+> -	p->sched_reset_on_fork = 0;
+> -
+>  #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+>  	if (likely(sched_info_on()))
+>  		memset(&p->sched_info, 0, sizeof(p->sched_info));
+> 
 
-> I'd guess that both of these 
-> things are correct. I've had a quick look in that file and there is code 
-> in there raising arbitartion priority and parking the bus.
 
-Just because the code is there doesn't mean you're using it -- are you 
-using cuImage?  Are you using arch/ppc or arch/powerpc?
+Lennart
 
-Typically this would be done by firmware; it's only in cuboot because 
-u-boot wasn't doing it.
-
->> BTW, you may want to post to linuxppc-dev@lists.ozlabs.org for
->> powerpc-specific issues, especially this kind of hardware issue.
->>
->>   
-> I've just posted there :-)
-
-Doh, sorry. :-)
-
-> Interestingly, I've just turned off cache snooping and the problem has 
-> got much worse. This has surprised me as I thought that part of the job 
-> done by pci_map_sg was to flush the CPU cache
-
-It only flushes the cache on hardware that doesn't do coherent DMA.
-
--Scott
-
+-- 
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
