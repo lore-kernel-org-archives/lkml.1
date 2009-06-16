@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbZFPKDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZFPKDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708AbZFPKDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZFPKDR
+	id S1756829AbZFPKDg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZFPKDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 06:03:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54445 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750942AbZFPKDQ (ORCPT
+	Tue, 16 Jun 2009 06:03:22 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:10592 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755434AbZFPKDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 06:03:16 -0400
-Date: Tue, 16 Jun 2009 11:04:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in tty ldisc and friends
-Message-ID: <20090616110419.14bc9485@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090616100015.GD6432@elte.hu>
-References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com>
-	<20090616093741.0d5b36bc@lxorguk.ukuu.org.uk>
-	<20090616085028.GA13771@elte.hu>
-	<20090616095706.36f01282@lxorguk.ukuu.org.uk>
-	<20090616100015.GD6432@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Jun 2009 06:03:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=cbiNX5NKOnyaLIo0X3eKotUgvUULl3jRZEt9PciyrQjFNc3BDBP9wC9hsrBWbMcDc+
+         +gcAs+U/xnyptgeeUV6kNWionE8/ppNglOFf0Br/SE9B255WHuHT8xUSSbL0hjWCgtmI
+         03pt3++Z3gghjOsxJ6qRq5AXzFoZnBs/08nqs=
+MIME-Version: 1.0
+In-Reply-To: <200906151304.16416.arnd@arndb.de>
+References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> 
+	<1244980878-2124-6-git-send-email-vapier@gentoo.org> <200906151304.16416.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 16 Jun 2009 06:03:03 -0400
+Message-ID: <8bd0f97a0906160303j7b72ca8ag83dc9a3ab1516406@mail.gmail.com>
+Subject: Re: [PATCH 05/17] Blackfin: convert to generic checksum code
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  stack-trace entries:                262144 [max: 262144]
-> 
-> stack-trace entries ran out. And it seems like you didnt quadruple 
-> MAX_STACK_TRACE_ENTRIES to 1 million entries.
+On Mon, Jun 15, 2009 at 07:04, Arnd Bergmann wrote:
+> On Sunday 14 June 2009, Mike Frysinger wrote:
+>> The Blackfin port only implemented an optimized version of the
+>> csum_tcpudp_nofold function, so convert everything else to the new
+>> generic code.
+>
+> Have you tested this one well? I was as careful as possible with the
+> version I added, but it was basically only tested on microblaze, which
+> has a different endianess from blackfin. Some areas of the code may be
+> sensitive to this.
 
-I did a while ago but would have been another kernel config.
+networking still worked on my BF537-STAMP, but that isnt a very big
+test.  i'll keep it locally until we can regression test it harder.
 
-> Do we run out of entries right during bootup? Are you 
-> loading/unloading modules a lot perhaps? Could you send your .config 
-> please? (assuming a plain bootup triggers it - that should make it 
-> reproducible to me too)
-
-On bootup with a totally generic Fedora 11, thinkpad setup with the kernel
-swapped for current git head. Will send the .config off list and build it
-with a 1M entry stack trace again.
-
-Alan
+although these kind of issues sounds like a good reason to add some
+internal testing code for people to optionally enable ... make sure
+things work across endians/bit sizes/assorted changes & improvements
+...
+-mike
