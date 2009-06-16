@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936653AbZFPGCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937020AbZFPGC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936653AbZFPGCJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935657AbZFPFvh
+	id S937020AbZFPGC3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935907AbZFPFvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:51:37 -0400
-Received: from kroah.org ([198.145.64.141]:48436 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:51:38 -0400
+Received: from kroah.org ([198.145.64.141]:48439 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935595AbZFPFve (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:51:34 -0400
+	id S935845AbZFPFvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:51:35 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 48/64] thermal: remove driver_data direct access of struct device
-Date: Mon, 15 Jun 2009 22:46:37 -0700
-Message-Id: <1245131213-24168-48-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, xen-devel@lists.xensource.com,
+       virtualization@lists.osdl.org
+Subject: [PATCH 49/64] xen block: remove driver_data direct access of struct device
+Date: Mon, 15 Jun 2009 22:46:38 -0700
+Message-Id: <1245131213-24168-49-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -29,33 +30,79 @@ have been around since the beginning, so are backwards compatible with
 all older kernel versions.
 
 
+Cc: xen-devel@lists.xensource.com
+Cc: virtualization@lists.osdl.org
+Acked-by: Chris Wright <chrisw@sous-sol.org>
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/thermal/thermal_sys.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/block/xen-blkfront.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 5e38ba1..0a69672 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -417,7 +417,7 @@ static LIST_HEAD(thermal_hwmon_list);
- static ssize_t
- name_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	struct thermal_hwmon_device *hwmon = dev->driver_data;
-+	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
- 	return sprintf(buf, "%s\n", hwmon->type);
- }
- static DEVICE_ATTR(name, 0444, name_show, NULL);
-@@ -488,7 +488,7 @@ thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
- 		result = PTR_ERR(hwmon->device);
- 		goto free_mem;
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index c199682..e532847 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -753,12 +753,12 @@ static int blkfront_probe(struct xenbus_device *dev,
+ 
+ 	/* Front end dir is a number, which is used as the id. */
+ 	info->handle = simple_strtoul(strrchr(dev->nodename, '/')+1, NULL, 0);
+-	dev->dev.driver_data = info;
++	dev_set_drvdata(&dev->dev, info);
+ 
+ 	err = talk_to_backend(dev, info);
+ 	if (err) {
+ 		kfree(info);
+-		dev->dev.driver_data = NULL;
++		dev_set_drvdata(&dev->dev, NULL);
+ 		return err;
  	}
--	hwmon->device->driver_data = hwmon;
-+	dev_set_drvdata(hwmon->device, hwmon);
- 	result = device_create_file(hwmon->device, &dev_attr_name);
- 	if (result)
- 		goto unregister_hwmon_device;
+ 
+@@ -843,7 +843,7 @@ static int blkif_recover(struct blkfront_info *info)
+  */
+ static int blkfront_resume(struct xenbus_device *dev)
+ {
+-	struct blkfront_info *info = dev->dev.driver_data;
++	struct blkfront_info *info = dev_get_drvdata(&dev->dev);
+ 	int err;
+ 
+ 	dev_dbg(&dev->dev, "blkfront_resume: %s\n", dev->nodename);
+@@ -922,7 +922,7 @@ static void blkfront_connect(struct blkfront_info *info)
+  */
+ static void blkfront_closing(struct xenbus_device *dev)
+ {
+-	struct blkfront_info *info = dev->dev.driver_data;
++	struct blkfront_info *info = dev_get_drvdata(&dev->dev);
+ 	unsigned long flags;
+ 
+ 	dev_dbg(&dev->dev, "blkfront_closing: %s removed\n", dev->nodename);
+@@ -957,7 +957,7 @@ static void blkfront_closing(struct xenbus_device *dev)
+ static void backend_changed(struct xenbus_device *dev,
+ 			    enum xenbus_state backend_state)
+ {
+-	struct blkfront_info *info = dev->dev.driver_data;
++	struct blkfront_info *info = dev_get_drvdata(&dev->dev);
+ 	struct block_device *bd;
+ 
+ 	dev_dbg(&dev->dev, "blkfront:backend_changed.\n");
+@@ -997,7 +997,7 @@ static void backend_changed(struct xenbus_device *dev,
+ 
+ static int blkfront_remove(struct xenbus_device *dev)
+ {
+-	struct blkfront_info *info = dev->dev.driver_data;
++	struct blkfront_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	dev_dbg(&dev->dev, "blkfront_remove: %s removed\n", dev->nodename);
+ 
+@@ -1010,7 +1010,7 @@ static int blkfront_remove(struct xenbus_device *dev)
+ 
+ static int blkfront_is_ready(struct xenbus_device *dev)
+ {
+-	struct blkfront_info *info = dev->dev.driver_data;
++	struct blkfront_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	return info->is_ready;
+ }
 -- 
 1.6.3.2
 
