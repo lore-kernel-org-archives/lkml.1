@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbZFPX06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbZFPXco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762057AbZFPX06 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 19:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZFPX0u
+	id S1760997AbZFPXco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 19:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZFPXcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 19:26:50 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:34697 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754550AbZFPX0t (ORCPT
+	Tue, 16 Jun 2009 19:32:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34637 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752781AbZFPXcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 19:26:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:reply-to:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=d0hGqEWUhuNjL9eMvMZnDfA7rjG0L0WqBPPGyJfqROG84BOqX2nIUPy/vWeOnT+RMA
-         3NeW81pqAd4v7sR9Hbc9x9AKKtjSXIToZI4EsummDl5s2zJNb8ZCXzSsy/LCaKi3OpUW
-         h/zDvozfCLU1lz8qz09rtqla+uAtS+l0hAN60=
+	Tue, 16 Jun 2009 19:32:35 -0400
+Date: Tue, 16 Jun 2009 16:32:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Patterson <andrew.patterson@hp.com>
+cc: linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
+ trees
+In-Reply-To: <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906161623240.16802@localhost.localdomain>
+References: <20090616220419.14021.84524.stgit@bob.kio>  <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain> <1245192703.8234.226.camel@bluto.andrew> <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Reply-To: mr.georgefofi09@sify.com
-Date: Tue, 16 Jun 2009 16:26:47 -0700
-Message-ID: <bde1565c0906161626q40d50cc1n5ccb0bf86274ac78@mail.gmail.com>
-Subject: DEAR BENEFICIARY YOUR PAYMENT HAVE BEEN APPROVE BY SWIFT ATM DEBIT 
-	CARD, YOUR REPLY IS NEEDED.
-From: "Mr. George Howard Kofi" <georgehoward09@gmail.com>
-To: zenith@nycap.rr.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: George Howard Kofi.
 
 
-My Dear Friend,
+On Tue, 16 Jun 2009, Linus Torvalds wrote:
+> 
+> So your patch may fix a bug, but I'm pretty sure I've seen a patch from 
+> Ivan that should _also_ fix it, and that I would expect to do it not by 
+> just tweaking a fundamentally ambiguous case.
 
-It was Resolved and Agreed upon that your Inheritance/Contract Funds
-would be released to you on a special method of payment which tag Name
-Reads "SWIFT ATM DEBIT MASTER CARD".
+Hmm. For the life of me, I can't seem to find this patch. Maybe it wasn't 
+Ivan who wrote it after all. Or maybe my google-fu is weak. Or maybe I'm 
+just delusional, and the patch never existed.
 
-You are Adviced to Re-comfirm YOUR NAME, ADDRESS, OCCUPATION, AGE,
-NEXT OF KIN AND PHONE NUMBER TO CLAIM YOUR FUND.
+However, regardless of that, I'm now confused about your patch too. So you 
+have this layout:
 
-I wait to hear from you along with the above mentioned information.
+	-+-[0000:c2]---00.0-[0000:c3-fb]--+-00.0  QLogic Corp. 8Gb Fibre Channel HBA
+	 |                                \-00.1  QLogic Corp. 8Gb Fibre Channel HBA
 
-Thanks and God bless.
+where bus c3 is inside bus c2. Fine. And we clearly get that wrong in the 
+resource tree:
 
-Yours Faithfully,
+	f0000000-fdffffff : PCI Bus 0000:c3
+	  f0000000-fdffffff : PCI Bus 0000:c2
+	    f0000000-f00fffff : 0000:c3:00.1
 
-GEORGE HOWARD KOFI.
+since that one end up having the c3 bus resource _outside_ of the c2 one. 
+That is, I think, the real bug. However, your patch doesn't try to fix 
+that bad nesting, but instead seems to try to work around it some odd way.
+
+But looking at things, I don't even see how this happens in the first 
+place. Afaik, we use pci_assign_resource() to assign bus resources, and 
+that one _should_ nest properly. So now I'm really confused about how you 
+got that /proc/iomem in the first place. 
+
+Is this perhaps some hotplug-pci specific bug? How did that bus resource 
+for "PCI Bus 0000:c3" get allocated? 
+
+			Linus
