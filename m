@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbZFPKZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZFPK0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757124AbZFPKZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbZFPKZU
+	id S1757328AbZFPK0v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZFPK0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 06:25:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40346 "EHLO mx2.mail.elte.hu"
+	Tue, 16 Jun 2009 06:26:43 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:46248 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756141AbZFPKZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 06:25:18 -0400
-Date: Tue, 16 Jun 2009 12:25:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in tty ldisc and friends
-Message-ID: <20090616102509.GA32717@elte.hu>
-References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com> <20090616093741.0d5b36bc@lxorguk.ukuu.org.uk> <20090616085028.GA13771@elte.hu> <20090616095706.36f01282@lxorguk.ukuu.org.uk> <20090616100015.GD6432@elte.hu> <20090616110419.14bc9485@lxorguk.ukuu.org.uk> <20090616101240.GB28204@elte.hu>
+	id S1751866AbZFPK0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 06:26:43 -0400
+Date: Tue, 16 Jun 2009 11:20:34 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-mips@linux-mips.org, wli@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] Enable hugetlbfs for more systems.
+Message-ID: <20090616102034.GC13622@linux-mips.org>
+References: <4A1DDED7.3020306@caviumnetworks.com> <1243471666-27915-4-git-send-email-ddaney@caviumnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090616101240.GB28204@elte.hu>
+In-Reply-To: <1243471666-27915-4-git-send-email-ddaney@caviumnetworks.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0686]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 27, 2009 at 05:47:45PM -0700, David Daney wrote:
+> From: David Daney <ddaney@caviumnetworks.com>
+> Date: Wed, 27 May 2009 17:47:45 -0700
+> To: linux-mips@linux-mips.org, ralf@linux-mips.org
+> Cc: wli@holomorphy.com, David Daney <ddaney@caviumnetworks.com>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Holomorphy.com is unreachable since like a year.  Use wli@kernel.org.
 
-> > On bootup with a totally generic Fedora 11, thinkpad setup with 
-> > the kernel swapped for current git head. Will send the .config 
-> > off list and build it with a 1M entry stack trace again.
+> Subject: [PATCH 4/5] Enable hugetlbfs for more systems.
 > 
-> Nah, dont waste your time on that for now - if it's reproducible 
-> on simple bootup then i will be able to trigger it once i have 
-> your config.
+> As part of adding hugetlbfs support for MIPS, I am adding a new
+> kconfig variable 'SYS_SUPPORTS_HUGETLBFS'.  Since some mips cpu
+> varients don't yet support it, we can enable selection of HUGETLBFS on
+> a system by system basis from the arch/mips/Kconfig.
+> 
+> CC: William Irwin <wli@holomorphy.com>
+> Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+> ---
+>  fs/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index 9f7270f..c36d63b 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -124,7 +124,7 @@ config TMPFS_POSIX_ACL
+>  config HUGETLBFS
+>  	bool "HugeTLB file system support"
+>  	depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || \
+> -		   (S390 && 64BIT) || BROKEN
+> +		   (S390 && 64BIT) || SYS_SUPPORTS_HUGETLBFS || BROKEN
 
-update: i do trigger it too with your config:
+I'm ok with this patch but it's really crying for some follup patch to
+convert all the other architectures to use SYS_SUPPORTS_HUGETLBFS.
 
-BUG: MAX_STACK_TRACE_ENTRIES too low!
-
-	Ingo
+  Ralf
