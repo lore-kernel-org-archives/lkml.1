@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762580AbZFPUBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762657AbZFPUCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762580AbZFPUBB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762297AbZFPUAX
+	id S1762657AbZFPUCG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762679AbZFPUBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:00:23 -0400
-Received: from sous-sol.org ([216.99.217.87]:53914 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762276AbZFPUAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:00:21 -0400
-Date: Tue, 16 Jun 2009 13:00:17 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Greg KH <greg@kroah.com>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Stefan Bader <stefan.bader@canonical.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: Volunteering for stable patch review process
-Message-ID: <20090616200017.GI30071@sequoia.sous-sol.org>
-References: <43e72e890906152230j7bd91086y26f3ab7fb3c0cfa7@mail.gmail.com> <20090616053718.GE30071@sequoia.sous-sol.org> <43e72e890906161132m4bfcf2cbpdf46712f1b7afeb5@mail.gmail.com> <4A37E7D1.7060109@canonical.com> <20090616184943.GA28969@kroah.com> <20090616190003.GG30071@sequoia.sous-sol.org> <20090616191541.GA29254@kroah.com>
+	Tue, 16 Jun 2009 16:01:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49097 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762691AbZFPUBx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:01:53 -0400
+Date: Tue, 16 Jun 2009 16:01:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jake Edge <jake@lwn.net>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: problem with function_graph self-test?
+In-Reply-To: <20090616130443.721947e6@chukar>
+Message-ID: <alpine.DEB.2.00.0906161601290.26673@gandalf.stny.rr.com>
+References: <20090616122603.6a628097@chukar> <alpine.DEB.2.00.0906161436200.26673@gandalf.stny.rr.com> <20090616130443.721947e6@chukar>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616191541.GA29254@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH (greg@kroah.com) wrote:
-> Should we create "stable-review" instead?
+On Tue, 16 Jun 2009, Jake Edge wrote:
 
-Yeah, I think so.  I can chase it down if you want.
+> On Tue, 16 Jun 2009 14:37:10 -0400 (EDT) Steven Rostedt wrote:
+> 
+> > No I have not seen this before. Could you send me your config. And if
+> > you can take a digital picture of the dump (if one is available) that
+> > would also be helpful.
+> 
+> I'll tack the config on to the end of this message, I assume jpgs are
+> frowned upon for lkml so I will send those to you separately ... In
+> getting these, I also had a hang (with no dump) in the wakeup tracer
+> self-test ...
 
-thanks,
--chris
+I'm able to reproduce it, I'll dig into it.
+
+Thanks!
+
+-- Steve
