@@ -1,194 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbZFPUMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759414AbZFPUMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbZFPUMQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZFPUMB
+	id S1759414AbZFPUMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZFPUMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:12:01 -0400
-Received: from cmpxchg.org ([85.214.51.133]:43136 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbZFPUMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:12:00 -0400
-Date: Tue, 16 Jun 2009 22:08:52 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       nickpiggin@yahoo.com.au
-Subject: Re: running get_user_pages() from kernel thread
-Message-ID: <20090616200852.GA16265@cmpxchg.org>
-References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random> <Pine.LNX.4.64.0906161930050.24878@sister.anvils>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906161930050.24878@sister.anvils>
+	Tue, 16 Jun 2009 16:12:22 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:44925 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752205AbZFPUMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:12:21 -0400
+Message-ID: <4A37FC93.7070403@gmail.com>
+Date: Tue, 16 Jun 2009 22:12:03 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+References: <4A37A058.1030701@gmail.com>	<4A37AA0C.40507@gmail.com>	<alpine.LFD.2.01.0906161155400.3282@localhost.localdomain> <20090616.120829.182011393.davem@davemloft.net> <4A37F495.9030101@gmail.com>
+In-Reply-To: <4A37F495.9030101@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 16 Jun 2009 22:12:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 07:38:39PM +0100, Hugh Dickins wrote:
-> On Tue, 16 Jun 2009, Andrea Arcangeli wrote:
-> > On Tue, Jun 16, 2009 at 09:05:27PM +0300, Izik Eidus wrote:
-> > > So the question is: is this thing is by desgin? (that kernel thread cant 
-> > > call get_user_pages???), should i use something like switch_mm()??
-> > 
-> > I think switch_mm trick should be used for page faults, but gup
-> > shouldn't require it because it gets the 'mm' as parameter and the
-> > current->mm has to be irrelevant. current->mm is only relevant for
-> > gup-fast (obviously :). So I think the only bit that needs fixing is
-> > grab_swap_token to not run if current->mm is null.
+Eric Dumazet a écrit :
+> David Miller a écrit :
+>> From: Linus Torvalds <torvalds@linux-foundation.org>
+>> Date: Tue, 16 Jun 2009 11:59:34 -0700 (PDT)
+>>
+>>> At the very least, add a helper function for "do I actually have 
+>>> outstanding allocations" or something like that. IOW, do a 
+>>>
+>>> 	/*
+>>> 	 * Comment here about that magical "1"
+>>> 	 */
+>>> 	static inline int sk_has_allocations(struct sock *sk)
+>>> 	{
+>>> 		return atomic_read(&sk->sk_wmem_alloc) > 1 ||
+>>> 			atomic_read(&sk->sk_rmem_alloc);
+>>> 	}
+>>>
+>>> and then make the various network protocols use that, rather than 
+>>> open-coding some random internal implementation magic.
+>> I agree, this should be handled with a helper function
+>> abstraction rather than putting "1" checks all over the place.
 > 
-> Looks like Izik and I hit the same problem (otherwise running well):
-> I too decided we needn't do more than avoid the issue in grab_swap_token.
-> (I've a feeling someone has hit this issue before with some other thread,
-> though I've no idea which - does RHEL include a patch like this perhaps?).
+> Fair enough, I'll submit an updated patch in following hour.
 > 
-> [PATCH] mm: grab_swap_token back out if no mm
-> 
-> If a kthread happens to use get_user_pages() on an mm (as KSM does),
-> there's a chance that it will end up trying to read in a swap page,
-> and oops in grab_swap_token() because the kthread has no mm:
-> nothing clever, just avoid that case.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
-> 
->  mm/thrash.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> --- 2.6.30-mm1/mm/thrash.c	2007-07-09 00:32:17.000000000 +0100
-> +++ linux/mm/thrash.c	2009-06-15 19:44:53.000000000 +0100
-> @@ -30,6 +30,9 @@ void grab_swap_token(void)
->  {
->  	int current_interval;
->  
-> +	if (!current->mm)	/* kthread doing get_user_pages on an mm */
-> +		return;
-> +
 
-Did you have a particular reason not to pass in the faulting mm
-instead?
+[PATCH] net: sk_wmem_alloc has initial value of one, not zero
 
-As the swap token should only care about the faulting address space
-leading to swap io and not about the running process anyway, we could
-do it like below and remove all those pesky current->derefs in the
-same go.  What do you think?
+commit 2b85a34e911bf483c27cfdd124aeb1605145dc80 
+(net: No more expensive sock_hold()/sock_put() on each tx)
+changed initial sk_wmem_alloc value.
 
-	Hannes
+Some protocols check sk_wmem_alloc value to determine if a timer
+must delay socket deallocation. We must take care of the sk_wmem_alloc
+value being one instead of zero when no write allocations are pending.
 
+Reported by Ingo Molnar, and full diagnostic from David Miller.
+
+This patch introduces three helpers to get read/write allocations
+and a followup patch will use these helpers to report correct
+write allocations to user.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 ---
-Subject: mm: remove task assumptions from swap token
+ include/net/sock.h     |   33 +++++++++++++++++++++++++++++++++
+ net/appletalk/ddp.c    |    6 ++----
+ net/ax25/af_ax25.c     |    3 +--
+ net/econet/af_econet.c |    6 ++----
+ net/netrom/af_netrom.c |    3 +--
+ net/rose/af_rose.c     |    3 +--
+ net/x25/af_x25.c       |    3 +--
+ 7 files changed, 41 insertions(+), 16 deletions(-)
 
-grab_swap_token() should not make any assumptions about the running
-process as the swap token is an attribute of the address space and the
-faulting mm is not necessarily current->mm.
-
-This fixes get_user_pages() from kernel threads which would blow up
-when encountering a swapped out page and grab_swap_token()
-dereferencing the unset for kernel threads current->mm.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
-
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index d476aad..9fe314b 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -315,7 +315,7 @@ struct backing_dev_info;
- 
- /* linux/mm/thrash.c */
- extern struct mm_struct * swap_token_mm;
--extern void grab_swap_token(void);
-+extern void grab_swap_token(struct mm_struct *);
- extern void __put_swap_token(struct mm_struct *);
- 
- static inline int has_swap_token(struct mm_struct *mm)
-@@ -427,7 +427,7 @@ static inline swp_entry_t get_swap_page(void)
- 
- /* linux/mm/thrash.c */
- #define put_swap_token(x) do { } while(0)
--#define grab_swap_token()  do { } while(0)
-+#define grab_swap_token(x)  do { } while(0)
- #define has_swap_token(x) 0
- #define disable_swap_token() do { } while(0)
- 
-diff --git a/mm/memory.c b/mm/memory.c
-index 4126dd1..862e120 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2466,7 +2466,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
- 	page = lookup_swap_cache(entry);
- 	if (!page) {
--		grab_swap_token(); /* Contend for token _before_ read-in */
-+		grab_swap_token(mm); /* Contend for token _before_ read-in */
- 		page = swapin_readahead(entry,
- 					GFP_HIGHUSER_MOVABLE, vma, address);
- 		if (!page) {
-diff --git a/mm/thrash.c b/mm/thrash.c
-index c4c5205..8b864ae 100644
---- a/mm/thrash.c
-+++ b/mm/thrash.c
-@@ -26,47 +26,46 @@ static DEFINE_SPINLOCK(swap_token_lock);
- struct mm_struct *swap_token_mm;
- static unsigned int global_faults;
- 
--void grab_swap_token(void)
-+void grab_swap_token(struct mm_struct *mm)
- {
- 	int current_interval;
- 
- 	global_faults++;
- 
--	current_interval = global_faults - current->mm->faultstamp;
-+	current_interval = global_faults - mm->faultstamp;
- 
- 	if (!spin_trylock(&swap_token_lock))
- 		return;
- 
- 	/* First come first served */
- 	if (swap_token_mm == NULL) {
--		current->mm->token_priority = current->mm->token_priority + 2;
--		swap_token_mm = current->mm;
-+		mm->token_priority = mm->token_priority + 2;
-+		swap_token_mm = mm;
- 		goto out;
- 	}
- 
--	if (current->mm != swap_token_mm) {
--		if (current_interval < current->mm->last_interval)
--			current->mm->token_priority++;
-+	if (mm != swap_token_mm) {
-+		if (current_interval < mm->last_interval)
-+			mm->token_priority++;
- 		else {
--			if (likely(current->mm->token_priority > 0))
--				current->mm->token_priority--;
-+			if (likely(mm->token_priority > 0))
-+				mm->token_priority--;
- 		}
- 		/* Check if we deserve the token */
--		if (current->mm->token_priority >
-+		if (mm->token_priority >
- 				swap_token_mm->token_priority) {
--			current->mm->token_priority += 2;
--			swap_token_mm = current->mm;
-+			mm->token_priority += 2;
-+			swap_token_mm = mm;
- 		}
- 	} else {
- 		/* Token holder came in again! */
--		current->mm->token_priority += 2;
-+		mm->token_priority += 2;
- 	}
- 
- out:
--	current->mm->faultstamp = global_faults;
--	current->mm->last_interval = current_interval;
-+	mm->faultstamp = global_faults;
-+	mm->last_interval = current_interval;
- 	spin_unlock(&swap_token_lock);
--return;
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 010e14a..570c7a1 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -1206,6 +1206,39 @@ static inline int skb_copy_to_page(struct sock *sk, char __user *from,
+ 	return 0;
  }
  
- /* Called on process exit. */
++/**
++ * sk_wmem_alloc_get - returns write allocations
++ * @sk: socket
++ *
++ * Returns sk_wmem_alloc minus initial offset of one
++ */
++static inline int sk_wmem_alloc_get(const struct sock *sk)
++{
++	return atomic_read(&sk->sk_wmem_alloc) - 1;
++}
++
++/**
++ * sk_rmem_alloc_get - returns read allocations
++ * @sk: socket
++ *
++ * Returns sk_rmem_alloc
++ */
++static inline int sk_rmem_alloc_get(const struct sock *sk)
++{
++	return atomic_read(&sk->sk_rmem_alloc);
++}
++
++/**
++ * sk_has_allocations - check if allocations are outstanding
++ * @sk: socket
++ *
++ * Returns true if socket has write or read allocations
++ */
++static inline int sk_has_allocations(const struct sock *sk)
++{
++	return sk_wmem_alloc_get(sk) || sk_rmem_alloc_get(sk);
++}
++
+ /*
+  * 	Queue a received datagram if it will fit. Stream and sequenced
+  *	protocols can't normally use this as they need to fit buffers in
+diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
+index b603cba..f7a53b2 100644
+--- a/net/appletalk/ddp.c
++++ b/net/appletalk/ddp.c
+@@ -162,8 +162,7 @@ static void atalk_destroy_timer(unsigned long data)
+ {
+ 	struct sock *sk = (struct sock *)data;
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
+-	    atomic_read(&sk->sk_rmem_alloc)) {
++	if (sk_has_allocations(sk)) {
+ 		sk->sk_timer.expires = jiffies + SOCK_DESTROY_TIME;
+ 		add_timer(&sk->sk_timer);
+ 	} else
+@@ -175,8 +174,7 @@ static inline void atalk_destroy_socket(struct sock *sk)
+ 	atalk_remove_socket(sk);
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
+-	    atomic_read(&sk->sk_rmem_alloc)) {
++	if (sk_has_allocations(sk)) {
+ 		setup_timer(&sk->sk_timer, atalk_destroy_timer,
+ 				(unsigned long)sk);
+ 		sk->sk_timer.expires	= jiffies + SOCK_DESTROY_TIME;
+diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
+index fd9d06f..61b35b9 100644
+--- a/net/ax25/af_ax25.c
++++ b/net/ax25/af_ax25.c
+@@ -330,8 +330,7 @@ void ax25_destroy_socket(ax25_cb *ax25)
+ 	}
+ 
+ 	if (ax25->sk != NULL) {
+-		if (atomic_read(&ax25->sk->sk_wmem_alloc) ||
+-		    atomic_read(&ax25->sk->sk_rmem_alloc)) {
++		if (sk_has_allocations(ax25->sk)) {
+ 			/* Defer: outstanding buffers */
+ 			setup_timer(&ax25->dtimer, ax25_destroy_timer,
+ 					(unsigned long)ax25);
+diff --git a/net/econet/af_econet.c b/net/econet/af_econet.c
+index 8121bf0..2e1f836 100644
+--- a/net/econet/af_econet.c
++++ b/net/econet/af_econet.c
+@@ -540,8 +540,7 @@ static void econet_destroy_timer(unsigned long data)
+ {
+ 	struct sock *sk=(struct sock *)data;
+ 
+-	if (!atomic_read(&sk->sk_wmem_alloc) &&
+-	    !atomic_read(&sk->sk_rmem_alloc)) {
++	if (!sk_has_allocations(sk)) {
+ 		sk_free(sk);
+ 		return;
+ 	}
+@@ -579,8 +578,7 @@ static int econet_release(struct socket *sock)
+ 
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 
+-	if (atomic_read(&sk->sk_rmem_alloc) ||
+-	    atomic_read(&sk->sk_wmem_alloc)) {
++	if (sk_has_allocations(sk)) {
+ 		sk->sk_timer.data     = (unsigned long)sk;
+ 		sk->sk_timer.expires  = jiffies + HZ;
+ 		sk->sk_timer.function = econet_destroy_timer;
+diff --git a/net/netrom/af_netrom.c b/net/netrom/af_netrom.c
+index 3be0e01..cd91190 100644
+--- a/net/netrom/af_netrom.c
++++ b/net/netrom/af_netrom.c
+@@ -286,8 +286,7 @@ void nr_destroy_socket(struct sock *sk)
+ 		kfree_skb(skb);
+ 	}
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
+-	    atomic_read(&sk->sk_rmem_alloc)) {
++	if (sk_has_allocations(sk)) {
+ 		/* Defer: outstanding buffers */
+ 		sk->sk_timer.function = nr_destroy_timer;
+ 		sk->sk_timer.expires  = jiffies + 2 * HZ;
+diff --git a/net/rose/af_rose.c b/net/rose/af_rose.c
+index 877a7f6..4dd9a7d 100644
+--- a/net/rose/af_rose.c
++++ b/net/rose/af_rose.c
+@@ -356,8 +356,7 @@ void rose_destroy_socket(struct sock *sk)
+ 		kfree_skb(skb);
+ 	}
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
+-	    atomic_read(&sk->sk_rmem_alloc)) {
++	if (sk_has_allocations(sk)) {
+ 		/* Defer: outstanding buffers */
+ 		setup_timer(&sk->sk_timer, rose_destroy_timer,
+ 				(unsigned long)sk);
+diff --git a/net/x25/af_x25.c b/net/x25/af_x25.c
+index c51f309..8cd2390 100644
+--- a/net/x25/af_x25.c
++++ b/net/x25/af_x25.c
+@@ -372,8 +372,7 @@ static void __x25_destroy_socket(struct sock *sk)
+ 		kfree_skb(skb);
+ 	}
+ 
+-	if (atomic_read(&sk->sk_wmem_alloc) ||
+-	    atomic_read(&sk->sk_rmem_alloc)) {
++	if (sk_has_allocations(sk)) {
+ 		/* Defer: outstanding buffers */
+ 		sk->sk_timer.expires  = jiffies + 10 * HZ;
+ 		sk->sk_timer.function = x25_destroy_timer;
