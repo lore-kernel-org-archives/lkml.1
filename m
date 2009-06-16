@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936916AbZFPGGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936461AbZFPGGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936916AbZFPGGs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935979AbZFPFwC
+	id S936461AbZFPGGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935998AbZFPFv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:52:02 -0400
-Received: from kroah.org ([198.145.64.141]:48476 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:51:56 -0400
+Received: from kroah.org ([198.145.64.141]:48491 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764520AbZFPFvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:51:44 -0400
+	id S935983AbZFPFvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:51:48 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Sebastian Ott <sebott@linux.vnet.ibm.com>, linux-s390@vger.kernel.org,
-       linux390@de.ibm.com
-Subject: [PATCH 58/64] s390: remove driver_data direct access of struct device
-Date: Mon, 15 Jun 2009 22:46:47 -0700
-Message-Id: <1245131213-24168-58-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, xen-devel@lists.xensource.com,
+       virtualization@lists.osdl.org,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: [PATCH 62/64] xen: remove driver_data direct access of struct device from more drivers
+Date: Mon, 15 Jun 2009 22:46:51 -0700
+Message-Id: <1245131213-24168-62-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -32,931 +30,146 @@ dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
 have been around since the beginning, so are backwards compatible with
 all older kernel versions.
 
-Thanks to Sebastian Ott <sebott@linux.vnet.ibm.com> for fixing a few
-typos in my original version of this patch.
-
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Cc: linux-s390@vger.kernel.org
-Cc: linux390@de.ibm.com
+Cc: xen-devel@lists.xensource.com
+Cc: virtualization@lists.osdl.org
+Acked-by: Chris Wright <chrisw@sous-sol.org>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/s390/char/con3215.c   |   16 ++++++------
- drivers/s390/char/raw3270.c   |   16 ++++++------
- drivers/s390/char/tape_34xx.c |    2 +-
- drivers/s390/char/tape_3590.c |    2 +-
- drivers/s390/char/tape_core.c |   22 ++++++++--------
- drivers/s390/char/vmlogrdr.c  |   12 ++++----
- drivers/s390/char/vmur.c      |   16 ++++++------
- drivers/s390/net/claw.c       |   52 ++++++++++++++++++++--------------------
- drivers/s390/net/lcs.c        |   20 ++++++++--------
- drivers/s390/net/lcs.h        |    4 +-
- drivers/s390/net/netiucv.c    |   47 +++++++++++++++++++------------------
- 11 files changed, 105 insertions(+), 104 deletions(-)
+ drivers/input/xen-kbdfront.c |    8 ++++----
+ drivers/net/xen-netfront.c   |   10 +++++-----
+ drivers/video/xen-fbfront.c  |    8 ++++----
+ 3 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/s390/char/con3215.c b/drivers/s390/char/con3215.c
-index 9ab06e0..c639361 100644
---- a/drivers/s390/char/con3215.c
-+++ b/drivers/s390/char/con3215.c
-@@ -368,7 +368,7 @@ raw3215_irq(struct ccw_device *cdev, unsigned long intparm, struct irb *irb)
- 	int cstat, dstat;
- 	int count;
- 
--	raw = cdev->dev.driver_data;
-+	raw = dev_get_drvdata(&cdev->dev);
- 	req = (struct raw3215_req *) intparm;
- 	cstat = irb->scsw.cmd.cstat;
- 	dstat = irb->scsw.cmd.dstat;
-@@ -635,7 +635,7 @@ raw3215_probe (struct ccw_device *cdev)
- 	int line;
- 
- 	/* Console is special. */
--	if (raw3215[0] && (cdev->dev.driver_data == raw3215[0]))
-+	if (raw3215[0] && (raw3215[0] == dev_get_drvdata(&cdev->dev)))
- 		return 0;
- 	raw = kmalloc(sizeof(struct raw3215_info) +
- 		      RAW3215_INBUF_SIZE, GFP_KERNEL|GFP_DMA);
-@@ -669,7 +669,7 @@ raw3215_probe (struct ccw_device *cdev)
+diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+index 928d2ed..b115726 100644
+--- a/drivers/input/xen-kbdfront.c
++++ b/drivers/input/xen-kbdfront.c
+@@ -114,7 +114,7 @@ static int __devinit xenkbd_probe(struct xenbus_device *dev,
+ 		xenbus_dev_fatal(dev, -ENOMEM, "allocating info structure");
+ 		return -ENOMEM;
  	}
- 	init_waitqueue_head(&raw->empty_wait);
+-	dev->dev.driver_data = info;
++	dev_set_drvdata(&dev->dev, info);
+ 	info->xbdev = dev;
+ 	info->irq = -1;
+ 	snprintf(info->phys, sizeof(info->phys), "xenbus/%s", dev->nodename);
+@@ -186,7 +186,7 @@ static int __devinit xenkbd_probe(struct xenbus_device *dev,
  
--	cdev->dev.driver_data = raw;
-+	dev_set_drvdata(&cdev->dev, raw);
- 	cdev->handler = raw3215_irq;
- 
- 	return 0;
-@@ -681,9 +681,9 @@ raw3215_remove (struct ccw_device *cdev)
- 	struct raw3215_info *raw;
- 
- 	ccw_device_set_offline(cdev);
--	raw = cdev->dev.driver_data;
-+	raw = dev_get_drvdata(&cdev->dev);
- 	if (raw) {
--		cdev->dev.driver_data = NULL;
-+		dev_set_drvdata(&cdev->dev, NULL);
- 		kfree(raw->buffer);
- 		kfree(raw);
- 	}
-@@ -694,7 +694,7 @@ raw3215_set_online (struct ccw_device *cdev)
+ static int xenkbd_resume(struct xenbus_device *dev)
  {
- 	struct raw3215_info *raw;
+-	struct xenkbd_info *info = dev->dev.driver_data;
++	struct xenkbd_info *info = dev_get_drvdata(&dev->dev);
  
--	raw = cdev->dev.driver_data;
-+	raw = dev_get_drvdata(&cdev->dev);
- 	if (!raw)
- 		return -ENODEV;
+ 	xenkbd_disconnect_backend(info);
+ 	memset(info->page, 0, PAGE_SIZE);
+@@ -195,7 +195,7 @@ static int xenkbd_resume(struct xenbus_device *dev)
  
-@@ -706,7 +706,7 @@ raw3215_set_offline (struct ccw_device *cdev)
+ static int xenkbd_remove(struct xenbus_device *dev)
  {
- 	struct raw3215_info *raw;
+-	struct xenkbd_info *info = dev->dev.driver_data;
++	struct xenkbd_info *info = dev_get_drvdata(&dev->dev);
  
--	raw = cdev->dev.driver_data;
-+	raw = dev_get_drvdata(&cdev->dev);
- 	if (!raw)
- 		return -ENODEV;
- 
-@@ -848,7 +848,7 @@ con3215_init(void)
- 	raw->buffer = (char *) alloc_bootmem_low(RAW3215_BUFFER_SIZE);
- 	raw->inbuf = (char *) alloc_bootmem_low(RAW3215_INBUF_SIZE);
- 	raw->cdev = cdev;
--	cdev->dev.driver_data = raw;
-+	dev_set_drvdata(&cdev->dev, raw);
- 	cdev->handler = raw3215_irq;
- 
- 	raw->flags |= RAW3215_FIXED;
-diff --git a/drivers/s390/char/raw3270.c b/drivers/s390/char/raw3270.c
-index 0b15cf1..1ab69df 100644
---- a/drivers/s390/char/raw3270.c
-+++ b/drivers/s390/char/raw3270.c
-@@ -355,7 +355,7 @@ raw3270_irq (struct ccw_device *cdev, unsigned long intparm, struct irb *irb)
- 	struct raw3270_request *rq;
- 	int rc;
- 
--	rp = (struct raw3270 *) cdev->dev.driver_data;
-+	rp = dev_get_drvdata(&cdev->dev);
- 	if (!rp)
- 		return;
- 	rq = (struct raw3270_request *) intparm;
-@@ -828,7 +828,7 @@ raw3270_setup_device(struct ccw_device *cdev, struct raw3270 *rp, char *ascebc)
- 	if (rp->minor == -1)
- 		return -EUSERS;
- 	rp->cdev = cdev;
--	cdev->dev.driver_data = rp;
-+	dev_set_drvdata(&cdev->dev, rp);
- 	cdev->handler = raw3270_irq;
- 	return 0;
- }
-@@ -1105,7 +1105,7 @@ raw3270_delete_device(struct raw3270 *rp)
- 	/* Disconnect from ccw_device. */
- 	cdev = rp->cdev;
- 	rp->cdev = NULL;
--	cdev->dev.driver_data = NULL;
-+	dev_set_drvdata(&cdev->dev, NULL);
- 	cdev->handler = NULL;
- 
- 	/* Put ccw_device structure. */
-@@ -1129,7 +1129,7 @@ static ssize_t
- raw3270_model_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	xenkbd_disconnect_backend(info);
+ 	if (info->kbd)
+@@ -266,7 +266,7 @@ static void xenkbd_disconnect_backend(struct xenkbd_info *info)
+ static void xenkbd_backend_changed(struct xenbus_device *dev,
+ 				   enum xenbus_state backend_state)
  {
- 	return snprintf(buf, PAGE_SIZE, "%i\n",
--			((struct raw3270 *) dev->driver_data)->model);
-+			((struct raw3270 *) dev_get_drvdata(dev))->model);
- }
- static DEVICE_ATTR(model, 0444, raw3270_model_show, NULL);
+-	struct xenkbd_info *info = dev->dev.driver_data;
++	struct xenkbd_info *info = dev_get_drvdata(&dev->dev);
+ 	int ret, val;
  
-@@ -1137,7 +1137,7 @@ static ssize_t
- raw3270_rows_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	return snprintf(buf, PAGE_SIZE, "%i\n",
--			((struct raw3270 *) dev->driver_data)->rows);
-+			((struct raw3270 *) dev_get_drvdata(dev))->rows);
- }
- static DEVICE_ATTR(rows, 0444, raw3270_rows_show, NULL);
- 
-@@ -1145,7 +1145,7 @@ static ssize_t
- raw3270_columns_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	return snprintf(buf, PAGE_SIZE, "%i\n",
--			((struct raw3270 *) dev->driver_data)->cols);
-+			((struct raw3270 *) dev_get_drvdata(dev))->cols);
- }
- static DEVICE_ATTR(columns, 0444, raw3270_columns_show, NULL);
- 
-@@ -1282,7 +1282,7 @@ raw3270_remove (struct ccw_device *cdev)
- 	struct raw3270_view *v;
- 	struct raw3270_notifier *np;
- 
--	rp = cdev->dev.driver_data;
-+	rp = dev_get_drvdata(&cdev->dev);
- 	/*
- 	 * _remove is the opposite of _probe; it's probe that
- 	 * should set up rp.  raw3270_remove gets entered for
-@@ -1330,7 +1330,7 @@ raw3270_set_offline (struct ccw_device *cdev)
- {
- 	struct raw3270 *rp;
- 
--	rp = cdev->dev.driver_data;
-+	rp = dev_get_drvdata(&cdev->dev);
- 	if (test_bit(RAW3270_FLAGS_CONSOLE, &rp->flags))
- 		return -EBUSY;
- 	raw3270_remove(cdev);
-diff --git a/drivers/s390/char/tape_34xx.c b/drivers/s390/char/tape_34xx.c
-index 2d00a38..997ed58 100644
---- a/drivers/s390/char/tape_34xx.c
-+++ b/drivers/s390/char/tape_34xx.c
-@@ -1289,7 +1289,7 @@ static int
- tape_34xx_online(struct ccw_device *cdev)
- {
- 	return tape_generic_online(
--		cdev->dev.driver_data,
-+		dev_get_drvdata(&cdev->dev),
- 		&tape_discipline_34xx
- 	);
- }
-diff --git a/drivers/s390/char/tape_3590.c b/drivers/s390/char/tape_3590.c
-index c453b2f..5de27c9 100644
---- a/drivers/s390/char/tape_3590.c
-+++ b/drivers/s390/char/tape_3590.c
-@@ -1703,7 +1703,7 @@ static struct ccw_device_id tape_3590_ids[] = {
- static int
- tape_3590_online(struct ccw_device *cdev)
- {
--	return tape_generic_online(cdev->dev.driver_data,
-+	return tape_generic_online(dev_get_drvdata(&cdev->dev),
- 				   &tape_discipline_3590);
- }
- 
-diff --git a/drivers/s390/char/tape_core.c b/drivers/s390/char/tape_core.c
-index 8a109f3..dfeb0d4 100644
---- a/drivers/s390/char/tape_core.c
-+++ b/drivers/s390/char/tape_core.c
-@@ -92,7 +92,7 @@ tape_medium_state_show(struct device *dev, struct device_attribute *attr, char *
- {
- 	struct tape_device *tdev;
- 
--	tdev = (struct tape_device *) dev->driver_data;
-+	tdev = dev_get_drvdata(dev);
- 	return scnprintf(buf, PAGE_SIZE, "%i\n", tdev->medium_state);
- }
- 
-@@ -104,7 +104,7 @@ tape_first_minor_show(struct device *dev, struct device_attribute *attr, char *b
- {
- 	struct tape_device *tdev;
- 
--	tdev = (struct tape_device *) dev->driver_data;
-+	tdev = dev_get_drvdata(dev);
- 	return scnprintf(buf, PAGE_SIZE, "%i\n", tdev->first_minor);
- }
- 
-@@ -116,7 +116,7 @@ tape_state_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct tape_device *tdev;
- 
--	tdev = (struct tape_device *) dev->driver_data;
-+	tdev = dev_get_drvdata(dev);
- 	return scnprintf(buf, PAGE_SIZE, "%s\n", (tdev->first_minor < 0) ?
- 		"OFFLINE" : tape_state_verbose[tdev->tape_state]);
- }
-@@ -130,7 +130,7 @@ tape_operation_show(struct device *dev, struct device_attribute *attr, char *buf
- 	struct tape_device *tdev;
- 	ssize_t rc;
- 
--	tdev = (struct tape_device *) dev->driver_data;
-+	tdev = dev_get_drvdata(dev);
- 	if (tdev->first_minor < 0)
- 		return scnprintf(buf, PAGE_SIZE, "N/A\n");
- 
-@@ -156,7 +156,7 @@ tape_blocksize_show(struct device *dev, struct device_attribute *attr, char *buf
- {
- 	struct tape_device *tdev;
- 
--	tdev = (struct tape_device *) dev->driver_data;
-+	tdev = dev_get_drvdata(dev);
- 
- 	return scnprintf(buf, PAGE_SIZE, "%i\n", tdev->char_data.block_size);
- }
-@@ -391,7 +391,7 @@ tape_generic_offline(struct ccw_device *cdev)
- {
- 	struct tape_device *device;
- 
--	device = cdev->dev.driver_data;
-+	device = dev_get_drvdata(&cdev->dev);
- 	if (!device) {
- 		return -ENODEV;
- 	}
-@@ -534,7 +534,7 @@ tape_generic_probe(struct ccw_device *cdev)
- 		tape_put_device(device);
- 		return ret;
- 	}
--	cdev->dev.driver_data = device;
-+	dev_set_drvdata(&cdev->dev, device);
- 	cdev->handler = __tape_do_irq;
- 	device->cdev = cdev;
- 	ccw_device_get_id(cdev, &dev_id);
-@@ -573,7 +573,7 @@ tape_generic_remove(struct ccw_device *cdev)
- {
- 	struct tape_device *	device;
- 
--	device = cdev->dev.driver_data;
-+	device = dev_get_drvdata(&cdev->dev);
- 	if (!device) {
- 		return;
- 	}
-@@ -613,9 +613,9 @@ tape_generic_remove(struct ccw_device *cdev)
- 			tape_cleanup_device(device);
+ 	switch (backend_state) {
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index f673253..8d88dae 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1212,7 +1212,7 @@ static int __devinit netfront_probe(struct xenbus_device *dev,
  	}
  
--	if (cdev->dev.driver_data != NULL) {
-+	if (!dev_get_drvdata(&cdev->dev)) {
- 		sysfs_remove_group(&cdev->dev.kobj, &tape_attr_group);
--		cdev->dev.driver_data = tape_put_device(cdev->dev.driver_data);
-+		dev_set_drvdata(&cdev->dev, tape_put_device(dev_get_drvdata(&cdev->dev)));
- 	}
+ 	info = netdev_priv(netdev);
+-	dev->dev.driver_data = info;
++	dev_set_drvdata(&dev->dev, info);
+ 
+ 	err = register_netdev(info->netdev);
+ 	if (err) {
+@@ -1233,7 +1233,7 @@ static int __devinit netfront_probe(struct xenbus_device *dev,
+ 
+  fail:
+ 	free_netdev(netdev);
+-	dev->dev.driver_data = NULL;
++	dev_set_drvdata(&dev->dev, NULL);
+ 	return err;
  }
  
-@@ -1011,7 +1011,7 @@ __tape_do_irq (struct ccw_device *cdev, unsigned long intparm, struct irb *irb)
- 	struct tape_request *request;
- 	int rc;
- 
--	device = (struct tape_device *) cdev->dev.driver_data;
-+	device = dev_get_drvdata(&cdev->dev);
- 	if (device == NULL) {
- 		return;
- 	}
-diff --git a/drivers/s390/char/vmlogrdr.c b/drivers/s390/char/vmlogrdr.c
-index d8a2289..ee1b418 100644
---- a/drivers/s390/char/vmlogrdr.c
-+++ b/drivers/s390/char/vmlogrdr.c
-@@ -504,7 +504,7 @@ static ssize_t vmlogrdr_autopurge_store(struct device * dev,
- 					struct device_attribute *attr,
- 					const char * buf, size_t count)
- {
--	struct vmlogrdr_priv_t *priv = dev->driver_data;
-+	struct vmlogrdr_priv_t *priv = dev_get_drvdata(dev);
- 	ssize_t ret = count;
- 
- 	switch (buf[0]) {
-@@ -525,7 +525,7 @@ static ssize_t vmlogrdr_autopurge_show(struct device *dev,
- 				       struct device_attribute *attr,
- 				       char *buf)
- {
--	struct vmlogrdr_priv_t *priv = dev->driver_data;
-+	struct vmlogrdr_priv_t *priv = dev_get_drvdata(dev);
- 	return sprintf(buf, "%u\n", priv->autopurge);
- }
- 
-@@ -541,7 +541,7 @@ static ssize_t vmlogrdr_purge_store(struct device * dev,
- 
- 	char cp_command[80];
- 	char cp_response[80];
--	struct vmlogrdr_priv_t *priv = dev->driver_data;
-+	struct vmlogrdr_priv_t *priv = dev_get_drvdata(dev);
- 
- 	if (buf[0] != '1')
- 		return -EINVAL;
-@@ -578,7 +578,7 @@ static ssize_t vmlogrdr_autorecording_store(struct device *dev,
- 					    struct device_attribute *attr,
- 					    const char *buf, size_t count)
- {
--	struct vmlogrdr_priv_t *priv = dev->driver_data;
-+	struct vmlogrdr_priv_t *priv = dev_get_drvdata(dev);
- 	ssize_t ret = count;
- 
- 	switch (buf[0]) {
-@@ -599,7 +599,7 @@ static ssize_t vmlogrdr_autorecording_show(struct device *dev,
- 					   struct device_attribute *attr,
- 					   char *buf)
- {
--	struct vmlogrdr_priv_t *priv = dev->driver_data;
-+	struct vmlogrdr_priv_t *priv = dev_get_drvdata(dev);
- 	return sprintf(buf, "%u\n", priv->autorecording);
- }
- 
-@@ -612,7 +612,7 @@ static ssize_t vmlogrdr_recording_store(struct device * dev,
- 					struct device_attribute *attr,
- 					const char * buf, size_t count)
- {
--	struct vmlogrdr_priv_t *priv = dev->driver_data;
-+	struct vmlogrdr_priv_t *priv = dev_get_drvdata(dev);
- 	ssize_t ret;
- 
- 	switch (buf[0]) {
-diff --git a/drivers/s390/char/vmur.c b/drivers/s390/char/vmur.c
-index 5dcef81..6492b20 100644
---- a/drivers/s390/char/vmur.c
-+++ b/drivers/s390/char/vmur.c
-@@ -78,11 +78,11 @@ static DEFINE_MUTEX(vmur_mutex);
-  *
-  * Each ur device (urd) contains a reference to its corresponding ccw device
-  * (cdev) using the urd->cdev pointer. Each ccw device has a reference to the
-- * ur device using the cdev->dev.driver_data pointer.
-+ * ur device using dev_get_drvdata(&cdev->dev) pointer.
-  *
-  * urd references:
-  * - ur_probe gets a urd reference, ur_remove drops the reference
-- *   (cdev->dev.driver_data)
-+ *   dev_get_drvdata(&cdev->dev)
-  * - ur_open gets a urd reference, ur_relase drops the reference
-  *   (urf->urd)
-  *
-@@ -90,7 +90,7 @@ static DEFINE_MUTEX(vmur_mutex);
-  * - urdev_alloc get a cdev reference (urd->cdev)
-  * - urdev_free drops the cdev reference (urd->cdev)
-  *
-- * Setting and clearing of cdev->dev.driver_data is protected by the ccwdev lock
-+ * Setting and clearing of dev_get_drvdata(&cdev->dev) is protected by the ccwdev lock
+@@ -1275,7 +1275,7 @@ static void xennet_disconnect_backend(struct netfront_info *info)
   */
- static struct urdev *urdev_alloc(struct ccw_device *cdev)
+ static int netfront_resume(struct xenbus_device *dev)
  {
-@@ -129,7 +129,7 @@ static struct urdev *urdev_get_from_cdev(struct ccw_device *cdev)
- 	unsigned long flags;
+-	struct netfront_info *info = dev->dev.driver_data;
++	struct netfront_info *info = dev_get_drvdata(&dev->dev);
  
- 	spin_lock_irqsave(get_ccwdev_lock(cdev), flags);
--	urd = cdev->dev.driver_data;
-+	urd = dev_get_drvdata(&cdev->dev);
- 	if (urd)
- 		urdev_get(urd);
- 	spin_unlock_irqrestore(get_ccwdev_lock(cdev), flags);
-@@ -286,7 +286,7 @@ static void ur_int_handler(struct ccw_device *cdev, unsigned long intparm,
- 		TRACE("ur_int_handler: unsolicited interrupt\n");
- 		return;
+ 	dev_dbg(&dev->dev, "%s\n", dev->nodename);
+ 
+@@ -1600,7 +1600,7 @@ static int xennet_connect(struct net_device *dev)
+ static void backend_changed(struct xenbus_device *dev,
+ 			    enum xenbus_state backend_state)
+ {
+-	struct netfront_info *np = dev->dev.driver_data;
++	struct netfront_info *np = dev_get_drvdata(&dev->dev);
+ 	struct net_device *netdev = np->netdev;
+ 
+ 	dev_dbg(&dev->dev, "%s\n", xenbus_strstate(backend_state));
+@@ -1774,7 +1774,7 @@ static struct xenbus_device_id netfront_ids[] = {
+ 
+ static int __devexit xennet_remove(struct xenbus_device *dev)
+ {
+-	struct netfront_info *info = dev->dev.driver_data;
++	struct netfront_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	dev_dbg(&dev->dev, "%s\n", dev->nodename);
+ 
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index 2493f05..15502d5 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -384,7 +384,7 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
+ 		fb_size = XENFB_DEFAULT_FB_LEN;
  	}
--	urd = cdev->dev.driver_data;
-+	urd = dev_get_drvdata(&cdev->dev);
- 	BUG_ON(!urd);
- 	/* On special conditions irb is an error pointer */
- 	if (IS_ERR(irb))
-@@ -832,7 +832,7 @@ static int ur_probe(struct ccw_device *cdev)
- 		goto fail_remove_attr;
- 	}
- 	spin_lock_irq(get_ccwdev_lock(cdev));
--	cdev->dev.driver_data = urd;
-+	dev_set_drvdata(&cdev->dev, urd);
- 	spin_unlock_irq(get_ccwdev_lock(cdev));
  
- 	mutex_unlock(&vmur_mutex);
-@@ -972,8 +972,8 @@ static void ur_remove(struct ccw_device *cdev)
- 	ur_remove_attributes(&cdev->dev);
+-	dev->dev.driver_data = info;
++	dev_set_drvdata(&dev->dev, info);
+ 	info->xbdev = dev;
+ 	info->irq = -1;
+ 	info->x1 = info->y1 = INT_MAX;
+@@ -503,7 +503,7 @@ xenfb_make_preferred_console(void)
  
- 	spin_lock_irqsave(get_ccwdev_lock(cdev), flags);
--	urdev_put(cdev->dev.driver_data);
--	cdev->dev.driver_data = NULL;
-+	urdev_put(dev_get_drvdata(&cdev->dev));
-+	dev_set_drvdata(&cdev->dev, NULL);
- 	spin_unlock_irqrestore(get_ccwdev_lock(cdev), flags);
- 
- 	mutex_unlock(&vmur_mutex);
-diff --git a/drivers/s390/net/claw.c b/drivers/s390/net/claw.c
-index 7b6f46d..1b34233 100644
---- a/drivers/s390/net/claw.c
-+++ b/drivers/s390/net/claw.c
-@@ -284,7 +284,7 @@ claw_probe(struct ccwgroup_device *cgdev)
- 	if (!get_device(&cgdev->dev))
- 		return -ENODEV;
- 	privptr = kzalloc(sizeof(struct claw_privbk), GFP_KERNEL);
--	cgdev->dev.driver_data = privptr;
-+	dev_set_drvdata(&cgdev->dev, privptr);
- 	if (privptr == NULL) {
- 		probe_error(cgdev);
- 		put_device(&cgdev->dev);
-@@ -591,14 +591,14 @@ claw_irq_handler(struct ccw_device *cdev,
- 
- 	CLAW_DBF_TEXT(4, trace, "clawirq");
-         /* Bypass all 'unsolicited interrupts' */
--	if (!cdev->dev.driver_data) {
-+	privptr = dev_get_drvdata(&cdev->dev);
-+	if (!privptr) {
- 		dev_warn(&cdev->dev, "An uninitialized CLAW device received an"
- 			" IRQ, c-%02x d-%02x\n",
- 			irb->scsw.cmd.cstat, irb->scsw.cmd.dstat);
- 		CLAW_DBF_TEXT(2, trace, "badirq");
-                 return;
-         }
--	privptr = (struct claw_privbk *)cdev->dev.driver_data;
- 
- 	/* Try to extract channel from driver data. */
- 	if (privptr->channel[READ].cdev == cdev)
-@@ -1980,9 +1980,9 @@ probe_error( struct ccwgroup_device *cgdev)
- 	struct claw_privbk *privptr;
- 
- 	CLAW_DBF_TEXT(4, trace, "proberr");
--	privptr = (struct claw_privbk *) cgdev->dev.driver_data;
-+	privptr = dev_get_drvdata(&cgdev->dev);
- 	if (privptr != NULL) {
--		cgdev->dev.driver_data = NULL;
-+		dev_set_drvdata(&cgdev->dev, NULL);
- 		kfree(privptr->p_env);
- 		kfree(privptr->p_mtc_envelope);
- 		kfree(privptr);
-@@ -2911,9 +2911,9 @@ claw_new_device(struct ccwgroup_device *cgdev)
- 	dev_info(&cgdev->dev, "add for %s\n",
- 		 dev_name(&cgdev->cdev[READ]->dev));
- 	CLAW_DBF_TEXT(2, setup, "new_dev");
--	privptr = cgdev->dev.driver_data;
--	cgdev->cdev[READ]->dev.driver_data = privptr;
--	cgdev->cdev[WRITE]->dev.driver_data = privptr;
-+	privptr = dev_get_drvdata(&cgdev->dev);
-+	dev_set_drvdata(&cgdev->cdev[READ]->dev, privptr);
-+	dev_set_drvdata(&cgdev->cdev[WRITE]->dev, privptr);
- 	if (!privptr)
- 		return -ENODEV;
- 	p_env = privptr->p_env;
-@@ -2950,9 +2950,9 @@ claw_new_device(struct ccwgroup_device *cgdev)
- 		goto out;
- 	}
- 	dev->ml_priv = privptr;
--	cgdev->dev.driver_data = privptr;
--        cgdev->cdev[READ]->dev.driver_data = privptr;
--        cgdev->cdev[WRITE]->dev.driver_data = privptr;
-+	dev_set_drvdata(&cgdev->dev, privptr);
-+	dev_set_drvdata(&cgdev->cdev[READ]->dev, privptr);
-+	dev_set_drvdata(&cgdev->cdev[WRITE]->dev, privptr);
- 	/* sysfs magic */
-         SET_NETDEV_DEV(dev, &cgdev->dev);
- 	if (register_netdev(dev) != 0) {
-@@ -3018,7 +3018,7 @@ claw_shutdown_device(struct ccwgroup_device *cgdev)
- 	int	ret;
- 
- 	CLAW_DBF_TEXT_(2, setup, "%s", dev_name(&cgdev->dev));
--	priv = cgdev->dev.driver_data;
-+	priv = dev_get_drvdata(&cgdev->dev);
- 	if (!priv)
- 		return -ENODEV;
- 	ndev = priv->channel[READ].ndev;
-@@ -3048,7 +3048,7 @@ claw_remove_device(struct ccwgroup_device *cgdev)
- 
- 	BUG_ON(!cgdev);
- 	CLAW_DBF_TEXT_(2, setup, "%s", dev_name(&cgdev->dev));
--	priv = cgdev->dev.driver_data;
-+	priv = dev_get_drvdata(&cgdev->dev);
- 	BUG_ON(!priv);
- 	dev_info(&cgdev->dev, " will be removed.\n");
- 	if (cgdev->state == CCWGROUP_ONLINE)
-@@ -3063,9 +3063,9 @@ claw_remove_device(struct ccwgroup_device *cgdev)
- 	kfree(priv->channel[1].irb);
- 	priv->channel[1].irb=NULL;
- 	kfree(priv);
--	cgdev->dev.driver_data=NULL;
--	cgdev->cdev[READ]->dev.driver_data = NULL;
--	cgdev->cdev[WRITE]->dev.driver_data = NULL;
-+	dev_set_drvdata(&cgdev->dev, NULL);
-+	dev_set_drvdata(&cgdev->cdev[READ]->dev, NULL);
-+	dev_set_drvdata(&cgdev->cdev[WRITE]->dev, NULL);
- 	put_device(&cgdev->dev);
- 
- 	return;
-@@ -3081,7 +3081,7 @@ claw_hname_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	struct claw_privbk *priv;
- 	struct claw_env *  p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3095,7 +3095,7 @@ claw_hname_write(struct device *dev, struct device_attribute *attr,
- 	struct claw_privbk *priv;
- 	struct claw_env *  p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3119,7 +3119,7 @@ claw_adname_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	struct claw_privbk *priv;
- 	struct claw_env *  p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3133,7 +3133,7 @@ claw_adname_write(struct device *dev, struct device_attribute *attr,
- 	struct claw_privbk *priv;
- 	struct claw_env *  p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3157,7 +3157,7 @@ claw_apname_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	struct claw_privbk *priv;
- 	struct claw_env *  p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3172,7 +3172,7 @@ claw_apname_write(struct device *dev, struct device_attribute *attr,
- 	struct claw_privbk *priv;
- 	struct claw_env *  p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3206,7 +3206,7 @@ claw_wbuff_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	struct claw_privbk *priv;
- 	struct claw_env * p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3221,7 +3221,7 @@ claw_wbuff_write(struct device *dev, struct device_attribute *attr,
- 	struct claw_env *  p_env;
- 	int nnn,max;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3248,7 +3248,7 @@ claw_rbuff_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	struct claw_privbk *priv;
- 	struct claw_env *  p_env;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-@@ -3263,7 +3263,7 @@ claw_rbuff_write(struct device *dev, struct device_attribute *attr,
- 	struct claw_env *p_env;
- 	int nnn,max;
- 
--	priv = dev->driver_data;
-+	priv = dev_get_drvdata(dev);
- 	if (!priv)
- 		return -ENODEV;
- 	p_env = priv->p_env;
-diff --git a/drivers/s390/net/lcs.c b/drivers/s390/net/lcs.c
-index a45bc24..ba6d45d 100644
---- a/drivers/s390/net/lcs.c
-+++ b/drivers/s390/net/lcs.c
-@@ -1939,7 +1939,7 @@ lcs_portno_show (struct device *dev, struct device_attribute *attr, char *buf)
+ static int xenfb_resume(struct xenbus_device *dev)
  {
-         struct lcs_card *card;
+-	struct xenfb_info *info = dev->dev.driver_data;
++	struct xenfb_info *info = dev_get_drvdata(&dev->dev);
  
--	card = (struct lcs_card *)dev->driver_data;
-+	card = dev_get_drvdata(dev);
+ 	xenfb_disconnect_backend(info);
+ 	xenfb_init_shared_page(info, info->fb_info);
+@@ -512,7 +512,7 @@ static int xenfb_resume(struct xenbus_device *dev)
  
-         if (!card)
-                 return 0;
-@@ -1956,7 +1956,7 @@ lcs_portno_store (struct device *dev, struct device_attribute *attr, const char
-         struct lcs_card *card;
-         int value;
- 
--	card = (struct lcs_card *)dev->driver_data;
-+	card = dev_get_drvdata(dev);
- 
-         if (!card)
-                 return 0;
-@@ -1990,7 +1990,7 @@ lcs_timeout_show(struct device *dev, struct device_attribute *attr, char *buf)
+ static int xenfb_remove(struct xenbus_device *dev)
  {
- 	struct lcs_card *card;
+-	struct xenfb_info *info = dev->dev.driver_data;
++	struct xenfb_info *info = dev_get_drvdata(&dev->dev);
  
--	card = (struct lcs_card *)dev->driver_data;
-+	card = dev_get_drvdata(dev);
- 
- 	return card ? sprintf(buf, "%u\n", card->lancmd_timeout) : 0;
- }
-@@ -2001,7 +2001,7 @@ lcs_timeout_store (struct device *dev, struct device_attribute *attr, const char
-         struct lcs_card *card;
-         int value;
- 
--	card = (struct lcs_card *)dev->driver_data;
-+	card = dev_get_drvdata(dev);
- 
-         if (!card)
-                 return 0;
-@@ -2020,7 +2020,7 @@ static ssize_t
- lcs_dev_recover_store(struct device *dev, struct device_attribute *attr,
- 		      const char *buf, size_t count)
+ 	xenfb_disconnect_backend(info);
+ 	if (info->fb_info) {
+@@ -621,7 +621,7 @@ static void xenfb_disconnect_backend(struct xenfb_info *info)
+ static void xenfb_backend_changed(struct xenbus_device *dev,
+ 				  enum xenbus_state backend_state)
  {
--	struct lcs_card *card = dev->driver_data;
-+	struct lcs_card *card = dev_get_drvdata(dev);
- 	char *tmp;
- 	int i;
+-	struct xenfb_info *info = dev->dev.driver_data;
++	struct xenfb_info *info = dev_get_drvdata(&dev->dev);
+ 	int val;
  
-@@ -2073,7 +2073,7 @@ lcs_probe_device(struct ccwgroup_device *ccwgdev)
- 		put_device(&ccwgdev->dev);
- 		return ret;
-         }
--	ccwgdev->dev.driver_data = card;
-+	dev_set_drvdata(&ccwgdev->dev, card);
- 	ccwgdev->cdev[0]->handler = lcs_irq;
- 	ccwgdev->cdev[1]->handler = lcs_irq;
- 	card->gdev = ccwgdev;
-@@ -2090,7 +2090,7 @@ lcs_register_netdev(struct ccwgroup_device *ccwgdev)
- 	struct lcs_card *card;
- 
- 	LCS_DBF_TEXT(2, setup, "regnetdv");
--	card = (struct lcs_card *)ccwgdev->dev.driver_data;
-+	card = dev_get_drvdata(&ccwgdev->dev);
- 	if (card->dev->reg_state != NETREG_UNINITIALIZED)
- 		return 0;
- 	SET_NETDEV_DEV(card->dev, &ccwgdev->dev);
-@@ -2123,7 +2123,7 @@ lcs_new_device(struct ccwgroup_device *ccwgdev)
- 	enum lcs_dev_states recover_state;
- 	int rc;
- 
--	card = (struct lcs_card *)ccwgdev->dev.driver_data;
-+	card = dev_get_drvdata(&ccwgdev->dev);
- 	if (!card)
- 		return -ENODEV;
- 
-@@ -2229,7 +2229,7 @@ __lcs_shutdown_device(struct ccwgroup_device *ccwgdev, int recovery_mode)
- 	int ret;
- 
- 	LCS_DBF_TEXT(3, setup, "shtdndev");
--	card = (struct lcs_card *)ccwgdev->dev.driver_data;
-+	card = dev_get_drvdata(&ccwgdev->dev);
- 	if (!card)
- 		return -ENODEV;
- 	if (recovery_mode == 0) {
-@@ -2296,7 +2296,7 @@ lcs_remove_device(struct ccwgroup_device *ccwgdev)
- {
- 	struct lcs_card *card;
- 
--	card = (struct lcs_card *)ccwgdev->dev.driver_data;
-+	card = dev_get_drvdata(&ccwgdev->dev);
- 	if (!card)
- 		return;
- 
-diff --git a/drivers/s390/net/lcs.h b/drivers/s390/net/lcs.h
-index d58fea5..6d66864 100644
---- a/drivers/s390/net/lcs.h
-+++ b/drivers/s390/net/lcs.h
-@@ -34,8 +34,8 @@ static inline int lcs_dbf_passes(debug_info_t *dbf_grp, int level)
-  *	sysfs related stuff
-  */
- #define CARD_FROM_DEV(cdev) \
--	(struct lcs_card *) \
--	((struct ccwgroup_device *)cdev->dev.driver_data)->dev.driver_data;
-+	(struct lcs_card *) dev_get_drvdata( \
-+		&((struct ccwgroup_device *)dev_get_drvdata(&cdev->dev))->dev);
- /**
-  * CCW commands used in this driver
-  */
-diff --git a/drivers/s390/net/netiucv.c b/drivers/s390/net/netiucv.c
-index aec9e5d..d52a99f 100644
---- a/drivers/s390/net/netiucv.c
-+++ b/drivers/s390/net/netiucv.c
-@@ -1364,7 +1364,7 @@ static int netiucv_change_mtu(struct net_device * dev, int new_mtu)
- static ssize_t user_show(struct device *dev, struct device_attribute *attr,
- 			 char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%s\n", netiucv_printname(priv->conn->userid));
-@@ -1373,7 +1373,7 @@ static ssize_t user_show(struct device *dev, struct device_attribute *attr,
- static ssize_t user_write(struct device *dev, struct device_attribute *attr,
- 			  const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 	struct net_device *ndev = priv->conn->netdev;
- 	char    *p;
- 	char    *tmp;
-@@ -1430,7 +1430,8 @@ static DEVICE_ATTR(user, 0644, user_show, user_write);
- 
- static ssize_t buffer_show (struct device *dev, struct device_attribute *attr,
- 			    char *buf)
--{	struct netiucv_priv *priv = dev->driver_data;
-+{
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%d\n", priv->conn->max_buffsize);
-@@ -1439,7 +1440,7 @@ static ssize_t buffer_show (struct device *dev, struct device_attribute *attr,
- static ssize_t buffer_write (struct device *dev, struct device_attribute *attr,
- 			     const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 	struct net_device *ndev = priv->conn->netdev;
- 	char         *e;
- 	int          bs1;
-@@ -1487,7 +1488,7 @@ static DEVICE_ATTR(buffer, 0644, buffer_show, buffer_write);
- static ssize_t dev_fsm_show (struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%s\n", fsm_getstate_str(priv->fsm));
-@@ -1498,7 +1499,7 @@ static DEVICE_ATTR(device_fsm_state, 0444, dev_fsm_show, NULL);
- static ssize_t conn_fsm_show (struct device *dev,
- 			      struct device_attribute *attr, char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%s\n", fsm_getstate_str(priv->conn->fsm));
-@@ -1509,7 +1510,7 @@ static DEVICE_ATTR(connection_fsm_state, 0444, conn_fsm_show, NULL);
- static ssize_t maxmulti_show (struct device *dev,
- 			      struct device_attribute *attr, char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.maxmulti);
-@@ -1519,7 +1520,7 @@ static ssize_t maxmulti_write (struct device *dev,
- 			       struct device_attribute *attr,
- 			       const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.maxmulti = 0;
-@@ -1531,7 +1532,7 @@ static DEVICE_ATTR(max_tx_buffer_used, 0644, maxmulti_show, maxmulti_write);
- static ssize_t maxcq_show (struct device *dev, struct device_attribute *attr,
- 			   char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.maxcqueue);
-@@ -1540,7 +1541,7 @@ static ssize_t maxcq_show (struct device *dev, struct device_attribute *attr,
- static ssize_t maxcq_write (struct device *dev, struct device_attribute *attr,
- 			    const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.maxcqueue = 0;
-@@ -1552,7 +1553,7 @@ static DEVICE_ATTR(max_chained_skbs, 0644, maxcq_show, maxcq_write);
- static ssize_t sdoio_show (struct device *dev, struct device_attribute *attr,
- 			   char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.doios_single);
-@@ -1561,7 +1562,7 @@ static ssize_t sdoio_show (struct device *dev, struct device_attribute *attr,
- static ssize_t sdoio_write (struct device *dev, struct device_attribute *attr,
- 			    const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.doios_single = 0;
-@@ -1573,7 +1574,7 @@ static DEVICE_ATTR(tx_single_write_ops, 0644, sdoio_show, sdoio_write);
- static ssize_t mdoio_show (struct device *dev, struct device_attribute *attr,
- 			   char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.doios_multi);
-@@ -1582,7 +1583,7 @@ static ssize_t mdoio_show (struct device *dev, struct device_attribute *attr,
- static ssize_t mdoio_write (struct device *dev, struct device_attribute *attr,
- 			    const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	priv->conn->prof.doios_multi = 0;
-@@ -1594,7 +1595,7 @@ static DEVICE_ATTR(tx_multi_write_ops, 0644, mdoio_show, mdoio_write);
- static ssize_t txlen_show (struct device *dev, struct device_attribute *attr,
- 			   char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.txlen);
-@@ -1603,7 +1604,7 @@ static ssize_t txlen_show (struct device *dev, struct device_attribute *attr,
- static ssize_t txlen_write (struct device *dev, struct device_attribute *attr,
- 			    const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.txlen = 0;
-@@ -1615,7 +1616,7 @@ static DEVICE_ATTR(netto_bytes, 0644, txlen_show, txlen_write);
- static ssize_t txtime_show (struct device *dev, struct device_attribute *attr,
- 			    char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.tx_time);
-@@ -1624,7 +1625,7 @@ static ssize_t txtime_show (struct device *dev, struct device_attribute *attr,
- static ssize_t txtime_write (struct device *dev, struct device_attribute *attr,
- 			     const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.tx_time = 0;
-@@ -1636,7 +1637,7 @@ static DEVICE_ATTR(max_tx_io_time, 0644, txtime_show, txtime_write);
- static ssize_t txpend_show (struct device *dev, struct device_attribute *attr,
- 			    char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.tx_pending);
-@@ -1645,7 +1646,7 @@ static ssize_t txpend_show (struct device *dev, struct device_attribute *attr,
- static ssize_t txpend_write (struct device *dev, struct device_attribute *attr,
- 			     const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.tx_pending = 0;
-@@ -1657,7 +1658,7 @@ static DEVICE_ATTR(tx_pending, 0644, txpend_show, txpend_write);
- static ssize_t txmpnd_show (struct device *dev, struct device_attribute *attr,
- 			    char *buf)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.tx_max_pending);
-@@ -1666,7 +1667,7 @@ static ssize_t txmpnd_show (struct device *dev, struct device_attribute *attr,
- static ssize_t txmpnd_write (struct device *dev, struct device_attribute *attr,
- 			     const char *buf, size_t count)
- {
--	struct netiucv_priv *priv = dev->driver_data;
-+	struct netiucv_priv *priv = dev_get_drvdata(dev);
- 
- 	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.tx_max_pending = 0;
-@@ -1758,7 +1759,7 @@ static int netiucv_register_device(struct net_device *ndev)
- 	if (ret)
- 		goto out_unreg;
- 	priv->dev = dev;
--	dev->driver_data = priv;
-+	dev_set_drvdata(dev, priv);
- 	return 0;
- 
- out_unreg:
+ 	switch (backend_state) {
 -- 
 1.6.3.2
 
