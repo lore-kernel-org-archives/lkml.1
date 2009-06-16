@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936085AbZFPFwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936116AbZFPFxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936085AbZFPFwu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 01:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZFPFu4
+	id S936116AbZFPFxE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 01:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759845AbZFPFu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:50:56 -0400
-Received: from kroah.org ([198.145.64.141]:48304 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:50:57 -0400
+Received: from kroah.org ([198.145.64.141]:48307 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756058AbZFPFuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:50:55 -0400
+	id S1761870AbZFPFu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:50:56 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Linus Walleij <linus.walleij@stericsson.com>,
+Cc: Steven Rostedt <srostedt@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 07/64] driver core: Const-correct platform getbyname functions
-Date: Mon, 15 Jun 2009 22:45:56 -0700
-Message-Id: <1245131213-24168-7-git-send-email-gregkh@suse.de>
+Subject: [PATCH 08/64] debugfs: dont stop on first failed recursive delete
+Date: Mon, 15 Jun 2009 22:45:57 -0700
+Message-Id: <1245131213-24168-8-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -24,57 +23,78 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Walleij <linus.ml.walleij@gmail.com>
+From: Steven Rostedt <srostedt@redhat.com>
 
-This converts resource and IRQ getbyname functions for the platform
-bus to use const char *, I ran into compiler moanings when I tried
-using a const char * for looking up a certain resource.
+debugfs: dont stop on first failed recursive delete
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+While running a while loop of removing a module that removes a debugfs
+directory with debugfs_remove_recursive, and at the same time doing a
+while loop of cat of a file in that directory, I would hit a point where
+somehow the cat of the file caused the remove to fail.
+
+The result is that other files did not get removed when the module
+was removed. I simple read of one of those file can oops the kernel
+because the operations to the file no longer exist (removed by module).
+
+The funny thing is that the file being cat'ed was removed. It was
+the siblings that were not. I see in the code to debugfs_remove_recursive
+there's a test that checks if the child fails to bail out of the loop
+to prevent an infinite loop.
+
+What this patch does is to still try any siblings in that directory.
+If all the siblings fail, or there are no more siblings, then we exit
+the loop.
+
+This fixes the above symptom, but...
+
+This is no full proof. It makes the debugfs_remove_recursive a bit more
+robust, but it does not explain why the one file failed. There may
+be some kind of delay deletion that makes the debugfs think it did
+not succeed. So this patch is more of a fix for the symptom but not
+the disease.
+
+This patch still makes the debugfs_remove_recursive more robust and
+until I can find out why the bug exists, this patch will keep
+the kernel from oopsing in most cases.  Even after the cause is found
+I think this change can stand on its own and should be kept.
+
+[ Impact: prevent kernel oops on module unload and reading debugfs files ]
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/platform.c         |    5 +++--
- include/linux/platform_device.h |    4 ++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ fs/debugfs/inode.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index ead3f64..59df629 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -69,7 +69,8 @@ EXPORT_SYMBOL_GPL(platform_get_irq);
-  * @name: resource name
-  */
- struct resource *platform_get_resource_byname(struct platform_device *dev,
--					      unsigned int type, char *name)
-+					      unsigned int type,
-+					      const char *name)
- {
- 	int i;
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index 0662ba6..d22438e 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -403,6 +403,7 @@ void debugfs_remove_recursive(struct dentry *dentry)
+ 		}
+ 		child = list_entry(parent->d_subdirs.next, struct dentry,
+ 				d_u.d_child);
++ next_sibling:
  
-@@ -88,7 +89,7 @@ EXPORT_SYMBOL_GPL(platform_get_resource_byname);
-  * @dev: platform device
-  * @name: IRQ name
-  */
--int platform_get_irq_byname(struct platform_device *dev, char *name)
-+int platform_get_irq_byname(struct platform_device *dev, const char *name)
- {
- 	struct resource *r = platform_get_resource_byname(dev, IORESOURCE_IRQ,
- 							  name);
-diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-index b67bb5d..8dc5123 100644
---- a/include/linux/platform_device.h
-+++ b/include/linux/platform_device.h
-@@ -36,8 +36,8 @@ extern struct device platform_bus;
- 
- extern struct resource *platform_get_resource(struct platform_device *, unsigned int, unsigned int);
- extern int platform_get_irq(struct platform_device *, unsigned int);
--extern struct resource *platform_get_resource_byname(struct platform_device *, unsigned int, char *);
--extern int platform_get_irq_byname(struct platform_device *, char *);
-+extern struct resource *platform_get_resource_byname(struct platform_device *, unsigned int, const char *);
-+extern int platform_get_irq_byname(struct platform_device *, const char *);
- extern int platform_add_devices(struct platform_device **, int);
- 
- extern struct platform_device *platform_device_register_simple(const char *, int id,
+ 		/*
+ 		 * If "child" isn't empty, walk down the tree and
+@@ -417,6 +418,16 @@ void debugfs_remove_recursive(struct dentry *dentry)
+ 		__debugfs_remove(child, parent);
+ 		if (parent->d_subdirs.next == &child->d_u.d_child) {
+ 			/*
++			 * Try the next sibling.
++			 */
++			if (child->d_u.d_child.next != &parent->d_subdirs) {
++				child = list_entry(child->d_u.d_child.next,
++						   struct dentry,
++						   d_u.d_child);
++				goto next_sibling;
++			}
++
++			/*
+ 			 * Avoid infinite loop if we fail to remove
+ 			 * one dentry.
+ 			 */
 -- 
 1.6.3.2
 
