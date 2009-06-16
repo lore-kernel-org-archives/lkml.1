@@ -1,189 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZFPIiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbZFPIig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZFPIiY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 04:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbZFPIiG
+	id S1754991AbZFPIig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZFPIiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 04:38:06 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52452 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754534AbZFPIiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 04:38:04 -0400
-Message-ID: <4A375A4D.6000205@cn.fujitsu.com>
-Date: Tue, 16 Jun 2009 16:39:41 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 16 Jun 2009 04:38:23 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:43232 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754738AbZFPIiW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 04:38:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=b3Orm4hRKER7T9vsldgyDuXoNCei7Ays9axf5lN6+K0DOUzuxeqSR8eE4qDmneldkd
+         x62kzflf9VIPQa5k3UWfT1vH/CcR/lDuuW6Q/UYX5WrNfpplyInvu6wJ5XNgtAEOE7h3
+         BeQkYdtku7VJgysyTAw7LS/lUS7dl8jtT053c=
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] tracing/filters: fix race between filter setting and
- module unload
-References: <4A375A30.9060802@cn.fujitsu.com>
-In-Reply-To: <4A375A30.9060802@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <61b223ba0906150109r3a69e98aq949c7f2df5563c6e@mail.gmail.com>
+References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
+	 <20090404041813.GA30746@srcf.ucam.org>
+	 <9b2b86520906080824i134ee546v33990176b0d3e618@mail.gmail.com>
+	 <71cd59b00906130155u2757ade3t3378685846b80410@mail.gmail.com>
+	 <4A337251.7010705@tuffmail.co.uk>
+	 <71cd59b00906130306w319c0fc2i376bb03323845b80@mail.gmail.com>
+	 <507032D758%linux@youmustbejoking.demon.co.uk>
+	 <9b2b86520906131051t32183554r8208cf886609e09c@mail.gmail.com>
+	 <71cd59b00906141226k37b90b9ey7347ed85ec17a17b@mail.gmail.com>
+	 <61b223ba0906150109r3a69e98aq949c7f2df5563c6e@mail.gmail.com>
+Date: Tue, 16 Jun 2009 09:33:22 +0100
+Message-ID: <15e53e180906160133j7055536cqe5b9515704fd4d94@mail.gmail.com>
+Subject: Re: [gpm] [PATCH 2.6.29] eeepc-laptop: report brightness control 
+	events via the input layer
+From: Richard Hughes <hughsient@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: gnome-power-manager-list@gnome.org, acpi4asus-user@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Corentin Chary <corentin.chary@gmail.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Module unload is protected by event_mutex, while setting filter is
-protected by filter_mutex. This leads to the race:
+On Mon, Jun 15, 2009 at 9:09 AM, Alan
+Jenkins<alan-jenkins@tuffmail.co.uk> wrote:
+> So during step iii) I think you see the firmware
+> increase the brightness, then g-p-m decrease the brightness, and then
+> g-p-m catches up and the brightness increases again.
 
-echo 'bar == 0 || bar == 10' \    |
-		> sample/filter   |
-                                  |  insmod sample.ko
-  add_pred("bar == 0")            |
-    -> n_preds == 1               |
-  add_pred("bar == 100")          |
-    -> n_preds == 2               |
-                                  |  rmmod sample.ko
-                                  |  insmod sample.ko
-  add_pred("&&")                  |
-    -> n_preds == 1 (should be 3) |
+Sorry for not responding sooner, been moving house.
 
-Now event->filter->preds is corrupted. An then when filter_match_preds()
-is called, the WARN_ON() in it will be triggered.
+I don't think the kernel driver should modify the brightness itself,
+as that's applying policy. Is this is left to userspace then we can
+put on policy such as "don't allow brightness to be set below 30%" or
+"automatically set the brightness using a ambient light sensor, and
+use the brightness keys to set ambient thresholds".
 
-To avoid the race, we remove filter_mutex, and replace it with event_mutex.
+Doing this policy in the driver is the wrong thing to do IMO.
 
-[ fix race that can cause WARN_ON (even sth worse) when filtering events ]
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace_events_filter.c |   27 ++++++++++-----------------
- 1 files changed, 10 insertions(+), 17 deletions(-)
-
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index d9f01c1..936c621 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -27,8 +27,6 @@
- #include "trace.h"
- #include "trace_output.h"
- 
--static DEFINE_MUTEX(filter_mutex);
--
- enum filter_op_ids
- {
- 	OP_OR,
-@@ -294,12 +292,12 @@ void print_event_filter(struct ftrace_event_call *call, struct trace_seq *s)
- {
- 	struct event_filter *filter = call->filter;
- 
--	mutex_lock(&filter_mutex);
-+	mutex_lock(&event_mutex);
- 	if (filter->filter_string)
- 		trace_seq_printf(s, "%s\n", filter->filter_string);
- 	else
- 		trace_seq_printf(s, "none\n");
--	mutex_unlock(&filter_mutex);
-+	mutex_unlock(&event_mutex);
- }
- 
- void print_subsystem_event_filter(struct event_subsystem *system,
-@@ -307,12 +305,12 @@ void print_subsystem_event_filter(struct event_subsystem *system,
- {
- 	struct event_filter *filter = system->filter;
- 
--	mutex_lock(&filter_mutex);
-+	mutex_lock(&event_mutex);
- 	if (filter->filter_string)
- 		trace_seq_printf(s, "%s\n", filter->filter_string);
- 	else
- 		trace_seq_printf(s, "none\n");
--	mutex_unlock(&filter_mutex);
-+	mutex_unlock(&event_mutex);
- }
- 
- static struct ftrace_event_field *
-@@ -434,7 +432,6 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 		filter->n_preds = 0;
- 	}
- 
--	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		if (!call->define_fields)
- 			continue;
-@@ -444,7 +441,6 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 			remove_filter_string(call->filter);
- 		}
- 	}
--	mutex_unlock(&event_mutex);
- }
- 
- static int filter_add_pred_fn(struct filter_parse_state *ps,
-@@ -631,7 +627,6 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 	filter->preds[filter->n_preds] = pred;
- 	filter->n_preds++;
- 
--	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 
- 		if (!call->define_fields)
-@@ -642,14 +637,12 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 
- 		err = filter_add_pred(ps, call, pred);
- 		if (err) {
--			mutex_unlock(&event_mutex);
- 			filter_free_subsystem_preds(system);
- 			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
- 			goto out;
- 		}
- 		replace_filter_string(call->filter, filter_string);
- 	}
--	mutex_unlock(&event_mutex);
- out:
- 	return err;
- }
-@@ -1076,12 +1069,12 @@ int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
- 
- 	struct filter_parse_state *ps;
- 
--	mutex_lock(&filter_mutex);
-+	mutex_lock(&event_mutex);
- 
- 	if (!strcmp(strstrip(filter_string), "0")) {
- 		filter_disable_preds(call);
- 		remove_filter_string(call->filter);
--		mutex_unlock(&filter_mutex);
-+		mutex_unlock(&event_mutex);
- 		return 0;
- 	}
- 
-@@ -1109,7 +1102,7 @@ out:
- 	postfix_clear(ps);
- 	kfree(ps);
- out_unlock:
--	mutex_unlock(&filter_mutex);
-+	mutex_unlock(&event_mutex);
- 
- 	return err;
- }
-@@ -1121,12 +1114,12 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
- 
- 	struct filter_parse_state *ps;
- 
--	mutex_lock(&filter_mutex);
-+	mutex_lock(&event_mutex);
- 
- 	if (!strcmp(strstrip(filter_string), "0")) {
- 		filter_free_subsystem_preds(system);
- 		remove_filter_string(system->filter);
--		mutex_unlock(&filter_mutex);
-+		mutex_unlock(&event_mutex);
- 		return 0;
- 	}
- 
-@@ -1154,7 +1147,7 @@ out:
- 	postfix_clear(ps);
- 	kfree(ps);
- out_unlock:
--	mutex_unlock(&filter_mutex);
-+	mutex_unlock(&event_mutex);
- 
- 	return err;
- }
--- 
-1.5.4.rc3
-
+Richard.
