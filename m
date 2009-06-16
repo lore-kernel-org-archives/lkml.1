@@ -1,98 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761521AbZFPUib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbZFPUiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761521AbZFPUib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbZFPUiG
+	id S1762169AbZFPUiz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZFPUir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:38:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59436 "EHLO mx2.redhat.com"
+	Tue, 16 Jun 2009 16:38:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59472 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758194AbZFPUiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:38:04 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 2/2] AFS: Correctly translate auth error aborts and don't
-	failover in such cases
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-afs@lists.infradead.org,
-       netdev@vger.kernel.org, David Howells <dhowells@redhat.com>
-Date: Tue, 16 Jun 2009 21:36:49 +0100
-Message-ID: <20090616203649.4447.82940.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090616203644.4447.24960.stgit@warthog.procyon.org.uk>
-References: <20090616203644.4447.24960.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1757525AbZFPUiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:38:46 -0400
+Date: Tue, 16 Jun 2009 22:38:44 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Rik van Riel <riel@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
+Subject: Re: running get_user_pages() from kernel thread
+Message-ID: <20090616203844.GE23969@random.random>
+References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random> <Pine.LNX.4.64.0906161930050.24878@sister.anvils> <4A37EA92.7050509@redhat.com> <Pine.LNX.4.64.0906162035240.2933@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906162035240.2933@sister.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Authentication error abort codes should be translated to appropriate Linux
-error codes, rather than all being translated to EREMOTEIO - which indicates
-that the server had internal problems.
+On Tue, Jun 16, 2009 at 08:45:05PM +0100, Hugh Dickins wrote:
+> liking the below better - what do you think?  If you approve, I'll send
+> it in to Andrew for mmotm: I can't quite justify it without KSM.
 
-Additionally, a server shouldn't be marked unavailable and the next server
-tried if an authentication error occurs.  This will quickly make all the
-servers unavailable to the client.  Instead the error should be returned
-straight to the user.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/afs/misc.c      |   16 ++++++++++++++++
- fs/afs/vlocation.c |    2 ++
- 2 files changed, 18 insertions(+), 0 deletions(-)
-
-
-diff --git a/fs/afs/misc.c b/fs/afs/misc.c
-index 2d33a5f..0dd4daf 100644
---- a/fs/afs/misc.c
-+++ b/fs/afs/misc.c
-@@ -12,6 +12,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/errno.h>
-+#include <rxrpc/packet.h>
- #include "internal.h"
- #include "afs_fs.h"
- 
-@@ -54,6 +55,21 @@ int afs_abort_to_error(u32 abort_code)
- 	case 0x2f6df24:		return -ENOLCK;
- 	case 0x2f6df26:		return -ENOTEMPTY;
- 	case 0x2f6df78:		return -EDQUOT;
-+
-+	case RXKADINCONSISTENCY: return -EPROTO;
-+	case RXKADPACKETSHORT:	return -EPROTO;
-+	case RXKADLEVELFAIL:	return -EKEYREJECTED;
-+	case RXKADTICKETLEN:	return -EKEYREJECTED;
-+	case RXKADOUTOFSEQUENCE: return -EPROTO;
-+	case RXKADNOAUTH:	return -EKEYREJECTED;
-+	case RXKADBADKEY:	return -EKEYREJECTED;
-+	case RXKADBADTICKET:	return -EKEYREJECTED;
-+	case RXKADUNKNOWNKEY:	return -EKEYREJECTED;
-+	case RXKADEXPIRED:	return -EKEYEXPIRED;
-+	case RXKADSEALEDINCON:	return -EKEYREJECTED;
-+	case RXKADDATALEN:	return -EKEYREJECTED;
-+	case RXKADILLEGALLEVEL:	return -EKEYREJECTED;
-+
- 	default:		return -EREMOTEIO;
- 	}
- }
-diff --git a/fs/afs/vlocation.c b/fs/afs/vlocation.c
-index ec2a743..6e68920 100644
---- a/fs/afs/vlocation.c
-+++ b/fs/afs/vlocation.c
-@@ -65,6 +65,8 @@ static int afs_vlocation_access_vl_by_name(struct afs_vlocation *vl,
- 				goto out;
- 			goto rotate;
- 		case -ENOMEDIUM:
-+		case -EKEYREJECTED:
-+		case -EKEYEXPIRED:
- 			goto out;
- 		default:
- 			ret = -EIO;
-
+I think it's definitely better to fix gup to be safe from kernel
+thread even without KSM so this can go in mainline well before KSM.
+Unless gup requires a swapin fault it won't ever trigger.
