@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbZFPEVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZFPEY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091AbZFPEVg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 00:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZFPEVR
+	id S1756747AbZFPEY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZFPEYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 00:21:17 -0400
-Received: from tango.tkos.co.il ([62.219.50.35]:45742 "EHLO tango.tkos.co.il"
+	Tue, 16 Jun 2009 00:24:22 -0400
+Received: from mx.binnacle.cx ([74.95.187.105]:7235 "EHLO mx.binnacle.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbZFPEVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 00:21:14 -0400
-Date: Tue, 16 Jun 2009 07:20:09 +0300
-From: Baruch Siach <baruch@tkos.co.il>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v5] gpio: driver for PrimeCell PL061 GPIO controller
-Message-ID: <20090616042008.GA2794@jasper.tkos.co.il>
-References: <1244708976-22122-1-git-send-email-baruch@tkos.co.il> <200906151629.11350.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200906151629.11350.david-b@pacbell.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750816AbZFPEYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 00:24:21 -0400
+Message-Id: <6.2.5.6.2.20090616000017.05b5da70@binnacle.cx>
+X-Mailer: QUALCOMM Windows Eudora Version 6.2.5.6
+Date: Tue, 16 Jun 2009 00:12:14 -0400
+To: Eric Dumazet <eric.dumazet@gmail.com>
+From: starlight@binnacle.cx
+Subject: Re: QUESTION: can netdev_alloc_skb() errors be reduced
+  by  tuning?
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org, hugh.dickins@tiscali.co.uk, Lee.Schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, ebmunson@us.ibm.com, agl@us.ibm.com,
+       apw@canonical.com, wli@movementarian.org
+In-Reply-To: <4A3702CF.9070303@gmail.com>
+References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
+ <20090527131437.5870e342.akpm@linux-foundation.org>
+ <20090527231949.GB30002@elte.hu>
+ <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
+ <4A3702CF.9070303@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Eric,
 
-Thank you very much for your review.
+Great thought--thank you.  Running a similar server with 
+82571/e1000e and it does not exhibit the problem.  'e1000e' has 
+default copybreak=256 while 'ixgbe' has no copybreak.  Rational 
+given is
 
-On Mon, Jun 15, 2009 at 04:29:11PM -0700, David Brownell wrote:
-> On Thursday 11 June 2009, Baruch Siach wrote:
-> > +static unsigned int pl061_irq_startup(unsigned irq)
-> > +{
-> > +       if (gpio_request(irq_to_gpio(irq), "IRQ") == 0)
-> > +               pr_warning("%s: warning: GPIO%d has not been requested\n",
-> > +                               __func__, irq_to_gpio(irq));
-> 
-> No, that's the responsibility of whoever is setting this up.
+   http://osdir.com/ml/linux.drivers.e1000.devel/2008-01/msg00103.html
 
-The gpio_request() here is only for warning. It is expected to fail. Should I 
-remove it? Shouldn't there be an is_gpio_requested() as part of gpiolib?
+But the comparion is a bit apples-and-oranges since the 'e1000e' 
+system is dual Opteron 2354 while the 'ixgbe' system is Xeon 
+E5430 (a painful choice thus far).  Also 'e1000e' system passes 
+data via a PACKET socket while the 'ixgbe' system passes data 
+via UDP (a configurable option).
 
-> Normally, platform setup code would request the GPIO since it's
-> being dedicated to some task on the board ... and then pass the
-> gpio_to_irq() value as a device resource, or maybe the GPIO itself
-> (if the driver had to deal with GPIOs per se).
-> 
-> Also, irq_to_gpio() can be problematic in some systems; avoid it.
+I'm not fully up on how this all works: am I to understand that 
+the error could result from RX ring-queue buffers not freeing 
+quickly enough because they have a use-count held non-zero as
+the packet travels the stack?
 
-I use irq_to_gpio() extensively to implement the enable/disable etc. methods 
-of irq_chip. Is there a way to implement them without irq_to_gpio()?
+I've just doubled some SLAB tuneables that seem relevant, but 
+if the cause is the aforementioned, this won't help.  Will
+have the answer on the tweaks by the end of Tuesday.
 
-> > +
-> > +       pl061_irq_enable(irq);
-> > +
-> > +       return 0;
-> > +}
-> 
-> Remove that gpio_request(), and the irq_to_gpio(), and you get:
-> 
-> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+David
 
-Thanks,
 
-Baruch
 
--- 
-                                                     ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+At 04:26 AM 6/16/2009 +0200, Eric Dumazet wrote:
+>
+>152691992335/724246449 = 210 bytes per rx packet in average
+>
+>It could make sense to add copybreak feature in this driver to 
+>reduce memory needs, but that also would consume more cpu 
+>cycles, and slow down forwarding setups.
+>
+>Maybe this packet trimming could be done generically in UDP 
+>stack input path, before queueing packet into a receive queue, 
+>if amount of available memory is under a given threshold.
+
