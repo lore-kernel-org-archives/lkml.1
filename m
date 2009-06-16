@@ -1,101 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbZFPUZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761260AbZFPU0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760841AbZFPUZW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758988AbZFPUZF
+	id S1761260AbZFPU0N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbZFPUZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:25:05 -0400
-Received: from claw.goop.org ([74.207.240.146]:42125 "EHLO claw.goop.org"
+	Tue, 16 Jun 2009 16:25:57 -0400
+Received: from mga11.intel.com ([192.55.52.93]:4466 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbZFPUZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:25:04 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Cliff Wickman <cpw@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 03/16] x86: Fix UV BAU activation descriptor init
-Date: Tue, 16 Jun 2009 13:15:42 -0700
-Message-Id: <1245183355-25808-4-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.2.2
-In-Reply-To: <1245183355-25808-1-git-send-email-jeremy@goop.org>
-References: <1245183355-25808-1-git-send-email-jeremy@goop.org>
+	id S1755016AbZFPUZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:25:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,231,1243839600"; 
+   d="scan'208";a="466972567"
+Date: Tue, 16 Jun 2009 13:25:58 -0700
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "rjw@sisk.pl" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "davej@redhat.com" <davej@redhat.com>, "pavel@ucw.cz" <pavel@ucw.cz>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: 2.6.30: hibernation/swsusp lockup due to acpi-cpufreq
+Message-ID: <20090616202558.GA5423@linux-os.sc.intel.com>
+References: <20090615232709.GA6059@sig21.net> <200906160216.29537.rjw@sisk.pl> <20090616142217.GA5548@sig21.net> <20090616115540.ceb67a30.akpm@linux-foundation.org> <20090616195750.GA12814@sig21.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616195750.GA12814@sig21.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Wickman <cpw@sgi.com>
+On Tue, Jun 16, 2009 at 12:57:50PM -0700, Johannes Stezenbach wrote:
+> On Tue, Jun 16, 2009 at 11:55:40AM -0700, Andrew Morton wrote:
+> > On Tue, 16 Jun 2009 16:22:17 +0200
+> > Johannes Stezenbach <js@sig21.net> wrote:
+> > 
+> > > Fix swsusp failure on !SMP
+> > > 
+> > > Commit 01599fca6758d2cd133e78f87426fc851c9ea725 introduced
+> > > a regression which caused a backtrace on suspend and
+> > > a hang on resume on a Thinkpad T42p (Pentium M CPU).
+> > > 
+> > > Signed-off-by: Johannes Stezenbach <js@sig21.net>
+> > > 
+> > > 
+> > > --- linux-2.6.30/kernel/up.c.orig	2009-06-16 15:56:28.000000000 +0200
+> > > +++ linux-2.6.30/kernel/up.c	2009-06-16 15:57:27.000000000 +0200
+> > > @@ -10,11 +10,13 @@
+> > >  int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+> > >  				int wait)
+> > >  {
+> > > +	unsigned long flags;
+> > > +
+> > >  	WARN_ON(cpu != 0);
+> > >  
+> > > -	local_irq_disable();
+> > > +	local_irq_save(flags);
+> > >  	(func)(info);
+> > > -	local_irq_enable();
+> > > +	local_irq_restore(flags);
+> > >  
+> > >  	return 0;
+> > >  }
+> > 
+> > ok, what's going on here?  The patch implies that someone (presumably
+> > acpi-cpufreq) is calling smp_call_function_single() with local
+> > interrupts disabled.  That's a bug on SMP kernels.  And it'll generate
+> > a trace if it happens:
+> > 
+> > 	/* Can deadlock when called with interrupts disabled */
+> > 	WARN_ON_ONCE(irqs_disabled() && !oops_in_progress);
+> > 
+> > but nobody has reported such a trace AFAIK?
+> 
+> This problem apparently only exists on !SMP kernels...
+> 
+> > Also, prior to 01599fca6758d2cd133e78f87426fc851c9ea725, acpi-cpufreq
+> > was using work_on_cpu().  If it was calling work_on_cpu() with local
+> > interrupts disabled then that would have been a bug too, which could
+> > generate might_sleep() or scheduling-while-atomic warnings.
+> 
+> On !SMP, work_on_cpu() is just a function call:
+> http://lxr.linux.no/linux+v2.6.30/include/linux/workqueue.h#L261
+> 
+> > Because it is a bug to call the SMP version of
+> > smp_call_function_single() with local interrupts disabled, I don't
+> > think we should need to apply the above patch.
+> 
+> and on SMP, smp_call_function_single() also uses
+> local_irq_save/restore() iff  cpu == this_cpu:
+> http://lxr.linux.no/linux+v2.6.30/kernel/smp.c#L272
+> 
+> > But I don't know what we _should_ do because I don't know what the bug
+> > is.  Are you able to get us a copy of that stack trace?
+> 
+> Unfortunately my laptop doesn't have a serial port, and the
+> stack trace is large and scrolls off the screen, I can only
+> see the last part of it and I would need to find someone with
+> a camera to take a picture...
 
-The UV tlb shootdown code has a serious initialization error.
 
-An array of structures [32*8] is initialized as if it were [32].
-The array is indexed by (cpu number on the blade)*8, so the short
-initialization works for up to 4 cpus on a blade.
-But above that, we provide an invalid opcode to the hub's
-broadcast assist unit.
+Can you try the patch below (your changes + a warnon). That should give
+the stack trace with successful suspend-resume.
 
-This patch changes the allocation of the array to use its symbolic
-dimensions for better clarity. And initializes all 32*8 entries.
+acpi-cpufreq will not directly disable interrupt and call these routines.
+So, it will be interesting to see how we are ending up in this state.
 
-Shortened 'UV_ACTIVATION_DESCRIPTOR_SIZE' to 'UV_ADP_SIZE' per Ingo's
-recommendation.
+Thanks,
+Venki
 
-Tested on the UV simulator.
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-LKML-Reference: <E1M6lZR-0007kV-Aq@eag09.americas.sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/uv/uv_bau.h |    2 +-
- arch/x86/kernel/tlb_uv.c         |   15 +++++++++++++--
- 2 files changed, 14 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/include/asm/uv/uv_bau.h b/arch/x86/include/asm/uv/uv_bau.h
-index 9b0e61b..bddd44f 100644
---- a/arch/x86/include/asm/uv/uv_bau.h
-+++ b/arch/x86/include/asm/uv/uv_bau.h
-@@ -37,7 +37,7 @@
- #define UV_CPUS_PER_ACT_STATUS		32
- #define UV_ACT_STATUS_MASK		0x3
- #define UV_ACT_STATUS_SIZE		2
--#define UV_ACTIVATION_DESCRIPTOR_SIZE	32
-+#define UV_ADP_SIZE			32
- #define UV_DISTRIBUTION_SIZE		256
- #define UV_SW_ACK_NPENDING		8
- #define UV_NET_ENDPOINT_INTD		0x38
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
-index ed0c337..16f0fd4 100644
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -715,7 +715,12 @@ uv_activation_descriptor_init(int node, int pnode)
- 	struct bau_desc *adp;
- 	struct bau_desc *ad2;
+diff --git a/kernel/up.c b/kernel/up.c
+index 1ff27a2..a4318ff 100644
+--- a/kernel/up.c
++++ b/kernel/up.c
+@@ -10,11 +10,15 @@
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 				int wait)
+ {
++	unsigned long flags;
++
+ 	WARN_ON(cpu != 0);
  
--	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
-+	/*
-+	 * each bau_desc is 64 bytes; there are 8 (UV_ITEMS_PER_DESCRIPTOR)
-+	 * per cpu; and up to 32 (UV_ADP_SIZE) cpu's per blade
-+	 */
-+	adp = (struct bau_desc *)kmalloc_node(sizeof(struct bau_desc)*
-+		UV_ADP_SIZE*UV_ITEMS_PER_DESCRIPTOR, GFP_KERNEL, node);
- 	BUG_ON(!adp);
+-	local_irq_disable();
++	WARN_ON(irqs_disabled());
++
++	local_irq_save(flags);
+ 	(func)(info);
+-	local_irq_enable();
++	local_irq_restore(flags);
  
- 	pa = uv_gpa(adp); /* need the real nasid*/
-@@ -729,7 +734,13 @@ uv_activation_descriptor_init(int node, int pnode)
- 				      (n << UV_DESC_BASE_PNODE_SHIFT | m));
- 	}
- 
--	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
-+	/*
-+	 * initializing all 8 (UV_ITEMS_PER_DESCRIPTOR) descriptors for each
-+	 * cpu even though we only use the first one; one descriptor can
-+	 * describe a broadcast to 256 nodes.
-+	 */
-+	for (i = 0, ad2 = adp; i < (UV_ADP_SIZE*UV_ITEMS_PER_DESCRIPTOR);
-+		i++, ad2++) {
- 		memset(ad2, 0, sizeof(struct bau_desc));
- 		ad2->header.sw_ack_flag = 1;
- 		/*
--- 
-1.6.2.2
-
+ 	return 0;
+ }
