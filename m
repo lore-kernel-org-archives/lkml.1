@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZFPIpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbZFPIrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZFPIpf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 04:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZFPIp0
+	id S1754450AbZFPIrR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZFPIrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 04:45:26 -0400
-Received: from trinity.fluff.org ([89.16.178.74]:39427 "EHLO trinity.fluff.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753202AbZFPIpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 04:45:24 -0400
-Date: Tue, 16 Jun 2009 09:45:24 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Alek Du <alek.du@intel.com>
-Cc: Florian Fainelli <florian@openwrt.org>, Ben Dooks <ben-linux@fluff.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and gpio_alt_func features to GPIOLIB
-Message-ID: <20090616084524.GC14476@trinity.fluff.org>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com> <20090615125146.GC19873@fluff.org.uk> <200906151504.51934.florian@openwrt.org> <20090616092121.3ed42b63@dxy.sh.intel.com>
+	Tue, 16 Jun 2009 04:47:06 -0400
+Received: from mail-fx0-f211.google.com ([209.85.220.211]:53321 "EHLO
+	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbZFPIrF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 04:47:05 -0400
+X-Greylist: delayed 824 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 04:47:05 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=X+Mjc9XqJaMv6afjKW/ZnpZiGx7mv7UMZtDoCVLKyd1RtCApiMpnJ8fyJsjvTkGhkI
+         dj8XwZXf3EtE20SPQrtFVw4a6RfkuBukfpK7MFc2xRe47EBtIMTpgdePNcQMcRoZqeFi
+         ay5oYRbGd00O8Wz5sgfLn9lyX/Kc93l+9u180=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090616092121.3ed42b63@dxy.sh.intel.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+In-Reply-To: <4A375914.5050800@tuffmail.co.uk>
+References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
+	 <71cd59b00906130155u2757ade3t3378685846b80410@mail.gmail.com>
+	 <4A337251.7010705@tuffmail.co.uk>
+	 <71cd59b00906130306w319c0fc2i376bb03323845b80@mail.gmail.com>
+	 <507032D758%linux@youmustbejoking.demon.co.uk>
+	 <9b2b86520906131051t32183554r8208cf886609e09c@mail.gmail.com>
+	 <71cd59b00906141226k37b90b9ey7347ed85ec17a17b@mail.gmail.com>
+	 <61b223ba0906150109r3a69e98aq949c7f2df5563c6e@mail.gmail.com>
+	 <15e53e180906160133j7055536cqe5b9515704fd4d94@mail.gmail.com>
+	 <4A375914.5050800@tuffmail.co.uk>
+Date: Tue, 16 Jun 2009 09:47:06 +0100
+Message-ID: <15e53e180906160147w1fa6282dl50e8e728f067e090@mail.gmail.com>
+Subject: Re: [gpm] [PATCH 2.6.29] eeepc-laptop: report brightness control 
+	events via the input layer
+From: Richard Hughes <hughsient@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: gnome-power-manager-list@gnome.org, acpi4asus-user@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Corentin Chary <corentin.chary@gmail.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 09:21:21AM +0800, Alek Du wrote:
-> On Mon, 15 Jun 2009 21:04:50 +0800
-> Florian Fainelli <florian@openwrt.org> wrote:
-> 
-> > Le Monday 15 June 2009 14:51:46 Ben Dooks, vous avez écrit :
-> > > On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
-> > > > >From 7a76916ccea4a376a260ea67fbc79ac4d958757f Mon Sep 17 00:00:00 2001
-> > > >
-> > > > From: Alek Du <alek.du@intel.com>
-> > > > Date: Fri, 8 May 2009 09:46:49 +0800
-> > > > Subject: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
-> > > > gpio_alt_func features to GPIOLIB
-> > > >
-> > > > Add some more functions to GPIOLIB, they are:
-> > > > * gpio_detect is to set GPIO interrupt triggering method (edge, level,
-> > > > high, low, etc.)
-> > 
-> > The name does not seem to reflect what it does, what about gpio_set_type or 
-> > gpio_set_int_type for instance ?
-> > 
-> > >
-> > > This is the wrong way of doing it, there is as a definit set_type
-> > > method in the irq_chip structure which should be used to alter the
-> > > way the IRQ is triggered.
-> > 
-> > I would expect your architecture IRQ handler to have a set_type callback for 
-> > the GPIO lines capables of generating an interrupt. See how we have beeing 
-> > doing it for rb532 for instance: 
-> > http://www.linux-mips.org/git?p=linux-queue.git;a=blob;f=arch/mips/rb532/irq.c;h=f07882029a90d3d155c17b462812c2936229458c;hb=HEAD#l173
-> 
-> 
-> For you case, in set_type handler it calls a "rb532_gpio_set_ilevel", my purpose of the gpio_detect is to provide the general way to replace 
-> the private function like "rb532_gpio_set_ilevel". Suppose you have several type GPIO devices in the system, in you way, you have to export
-> different private function to set each GPIO device triggering mode. Also for some system, we have i2c or SPI GPIO expander, we need to hook
-> them on the fly. The gpio_detect API provide a general way to set triggering mode, you could call it under set_type callback.
+On Tue, Jun 16, 2009 at 9:34 AM, Alan
+Jenkins<alan-jenkins@tuffmail.co.uk> wrote:
+> The driver doesn't.  As far as we know, none of them do.  Firmware does.
 
-Somehow you are still missing my point, this is the way it can be done
-at the moment, without any extension to the API!
+In that case there's a "laptop_panel.brightness_in_hardware" hal quirk
+that turns off all the fancy stuff, and makes the GUI DTRT without
+guessing.
 
-int attach_my_gpio_irq(int gpio, void *irqpw)
-{
-	int ret;
-	int irq;
-
-	irq = gpio_to_irq(gpio);
-	if (irq < 0) {
-		printk(KERN_ERR "%s: no gpio irq available\n", __func__);
-		return irq;
-	}
-
-	ret = request_irq(irq, my_irq_handler, IRQF_TRIGGER_FALLING,
-			  "mygpio", irqpw);
-	if (ret < 0) 
-		printk(KERN_ERR "%s: cannot request irq\n", __func__);
-
-	return ret;
-}
-
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+Richard.
