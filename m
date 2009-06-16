@@ -1,110 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbZFPUrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbZFPUuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932103AbZFPUrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762869AbZFPUrE
+	id S1758076AbZFPUuO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:50:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZFPUuC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:47:04 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:55570 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764652AbZFPUrD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:47:03 -0400
-X-Trace: 215965825/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.95.160/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.95.160
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlEGAN+hN0pQKV+g/2dsb2JhbACBT9N/hAsF
-X-IronPort-AV: E=Sophos;i="4.42,231,1243810800"; 
-   d="scan'208";a="215965825"
-Date: Tue, 16 Jun 2009 21:45:01 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
-       Rik van Riel <riel@redhat.com>, nickpiggin@yahoo.com.au
-Subject: Re: running get_user_pages() from kernel thread
-In-Reply-To: <4A37F098.2060208@redhat.com>
-Message-ID: <Pine.LNX.4.64.0906162108550.6321@sister.anvils>
-References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random>
- <Pine.LNX.4.64.0906161930050.24878@sister.anvils> <4A37F098.2060208@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 16 Jun 2009 16:50:02 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41845 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbZFPUuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:50:00 -0400
+Subject: Re: [tpmdd-devel] TPM drivers support and Linux Integrity Module
+ for 2.6.30
+From: Eric Paris <eparis@redhat.com>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: "\"dds" =?UTF-8?Q?=28=E2=98=95=29=22?= <dds@google.com>,
+       seiji.munetoh@gmail.com, tpmdd-devel@lists.sourceforge.net,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Shahbaz Khan <shaz.linux@gmail.com>
+In-Reply-To: <4A36C04B.6070204@linux.vnet.ibm.com>
+References: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com>
+	 <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com>
+	 <4A3474BD.4000804@linux.vnet.ibm.com>
+	 <b8394ab90906140015h793aaf51rb9b105910e61fa1@mail.gmail.com>
+	 <1245007238.10712.5.camel@blackbox>
+	 <1245068894.3247.22.camel@dhcp231-142.rdu.redhat.com>
+	 <4A367093.6010206@linux.vnet.ibm.com> <4A36C04B.6070204@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 16 Jun 2009 16:49:51 -0400
+Message-Id: <1245185391.2848.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Izik Eidus wrote:
-> Hugh Dickins wrote:
+On Mon, 2009-06-15 at 18:42 -0300, Rajiv Andrade wrote:
+> > 2- Forget manufacturer_id and base the decision on the PNP_ID as david
+> > suggested. I previously considered it but since it would end up in
+> > modifying tpm_tis_init() prototype (struct device * to struct pnp_dev *)
+> > and then wouldn't work when loading as a module with force option on, so
+> > I moved to the manufacturer_id approach.
 > >
-> > Looks like Izik and I hit the same problem (otherwise running well):
-
-Ran well enough overnight (with mm/mmap.c vm_flags hack to be merging
-everything it could) that, to judge by your remarks below, I ought to
-switch away from investigating and fixing and reviewing, to sending
-you patches to bring us back in synch.
-
-I don't think I have any problems with the madvise route, which weren't
-already problems with the /dev/ksm route: there are oddities I'm eager
-to look into (fork still raising questions for me), but nothing serious
-enough to get in the way of resynching.
-
-Andrea will be relieved to learn that I like mm_slot->touched very much:
-I don't know (and now don't need to know) what was serving that purpose
-in the /dev/ksm version.
-
-> Good, This solve another issue that you probably dont hit beacuse you work
-> with the madvise version:
-> the .release call back of the file_operations strcture will call to:
-> ksm_sma_release() that will call to remove_slot_from_hash_and_tree() that will
-> do the silly break_cow() call (even that the prcoesses just die!!!)
-
-Yes, I'd noticed before that break_cow() can be silly more work than
-necessary, may need care in ordering things.  But, if it's still any
-issue, it's something that can be optimized later: you have a technique
-that goes about it safely, that's good.
-
-> Now beacuse that exit_mm() will set tsk->mm = NULL before the .release will
-> get called, we will trigger this path even without the kernel thread context.
-> (I prepred patch that just avoid the break_cow() from the .release context,
-> but it isnt needed with this patch)
+> > I'll get back to #2 meanwhile and post the patch, seems not hard to
+> > accomplish though..
+> >   
+> Yes, it wasn't hard, at all, just get the id with to_pnp_dev(dev)->id.
 > 
-> (You shouldnt have that specific problem in the madvise() version beacuse we
-> dont have this .release callback anymore, but we still do there useless
-> break_cow() calls, considering the fact that the process just die, this
-> break_cow() calls should be made only when the user ask specifically to stop
-> merging pages i guess...,
+> However, the chip is buggy, there's no reason to make a compliant
+> upstream code modify its behavior just due an 'exception' for a not
+> compliant hardware.
+> No need to worry about it too though, the workaround is available as I
+> pointed earlier (Seiji's)...
 
-Yes, and I'm thinking that although it's fine for madvise(,,MADV_MERGEABLE)
-to be slow to get around to merging, probably madvise(,,MADV_UNMERGEABLE)
-needs to have broken COW on any KSM pages before the call returns.  I've
-a suspicion that nobody will ever use MADV_UNMERGEABLE, outside of our
-testing; and yet it's against my principles not to provide it, and if it
-is used, then I think it needs to give that guarantee before returning.
-But again, something we can fill in once we're in synch.
+Wait what?  we refuse to work around buggy hardware that is shipping in
+LOTS of hardware (all the currently shipping lenovo thinkpads) even
+though the fix is easy?  This doesn't sound right.....
 
-> I will send patch that will make it work more logical on top of your patches
-> as soon as you send something)
+-Eric
 
-Right, what would you like me to base against?  What if you were to
-send me a rollup patch against 2.6.30 of what your tree has now?  Or
-would you prefer to base against an mmotm?  With or without your RFC
-patches, or something close to them?
-
-Once I have your base, whichever way you prefer it, then I can put
-together a series of patches to adjust that to what I'm now working
-with (mainly: the ksm.c end of it would be much as in your RFC though
-with tidyups, and minus 4/4; whereas the madvise.c end of it I reworked).
-
-The patches we send to Andrew for mmotm, later on, would be something
-different, I believe (and something different from your git history):
-there I think we'd be asking him to remove the KSM patches he already
-has, and providing fresh equivalents based around the madvise interface
-(so, for example, I think there would be no patch at all to mm/rmap.c,
-all the changes made there earlier being later reverted).
-
-Hugh
