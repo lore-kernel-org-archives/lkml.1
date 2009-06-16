@@ -1,74 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZFPEY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbZFPEaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbZFPEY3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 00:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZFPEYW
+	id S1757615AbZFPEaA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbZFPE3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 00:24:22 -0400
-Received: from mx.binnacle.cx ([74.95.187.105]:7235 "EHLO mx.binnacle.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750816AbZFPEYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 00:24:21 -0400
-Message-Id: <6.2.5.6.2.20090616000017.05b5da70@binnacle.cx>
-X-Mailer: QUALCOMM Windows Eudora Version 6.2.5.6
-Date: Tue, 16 Jun 2009 00:12:14 -0400
-To: Eric Dumazet <eric.dumazet@gmail.com>
-From: starlight@binnacle.cx
-Subject: Re: QUESTION: can netdev_alloc_skb() errors be reduced
-  by  tuning?
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org, hugh.dickins@tiscali.co.uk, Lee.Schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, ebmunson@us.ibm.com, agl@us.ibm.com,
-       apw@canonical.com, wli@movementarian.org
-In-Reply-To: <4A3702CF.9070303@gmail.com>
-References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie>
- <20090527131437.5870e342.akpm@linux-foundation.org>
- <20090527231949.GB30002@elte.hu>
- <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
- <4A3702CF.9070303@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 16 Jun 2009 00:29:51 -0400
+Received: from authsmtp00.uchicago.edu ([128.135.249.245]:48956 "EHLO
+	authsmtp00.uchicago.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750791AbZFPE3u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 00:29:50 -0400
+X-Greylist: delayed 824 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 00:29:50 EDT
+Message-ID: <4A371AED.5080800@uchicago.edu>
+Date: Tue, 16 Jun 2009 00:09:17 -0400
+From: Jake Ellowitz <ellowitz@uchicago.edu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+MIME-Version: 1.0
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>, tj@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [Bug #13463] Poor SSD performance
+References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <AN6kEAA5GQ.A.23.sj7KKB@chimera> <20090610063746.GA26773@localhost> <20090611031153.GA7007@localhost>
+In-Reply-To: <20090611031153.GA7007@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric,
+Dear Fengguang,
 
-Great thought--thank you.  Running a similar server with 
-82571/e1000e and it does not exhibit the problem.  'e1000e' has 
-default copybreak=256 while 'ixgbe' has no copybreak.  Rational 
-given is
+Thanks so much for the attention you paid to this problem. I did not 
+want to respond until I got a chance to give the new kernel a shot to 
+see if the bug was still present. It appears not to be -- hdparm and dd 
+both register read speeds between 200 and 220 MB/s as opposed to the 70 
+to 80 MB/s I was getting with kernel 2.6.29. So, I guess this strange 
+bug has sort of resolved itself.
 
-   http://osdir.com/ml/linux.drivers.e1000.devel/2008-01/msg00103.html
+Best,
+Jake
 
-But the comparion is a bit apples-and-oranges since the 'e1000e' 
-system is dual Opteron 2354 while the 'ixgbe' system is Xeon 
-E5430 (a painful choice thus far).  Also 'e1000e' system passes 
-data via a PACKET socket while the 'ixgbe' system passes data 
-via UDP (a configurable option).
+ 
 
-I'm not fully up on how this all works: am I to understand that 
-the error could result from RX ring-queue buffers not freeing 
-quickly enough because they have a use-count held non-zero as
-the packet travels the stack?
-
-I've just doubled some SLAB tuneables that seem relevant, but 
-if the cause is the aforementioned, this won't help.  Will
-have the answer on the tweaks by the end of Tuesday.
-
-David
-
-
-
-At 04:26 AM 6/16/2009 +0200, Eric Dumazet wrote:
+Wu Fengguang wrote:
+> On Wed, Jun 10, 2009 at 02:37:46PM +0800, Wu Fengguang wrote:
+>   
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13463
+>>> Subject		: Poor SSD performance
+>>> Submitter	: Jake <ellowitz@uchicago.edu>
+>>> Date		: 2009-06-05 17:37 (3 days old)
+>>>       
+>> Hi Jake,
+>>
+>> Could you collect some blktrace data for the dd commands on new/old
+>> kernels?
+>>
+>> dd if=/dev/sda of=/dev/null bs=1M count=1024 iflag=direct
+>> dd if=/dev/sda of=/dev/null bs=1M count=1024
+>>     
 >
->152691992335/724246449 = 210 bytes per rx packet in average
+> I managed to get a SanDisk SSD for testing, and observes that
 >
->It could make sense to add copybreak feature in this driver to 
->reduce memory needs, but that also would consume more cpu 
->cycles, and slow down forwarding setups.
+> - one must increase read_ahead_kb to at least max_sectors_kb or better
+>   "bs=1M" to make a fair comparison
+> - with increased readahead size, the dd reported throughputs are
+>   75MB/s vs 77MB/s, while the blktrace reported throughputs are
+>   75MB/s vs 75MB/s (buffered IO vs direct IO).
 >
->Maybe this packet trimming could be done generically in UDP 
->stack input path, before queueing packet into a receive queue, 
->if amount of available memory is under a given threshold.
-
+> Here are details.
+>
+> The dd throughputs are equal for rotational hard disks, but differs
+> for this SanDisk SSD (with default RA parameters):
+>
+>         % dd if=/dev/sda of=/dev/null iflag=direct bs=1M count=1024
+>         1073741824 bytes (1.1 GB) copied, 13.905 s, 77.2 MB/s
+>         1073741824 bytes (1.1 GB) copied, 13.9029 s, 77.2 MB/s
+>
+>         % dd if=/dev/sda of=/dev/null bs=1M count=1024             
+>         1073741824 bytes (1.1 GB) copied, 14.7294 s, 72.9 MB/s
+>         1073741824 bytes (1.1 GB) copied, 14.8647 s, 72.2 MB/s
+>
+> Here is the blktrace summary:
+>
+>    dd                                           dd-direct
+> --------------------------------------------------------------------------------------
+>   CPU0 (sda):                               |  CPU0 (sda):
+>    Reads Queued:       9,888,   39,552KiB   |   Reads Queued:          84,   43,008KiB   
+>    Read Dispatches:      302,   38,588KiB   |   Read Dispatches:       84,   43,008KiB   
+>    Reads Requeued:         0                |   Reads Requeued:         0                
+>    Reads Completed:      337,   44,600KiB   |   Reads Completed:       83,   42,496KiB   
+>    Read Merges:        9,574,   38,296KiB   |   Read Merges:            0,        0KiB   
+>    Read depth:             2                |   Read depth:             2                
+>    IO unplugs:           313                |   IO unplugs:            42                
+>   CPU1 (sda):                               |  CPU1 (sda):
+>    Reads Queued:      11,840,   47,360KiB   |   Reads Queued:          96,   49,152KiB   
+>    Read Dispatches:      372,   48,196KiB   |   Read Dispatches:       96,   49,152KiB   
+>    Reads Requeued:         0                |   Reads Requeued:         0                
+>    Reads Completed:      337,   42,312KiB   |   Reads Completed:       96,   49,152KiB   
+>    Read Merges:       11,479,   45,916KiB   |   Read Merges:            0,        0KiB   
+>    Read depth:             2                |   Read depth:             2                
+>    IO unplugs:           372                |   IO unplugs:            48                
+>                                             |  
+>   Total (sda):                              |  Total (sda):
+>    Reads Queued:      21,728,   86,912KiB   |   Reads Queued:         180,   92,160KiB   
+>    Read Dispatches:      674,   86,784KiB   |   Read Dispatches:      180,   92,160KiB   
+>    Reads Requeued:         0                |   Reads Requeued:         0                
+>    Reads Completed:      674,   86,912KiB   |   Reads Completed:      179,   91,648KiB   
+>    Read Merges:       21,053,   84,212KiB   |   Read Merges:            0,        0KiB   
+>    IO unplugs:           685                |   IO unplugs:            90                
+>                                             |  
+>   Throughput (R/W): 69,977KiB/s / 0KiB/s    |  Throughput (R/W): 75,368KiB/s / 0KiB/s    
+>   Events (sda): 46,804 entries              |  Events (sda): 1,158 entries               
+>
+>
+> Another obvious difference is IO size.
+> One is read_ahead_kb=128K, another is max_sectors_kb=512K:
+>
+> dd:
+>   8,0    0    13497     0.804939305     0  C   R 782592 + 256 [0]
+>   8,0    0    13498     0.806713692     0  C   R 782848 + 256 [0]
+>   8,0    1    16275     0.808488708     0  C   R 783104 + 256 [0]
+>   8,0    0    13567     0.810261350     0  C   R 783360 + 256 [0]
+>   8,0    0    13636     0.812036226     0  C   R 783616 + 256 [0]
+>   8,0    1    16344     0.813806353     0  C   R 783872 + 256 [0]
+>   8,0    1    16413     0.815578436     0  C   R 784128 + 256 [0]
+>   8,0    0    13705     0.817347935     0  C   R 784384 + 256 [0]
+>
+> dd-direct:
+>   8,0    0      428     0.998831975     0  C   R 357376 + 1024 [0]
+>   8,0    1      514     1.005683404     0  C   R 358400 + 1024 [0]
+>   8,0    1      515     1.012402554     0  C   R 359424 + 1024 [0]
+>   8,0    0      440     1.019303850     0  C   R 360448 + 1024 [0]
+>   8,0    1      526     1.026024048     0  C   R 361472 + 1024 [0]
+>   8,0    1      538     1.032875967     0  C   R 362496 + 1024 [0]
+>   8,0    0      441     1.039595815     0  C   R 363520 + 1024 [0]
+>
+> The non-direct dd throughput can improve with 512K and 1M readahead size,
+> but still a bit slower than the direct dd case:
+>         1073741824 bytes (1.1 GB) copied, 14.1619 s, 75.8 MB/s
+>         1073741824 bytes (1.1 GB) copied, 14.1517 s, 75.9 MB/s
+>
+>    dd-512k                                     dd-direct2
+> -------------------------------------------------------------------------------------
+>   Total (sda):                             |  Total (sda):
+>    Reads Queued:      23,808,   95,232KiB  |   Reads Queued:         178,   91,136KiB  
+>    Read Dispatches:      215,   95,232KiB  |   Read Dispatches:      178,   91,136KiB  
+>    Reads Requeued:         0               |   Reads Requeued:         0               
+>    Reads Completed:      215,   95,232KiB  |   Reads Completed:      177,   90,624KiB  
+>    Read Merges:       23,593,   94,372KiB  |   Read Merges:            0,        0KiB  
+>    IO unplugs:           236               |   IO unplugs:            89               
+>                                            |  
+>   Throughput (R/W): 75,222KiB/s / 0KiB/s   |  Throughput (R/W): 75,520KiB/s / 0KiB/s   
+>   Events (sda): 48,687 entries             |  Events (sda): 1,145 entries              
+>
+> Interestingly, the throughput reported by blktrace is almost the same,
+> whereas the dd report favors the dd-direct case.
+>
+> More parameters.
+>
+> [   10.137350] scsi 3:0:0:0: Direct-Access     ATA      SanDisk SSD SATA 1.13 PQ: 0 ANSI: 5
+> [   10.147137] sd 3:0:0:0: [sda] 61500000 512-byte hardware sectors: (31.4 GB/29.3 GiB)
+> [   10.155060] sd 3:0:0:0: [sda] Write Protect is off
+> [   10.159922] sd 3:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> [   10.165179] sd 3:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+> [   10.174994]  sda:
+>
+>
+> /dev/sda:
+>
+>  Model=SanDisk SSD SATA 5000 2.5               , FwRev=1.13    , SerialNo=         81402200246
+>  Config={ Fixed }
+>  RawCHS=16383/16/63, TrkSize=0, SectSize=0, ECCbytes=4
+>  BuffType=unknown, BuffSize=0kB, MaxMultSect=1, MultSect=?1?
+>  CurCHS=16383/16/63, CurSects=16514064, LBA=yes, LBAsects=61500000
+>  IORDY=yes, tPIO={min:120,w/IORDY:120}, tDMA={min:120,rec:120}
+>  PIO modes:  pio0 pio1 pio2 pio3 pio4 
+>  DMA modes:  mdma0 mdma1 mdma2 
+>  UDMA modes: udma0 udma1 udma2 udma3 udma4 *udma5 
+>  AdvancedPM=yes: disabled (255) WriteCache=disabled
+>  Drive conforms to: unknown:  ATA/ATAPI-2,3,4,5,6,7
+>
+>  * signifies the current active mode
+>
+>
+> /sys/block/sda/queue/nr_requests:128
+> /sys/block/sda/queue/read_ahead_kb:128
+> /sys/block/sda/queue/max_hw_sectors_kb:32767
+> /sys/block/sda/queue/max_sectors_kb:512
+> /sys/block/sda/queue/scheduler:noop [cfq] 
+> /sys/block/sda/queue/hw_sector_size:512
+> /sys/block/sda/queue/rotational:1
+> /sys/block/sda/queue/nomerges:0
+> /sys/block/sda/queue/rq_affinity:0
+> /sys/block/sda/queue/iostats:1
+> /sys/block/sda/queue/iosched/quantum:4
+> /sys/block/sda/queue/iosched/fifo_expire_sync:124
+> /sys/block/sda/queue/iosched/fifo_expire_async:248
+> /sys/block/sda/queue/iosched/back_seek_max:16384
+> /sys/block/sda/queue/iosched/back_seek_penalty:2
+> /sys/block/sda/queue/iosched/slice_sync:100
+> /sys/block/sda/queue/iosched/slice_async:40
+> /sys/block/sda/queue/iosched/slice_async_rq:2
+> /sys/block/sda/queue/iosched/slice_idle:8
+>
+> Thanks,
+> Fengguang
+>   
