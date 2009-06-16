@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759730AbZFPQVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbZFPQWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759730AbZFPQVY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbZFPQVQ
+	id S1759612AbZFPQWJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbZFPQV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:21:16 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:58210 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754263AbZFPQVQ (ORCPT
+	Tue, 16 Jun 2009 12:21:57 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:59156 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756949AbZFPQV5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:21:16 -0400
-Date: Tue, 16 Jun 2009 11:21:14 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Chris Pringle <chris.pringle@oxtel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-Message-ID: <20090616162114.GA5051@loki.buserror.net>
-References: <4A37A503.3030209@oxtel.com>
+	Tue, 16 Jun 2009 12:21:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sH2/04o/hiEXW7wfR7czHzeLRxw8b1ikoLNMQyEHjjrxcivUTFs/L58Y7IoZgiBOJP
+         +AzRhzelJ9WhRkuS5eK+XMWvFFl5naFI+Ksq1R0mG4Ka3WqNsMbKMh4YGTDsar4NzNhG
+         xb4I9c+Mu498RLd0pQ3F022bjdw7v0L0m/e2E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A37A503.3030209@oxtel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Brightmail-Tracker: AAAAAQAAAWE=
+In-Reply-To: <20090615145933.GA26856@damson.getinternet.no>
+References: <alpine.LFD.2.01.0906120933120.3237@localhost.localdomain>
+	 <20090615145933.GA26856@damson.getinternet.no>
+Date: Tue, 16 Jun 2009 19:21:57 +0300
+X-Google-Sender-Auth: e9d94a6a5a76270e
+Message-ID: <84144f020906160921s234b0095k654c75e2e6bfe6dd@mail.gmail.com>
+Subject: Re: [GIT PULL] kmemcheck for mainline
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 02:58:27PM +0100, Chris Pringle wrote:
-> We're developing on a Freescale MPC8272 and are having some nasty  
-> problems with PCI bus mastering and data corruption.
+On Mon, Jun 15, 2009 at 5:59 PM, Vegard Nossum<vegard.nossum@gmail.com> wrote:
+> I redid the tree by rebasing. I've backported and incorporated fixes except
+> in the (few) cases where multiple authors were involved, in order to preserve
+> authorship information. I rebased against the same version that the previous
+> pull request was merged to; this allows us to easily view the difference
+> between the two pull requests (minus the top commit, which is a merge with
+> your latest tree):
+>
+>  $ git diff kmemcheck/for-linus..kmemcheck/for-linus2^
+>
+> and account for any discrepancies (see the bottom of this e-mail). I've
+> tested the new tree on x86 and x86_64 with and without kmemcheck.
 
-What kernel version?  What firmware?  Custom board, or one in upstream
-(which one)?
+Looks good to me. Ingo, if Linus doesn't pull this for -rc1, I think
+you should nuke the kmemcheck branch in -tip and use this instead,
+right?
 
-> We have some custom hardware that is bus mastering, reading data from  
-> the CPUs memory for it's own use. Most of the time, the data is correct,  
-> however occasionally we are seeing data that appears to be from  
-> somewhere else in memory (usually memory that has already been read by  
-> the PCI device). The problem looks like stale data on the PCI bridge  
-> prefetch buffers or a cache coherency problem, but we've been unable to  
-> come up with a solution to our problem. It is my understanding that it  
-> shouldn't be a cache coherency problem as the CPU cache should be  
-> snooped as the data is read from memory. Even if it were an issue, the  
-> pci_map_sg* functions should have sorted out any cache coherency issues  
-> before the DMA operation started.
-
-Cache coherency on PCI DMA requires that the memory be mapped with the M
-attribute on this chip, but that should be happening based on detection of
-the core.
-
-Also make sure that you park the bus on PCI and raise its arbitration
-priority, as done at the end of fixup_pci in arch/powerpc/boot/cuboot-pq2.c.
-
-BTW, you may want to post to linuxppc-dev@lists.ozlabs.org for
-powerpc-specific issues, especially this kind of hardware issue.
-
--Scott
+                                Pekka
