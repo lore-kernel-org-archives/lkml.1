@@ -1,19 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZFOXyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbZFPADi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753623AbZFOXyE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 19:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZFOXxz
+	id S1752772AbZFPADi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 20:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZFPAD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 19:53:55 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41290 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751179AbZFOXxy (ORCPT
+	Mon, 15 Jun 2009 20:03:26 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:7166 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbZFPADZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 19:53:54 -0400
-Date: Tue, 16 Jun 2009 08:52:22 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 15 Jun 2009 20:03:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=kxzQ2eUitk036n5h+nQAjreDoZmi3yRgu8Q1ysvTAeNjPvdSjk3zKZEPkwbedSHEyz
+         mFDCKoPnYCI3a8IiTpPM7G5kV/QgJwxBlVXHtp6f41zlZKvBZN9RPALkWXq6+sSX4B7c
+         /TwSP+ZVXC6IUKmv+Dx8ztsXKMUDYWpsXdQK0=
+Date: Tue, 16 Jun 2009 09:03:08 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
 To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
        Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,100 +30,78 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 10/22] HWPOISON: check and isolate corrupted free pages
- v2
-Message-Id: <20090616085222.1545cc05.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090615101620.GA7216@localhost>
+Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in
+ try_to_unmap
+Message-Id: <20090616090308.bac3b1f7.minchan.kim@barrios-desktop>
+In-Reply-To: <20090615152612.GA11700@localhost>
 References: <20090615024520.786814520@intel.com>
-	<20090615031253.715406280@intel.com>
-	<20090615184112.ed8e2f03.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090615101620.GA7216@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	<20090615031253.530308256@intel.com>
+	<28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com>
+	<20090615152612.GA11700@localhost>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009 18:16:20 +0800
+On Mon, 15 Jun 2009 23:26:12 +0800
 Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> On Mon, Jun 15, 2009 at 05:41:12PM +0800, KAMEZAWA Hiroyuki wrote:
-> > On Mon, 15 Jun 2009 10:45:30 +0800
-> > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > From: Wu Fengguang <fengguang.wu@intel.com>
-> > > 
-> > > If memory corruption hits the free buddy pages, we can safely ignore them.
-> > > No one will access them until page allocation time, then prep_new_page()
-> > > will automatically check and isolate PG_hwpoison page for us (for 0-order
-> > > allocation).
-> > > 
-> > > This patch expands prep_new_page() to check every component page in a high
-> > > order page allocation, in order to completely stop PG_hwpoison pages from
-> > > being recirculated.
-> > > 
-> > > Note that the common case -- only allocating a single page, doesn't
-> > > do any more work than before. Allocating > order 0 does a bit more work,
-> > > but that's relatively uncommon.
-> > > 
-> > > This simple implementation may drop some innocent neighbor pages, hopefully
-> > > it is not a big problem because the event should be rare enough.
-> > > 
-> > > This patch adds some runtime costs to high order page users.
-> > > 
-> > > [AK: Improved description]
-> > > 
-> > > v2: Andi Kleen:
-> > > Port to -mm code
-> > > Move check into separate function.
-> > > Don't dump stack in bad_pages for hwpoisoned pages.
-> > > 
-> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> On Mon, Jun 15, 2009 at 09:09:03PM +0800, Minchan Kim wrote:
+> > On Mon, Jun 15, 2009 at 11:45 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> > > From: Andi Kleen <ak@linux.intel.com>
+> > >
+> > > When a page has the poison bit set replace the PTE with a poison entry.
+> > > This causes the right error handling to be done later when a process runs
+> > > into it.
+> > >
+> > > Also add a new flag to not do that (needed for the memory-failure handler
+> > > later)
+> > >
+> > > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
 > > > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > > 
+> > >
 > > > ---
-> > >  mm/page_alloc.c |   20 +++++++++++++++++++-
-> > >  1 file changed, 19 insertions(+), 1 deletion(-)
-> > > 
-> > > --- sound-2.6.orig/mm/page_alloc.c
-> > > +++ sound-2.6/mm/page_alloc.c
-> > > @@ -233,6 +233,12 @@ static void bad_page(struct page *page)
-> > >  	static unsigned long nr_shown;
-> > >  	static unsigned long nr_unshown;
-> > >  
-> > > +	/* Don't complain about poisoned pages */
-> > > +	if (PageHWPoison(page)) {
-> > > +		__ClearPageBuddy(page);
-> > > +		return;
-> > > +	}
+> > >  include/linux/rmap.h |    1 +
+> > >  mm/rmap.c            |    9 ++++++++-
+> > >  2 files changed, 9 insertions(+), 1 deletion(-)
+> > >
+> > > --- sound-2.6.orig/mm/rmap.c
+> > > +++ sound-2.6/mm/rmap.c
+> > > @@ -958,7 +958,14 @@ static int try_to_unmap_one(struct page
+> > >        /* Update high watermark before we lower rss */
+> > >        update_hiwater_rss(mm);
+> > >
+> > > -       if (PageAnon(page)) {
+> > > +       if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
+> > > +               if (PageAnon(page))
+> > > +                       dec_mm_counter(mm, anon_rss);
+> > > +               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
 > > 
-> > Hmm ? why __ClearPageBuddy() is necessary ?
+> > Isn't it straightforward to use !is_hwpoison_entry ?
 > 
-> Because this page is considered to be "allocated" out of the buddy
-> system, even though we fail the allocation here.
+> Good catch!  It looks like a redundant check: the
+> page_check_address() at the beginning of the function guarantees that 
+> !is_migration_entry() or !is_migration_entry() tests will all be TRUE.
+> So let's do this?
+It seems you expand my sight :)
+
+I don't know migration well.
+How page_check_address guarantee it's not migration entry ? 
+
+In addtion, If the page is poison while we are going to migration((PAGE_MIGRATION && migration) == TRUE), we should decrease file_rss ?
+
 > 
-> The page is now owned by no one, especially not owned by the buddy
-> allocator.
+> -               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
+> +               else
 > 
-I just wonder "why __ClearPageBuddy() is necessary."
-
-When bad_page() is called,  a page is removed from buddy allocator and no
-PG_buddy flag at all....I'm sorry if you added bad_page() caller in buddy allocator.
-
-Buddy Allocator I call here is just 2 functions.
- - __free_one_page()
- - expand()
-
-
-Bye,
--Kame
-
-
-
+> 
 > Thanks,
 > Fengguang
-> 
 
+
+-- 
+Kinds Regards
+Minchan Kim
