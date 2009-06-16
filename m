@@ -1,128 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZFPODR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZFPOGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbZFPODR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 10:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZFPODB
+	id S1756829AbZFPOGo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 10:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZFPOGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 10:03:01 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56834 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbZFPODA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 10:03:00 -0400
-Date: Tue, 16 Jun 2009 17:02:40 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based
-	notifier interface
-Message-ID: <20090616140240.GA9401@redhat.com>
-References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net>
+	Tue, 16 Jun 2009 10:06:37 -0400
+Received: from mail.oxtel.com ([193.200.114.15]:2610 "EHLO oxtel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752327AbZFPOGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 10:06:36 -0400
+X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 10:06:36 EDT
+Message-ID: <4A37A503.3030209@oxtel.com>
+Date: Tue, 16 Jun 2009 14:58:27 +0100
+From: Chris Pringle <chris.pringle@oxtel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616022956.23890.63776.stgit@dev.haskins.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: PowerPC PCI DMA issues (prefetch/coherency?)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: chris.pringle
+X-Server: VPOP3 Enterprise V2.6.0b - Registered
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 10:29:56PM -0400, Gregory Haskins wrote:
-> irqfd and its underlying implementation, eventfd, currently utilize
-> the embedded wait-queue in eventfd for signal notification.  The nice thing
-> about this design decision is that it re-uses the existing
-> eventfd/wait-queue code and it generally works well....with several
-> limitations.
-> 
-> One of the limitations is that notification callbacks are always called
-> inside a spin_lock_irqsave critical section.  Another limitation is
-> that it is very difficult to build a system that can recieve release
-> notification without being racy.
-> 
-> Therefore, we introduce a new registration interface that is SRCU based
-> instead of wait-queue based, and implement the internal wait-queue
-> infrastructure in terms of this new interface.  We then convert irqfd
-> to use this new interface instead of the existing wait-queue code.
-> 
-> The end result is that we now have the opportunity to run the interrupt
-> injection code serially to the callback (when the signal is raised from
-> process-context, at least) instead of always deferring the injection to a
-> work-queue.
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> CC: Davide Libenzi <davidel@xmailserver.org>
-> ---
-> 
->  fs/eventfd.c            |  115 +++++++++++++++++++++++++++++++++++++++++++----
->  include/linux/eventfd.h |   30 ++++++++++++
->  virt/kvm/eventfd.c      |  114 +++++++++++++++++++++--------------------------
->  3 files changed, 188 insertions(+), 71 deletions(-)
-> 
-> diff --git a/fs/eventfd.c b/fs/eventfd.c
-> index 72f5f8d..505d5de 100644
-> --- a/fs/eventfd.c
-> +++ b/fs/eventfd.c
-> @@ -30,8 +30,47 @@ struct eventfd_ctx {
->  	 */
->  	__u64 count;
->  	unsigned int flags;
-> +	struct srcu_struct srcu;
-> +	struct list_head nh;
-> +	struct eventfd_notifier notifier;
->  };
->  
-> +static void _eventfd_wqh_notify(struct eventfd_notifier *en)
-> +{
-> +	struct eventfd_ctx *ctx = container_of(en,
-> +					       struct eventfd_ctx,
-> +					       notifier);
-> +
-> +	if (waitqueue_active(&ctx->wqh))
-> +		wake_up_poll(&ctx->wqh, POLLIN);
-> +}
-> +
-> +static void _eventfd_notify(struct eventfd_ctx *ctx)
-> +{
-> +	struct eventfd_notifier *en;
-> +	int idx;
-> +
-> +	idx = srcu_read_lock(&ctx->srcu);
-> +
-> +	/*
-> +	 * The goal here is to allow the notification to be preemptible
-> +	 * as often as possible.  We cannot achieve this with the basic
-> +	 * wqh mechanism because it requires the wqh->lock.  Therefore
-> +	 * we have an internal srcu list mechanism of which the wqh is
-> +	 * a client.
-> +	 *
-> +	 * Not all paths will invoke this function in process context.
-> +	 * Callers should check for suitable state before assuming they
-> +	 * can sleep (such as with preemptible()).  Paul McKenney assures
-> +	 * me that srcu_read_lock is compatible with in-atomic, as long as
-> +	 * the code within the critical section is also compatible.
-> +	 */
-> +	list_for_each_entry_rcu(en, &ctx->nh, list)
-> +		en->ops->signal(en);
-> +
-> +	srcu_read_unlock(&ctx->srcu, idx);
-> +}
-> +
->  /*
->   * Adds "n" to the eventfd counter "count". Returns "n" in case of
->   * success, or a value lower then "n" in case of coutner overflow.
+Hello All,
 
-This is ugly, isn't it? With CONFIG_PREEMPT=no preemptible() is always false.
+We're developing on a Freescale MPC8272 and are having some nasty 
+problems with PCI bus mastering and data corruption.
 
-Further, to do useful things it might not be enough that you can sleep:
-with iofd you also want to access current task with e.g. copy from user.
+We have some custom hardware that is bus mastering, reading data from 
+the CPUs memory for it's own use. Most of the time, the data is correct, 
+however occasionally we are seeing data that appears to be from 
+somewhere else in memory (usually memory that has already been read by 
+the PCI device). The problem looks like stale data on the PCI bridge 
+prefetch buffers or a cache coherency problem, but we've been unable to 
+come up with a solution to our problem. It is my understanding that it 
+shouldn't be a cache coherency problem as the CPU cache should be 
+snooped as the data is read from memory. Even if it were an issue, the 
+pci_map_sg* functions should have sorted out any cache coherency issues 
+before the DMA operation started.
 
-Here's an idea: let's pass a flag to ->signal, along the lines of
-signal_is_task, that tells us that it is safe to use current, and add
-eventfd_signal_task() which is the same as eventfd_signal but lets everyone
-know that it's safe to both sleep and use current->mm.
+I've not been able to find anything on the Freescale data sheet that 
+provides any way of flushing the prefetch cache on the PCI bridge. We've 
+done a bit of experimenting, and found that turning off prefetch appears 
+to solve (or possibly mask?) the problem (at the expensive of massive 
+performance problems). I've also tried DMA'ing two adjacent userspace 
+buffers in memory (from the same page), and see corruption on the second 
+buffer. If I populate both buffers, then DMA them both, the data is 
+fine. If I populate the first, DMA the first, then populate the second 
+and DMA the second, corruption occurs at the start of the second buffer. 
+If I add 8-32 bytes of padding between the buffers, the problem goes away.
 
-Makes sense?
+The PCI spec says that the PCI bridge is supposed to flush any data from 
+it's prefetch buffers that are not read by the bus master, so 
+technically, this isn't supposed to happen.
+
+I've tried making sure that buffers are cache line (and page) aligned, 
+and are multiples of cache lines, but it's made no difference. PIO mode 
+works fine, and I've checked the data with the CPU just before, and 
+immediately after the DMA and the driver sees no data integrity issues. 
+There are memory write barriers just before the DMA start, so all the 
+registers should be correct before the DMA starts.
+
+For background info, the device doing the bus mastering is a Xilinx 
+Virtex 5 FPGA. We've monitored the data as it comes off the PCI bus 
+using ChipScope - so the firmware should not be manipulating the data in 
+any way.
+
+We have some hardware/firmware/drivers that has a lot of common code 
+that runs on an x86 platform (as opposed to powerpc), and that works 
+without any issues whatsoever.
+
+Has anyone got any ideas what this might be? Does anyone of know issues 
+with PCI bridges on the PowerPC platform? Is there extra things that 
+need to be done from the driver when DMAing on PowerPC (I've looked at 
+other drivers and there's nothing obvious). The chip errata doesn't have 
+anything on it that looks like it could cause this.
+
+I'm really hoping this is something that we're doing wrong in the driver 
+or the firmware, but we've been through both the firmware and drivers 
+countless times and are unable to see anything wrong.
+
+Any thoughts/ideas would be much appreciated!
+
+Regards,
+Chris
 
 -- 
-MST
+
+______________________________
+Chris Pringle
+Software Engineer
+
+Miranda Technologies Ltd.
+Hithercroft Road
+Wallingford
+Oxfordshire OX10 9DG
+UK
+
+Tel. +44 1491 820206
+Fax. +44 1491 820001
+www.miranda.com
+
+____________________________
+
+Miranda Technologies Limited
+Registered in England and Wales CN 02017053
+Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
