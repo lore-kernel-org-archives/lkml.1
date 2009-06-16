@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbZFPIse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZFPIuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbZFPIse (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 04:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZFPIs1
+	id S1754689AbZFPIuU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZFPIuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 04:48:27 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39536 "EHLO mx2.suse.de"
+	Tue, 16 Jun 2009 04:50:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56358 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752096AbZFPIs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 04:48:26 -0400
-Date: Tue, 16 Jun 2009 10:48:27 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Bringer Didier <dda@awalis.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: keyboard problems on HP Pavilion ZE4200
-In-Reply-To: <2558ACFA-84E2-4948-B371-D4F9606C0B15@awalis.com>
-Message-ID: <alpine.LNX.2.00.0906161044590.7457@wotan.suse.de>
-References: <3277220fa08b0d9b83dd7598e6f360d5@192.168.1.20> <20090609200202.GC1388@ucw.cz> <alpine.LNX.2.00.0906100046410.7457@wotan.suse.de> <2558ACFA-84E2-4948-B371-D4F9606C0B15@awalis.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1751509AbZFPIuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 04:50:05 -0400
+Date: Tue, 16 Jun 2009 10:49:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [bug] WARNING: at drivers/char/tty_io.c:1266
+	tty_open+0x1ea/0x388()
+Message-ID: <20090616084952.GA18263@elte.hu>
+References: <20090614081052.GA9276@elte.hu> <20090614115428.1127ed2d@lxorguk.ukuu.org.uk> <20090616071057.GA29862@elte.hu> <20090616094430.75bbbee2@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616094430.75bbbee2@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-[ restored CC list ]
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-On Thu, 11 Jun 2009, Bringer Didier wrote:
-
-> > > >Under linux (ubuntu 9) some keys are "pressed" even when I'm not
-> > > >touching the keyboard, so for example it launches the tool for the
-> > > >printscreen hundreds of times and then the machine is not usable
-> > > >anymore...
-> > >Which kernel? Does it happen on 2.6.30? Does it happen on console?
-> > >Which keys?
-> >
-> >Also output of 'evtest' on the corresponding device in /dev/input/event?
-> >from the time the key(s) get stuck will be helpful.
-> >
-> >Is the keyboard in question PS2-conntected or USB-connected?
-> First of all, thank you for your answer
+> > > I split the ldisc and tty apart and redid the ldisc locking so its a fair
+> > > bet I know what changeset is to blame, will just need to hunt it down a
+> > > bit. kmemcheck found one leak case on Friday which I've fixed but not yet
+> > > scribbles.
+> > > 
+> > > >  c65c9bc: tty: rewrite the ldisc locking
+> > > 
+> > > Almost certainly that one and will investigate on Monday
+> > 
+> > I have applied your patch from yesterday (attached further below for 
+> > reference) and the SLAB corruption has not triggered - instead i'm 
+> > now getting this warning, after 96 reboots:
 > 
-> Kernel : Linux champ 2.6.28-11-generic #42-Ubuntu SMP Fri Apr 17 01:57:59 UTC
-> 2009 i686 GNU/Linux
+> That's progress
 > 
-> Output of evtest /dev/input/event4 while the bug appears
+> > Another test-box has produced this warning too. (Same config and 
+> > same hw as i sent the details for earlier in this thread.)
+> > 
+> > So there's still something fishy going on.
+> 
+> Are you using a standard udev/fedora setup or something different 
+> (I know the devtmpfs proposal stuff produces crashes like that one 
+> all the time which are not seen anywhere else)
+> 
+> And is it reproducable this time - and always 96 ?
 
-> Event: time 1244751563.258790, -------------- Report Sync ------------
->Event: time 1244751563.349861, type 4 (Misc), code 4 (ScanCode), value 54
-> Event: time 1244751563.349897, type 1 (Key), code 99 (SysRq), value 1
-> Event: time 1244751563.349900, -------------- Report Sync ------------
-> Event: time 1244751563.370076, type 4 (Misc), code 4 (ScanCode), value 38
-> Event: time 1244751563.370107, type 1 (Key), code 56 (LeftAlt), value 0
-> Event: time 1244751563.370109, -------------- Report Sync ------------
-> Event: time 1244751563.401550, type 4 (Misc), code 4 (ScanCode), value 0f
-> Event: time 1244751563.401583, type 1 (Key), code 15 (Tab), value 0
-> Event: time 1244751563.401586, -------------- Report Sync ------------
-> Event: time 1244751563.599697, type 4 (Misc), code 4 (ScanCode), value 54
-> Event: time 1244751563.599731, type 1 (Key), code 99 (SysRq), value 2
+It shows up randomly and on multiple systems.
 
-So forever-repeating sysrq/printscreen is really coming out of the evdev 
-input node.
+I'm wondering, how long have these patches been in linux-next? Has 
+no-one reported an easy (or easier) reproducer than a plain bootup 
+(which really doesnt hit the tty code intentionally hard)?
 
-Could you please boot you kernel with i8042.debug kernel parameter and 
-send the output from the time the bug triggers? This way we'll see whether 
-the repeated key really arrives from PS/2.
+You should probably also write testcases and stress-tests if you 
+modify code in this area.
 
-> I will try with a 2.6.30 soon
-
-Do you know about any kernel version where this bug didn't trigger?
-
-> Weirdly the bug doesn't seem to work when I use KDE as windowsmanager... 
-> Under gnome it is every 20 seconds that it happens. I cannot say that 
-> the bug really doesn't appear under kde but I cannot see effects of it
-
-You can check the evtest output when running KDE, if the repeated key 
-appears there as well.
-
--- 
-Jiri Kosina
-SUSE Labs
+	Ingo
