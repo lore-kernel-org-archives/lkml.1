@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbZFPDbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbZFPDcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758321AbZFPDbV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 23:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZFPDbN
+	id S1753330AbZFPDcQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 23:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZFPDcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 23:31:13 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:37920 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbZFPDbM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 23:31:12 -0400
-In-Reply-To: <200906151602.42873.arnd@arndb.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-arch-owner@vger.kernel.org, linux-kernel@vger.kernel.org,
-       liqin.chen@sunplusct.com, Matthew Wilcox <matthew@wil.cx>,
-       torvalds@linux-foundation.org
-MIME-Version: 1.0
-Subject: Re: [PATCH] asm-generic: add EMAXERRNO
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OFD9F2472F.5C67128A-ON482575D7.000F7E83-482575D7.0011466D@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Tue, 16 Jun 2009 11:04:10 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/16 ?? 11:04:11,
-	Serialize complete at 2009/06/16 ?? 11:04:11
-Content-Type: text/plain; charset="GB2312"
+	Mon, 15 Jun 2009 23:32:01 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40004 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751959AbZFPDcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 23:32:00 -0400
+Subject: Re: [PATCH v2] drivers/hvc: add missing __devexit_p()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1242632661-16198-1-git-send-email-vapier@gentoo.org>
+References: <1242632521-15954-1-git-send-email-vapier@gentoo.org>
+	 <1242632661-16198-1-git-send-email-vapier@gentoo.org>
+Content-Type: text/plain
+Date: Tue, 16 Jun 2009 13:30:57 +1000
+Message-Id: <1245123057.12400.53.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5G3Vv54023124
 
-linux-arch-owner@vger.kernel.org Ð´ÓÚ 2009-06-15 22:02:42:
+On Mon, 2009-05-18 at 03:44 -0400, Mike Frysinger wrote:
+> The remove function uses __devexit, so the .remove assignment needs
+> __devexit_p() to fix a build error with hotplug disabled.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> CC: linuxppc-dev@ozlabs.org
+> ---
+> v2
 
-> On Monday 15 June 2009, Matthew Wilcox wrote:
-> > On Mon, Jun 15, 2009 at 03:30:09PM +0200, Arnd Bergmann wrote:
-> > > Some architectures want to flag error returns from a syscall based 
-on
-> > > the return value. The range from zero to -511 is for errors that
-> > > we can return to user space, so add a #define for this to
-> > > include/asm-generic/errno.h.
-> > 
-> > I thought we could return anything up to -4095.
-> 
-> Sort of, yes. Internally to the kernel, we use anything up to 4095,
-> that's e.g. IS_ERR_VALUE checks for.
-> 
-> Error numbers from 512 to 4095 are internal and should never be seen
-> by the user.
-> 
-> In reality, it probably does not matter at all because we know what
-> error numbers we use. Now that you pointed me to include/linux/err.h,
-> that already defines MAX_ERRNO.
-> 
-> Liqin, I think I'd prefer to just drop my patch again, and you can
-> use MAX_ERRNO, which is defined in err.h.
-> 
-OK.
-But I think move MAX_ERRNO define from include/linux/err.h to 
-include/asm-generic/errno.h will be more clear. And no harm to
-include/linux/err.h file.
+Thanks. Andrew, I'm picking this one up.
 
-liqin
---
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Cheers,
+Ben.
+
+> 	- include all hvc files
+> 
+>  drivers/char/hvc_iseries.c |    2 +-
+>  drivers/char/hvc_vio.c     |    2 +-
+>  drivers/char/hvcs.c        |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/char/hvc_iseries.c b/drivers/char/hvc_iseries.c
+> index 449727b..936d05b 100644
+> --- a/drivers/char/hvc_iseries.c
+> +++ b/drivers/char/hvc_iseries.c
+> @@ -241,7 +241,7 @@ static int __devexit hvc_vio_remove(struct vio_dev *vdev)
+>  static struct vio_driver hvc_vio_driver = {
+>  	.id_table	= hvc_driver_table,
+>  	.probe		= hvc_vio_probe,
+> -	.remove		= hvc_vio_remove,
+> +	.remove		= __devexit_p(hvc_vio_remove),
+>  	.driver		= {
+>  		.name	= hvc_driver_name,
+>  		.owner	= THIS_MODULE,
+> diff --git a/drivers/char/hvc_vio.c b/drivers/char/hvc_vio.c
+> index bd62dc8..c72b994 100644
+> --- a/drivers/char/hvc_vio.c
+> +++ b/drivers/char/hvc_vio.c
+> @@ -113,7 +113,7 @@ static int __devexit hvc_vio_remove(struct vio_dev *vdev)
+>  static struct vio_driver hvc_vio_driver = {
+>  	.id_table	= hvc_driver_table,
+>  	.probe		= hvc_vio_probe,
+> -	.remove		= hvc_vio_remove,
+> +	.remove		= __devexit_p(hvc_vio_remove),
+>  	.driver		= {
+>  		.name	= hvc_driver_name,
+>  		.owner	= THIS_MODULE,
+> diff --git a/drivers/char/hvcs.c b/drivers/char/hvcs.c
+> index c76bccf..2724d62 100644
+> --- a/drivers/char/hvcs.c
+> +++ b/drivers/char/hvcs.c
+> @@ -868,7 +868,7 @@ static int __devexit hvcs_remove(struct vio_dev *dev)
+>  static struct vio_driver hvcs_vio_driver = {
+>  	.id_table	= hvcs_driver_table,
+>  	.probe		= hvcs_probe,
+> -	.remove		= hvcs_remove,
+> +	.remove		= __devexit_p(hvcs_remove),
+>  	.driver		= {
+>  		.name	= hvcs_driver_name,
+>  		.owner	= THIS_MODULE,
+
