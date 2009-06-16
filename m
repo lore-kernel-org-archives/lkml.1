@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762393AbZFPVUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763020AbZFPVWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762393AbZFPVUd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 17:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZFPVUZ
+	id S1763020AbZFPVWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZFPVWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 17:20:25 -0400
-Received: from kroah.org ([198.145.64.141]:38173 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbZFPVUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 17:20:25 -0400
-Date: Tue, 16 Jun 2009 14:03:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ryan Hope <rmh3093@gmail.com>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm - fixes + radeon KMS (part 2)
-Message-ID: <20090616210309.GA3563@kroah.com>
-References: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie> <20090615022235.GA12905@kroah.com> <21d7e9970906141943s8dd6e27sd4308413601d65e3@mail.gmail.com> <48f7fe350906160853m41f43fe5i892a4057b5eae319@mail.gmail.com> <alpine.LFD.2.01.0906161119500.3282@localhost.localdomain> <21d7e9970906161345q6e826d18q3a197643e370156c@mail.gmail.com> <alpine.LFD.2.01.0906161351130.16802@localhost.localdomain> <21d7e9970906161356y75702185gff0500571fff1e47@mail.gmail.com>
+	Tue, 16 Jun 2009 17:22:22 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:52261 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752707AbZFPVWW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 17:22:22 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 16 Jun 2009 23:22:04 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire updates post 2.6.30
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.9282749343d60f9f@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21d7e9970906161356y75702185gff0500571fff1e47@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 06:56:31AM +1000, Dave Airlie wrote:
-> On Wed, Jun 17, 2009 at 6:52 AM, Linus
-> Torvalds<torvalds@linux-foundation.org> wrote:
-> >
-> >
-> > On Wed, 17 Jun 2009, Dave Airlie wrote:
-> >>
-> >> Linus can you pull this tree?
-> >
-> > I hate pulling trees when I know there are _known_ bugs.
-> >
-> > Even during the merge window. The rest of the -rc series is for fixing up
-> > bugs, yes, but not bugs that were introduced on purpose.
-> >
-> 
-> It only happens if the user enable staging drivers, and I suspect staging
-> has much worse bugs, but okay I'll put the initcall fix into the tree
-> and send you another pull request.
+Linus, please pull from the for-linus branch at
 
-Note, distros enable the staging tree to pick up drivers they were
-previously including anyway.  So that is quite a large userbase :)
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-thanks,
+to receive the following IEEE 1394/ FireWire subsystem updates:
+  - a few small fixes,
+  - a new sysfs attribute for simpler and saner udev rules,
+  - preparations to add more drivers to the newer firewire stack
+    (mostly just header reorganization and file renames, as obvious in
+    the diffstat).
 
-greg k-h
+Admittedly, more than half of the commits are from June, but it's not
+much and not complex and was successfully exposed to linux-next as long
+as possible.
+
+There is one firewire-sbp2 change in Greg's driver core pull request,
+but git will merge it correctly regardless of the merge order.
+
+Stefan Richter (14):
+      firewire: core: improve check for local node
+      firewire: core: check for missing struct update at build time, not run time
+      firewire: core: add sysfs attribute for easier udev rules
+      firewire: share device ID table type with ieee1394
+      firewire: also use vendor ID in root directory for driver matches
+      firewire: ohci: access bus_seconds atomically
+      firewire: clean up includes
+      firewire: reorganize header files
+      firewire: rename source files
+      firewire: add parent-of-unit accessor
+      firewire: core: include linux/uaccess.h instead of asm/uaccess.h
+      firewire: core: prepare for non-core children of card devices
+      firewire: core: don't update Broadcast_Channel if RFC 2734 conditions aren't met
+      firewire: core: use more outbound tlabels
+
+ drivers/firewire/Makefile                          |    8 +-
+ drivers/firewire/{fw-card.c => core-card.c}        |   25 +-
+ drivers/firewire/{fw-cdev.c => core-cdev.c}        |   13 +-
+ drivers/firewire/{fw-device.c => core-device.c}    |  154 ++++++-
+ drivers/firewire/{fw-iso.c => core-iso.c}          |    6 +-
+ .../firewire/{fw-topology.c => core-topology.c}    |   24 +-
+ .../{fw-transaction.c => core-transaction.c}       |   42 ++-
+ drivers/firewire/core.h                            |  293 +++++++++++++
+ drivers/firewire/fw-device.h                       |  202 ---------
+ drivers/firewire/fw-topology.h                     |   77 ----
+ drivers/firewire/fw-transaction.h                  |  446 --------------------
+ drivers/firewire/{fw-ohci.c => ohci.c}             |   19 +-
+ drivers/firewire/{fw-ohci.h => ohci.h}             |    6 +-
+ drivers/firewire/{fw-sbp2.c => sbp2.c}             |   58 ++-
+ include/linux/firewire.h                           |  358 ++++++++++++++++
+ 15 files changed, 902 insertions(+), 829 deletions(-)
+ rename drivers/firewire/{fw-card.c => core-card.c} (97%)
+ rename drivers/firewire/{fw-cdev.c => core-cdev.c} (99%)
+ rename drivers/firewire/{fw-device.c => core-device.c} (88%)
+ rename drivers/firewire/{fw-iso.c => core-iso.c} (99%)
+ rename drivers/firewire/{fw-topology.c => core-topology.c} (97%)
+ rename drivers/firewire/{fw-transaction.c => core-transaction.c} (97%)
+ create mode 100644 drivers/firewire/core.h
+ delete mode 100644 drivers/firewire/fw-device.h
+ delete mode 100644 drivers/firewire/fw-topology.h
+ delete mode 100644 drivers/firewire/fw-transaction.h
+ rename drivers/firewire/{fw-ohci.c => ohci.c} (99%)
+ rename drivers/firewire/{fw-ohci.h => ohci.h} (98%)
+ rename drivers/firewire/{fw-sbp2.c => sbp2.c} (97%)
+ create mode 100644 include/linux/firewire.h
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--= -==- =----
+http://arcgraph.de/sr/
+
