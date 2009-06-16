@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbZFPPmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbZFPPmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758339AbZFPPmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZFPPlz
+	id S1759518AbZFPPmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbZFPPmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:41:55 -0400
-Received: from imta-38.everyone.net ([216.200.145.38]:44725 "EHLO
-	omta0106.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754500AbZFPPly (ORCPT
+	Tue, 16 Jun 2009 11:42:23 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:55965 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752911AbZFPPmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:41:54 -0400
-X-Greylist: delayed 1970 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 11:41:54 EDT
-X-Eon-Dm: dm24
+	Tue, 16 Jun 2009 11:42:22 -0400
+Date: Tue, 16 Jun 2009 16:42:00 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, greg@kroah.com, yan.i.li@intel.com
+Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
+Message-ID: <20090616154200.GA12715@srcf.ucam.org>
+References: <20090615141613.GA7876@sage.bj.intel.com> <20090615143446.GB19451@srcf.ucam.org> <20090615144748.GA25734@thyme.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Message-Id: <20090616080904.CCA17C3A@resin11.mta.everyone.net>
-Date: Tue, 16 Jun 2009 08:09:04 -0700
-From: "Brad Allen" <braddo@tranceaddict.net>
-Reply-To: <braddo@tranceaddict.net>
-To: <linux-kernel@vger.kernel.org>
-Subject: PAT support (or lack of) for Pentium 3 CPU's
-X-Eon-Sig: AQLBoNFKN7WQe6VzuQEAAAAB,a5aa390501a373714302ceb4679f78e5
-X-Originating-Ip: [114.75.39.251]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615144748.GA25734@thyme.bj.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It has come to my attention that PAT support has been disabled for P3 CPU's in kernel versions 2.6.30 and later due to a bug in the CPU. 
+On Mon, Jun 15, 2009 at 10:47:48PM +0800, Li, Yan wrote:
+> On Mon, Jun 15, 2009 at 03:34:46PM +0100, Matthew Garrett wrote:
+> > On Mon, Jun 15, 2009 at 10:16:13PM +0800, Yan Li wrote:
+> > > When testing Moblin on various netbooks, we've got reports that many
+> > > MSI Wind clones need the i8042 reset quirks for the keyboard and/or
+> > > touchpad's proper function.
+> > 
+> > Why are we not doing this unconditionally?
+> 
+> For the majority of sane machines this is not necessary.
 
-I have attempted to get the NVIDIA proprietary drivers working with these kernel versions and 3 different Pentium 3 motherboards, all have failed. The drivers seem to require PAT support in order to work correctly, each board has in fact produced a different error when using only MTRR.
+So? If the alternative is machines that don't work until they're added 
+to a blacklist, then the correct thing to do is to do it 
+unconditionally.
 
-Can a kernel option be added to enable/disable PAT for P3 CPU's? Or is there any possible workaround for the bug?
-
-I'd be interested to hear from Radeon users running a 2.6.30 or later kernel.
-
-For anyone wondering why I still use such an old machine, I require ISA support.
-
-Cheers,
-
-Brad Allen
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
