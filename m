@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZFPD4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZFPEBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbZFPD4U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 23:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZFPD4L
+	id S1752664AbZFPEBy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZFPEBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 23:56:11 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49355 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZFPD4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 23:56:10 -0400
-Message-ID: <4A37175C.80906@cn.fujitsu.com>
-Date: Tue, 16 Jun 2009 11:54:04 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 16 Jun 2009 00:01:46 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58700 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbZFPEBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 00:01:45 -0400
+Date: Mon, 15 Jun 2009 20:56:30 -0700
+From: Greg KH <gregkh@suse.de>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: Linux 2.6.29.5
+Message-ID: <20090616035630.GA30380@suse.de>
+References: <20090615200304.GA2003@kroah.com> <200906160648.04627.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/19] io-controller: Common flat fair queuing code in
- elevaotor layer
-References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-3-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1244513342-11758-3-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906160648.04627.a1426z@gawab.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> +
-> +int elv_nr_busy_rt_ioq(struct elevator_queue *e)
-> +{
-> +	return e->efqd.busy_rt_queues;
-> +}
-> +EXPORT_SYMBOL(elv_nr_busy_rt_ioq);
+On Tue, Jun 16, 2009 at 06:48:04AM +0300, Al Boldi wrote:
+> Greg KH wrote:
+> > I'm announcing the release of the 2.6.29.5 kernel.  All users of the
+> > 2.6.29 kernel series are very strongly encouraged to upgrade.
+> >
+> > I'll also be replying to this message with a copy of the patch between
+> > 2.6.29.4 and 2.6.29.5
+> >
+> > The updated 2.6.29.y git tree can be found at:
+> >        
+> > git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.29.y.git and
+> > can be browsed at the normal kernel.org git web browser:
+> >        
+> > http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.29.y.git;a=summa
+> 
+> It may be a good idea to also allow pulling patches over email.
 
-This function is no need now.
+I'm confused as to why you would want this.  kernel.org is mirrored all
+around the world, so the tree can be found through ftp and http
+everywhere.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |    6 ------
- block/elevator-fq.h |    1 -
- 2 files changed, 0 insertions(+), 7 deletions(-)
+> Majordomo has such a facility via the "index" and "get" commands.
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index f33155c..912ac6a 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -2553,12 +2553,6 @@ int elv_nr_busy_ioq(struct elevator_queue *e)
- }
- EXPORT_SYMBOL(elv_nr_busy_ioq);
- 
--int elv_nr_busy_rt_ioq(struct elevator_queue *e)
--{
--	return e->efqd.busy_rt_queues;
--}
--EXPORT_SYMBOL(elv_nr_busy_rt_ioq);
--
- int elv_hw_tag(struct elevator_queue *e)
- {
- 	return e->efqd.hw_tag;
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 0939735..285a1ff 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -711,7 +711,6 @@ extern void io_group_set_async_queue(struct io_group *iog, int ioprio_class,
- extern struct io_group *io_get_io_group(struct request_queue *q,
- 					struct bio *bio, int create);
- extern int elv_nr_busy_ioq(struct elevator_queue *e);
--extern int elv_nr_busy_rt_ioq(struct elevator_queue *e);
- extern struct io_queue *elv_alloc_ioq(struct request_queue *q, gfp_t gfp_mask);
- extern void elv_free_ioq(struct io_queue *ioq);
- 
--- 
-1.5.4.rc3
+Majordomo is not used here for email delivery.
 
+thanks,
 
+greg k-h
