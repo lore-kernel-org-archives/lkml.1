@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZFPIXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbZFPIXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbZFPIXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 04:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZFPIXH
+	id S1752357AbZFPIXo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZFPIXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 04:23:07 -0400
-Received: from exprod7og105.obsmtp.com ([64.18.2.163]:34815 "HELO
-	exprod7og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750915AbZFPIXF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 04:23:05 -0400
+	Tue, 16 Jun 2009 04:23:15 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38754 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752042AbZFPIXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 04:23:10 -0400
+Date: Tue, 16 Jun 2009 10:23:08 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steve Wise <swise@opengridcomputing.com>, zygo.blaxell@xandros.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] LIB: remove unmatched write_lock() in gen_pool_destroy
+In-Reply-To: <20090615152959.7d4f4982.akpm@linux-foundation.org>
+Message-ID: <alpine.LNX.2.00.0906161022210.7457@wotan.suse.de>
+References: <E1MGFiZ-0006oN-UW@dactyl.ottawa.xandros.ca> <alpine.LNX.2.00.0906152333080.7457@wotan.suse.de> <4A36C55F.6060002@opengridcomputing.com> <20090615152959.7d4f4982.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090616171029H.fujita.tomonori@lab.ntt.co.jp>
-References: <2e115de50906160024r7c3140d6sc8744e4362d36ef8@mail.gmail.com>
-	 <20090616171029H.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 16 Jun 2009 17:53:03 +0930
-Message-ID: <2e115de50906160123n20791768sd154621b0d95ca50@mail.gmail.com>
-Subject: Re: is_device_dma_capable
-From: Malcom Blaney <malcolm.blaney@maptek.com.au>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Fujita,
+On Mon, 15 Jun 2009, Andrew Morton wrote:
 
-2009/6/16 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>:
-> You use X86_32, right?
+> > > this doesn't really qualify for trivial tree, as it introduces a 
+> > > significant code change. Adding some CCs.
+> > Looks ok to me.  Its dumb to aquire the lock you're gonna free anyway.  
+> > Maybe some BUG_ON() that sez nobody better be holding this lock?
+> CONFIG_DEBUG_OBJECTS_FREE could detect the freeing of a held rwlock. 
+> But probably it hasn't been wired up to handle rwlocks.
 
-I have CONFIG_X86_32=y in my config file.
+Hmm, in fact ... am I just completely blind, or is the only user of 
+CONFIG_DEBUG_OBJECTS_FREE the timer code?
 
->
-> In 2.6.25, X86_32 and X86_64 had the own dma_alloc_coherent
-> implementations; X86_32 accepted a device having dma_mask that is not
-> initialized however X86_64 didn't, I think.
->
-> When we merged them, we chose to prohibit a device having dma_mask
-> that is not initialized. I'm not sure the DMA docs say this but IMO
-> it's good to require drivers to set up dma_mask (and
-> coherent_dma_mask) properly if the drivers want DMA.
->
-
-If you could point me in the direction of how to set these values
-correctly, I would appreciate it.
-
-thanks,
-Malcolm.
+-- 
+Jiri Kosina
+SUSE Labs
