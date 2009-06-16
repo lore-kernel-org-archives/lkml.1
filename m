@@ -1,108 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763561AbZFPVEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763426AbZFPVFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763561AbZFPVEM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 17:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763021AbZFPVD7
+	id S1763426AbZFPVFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756614AbZFPVFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 17:03:59 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:31157 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763175AbZFPVD5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 17:03:57 -0400
-X-YMail-OSG: cKCKM2EVM1mgmIOe_WUP1FYsr_I89UbZpjef4l.8SL0ov1EFlF6m5xavU300Fr.2WPvVXCZQ1.8QpFSkYOMylAYMhSKhBlIXUgOUS.4I4C92flSrH1cYMIDGe3H4ohZEY_mOOyrCbsDJocwB.5.7HB3XpSNsEjUDtMQLLeaDRGThpjVVJwvXBnhyMeGcPGUB5nCeUccJXDDU.4YJAPHY_l658GEU0X4OWMhRuFHFP.62BYZSpuvawVVgWkQVWEsxjVstDbUV5PuJGGugPK6feyfX4mE4Pa22AHy4T3ZFBvrO1QIjQdtXAvEAS4.9pCDK1kFTuGAGoz6nW5C1kCcuqk.3iqz77fo1OWU0zMCMGWNKrAgAJlP6y4jmC9dXUbI-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [ANNOUNCE] lio-utils.git v3.0 configfs HOWTO for v2.6.30 released
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       kvm-devel <kvm@vger.kernel.org>
-Cc: Joel Becker <joel.becker@oracle.com>,
-       Leonid Grossman <leonid.grossman@neterion.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       Florian Haas <florian.haas@linbit.com>, Avi Kivity <avi@redhat.com>,
-       "J.H." <warthog9@kernel.org>, Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
-Content-Type: text/plain
-Date: Tue, 16 Jun 2009 13:57:17 -0700
-Message-Id: <1245185837.4232.179.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Jun 2009 17:05:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37748 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753814AbZFPVFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 17:05:40 -0400
+Date: Tue, 16 Jun 2009 23:00:15 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Eugene Teo <eugene@redhat.com>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       solar@openwall.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] shift current_cred() from __f_setown() to f_modown()
+Message-ID: <20090616210015.GA1879@redhat.com>
+References: <4A36532E.3050006@redhat.com> <20090615174544.GA10467@redhat.com> <4A36E555.80206@redhat.com> <20090616183829.GA10027@redhat.com> <alpine.LFD.2.01.0906161224110.3282@localhost.localdomain> <20090616200746.GA28663@redhat.com> <alpine.LFD.2.01.0906161319480.3282@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906161319480.3282@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grettings all,
+On 06/16, Linus Torvalds wrote:
+>
+>
+> On Tue, 16 Jun 2009, Oleg Nesterov wrote:
+> >
+> > Shift current_cred() from __f_setown() to f_modown(). This reduces
+> > the number of arguments and saves 48 bytes from fs/fcntl.o.
+>
+> Ok, I know I asked for this, but now I suddenly start worrying about
+> whether f_owner.uid/euid are initialized at all for the pid==NULL case?
+>
+> They used to be initialized to zero, now they are left alone. Are they
+> initialized somewhere else earlier?
 
-The Linux-iSCSI.org Target v3.0 HOWTO using the new configfs enabled
-generic target subsystem python CLI has been released and is up and
-running on v2.6.30 of the Linux Kernel in x86_64 KVM (Debian), x86_64
-bare-metal (SLES) and PPC64 (Fedora PS3) hosts!  The HOWTO entry can be
-found at:
+I think this is fine, but I should have mentioned this in the changelog.
 
-http://linux-iscsi.org/index.php/Howto
+If f_owner.pid == NULL we never use f_owner.uid/euid. Otherwise we have
+a bug anyway: we must not send signals if pid was reset to NULL.
 
-The v3.0 howto is a WIP and currently expects that the reader is fimilar
-with building and installing their own LIO target modules within a linux
-kernel source.  There is currently work being done to integrate this
-into virtual machines imagines ot make the v3.0 LIO CLI more accessable
-for end users.  We are expecting the v3.0 work to be available in a
-couple of different forms soon.  Until then, interested folks should
-have a look at the v3.0 howto and the lio-utils.git source tree for
-usage information and towards build their own copy from source.
-
-So far using the lio-utils.git tools for the Generic Target Core v3.0
-with LIO-Target configfs enabled symlinks, the code has been able to
-scale to 10000 unique Virtual HBA+FILEIO LUNs with SCSI 3 emulation <->
-10000 unique LIO-Target v3.0 Endpoints inside of a 4GB memory x86_64 KVM
-guest on recent x86_64 hardware.  Each of these HBA+LUNs and iSCSI
-Target Endpoints are designed (using the TCM+LIO configfs kernel
-infrastructure) to be configured completely independent of one another,
-so that creating/changing one does not effect the real-time configfs ops
-of another.
-
-The configs CLI commands to reproduce the running setup can be dumped at
-any time for the entire running setup using tcm_dump.py and lio_dump.py.
-The lio-utils.git source repository is for v3.0 target_core_mod
-+iscsi_target_mod configfs enabled code in lio-core-2.6.git:
-
-http://git.kernel.org/?p=linux/storage/lio/lio-utils.git;a=summary
-
-Additional information can be found here:
-
-http://linux-iscsi.org/index.php/Lio-utils
-
-Questions can be asked via the LIO-Devel or LIO-Users:
-
-http://groups.google.com/group/linux-iscsi-target-dev
-http://groups.google.com/group/linux-iscsi-target-users
-
-The former is where most folks today (devels+users) are doing most of
-their work, and thanks to the many people has been helping improve the
-code!  I would like to encourage new end users to start posting in
-linux-iscsi-targets-users as they get their v3.0 LIO-Target with
-tcm_node.py + lio_node.py setups up and running with general questions
-and comments.  
-
-Also a special thanks to the kernel.org folks (warthog9 and hpa)
-assitance with getting the lio-utils.git source repository up and
-running, it would not be possible without their help.  Thank you!
-
---nab
-
-
-
-
-
-
-
-
-
-
+Oleg.
 
