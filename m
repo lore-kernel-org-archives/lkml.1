@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZFPGlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760480AbZFPGnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbZFPGlt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZFPGll
+	id S1760480AbZFPGnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbZFPGnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 02:41:41 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:16512 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbZFPGll convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 02:41:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hEgSrCaicb0ekVoFBI19wnTyAz2aN7TcOfvnxSEXod8ojsL6hqYFvxtTPN3z81fSu2
-         THpYv8LNFGQNE0oyzR62W9DeUPxkf/El3hJkKlvkDq9/b5xDH3KOEEOjBqwEB6JryYxI
-         8A9M26kewBosJvF+zwDI8a+4aN0eXMlvNXF58=
-MIME-Version: 1.0
-In-Reply-To: <20090616151628V.fujita.tomonori@lab.ntt.co.jp>
-References: <20090614212018.GD20442@fluff.org.uk>
-	 <4A356F0E.9020809@s5r6.in-berlin.de> <20090615081355.GA5139@amd.com>
-	 <20090616151628V.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 16 Jun 2009 14:41:43 +0800
-Message-ID: <d82e647a0906152341u57e170f7v41b6c6e5b9698211@mail.gmail.com>
-Subject: Re: dma-debug: check_for_stack background?
-From: Ming Lei <tom.leiming@gmail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, stefanr@s5r6.in-berlin.de, ben-linux@fluff.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 16 Jun 2009 02:43:01 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53270 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750816AbZFPGnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 02:43:00 -0400
+Date: Tue, 16 Jun 2009 16:42:57 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Roel Kluin <roel.kluin@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: linux-next: manual merge of the driver-core tree with the
+ powerpc tree
+Message-Id: <20090616164257.d7e8d460.sfr@canb.auug.org.au>
+In-Reply-To: <20090616061849.GA32109@kroah.com>
+References: <20090616155317.d1f1217e.sfr@canb.auug.org.au>
+	<20090616061849.GA32109@kroah.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/16 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>:
-> On Mon, 15 Jun 2009 10:13:55 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+--Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Greg,
+
+On Mon, 15 Jun 2009 23:18:49 -0700 Greg KH <greg@kroah.com> wrote:
 >
->> On Sun, Jun 14, 2009 at 11:43:42PM +0200, Stefan Richter wrote:
->> > Ben Dooks wrote:
->> >> On Sun, Jun 14, 2009 at 08:56:29PM +0200, Stefan Richter wrote:
->> >>> the DMA debug facility warns  about mappings of on-stack memory.
->> >>> What's the problem with that?
->> > ...
->> >> I'm not sure if it is possible on all architectures, however the
->> >> DMA mapping documentation prohibts the use of stack memory.
->> >
->> > Ah, it has all been documented in plain sight for ages.  Thanks for the
->> > pointer.
->>
->> Problem is that the stack might go away or could be otherwise reused
->> while the DMA is in-flight. This could cause really hard to debug
->> problems.
->
-> Not true. Even if you use the stack buffer for DMA synchronously, it
-> doesn't work (we had the bad code like starting dma and waiting for
-> the completion).
+> I pushed out an update a number of hours ago (like 6+), so you should
+> have gotten it with this update.
+>=20
+> When did you pull from my tree?  I also just sent a merge request to
+> Linus, so everything should be fixed up now.
 
-Yes, there is cache alignement problem for stack buffer also.
+OK, thanks.  I fetch the trees usually between 8:30am and 10:00am UTC
++1000 (or +1100 in summer), so about 7 hours ago :-)
 
->
-> On some architectures, we can't use the stack buffer for DMA. That's
-> why the DMA mapping documentation prohibits the use of stack memory
-> for DMA.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--- 
-Lei Ming
+iEYEARECAAYFAko3PvEACgkQjjKRsyhoI8wx0QCdFcBRhrSoIDIYL6XzQvm9BdN9
+EOsAn0oiH4BUvXJ1NuivpYnFhMIt0AH5
+=uo5E
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd--
