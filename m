@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936542AbZFPF5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936624AbZFPF6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936542AbZFPF5z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 01:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935669AbZFPFvT
+	id S936624AbZFPF6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 01:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933482AbZFPFvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:51:19 -0400
-Received: from kroah.org ([198.145.64.141]:48376 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:51:21 -0400
+Received: from kroah.org ([198.145.64.141]:48378 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935634AbZFPFvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:51:15 -0400
+	id S934880AbZFPFvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:51:16 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 28/64] Driver Core: block: add nodename support for block drivers.
-Date: Mon, 15 Jun 2009 22:46:17 -0700
-Message-Id: <1245131213-24168-28-git-send-email-gregkh@suse.de>
+Subject: [PATCH 29/64] Driver Core: x86: add nodename for cpuid and msr drivers.
+Date: Mon, 15 Jun 2009 22:46:18 -0700
+Message-Id: <1245131213-24168-29-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -25,89 +25,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
-This adds support for block drivers to report their requested nodename
-to userspace.  It also updates a number of block drivers to provide the
-needed subdirectory and device name to be used for them.
+This adds support to the x86 cpuid and msr drivers to report the proper
+device name to userspace for their devices.
 
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- block/genhd.c           |   10 ++++++++++
- drivers/block/pktcdvd.c |    7 +++++++
- include/linux/genhd.h   |    2 +-
- 3 files changed, 18 insertions(+), 1 deletions(-)
+ arch/x86/kernel/cpuid.c |    6 ++++++
+ arch/x86/kernel/msr.c   |    6 ++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index fe7ccc0..f4c64c2 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -996,10 +996,20 @@ struct class block_class = {
- 	.name		= "block",
+diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
+index 2ac1f0c..b07af88 100644
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -182,6 +182,11 @@ static struct notifier_block __refdata cpuid_class_cpu_notifier =
+ 	.notifier_call = cpuid_class_cpu_callback,
  };
  
-+static char *block_nodename(struct device *dev)
++static char *cpuid_nodename(struct device *dev)
 +{
-+	struct gendisk *disk = dev_to_disk(dev);
-+
-+	if (disk->nodename)
-+		return disk->nodename(disk);
-+	return NULL;
++	return kasprintf(GFP_KERNEL, "cpu/%u/cpuid", MINOR(dev->devt));
 +}
 +
- static struct device_type disk_type = {
- 	.name		= "disk",
- 	.groups		= disk_attr_groups,
- 	.release	= disk_release,
-+	.nodename	= block_nodename,
+ static int __init cpuid_init(void)
+ {
+ 	int i, err = 0;
+@@ -198,6 +203,7 @@ static int __init cpuid_init(void)
+ 		err = PTR_ERR(cpuid_class);
+ 		goto out_chrdev;
+ 	}
++	cpuid_class->nodename = cpuid_nodename;
+ 	for_each_online_cpu(i) {
+ 		err = cpuid_device_create(i);
+ 		if (err != 0)
+diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+index 3cf3413..98fd6cd 100644
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -196,6 +196,11 @@ static struct notifier_block __refdata msr_class_cpu_notifier = {
+ 	.notifier_call = msr_class_cpu_callback,
  };
  
- #ifdef CONFIG_PROC_FS
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index d57f117..37e0f81 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -2855,6 +2855,11 @@ static struct block_device_operations pktcdvd_ops = {
- 	.media_changed =	pkt_media_changed,
- };
- 
-+static char *pktcdvd_nodename(struct gendisk *gd)
++static char *msr_nodename(struct device *dev)
 +{
-+	return kasprintf(GFP_KERNEL, "pktcdvd/%s", gd->disk_name);
++	return kasprintf(GFP_KERNEL, "cpu/%u/msr", MINOR(dev->devt));
 +}
 +
- /*
-  * Set up mapping from pktcdvd device to CD-ROM device.
-  */
-@@ -2907,6 +2912,7 @@ static int pkt_setup_dev(dev_t dev, dev_t* pkt_dev)
- 	disk->fops = &pktcdvd_ops;
- 	disk->flags = GENHD_FL_REMOVABLE;
- 	strcpy(disk->disk_name, pd->name);
-+	disk->nodename = pktcdvd_nodename;
- 	disk->private_data = pd;
- 	disk->queue = blk_alloc_queue(GFP_KERNEL);
- 	if (!disk->queue)
-@@ -3062,6 +3068,7 @@ static const struct file_operations pkt_ctl_fops = {
- static struct miscdevice pkt_misc = {
- 	.minor 		= MISC_DYNAMIC_MINOR,
- 	.name  		= DRIVER_NAME,
-+	.name  		= "pktcdvd/control",
- 	.fops  		= &pkt_ctl_fops
- };
- 
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 7cbd38d..45fc320 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -142,7 +142,7 @@ struct gendisk {
-                                          * disks that can't be partitioned. */
- 
- 	char disk_name[DISK_NAME_LEN];	/* name of major driver */
--
-+	char *(*nodename)(struct gendisk *gd);
- 	/* Array of pointers to partitions indexed by partno.
- 	 * Protected with matching bdev lock but stat and other
- 	 * non-critical accesses use RCU.  Always access through
+ static int __init msr_init(void)
+ {
+ 	int i, err = 0;
+@@ -212,6 +217,7 @@ static int __init msr_init(void)
+ 		err = PTR_ERR(msr_class);
+ 		goto out_chrdev;
+ 	}
++	msr_class->nodename = msr_nodename;
+ 	for_each_online_cpu(i) {
+ 		err = msr_device_create(i);
+ 		if (err != 0)
 -- 
 1.6.3.2
 
