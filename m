@@ -1,68 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZFPAQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZFPA1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbZFPAQc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 20:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZFPAQW
+	id S1755813AbZFPA1n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 20:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZFPA1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 20:16:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46631 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751372AbZFPAQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 20:16:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Stezenbach <js@sig21.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.30: hibernation/swsusp lockup due to acpi-cpufreq
-Date: Tue, 16 Jun 2009 02:16:28 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20090615232709.GA6059@sig21.net>
-In-Reply-To: <20090615232709.GA6059@sig21.net>
+	Mon, 15 Jun 2009 20:27:34 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:56533 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751179AbZFPA1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Jun 2009 20:27:33 -0400
+Message-ID: <4A36E6F2.5050708@opengridcomputing.com>
+Date: Mon, 15 Jun 2009 19:27:30 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: trivial@kernel.org, zygo.blaxell@xandros.com, linux-kernel@vger.kernel.org,
+       Jes Sorensen <jes@trained-monkey.org>
+Subject: Re: [PATCH] LIB: remove unmatched write_lock() in gen_pool_destroy
+References: <E1MGFiZ-0006oN-UW@dactyl.ottawa.xandros.ca>	<alpine.LNX.2.00.0906152333080.7457@wotan.suse.de>	<20090615152608.7f4f6548.akpm@linux-foundation.org>	<4A36CB88.1080300@opengridcomputing.com> <20090615155424.14ad5c6a.akpm@linux-foundation.org>
+In-Reply-To: <20090615155424.14ad5c6a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906160216.29537.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 June 2009, Johannes Stezenbach wrote:
-> Hi,
-> 
-> on my aging Thinkpad T42p resume from hibernation
-> fails in 2.6.30. There is a backtrace on suspend prior
-> to writing out the disk image, but I cannot capture
-> it due to lack of a serial port on the T42p. On
-> resume the machine is dead after reading the image
-> from disk.
-> 
-> I've bisected this to:
-> 
->  commit 01599fca6758d2cd133e78f87426fc851c9ea725
->  Author: Andrew Morton <akpm@linux-foundation.org>
->  Date:   Mon Apr 13 10:27:49 2009 -0700
-> 
->     cpufreq: use smp_call_function_[single|many]() in acpi-cpufreq.c
-> 
-> I see in git log that this commit is known broken, but the
-> resume on my machine is still broken in 2.6.30.
-> 
-> If I disable CONFIG_X86_ACPI_CPUFREQ suspend/resume works in 2.6.30.
+Andrew Morton wrote:
+> On Mon, 15 Jun 2009 17:30:32 -0500
+> Steve Wise <swise@opengridcomputing.com> wrote:
+>
+>   
+>> Andrew Morton wrote:
+>>     
+>>> On Mon, 15 Jun 2009 23:35:31 +0200 (CEST)
+>>> Jiri Kosina <trivial@kernel.org> wrote:
+>>>
+>>>   
+>>>       
+>>>>> -	write_lock(&pool->lock);
+>>>>>  	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
+>>>>>  		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
+>>>>>  		list_del(&chunk->next_chunk);
+>>>>> -- 
+>>>>> 1.5.6.5
+>>>>>
+>>>>>       
+>>>>>           
+>>>> Hi Zygo,
+>>>>
+>>>> this doesn't really qualify for trivial tree, as it introduces a 
+>>>> significant code change. Adding some CCs.
+>>>>     
+>>>>         
+>>> yep, I merged it, thanks.
+>>>
+>>> I wonder why drivers/infiniband/hw/cxgb3 users never noticed this.
+>>>   
+>>>       
+>> I seem to remember trying to get this removed a few years ago and the 
+>> owner didn't want it removed...
+>>
+>>     
+>
+> void gen_pool_destroy(struct gen_pool *pool)
+> {
+> 	struct list_head *_chunk, *_next_chunk;
+> 	struct gen_pool_chunk *chunk;
+> 	int order = pool->min_alloc_order;
+> 	int bit, end_bit;
+>
+>
+> 	write_lock(&pool->lock);
+> 	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
+> 		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
+> 		list_del(&chunk->next_chunk);
+>
+> 		end_bit = (chunk->end_addr - chunk->start_addr) >> order;
+> 		bit = find_next_bit(chunk->bits, end_bit, 0);
+> 		BUG_ON(bit < end_bit);
+>
+> 		kfree(chunk);
+> 	}
+> 	kfree(pool);
+> 	return;
+> }
+>
+> The write_lock is unneeded and wrong.  Because if any other thread of
+> control is concurrently playing with this pool, it will sometimes do a
+> use-after-free.
+>
+> So no other thread of control should have access to this pool, so
+> there's no need for the write_lock().
+>   
 
-Thanks a lot for bisecting this!
+Yup. 
 
-Is it the reason for the enabling of interrupts during cpufreq_suspend()?
+My original patch adding gen_pool_destroy() didn't have the 
+write_lock().  It was added as part of "reviewing" the patch. :)
 
-/me wonders
+Steve.
 
-Is there anything we can do to fix this quickly?
-
-Rafael
