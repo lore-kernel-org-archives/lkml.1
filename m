@@ -1,104 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbZFPQ5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760088AbZFPQ6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758990AbZFPQ5q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 12:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbZFPQ5j
+	id S1760088AbZFPQ6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 12:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZFPQ6B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 12:57:39 -0400
-Received: from mail.oxtel.com ([193.200.114.15]:2576 "EHLO oxtel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752307AbZFPQ5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 12:57:39 -0400
-Message-ID: <4A37CF02.5080906@oxtel.com>
-Date: Tue, 16 Jun 2009 17:57:38 +0100
-From: Chris Pringle <chris.pringle@oxtel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Tue, 16 Jun 2009 12:58:01 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:45582 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752818AbZFPQ6A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 12:58:00 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 16 Jun 2009 09:51:05 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch] epoll - fix nested calls support
+Message-ID: <alpine.DEB.1.10.0906160941030.25664@makko.or.mcafeemobile.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-CC: linux-kernel@vger.kernel.org,
-       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-References: <4A37A503.3030209@oxtel.com>
- <20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
- <4A37CC72.3060709@freescale.com>
-In-Reply-To: <4A37CC72.3060709@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: chris.pringle
-X-Server: VPOP3 Enterprise V2.6.0b - Registered
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Wood wrote:
->
-> Check asm/cputable.h for CPU_FTR_NEED_COHERENT.  Make sure that 
-> CONFIG_8260 is one of the #ifdefs that turns that on.  It looks like 
-> that was in place by 2.6.26 in arch/powerpc.  I'm not sure what to 
-> look for in arch/ppc.
-I've just checked that and it's definitely switched on in CPU_FTR_COMMON 
-(CONFIG_8260 is also being used).
->
->>> Also make sure that you park the bus on PCI and raise its arbitration
->>> priority, as done at the end of fixup_pci in 
->>> arch/powerpc/boot/cuboot-pq2.c.
->>>   
->> Since this is a reasonably recent kernel,
->
-> Not really, there was a fair amount of 82xx work in the mid-2.6.20s. 
-> The addition of CPU_FTR_NEED_COHERENT to 82xx was somewhere in that time.
->
-> Can you try 2.6.30?
-I'll give it a try, but that won't be a quick thing to do - will 
-hopefully manage to get that done tomorrow if it patches without too 
-many issues. I should point out that we've got the low latency patches 
-on this kernel too; I guess it'd be worth trying it without them before 
-I move kernels.
->
->> I'd guess that both of these things are correct. I've had a quick 
->> look in that file and there is code in there raising arbitartion 
->> priority and parking the bus.
->
-> Just because the code is there doesn't mean you're using it -- are you 
-> using cuImage?  Are you using arch/ppc or arch/powerpc?
->
-> Typically this would be done by firmware; it's only in cuboot because 
-> u-boot wasn't doing it.
-Just checked this is being called and it is. We're using arch/powerpc.
->
->
->> Interestingly, I've just turned off cache snooping and the problem 
->> has got much worse. This has surprised me as I thought that part of 
->> the job done by pci_map_sg was to flush the CPU cache
->
-> It only flushes the cache on hardware that doesn't do coherent DMA.
->
-Ah right - that would explain what we're seeing then... Doh. Thought I 
-might have been onto something then. Is there any way to force a cache 
-flush? That'd at least prove it was a caching issue if it resolved the 
-problem.
+Andrew, Greg, this fixes a regression in 2.6.30.
+I unfortunately accepted a patch time ago, to drop the "current" usage 
+from possible IRQ context, w/out proper thought over it.
+The patch switched to using the CPU id by bounding the nested call 
+callback with a get_cpu()/put_cpu().
+Unfortunately the ep_call_nested() function can be called with a callback 
+that grabs sleepy locks (from own f_op->poll()), that results in epic fails.
+The following patch uses the proper "context" depending on the path where 
+it is called, and on the kind of callback.
+This has been reported by Stefan Richter, that has also verified the patch 
+is his previously failing environment.
+Greg, this should go in -stable too.
 
-Thanks,
-Chris
 
--- 
 
-______________________________
-Chris Pringle
-Software Engineer
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-Miranda Technologies Ltd.
-Hithercroft Road
-Wallingford
-Oxfordshire OX10 9DG
-UK
 
-Tel. +44 1491 820206
-Fax. +44 1491 820001
-www.miranda.com
+- Davide
 
-____________________________
 
-Miranda Technologies Limited
-Registered in England and Wales CN 02017053
-Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
+---
+ fs/eventpoll.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+Index: linux-2.6.mod/fs/eventpoll.c
+===================================================================
+--- linux-2.6.mod.orig/fs/eventpoll.c	2009-06-15 19:27:05.000000000 -0700
++++ linux-2.6.mod/fs/eventpoll.c	2009-06-15 21:30:19.000000000 -0700
+@@ -98,7 +98,7 @@ struct epoll_filefd {
+ struct nested_call_node {
+ 	struct list_head llink;
+ 	void *cookie;
+-	int cpu;
++	void *ctx;
+ };
+ 
+ /*
+@@ -317,17 +317,17 @@ static void ep_nested_calls_init(struct 
+  * @nproc: Nested call core function pointer.
+  * @priv: Opaque data to be passed to the @nproc callback.
+  * @cookie: Cookie to be used to identify this nested call.
++ * @ctx: This instance context.
+  *
+  * Returns: Returns the code returned by the @nproc callback, or -1 if
+  *          the maximum recursion limit has been exceeded.
+  */
+ static int ep_call_nested(struct nested_calls *ncalls, int max_nests,
+ 			  int (*nproc)(void *, void *, int), void *priv,
+-			  void *cookie)
++			  void *cookie, void *ctx)
+ {
+ 	int error, call_nests = 0;
+ 	unsigned long flags;
+-	int this_cpu = get_cpu();
+ 	struct list_head *lsthead = &ncalls->tasks_call_list;
+ 	struct nested_call_node *tncur;
+ 	struct nested_call_node tnode;
+@@ -340,7 +340,7 @@ static int ep_call_nested(struct nested_
+ 	 * very much limited.
+ 	 */
+ 	list_for_each_entry(tncur, lsthead, llink) {
+-		if (tncur->cpu == this_cpu &&
++		if (tncur->ctx == ctx &&
+ 		    (tncur->cookie == cookie || ++call_nests > max_nests)) {
+ 			/*
+ 			 * Ops ... loop detected or maximum nest level reached.
+@@ -352,7 +352,7 @@ static int ep_call_nested(struct nested_
+ 	}
+ 
+ 	/* Add the current task and cookie to the list */
+-	tnode.cpu = this_cpu;
++	tnode.ctx = ctx;
+ 	tnode.cookie = cookie;
+ 	list_add(&tnode.llink, lsthead);
+ 
+@@ -364,10 +364,9 @@ static int ep_call_nested(struct nested_
+ 	/* Remove the current task from the list */
+ 	spin_lock_irqsave(&ncalls->lock, flags);
+ 	list_del(&tnode.llink);
+- out_unlock:
++out_unlock:
+ 	spin_unlock_irqrestore(&ncalls->lock, flags);
+ 
+-	put_cpu();
+ 	return error;
+ }
+ 
+@@ -408,8 +407,12 @@ static int ep_poll_wakeup_proc(void *pri
+  */
+ static void ep_poll_safewake(wait_queue_head_t *wq)
+ {
++	int this_cpu = get_cpu();
++
+ 	ep_call_nested(&poll_safewake_ncalls, EP_MAX_NESTS,
+-		       ep_poll_wakeup_proc, NULL, wq);
++		       ep_poll_wakeup_proc, NULL, wq, (void *) (long) this_cpu);
++
++	put_cpu();
+ }
+ 
+ /*
+@@ -663,7 +666,7 @@ static unsigned int ep_eventpoll_poll(st
+ 	 * could re-enter here.
+ 	 */
+ 	pollflags = ep_call_nested(&poll_readywalk_ncalls, EP_MAX_NESTS,
+-				   ep_poll_readyevents_proc, ep, ep);
++				   ep_poll_readyevents_proc, ep, ep, current);
+ 
+ 	return pollflags != -1 ? pollflags : 0;
+ }
