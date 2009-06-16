@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbZFPKfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZFPKgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756910AbZFPKfL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbZFPKew
+	id S1757385AbZFPKgG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbZFPKfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 06:34:52 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:21219 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756195AbZFPKev convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 06:35:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41487
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753049AbZFPKfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 06:34:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Xkbj2PPbECnv5IjsgGQtkVdaq0v84Ydg85RhjYQzliwUa0ZhKBc+rd5b5f9/78r8Pz
-         mB8Tta4NSCtHS4vECC/OAHRkj0n3CExjej3I2Vup0mcKyY3xBHZN+rYsCgmGj96vPHiQ
-         xKWdJgLuj1aQrs8Lndkvn2XSv9FsDIjZA7ZmI=
-MIME-Version: 1.0
-In-Reply-To: <200906142217.50997.arnd@arndb.de>
-References: <1244959204-11269-1-git-send-email-vapier@gentoo.org> 
-	<1244959204-11269-4-git-send-email-vapier@gentoo.org> <200906142217.50997.arnd@arndb.de>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 16 Jun 2009 06:34:34 -0400
-Message-ID: <8bd0f97a0906160334rc85a3bei29bfbfd65f3fab3d@mail.gmail.com>
-Subject: Re: [PATCH 4/4] asm-generic: uaccess: fix access_ok() prototype
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 16 Jun 2009 06:35:51 -0400
+Date: Tue, 16 Jun 2009 03:35:54 -0700 (PDT)
+Message-Id: <20090616.033554.102149558.davem@davemloft.net>
+To: mingo@elte.hu, eric.dumazet@gmail.com
+Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090616101132.GA28204@elte.hu>
+References: <20090616094813.GA1686@elte.hu>
+	<20090616.025659.224075454.davem@davemloft.net>
+	<20090616101132.GA28204@elte.hu>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 16:17, Arnd Bergmann wrote:
-> On Sunday 14 June 2009, Mike Frysinger wrote:
->> @@ -37,14 +37,14 @@ static inline void set_fs(mm_segment_t fs)
->>  #define VERIFY_READ    0
->>  #define VERIFY_WRITE   1
->>
->> -#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
->> +#define access_ok(type, addr, size) __access_ok((addr), (size))
->>
->>  /*
->>   * The architecture should really override this if possible, at least
->
-> Upon actually testing this change, it turns out that this causes more
-> trouble because of having to pass down pointers that may have 'const'
-> or 'volatile' modifiers. I'm sure there is a way to do this correctly,
-> but most architectures seem to cope well with 'unsigned long' here,
-> and your patch 3/4 solves the original problem nicely.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 16 Jun 2009 12:11:32 +0200
 
-yeah, i ended up making the Blackfin access_ok replacement cast the
-first argument to an unsigned long to avoid those warnings ;).  i
-guess we can just leave this alone for a rainy day ...
--mike
+> sure, here you go (i also added a stack dump, just in case it's some 
+> kernel-internal socket open):
+> 
+>  [ifconfig:3516]: Creates X25 socket.
+> 
+> so plain ifconfig. Part of the ~1.5 years old net-tools-1.60-84.fc8.
+
+Ok, ifconfig seems to open one of every socket type when it starts up.
+That explains why an X25 socket is openned and then closed.
+
+Now the question is why is the X25 socket released by a timer?  This
+should only happen if some socket memory is still pending in the
+socket buffers.
+
+Wait, I know why this is triggering now.  It's Eric Dumazet's SKB
+accounting optimizations.
+
+So, I'll fix the X25 timer bug.  It's always been there, but
+beforehand this deferred-via-timer x25 socket destruction path almost
+never triggers.  So we never saw it.  Now it happens every time.
+
+Eric can you sniff around and see what you think about this unforseen
+(at least for me) consequence of your changes?  Socket layers that use
+the current sk_wmem_alloc/sk_rmem_alloc value at destroy time to
+determine if a socket can be killed immediately, or need to be killed
+later via timer, will always see that dummy one byte allocation you
+now put there.
+
+Can you look into that?
+
+Thanks.
