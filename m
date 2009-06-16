@@ -1,232 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759414AbZFPUMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761839AbZFPUM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759414AbZFPUMd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZFPUMW
+	id S1761839AbZFPUM5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZFPUMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:12:22 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:44925 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752205AbZFPUMV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:12:21 -0400
-Message-ID: <4A37FC93.7070403@gmail.com>
-Date: Tue, 16 Jun 2009 22:12:03 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 16 Jun 2009 16:12:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58516 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759296AbZFPUMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:12:48 -0400
+Date: Tue, 16 Jun 2009 22:07:46 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Eugene Teo <eugene@redhat.com>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       solar@openwall.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] shift current_cred() from __f_setown() to f_modown()
+Message-ID: <20090616200746.GA28663@redhat.com>
+References: <4A36532E.3050006@redhat.com> <20090615174544.GA10467@redhat.com> <4A36E555.80206@redhat.com> <20090616183829.GA10027@redhat.com> <alpine.LFD.2.01.0906161224110.3282@localhost.localdomain>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-References: <4A37A058.1030701@gmail.com>	<4A37AA0C.40507@gmail.com>	<alpine.LFD.2.01.0906161155400.3282@localhost.localdomain> <20090616.120829.182011393.davem@davemloft.net> <4A37F495.9030101@gmail.com>
-In-Reply-To: <4A37F495.9030101@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 16 Jun 2009 22:12:04 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906161224110.3282@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> David Miller a écrit :
->> From: Linus Torvalds <torvalds@linux-foundation.org>
->> Date: Tue, 16 Jun 2009 11:59:34 -0700 (PDT)
->>
->>> At the very least, add a helper function for "do I actually have 
->>> outstanding allocations" or something like that. IOW, do a 
->>>
->>> 	/*
->>> 	 * Comment here about that magical "1"
->>> 	 */
->>> 	static inline int sk_has_allocations(struct sock *sk)
->>> 	{
->>> 		return atomic_read(&sk->sk_wmem_alloc) > 1 ||
->>> 			atomic_read(&sk->sk_rmem_alloc);
->>> 	}
->>>
->>> and then make the various network protocols use that, rather than 
->>> open-coding some random internal implementation magic.
->> I agree, this should be handled with a helper function
->> abstraction rather than putting "1" checks all over the place.
-> 
-> Fair enough, I'll submit an updated patch in following hour.
-> 
+Shift current_cred() from __f_setown() to f_modown(). This reduces
+the number of arguments and saves 48 bytes from fs/fcntl.o.
 
-[PATCH] net: sk_wmem_alloc has initial value of one, not zero
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-commit 2b85a34e911bf483c27cfdd124aeb1605145dc80 
-(net: No more expensive sock_hold()/sock_put() on each tx)
-changed initial sk_wmem_alloc value.
-
-Some protocols check sk_wmem_alloc value to determine if a timer
-must delay socket deallocation. We must take care of the sk_wmem_alloc
-value being one instead of zero when no write allocations are pending.
-
-Reported by Ingo Molnar, and full diagnostic from David Miller.
-
-This patch introduces three helpers to get read/write allocations
-and a followup patch will use these helpers to report correct
-write allocations to user.
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
----
- include/net/sock.h     |   33 +++++++++++++++++++++++++++++++++
- net/appletalk/ddp.c    |    6 ++----
- net/ax25/af_ax25.c     |    3 +--
- net/econet/af_econet.c |    6 ++----
- net/netrom/af_netrom.c |    3 +--
- net/rose/af_rose.c     |    3 +--
- net/x25/af_x25.c       |    3 +--
- 7 files changed, 41 insertions(+), 16 deletions(-)
-
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 010e14a..570c7a1 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1206,6 +1206,39 @@ static inline int skb_copy_to_page(struct sock *sk, char __user *from,
- 	return 0;
+--- a/fs/fcntl.c~f_modown	2009-04-06 00:03:41.000000000 +0200
++++ b/fs/fcntl.c	2009-06-16 21:41:18.000000000 +0200
+@@ -196,15 +196,19 @@ static int setfl(int fd, struct file * f
  }
  
-+/**
-+ * sk_wmem_alloc_get - returns write allocations
-+ * @sk: socket
-+ *
-+ * Returns sk_wmem_alloc minus initial offset of one
-+ */
-+static inline int sk_wmem_alloc_get(const struct sock *sk)
-+{
-+	return atomic_read(&sk->sk_wmem_alloc) - 1;
-+}
-+
-+/**
-+ * sk_rmem_alloc_get - returns read allocations
-+ * @sk: socket
-+ *
-+ * Returns sk_rmem_alloc
-+ */
-+static inline int sk_rmem_alloc_get(const struct sock *sk)
-+{
-+	return atomic_read(&sk->sk_rmem_alloc);
-+}
-+
-+/**
-+ * sk_has_allocations - check if allocations are outstanding
-+ * @sk: socket
-+ *
-+ * Returns true if socket has write or read allocations
-+ */
-+static inline int sk_has_allocations(const struct sock *sk)
-+{
-+	return sk_wmem_alloc_get(sk) || sk_rmem_alloc_get(sk);
-+}
-+
- /*
-  * 	Queue a received datagram if it will fit. Stream and sequenced
-  *	protocols can't normally use this as they need to fit buffers in
-diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
-index b603cba..f7a53b2 100644
---- a/net/appletalk/ddp.c
-+++ b/net/appletalk/ddp.c
-@@ -162,8 +162,7 @@ static void atalk_destroy_timer(unsigned long data)
+ static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
+-                     uid_t uid, uid_t euid, int force)
++                     int force)
  {
- 	struct sock *sk = (struct sock *)data;
- 
--	if (atomic_read(&sk->sk_wmem_alloc) ||
--	    atomic_read(&sk->sk_rmem_alloc)) {
-+	if (sk_has_allocations(sk)) {
- 		sk->sk_timer.expires = jiffies + SOCK_DESTROY_TIME;
- 		add_timer(&sk->sk_timer);
- 	} else
-@@ -175,8 +174,7 @@ static inline void atalk_destroy_socket(struct sock *sk)
- 	atalk_remove_socket(sk);
- 	skb_queue_purge(&sk->sk_receive_queue);
- 
--	if (atomic_read(&sk->sk_wmem_alloc) ||
--	    atomic_read(&sk->sk_rmem_alloc)) {
-+	if (sk_has_allocations(sk)) {
- 		setup_timer(&sk->sk_timer, atalk_destroy_timer,
- 				(unsigned long)sk);
- 		sk->sk_timer.expires	= jiffies + SOCK_DESTROY_TIME;
-diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
-index fd9d06f..61b35b9 100644
---- a/net/ax25/af_ax25.c
-+++ b/net/ax25/af_ax25.c
-@@ -330,8 +330,7 @@ void ax25_destroy_socket(ax25_cb *ax25)
+ 	write_lock_irq(&filp->f_owner.lock);
+ 	if (force || !filp->f_owner.pid) {
+ 		put_pid(filp->f_owner.pid);
+ 		filp->f_owner.pid = get_pid(pid);
+ 		filp->f_owner.pid_type = type;
+-		filp->f_owner.uid = uid;
+-		filp->f_owner.euid = euid;
++
++		if (pid) {
++			const struct cred *cred = current_cred();
++			filp->f_owner.uid = cred->uid;
++			filp->f_owner.euid = cred->euid;
++		}
  	}
- 
- 	if (ax25->sk != NULL) {
--		if (atomic_read(&ax25->sk->sk_wmem_alloc) ||
--		    atomic_read(&ax25->sk->sk_rmem_alloc)) {
-+		if (sk_has_allocations(ax25->sk)) {
- 			/* Defer: outstanding buffers */
- 			setup_timer(&ax25->dtimer, ax25_destroy_timer,
- 					(unsigned long)ax25);
-diff --git a/net/econet/af_econet.c b/net/econet/af_econet.c
-index 8121bf0..2e1f836 100644
---- a/net/econet/af_econet.c
-+++ b/net/econet/af_econet.c
-@@ -540,8 +540,7 @@ static void econet_destroy_timer(unsigned long data)
+ 	write_unlock_irq(&filp->f_owner.lock);
+ }
+@@ -212,14 +216,13 @@ static void f_modown(struct file *filp, 
+ int __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
+ 		int force)
  {
- 	struct sock *sk=(struct sock *)data;
+-	const struct cred *cred = current_cred();
+ 	int err;
+-	
++
+ 	err = security_file_set_fowner(filp);
+ 	if (err)
+ 		return err;
  
--	if (!atomic_read(&sk->sk_wmem_alloc) &&
--	    !atomic_read(&sk->sk_rmem_alloc)) {
-+	if (!sk_has_allocations(sk)) {
- 		sk_free(sk);
- 		return;
- 	}
-@@ -579,8 +578,7 @@ static int econet_release(struct socket *sock)
+-	f_modown(filp, pid, type, cred->uid, cred->euid, force);
++	f_modown(filp, pid, type, force);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(__f_setown);
+@@ -245,7 +248,7 @@ EXPORT_SYMBOL(f_setown);
  
- 	skb_queue_purge(&sk->sk_receive_queue);
+ void f_delown(struct file *filp)
+ {
+-	f_modown(filp, NULL, PIDTYPE_PID, 0, 0, 1);
++	f_modown(filp, NULL, PIDTYPE_PID, 1);
+ }
  
--	if (atomic_read(&sk->sk_rmem_alloc) ||
--	    atomic_read(&sk->sk_wmem_alloc)) {
-+	if (sk_has_allocations(sk)) {
- 		sk->sk_timer.data     = (unsigned long)sk;
- 		sk->sk_timer.expires  = jiffies + HZ;
- 		sk->sk_timer.function = econet_destroy_timer;
-diff --git a/net/netrom/af_netrom.c b/net/netrom/af_netrom.c
-index 3be0e01..cd91190 100644
---- a/net/netrom/af_netrom.c
-+++ b/net/netrom/af_netrom.c
-@@ -286,8 +286,7 @@ void nr_destroy_socket(struct sock *sk)
- 		kfree_skb(skb);
- 	}
- 
--	if (atomic_read(&sk->sk_wmem_alloc) ||
--	    atomic_read(&sk->sk_rmem_alloc)) {
-+	if (sk_has_allocations(sk)) {
- 		/* Defer: outstanding buffers */
- 		sk->sk_timer.function = nr_destroy_timer;
- 		sk->sk_timer.expires  = jiffies + 2 * HZ;
-diff --git a/net/rose/af_rose.c b/net/rose/af_rose.c
-index 877a7f6..4dd9a7d 100644
---- a/net/rose/af_rose.c
-+++ b/net/rose/af_rose.c
-@@ -356,8 +356,7 @@ void rose_destroy_socket(struct sock *sk)
- 		kfree_skb(skb);
- 	}
- 
--	if (atomic_read(&sk->sk_wmem_alloc) ||
--	    atomic_read(&sk->sk_rmem_alloc)) {
-+	if (sk_has_allocations(sk)) {
- 		/* Defer: outstanding buffers */
- 		setup_timer(&sk->sk_timer, rose_destroy_timer,
- 				(unsigned long)sk);
-diff --git a/net/x25/af_x25.c b/net/x25/af_x25.c
-index c51f309..8cd2390 100644
---- a/net/x25/af_x25.c
-+++ b/net/x25/af_x25.c
-@@ -372,8 +372,7 @@ static void __x25_destroy_socket(struct sock *sk)
- 		kfree_skb(skb);
- 	}
- 
--	if (atomic_read(&sk->sk_wmem_alloc) ||
--	    atomic_read(&sk->sk_rmem_alloc)) {
-+	if (sk_has_allocations(sk)) {
- 		/* Defer: outstanding buffers */
- 		sk->sk_timer.expires  = jiffies + 10 * HZ;
- 		sk->sk_timer.function = x25_destroy_timer;
+ pid_t f_getown(struct file *filp)
+
