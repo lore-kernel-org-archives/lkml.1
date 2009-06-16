@@ -1,47 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762232AbZFPC0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbZFPC1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762232AbZFPC0F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 22:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZFPCZy
+	id S1752603AbZFPC1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 22:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZFPC1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 22:25:54 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55760 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751709AbZFPCZy (ORCPT
+	Mon, 15 Jun 2009 22:27:06 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:47873 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbZFPC1F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 22:25:54 -0400
-Subject: Re: linux-next: scsi tree build failure
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1245102000.12400.44.camel@pasglop>
-References: <20090615121716.c5bc0655.sfr@canb.auug.org.au>
-	 <1245078707.3858.0.camel@mulgrave.site> <1245102000.12400.44.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 22:24:37 -0400
-Message-Id: <1245119077.3858.51.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Jun 2009 22:27:05 -0400
+Message-ID: <4A3702CF.9070303@gmail.com>
+Date: Tue, 16 Jun 2009 04:26:23 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: starlight@binnacle.cx
+CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org, hugh.dickins@tiscali.co.uk, Lee.Schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, ebmunson@us.ibm.com, agl@us.ibm.com,
+       apw@canonical.com, wli@movementarian.org
+Subject: Re: QUESTION: can netdev_alloc_skb() errors be reduced by  tuning?
+References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie> <20090527131437.5870e342.akpm@linux-foundation.org> <20090527231949.GB30002@elte.hu> <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
+In-Reply-To: <6.2.5.6.2.20090615201713.05b5d408@binnacle.cx>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 16 Jun 2009 04:26:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-16 at 07:40 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-06-15 at 10:11 -0500, James Bottomley wrote:
-> > OK, dumped the offending patch, so it should be safe to take scsi-misc
-> > again.
-> > 
-> > I'm so used to merging these type of conversions, I didn't check that
-> > it
-> > was using a ps3 specific wrapper instead of a generic device one.
+starlight@binnacle.cx a écrit :
+> Hello,
 > 
-> Do I have your Ack to merge the patch via the powerpc tree ?
+> I submitted testcase for a hugepages bug that has been 
+> successfully resolved.  Have an apparently obscure question 
+> related to MM, and so I am asking anyone who might have some idea 
+> on this.  Nothing much turned up via Google and digging into
+> the KMEM code looks daunting.
+> 
+> Running Intel 82598/ixgbe 10 gig Ethernet under heavy stress. 
+> Generally is working well after tuning IRQ affinities, but a 
+> fair number of buffer allocation failures are occurring in the 
+> 'ixgbe' device driver and are reported via 'ethtool' statistics. 
+>  This may be causing data loss.
+> 
+> The kernel primitive returning the error is netdev_alloc_skb().
+> 
+> Are any tuneable parameters available that can reduce or 
+> eliminate these allocation failures?  Have about eleven 
+> gigabytes of free memory, though most of that is consumed 
+> by non-dirty file cache data.  Total system memory is 16GB with 
+> 4GB allocated to hugepages.  Zero swap usage and activity though
+> swap is enabled.  Most application memory is hugepage or is
+> 'mlock()'ed.
+> 
+> Thank you.
+> 
+> 
+> 
+> 
+> 
+> System rebooted before test run.
+> 
+> Dual Xeon E5430, 16GB FB-DIMM RAM.
+> 
+> 
+> $ cat /proc/meminfo
+> MemTotal:     16443828 kB
+> MemFree:        281176 kB
+> Buffers:         53896 kB
+> Cached:       11331924 kB
+> SwapCached:          0 kB
+> Active:         200740 kB
+> Inactive:     11284312 kB
+> HighTotal:           0 kB
+> HighFree:            0 kB
+> LowTotal:     16443828 kB
+> LowFree:        281176 kB
+> SwapTotal:     2031608 kB
+> SwapFree:      2031400 kB
+> Dirty:               4 kB
+> Writeback:           0 kB
+> AnonPages:      104464 kB
+> Mapped:          14644 kB
+> Slab:           440452 kB
+> PageTables:       4032 kB
+> NFS_Unstable:        0 kB
+> Bounce:              0 kB
+> CommitLimit:   8156368 kB
+> Committed_AS:   122452 kB
+> VmallocTotal: 34359738367 kB
+> VmallocUsed:    266872 kB
+> VmallocChunk: 34359471043 kB
+> HugePages_Total:  2048
+> HugePages_Free:    735
+> HugePages_Rsvd:      0
+> Hugepagesize:     2048 kB
+> 
+> 
+> # ethtool -S eth2 | egrep -v ': 0$'
+> NIC statistics:
+>      rx_packets: 724246449
+>      tx_packets: 229847
+>      rx_bytes: 152691992335
+>      tx_bytes: 10573426
+>      multicast: 725997241
+>      broadcast: 6
+>      rx_csum_offload_good: 723051776
+>      alloc_rx_buff_failed: 7119
+>      tx_queue_0_packets: 229847
+>      tx_queue_0_bytes: 10573426
+>      rx_queue_0_packets: 340698332
+>      rx_queue_0_bytes: 70844299683
+>      rx_queue_1_packets: 385298923
+>      rx_queue_1_bytes: 82276167594
+> 
+> 
+> ixgbe driver fragment
+> =====================
+>     struct sk_buff *skb = netdev_alloc_skb(adapter->netdev, bufsz);
+> 
+>     if (!skb) {
+>         adapter->alloc_rx_buff_failed++;
+>         goto no_buffers;
+>     }
+> 
 
-Ack
+152691992335/724246449 = 210 bytes per rx packet in average
 
-James
+It could make sense to add copybreak feature in this driver to reduce memory needs,
+but that also would consume more cpu cycles, and slow down forwarding setups.
 
-
+Maybe this packet trimming could be done generically in UDP stack input path,
+before queueing packet into a receive queue, if amount of available memory
+is under a given threshold.
