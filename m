@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZFPRDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbZFPRKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbZFPRDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 13:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZFPRDd
+	id S1759499AbZFPRKU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 13:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbZFPRKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 13:03:33 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:33278 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbZFPRDc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 13:03:32 -0400
-Message-ID: <4A37D073.6020802@freescale.com>
-Date: Tue, 16 Jun 2009 12:03:47 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Chris Pringle <chris.pringle@oxtel.com>
-CC: linux-kernel@vger.kernel.org,
-       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-References: <4A37A503.3030209@oxtel.com> <20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com> <4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
-In-Reply-To: <4A37CF02.5080906@oxtel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 16 Jun 2009 13:10:08 -0400
+Received: from mga11.intel.com ([192.55.52.93]:42602 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754240AbZFPRKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 13:10:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,230,1243839600"; 
+   d="scan'208";a="699910128"
+Date: Tue, 16 Jun 2009 10:10:09 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH V5: 3/3] pci: Provide Multiple Error Received support on
+ AER
+Message-ID: <20090616101009.521774ab@jbarnes-g45>
+In-Reply-To: <1245130516.2560.394.camel@ymzhang>
+References: <1245130516.2560.394.camel@ymzhang>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Pringle wrote:
-> Ah right - that would explain what we're seeing then... Doh. Thought I 
-> might have been onto something then. Is there any way to force a cache 
-> flush? That'd at least prove it was a caching issue if it resolved the 
-> problem.
+On Tue, 16 Jun 2009 13:35:16 +0800
+"Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
 
-You could enable CONFIG_NOT_COHERENT_CACHE.
+>     When a root port receive the same errors more than once before
+> kernel process them, the Multiple Error Messages Received flags are
+> set by hardware. Because root port could only save one kind of
+> correctable error source id and another uncorrectable error source id
+> at the same time, so the second message sender id is lost if the 2
+> messages are sent from 2 different devices. Below patch searches all
+> devices under the root port when multiple messages are received.
+>     
+>     Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
 
--Scott
+Thanks for rebasing Yanmin; I applied this to my linux-next branch with
+Andrew's reviewed-bys.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
