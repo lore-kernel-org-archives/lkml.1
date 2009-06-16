@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761170AbZFPS2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbZFPSbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761170AbZFPS2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 14:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZFPS2I
+	id S1761313AbZFPSbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 14:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760338AbZFPSbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 14:28:08 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42699 "EHLO kernel.dk"
+	Tue, 16 Jun 2009 14:31:36 -0400
+Received: from kroah.org ([198.145.64.141]:59853 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756807AbZFPS2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 14:28:08 -0400
-Date: Tue, 16 Jun 2009 20:28:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Steve Rottinger <steve@pentek.com>
-Cc: Leon Woestenberg <leon.woestenberg@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: splice methods in character device driver
-Message-ID: <20090616182810.GD11363@kernel.dk>
-References: <4A0838D1.5090102@pentek.com> <20090511192253.GH4694@kernel.dk> <4A0AFC62.3090002@pentek.com> <c384c5ea0906031432x2675c5a4xcc940a567ca408b8@mail.gmail.com> <20090604073218.GT11363@kernel.dk> <4A27CA0A.7060400@pentek.com> <20090616115917.GX11363@kernel.dk> <4A37B4D8.5090404@pentek.com>
+	id S1759805AbZFPSbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 14:31:35 -0400
+Date: Tue, 16 Jun 2009 11:26:04 -0700
+From: Greg KH <greg@kroah.com>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix OOPS in pl2303
+Message-ID: <20090616182604.GA28536@kroah.com>
+References: <87k53cy697.wl%vmayatsk@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A37B4D8.5090404@pentek.com>
+In-Reply-To: <87k53cy697.wl%vmayatsk@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16 2009, Steve Rottinger wrote:
-> >> I'm doing about 300MB/s to my hardware RAID, running two instances of my
-> >> splice() copy application
-> >> (One on each RAID channel).  I would like to combine the two RAID
-> >> channels using a software RAID 0;
-> >> however, splice, even from /dev/zero runs horribly slow to a software
-> >> RAID device.  I'd be curious
-> >> to know if anyone else has tried this?
-> >>     
-> >
-> > Did you trace it and find out why it was slow? It should not be. Moving
-> > 300MB/sec should not be making any machine sweat.
-> >
-> I haven't dug into this too deeply, yet; however, I did discover
-> something interesting: The splice runs much faster using the software
-> raid, if I transfer to a file on a mounted filesystem, instead of the
-> raw md block device. 
+On Tue, Jun 16, 2009 at 09:42:12AM +0200, Vitaly Mayatskikh wrote:
+> Kernel always OOPS in pl2303_close(), when serial converter disappears
+> and pppd tries to close statistics files in sysfs, because priv
+> structure was already freed in pl2302_shutdown().
+> 
+> This patch adds check for priv in pl2303_close().
+> 
+> Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
 
-OK, that's a least a starting point. I'll try this tomorrow (raw block
-device vs fs file).
+What kernel version are you seeing this problem on?  And what version is
+this patch for?
 
--- 
-Jens Axboe
+thanks,
 
+greg k-h
