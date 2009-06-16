@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763165AbZFPUzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbZFPU4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763165AbZFPUzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761161AbZFPUzI
+	id S1760712AbZFPU4h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757882AbZFPU4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:55:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50516 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760791AbZFPUzG (ORCPT
+	Tue, 16 Jun 2009 16:56:30 -0400
+Received: from mail-yx0-f173.google.com ([209.85.210.173]:58861 "EHLO
+	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757633AbZFPU43 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:55:06 -0400
-Date: Tue, 16 Jun 2009 16:54:54 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jacob Thebault-Spieker <summatusmentis@gmail.com>,
-       linux-afs@lists.infradead.org
-Subject: Re: [PATCH 01/17] VFS: Implement the pioctl() system call
-Message-ID: <20090616205454.GA2181@infradead.org>
-References: <20090616203845.4526.60013.stgit@warthog.procyon.org.uk> <20090616203850.4526.83585.stgit@warthog.procyon.org.uk>
+	Tue, 16 Jun 2009 16:56:29 -0400
+X-Greylist: delayed 151973 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 16:56:29 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=S/Qa1aAMlCBHUPAMNmaTqMKTB1cMjvu1PNtXEMLKlBYr4sna6QYoaj4SH7rAskgN3i
+         4Z5FDzBjvx0j7048ecx1sOtfUj7t+r7KDIrULDDI7E3HxsRtSp3FSU0w+p+ArAhfe0Yj
+         Gy6QUPFW3sQCY3IsgjuXdXID3g61wSdJ3f0rY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616203850.4526.83585.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <alpine.LFD.2.01.0906161351130.16802@localhost.localdomain>
+References: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie>
+	 <20090615022235.GA12905@kroah.com>
+	 <21d7e9970906141943s8dd6e27sd4308413601d65e3@mail.gmail.com>
+	 <48f7fe350906160853m41f43fe5i892a4057b5eae319@mail.gmail.com>
+	 <alpine.LFD.2.01.0906161119500.3282@localhost.localdomain>
+	 <21d7e9970906161345q6e826d18q3a197643e370156c@mail.gmail.com>
+	 <alpine.LFD.2.01.0906161351130.16802@localhost.localdomain>
+Date: Wed, 17 Jun 2009 06:56:31 +1000
+Message-ID: <21d7e9970906161356y75702185gff0500571fff1e47@mail.gmail.com>
+Subject: Re: [git pull] drm - fixes + radeon KMS (part 2)
+From: Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ryan Hope <rmh3093@gmail.com>, Greg KH <greg@kroah.com>,
+       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 09:38:51PM +0100, David Howells wrote:
-> From: Jacob Thebault-Spieker <summatusmentis@gmail.com>
-> 
-> Implement the pioctl() system call.  This is used to support a number of AFS
-> functions, and could also be used for Coda and other filesystems.
+On Wed, Jun 17, 2009 at 6:52 AM, Linus
+Torvalds<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 17 Jun 2009, Dave Airlie wrote:
+>>
+>> Linus can you pull this tree?
+>
+> I hate pulling trees when I know there are _known_ bugs.
+>
+> Even during the merge window. The rest of the -rc series is for fixing up
+> bugs, yes, but not bugs that were introduced on purpose.
+>
 
-Umm, adding a new system call multiplexer without any structure is a
-serious no-go.  And this one is much worse than ioctl, which with a
-fixed [fd,cmd,arg] tuple seems like a stronhold of sanity compred to this
-monster with multiple arguments and a path that may or may not be there.
+It only happens if the user enable staging drivers, and I suspect staging
+has much worse bugs, but okay I'll put the initcall fix into the tree
+and send you
+another pull request.
 
-I think you'd be better of writing tools that use a sane interface than
-adding a big pile of crap like this to the kernel.
-
+Dave.
+>                Linus
+>
