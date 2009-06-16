@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937825AbZFPGL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936338AbZFPGNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937825AbZFPGL5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937584AbZFPGJe
+	id S936338AbZFPGNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757785AbZFPGNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 02:09:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35730 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937578AbZFPGJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 02:09:32 -0400
-Date: Tue, 16 Jun 2009 15:53:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Roel Kluin <roel.kluin@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: linux-next: manual merge of the driver-core tree with the powerpc
- tree
-Message-Id: <20090616155317.d1f1217e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__16_Jun_2009_15_53_17_+1000_5CgLt.dtOYfaXZ9T"
+	Tue, 16 Jun 2009 02:13:00 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:36997 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757128AbZFPGM6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 02:12:58 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5647"; a="19467009"
+From: davidb@quicinc.com
+Date: Mon, 15 Jun 2009 23:12:46 -0700
+To: Ben Leslie <benno@benno.id.au>
+Cc: Brian Swetland <swetland@google.com>, Pavel Machek <pavel@ucw.cz>,
+       Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, lkml <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090616061246.GA10145@huya.quicinc.com>
+Mail-Followup-To: Ben Leslie <benno@benno.id.au>,
+	Brian Swetland <swetland@google.com>, Pavel Machek <pavel@ucw.cz>,
+	Nicolas Pitre <nico@cam.org>, Ryan Mallon <ryan@bluewatersys.com>,
+	Russell King - ARM Linux <linux@arm.linux.org.uk>,
+	Tony Lindgren <tony@atomide.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	David Miller <davem@davemloft.net>,
+	lkml <linux-kernel@vger.kernel.org>,
+	"linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
+References: <4A31AECA.6070303@bluewatersys.com> <alpine.LFD.2.00.0906112138090.31536@xanadu.home> <a55d774e0906111916y2f49e5a9q362e12b52fb5414a@mail.gmail.com> <20090612103521.GD18682@elf.ucw.cz> <a55d774e0906120344p57226dd4ve526f274a2bf7c8e@mail.gmail.com> <a55d774e0906130005v5a35aa60ybabde470ff44cf77@mail.gmail.com> <20090615162150.GC6842@huya.quicinc.com> <17b28da20906151525q1d8f10daj734faacf5dafda12@mail.gmail.com> <20090615223941.GA8974@huya.quicinc.com> <17b28da20906151641q352fd44fme0e7ddf347cf0b93@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17b28da20906151641q352fd44fme0e7ddf347cf0b93@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__16_Jun_2009_15_53_17_+1000_5CgLt.dtOYfaXZ9T
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jun 15, 2009 at 04:41:14PM -0700, Ben Leslie wrote:
 
-Hi Greg,
+> I would say that the binary there is pretty much completely redundant now.
+> Any new busybox 'for android' should probably build against the Android
+> C library, with the Android version of gcc etc. My contribution was done
+> before any of the Android source was available, and was compiled with
+> the codesourcery gcc compiler.
 
-Today's linux-next merge of the driver-core tree got a conflict in
-drivers/block/ps3disk.c between commits
-6dee2c87ebbe5d7ce8c4c163966a0bd9c02c75ef ("block/ps3: remove driver_data
-direct access of struct device") and
-03fa68c245cccbcb99035cbabaa13b408ba91ab5 ("ps3: shorten ps3_system_bus_
-[gs]et_driver_data to ps3_system_bus_[gs]et_drvdata") from the powerpc
-tree and commit db7afa200c4ef6823a2a40e4ea1dd747775be01a ("block/ps3:
-remove driver_data direct access of struct device") from the driver-core
-tree.
+A coworker spent a day or so trying to get this working and ran
+into a lot of difficulties.  Bionic is missing a lot of things
+that just aren't needed by Android, and busybox makes a lot of
+assumptions about the C library.  It'd be nice to have, but I
+think it would be a good amount of work.  For now, we're just
+living with a static glibc version.
 
-I fixed it up (I used the version from the powerpc tree).  Greg, I think
-the driver-core patch is no longer relevant.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Tue__16_Jun_2009_15_53_17_+1000_5CgLt.dtOYfaXZ9T
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko3M00ACgkQjjKRsyhoI8zt2QCgnGELqaTIr4Cq5z/mp7a3SKj0
-ookAoJo1ynvM+Gk6mxycGKMAWyxX5Xr5
-=tAe2
------END PGP SIGNATURE-----
-
---Signature=_Tue__16_Jun_2009_15_53_17_+1000_5CgLt.dtOYfaXZ9T--
+David
