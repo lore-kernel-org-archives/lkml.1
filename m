@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751378AbZFPKAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbZFPKBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751378AbZFPKAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZFPKAW
+	id S1756763AbZFPKBT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZFPKBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 06:00:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45506 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbZFPKAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 06:00:21 -0400
-Date: Tue, 16 Jun 2009 12:00:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in tty ldisc and friends
-Message-ID: <20090616100015.GD6432@elte.hu>
-References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com> <20090616093741.0d5b36bc@lxorguk.ukuu.org.uk> <20090616085028.GA13771@elte.hu> <20090616095706.36f01282@lxorguk.ukuu.org.uk>
+	Tue, 16 Jun 2009 06:01:09 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:8514 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZFPKBI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 06:01:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=B1yiuiTY74ONpBBIVKq/vw1Gb3BKkXxi0ztOLD/aBY8EebisTTdlW+fK2tb6v1gaAH
+         9RfSmeLvtW4/fxWuUAnHM8qAy7C+vAIBmX51MFP9SKqgYv43SF5Hh1UckMq9Ew0r2ORA
+         sTEFZUnoxlN/zTGScZ92CI8klCvYLxBcB+4Vk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616095706.36f01282@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200906151337.17066.arnd@arndb.de>
+References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> 
+	<1244980878-2124-11-git-send-email-vapier@gentoo.org> <200906151337.17066.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 16 Jun 2009 06:00:50 -0400
+Message-ID: <8bd0f97a0906160300s15982889h11487a8421f95582@mail.gmail.com>
+Subject: Re: [PATCH 10/17] Blackfin: convert dma/pci to asm-generic
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 15, 2009 at 07:37, Arnd Bergmann wrote:
+> On Sunday 14 June 2009, Mike Frysinger wrote:
+>> --- a/arch/blackfin/include/asm/dma-mapping.h
+>> +++ b/arch/blackfin/include/asm/dma-mapping.h
+>> @@ -2,97 +2,28 @@
+>>  #define _BLACKFIN_DMA_MAPPING_H
+>>
+>>  #include <asm/scatterlist.h>
+>> +#include <asm-generic/dma-mapping-broken.h>
+>
+> I would leave this one alone, I don't think that moving
+> to dma-mapping-broken.h helps here.
 
-got the debug data off-list (it's large):
+just trying to punt as much as possible from arch/blackfin/ as it
+means less stuff for me to worry about :).  i'll drop the
+dma-mapping.h change from this patch.
 
- lock-classes:                         1763 [max: 8191]
- direct dependencies:                  9104 [max: 16384]
- indirect dependencies:              129622
- all direct dependencies:           1129624
- dependency chains:                    9781 [max: 32768]
- dependency chain hlocks:             27553 [max: 163840]
- in-hardirq chains:                    1573
- in-softirq chains:                     131
- in-process chains:                    8077
- stack-trace entries:                262144 [max: 262144]
+> I have a dma-mapping
+> branch in my asm-generic repository. While I could not
+> get an agreement on an approach for a common dma-mapping.h
+> file for asm-generic, I did a number of cleanups on a few
+> architectures. Feel free to take this patch as a base for
+> your work.
 
-stack-trace entries ran out. And it seems like you didnt quadruple 
-MAX_STACK_TRACE_ENTRIES to 1 million entries.
-
-Do we run out of entries right during bootup? Are you 
-loading/unloading modules a lot perhaps? Could you send your .config 
-please? (assuming a plain bootup triggers it - that should make it 
-reproducible to me too)
-
-Thanks,
-
-	Ingo
+once i get most of my local queue settled, i'll look at integrating
+this.  thanks!
+-mike
