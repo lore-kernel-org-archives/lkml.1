@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763216AbZFPWo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbZFPWrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763216AbZFPWo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 18:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757021AbZFPWoT
+	id S1763288AbZFPWrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 18:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZFPWrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 18:44:19 -0400
-Received: from bar.sig21.net ([80.81.252.164]:60103 "EHLO bar.sig21.net"
+	Tue, 16 Jun 2009 18:47:07 -0400
+Received: from gra-lx1.iram.es ([150.214.224.41]:47060 "EHLO gra-lx1.iram.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753774AbZFPWoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 18:44:18 -0400
-Date: Wed, 17 Jun 2009 00:44:31 +0200
-From: Johannes Stezenbach <js@sig21.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: venkatesh.pallipadi@intel.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       davej@redhat.com, pavel@ucw.cz, linux-acpi@vger.kernel.org,
-       lenb@kernel.org, arjan@infradead.org, tglx@linutronix.de
-Subject: Re: 2.6.30: hibernation/swsusp lockup due to acpi-cpufreq
-Message-ID: <20090616224431.GA14186@sig21.net>
-References: <20090615232709.GA6059@sig21.net> <200906160216.29537.rjw@sisk.pl> <20090616142217.GA5548@sig21.net> <20090616115540.ceb67a30.akpm@linux-foundation.org> <20090616195750.GA12814@sig21.net> <20090616202558.GA5423@linux-os.sc.intel.com> <20090616204039.GA13399@sig21.net> <20090616140923.eb3ae6e3.akpm@linux-foundation.org>
+	id S1751473AbZFPWrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 18:47:05 -0400
+X-Greylist: delayed 1162 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 18:47:05 EDT
+Date: Wed, 17 Jun 2009 00:27:23 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Avi Kivity <avi@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
+Message-ID: <20090616222723.GA18394@iram.es>
+References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com> <alpine.LFD.2.01.0906131312470.3237@localhost.localdomain> <alpine.LFD.2.01.0906131323270.3237@localhost.localdomain> <4A34E4A5.3040306@redhat.com> <18996.60235.178618.531664@cargo.ozlabs.ibm.com> <4A34F564.2010500@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090616140923.eb3ae6e3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-21-Score: -3.6 (---)
-X-Spam-21-Report: No, score=-3.6 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.831,BAYES_00=-2.599 autolearn=no
+In-Reply-To: <4A34F564.2010500@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 02:09:23PM -0700, Andrew Morton wrote:
-> 
-> Right, so it's the suspend-must-disable-local-interrupts thing.  Again.
->  create_image()'s local_irq_disable().
-> 
-> It was wrong to call work_on_cpu() with lcoal interrupts disabled, and
-> it's now wrong to call smp_call_function_single() with local interrupts
-> disabled.  It's just that smp_call_function_single() warns while
-> work_on_cpu() didn't.
-> 
-> That all explains the warning But afaik we still don't know why your
-> machine actually failed.  Perhaps it is a side-efect of emitting the
-> warning when the console is in a weird state?
+On Sun, Jun 14, 2009 at 04:04:36PM +0300, Avi Kivity wrote:
+> Paul Mackerras wrote:
+>> Avi Kivity writes:
+>>
+>>   
+>>> An alternative implementation using 64-bit cmpxchg will recover most 
+>>> of the costs of hashed spinlocks.  I assume most serious 32-bit  
+>>> architectures have them?
+>>>     
+>>
+>> Have a 64-bit cmpxchg, you mean?  x86 is the only one I know of, and
+>> it already has an atomic64_t implementation using cmpxchg8b (or
+>> whatever it's called).
+>>   
+>
+> Yes (and it is cmpxchg8b).  I'm surprised powerpc doesn't have DCAS support.
 
-smp_call_function_single() enables irqs and hibernate doesn't like that?
+Well, s390 and m68k have the equivalent (although I don't think Linux
+suppiorts SMP m68k, although some dual 68040/68060 boards have existed).
 
-BTW, I have no other UP machine to test with, but I reported
-in another thread that a !SMP kernel (or a SMP kernel
-with maxcpus=0 parameter) does not boot at all on
-my destop machine, see
-http://lkml.org/lkml/2009/6/12/468
+But 32 bit PPC will never have it. It just does not fit in the architecture
+since integer loads and stores are limited to 32 bit (or split into 32 bit
+chunks). Besides that there is no instruction that performs a read-modify-write
+of memory. This would make the LSU much more complex for a corner case.
 
-No idea if I should be worried about this since the
-SMP kernel now works fine, another hibernate problem
-was solved in
-http://lkml.org/lkml/2009/6/14/156
+Hey, Intel also botched the first implementation of cmpxchg8b on the Pentium:
+the (in)famous f00f bug is actually "lock cmpxchg8b" with a register operand.
 
+Now for these counters, other solutions could be considered, like using
+the most significant bit as a lock and having "only" 63 usable bits (when 
+counting ns, this overflows at 292 years). 
 
-Johannes
+>
+>> My thinking is that the 32-bit non-x86 architectures will be mostly
+>> UP, so the overhead is just an interrupt enable/restore.  Those that
+>> are SMP I would expect to be small SMP -- mostly just 2 cpus and maybe
+>> a few 4-way systems.
+>>   
+>
+> The new Nehalems provide 8 logical threads in a single socket.  All  
+> those threads share a cache, and they have cmpxchg8b anyway, so this  
+> won't matter.
+>
+
+The problem is not Nehalem (who wants to run 32 bit kernels on a Nehalem
+anyway) or x86.
+
+The problem is that the assumption that the largest PPC32 SMP are 4 way
+may be outdated:
+
+http://www.freescale.com/webapp/sps/site/prod_summary.jsp?fastpreview=1&code=P4080
+
+and some products including that processor have been announced (I don't know
+whether they are shipping or not) and (apparently) run Linux.
+
+	Gabriel
