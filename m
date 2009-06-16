@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764311AbZFPUqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbZFPUqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764311AbZFPUqf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 16:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764716AbZFPUpi
+	id S932073AbZFPUqw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 16:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764840AbZFPUqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 16:45:38 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:37372 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764126AbZFPUph convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 16:45:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ij4spJV5VPrQQTiHgCFgKJlmFmNyCSUus2JhF+7rJTmxV6D3MqmOu2HKLVECPevLDV
-         Jh3jiZcFdfSOq9heNAiyNvHcT2Xfi+tmRmTcmGY7yssk/962DgaiTB2URgMJ1fqcs9Pm
-         M3sXINgPd/RUIjvr1tQKJaVTqNFoTK47Rj03A=
+	Tue, 16 Jun 2009 16:46:22 -0400
+Received: from claw.goop.org ([74.207.240.146]:44666 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764823AbZFPUqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 16:46:21 -0400
+Message-ID: <4A380494.6030506@goop.org>
+Date: Tue, 16 Jun 2009 13:46:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.01.0906161119500.3282@localhost.localdomain>
-References: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie>
-	 <20090615022235.GA12905@kroah.com>
-	 <21d7e9970906141943s8dd6e27sd4308413601d65e3@mail.gmail.com>
-	 <48f7fe350906160853m41f43fe5i892a4057b5eae319@mail.gmail.com>
-	 <alpine.LFD.2.01.0906161119500.3282@localhost.localdomain>
-Date: Wed, 17 Jun 2009 06:45:39 +1000
-Message-ID: <21d7e9970906161345q6e826d18q3a197643e370156c@mail.gmail.com>
-Subject: Re: [git pull] drm - fixes + radeon KMS (part 2)
-From: Dave Airlie <airlied@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ryan Hope <rmh3093@gmail.com>, Greg KH <greg@kroah.com>,
-       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Daniel Walker <dwalker@fifo99.com>
+CC: Greg Kroah-Hartman <greg@kroah.com>, Brian Swetland <swetland@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny && usage
+References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+In-Reply-To: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 4:20 AM, Linus
-Torvalds<torvalds@linux-foundation.org> wrote:
+On 06/12/09 11:51, Daniel Walker wrote:
+> Signed-off-by: Daniel Walker<dwalker@fifo99.com>
+> ---
+>   drivers/staging/android/binder.c |   14 ++++++++------
+>   1 files changed, 8 insertions(+), 6 deletions(-)
 >
+> diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
+> index 17d89a8..c37336d 100644
+> --- a/drivers/staging/android/binder.c
+> +++ b/drivers/staging/android/binder.c
+> @@ -2146,7 +2146,7 @@ static int binder_thread_read(struct binder_proc *proc,
+>   	void __user *end = buffer + size;
 >
-> On Tue, 16 Jun 2009, Ryan Hope wrote:
->>
->> +#ifdef MODULE
->>  module_init(radeon_init);
->> +#else
->> +late_initcall(radeon_init);
->> +#endif
+>   	int ret = 0;
+> -	int wait_for_proc_work;
+> +	int wait_for_proc_work = 0;
 >
+>   	if (*consumed == 0) {
+>   		if (put_user(BR_NOOP, (uint32_t __user *)ptr))
+> @@ -2155,8 +2155,8 @@ static int binder_thread_read(struct binder_proc *proc,
+>   	}
 >
-> You should never need something like that.
->
-> Just do
->
->        late_initcall(radeon_init);
+>   retry:
+> -	wait_for_proc_work = thread->transaction_stack == NULL&&
+> -				list_empty(&thread->todo);
+> +	if (list_empty(&thread->todo)&&  thread->transaction_stack == NULL)
+> +		wait_for_proc_work = 1;
+>    
 
-I actually don't think we need either of them, the ordering shuoldn't
-matter, its just a bug we need to fix
-in the radeon code during staging I expect, in theory you should be
-able to load fbcon before/after radeon.
+I think the original looks cleaner (in both cases).  Assigning a 
+variable with the result of a boolean expression is perfectly 
+reasonable.  Perhaps change the type of the variable to "bool" to make 
+it a bit clearer what's going on.
 
-I don't think the intel code suffers from this issue.
+(It would be a different matter if any of the expression had side-effects.)
 
-Linus can you pull this tree?
-
-Dave.
+     J
