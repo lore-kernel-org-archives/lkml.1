@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763020AbZFPVWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763489AbZFPVXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763020AbZFPVWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 17:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZFPVWW
+	id S1763489AbZFPVXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbZFPVXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 17:22:22 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52261 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbZFPVWW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 17:22:22 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 16 Jun 2009 23:22:04 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] FireWire updates post 2.6.30
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.9282749343d60f9f@s5r6.in-berlin.de>
+	Tue, 16 Jun 2009 17:23:05 -0400
+Received: from imp03.mtu.ru ([62.5.255.20]:32902 "EHLO imp03.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754582AbZFPVXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 17:23:04 -0400
+X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 17:23:03 EDT
+Message-ID: <4A380C49.6050206@aknet.ru>
+Date: Wed, 17 Jun 2009 01:19:05 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Tejun Heo <tj@kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Chuck Ebbert <76306.1226@compuserve.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ping: Re: [PATCH 0/2] i386: espfix fixes
+References: <1244378557-5455-1-git-send-email-heukelum@fastmail.fm> <1245182594.27756.1320705931@webmail.messagingengine.com>
+In-Reply-To: <1245182594.27756.1320705931@webmail.messagingengine.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Flag: NO
+X-Spam-Yversion: Spamooborona-3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+Hi.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+17.06.2009 00:03, Alexander van Heukelum wrote:
+> Just wanted to get a little attention for the espfix fixes...
+>
+> http://lkml.org/lkml/2009/6/7/106 : fix return to 16-bit stack from NMI
+> http://lkml.org/lkml/2009/6/7/109 : fix/simplify espfix, move it into
+> assembly
+>
+> Any objections against those?
+Well, the dynamic limits were advocated
+by Zach and Chuck, so lets ask them first
+(added CCs).
 
-to receive the following IEEE 1394/ FireWire subsystem updates:
-  - a few small fixes,
-  - a new sysfs attribute for simpler and saner udev rules,
-  - preparations to add more drivers to the newer firewire stack
-    (mostly just header reorganization and file renames, as obvious in
-    the diffstat).
+For the rest:
+Acked-by: Stas Sergeev <stsp@aknet.ru>
 
-Admittedly, more than half of the commits are from June, but it's not
-much and not complex and was successfully exposed to linux-next as long
-as possible.
-
-There is one firewire-sbp2 change in Greg's driver core pull request,
-but git will merge it correctly regardless of the merge order.
-
-Stefan Richter (14):
-      firewire: core: improve check for local node
-      firewire: core: check for missing struct update at build time, not run time
-      firewire: core: add sysfs attribute for easier udev rules
-      firewire: share device ID table type with ieee1394
-      firewire: also use vendor ID in root directory for driver matches
-      firewire: ohci: access bus_seconds atomically
-      firewire: clean up includes
-      firewire: reorganize header files
-      firewire: rename source files
-      firewire: add parent-of-unit accessor
-      firewire: core: include linux/uaccess.h instead of asm/uaccess.h
-      firewire: core: prepare for non-core children of card devices
-      firewire: core: don't update Broadcast_Channel if RFC 2734 conditions aren't met
-      firewire: core: use more outbound tlabels
-
- drivers/firewire/Makefile                          |    8 +-
- drivers/firewire/{fw-card.c => core-card.c}        |   25 +-
- drivers/firewire/{fw-cdev.c => core-cdev.c}        |   13 +-
- drivers/firewire/{fw-device.c => core-device.c}    |  154 ++++++-
- drivers/firewire/{fw-iso.c => core-iso.c}          |    6 +-
- .../firewire/{fw-topology.c => core-topology.c}    |   24 +-
- .../{fw-transaction.c => core-transaction.c}       |   42 ++-
- drivers/firewire/core.h                            |  293 +++++++++++++
- drivers/firewire/fw-device.h                       |  202 ---------
- drivers/firewire/fw-topology.h                     |   77 ----
- drivers/firewire/fw-transaction.h                  |  446 --------------------
- drivers/firewire/{fw-ohci.c => ohci.c}             |   19 +-
- drivers/firewire/{fw-ohci.h => ohci.h}             |    6 +-
- drivers/firewire/{fw-sbp2.c => sbp2.c}             |   58 ++-
- include/linux/firewire.h                           |  358 ++++++++++++++++
- 15 files changed, 902 insertions(+), 829 deletions(-)
- rename drivers/firewire/{fw-card.c => core-card.c} (97%)
- rename drivers/firewire/{fw-cdev.c => core-cdev.c} (99%)
- rename drivers/firewire/{fw-device.c => core-device.c} (88%)
- rename drivers/firewire/{fw-iso.c => core-iso.c} (99%)
- rename drivers/firewire/{fw-topology.c => core-topology.c} (97%)
- rename drivers/firewire/{fw-transaction.c => core-transaction.c} (97%)
- create mode 100644 drivers/firewire/core.h
- delete mode 100644 drivers/firewire/fw-device.h
- delete mode 100644 drivers/firewire/fw-topology.h
- delete mode 100644 drivers/firewire/fw-transaction.h
- rename drivers/firewire/{fw-ohci.c => ohci.c} (99%)
- rename drivers/firewire/{fw-ohci.h => ohci.h} (98%)
- rename drivers/firewire/{fw-sbp2.c => sbp2.c} (97%)
- create mode 100644 include/linux/firewire.h
-
-Thanks,
--- 
-Stefan Richter
--=====-==--= -==- =----
-http://arcgraph.de/sr/
-
+In particular, I am asking now myself why
+have I used THREAD_SIZE there, and can't
+recall the reason...
