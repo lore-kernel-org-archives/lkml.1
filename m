@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762374AbZFPB0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZFPBcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762374AbZFPB0b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Jun 2009 21:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbZFPB0X
+	id S1755356AbZFPBcd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Jun 2009 21:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZFPBcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Jun 2009 21:26:23 -0400
-Received: from mga03.intel.com ([143.182.124.21]:6996 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752964AbZFPB0X convert rfc822-to-8bit (ORCPT
+	Mon, 15 Jun 2009 21:32:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59653 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbZFPBcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Jun 2009 21:26:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,225,1243839600"; 
-   d="scan'208";a="154791546"
-Date: Tue, 16 Jun 2009 09:21:21 +0800
-From: Alek Du <alek.du@intel.com>
-To: Florian Fainelli <florian@openwrt.org>
-CC: Ben Dooks <ben-linux@fluff.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
- gpio_alt_func features to GPIOLIB
-Message-ID: <20090616092121.3ed42b63@dxy.sh.intel.com>
-In-Reply-To: <200906151504.51934.florian@openwrt.org>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com>
-	<20090615125146.GC19873@fluff.org.uk>
-	<200906151504.51934.florian@openwrt.org>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Mon, 15 Jun 2009 21:32:24 -0400
+Message-ID: <4A36F520.6020604@zytor.com>
+Date: Mon, 15 Jun 2009 18:28:00 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain	support
+ to use NMI-safe methods
+References: <4A36A1C7.6080005@zytor.com> <20090615210119.GD24554@elte.hu> <20090615211207.GB12919@Krystal> <20090615211605.GC27100@elte.hu> <20090615213429.GD12919@Krystal> <4A36BF61.10901@zytor.com> <20090615215420.GE12919@Krystal> <4A36C953.8060906@zytor.com> <20090615223038.GA15903@Krystal> <4A36CCFC.8070908@zytor.com> <20090615224908.GA16661@Krystal>
+In-Reply-To: <20090615224908.GA16661@Krystal>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009 21:04:50 +0800
-Florian Fainelli <florian@openwrt.org> wrote:
-
-> Le Monday 15 June 2009 14:51:46 Ben Dooks, vous avez écrit :
-> > On Mon, Jun 15, 2009 at 05:15:02PM +0800, Alek Du wrote:
-> > > >From 7a76916ccea4a376a260ea67fbc79ac4d958757f Mon Sep 17 00:00:00 2001
-> > >
-> > > From: Alek Du <alek.du@intel.com>
-> > > Date: Fri, 8 May 2009 09:46:49 +0800
-> > > Subject: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and
-> > > gpio_alt_func features to GPIOLIB
-> > >
-> > > Add some more functions to GPIOLIB, they are:
-> > > * gpio_detect is to set GPIO interrupt triggering method (edge, level,
-> > > high, low, etc.)
+Mathieu Desnoyers wrote:
 > 
-> The name does not seem to reflect what it does, what about gpio_set_type or 
-> gpio_set_int_type for instance ?
+> Where is the kernel page fault handler grabbing any lock to service
+> in-kernel page faults exactly ?
 > 
-> >
-> > This is the wrong way of doing it, there is as a definit set_type
-> > method in the irq_chip structure which should be used to alter the
-> > way the IRQ is triggered.
+> Those are usually considered as utterly simple page table fixups,
+> nothing more.
 > 
-> I would expect your architecture IRQ handler to have a set_type callback for 
-> the GPIO lines capables of generating an interrupt. See how we have beeing 
-> doing it for rb532 for instance: 
-> http://www.linux-mips.org/git?p=linux-queue.git;a=blob;f=arch/mips/rb532/irq.c;h=f07882029a90d3d155c17b462812c2936229458c;hb=HEAD#l173
 
+It doesn't, *because it doesn't have to*.  Your proposal requires that
+page faults can be handled inside the page fault handler, and that's a
+pretty tall order.
 
-For you case, in set_type handler it calls a "rb532_gpio_set_ilevel", my purpose of the gpio_detect is to provide the general way to replace 
-the private function like "rb532_gpio_set_ilevel". Suppose you have several type GPIO devices in the system, in you way, you have to export
-different private function to set each GPIO device triggering mode. Also for some system, we have i2c or SPI GPIO expander, we need to hook
-them on the fly. The gpio_detect API provide a general way to set triggering mode, you could call it under set_type callback.
+	-hpa
 
-Thanks,
-Alek
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
