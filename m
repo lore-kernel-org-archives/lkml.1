@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbZFPKe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbZFPKfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380AbZFPKe4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbZFPKer
+	id S1756910AbZFPKfL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:35:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbZFPKew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 06:34:47 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:33882 "EHLO
-	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZFPKep convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 06:34:52 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:21219 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756195AbZFPKev convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 06:34:45 -0400
-X-SpamScore: -22
-X-BigFish: VPS-22(zz1432R98dR1805Mzz1202hzzz32i6bh17ch43j)
-X-WSS-ID: 0KLBUPP-03-D9Z-01
-Date: Tue, 16 Jun 2009 12:34:35 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in tty ldisc and friends
-Message-ID: <20090616103435.GI5139@amd.com>
-References: <alpine.DEB.2.00.0906160144340.26673@gandalf.stny.rr.com> <20090616093741.0d5b36bc@lxorguk.ukuu.org.uk> <20090616085028.GA13771@elte.hu> <20090616095706.36f01282@lxorguk.ukuu.org.uk> <20090616100015.GD6432@elte.hu> <20090616110419.14bc9485@lxorguk.ukuu.org.uk> <20090616101240.GB28204@elte.hu> <20090616102509.GA32717@elte.hu> <20090616102910.GA11011@elte.hu>
+	Tue, 16 Jun 2009 06:34:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Xkbj2PPbECnv5IjsgGQtkVdaq0v84Ydg85RhjYQzliwUa0ZhKBc+rd5b5f9/78r8Pz
+         mB8Tta4NSCtHS4vECC/OAHRkj0n3CExjej3I2Vup0mcKyY3xBHZN+rYsCgmGj96vPHiQ
+         xKWdJgLuj1aQrs8Lndkvn2XSv9FsDIjZA7ZmI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090616102910.GA11011@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200906142217.50997.arnd@arndb.de>
+References: <1244959204-11269-1-git-send-email-vapier@gentoo.org> 
+	<1244959204-11269-4-git-send-email-vapier@gentoo.org> <200906142217.50997.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 16 Jun 2009 06:34:34 -0400
+Message-ID: <8bd0f97a0906160334rc85a3bei29bfbfd65f3fab3d@mail.gmail.com>
+Subject: Re: [PATCH 4/4] asm-generic: uaccess: fix access_ok() prototype
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 16 Jun 2009 10:34:35.0769 (UTC) FILETIME=[0B270690:01C9EE6E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 12:29:10PM +0200, Ingo Molnar wrote:
-> We are now well below the limit for stack-trace entries.
-> 
-> This is something we noticed recently: dma-debug uses a lot of lock 
-> classes and thus creates a really large lock-graph, depleting the 
-> reserves quickly.
+On Sun, Jun 14, 2009 at 16:17, Arnd Bergmann wrote:
+> On Sunday 14 June 2009, Mike Frysinger wrote:
+>> @@ -37,14 +37,14 @@ static inline void set_fs(mm_segment_t fs)
+>> Â #define VERIFY_READ Â  Â 0
+>> Â #define VERIFY_WRITE Â  1
+>>
+>> -#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
+>> +#define access_ok(type, addr, size) __access_ok((addr), (size))
+>>
+>> Â /*
+>> Â  * The architecture should really override this if possible, at least
+>
+> Upon actually testing this change, it turns out that this causes more
+> trouble because of having to pass down pointers that may have 'const'
+> or 'volatile' modifiers. I'm sure there is a way to do this correctly,
+> but most architectures seem to cope well with 'unsigned long' here,
+> and your patch 3/4 solves the original problem nicely.
 
-Is this considered a problem? I increased the hash-size to 1024 for
-performance reasons (== 1024 spin_locks). But if it hurts to much in
-other places this can be reverted.
-
-	Joerg
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+yeah, i ended up making the Blackfin access_ok replacement cast the
+first argument to an unsigned long to avoid those warnings ;).  i
+guess we can just leave this alone for a rainy day ...
+-mike
