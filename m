@@ -1,96 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761726AbZFPT1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762100AbZFPT2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761726AbZFPT1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 15:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761436AbZFPT1i
+	id S1762100AbZFPT2g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 15:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZFPT22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 15:27:38 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:57379 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761725AbZFPT1g convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 15:27:36 -0400
-To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Tao Ma <tao.ma@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
-References: <4A2A7F33.4030807@oracle.com> <4A2CA96D.3090502@oracle.com>
-	<2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com>
-	<4A2CC52B.9010602@oracle.com>
-	<2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com>
-	<m1ab4i11zx.fsf@fess.ebiederm.org>
-	<20090611050929.GA2706@cr0.nay.redhat.com>
-	<m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0>
-	<m17hzdhkr8.fsf@fess.ebiederm.org>
-	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 16 Jun 2009 12:27:36 -0700
-In-Reply-To: <2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
- (=?utf-8?Q?=22Am=C3=A9rico?= Wang"'s message of "Tue\, 16 Jun 2009
- 23\:29\:18 +0800")
-Message-ID: <m1my88568n.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 16 Jun 2009 15:28:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58627 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751889AbZFPT21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 15:28:27 -0400
+Date: Tue, 16 Jun 2009 21:28:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/5] [GIT PULL] tracing/filters/ringbuffer: updates for
+	2.6.31
+Message-ID: <20090616192821.GA12699@elte.hu>
+References: <20090616175133.317996432@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: xiyou.wangcong@gmail.com, adobriyan@gmail.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, tao.ma@oracle.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616175133.317996432@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo Wang <xiyou.wangcong@gmail.com> writes:
 
-> On Mon, Jun 15, 2009 at 6:08 PM, Eric W. Biederman<ebiederm@xmission.com> wrote:
->> Amerigo Wang <xiyou.wangcong@gmail.com> writes:
->>
->>> Fix wrong /proc/kcore size on x86_64.
->>>
->>> x86_64 uses __va() macro to caculate the virtual address passed to kclist_add()
->>> but decodes it with its own macro kc_vadd_to_offset(). This is wrong.
->>
->> Ok.  I finally understand what is going on here, and no kc_vaddr_to_offset
->> is not wrong when applied to a virtual address.  In fact I expect the current
->> definition makes things a bit more predictable.
->>
->> And yes kclist_add is must be given a virtual address
->>
->>> Also, according to Documentation/x86/x86_64/mm.txt, kc_vaddr_to_offset()
->>> is wrong too.
->>
->> How so?  The file offset is a number space that is different from both
->> physical and virtual addresses.
->
-> Why? They _do_ have some calculated relations.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Sure.  The offset is what you give to read/write.  The virtual
-addresses are what the kernel uses.  In general in a core file they
-are only tied together with the elf header.   We do something a little
-more pragmatic in the kernel.
+> Ingo,
+> 
+> Could you run these through your tests. I ran them through mine and
+> they passed.
+> 
+> These should really make it into 31 since they all fix some bugs.
+> 
+> Please pull the latest tip/tracing/urgent tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/urgent
+> 
+> 
+> Li Zefan (2):
+>       tracing/filters: free filter_string in destroy_preds()
+>       tracing/filters: fix race between filter setting and module unload
+> 
+> Steven Rostedt (3):
+>       ring-buffer: have benchmark test handle discarded events
+>       ring-buffer: remove unused variable
+>       ring-buffer: use commit counters for commit pointer accounting
+> 
+> ----
+>  kernel/trace/ring_buffer.c           |  155 ++++++++++++++++-----------------
+>  kernel/trace/ring_buffer_benchmark.c |    8 +-
+>  kernel/trace/trace_events_filter.c   |   28 +++----
+>  3 files changed, 91 insertions(+), 100 deletions(-)
 
->>> So just remove them, use the generic macro.
->>
->> I think a case can be made either way.  In practice neither answer
->> gives us a dense offset space on x86_64 so I think I prefer the
->> current definition which sets or clears the high bits as opposed
->> to something that mangles the address more.
->>
->
-> I am trying to dig more... There must be something wrong there.
+Pulled, thanks Steve!
 
-How so?
-
->> It uses get_kcore_size and (size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
->> The second definition being bogus as it has nothing to do with which
->> offsets are accepted.
->
-> Agreed. Maybe we can just remove the second one and update the doc?
-
-Yes.  It isn't critical but reducing confusion is good.
-Do you want to cook up the patch for that?
-
-Eric
+	Ingo
