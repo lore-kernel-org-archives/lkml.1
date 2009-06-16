@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbZFPWIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbZFPWMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbZFPWIi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 18:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZFPWIb
+	id S1758795AbZFPWMB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 18:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZFPWLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 18:08:31 -0400
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:13919 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751505AbZFPWIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 18:08:30 -0400
-X-Greylist: delayed 913 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 18:08:30 EDT
-Date: Wed, 17 Jun 2009 00:53:18 +0300
-From: Dragos Tatulea <dtatulea@ixiacom.com>
-To: linux-kernel@vger.kernel.org
-Subject: DMA_ENGINE: can't use it without selecting a dma engine driver
-Message-ID: <20090617005318.1e35ae98@dragos-tp.localdomain>
-Organization: IXIA
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jun 2009 21:53:18.0376 (UTC) FILETIME=[DBB7BA80:01C9EECC]
+	Tue, 16 Jun 2009 18:11:53 -0400
+Received: from thunk.org ([69.25.196.29]:45979 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753208AbZFPWLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 18:11:52 -0400
+Date: Tue, 16 Jun 2009 18:11:47 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: linux-next: ext4 tree build failure
+Message-ID: <20090616221147.GC14788@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	Christoph Lameter <cl@linux-foundation.org>
+References: <20090616144413.50e975f9.sfr@canb.auug.org.au> <20090616203034.GB14788@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616203034.GB14788@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jun 16, 2009 at 04:30:34PM -0400, Theodore Tso wrote:
+> On Tue, Jun 16, 2009 at 02:44:13PM +1000, Stephen Rothwell wrote:
+> > Hi Ted,
+> > 
+> > Today's linux-next build (powerpc ppc64_defconfig) failed like this after
+> > the slab tree was merged:
+> > 
+> > In file included from fs/jbd2/checkpoint.c:26:
+> > include/trace/events/jbd2.h:11: error: expected ')' before '(' token
+> > include/trace/events/jbd2.h:31: error: expected ')' before '(' token
+> 
+> Hmm... I wonder why the slab tree would be messing with tracing
+> include files.
+> 
+> Which slab tree is it?  Is it Pekka's?
+> 
+>       git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
+> 
 
-	Just discovered that it's impossible to select the dma engine without
-	compiling a dma engine driver from the kernel. What if I want to use a
-	different dma engine?
- 
-	I'm using CONFIG_DMADEVICES=y CONFIG_DMA_ENGINE=y (dependencies
-	included),	
+Never mind, I see the problem.   Thanks for pointing it out!
 
-Thanks,
-Dragos
+      	      	      		 	    - Ted
