@@ -1,110 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbZFPJDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZFPJEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbZFPJDO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 05:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZFPJC7
+	id S1753364AbZFPJEn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 05:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZFPJEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:02:59 -0400
-Received: from trinity.fluff.org ([89.16.178.74]:33740 "EHLO trinity.fluff.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbZFPJC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:02:59 -0400
-Date: Tue, 16 Jun 2009 10:02:58 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Alek Du <alek.du@intel.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, Florian Fainelli <florian@openwrt.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpiolib: Add gpio_detect, gpio_debounce and gpio_alt_func features to GPIOLIB
-Message-ID: <20090616090258.GD14476@trinity.fluff.org>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com> <20090615125146.GC19873@fluff.org.uk> <200906151504.51934.florian@openwrt.org> <20090616092121.3ed42b63@dxy.sh.intel.com> <20090616084524.GC14476@trinity.fluff.org> <20090616165135.2ef993a4@dxy.sh.intel.com>
+	Tue, 16 Jun 2009 05:04:36 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:47813 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752115AbZFPJEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 05:04:35 -0400
+Date: Tue, 16 Jun 2009 11:04:35 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, devicetree-discuss@ozlabs.org,
+       "Hans J. Koch" <hjk@linutronix.de>, Magnus Damm <magnus.damm@gmail.com>,
+       linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+Message-ID: <20090616090435.GA21321@pengutronix.de>
+References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de> <1244765062-14144-3-git-send-email-w.sang@pengutronix.de> <fa686aa40906140740m43e9dd8am4d242310f681c95c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
 Content-Disposition: inline
-In-Reply-To: <20090616165135.2ef993a4@dxy.sh.intel.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+In-Reply-To: <fa686aa40906140740m43e9dd8am4d242310f681c95c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 04:51:35PM +0800, Alek Du wrote:
-> On Tue, 16 Jun 2009 16:45:24 +0800
-> Ben Dooks <ben-linux@fluff.org> wrote:
-> 
-> under set_type callback.
-> > 
-> > Somehow you are still missing my point, this is the way it can be done
-> > at the moment, without any extension to the API!
-> > 
-> > int attach_my_gpio_irq(int gpio, void *irqpw)
-> > {
-> > 	int ret;
-> > 	int irq;
-> > 
-> > 	irq = gpio_to_irq(gpio);
-> > 	if (irq < 0) {
-> > 		printk(KERN_ERR "%s: no gpio irq available\n", __func__);
-> > 		return irq;
-> > 	}
-> > 
-> > 	ret = request_irq(irq, my_irq_handler, IRQF_TRIGGER_FALLING,
-> > 			  "mygpio", irqpw);
-> > 	if (ret < 0) 
-> > 		printk(KERN_ERR "%s: cannot request irq\n", __func__);
-> > 
-> > 	return ret;
-> > }
-> > 
-> I mean, in the set_type of the irq_chip driver, you need to call something like rb532_gpio_set_ilevel.
 
-The correct place is for the code to live in the set_type of the IRQ chip,
-I see no reason for this extra complexity of adding stuff to the GPIOLIB
-where there is already an interface for it.
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You seem to be trying to export some internal to the driver function
-implementing an extant interface for no gain to the system as a whole.
 
-> The GPIO driver needs to export rb532_gpio_set_ilevel, and this is specific to each GPIO driver. Ideally,
-> I should always call gpio_detect(gpio, ...) here.
-> 
-> static int rb532_set_type(unsigned int irq_nr, unsigned type)
-> {
-> 	int gpio = irq_nr - GPIO_MAPPED_IRQ_BASE;
-> 	int group = irq_to_group(irq_nr);
-> 
-> 	if (group != GPIO_MAPPED_IRQ_GROUP || irq_nr > (GROUP4_IRQ_BASE + 13))
-> 		return (type == IRQ_TYPE_LEVEL_HIGH) ? 0 : -EINVAL;
-> 
-> 	switch (type) {
-> 	case IRQ_TYPE_LEVEL_HIGH:
-> 		rb532_gpio_set_ilevel(1, gpio);
-> 		break;
-> 	case IRQ_TYPE_LEVEL_LOW:
-> 		rb532_gpio_set_ilevel(0, gpio);
-> 		break;
-> 	default:
-> 		return -EINVAL;
-> 	}
-> 	return 0;
-> }
+> > diff --git a/Documentation/powerpc/dts-bindings/uio-generic.txt b/Docum=
+entation/powerpc/dts-bindings/uio-generic.txt
+> > new file mode 100644
+> > index 0000000..8ad9861
+> > --- /dev/null
+> > +++ b/Documentation/powerpc/dts-bindings/uio-generic.txt
+> > @@ -0,0 +1,16 @@
+> > +UIO for custom devices
+> > +
+> > +A device which will be mapped using the UIO subsystem.
+> > +
+> > +Properties:
+> > + - compatible : should contain the specific model used, followed by
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"generic-uio".
+> > + - reg : address range(s) of the device (up to MAX_UIO_MAPS)
+> > + - interrupts : interrupt of the device
+> > +
+> > +Example:
+> > + =A0 =A0 =A0 =A0c64fpga@0 {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "ptx,c64fpga001", "gene=
+ric-uio";
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x0 0x10000>;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <0 0 3>;
+> > + =A0 =A0 =A0 =A0};
+>=20
+> Hmmm, I'm not happy about this.  The device tree describes the
+> hardware, not the way Linux uses the hardware.  UIO definitely falls
+> into the category of Linux implementation detail.
 
-My point is that there is an already extant way of configuring
-IRQ polarities and types. This interface is exported from something
-you must already implement if you want IRQs from GPIOs.
+Yes, I am aware of that. I just started with the mechanisms which are avail=
+able
+today and hoped we could find some compatible-value which will suit all nee=
+ds.
 
-so:
+> This should be approached from the other way around.  Either the
+> generic-uio of_platform driver should contain an explicit list of
+> devices to be handled by UIO,
 
-1) This interface exists in the irq_chip struct
-2) The GPIO driver needs to implement irq_chip to provide interrupts
-3) Therefore the functionality is already covered.
+Well, that could lead to a quite huge match_table over time.
 
--- 
-Ben
+> or the OF infrastructure should be modified to allow things like force
+> binding of_devices to of_drivers at runtime.
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+That is an interesting idea. I could imagine something like a 'new_compatib=
+le"
+entry in the sysfs-section of the driver similar to 'new_id' for PCI. After
+writing a new compatible-string into it, matching will triggered again with=
+ the
+new entry added. That could (should?) also be placed at the of-core-level. =
+Or
+did you have something else in mind?
 
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko3YCMACgkQD27XaX1/VRswtwCcDtPiiseb3Z92cZ6a+o9qGHNi
+k+wAnAubWxlG7Oi6ZRW2G0NMueA8Gwsh
+=0vEj
+-----END PGP SIGNATURE-----
+
+--OgqxwSJOaUobr8KG--
