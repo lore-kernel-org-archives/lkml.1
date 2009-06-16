@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761687AbZFPSuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbZFPSu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761687AbZFPSuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 14:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbZFPSuc
+	id S1761585AbZFPSu4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 14:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761282AbZFPSur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 14:50:32 -0400
-Received: from kroah.org ([198.145.64.141]:33991 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752338AbZFPSuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 14:50:32 -0400
-Date: Tue, 16 Jun 2009 11:45:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] drm - fixes + radeon KMS (part 2)
-Message-ID: <20090616184544.GC28853@kroah.com>
-References: <alpine.DEB.2.00.0906150302250.20307@skynet.skynet.ie> <20090615022235.GA12905@kroah.com> <21d7e9970906141943s8dd6e27sd4308413601d65e3@mail.gmail.com>
+	Tue, 16 Jun 2009 14:50:47 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:34751 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752338AbZFPSuq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 14:50:46 -0400
+Date: Tue, 16 Jun 2009 14:50:48 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Thomas Meyer <thomas@m3y3r.de>
+cc: Jiri Kosina <jkosina@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Frans Pop <elendil@planet.nl>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
+In-Reply-To: <1245174438.9269.5.camel@localhost>
+Message-ID: <Pine.LNX.4.44L0.0906161429060.5125-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <21d7e9970906141943s8dd6e27sd4308413601d65e3@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 12:43:38PM +1000, Dave Airlie wrote:
-> On Mon, Jun 15, 2009 at 12:22 PM, Greg KH<greg@kroah.com> wrote:
-> > On Mon, Jun 15, 2009 at 03:08:56AM +0100, Dave Airlie wrote:
-> >>
-> >> Hi Linus,
-> >>
-> >> Please pull the 'drm-linus' branch from
-> >> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
-> >>
-> >> This is big. It contains the initial TTM memory manager + ATI radeon KMS
-> >> support. Currently the KMS code is part of the DRM radeon driver however
-> >> it is very clearly separated internally from the old codepaths. We've
-> >> elected to keep the radeon KMS Kconfig build/enable under staging for now
-> >> since we may have some ABI tweaks to sort out in this release cycle,
-> >> however the code is all in the drm. I don't think this enables crap
-> >> tainting, but at least no-one will find kms by accident.
-> >
-> > No, the module loader looks for stuff in drivers/staging/ to cause a
-> > "taint".
-> >
-> > But why not just keep the Kconfig stuff in your own directory, and
-> > depend on CONFIG_STAGING if you want to not have it show up for "normal"
-> > users?  It seems odd to put anything in drivers/staging/Kconfig for
-> > something that is not in drivers/staging.
-> >
-> > I'm guessing this Kconfig change was not in linux-next?  Or had it been
-> > there and I just missed it somehow?
-> >
+On Tue, 16 Jun 2009, Thomas Meyer wrote:
+
+> Yes. These patches make usbmon stop abending.
 > 
-> No since I was on holidays until the just before the merge window
-> opened, the patches
-> did get posted to lkml but missed your cc.
-> 
-> Well we'd like to make sure people go via the staging menus to get at
-> the kconfig option
-> for now, granted it probably doesn't matter whether it goes in staging
-> menus or in drm depends
-> on CONFIG_STAGING. Up to you I can post a patch after this merge to
-> move it to drm.
+> Successful suspend -> stay in S3 -> resume cylce:
 
-Ok, I'll defer to your judgement here.
+Unfortunately this log is uninterpretable, thanks largely to the two 
+mass-storage devices at addresses 9 and 10.  I can't tell what they
+are because they don't appear to be listed in the dmesg log you
+posted.
 
-thanks,
+The device at address 10 isn't working at all.  It apparently has 4
+LUNs but it replies to all commands for all LUNs with an error code
+saying that the LUN isn't supported.
 
-greg k-h
+The device at address 9 is working, but its I/O clutters up the log.
+
+There's also something at address 4; perhaps an HID device, I can't
+tell.
+
+Can you run the test again, this time with no extraneous USB devices 
+plugged in?  (That includes hubs.)  And before starting the test, 
+collect the contents of /sys/kernel/debug/usb/devices (you'll probably 
+have to mount /sys/kernel/debug first).
+
+Alan Stern
+
