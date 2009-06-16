@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761535AbZFPTs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbZFPTtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761535AbZFPTs7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 15:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbZFPTsw
+	id S1757734AbZFPTtT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 15:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761235AbZFPTtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 15:48:52 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:42242 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757127AbZFPTsw (ORCPT
+	Tue, 16 Jun 2009 15:49:01 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34575 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760938AbZFPTtA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 15:48:52 -0400
-Date: Tue, 16 Jun 2009 15:48:32 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       yinghai@kernel.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0906161231020.3282@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0906161546520.19790@gentwo.org>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>  <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>  <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>  <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> 
- <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>  <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop>  <20090615112205.GA6012@wotan.suse.de> <20090615112827.GC6012@wotan.suse.de> <1245101567.12400.38.camel@pasglop>
- <alpine.DEB.1.10.0906161104480.26093@gentwo.org> <alpine.LFD.2.01.0906161208100.3282@localhost.localdomain> <alpine.DEB.1.10.0906161522370.29941@gentwo.org> <alpine.LFD.2.01.0906161231020.3282@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 16 Jun 2009 15:49:00 -0400
+Date: Tue, 16 Jun 2009 15:48:57 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/5] [GIT PULL] tracing/filters/ringbuffer: updates for
+ 2.6.31
+In-Reply-To: <20090616193621.GA21246@elte.hu>
+Message-ID: <alpine.DEB.2.00.0906161548110.26673@gandalf.stny.rr.com>
+References: <20090616175133.317996432@goodmis.org> <20090616192821.GA12699@elte.hu> <20090616193621.GA21246@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009, Linus Torvalds wrote:
 
-> So I literally mean "get rid of slab_is_available()" - and the fact that
-> SLAB itself _internally_ has some internal state is irrelevant (SLUB and
-> SLOB do not, for example).
+On Tue, 16 Jun 2009, Ingo Molnar wrote:
 
-SLUB has slab_state which is necessary for bootstrap of NUMA and sysfs
-support.
+> 
+> hm, there's a new build failure with this lot:
+> 
+> kernel/trace/ring_buffer.c:1298: error: ?event? undeclared (first use in this function)
+> kernel/trace/ring_buffer.c:1298: error: (Each undeclared identifier is reported only once
+> kernel/trace/ring_buffer.c:1298: error: for each function it appears in.)
 
+Strange, I have a blank line at line 1298:
+
+1294                 cpu_buffer->tail_page->page->time_stamp = *ts;
+1295         }
+1296 
+1297         rb_reset_tail(cpu_buffer, tail_page, tail, length);
+1298 
+1299         __raw_spin_unlock(&cpu_buffer->lock);
+1300         local_irq_restore(flags);
+1301 
+
+-- Steve
 
