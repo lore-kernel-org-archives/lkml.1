@@ -1,199 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbZFPWDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbZFPWE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756378AbZFPWDg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 18:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZFPWD3
+	id S1758202AbZFPWE1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 18:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbZFPWES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 18:03:29 -0400
-Received: from kroah.org ([198.145.64.141]:41742 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbZFPWD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 18:03:28 -0400
-Date: Tue, 16 Jun 2009 14:59:08 -0700
-From: Greg KH <greg@kroah.com>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: Michal Januszewski <spock@gentoo.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BISECTED] uvesafb broken on 2.6.30 (v86d segfault)
-Message-ID: <20090616215908.GA4390@kroah.com>
-References: <f488382f0906161435w2559831cob8a5b8a78c22cf91@mail.gmail.com>
+	Tue, 16 Jun 2009 18:04:18 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:11252 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbZFPWER (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 18:04:17 -0400
+Subject: [PATCH 0/1] Recurse when searching for empty slots in resources trees
+To: linux-pci@vger.kernel.org
+From: Andrew Patterson <andrew.patterson@hp.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Date: Tue, 16 Jun 2009 16:04:20 -0600
+Message-ID: <20090616220419.14021.84524.stgit@bob.kio>
+User-Agent: StGit/0.14.3.347.g594a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f488382f0906161435w2559831cob8a5b8a78c22cf91@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 02:35:27PM -0700, Steven Noonan wrote:
-> I noticed that v86d segfaults on the final v2.6.30 release (breaking
-> uvesafb), but doesn't on the current master (v2.6.30-3392-g44b7532)
-> nor on v2.6.29.x. I originally tried to git-bisect v2.6.29 and
-> v2.6.30-rc1 (the first tag to contain the problem), but I ran into
-> multiple kernels that would either not compile or would simply panic
-> on boot.
-> 
-> So instead, I did a 'git bisect' on commits between tags 'v2.6.30' and
-> commit-ish '44b7532' to find the commit that _corrected_ the problem
-> (reversing the 'good'/'bad' logic of git-bisect to do the task).
-> 
-> First, here's the relevant dmesg output for broken kernels:
-> 
-> [    1.770858] general protection fault: 0000 [#1] SMP
-> [    1.771080] last sysfs file:
-> [    1.771163] Modules linked in:
-> [    1.771287]
-> [    1.771287] Pid: 531, comm: v86d Not tainted (2.6.30 #1) HP
-> Pavilion dv5000 (ES933AS#ABA)
-> [    1.771287] EIP: 0060:[<c10c1377>] EFLAGS: 00013286 CPU: 0
-> [    1.771287] EIP is at lockdep_sys_exit+0x7/0xa0
-> [    1.771287] EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: f73e0000
-> [    1.771287] ESI: c3d9e800 EDI: f73e1ed4 EBP: f73e1ec0 ESP: f73e1eac
-> [    1.771287]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> [    1.771287] Process v86d (pid: 531, ti=f73e0000 task=f73fe9c0
-> task.ti=f73e0000)
-> [    1.771287] Stack:
-> [    1.771287]  f73e1f00 674c2f57 f73e1fb4 f73fe9c0 00000000 f73e0000
-> c10334c4 f73e0000
-> [    1.771287]  00000000 00000000 00000000 00000000 00000000 00000000
-> 00000000 00000000
-> [    1.771287]  00004f00 00000000 00000000 00000000 00000000 00000000
-> 0000100a 0000c000
-> [    1.771287] Call Trace:
-> [    1.771287]  [<c10334c4>] ? resume_userspace+0x8/0x28
-> [    1.771287]  [<c1033644>] ? syscall_call+0x7/0xb
-> [    1.771287]  [<c109007b>] ? proc_taint+0xab/0x140
-> [    1.771287] Code: 04 24 00 4a b6 c1 e8 69 77 7e 00 85 f6 0f 8e 57
-> ff ff ff eb a5 eb 0d 90 90 90 90 90 90 90 90 90 90 90 90 90 55 89 e5
-> 53 83 ec 10 <65> a1 14 00 00 00 89 45 f8 31 c0 64 8b 1d 20 20 ee c1 8b
-> 83 b0
-> [    1.771287] EIP: [<c10c1377>] lockdep_sys_exit+0x7/0xa0 SS:ESP 0068:f73e1eac
-> [    1.779083] ---[ end trace e93713a9d40cd06c ]---
-> [    6.777823] uvesafb: Getting VBE info block failed (eax=0x4f00, err=1)
-> [    6.777924] uvesafb: vbe_init() failed with -22
-> [    6.778031] uvesafb: probe of uvesafb.0 failed with error -22
-> 
-> 
-> 
-> Michal (uvesafb creator) suggested that I try disabling lockdep to see
-> what happens. Doing so changes the dmesg output to this:
-> 
-> [    1.648494] general protection fault: 0000 [#1] SMP
-> [    1.648695] last sysfs file:
-> [    1.648771] Modules linked in:
-> [    1.648903]
-> [    1.648979] Pid: 529, comm: v86d Not tainted (2.6.30 #1) HP
-> Pavilion dv5000 (ES933AS#ABA)
-> [    1.649086] EIP: 0060:[<c110943b>] EFLAGS: 00013082 CPU: 0
-> [    1.649176] EIP is at trace_hardirqs_off_caller+0xb/0x110
-> [    1.649261] EAX: c1033242 EBX: c1033242 ECX: 00000000 EDX: f684a000
-> [    1.649346] ESI: c2f54640 EDI: f684bed4 EBP: f684bebc ESP: f684be98
-> [    1.649381]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> [    1.649381] Process v86d (pid: 529, ti=f684a000 task=f7103ed0
-> task.ti=f684a000)
-> [    1.649381] Stack:
-> [    1.649381]  f684bed4 f684bec0 c1057457 f684bec0 f7103ed0 f684bf00
-> 00000000 f684bfb4
-> [    1.649381]  f7103ed0 f684a000 c148d5e4 f684a000 00000000 00000000
-> c1033242 00000000
-> [    1.649381]  00000000 00000000 00000000 00000000 00000000 00004f00
-> 00000000 00000000
-> [    1.649381] Call Trace:
-> [    1.649381]  [<c1057457>] ? do_sys_vm86+0x1b7/0x390
-> [    1.649381]  [<c148d5e4>] ? trace_hardirqs_off_thunk+0xc/0x18
-> [    1.649381]  [<c1033242>] ? resume_userspace+0x6/0x1c
-> [    1.649381]  [<c10333b0>] ? syscall_call+0x7/0xb
-> [    1.649381]  [<c109007b>] ? do_sysctl+0x2db/0x3a0
-> [    1.649381] Code: c0 a3 f4 d1 de c1 31 c0 8b 55 fc 65 33 15 14 00
-> 00 00 75 02 c9 c3 e8 05 8b f7 ff 90 8d 74 26 00 55 89 e5 83 ec 24 89
-> 5d f4 89 c3 <65> a1 14 00 00 00 89 45 f0 31 c0 f6 05 f8 d1 de c1 02 89
-> 75 f8
-> [    1.649381] EIP: [<c110943b>] trace_hardirqs_off_caller+0xb/0x110
-> SS:ESP 0068:f684be98
-> [    1.649381] ---[ end trace e93713a9d40cd06c ]---
-> [    6.655118] uvesafb: Getting VBE info block failed (eax=0x4f00, err=1)
-> [    6.655208] uvesafb: vbe_init() failed with -22
-> [    6.655299] uvesafb: probe of uvesafb.0 failed with error -22
-> 
-> 
-> 
-> Here's the bisection log (remember to mentally reverse 'bad' and 'good'):
-> 
-> # bad: [45e3e1935e2857c54783291107d33323b3ef33c8] Merge branch
-> 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-next
-> # good: [07a2039b8eb0af4ff464efd3dfd95de5c02648c6] Linux 2.6.30
-> git bisect start 'HEAD' 'v2.6.30'
-> # bad: [8a1ca8cedd108c8e76a6ab34079d0bbb4f244799] Merge branch
-> 'perfcounters-for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect bad 8a1ca8cedd108c8e76a6ab34079d0bbb4f244799
-> # bad: [6cd8e300b49332eb9eeda45816c711c198d31505] Merge branch
-> 'kvm-updates/2.6.31' of git://git.kernel.org/pub/scm/virt/kvm/kvm
-> git bisect bad 6cd8e300b49332eb9eeda45816c711c198d31505
-> # bad: [73fbad283cfbbcf02939bdbda31fc4a30e729cca] Merge branch 'next'
-> into for-linus
-> git bisect bad 73fbad283cfbbcf02939bdbda31fc4a30e729cca
-> # good: [bb7762961d3ce745688e9050e914c1d3f980268d] Merge branch
-> 'x86-mm-for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect good bb7762961d3ce745688e9050e914c1d3f980268d
-> # bad: [75063600fd7b27fe447112c27997f100b9e2f99b] Merge branch
-> 'futexes-for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect bad 75063600fd7b27fe447112c27997f100b9e2f99b
-> # good: [6b2e8523df148c15ea5abf13075026fb8bdb3f86] xen: reserve Xen
-> start_info rather than e820 reserving
-> git bisect good 6b2e8523df148c15ea5abf13075026fb8bdb3f86
-> # bad: [be15f9d63b97da0065187696962331de6cd9de9e] Merge branch
-> 'x86-xen-for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect bad be15f9d63b97da0065187696962331de6cd9de9e
-> # good: [bec706838ec2f9c8c2b99e88a1270d7cba159b06] Merge branch
-> 'x86-setup-for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect good bec706838ec2f9c8c2b99e88a1270d7cba159b06
-> # bad: [0b8c3d5ab000c22889af7f9409799a6cdc31a2b2] x86: Clear TS in
-> irq_ts_save() when in an atomic section
-> git bisect bad 0b8c3d5ab000c22889af7f9409799a6cdc31a2b2
-> # bad: [3aa6b186f86c5d06d6d92d14311ffed51f091f40] x86: Fix non-lazy GS
-> handling in sys_vm86()
-> git bisect bad 3aa6b186f86c5d06d6d92d14311ffed51f091f40
-> # good: [4a4aca641bc4598e77b866804f47c651ec4a764d] x86: Add quirk for
-> reboot stalls on a Dell Optiplex 360
-> git bisect good 4a4aca641bc4598e77b866804f47c651ec4a764d
-> 
-> 
-> 
-> And here's the commit that fixes the problem:
-> 
-> commit 3aa6b186f86c5d06d6d92d14311ffed51f091f40
-> Author: Lubomir Rintel <lkundrak@v3.sk>
-> Date:   Sun Jun 7 16:23:48 2009 +0200
-> 
->     x86: Fix non-lazy GS handling in sys_vm86()
-> 
->     This fixes a stack corruption panic or null dereference oops
->     due to a bad GS in resume_userspace() when returning from
->     sys_vm86() and calling lockdep_sys_exit().
-> 
->     Only a problem when CONFIG_LOCKDEP and CONFIG_CC_STACKPROTECTOR
->     enabled.
-> 
->     Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
->     Cc: H. Peter Anvin <hpa@zytor.com>
->     LKML-Reference: <1244384628.2323.4.camel@bimbo>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> The cherry-pick of the bisected commit seems to work when applied to
-> vanilla v2.6.30.
-> 
-> Greg, for v2.6.30.1, could you please cherry-pick commit
-> 3aa6b186f86c5d06d6d92d14311ffed51f091f40?
+I recently ran into a resource collision problem where PCI hot-plug
+operations are failing for certain PCI topologies.  One case
+illustrating the problem is using a QLogic PCIe HBA in a slot with a
+PCIe root port as its parent bus.  Here is an abbreviated lspci output
+for this topology:
 
-I don't see that commit id in Linus's tree.  Where did you get it from?
+-+-[0000:c2]---00.0-[0000:c3-fb]--+-00.0  QLogic Corp. 8Gb Fibre Channel HBA
+ |                                \-00.1  QLogic Corp. 8Gb Fibre Channel HBA
 
-thanks,
 
-greg k-h
+
+c2:00.0 PCI bridge: PCIe Root Port (prog-if 00 [Normal decode])
+	Bus: primary=c2, secondary=c3, subordinate=fb, sec-latency=0
+	I/O behind bridge: 00001000-0000ffff
+	Memory behind bridge: f0000000-fdffffff
+	Prefetchable memory behind bridge: 0000080780000000-00000807ffffffff
+
+c3:00.0 Fibre Channel: QLogic Corp. 8Gb Fibre Channel HBA
+	Region 0: I/O ports at 8001100 [size=256]
+	Region 1: Memory at f0284000 (64-bit, non-prefetchable) [size=16K]
+	Region 3: Memory at f0100000 (64-bit, non-prefetchable) [size=1M]
+	Expansion ROM at f0240000 [disabled] [size=256K]
+
+c3:00.1 Fibre Channel: QLogic Corp. 8Gb Fibre Channel HBA
+	Region 0: I/O ports at 8001000 [size=256]
+	Region 1: Memory at f0280000 (64-bit, non-prefetchable) [size=16K]
+	Region 3: Memory at f0000000 (64-bit, non-prefetchable) [size=1M]
+	Expansion ROM at f0200000 [disabled] [size=256K]
+
+After boot, the resource tree looks like:
+
+f0000000-fdffffff : PCI Bus 0000:c3
+  f0000000-fdffffff : PCI Bus 0000:c2
+    f0000000-f00fffff : 0000:c3:00.1
+      f0000000-f00fffff : qla2xxx
+    f0100000-f01fffff : 0000:c3:00.0
+      f0100000-f01fffff : qla2xxx
+    f0200000-f023ffff : 0000:c3:00.1
+    f0240000-f027ffff : 0000:c3:00.0
+    f0280000-f0283fff : 0000:c3:00.1
+      f0280000-f0283fff : qla2xxx
+    f0284000-f0287fff : 0000:c3:00.0
+      f0284000-f0287fff : qla2xxx
+
+Note that PCI Bus 0000:c2 is a child of PCI Bus 0000:c3 and has an
+identical address range.
+
+When performing a PCI physical hot add and replace, logical hot add
+and replace, or PCI error recovery of one the QLogic card functions in
+the above topology, we get the following error messages (PCI debug in on):
+
+GSI 85 (level, low) -> CPU 6 (0x0600) vector 87 unregistered
+PCI: Scanning bus 0000:c2
+pcieport-driver 0000:c2:00.0: scanning behind bridge, config fbc3c2, pass 0
+PCI: Scanning bus 0000:c3
+pci 0000:c3:00.0: found [1077:2532] class 000c04 header type 00
+pci 0000:c3:00.0: reg 10 io port: [0x1100-0x11ff]
+pci 0000:c3:00.0: reg 14 64bit mmio: [0xf0284000-0xf0287fff]
+pci 0000:c3:00.0: reg 1c 64bit mmio: [0xf0100000-0xf01fffff]
+pci 0000:c3:00.0: reg 30 32bit mmio: [0xf0240000-0xf027ffff]
+pci 0000:c3:00.0: calling quirk_resource_alignment+0x0/0x3a0
+pci 0000:c3:00.0: calling pci_fixup_video+0x0/0x280
+PCI: Bus scan for 0000:c3 returning with max=c3
+pcieport-driver 0000:c2:00.0: scanning behind bridge, config fbc3c2, pass 1
+PCI: Bus scan for 0000:c2 returning with max=fb
+pci 0000:c3:00.0: BAR 3: can't allocate mem resource [0xfe000000-0xfdffffff]
+pci 0000:c3:00.0: BAR 6: got res [0x80780000000-0x8078003ffff] bus [0x80780000000-0x8078003ffff] flags 0x27200
+pci 0000:c3:00.0: BAR 1: can't allocate mem resource [0xfe000000-0xfdffffff]
+pci 0000:c3:00.0: BAR 0: got res [0x8001100-0x80011ff] bus [0x1100-0x11ff] flags 0x20101
+pci 0000:c3:00.0: BAR 0: moved to bus [0x1100-0x11ff] flags 0x20101
+GSI 85 (level, low) -> CPU 0 (0x0000) vector 87
+qla2xxx 0000:c3:00.0: PCI INT A -> GSI 85 (level, low) -> IRQ 87
+qla2xxx 0000:c3:00.0: region #1 not an MMIO resource (0000:c3:00.0), aborting
+qla2xxx 0000:c3:00.0: PCI INT A disabled
+GSI 85 (level, low) -> CPU 0 (0x0000) vector 87 unregistered
+qla2xxx: probe of 0000:c3:00.0 failed with error -12
+
+And the hot add operation fails. This failure is due to how PCI BAR
+address resources are assigned in the parent buses.
+
+BAR resources for PCI devices are allocated during hot add operations
+using pci_allocate_resource() which calls find_resource() to find
+empty resource slots and allocate_resource() to insert the resource in
+the tree. Both find_resource() and allocate_resource() only search the
+immediate child and its siblings of the root resource passed to it,
+(f0000000-fdffffff : PCI Bus 0000:c3 in this example). The child
+(f0000000-fdffffff : PCI Bus 0000:c2) has the same exact address range
+resulting in a conflict and eventually returning -EBUSY.  This
+patchset changes find_resource() and allocate_resource() to
+recursively search the resource tree below the root so the appropriate
+entry is then located.
+
+A similar problem was found in:
+
+http://thread.gmane.org/gmane.linux.kernel/768526/
+
+This patch does not address the possibly incorrect parenting of
+identical resource ranges found in the above discussion, but it does
+"fix" the problem when this condition occurs for the hot plug case.
+
+Diff stats:
+
+ kernel/resource.c |   59 +++++++++++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 48 insertions(+), 11 deletions(-)
+
+--
+Andrew Patterson
