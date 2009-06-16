@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbZFPSxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbZFPSz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761772AbZFPSxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 14:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbZFPSxl
+	id S1761924AbZFPSz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 14:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759661AbZFPSzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 14:53:41 -0400
-Received: from kroah.org ([198.145.64.141]:50442 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 14:55:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53473 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754209AbZFPSxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 14:53:41 -0400
-Date: Tue, 16 Jun 2009 11:49:43 -0700
-From: Greg KH <greg@kroah.com>
-To: Stefan Bader <stefan.bader@canonical.com>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, Tim Gardner <tim.gardner@canonical.com>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: Volunteering for stable patch review process
-Message-ID: <20090616184943.GA28969@kroah.com>
-References: <43e72e890906152230j7bd91086y26f3ab7fb3c0cfa7@mail.gmail.com> <20090616053718.GE30071@sequoia.sous-sol.org> <43e72e890906161132m4bfcf2cbpdf46712f1b7afeb5@mail.gmail.com> <4A37E7D1.7060109@canonical.com>
+	id S1759604AbZFPSzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 14:55:18 -0400
+Message-ID: <4A37EA92.7050509@redhat.com>
+Date: Tue, 16 Jun 2009 14:55:14 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A37E7D1.7060109@canonical.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
+Subject: Re: running get_user_pages() from kernel thread
+References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random> <Pine.LNX.4.64.0906161930050.24878@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0906161930050.24878@sister.anvils>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 08:43:29PM +0200, Stefan Bader wrote:
-> Luis R. Rodriguez wrote:
-> > On Mon, Jun 15, 2009 at 10:37 PM, Chris Wright<chrisw@sous-sol.org> wrote:
-> >> * Luis R. Rodriguez (mcgrof@gmail.com) wrote:
-> >>> I'm curious what the process is to join the group of volunteers to
-> >>> review stable patches. Can't seem to find the docs for it. The only
-> >>> excerpt I see is:
-> >>>
-> >>> Review committee:
-> >>>
-> >>>  - This is made up of a number of kernel developers who have volunteered for
-> >>>    this task, and a few that haven't.
-> >> Just send a note (you just did) and we'll put you on the review list
-> >> (I just did).
-> > 
-> > OK thanks, I wasn't particularly looking to volunteer but to get info
-> > as to how to do it. But since you've already added me, lets go through
-> > with it -- I may at least be able to help review wireless stuff.
-> > 
-> >   Luis
+Hugh Dickins wrote:
+> On Tue, 16 Jun 2009, Andrea Arcangeli wrote:
+>> On Tue, Jun 16, 2009 at 09:05:27PM +0300, Izik Eidus wrote:
+>>> So the question is: is this thing is by desgin? (that kernel thread cant 
+>>> call get_user_pages???), should i use something like switch_mm()??
+>> I think switch_mm trick should be used for page faults, but gup
+>> shouldn't require it because it gets the 'mm' as parameter and the
+>> current->mm has to be irrelevant. current->mm is only relevant for
+>> gup-fast (obviously :). So I think the only bit that needs fixing is
+>> grab_swap_token to not run if current->mm is null.
 > 
-> Ok, thanks for checking out that, Luis. I'd be interested in getting in 
-> participating. Which was the part that made Luis ask. Could you add me too?
+> Looks like Izik and I hit the same problem (otherwise running well):
+> I too decided we needn't do more than avoid the issue in grab_swap_token.
+> (I've a feeling someone has hit this issue before with some other thread,
+> though I've no idea which - does RHEL include a patch like this perhaps?).
 
-Now added.
+It looks very familiar, indeed.
 
-Hm, we now have 17 people on the list.  This might be getting a bit
-messy for some email systems to have such a large CC: list, perhaps we
-should look into setting up an email list, like the stable-commits list
-is used.
+RHEL 4 and 5 both have code like this in the swap token
+code. I seem to remember submitting such code upstream,
+too.
 
-Or perhaps we should just use the stable-commits list instead?  Chris,
-any thoughts?
+I have no idea why it never got upstream, maybe I was
+drowned in Xen work at the time, or maybe the bug simply
+didn't happen upstream for whatever reason.
 
-thanks,
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-greg k-h
+Acked-by: Rik van Riel <riel@redhat.com>
+
+-- 
+All rights reversed.
