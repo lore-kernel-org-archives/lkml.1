@@ -1,48 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbZFPHAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZFPHGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759845AbZFPHAQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 03:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZFPHAD
+	id S1755653AbZFPHGk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 03:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbZFPHGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 03:00:03 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44268 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbZFPHAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 03:00:02 -0400
-Subject: Re: linux-next: Linus/powerpc tree build warning
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       John Linn <john.linn@xilinx.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org
-In-Reply-To: <20090616162429.07e74e75.sfr@canb.auug.org.au>
-References: <20090616162429.07e74e75.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Tue, 16 Jun 2009 16:59:46 +1000
-Message-Id: <1245135586.12400.104.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 16 Jun 2009 03:06:31 -0400
+Received: from tomts27.bellnexxia.net ([209.226.175.101]:47014 "EHLO
+	tomts27-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750964AbZFPHGa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 03:06:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Am4TANPbNkrR4q+G/2dsb2JhbACBL40pkkeyCoI3gUIF
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [41.219.137.100]
+From: Amanda <solarstage@bellnet.ca>
+Reply-To: dr.jerry_smith222@8u8.com
+To: <info@org.com>
+Subject: verify this email 
+Date: Tue, 16 Jun 2009 3:06:32 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090616070632.DIBK273.tomts27-srv.bellnexxia.net@toip52-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-16 at 16:24 +1000, Stephen Rothwell wrote:
-> Hi Ben,
-> 
-> Today's linux-next build (powerpc ppc44x_defconfig) produced this warning:
-> 
-> drivers/video/xilinxfb.c: In function 'xilinxfb_assign':
-> drivers/video/xilinxfb.c:328: warning: cast to pointer from integer of different size
-> 
-> Introduced by commit dac4ccfb64bcdd5b4c248ccc22903d67486573cd ("fbdev:
-> Add PLB support and cleanup DCR in xilinxfb driver").
-
-Known problem, a fix is currently being polished by Grant and John.
-
-Cheers,
-Ben.
-
+950.000.00pounds Has just awarded to you in the LG Draw send us your Name, Address, and Tell
 
