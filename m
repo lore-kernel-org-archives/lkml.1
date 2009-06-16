@@ -1,84 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbZFPHxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751455AbZFPIAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759204AbZFPHxU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 03:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZFPHxM
+	id S1751455AbZFPIAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 04:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbZFPIAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 03:53:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37536 "EHLO mx2.suse.de"
+	Tue, 16 Jun 2009 04:00:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53831 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751296AbZFPHxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 03:53:11 -0400
-Subject: Re: [PATCH v2 0/8] clean up vdso-layout.lds.S
-From: Petr Tesarik <ptesarik@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-In-Reply-To: <4A3693F8.6000209@zytor.com>
-References: <1244814040-5810-1-git-send-email-ptesarik@suse.cz>
-	 <20090612180626.GB18203@uranus.ravnborg.org>
-	 <1245079002.17481.118.camel@nathan.suse.cz>
-	 <1245079649.17481.121.camel@nathan.suse.cz>  <4A367C09.80008@zytor.com>
-	 <1245087957.17481.124.camel@nathan.suse.cz>  <4A3693F8.6000209@zytor.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Tue, 16 Jun 2009 09:53:12 +0200
-Message-Id: <1245138792.17481.138.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	id S1750789AbZFPIAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 04:00:35 -0400
+Date: Tue, 16 Jun 2009 10:00:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, richard@rsk.demon.co.uk,
+       damien.wyart@free.fr, dedekind1@gmail.com, fweisbec@gmail.com
+Subject: Re: [PATCH 0/15] Per-bdi writeback flusher threads v10
+Message-ID: <20090616080036.GO11363@kernel.dk>
+References: <1244811255-5391-1-git-send-email-jens.axboe@oracle.com> <1245114397.2560.368.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245114397.2560.368.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin píše v Po 15. 06. 2009 v 11:33 -0700:
-> Petr Tesarik wrote:
-> >>>
-> >> *(COMMON) is BSS, not data...
+On Tue, Jun 16 2009, Zhang, Yanmin wrote:
+> On Fri, 2009-06-12 at 14:54 +0200, Jens Axboe wrote:
+> > Hi,
 > > 
-> > Very true, but for the vDSO we decided to put both writeable and
-> > read-only data into one section (called .data for that matter), probably
-> > to reduce the number of sections and hence also the size of the
-> > resulting binary.
+> > Here's the 10th version of the writeback patches. Changes since v9:
 > > 
+> > - Fix bdi task exit race leaving work on the list, flush it after we
+> >   know we cannot be found anymore.
+> > - Rename flusher tasks from bdi-foo to flush-foo. Should make it more
+> >   clear to the casual observer.
+> > - Fix a problem with the btrfs bdi register patch that would spew
+> >   warnings for > 1 mounted btrfs file system.
+> > - Rebase to current -git, there were some conflicts with the latest work
+> >   from viro/hch.
+> > - Fix a block layer core problem were stacked devices would overwrite
+> >   the bdi state, causing problems and warning spew.
+> > - In bdi_writeback_all(), in the race occurence of a work allocation
+> >   failure, restart scanning from the beginning. Then we can drop the
+> >   bdi_lock mutex before diving into bdi specific writeback.
+> > - Convert bdi_lock to a spinlock.
+> > - Use spin_trylock() in bdi_writeback_all(), if this isn't a data
+> >   integrity writeback. Debatable, I kind of like it...
+> > - Get rid of BDI_CAP_FLUSH_FORKER, just check for match with the
+> >   default_backing_dev_info.
+> > - Fix race in list checking in bdi_forker_task().
+> > 
+> > 
+> > For ease of patching, I've put the full diff here:
+> > 
+> >   http://kernel.dk/writeback-v10.patch
+> Jens,
 > 
-> BSS is neither,
+> I applied the patch to 2.6.30 and got a confliction. The attachment is
+> the patch I ported to 2.6.30. Did I miss anything?
+> 
+> 
+> With the patch, kernel reports below messages on 2 machines.
+> 
+> INFO: task sync:29984 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> sync          D ffff88002805e300  6168 29984  24581
+>  ffff88022f84b780 0000000000000082 7fffffffffffffff ffff880133dbfe70
+>  0000000000000000 ffff88022e2b4c50 ffff88022e2b4fd8 00000001000c7bb8
+>  ffff88022f513fd0 ffff880133dbfde8 ffff880133dbfec8 ffff88022d5d13c8
+> Call Trace:
+>  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
+>  [<ffffffff80780fde>] ? schedule+0x9/0x1d
+>  [<ffffffff802b69ed>] ? bdi_sched_wait+0x9/0xd
+>  [<ffffffff8078158d>] ? __wait_on_bit+0x40/0x6f
+>  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
+>  [<ffffffff80781628>] ? out_of_line_wait_on_bit+0x6c/0x78
+>  [<ffffffff8024a426>] ? wake_bit_function+0x0/0x23
+>  [<ffffffff802b67ac>] ? bdi_writeback_all+0x12a/0x152
+>  [<ffffffff802b6805>] ? generic_sync_sb_inodes+0x31/0xde
+>  [<ffffffff802b6935>] ? sync_inodes_sb+0x83/0x88
+>  [<ffffffff802b6980>] ? __sync_inodes+0x46/0x8f
+>  [<ffffffff802b94f2>] ? do_sync+0x36/0x5a
+>  [<ffffffff802b9538>] ? sys_sync+0xe/0x12
+>  [<ffffffff8020b9ab>] ? system_call_fastpath+0x16/0x1b
 
-Right. My typing was once again faster than my thinking. I meant
-initialized vs. uninitialized, of course.
+I don't think it is your backport, for some reason the v10 missed a
+change that I think could solve this race. If not, there's another in
+there that I need to look at.
 
->  but I guess for the vDSO there really isn't any such
-> thing as uninitialized content.
+So against your current base, could you try with the below added as
+well? The printk() is just so we can see if this triggers for you or
+not.
 
-Right, too. I can't even think of a valid use case, so .broken might be
-the right place for both COMMON and .bss.
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index b3e80c5..a065da5 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -384,6 +384,15 @@ static int bdi_start_fn(void *ptr)
+ 	 */
+ 	synchronize_srcu(&bdi->srcu);
+ 
++	/*
++	 * Flush any pending work. No more can be added, since
++	 * the bdi is no longer discoverable.
++	 */
++	if (!list_empty(&bdi->work_list)) {
++		printk("bdi: flushing racy work\n");
++		wb_do_writeback(wb);
++	}
++
+ 	bdi_put_wb(bdi, wb);
+ 	return ret;
+ }
 
-> I have to admit feeling funny about that, and I'm wondering if we
-> shouldn't compile the vDSO with -fno-common.
-
-Oops, sorry. It's already compiled with -fno-common, because it gets
-inherited from the top-level Makefile's KBUILD_CFLAGS. Sorry for the
-noise.
-
-Anyway, my feeling is that the whole discussion is a bit academic. If I
-want to be rigorous, I should take an opt-in approach, i.e. handle all
-sections that work fine (e.g. also debugging sections) and then put all
-else into .broken with something like:
-
-.broken {
-	/* All else is dubious. */
-	*(*)
-}
-
-But this can become a maintenance PITA. Whenever GCC and/or binutils add
-a new extension, the linker script would have to be adjusted
-accordingly. Well, maybe that's even correct, because somebody at least
-stops and thinks for a while about the implications of the new feature.
-But I'm not really offering to become the new maintainer of this file.
-
-Comments?
-
-Petr Tesarik
-
+-- 
+Jens Axboe
 
