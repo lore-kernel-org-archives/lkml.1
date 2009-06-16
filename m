@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbZFPO5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbZFPPAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758958AbZFPO5W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 10:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZFPO5G
+	id S1758330AbZFPPAI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZFPO75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 10:57:06 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:57860 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752551AbZFPO5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 10:57:05 -0400
-Date: Tue, 16 Jun 2009 09:57:06 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] page_alloc: Oops when setting percpu_pagelist_fraction
-Message-ID: <20090616145706.GB14680@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 16 Jun 2009 10:59:57 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:19733 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbZFPO74 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 10:59:56 -0400
+Subject: RE: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+Cc: "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       "'Brice Goglin'" <Brice.Goglin@inria.fr>
+In-Reply-To: <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+	 <87zldjn597.fsf@basil.nowhere.org>
+	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	 <20090612103251.GJ25568@one.firstfloor.org>
+	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+	 <1245119977.6724.40.camel@lts-notebook>
+	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Tue, 16 Jun 2009 10:59:55 -0400
+Message-Id: <1245164395.15138.40.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After downing/upping a cpu, an attempt to set
-/proc/sys/vm/percpu_pagelist_fraction results in an oops in
-percpu_pagelist_fraction_sysctl_handler().
+On Tue, 2009-06-16 at 15:58 +0200, Stefan Lankes wrote:
+> > 
+> > I would like to get these patches working with latest mmotm to test on
+> > some newer hardware where I think they will help more.  And I would
+> > welcome your support.  However, I think we'll need to get Balbir and
+> > Kamezawa-san involved to sort out the interaction with memory control
+> > group.
+> > 
+> > I can send you the more recent rebase that I've done.  This is getting
+> > pretty old now:  2.6.28-rc4-mmotm-081110-081117.  I'll try to rebase to
+> > the most recent mmotm [that boots on my platforms], at least so that we
+> > can build and boot with migrate-on-fault disabled, within the next
+> > couple of weeks.
+> > 
+> 
+> Sounds good! Send me your last version and I will try to reconstruct your
+> problems. Afterwards, we could try to solve these problems.
+> 
 
-To reproduce this:
-  localhost:/sys/devices/system/cpu/cpu6 # echo 0 >online
-  localhost:/sys/devices/system/cpu/cpu6 # echo 1 >online
-  localhost:/sys/devices/system/cpu/cpu6 # cd /proc/sys/vm
-  localhost:/proc/sys/vm # echo 100000 >percpu_pagelist_fraction
+Stefan:
 
-  BUG: unable to handle kernel NULL pointer dereference at 0000000000000004
-  IP: [<ffffffff80286946>] percpu_pagelist_fraction_sysctl_handler+0x4a/0x96
+I've placed the last rebased version in :
+
+http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.28-rc4-mmotm-081110/
+
+As I recall, this version DOES bug out because of reference count
+problems due to interaction with the memory controller.
+
+As I said, I'll try to rebase to latest mmotm real soon.  I need to test
+whether it will boot on my test systems first.
+
+Lee
 
 
-This is because the zone->pageset[cpu] value has not been set when the
-cpu has been brought back up for unpopulated zones (the "Movable" zone
-in the case I'm running into).  Prior to downing/upping the cpu it had
-been set to &boot_pageset[cpu].
 
-There are two possible fixes that come to mind.  One is to check for an
-unpopulated zone or NULL zone pageset for that cpu in
-percpu_pagelist_fraction_sysctl_handler(), and simply not set a pagelist
-highmark for that zone/cpu combination.
-
-The other, and the one I'm proposing here, is to set the zone's pageset
-back to the boot_pageset when the cpu is brought back up if the zone is
-unpopulated.
-
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-
----
-
- mm/page_alloc.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux/mm/page_alloc.c
-===================================================================
---- linux.orig/mm/page_alloc.c	2009-06-16 09:25:25.000000000 -0500
-+++ linux/mm/page_alloc.c	2009-06-16 09:27:47.000000000 -0500
-@@ -2806,7 +2806,11 @@ static int __cpuinit process_zones(int c
- 
- 	node_set_state(node, N_CPU);	/* this node has a cpu */
- 
--	for_each_populated_zone(zone) {
-+	for_each_zone(zone) {
-+		if (!populated_zone(zone)) {
-+			zone_pcp(zone, cpu) = &boot_pageset[cpu];
-+			continue;
-+		}
- 		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
- 					 GFP_KERNEL, node);
- 		if (!zone_pcp(zone, cpu))
