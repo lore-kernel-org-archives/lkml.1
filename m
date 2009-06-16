@@ -1,98 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbZFPER2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZFPEVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752967AbZFPER2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 00:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZFPERV
+	id S1754825AbZFPEVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbZFPEVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 00:17:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40120 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750737AbZFPERV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 00:17:21 -0400
-Date: Mon, 15 Jun 2009 21:16:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] WARN(): add a \n to the message printk
-In-Reply-To: <alpine.LFD.2.01.0906152055580.3282@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0906152114070.3282@localhost.localdomain>
-References: <20090615000822.6e6bf282@infradead.org> <alpine.LFD.2.01.0906150933330.3305@localhost.localdomain> <alpine.LFD.2.01.0906150945490.3305@localhost.localdomain> <20090615171044.GC25760@elte.hu>
- <alpine.LFD.2.01.0906152055580.3282@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 16 Jun 2009 00:21:10 -0400
+Received: from mail.atheros.com ([12.36.123.2]:26977 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbZFPEVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 00:21:09 -0400
+Date: Mon, 15 Jun 2009 21:21:14 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Greg KH <greg@kroah.com>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "corbet@lwn.net" <corbet@lwn.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>,
+       "mcgrof@gmail.com" <mcgrof@gmail.com>
+Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
+	window
+Message-ID: <20090616042113.GA5680@tesla>
+References: <1245096771-3966-1-git-send-email-lrodriguez@atheros.com> <20090615201934.GA12685@kroah.com> <20090615214735.GE23972@bombadil.infradead.org> <20090615223206.GA4966@kroah.com> <20090616004122.GC5492@tesla> <20090616021011.GF23972@bombadil.infradead.org> <20090616032034.GA17932@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090616032034.GA17932@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 15 Jun 2009, Linus Torvalds wrote:
+On Mon, Jun 15, 2009 at 08:20:34PM -0700, Greg KH wrote:
+> On Mon, Jun 15, 2009 at 10:10:11PM -0400, Luis R. Rodriguez wrote:
+> > +     2.6.30  June 10, 2009 - 79 days
+> > +     2.6.29  March 23, 2009 - 84 days
+> > +     2.6.28  December 29, 2008 - 82 days
+> > +     2.6.27  October 8, 2008 - 87 days
+> > +     2.6.26  July 13, 2008 - 88 days
+> > +     2.6.25  April 16, 2008 - 83 days
+> > +     2.6.24  January 24, 2008 - 107 days
+> > +     2.6.23  October 9, 2007 - 93 days
+> > +     2.6.22  July 8, 2007 - 74 days
+> > +     2.6.21  April 25, 2007 - 80 days
+> >       2.6.20  February 4, 2007
 > 
-> And no, this does not necessarily fix Arjan's problem: it only adds the 
-> newline before printk's that _do_ have a KERN_<lvl> format. So now, in 
-> order to get the extra '\n' after the WARN_ON() line, somebody needs to 
-> make sure that the printk's in the warning printing have loglevels.
+> Are you sure about those dates and the count of number of days?
+
+I used this cheesy web app:
+
+http://www.timeanddate.com/date/duration.html
+
+So it could have told 42 for all answers I suppose and I wouldn't have known
+the difference. BTW does your list count the ending date? That is from say
+01-01-2009 to 01-02-2009 does it count 2 or 1? I set it to not count it.
+
+> According to my "big spreadsheet of kernel releases", your day count is
+> wrong...
 > 
-> Arjan?
+> I have:
+> 
+> release: v2.6.20  v2.6.21  v2.6.22  v2.6.23  v2.6.24  v2.6.25  v2.6.26  v2.6.27  v2.6.28  v2.6.29  v2.6.30
+>  date:   02/04/07 04/25/07 07/08/07 10/09/07 01/24/08 04/16/08 07/13/08 10/09/08 12/24/08 03/23/09 06/09/09
+> # Days:  68       81       75       94       108      83       88       88       76       89       78
 
-The "print_modules()" function needs a KERN_WARNING in front of it.
+I'll trust your big spreadsheet more and with it you actually get a nice
+even 86.0 average.
 
-Or something like this (on top of the patch I just sent out), which allows 
-you to specify loglevel that is just the default one, whatever that 
-happens to be. Using KERN_DEFAULT, of course.
+Here is a new patch based on your spreadsheet info.
 
-Hmm?
+From: Luis R. Rodriguez <lrodriguez@atheros.com>
+Subject: [PATCH] Documentation: add documentation summary for rc-series and merge window
 
-		Linus
+This is losely based on previous discussions on linux-kernel [1][2].
+Lets also refer people reading the stable rules to
+Documentation/development-process/.
 
+Also add the number of days it has taken between releases,
+and provide the average for the last 10 releases: 86.0 days.
+
+[1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
+[2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
+
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 ---
- include/linux/kernel.h |    2 ++
- kernel/module.c        |    2 +-
- kernel/printk.c        |    2 ++
- 3 files changed, 5 insertions(+), 1 deletions(-)
+ Documentation/development-process/2.Process |   92 ++++++++++++++++++++++++---
+ Documentation/stable_kernel_rules.txt       |    5 ++
+ 2 files changed, 87 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 066bb1e..1b2e174 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -97,6 +97,8 @@ extern const char linux_proc_banner[];
- #define	KERN_INFO	"<6>"	/* informational			*/
- #define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
+diff --git a/Documentation/development-process/2.Process b/Documentation/development-process/2.Process
+index d750321..668eb8f 100644
+--- a/Documentation/development-process/2.Process
++++ b/Documentation/development-process/2.Process
+@@ -7,20 +7,92 @@ course of one year, the kernel has since had to evolve a number of
+ processes to keep development happening smoothly.  A solid understanding of
+ how the process works is required in order to be an effective part of it.
  
-+/* Use the default kernel loglevel */
-+#define KERN_DEFAULT	"<d>"
- /*
-  * Annotation for a "continued" line of log printout (only done after a
-  * line that had no enclosing \n). Only to be used by core/arch code
-diff --git a/kernel/module.c b/kernel/module.c
-index e4ab36c..215aaab 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2899,7 +2899,7 @@ void print_modules(void)
- 	struct module *mod;
- 	char buf[8];
++2.0:SUMMARY
++
++This section provides a brief summary of the kernel release rules.
++
++2.0.0: KERNEL RELEASE RULES
++
++Stable kernels are released when they are ready! This means there are
++absolutely no strict guidelines for sticking to specific dates for a
++kernel release.
++
++2.0.1: MERGE WINDOW
++
++The merge window opens up after the next stable kernel is released.
++The merge window is when maintainers of different subsystem send pull
++requests to Linus for code they have been queuing up for the next
++stable kernel. This is typically now done through respective
++foo-next-2.6.git trees where foo is your subsystem. Each maintainer
++queues up patches for the next kernel cycle in this foo-next-2.6.git
++tree. After the merge window the kernel is worked on through the
++rc-series of the kernel release. The merge window closes at the first
++rc-series release.
++
++After a maintainer has sent his pull request to Linus during the merge
++window no further new development will be accepted for that tree and
++as such it marks the closure of development for that subsystem for that
++kernel cycle. Developers wishing to target deadlines should simply work
++on their development without regards or consideration for inclusion to
++a specific kernel release. Once development is done it should simply be
++posted. If you insist on targeting a kernel release for deadlines you can
++try to be aware of the current rc cycle development and how soon it seems
++the next stable kernel release will be made. When Linus notes the last rc
++cycle released may be the last -- that is a good sign you should already
++have all your development done and merged in the respective development
++tree. If your code is not ready and merged into the respective maintainers
++tree prior to the announced last potential rc kernel release chances are
++you missed getting your code in for the next kernel merge window.
++Exemptions here are new drivers, covered below.
++
++2.0.2: RC-SERIES RULES
++
++Rules on what kind of patches are accepted after the merge window closes.
++These are patches targeted for the kernel rc-series of a kernel prior
++to its release.
++
++ - it must fix a reported regression
++ - if must fix a reported security hole
++ - if must fix a reported oops/kernel hang
++
++This means any small-non-fix code changes, although they might fix an issue,
++will not be accepted. If the patch in question is for a driver that has been
++around for more than a kernel release, then "small fixes" really can't be
++worth all that much. And "small fixes" may be small and "obvious" they
++definitely can regress.
++
++2.0.3 RC-SERIES NEW DRIVER EXEMPTION RULE
++
++The very first release a new driver (or filesystem) is special. New drivers
++are accepted during the rc series. Patches for the same driver then are
++also accepted during the same rc series of a kernel as well as fixes as it
++cannot regress as no previous kernels exists with it.
++
++Once drivers are upstream for one kernel release (say on 2.6.29) the target
++*goal* after the merge window of the next kernel (respectively this would be
++the 2.6.30 rc-series) is to address regressions. Kernel oops/hangs and security
++issues are obviously accepted but the point is these should have also been
++caught earlier as a general development goal. The rc-series focus should really
++be to address regressions.
  
--	printk("Modules linked in:");
-+	printk(KERN_DEFAULT "Modules linked in:");
- 	/* Most callers should already have preempt disabled, but make sure */
- 	preempt_disable();
- 	list_for_each_entry_rcu(mod, &modules, list)
-diff --git a/kernel/printk.c b/kernel/printk.c
-index a87770c..b4d97b5 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -696,6 +696,8 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 			switch (c) {
- 			case '0' ... '7': /* loglevel */
- 				current_log_level = c - '0';
-+			/* Fallthrough - make sure we're on a new line */
-+			case 'd': /* KERN_DEFAULT */
- 				if (!new_text_line) {
- 					emit_log_char('\n');
- 					new_text_line = 1;
+ 2.1: THE BIG PICTURE
+ 
+ The kernel developers use a loosely time-based release process, with a new
+-major kernel release happening every two or three months.  The recent
+-release history looks like this:
+-
+-	2.6.26	July 13, 2008
+-	2.6.25	April 16, 2008
+-	2.6.24	January 24, 2008
+-	2.6.23	October 9, 2007
+-	2.6.22	July 8, 2007
+-	2.6.21	April 25, 2007
+-	2.6.20	February 4, 2007
++major kernel release happening about every two or three months. The current
++average time based on the last 10 releases is 86.0 days. The recent release
++history along with the number of days between each release looks like this:
++
++	2.6.30	June 10, 2009 - 78 days
++	2.6.29  March 23, 2009 - 89 days
++	2.6.28	December 29, 2008 - 76 days
++	2.6.27	October 8, 2008 - 88 days
++	2.6.26	July 13, 2008 - 88 days
++	2.6.25	April 16, 2008 - 83 days
++	2.6.24	January 24, 2008 - 108 days
++	2.6.23	October 9, 2007 - 94 days
++	2.6.22	July 8, 2007 - 75 days
++	2.6.21	April 25, 2007 - 81 days
++	2.6.20	February 4, 2007 - 68
+ 
+ Every 2.6.x release is a major kernel release with new features, internal
+ API changes, and more.  A typical 2.6 release can contain over 10,000
+diff --git a/Documentation/stable_kernel_rules.txt b/Documentation/stable_kernel_rules.txt
+index a452227..113e8c8 100644
+--- a/Documentation/stable_kernel_rules.txt
++++ b/Documentation/stable_kernel_rules.txt
+@@ -1,5 +1,10 @@
+ Everything you ever wanted to know about Linux 2.6 -stable releases.
+ 
++For further details, such as stable kernel release schedules, rc-series
++policies and process of development please refer to:
++
++Documentation/development-process/
++
+ Rules on what kind of patches are accepted, and which ones are not, into the
+ "-stable" tree:
+ 
+-- 
+1.6.2.2.446.gfbdc0
+
