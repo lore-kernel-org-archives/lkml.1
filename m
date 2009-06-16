@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZFPGCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937030AbZFPGDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007AbZFPGCo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 02:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935868AbZFPFvj
+	id S937030AbZFPGDA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 02:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935933AbZFPFvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 01:51:39 -0400
-Received: from kroah.org ([198.145.64.141]:48442 "EHLO coco.kroah.org"
+	Tue, 16 Jun 2009 01:51:40 -0400
+Received: from kroah.org ([198.145.64.141]:48448 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935908AbZFPFvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 01:51:36 -0400
+	id S935899AbZFPFvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 01:51:37 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Paul Mackerras <paulus@samba.org>,
-       Roel Kluin <roel.kluin@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 50/64] hvcs: remove driver_data direct access of struct device
-Date: Mon, 15 Jun 2009 22:46:39 -0700
-Message-Id: <1245131213-24168-50-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: [PATCH 51/64] ibmvscsi: gadget: at91_udc: remove driver_data direct access of struct device
+Date: Mon, 15 Jun 2009 22:46:40 -0700
+Message-Id: <1245131213-24168-51-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <20090616051351.GA23627@kroah.com>
 References: <20090616051351.GA23627@kroah.com>
@@ -30,45 +31,59 @@ dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
 have been around since the beginning, so are backwards compatible with
 all older kernel versions.
 
-Cc: Paul Mackerras <paulus@samba.org>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Roel Kluin <roel.kluin@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-scsi@vger.kernel.org
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>
+Cc: Robert Jennings <rcj@linux.vnet.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/hvcs.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvscsi.c |    6 +++---
+ drivers/scsi/ibmvscsi/ibmvstgt.c |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/char/hvcs.c b/drivers/char/hvcs.c
-index c76bccf..7d64e42 100644
---- a/drivers/char/hvcs.c
-+++ b/drivers/char/hvcs.c
-@@ -347,7 +347,7 @@ static void __exit hvcs_module_exit(void);
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 11d2602..869a11b 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -1877,7 +1877,7 @@ static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 	unsigned long wait_switch = 0;
+ 	int rc;
  
- static inline struct hvcs_struct *from_vio_dev(struct vio_dev *viod)
+-	vdev->dev.driver_data = NULL;
++	dev_set_drvdata(&vdev->dev, NULL);
+ 
+ 	host = scsi_host_alloc(&driver_template, sizeof(*hostdata));
+ 	if (!host) {
+@@ -1949,7 +1949,7 @@ static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 			scsi_scan_host(host);
+ 	}
+ 
+-	vdev->dev.driver_data = hostdata;
++	dev_set_drvdata(&vdev->dev, hostdata);
+ 	return 0;
+ 
+       add_srp_port_failed:
+@@ -1968,7 +1968,7 @@ static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 
+ static int ibmvscsi_remove(struct vio_dev *vdev)
  {
--	return viod->dev.driver_data;
-+	return dev_get_drvdata(&viod->dev);
- }
- /* The sysfs interface for the driver and devices */
+-	struct ibmvscsi_host_data *hostdata = vdev->dev.driver_data;
++	struct ibmvscsi_host_data *hostdata = dev_get_drvdata(&vdev->dev);
+ 	unmap_persist_bufs(hostdata);
+ 	release_event_pool(&hostdata->pool, hostdata);
+ 	ibmvscsi_ops->release_crq_queue(&hostdata->queue, hostdata,
+diff --git a/drivers/scsi/ibmvscsi/ibmvstgt.c b/drivers/scsi/ibmvscsi/ibmvstgt.c
+index e2dd6a4..d5eaf97 100644
+--- a/drivers/scsi/ibmvscsi/ibmvstgt.c
++++ b/drivers/scsi/ibmvscsi/ibmvstgt.c
+@@ -892,7 +892,7 @@ free_vport:
  
-@@ -785,7 +785,7 @@ static int __devinit hvcs_probe(
- 	kref_init(&hvcsd->kref);
- 
- 	hvcsd->vdev = dev;
--	dev->dev.driver_data = hvcsd;
-+	dev_set_drvdata(&dev->dev, hvcsd);
- 
- 	hvcsd->index = index;
- 
-@@ -831,7 +831,7 @@ static int __devinit hvcs_probe(
- 
- static int __devexit hvcs_remove(struct vio_dev *dev)
+ static int ibmvstgt_remove(struct vio_dev *dev)
  {
--	struct hvcs_struct *hvcsd = dev->dev.driver_data;
-+	struct hvcs_struct *hvcsd = dev_get_drvdata(&dev->dev);
- 	unsigned long flags;
- 	struct tty_struct *tty;
+-	struct srp_target *target = (struct srp_target *) dev->dev.driver_data;
++	struct srp_target *target = dev_get_drvdata(&dev->dev);
+ 	struct Scsi_Host *shost = target->shost;
+ 	struct vio_port *vport = target->ldata;
  
 -- 
 1.6.3.2
