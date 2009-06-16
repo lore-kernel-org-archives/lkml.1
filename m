@@ -1,157 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762393AbZFPV0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763216AbZFPV0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762393AbZFPV0E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 17:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZFPVZz
+	id S1763216AbZFPV0f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 17:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZFPV02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 17:25:55 -0400
-Received: from outbound-mail-121.bluehost.com ([67.222.38.21]:35181 "HELO
-	outbound-mail-121.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751078AbZFPVZy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 17:25:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=ntGO4uaRIoBmY9Lcje0NjpbZFCTCmSroQHypwzJGhUN2OPG60NZbFjAbqUl5BWbrEz34Y7u753zHW+oD+3c46gUvvT+A71yFY8KohaTFD75ubO3MRFSeyokHTXu1ZYIj;
-Date: Tue, 16 Jun 2009 14:25:54 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: What's in pci-2.6.git
-Message-ID: <20090616142554.7bce02f6@jbarnes-g45>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Jun 2009 17:26:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55353 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753814AbZFPV01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 17:26:27 -0400
+Message-ID: <4A380DE0.3000601@redhat.com>
+Date: Wed, 17 Jun 2009 00:25:52 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
+       Rik van Riel <riel@redhat.com>, nickpiggin@yahoo.com.au
+Subject: Re: running get_user_pages() from kernel thread
+References: <4A37DEE7.1000208@redhat.com> <20090616181325.GC23969@random.random> <Pine.LNX.4.64.0906161930050.24878@sister.anvils> <4A37F098.2060208@redhat.com> <Pine.LNX.4.64.0906162108550.6321@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0906162108550.6321@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting the queue together for my next pull request.  See below for
-the shortlog.
+Hugh Dickins wrote:
+> On Tue, 16 Jun 2009, Izik Eidus wrote:
+>   
+>> Hugh Dickins wrote:
+>>     
+>>> Looks like Izik and I hit the same problem (otherwise running well):
+>>>       
+>
+> Ran well enough overnight (with mm/mmap.c vm_flags hack to be merging
+> everything it could) that, to judge by your remarks below, I ought to
+> switch away from investigating and fixing and reviewing, to sending
+> you patches to bring us back in synch.
+>   
 
-On a high level there are a few important, new features & highlights:
-  - improved AER support
-    Thanks to Yanmin the AER code can now handle multiple errors and
-    chips that don't correctly set the source ID.  It does this by
-    scanning the bus when such a condition is detected, looking for the
-    errors.  Huang contributed some code to help test this feature as
-    well; driver developers are encouraged to use it.
-  - PCI resource allocation fixes
-    Yinghai sent some fixes for resource allocation for transparent
-    brdiges & prefetchable regions.  We also try to use _CRS data by
-    default now.
-  - no more pci_find_slot!  (Kudos again to Alex for his work this
-    cycle.)
-  - and the usual collection of misc cleanups & fixes
+Take your time!,
+The only things i want to change are this:
+this silly break_cow() usage,
+and move into usage of mm_count instead of mm_users (with some more 
+safety checks usage) - so when the process die we wont have to wait ksm 
+to find that it die and only then the physical memory will be released.
+(I have a list of things i want to change in ksm, but really not for the 
+merging version)
 
-In looking at the shortlog I just realized the authorship info for the
-check_enable_amd_mmconf and overflow quirk patches are wrong, so we're
-still at least one rebase away from having a tree that's ready to pull.
+> I don't think I have any problems with the madvise route, which weren't
+> already problems with the /dev/ksm route: there are oddities I'm eager
+> to look into (fork still raising questions for me), but nothing serious
+> enough to get in the way of resynching.
+>
+> Andrea will be relieved to learn that I like mm_slot->touched very much:
+> I don't know (and now don't need to know) what was serving that purpose
+> in the /dev/ksm version.
+>
+>   
+>> Good, This solve another issue that you probably dont hit beacuse you work
+>> with the madvise version:
+>> the .release call back of the file_operations strcture will call to:
+>> ksm_sma_release() that will call to remove_slot_from_hash_and_tree() that will
+>> do the silly break_cow() call (even that the prcoesses just die!!!)
+>>     
+>
+> Yes, I'd noticed before that break_cow() can be silly more work than
+> necessary, may need care in ordering things.  But, if it's still any
+> issue, it's something that can be optimized later: you have a technique
+> that goes about it safely, that's good.
+>
+>   
+>> Now beacuse that exit_mm() will set tsk->mm = NULL before the .release will
+>> get called, we will trigger this path even without the kernel thread context.
+>> (I prepred patch that just avoid the break_cow() from the .release context,
+>> but it isnt needed with this patch)
+>>
+>> (You shouldnt have that specific problem in the madvise() version beacuse we
+>> dont have this .release callback anymore, but we still do there useless
+>> break_cow() calls, considering the fact that the process just die, this
+>> break_cow() calls should be made only when the user ask specifically to stop
+>> merging pages i guess...,
+>>     
+>
+> Yes, and I'm thinking that although it's fine for madvise(,,MADV_MERGEABLE)
+> to be slow to get around to merging, probably madvise(,,MADV_UNMERGEABLE)
+> needs to have broken COW on any KSM pages before the call returns.  I've
+> a suspicion that nobody will ever use MADV_UNMERGEABLE, outside of our
+> testing; and yet it's against my principles not to provide it, and if it
+> is used, then I think it needs to give that guarantee before returning.
+> But again, something we can fill in once we're in synch.
+>
+>   
+>> I will send patch that will make it work more logical on top of your patches
+>> as soon as you send something)
+>>     
+>
+> Right, what would you like me to base against?  What if you were to
+> send me a rollup patch against 2.6.30 of what your tree has now?  Or
+> would you prefer to base against an mmotm?  With or without your RFC
+> patches, or something close to them?
+>   
 
-I think the only other patchset left outstanding is Kenji-san's ASPM
-cleanups; I'm waiting on some more review for those.  I think we'll be
-able to squeeze them in this cycle assuming that happens soon.  Oh and
-there's my Moorestown platform support code.  I got some good review on
-that, so I'll be cleaning it up and sending out another patch this
-week, with an eye towards merging it this week as well (though I'm not
-sure if some of the other bits will be ready; I'll talk with the
-Moorestown folks about that, maybe there's no hurry).
+Whatever is easier to you.
 
-If all goes well I'll be sending Linus a pull request later this week,
-so please test & report issues as soon as possible!
+> Once I have your base, whichever way you prefer it, then I can put
+> together a series of patches to adjust that to what I'm now working
+> with (mainly: the ksm.c end of it would be much as in your RFC though
+> with tidyups, and minus 4/4; whereas the madvise.c end of it I reworked).
+>
+> The patches we send to Andrew for mmotm, later on, would be something
+> different, I believe (and something different from your git history):
+> there I think we'd be asking him to remove the KSM patches he already
+> has, and providing fresh equivalents based around the madvise interface
+> (so, for example, I think there would be no patch at all to mm/rmap.c,
+> all the changes made there earlier being later reverted).
+>   
 
-Thanks,
-Jesse
+Yes, I agree it will be easier to drop KSM and resend him once we have 
+everything ready.
 
-Alex Chiang (16):
-      PCI Hotplug: cpqphp: stray whitespace cleanups
-      PCI Hotplug: cpqphp: fix comment style
-      PCI Hotplug: cpqphp: obey 80 column convention in cpqphp.h
-      PCI Hotplug: cpqphp: remove useless prototypes in cpqphp_core.c
-      PCI Hotplug: cpqphp: eliminate stray braces
-      PCI Hotplug: cpqphp: refactor cpqhp_probe
-      PCI Hotplug: cpqphp: clean up cpqphp_ctrl.c
-      PCI Hotplug: cpqphp: refactor cpqphp_save_slot_config
-      PCI Hotplug: cpqphp: style cleanups
-      PCI Hotplug: cpqphp: refactor cpqhp_save_config
-      PCI Hotplug: cpqphp: clean up accesses to pcibios_get_irq_routing_table()
-      PCI Hotplug: cpqphp: eliminate dead code - PCI_ScanBusNonBridge
-      PCI Hotplug: cpqphp: constify slot_name()
-      PCI Hotplug: cpqphp: don't use pci_find_slot()
-      PCI: remove deprecated pci_find_slot() interface
-      PCI: eliminate redundant pci_stop_dev() call from pci_destroy_dev()
-
-Andrew Patterson (1):
-      PCI: Add support for turning PCIe ECRC on or off
-
-Greg Kroah-Hartman (1):
-      PCIE: remove driver_data direct access of struct device
-
-Hidetoshi Seto (2):
-      PCI MSI: Remove unused/obsolete macros and definitions
-      PCI MSI: Define PCI_MSI_MASK_32/64
-
-Huang Ying (4):
-      PCI: Add pci_bus_set_ops
-      PCI: PCIE AER: export aer_irq
-      PCI: PCIE AER: Document for PCIE AER software error injection
-      PCI AER: software error injection
-
-Ingo Molnar (1):
-      x86/PCI: add description for check_enable_amd_mmconf boot parameter
-
-Jesse Barnes (1):
-      PCI: use ACPI _CRS data by default
-
-Kenji Kaneshige (11):
-      PCI: use pci_is_root_bus() in acpi_pci_get_bridge_handle()
-      PCI: use pci_is_root_bus() in acpi_find_root_bridge_handle()
-      PCI: use pci_is_root_bus() in pci_find_upstream_pcie_bridge()
-      PCI: use pci_is_root_bus() in pci_read_bridge_bases()
-      PCI: use pci_is_root_bus() in pci_get_interrupt_pin()
-      PCI: use pci_is_root_bus() in pci_common_swizzle()
-      PCI: Remove untested Electromechanical Interlock (EMI) support in pciehp.
-      PCI hotplug: fix return value of has_foo() functions
-      PCI hotplug: create symlink to hotplug driver module
-      PCI hotplug: remove redundant .owner initializations
-      PCI: remove invalid comment of msi_mask_irq()
-
-Mats Erik Andersson (1):
-      PCI: expose SMBus on Asus notebook A6L
-
-Michael S. Tsirkin (1):
-      PCI MSI: let drivers retry when not enough vectors
-
-Michal Miroslaw (1):
-      PCI quirk: HP hides SMBus controller in Compaq nx9500 laptops
-
-Rafael J. Wysocki (2):
-      PCI PM: Follow PCI_PM_CTRL_NO_SOFT_RESET during transitions from D3
-      PCI PM: Fix handling of devices without PM support by pci_target_state()
-
-Shaohua Li (1):
-      PCI: disable ASPM on VIA root-port-under-bridge configurations
-
-Yinghai Lu (2):
-      PCI/x86: don't assume prefetchable ranges are 64bit
-      PCI: improve resource allocation under transparent bridges
-
-Yu Zhao (4):
-      PCI: fix SR-IOV function dependency link problem
-      PCI: cleanup Function Level Reset
-      PCI: support PM D0hot->D3 transition reset
-      PCI: support Secondary Bus Reset
-
-Zhang, Yanmin (3):
-      PCI AER: support Multiple Error Received and no error source id
-      PCI AER: support invalid error source IDs
-      PCI AER: multiple error support
-
-akpm@linux-foundation.org (2):
-      PCI: ibmphp_core.c: fix warning due to missing module_exit()
-      PCI quirk: unhide 'Overflow' device on i828{6,7}5P/PE chipsets
-
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+> Hugh
+>   
+Thanks Hugh!
