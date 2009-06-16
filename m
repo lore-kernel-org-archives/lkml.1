@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZFPP3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZFPPes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbZFPP3Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 11:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZFPP3Q
+	id S1758155AbZFPPes (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 11:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZFPPei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 11:29:16 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:20660 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbZFPP3Q convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 11:34:38 -0400
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:41318 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754245AbZFPPeh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 11:29:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CEq6yvtBsdimwlejpWAuocrVkJx27GxvKD4EwG66Xc7XU+59stvvVm2zaW1b8slUJu
-         1CcsTLUYU/na1kAJHJwvfczFkHzxL7rhyctXfwnMCOBNo/1b4PPK8/JGEbhXTuRaN4jN
-         R2xAL51AYy/ZmyuTSAhMycR+OvOcM5frgjcb8=
+	Tue, 16 Jun 2009 11:34:37 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i17ch6bh43j)
+X-WSS-ID: 0KLC8L4-04-6I6-01
+Date: Tue, 16 Jun 2009 17:34:17 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: jesse.brandeburg@intel.com
+CC: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: dma-debug warning with ixgbe
+Message-ID: <20090616153417.GN5139@amd.com>
 MIME-Version: 1.0
-In-Reply-To: <m17hzdhkr8.fsf@fess.ebiederm.org>
-References: <4A2A7F33.4030807@oracle.com> <4A2CA96D.3090502@oracle.com>
-	 <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com>
-	 <4A2CC52B.9010602@oracle.com>
-	 <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com>
-	 <m1ab4i11zx.fsf@fess.ebiederm.org>
-	 <20090611050929.GA2706@cr0.nay.redhat.com>
-	 <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0>
-	 <m17hzdhkr8.fsf@fess.ebiederm.org>
-Date: Tue, 16 Jun 2009 23:29:18 +0800
-Message-ID: <2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
-Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Tao Ma <tao.ma@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 Jun 2009 15:34:18.0076 (UTC) FILETIME=[E97151C0:01C9EE97]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 6:08 PM, Eric W. Biederman<ebiederm@xmission.com> wrote:
-> Amerigo Wang <xiyou.wangcong@gmail.com> writes:
->
->> Fix wrong /proc/kcore size on x86_64.
->>
->> x86_64 uses __va() macro to caculate the virtual address passed to kclist_add()
->> but decodes it with its own macro kc_vadd_to_offset(). This is wrong.
->
-> Ok. Â I finally understand what is going on here, and no kc_vaddr_to_offset
-> is not wrong when applied to a virtual address. Â In fact I expect the current
-> definition makes things a bit more predictable.
->
-> And yes kclist_add is must be given a virtual address
->
->> Also, according to Documentation/x86/x86_64/mm.txt, kc_vaddr_to_offset()
->> is wrong too.
->
-> How so? Â The file offset is a number space that is different from both
-> physical and virtual addresses.
+Hi,
 
-Why? They _do_ have some calculated relations.
+today I got this dma-debug warning with the ixgbe driver with a kernel
+near 2.6.30-rc8.
 
->
->> So just remove them, use the generic macro.
->
-> I think a case can be made either way. Â In practice neither answer
-> gives us a dense offset space on x86_64 so I think I prefer the
-> current definition which sets or clears the high bits as opposed
-> to something that mangles the address more.
->
+------------[ cut here ]------------
+WARNING: at /data/repos/linux-2.6-iommu/lib/dma-debug.c:806
+check_unmap+0x214/0x5c3()
+Hardware name: Toonie
+ixgbe 0000:02:00.0: DMA-API: device driver frees DMA memory with
+different size [device address=0x0000000000045c12] [map size=258
+bytes] [unmap size=256 bytes]
+Modules linked in: loop i2c_piix4 tpm_infineon rtc_cmos tpm
+tpm_bios rtc_core rtc_lib button ata_generic pata_acpi usbhid
+pata_atiixp ixgbe hid dca bnx2
+Pid: 4391, comm: ifconfig Not tainted 2.6.30-rc81 #1
+Call Trace:
+ [<ffffffff8039125a>] ? check_unmap+0x214/0x5c3
+ [<ffffffff80238d72>] warn_slowpath_common+0x77/0xa4
+ [<ffffffff80238e14>] warn_slowpath_fmt+0x64/0x66
+ [<ffffffff80391134>] ? check_unmap+0xee/0x5c3
+ [<ffffffff8058970b>] ? _spin_lock_irqsave+0x3f/0x4b
+ [<ffffffff80391134>] ? check_unmap+0xee/0x5c3
+ [<ffffffff8039125a>] check_unmap+0x214/0x5c3
+ [<ffffffff80391813>] debug_dma_unmap_page+0x51/0x53
+ [<ffffffffa002e29c>] ixgbe_clean_rx_ring+0xb9/0x1e4 [ixgbe]
+ [<ffffffffa002f2f6>] ixgbe_down+0x2f8/0x34e [ixgbe]
+ [<ffffffffa00307a8>] ixgbe_reinit_locked+0x59/0x70 [ixgbe]
+ [<ffffffffa0030837>] ixgbe_change_mtu+0x78/0x82 [ixgbe]
+ [<ffffffff804f56b5>] dev_set_mtu+0x3a/0x69
+ [<ffffffff804f688c>] dev_ifsioc+0xcf/0x2cc
+ [<ffffffff804f7018>] dev_ioctl+0x58f/0x647
+ [<ffffffff80351978>] ? avc_has_perm+0x4e/0x60
+ [<ffffffff804e4e7f>] sock_ioctl+0x21f/0x231
+ [<ffffffff802cb478>] vfs_ioctl+0x2a/0x78
+ [<ffffffff802cb934>] do_vfs_ioctl+0x46e/0x4aa
+ [<ffffffff80250521>] ? up_read+0x26/0x2b
+ [<ffffffff802cb9c5>] sys_ioctl+0x55/0x77
+ [<ffffffff8020afab>] system_call_fastpath+0x16/0x1b
+---[ end trace f560e4a00a9d5d32 ]---
+Mapped at:
+ [<ffffffff80391bca>] debug_dma_map_page+0x7c/0x11f
+ [<ffffffffa002b3ba>] ixgbe_alloc_rx_buffers+0x247/0x316 [ixgbe]
+ [<ffffffffa002bc5a>] ixgbe_configure+0x7d1/0x7e3 [ixgbe]
+ [<ffffffffa002ffb9>] ixgbe_open+0xed/0x63b [ixgbe]
+ [<ffffffff804f5d48>] dev_open+0x7c/0xc2
 
-I am trying to dig more... There must be something wrong there.
+Joerg
 
->
-> It uses get_kcore_size and (size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
-> The second definition being bogus as it has nothing to do with which
-> offsets are accepted.
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
-Agreed. Maybe we can just remove the second one and update the doc?
