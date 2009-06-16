@@ -1,105 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZFPTOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZFPTPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbZFPTOe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 15:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZFPTO0
+	id S1755204AbZFPTPO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 15:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbZFPTPC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 15:14:26 -0400
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:47981 "EHLO
-	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754078AbZFPTOZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 15:14:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RW76vBArs+XxdFTtW6PCXJKm/yQCVAb+h42uKfA2jJdDKBi+jhS9AegCbzGbfiSWMY
-         8h5yzzRLC4W4aAeix16tLx0zU8EsJAZvfczHutZLrQeYSSJ6mXlalY1oh8IedgXwmyME
-         Z5gWYx20GhbNtf8EhmBGLt24ffwtvb82ueQmY=
-MIME-Version: 1.0
-In-Reply-To: <1245177592.14543.1.camel@wall-e>
-References: <1245177592.14543.1.camel@wall-e>
-Date: Tue, 16 Jun 2009 21:14:26 +0200
-Message-ID: <36ca99e90906161214u6624014q3f3dc4e234bdf772@mail.gmail.com>
-Subject: Re: [RFC] set the thread name
-From: Bert Wesarg <bert.wesarg@googlemail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	Tue, 16 Jun 2009 15:15:02 -0400
+Received: from main.gmane.org ([80.91.229.2]:35987 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753107AbZFPTPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 15:15:01 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jason Lynch <jason@calindora.com>
+Subject: [BUG?,FEATURE?] One core idles with 4 nice and 1 regular process
+Date: Tue, 16 Jun 2009 19:09:59 +0000 (UTC)
+Message-ID: <h18qm7$bf$1@ger.gmane.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 207-118-117-152.dyn.centurytel.net
+User-Agent: Pan/0.133 (House of Butterflies)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+First, a description of the problem, and a fairly simple way to test it:
 
-On Tue, Jun 16, 2009 at 20:39, Stefani Seibold<stefani@seibold.net> wrote:
-> Currently it is not easy to identify a thread in linux, because there is
-> no thread name like in some other OS.
->
-> If there were are thread name then we could extend a kernel segv message
-> and the /proc/<pid>/task/<tid>/... entries by a TName value like this:
-prctl(PR_SET_NAME, ...) works perfectly here.
+All of this is running on my quad-core Q6600. First, I start four nice -n 
+19 processes, each of which does nothing but busy-wait. (In my case, I 
+used a simple python script, but any CPU-bound process will do.) At this 
+point, top shows all four cores being utilized, at approximately 100% 
+nice each.
 
-Bert
+At this point, I start another of these busy-waiting processes, except 
+with no nice adjustment, so it runs at regular priority. After doing so, 
+top now reports the following CPU usage: one core is 100% user, two cores 
+are 100% nice, and finally, one last core is 100% idle, doing nothing, 
+despite a total of five processes being available to run.
 
-/* -*- c -*- */
+I thought I first noticed this running a 2.6.29 kernel, and thought about 
+bisecting, but my test 2.6.28 kernel also exhibited the behavior. I 
+couldn't test any previous kernels due to a lack of ext4 support. Both my 
+current 2.6.30 kernel and the torvalds/linux-2.6.git HEAD also show the 
+behavior.
 
-#define _GNU_SOURCE
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <math.h>
-#include <pthread.h>
-#include <sys/prctl.h>
+Now, I'm not sure if this is a bug or a strange feature (though it seems 
+very bug-like to me) or perhaps a configuration problem, but I'd like to 
+find out nonetheless.
 
-void *
-thread(void *arg)
-{
-    unsigned long i = (unsigned long)arg;
-    char comm[16];
-    snprintf(comm, sizeof comm, "task %02lu", i);
-    prctl(PR_SET_NAME, comm, 0l, 0l, 0l);
+If I can provide any additional information to help, I'll be happy to 
+oblige.
 
-    sleep(10);
-
-    return NULL;
-}
-
-int
-main(int ac, char *av[])
-{
-    pthread_t thr;
-    unsigned long i, n = 10;
-    char comm[16];
-
-    printf("%u\n", getpid());
-    sleep(5);
-    snprintf(comm, sizeof comm, "master");
-    prctl(PR_SET_NAME, comm, 0l, 0l, 0l);
-    sleep(5);
-
-    for (i = 0; i < n; i++)
-        pthread_create(&thr, NULL, thread, (void *)i);
-
-    pthread_join(thr, NULL);
-
-    return 0;
-}
-
->
-> Greetings,
-> Stefani
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
