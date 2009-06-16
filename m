@@ -1,79 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbZFPSGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbZFPSJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760919AbZFPSGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 14:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZFPSGK
+	id S1757853AbZFPSJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 14:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZFPSJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 14:06:10 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59305 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752052AbZFPSGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 14:06:10 -0400
-Date: Tue, 16 Jun 2009 11:00:53 -0700
-From: Greg KH <gregkh@suse.de>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 012/143] USB: move twl4030_usb's probe function to
-	.devinit.text
-Message-ID: <20090616180053.GA28158@suse.de>
-References: <20090616051356.GB23627@kroah.com> <1245129858-23818-12-git-send-email-gregkh@suse.de> <20090616060559.GA18333@pengutronix.de> <20090616062035.GA32226@suse.de> <20090616091444.GA23840@pengutronix.de> <20090616162106.GC26879@suse.de> <20090616175900.GA13048@pengutronix.de>
+	Tue, 16 Jun 2009 14:09:47 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:43589 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750978AbZFPSJq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 14:09:46 -0400
+Message-ID: <4A37DFE2.2020506@novell.com>
+Date: Tue, 16 Jun 2009 14:09:38 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090616175900.GA13048@pengutronix.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based	notifier
+ interface
+References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com> <4A37A7FC.4090403@novell.com> <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com> <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <20090616175300.GA24514@redhat.com>
+In-Reply-To: <20090616175300.GA24514@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig1BBB43D6002560D84A34E3ED"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 07:59:00PM +0200, Uwe Kleine-König wrote:
-> Hello,
-> 
-> On Tue, Jun 16, 2009 at 09:21:06AM -0700, Greg KH wrote:
-> > On Tue, Jun 16, 2009 at 11:14:44AM +0200, Uwe Kleine-König wrote:
-> > > Hi Greg,
-> > > 
-> > > On Mon, Jun 15, 2009 at 11:20:35PM -0700, Greg KH wrote:
-> > > > On Tue, Jun 16, 2009 at 08:05:59AM +0200, Uwe Kleine-König wrote:
-> > > > > Hi Greg,
-> > > > > 
-> > > > > On Mon, Jun 15, 2009 at 10:22:07PM -0700, Greg Kroah-Hartman wrote:
-> > > > > > A pointer to twl4030_usb_probe is passed to the core via
-> > > > > > platform_driver_register and so the function must not disappear when the
-> > > > > > .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-> > > > > > unbinding and binding a device to the driver via sysfs will result in an
-> > > > > > oops as does a device being registered late.
-> > > > > > 
-> > > > > > An alternative to this patch is using platform_driver_probe instead of
-> > > > > > platform_driver_register plus removing the pointer to the probe function
-> > > > > > from the struct platform_driver.
-> > > > > I wonder if this kind of error could be detected automatically.  That is
-> > > > > at probe time check if the probe function is in the .init.text section.
-> > > > 
-> > > > There's nothing wrong with calling probe functions in the .init.text
-> > > > section, _before_ we throw away the init.text section :)
-> > > Ah, my fault:
-> > > 
-> > > I wonder if this kind of error could be detected automatically.  That is
-> > > at *register* time check if the probe function is in the .init.text
-> > > section.
-> > 
-> > But again, we can register devices with their probe functions in
-> > .init.text and use them, before .init.text is thrown away, right?
-> Yes, but only if you unregister the driver before .init.text is thrown
-> away, right?
-> 
-> If your driver is still active while .init.text already disappeared a new
-> device makes your kernel oops.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig1BBB43D6002560D84A34E3ED
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes, but for almost all platform devices, they can not have a new device
-appear after init runs, as they are fixed to the motherboard.
+Michael S. Tsirkin wrote:
+> On Tue, Jun 16, 2009 at 12:17:22PM -0400, Gregory Haskins wrote:
+>  =20
+>>> Maybe I misunderstand what iosignalfd is - isn't it true that you get=
+ eventfd
+>>> and kvm will signal that when guest performs io write to a specific
+>>> address, and then drivers can get eventfd and poll it to detect
+>>> these writes?
+>>>  =20
+>>>      =20
+>> Correct.
+>>
+>>    =20
+>>> If yes, you have no way to know that the other end of eventfd
+>>> is connected to kvm, so you don't know you can access current->mm.
+>>>  =20
+>>>      =20
+>> Well, my intended use for them *does* know its connected to KVM.=20
+>>    =20
+>
+> How does it know? You get a file descriptor and you even figure out it'=
+s an
+> eventfd. Now what? Any process can write there.
+>  =20
 
-Anyway, if you want to send a patch to dynamically catch this kind of
-problem, that would be great.
+Well, I suppose that is true.  Unlike my current hypercall coupling
+deployed in vbus v3, anyone can signal the event for the iosignalfd.=20
+However, it wouldn't matter other than looking like an errant signal as
+I do not use "current" for anything. (e.g. all the virtio pointers are
+stored independently to the iosignalfd)
+>  =20
+>> Perhaps there will be others that do not in the future, but like I sai=
+d
+>> it could be addressed as those actually arise.
+>>
+>>
+>>    =20
+>>>  =20
+>>>      =20
+>>>> So since I cannot use it accurately for the hardirq/threaded-irq typ=
+e
+>>>> case, and I don't actually need it for the iosignalfd case, I am not=
 
-thanks,
+>>>> sure its the right direction (at least for now).  I do think it migh=
+t
+>>>> have merit for syscal/vmexit uses outside of iosignalfd, but I do no=
+t
+>>>> see a current use-case for it so perhaps it can wait until one arise=
+s.
+>>>>
+>>>> -Greg
+>>>>    =20
+>>>>        =20
+>>> But, it addresses the CONFIG_PREEMPT off case, which your design does=
+n't
+>>> seem to.
+>>>  =20
+>>>      =20
+>> Well, the problem is that it only addresses it partially in a limited
+>> set of circumstances, and doesn't address the broader problem.  I'll
+>> give you an example:
+>>
+>> (First off, lets assume that we are not going to have
+>> eventfd_signal_task(), but rather eventfd_signal() with two option
+>> flags: EVENTFD_SIGNAL_CANSLEEP, and EVENTFD_SIGNAL_CURRENTVALID
+>>
+>> Today vbus-enet has a rx-thread and a tx-thread at least partially
+>> because I need process-context to do the copy_to_user(other->mm) type
+>> stuff (and we will need similar for our virtio-net backend as well).  =
+I
+>> also utilize irqfd to do interrupt injection.  Now, since I know that =
+I
+>> have kthread_context, I could modify vbus-enet to inject interrupts wi=
+th
+>> EVENTFD_SIGNAL_CANSLEEP set, and this is fine.  I know that is safe.
+>>
+>> However, the problem is above that!  I would like to optimize out the
+>> tx-thread to begin with with a similar "can_sleep()" pattern whenever
+>> possible.
+>>
+>> For instance, if the netif stack calls me to do a transmit and it
+>> happens to be in a sleepable context, it would be nice to just skip
+>> waking up the tx-thread.  I would therefore just do the
+>> copy_to_user(other->mm) + irqfd directly in the netif callback, thereb=
+y
+>> skipping the context switch.
+>>    =20
+>
+> What do you mean by copy_to_user(other->mm) here?  If you are going to =
+switch
+> to another mm, then I think current->mm must be valid (I think it's not=
+ enough
+> that you can sleep). So preemptible() might not be enough.
+>  =20
 
-greg k-h
+I dont currently use switch_mm, if that is what you mean.  I save the
+task_struct into the appropriate context so current->mm doesn't matter
+to me.  I never use it.  All I need (afaik) is to acquire the proper
+mutex first.  I am not an MM expert, so perhaps I have this wrong but it
+does appear to work properly even from kthread context.
+
+-Greg
+
+
+
+--------------enig1BBB43D6002560D84A34E3ED
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko33+IACgkQlOSOBdgZUxlsIQCeLz7rI0xdh62iMzpcFLZSlCO5
+zZQAnRLrojjvvubMcy11OfbRq/X+21EB
+=Y0mr
+-----END PGP SIGNATURE-----
+
+--------------enig1BBB43D6002560D84A34E3ED--
