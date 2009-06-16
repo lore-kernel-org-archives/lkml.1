@@ -1,211 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbZFPEaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZFPEcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757615AbZFPEaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 00:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbZFPE3v
+	id S1753853AbZFPEcS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZFPEcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 00:29:51 -0400
-Received: from authsmtp00.uchicago.edu ([128.135.249.245]:48956 "EHLO
-	authsmtp00.uchicago.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750791AbZFPE3u (ORCPT
+	Tue, 16 Jun 2009 00:32:10 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:54166 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbZFPEcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 00:29:50 -0400
-X-Greylist: delayed 824 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Jun 2009 00:29:50 EDT
-Message-ID: <4A371AED.5080800@uchicago.edu>
-Date: Tue, 16 Jun 2009 00:09:17 -0400
-From: Jake Ellowitz <ellowitz@uchicago.edu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Tue, 16 Jun 2009 00:32:09 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 15 Jun 2009 21:26:01 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.30-rc1 regression? -- epoll: BUG: sleeping function called
+ from invalid context
+In-Reply-To: <tkrat.dc33b782c61692c7@s5r6.in-berlin.de>
+Message-ID: <alpine.DEB.1.10.0906152124480.21001@makko.or.mcafeemobile.com>
+References: <tkrat.dc33b782c61692c7@s5r6.in-berlin.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>, tj@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [Bug #13463] Poor SSD performance
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <AN6kEAA5GQ.A.23.sj7KKB@chimera> <20090610063746.GA26773@localhost> <20090611031153.GA7007@localhost>
-In-Reply-To: <20090611031153.GA7007@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Fengguang,
+On Tue, 16 Jun 2009, Stefan Richter wrote:
 
-Thanks so much for the attention you paid to this problem. I did not 
-want to respond until I got a chance to give the new kernel a shot to 
-see if the bug was still present. It appears not to be -- hdparm and dd 
-both register read speeds between 200 and 220 MB/s as opposed to the 70 
-to 80 MB/s I was getting with kernel 2.6.29. So, I guess this strange 
-bug has sort of resolved itself.
+> Looks like a regression after 2.6.29, before 2.6.30-rc1, caused by
+> commit 5071f97ec6d74f006072de0ce89b67c8792fe5a1, "epoll: fix epoll's own
+> poll" (since this introduced ep_scan_ready_list), but I haven't fully
+> investigated yet whether this is really the cause.
+> 
+> Test case:  Run any libraw1394 or libdc1394 based program on
+> firewire-core on a kernel with the usual selection of debugging options
+> configured in.  I didn't have these options enabled for a while, hence
+> noticed only now.
+> 
+> BUG: sleeping function called from invalid context at kernel/mutex.c:278
+> in_atomic(): 1, irqs_disabled(): 0, pid: 8301, name: dvgrab
+> no locks held by dvgrab/8301.
+> Pid: 8301, comm: dvgrab Tainted: G	  W  2.6.30 #2
+> Call Trace:
+> [<ffffffff80250bb2>] ? __debug_show_held_locks+0x22/0x24
+> [<ffffffff8022a91f>] __might_sleep+0x120/0x122
+> [<ffffffff8045192b>] mutex_lock_nested+0x25/0x2eb
+> [<ffffffff80253c25>] ? __lock_acquire+0x705/0x793
+> [<ffffffff802b8f5a>] ep_scan_ready_list+0x3c/0x185
+> [<ffffffff802b997f>] ? ep_read_events_proc+0x0/0x6c
+> [<ffffffff802b90b5>] ep_poll_readyevents_proc+0x12/0x14
+> [<ffffffff802b8b4f>] ep_call_nested+0x9f/0xfa
+> [<ffffffff802b90a3>] ? ep_poll_readyevents_proc+0x0/0x14
+> [<ffffffff802b8bf7>] ep_eventpoll_poll+0x4d/0x5b
+> [<ffffffff8029d525>] do_sys_poll+0x1b4/0x3b5
+> [<ffffffff8029e17a>] ? __pollwait+0x0/0xce
+> [<ffffffff8029e248>] ? pollwake+0x0/0x52
+> [<ffffffff8025162b>] ? mark_held_locks+0x4d/0x6a
+> [<ffffffff8020b900>] ? restore_args+0x0/0x30
+> [<ffffffff80251753>] ? trace_hardirqs_on_caller+0x10b/0x12f
+> [<ffffffff8025162b>] ? mark_held_locks+0x4d/0x6a
+> [<ffffffff8020b900>] ? restore_args+0x0/0x30
+> [<ffffffff80253c25>] ? __lock_acquire+0x705/0x793
+> [<ffffffff80251753>] ? trace_hardirqs_on_caller+0x10b/0x12f
+> [<ffffffff80251784>] ? trace_hardirqs_on+0xd/0xf
+> [<ffffffff80235a69>] ? timespec_add_safe+0x34/0x61
+> [<ffffffff802b9070>] ? ep_scan_ready_list+0x152/0x185
+> [<ffffffff802483f9>] ? ktime_get_ts+0x49/0x4e
+> [<ffffffff8029d26b>] ? poll_select_set_timeout+0x5c/0x7f
+> [<ffffffff8029d778>] sys_poll+0x52/0xb2
+> [<ffffffff8020aeab>] system_call_fastpath+0x16/0x1b
+> 
+> Any idea how to approach this?
 
-Best,
-Jake
+Do you have a chance to give the patch below a spin, in your context?
 
+
+
+- Davide
+
+
+---
+ fs/eventpoll.c |   22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
+
+Index: linux-2.6.mod/fs/eventpoll.c
+===================================================================
+--- linux-2.6.mod.orig/fs/eventpoll.c	2009-06-15 19:27:05.000000000 -0700
++++ linux-2.6.mod/fs/eventpoll.c	2009-06-15 21:14:36.000000000 -0700
+@@ -13,6 +13,7 @@
  
-
-Wu Fengguang wrote:
-> On Wed, Jun 10, 2009 at 02:37:46PM +0800, Wu Fengguang wrote:
->   
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13463
->>> Subject		: Poor SSD performance
->>> Submitter	: Jake <ellowitz@uchicago.edu>
->>> Date		: 2009-06-05 17:37 (3 days old)
->>>       
->> Hi Jake,
->>
->> Could you collect some blktrace data for the dd commands on new/old
->> kernels?
->>
->> dd if=/dev/sda of=/dev/null bs=1M count=1024 iflag=direct
->> dd if=/dev/sda of=/dev/null bs=1M count=1024
->>     
->
-> I managed to get a SanDisk SSD for testing, and observes that
->
-> - one must increase read_ahead_kb to at least max_sectors_kb or better
->   "bs=1M" to make a fair comparison
-> - with increased readahead size, the dd reported throughputs are
->   75MB/s vs 77MB/s, while the blktrace reported throughputs are
->   75MB/s vs 75MB/s (buffered IO vs direct IO).
->
-> Here are details.
->
-> The dd throughputs are equal for rotational hard disks, but differs
-> for this SanDisk SSD (with default RA parameters):
->
->         % dd if=/dev/sda of=/dev/null iflag=direct bs=1M count=1024
->         1073741824 bytes (1.1 GB) copied, 13.905 s, 77.2 MB/s
->         1073741824 bytes (1.1 GB) copied, 13.9029 s, 77.2 MB/s
->
->         % dd if=/dev/sda of=/dev/null bs=1M count=1024             
->         1073741824 bytes (1.1 GB) copied, 14.7294 s, 72.9 MB/s
->         1073741824 bytes (1.1 GB) copied, 14.8647 s, 72.2 MB/s
->
-> Here is the blktrace summary:
->
->    dd                                           dd-direct
-> --------------------------------------------------------------------------------------
->   CPU0 (sda):                               |  CPU0 (sda):
->    Reads Queued:       9,888,   39,552KiB   |   Reads Queued:          84,   43,008KiB   
->    Read Dispatches:      302,   38,588KiB   |   Read Dispatches:       84,   43,008KiB   
->    Reads Requeued:         0                |   Reads Requeued:         0                
->    Reads Completed:      337,   44,600KiB   |   Reads Completed:       83,   42,496KiB   
->    Read Merges:        9,574,   38,296KiB   |   Read Merges:            0,        0KiB   
->    Read depth:             2                |   Read depth:             2                
->    IO unplugs:           313                |   IO unplugs:            42                
->   CPU1 (sda):                               |  CPU1 (sda):
->    Reads Queued:      11,840,   47,360KiB   |   Reads Queued:          96,   49,152KiB   
->    Read Dispatches:      372,   48,196KiB   |   Read Dispatches:       96,   49,152KiB   
->    Reads Requeued:         0                |   Reads Requeued:         0                
->    Reads Completed:      337,   42,312KiB   |   Reads Completed:       96,   49,152KiB   
->    Read Merges:       11,479,   45,916KiB   |   Read Merges:            0,        0KiB   
->    Read depth:             2                |   Read depth:             2                
->    IO unplugs:           372                |   IO unplugs:            48                
->                                             |  
->   Total (sda):                              |  Total (sda):
->    Reads Queued:      21,728,   86,912KiB   |   Reads Queued:         180,   92,160KiB   
->    Read Dispatches:      674,   86,784KiB   |   Read Dispatches:      180,   92,160KiB   
->    Reads Requeued:         0                |   Reads Requeued:         0                
->    Reads Completed:      674,   86,912KiB   |   Reads Completed:      179,   91,648KiB   
->    Read Merges:       21,053,   84,212KiB   |   Read Merges:            0,        0KiB   
->    IO unplugs:           685                |   IO unplugs:            90                
->                                             |  
->   Throughput (R/W): 69,977KiB/s / 0KiB/s    |  Throughput (R/W): 75,368KiB/s / 0KiB/s    
->   Events (sda): 46,804 entries              |  Events (sda): 1,158 entries               
->
->
-> Another obvious difference is IO size.
-> One is read_ahead_kb=128K, another is max_sectors_kb=512K:
->
-> dd:
->   8,0    0    13497     0.804939305     0  C   R 782592 + 256 [0]
->   8,0    0    13498     0.806713692     0  C   R 782848 + 256 [0]
->   8,0    1    16275     0.808488708     0  C   R 783104 + 256 [0]
->   8,0    0    13567     0.810261350     0  C   R 783360 + 256 [0]
->   8,0    0    13636     0.812036226     0  C   R 783616 + 256 [0]
->   8,0    1    16344     0.813806353     0  C   R 783872 + 256 [0]
->   8,0    1    16413     0.815578436     0  C   R 784128 + 256 [0]
->   8,0    0    13705     0.817347935     0  C   R 784384 + 256 [0]
->
-> dd-direct:
->   8,0    0      428     0.998831975     0  C   R 357376 + 1024 [0]
->   8,0    1      514     1.005683404     0  C   R 358400 + 1024 [0]
->   8,0    1      515     1.012402554     0  C   R 359424 + 1024 [0]
->   8,0    0      440     1.019303850     0  C   R 360448 + 1024 [0]
->   8,0    1      526     1.026024048     0  C   R 361472 + 1024 [0]
->   8,0    1      538     1.032875967     0  C   R 362496 + 1024 [0]
->   8,0    0      441     1.039595815     0  C   R 363520 + 1024 [0]
->
-> The non-direct dd throughput can improve with 512K and 1M readahead size,
-> but still a bit slower than the direct dd case:
->         1073741824 bytes (1.1 GB) copied, 14.1619 s, 75.8 MB/s
->         1073741824 bytes (1.1 GB) copied, 14.1517 s, 75.9 MB/s
->
->    dd-512k                                     dd-direct2
-> -------------------------------------------------------------------------------------
->   Total (sda):                             |  Total (sda):
->    Reads Queued:      23,808,   95,232KiB  |   Reads Queued:         178,   91,136KiB  
->    Read Dispatches:      215,   95,232KiB  |   Read Dispatches:      178,   91,136KiB  
->    Reads Requeued:         0               |   Reads Requeued:         0               
->    Reads Completed:      215,   95,232KiB  |   Reads Completed:      177,   90,624KiB  
->    Read Merges:       23,593,   94,372KiB  |   Read Merges:            0,        0KiB  
->    IO unplugs:           236               |   IO unplugs:            89               
->                                            |  
->   Throughput (R/W): 75,222KiB/s / 0KiB/s   |  Throughput (R/W): 75,520KiB/s / 0KiB/s   
->   Events (sda): 48,687 entries             |  Events (sda): 1,145 entries              
->
-> Interestingly, the throughput reported by blktrace is almost the same,
-> whereas the dd report favors the dd-direct case.
->
-> More parameters.
->
-> [   10.137350] scsi 3:0:0:0: Direct-Access     ATA      SanDisk SSD SATA 1.13 PQ: 0 ANSI: 5
-> [   10.147137] sd 3:0:0:0: [sda] 61500000 512-byte hardware sectors: (31.4 GB/29.3 GiB)
-> [   10.155060] sd 3:0:0:0: [sda] Write Protect is off
-> [   10.159922] sd 3:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> [   10.165179] sd 3:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-> [   10.174994]  sda:
->
->
-> /dev/sda:
->
->  Model=SanDisk SSD SATA 5000 2.5               , FwRev=1.13    , SerialNo=         81402200246
->  Config={ Fixed }
->  RawCHS=16383/16/63, TrkSize=0, SectSize=0, ECCbytes=4
->  BuffType=unknown, BuffSize=0kB, MaxMultSect=1, MultSect=?1?
->  CurCHS=16383/16/63, CurSects=16514064, LBA=yes, LBAsects=61500000
->  IORDY=yes, tPIO={min:120,w/IORDY:120}, tDMA={min:120,rec:120}
->  PIO modes:  pio0 pio1 pio2 pio3 pio4 
->  DMA modes:  mdma0 mdma1 mdma2 
->  UDMA modes: udma0 udma1 udma2 udma3 udma4 *udma5 
->  AdvancedPM=yes: disabled (255) WriteCache=disabled
->  Drive conforms to: unknown:  ATA/ATAPI-2,3,4,5,6,7
->
->  * signifies the current active mode
->
->
-> /sys/block/sda/queue/nr_requests:128
-> /sys/block/sda/queue/read_ahead_kb:128
-> /sys/block/sda/queue/max_hw_sectors_kb:32767
-> /sys/block/sda/queue/max_sectors_kb:512
-> /sys/block/sda/queue/scheduler:noop [cfq] 
-> /sys/block/sda/queue/hw_sector_size:512
-> /sys/block/sda/queue/rotational:1
-> /sys/block/sda/queue/nomerges:0
-> /sys/block/sda/queue/rq_affinity:0
-> /sys/block/sda/queue/iostats:1
-> /sys/block/sda/queue/iosched/quantum:4
-> /sys/block/sda/queue/iosched/fifo_expire_sync:124
-> /sys/block/sda/queue/iosched/fifo_expire_async:248
-> /sys/block/sda/queue/iosched/back_seek_max:16384
-> /sys/block/sda/queue/iosched/back_seek_penalty:2
-> /sys/block/sda/queue/iosched/slice_sync:100
-> /sys/block/sda/queue/iosched/slice_async:40
-> /sys/block/sda/queue/iosched/slice_async_rq:2
-> /sys/block/sda/queue/iosched/slice_idle:8
->
-> Thanks,
-> Fengguang
->   
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/hardirq.h>
+ #include <linux/sched.h>
+ #include <linux/fs.h>
+ #include <linux/file.h>
+@@ -98,7 +99,7 @@ struct epoll_filefd {
+ struct nested_call_node {
+ 	struct list_head llink;
+ 	void *cookie;
+-	int cpu;
++	void *ctx;
+ };
+ 
+ /*
+@@ -317,17 +318,17 @@ static void ep_nested_calls_init(struct 
+  * @nproc: Nested call core function pointer.
+  * @priv: Opaque data to be passed to the @nproc callback.
+  * @cookie: Cookie to be used to identify this nested call.
++ * @ctx: This instance context.
+  *
+  * Returns: Returns the code returned by the @nproc callback, or -1 if
+  *          the maximum recursion limit has been exceeded.
+  */
+ static int ep_call_nested(struct nested_calls *ncalls, int max_nests,
+ 			  int (*nproc)(void *, void *, int), void *priv,
+-			  void *cookie)
++			  void *cookie, void *ctx)
+ {
+ 	int error, call_nests = 0;
+ 	unsigned long flags;
+-	int this_cpu = get_cpu();
+ 	struct list_head *lsthead = &ncalls->tasks_call_list;
+ 	struct nested_call_node *tncur;
+ 	struct nested_call_node tnode;
+@@ -340,7 +341,7 @@ static int ep_call_nested(struct nested_
+ 	 * very much limited.
+ 	 */
+ 	list_for_each_entry(tncur, lsthead, llink) {
+-		if (tncur->cpu == this_cpu &&
++		if (tncur->ctx == ctx &&
+ 		    (tncur->cookie == cookie || ++call_nests > max_nests)) {
+ 			/*
+ 			 * Ops ... loop detected or maximum nest level reached.
+@@ -352,7 +353,7 @@ static int ep_call_nested(struct nested_
+ 	}
+ 
+ 	/* Add the current task and cookie to the list */
+-	tnode.cpu = this_cpu;
++	tnode.ctx = ctx;
+ 	tnode.cookie = cookie;
+ 	list_add(&tnode.llink, lsthead);
+ 
+@@ -364,10 +365,9 @@ static int ep_call_nested(struct nested_
+ 	/* Remove the current task from the list */
+ 	spin_lock_irqsave(&ncalls->lock, flags);
+ 	list_del(&tnode.llink);
+- out_unlock:
++out_unlock:
+ 	spin_unlock_irqrestore(&ncalls->lock, flags);
+ 
+-	put_cpu();
+ 	return error;
+ }
+ 
+@@ -408,8 +408,12 @@ static int ep_poll_wakeup_proc(void *pri
+  */
+ static void ep_poll_safewake(wait_queue_head_t *wq)
+ {
++	int this_cpu = get_cpu();
++
+ 	ep_call_nested(&poll_safewake_ncalls, EP_MAX_NESTS,
+-		       ep_poll_wakeup_proc, NULL, wq);
++		       ep_poll_wakeup_proc, NULL, wq, (void *) (long) this_cpu);
++
++	put_cpu();
+ }
+ 
+ /*
+@@ -663,7 +667,7 @@ static unsigned int ep_eventpoll_poll(st
+ 	 * could re-enter here.
+ 	 */
+ 	pollflags = ep_call_nested(&poll_readywalk_ncalls, EP_MAX_NESTS,
+-				   ep_poll_readyevents_proc, ep, ep);
++				   ep_poll_readyevents_proc, ep, ep, current);
+ 
+ 	return pollflags != -1 ? pollflags : 0;
+ }
