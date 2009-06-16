@@ -1,333 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZFPEOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZFPEQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbZFPEOs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 00:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZFPEOi
+	id S1753430AbZFPEQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 00:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZFPEQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 00:14:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50732 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbZFPEOh convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 00:16:10 -0400
+Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:46428
+	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750824AbZFPEQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 00:14:37 -0400
-Date: Tue, 16 Jun 2009 01:14:29 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Richard =?ISO-8859-1?B?UvZqZm9ycw==?= 
-	<richard.rojfors.ext@mocean-labs.com>
-Cc: linux-media@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RESEND][PATCH] video: Initial support for ADV7180
-Message-ID: <20090616011429.37314af6@pedra.chehab.org>
-In-Reply-To: <4A366518.3050101@mocean-labs.com>
-References: <4A366518.3050101@mocean-labs.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Tue, 16 Jun 2009 00:16:08 -0400
+Message-ID: <4A371CDF.3070407@bluewatersys.com>
+Date: Tue, 16 Jun 2009 16:17:35 +1200
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: linux kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org
+Subject: [PATCH] ds2782 battery gas gauge driver
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 15 Jun 2009 17:13:28 +0200
-Richard Röjfors  <richard.rojfors.ext@mocean-labs.com> escreveu:
+Add support for the the ds2782 standalone I2C gas-gauge.
 
-> This is an initial driver for Analog Devices ADV7180 Video Decoder.
-> 
-> So far it only supports query standard.
+Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
 
-Hmm... it seems too preliminar for merging. Also, as this is an i2c ancillary
-driver, it would be interesting if you could send it together with the bridge
-or platform driver that uses it.
+---
 
-Cheers,
-Mauro.
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 33da112..b9c818f 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -43,6 +43,13 @@ config BATTERY_DS2760
+ 	help
+ 	  Say Y here to enable support for batteries with ds2760 chip.
+ 
++config BATTERY_DS2782
++	tristate "DS2782 standalone gas-gauge"
++	depends on I2C
++	help
++	  Say Y here to enable support for the DS2782 standalone battery
++	  gas-gauge.
++
+ config BATTERY_PMU
+ 	tristate "Apple PMU battery"
+ 	depends on PPC32 && ADB_PMU
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index 2fcf41d..ad1ac61 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -19,6 +19,7 @@ obj-$(CONFIG_APM_POWER)		+= apm_power.o
+ obj-$(CONFIG_WM8350_POWER)	+= wm8350_power.o
+ 
+ obj-$(CONFIG_BATTERY_DS2760)	+= ds2760_battery.o
++obj-$(CONFIG_BATTERY_DS2782)	+= ds2782_battery.o
+ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
+ obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
+ obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
+diff --git a/drivers/power/ds2782_battery.c b/drivers/power/ds2782_battery.c
+new file mode 100644
+index 0000000..8697891
+--- /dev/null
++++ b/drivers/power/ds2782_battery.c
+@@ -0,0 +1,269 @@
++/*
++ * drivers/power/ds2782_battery.c
++ *
++ * I2C client/driver for the Maxim/Dallas DS2782 Stand-Alone Fuel Gauge IC
++ *
++ * Copyright (C) 2009 Bluewater Systems Ltd
++ * Author: Ryan Mallon <ryan@bluewatersys.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/i2c.h>
++#include <linux/idr.h>
++#include <linux/power_supply.h>
++
++#define DS2782_REG_RARC		0x06	/* Remaining active relative capacity */
++
++#define DS2782_REG_VOLT_MSB	0x0c
++#define DS2782_REG_TEMP_MSB	0x0a
++#define DS2782_REG_CURRENT_MSB	0x0e
++
++/* EEPROM Block */
++#define DS2782_REG_RSNSP	0x69	/* Sense resistor value */
++
++/* Current unit measurement in uA for a 1 milli-ohm sense resistor */
++#define DS2782_CURRENT_UNITS	1563
++
++#define to_ds2782_info(x) container_of(x, struct ds2782_info, battery)
++
++struct ds2782_info {
++	struct i2c_client	*client;
++	struct power_supply	battery;
++	int			id;
++};
++
++static DEFINE_IDR(battery_id);
++static DEFINE_MUTEX(battery_lock);
++
++static inline u8 ds2782_read_reg(struct ds2782_info *info, int reg)
++{
++	return i2c_smbus_read_byte_data(info->client, reg);
++}
++
++static inline u16 ds2782_read_reg16(struct ds2782_info *info, int reg_msb)
++{
++	u8 msb, lsb;
++
++	msb = ds2782_read_reg(info, reg_msb);
++	lsb = ds2782_read_reg(info, reg_msb + 1);
++
++	return (msb << 8) | lsb;
++}
++
++static int ds2782_get_temp(struct ds2782_info *info)
++{
++	u16 raw;
++	s16 temp;
++
++	/* Temperature is measured in units of 0.125 degrees celcius */
++	raw = ds2782_read_reg16(info, DS2782_REG_TEMP_MSB);
++	temp = (raw >> 5) & 0x7ff;
++	if (raw & (1 << 15))
++		temp |= 0xf800;
++	return (temp * 125) / 100;
++}
++
++static int ds2782_get_current(struct ds2782_info *info)
++{
++	s16 current_uA;
++	int sense_res;
++
++	/*
++	 * The units of measurement for current are dependent on the value of
++	 * the sense resistor.
++	 */
++	sense_res = 1000 / ds2782_read_reg(info, DS2782_REG_RSNSP);
++	dev_dbg(&info->client->dev, "sense resistor = %d milli-ohms\n",
++		sense_res);
++	current_uA = ds2782_read_reg16(info, DS2782_REG_CURRENT_MSB);
++	return current_uA * (DS2782_CURRENT_UNITS / sense_res);
++}
++
++static int ds2782_get_voltage(struct ds2782_info *info)
++{
++	u16 raw;
++	s16 voltage_uA;
++
++	/* Voltage is measured in units of 4.88mV */
++	raw = ds2782_read_reg16(info, DS2782_REG_VOLT_MSB);
++	voltage_uA = (raw >> 5) & 0x7ff;
++	if (raw & (1 << 15))
++		voltage_uA |= 0xf800;
++	return voltage_uA * 4880;
++}
++
++static int ds2782_get_status(struct ds2782_info *info)
++{
++	int current_uA, capacity;
++
++	current_uA = ds2782_get_current(info);
++	capacity = ds2782_read_reg(info, DS2782_REG_RARC);
++
++	if (capacity == 100)
++		return POWER_SUPPLY_STATUS_FULL;
++	else if (current_uA == 0)
++		return POWER_SUPPLY_STATUS_NOT_CHARGING;
++	else if (current_uA < 0)
++		return POWER_SUPPLY_STATUS_DISCHARGING;
++	else
++		return POWER_SUPPLY_STATUS_CHARGING;
++}
++
++static int ds2782_battery_get_property(struct power_supply *psy,
++				       enum power_supply_property prop,
++				       union power_supply_propval *val)
++{
++	struct ds2782_info *info = to_ds2782_info(psy);
++
++	switch (prop) {
++	case POWER_SUPPLY_PROP_STATUS:
++		val->intval = ds2782_get_status(info);
++		break;
++
++	case POWER_SUPPLY_PROP_CAPACITY:
++		val->intval = ds2782_read_reg(info, DS2782_REG_RARC);
++		break;
++
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		val->intval = ds2782_get_voltage(info);
++		break;
++
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		val->intval = ds2782_get_current(info);
++		break;
++
++	case POWER_SUPPLY_PROP_TEMP:
++		val->intval = ds2782_get_temp(info);
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static enum power_supply_property ds2782_battery_props[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_TEMP,
++};
++
++static void ds2782_power_supply_init(struct power_supply *battery)
++{
++	battery->type			= POWER_SUPPLY_TYPE_BATTERY;
++	battery->properties		= ds2782_battery_props;
++	battery->num_properties		= ARRAY_SIZE(ds2782_battery_props);
++	battery->get_property		= ds2782_battery_get_property;
++	battery->external_power_changed	= NULL;
++}
++
++static int ds2782_battery_remove(struct i2c_client *client)
++{
++	struct ds2782_info *info = i2c_get_clientdata(client);
++
++	power_supply_unregister(&info->battery);
++	kfree(info->battery.name);
++
++	mutex_lock(&battery_lock);
++	idr_remove(&battery_id, info->id);
++	mutex_unlock(&battery_lock);
++
++	kfree(info);
++	return 0;
++}
++
++static int ds2782_battery_probe(struct i2c_client *client,
++				const struct i2c_device_id *id)
++{
++	struct ds2782_info *info;
++	int ret, num;
++
++	/* Get an ID for this battery */
++	ret = idr_pre_get(&battery_id, GFP_KERNEL);
++	if (ret == 0) {
++		ret = -ENOMEM;
++		goto fail_id;
++	}
++
++	mutex_lock(&battery_lock);
++	ret = idr_get_new(&battery_id, client, &num);
++	mutex_unlock(&battery_lock);
++	if (ret < 0)
++		return ret;
++
++	info = kzalloc(sizeof(struct ds2782_info), GFP_KERNEL);
++	if (!info) {
++		ret = -ENOMEM;
++		goto fail_info;
++	}
++
++	info->battery.name = kasprintf(GFP_KERNEL, "ds2782-%d", num);
++	if (!info->battery.name) {
++		ret = -ENOMEM;
++		goto fail_name;
++	}
++
++	i2c_set_clientdata(client, info);
++	info->client = client;
++	ds2782_power_supply_init(&info->battery);
++
++	ret = power_supply_register(&client->dev, &info->battery);
++	if (ret) {
++		dev_err(&client->dev, "failed to register battery\n");
++		goto fail_register;
++	}
++
++	return 0;
++
++fail_register:
++	kfree(info->battery.name);
++fail_name:
++	kfree(info);
++fail_info:
++	mutex_lock(&battery_lock);
++	idr_remove(&battery_id, num);
++	mutex_unlock(&battery_lock);
++fail_id:
++	return ret;
++}
++
++static const struct i2c_device_id ds2782_id[] = {
++	{"ds2782", 0},
++	{},
++};
++
++static struct i2c_driver ds2782_battery_driver = {
++	.driver 	= {
++		.name	= "ds2782-battery",
++	},
++	.probe		= ds2782_battery_probe,
++	.remove		= ds2782_battery_remove,
++	.id_table	= ds2782_id,
++};
++
++static int __init ds2782_init(void)
++{
++	return i2c_add_driver(&ds2782_battery_driver);
++}
++
++static void __exit ds2782_exit(void)
++{
++	i2c_del_driver(&ds2782_battery_driver);
++}
++
++module_init(ds2782_init);
++module_exit(ds2782_exit);
++
++MODULE_AUTHOR("Ryan Mallon <ryan@bluewatersys.com>");
++MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC driver");
++MODULE_LICENSE("GPL");
++
 
-> 
-> Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
-> ---
-> Index: linux-2.6.30-rc7/drivers/media/video/adv7180.c
-> ===================================================================
-> --- linux-2.6.30-rc7/drivers/media/video/adv7180.c	(revision 0)
-> +++ linux-2.6.30-rc7/drivers/media/video/adv7180.c	(revision 867)
-> @@ -0,0 +1,221 @@
-> +/*
-> + * adv7180.c Analog Devices ADV7180 video decoder driver
-> + * Copyright (c) 2009 Intel Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/errno.h>
-> +#include <linux/kernel.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/i2c.h>
-> +#include <linux/i2c-id.h>
-> +#include <media/v4l2-ioctl.h>
-> +#include <linux/videodev2.h>
-> +#include <media/v4l2-device.h>
-> +#include <media/v4l2-chip-ident.h>
-> +#include <media/v4l2-i2c-drv.h>
-> +
-> +
-> +#define ADV7180_INPUT_CONTROL_REG	0x00
-> +#define ADV7180_INPUT_CONTROL_PAL_BG_NTSC_J_SECAM	0x00
-> +#define ADV7180_AUTODETECT_ENABLE_REG	0x07
-> +#define ADV7180_AUTODETECT_DEFAULT	0x7f
-> +
-> +
-> +#define ADV7180_STATUS1_REG 0x10
-> +#define ADV7180_STATUS1_AUTOD_MASK 0x70
-> +#define ADV7180_STATUS1_AUTOD_NTSM_M_J	0x00
-> +#define ADV7180_STATUS1_AUTOD_NTSC_4_43 0x10
-> +#define ADV7180_STATUS1_AUTOD_PAL_M	0x20
-> +#define ADV7180_STATUS1_AUTOD_PAL_60	0x30
-> +#define ADV7180_STATUS1_AUTOD_PAL_B_G	0x40
-> +#define ADV7180_STATUS1_AUTOD_SECAM	0x50
-> +#define ADV7180_STATUS1_AUTOD_PAL_COMB	0x60
-> +#define ADV7180_STATUS1_AUTOD_SECAM_525	0x70
-> +
-> +#define ADV7180_IDENT_REG 0x11
-> +#define ADV7180_ID_7180 0x18
-> +
-> +
-> +static unsigned short normal_i2c[] = { 0x42 >> 1, I2C_CLIENT_END };
-> +
-> +I2C_CLIENT_INSMOD;
-> +
-> +struct adv7180_state {
-> +	struct v4l2_subdev sd;
-> +};
-> +
-> +static v4l2_std_id determine_norm(struct i2c_client *client)
-> +{
-> +	u8 status1 = i2c_smbus_read_byte_data(client, ADV7180_STATUS1_REG);
-> +
-> +	switch (status1 & ADV7180_STATUS1_AUTOD_MASK) {
-> +	case ADV7180_STATUS1_AUTOD_NTSM_M_J:
-> +		return V4L2_STD_NTSC_M_JP;
-> +	case ADV7180_STATUS1_AUTOD_NTSC_4_43:
-> +		return V4L2_STD_NTSC_443;
-> +	case ADV7180_STATUS1_AUTOD_PAL_M:
-> +		return V4L2_STD_PAL_M;
-> +	case ADV7180_STATUS1_AUTOD_PAL_60:
-> +		return V4L2_STD_PAL_60;
-> +	case ADV7180_STATUS1_AUTOD_PAL_B_G:
-> +		return V4L2_STD_PAL;
-> +	case ADV7180_STATUS1_AUTOD_SECAM:
-> +		return V4L2_STD_SECAM;
-> +	case ADV7180_STATUS1_AUTOD_PAL_COMB:
-> +		return V4L2_STD_PAL_Nc | V4L2_STD_PAL_N;
-> +	case ADV7180_STATUS1_AUTOD_SECAM_525:
-> +		return V4L2_STD_SECAM;
-> +	default:
-> +		return V4L2_STD_UNKNOWN;
-> +	}
-> +}
-> +
-> +static inline struct adv7180_state *to_state(struct v4l2_subdev *sd)
-> +{
-> +	return container_of(sd, struct adv7180_state, sd);
-> +}
-> +
-> +static int adv7180_querystd(struct v4l2_subdev *sd, v4l2_std_id *std)
-> +{
-> +	struct i2c_client *client = v4l2_get_subdevdata(sd);
-> +
-> +	*(v4l2_std_id *)std = determine_norm(client);
-> +	return 0;
-> +}
-> +
-> +static int adv7180_g_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static int adv7180_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static int adv7180_g_chip_ident(struct v4l2_subdev *sd,
-> +	struct v4l2_dbg_chip_ident *chip)
-> +{
-> +	struct i2c_client *client = v4l2_get_subdevdata(sd);
-> +
-> +	return v4l2_chip_ident_i2c_client(client, chip, V4L2_IDENT_ADV7180, 0);
-> +}
-> +
-> +static int adv7180_log_status(struct v4l2_subdev *sd)
-> +{
-> +	v4l2_info(sd, "Normal operation\n");
-> +	return 0;
-> +}
-> +
-> +static irqreturn_t adv7180_irq(int irq, void *devid)
-> +{
-> +	return IRQ_NONE;
-> +}
-> +
-> +static const struct v4l2_subdev_video_ops adv7180_video_ops = {
-> +	.querystd = adv7180_querystd,
-> +};
-> +
-> +static const struct v4l2_subdev_core_ops adv7180_core_ops = {
-> +	.log_status = adv7180_log_status,
-> +	.g_chip_ident = adv7180_g_chip_ident,
-> +	.g_ctrl = adv7180_g_ctrl,
-> +	.s_ctrl = adv7180_s_ctrl,
-> +};
-> +
-> +static const struct v4l2_subdev_ops adv7180_ops = {
-> +	.core = &adv7180_core_ops,
-> +	.video = &adv7180_video_ops,
-> +};
-> +
-> +/*
-> + * Generic i2c probe
-> + * concerning the addresses: i2c wants 7 bit (without the r/w bit), so '>>1'
-> + */
-> +
-> +static int adv7180_probe(struct i2c_client *client,
-> +			const struct i2c_device_id *id)
-> +{
-> +	struct adv7180_state *state;
-> +	struct v4l2_subdev *sd;
-> +
-> +	/* Check if the adapter supports the needed features */
-> +	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
-> +		return -EIO;
-> +
-> +	v4l_info(client, "chip found @ 0x%02x (%s)\n",
-> +			client->addr << 1, client->adapter->name);
-> +
-> +	state = kmalloc(sizeof(struct adv7180_state), GFP_KERNEL);
-> +	if (state == NULL)
-> +		return -ENOMEM;
-> +	sd = &state->sd;
-> +	v4l2_i2c_subdev_init(sd, client, &adv7180_ops);
-> +
-> +	/* Initialize adv7180 */
-> +
-> +	/* register interrupt, can be used later */
-> +	if (client->irq > 0) {
-> +		/* we can use IRQ */
-> +		int err = request_irq(client->irq, adv7180_irq, IRQF_SHARED,
-> +			"adv7180", sd);
-> +		if (err) {
-> +			printk(KERN_ERR "adv7180: Failed to request IRQ\n");
-> +			v4l2_device_unregister_subdev(sd);
-> +			kfree(state);
-> +			return err;
-> +		}
-> +	}
-> +
-> +	/* enable autodetection */
-> +	i2c_smbus_write_byte_data(client, ADV7180_INPUT_CONTROL_REG,
-> +		ADV7180_INPUT_CONTROL_PAL_BG_NTSC_J_SECAM);
-> +	i2c_smbus_write_byte_data(client, ADV7180_AUTODETECT_ENABLE_REG,
-> +		ADV7180_AUTODETECT_DEFAULT);
-> +	return 0;
-> +}
-> +
-> +static int adv7180_remove(struct i2c_client *client)
-> +{
-> +	struct v4l2_subdev *sd = i2c_get_clientdata(client);
-> +
-> +	if (client->irq > 0)
-> +		free_irq(client->irq, sd);
-> +
-> +	v4l2_device_unregister_subdev(sd);
-> +	kfree(to_state(sd));
-> +	return 0;
-> +}
-> +
-> +static const struct i2c_device_id adv7180_id[] = {
-> +	{ "adv7180", 0 },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, adv7180_id);
-> +
-> +static struct v4l2_i2c_driver_data v4l2_i2c_data = {
-> +	.name = "adv7180",
-> +	.probe = adv7180_probe,
-> +	.remove = adv7180_remove,
-> +	.id_table = adv7180_id,
-> +};
-> +
-> +MODULE_DESCRIPTION("Analog Devices ADV7180 video decoder driver");
-> +MODULE_AUTHOR("Mocean Laboratories");
-> +MODULE_LICENSE("GPL v2");
-> +
-> Index: linux-2.6.30-rc7/drivers/media/video/Kconfig
-> ===================================================================
-> --- linux-2.6.30-rc7/drivers/media/video/Kconfig	(revision 861)
-> +++ linux-2.6.30-rc7/drivers/media/video/Kconfig	(working copy)
-> @@ -265,6 +265,15 @@
-> 
->  comment "Video decoders"
-> 
-> +config VIDEO_ADV7180
-> +	tristate "Analog Devices ADV7180 decoder"
-> +	depends on VIDEO_V4L2 && I2C
-> +	---help---
-> +	  Support for the Analog Devices ADV7180 video decoder.
-> +
-> +	  To compile this driver as a module, choose M here: the
-> +	  module will be called adv7180.
-> +
->  config VIDEO_BT819
->  	tristate "BT819A VideoStream decoder"
->  	depends on VIDEO_V4L2 && I2C
-> Index: linux-2.6.30-rc7/drivers/media/video/Makefile
-> ===================================================================
-> --- linux-2.6.30-rc7/drivers/media/video/Makefile	(revision 861)
-> +++ linux-2.6.30-rc7/drivers/media/video/Makefile	(working copy)
-> @@ -49,6 +49,7 @@
->  obj-$(CONFIG_VIDEO_SAA7191) += saa7191.o
->  obj-$(CONFIG_VIDEO_ADV7170) += adv7170.o
->  obj-$(CONFIG_VIDEO_ADV7175) += adv7175.o
-> +obj-$(CONFIG_VIDEO_ADV7180) += adv7180.o
->  obj-$(CONFIG_VIDEO_VPX3220) += vpx3220.o
->  obj-$(CONFIG_VIDEO_BT819) += bt819.o
->  obj-$(CONFIG_VIDEO_BT856) += bt856.o
-> Index: linux-2.6.30-rc7/include/media/v4l2-chip-ident.h
-> ===================================================================
-> --- linux-2.6.30-rc7/include/media/v4l2-chip-ident.h	(revision 861)
-> +++ linux-2.6.30-rc7/include/media/v4l2-chip-ident.h	(working copy)
-> @@ -131,6 +131,9 @@
->  	/* module adv7175: just ident 7175 */
->  	V4L2_IDENT_ADV7175 = 7175,
-> 
-> +	/* module adv7180: just ident 7180 */
-> +	V4L2_IDENT_ADV7180 = 7180,
-> +
->  	/* module saa7185: just ident 7185 */
->  	V4L2_IDENT_SAA7185 = 7185,
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
-
-Cheers,
-Mauro
