@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbZFPLlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757802AbZFPLoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbZFPLlD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 07:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZFPLky
+	id S1757802AbZFPLoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 07:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZFPLoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 07:40:54 -0400
-Received: from mga03.intel.com ([143.182.124.21]:30526 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZFPLkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 07:40:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,228,1243839600"; 
-   d="scan'208";a="155047442"
-Date: Tue, 16 Jun 2009 19:40:24 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 10/22] HWPOISON: check and isolate corrupted free pages
-	v2
-Message-ID: <20090616114024.GA6185@localhost>
-References: <20090615024520.786814520@intel.com> <20090615031253.715406280@intel.com> <20090615184112.ed8e2f03.kamezawa.hiroyu@jp.fujitsu.com> <20090615101620.GA7216@localhost> <20090616085222.1545cc05.kamezawa.hiroyu@jp.fujitsu.com> <20090616003440.GA7329@localhost> <Pine.LNX.4.64.0906161220070.31597@sister.anvils>
+	Tue, 16 Jun 2009 07:44:14 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:61215 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbZFPLoN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 07:44:13 -0400
+Date: Tue, 16 Jun 2009 07:44:10 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: David Woodhouse <david.woodhouse@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: iommu bug
+Message-ID: <20090616114410.GE3735@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	David Woodhouse <david.woodhouse@intel.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906161220070.31597@sister.anvils>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: abhmt005.oracle.com [141.146.116.14]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4A37858B.0268:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 07:29:45PM +0800, Hugh Dickins wrote:
-> On Tue, 16 Jun 2009, Wu Fengguang wrote:
-> > 
-> > Right.  Then the original __ClearPageBuddy() call in bad_page() is
-> > questionable, I guess this line was there just for the sake of safety
-> > (ie. the buddy allocator itself goes wrong):
-> > 
-> > sound-2.6/mm/page_alloc.c
-> > 
-> >         @@ -269,7 +269,6 @@ static void bad_page(struct page *page)
-> >                 dump_stack();
-> >          out:
-> >                 /* Leave bad fields for debug, except PageBuddy could make trouble */
-> > ===>            __ClearPageBuddy(page);
-> >                 add_taint(TAINT_BAD_PAGE);
-> >          }
-> 
-> I didn't put that in for the case of the buddy allocator going wrong
-> (not sure if there could be such a case - I don't mean that the buddy
-> allocator is provably perfect! but how would it get here if it were
-> wrong?).  No, I put that in for the case when the flag bits in struct
-> page have themselves got corrupted somehow, and hence we arrive at
-> bad_page(): most of the bits are best left as they are, to provide
-> maximum debug info; but leaving PageBuddy set there might conceivably
-> allow this corrupted struct page to get paired up with its buddy later,
-> and so freed for reuse, when we're trying to make sure it's never reused.
+Hello,
 
-Hugh, thank you for the detailed explanations!  You are always informative :)
+I posted this one a while ago (last September) and it disappeared on me.
+I've recently turned the iommu back on and its back:
 
-Thanks,
-Fengguang
+Last time David asked me to try with iommu=strict, which I'll do when
+back from vacation.  At the time we thought the bug was an IO being
+submitted with the same page on two different bios.  For whatever
+reason, btrfs raid1 and raid10 hit this harder than MD.
+
+This oops is 2.6.30 + the btrfs tree (which doesn't change iommu at
+all).
+
+kernel BUG at drivers/pci/intel-iommu.c:1524!
+invalid opcode: 0000 [#1] SMP
+last sysfs file: /sys/block/loop3/removable
+CPU 1
+Modules linked in: loop btrfs netconsole configfs 3w_9xxx
+Pid: 30595, comm: btrfs-worker-5 Not tainted 2.6.30 #6
+RIP: 0010:[<ffffffff803ee688>]  [<ffffffff803ee688>] domain_page_mapping+0xa4/0xf7
+RSP: 0018:ffff880004cc5af0  EFLAGS: 00010006
+RAX: ffff880110e96e00 RBX: ffff88014eda3f40 RCX: 00000000a958e001
+RDX: ffff880110e96000 RSI: 0000000000000006 RDI: ffff88014eda3f88
+RBP: ffff880004cc5b30 R08: 0000000000000027 R09: 0000000000001000
+R10: 0000000000000000 R11: 0000000000000002 R12: 000000000006ec4a
+R13: 000000000006ec4b R14: 000000000006ec4a R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffff880004c62000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 00007f0de3efe508 CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process btrfs-worker-5 (pid: 30595, threadinfo ffff8801339e6000, task ffff8801085b2280)
+Stack:
+ 0000000000000001 00000000affc0000 0000000000000018 ffff88014eda3f40
+ ffff88011d826000 0000000000000018 00000000affc0000 0000000000000000
+ ffff880004cc5bb0 ffffffff803efb31 ffff8800572fe080 0000000000000000
+Call Trace:
+Code: 48 63 f6 48 89 df 48 c1 e6 0c 48 03 75 c8 e8 dd fd ff ff 48 85 c0 75 07 b8 f4 ff ff ff eb 50 48 8b 08 48 f7 c1 00 f0 ff ff 74 04 <0f> 0b eb fe 4c 89 e2 48 c1 e2 0c 48 09 ca 48 83 e2 fc 48 0b 55
+RIP  [<ffffffff803ee688>] domain_page_mapping+0xa4/0xf7
+ RSP <ffff880004cc5af0>
+---[ end trace e1cd0e6624485448 ]---
