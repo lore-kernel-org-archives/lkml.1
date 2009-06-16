@@ -1,32 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbZFPKvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZFPKx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbZFPKvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 06:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZFPKvF
+	id S1756177AbZFPKx0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZFPKxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 06:51:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43932 "EHLO mx2.mail.elte.hu"
+	Tue, 16 Jun 2009 06:53:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33156 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbZFPKvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 06:51:03 -0400
-Date: Tue, 16 Jun 2009 12:50:25 +0200
+	id S1751267AbZFPKxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 06:53:14 -0400
+Date: Tue, 16 Jun 2009 12:53:04 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
-       efault@gmx.de, jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090616105025.GA2297@elte.hu>
-References: <20090615171845.GA7664@elte.hu> <alpine.LFD.2.01.0906151029160.3305@localhost.localdomain> <20090615180527.GB4201@Krystal> <20090615182348.GC11248@elte.hu> <4A369573.1060504@zytor.com> <20090615184536.GH11248@elte.hu> <4A369914.4010903@zytor.com> <4A369ADF.2050305@redhat.com> <20090616083635.GE16229@elte.hu> <4A375D6B.3000105@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20090616105304.GA3579@elte.hu>
+References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A375D6B.3000105@redhat.com>
+In-Reply-To: <20090616.034752.226811527.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -40,39 +34,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Avi Kivity <avi@redhat.com> wrote:
+* David Miller <davem@davemloft.net> wrote:
 
-> On 06/16/2009 11:36 AM, Ingo Molnar wrote:
->>
->>>> I can try to find out internally what Intel's position on writing
->>>> %cr2 is, but it'll take a while; however, KVM should be able to
->>>> tell you if any random OS uses %cr2 writes (as should a static
->>>> disassembly of their kernel.)
->>>>        
->>> Linux is one such OS.  When acting as a hypervisor it writes cr2
->>> to present its guests with their expected environment (any
->>> hypervisor that uses virtualization extensions will of course need
->>> to do this).
->>>      
->>
->> Ah, it does save/restore it in svm_vcpu_run. VMX can do this via its
->> context structure (without explicit CR manipulations in host space),
->> right?
->>    
->
-> It's the other way around.  svm switches the guest cr2 in hardware 
-> (through svm->vmcb->save.cr2).  The code you're referring to saves 
-> and restores the host cr2, which is completely unnecessary.  I'm 
-> currently in the middle of dropping it :)
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 16 Jun 2009 11:15:38 +0200
+> 
+> > 
+> > hm, FYI, these bits caused widespread scheduling-while-atomic 
+> > problems on most of my test-systems:
+> > 
+> > BUG: sleeping function called from invalid context at net/core/sock.c:1851
+> > in_atomic(): 1, irqs_disabled(): 0, pid: 544, name: rcu_torture_rea
+> > 1 lock held by rcu_torture_rea/544:
+> >  #0:  (&sk->sk_timer){......}, at: [<ffffffff81060560>] run_timer_softirq+0x120/0x2e0
+> > Pid: 544, comm: rcu_torture_rea Tainted: G        W  2.6.30-tip #54067
+> > Call Trace:
+> >  [<ffffffff810820c3>] ? __debug_show_held_locks+0x13/0x30
+> >  [<ffffffff810489e6>] __might_sleep+0xf6/0x120
+> >  [<ffffffff81b3921d>] lock_sock_nested+0x3d/0x120
+> >  [<ffffffff81c1a7d2>] x25_destroy_socket+0x22/0x180
+> 
+> Please give this patch a try.
 
-Heh :)
-
-> vmx has no hardware support for switching cr2, so vmx_vcpu_run() 
-> switches it using mov cr2.  Given that it's pretty expensive, I've 
-> switched it to write-if-changed, which dropped 70 cycles from the 
-> vmexit latency.
-
-Yep, see my numbers elsewhere in this thread - the cost of a cr2 
-write is ~84 cycles on Nehalem.
+Started testing it - thanks David!
 
 	Ingo
