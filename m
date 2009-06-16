@@ -1,124 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbZFPHL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbZFPHLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbZFPHL0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 03:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281AbZFPHLK
+	id S1761443AbZFPHLx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 03:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281AbZFPHLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 03:11:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48088 "EHLO mx3.mail.elte.hu"
+	Tue, 16 Jun 2009 03:11:41 -0400
+Received: from sirius.lasnet.de ([78.47.116.19]:51257 "EHLO sirius.lasnet.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753950AbZFPHLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 03:11:07 -0400
-Date: Tue, 16 Jun 2009 09:10:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [bug] WARNING: at drivers/char/tty_io.c:1266 tty_open+0x1ea/0x388()
-Message-ID: <20090616071057.GA29862@elte.hu>
-References: <20090614081052.GA9276@elte.hu> <20090614115428.1127ed2d@lxorguk.ukuu.org.uk>
+	id S1752835AbZFPHLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 03:11:40 -0400
+Date: Tue, 16 Jun 2009 09:11:05 +0200
+From: Stefan Schmidt <stefan@datenfreihafen.org>
+To: Stefan Schmidt <stefan@datenfreihafen.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, tglx@tglx.de,
+       alan@lxorguk.ukuu.org.uk, rjw@sisk.pl, netdev@vger.kernel.org,
+       mingo@elte.hu, dwmw2@infradead.org, alsa-devel@alsa-project.org,
+       dri-devel@lists.sourceforge.net, eric@anholt.net
+Message-ID: <20090616071105.GA19511@excalibur.local>
+References: <20090614173331.18f01123@infradead.org> <20090615070651.GB1221@excalibur.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090614115428.1127ed2d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090615070651.GB1221@excalibur.local>
+X-Mailer: Mutt http://www.mutt.org/
+X-KeyID: 0xDDF51665
+X-Website: http://www.datenfreihafen.org/
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Subject: Re: WARN_ON's in i915_gem_tiling.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Bringing Eric into the loop here as he is listed as author of the
+i915_gem_tiling.c
 
-> On Sun, 14 Jun 2009 10:10:52 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, 2009-06-15 at 09:06, Stefan Schmidt wrote:
 > 
+> On Sun, 2009-06-14 at 17:33, Arjan van de Ven wrote:
 > > 
-> > Ok, this is one for those who like to look at weird crashes/bugs.
-> > 
-> > Here's a new regression that popped up in this merge window, there's 
-> > some sort of slab corruption going on in tty data structures:
+> > Rank 1: i915_gem_set_tiling (warning)
+> > 	Reported 830 times (3700 total reports)
+> > 	[gem] Failure in the tiling code
+> > 	This warning was last seen in version 2.6.30, and first seen in 2.6.29-rc2.
+> > 	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_set_tiling
 > 
-> I split the ldisc and tty apart and redid the ldisc locking so its a fair
-> bet I know what changeset is to blame, will just need to hunt it down a
-> bit. kmemcheck found one leak case on Friday which I've fixed but not yet
-> scribbles.
+> There seem to be more then one issue. I'm running into one of them here on a
+> Lenovo Thinkpad X200s. It's 2.6.30 and I enabled KMS the first time here. So I
+> can't tell if it is a regression.
 > 
-> >  c65c9bc: tty: rewrite the ldisc locking
+> http://www.kerneloops.org/oops.php?number=207353
+
+http://www.kerneloops.org/raw.php?rawid=453362&msgid=
+
+and
+
+http://www.kerneloops.org/oops.php?number=453361
+
+Are looking similar to #207353 to me. That's the one I can easily reproduce by
+booting into an KMS enabled kernel. Without modsetting eveything is fine. Let me
+know if there are patches I should give a try.
+
+> The result is that the EDID data could not be read and the wrong screen size
+> set:
+> [   45.524589] i2c-adapter i2c-3: unable to read EDID block.
+> [   45.588200] i915 0000:00:02.0: DVI-D-2: no EDID data
+> [   45.777251] [drm] TMDS-14: set mode 1360x768 13
+> [   45.777261] [drm] TMDS-16: set mode 1360x768 13 <= Should be 1280x900 here
 > 
-> Almost certainly that one and will investigate on Monday
+> Somehow the driver tries to use DVI1 and DVI2 while the display is connected to
+> LVDS1.
+> 
+> stefan@excalibur:~$ xrandr
+> Screen 0: minimum 320 x 200, current 1360 x 800, maximum 8192 x 8192
+> VGA1 disconnected (normal left inverted right x axis y axis)
+> LVDS1 connected 1280x800+0+0 (normal left inverted right x axis y axis) 261mm x
+> 163mm
+>    1280x800       60.0*+   50.0  
+> DVI1 connected 1360x768+0+0 (normal left inverted right x axis y axis) 0mm x 0mm
+>    1360x768       59.8* 
+>    1152x864       60.0  
+>    1024x768       60.0  
+>    800x600        60.3  
+>    640x480        59.9  
+> DVI2 connected 1360x768+0+0 (normal left inverted right x axis y axis) 0mm x 0mm
+>    1360x768       59.8* 
+>    1152x864       60.0  
+>    1024x768       60.0  
+>    800x600        60.3  
+>    640x480        59.9
 
-I have applied your patch from yesterday (attached further below for 
-reference) and the SLAB corruption has not triggered - instead i'm 
-now getting this warning, after 96 reboots:
-
-[   20.782199] sshd used greatest stack depth: 5376 bytes left
-[   22.260149] ------------[ cut here ]------------
-[   22.261027] WARNING: at drivers/char/tty_io.c:1266 tty_open+0x1ea/0x388()
-[   22.262018] Hardware name: System Product Name
-[   22.262020] Modules linked in:
-[   22.262024] Pid: 2553, comm: modprobe Tainted: G        W  2.6.30-tip #54059
-[   22.262026] Call Trace:
-[   22.262032]  [<c102d810>] warn_slowpath_common+0x60/0x90
-[   22.262037]  [<c102d84d>] warn_slowpath_null+0xd/0x10
-[   22.262041]  [<c11a88ae>] tty_open+0x1ea/0x388
-[   22.262045]  [<c108e4c2>] chrdev_open+0x11b/0x132
-[   22.262049]  [<c108a8a6>] __dentry_open+0x167/0x265
-[   22.262052]  [<c108aa3e>] nameidata_to_filp+0x2c/0x43
-[   22.262056]  [<c108e3a7>] ? chrdev_open+0x0/0x132
-[   22.262060]  [<c1094bbd>] do_filp_open+0x3cd/0x712
-[   22.262064]  [<c1083460>] ? check_valid_pointer+0x1f/0x4e
-[   22.262068]  [<c109cd26>] ? alloc_fd+0xcb/0xd5
-[   22.262071]  [<c109cd26>] ? alloc_fd+0xcb/0xd5
-[   22.262075]  [<c108a63d>] do_sys_open+0x4a/0xed
-[   22.262078]  [<c1002a5e>] ? sysenter_exit+0xf/0x21
-[   22.262081]  [<c108a722>] sys_open+0x1e/0x26
-[   22.262085]  [<c1002a2b>] sysenter_do_call+0x12/0x36
-[   22.262087] ---[ end trace 81f0afc9843492f2 ]---
-[   31.191037] CPA self-test:
-
-Another test-box has produced this warning too. (Same config and 
-same hw as i sent the details for earlier in this thread.)
-
-So there's still something fishy going on.
-
-Thanks,
-
-	Ingo
-
--------------------->
->From 9f7a9ce1955c5f7af7456363a552819a82c19896 Mon Sep 17 00:00:00 2001
-From: Alan Cox <alan@linux.intel.com>
-Date: Mon, 15 Jun 2009 16:32:12 +0100
-Subject: [PATCH] ldisc: Make sure the ldisc isn't active when we close it
-
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-LKML-Reference: <20090615153206.4036.26148.stgit@t61.ukuu.org.uk>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/char/tty_ldisc.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index 69b912d..0ea4f63 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -792,6 +792,8 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 		/* Avoid racing set_ldisc */
- 		mutex_lock(&tty->ldisc_mutex);
- 		/* Switch back to N_TTY */
-+		tty_ldisc_halt(tty);
-+		tty_ldisc_wait_idle(tty);
- 		tty_ldisc_reinit(tty);
- 		/* At this point we have a closed ldisc and we want to
- 		   reopen it. We could defer this to the next open but
+regards
+Stefan Schmidt
