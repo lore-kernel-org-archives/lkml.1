@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZFPJ5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZFPKAD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbZFPJ5M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 05:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbZFPJ45
+	id S1752075AbZFPKAD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 06:00:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZFPJ7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 05:56:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41503
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751213AbZFPJ44 (ORCPT
+	Tue, 16 Jun 2009 05:59:53 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:35288 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbZFPJ7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 05:56:56 -0400
-Date: Tue, 16 Jun 2009 02:56:59 -0700 (PDT)
-Message-Id: <20090616.025659.224075454.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
+	Tue, 16 Jun 2009 05:59:52 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [x86] Build error at arch/x86/boot/bioscall.S
+Date: Tue, 16 Jun 2009 04:59:50 -0500
+User-Agent: KMail/1.9.9
+Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, hpa@zytor.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090616094813.GA1686@elte.hu>
-References: <20090616.021955.243374916.davem@davemloft.net>
-	<20090616104417.657d6682@lxorguk.ukuu.org.uk>
-	<20090616094813.GA1686@elte.hu>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+References: <200906160738.n5G7cs9r007216@www262.sakura.ne.jp> <200906160825.n5G8PYRu020230@www262.sakura.ne.jp> <20090616093056.GD6270@cr0.nay.redhat.com>
+In-Reply-To: <20090616093056.GD6270@cr0.nay.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906160459.53065.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 16 Jun 2009 11:48:13 +0200
-
-> I think David's larger point was that what looked to me like more 
-> widespread breakage was in fact limited to [a]x25, a comparatively 
-> rarely used (and rarely tested) corner of the kernel.
+On Tue June 16 2009, Amerigo Wang wrote:
+> On Tue, Jun 16, 2009 at 05:25:34PM +0900, Tetsuo Handa wrote:
+> >Amerigo Wang wrote:
+> >> How about:
+> >> 
+> >> - movw 68(%esp), %di
+> >> + movzwl %sp, %ebx
+> >> + movw 68(%ebx), %di
+> >> 
+> >> ? Does this work?
+> >No.
+> >
+> >arch/x86/boot/bioscall.S: Assembler messages:
+> >arch/x86/boot/bioscall.S:69: Error: `68(%ebx)' is not a valid 16 bit base/index expression
+> >make[1]: *** [arch/x86/boot/bioscall.o] Error 1
+> >make: *** [bzImage] Error 2
 > 
-> I turned them off and that solved the problems here. (and i suspect 
-> the real fix wont be far away either) Thanks everyone.
+> Ok, how about:
+> 
+> - movw 68(%esp), %di
+> + addl $68, %esp
+> + popw %di
+> + subl $66, %esp
+> 
 
-This code path has been broken, basically, forever.  It does a
-lock_sock() from a timer, which has that might_sleep() check, and
-essentially always has.
+I do hope you have interrupts disabled around that chunk.
+Just how old is the toolchain (some didn't do 16bit worth a sh..)?
 
-It would have warned this way years ago if someone had triggered it.
+Mike
 
-The code has been this way forever, so something else changed to start
-triggering this on you.
+> ?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-I still am curious what in the world opens those sockets for you,
-nothing normal should be doing so.
 
-Can you satisfy my curiosity by turning X25 back on and booting
-with this patch?  Thanks.
-
-diff --git a/net/x25/af_x25.c b/net/x25/af_x25.c
-index ed80af8..5214a38 100644
---- a/net/x25/af_x25.c
-+++ b/net/x25/af_x25.c
-@@ -494,6 +494,10 @@ static int x25_create(struct net *net, struct socket *sock, int protocol)
- 	struct x25_sock *x25;
- 	int rc = -ESOCKTNOSUPPORT;
- 
-+#if 1
-+	printk(KERN_INFO "[%s:%d]: Creates X25 socket.\n",
-+	       current->comm, current->pid);
-+#endif
- 	if (net != &init_net)
- 		return -EAFNOSUPPORT;
- 
