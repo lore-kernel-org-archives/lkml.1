@@ -1,100 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZFPR7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbZFPR7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758347AbZFPR7A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 13:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZFPR6s
+	id S1760476AbZFPR7V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 13:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbZFPR67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 13:58:48 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2636 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbZFPR6r (ORCPT
+	Tue, 16 Jun 2009 13:58:59 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56898 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755531AbZFPR66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 13:58:47 -0400
-Subject: Re: [PATCH 2/3] net/netfilter: Convert printk uses to pr_<level>
-From: Joe Perches <joe@perches.com>
-To: Patrick McHardy <kaber@trash.net>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <4A33833B.4080609@trash.net>
-References: <cover.1244705154.git.joe@perches.com>
-	 <835d5482f92aa00f571b2775b96e0e555c31bcf8.1244705154.git.joe@perches.com>
-	 <4A33833B.4080609@trash.net>
-Content-Type: text/plain
-Date: Tue, 16 Jun 2009 10:58:45 -0700
-Message-Id: <1245175125.28596.100.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Jun 2009 13:58:58 -0400
+Date: Tue, 16 Jun 2009 19:59:00 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 012/143] USB: move twl4030_usb's probe function to
+	.devinit.text
+Message-ID: <20090616175900.GA13048@pengutronix.de>
+References: <20090616051356.GB23627@kroah.com> <1245129858-23818-12-git-send-email-gregkh@suse.de> <20090616060559.GA18333@pengutronix.de> <20090616062035.GA32226@suse.de> <20090616091444.GA23840@pengutronix.de> <20090616162106.GC26879@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090616162106.GC26879@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-13 at 12:45 +0200, Patrick McHardy wrote:
-> Joe Perches wrote:
-> > Remove function names from format strings
-> > Add #define pr_fmt(fmt) "%s:%s: " fmt, KBUILD_MODNAME, __func__
+Hello,
+
+On Tue, Jun 16, 2009 at 09:21:06AM -0700, Greg KH wrote:
+> On Tue, Jun 16, 2009 at 11:14:44AM +0200, Uwe Kleine-König wrote:
+> > Hi Greg,
+> > 
+> > On Mon, Jun 15, 2009 at 11:20:35PM -0700, Greg KH wrote:
+> > > On Tue, Jun 16, 2009 at 08:05:59AM +0200, Uwe Kleine-König wrote:
+> > > > Hi Greg,
+> > > > 
+> > > > On Mon, Jun 15, 2009 at 10:22:07PM -0700, Greg Kroah-Hartman wrote:
+> > > > > A pointer to twl4030_usb_probe is passed to the core via
+> > > > > platform_driver_register and so the function must not disappear when the
+> > > > > .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> > > > > unbinding and binding a device to the driver via sysfs will result in an
+> > > > > oops as does a device being registered late.
+> > > > > 
+> > > > > An alternative to this patch is using platform_driver_probe instead of
+> > > > > platform_driver_register plus removing the pointer to the probe function
+> > > > > from the struct platform_driver.
+> > > > I wonder if this kind of error could be detected automatically.  That is
+> > > > at probe time check if the probe function is in the .init.text section.
+> > > 
+> > > There's nothing wrong with calling probe functions in the .init.text
+> > > section, _before_ we throw away the init.text section :)
+> > Ah, my fault:
+> > 
+> > I wonder if this kind of error could be detected automatically.  That is
+> > at *register* time check if the probe function is in the .init.text
+> > section.
 > 
-> For non-debugging messages that should provide enough information
-> to make sense of them without function names, this change does not
-> make much sense in my opinion.
-> 
-> Instead of a half-way readable message, we now would get:
-> 
-> nf_conntrack: nf_conntrack_acct_init: CONFIG_NF_CT_ACCT is deprecated ...
-> 
-> which is not an improvement at all. So unless we can limit this
-> to debugging message, I'll pass on this change.
+> But again, we can register devices with their probe functions in
+> .init.text and use them, before .init.text is thrown away, right?
+Yes, but only if you unregister the driver before .init.text is thrown
+away, right?
 
-Good point.
+If your driver is still active while .init.text already disappeared a new
+device makes your kernel oops.
 
-Maybe there should be a #define pr_dbg_fmt(fmt) <foo>
+Best regards
+Uwe
 
-Perhaps:
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 883cd44..adda97d 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -360,6 +360,10 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
- #define pr_fmt(fmt) fmt
- #endif
- 
-+#ifndef pr_dbg_fmt
-+#define pr_dbg_fmt(fmt) pr_fmt(fmt)
-+#endif
-+
- #define pr_emerg(fmt, ...) \
-         printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
- #define pr_alert(fmt, ...) \
-@@ -380,16 +384,16 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
- /* pr_devel() should produce zero code unless DEBUG is defined */
- #ifdef DEBUG
- #define pr_devel(fmt, ...) \
--	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+	printk(KERN_DEBUG pr_dbg_fmt(fmt), ##__VA_ARGS__)
- #else
- #define pr_devel(fmt, ...) \
--	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+	({ if (0) printk(KERN_DEBUG pr_dbg_fmt(fmt), ##__VA_ARGS__); 0; })
- #endif
- 
- /* If you are writing a driver, please use dev_dbg instead */
- #if defined(DEBUG)
- #define pr_debug(fmt, ...) \
--	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+	printk(KERN_DEBUG pr_dbg_fmt(fmt), ##__VA_ARGS__)
- #elif defined(CONFIG_DYNAMIC_DEBUG)
- /* dynamic_pr_debug() uses pr_fmt() internally so we don't need it here */
- #define pr_debug(fmt, ...) do { \
-@@ -397,7 +401,7 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
- 	} while (0)
- #else
- #define pr_debug(fmt, ...) \
--	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+	({ if (0) printk(KERN_DEBUG pr_dbg_fmt(fmt), ##__VA_ARGS__); 0; })
- #endif
- 
- /*
-
-
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
