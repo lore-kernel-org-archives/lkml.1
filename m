@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbZFPXFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763871AbZFPXFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763553AbZFPXFh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 19:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763381AbZFPXFM
+	id S1763871AbZFPXFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 19:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763515AbZFPXFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 19:05:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46293 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761303AbZFPXFL (ORCPT
+	Tue, 16 Jun 2009 19:05:32 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:59046 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763549AbZFPXFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 19:05:11 -0400
-Date: Tue, 16 Jun 2009 16:05:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Patterson <andrew.patterson@hp.com>
-cc: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
- trees
-In-Reply-To: <1245192703.8234.226.camel@bluto.andrew>
-Message-ID: <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain>
-References: <20090616220419.14021.84524.stgit@bob.kio>  <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain> <1245192703.8234.226.camel@bluto.andrew>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 16 Jun 2009 19:05:31 -0400
+Date: Wed, 17 Jun 2009 04:35:27 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: =?iso-8859-1?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [Patch 2/2] ksym_tracer:Handle machine stall when cat trace_pipe
+	for ksym tracer
+Message-ID: <20090616230527.GC14753@in.ibm.com>
+References: <20090616225257.041883212@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename=fix_machine_stall_issue_02
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+'trace_pipe' does not handle a TRACE_TYPE_PARTIAL_LINE well and causes the
+machine to stall. While a TRACE_TYPE_UNHANDLED return causes the tracer to
+output unrelated data, a TRACE_TYPE_HANDLED return presents a clean output
+(minus all partial traces).
 
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ kernel/trace/trace_ksym.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-On Tue, 16 Jun 2009, Andrew Patterson wrote:
-> 
-> That is at least one problem. I initially tried reparenting this stuff.
-> That is what got backed out in
-> http://thread.gmane.org/gmane.linux.kernel/768526/
+Index: linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
++++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+@@ -389,6 +389,12 @@ static enum print_line_t ksym_trace_outp
+ 
+ 	trace_assign_type(field, entry);
+ 
++	/*
++	 * Return early without any output if we don't have sufficient
++	 * information
++	 */
++	if ((!field->ksym_hbp->info.type) || (!field->ip))
++		return TRACE_TYPE_HANDLED;
+ 	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ", field->p_name,
+ 				entry->pid, iter->cpu, field->ksym_name);
+ 	if (!ret) {
 
-Well, aren't we in the exact same situation still? Ie the problem (as 
-Matthew claims) is:
-
-  'Basically it was that we came across a machine with the opposite 
-   problem -- that we found a parent after we found a child (and claimed 
-   the child's resources), and had no way to insert the parent's region 
-   above the child's region.  Alex's machine finds the child after the 
-   parent and needs to insert the child's resource inside the parent's 
-   resource.'
-
-and the problem is that anything that isn't explicitly aware of the 
-topology is always going to be potentially confused about things like 
-this, since it's not clear at which level you want to find or add a 
-resource.
-
-> > But you fix it by making find_resource always go as deep as it can (if I 
-> > read the code correctly).
-> 
-> Well, just deep enough.
-
-Ok, color me confused now. When is "as deep as it can" different from your 
-"just deep enough"?
-
-> Is there a reason that find_resources should stop at the roots immediate
-> child/sibling.  It seems like a bug to me. Hence this patch.
-
-Well, find_resource() found room for a resource. So it returns it. The 
-point is, your patch returns another - equally valid one.
-
-Now, I'm not saying that your patch is wrong, but I _am_ worried that it 
-(once more) changes some random heuristic when we have two choices, and it 
-just makes it choose the other choice.
-
-We've had those kinds of situations before. The thread you point to is an 
-exact case of this. My point is that I'd rather try to _avoid_ any 
-ambiguous cases, and try to solve it properly at a higher PCI level, where 
-the ambiguity doesn't exist any more (because we'd explicitly take the 
-actual bus topology into account).
-
-So your patch may fix a bug, but I'm pretty sure I've seen a patch from 
-Ivan that should _also_ fix it, and that I would expect to do it not by 
-just tweaking a fundamentally ambiguous case.
-
-		Linus
