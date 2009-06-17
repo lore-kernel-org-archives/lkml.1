@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbZFQCh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762989AbZFQCvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763940AbZFQCh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 22:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZFQChw
+	id S1762989AbZFQCvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 22:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZFQCvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 22:37:52 -0400
-Received: from exprod7og120.obsmtp.com ([64.18.2.18]:53631 "HELO
-	exprod7og120.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753979AbZFQChv convert rfc822-to-8bit (ORCPT
+	Tue, 16 Jun 2009 22:51:03 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:60957 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbZFQCvC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 22:37:51 -0400
+	Tue, 16 Jun 2009 22:51:02 -0400
+Date: Wed, 17 Jun 2009 03:51:01 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "greg@kroah.com" <greg@kroah.com>, yanli@infradead.org
+Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
+Message-ID: <20090617025101.GA27595@srcf.ucam.org>
+References: <20090615141613.GA7876@sage.bj.intel.com> <20090615143446.GB19451@srcf.ucam.org> <20090615144748.GA25734@thyme.bj.intel.com> <20090616154200.GA12715@srcf.ucam.org> <20090616173618.353901ee@lxorguk.ukuu.org.uk> <20090616164351.GA14353@srcf.ucam.org> <20090616181549.496ae0f2@lxorguk.ukuu.org.uk> <20090616171732.GA14912@srcf.ucam.org> <20090617010138.GA13479@thyme.bj.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20090617111443B.fujita.tomonori@lab.ntt.co.jp>
-References: <20090617111443B.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 17 Jun 2009 12:07:53 +0930
-Message-ID: <2e115de50906161937j1fc9e28dxd9622b0092ddc997@mail.gmail.com>
-Subject: Re: [PATCH] parport_pc: set properly the dma_mask for parport_pc 
-	device
-From: Malcom Blaney <malcolm.blaney@maptek.com.au>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: alan@linux.intel.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617010138.GA13479@thyme.bj.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I used this with a patch I worked on a few years ago to fix ECP reads
-from the parport.
+On Wed, Jun 17, 2009 at 09:01:40AM +0800, Li, Yan I wrote:
 
-If anyone is interested it can be found at:
-http://lists.infradead.org/pipermail/linux-parport/2007-October/000614.html
+> This seems a change too aggressive for me. Do we have a good reason
+> for taking this risk? 
 
-2009/6/17 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>:
-> parport_pc_probe_port() creates the own 'parport_pc' device if the
-> device argument is NULL. Then parport_pc_probe_port() doesn't
-> initialize the dma_mask and coherent_dma_mask of the device and calls
-> dma_alloc_coherent with it. dma_alloc_coherent fails because
-> dma_alloc_coherent() doesn't accept the uninitialized dma_mask:
->
-> http://lkml.org/lkml/2009/6/16/150
->
-> Long ago, X86_32 and X86_64 had the own dma_alloc_coherent
-> implementations; X86_32 accepted a device having dma_mask that is not
-> initialized however X86_64 didn't. When we merged them, we chose to
-> prohibit a device having dma_mask that is not initialized. I think
-> that it's good to require drivers to set up dma_mask (and
-> coherent_dma_mask) properly if the drivers want DMA.
->
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Reported-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
-> Tested-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
-> Cc: stable@kernel.org
-> ---
->  drivers/parport/parport_pc.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-> index 151bf5b..1af57b7 100644
-> --- a/drivers/parport/parport_pc.c
-> +++ b/drivers/parport/parport_pc.c
-> @@ -2271,6 +2271,9 @@ struct parport *parport_pc_probe_port(unsigned long int base,
->                if (IS_ERR(pdev))
->                        return NULL;
->                dev = &pdev->dev;
-> +
-> +               dev->coherent_dma_mask = DMA_BIT_MASK(24);
-> +               dev->dma_mask = &dev->coherent_dma_mask;
->        }
->
->        ops = kmalloc(sizeof(struct parport_operations), GFP_KERNEL);
-> --
-> 1.6.0.6
->
->
+It's generally much easier to find regressions (people complain) than it 
+is to find things that have never worked (people just assume Linux is 
+broken).
+
+> Of course if we found the "actual problem" we'd conjure up a better 
+> fix. But before that, I'd prefer the conservative way.
+
+Does stock Windows work on the machine? I think this really ought to be 
+a pretty obvious minimal test before adding quirks to the kernel.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
