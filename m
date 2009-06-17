@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764905AbZFQKG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764195AbZFQKHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764905AbZFQKG4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 06:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZFQKGr
+	id S1764195AbZFQKHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 06:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbZFQKHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 06:06:47 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51199 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbZFQKGq (ORCPT
+	Wed, 17 Jun 2009 06:07:33 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56399 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbZFQKHc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 06:06:46 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring behaviour more in line with expectations V3
-Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
-       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
-       fengguang.wu@intel.com, linuxram@us.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>
-In-Reply-To: <alpine.DEB.1.10.0906161049180.26093@gentwo.org>
-References: <20090616134423.GD14241@csn.ul.ie> <alpine.DEB.1.10.0906161049180.26093@gentwo.org>
-Message-Id: <20090617190204.99C6.A69D9226@jp.fujitsu.com>
+	Wed, 17 Jun 2009 06:07:32 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 17 Jun 2009 12:07:27 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] SCSI: explain the hidden scsi_wait_scan Kconfig variable
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Changli Gao <xiaosuo@gmail.com>, James.Bottomley@HansenPartnership.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20090617021254.GQ19977@parisc-linux.org>
+Message-ID: <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
+References: <4A384FE4.9090703@gmail.com>
+ <20090617021254.GQ19977@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 17 Jun 2009 19:06:46 +0900 (JST)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 16 Jun 2009, Mel Gorman wrote:
-> 
-> > I don't have a particular workload in mind to be perfectly honest. I'm just not
-> > convinced of the wisdom of trying to unmap pages by default in zone_reclaim()
-> > just because the NUMA distances happen to be large.
-> 
-> zone reclaim = 1 is supposed to be light weight with minimal impact. The
-> intend was just to remove potentially unused pagecache pages so that node
-> local allocations can succeed again. So lets not unmap pages.
+People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
+item.  These patches aren't accepted upstream, so let's stop the ongoing
+irritation of people due to this obscure and strange installed module
+and its Kconfig option.
 
-hm, At least major two zone reclaim developer disagree my patch. Thus I have to
-agree with you, because I really don't hope to ignore other developer's opnion.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/scsi/Kconfig |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-So, as far as I understand, the conclusion of this thread are
-  - Drop my patch
-  - instead, implement improvement patch of (may_unmap && page_mapped()) case
-  - the documentation should be changed
-  - it's my homework(?)
+Index: b/drivers/scsi/Kconfig
+===================================================================
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -259,10 +259,25 @@ config SCSI_SCAN_ASYNC
+ 	  or async on the kernel's command line.
+ 
+ config SCSI_WAIT_SCAN
+-	tristate
++	tristate  # No prompt here, this is a hidden option.
+ 	default m
+ 	depends on SCSI
+ 	depends on MODULES
++	help
++	  Wait until all the async scans are complete.  The idea is to use
++	  it in initrd/ initramfs scripts.  You modprobe it after all the
++	  modprobes of the root SCSI drivers and it will wait until they
++	  have all finished scanning their buses before allowing the boot
++	  to proceed.
++
++	  Of course this does not work if targets boot independently of and
++	  in parallel with the initiator, and/ or with transports with non-
++	  deterministic target discovery schemes, and/ or if a transport
++	  driver does not support scsi_wait_scan.
++
++	  Still, this option is not exposed as a prompt because little is
++	  to be gained by disabling it, whereas people who accidentally
++	  switch it off may wonder why their mkinitrd gets into trouble.
+ 
+ menu "SCSI Transports"
+ 	depends on SCSI
 
-Can you agree this?
-
-
+-- 
+Stefan Richter
+-=====-==--= -==- =---=
+http://arcgraph.de/sr/
 
