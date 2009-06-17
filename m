@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZFQPH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZFQPL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZFQPH6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 11:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZFQPHu
+	id S1753837AbZFQPL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 11:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZFQPLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 11:07:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58054 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751656AbZFQPHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 11:07:49 -0400
-Date: Wed, 17 Jun 2009 17:07:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, svaidy@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
-       Nathan Lynch <ntl@pobox.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
-Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
-Message-ID: <20090617150700.GB20345@elte.hu>
-References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com> <20090615232318.74b099a6.akpm@linux-foundation.org> <20090616080715.GB7961@dirshya.in.ibm.com> <1245223977.13761.21576.camel@twins> <20090617143804.GA6767@linux.vnet.ibm.com>
+	Wed, 17 Jun 2009 11:11:20 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:55630 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752358AbZFQPLT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 11:11:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=NhrFuN6ob1A1Yhbrbj088JVI3QHezkAyZJbyF53lz2mCnrPI80YZE2RoMtAJvianSC
+         i8XPjp53505hR3OrfxGp5AH0U2sEft7lRqdAGqwY44EfHeYpcHFbzdBPNhaP4ZjwV1ni
+         Y2ORy21/QZXRTHr3rMh8oEFKRCXwdvzNexr8I=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090617143804.GA6767@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Wed, 17 Jun 2009 17:11:20 +0200
+Message-ID: <19f34abd0906170811h36a7082asf68294db9490a049@mail.gmail.com>
+Subject: WARNING: at arch/x86/kernel/apic/apic.c:249 native_apic_write_dummy
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+I just saw this warning on latest mainline when shutting down a box:
 
-> On Wed, Jun 17, 2009 at 09:32:57AM +0200, Peter Zijlstra wrote:
-> > On Tue, 2009-06-16 at 13:37 +0530, Vaidyanathan Srinivasan wrote:
-> > > * Andrew Morton <akpm@linux-foundation.org> [2009-06-15 23:23:18]:
-> > > 
-> > > > On Tue, 16 Jun 2009 11:08:39 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-> > > > 
-> > > > > Currently on a ppc64 box with 16 CPUs, the time taken for
-> > > > > a individual cpu-hotplug operation is as follows.
-> > > > > 
-> > > > >     # time echo 0 > /sys/devices/system/cpu/cpu2/online
-> > > > >     real    0m0.025s
-> > > > >     user    0m0.000s
-> > > > >     sys     0m0.002s
-> > > > > 
-> > > > >     # time echo 1 > /sys/devices/system/cpu/cpu2/online
-> > > > >     real    0m0.021s
-> > > > >     user    0m0.000s
-> > > > >     sys     0m0.000s
-> > > > 
-> > > > Surprised.  Do people really online and offline CPUs frequently enough
-> > > > for this to be a problem?
-> > > 
-> > > Certainly not for hardware faults or hardware replacement, but
-> > > cpu-hotplug interface is useful for changing system configuration to
-> > > meet different objectives like
-> > > 
-> > > * Reduce system capacity to reduce average power and reduce heat
-> > > 
-> > > * Increasing number of cores and threads in a CPU package is leading
-> > >   to multiple cpu offline/online operations for any perceivable effect
-> > > 
-> > > * Dynamically change CPU configurations in virtualized environments
-> > 
-> > I tend to agree with Andrew, if any of those things are done 
-> > frequent enough that the hotplug performance matter you're doing 
-> > something mighty odd.
-> 
-> Boot speedup?
+[  503.576724] ACPI: Preparing to enter system sleep state S5
+[  503.710857] Disabling non-boot CPUs ...
+[  503.716853] Power down.
+[  503.717770] ------------[ cut here ]------------
+[  503.717770] WARNING: at arch/x86/kernel/apic/apic.c:249 native_apic_write_du)
+[  503.717770] Hardware name: OptiPlex GX100
+[  503.717770] Modules linked in:
+[  503.717770] Pid: 2136, comm: halt Not tainted 2.6.30 #443
+[  503.717770] Call Trace:
+[  503.717770]  [<c154d327>] ? printk+0x18/0x1a
+[  503.717770]  [<c1017358>] ? native_apic_write_dummy+0x38/0x50
+[  503.717770]  [<c10360fc>] warn_slowpath_common+0x6c/0xc0
+[  503.717770]  [<c1017358>] ? native_apic_write_dummy+0x38/0x50
+[  503.717770]  [<c1036165>] warn_slowpath_null+0x15/0x20
+[  503.717770]  [<c1017358>] native_apic_write_dummy+0x38/0x50
+[  503.717770]  [<c1017173>] disconnect_bsp_APIC+0x63/0x100
+[  503.717770]  [<c1019e48>] disable_IO_APIC+0xb8/0xc0
+[  503.717770]  [<c1214231>] ? acpi_power_off+0x0/0x29
+[  503.717770]  [<c1015e55>] native_machine_shutdown+0x65/0x80
+[  503.717770]  [<c1015c36>] native_machine_power_off+0x26/0x30
+[  503.717770]  [<c1015c49>] machine_power_off+0x9/0x10
+[  503.717770]  [<c1046596>] kernel_power_off+0x36/0x40
+[  503.717770]  [<c104680d>] sys_reboot+0xfd/0x1f0
+[  503.717770]  [<c109daa0>] ? perf_swcounter_event+0xb0/0x130
+[  503.717770]  [<c109db7d>] ? perf_counter_task_sched_out+0x5d/0x120
+[  503.717770]  [<c102dfc6>] ? finish_task_switch+0x56/0xd0
+[  503.717770]  [<c154da1e>] ? schedule+0x49e/0xb40
+[  503.717770]  [<c10444b0>] ? sys_kill+0x70/0x160
+[  503.717770]  [<c119d9db>] ? selinux_file_ioctl+0x3b/0x50
+[  503.717770]  [<c10dd443>] ? sys_ioctl+0x63/0x70
+[  503.717770]  [<c1003024>] sysenter_do_call+0x12/0x22
+[  503.717770] ---[ end trace 8157b5d0ed378f15 ]---
+[  503.717770] acpi_power_off called
 
-Also, if it brings more attention (and more stability and more 
-bugfixes) to CPU hotplug that's only good.
+That's including this commit:
 
-	Ingo
+commit 103428e57be323c3c5545db8ad12667099bc6005
+Author: Cyrill Gorcunov <gorcunov@openvz.org>
+Date:   Sun Jun 7 16:48:40 2009 +0400
+
+    x86, apic: Fix dummy apic read operation together with broken MP handling
+
+
+Vegard
