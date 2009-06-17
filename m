@@ -1,222 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765517AbZFQL4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765569AbZFQL5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765517AbZFQL4t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 07:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757748AbZFQL4W
+	id S1765569AbZFQL5D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 07:57:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761838AbZFQL4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 07:56:22 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:55600 "EHLO bilbo.ozlabs.org"
+	Wed, 17 Jun 2009 07:56:23 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:55603 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754302AbZFQL4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754931AbZFQL4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 17 Jun 2009 07:56:20 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-Date: Wed, 17 Jun 2009 21:50:04 +1000
+Message-ID: <19000.55529.762227.518531@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Jun 2009 21:52:09 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/6] perf_counter: powerpc: Enable use of software
-   counters on 32-bit powerpc
+Subject: [PATCH 3/6] perf_counter: powerpc: Change how
+   processor-specific back-ends get selected 
+In-Reply-To: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
 X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This enables the perf_counter subsystem on 32-bit powerpc.  Since we
-don't have any support for hardware counters on 32-bit powerpc yet,
-only software counters can be used.
+At present, the powerpc generic (processor-independent) perf_counter
+code has list of processor back-end modules, and at initialization,
+it looks at the PVR (processor version register) and has a switch
+statement to select a suitable processor-specific back-end.
 
-Besides selecting HAVE_PERF_COUNTERS for 32-bit powerpc as well as
-64-bit, the main thing this does is add an implementation of
-set_perf_counter_pending().  This needs to arrange for
-perf_counter_do_pending() to be called when interrupts are enabled.
-Rather than add code to local_irq_restore as 64-bit does, the 32-bit
-set_perf_counter_pending() generates an interrupt by setting the
-decrementer to 1 so that a decrementer interrupt will become pending
-in 1 or 2 timebase ticks (if a decrementer interrupt isn't already
-pending).  When interrupts are enabled, timer_interrupt() will be
-called, and some new code in there calls perf_counter_do_pending().
-We use a per-cpu array of flags to indicate whether we need to call
-perf_counter_do_pending() or not.
+This is going to become inconvenient as we add more processor-specific
+back-ends, so this inverts the order: now each back-end checks whether
+it applies to the current processor, and registers itself if so.
+Furthermore, instead of looking at the PVR, back-ends now check the
+cur_cpu_spec->oprofile_cpu_type string and match on that.
 
-This introduces a couple of new Kconfig symbols: PPC_HAVE_PMU_SUPPORT,
-which is selected by processor families for which we have hardware PMU
-support (currently only PPC64), and PPC_PERF_CTRS, which enables the
-powerpc-specific perf_counter back-end.
+Lastly, each back-end now specifies a name for itself so the core can
+print a nice message when a back-end registers itself.
+
+This doesn't provide any support for unregistering back-ends, but that
+wouldn't be hard to do and would allow back-ends to be modules.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-This depends on the generic atomic64_t patches, which are now in
-Linus' tree.  Ingo, if you're putting these in, please pull Linus'
-tree in first.
+ arch/powerpc/include/asm/perf_counter.h |    5 ++-
+ arch/powerpc/kernel/perf_counter.c      |   44 +++++--------------------------
+ arch/powerpc/kernel/power4-pmu.c        |   15 ++++++++++-
+ arch/powerpc/kernel/power5+-pmu.c       |   16 ++++++++++-
+ arch/powerpc/kernel/power5-pmu.c        |   15 ++++++++++-
+ arch/powerpc/kernel/power6-pmu.c        |   15 ++++++++++-
+ arch/powerpc/kernel/power7-pmu.c        |   15 ++++++++++-
+ arch/powerpc/kernel/ppc970-pmu.c        |   16 ++++++++++-
+ 8 files changed, 96 insertions(+), 45 deletions(-)
 
- arch/powerpc/Kconfig                    |    1 +
- arch/powerpc/include/asm/hw_irq.h       |    5 ++++-
- arch/powerpc/include/asm/perf_counter.h |   10 ++++++++--
- arch/powerpc/kernel/Makefile            |    6 +++---
- arch/powerpc/kernel/time.c              |   25 +++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype  |   11 ++++++++++-
- 6 files changed, 51 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9fb344d..bf6cedf 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -126,6 +126,7 @@ config PPC
- 	select HAVE_OPROFILE
- 	select HAVE_SYSCALL_WRAPPERS if PPC64
- 	select GENERIC_ATOMIC64 if PPC32
-+	select HAVE_PERF_COUNTERS
- 
- config EARLY_PRINTK
- 	bool
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 10a642d..867ab8e 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -131,6 +131,8 @@ static inline int irqs_disabled_flags(unsigned long flags)
- struct irq_chip;
- 
- #ifdef CONFIG_PERF_COUNTERS
-+
-+#ifdef CONFIG_PPC64
- static inline unsigned long test_perf_counter_pending(void)
- {
- 	unsigned long x;
-@@ -154,8 +156,9 @@ static inline void clear_perf_counter_pending(void)
- 		"r" (0),
- 		"i" (offsetof(struct paca_struct, perf_counter_pending)));
- }
-+#endif /* CONFIG_PPC64 */
- 
--#else
-+#else  /* CONFIG_PERF_COUNTERS */
- 
- static inline unsigned long test_perf_counter_pending(void)
- {
 diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
-index b398a84..2c2d9f6 100644
+index 2ceb0fe..8ccd4e1 100644
 --- a/arch/powerpc/include/asm/perf_counter.h
 +++ b/arch/powerpc/include/asm/perf_counter.h
-@@ -57,11 +57,17 @@ extern struct power_pmu *ppmu;
+@@ -21,6 +21,7 @@
+  * describe the PMU on a particular POWER-family CPU.
+  */
+ struct power_pmu {
++	const char	*name;
+ 	int		n_counter;
+ 	int		max_alternatives;
+ 	unsigned long	add_fields;
+@@ -41,8 +42,6 @@ struct power_pmu {
+ 			       [PERF_COUNT_HW_CACHE_RESULT_MAX];
+ };
  
+-extern struct power_pmu *ppmu;
+-
+ /*
+  * Values for power_pmu.flags
+  */
+@@ -56,6 +55,8 @@ extern struct power_pmu *ppmu;
+ #define PPMU_LIMITED_PMC_REQD	2	/* have to put this on a limited PMC */
+ #define PPMU_ONLY_COUNT_RUN	4	/* only counting in run state */
+ 
++extern int register_power_pmu(struct power_pmu *);
++
  struct pt_regs;
  extern unsigned long perf_misc_flags(struct pt_regs *regs);
--#define perf_misc_flags(regs)	perf_misc_flags(regs)
--
  extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index 0249252..54e0489 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -1214,42 +1214,14 @@ void hw_perf_counter_setup(int cpu)
+ 	cpuhw->mmcr[0] = MMCR0_FC;
+ }
+ 
+-extern struct power_pmu power4_pmu;
+-extern struct power_pmu ppc970_pmu;
+-extern struct power_pmu power5_pmu;
+-extern struct power_pmu power5p_pmu;
+-extern struct power_pmu power6_pmu;
+-extern struct power_pmu power7_pmu;
+-
+-static int init_perf_counters(void)
++int register_power_pmu(struct power_pmu *pmu)
+ {
+-	unsigned long pvr;
+-
+-	/* XXX should get this from cputable */
+-	pvr = mfspr(SPRN_PVR);
+-	switch (PVR_VER(pvr)) {
+-	case PV_POWER4:
+-	case PV_POWER4p:
+-		ppmu = &power4_pmu;
+-		break;
+-	case PV_970:
+-	case PV_970FX:
+-	case PV_970MP:
+-		ppmu = &ppc970_pmu;
+-		break;
+-	case PV_POWER5:
+-		ppmu = &power5_pmu;
+-		break;
+-	case PV_POWER5p:
+-		ppmu = &power5p_pmu;
+-		break;
+-	case 0x3e:
+-		ppmu = &power6_pmu;
+-		break;
+-	case 0x3f:
+-		ppmu = &power7_pmu;
+-		break;
+-	}
++	if (ppmu)
++		return -EBUSY;		/* something's already registered */
++
++	ppmu = pmu;
++	pr_info("%s performance monitor hardware support registered\n",
++		pmu->name);
+ 
+ 	/*
+ 	 * Use FCHV to ignore kernel events if MSR.HV is set.
+@@ -1259,5 +1231,3 @@ static int init_perf_counters(void)
+ 
+ 	return 0;
+ }
+-
+-arch_initcall(init_perf_counters);
+diff --git a/arch/powerpc/kernel/power4-pmu.c b/arch/powerpc/kernel/power4-pmu.c
+index 81a1708..db90b0c 100644
+--- a/arch/powerpc/kernel/power4-pmu.c
++++ b/arch/powerpc/kernel/power4-pmu.c
+@@ -10,7 +10,9 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/perf_counter.h>
++#include <linux/string.h>
+ #include <asm/reg.h>
++#include <asm/cputable.h>
  
  /*
-+ * Only override the default definitions in include/linux/perf_counter.h
-+ * if we have hardware PMU support.
-+ */
-+#ifdef CONFIG_PPC_PERF_CTRS
-+#define perf_misc_flags(regs)	perf_misc_flags(regs)
-+#endif
+  * Bits in event code for POWER4
+@@ -587,7 +589,8 @@ static int power4_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	},
+ };
+ 
+-struct power_pmu power4_pmu = {
++static struct power_pmu power4_pmu = {
++	.name			= "POWER4/4+",
+ 	.n_counter		= 8,
+ 	.max_alternatives	= 5,
+ 	.add_fields		= 0x0000001100005555ul,
+@@ -600,3 +603,13 @@ struct power_pmu power4_pmu = {
+ 	.generic_events		= p4_generic_events,
+ 	.cache_events		= &power4_cache_events,
+ };
 +
-+/*
-  * The power_pmu.get_constraint function returns a 64-bit value and
-  * a 64-bit mask that express the constraints between this event and
-  * other events.
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 612b0c4..c5f93f0 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -95,9 +95,9 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
- 
- obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
--obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o power4-pmu.o ppc970-pmu.o \
--				   power5-pmu.o power5+-pmu.o power6-pmu.o \
--				   power7-pmu.o
-+obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_counter.o
-+obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
-+				   power5+-pmu.o power6-pmu.o power7-pmu.o
- 
- obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 15391c2..eae4511 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -53,6 +53,7 @@
- #include <linux/posix-timers.h>
- #include <linux/irq.h>
- #include <linux/delay.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm/io.h>
- #include <asm/processor.h>
-@@ -525,6 +526,26 @@ void __init iSeries_time_init_early(void)
- }
- #endif /* CONFIG_PPC_ISERIES */
- 
-+#if defined(CONFIG_PERF_COUNTERS) && defined(CONFIG_PPC32)
-+DEFINE_PER_CPU(u8, perf_counter_pending);
-+
-+void set_perf_counter_pending(void)
++static int init_power4_pmu(void)
 +{
-+	get_cpu_var(perf_counter_pending) = 1;
-+	set_dec(1);
-+	put_cpu_var(perf_counter_pending);
++	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power4"))
++		return -ENODEV;
++
++	return register_power_pmu(&power4_pmu);
 +}
 +
-+#define test_perf_counter_pending()	__get_cpu_var(perf_counter_pending)
-+#define clear_perf_counter_pending()	__get_cpu_var(perf_counter_pending) = 0
-+
-+#else  /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
-+
-+#define test_perf_counter_pending()	0
-+#define clear_perf_counter_pending()
-+
-+#endif /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
-+
++arch_initcall(init_power4_pmu);
+diff --git a/arch/powerpc/kernel/power5+-pmu.c b/arch/powerpc/kernel/power5+-pmu.c
+index aef144d..f4adca8 100644
+--- a/arch/powerpc/kernel/power5+-pmu.c
++++ b/arch/powerpc/kernel/power5+-pmu.c
+@@ -10,7 +10,9 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/perf_counter.h>
++#include <linux/string.h>
+ #include <asm/reg.h>
++#include <asm/cputable.h>
+ 
  /*
-  * For iSeries shared processors, we have to let the hypervisor
-  * set the hardware decrementer.  We set a virtual decrementer
-@@ -551,6 +572,10 @@ void timer_interrupt(struct pt_regs * regs)
- 	set_dec(DECREMENTER_MAX);
+  * Bits in event code for POWER5+ (POWER5 GS) and POWER5++ (POWER5 GS DD3)
+@@ -657,7 +659,8 @@ static int power5p_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	},
+ };
  
- #ifdef CONFIG_PPC32
-+	if (test_perf_counter_pending()) {
-+		clear_perf_counter_pending();
-+		perf_counter_do_pending();
-+	}
- 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
- 		do_IRQ(regs);
- #endif
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index cca6b4f..dd9f3ec 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -1,7 +1,7 @@
- config PPC64
- 	bool "64-bit kernel"
- 	default n
--	select HAVE_PERF_COUNTERS
-+	select PPC_HAVE_PMU_SUPPORT
- 	help
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
-@@ -243,6 +243,15 @@ config VIRT_CPU_ACCOUNTING
- 
- 	  If in doubt, say Y here.
- 
-+config PPC_HAVE_PMU_SUPPORT
-+       bool
+-struct power_pmu power5p_pmu = {
++static struct power_pmu power5p_pmu = {
++	.name			= "POWER5+/++",
+ 	.n_counter		= 6,
+ 	.max_alternatives	= MAX_ALT,
+ 	.add_fields		= 0x7000000000055ul,
+@@ -672,3 +675,14 @@ struct power_pmu power5p_pmu = {
+ 	.generic_events		= power5p_generic_events,
+ 	.cache_events		= &power5p_cache_events,
+ };
 +
-+config PPC_PERF_CTRS
-+       def_bool y
-+       depends on PERF_COUNTERS && PPC_HAVE_PMU_SUPPORT
-+       help
-+         This enables the powerpc-specific perf_counter back-end.
++static int init_power5p_pmu(void)
++{
++	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5+")
++	    && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5++"))
++		return -ENODEV;
 +
- config SMP
- 	depends on PPC_STD_MMU || FSL_BOOKE
- 	bool "Symmetric multi-processing support"
++	return register_power_pmu(&power5p_pmu);
++}
++
++arch_initcall(init_power5p_pmu);
+diff --git a/arch/powerpc/kernel/power5-pmu.c b/arch/powerpc/kernel/power5-pmu.c
+index 8694c73..29b2c6c 100644
+--- a/arch/powerpc/kernel/power5-pmu.c
++++ b/arch/powerpc/kernel/power5-pmu.c
+@@ -10,7 +10,9 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/perf_counter.h>
++#include <linux/string.h>
+ #include <asm/reg.h>
++#include <asm/cputable.h>
+ 
+ /*
+  * Bits in event code for POWER5 (not POWER5++)
+@@ -599,7 +601,8 @@ static int power5_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	},
+ };
+ 
+-struct power_pmu power5_pmu = {
++static struct power_pmu power5_pmu = {
++	.name			= "POWER5",
+ 	.n_counter		= 6,
+ 	.max_alternatives	= MAX_ALT,
+ 	.add_fields		= 0x7000090000555ul,
+@@ -612,3 +615,13 @@ struct power_pmu power5_pmu = {
+ 	.generic_events		= power5_generic_events,
+ 	.cache_events		= &power5_cache_events,
+ };
++
++static int init_power5_pmu(void)
++{
++	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5"))
++		return -ENODEV;
++
++	return register_power_pmu(&power5_pmu);
++}
++
++arch_initcall(init_power5_pmu);
+diff --git a/arch/powerpc/kernel/power6-pmu.c b/arch/powerpc/kernel/power6-pmu.c
+index 8898622..09ae5bf 100644
+--- a/arch/powerpc/kernel/power6-pmu.c
++++ b/arch/powerpc/kernel/power6-pmu.c
+@@ -10,7 +10,9 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/perf_counter.h>
++#include <linux/string.h>
+ #include <asm/reg.h>
++#include <asm/cputable.h>
+ 
+ /*
+  * Bits in event code for POWER6
+@@ -516,7 +518,8 @@ static int power6_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	},
+ };
+ 
+-struct power_pmu power6_pmu = {
++static struct power_pmu power6_pmu = {
++	.name			= "POWER6",
+ 	.n_counter		= 6,
+ 	.max_alternatives	= MAX_ALT,
+ 	.add_fields		= 0x1555,
+@@ -531,3 +534,13 @@ struct power_pmu power6_pmu = {
+ 	.generic_events		= power6_generic_events,
+ 	.cache_events		= &power6_cache_events,
+ };
++
++static int init_power6_pmu(void)
++{
++	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power6"))
++		return -ENODEV;
++
++	return register_power_pmu(&power6_pmu);
++}
++
++arch_initcall(init_power6_pmu);
+diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
+index 658d1ae..5d755ef 100644
+--- a/arch/powerpc/kernel/power7-pmu.c
++++ b/arch/powerpc/kernel/power7-pmu.c
+@@ -10,7 +10,9 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/perf_counter.h>
++#include <linux/string.h>
+ #include <asm/reg.h>
++#include <asm/cputable.h>
+ 
+ /*
+  * Bits in event code for POWER7
+@@ -346,7 +348,8 @@ static int power7_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	},
+ };
+ 
+-struct power_pmu power7_pmu = {
++static struct power_pmu power7_pmu = {
++	.name			= "POWER7",
+ 	.n_counter		= 6,
+ 	.max_alternatives	= MAX_ALT + 1,
+ 	.add_fields		= 0x1555ul,
+@@ -359,3 +362,13 @@ struct power_pmu power7_pmu = {
+ 	.generic_events		= power7_generic_events,
+ 	.cache_events		= &power7_cache_events,
+ };
++
++static int init_power7_pmu(void)
++{
++	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
++		return -ENODEV;
++
++	return register_power_pmu(&power7_pmu);
++}
++
++arch_initcall(init_power7_pmu);
+diff --git a/arch/powerpc/kernel/ppc970-pmu.c b/arch/powerpc/kernel/ppc970-pmu.c
+index 3ed8833..6637c87 100644
+--- a/arch/powerpc/kernel/ppc970-pmu.c
++++ b/arch/powerpc/kernel/ppc970-pmu.c
+@@ -10,7 +10,9 @@
+  */
+ #include <linux/string.h>
+ #include <linux/perf_counter.h>
++#include <linux/string.h>
+ #include <asm/reg.h>
++#include <asm/cputable.h>
+ 
+ /*
+  * Bits in event code for PPC970
+@@ -470,7 +472,8 @@ static int ppc970_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	},
+ };
+ 
+-struct power_pmu ppc970_pmu = {
++static struct power_pmu ppc970_pmu = {
++	.name			= "PPC970/FX/MP",
+ 	.n_counter		= 8,
+ 	.max_alternatives	= 2,
+ 	.add_fields		= 0x001100005555ull,
+@@ -483,3 +486,14 @@ struct power_pmu ppc970_pmu = {
+ 	.generic_events		= ppc970_generic_events,
+ 	.cache_events		= &ppc970_cache_events,
+ };
++
++static int init_ppc970_pmu(void)
++{
++	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970")
++	    && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970MP"))
++		return -ENODEV;
++
++	return register_power_pmu(&ppc970_pmu);
++}
++
++arch_initcall(init_ppc970_pmu);
 -- 
 1.6.0.4
 
