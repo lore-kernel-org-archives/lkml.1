@@ -1,116 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765481AbZFQIqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932730AbZFQIrG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765481AbZFQIqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764803AbZFQIqF
+	id S932730AbZFQIrG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:47:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932458AbZFQIqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:46:05 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51496 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1764415AbZFQIqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:46:03 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/4QQMf5sH43cRXOeT3ctwznQPefsd9YzZz2zk+mk
-	R3ErPbbIsLRfAH
-Subject: [patch 1/2] Re: [PATCH] scheduler: introduce SCHED_RESET_ON_FORK
- scheduling policy flag, fourth try
-From: Mike Galbraith <efault@gmx.de>
-To: Lennart Poettering <mzxreary@0pointer.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090616164742.GA21385@tango.0pointer.de>
-References: <20090615152714.GA29092@tango.0pointer.de>
-	 <1245143108.6038.10.camel@marge.simson.net>
-	 <20090616164742.GA21385@tango.0pointer.de>
-Content-Type: text/plain
-Date: Wed, 17 Jun 2009 10:46:01 +0200
-Message-Id: <1245228361.18329.6.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.43
+	Wed, 17 Jun 2009 04:46:53 -0400
+Received: from www.tglx.de ([62.245.132.106]:58878 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932411AbZFQIqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 04:46:51 -0400
+Date: Wed, 17 Jun 2009 10:45:38 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: [ANNOUNCE] 2.6.29.5-rt21
+In-Reply-To: <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain> <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
+ <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
+ <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+ <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-16 at 18:47 +0200, Lennart Poettering wrote:
-> On Tue, 16.06.09 11:05, Mike Galbraith (efault@gmx.de) wrote:
-> 
-> > I think it's cleaner to keep reset_on_fork functionality separate.
-> > Thoughts on the below?
-> 
-> Looks good to me!
+We are pleased to announce the next update to our new preempt-rt
+series.
 
-OK, I'll submit then, splitting cleanup from functionality addition.
-
-commit 58e1710a8a525e0fb1f4c608d5f73377fb56c893
-Author: Mike Galbraith <efault@gmx.de>
-Date:   Wed Jun 17 10:16:26 2009 +0200
-
-    sched: SCHED_RESET_ON_FORK cleanup.
-    
-    Make SCHED_RESET_ON_FORK sched_fork() bits a self-contained unlikely code path.
-    
-    Signed-off-by: Mike Galbraith <efault@gmx.de>
-    Cc: Ingo Molnar <mingo@elte.hu>
-    Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Cc: Lennart Poettering <mzxreary@0pointer.de>
-    LKML-Reference: <new-submission>
----
- kernel/sched.c |   34 ++++++++++++++++++----------------
- 1 files changed, 18 insertions(+), 16 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 095892c..3c27e44 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2613,28 +2613,30 @@ void sched_fork(struct task_struct *p, int clone_flags)
- 	set_task_cpu(p, cpu);
+   - update to 2.6.29.5 (2.6.29.5-rt20, which I uploaded yesterday but
+     did not announce due to the findings below)
  
- 	/*
--	 * Revert to default priority/policy on fork if requested. Make sure we
--	 * do not leak PI boosting priority to the child.
-+	 * Make sure we do not leak PI boosting priority to the child.
- 	 */
--	if (current->sched_reset_on_fork &&
--			(p->policy == SCHED_FIFO || p->policy == SCHED_RR))
--		p->policy = SCHED_NORMAL;
-+	p->prio = current->normal_prio;
- 
--	if (current->sched_reset_on_fork &&
--			(current->normal_prio < DEFAULT_PRIO))
--		p->prio = DEFAULT_PRIO;
--	else
--		p->prio = current->normal_prio;
-+	/*
-+	 * Revert to default priority/policy on fork if requested.
-+	 */
-+	if (unlikely(p->sched_reset_on_fork)) {
-+		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR)
-+			p->policy = SCHED_NORMAL;
-+
-+		if (p->normal_prio < DEFAULT_PRIO)
-+			p->prio = DEFAULT_PRIO;
-+
-+		/*
-+		 * We don't need the reset flag anymore after the fork. It has
-+		 * fulfilled its duty:
-+		 */
-+		p->sched_reset_on_fork = 0;
-+	}
- 
- 	if (!rt_prio(p->prio))
- 		p->sched_class = &fair_sched_class;
- 
--	/*
--	 * We don't need the reset flag anymore after the fork. It has
--	 * fulfilled its duty:
--	 */
--	p->sched_reset_on_fork = 0;
--
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
- 	if (likely(sched_info_on()))
- 		memset(&p->sched_info, 0, sizeof(p->sched_info));
+   - softirq: lower default priority below hardirq default priority
 
+This fixes a long standing default priority configuration problem of
+the -rt series. On UP machines this can result in net_tx softirq
+running in an endless loop and starving the irq threads and the other
+softirq threads and of course everything with lower priority. It might
+be possible to happen on a SMP machine when the hardirq thread
+affinities are tweaked in the right way.
+
+What happens is:
+
+     tx interrupt
+        lock(card->tx_lock);
+        dev_kfree_skb_any(skb);
+          blocks on a contended lock
+	    
+     net_tx softirq runs
+        unlocks contended lock but does not schedule away due to equal prio
+	repeat:
+         calls xmit
+	 try_lock(card->tx_lock) fails
+	   -> reschedule skb which keeps net_tx running
+         goto repeat;
+
+The scheduler does not schedule away net_tx, so this goes on forever.
+
+This has been there forever, but it seems to be easier to trigger in
+the 29 -rt series which is probably due to the slab cache lock breaks
+we did.
+
+The problem is restricted to a dozen of wireless adapters and network
+cards where e1000e is the most popular one. We could patch the
+affected drivers for -rt, but we need to have a closer look at the
+general assumptions of drivers vs. hardirq/softirq. Note, this is not
+a mainline problem as the semantics are entirely correct there.
+
+Lowering the priorities of the softirq threads below the hardirq
+threads priorities is a safe workaround for now. It prevents the
+runaway scenario under all circumstances as it resembles the mainline
+semantics closely.
+
+For all existing -rt systems the problem can be solved w/o patching
+the kernel by adjusting the priority of the softirq threads from the
+init scripts with chrt.
+
+It's extremly hard to trigger this, we never had a report of that
+before, and I want to say thanks to Bernd Oelker who meticulously
+worked on reproducing the problem and debugging it with all evil
+methods and patches I could come up with. And no, I'm not going to
+tell you which nasty hacks made it possible to decode this :)
+
+Download locations:
+
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.29.5-rt21 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.5.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.5-rt21.bz2
+
+The broken out patches are also available at the same download
+locations.
+
+Enjoy !
+
+       tglx
 
