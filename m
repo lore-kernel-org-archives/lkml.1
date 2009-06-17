@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759223AbZFQHou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764854AbZFQHpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759223AbZFQHou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 03:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZFQHom
+	id S1764854AbZFQHpf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 03:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZFQHp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 03:44:42 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34469 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbZFQHol (ORCPT
+	Wed, 17 Jun 2009 03:45:27 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:57047 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751104AbZFQHp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 03:44:41 -0400
-Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090616081348.GC16229@elte.hu>
-References: <1245080486.6800.561.camel@laptop>
-	 <1245089065.13761.19316.camel@twins> <20090615181555.GA11248@elte.hu>
-	 <1245089943.13761.19334.camel@twins> <20090615182549.GD11248@elte.hu>
-	 <1245090608.13761.19349.camel@twins> <20090615184217.GG11248@elte.hu>
-	 <1245091674.6741.180.camel@laptop> <20090615185259.GK11248@elte.hu>
-	 <1245092433.6741.201.camel@laptop>  <20090616081348.GC16229@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 17 Jun 2009 09:44:35 +0200
-Message-Id: <1245224675.13761.21598.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 17 Jun 2009 03:45:26 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=US-ASCII
+X-IronPort-AV: E=Sophos;i="4.42,234,1243807200";   d="scan'208";a="15711185"
+From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+To: "'Lee Schermerhorn'" <Lee.Schermerhorn@hp.com>
+Cc: "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       "'Brice Goglin'" <Brice.Goglin@inria.fr>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+ <87zldjn597.fsf@basil.nowhere.org>
+ <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+ <20090612103251.GJ25568@one.firstfloor.org>
+ <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+ <1245119977.6724.40.camel@lts-notebook>
+ <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+ <1245164395.15138.40.camel@lts-notebook>
+In-reply-to: <1245164395.15138.40.camel@lts-notebook>
+Subject: RE: [RFC PATCH 0/4]: affinity-on-next-touch
+Date: Wed, 17 Jun 2009 09:45:22 +0200
+Organization: Chair for Operating Systems, RWTH Aachen University
+Message-id: <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-index: Acnukx670OlwmW2mTKGIzn9zFSmBRAAjDOZA
+Content-language: de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-16 at 10:13 +0200, Ingo Molnar wrote:
-
-> > By removing the types it becomes very difficult to verify the max 
-> > depth. I really don't like removing them.
+ 
+> I've placed the last rebased version in :
 > 
-> The fact that it implies an atomic section pretty much limits its 
-> depth in practice, doesnt it?
+> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.28-rc4-mmotm-
+> 081110/
 > 
-> All we need to track in the debug code is 
-> max-{syscall,softirq,hardirq,nmi}. The sum of these 4 counts must be 
-> smaller than the max - even if (as you are right to point out) we 
-> dont hit that magic combo that truly maximizes the depth.
 
-Right, so the thing I'd worry about is someone adding kmap_atomic() to
-an interrupt context that didn't have interrupts disabled and then
-managing to nest that a few times.
+OK! I will try to reconstruct the problem.
 
-Suppose you put it in some IO completion handler, and someone has 4 IO
-controllers installed and all 4 IO interrupts come in at the 'same'
-time.
+Stefan 
 
-With types you could warn on similarly to what we do today, but with the
-simple push/pop that might be a lot harder.
-
-Anyway, with the whole cr2 fiddling bit being discussed this seems to
-become redundant.
-
-> And note that in practice many of the current types are exclusive to 
-> each other - so using the stack would _reduce_ the amount of 
-> kmap-atomic space we need.
-
-Yeah, I did realize that.
