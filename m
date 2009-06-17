@@ -1,75 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbZFQDmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764466AbZFQDnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932416AbZFQDmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 23:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbZFQDmT
+	id S1764466AbZFQDnD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 23:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbZFQDmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 23:42:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48447 "EHLO hera.kernel.org"
+	Tue, 16 Jun 2009 23:42:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48450 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758514AbZFQDmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 23:42:17 -0400
+	id S932321AbZFQDmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 23:42:19 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
        mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
        Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
        paulmck@linux.vnet.ibm.com
-Cc: Tejun Heo <tj@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>
-Subject: [PATCH 7/9] alpha: kill unnecessary __used attribute in PER_CPU_ATTRIBUTES
-Date: Wed, 17 Jun 2009 12:40:58 +0900
-Message-Id: <1245210060-24344-8-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, linux-mm@kvack.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 4/9] percpu: cleanup percpu array definitions
+Date: Wed, 17 Jun 2009 12:40:55 +0900
+Message-Id: <1245210060-24344-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1245210060-24344-1-git-send-email-tj@kernel.org>
 References: <1245210060-24344-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 03:41:08 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 03:41:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the previous percpu variable definition change, all percpu
-variables are global and there's no need to specify __used, which only
-triggers on recent compilers anyway.  Kill it.
+Currently, the following three different ways to define percpu arrays
+are in use.
 
-[ Impact: remove unnecessary percpu attribute ]
+1. DEFINE_PER_CPU(elem_type[array_len], array_name);
+2. DEFINE_PER_CPU(elem_type, array_name[array_len]);
+3. DEFINE_PER_CPU(elem_type, array_name)[array_len];
+
+Unify to #1 which correctly separates the roles of the two parameters
+and thus allows more flexibility in the way percpu variables are
+defined.
+
+[ Impact: cleanup ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: linux-mm@kvack.org
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: David S. Miller <davem@davemloft.net>
 ---
- arch/alpha/include/asm/percpu.h |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+ arch/ia64/kernel/smp.c                  |    2 +-
+ arch/ia64/sn/kernel/setup.c             |    2 +-
+ arch/powerpc/mm/stab.c                  |    2 +-
+ arch/powerpc/platforms/ps3/smp.c        |    2 +-
+ arch/x86/kernel/cpu/cpu_debug.c         |    4 ++--
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |    2 +-
+ drivers/xen/events.c                    |    4 ++--
+ mm/quicklist.c                          |    2 +-
+ mm/slub.c                               |    4 ++--
+ net/ipv4/syncookies.c                   |    2 +-
+ net/ipv6/syncookies.c                   |    2 +-
+ 11 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
-index 06c5c7a..7f0a9c4 100644
---- a/arch/alpha/include/asm/percpu.h
-+++ b/arch/alpha/include/asm/percpu.h
-@@ -30,7 +30,6 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index 5230eaa..3e0840c 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -58,7 +58,7 @@ static struct local_tlb_flush_counts {
+ 	unsigned int count;
+ } __attribute__((__aligned__(32))) local_tlb_flush_counts[NR_CPUS];
  
- #ifndef MODULE
- #define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
--#define PER_CPU_ATTRIBUTES
- #else
+-static DEFINE_PER_CPU(unsigned short, shadow_flush_counts[NR_CPUS]) ____cacheline_aligned;
++static DEFINE_PER_CPU(unsigned short [NR_CPUS], shadow_flush_counts) ____cacheline_aligned;
+ 
+ #define IPI_CALL_FUNC		0
+ #define IPI_CPU_STOP		1
+diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
+index e456f06..ece1bf9 100644
+--- a/arch/ia64/sn/kernel/setup.c
++++ b/arch/ia64/sn/kernel/setup.c
+@@ -71,7 +71,7 @@ EXPORT_SYMBOL(sn_rtc_cycles_per_second);
+ DEFINE_PER_CPU(struct sn_hub_info_s, __sn_hub_info);
+ EXPORT_PER_CPU_SYMBOL(__sn_hub_info);
+ 
+-DEFINE_PER_CPU(short, __sn_cnodeid_to_nasid[MAX_COMPACT_NODES]);
++DEFINE_PER_CPU(short [MAX_COMPACT_NODES], __sn_cnodeid_to_nasid);
+ EXPORT_PER_CPU_SYMBOL(__sn_cnodeid_to_nasid);
+ 
+ DEFINE_PER_CPU(struct nodepda_s *, __sn_nodepda);
+diff --git a/arch/powerpc/mm/stab.c b/arch/powerpc/mm/stab.c
+index 98cd1dc..6e9b69c 100644
+--- a/arch/powerpc/mm/stab.c
++++ b/arch/powerpc/mm/stab.c
+@@ -31,7 +31,7 @@ struct stab_entry {
+ 
+ #define NR_STAB_CACHE_ENTRIES 8
+ static DEFINE_PER_CPU(long, stab_cache_ptr);
+-static DEFINE_PER_CPU(long, stab_cache[NR_STAB_CACHE_ENTRIES]);
++static DEFINE_PER_CPU(long [NR_STAB_CACHE_ENTRIES], stab_cache);
+ 
  /*
-  * To calculate addresses of locally defined variables, GCC uses 32-bit
-@@ -49,8 +48,6 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- 		: "=&r"(__ptr), "=&r"(tmp_gp));		\
- 	(typeof(&per_cpu_var(var)))(__ptr + (offset)); })
+  * Create a segment table entry for the given esid/vsid pair.
+diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
+index f6e04bc..51ffde4 100644
+--- a/arch/powerpc/platforms/ps3/smp.c
++++ b/arch/powerpc/platforms/ps3/smp.c
+@@ -37,7 +37,7 @@
+   */
  
--#define PER_CPU_ATTRIBUTES	__used
--
- #endif /* MODULE */
+ #define MSG_COUNT 4
+-static DEFINE_PER_CPU(unsigned int, ps3_ipi_virqs[MSG_COUNT]);
++static DEFINE_PER_CPU(unsigned int [MSG_COUNT], ps3_ipi_virqs);
  
- /*
-@@ -71,8 +68,6 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- #define __get_cpu_var(var)		per_cpu_var(var)
- #define __raw_get_cpu_var(var)		per_cpu_var(var)
+ static void do_message_pass(int target, int msg)
+ {
+diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+index 6b2a52d..dca325c 100644
+--- a/arch/x86/kernel/cpu/cpu_debug.c
++++ b/arch/x86/kernel/cpu/cpu_debug.c
+@@ -30,8 +30,8 @@
+ #include <asm/apic.h>
+ #include <asm/desc.h>
  
--#define PER_CPU_ATTRIBUTES
--
- #endif /* SMP */
+-static DEFINE_PER_CPU(struct cpu_cpuX_base, cpu_arr[CPU_REG_ALL_BIT]);
+-static DEFINE_PER_CPU(struct cpu_private *, priv_arr[MAX_CPU_FILES]);
++static DEFINE_PER_CPU(struct cpu_cpuX_base [CPU_REG_ALL_BIT], cpu_arr);
++static DEFINE_PER_CPU(struct cpu_private * [MAX_CPU_FILES], priv_arr);
+ static DEFINE_PER_CPU(int, cpu_priv_count);
+ 
+ static DEFINE_MUTEX(cpu_debug_lock);
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+index ddae216..bd2a2fa 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -69,7 +69,7 @@ struct threshold_bank {
+ 	struct threshold_block	*blocks;
+ 	cpumask_var_t		cpus;
+ };
+-static DEFINE_PER_CPU(struct threshold_bank *, threshold_banks[NR_BANKS]);
++static DEFINE_PER_CPU(struct threshold_bank * [NR_BANKS], threshold_banks);
  
  #ifdef CONFIG_SMP
+ static unsigned char shared_bank[NR_BANKS] = {
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 891d2e9..ab581fa 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -47,10 +47,10 @@
+ static DEFINE_SPINLOCK(irq_mapping_update_lock);
+ 
+ /* IRQ <-> VIRQ mapping. */
+-static DEFINE_PER_CPU(int, virq_to_irq[NR_VIRQS]) = {[0 ... NR_VIRQS-1] = -1};
++static DEFINE_PER_CPU(int [NR_VIRQS], virq_to_irq) = {[0 ... NR_VIRQS-1] = -1};
+ 
+ /* IRQ <-> IPI mapping */
+-static DEFINE_PER_CPU(int, ipi_to_irq[XEN_NR_IPIS]) = {[0 ... XEN_NR_IPIS-1] = -1};
++static DEFINE_PER_CPU(int [XEN_NR_IPIS], ipi_to_irq) = {[0 ... XEN_NR_IPIS-1] = -1};
+ 
+ /* Interrupt types. */
+ enum xen_irq_type {
+diff --git a/mm/quicklist.c b/mm/quicklist.c
+index e66d07d..6eedf7e 100644
+--- a/mm/quicklist.c
++++ b/mm/quicklist.c
+@@ -19,7 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/quicklist.h>
+ 
+-DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
++DEFINE_PER_CPU(struct quicklist [CONFIG_NR_QUICK], quicklist);
+ 
+ #define FRACTION_OF_NODE_MEM	16
+ 
+diff --git a/mm/slub.c b/mm/slub.c
+index 30354bf..0933b91 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1998,8 +1998,8 @@ init_kmem_cache_node(struct kmem_cache_node *n, struct kmem_cache *s)
+  */
+ #define NR_KMEM_CACHE_CPU 100
+ 
+-static DEFINE_PER_CPU(struct kmem_cache_cpu,
+-				kmem_cache_cpu)[NR_KMEM_CACHE_CPU];
++static DEFINE_PER_CPU(struct kmem_cache_cpu [NR_KMEM_CACHE_CPU],
++		      kmem_cache_cpu);
+ 
+ static DEFINE_PER_CPU(struct kmem_cache_cpu *, kmem_cache_cpu_free);
+ static DECLARE_BITMAP(kmem_cach_cpu_free_init_once, CONFIG_NR_CPUS);
+diff --git a/net/ipv4/syncookies.c b/net/ipv4/syncookies.c
+index cd2b97f..84d90f2 100644
+--- a/net/ipv4/syncookies.c
++++ b/net/ipv4/syncookies.c
+@@ -37,7 +37,7 @@ __initcall(init_syncookies);
+ #define COOKIEBITS 24	/* Upper bits store count */
+ #define COOKIEMASK (((__u32)1 << COOKIEBITS) - 1)
+ 
+-static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
++static DEFINE_PER_CPU(__u32 [16 + 5 + SHA_WORKSPACE_WORDS], cookie_scratch);
+ 
+ static u32 cookie_hash(__be32 saddr, __be32 daddr, __be16 sport, __be16 dport,
+ 		       u32 count, int c)
+diff --git a/net/ipv6/syncookies.c b/net/ipv6/syncookies.c
+index 8c25139..23d0d6d 100644
+--- a/net/ipv6/syncookies.c
++++ b/net/ipv6/syncookies.c
+@@ -74,7 +74,7 @@ static inline struct sock *get_cookie_sock(struct sock *sk, struct sk_buff *skb,
+ 	return child;
+ }
+ 
+-static DEFINE_PER_CPU(__u32, cookie_scratch)[16 + 5 + SHA_WORKSPACE_WORDS];
++static DEFINE_PER_CPU(__u32 [16 + 5 + SHA_WORKSPACE_WORDS], cookie_scratch);
+ 
+ static u32 cookie_hash(struct in6_addr *saddr, struct in6_addr *daddr,
+ 		       __be16 sport, __be16 dport, u32 count, int c)
 -- 
 1.6.0.2
 
