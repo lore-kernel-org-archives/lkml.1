@@ -1,61 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932784AbZFQKjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759722AbZFQKjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932784AbZFQKjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 06:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758616AbZFQKjI
+	id S1759722AbZFQKjp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 06:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZFQKjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 06:39:08 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:54019 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758373AbZFQKjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 06:39:08 -0400
-Message-ID: <4A38C7CA.7040005@msgid.tls.msk.ru>
-Date: Wed, 17 Jun 2009 14:39:06 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 17 Jun 2009 06:39:37 -0400
+Received: from mail-pz0-f187.google.com ([209.85.222.187]:65084 "EHLO
+	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758616AbZFQKjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 06:39:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CIcwkSkbzy5QkcFjDnEt8PY0OTGQGpxW3iRfX3TPgv8KBNbGvNo2MBbwubi00byXBd
+         xjhlYeobsL5QBKXUW8q+Mi1iNEVNGkzuXf3z51VHX4G1KLWf5MO1CM+HSZhGrHmkG4el
+         Goa5kLU+h8gfA63e+LDKfzsTN7VcnsXtzCLUQ=
+Date: Wed, 17 Jun 2009 18:41:48 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: poornima nayak <mpnayak@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] timer_migration interface accepts any number as input in
+	2.6.30-git9
+Message-ID: <20090617104148.GC6167@cr0.nay.redhat.com>
+References: <1245229936.3345.67.camel@localhost.localdomain> <20090617102126.GA28647@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29.1: nfsd: page allocation failure - nfsd or kernel problem?
-References: <alpine.DEB.2.00.0906161203160.27742@p34.internal.lan> <alpine.DEB.2.00.0906161205260.27742@p34.internal.lan> <4A37FE48.6070306@msgid.tls.msk.ru> <4A38ACC0.3060501@msgid.tls.msk.ru> <alpine.DEB.2.00.0906170542170.3600@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.0906170542170.3600@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617102126.GA28647@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> 
-> 
-> On Wed, 17 Jun 2009, Michael Tokarev wrote:
-> 
->> Michael Tokarev wrote:
->>> Justin Piszcz wrote:
->> ...
->>
->> Justin, by the way, what's the underlying filesystem on the server?
->>
->> I've seen this error on 2 machines already (both running 2.6.29.x 
->> x86-64),
->> and in both cases the filesystem on the server was xfs.  May this be
->> related somehow to http://bugzilla.kernel.org/show_bug.cgi?id=13375 ?
->> That one is different, but also about xfs and nfs.  I'm trying to
->> reproduce the problem on different filesystem...
-> 
-> Hello, I am also running XFS on 2.6.29.x x86-64.
-> 
-> For me, the error happened when I was running an XFSDUMP from a client 
-> (and dumping) the stream over NFS to the XFS server/filesystem.  This is 
-> typically when the error occurs or during heavy I/O.
+On Wed, Jun 17, 2009 at 03:51:26PM +0530, Arun R Bharadwaj wrote:
+>* poornima nayak <mpnayak@linux.vnet.ibm.com> [2009-06-17 14:42:16]:
+>
+>> Hi
+>> 
+>> Timer migration interface /proc/sys/kernel/timer_migration in
+>> 2.6.30-git9 accepts any numerical value as input.
+>> Steps to reproduce 
+>> 1. echo -6666666 > /proc/sys/kernel/timer_migration
+>> 2. cat /proc/sys/kernel/timer_migration
+>> -6666666
+>> 
+>> 1. echo 44444444444444444444444444444444444444444444444444444444444 > /proc/sys/kernel/timer_migration
+>> 2. cat /proc/sys/kernel/timer_migration
+>> -1357789412
+>> 
+>> Expected behavior: Should 'echo: write error: Invalid argument' while
+>> setting any value other then 0 & 1
+>> 
+>> Regards
+>> Poornima
+>> 
+>
+>Hi Poornima,
+>
+>Thanks for reporting the bug.
+>Hope this patch removes the bug.
+>The patch is based against the latest -tip/master.
+>
+>--arun
+>
+>
+>Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 
-Very similar load was here -- not xfsdump but tar and dump of an ext3
-filesystems.
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-And no, it's NOT xfs-related: I can trigger the same issue easily on
-ext4 as well.  About 20 minutes of running 'dump' of another fs
-to the nfs mount and voila, nfs server reports the same page allocation
-failure.  Note that all file operations are still working, i.e. it
-produces good (not corrupted) files on the server.
 
-/mjt
+My fix goes further, the further part of it is shown below. :)
+Mind to have a look?
+
+Not tested yet.
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+-----
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index ab462b9..bc27e00 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -2331,7 +2331,8 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
+ 			if (*p < '0' || *p > '9')
+ 				break;
+ 
+-			lval = simple_strtoul(p, &p, 0);
++			if (strict_strtoul(p, 0, &lval))
++				return -EINVAL;
+ 
+ 			len = p-buf;
+ 			if ((len < left) && *p && !isspace(*p))
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 756ccaf..ff2ca5c 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -163,11 +163,14 @@ int strict_strtoul(const char *cp, unsigned int base, unsigned long *res)
+ 	char *tail;
+ 	unsigned long val;
+ 	size_t len;
++	char tmp[32];
+ 
+ 	*res = 0;
+ 	len = strlen(cp);
+ 	if (len == 0)
+ 		return -EINVAL;
++	if (len > snprintf(tmp, "%ld", ULONG_MAX))
++		return -EINVAL;
+ 
+ 	val = simple_strtoul(cp, &tail, base);
+ 	if (tail == cp)
