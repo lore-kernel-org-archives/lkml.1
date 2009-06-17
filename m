@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZFQQiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZFQQii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758848AbZFQQiM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbZFQQhe
+	id S1759117AbZFQQii (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbZFQQia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:37:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45911 "EHLO mx2.mail.elte.hu"
+	Wed, 17 Jun 2009 12:38:30 -0400
+Received: from mga01.intel.com ([192.55.52.88]:19787 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755474AbZFQQha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:37:30 -0400
-Date: Wed, 17 Jun 2009 18:37:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christian Engelmayer <christian.engelmayer@frequentis.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] scheduler: access to variable out of scope in
-	sched_slice()
-Message-ID: <20090617163723.GB16128@elte.hu>
-References: <20090616103512.0c846e51@frequentis.com>
+	id S1757642AbZFQQi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:38:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,238,1243839600"; 
+   d="scan'208";a="700232592"
+Message-ID: <4A391C06.2060302@intel.com>
+Date: Wed, 17 Jun 2009 09:38:30 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616103512.0c846e51@frequentis.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0989]
+To: Dragos Tatulea <dtatulea@ixiacom.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Octavian Purdila <opurdila@ixiacom.com>
+Subject: Re: DMA_ENGINE: can't use it without selecting a dma engine driver
+References: <20090617005318.1e35ae98@dragos-tp.localdomain>	<e9c3a7c20906162340o141d04e6n36b5b7b4a2513270@mail.gmail.com> <20090617181204.52981f5f@dragos-tp.localdomain>
+In-Reply-To: <20090617181204.52981f5f@dragos-tp.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Christian Engelmayer <christian.engelmayer@frequentis.com> wrote:
-
-> From: Christian Engelmayer <christian.engelmayer@frequentis.com>
+Dragos Tatulea wrote:
+> Hi,
 > 
-> Access to local variable lw is aliased by usage of pointer load. Access to
-> pointer load in calc_delta_mine() happens when lw is already out of scope.
+>>>        Just discovered that it's impossible to select the dma engine
+>>> without compiling a dma engine driver from the kernel. What if I want to
+>>> use a different dma engine?
+>>>
+>> Create a Kconfig entry for your driver in drivers/dma/Kconfig and have
+>> it "select DMA_ENGINE".
+> That's what I want to avoid. The dma engine driver is out of tree.
 > 
-> Signed-off-by: Christian Engelmayer <christian.engelmayer@frequentis.com>
-> --
-> Reported by static code analysis. 
-> 
-> --- linux-2.6.30/kernel/sched_fair.c.orig	2009-06-16 10:01:50.000000000 +0200
-> +++ linux-2.6.30/kernel/sched_fair.c	2009-06-16 10:02:39.000000000 +0200
-> @@ -430,12 +430,13 @@ static u64 sched_slice(struct cfs_rq *cf
->  
->  	for_each_sched_entity(se) {
->  		struct load_weight *load;
-> +		struct load_weight lw;
->  
->  		cfs_rq = cfs_rq_of(se);
->  		load = &cfs_rq->load;
->  
->  		if (unlikely(!se->on_rq)) {
-> -			struct load_weight lw = cfs_rq->load;
-> +			lw = cfs_rq->load;
->  
->  			update_load_add(&lw, se->load.weight);
->  			load = &lw;
+> What is the rationale behind this? It seems (to me) impossible to have all
+> such drivers in upstream.
 
-Good one!
+It is very straightforward to have all drivers upstream, just send the 
+code [1].
 
-I suspect it doesnt matter in practice because GCC will just have 
-them all on the same stack frame?
+The rationale for this configuration scheme is to turn off a lot of 
+unnecessary code when we know at build time that a dma driver will never 
+be loaded.
 
-	Ingo
+If you must keep your driver out of tree simply maintain another out of 
+tree patch that allows DMA_ENGINE to be manually enabled.
+
+Regards,
+Dan
+
+[1]: http://www.kernel.org/doc/Documentation/SubmittingDrivers
+
