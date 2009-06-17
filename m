@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763794AbZFQOpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764283AbZFQOqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763794AbZFQOpu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZFQOpS
+	id S1764283AbZFQOqH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbZFQOpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:45:18 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:51709 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753863AbZFQOpR (ORCPT
+	Wed, 17 Jun 2009 10:45:49 -0400
+Received: from smtpn2.emerion.com ([212.69.178.34]:50412 "EHLO
+	smtps02.emerion.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763569AbZFQOps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:45:17 -0400
-Date: Wed, 17 Jun 2009 18:45:14 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in
-	resources trees
-Message-ID: <20090617144513.GA17720@jurassic.park.msu.ru>
-References: <20090616220419.14021.84524.stgit@bob.kio> <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain> <1245192703.8234.226.camel@bluto.andrew> <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain> <alpine.LFD.2.01.0906161623240.16802@localhost.localdomain>
+	Wed, 17 Jun 2009 10:45:48 -0400
+X-Greylist: delayed 2530 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Jun 2009 10:45:48 EDT
+From: Philipp Marek <philipp.marek@emerion.com>
+Organization: Emerion.com
+To: linux-kernel@vger.kernel.org
+Subject: Changing the data of hardlinked symlinks
+Date: Wed, 17 Jun 2009 16:03:38 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.29-2-amd64; KDE/4.2.4; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906161623240.16802@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200906171603.39497.philipp.marek@emerion.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 04:32:18PM -0700, Linus Torvalds wrote:
-> > So your patch may fix a bug, but I'm pretty sure I've seen a patch from 
-> > Ivan that should _also_ fix it, and that I would expect to do it not by 
-> > just tweaking a fundamentally ambiguous case.
-> 
-> Hmm. For the life of me, I can't seem to find this patch. Maybe it wasn't 
-> Ivan who wrote it after all. Or maybe my google-fu is weak. Or maybe I'm 
-> just delusional, and the patch never existed.
+Hello everybody,
 
-No, it wasn't me.
+I'd like to know if there's something I'm missing, or whether that's simply 
+not possible currently - or won't ever because of POSIX.
 
-Anyway, pci_claim_resource() fix suggested by Matthew seems to be
-correct, if the problematic system was indeed ia64 and not x86.
+I have hardlinks of symlinks, like this:
+	# ls -la
+	-rw-r--r--  1 root root     0 Jun 17 15:36 daten
+	drwxr-xr-x  2 root root  4096 Jun 17 15:37 daten2
+	lrwxrwxrwx  3 root root     5 Jun 17 15:36 link -> daten
+	lrwxrwxrwx  3 root root     5 Jun 17 15:36 link2 -> daten
+	lrwxrwxrwx  3 root root     6 Jun 17 15:37 link3 -> daten2
+	lrwxrwxrwx  3 root root     6 Jun 17 15:37 link4 -> daten2
+	lrwxrwxrwx  3 root root     5 Jun 17 15:36 link5 -> daten
+	lrwxrwxrwx  3 root root     6 Jun 17 15:37 link6 -> daten2
 
-Ivan.
+Now I'd like to change the inode of one of the symlinks, but in a way that 
+*all* symlinks sharing the inode are changed, too.
+
+"ln -f" doesn't work; "man symlink" and "man link" let me believe that it's 
+not possible.
+
+
+I even looked at debugfs, but from a quick look I only saw how to read the 
+data of an inode ("cat") - nothing to write it back.
+
+
+Is there some way to do that?
+
+
+Regards,
+
+Phil
+
