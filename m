@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbZFQPe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZFQPfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbZFQPe1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 11:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZFQPeR
+	id S1754725AbZFQPfV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 11:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZFQPfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 11:34:17 -0400
-Received: from stinky.trash.net ([213.144.137.162]:36782 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752396AbZFQPeQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 11:34:16 -0400
-Message-ID: <4A390CF4.7060909@trash.net>
-Date: Wed, 17 Jun 2009 17:34:12 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 17 Jun 2009 11:35:10 -0400
+Received: from claw.goop.org ([74.207.240.146]:50355 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752821AbZFQPfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 11:35:09 -0400
+Message-ID: <4A390D20.7010402@goop.org>
+Date: Wed, 17 Jun 2009 08:34:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
- __list_add+0x7d/0xad()
-References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <4A38D5BD.2040502@trash.net> <4A38D9BE.3020403@gmail.com> <4A38DAC4.2050902@trash.net> <4A38E2AE.3030106@gmail.com> <4A38E33E.1050006@trash.net> <4A38EF40.7040106@gmail.com> <4A38EFC4.8000907@trash.net> <4A38FC5A.70500@trash.net> <4A390BC7.3030901@gmail.com>
-In-Reply-To: <4A390BC7.3030901@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Robert Richter <robert.richter@amd.com>
+Subject: Re: [PATCH 00/16] Cleanups to io_apic.c
+References: <1245183355-25808-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1245183355-25808-1-git-send-email-jeremy@goop.org>
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Patrick McHardy a écrit :
->> I'm having some trouble figuring out the exact events that would
->> lead to the timer base corruption. Ingo, could you please test
->> this patch to make sure it also fixes the problem?
-> 
-> ;)
-> 
-> Event can be described as following :
-> 
-> CPU1					CPU2
-> 
-> /* __nf_conntrack_confirm() */
-> __nf_conntrack_hash_insert(ct, hash, repl_hash);
-> // now 'ct' is visible by other cpus
-> 					// search conntrack and find ct
-> // timeout.expires becomes absolute here
-> ct->timeout.expires += jiffies;
-> add_timer(&ct->timeout);
-> 
-> 					/* __nf_ct_refresh_acct() */
-> 					if (!nf_ct_is_confirmed(ct)) {
-> 					// we *believe* timeout.expires 
-> 					// is not yet in use by timer code
-> 					// and is still a relative quantity.
-> 					// We want to 'update' it but we should not !
-> 						ct->timeout.expires = extra_jiffies;  << CORRUPTION >>
-> 					} else {
-> // too late :(
-> set_bit(IPS_CONFIRMED_BIT, &ct->status);
-> 
-> This is how I understood the problem, but I may be wrong ?
+On 06/16/09 13:15, Jeremy Fitzhardinge wrote:
+> Hi Ingo,
+>
+> Here's a series of little cleanup patches to kernel/apic/io_apic.c which
+> I fixed as I was reviewing the code.
+>    
 
-Thats one case that can happen, but that wouldn't corrupt the
-timer base AFAICS. Also the callpath shows that it actually went
-into the mod_timer_pending() path *and* timer_pending() was true.
+Hm, patches 1-4 in this series are a mistake; I guess I managed to 
+specify the base version wrongly or something.  5-16 are what I intended 
+to send.
 
+The git tree at 
+"git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git 
+apic-cleanup" is fine.
 
+     J
