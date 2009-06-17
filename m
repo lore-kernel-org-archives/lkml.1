@@ -1,123 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbZFQBNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbZFQBVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764251AbZFQBNs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 21:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbZFQBNk
+	id S1763606AbZFQBVu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 21:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZFQBVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 21:13:40 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52851 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759104AbZFQBNj (ORCPT
+	Tue, 16 Jun 2009 21:21:42 -0400
+Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:35436
+	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751995AbZFQBVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 21:13:39 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-Subject: Re: [RFC] set the thread name
-Cc: kosaki.motohiro@jp.fujitsu.com, Stefani Seibold <stefani@seibold.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org
-In-Reply-To: <36ca99e90906161214u6624014q3f3dc4e234bdf772@mail.gmail.com>
-References: <1245177592.14543.1.camel@wall-e> <36ca99e90906161214u6624014q3f3dc4e234bdf772@mail.gmail.com>
-Message-Id: <20090617100803.99C1.A69D9226@jp.fujitsu.com>
+	Tue, 16 Jun 2009 21:21:41 -0400
+Message-ID: <4A384580.7030806@bluewatersys.com>
+Date: Wed, 17 Jun 2009 13:23:12 +1200
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Rob Emanuele <rob@emanuele.us>
+CC: nicolas.ferre@atmel.com, haavard.skinnemoen@atmel.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] atmel-mci: Platform driver MMC slot power control
+References: <1245200079-6323-1-git-send-email-rob@emanuele.us> <1245200079-6323-6-git-send-email-rob@emanuele.us>
+In-Reply-To: <1245200079-6323-6-git-send-email-rob@emanuele.us>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 17 Jun 2009 10:13:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc to linux-api)
+Rob Emanuele wrote:
+> Add support to the at91sam9g20ek_2mmc platform (board-sam9g20ek-2slot-mmc.c) and support files for a VCC pin using the atmel-mci driver.
+> 
+> Signed-off-by: Rob Emanuele <rob@emanuele.us>
+> ---
+>  arch/arm/mach-at91/at91sam9260_devices.c       |    2 ++
+>  arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c |    3 +++
+>  2 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/arm/mach-at91/at91sam9260_devices.c b/arch/arm/mach-at91/at91sam9260_devices.c
+> index c372f4f..7634632 100644
+> --- a/arch/arm/mach-at91/at91sam9260_devices.c
+> +++ b/arch/arm/mach-at91/at91sam9260_devices.c
+> @@ -328,6 +328,8 @@ void __init at91_add_device_mci(short mmc_id, struct mci_platform_data *data)
+>  			}
+>  			if (data->slot[i].wp_pin)
+>  				at91_set_gpio_input(data->slot[i].wp_pin, 1);
+> +			if (data->slot[i].vcc_pin)
+> +				at91_set_gpio_output(data->slot[i].vcc_pin, 0);
+>  
 
-> Hi,
-> 
-> On Tue, Jun 16, 2009 at 20:39, Stefani Seibold<stefani@seibold.net> wrote:
-> > Currently it is not easy to identify a thread in linux, because there is
-> > no thread name like in some other OS.
-> >
-> > If there were are thread name then we could extend a kernel segv message
-> > and the /proc/<pid>/task/<tid>/... entries by a TName value like this:
-> prctl(PR_SET_NAME, ...) works perfectly here.
+Can use gpio_direction_output on these.
 
-Oops, but man page describe another thing.
+~Ryan
 
-       PR_SET_NAME
-              (Since Linux 2.6.9) Set the process name for the calling process
-              to arg2.                    ^^^^^^^^^^^^
+-- 
+Bluewater Systems Ltd - ARM Technology Solution Centre
 
-Should we change man page? or change implementation?
-
-I bet many developer assume the implementation is right.
-
-
-> 
-> Bert
-> 
-> /* -*- c -*- */
-> 
-> #define _GNU_SOURCE
-> #include <unistd.h>
-> #include <stdlib.h>
-> #include <stdio.h>
-> #include <string.h>
-> #include <stdint.h>
-> #include <stdbool.h>
-> #include <math.h>
-> #include <pthread.h>
-> #include <sys/prctl.h>
-> 
-> void *
-> thread(void *arg)
-> {
->     unsigned long i = (unsigned long)arg;
->     char comm[16];
->     snprintf(comm, sizeof comm, "task %02lu", i);
->     prctl(PR_SET_NAME, comm, 0l, 0l, 0l);
-> 
->     sleep(10);
-> 
->     return NULL;
-> }
-> 
-> int
-> main(int ac, char *av[])
-> {
->     pthread_t thr;
->     unsigned long i, n = 10;
->     char comm[16];
-> 
->     printf("%u\n", getpid());
->     sleep(5);
->     snprintf(comm, sizeof comm, "master");
->     prctl(PR_SET_NAME, comm, 0l, 0l, 0l);
->     sleep(5);
-> 
->     for (i = 0; i < n; i++)
->         pthread_create(&thr, NULL, thread, (void *)i);
-> 
->     pthread_join(thr, NULL);
-> 
->     return 0;
-> }
-> 
-> >
-> > Greetings,
-> > Stefani
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at ?http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at ?http://www.tux.org/lkml/
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
+       Ryan Mallon                              Unit 5, Amuri Park
+       Phone: +64 3 3779127                     404 Barbadoes St
+       Fax:   +64 3 3779135                     PO Box 13 889
+       Email: ryan@bluewatersys.com             Christchurch, 8013
+       Web:   http://www.bluewatersys.com       New Zealand
+       Freecall Australia  1800 148 751         USA 1800 261 2934
