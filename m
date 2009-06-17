@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbZFQVgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761121AbZFQViK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbZFQVgz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 17:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZFQVgs
+	id S1761121AbZFQViK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 17:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZFQVh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 17:36:48 -0400
-Received: from mail-qy0-f201.google.com ([209.85.221.201]:40329 "EHLO
-	mail-qy0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbZFQVgs convert rfc822-to-8bit (ORCPT
+	Wed, 17 Jun 2009 17:37:58 -0400
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:54984 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754208AbZFQVh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 17:36:48 -0400
-MIME-Version: 1.0
-In-Reply-To: <a55d774e0906170240w631cdfbfq52647d1c438647cb@mail.gmail.com>
-References: <20090610194852.GA28787@n2100.arm.linux.org.uk>
-	 <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com>
-	 <20090611082532.GE8592@elf.ucw.cz>
-	 <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com>
-	 <20090612150504.GA15084@elf.ucw.cz>
-	 <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com>
-	 <20090615170103.GE25040@elf.ucw.cz>
-	 <a55d774e0906151132m5584409epe0b7581fde5ec184@mail.gmail.com>
-	 <20090617091139.GA4536@elf.ucw.cz>
-	 <a55d774e0906170240w631cdfbfq52647d1c438647cb@mail.gmail.com>
-Date: Wed, 17 Jun 2009 14:36:50 -0700
-Message-ID: <d6200be20906171436y5280ed8do561d2d53d73ca78@mail.gmail.com>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Brian Swetland <swetland@google.com>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 17 Jun 2009 17:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=qML1LTBoW0B2ywcmHiPZmhwIRSMedzFvgdyS55LQZlXly32tY8Ybu17dqYws+gGwU3jOJjD6BwmbAy9Dy4sSDZfKYENiI8G3mxRpeUHrhAMkQMo0R+GBJk2myfoy21Hy;
+Date: Wed, 17 Jun 2009 14:37:56 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] make mapped executable pages the first class
+ citizen
+Message-ID: <20090617143756.5c57f6e7@jbarnes-g45>
+In-Reply-To: <20090617141135.0d622bfe@jbarnes-g45>
+References: <20090516090005.916779788@intel.com>
+	<1242485776.32543.834.camel@laptop>
+	<20090617141135.0d622bfe@jbarnes-g45>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 2:40 AM, Brian Swetland<swetland@google.com> wrote:
-> On Wed, Jun 17, 2009 at 2:11 AM, Pavel Machek<pavel@ucw.cz> wrote:
-...
->> One more question... do you have keymap.map to make console usable? By
->> default, keyboard lacks any special characters...
->
-> I don't think we ever put together a full keymap for the console,
-> since we don't use it much.  Arve might have done something with
-> setkey once upon a time.
->
+On Wed, 17 Jun 2009 14:11:35 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-I used setkey on older hardware to get a usable console, but the
-original dream keyboards did not need a special keymap to be useful.
-We change the keymap in vendor/htc/dream/init.trout.rc, but it is
-probably the opposite of what you want.
+> On Sat, 16 May 2009 16:56:16 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Sat, 2009-05-16 at 17:00 +0800, Wu Fengguang wrote:
+> > > Andrew,
+> > > 
+> > > This patchset makes mapped executable pages the first class
+> > > citizen. This version has incorparated many valuable comments
+> > > from people in the CC list, and runs OK on my desktop. Let's test
+> > > it in your -mm?
+> > 
+> > Seems like a good set to me. Thanks for following this through Wu!
+> 
+> Now that this set has hit the mainline I just wanted to chime in and
+> say this makes a big difference.  Under my current load (a parallel
+> kernel build and virtualbox session the old kernel would have been
+> totally unusable.  With Linus's current bits, things are much better
+> (still a little sluggish with a big dd going on in the virtualbox, but
+> actually usable).
+
+To really make things better though, I changed from CFQ to deadline on
+the disk I'm using.  I also changed swappiness to 40 and reduced my
+max_sectors_kb (512 -> 64) though...
 
 -- 
-Arve Hjønnevåg
+Jesse Barnes, Intel Open Source Technology Center
