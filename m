@@ -1,90 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbZFQOph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763794AbZFQOpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbZFQOph (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbZFQOpK
+	id S1763794AbZFQOpu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZFQOpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:45:10 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42460 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752566AbZFQOpI (ORCPT
+	Wed, 17 Jun 2009 10:45:18 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:51709 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753863AbZFQOpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:45:08 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2/2] regulator: Make virtual consumer a bit more chatty
-Date: Wed, 17 Jun 2009 15:45:07 +0100
-Message-Id: <1245249907-5240-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1245249907-5240-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1245249907-5240-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Wed, 17 Jun 2009 10:45:17 -0400
+Date: Wed, 17 Jun 2009 18:45:14 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in
+	resources trees
+Message-ID: <20090617144513.GA17720@jurassic.park.msu.ru>
+References: <20090616220419.14021.84524.stgit@bob.kio> <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain> <1245192703.8234.226.camel@bluto.andrew> <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain> <alpine.LFD.2.01.0906161623240.16802@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906161623240.16802@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes it easier to read the logs when doing testing.
+On Tue, Jun 16, 2009 at 04:32:18PM -0700, Linus Torvalds wrote:
+> > So your patch may fix a bug, but I'm pretty sure I've seen a patch from 
+> > Ivan that should _also_ fix it, and that I would expect to do it not by 
+> > just tweaking a fundamentally ambiguous case.
+> 
+> Hmm. For the life of me, I can't seem to find this patch. Maybe it wasn't 
+> Ivan who wrote it after all. Or maybe my google-fu is weak. Or maybe I'm 
+> just delusional, and the patch never existed.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/regulator/virtual.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+No, it wasn't me.
 
-diff --git a/drivers/regulator/virtual.c b/drivers/regulator/virtual.c
-index 5c1d756..1441107 100644
---- a/drivers/regulator/virtual.c
-+++ b/drivers/regulator/virtual.c
-@@ -34,6 +34,8 @@ static void update_voltage_constraints(struct device *dev,
- 
- 	if (data->min_uV && data->max_uV
- 	    && data->min_uV <= data->max_uV) {
-+		dev_dbg(dev, "Requesting %d-%duV\n",
-+			data->min_uV, data->max_uV);
- 		ret = regulator_set_voltage(data->regulator,
- 					data->min_uV, data->max_uV);
- 		if (ret != 0) {
-@@ -44,6 +46,7 @@ static void update_voltage_constraints(struct device *dev,
- 	}
- 
- 	if (data->min_uV && data->max_uV && !data->enabled) {
-+		dev_dbg(dev, "Enabling regulator\n");
- 		ret = regulator_enable(data->regulator);
- 		if (ret == 0)
- 			data->enabled = 1;
-@@ -53,6 +56,7 @@ static void update_voltage_constraints(struct device *dev,
- 	}
- 
- 	if (!(data->min_uV && data->max_uV) && data->enabled) {
-+		dev_dbg(dev, "Disabling regulator\n");
- 		ret = regulator_disable(data->regulator);
- 		if (ret == 0)
- 			data->enabled = 0;
-@@ -69,6 +73,8 @@ static void update_current_limit_constraints(struct device *dev,
- 
- 	if (data->max_uA
- 	    && data->min_uA <= data->max_uA) {
-+		dev_dbg(dev, "Requesting %d-%duA\n",
-+			data->min_uA, data->max_uA);
- 		ret = regulator_set_current_limit(data->regulator,
- 					data->min_uA, data->max_uA);
- 		if (ret != 0) {
-@@ -80,6 +86,7 @@ static void update_current_limit_constraints(struct device *dev,
- 	}
- 
- 	if (data->max_uA && !data->enabled) {
-+		dev_dbg(dev, "Enabling regulator\n");
- 		ret = regulator_enable(data->regulator);
- 		if (ret == 0)
- 			data->enabled = 1;
-@@ -89,6 +96,7 @@ static void update_current_limit_constraints(struct device *dev,
- 	}
- 
- 	if (!(data->min_uA && data->max_uA) && data->enabled) {
-+		dev_dbg(dev, "Disabling regulator\n");
- 		ret = regulator_disable(data->regulator);
- 		if (ret == 0)
- 			data->enabled = 0;
--- 
-1.6.3.1
+Anyway, pci_claim_resource() fix suggested by Matthew seems to be
+correct, if the problematic system was indeed ia64 and not x86.
 
+Ivan.
