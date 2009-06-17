@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbZFQBKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763731AbZFQBKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761353AbZFQBKH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 21:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZFQBJ5
+	id S1763731AbZFQBKY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 21:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760142AbZFQBKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 21:09:57 -0400
-Received: from gate.crashing.org ([63.228.1.57]:34504 "EHLO gate.crashing.org"
+	Tue, 16 Jun 2009 21:10:06 -0400
+Received: from mga01.intel.com ([192.55.52.88]:32298 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbZFQBJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 21:09:56 -0400
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: arnd@arndb.de, scottwood@freescale.com, chris.pringle@oxtel.com,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090617093654B.fujita.tomonori@lab.ntt.co.jp>
-References: <4A37DB0F.7060801@freescale.com>
-	 <200906162002.12376.arnd@arndb.de> <1245197925.21602.0.camel@pasglop>
-	 <20090617093654B.fujita.tomonori@lab.ntt.co.jp>
+	id S1759805AbZFQBKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 21:10:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,233,1243839600"; 
+   d="scan'208";a="700031643"
+Subject: Re: [PATCH] x86: efi/e820 table merge fix
+From: Huang Ying <ying.huang@intel.com>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "yinghai@kernel.org" <yinghai@kernel.org>
+In-Reply-To: <E1MGgRQ-0002pu-6Z@eag09.americas.sgi.com>
+References: <E1MGgRQ-0002pu-6Z@eag09.americas.sgi.com>
 Content-Type: text/plain
-Date: Wed, 17 Jun 2009 11:07:30 +1000
-Message-Id: <1245200850.21602.1.camel@pasglop>
+Date: Wed, 17 Jun 2009 09:10:05 +0800
+Message-Id: <1245201005.11965.4.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-17 at 09:37 +0900, FUJITA Tomonori wrote:
-> 
-> dma_cache_sync is supposed to be used only with the buffers that
-> dma_alloc_noncoherent() returns. On architecutures that maps
-> dma_alloc_noncoherent to dma_alloc_coherent, dma_cache_sync() is
-> supposed to be NOP.
-> 
-Or at least a sync() on powerpc but yeah, I see. We should probably do
-that.
+On Wed, 2009-06-17 at 05:43 +0800, Cliff Wickman wrote:
+> From: Cliff Wickman <cpw@sgi.com>
+> --- linux.orig/arch/x86/kernel/efi.c
+> +++ linux/arch/x86/kernel/efi.c
+> @@ -240,10 +240,35 @@ static void __init do_add_efi_memmap(voi
+>  		unsigned long long size = md->num_pages << EFI_PAGE_SHIFT;
+>  		int e820_type;
+>  
+> -		if (md->attribute & EFI_MEMORY_WB)
+> -			e820_type = E820_RAM;
+> -		else
+> +		switch (md->type) {
+> +		case EFI_LOADER_CODE:
+> +		case EFI_LOADER_DATA:
+> +		case EFI_BOOT_SERVICES_CODE:
+> +		case EFI_BOOT_SERVICES_DATA:
+> +		case EFI_CONVENTIONAL_MEMORY:
+> +			if (md->attribute & EFI_MEMORY_WB)
+> +				e820_type = E820_RAM;
+> +			else
+> +				e820_type = E820_RESERVED;
+> +			break;
 
-Cheers,
-Ben.
+Why does BIOS mark memory region without EFI_MEMORY_WB as these types?
+Any example?
+
+Best Regards,
+Huang Ying
 
 
