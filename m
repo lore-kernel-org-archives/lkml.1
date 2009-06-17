@@ -1,67 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbZFQT41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbZFQT7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbZFQT41 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 15:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZFQT4S
+	id S1759777AbZFQT7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 15:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZFQT7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 15:56:18 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:44715 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753180AbZFQT4R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 15:56:17 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 17 Jun 2009 12:50:10 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based notifier
- interface
-In-Reply-To: <4A39415C.9060803@novell.com>
-Message-ID: <alpine.DEB.1.10.0906171247120.7891@makko.or.mcafeemobile.com>
-References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com> <4A37A7FC.4090403@novell.com> <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com>
- <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <alpine.DEB.1.10.0906160915340.25664@makko.or.mcafeemobile.com> <4A37CFDA.4000602@novell.com>
- <alpine.DEB.1.10.0906170932290.7891@makko.or.mcafeemobile.com> <4A3927C0.5060607@novell.com> <alpine.DEB.1.10.0906171034030.7891@makko.or.mcafeemobile.com> <4A39415C.9060803@novell.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 17 Jun 2009 15:59:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60707 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752683AbZFQT7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 15:59:10 -0400
+Message-ID: <4A394AD6.5030007@kernel.org>
+Date: Wed, 17 Jun 2009 12:58:14 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: [PATCH] x86/pci: get root CRS before scan child bues
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Jun 2009, Gregory Haskins wrote:
 
-> Davide Libenzi wrote:
-> 
-> > How much the (possible, but not certain) kernel thread context switch time 
-> > weighs in the overall KVM IRQ service time?
-> >   
-> 
-> Generally each one is costing me about 7us on average.  For something
-> like high-speed networking, we have a path that has about 30us of
-> base-line overhead.  So one additional ctx-switch puts me at base+7 ( =
-> ~37us), two puts me in base+2*7 (= ~44us).  So in that context (no pun
-> intended ;), it hurts quite a bit.  I'll be the first to admit that not
-> everyone (most?) will care about latency, though.  But FWIW, I do.
+so we could remove adjust_transparent_bridge_resources..
 
-And how a frame reception is handled in Linux nowadays?
+and give x86_pci_root_bus_res_quirks chance when _CRS is not used or
+not there.
 
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+---
+ arch/x86/pci/acpi.c    |   32 +++++++++-----------------------
+ arch/x86/pci/amd_bus.c |    5 +++--
+ 2 files changed, 12 insertions(+), 25 deletions(-)
 
-> True, but thats the notifiee's burden, not eventfd's.  And its always
-> going to be opt-in.  Even today, someone is free to either try to sleep
-> (which will oops on the might_sleep()), ...
-
-No, today you just can't sleep. As you can't sleep in any 
-callback-registered wakeups, like epoll, for example.
-
-
-
-- Davide
-
-
+Index: linux-2.6/arch/x86/pci/acpi.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/acpi.c
++++ linux-2.6/arch/x86/pci/acpi.c
+@@ -115,23 +115,6 @@ setup_resource(struct acpi_resource *acp
+ }
+ 
+ static void
+-adjust_transparent_bridge_resources(struct pci_bus *bus)
+-{
+-	struct pci_dev *dev;
+-
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		int i;
+-		u16 class = dev->class >> 8;
+-
+-		if (class == PCI_CLASS_BRIDGE_PCI && dev->transparent) {
+-			for(i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
+-				dev->subordinate->resource[i] =
+-						dev->bus->resource[i - 3];
+-		}
+-	}
+-}
+-
+-static void
+ get_current_resources(struct acpi_device *device, int busnum,
+ 			int domain, struct pci_bus *bus)
+ {
+@@ -158,8 +141,6 @@ get_current_resources(struct acpi_device
+ 	info.res_num = 0;
+ 	acpi_walk_resources(device->handle, METHOD_NAME__CRS, setup_resource,
+ 				&info);
+-	if (info.res_num)
+-		adjust_transparent_bridge_resources(bus);
+ 
+ 	return;
+ 
+@@ -222,8 +203,15 @@ struct pci_bus * __devinit pci_acpi_scan
+ 		 */
+ 		memcpy(bus->sysdata, sd, sizeof(*sd));
+ 		kfree(sd);
+-	} else
+-		bus = pci_scan_bus_parented(NULL, busnum, &pci_root_ops, sd);
++	} else {
++		bus = pci_create_bus(NULL, busnum, &pci_root_ops, sd);
++		if (bus) {
++			if (!(pci_probe & PCI_NO_ROOT_CRS))
++				get_current_resources(device, busnum, domain,
++							bus);
++			bus->subordinate = pci_scan_child_bus(bus);
++		}
++	}
+ 
+ 	if (!bus)
+ 		kfree(sd);
+@@ -238,8 +226,6 @@ struct pci_bus * __devinit pci_acpi_scan
+ #endif
+ 	}
+ 
+-	if (bus && !(pci_probe & PCI_NO_ROOT_CRS))
+-		get_current_resources(device, busnum, domain, bus);
+ 	return bus;
+ }
+ 
+Index: linux-2.6/arch/x86/pci/amd_bus.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/amd_bus.c
++++ linux-2.6/arch/x86/pci/amd_bus.c
+@@ -100,8 +100,9 @@ void x86_pci_root_bus_res_quirks(struct
+ 	int j;
+ 	struct pci_root_info *info;
+ 
+-	/* don't go for it if _CRS is used */
+-	if (!(pci_probe & PCI_NO_ROOT_CRS))
++       /* don't go for it if _CRS is used already */
++	if (b->resource[0] != &ioport_resource ||
++	    b->resource[1] != &iomem_resource)
+ 		return;
+ 
+ 	/* if only one root bus, don't need to anything */
