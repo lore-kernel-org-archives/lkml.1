@@ -1,71 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbZFQSc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbZFQScz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759925AbZFQSc1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 14:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZFQScQ
+	id S1759858AbZFQScz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 14:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759636AbZFQScp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 14:32:16 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:45010 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbZFQScP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 14:32:15 -0400
-Message-ID: <4A3936A0.9050709@nortel.com>
-Date: Wed, 17 Jun 2009 12:32:00 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Wed, 17 Jun 2009 14:32:45 -0400
+Received: from mail.mev.co.uk ([62.49.15.74]:58358 "EHLO mail.mev.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759564AbZFQSco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 14:32:44 -0400
+X-Greylist: delayed 641 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Jun 2009 14:32:43 EDT
+Message-ID: <4A39343C.7030908@mev.co.uk>
+Date: Wed, 17 Jun 2009 19:21:48 +0100
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Marco <marco.stornelli@gmail.com>
-CC: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-References: <4A33A7A2.1050608@gmail.com>
-In-Reply-To: <4A33A7A2.1050608@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jun 2009 18:32:03.0146 (UTC) FILETIME=[E8BB9AA0:01C9EF79]
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+CC: Ian Abbott <ian.abbott@mev.co.uk>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>,
+       Frank Mori Hess <fmhess@users.sourceforge.net>
+Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based
+ cards
+References: <200906161701.45234.herton@mandriva.com.br> <200906161830.02308.herton@mandriva.com.br> <4A38E0D8.1000202@mev.co.uk> <200906171345.19815.herton@mandriva.com.br>
+In-Reply-To: <200906171345.19815.herton@mandriva.com.br>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marco wrote:
-> This is a second attempt at mainlining Pramfs. The first attempt was
-> back in early 2004 by MontaVista. Since then the kernel code has almost
-> been completely rewritten. So my first item on the list was porting the
-> code on a recent kernel version. After that I added the XIP support.
-> 
-> Now some FAQs:
-> 
-> What is the goal of this filesystem?
-> 
-> Many embedded systems have a block of non-volatile RAM separate from
-> normal system memory, i.e. of which the kernel maintains no memory page
-> descriptors. For such systems it would be beneficial to mount a
-> fast read/write filesystem over this "I/O memory", for storing
-> frequently accessed data that must survive system reboots and power
-> cycles. An example usage might be system logs under /var/log, or a user
-> address book in a cell phone or PDA.
+Herton Ronaldo Krzesinski wrote:
+> Em Quarta-feira 17 Junho 2009, às 09:26:00, Ian Abbott escreveu:
+>> Herton Ronaldo Krzesinski wrote:
+>>> Em Terça-feira 16 Junho 2009, às 17:51:21, Greg KH escreveu:
+>>>> On Tue, Jun 16, 2009 at 05:01:44PM -0300, Herton Ronaldo Krzesinski wrote:
+>>>>> Hi,
+>>>>>
+>>>>> The s626 (comedi) driver in staging conflicts with philips SAA7146
+>>>>> media/dvb based cards, because it claims the same vendor:device pci id
+>>>>> for all subdevice/subvendor ids. What happens is that for people that
+>>>>> have a philips SAA7146 based card, s626 if available gets loaded by udev
+>>>>> and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
+>>>> So a PCI device that does different things has the same device ids?
+>>>> ick, stupid vendors...
+>>>>
+>>>>> Looks like s626 shouldn't claim all 1131:7146 devices, either by
+>>>>> specifying specific subdevice/subvendor ids specific to s626 devices or
+>>>>> doing additional checks in its probe/attach function.
+>>>> If you can propose the proper sub ids, or the needed checks, please send
+>>>> a patch.
+>>> Can't propose proper sub ids here etc., as I don't know about/don't have s626
+>>> device, s626 author is CC'ed here to check this. But I could send a patch to
+>>> disable just the build of s626 if acceptable/desired for the moment.
+>> The Windows driver (<http://www.sensoray.com/downloads/sdk626.zip>) has
+>> this in the models section of the INF file:
+>>
+>> %sx26.DeviceDesc%=sxdrv.Device,PCI\VEN_1131&DEV_7146&SUBSYS_02726000
+>>
+>> And it looks like the correct device because this the strings section
+>> contains:
+>>
+>> sx26.DeviceDesc=   "Sensoray Model 626 Analog/Digital I/O"
+>>
+>> Interpreting the above information gives us:
+>>
+>> PCI Vendor ID = 0x1131
+>> PCI Device ID = 0x7146
+>> PCI Subvendor ID = 0x6000
+>> PCI Subdevice ID = 0x0272 (626)
+>>
+>> The Linux SDK for this board
+>> (<http://www.sensoray.com/downloads/s626-1.0.1.tar.gz> has the same info
+>> in the s626core.h file.
+>
+> Ok thanks. So lets limit s626 by its subvendor:subdevice id, patch follows:
+>
+> From 6f4d2430959a378ab754c5dbd3903fdcf33abe36 Mon Sep 17 00:00:00 2001
+> From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+> Date: Wed, 17 Jun 2009 13:31:15 -0300
+> Subject: [PATCH] Staging: comedi: use subvendor:subdevice ids for its pci id device table
+>
+> The current s626 comedi driver in staging conflicts with philips SAA7146
+> media/dvb based cards, because it claims the same vendor:device pci id
+> for all subdevice/subvendor ids. What happens is that for people that
+> have a philips SAA7146 based card, s626 if available gets loaded by udev
+> and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
+>
+> The s626 driver shouldn't claim all 1131:7146 devices. Fix this by
+> specifying specific known subvendor:subdevice ids in its pci id table
+> list.
+>
+> Reference: http://lkml.org/lkml/2009/6/16/552
+>
+> Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+> ---
+>  drivers/staging/comedi/drivers/s626.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
+> index 30dec9d..b4b7713 100644
+> --- a/drivers/staging/comedi/drivers/s626.c
+> +++ b/drivers/staging/comedi/drivers/s626.c
+> @@ -110,9 +110,13 @@ static const struct s626_board s626_boards[] = {
+>  #define PCI_VENDOR_ID_S626 0x1131
+>  #define PCI_DEVICE_ID_S626 0x7146
+>
+> +/*
+> + * Note: always specify subvendor:subdevice ids in table below, to avoid
+> + * clash with Philips SAA7146 media/dvb based cards which have same
+> + * vendor:device ids as S626
+> + */
+>  static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) = {
+> -       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+> -               0},
+> +       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
+>         {0}
+>  };
+>
+> --
+> 1.6.3.2
 
-Nice to see something like this submitted to mainline.  We use something
-similar to provide persistent storage for crash recovery debug data for
-boards which don't have local storage.
+There are also a couple of calls to pci_get_device() that need changing
+to pci_get_subsys() in the s626_attach() function (so it also might be
+worth #define'ing the subsys numbers to avoid repeating these magic
+numbers).
 
-In many cases kdump can provide good information, but it's not
-sufficient for "flight recorder" type data if the kernel gets rebooted
-by a hardware mechanism (watchdog, for instance) that doesn't give a
-pre-interrupt.
+--
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>             )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587              )=-
 
-I'm a bit concerned about your PTE modifications on every write
-though...we do things like log every exception and scheduler operation
-to persistent memory, and I think the overhead of changing the
-protection on every write would be a killer.  Instead, we make extensive
-use of checksums at various different levels so that the recovery app
-can determine which data is valid.
-
-Also, I'd like to ensure that direct memory access to the memory area
-would be available.  There are some things (like the sched/exception
-logging mentioned above) where we want to make accesses as fast as possible.
-
-Chris
 
