@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762723AbZFQUrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZFQUxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762723AbZFQUrr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 16:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbZFQUri
+	id S1756032AbZFQUxg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 16:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZFQUx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 16:47:38 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:46421 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753423AbZFQUrh (ORCPT
+	Wed, 17 Jun 2009 16:53:28 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:57182 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbZFQUx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 16:47:37 -0400
-Date: Wed, 17 Jun 2009 22:47:36 +0200
-From: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [RFC 2/7] crypto: Use GHASH digest algorithm in GCM
-Message-ID: <20090617204736.GC28694@Chamillionaire.breakpoint.cc>
-Reply-To: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
-References: <1244704228.5320.125.camel@yhuang-dev.sh.intel.com>
+	Wed, 17 Jun 2009 16:53:28 -0400
+Message-ID: <4A3957A1.5030407@gmail.com>
+Date: Wed, 17 Jun 2009 22:52:49 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1244704228.5320.125.camel@yhuang-dev.sh.intel.com>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: David Rientjes <rientjes@google.com>
+CC: Eric Dumazet <eric.dumazet@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
+References: <alpine.DEB.2.00.0906161203160.27742@p34.internal.lan> <alpine.DEB.2.00.0906161205260.27742@p34.internal.lan> <alpine.DEB.2.00.0906171227040.1089@chino.kir.corp.google.com> <4A394F27.8060308@gmail.com> <alpine.DEB.2.00.0906171326120.4786@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0906171326120.4786@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 17 Jun 2009 22:52:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Huang Ying | 2009-06-11 15:10:28 [+0800]:
-
->Remove the dedicated GHASH implementation in GCM, and uses the GHASH
->digest algorithm instead. This will make GCM uses hardware accelerated
->GHASH implementation automatically if available.
->
->ahash instead of shash interface is used, because some hardware
->accelerated GHASH implementation needs asynchronous interface.
-The outside interface is also async so this should work.
-
->Signed-off-by: Huang Ying <ying.huang@intel.com>
->
->@@ -796,14 +996,15 @@ static int __init crypto_gcm_module_init
-> 	if (err)
-> 		goto out_undo_gcm;
+David Rientjes a écrit :
+> On Wed, 17 Jun 2009, Eric Dumazet wrote:
 > 
->-out:
->-	return err;
->+	return 0;
+>>> ipv4: don't warn about skb ack allocation failures
+>>>
+>>> tcp_send_ack() will recover from alloc_skb() allocation failures, so avoid 
+>>> emitting warnings.
+>>>
+>>> Signed-off-by: David Rientjes <rientjes@google.com>
+>>> ---
+>>> diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
+>>> --- a/net/ipv4/tcp_output.c
+>>> +++ b/net/ipv4/tcp_output.c
+>>> @@ -2442,7 +2442,7 @@ void tcp_send_ack(struct sock *sk)
+>>>  	 * tcp_transmit_skb() will set the ownership to this
+>>>  	 * sock.
+>>>  	 */
+>>> -	buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
+>>> +	buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC | __GFP_NOWARN);
+>>>  	if (buff == NULL) {
+>>>  		inet_csk_schedule_ack(sk);
+>>>  		inet_csk(sk)->icsk_ack.ato = TCP_ATO_MIN;
+>> I count more than 800 GFP_ATOMIC allocations in net/ tree.
+>>
+>> Most (if not all) of them can recover in case of failures.
+>>
+>> Should we add __GFP_NOWARN to all of them ?
+>>
 > 
-> out_undo_gcm:
-> 	crypto_unregister_template(&crypto_gcm_tmpl);
-> out_undo_base:
-> 	crypto_unregister_template(&crypto_gcm_base_tmpl);
->-	goto out;
->+out:
->+	kfree(gcm_zeroes);
->+	return err;
-> }
-> 
-> static void __exit crypto_gcm_module_exit(void)
-here you are leaking gcm_zeroes
+> Yes, if they are recoverable without any side effects.  Otherwise, they 
+> will continue to emit page allocation failure messages which cause users 
+> to waste their time when they recognize a problem of an unknown 
+> seriousness level in both reporting the issue and looking for resulting 
+> corruption.  The __GFP_NOWARN annotation suppresses such warnings for 
+> those very reasons.
 
-Sebastian
+Then why emit the warning at first place ?
+
+Once we patch all call sites to use GFP_ATOMIC | __GFP_NOWARN, I bet 99% 
+GFP_ATOMIC allocations in kernel will use it, so we go back to silent mode.
+
+If a GFP_ATOMIC call site *cannot* use __GFP_NOWARN, it will either :
+
+- call panic()
+- crash with a nice stack trace because caller was not aware NULL could be
+returned by kmalloc()
+
+
+Maybe GFP_ATOMIC should include __GFP_NOWARN
+
+#define GFP_ATOMIC  (__GFP_HIGH)
+->
+#define GFP_ATOMIC  (__GFP_HIGH | __GFP_NOWARN)
+
