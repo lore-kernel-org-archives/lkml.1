@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764434AbZFQHK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764590AbZFQHLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764434AbZFQHK1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 03:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZFQHKU
+	id S1764590AbZFQHLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 03:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZFQHLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 03:10:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:28274 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbZFQHKT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 03:10:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=FqJVJJc+EaGHYnvc+pKmYv4u/JduAM8kNUM2FXhrTOzvN79O92hZw94ehsBm8yrCNQ
-         Uhf8nF6zpMqlsrpAczygtY4405FmUomrkJgjOBt0E7TauknSCN3oNJbvnaFOKgROV8n1
-         /49OF9cWp1du03uFs1MgoswUIoON6fujU8vPk=
-Message-ID: <4A389512.7060005@gmail.com>
-Date: Wed, 17 Jun 2009 09:02:42 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.4 Thunderbird/3.0b3pre
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Char: tty, fix tty_port_block_til_ready waiting
-References: <1245179580-25402-1-git-send-email-jirislaby@gmail.com> <20090616233152.41e43277.akpm@linux-foundation.org>
-In-Reply-To: <20090616233152.41e43277.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Jun 2009 03:11:11 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:60169 "EHLO
+	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753422AbZFQHLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 03:11:10 -0400
+Date: Wed, 17 Jun 2009 17:10:59 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200906170710.n5H7AxxV009015@localhost.localdomain>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] m68k: merge the non-mmu and mmu versions of hardirq.h
+Cc: gerg@uclinux.org, linux-m68k@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/17/2009 08:31 AM, Andrew Morton wrote:
->> --- a/drivers/char/tty_port.c
->> +++ b/drivers/char/tty_port.c
->> @@ -193,7 +193,7 @@ int tty_port_block_til_ready(struct tty_port *port,
->>  {
->>  	int do_clocal = 0, retval;
->>  	unsigned long flags;
->> -	DECLARE_WAITQUEUE(wait, current);
->> +	DEFINE_WAIT(wait, current);
-> 
-> That won't compile.  DEFINE_WAIT(wait) will though.
+[PATCH] m68k: merge the non-mmu and mmu versions of hardirq.h
 
-Ah, crap. One should teach himself using commit --amend.
+There is nothing different required between the non-mmu and mmu
+versions of hardirq.h, so merge them back into a single file.
 
-Sorry.
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
+ arch/m68k/include/asm/{hardirq_mm.h => hardirq.h} |    2 +
+ arch/m68k/include/asm/hardirq_no.h                |   27 ---------------------
+ 2 files changed, 2 insertions(+), 27 deletions(-)
+ rename arch/m68k/include/asm/{hardirq_mm.h => hardirq.h} (90%)
+ delete mode 100644 arch/m68k/include/asm/hardirq_no.h
+
+diff --git a/arch/m68k/include/asm/hardirq_mm.h b/arch/m68k/include/asm/hardirq.h
+similarity index 90%
+rename from arch/m68k/include/asm/hardirq_mm.h
+rename to arch/m68k/include/asm/hardirq.h
+index 394ee94..7167ed2 100644
+--- a/arch/m68k/include/asm/hardirq_mm.h
++++ b/arch/m68k/include/asm/hardirq.h
+@@ -13,4 +13,6 @@ typedef struct {
+ 
+ #define HARDIRQ_BITS	8
+ 
++void ack_bad_irq(unsigned int irq);
++
+ #endif
+diff --git a/arch/m68k/include/asm/hardirq_no.h b/arch/m68k/include/asm/hardirq_no.h
+deleted file mode 100644
+index bfad281..0000000
+--- a/arch/m68k/include/asm/hardirq_no.h
++++ /dev/null
+@@ -1,27 +0,0 @@
+-#ifndef __M68K_HARDIRQ_H
+-#define __M68K_HARDIRQ_H
+-
+-#include <linux/cache.h>
+-#include <linux/threads.h>
+-#include <asm/irq.h>
+-
+-typedef struct {
+-	unsigned int __softirq_pending;
+-} ____cacheline_aligned irq_cpustat_t;
+-
+-#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
+-
+-#define HARDIRQ_BITS	8
+-
+-/*
+- * The hardirq mask has to be large enough to have
+- * space for potentially all IRQ sources in the system
+- * nesting on a single CPU:
+- */
+-#if (1 << HARDIRQ_BITS) < NR_IRQS
+-# error HARDIRQ_BITS is too low!
+-#endif
+-
+-void ack_bad_irq(unsigned int irq);
+-
+-#endif /* __M68K_HARDIRQ_H */
