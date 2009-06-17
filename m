@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765798AbZFQNxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbZFQNxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765798AbZFQNxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZFQNxL
+	id S933335AbZFQNxl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbZFQNxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:53:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:36152 "EHLO mga02.intel.com"
+	Wed, 17 Jun 2009 09:53:32 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57438 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751796AbZFQNxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:53:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,236,1243839600"; 
-   d="scan'208";a="423091453"
-Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
-       Paul E McKenney <paulmck@us.ibm.com>, Nathan Lynch <ntl@pobox.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
-In-Reply-To: <20090616053431.30891.18682.stgit@sofia.in.ibm.com>
-References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 17 Jun 2009 06:50:28 -0700
-Message-Id: <1245246628.27006.10556.camel@localhost.localdomain>
+	id S1752570AbZFQNxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 09:53:31 -0400
+Date: Wed, 17 Jun 2009 15:53:31 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 07/11] vfs: Unmap underlying metadata of new data buffers only when buffer is mapped
+Message-ID: <20090617135331.GA20678@wotan.suse.de>
+References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-8-git-send-email-jack@suse.cz> <20090617103543.GB29931@wotan.suse.de> <20090617120520.GD2612@duck.suse.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617120520.GD2612@duck.suse.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 22:38 -0700, Gautham R Shenoy wrote:
-> So, of the accounted time, a major chunk of time is consumed by
-> cpuset_track_online_cpus() while handling CPU_DEAD and CPU_ONLINE
-> notifications.
-> 
->         11.320205 ms: cpuset_track_online_cpus      : CPU_DEAD
->         12.767882 ms: cpuset_track_online_cpus      : CPU_ONLINE
-> 
-> cpuset_trace_online_cpus() among other things performs the task of rebuilding
-> the sched_domains for every online CPU in the system.
+On Wed, Jun 17, 2009 at 02:05:20PM +0200, Jan Kara wrote:
+> On Wed 17-06-09 12:35:43, Nick Piggin wrote:
+> > On Mon, Jun 15, 2009 at 07:59:54PM +0200, Jan Kara wrote:
+> > > When we do delayed allocation of some buffer, we want to signal to VFS that
+> > > the buffer is new (set buffer_new) so that it properly zeros out everything.
+> > > But we don't have the buffer mapped yet so we cannot really unmap underlying
+> > > metadata in this state. Make VFS avoid doing unmapping of metadata when the
+> > > buffer is not yet mapped.
+> > 
+> > Is this a seperate bugfix for delalloc filesystems? What is the error
+> > case of attempting to unmap underlying metadata of non mapped buffer?
+> > Won't translate to a serious bug will it?
+>   If you do unmap_underlying_metadata on !mapped buffer, the kernel will
+> oops because it will try to dereference bh->b_bdev which is NULL. Ext4 or
+> XFS workaround this issue by setting b_bdev to the real device and b_blocknr
+> to ~0 so unmap_underlying_metadata does not oops.  As I didn't want to do
+> the same hack in ext3, I need this patch...
 
-Are the above numbers with CONFIG_SCHED_DEBUG turned on/off?
+OK, just trying to understand the patchset. It would be nice to
+merge this ASAP as well and remove the ext4 and xfs hacks.
 
-thanks,
-suresh
+
+>   You're right it's not directly connected with the mkwrite problem and
+> can go in separately. Given how late it is, I'd like to get patch number 2
+> reviewed (generic mkwrite changes), so that it can go together with patch
+> number 4 (ext4 fixes) in the current merge window. The rest is not that
+> urgent since it's not oopsable and you can hit it only when running out
+> of space (or hitting quota limit)...
+
+Sorry I was so late with looking at it. I am reading it now though
+(especially #2) ;)
 
