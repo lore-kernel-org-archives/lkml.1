@@ -1,85 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZFQUxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbZFQU4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbZFQUxg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 16:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZFQUx2
+	id S1753752AbZFQU4t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 16:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZFQU4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 16:53:28 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:57182 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbZFQUx2 (ORCPT
+	Wed, 17 Jun 2009 16:56:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51042 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751862AbZFQU4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 16:53:28 -0400
-Message-ID: <4A3957A1.5030407@gmail.com>
-Date: Wed, 17 Jun 2009 22:52:49 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 17 Jun 2009 16:56:41 -0400
+Date: Wed, 17 Jun 2009 13:56:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Matthew Wilcox <willy@linux.intel.com>
+cc: jbarnes@virtuousgeek.org, andrew.patterson@hp.com,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] ia64: Fix resource assignment for root busses
+In-Reply-To: <1245270816-11755-5-git-send-email-willy@linux.intel.com>
+Message-ID: <alpine.LFD.2.01.0906171356040.16802@localhost.localdomain>
+References: <1245270816-11755-1-git-send-email-willy@linux.intel.com> <1245270816-11755-5-git-send-email-willy@linux.intel.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Eric Dumazet <eric.dumazet@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
-References: <alpine.DEB.2.00.0906161203160.27742@p34.internal.lan> <alpine.DEB.2.00.0906161205260.27742@p34.internal.lan> <alpine.DEB.2.00.0906171227040.1089@chino.kir.corp.google.com> <4A394F27.8060308@gmail.com> <alpine.DEB.2.00.0906171326120.4786@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0906171326120.4786@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 17 Jun 2009 22:52:51 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes a écrit :
-> On Wed, 17 Jun 2009, Eric Dumazet wrote:
+
+
+On Wed, 17 Jun 2009, Matthew Wilcox wrote:
+>
+> ia64 was assigning resources to root busses after allocations had
+> been made for child busses.  Calling pcibios_setup_root_windows() from
+> pcibios_fixup_bus() solves this problem by assigning the resources to
+> the root bus before child busses are scanned.
 > 
->>> ipv4: don't warn about skb ack allocation failures
->>>
->>> tcp_send_ack() will recover from alloc_skb() allocation failures, so avoid 
->>> emitting warnings.
->>>
->>> Signed-off-by: David Rientjes <rientjes@google.com>
->>> ---
->>> diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
->>> --- a/net/ipv4/tcp_output.c
->>> +++ b/net/ipv4/tcp_output.c
->>> @@ -2442,7 +2442,7 @@ void tcp_send_ack(struct sock *sk)
->>>  	 * tcp_transmit_skb() will set the ownership to this
->>>  	 * sock.
->>>  	 */
->>> -	buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
->>> +	buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC | __GFP_NOWARN);
->>>  	if (buff == NULL) {
->>>  		inet_csk_schedule_ack(sk);
->>>  		inet_csk(sk)->icsk_ack.ato = TCP_ATO_MIN;
->> I count more than 800 GFP_ATOMIC allocations in net/ tree.
->>
->> Most (if not all) of them can recover in case of failures.
->>
->> Should we add __GFP_NOWARN to all of them ?
->>
-> 
-> Yes, if they are recoverable without any side effects.  Otherwise, they 
-> will continue to emit page allocation failure messages which cause users 
-> to waste their time when they recognize a problem of an unknown 
-> seriousness level in both reporting the issue and looking for resulting 
-> corruption.  The __GFP_NOWARN annotation suppresses such warnings for 
-> those very reasons.
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> Tested-by: Andrew Patterson <andrew.patterson@hp.com>
 
-Then why emit the warning at first place ?
+So I assume this "Tested-by:" means that Andrew confirmed that this 
+actually fixes the nesting? I wasn't cc'd on that, so I'm just checking..
 
-Once we patch all call sites to use GFP_ATOMIC | __GFP_NOWARN, I bet 99% 
-GFP_ATOMIC allocations in kernel will use it, so we go back to silent mode.
-
-If a GFP_ATOMIC call site *cannot* use __GFP_NOWARN, it will either :
-
-- call panic()
-- crash with a nice stack trace because caller was not aware NULL could be
-returned by kmalloc()
-
-
-Maybe GFP_ATOMIC should include __GFP_NOWARN
-
-#define GFP_ATOMIC  (__GFP_HIGH)
-->
-#define GFP_ATOMIC  (__GFP_HIGH | __GFP_NOWARN)
-
+		Linus
