@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765408AbZFQNnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933014AbZFQNna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765408AbZFQNnM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbZFQNm7
+	id S933014AbZFQNna (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765432AbZFQNnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:42:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48218 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752877AbZFQNm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:42:58 -0400
-Date: Wed, 17 Jun 2009 15:36:37 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roland McGrath <roland@redhat.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH] posix_cpu_timers_exit_group: do not use
- thread_group_cputimer()
-Message-ID: <20090617153637.3342988c@dhcp-lab-109.englab.brq.redhat.com>
-Organization: RedHat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Jun 2009 09:43:12 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54478 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764899AbZFQNnL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 09:43:11 -0400
+Date: Wed, 17 Jun 2009 07:43:11 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-pci@vger.kernel.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in
+	resources trees
+Message-ID: <20090617134311.GR19977@parisc-linux.org>
+References: <20090616220419.14021.84524.stgit@bob.kio> <4A38B3B4.1020304@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A38B3B4.1020304@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the process exits we don't have to run new cputimer nor use running one
-(as it not accounts when tsk->exit_state != 0) to get process CPU times.
-As there is only one thread we can just use CPU times fields form task
-and signal structs.
+On Wed, Jun 17, 2009 at 06:13:24PM +0900, Kenji Kaneshige wrote:
+> I think the reason why it happen is ia64 (I believe you are using
+> ia64 environment) uses pci_claim_resource(), which calls
+> insert_resource(), to insert resources. In my understanding, if
+> two resources having an identical address range are inserted using
+> insert_resource(), the latter one  becomes parent of the first one.
+> 
+> I made a sample patch, though I don't know if it fixes the problem.
+> I hope this would help you. But please note that it is NOT well
+> tested.
 
-Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
----
- kernel/posix-cpu-timers.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+This patch seems to be saying that it's ia64's fault for using
+pci_claim_resource.  Surely pci_claim_resource() is buggy and is the
+right place to fix the problem (other users include alpha, mn10300,
+powerpc and parisc).
 
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index bece7c0..e33a21c 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -521,11 +521,12 @@ void posix_cpu_timers_exit(struct task_struct *tsk)
- }
- void posix_cpu_timers_exit_group(struct task_struct *tsk)
+This all kind of begs the question why x86 isn't using
+pci_claim_resource(); if it were, bugs like this would be found and
+fixed earlier.
+
+It further begs the question why architectures are doing this in the
+first place.  All PCI device resources should be in /proc/iomem, no
+matter what architecture.
+
+Anyway, this should fix pci_claim_resource (untested):
+
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index 3039fcb..1240351 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -99,11 +99,11 @@ void pci_update_resource(struct pci_dev *dev, int resno)
+ int pci_claim_resource(struct pci_dev *dev, int resource)
  {
--	struct task_cputime cputime;
-+	struct signal_struct *const sig = tsk->signal;
+ 	struct resource *res = &dev->resource[resource];
+-	struct resource *root = NULL;
++	struct resource *root;
+ 	char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
+ 	int err;
  
--	thread_group_cputimer(tsk, &cputime);
- 	cleanup_timers(tsk->signal->cpu_timers,
--		       cputime.utime, cputime.stime, cputime.sum_exec_runtime);
-+		       cputime_add(tsk->utime, sig->utime),
-+		       cputime_add(tsk->stime, sig->stime),
-+		       tsk->se.sum_exec_runtime + sig->sum_sched_runtime);
- }
+-	root = pcibios_select_root(dev, res);
++	root = pci_find_parent_resource(dev, res);
  
- static void clear_dead_task(struct k_itimer *timer, union cpu_time_count now)
--- 
-1.5.5.6
+ 	err = -EINVAL;
+ 	if (root != NULL)
 
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
