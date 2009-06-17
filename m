@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZFQIEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762027AbZFQILX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbZFQIEg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZFQIEM
+	id S1762027AbZFQILX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZFQILJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:04:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46723 "EHLO mx2.suse.de"
+	Wed, 17 Jun 2009 04:11:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58943 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751727AbZFQIEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:04:05 -0400
-Date: Wed, 17 Jun 2009 10:04:04 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] HWPOISON: only early kill processes who installed SIGBUS handler
-Message-ID: <20090617080404.GB31192@wotan.suse.de>
-References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de> <20090615142225.GA11167@localhost> <20090617063702.GA20922@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090617063702.GA20922@localhost>
-User-Agent: Mutt/1.5.9i
+	id S1752222AbZFQILH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 04:11:07 -0400
+Message-ID: <4A38A4D1.8010800@kernel.org>
+Date: Wed, 17 Jun 2009 17:09:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
+Subject: Re: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_*
+ operations
+References: <20090605191819.376530498@gentwo.org> <20090605191850.441840884@gentwo.org> <4A2F40A3.5020602@kernel.org> <alpine.DEB.1.10.0906111109410.29827@gentwo.org> <4A31B8BF.30304@kernel.org> <alpine.DEB.1.10.0906121017430.13365@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0906121017430.13365@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 08:09:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 02:37:02PM +0800, Wu Fengguang wrote:
-> On Mon, Jun 15, 2009 at 10:22:25PM +0800, Wu Fengguang wrote:
-> > On Mon, Jun 15, 2009 at 08:25:28PM +0800, Nick Piggin wrote:
-> > > On Mon, Jun 15, 2009 at 08:10:01PM +0800, Wu Fengguang wrote:
-> > > > On Mon, Jun 15, 2009 at 03:19:07PM +0800, Nick Piggin wrote:
-> > > > > > For KVM you need early kill, for the others it remains to be seen.
-> > > > > 
-> > > > > Right. It's almost like you need to do a per-process thing, and
-> > > > > those that can handle things (such as the new SIGBUS or the new
-> > > > > EIO) could get those, and others could be killed.
-> > > > 
-> > > > To send early SIGBUS kills to processes who has called
-> > > > sigaction(SIGBUS, ...)?  KVM will sure do that. For other apps we
-> > > > don't mind they can understand that signal at all.
-> > > 
-> > > For apps that hook into SIGBUS for some other means and
-> > 
-> > Yes I was referring to the sigaction(SIGBUS) apps, others will
-> > be late killed anyway.
-> > 
-> > > do not understand the new type of SIGBUS signal? What about
-> > > those?
-> > 
-> > We introduced two new SIGBUS codes:
-> >         BUS_MCEERR_AO=5         for early kill
-> >         BUS_MCEERR_AR=4         for late  kill
-> > I'd assume a legacy application will handle them in the same way (both
-> > are unexpected code to the application).
-> > 
-> > We don't care whether the application can be killed by BUS_MCEERR_AO
-> > or BUS_MCEERR_AR depending on its SIGBUS handler implementation.
-> > But (in the rare case) if the handler
-> > - refused to die on BUS_MCEERR_AR, it may create a busy loop and
-> >   flooding of SIGBUS signals, which is a bug of the application.
-> >   BUS_MCEERR_AO is one time and won't lead to busy loops.
-> > - does something that hurts itself (ie. data safety) on BUS_MCEERR_AO,
-> >   it may well hurt the same way on BUS_MCEERR_AR. The latter one is
-> >   unavoidable, so the application must be fixed anyway.
+Christoph Lameter wrote:
+> On Fri, 12 Jun 2009, Tejun Heo wrote:
 > 
-> This patch materializes the automatically early kill idea.
-> It aims to remove the vm.memory_failure_ealy_kill sysctl parameter.
+>>> They are usable for both as the following patches show.
+>> Oops, sorry about that.  Got confused there.  :-)
 > 
-> This is mainly a policy change, please comment.
+> Reviewed-by's or so would be appreciated. I almost got the allocators
+> converted to use the ops as well but I want the simple stuff to be merged
+> first.
 
-Well then you can still early-kill random apps that did not
-want it, and you may still cause problems if its sigbus
-handler does something nontrivial.
+Sorry about late reply.  Was hiding in my hole.  Will reply to the
+orignal posting.
 
-Can you use a prctl or something so it can expclitly
-register interest in this?
+Thanks.
 
+-- 
+tejun
