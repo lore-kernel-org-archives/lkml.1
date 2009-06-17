@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbZFQBDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbZFQBFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759950AbZFQBDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 21:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZFQBDc
+	id S1763341AbZFQBFL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 21:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZFQBE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 21:03:32 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:62757 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbZFQBDb (ORCPT
+	Tue, 16 Jun 2009 21:04:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52761 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751143AbZFQBE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 21:03:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OvS2TQsL5eEO+2QNF7eIzMzfrTTT2ODPm7blS8JXFtx19H4Dn0VxcwqQYlZnQE40iv
-         NDD1THFRfYMLdojNNDBYJqr7F0L98j5Dqx7obaQmBT0gMB1KrR/SizCWEJ6fi/P0yslW
-         0gTxUyE1kl/PX2+CHo3lJH1z8HNP+90GIvQJQ=
+	Tue, 16 Jun 2009 21:04:59 -0400
+Date: Tue, 16 Jun 2009 18:04:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Patterson <andrew.patterson@hp.com>
+cc: linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
+ trees
+In-Reply-To: <alpine.LFD.2.01.0906161717220.16802@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906161804030.16802@localhost.localdomain>
+References: <20090616220419.14021.84524.stgit@bob.kio>  <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain>  <1245192703.8234.226.camel@bluto.andrew>  <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain> <1245195498.8234.236.camel@bluto.andrew>
+ <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain> <alpine.LFD.2.01.0906161717220.16802@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <20090617093654B.fujita.tomonori@lab.ntt.co.jp>
-References: <4A37DB0F.7060801@freescale.com> <200906162002.12376.arnd@arndb.de>
-	 <1245197925.21602.0.camel@pasglop>
-	 <20090617093654B.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 17 Jun 2009 02:56:17 +0200
-Message-ID: <c384c5ea0906161756j4b701abfj2a8908b9c93ddd04@mail.gmail.com>
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: benh@kernel.crashing.org, arnd@arndb.de, scottwood@freescale.com,
-       chris.pringle@oxtel.com, linuxppc-dev@lists.ozlabs.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
 
-On Wed, Jun 17, 2009 at 2:37 AM, FUJITA
-Tomonori<fujita.tomonori@lab.ntt.co.jp> wrote:
-> On Wed, 17 Jun 2009 10:18:45 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> On Tue, 2009-06-16 at 20:02 +0200, Arnd Bergmann wrote:
->> > On Tuesday 16 June 2009, Scott Wood wrote:
->> > > > If the
->> > > > device is the only one, you can also use dma_alloc_noncoherent() and
->> > > > flush explicitly with dma_cache_sync().
->> > >
->> > > I don't see how that would help -- aren't those also controlled by
->> > > CONFIG_NOT_COHERENT_CACHE?
->> >
->> > Ah, yes you are right. PowerPC implements dma_alloc_noncoherent as
->> > dma_alloc_coherent, so dma_cache_sync() is actually a NOP (or should be).
->>
->> But we still need to sync the result of dma_map_* when used multiple
->> times for a single mapping.
->
-> We have dma_sync_{single|sg}_for_{cpu|device} API for the above
-> purpose.
->
-> dma_cache_sync is supposed to be used only with the buffers that
-> dma_alloc_noncoherent() returns. On architecutures that maps
-> dma_alloc_noncoherent to dma_alloc_coherent, dma_cache_sync() is
-> supposed to be NOP.
 
-This discussion raised some doubt with me about my use case:
+On Tue, 16 Jun 2009, Linus Torvalds wrote:
+> 
+> Can you try this patch?
 
-I my case (note I am not the poster) I am using (what LDD3 calls)
-streaming mappings:
+Oops. As Jesse pointed out, there was no patch.
 
-I use pci_map_sg(), have the device perform either DMA master reads or
-writes to the bus address using PCIe.
-After that, I use pci_unmap_sg().
+_This_ time.
 
-My assumption is that pci_unmap_sg() either makes the cache coherent
-or invalidated and thus I do not need to take further actions.
-This is on a MPC83xx or 85xx system.
+		Linus
 
-Is this assumption correct?
+---
+ kernel/resource.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
-Regards,
-
-Leon/
-
--- 
-Leon
+diff --git a/kernel/resource.c b/kernel/resource.c
+index ac5f3a3..d9d7ede 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -140,6 +140,13 @@ __initcall(ioresources_init);
+ 
+ #endif /* CONFIG_PROC_FS */
+ 
++#define set_parent(x,p) __set_parent(__FUNCTION__, x, p)
++static void __set_parent(const char *fn, struct resource *x, struct resource *parent)
++{
++	WARN("%s: parent of '%s' is '%s'\n", fn, x->name, parent ? parent->name : "none");
++	x->parent = parent;
++}
++
+ /* Return the conflict entry if you can't request it */
+ static struct resource * __request_resource(struct resource *root, struct resource *new)
+ {
+@@ -159,7 +166,7 @@ static struct resource * __request_resource(struct resource *root, struct resour
+ 		if (!tmp || tmp->start > end) {
+ 			new->sibling = tmp;
+ 			*p = new;
+-			new->parent = root;
++			set_parent(new, root);
+ 			return NULL;
+ 		}
+ 		p = &tmp->sibling;
+@@ -395,13 +402,13 @@ static struct resource * __insert_resource(struct resource *parent, struct resou
+ 			break;
+ 	}
+ 
+-	new->parent = parent;
++	set_parent(new, parent);
+ 	new->sibling = next->sibling;
+ 	new->child = first;
+ 
+ 	next->sibling = NULL;
+ 	for (next = first; next; next = next->sibling)
+-		next->parent = new;
++		set_parent(next, new);
+ 
+ 	if (parent->child == first) {
+ 		parent->child = new;
