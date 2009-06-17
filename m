@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbZFQN3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765346AbZFQNaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933381AbZFQN3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765857AbZFQN3m
+	id S1765346AbZFQNaz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZFQNas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:29:42 -0400
-Received: from stinky.trash.net ([213.144.137.162]:34236 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753231AbZFQN3l (ORCPT
+	Wed, 17 Jun 2009 09:30:48 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:32971 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbZFQNar (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:29:41 -0400
-Message-ID: <4A38EFC4.8000907@trash.net>
-Date: Wed, 17 Jun 2009 15:29:40 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
+	Wed, 17 Jun 2009 09:30:47 -0400
+Subject: Re: [PATCH] kmemleak: Only use GFP_KERNEL|GFP_ATOMIC for the
+ internal  allocations
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, fengguang.wu@intel.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
- __list_add+0x7d/0xad()
-References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <4A38D5BD.2040502@trash.net> <4A38D9BE.3020403@gmail.com> <4A38DAC4.2050902@trash.net> <4A38E2AE.3030106@gmail.com> <4A38E33E.1050006@trash.net> <4A38EF40.7040106@gmail.com>
-In-Reply-To: <4A38EF40.7040106@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1245245007.11889.42.camel@pc1117.cambridge.arm.com>
+References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org>
+	 <20090616223649.719ea378.akpm@linux-foundation.org>
+	 <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu>
+	 <1245240677.11889.17.camel@pc1117.cambridge.arm.com>
+	 <20090617122803.GD28529@csn.ul.ie>
+	 <1245242160.11889.23.camel@pc1117.cambridge.arm.com>
+	 <20090617124034.GE28529@csn.ul.ie>
+	 <1245243130.11889.27.camel@pc1117.cambridge.arm.com>
+	 <84144f020906170601l254d3b29udc688d02426ea247@mail.gmail.com>
+	 <1245245007.11889.42.camel@pc1117.cambridge.arm.com>
+Date: Wed, 17 Jun 2009 16:30:48 +0300
+Message-Id: <1245245448.5604.31.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Patrick McHardy a écrit :
->> Eric Dumazet wrote:
->>> Patrick McHardy a écrit :
->>>> Eric Dumazet wrote:
->>>>> Patrick McHardy a écrit :
->>>>>> Before the conntrack is confirmed, it is exclusively handled by a
->>>>>> single CPU. I agree that we need to make sure the IPS_CONFIRMED_BIT
->>>>>> is visible before we add the conntrack to the hash table since the
->>>>>> lookup is lockless, but simply moving the set_bit before the hash
->>>>>> insertion should be fine I think.
->>>>>>
->>>>> Problem is timeout.expires is either a relative or absolute timeout,
->>>>> and changes happen
->>>>> in __nf_conntrack_confirm() or __nf_ct_refresh_acct().
->>>>>
->>>>> We must have a synchronization (an barriers), a single bit wont be
->>>>> enough.
->>>> Please have a look at the second patch I just sent. It relies
->>>> on the RCU barriers to make sure all stores are visible before
->>>> other CPUs can find the conntrack.
->>>>
->>> Sorry, I dont understand how your second patch corrects the problem.
->>>
->>> This (unconfirmed) conntrack is visible by another cpu.
->> No, before it is confirmed, its only visible to the CPU handling
->> the initial packet of a connection. Confirmation is the step that
->> makes it visible to other CPUs.
+On Wed, 2009-06-17 at 14:23 +0100, Catalin Marinas wrote:
+> On Wed, 2009-06-17 at 16:01 +0300, Pekka Enberg wrote:
+> > On Wed, Jun 17, 2009 at 3:52 PM, Catalin Marinas<catalin.marinas@arm.com> wrote:
+> > > Kmemleak allocates memory for pointer tracking and it tries to avoid
+> > > using GFP_ATOMIC if the caller doesn't require it. However other gfp
+> > > flags may be passed by the caller which aren't required by kmemleak.
+> > > This patch filters the gfp flags so that only GFP_KERNEL | GFP_ATOMIC
+> > > are used.
+> > >
+> > > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> > 
+> > Is this really safe? What if we're in a middle of a filesystem
+> > operation that uses GFP_NOFAIL and all of a sudden kmemleak allocation
+> > fails and causes a panic?
 > 
-> Thanks Patrick, I missed this, and your patch seems fine now :)
+> A kmemleak_panic() call only disables the kmemleak but doesn't stop the
+> kernel. The __GFP_NOFAIL allocation had already happened and the pointer
+> returned to the caller.
 
-Thanks for your help, I'll send it to Dave later today.
+Ah, ok. I was confused by the name of kmemleak_panic() (which could use
+renaming methinks).
+
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+			Pekka
+
