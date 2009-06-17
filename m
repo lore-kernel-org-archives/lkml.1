@@ -1,73 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762270AbZFQOiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZFQOpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762270AbZFQOiU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZFQOiG
+	id S1754740AbZFQOpW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZFQOpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:38:06 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36797 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754740AbZFQOiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:38:04 -0400
-Date: Wed, 17 Jun 2009 07:38:04 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: svaidy@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
-       Nathan Lynch <ntl@pobox.com>, Ingo Molnar <mingo@elte.hu>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
-Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
-Message-ID: <20090617143804.GA6767@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com> <20090615232318.74b099a6.akpm@linux-foundation.org> <20090616080715.GB7961@dirshya.in.ibm.com> <1245223977.13761.21576.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245223977.13761.21576.camel@twins>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 17 Jun 2009 10:45:09 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42457 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752310AbZFQOpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 10:45:08 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 1/2] regulator: Make virtual consumer use dev_printk
+Date: Wed, 17 Jun 2009 15:45:06 +0100
+Message-Id: <1245249907-5240-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 09:32:57AM +0200, Peter Zijlstra wrote:
-> On Tue, 2009-06-16 at 13:37 +0530, Vaidyanathan Srinivasan wrote:
-> > * Andrew Morton <akpm@linux-foundation.org> [2009-06-15 23:23:18]:
-> > 
-> > > On Tue, 16 Jun 2009 11:08:39 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-> > > 
-> > > > Currently on a ppc64 box with 16 CPUs, the time taken for
-> > > > a individual cpu-hotplug operation is as follows.
-> > > > 
-> > > >     # time echo 0 > /sys/devices/system/cpu/cpu2/online
-> > > >     real    0m0.025s
-> > > >     user    0m0.000s
-> > > >     sys     0m0.002s
-> > > > 
-> > > >     # time echo 1 > /sys/devices/system/cpu/cpu2/online
-> > > >     real    0m0.021s
-> > > >     user    0m0.000s
-> > > >     sys     0m0.000s
-> > > 
-> > > Surprised.  Do people really online and offline CPUs frequently enough
-> > > for this to be a problem?
-> > 
-> > Certainly not for hardware faults or hardware replacement, but
-> > cpu-hotplug interface is useful for changing system configuration to
-> > meet different objectives like
-> > 
-> > * Reduce system capacity to reduce average power and reduce heat
-> > 
-> > * Increasing number of cores and threads in a CPU package is leading
-> >   to multiple cpu offline/online operations for any perceivable effect
-> > 
-> > * Dynamically change CPU configurations in virtualized environments
-> 
-> I tend to agree with Andrew, if any of those things are done frequent
-> enough that the hotplug performance matter you're doing something mighty
-> odd.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/virtual.c |   34 ++++++++++++++++++----------------
+ 1 files changed, 18 insertions(+), 16 deletions(-)
 
-Boot speedup?
+diff --git a/drivers/regulator/virtual.c b/drivers/regulator/virtual.c
+index e953c18..5c1d756 100644
+--- a/drivers/regulator/virtual.c
++++ b/drivers/regulator/virtual.c
+@@ -27,17 +27,18 @@ struct virtual_consumer_data {
+ 	unsigned int mode;
+ };
+ 
+-static void update_voltage_constraints(struct virtual_consumer_data *data)
++static void update_voltage_constraints(struct device *dev,
++				       struct virtual_consumer_data *data)
+ {
+ 	int ret;
+ 
+ 	if (data->min_uV && data->max_uV
+ 	    && data->min_uV <= data->max_uV) {
+ 		ret = regulator_set_voltage(data->regulator,
+-					    data->min_uV, data->max_uV);
++					data->min_uV, data->max_uV);
+ 		if (ret != 0) {
+-			printk(KERN_ERR "regulator_set_voltage() failed: %d\n",
+-			       ret);
++			dev_err(dev,
++				"regulator_set_voltage() failed: %d\n", ret);
+ 			return;
+ 		}
+ 	}
+@@ -47,7 +48,7 @@ static void update_voltage_constraints(struct virtual_consumer_data *data)
+ 		if (ret == 0)
+ 			data->enabled = 1;
+ 		else
+-			printk(KERN_ERR "regulator_enable() failed: %d\n",
++			dev_err(dev, "regulator_enable() failed: %d\n",
+ 				ret);
+ 	}
+ 
+@@ -56,13 +57,13 @@ static void update_voltage_constraints(struct virtual_consumer_data *data)
+ 		if (ret == 0)
+ 			data->enabled = 0;
+ 		else
+-			printk(KERN_ERR "regulator_disable() failed: %d\n",
++			dev_err(dev, "regulator_disable() failed: %d\n",
+ 				ret);
+ 	}
+ }
+ 
+-static void update_current_limit_constraints(struct virtual_consumer_data
+-						*data)
++static void update_current_limit_constraints(struct device *dev,
++					  struct virtual_consumer_data *data)
+ {
+ 	int ret;
+ 
+@@ -71,8 +72,9 @@ static void update_current_limit_constraints(struct virtual_consumer_data
+ 		ret = regulator_set_current_limit(data->regulator,
+ 					data->min_uA, data->max_uA);
+ 		if (ret != 0) {
+-			pr_err("regulator_set_current_limit() failed: %d\n",
+-			       ret);
++			dev_err(dev,
++				"regulator_set_current_limit() failed: %d\n",
++				ret);
+ 			return;
+ 		}
+ 	}
+@@ -82,7 +84,7 @@ static void update_current_limit_constraints(struct virtual_consumer_data
+ 		if (ret == 0)
+ 			data->enabled = 1;
+ 		else
+-			printk(KERN_ERR "regulator_enable() failed: %d\n",
++			dev_err(dev, "regulator_enable() failed: %d\n",
+ 				ret);
+ 	}
+ 
+@@ -91,7 +93,7 @@ static void update_current_limit_constraints(struct virtual_consumer_data
+ 		if (ret == 0)
+ 			data->enabled = 0;
+ 		else
+-			printk(KERN_ERR "regulator_disable() failed: %d\n",
++			dev_err(dev, "regulator_disable() failed: %d\n",
+ 				ret);
+ 	}
+ }
+@@ -115,7 +117,7 @@ static ssize_t set_min_uV(struct device *dev, struct device_attribute *attr,
+ 	mutex_lock(&data->lock);
+ 
+ 	data->min_uV = val;
+-	update_voltage_constraints(data);
++	update_voltage_constraints(dev, data);
+ 
+ 	mutex_unlock(&data->lock);
+ 
+@@ -141,7 +143,7 @@ static ssize_t set_max_uV(struct device *dev, struct device_attribute *attr,
+ 	mutex_lock(&data->lock);
+ 
+ 	data->max_uV = val;
+-	update_voltage_constraints(data);
++	update_voltage_constraints(dev, data);
+ 
+ 	mutex_unlock(&data->lock);
+ 
+@@ -167,7 +169,7 @@ static ssize_t set_min_uA(struct device *dev, struct device_attribute *attr,
+ 	mutex_lock(&data->lock);
+ 
+ 	data->min_uA = val;
+-	update_current_limit_constraints(data);
++	update_current_limit_constraints(dev, data);
+ 
+ 	mutex_unlock(&data->lock);
+ 
+@@ -193,7 +195,7 @@ static ssize_t set_max_uA(struct device *dev, struct device_attribute *attr,
+ 	mutex_lock(&data->lock);
+ 
+ 	data->max_uA = val;
+-	update_current_limit_constraints(data);
++	update_current_limit_constraints(dev, data);
+ 
+ 	mutex_unlock(&data->lock);
+ 
+-- 
+1.6.3.1
 
-							Thanx, Paul
