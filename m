@@ -1,177 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbZFQXjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbZFQXmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757741AbZFQXjw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 19:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbZFQXjo
+	id S1761902AbZFQXmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 19:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZFQXlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 19:39:44 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33657 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755086AbZFQXjo (ORCPT
+	Wed, 17 Jun 2009 19:41:53 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:41881 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbZFQXlw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 19:39:44 -0400
-Message-Id: <20090617232630.762597258@goodmis.org>
-References: <20090617232555.164629684@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 17 Jun 2009 19:26:01 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 6/7] ring-buffer: do not grab locks in nmi
-Content-Disposition: inline; filename=0006-ring-buffer-do-not-grab-locks-in-nmi.patch
+	Wed, 17 Jun 2009 19:41:52 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Jun 2009 19:41:52 EDT
+From: Frank Mori Hess <fmhess@speakeasy.net>
+Reply-To: fmhess@users.sourceforge.net
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based cards
+Date: Wed, 17 Jun 2009 19:35:13 -0400
+User-Agent: KMail/1.9.9
+Cc: Ian Abbott <abbotti@mev.co.uk>, Ian Abbott <ian.abbott@mev.co.uk>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>,
+       Frank Mori Hess <fmhess@users.sourceforge.net>
+References: <200906161701.45234.herton@mandriva.com.br> <4A39343C.7030908@mev.co.uk> <200906172009.50798.herton@mandriva.com.br>
+In-Reply-To: <200906172009.50798.herton@mandriva.com.br>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart15379278.AcGlsTzjNB";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906171935.14341.fmhess@speakeasy.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+--nextPart15379278.AcGlsTzjNB
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If ftrace_dump_on_oops is set, and an NMI detects a lockup, then it
-will need to read from the ring buffer. But the read side of the
-ring buffer still takes locks. This patch adds a check on the read
-side that if it is in an NMI, then it will disable the ring buffer
-and not take any locks.
+On Wednesday 17 June 2009, Herton Ronaldo Krzesinski wrote:
+> Also s626_attach is modified to use now pci_get_subsys instead of
+> pci_get_device as reported by Ian Abbott, additionaly ensuring that
+> subvendor or subdevice id is set in pci id table entries.
+>
+> Reference: http://lkml.org/lkml/2009/6/16/552
+> ---
+>  drivers/staging/comedi/drivers/s626.c |   35
+> ++++++++++++++++++++------------ 1 files changed, 22 insertions(+), 13
+> deletions(-)
+>
+> diff --git a/drivers/staging/comedi/drivers/s626.c
+> b/drivers/staging/comedi/drivers/s626.c index 30dec9d..3ec4407 100644
+> --- a/drivers/staging/comedi/drivers/s626.c
+> +++ b/drivers/staging/comedi/drivers/s626.c
+> @@ -110,9 +110,9 @@ static const struct s626_board s626_boards[] =3D {
+>  #define PCI_VENDOR_ID_S626 0x1131
+>  #define PCI_DEVICE_ID_S626 0x7146
+>
+> +/* sub pci id must be specified, see s626_attach for more details */
+>  static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) =3D {
+> -	{PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+> -		0},
+> +	{PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
+>  	{0}
+>  };
+>
+> @@ -498,24 +498,33 @@ static int s626_attach(struct comedi_device *dev,
+> struct comedi_devconfig *it) resource_size_t resourceStart;
+>  	dma_addr_t appdma;
+>  	struct comedi_subdevice *s;
+> -	struct pci_dev *pdev;
+> +	const struct pci_device_id *ids;
+> +	struct pci_dev *pdev =3D NULL;
+>
+>  	if (alloc_private(dev, sizeof(struct s626_private)) < 0)
+>  		return -ENOMEM;
+>
+> -	for (pdev =3D pci_get_device(PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626,
+> -			NULL); pdev !=3D NULL;
+> -		pdev =3D pci_get_device(PCI_VENDOR_ID_S626,
+> -			PCI_DEVICE_ID_S626, pdev)) {
+> +	/*
+> +	 * Require also one of sub pci ids to be defined (see check below),
+> +	 * otherwise there will be a clash with Philips SAA7146 media/dvb
+> +	 * based cards (they have same vendor:device =3D=3D 0x1131:0x7146 pair
+> +	 * as main S626 cards)
+> +	 */
+> +	for (ids =3D s626_pci_table;
+> +	     (ids->vendor && (ids->subvendor || ids->subdevice)) && !pdev;
+> +	     ids++) {
+> +		pdev =3D pci_get_subsys(ids->vendor, ids->device, ids->subvendor,
+> +				      ids->subdevice, NULL);
+> +		if (!pdev)
+> +			continue;
+> +
+>  		if (it->options[0] || it->options[1]) {
+> +			/* matches requested bus/slot */
+>  			if (pdev->bus->number =3D=3D it->options[0] &&
+> -				PCI_SLOT(pdev->devfn) =3D=3D it->options[1]) {
+> -				/* matches requested bus/slot */
+> +			    PCI_SLOT(pdev->devfn) =3D=3D it->options[1])
+>  				break;
+> -			}
+> -		} else {
+> -			/* no bus/slot specified */
+> -			break;
+> +			pci_dev_put(pdev);
+> +			pdev =3D NULL;
+>  		}
+>  	}
+>  	devpriv->pdev =3D pdev;
 
-Reads can still happen on a disabled ring buffer.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/ring_buffer.c |   59 ++++++++++++++++++++++++++++++++++++++------
- 1 files changed, 51 insertions(+), 8 deletions(-)
+This patch looks buggy.  It's changing the logic beyond just checking for=20
+subvendor/subdevice ids.
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 969f7cb..589b3ee 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -2466,6 +2466,21 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
- }
- EXPORT_SYMBOL_GPL(ring_buffer_iter_peek);
- 
-+static inline int rb_ok_to_lock(void)
-+{
-+	/*
-+	 * If an NMI die dumps out the content of the ring buffer
-+	 * do not grab locks. We also permanently disable the ring
-+	 * buffer too. A one time deal is all you get from reading
-+	 * the ring buffer from an NMI.
-+	 */
-+	if (likely(!in_nmi() && !oops_in_progress))
-+		return 1;
-+
-+	tracing_off_permanent();
-+	return 0;
-+}
-+
- /**
-  * ring_buffer_peek - peek at the next event to be read
-  * @buffer: The ring buffer to read
-@@ -2481,14 +2496,20 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
- 	struct ring_buffer_event *event;
- 	unsigned long flags;
-+	int dolock;
- 
- 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
- 		return NULL;
- 
-+	dolock = rb_ok_to_lock();
-  again:
--	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+	local_irq_save(flags);
-+	if (dolock)
-+		spin_lock(&cpu_buffer->reader_lock);
- 	event = rb_buffer_peek(buffer, cpu, ts);
--	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+	if (dolock)
-+		spin_unlock(&cpu_buffer->reader_lock);
-+	local_irq_restore(flags);
- 
- 	if (event && event->type_len == RINGBUF_TYPE_PADDING) {
- 		cpu_relax();
-@@ -2540,6 +2561,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	struct ring_buffer_per_cpu *cpu_buffer;
- 	struct ring_buffer_event *event = NULL;
- 	unsigned long flags;
-+	int dolock;
-+
-+	dolock = rb_ok_to_lock();
- 
-  again:
- 	/* might be called in atomic */
-@@ -2549,7 +2573,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
- 		goto out;
- 
- 	cpu_buffer = buffer->buffers[cpu];
--	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+	local_irq_save(flags);
-+	if (dolock)
-+		spin_lock(&cpu_buffer->reader_lock);
- 
- 	event = rb_buffer_peek(buffer, cpu, ts);
- 	if (!event)
-@@ -2558,7 +2584,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	rb_advance_reader(cpu_buffer);
- 
-  out_unlock:
--	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+	if (dolock)
-+		spin_unlock(&cpu_buffer->reader_lock);
-+	local_irq_restore(flags);
- 
-  out:
- 	preempt_enable();
-@@ -2757,15 +2785,23 @@ int ring_buffer_empty(struct ring_buffer *buffer)
- {
- 	struct ring_buffer_per_cpu *cpu_buffer;
- 	unsigned long flags;
-+	int dolock;
- 	int cpu;
- 	int ret;
- 
-+	dolock = rb_ok_to_lock();
-+
- 	/* yes this is racy, but if you don't like the race, lock the buffer */
- 	for_each_buffer_cpu(buffer, cpu) {
- 		cpu_buffer = buffer->buffers[cpu];
--		spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+		local_irq_save(flags);
-+		if (dolock)
-+			spin_lock(&cpu_buffer->reader_lock);
- 		ret = rb_per_cpu_empty(cpu_buffer);
--		spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+		if (dolock)
-+			spin_unlock(&cpu_buffer->reader_lock);
-+		local_irq_restore(flags);
-+
- 		if (!ret)
- 			return 0;
- 	}
-@@ -2783,15 +2819,22 @@ int ring_buffer_empty_cpu(struct ring_buffer *buffer, int cpu)
- {
- 	struct ring_buffer_per_cpu *cpu_buffer;
- 	unsigned long flags;
-+	int dolock;
- 	int ret;
- 
- 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
- 		return 1;
- 
-+	dolock = rb_ok_to_lock();
-+
- 	cpu_buffer = buffer->buffers[cpu];
--	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+	local_irq_save(flags);
-+	if (dolock)
-+		spin_lock(&cpu_buffer->reader_lock);
- 	ret = rb_per_cpu_empty(cpu_buffer);
--	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+	if (dolock)
-+		spin_unlock(&cpu_buffer->reader_lock);
-+	local_irq_restore(flags);
- 
- 	return ret;
- }
--- 
-1.6.3.1
 
--- 
+--nextPart15379278.AcGlsTzjNB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBKOX2y5vihyNWuA4URAsF5AKCMud13BW4meTpBvT1D6IYaWxpWRwCgwr2r
+OMZrJGP5jo48qmYyw37ONnw=
+=mOH/
+-----END PGP SIGNATURE-----
+
+--nextPart15379278.AcGlsTzjNB--
