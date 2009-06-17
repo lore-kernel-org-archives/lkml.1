@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763391AbZFQGmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764513AbZFQGmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763391AbZFQGmD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 02:42:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZFQGly
+	id S1764513AbZFQGmq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 02:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZFQGmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 02:41:54 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:47824 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbZFQGly (ORCPT
+	Wed, 17 Jun 2009 02:42:37 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48690 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbZFQGmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 02:41:54 -0400
-Date: Wed, 17 Jun 2009 08:41:51 +0200
-From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linuxppc-dev@ozlabs.org, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-       raisch@de.ibm.com, linux-kernel@vger.kernel.org,
-       ewg@lists.openfabrics.org
-Subject: Re: [ewg] Re: [PATCH 2.6.31] ehca: Tolerate dynamic memory
- operations and huge pages
-Message-ID: <20090617084151.010562c5@BL3D1974.boeblingen.de.ibm.com>
-In-Reply-To: <adazlc8w45c.fsf@cisco.com>
-References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-	<adar5xoybwt.fsf@cisco.com>
-	<20090616090809.34d162fc@BL3D1974.boeblingen.de.ibm.com>
-	<adazlc8w45c.fsf@cisco.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Wed, 17 Jun 2009 02:42:36 -0400
+Date: Wed, 17 Jun 2009 09:42:38 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       heiko.carstens@de.ibm.com, schwidefsky@de.ibm.com
+Subject: [PATCH] s390: remove DEBUG_MALLOC
+Message-ID: <Pine.LNX.4.64.0906170941340.29445@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009 09:10:39 -0700
-Roland Dreier <rdreier@cisco.com> wrote:
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> 
->  > Yeah, the notifier code remains untouched as we still do not allow dynamic
->  > memory operations _while_ our module is loaded. The patch allows the driver to
->  > cope with DMEM operations that happened before the module was loaded, which
->  > might result in a non-contiguous memory layout. When the driver registers
->  > its global memory region in the system, the memory layout must be considered.
->  > 
->  > We chose the term "toleration" instead of "support" to illustrate this.
-> 
-> I see.  So things just silently broke in some cases when the driver was
-> loaded after operations you didn't tolerate?
-> 
-> Anyway, thanks for the explanation.
+The kernel now has kmemleak and kmemtrace so there's no reason to keep
+this ugly s390 hack around. I am not sure how it's supposed to work on
+SMP anyway as it uses a global variable to temporarily store the return 
+value of all kmalloc() calls:
 
-Well, things did not break silently. The registration of the MR failed with
-an error code which was reported to userspace.
+  void *b;
 
-Will you push the patch for .31 or .32?
+  #define kmalloc(x...) (PRINT_INFO(" kmalloc %p\n",b=kmalloc(x)),b)
 
-Thanks,
-Alex
+Cc: <linux-s390@vger.kernel.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ arch/s390/include/asm/debug.h |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
+
+diff --git a/arch/s390/include/asm/debug.h b/arch/s390/include/asm/debug.h
+index 9450ce6..31ed568 100644
+--- a/arch/s390/include/asm/debug.h
++++ b/arch/s390/include/asm/debug.h
+@@ -248,14 +248,5 @@ int debug_unregister_view(debug_info_t* id, struct debug_view* view);
+ #define PRINT_FATAL(x...) printk ( KERN_DEBUG PRINTK_HEADER x )
+ #endif				/* DASD_DEBUG */
+ 
+-#undef DEBUG_MALLOC
+-#ifdef DEBUG_MALLOC
+-void *b;
+-#define kmalloc(x...) (PRINT_INFO(" kmalloc %p\n",b=kmalloc(x)),b)
+-#define kfree(x) PRINT_INFO(" kfree %p\n",x);kfree(x)
+-#define get_zeroed_page(x...) (PRINT_INFO(" gfp %p\n",b=get_zeroed_page(x)),b)
+-#define __get_free_pages(x...) (PRINT_INFO(" gfps %p\n",b=__get_free_pages(x)),b)
+-#endif				/* DEBUG_MALLOC */
+-
+ #endif				/* __KERNEL__ */
+ #endif				/* DEBUG_H */
+-- 
+1.5.6.3
+
