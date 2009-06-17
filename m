@@ -1,423 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933401AbZFQMCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933418AbZFQMCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933401AbZFQMCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 08:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbZFQMCV
+	id S933418AbZFQMCp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 08:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933175AbZFQMCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 08:02:21 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:50187 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754590AbZFQMCU (ORCPT
+	Wed, 17 Jun 2009 08:02:34 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:58108 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754931AbZFQMCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 08:02:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VxwGOGw4e9qO1t/logP74S0iCyefQgUOahSSud2I3FHJ2yGj2NQBgZYMqYsUyeydLL
-         qrvcvpLANpUmLnfdWyX9xfo+56b+l+g9zVGXPLiFADjBVDxiuVECFQyP3pnJFR5Y7z2Q
-         4Fy+Ygvi+19wvRIyaptQZvu9AWCS7jK+lVa0w=
-Date: Wed, 17 Jun 2009 14:02:17 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/filters: remove error messages
-Message-ID: <20090617120216.GB6064@nowhere>
-References: <4A38AD7F.2070408@cn.fujitsu.com> <4A38AD93.4070300@cn.fujitsu.com>
+	Wed, 17 Jun 2009 08:02:33 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
+References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>
+	<4A35ACB3.9040501@goop.org> <m1k53dbwo2.fsf@fess.ebiederm.org>
+	<4A36B3EC.7010004@goop.org> <m1fxe117n5.fsf@fess.ebiederm.org>
+	<4A37F4AE.5050902@goop.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 17 Jun 2009 05:02:29 -0700
+In-Reply-To: <4A37F4AE.5050902@goop.org> (Jeremy Fitzhardinge's message of "Tue\, 16 Jun 2009 12\:38\:22 -0700")
+Message-ID: <m1vdmvxe3u.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A38AD93.4070300@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: jeremy@goop.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 04:47:15PM +0800, Li Zefan wrote:
-> Now we restore original filter is the new one can't be applied,
-> and no long show error messages, so we can remove them totally.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
+> I think we're getting off into the weeds a bit here.  I'm looking at other
+> options of how to fit Xen interrupt handling into the kernel in a clean way; we
+> may end up with a different model from the previous patch postings (not this
+> particular one under discussion; the ones from last month).  We can reopen this
+> discussion when I post those patches.
+>
+> However, the kernel will still need information about the I/O APICs from ACPI so
+> that it can perform basic interrupt routing for PCI devices (ie, regardless of
+> how the interrupt gets delivered, and who programs the APIC hardware, we still
+> need the basic information of "what io apic+pin is this PCI device connected
+> to?").  This particular patch is my attempt to achieve this.
 
-Why?
-These messages are very powerful to point a user to its mistakes
-in filters syntaxes or semantics.
+Trying to understand what is going on I just read through Xen 3.4 and the
+accompanying 2.6.18 kernel source.
 
-I really think we are removing a very useful feature in this patch.
+Xen has a horrible api with respect to io_apics.  They aren't even real
+io_apics when Xen is done ``abstracting'' them.
 
-May be we can keep the previous filter in case of new filter string
-inserting failure, though if the user wanted to insert a new one, there
-are few chances that the previous one is still relevant for him.
-I don't know.
+Xen gives us the vector to write.  But we get to assign that
+vector arbitrarily to an ioapic and vector.
 
- 
-> Another reason is, I don't think it's good to show error messages
-> when reading a control file.
+We are required to use a hypercall when performing the write.
+Xen overrides the delivery_mode and destination, and occasionally
+the mask bit.
 
+We still have to handle polarity and the trigger mode.  Despite
+the fact that Xen has acpi and mp tables parsers of it's own.
 
-So, why not create a filter_error file in this case? One for each
-event and subsys that would print the last error?
+I expect it would have been easier and simpler all around if there
+was just a map_gsi event channel hypercall.  But Xen has an abi
+and an existing set of calls so could aren't worth worrying about
+much.
 
-Frederic.
+Xen's ioapic affinity management logic looks like it only works
+on sunny days if you don't stress it too hard.  Of course the hard
+part Xen of driving the hardware Xen doesn't want to share.
 
+It looks like the only thing Xen gains by pushing out the work of
+setting the polarity and setting edge/level triggering is our database
+of motherboards which get those things wrong.
 
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/trace/trace_events_filter.c |  168 ++++++------------------------------
->  1 files changed, 27 insertions(+), 141 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index 2f706e5..cd7a928 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -60,36 +60,6 @@ static struct filter_op filter_ops[] = {
->  	{ OP_OPEN_PAREN, "(", 0 },
->  };
->  
-> -enum {
-> -	FILT_ERR_NONE,
-> -	FILT_ERR_INVALID_OP,
-> -	FILT_ERR_UNBALANCED_PAREN,
-> -	FILT_ERR_TOO_MANY_OPERANDS,
-> -	FILT_ERR_OPERAND_TOO_LONG,
-> -	FILT_ERR_FIELD_NOT_FOUND,
-> -	FILT_ERR_ILLEGAL_FIELD_OP,
-> -	FILT_ERR_ILLEGAL_INTVAL,
-> -	FILT_ERR_BAD_SUBSYS_FILTER,
-> -	FILT_ERR_TOO_MANY_PREDS,
-> -	FILT_ERR_MISSING_FIELD,
-> -	FILT_ERR_INVALID_FILTER,
-> -};
-> -
-> -static char *err_text[] = {
-> -	"No error",
-> -	"Invalid operator",
-> -	"Unbalanced parens",
-> -	"Too many operands",
-> -	"Operand too long",
-> -	"Field not found",
-> -	"Illegal operation for field type",
-> -	"Illegal integer value",
-> -	"Couldn't find or set field in one of a subsystem's events",
-> -	"Too many terms in predicate expression",
-> -	"Missing field name and/or value",
-> -	"Meaningless filter expression",
-> -};
-> -
->  struct opstack_op {
->  	int op;
->  	struct list_head list;
-> @@ -105,8 +75,6 @@ struct filter_parse_state {
->  	struct filter_op *ops;
->  	struct list_head opstack;
->  	struct list_head postfix;
-> -	int lasterr;
-> -	int lasterr_pos;
->  
->  	struct {
->  		char *string;
-> @@ -223,12 +191,6 @@ int filter_match_preds(struct ftrace_event_call *call, void *rec)
->  }
->  EXPORT_SYMBOL_GPL(filter_match_preds);
->  
-> -static void parse_error(struct filter_parse_state *ps, int err, int pos)
-> -{
-> -	ps->lasterr = err;
-> -	ps->lasterr_pos = pos;
-> -}
-> -
->  static void remove_filter_string(struct event_filter *filter)
->  {
->  	kfree(filter->filter_string);
-> @@ -269,48 +231,6 @@ static void free_old_filter(struct event_filter *filter)
->  	filter->old_filter = NULL;
->  }
->  
-> -static int append_filter_string(struct event_filter *filter,
-> -				char *string)
-> -{
-> -	int newlen;
-> -	char *new_filter_string;
-> -
-> -	BUG_ON(!filter->filter_string);
-> -	newlen = strlen(filter->filter_string) + strlen(string) + 1;
-> -	new_filter_string = kmalloc(newlen, GFP_KERNEL);
-> -	if (!new_filter_string)
-> -		return -ENOMEM;
-> -
-> -	strcpy(new_filter_string, filter->filter_string);
-> -	strcat(new_filter_string, string);
-> -	kfree(filter->filter_string);
-> -	filter->filter_string = new_filter_string;
-> -
-> -	return 0;
-> -}
-> -
-> -static void append_filter_err(struct filter_parse_state *ps,
-> -			      struct event_filter *filter)
-> -{
-> -	int pos = ps->lasterr_pos;
-> -	char *buf, *pbuf;
-> -
-> -	buf = (char *)__get_free_page(GFP_TEMPORARY);
-> -	if (!buf)
-> -		return;
-> -
-> -	append_filter_string(filter, "\n");
-> -	memset(buf, ' ', PAGE_SIZE);
-> -	if (pos > PAGE_SIZE - 128)
-> -		pos = 0;
-> -	buf[pos] = '^';
-> -	pbuf = &buf[pos] + 1;
-> -
-> -	sprintf(pbuf, "\nparse_error: %s\n", err_text[ps->lasterr]);
-> -	append_filter_string(filter, buf);
-> -	free_page((unsigned long) buf);
-> -}
-> -
->  void print_event_filter(struct ftrace_event_call *call, struct trace_seq *s)
->  {
->  	struct event_filter *filter = call->filter;
-> @@ -478,18 +398,15 @@ static void filter_free_subsystem_preds(struct event_subsystem *system,
->  	}
->  }
->  
-> -static int filter_add_pred_fn(struct filter_parse_state *ps,
-> -			      struct ftrace_event_call *call,
-> +static int filter_add_pred_fn(struct ftrace_event_call *call,
->  			      struct filter_pred *pred,
->  			      filter_pred_fn_t fn)
->  {
->  	struct event_filter *filter = call->filter;
->  	int idx, err;
->  
-> -	if (filter->n_preds == MAX_FILTER_PRED) {
-> -		parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
-> +	if (filter->n_preds == MAX_FILTER_PRED)
->  		return -ENOSPC;
-> -	}
->  
->  	idx = filter->n_preds;
->  	filter_clear_pred(filter->preds[idx]);
-> @@ -570,8 +487,7 @@ static filter_pred_fn_t select_comparison_fn(int op, int field_size,
->  	return fn;
->  }
->  
-> -static int filter_add_pred(struct filter_parse_state *ps,
-> -			   struct ftrace_event_call *call,
-> +static int filter_add_pred(struct ftrace_event_call *call,
->  			   struct filter_pred *pred)
->  {
->  	struct ftrace_event_field *field;
-> @@ -584,24 +500,20 @@ static int filter_add_pred(struct filter_parse_state *ps,
->  
->  	if (pred->op == OP_AND) {
->  		pred->pop_n = 2;
-> -		return filter_add_pred_fn(ps, call, pred, filter_pred_and);
-> +		return filter_add_pred_fn(call, pred, filter_pred_and);
->  	} else if (pred->op == OP_OR) {
->  		pred->pop_n = 2;
-> -		return filter_add_pred_fn(ps, call, pred, filter_pred_or);
-> +		return filter_add_pred_fn(call, pred, filter_pred_or);
->  	}
->  
->  	field = find_event_field(call, pred->field_name);
-> -	if (!field) {
-> -		parse_error(ps, FILT_ERR_FIELD_NOT_FOUND, 0);
-> +	if (!field)
->  		return -EINVAL;
-> -	}
->  
->  	pred->offset = field->offset;
->  
-> -	if (!is_legal_op(field, pred->op)) {
-> -		parse_error(ps, FILT_ERR_ILLEGAL_FIELD_OP, 0);
-> +	if (!is_legal_op(field, pred->op))
->  		return -EINVAL;
-> -	}
->  
->  	string_type = is_string_field(field->type);
->  	if (string_type) {
-> @@ -612,33 +524,28 @@ static int filter_add_pred(struct filter_parse_state *ps,
->  		pred->str_len = field->size;
->  		if (pred->op == OP_NE)
->  			pred->not = 1;
-> -		return filter_add_pred_fn(ps, call, pred, fn);
-> +		return filter_add_pred_fn(call, pred, fn);
->  	} else {
->  		if (field->is_signed)
->  			ret = strict_strtoll(pred->str_val, 0, &val);
->  		else
->  			ret = strict_strtoull(pred->str_val, 0, &val);
-> -		if (ret) {
-> -			parse_error(ps, FILT_ERR_ILLEGAL_INTVAL, 0);
-> +		if (ret)
->  			return -EINVAL;
-> -		}
->  		pred->val = val;
->  	}
->  
->  	fn = select_comparison_fn(pred->op, field->size, field->is_signed);
-> -	if (!fn) {
-> -		parse_error(ps, FILT_ERR_INVALID_OP, 0);
-> +	if (!fn)
->  		return -EINVAL;
-> -	}
->  
->  	if (pred->op == OP_NE)
->  		pred->not = 1;
->  
-> -	return filter_add_pred_fn(ps, call, pred, fn);
-> +	return filter_add_pred_fn(call, pred, fn);
->  }
->  
-> -static int filter_add_subsystem_pred(struct filter_parse_state *ps,
-> -				     struct event_subsystem *system,
-> +static int filter_add_subsystem_pred(struct event_subsystem *system,
->  				     struct filter_pred *pred,
->  				     char *filter_string)
->  {
-> @@ -655,10 +562,8 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
->  			return -ENOMEM;
->  	}
->  
-> -	if (filter->n_preds == MAX_FILTER_PRED) {
-> -		parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
-> +	if (filter->n_preds == MAX_FILTER_PRED)
->  		return -ENOSPC;
-> -	}
->  
->  	filter->preds[filter->n_preds] = pred;
->  	filter->n_preds++;
-> @@ -676,7 +581,7 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
->  		if (call_filter->need_reset)
->  			continue;
->  
-> -		err = filter_add_pred(ps, call, pred);
-> +		err = filter_add_pred(call, pred);
->  		if (err)
->  			call_filter->need_reset = true;
->  	}
-> @@ -906,10 +811,8 @@ static int filter_parse(struct filter_parse_state *ps)
->  
->  		if (is_op_char(ps, ch)) {
->  			op = infix_get_op(ps, ch);
-> -			if (op == OP_NONE) {
-> -				parse_error(ps, FILT_ERR_INVALID_OP, 0);
-> +			if (op == OP_NONE)
->  				return -EINVAL;
-> -			}
->  
->  			if (strlen(curr_operand(ps))) {
->  				postfix_append_operand(ps, curr_operand(ps));
-> @@ -948,17 +851,13 @@ static int filter_parse(struct filter_parse_state *ps)
->  				postfix_append_op(ps, top_op);
->  				top_op = filter_opstack_pop(ps);
->  			}
-> -			if (top_op == OP_NONE) {
-> -				parse_error(ps, FILT_ERR_UNBALANCED_PAREN, 0);
-> +			if (top_op == OP_NONE)
->  				return -EINVAL;
-> -			}
->  			continue;
->  		}
->  parse_operand:
-> -		if (append_operand_char(ps, ch)) {
-> -			parse_error(ps, FILT_ERR_OPERAND_TOO_LONG, 0);
-> +		if (append_operand_char(ps, ch))
->  			return -EINVAL;
-> -		}
->  	}
->  
->  	if (strlen(curr_operand(ps)))
-> @@ -968,10 +867,8 @@ parse_operand:
->  		top_op = filter_opstack_pop(ps);
->  		if (top_op == OP_NONE)
->  			break;
-> -		if (top_op == OP_OPEN_PAREN) {
-> -			parse_error(ps, FILT_ERR_UNBALANCED_PAREN, 0);
-> +		if (top_op == OP_OPEN_PAREN)
->  			return -EINVAL;
-> -		}
->  		postfix_append_op(ps, top_op);
->  	}
->  
-> @@ -1029,10 +926,8 @@ static int check_preds(struct filter_parse_state *ps)
->  		n_normal_preds++;
->  	}
->  
-> -	if (!n_normal_preds || n_logical_preds >= n_normal_preds) {
-> -		parse_error(ps, FILT_ERR_INVALID_FILTER, 0);
-> +	if (!n_normal_preds || n_logical_preds >= n_normal_preds)
->  		return -EINVAL;
-> -	}
->  
->  	return 0;
->  }
-> @@ -1057,21 +952,19 @@ static int replace_preds(struct event_subsystem *system,
->  				operand1 = elt->operand;
->  			else if (!operand2)
->  				operand2 = elt->operand;
-> -			else {
-> -				parse_error(ps, FILT_ERR_TOO_MANY_OPERANDS, 0);
-> +			else
->  				return -EINVAL;
-> -			}
->  			continue;
->  		}
->  
->  		if (elt->op == OP_AND || elt->op == OP_OR) {
->  			pred = create_logical_pred(elt->op);
->  			if (call) {
-> -				err = filter_add_pred(ps, call, pred);
-> +				err = filter_add_pred(call, pred);
->  				filter_free_pred(pred);
->  			} else
-> -				err = filter_add_subsystem_pred(ps, system,
-> -							pred, filter_string);
-> +				err = filter_add_subsystem_pred(system, pred,
-> +								filter_string);
->  			if (err)
->  				return err;
->  
-> @@ -1079,17 +972,15 @@ static int replace_preds(struct event_subsystem *system,
->  			continue;
->  		}
->  
-> -		if (!operand1 || !operand2) {
-> -			parse_error(ps, FILT_ERR_MISSING_FIELD, 0);
-> +		if (!operand1 || !operand2)
->  			return -EINVAL;
-> -		}
->  
->  		pred = create_pred(elt->op, operand1, operand2);
->  		if (call) {
-> -			err = filter_add_pred(ps, call, pred);
-> +			err = filter_add_pred(call, pred);
->  			filter_free_pred(pred);
->  		} else
-> -			err = filter_add_subsystem_pred(ps, system, pred,
-> +			err = filter_add_subsystem_pred(system, pred,
->  							filter_string);
->  		if (err)
->  			return err;
-> @@ -1121,15 +1012,10 @@ int __apply_event_filter(struct ftrace_event_call *call, char *filter_string)
->  
->  	parse_init(ps, filter_ops, filter_string);
->  	err = filter_parse(ps);
-> -	if (err) {
-> -		append_filter_err(ps, call->filter);
-> +	if (err)
->  		goto out;
-> -	}
->  
->  	err = replace_preds(NULL, call, ps, filter_string);
-> -	if (err)
-> -		append_filter_err(ps, call->filter);
-> -
->  out:
->  	filter_opstack_clear(ps);
->  	postfix_clear(ps);
-> -- 1.5.4.rc3 
+So I expect the thing to do is factor out acpi_parse_ioapic,
+mp_register_ioapic so we can share information on borked BIOS's
+between the Xen dom0 port and otherwise push Xen pseudo apic handling
+off into it's strange little corner.
 
+Eric
