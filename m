@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbZFQWSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbZFQWWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758288AbZFQWSe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 18:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZFQWS1
+	id S1760807AbZFQWWw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 18:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZFQWWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 18:18:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37421 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754461AbZFQWS0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 18:18:26 -0400
-Date: Wed, 17 Jun 2009 15:17:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: Re: [GIT PULL] block updates for 2.6.31-rc1
-Message-Id: <20090617151754.e7c4c58c.akpm@linux-foundation.org>
-In-Reply-To: <20090616071823.GL11363@kernel.dk>
-References: <20090616071823.GL11363@kernel.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Wed, 17 Jun 2009 18:22:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44303 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754461AbZFQWWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 18:22:42 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>, dm-devel@redhat.com
+Date: Thu, 18 Jun 2009 08:22:36 +1000 (EST)
+Message-ID: <0f79c2d4513c50184383e223d3d2ee97.squirrel@neil.brown.name>
+In-Reply-To: <4A396195.8060503@goop.org>
+References: <4A396195.8060503@goop.org>
+Subject: Re: init_emergency_isa_pool calling mempool_create in non-sleeping 
+     context
+Cc: "Jens Axboe" <jens.axboe@oracle.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009 09:18:23 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> Martin K. Petersen (1):
->       block: Introduce helper to reset queue limits to default values
+You wanted dm-devel@redhat.com, not linux-raid@vger.kernel.org.
 
-
-i386 allnoconfig:
-
-block/blk-settings.c: In function 'blk_set_default_limits':
-block/blk-settings.c:115: warning: large integer implicitly truncated to unsigned type
+NeilBrown
 
 
-The patch was sent on June 12, acked on June 15, merged into mainline
-June 16 and never made an appearance in linux-next.
-
-It doesn't look like it'll cause any runtime problems, but that just
-means we got lucky.  
-
-
-Suggested fix is to use plain old "-1", rather than (incorrectly)
-guessing what type the caller might be assigning to.
-
---- a/include/linux/blkdev.h~a
-+++ a/include/linux/blkdev.h
-@@ -702,7 +702,7 @@ extern unsigned long blk_max_low_pfn, bl
- #else
- #define BLK_BOUNCE_HIGH		-1ULL
- #endif
--#define BLK_BOUNCE_ANY		(-1ULL)
-+#define BLK_BOUNCE_ANY		(-1)
- #define BLK_BOUNCE_ISA		(ISA_DMA_THRESHOLD)
- 
- /*
-_
-
-
-Or is the code just buggy?  What are the units of BLK_BOUNCE_HIGH,
-BLK_BOUNCE_ANY and BLK_BOUNCE_ISA?  Seems that they are physical
-addresses.  So why are we copying one of these onto a variable which
-records pfns?
-
-If BLK_BOUNCE_ANY's units are indeed pfns (not the case afaict) then
-using a ULL was inappropriate.
+On Thu, June 18, 2009 7:35 am, Jeremy Fitzhardinge wrote:
+> I just saw this when booting a current linux-2.6.git kernel
+> (3fe0344faf7fdcb158bd5c1a9aec960a8d70c8e8).
+> .config and full bootlog attached.
+>
+> BUG: sleeping function called from invalid context at
+> /home/jeremy/git/linux/mm/slab.c:3029
+> in_atomic(): 1, irqs_disabled(): 0, pid: 388, name: lvm
+> Pid: 388, comm: lvm Not tainted 2.6.30 #225
+> Call Trace:
+>  [<ffffffff81137a65>] ? __init_rwsem+0x29/0x39
+>  [<ffffffff81035346>] __might_sleep+0x110/0x112
+>  [<ffffffff810acf07>] kmem_cache_alloc+0x38/0x12b
+>  [<ffffffff810a71d4>] ? mempool_alloc_pages_isa+0x0/0x10
+>  [<ffffffff8108a5df>] mempool_create_node+0x2f/0x152
+>  [<ffffffff8108a31c>] ? mempool_free_pages+0x0/0xb
+>  [<ffffffff8108a70f>] mempool_create+0xd/0xf
+>  [<ffffffff810a71ad>] init_emergency_isa_pool+0x28/0x4f
+>  [<ffffffff81127b90>] blk_queue_bounce_limit+0x40/0x56
+>  [<ffffffffa00f856c>] dm_table_set_restrictions+0x82/0xa6 [dm_mod]
+>  [<ffffffffa00f6415>] dm_swap_table+0x132/0x15a [dm_mod]
+>  [<ffffffffa00faf61>] dev_suspend+0xfd/0x177 [dm_mod]
+>  [<ffffffffa00fb959>] dm_ctl_ioctl+0x252/0x2a2 [dm_mod]
+>  [<ffffffffa00fae64>] ? dev_suspend+0x0/0x177 [dm_mod]
+>  [<ffffffff810bd4c0>] vfs_ioctl+0x2a/0x77
+>  [<ffffffff810bd9b4>] do_vfs_ioctl+0x4a7/0x4fa
+>  [<ffffffff810bda5e>] sys_ioctl+0x57/0x7a
+>  [<ffffffff81011042>] system_call_fastpath+0x16/0x1b
+>
+> 	J
+>
+>
 
