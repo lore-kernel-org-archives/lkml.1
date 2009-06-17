@@ -1,122 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbZFQT7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbZFQUEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759777AbZFQT7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 15:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZFQT7L
+	id S1759569AbZFQUEV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 16:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbZFQUEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 15:59:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60707 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbZFQT7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 15:59:10 -0400
-Message-ID: <4A394AD6.5030007@kernel.org>
-Date: Wed, 17 Jun 2009 12:58:14 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 17 Jun 2009 16:04:13 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:55067 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752644AbZFQUEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 16:04:12 -0400
+Date: Wed, 17 Jun 2009 22:04:10 +0200
+From: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [RFC 1/7] crypto: Add GHASH digest algorithm for GCM
+Message-ID: <20090617200410.GB28694@Chamillionaire.breakpoint.cc>
+Reply-To: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+References: <1244704226.5320.124.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH] x86/pci: get root CRS before scan child bues
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1244704226.5320.124.camel@yhuang-dev.sh.intel.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Huang Ying | 2009-06-11 15:10:26 [+0800]:
 
-so we could remove adjust_transparent_bridge_resources..
+>GHASH is implemented as a shash algorithm. The actual implementation
+>is copied from gcm.c. This makes it possible to add
+>architecture/hardware accelerated GHASH implementation.
+>
+>Signed-off-by: Huang Ying <ying.huang@intel.com>
+>
+>---
+> crypto/Kconfig         |    7 +
+> crypto/Makefile        |    2 
+> crypto/ghash-generic.c |  179 +++++++++++++++++++++++++++++++++++++++++++++++++
+> 3 files changed, 188 insertions(+)
+>
+>--- /dev/null
+>+++ b/crypto/ghash-generic.c
+>@@ -0,0 +1,179 @@
+>+/*
+>+ * GHASH: digest algorithm for GCM (Galois/Counter Mode).
+>+ *
+>+ * Copyright (c) 2007 Nokia Siemens Networks - Mikko Herranen <mh1@iki.fi>
+>+ * Copyright (c) 2009 Intel Corp.
+>+ *   Author: Huang Ying <ying.huang@intel.com>
+>+ *
+>+ * The algorithm implementation is copied from gcm.c.
+>+ *
+>+ * This program is free software; you can redistribute it and/or modify it
+>+ * under the terms of the GNU General Public License version 2 as published
+>+ * by the Free Software Foundation.
+>+ */
+>+
+>+#include <linux/module.h>
+>+#include <linux/init.h>
+>+#include <linux/kernel.h>
+>+#include <linux/crypto.h>
+>+#include <crypto/gf128mul.h>
+>+#include <crypto/algapi.h>
+>+#include <crypto/internal/hash.h>
+Do you mind to sort them?
 
-and give x86_pci_root_bus_res_quirks chance when _CRS is not used or
-not there.
+>+
+>+#define GHASH_BLOCK_SIZE	16
+>+#define GHASH_DIGEST_SIZE	16
+>+
+>+struct ghash_ctx {
+>+	struct gf128mul_4k *gf128;
+>+};
+>+
+>+struct ghash_desc_ctx {
+>+	u8 buffer[16];
+>+	u32 bytes;
+>+};
+>+
+>+static int ghash_init(struct shash_desc *desc)
+>+{
+>+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
+>+
+>+	dctx->bytes = 0;
+>+	memset(dctx->buffer, 0, 16);
+>+
+you could memset() the whole struct at once
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>+	return 0;
+>+}
+>+
+>+static int ghash_setkey(struct crypto_shash *tfm,
+>+			const u8 *key, unsigned int keylen)
+>+{
+>+	struct ghash_ctx *ctx = crypto_shash_ctx(tfm);
+>+
+>+	if (keylen != 16) {
+>+		crypto_shash_set_flags(tfm, CRYPTO_TFM_RES_BAD_KEY_LEN);
+>+		return -EINVAL;
+>+	}
+>+
+>+	if (ctx->gf128)
+>+		gf128mul_free_4k(ctx->gf128);
+>+	ctx->gf128 = gf128mul_init_4k_lle((be128 *)key);
+>+	if (!ctx->gf128)
+>+		return -ENOMEM;
+>+
+>+	return 0;
+>+}
+>+
+>+static int ghash_update(struct shash_desc *desc,
+>+			 const u8 *src, unsigned int srclen)
+>+{
+>+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
+>+	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
+>+	u8 *dst = dctx->buffer;
+>+
+>+	if (dctx->bytes) {
+>+		int n = min(srclen, dctx->bytes);
+>+		u8 *pos = dst + (16 - dctx->bytes);
+>+
+>+		dctx->bytes -= n;
+>+		srclen -= n;
+>+
+>+		while (n--)
+>+			*pos++ ^= *src++;
+>+
+>+		if (!dctx->bytes)
+>+			gf128mul_4k_lle((be128 *)dst, ctx->gf128);
+>+	}
+>+
+>+	while (srclen >= 16) {
+>+		crypto_xor(dst, src, 16);
+>+		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
+>+		src += 16;
+>+		srclen -= 16;
+>+	}
+>+
+>+	if (srclen) {
+>+		dctx->bytes = 16 - srclen;
+>+		while (srclen--)
+>+			*dst++ ^= *src++;
+>+	}
+>+
+16 here looks like GHASH_BLOCK_SIZE to me
 
----
- arch/x86/pci/acpi.c    |   32 +++++++++-----------------------
- arch/x86/pci/amd_bus.c |    5 +++--
- 2 files changed, 12 insertions(+), 25 deletions(-)
+>+	return 0;
+>+}
+>+
+>+static void ghash_flush(struct ghash_ctx *ctx, struct ghash_desc_ctx *dctx)
+>+{
+>+	u8 *dst = dctx->buffer;
+>+
+>+	if (dctx->bytes) {
+>+		u8 *tmp = dst + (16 - dctx->bytes);
+>+
+>+		while (dctx->bytes--)
+>+			*tmp++ ^= 0;
+>+
+>+		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
+>+	}
+>+
+>+	dctx->bytes = 0;
+>+}
+>+
+>+static int ghash_final(struct shash_desc *desc, u8 *dst)
+>+{
+>+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
+>+	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
+>+	u8 *buf = dctx->buffer;
+>+
+>+	ghash_flush(ctx, dctx);
+>+	memcpy(dst, buf, 16);
+>+
+>+	return 0;
+>+}
+>+
+>+static int ghash_init_tfm(struct crypto_tfm *tfm)
+>+{
+>+	struct ghash_ctx *ctx = crypto_tfm_ctx(tfm);
+>+	ctx->gf128 = NULL;
 
-Index: linux-2.6/arch/x86/pci/acpi.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/acpi.c
-+++ linux-2.6/arch/x86/pci/acpi.c
-@@ -115,23 +115,6 @@ setup_resource(struct acpi_resource *acp
- }
- 
- static void
--adjust_transparent_bridge_resources(struct pci_bus *bus)
--{
--	struct pci_dev *dev;
--
--	list_for_each_entry(dev, &bus->devices, bus_list) {
--		int i;
--		u16 class = dev->class >> 8;
--
--		if (class == PCI_CLASS_BRIDGE_PCI && dev->transparent) {
--			for(i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
--				dev->subordinate->resource[i] =
--						dev->bus->resource[i - 3];
--		}
--	}
--}
--
--static void
- get_current_resources(struct acpi_device *device, int busnum,
- 			int domain, struct pci_bus *bus)
- {
-@@ -158,8 +141,6 @@ get_current_resources(struct acpi_device
- 	info.res_num = 0;
- 	acpi_walk_resources(device->handle, METHOD_NAME__CRS, setup_resource,
- 				&info);
--	if (info.res_num)
--		adjust_transparent_bridge_resources(bus);
- 
- 	return;
- 
-@@ -222,8 +203,15 @@ struct pci_bus * __devinit pci_acpi_scan
- 		 */
- 		memcpy(bus->sysdata, sd, sizeof(*sd));
- 		kfree(sd);
--	} else
--		bus = pci_scan_bus_parented(NULL, busnum, &pci_root_ops, sd);
-+	} else {
-+		bus = pci_create_bus(NULL, busnum, &pci_root_ops, sd);
-+		if (bus) {
-+			if (!(pci_probe & PCI_NO_ROOT_CRS))
-+				get_current_resources(device, busnum, domain,
-+							bus);
-+			bus->subordinate = pci_scan_child_bus(bus);
-+		}
-+	}
- 
- 	if (!bus)
- 		kfree(sd);
-@@ -238,8 +226,6 @@ struct pci_bus * __devinit pci_acpi_scan
- #endif
- 	}
- 
--	if (bus && !(pci_probe & PCI_NO_ROOT_CRS))
--		get_current_resources(device, busnum, domain, bus);
- 	return bus;
- }
- 
-Index: linux-2.6/arch/x86/pci/amd_bus.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/amd_bus.c
-+++ linux-2.6/arch/x86/pci/amd_bus.c
-@@ -100,8 +100,9 @@ void x86_pci_root_bus_res_quirks(struct
- 	int j;
- 	struct pci_root_info *info;
- 
--	/* don't go for it if _CRS is used */
--	if (!(pci_probe & PCI_NO_ROOT_CRS))
-+       /* don't go for it if _CRS is used already */
-+	if (b->resource[0] != &ioport_resource ||
-+	    b->resource[1] != &iomem_resource)
- 		return;
- 
- 	/* if only one root bus, don't need to anything */
+Unless I'm mistaken, this is called once on allocation and this ctx is
+allocated via kzalloc().
+
+>+	return 0;
+>+}
+>+
+>+static void ghash_exit_tfm(struct crypto_tfm *tfm)
+>+{
+>+	struct ghash_ctx *ctx = crypto_tfm_ctx(tfm);
+>+	if (ctx->gf128)
+>+		gf128mul_free_4k(ctx->gf128);
+>+}
+>+
+>+static struct shash_alg ghash_alg = {
+>+	.digestsize	= GHASH_DIGEST_SIZE,
+>+	.init		= ghash_init,
+>+	.update		= ghash_update,
+>+	.final		= ghash_final,
+>+	.setkey		= ghash_setkey,
+>+	.descsize	= sizeof(struct ghash_desc_ctx),
+>+	.base		= {
+>+		.cra_name		= "ghash",
+>+		.cra_driver_name	= "ghash-generic",
+>+		.cra_priority		= 100,
+>+		.cra_flags		= CRYPTO_ALG_TYPE_SHASH,
+>+		.cra_blocksize		= GHASH_BLOCK_SIZE,
+>+		.cra_ctxsize		= sizeof(struct ghash_ctx),
+>+		.cra_module		= THIS_MODULE,
+>+		.cra_list		= LIST_HEAD_INIT(ghash_alg.base.cra_list),
+>+		.cra_init		= ghash_init_tfm,
+>+		.cra_exit		= ghash_exit_tfm,
+>+	},
+>+};
+>+
+>+static int __init ghash_mod_init(void)
+>+{
+>+	return crypto_register_shash(&ghash_alg);
+>+}
+>+
+>+static void __exit ghash_mod_exit(void)
+>+{
+>+	crypto_unregister_shash(&ghash_alg);
+>+}
+>+
+>+module_init(ghash_mod_init);
+>+module_exit(ghash_mod_exit);
+>+
+>+MODULE_LICENSE("GPL");
+>+MODULE_DESCRIPTION("GHASH Message Digest Algorithm");
+>+MODULE_ALIAS("ghash");
+>--- a/crypto/Kconfig
+>+++ b/crypto/Kconfig
+>@@ -419,6 +419,13 @@ config CRYPTO_WP512
+> 	  See also:
+> 	  <http://planeta.terra.com.br/informatica/paulobarreto/WhirlpoolPage.html>
+> 
+>+config CRYPTO_GHASH
+>+	tristate "GHASH digest algorithm"
+>+	select CRYPTO_SHASH
+>+	select CRYPTO_GF128MUL
+>+	help
+>+	  GHASH is message digest algorithm for GCM (Galois/Counter Mode).
+>+
+Could you please move it to the 'G' section
+
+> comment "Ciphers"
+> 
+> config CRYPTO_AES
+>--- a/crypto/Makefile
+>+++ b/crypto/Makefile
+>@@ -83,6 +83,8 @@ obj-$(CONFIG_CRYPTO_RNG2) += rng.o
+> obj-$(CONFIG_CRYPTO_RNG2) += krng.o
+> obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
+> obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
+>+obj-$(CONFIG_CRYPTO_MD5) += md5.o
+md5?
+
+>+obj-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
+> 
+> #
+> # generic algorithms and the async_tx api
+>
+>
+
+Sebastian
