@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbZFQQ0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZFQQ3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbZFQQ0X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757115AbZFQQZ5
+	id S1755976AbZFQQ3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZFQQ3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:25:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36319 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757460AbZFQQZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:25:56 -0400
-Date: Wed, 17 Jun 2009 19:25:21 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, mingo@elte.hu
-Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based
-	notifier interface
-Message-ID: <20090617162521.GE3089@redhat.com>
-References: <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com> <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <20090616175300.GA24514@redhat.com> <4A37DFE2.2020506@novell.com> <20090617144540.GB3089@redhat.com> <4A39056E.1060409@novell.com>
+	Wed, 17 Jun 2009 12:29:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52871 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752771AbZFQQ3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:29:03 -0400
+Date: Wed, 17 Jun 2009 09:28:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+cc: Andrew Patterson <andrew.patterson@hp.com>, linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
+ trees
+In-Reply-To: <20090617144513.GA17720@jurassic.park.msu.ru>
+Message-ID: <alpine.LFD.2.01.0906170924180.16802@localhost.localdomain>
+References: <20090616220419.14021.84524.stgit@bob.kio> <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain> <1245192703.8234.226.camel@bluto.andrew> <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain> <alpine.LFD.2.01.0906161623240.16802@localhost.localdomain>
+ <20090617144513.GA17720@jurassic.park.msu.ru>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A39056E.1060409@novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 11:02:06AM -0400, Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
-> > On Tue, Jun 16, 2009 at 02:09:38PM -0400, Gregory Haskins wrote:
-> >   
-> >>> What do you mean by copy_to_user(other->mm) here?  If you are going to switch
-> >>> to another mm, then I think current->mm must be valid (I think it's not enough
-> >>> that you can sleep). So preemptible() might not be enough.
-> >>>   
-> >>>       
-> >> I dont currently use switch_mm, if that is what you mean.  I save the
-> >> task_struct into the appropriate context so current->mm doesn't matter
-> >> to me.  I never use it.  All I need (afaik) is to acquire the proper
-> >> mutex first.  I am not an MM expert, so perhaps I have this wrong but it
-> >> does appear to work properly even from kthread context.
-> >>
-> >> -Greg
-> >>
-> >>
-> >>     
-> >
-> > I think I saw get_user_pages + memcpy in your patch. Yes, that works
-> > without switching contexts but it's slower than copy to user if you are
-> > in the right context, and AFAIK it's slower than get_user_pages_fast.
-> >
-> >   
-> Yeah, understood.  It will definitely be interesting to try that
-> optimization with switch_mm that you suggested.
 
-BTW, I'm kind of confused - in your patch you do get_task_struct: does this
-guarantee that mm is not going aways?
 
-> On that front, would "if (p == current)" still work even if we don't
-> have the "signal_task()" hint?
+On Wed, 17 Jun 2009, Ivan Kokshaysky wrote:
+
+> On Tue, Jun 16, 2009 at 04:32:18PM -0700, Linus Torvalds wrote:
+> > > So your patch may fix a bug, but I'm pretty sure I've seen a patch from 
+> > > Ivan that should _also_ fix it, and that I would expect to do it not by 
+> > > just tweaking a fundamentally ambiguous case.
+> > 
+> > Hmm. For the life of me, I can't seem to find this patch. Maybe it wasn't 
+> > Ivan who wrote it after all. Or maybe my google-fu is weak. Or maybe I'm 
+> > just delusional, and the patch never existed.
 > 
+> No, it wasn't me.
 
-Donnu.
+Ingo pointed out that it was probably Yinghai. And now that I'm googling 
+for the right author, I found it on the first try. It's this patch
 
--- 
-MST
+	http://lkml.org/lkml/2009/4/22/433
+
+I was thinking of.
+
+But that was before I realized that pci_assign_resource() _already_ always 
+chose the right parent bus (and it was just that it can't handle 
+transparent buses at all). I then ended up not understanding how the 
+incorrect nesting could possibly happen at all. So Yinghai's patch is 
+irrelevant for this particular problem.
+
+And:
+
+> Anyway, pci_claim_resource() fix suggested by Matthew seems to be
+> correct, if the problematic system was indeed ia64 and not x86.
+
+I agree. That one explains why the nesting is wrong, and also why I 
+couldn't figure out how it happened.
+
+		Linus
