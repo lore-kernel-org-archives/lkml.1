@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762989AbZFQCvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbZFQCzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762989AbZFQCvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 22:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZFQCvD
+	id S1762204AbZFQCzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 22:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZFQCzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 22:51:03 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:60957 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753877AbZFQCvC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 22:51:02 -0400
-Date: Wed, 17 Jun 2009 03:51:01 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "greg@kroah.com" <greg@kroah.com>, yanli@infradead.org
-Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
-Message-ID: <20090617025101.GA27595@srcf.ucam.org>
-References: <20090615141613.GA7876@sage.bj.intel.com> <20090615143446.GB19451@srcf.ucam.org> <20090615144748.GA25734@thyme.bj.intel.com> <20090616154200.GA12715@srcf.ucam.org> <20090616173618.353901ee@lxorguk.ukuu.org.uk> <20090616164351.GA14353@srcf.ucam.org> <20090616181549.496ae0f2@lxorguk.ukuu.org.uk> <20090616171732.GA14912@srcf.ucam.org> <20090617010138.GA13479@thyme.bj.intel.com>
+	Tue, 16 Jun 2009 22:55:38 -0400
+Received: from kroah.org ([198.145.64.141]:39897 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753664AbZFQCzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 22:55:37 -0400
+Date: Tue, 16 Jun 2009 19:51:34 -0700
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] driver/core: Fix various warnings due to
+	dev_set_name() usage
+Message-ID: <20090617025134.GA6807@kroah.com>
+References: <1245203150.21602.10.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090617010138.GA13479@thyme.bj.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1245203150.21602.10.camel@pasglop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 09:01:40AM +0800, Li, Yan I wrote:
+On Wed, Jun 17, 2009 at 11:45:50AM +1000, Benjamin Herrenschmidt wrote:
+> gcc is too smart, we get:
+> 
+> drivers/base/core.c: In function ‘device_add’:
+> drivers/base/core.c:877: warning: format not a string literal and no format arguments
+> drivers/base/core.c: In function ‘__root_device_register’:
+> drivers/base/core.c:1274: warning: format not a string literal and no format arguments
+> 
+> With 4.3.3 and later. This fixes a bunch of them in drivers/base
 
-> This seems a change too aggressive for me. Do we have a good reason
-> for taking this risk? 
+These have all been fixed in linux-next for a while, and are already
+contained in the patchset I sent to Linus for inclusion in his tree
+yesterday.
 
-It's generally much easier to find regressions (people complain) than it 
-is to find things that have never worked (people just assume Linux is 
-broken).
+But thanks anyway :)
 
-> Of course if we found the "actual problem" we'd conjure up a better 
-> fix. But before that, I'd prefer the conservative way.
-
-Does stock Windows work on the machine? I think this really ought to be 
-a pretty obvious minimal test before adding quirks to the kernel.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+greg k-h
