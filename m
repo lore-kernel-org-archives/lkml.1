@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760334AbZFQOfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932877AbZFQOff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760334AbZFQOfF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbZFQOez
+	id S932877AbZFQOff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbZFQOf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:34:55 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:58297 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754928AbZFQOey convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:34:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XGYYUR9lt98RfJnNoGwOwMuUmSu7Obn6vjg7OVqssCsKMVpD8CLKFYrPJHJeVXwxjZ
-         ATgTyqA8VCncR1oO04Hh46KeBfOX24tt9jBZAbZX2V6KZn4mN7y/K51a81Mxe5lURFZi
-         BOAeag09pYvgj8NKe5aaNugmHe3Iwk2YY7yVw=
-MIME-Version: 1.0
-In-Reply-To: <20090617132947.GA6476@redhat.com>
-References: <20090525185502.GA20781@redhat.com>
-	 <20090526210514.C1C91FC2BD@magilla.sf.frob.com>
-	 <20090526213346.GA7073@redhat.com>
-	 <20090527005527.B50B7FC36B@magilla.sf.frob.com>
-	 <20090602045418.GB8219@us.ibm.com>
-	 <f5a7b3810906050843g6cbf5067o5ba1b9e07e5e2f5b@mail.gmail.com>
-	 <20090606064749.GA13508@redhat.com>
-	 <f5a7b3810906170135q3fd90f8fy8c5e06ab77e26b52@mail.gmail.com>
-	 <20090617132947.GA6476@redhat.com>
-Date: Wed, 17 Jun 2009 20:04:57 +0530
-Message-ID: <f5a7b3810906170734q814c616o155509561e961244@mail.gmail.com>
-Subject: Re: open_posix_testsuite: STOP + CONT + wait hang?
-From: naresh kamboju <naresh.kernel@gmail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 17 Jun 2009 10:35:27 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:41632 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754613AbZFQOf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 10:35:26 -0400
+Subject: Re: [PATCH]io_apic.c: fix compile warning
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: "Figo.zhang" <figo1802@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <bb33bcf20906170729n616dcdbfkc02a168347612138@mail.gmail.com>
+References: <1245248720.3312.27.camel@myhost>
+	 <20090617152846.72804bae@lxorguk.ukuu.org.uk>
+	 <bb33bcf20906170729n616dcdbfkc02a168347612138@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: IBM
+Date: Wed, 17 Jun 2009 20:05:22 +0530
+Message-Id: <1245249322.4870.19.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you very much.
-just before i have reported the same issue to ARM Kernel mailing list.
+> On Wed, 17 Jun 2009 22:25:20 +0800
+> "Figo.zhang" <figo1802@gmail.com> wrote:
+> 
+> > fix compile warning:
+> > arch/x86/kernel/apic/io_apic.c: In function ‘ioapic_write_entry’:
+> > arch/x86/kernel/apic/io_apic.c:466: warning: ‘eu’ is used uninitialized in this function
+> > arch/x86/kernel/apic/io_apic.c:465: note: ‘eu’ was declared here
+> 
+> What compiler are you using. Current gcc correctly notices that there are
+> no uninitialized things to worry about ?
+
+Even 4.4.0 and above reports this warning. Last time i remember it
+generated somewhere around 70 such warnings. And, then you need to dig
+down whether any of them will really introduce bug(s). Else, leave as it
+is. It is more of a gcc problem rather than kernel.
+
+Regards--
+Subrata
 
 
-Best regards,
-Naresh Kamboju
-
-On Wed, Jun 17, 2009 at 6:59 PM, Oleg Nesterov<oleg@redhat.com> wrote:
-> On 06/17, naresh kamboju wrote:
->>
->> please find inline comments
->
-> Thanks Naresh.
->
->> >> ARCH: ARM
->> >
->> > is it ARM specific? I can't reproduce the problem on x86.
->> yes it is specific to ARM. test cases are PASSED on X86-2.6.29 Kernels.
->
-> Not good, because I know nothing about arm and don't have the arm machine ;)
-> Will try to look...
->
->> > If you can reproduce the problem, please send the content of
->> > /proc/CHILD_PID/status and /proc/PARENT_PID/status.
->>
->> i have attached �strace and proc_log
->> please review the same.
->
-> Thanks.
->
-> Could you reproduce without strace, and send the output of /proc/xxx/status ?
-> I don't really expect we will see something interesting, but just in case.
->
-> Also, the output of sysrq-t may help. (the part which relates to these 2
-> processes).
->
-> Oleg.
->
->
