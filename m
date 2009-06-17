@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761172AbZFQWYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbZFQW0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761172AbZFQWYv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 18:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZFQWYm
+	id S1760085AbZFQW0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 18:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZFQW0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 18:24:42 -0400
-Received: from Cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:56975 "EHLO
-	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755848AbZFQWYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 18:24:42 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
-Date: Thu, 18 Jun 2009 00:24:41 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>, Jiri Kosina <jkosina@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0906161429060.5125-100000@iolanthe.rowland.org> <1245275412.22520.7.camel@localhost>
-In-Reply-To: <1245275412.22520.7.camel@localhost>
+	Wed, 17 Jun 2009 18:26:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55403 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756054AbZFQW0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 18:26:06 -0400
+Message-ID: <4A396DD6.2050002@redhat.com>
+Date: Wed, 17 Jun 2009 18:27:34 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Tim Abbott <tabbott@ksplice.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Anders Kaseorg <andersk@ksplice.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [RFC][ PATCH -tip 0/6] kprobes: Kprobes jump optimization support
+References: <20090612224925.17825.49637.stgit@localhost.localdomain> <alpine.DEB.1.10.0906131031570.29895@vinegar-pot.mit.edu> <4A381F8A.8020105@redhat.com>
+In-Reply-To: <4A381F8A.8020105@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906180024.42998.elendil@planet.nl>
-X-OriginalArrivalTime: 17 Jun 2009 22:24:43.0414 (UTC) FILETIME=[69B37360:01C9EF9A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 June 2009, Thomas Meyer wrote:
-> Sure. Rearranging the usb devices and removing some hubs makes the
-> problem go away in most cases...
+Masami Hiramatsu wrote:
+>> (1) The compiler is allowed to do cross-function optimization within a 
+>> compilation unit where code in one function jumps into the middle of 
+>> another function.
+> 
+> Hmm, right. This is a real problem. I think I have 2 options for this
+> issue. I counted the cross-function jumps on my kernel roughly, and
+> I found there were about 856 jumps jump into 158 functions (it might be
+> incorrect, I just used 'objdump -d', and it also disassembles data
+> section...)
 
-I see that you still have the Broadcom "Wireless RNDIS device" attached 
-that was my initial suspect after looking through your boot log.
+Hmm, almost all of these functions are jumped from .fixup section.
+Obviously, these should be mentioned.
 
-Does removing that device make the problem go away? Can you reproduce the 
-problem at all without that device connected (during boot)?
+> - Making a blacklist of target functions or addresses which cross-function
+>   jumps jump into. This will be done by disassembling kernel when starting up
+>   kernel and loading modules.(or, at build-time)
 
-Probably moving that device to a different controller than used for your 
-keyboard and mouse will also get rid of the problem. Correct?
+If we can make this blacklist, it will include above .fixup section.
 
-If removing that device does solve the problem, I would guess that without 
-it you will also no longer have that "PME+" value in the output of lspci 
-for the USB Controller it is connected to.
+> 
+> - Just disables cross-function optimization by adding --param
+>   min-crossjump-insns=XXXX where XXXX is enough big number, when
+>   CONFIG_OPTPROBES=y
 
-Hopefully someone else can then explain how/why that device forces the 
-PME+ setting for the controller.
+BTW, I've tried to compile with min-crossjump-insns=32768. It actually
+increased vmlinux size (about 1%),
 
-But I must also say that to me it seems rather fragile that in default 
-configuration a random USB device can suddenly cause wakeups as result of 
-a change caused by a totally different device.
+   text    data     bss     dec     hex filename
+5767574 2022487 1521264 9311325  8e145d vmlinux-crossjump
+5809551 2022487 1521264 9353302  8eb856 vmlinux-noncrossjump
 
-Cheers,
-FJP
+However, with crossjumps opt, it seems not to add any jumps which
+jump into the middle of other functions...
+
+Thanks,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
