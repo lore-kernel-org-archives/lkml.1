@@ -1,113 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZFQQln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbZFQQpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbZFQQln (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbZFQQle
+	id S1757305AbZFQQpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZFQQpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:41:34 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38504 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754436AbZFQQld (ORCPT
+	Wed, 17 Jun 2009 12:45:06 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:49425 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752623AbZFQQpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:41:33 -0400
-Message-ID: <4A391CB4.8090405@novell.com>
-Date: Wed, 17 Jun 2009 12:41:24 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, mingo@elte.hu
-Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based	notifier
+	Wed, 17 Jun 2009 12:45:05 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 17 Jun 2009 09:38:55 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based notifier
  interface
-References: <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com> <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <20090616175300.GA24514@redhat.com> <4A37DFE2.2020506@novell.com> <20090617144540.GB3089@redhat.com> <4A39056E.1060409@novell.com> <20090617162521.GE3089@redhat.com>
-In-Reply-To: <20090617162521.GE3089@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBF33B196201A38A51CD4336B"
+In-Reply-To: <4A37CFDA.4000602@novell.com>
+Message-ID: <alpine.DEB.1.10.0906170932290.7891@makko.or.mcafeemobile.com>
+References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com> <4A37A7FC.4090403@novell.com> <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com>
+ <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <alpine.DEB.1.10.0906160915340.25664@makko.or.mcafeemobile.com> <4A37CFDA.4000602@novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBF33B196201A38A51CD4336B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 16 Jun 2009, Gregory Haskins wrote:
 
-Michael S. Tsirkin wrote:
-> On Wed, Jun 17, 2009 at 11:02:06AM -0400, Gregory Haskins wrote:
->  =20
->> Michael S. Tsirkin wrote:
->>    =20
->>> On Tue, Jun 16, 2009 at 02:09:38PM -0400, Gregory Haskins wrote:
->>>  =20
->>>      =20
->>>>> What do you mean by copy_to_user(other->mm) here?  If you are going=
- to switch
->>>>> to another mm, then I think current->mm must be valid (I think it's=
- not enough
->>>>> that you can sleep). So preemptible() might not be enough.
->>>>>  =20
->>>>>      =20
->>>>>          =20
->>>> I dont currently use switch_mm, if that is what you mean.  I save th=
-e
->>>> task_struct into the appropriate context so current->mm doesn't matt=
-er
->>>> to me.  I never use it.  All I need (afaik) is to acquire the proper=
+> Davide Libenzi wrote:
+> > On Tue, 16 Jun 2009, Gregory Haskins wrote:
+> >
+> >   
+> >> Does this all make sense?
+> >>     
+> >
+> > This conversation has been *really* long, and I haven't had time to look 
+> > at the patch yet. But looking at the amount of changes, and the amount of 
+> > even more changes talked in this thread, there's a very slim chance that 
+> > I'll ACK the eventfd code.
+> > You may want to consider a solution that does not litter eventfd code that 
+> > much.
+> >
+> >
+> > - Davide
+> >
+> >
+> >   
+> Hi Davide,
+> 
+> I understand your position and value your time/insight into looking at
+> this things.
+> 
+> Despite the current ongoing discussion, I still stand that the current
+> patch is my proposed solution (though I have yet to convince Michael). 
+> But in any case,  if you have the time, please look it over because I
+> still think its the right direction to head in.
 
->>>> mutex first.  I am not an MM expert, so perhaps I have this wrong bu=
-t it
->>>> does appear to work properly even from kthread context.
->>>>
->>>> -Greg
->>>>
->>>>
->>>>    =20
->>>>        =20
->>> I think I saw get_user_pages + memcpy in your patch. Yes, that works
->>> without switching contexts but it's slower than copy to user if you a=
-re
->>> in the right context, and AFAIK it's slower than get_user_pages_fast.=
-
->>>
->>>  =20
->>>      =20
->> Yeah, understood.  It will definitely be interesting to try that
->> optimization with switch_mm that you suggested.
->>    =20
->
-> BTW, I'm kind of confused - in your patch you do get_task_struct: does =
-this
-> guarantee that mm is not going aways?
->  =20
-
-Well, again, I am not an expert on MM, but I would think so.  If p holds
-a reference to p->mm (which I would think it would have to), and we hold
-a reference to p, p->mm should be indirectly stable coincident with the
-lifetime of our p reference.  OTOH, I have not actually looked at
-whether p actually takes a p->mm reference or not via inspection, so
-this is just an educated guess at this point. ;)
-
-I guess if this is broken, the solution is simple:  Modify the code to
-take an mm reference as well.
-
--Greg
+I don't think so. You basically upload a bunch of stuff it could have been 
+inside your irqfd into eventfd. Now the eventfd_signal() can magically 
+sleep, or not, depending on what the signal functions do. This makes up a 
+pretty aweful interface if you ask me.
+A lot simpler and cleaner if eventfd_signal(), like all the wake up 
+functions inside the kernel, can be called from atomic context. Always, 
+not sometimes.
 
 
---------------enigBF33B196201A38A51CD4336B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+- Davide
 
-iEYEARECAAYFAko5HLQACgkQlOSOBdgZUxlYlACeMTxkttrV4Y90D8yutsr7Dbza
-dAMAnj1rj9NLdbkVSB/wYYQeldTxkT3N
-=+UiO
------END PGP SIGNATURE-----
 
---------------enigBF33B196201A38A51CD4336B--
