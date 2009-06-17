@@ -1,203 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765333AbZFQJ4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763811AbZFQKAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765333AbZFQJ4w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 05:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764993AbZFQJ4j
+	id S1763811AbZFQKAY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 06:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbZFQKAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 05:56:39 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:64316 "EHLO atmel-es2.atmel.fr"
+	Wed, 17 Jun 2009 06:00:08 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49865 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764951AbZFQJ4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 05:56:37 -0400
-Message-ID: <4A38BDB8.5030804@atmel.com>
-Date: Wed, 17 Jun 2009 11:56:08 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Rob Emanuele <rob@emanuele.us>, haavard.skinnemoen@atmel.com
-CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] atmel-mci: Unified Atmel MCI drivers (AVR32 & AT91)
-References: <1245200079-6323-1-git-send-email-rob@emanuele.us>
-In-Reply-To: <1245200079-6323-1-git-send-email-rob@emanuele.us>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1757788AbZFQKAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 06:00:07 -0400
+Date: Wed, 17 Jun 2009 12:00:06 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] HWPOISON: only early kill processes who installed SIGBUS handler
+Message-ID: <20090617100006.GC14915@wotan.suse.de>
+References: <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de> <20090615142225.GA11167@localhost> <20090617063702.GA20922@localhost> <20090617080404.GB31192@wotan.suse.de> <20090617095532.GA25001@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617095532.GA25001@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob, Haavard,
-
-Rob Emanuele :
-> Unification of the atmel-mci driver to support the AT91 processors MCI interface.  The atmel-mci driver currently supports the AVR32 and this patch adds AT91 support.
+On Wed, Jun 17, 2009 at 05:55:32PM +0800, Wu Fengguang wrote:
+> On Wed, Jun 17, 2009 at 04:04:04PM +0800, Nick Piggin wrote:
+> > Well then you can still early-kill random apps that did not
+> > want it, and you may still cause problems if its sigbus
+> > handler does something nontrivial.
+> > 
+> > Can you use a prctl or something so it can expclitly
+> > register interest in this?
 > 
-> To use this new driver on a at91 the platform driver for your board needs to updated.  See the following patch for an example of how to do that.
-
-I format those lines remove last sentence and add :
-"Add read/write proof selection switch dependent on chip availability
- of this feature."
-
-
-> Signed-off-by: Rob Emanuele <rob@emanuele.us>
-> ---
->  drivers/mmc/host/Kconfig     |   16 ++++++++++++----
->  drivers/mmc/host/atmel-mci.c |   37 +++++++++++++++++++++++++++++++++----
->  2 files changed, 45 insertions(+), 8 deletions(-)
+> No I don't think prctl would be much better.
 > 
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index 40111a6..a0eaf69 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -135,6 +135,12 @@ config MMC_AU1X
->  
->  	  If unsure, say N.
->  
-> +choice
-> +	prompt "Atmel MMC Driver"
+> - if an application want early/late kill, it can do so with a proper
+>   written SIGBUS handler: the prctl call is redundant.
 
-I add SD/MMC
+s/proper written/is switched to new semantics based on the existance
+of a/
 
-> +	default MMC_ATMELMCI if AVR32
-> +	help
-> +	  Choose which driver to use for the Atmel MCI Silicon
-> +
->  config MMC_AT91
->  	tristate "AT91 SD/MMC Card Interface support"
->  	depends on ARCH_AT91
-> @@ -145,17 +151,19 @@ config MMC_AT91
->  
->  config MMC_ATMELMCI
->  	tristate "Atmel Multimedia Card Interface support"
-> -	depends on AVR32
-> +	depends on AVR32 || ARCH_AT91
->  	help
->  	  This selects the Atmel Multimedia Card Interface driver. If
-> -	  you have an AT32 (AVR32) platform with a Multimedia Card
-> -	  slot, say Y or M here.
-> +	  you have an AT32 (AVR32) or AT91 platform with a Multimedia
-> +	  Card slot, say Y or M here.
->  
->  	  If unsure, say N.
->  
-> +endchoice
-> +
->  config MMC_ATMELMCI_DMA
->  	bool "Atmel MCI DMA support (EXPERIMENTAL)"
-> -	depends on MMC_ATMELMCI && DMA_ENGINE && EXPERIMENTAL
-> +	depends on MMC_ATMELMCI && AVR32 && DMA_ENGINE && EXPERIMENTAL
->  	help
->  	  Say Y here to have the Atmel MCI driver use a DMA engine to
->  	  do data transfers and thus increase the throughput and
-> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-> index 7b603e4..98b25de 100644
-> --- a/drivers/mmc/host/atmel-mci.c
-> +++ b/drivers/mmc/host/atmel-mci.c
-> @@ -30,11 +30,14 @@
->  #include <asm/io.h>
->  #include <asm/unaligned.h>
->  
-> +#include <mach/cpu.h>
->  #include <mach/board.h>
->  
->  #include "atmel-mci-regs.h"
->  
-> -#define ATMCI_DATA_ERROR_FLAGS	(MCI_DCRCE | MCI_DTOE | MCI_OVRE | MCI_UNRE)
-> +#define ATMCI_DATA_ERROR_FLAGS	(MCI_RINDE | MCI_RDIRE | MCI_RCRCE  \
-> +				 | MCI_RENDE | MCI_RTOE | MCI_DCRCE \
-> +				 | MCI_DTOE | MCI_OVRE | MCI_UNRE)
+> - if an admin want to control early/late kill for an unmodified app,
+>   prctl is as unhelpful as this patch(*).
 
-Haavard, is it ok to add those flags on an AVR32 platform for now ?
+Clearly you can execute a process with a given prctl.
 
->  #define ATMCI_DMA_THRESHOLD	16
->  
->  enum {
-> @@ -210,6 +213,18 @@ struct atmel_mci_slot {
->  	set_bit(event, &host->pending_events)
->  
->  /*
-> + * Enable or disable features/registers based on
-> + * whether the processor supports them
-> + */
-> +static bool mci_has_rwproof(void)
-> +{
-> +	if (cpu_is_at91sam9261() || cpu_is_at91rm9200())
-> +		return false;
-> +	else
-> +		return true;
-> +}
-> +
-> +/*
->   * The debugfs stuff below is mostly optimized away when
->   * CONFIG_DEBUG_FS is not set.
->   */
-> @@ -276,8 +291,13 @@ static void atmci_show_status_reg(struct seq_file *s,
->  		[3]	= "BLKE",
->  		[4]	= "DTIP",
->  		[5]	= "NOTBUSY",
-> +		[6]	= "ENDRX",
-> +		[7]	= "ENDTX",
->  		[8]	= "SDIOIRQA",
->  		[9]	= "SDIOIRQB",
-> +		[12]	= "SDIOWAIT",
-> +		[14]	= "RXBUFF",
-> +		[15]	= "TXBUFE",
->  		[16]	= "RINDE",
->  		[17]	= "RDIRE",
->  		[18]	= "RCRCE",
-> @@ -285,6 +305,11 @@ static void atmci_show_status_reg(struct seq_file *s,
->  		[20]	= "RTOE",
->  		[21]	= "DCRCE",
->  		[22]	= "DTOE",
-> +		[23]    = "CSTOE",
-> +		[24]    = "BLKOVRE",
-> +		[25]    = "DMADONE",
-> +		[26]    = "FIFOEMPTY",
-> +		[27]    = "XFRDONE",
 
-Little indentation modifications.
+> - prctl does can help legacy apps whose SIGBUS handler has trouble
+>   with the new SIGBUS codes, however such application should be rare
+>   and the application should be fixed(why shall it do something wrong
+>   on newly introduced code at all? Shall we stop introducing new codes
+>   just because some random buggy app cannot handle new codes?)
 
->  		[30]	= "OVRE",
->  		[31]	= "UNRE",
->  	};
-> @@ -849,13 +874,15 @@ static void atmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
->  			clkdiv = 255;
->  		}
->  
-> +		host->mode_reg = MCI_MR_CLKDIV(clkdiv);
-> +
->  		/*
->  		 * WRPROOF and RDPROOF prevent overruns/underruns by
->  		 * stopping the clock when the FIFO is full/empty.
->  		 * This state is not expected to last for long.
->  		 */
-> -		host->mode_reg = MCI_MR_CLKDIV(clkdiv) | MCI_MR_WRPROOF
-> -					| MCI_MR_RDPROOF;
-> +		if (mci_has_rwproof())
-> +			host->mode_reg |= (MCI_MR_WRPROOF | MCI_MR_RDPROOF);
->  
->  		if (list_empty(&host->queue))
->  			mci_writel(host, MR, host->mode_reg);
-> @@ -1648,8 +1675,10 @@ static int __init atmci_probe(struct platform_device *pdev)
->  			nr_slots++;
->  	}
->  
-> -	if (!nr_slots)
-> +	if (!nr_slots) {
-> +		printk(KERN_ERR "Atmel MCI controller init failed.  atmci_init_slot error or no slots with bus_width > 0.\n");
+Backwards compatibility? Kind of important.
 
-I change this to :
-dev_err(&pdev->dev, "init failed: no slot defined\n");
 
->  		goto err_init_slot;
-> +	}
->  
->  	dev_info(&pdev->dev,
->  			"Atmel MCI controller at 0x%08lx irq %d, %u slots\n",
+> So I still prefer this patch, until we come up with some solution that
+> allows both app and admin to change the setting.
 
-If Haavard is ok, I post the patch to Pierre Ossman with the tiny
-modifications above (your SOB & From: preserved of course).
+Not only does it allow that, but it also provides backwards
+compatibility. Your patch does not allow admin to change
+anything nor does it guarantee 100% back compat so I can't
+see how you think it is better.
 
-Thanks, Bye,
--- 
-Nicolas Ferre
+Also it does not allow for an app with a SIGBUS handler to
+use late kill. If late kill is useful to anyone, why would
+it not be useful to some app with a SIGBUS handler (that is
+not KVM)?
 
