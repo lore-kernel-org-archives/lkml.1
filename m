@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbZFQASb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbZFQATT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759580AbZFQASb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 20:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbZFQASY
+	id S1760093AbZFQATT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 20:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbZFQATK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 20:18:24 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:39709 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756731AbZFQASX (ORCPT
+	Tue, 16 Jun 2009 20:19:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37507 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756731AbZFQATJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 20:18:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=h5D+FavWLTQxmtJkaW5swLHT1Yx0wvnU31f203IHqesE7GeQDxdN84BCkESLGx8IQi
-         AEBzIX5Dmn+svcWxH/8HwS1YD4gumHcEAzIGURgHSXKPY2fI9WvwrZZfoMY4JbVlguqm
-         00Q9xjYjAlsdS9P5VOYJyw8lgFd54E6vnBkH0=
-Message-ID: <4A38365F.1050409@gmail.com>
-Date: Tue, 16 Jun 2009 18:18:39 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 16 Jun 2009 20:19:09 -0400
+Date: Tue, 16 Jun 2009 17:19:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Patterson <andrew.patterson@hp.com>
+cc: linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
+ trees
+In-Reply-To: <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906161717220.16802@localhost.localdomain>
+References: <20090616220419.14021.84524.stgit@bob.kio>  <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain>  <1245192703.8234.226.camel@bluto.andrew>  <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain> <1245195498.8234.236.camel@bluto.andrew>
+ <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: David Lindsay <dav7@dav7.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Kernel 2.4.0 ramdisk decompression infinite loop
-References: <af7719af0906160127n36be4aa2qf5a309f44077b4b1@mail.gmail.com>
-In-Reply-To: <af7719af0906160127n36be4aa2qf5a309f44077b4b1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/16/2009 02:27 AM, David Lindsay wrote:
-> I know kernel 2.4.0 is old, but it's the oldest kernel my system will
-> compile (with binutils 2.9.1 downloaded from kernel.org/lib/ and GCC
-> 2.95.3), and I want a small kernel. ;-)
-> If anyone knows how to make a (useful ;p) ~350kB 2.6, please do tell! :P
 
-Surely at least the latest 2.4.x release is not that much larger. 2.4.0 
-was surely riddled with bugs..
+
+On Tue, 16 Jun 2009, Linus Torvalds wrote:
+> 
+> I may also be confused, and not have found the right place that actually 
+> inserts the resource.
+
+Can you try this patch? It's simple and stupid and will be very noisy, but 
+it should hopefully get a call chain for all the cases where we set 
+parenthood, and then we can hopefully see exactly where that incorrect 
+nesting gets done.
+
+No guarantees, I didn't test this. But I suspect you see where I'm trying 
+to go.
+
+			Linus
