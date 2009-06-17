@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbZFQJnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765385AbZFQJnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbZFQJnP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 05:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758092AbZFQJnB
+	id S1765385AbZFQJnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 05:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765253AbZFQJnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 05:43:01 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1865 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753048AbZFQJnB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 05:43:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ujbnwttlOZXBeOE8iWD4v/Udk7QpLdUWraxm+rJyTfw2ljDXa5asISxe0keNsk+yj
-	fTjQQS3my44fDGXeHlJDA==
+	Wed, 17 Jun 2009 05:43:22 -0400
+Received: from lucidpixels.com ([75.144.35.66]:48771 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758092AbZFQJnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 05:43:21 -0400
+Date: Wed, 17 Jun 2009 05:43:23 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29.1: nfsd: page allocation failure - nfsd or kernel
+ problem?
+In-Reply-To: <4A38ACC0.3060501@msgid.tls.msk.ru>
+Message-ID: <alpine.DEB.2.00.0906170542170.3600@p34.internal.lan>
+References: <alpine.DEB.2.00.0906161203160.27742@p34.internal.lan> <alpine.DEB.2.00.0906161205260.27742@p34.internal.lan> <4A37FE48.6070306@msgid.tls.msk.ru> <4A38ACC0.3060501@msgid.tls.msk.ru>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <4A383CAB.6060809@cn.fujitsu.com>
-References: <200906161646.50305.knikanth@suse.de>
-	 <4A383CAB.6060809@cn.fujitsu.com>
-Date: Wed, 17 Jun 2009 02:42:58 -0700
-Message-ID: <6599ad830906170242v47b56368ra1b39ef2c5bb4a81@mail.gmail.com>
-Subject: Re: cpusets: document adding/removing cpus to cpuset elaborately
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 5:45 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
-> Nikanth Karthikesan wrote:
->> Writing a pid to the file, tasks adds that task to that cgroup/cpuset. But to
->> add a cpu/mem to a cpuset, the new list of cpus should be written to the
->> cpuset.mems file which would replace the old list of cpus. Make this clearer
->> in the documentation.
->>
+
+
+On Wed, 17 Jun 2009, Michael Tokarev wrote:
+
+> Michael Tokarev wrote:
+>> Justin Piszcz wrote:
+> ...
 >
-> Though I think '>' already means overwrite so removing/adding cpus should
-> always writing the full list of CPUs to 'cpus'
-
-But in the context of cgroups/cpusets that's not always the case -
-think of the "tasks" file.
-
+> Justin, by the way, what's the underlying filesystem on the server?
 >
-> Acked-by: Li Zefan <lizf@cn.fujitsu.com>
+> I've seen this error on 2 machines already (both running 2.6.29.x x86-64),
+> and in both cases the filesystem on the server was xfs.  May this be
+> related somehow to http://bugzilla.kernel.org/show_bug.cgi?id=13375 ?
+> That one is different, but also about xfs and nfs.  I'm trying to
+> reproduce the problem on different filesystem...
+>
+> /mjt
+>
 
-Acked-by: Paul Menage <menage@google.com>
+Hello, I am also running XFS on 2.6.29.x x86-64.
 
-Paul
+For me, the error happened when I was running an XFSDUMP from a client 
+(and dumping) the stream over NFS to the XFS server/filesystem.  This is 
+typically when the error occurs or during heavy I/O.
+
+Justin.
