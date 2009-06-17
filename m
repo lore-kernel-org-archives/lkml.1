@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758354AbZFPX4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760142AbZFQABO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758354AbZFPX4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 19:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbZFPX4P
+	id S1760142AbZFQABO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 20:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbZFQAA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 19:56:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50917 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753845AbZFPX4O (ORCPT
+	Tue, 16 Jun 2009 20:00:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35024 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756060AbZFQAA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 19:56:14 -0400
-Date: Tue, 16 Jun 2009 16:56:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Patterson <andrew.patterson@hp.com>
-cc: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
- trees
-In-Reply-To: <1245195498.8234.236.camel@bluto.andrew>
-Message-ID: <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain>
-References: <20090616220419.14021.84524.stgit@bob.kio>  <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain>  <1245192703.8234.226.camel@bluto.andrew>  <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain>
- <1245195498.8234.236.camel@bluto.andrew>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 16 Jun 2009 20:00:59 -0400
+Date: Tue, 16 Jun 2009 20:00:59 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH][GIT PULL][for 2.6.31] tracing: update sample event
+ documentation
+Message-ID: <alpine.DEB.2.00.0906161954270.26673@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,56 +27,109 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Ingo,
 
-On Tue, 16 Jun 2009, Andrew Patterson wrote:
-> > 
-> > Well, find_resource() found room for a resource. So it returns it. The 
-> > point is, your patch returns another - equally valid one.
-> 
-> I am confused.  The existing code will return a conflict and bomb out.
+Please pull the latest tip/tracing/urgent-1 tree, which can be found at:
 
-My point is, there are two answers - returning the conflicting resource, 
-or trying to recurse into it. Both are "valid", in the sense that both 
-have real semantics.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/urgent-1
 
-But the reason I don't like your patch is that I think the _deeper_ 
-problem is the fact that the resource tree isn't set up right in the first 
-place.
 
-It looks to me like your patch works around the bug (by trying to find 
-that "other possible case"), while my disagreement with that patch is that 
-we should never need to care about these kinds of "you can try to find 
-ambiguous cases" in the first place.
+Steven Rostedt (1):
+      tracing: update sample event documentation
 
-> > We've had those kinds of situations before. The thread you point to is an 
-> > exact case of this. My point is that I'd rather try to _avoid_ any 
-> > ambiguous cases, and try to solve it properly at a higher PCI level, where 
-> > the ambiguity doesn't exist any more (because we'd explicitly take the 
-> > actual bus topology into account).
-> > So your patch may fix a bug, but I'm pretty sure I've seen a patch from 
-> > Ivan that should _also_ fix it, and that I would expect to do it not by 
-> > just tweaking a fundamentally ambiguous case.
-> 
-> OK. I would be happy to test Ivan's patch.
+----
+ samples/trace_events/Makefile              |    8 ++++++++
+ samples/trace_events/trace-events-sample.h |   27 ++++++++++++++++-----------
+ 2 files changed, 24 insertions(+), 11 deletions(-)
+---------------------------
+commit 44ad18e0a65e296b2e68a1452509f6222cdce743
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Tue Jun 16 19:53:07 2009 -0400
 
-I just looked at our PCI bus resource allocation code, and afaik it does 
-everything right even as-is. Which is why I now wonder if that incorrectly 
-nested bus resource was perhaps set up by the PCI hotplug code (which I do 
-not know, and didn't look at). 
+    tracing: update sample event documentation
+    
+    The comments in the sample code is a bit confusing. This patch
+    cleans them up a little.
+    
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-I may also be confused, and not have found the right place that actually 
-inserts the resource. Afaik, bus resources get allocated through
-
-	pbus_assign_resources_sorted ->
-	  pci_assign_resource ->
-	    pci_bus_alloc_resource ->
-	      allocate_resource
-
-and that "pci_bus_alloc_resource()" thing only allocates within the parent 
-bus, so it _should_ nest correctly.
-
-It would be interesting to see where that resource actually gets 
-allocated. I'm clearly missing something, since clearly your resources do 
-_not_ nest correctly.
-
-			Linus
+diff --git a/samples/trace_events/Makefile b/samples/trace_events/Makefile
+index 0d428dc..0f8d921 100644
+--- a/samples/trace_events/Makefile
++++ b/samples/trace_events/Makefile
+@@ -1,6 +1,14 @@
+ # builds the trace events example kernel modules;
+ # then to use one (as root):  insmod <module_name.ko>
+ 
++# If you include a trace header outside of include/trace/events
++# then the file that does the #define CREATE_TRACE_POINTS must
++# have that tracer file in its main search path. This is because
++# define_trace.h will include it, and must be able to find it from
++# the include/trace directory.
++#
++# Here trace-events-sample.c does the CREATE_TRACE_POINTS.
++#
+ CFLAGS_trace-events-sample.o := -I$(src)
+ 
+ obj-$(CONFIG_SAMPLE_TRACE_EVENTS) += trace-events-sample.o
+diff --git a/samples/trace_events/trace-events-sample.h b/samples/trace_events/trace-events-sample.h
+index 128a897..9977a75 100644
+--- a/samples/trace_events/trace-events-sample.h
++++ b/samples/trace_events/trace-events-sample.h
+@@ -19,16 +19,21 @@
+  * If TRACE_SYSTEM is defined, that will be the directory created
+  * in the ftrace directory under /debugfs/tracing/events/<system>
+  *
+- * The define_trace.h belowe will also look for a file name of
++ * The define_trace.h below will also look for a file name of
+  * TRACE_SYSTEM.h where TRACE_SYSTEM is what is defined here.
++ * In this case, it would look for sample.h
+  *
+- * If you want a different system than file name, you can override
+- * the header name by defining TRACE_INCLUDE_FILE
++ * If the header name will be different than the system name
++ * (as in this case), then you can override the header name that
++ * define_trace.h will look up by defining TRACE_INCLUDE_FILE
+  *
+- * If this file was called, goofy.h, then we would define:
++ * This file is called trace-events-sample.h but we want the system
++ * to be called "sample". Therefore we must define the name of this
++ * file:
+  *
+- * #define TRACE_INCLUDE_FILE goofy
++ * #define TRACE_INCLUDE_FILE trace-events-sample
+  *
++ * As we do an the bottom of this file.
+  */
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM sample
+@@ -99,13 +104,13 @@ TRACE_EVENT(foo_bar,
+  *
+  * #define TRACE_INCLUDE_PATH ../../samples/trace_events
+  *
+- * But I chose to simply make it use the current directory and then in
+- * the Makefile I added:
++ * But the safest and easiest way to simply make it use the directory
++ * that the file is in is to add in the Makefile:
+  *
+- * CFLAGS_trace-events-sample.o := -I$(PWD)/samples/trace_events/
++ * CFLAGS_trace-events-sample.o := -I$(src)
+  *
+  * This will make sure the current path is part of the include
+- * structure for our file so that we can find it.
++ * structure for our file so that define_trace.h can find it.
+  *
+  * I could have made only the top level directory the include:
+  *
+@@ -115,8 +120,8 @@ TRACE_EVENT(foo_bar,
+  *
+  * #define TRACE_INCLUDE_PATH samples/trace_events
+  *
+- * But then if something defines "samples" or "trace_events" then we
+- * could risk that being converted too, and give us an unexpected
++ * But then if something defines "samples" or "trace_events" as a macro
++ * then we could risk that being converted too, and give us an unexpected
+  * result.
+  */
+ #undef TRACE_INCLUDE_PATH
