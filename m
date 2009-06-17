@@ -1,436 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932531AbZFQDoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764320AbZFQDww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932531AbZFQDoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 23:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932464AbZFQDmz
+	id S1764320AbZFQDww (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 23:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZFQDwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 23:42:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48492 "EHLO hera.kernel.org"
+	Tue, 16 Jun 2009 23:52:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49469 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932461AbZFQDmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 23:42:53 -0400
+	id S1752390AbZFQDwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 23:52:39 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
-       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
-       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
-       paulmck@linux.vnet.ibm.com
-Cc: Tejun Heo <tj@kernel.org>, Paul Mundt <lethal@linux-sh.org>,
-       Russell King <rmk@arm.linux.org.uk>, Mikael Starvik <starvik@axis.com>,
-       Ralf Baechle <ralf@linux-mips.org>, Bryan Wu <cooloney@kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 2/9] percpu: use dynamic percpu allocator as the default percpu allocator
-Date: Wed, 17 Jun 2009 12:40:53 +0900
-Message-Id: <1245210060-24344-3-git-send-email-tj@kernel.org>
+       mingo@elte.hu, JBeulich@novell.com, andi@firstfloor.org, hpa@zytor.com,
+       tglx@linutronix.de
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 2/7] x86: rename remap percpu first chunk allocator to lpage
+Date: Wed, 17 Jun 2009 12:52:14 +0900
+Message-Id: <1245210739-25699-3-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1245210060-24344-1-git-send-email-tj@kernel.org>
-References: <1245210060-24344-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 03:41:05 +0000 (UTC)
+In-Reply-To: <1245210739-25699-1-git-send-email-tj@kernel.org>
+References: <1245210739-25699-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 03:52:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
-dynamic percpu allocator.  The first chunk is allocated using
-embedding helper and 8k is reserved for modules.  This ensures that
-the new allocator behaves almost identically to the original allocator
-as long as static percpu variables are concerned, so it shouldn't
-introduce much breakage.
+The "remap" allocator remaps large pages to build the first chunk;
+however, the name isn't very good because 4k allocator remaps too and
+the whole point of the remap allocator is using large page mapping.
+The allocator will be generalized and exported outside of x86, rename
+it to lpage before that happens.
 
-s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
-range limit the addressing model imposes.  Unfortunately, this breaks
-if the address is specified using a variable, so for now, the two
-archs aren't converted.
+percpu_alloc kernel parameter is updated to accept both "remap" and
+"lpage" for lpage allocator.
 
-The following architectures are affected by this change.
-
-* sh
-* arm
-* cris
-* mips
-* sparc(32)
-* blackfin
-* avr32
-* parisc (broken, under investigation)
-* m32r
-* powerpc(32)
-
-As this change makes the dynamic allocator the default one,
-CONFIG_HAVE_DYNAMIC_PER_CPU_AREA is replaced with its invert -
-CONFIG_HAVE_LEGACY_PER_CPU_AREA, which is added to yet-to-be converted
-archs.  These archs implement their own setup_per_cpu_areas() and the
-conversion is not trivial.
-
-* powerpc(64)
-* sparc(64)
-* ia64
-* alpha
-* s390
-
-Boot and batch alloc/free tests on x86_32 with debug code (x86_32
-doesn't use default first chunk initialization).  Compile tested on
-sparc(32), powerpc(32), arm and alpha.
-
-Kyle McMartin reported that this change breaks parisc.  The problem is
-still under investigation and he is okay with pushing this patch
-forward and fixing parisc later.
-
-[ Impact: use dynamic allocator for most archs w/o custom percpu setup ]
+[ Impact: code cleanup, kernel parameter argument updated ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: David S. Miller <davem@davemloft.net>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reviewed-by: Christoph Lameter <cl@linux.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Bryan Wu <cooloney@kernel.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/alpha/Kconfig     |    3 +++
- arch/ia64/Kconfig      |    3 +++
- arch/powerpc/Kconfig   |    3 +++
- arch/s390/Kconfig      |    3 +++
- arch/sparc/Kconfig     |    3 +++
- arch/x86/Kconfig       |    3 ---
- include/linux/percpu.h |   12 +++++++++---
- init/main.c            |   24 ------------------------
- kernel/module.c        |    6 +++---
- mm/Makefile            |    2 +-
- mm/allocpercpu.c       |   28 ++++++++++++++++++++++++++++
- mm/percpu.c            |   40 +++++++++++++++++++++++++++++++++++++++-
- 12 files changed, 95 insertions(+), 35 deletions(-)
+ arch/x86/kernel/setup_percpu.c |   50 ++++++++++++++++++++--------------------
+ 1 files changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index 9fb8aae..05d8640 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -70,6 +70,9 @@ config AUTO_IRQ_AFFINITY
- 	depends on SMP
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y
-+
- source "init/Kconfig"
- source "kernel/Kconfig.freezer"
- 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 294a3b1..8e88df7 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -88,6 +88,9 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9fb344d..e799536 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -46,6 +46,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
- 	bool
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool PPC64
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
- 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index a14dba0..f4a3cc6 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -75,6 +75,9 @@ config VIRT_CPU_ACCOUNTING
- config ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	def_bool y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y
-+
- mainmenu "Linux Kernel Configuration"
- 
- config S390
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 3f8b6a9..7a8698b 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -92,6 +92,9 @@ config AUDIT_ARCH
- 	bool
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y if SPARC64
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y if SPARC64
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 356d2ec..b973f4a 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -146,9 +146,6 @@ config ARCH_HAS_CACHE_LINE_SIZE
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
--config HAVE_DYNAMIC_PER_CPU_AREA
--	def_bool y
--
- config HAVE_CPUMASK_OF_CPU_MAP
- 	def_bool X86_64_SMP
- 
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 26fd9d1..e500034 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -34,7 +34,7 @@
- 
- #ifdef CONFIG_SMP
- 
--#ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- 
- /* minimum unit size, also is the maximum supported allocation size */
- #define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(64 << 10)
-@@ -80,7 +80,7 @@ extern ssize_t __init pcpu_embed_first_chunk(
- 
- extern void *__alloc_reserved_percpu(size_t size, size_t align);
- 
--#else /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#else /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- struct percpu_data {
- 	void *ptrs[1];
-@@ -99,11 +99,15 @@ struct percpu_data {
-         (__typeof__(ptr))__p->ptrs[(cpu)];				\
- })
- 
--#endif /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- extern void *__alloc_percpu(size_t size, size_t align);
- extern void free_percpu(void *__pdata);
- 
-+#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-+extern void __init setup_per_cpu_areas(void);
-+#endif
-+
- #else /* CONFIG_SMP */
- 
- #define per_cpu_ptr(ptr, cpu) ({ (void)(cpu); (ptr); })
-@@ -124,6 +128,8 @@ static inline void free_percpu(void *p)
- 	kfree(p);
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index dfbc7e6..8794c0c 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -124,7 +124,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
  }
  
-+static inline void __init setup_per_cpu_areas(void) { }
-+
- #endif /* CONFIG_SMP */
- 
- #define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type), \
-diff --git a/init/main.c b/init/main.c
-index f6204f7..7b87bd1 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -356,7 +356,6 @@ static void __init smp_init(void)
- #define smp_init()	do { } while (0)
- #endif
- 
--static inline void setup_per_cpu_areas(void) { }
- static inline void setup_nr_cpu_ids(void) { }
- static inline void smp_prepare_cpus(unsigned int maxcpus) { }
- 
-@@ -377,29 +376,6 @@ static void __init setup_nr_cpu_ids(void)
- 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
- }
- 
--#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
--unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
--
--EXPORT_SYMBOL(__per_cpu_offset);
--
--static void __init setup_per_cpu_areas(void)
--{
--	unsigned long size, i;
--	char *ptr;
--	unsigned long nr_possible_cpus = num_possible_cpus();
--
--	/* Copy section for each CPU (we discard the original) */
--	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
--	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
--
--	for_each_possible_cpu(i) {
--		__per_cpu_offset[i] = ptr - __per_cpu_start;
--		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
--		ptr += size;
--	}
--}
--#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
--
- /* Called by boot processor to activate the rest. */
- static void __init smp_init(void)
- {
-diff --git a/kernel/module.c b/kernel/module.c
-index 215aaab..9f8631c 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -364,7 +364,7 @@ EXPORT_SYMBOL_GPL(find_module);
- 
- #ifdef CONFIG_SMP
- 
--#ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- 
- static void *percpu_modalloc(unsigned long size, unsigned long align,
- 			     const char *name)
-@@ -389,7 +389,7 @@ static void percpu_modfree(void *freeme)
- 	free_percpu(freeme);
- }
- 
--#else /* ... !CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#else /* ... CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- /* Number of blocks used and allocated. */
- static unsigned int pcpu_num_used, pcpu_num_allocated;
-@@ -535,7 +535,7 @@ static int percpu_modinit(void)
- }
- __initcall(percpu_modinit);
- 
--#endif /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- static unsigned int find_pcpusec(Elf_Ehdr *hdr,
- 				 Elf_Shdr *sechdrs,
-diff --git a/mm/Makefile b/mm/Makefile
-index e89acb0..71d9fa8 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -31,7 +31,7 @@ obj-$(CONFIG_FAILSLAB) += failslab.o
- obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
- obj-$(CONFIG_FS_XIP) += filemap_xip.o
- obj-$(CONFIG_MIGRATION) += migrate.o
--ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- obj-$(CONFIG_SMP) += percpu.o
- else
- obj-$(CONFIG_SMP) += allocpercpu.o
-diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
-index dfdee6a..df34cea 100644
---- a/mm/allocpercpu.c
-+++ b/mm/allocpercpu.c
-@@ -5,6 +5,8 @@
+ /*
+- * Remap allocator
++ * Large page remap allocator
+  *
+  * This allocator uses PMD page as unit.  A PMD page is allocated for
+  * each cpu and each is remapped into vmalloc area using PMD mapping.
+@@ -137,20 +137,20 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+  * better than only using 4k mappings while still being NUMA friendly.
   */
- #include <linux/mm.h>
- #include <linux/module.h>
-+#include <linux/bootmem.h>
-+#include <asm/sections.h>
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+-static size_t pcpur_size __initdata;
+-static void **pcpur_ptrs __initdata;
++static size_t pcpul_size __initdata;
++static void **pcpul_ptrs __initdata;
  
- #ifndef cache_line_size
- #define cache_line_size()	L1_CACHE_BYTES
-@@ -147,3 +149,29 @@ void free_percpu(void *__pdata)
- 	kfree(__percpu_disguise(__pdata));
+-static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
++static struct page * __init pcpul_get_page(unsigned int cpu, int pageno)
+ {
+ 	size_t off = (size_t)pageno << PAGE_SHIFT;
+ 
+-	if (off >= pcpur_size)
++	if (off >= pcpul_size)
+ 		return NULL;
+ 
+-	return virt_to_page(pcpur_ptrs[cpu] + off);
++	return virt_to_page(pcpul_ptrs[cpu] + off);
  }
- EXPORT_SYMBOL_GPL(free_percpu);
-+
-+/*
-+ * Generic percpu area setup.
-+ */
-+#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-+unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
-+
-+EXPORT_SYMBOL(__per_cpu_offset);
-+
-+void __init setup_per_cpu_areas(void)
-+{
-+	unsigned long size, i;
-+	char *ptr;
-+	unsigned long nr_possible_cpus = num_possible_cpus();
-+
-+	/* Copy section for each CPU (we discard the original) */
-+	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
-+	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
-+
-+	for_each_possible_cpu(i) {
-+		__per_cpu_offset[i] = ptr - __per_cpu_start;
-+		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-+		ptr += size;
-+	}
-+}
-+#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
-diff --git a/mm/percpu.c b/mm/percpu.c
-index d06f474..01a6fd9 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -43,7 +43,7 @@
-  *
-  * To use this allocator, arch code should do the followings.
-  *
-- * - define CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+ * - drop CONFIG_HAVE_LEGACY_PER_CPU_AREA
-  *
-  * - define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr() to translate
-  *   regular address to percpu pointer and back if they need to be
-@@ -1270,3 +1270,41 @@ ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
- 				      reserved_size, dyn_size,
- 				      pcpue_unit_size, pcpue_ptr, NULL);
+ 
+-static ssize_t __init setup_pcpu_remap(size_t static_size)
++static ssize_t __init setup_pcpu_lpage(size_t static_size)
+ {
+ 	static struct vm_struct vm;
+ 	size_t ptrs_size, dyn_size;
+@@ -170,36 +170,36 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
+ 	 * Currently supports only single page.  Supporting multiple
+ 	 * pages won't be too difficult if it ever becomes necessary.
+ 	 */
+-	pcpur_size = PFN_ALIGN(static_size + PERCPU_MODULE_RESERVE +
++	pcpul_size = PFN_ALIGN(static_size + PERCPU_MODULE_RESERVE +
+ 			       PERCPU_DYNAMIC_RESERVE);
+-	if (pcpur_size > PMD_SIZE) {
++	if (pcpul_size > PMD_SIZE) {
+ 		pr_warning("PERCPU: static data is larger than large page, "
+ 			   "can't use large page\n");
+ 		return -EINVAL;
+ 	}
+-	dyn_size = pcpur_size - static_size - PERCPU_FIRST_CHUNK_RESERVE;
++	dyn_size = pcpul_size - static_size - PERCPU_FIRST_CHUNK_RESERVE;
+ 
+ 	/* allocate pointer array and alloc large pages */
+-	ptrs_size = PFN_ALIGN(num_possible_cpus() * sizeof(pcpur_ptrs[0]));
+-	pcpur_ptrs = alloc_bootmem(ptrs_size);
++	ptrs_size = PFN_ALIGN(num_possible_cpus() * sizeof(pcpul_ptrs[0]));
++	pcpul_ptrs = alloc_bootmem(ptrs_size);
+ 
+ 	for_each_possible_cpu(cpu) {
+-		pcpur_ptrs[cpu] = pcpu_alloc_bootmem(cpu, PMD_SIZE, PMD_SIZE);
+-		if (!pcpur_ptrs[cpu])
++		pcpul_ptrs[cpu] = pcpu_alloc_bootmem(cpu, PMD_SIZE, PMD_SIZE);
++		if (!pcpul_ptrs[cpu])
+ 			goto enomem;
+ 
+ 		/*
+-		 * Only use pcpur_size bytes and give back the rest.
++		 * Only use pcpul_size bytes and give back the rest.
+ 		 *
+ 		 * Ingo: The 2MB up-rounding bootmem is needed to make
+ 		 * sure the partial 2MB page is still fully RAM - it's
+ 		 * not well-specified to have a PAT-incompatible area
+ 		 * (unmapped RAM, device memory, etc.) in that hole.
+ 		 */
+-		free_bootmem(__pa(pcpur_ptrs[cpu] + pcpur_size),
+-			     PMD_SIZE - pcpur_size);
++		free_bootmem(__pa(pcpul_ptrs[cpu] + pcpul_size),
++			     PMD_SIZE - pcpul_size);
+ 
+-		memcpy(pcpur_ptrs[cpu], __per_cpu_load, static_size);
++		memcpy(pcpul_ptrs[cpu], __per_cpu_load, static_size);
+ 	}
+ 
+ 	/* allocate address and map */
+@@ -212,7 +212,7 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
+ 
+ 		pmd = populate_extra_pmd((unsigned long)vm.addr
+ 					 + cpu * PMD_SIZE);
+-		set_pmd(pmd, pfn_pmd(page_to_pfn(virt_to_page(pcpur_ptrs[cpu])),
++		set_pmd(pmd, pfn_pmd(page_to_pfn(virt_to_page(pcpul_ptrs[cpu])),
+ 				     PAGE_KERNEL_LARGE));
+ 	}
+ 
+@@ -220,22 +220,22 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
+ 	pr_info("PERCPU: Remapped at %p with large pages, static data "
+ 		"%zu bytes\n", vm.addr, static_size);
+ 
+-	ret = pcpu_setup_first_chunk(pcpur_get_page, static_size,
++	ret = pcpu_setup_first_chunk(pcpul_get_page, static_size,
+ 				     PERCPU_FIRST_CHUNK_RESERVE, dyn_size,
+ 				     PMD_SIZE, vm.addr, NULL);
+ 	goto out_free_ar;
+ 
+ enomem:
+ 	for_each_possible_cpu(cpu)
+-		if (pcpur_ptrs[cpu])
+-			free_bootmem(__pa(pcpur_ptrs[cpu]), pcpur_size);
++		if (pcpul_ptrs[cpu])
++			free_bootmem(__pa(pcpul_ptrs[cpu]), pcpul_size);
+ 	ret = -ENOMEM;
+ out_free_ar:
+-	free_bootmem(__pa(pcpur_ptrs), ptrs_size);
++	free_bootmem(__pa(pcpul_ptrs), ptrs_size);
+ 	return ret;
  }
-+
-+/*
-+ * Generic percpu area setup.
-+ *
-+ * The embedding helper is used because its behavior closely resembles
-+ * the original non-dynamic generic percpu area setup.  This is
-+ * important because many archs have addressing restrictions and might
-+ * fail if the percpu area is located far away from the previous
-+ * location.  As an added bonus, in non-NUMA cases, embedding is
-+ * generally a good idea TLB-wise because percpu area can piggy back
-+ * on the physical linear memory mapping which uses large page
-+ * mappings on applicable archs.
-+ */
-+#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-+unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
-+EXPORT_SYMBOL(__per_cpu_offset);
-+
-+void __init setup_per_cpu_areas(void)
-+{
-+	size_t static_size = __per_cpu_end - __per_cpu_start;
-+	ssize_t unit_size;
-+	unsigned long delta;
-+	unsigned int cpu;
-+
-+	/*
-+	 * Always reserve area for module percpu variables.  That's
-+	 * what the legacy allocator did.
-+	 */
-+	unit_size = pcpu_embed_first_chunk(static_size, PERCPU_MODULE_RESERVE,
-+					   PERCPU_DYNAMIC_RESERVE, -1);
-+	if (unit_size < 0)
-+		panic("Failed to initialized percpu areas.");
-+
-+	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
-+	for_each_possible_cpu(cpu)
-+		__per_cpu_offset[cpu] = delta + cpu * unit_size;
-+}
-+#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
+ #else
+-static ssize_t __init setup_pcpu_remap(size_t static_size)
++static ssize_t __init setup_pcpu_lpage(size_t static_size)
+ {
+ 	return -EINVAL;
+ }
+@@ -367,7 +367,7 @@ void __init setup_per_cpu_areas(void)
+ 	 * of large page mappings.  Please read comments on top of
+ 	 * each allocator for details.
+ 	 */
+-	ret = setup_pcpu_remap(static_size);
++	ret = setup_pcpu_lpage(static_size);
+ 	if (ret < 0)
+ 		ret = setup_pcpu_embed(static_size);
+ 	if (ret < 0)
 -- 
 1.6.0.2
 
