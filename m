@@ -1,78 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbZFQHHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761033AbZFQHI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbZFQHHh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 03:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZFQHH3
+	id S1761033AbZFQHI0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 03:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZFQHIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 03:07:29 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35275 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752244AbZFQHH3 (ORCPT
+	Wed, 17 Jun 2009 03:08:15 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56014 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbZFQHIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 03:07:29 -0400
-Date: Wed, 17 Jun 2009 08:07:31 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] vfs patches, part 2
-Message-ID: <20090617070731.GH8633@ZenIV.linux.org.uk>
+	Wed, 17 Jun 2009 03:08:14 -0400
+Date: Wed, 17 Jun 2009 16:07:25 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+Cc: Marco <marco.stornelli@gmail.com>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 13/14] Pramfs: Write protection
+Message-ID: <20090617070725.GC5208@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jared Hulbert <jaredeh@gmail.com>,
+	Marco <marco.stornelli@gmail.com>,
+	Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+	Linux Embedded <linux-embedded@vger.kernel.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Daniel Walker <dwalker@soe.ucsc.edu>
+References: <4A33A835.901@gmail.com> <6934efce0906161935x65c2a31br4bf1d35493e7b77c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <6934efce0906161935x65c2a31br4bf1d35493e7b77c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mostlty BKL removal in VFS and filesystems. Please, pull from
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git for-linus
+On Tue, Jun 16, 2009 at 07:35:24PM -0700, Jared Hulbert wrote:
+> > +/* init_mm.page_table_lock must be held before calling! */
+> > +static void pram_page_writeable(unsigned long addr, int rw)
+> > +{
+> > + ? ? ? pgd_t *pgdp;
+> > + ? ? ? pud_t *pudp;
+> > + ? ? ? pmd_t *pmdp;
+> > + ? ? ? pte_t *ptep;
+> > +
+> > + ? ? ? pgdp = pgd_offset_k(addr);
+> > + ? ? ? if (!pgd_none(*pgdp)) {
+> > + ? ? ? ? ? ? ? pudp = pud_offset(pgdp, addr);
+> > + ? ? ? ? ? ? ? if (!pud_none(*pudp)) {
+> > + ? ? ? ? ? ? ? ? ? ? ? pmdp = pmd_offset(pudp, addr);
+> > + ? ? ? ? ? ? ? ? ? ? ? if (!pmd_none(*pmdp)) {
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte_t pte;
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ptep = pte_offset_kernel(pmdp, addr);
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte = *ptep;
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? if (pte_present(pte)) {
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte = rw ? pte_mkwrite(pte) :
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte_wrprotect(pte);
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? set_pte(ptep, pte);
+> > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? }
+> > + ? ? ? ? ? ? ? ? ? ? ? }
+> > + ? ? ? ? ? ? ? }
+> > + ? ? ? }
+> > +}
+> 
+> Wow.  Don't we want to do this pte walking in mm/ someplace?
+> 
+> Do you really intend to protect just the PTE in question rather than
+> the entire physical page, regardless of which PTE is talking to it?
+> Maybe I'm missing something.
+> 
+follow_pfn() ought to be fine for this, optionally follow_pte() could be
+exported and used.
 
-Al Viro (8):
-      No instance of ->bmap() needs BKL
-      fuse doesn't need BKL in ->umount_begin()
-      9P doesn't need BKL in ->umount_begin()
-      Cleanup of adfs headers
-      befs ->pust_super() doesn't need BKL
-      get rid of BKL in fs/efs
-      get rid of BKL in fs/minix
-      get rid of BKL in fs/sysv
+> > +#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_H8300) || \
+> > + ? ? ? defined(CONFIG_BLACKFIN)
+> > + ? ? ? /*
+> > + ? ? ? ?* FIXME: so far only these archs have flush_tlb_kernel_page(),
+> > + ? ? ? ?* for the rest just use flush_tlb_kernel_range(). Not ideal
+> > + ? ? ? ?* to use _range() because many archs just flush the whole TLB.
+> > + ? ? ? ?*/
+> > + ? ? ? if (end <= start + PAGE_SIZE)
+> > + ? ? ? ? ? ? ? flush_tlb_kernel_page(start);
+> > + ? ? ? else
+> > +#endif
+> > + ? ? ? ? ? ? ? flush_tlb_kernel_range(start, end);
+> > +}
+> 
+> Why not just fix flush_tlb_range()?
+> 
+> If an arch has a flush_tlb_kernel_page() that works then it stands to
+> reason that the flush_tlb_kernel_range() shouldn't work with minimal
+> effort, no?
 
-J. R. Okajima (1):
-      remove unlock_kernel() left accidentally
+flush_tlb_kernel_page() is a new one to me, it doesn't have any mention
+in Documentation/cachetlb.txt anyways.
 
-Linus Torvalds (1):
-      ext3: avoid unnecessary spinlock in critical POSIX ACL path
+Many of the flush_tlb_kernel_range() implementations do ranged checks
+with tunables to determine whether it is more expensive to selectively
+flush vs just blowing the entire TLB away.
 
-Theodore Ts'o (1):
-      ext4: avoid unnecessary spinlock in critical POSIX ACL path
-
- Documentation/filesystems/Locking |    2 +-
- fs/9p/vfs_super.c                 |    3 --
- fs/adfs/adfs.h                    |   55 +++++++++++++++++++++++++++++++++++++
- fs/adfs/dir.c                     |    8 -----
- fs/adfs/dir_f.c                   |    8 -----
- fs/adfs/dir_fplus.c               |    8 -----
- fs/adfs/file.c                    |    4 ---
- fs/adfs/inode.c                   |   10 -------
- fs/adfs/map.c                     |    6 ----
- fs/adfs/super.c                   |   17 +----------
- fs/befs/linuxvfs.c                |    4 ---
- fs/efs/dir.c                      |    5 +---
- fs/efs/namei.c                    |    9 +-----
- fs/efs/symlink.c                  |    7 +----
- fs/ext3/acl.c                     |   13 +++++---
- fs/ext4/acl.c                     |   15 ++++++----
- fs/fuse/inode.c                   |    3 --
- fs/ioctl.c                        |    2 -
- fs/minix/bitmap.c                 |   25 +++++++++--------
- fs/minix/dir.c                    |    5 +---
- fs/minix/inode.c                  |    4 ---
- fs/super.c                        |   12 ++------
- fs/sysv/dir.c                     |    5 +---
- fs/sysv/inode.c                   |   11 -------
- include/linux/adfs_fs.h           |   13 ---------
- include/linux/adfs_fs_i.h         |   24 ----------------
- include/linux/adfs_fs_sb.h        |   38 -------------------------
- 27 files changed, 96 insertions(+), 220 deletions(-)
- delete mode 100644 include/linux/adfs_fs_i.h
- delete mode 100644 include/linux/adfs_fs_sb.h
+Likewise, there is no reason why those 4 architectures can not just shove
+that if (end <= start + PAGE_SIZE) check in the beginning of their
+flush_tlb_kernel_range() and fall back on flush_tlb_kernel_page() for
+those cases. Hiding this in generic code is definitely not the way to go.
