@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764283AbZFQOqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750997AbZFQOq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764283AbZFQOqH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbZFQOpt
+	id S1750997AbZFQOq0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764654AbZFQOqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:45:49 -0400
-Received: from smtpn2.emerion.com ([212.69.178.34]:50412 "EHLO
-	smtps02.emerion.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763569AbZFQOps (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:45:48 -0400
-X-Greylist: delayed 2530 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Jun 2009 10:45:48 EDT
-From: Philipp Marek <philipp.marek@emerion.com>
-Organization: Emerion.com
-To: linux-kernel@vger.kernel.org
-Subject: Changing the data of hardlinked symlinks
-Date: Wed, 17 Jun 2009 16:03:38 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.29-2-amd64; KDE/4.2.4; x86_64; ; )
+	Wed, 17 Jun 2009 10:46:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35350 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764254AbZFQOqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 10:46:09 -0400
+Date: Wed, 17 Jun 2009 17:45:40 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based
+	notifier interface
+Message-ID: <20090617144540.GB3089@redhat.com>
+References: <20090616140240.GA9401@redhat.com> <4A37A7FC.4090403@novell.com> <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com> <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <20090616175300.GA24514@redhat.com> <4A37DFE2.2020506@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906171603.39497.philipp.marek@emerion.com>
+In-Reply-To: <4A37DFE2.2020506@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+On Tue, Jun 16, 2009 at 02:09:38PM -0400, Gregory Haskins wrote:
+> > What do you mean by copy_to_user(other->mm) here?  If you are going to switch
+> > to another mm, then I think current->mm must be valid (I think it's not enough
+> > that you can sleep). So preemptible() might not be enough.
+> >   
+> 
+> I dont currently use switch_mm, if that is what you mean.  I save the
+> task_struct into the appropriate context so current->mm doesn't matter
+> to me.  I never use it.  All I need (afaik) is to acquire the proper
+> mutex first.  I am not an MM expert, so perhaps I have this wrong but it
+> does appear to work properly even from kthread context.
+> 
+> -Greg
+> 
+> 
 
-I'd like to know if there's something I'm missing, or whether that's simply 
-not possible currently - or won't ever because of POSIX.
+I think I saw get_user_pages + memcpy in your patch. Yes, that works
+without switching contexts but it's slower than copy to user if you are
+in the right context, and AFAIK it's slower than get_user_pages_fast.
 
-I have hardlinks of symlinks, like this:
-	# ls -la
-	-rw-r--r--  1 root root     0 Jun 17 15:36 daten
-	drwxr-xr-x  2 root root  4096 Jun 17 15:37 daten2
-	lrwxrwxrwx  3 root root     5 Jun 17 15:36 link -> daten
-	lrwxrwxrwx  3 root root     5 Jun 17 15:36 link2 -> daten
-	lrwxrwxrwx  3 root root     6 Jun 17 15:37 link3 -> daten2
-	lrwxrwxrwx  3 root root     6 Jun 17 15:37 link4 -> daten2
-	lrwxrwxrwx  3 root root     5 Jun 17 15:36 link5 -> daten
-	lrwxrwxrwx  3 root root     6 Jun 17 15:37 link6 -> daten2
-
-Now I'd like to change the inode of one of the symlinks, but in a way that 
-*all* symlinks sharing the inode are changed, too.
-
-"ln -f" doesn't work; "man symlink" and "man link" let me believe that it's 
-not possible.
-
-
-I even looked at debugfs, but from a quick look I only saw how to read the 
-data of an inode ("cat") - nothing to write it back.
-
-
-Is there some way to do that?
-
-
-Regards,
-
-Phil
-
+-- 
+MST
