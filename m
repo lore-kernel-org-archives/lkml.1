@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZFQETZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZFQETt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbZFQETZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 00:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbZFQETP
+	id S1754672AbZFQETt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 00:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZFQETj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 00:19:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60680 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750805AbZFQETO (ORCPT
+	Wed, 17 Jun 2009 00:19:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49385 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbZFQETj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 00:19:14 -0400
-Date: Tue, 16 Jun 2009 21:19:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Patterson <andrew.patterson@hp.com>
-cc: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
- trees
-In-Reply-To: <1245208744.19708.243.camel@grinch>
-Message-ID: <alpine.LFD.2.01.0906162116280.16802@localhost.localdomain>
-References: <20090616220419.14021.84524.stgit@bob.kio>  <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain>  <1245192703.8234.226.camel@bluto.andrew>  <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain>  <1245195498.8234.236.camel@bluto.andrew>
-  <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain>  <alpine.LFD.2.01.0906161717220.16802@localhost.localdomain>  <alpine.LFD.2.01.0906161804030.16802@localhost.localdomain> <1245208744.19708.243.camel@grinch>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 17 Jun 2009 00:19:39 -0400
+Message-Id: <200906170419.n5H4Jdkn017670@voreg.hos.anvin.org>
+To: Al Viro <viro@zeniv.linux.org.uk>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Tue, 16 Jun 2009 21:15:04 -0700
+Subject: [PATCH] devpts: remove module-related code
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+These days, the devpts filesystem is closely integrated with the pty
+memory management, and cannot be built as a module, even less removed
+from the kernel.  Accordingly, remove all module-related stuff from
+this filesystem.
 
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ fs/devpts/inode.c |   12 ------------
+ 1 files changed, 0 insertions(+), 12 deletions(-)
 
-On Wed, 17 Jun 2009, Andrew Patterson wrote:
-> 
-> This looks functionally equivalent to the current code.
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 9b1d285..ec75329 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -10,7 +10,6 @@
+  *
+  * ------------------------------------------------------------------------- */
+ 
+-#include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/fs.h>
+ #include <linux/sched.h>
+@@ -423,7 +422,6 @@ static void devpts_kill_sb(struct super_block *sb)
+ }
+ 
+ static struct file_system_type devpts_fs_type = {
+-	.owner		= THIS_MODULE,
+ 	.name		= "devpts",
+ 	.get_sb		= devpts_get_sb,
+ 	.kill_sb	= devpts_kill_sb,
+@@ -564,13 +562,3 @@ static int __init init_devpts_fs(void)
+ 	}
+ 	return err;
+ }
+-
+-static void __exit exit_devpts_fs(void)
+-{
+-	unregister_filesystem(&devpts_fs_type);
+-	mntput(devpts_mnt);
+-}
+-
+-module_init(init_devpts_fs)
+-module_exit(exit_devpts_fs)
+-MODULE_LICENSE("GPL");
+-- 
+1.6.0.6
 
-Absolutely. It's only meant to add the call chains for all the resource 
-additions, so that we could see how that buggy 'c2' resource gets added as 
-a parent to 'c3' (when it should be the other way around).
-
-> I get way too much output to be useful.  I can log the serial port if we 
-> need it all, or I can change it to just look at the buses in question if 
-> desired.
-
-Sure. Or increase CONFIG_LOG_BUF_SHIFT to 22 or somethng insane like that 
-(so that it logs up to 4MB of messages).
-
-But yeah, if you just make it smarter, and only do that WARN() thing for 
-resources that match "PCI Bus" at the beginning of the name, that should 
-be plenty good enough.
-
-			Linus
