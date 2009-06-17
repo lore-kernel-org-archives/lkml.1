@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbZFQLws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765009AbZFQL4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933148AbZFQLws (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 07:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932738AbZFQLwk
+	id S1765009AbZFQL4e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 07:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbZFQL4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 07:52:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50874 "EHLO hera.kernel.org"
+	Wed, 17 Jun 2009 07:56:21 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:55612 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932592AbZFQLwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 07:52:39 -0400
-Date: Wed, 17 Jun 2009 11:51:33 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, a.p.zijlstra@chello.nl, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:core/urgent] lockdep: Select frame pointers on x86
-Message-ID: <tip-b54eff768d8b6d0b50d90b0a27eb2c3d20b9c91c@git.kernel.org>
-Git-Commit-ID: b54eff768d8b6d0b50d90b0a27eb2c3d20b9c91c
-X-Mailer: tip-git-log-daemon
+	id S1756202AbZFQL4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 07:56:20 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 11:51:34 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19000.55666.866148.559620@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Jun 2009 21:54:26 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit powerpc
+In-Reply-To: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b54eff768d8b6d0b50d90b0a27eb2c3d20b9c91c
-Gitweb:     http://git.kernel.org/tip/b54eff768d8b6d0b50d90b0a27eb2c3d20b9c91c
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 12 Jun 2009 10:04:01 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 17 Jun 2009 13:48:37 +0200
+On 64-bit powerpc, perf needs to be built as a 64-bit executable.
+This arranges to add the -m64 flag to CFLAGS if we are running on
+a 64-bit machine, indicated by the result of uname -m ending in "64".
+This means that we'll use -m64 on x86_64 machines as well.
 
-lockdep: Select frame pointers on x86
+This also removes the -Werror flag when building on a 64-bit powerpc
+machine.  The userspace definition of u64 is unsigned long rather
+than unsigned long long, meaning that gcc warns every time a u64
+is printed with %Lx or %llx (though that does work properly).
+In future we may use PRI64 etc. for printing 64-bit quantities,
+which would eliminate these warnings.
 
-x86 stack traces are a piece of crap without frame pointers, and its not
-like the 'performance gain' of not having stack pointers matters when you
-selected lockdep.
-
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <new-submission>
-Cc: <stable@kernel.org>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- lib/Kconfig.debug |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ tools/perf/Makefile |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 6cdcf38..3be4b7c 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -440,7 +440,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS && !PPC && !ARM_UNWIND && !S390
-+	select FRAME_POINTER if !MIPS && !PPC && !ARM_UNWIND && !S390
- 	select KALLSYMS
- 	select KALLSYMS_ALL
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index e8346f9..eddd61a 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -157,9 +157,21 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+ uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
  
++# If we're on a 64-bit kernel, use -m64
++ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
++  M64 := -m64
++endif
++
++# Don't use -Werror on ppc64; we get warnings due to using
++# %Lx formats on __u64, which is unsigned long.
++Werror := -Werror
++ifeq ($(uname_M),ppc64)
++  Werror :=
++endif
++
+ # CFLAGS and LDFLAGS are for the users to override from the command line.
+ 
+-CFLAGS = -ggdb3 -Wall -Werror -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
++CFLAGS = $(M64) -ggdb3 -Wall $(Werror) -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+-- 
+1.6.0.4
+
