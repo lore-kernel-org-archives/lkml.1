@@ -1,255 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbZFQFyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZFQGKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757654AbZFQFyH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 01:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZFQFx4
+	id S1756829AbZFQGKX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 02:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbZFQGKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 01:53:56 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49687 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753778AbZFQFxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 01:53:55 -0400
-Date: Wed, 17 Jun 2009 15:53:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 17
-Message-Id: <20090617155354.075c60ae.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Wed, 17 Jun 2009 02:10:11 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35536 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbZFQGKJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 02:10:09 -0400
+Date: Wed, 17 Jun 2009 09:10:09 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, a.beregalov@gmail.com, adobriyan@gmail.com,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, fengguang.wu@intel.com, heiko.carstens@de.ibm.com,
+       kosaki.motohiro@jp.fujitsu.com, Larry.Finger@lwfinger.net,
+       mel@csn.ul.ie, mingo@elte.hu, mpm@selenic.com, npiggin@suse.de,
+       ron@debian.org
+Subject: [GIT PULL] SLAB updates for 2.6.31-rc1
+Message-ID: <Pine.LNX.4.64.0906170906440.28840@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__17_Jun_2009_15_53_54_+1000_1eKMrl9zm1DogDrs"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__17_Jun_2009_15_53_54_+1000_1eKMrl9zm1DogDrs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-Hi all,
+Here are some slab allocator updates accumulated over the past few months. The
+most important one of them is the early-boot GFP_DMA allocation fix from Nick
+which is required by s390 boot code.
 
-Changes since 20090616:
+			Pekka
 
-This tree fails to build for powerpc allyesconfig.
+The following changes since commit 65795efbd380a832ae508b04dba8f8e53f0b84d9:
+  Linus Torvalds (1):
+        Merge branch 'next-i2c' of git://aeryn.fluff.org.uk/bjdooks/linux
 
-The ext4 tree build failure meant that I am now using the version from
-next-20090615.
+are available in the git repository at:
 
-The 4vl-dvb tree lost its conflict.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6 for-linus
 
-The kvm tree gained a build failure (due to powerpc now using -Werror)
-for which I applied a patch.
+Alexander Beregalov (1):
+      SLUB: fix build when !SLUB_DEBUG
 
-----------------------------------------------------------------------------
+Nick Piggin (1):
+      SLUB: Fix early boot GFP_DMA allocations
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+Pekka Enberg (5):
+      slab: document kzfree() zeroing behavior
+      SLUB: Out-of-memory diagnostics
+      SLUB: Don't print out OOM warning for __GFP_NOFAIL
+      Merge branches 'slab/documentation', 'slab/fixes', 'slob/cleanups' and 'slub/fixes' into for-linus
+      Merge branch 'slub/earlyboot' into for-linus
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+Ron Lee (1):
+      slab: fix generic PAGE_POISONING conflict with SLAB_RED_ZONE
 
-Below is a summary of the state of the merge.
+Wu Fengguang (1):
+      slob: use PG_slab for identifying SLOB pages
 
-We are up to 128 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+ include/linux/page-flags.h |    2 -
+ mm/slab.c                  |    9 ++++
+ mm/slob.c                  |    6 +-
+ mm/slub.c                  |  105 ++++++++++++++++++++++++++++++++++----------
+ mm/util.c                  |    4 ++
+ 5 files changed, 98 insertions(+), 28 deletions(-)
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ext4/next
-$ git reset --hard HEAD^
-Merging refs/next/20090615/ext4
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/platform/x86/Kconfig
-CONFLICT (content): Merge conflict in drivers/platform/x86/toshiba_acpi.c
-[master 10c72cb] Revert "Merge branch 'oqo-wmi-EXPECT-REFRESH' into test"
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in arch/x86/include/asm/mce.h
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/sh/include/asm/smp.h
-CONFLICT (content): Merge conflict in drivers/net/sfc/efx.c
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-CONFLICT (content): Merge conflict in drivers/md/md.c
-CONFLICT (content): Merge conflict in drivers/md/raid5.c
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-CONFLICT (content): Merge conflict in drivers/watchdog/Makefile
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in kernel/sched.c
-CONFLICT (content): Merge conflict in mm/Makefile
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging asm-generic/next
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/block/ps3disk.c
-CONFLICT (content): Merge conflict in drivers/block/ps3vram.c
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-Applying: kvm/powerpc: make 32 bit constant unsigned long
-
---Signature=_Wed__17_Jun_2009_15_53_54_+1000_1eKMrl9zm1DogDrs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko4hPIACgkQjjKRsyhoI8yFFgCgjM9TieET9X8VNgS7JT1liqsW
-DbMAoKisV0BuIBkVCEYLDmhYeYtXkW5s
-=t3Ay
------END PGP SIGNATURE-----
-
---Signature=_Wed__17_Jun_2009_15_53_54_+1000_1eKMrl9zm1DogDrs--
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index d6792f8..e2e5ce5 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -118,7 +118,6 @@ enum pageflags {
+ 	PG_savepinned = PG_dirty,
+ 
+ 	/* SLOB */
+-	PG_slob_page = PG_active,
+ 	PG_slob_free = PG_private,
+ 
+ 	/* SLUB */
+@@ -201,7 +200,6 @@ PAGEFLAG(SavePinned, savepinned);			/* Xen */
+ PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
+ PAGEFLAG(SwapBacked, swapbacked) __CLEARPAGEFLAG(SwapBacked, swapbacked)
+ 
+-__PAGEFLAG(SlobPage, slob_page)
+ __PAGEFLAG(SlobFree, slob_free)
+ 
+ __PAGEFLAG(SlubFrozen, slub_frozen)
+diff --git a/mm/slab.c b/mm/slab.c
+index f257d4d..d086923 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2308,6 +2308,15 @@ kmem_cache_create (const char *name, size_t size, size_t align,
+ 		/* really off slab. No need for manual alignment */
+ 		slab_size =
+ 		    cachep->num * sizeof(kmem_bufctl_t) + sizeof(struct slab);
++
++#ifdef CONFIG_PAGE_POISONING
++		/* If we're going to use the generic kernel_map_pages()
++		 * poisoning, then it's going to smash the contents of
++		 * the redzone and userword anyhow, so switch them off.
++		 */
++		if (size % PAGE_SIZE == 0 && flags & SLAB_POISON)
++			flags &= ~(SLAB_RED_ZONE | SLAB_STORE_USER);
++#endif
+ 	}
+ 
+ 	cachep->colour_off = cache_line_size();
+diff --git a/mm/slob.c b/mm/slob.c
+index 64f6db1..c78742d 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -133,17 +133,17 @@ static LIST_HEAD(free_slob_large);
+  */
+ static inline int is_slob_page(struct slob_page *sp)
+ {
+-	return PageSlobPage((struct page *)sp);
++	return PageSlab((struct page *)sp);
+ }
+ 
+ static inline void set_slob_page(struct slob_page *sp)
+ {
+-	__SetPageSlobPage((struct page *)sp);
++	__SetPageSlab((struct page *)sp);
+ }
+ 
+ static inline void clear_slob_page(struct slob_page *sp)
+ {
+-	__ClearPageSlobPage((struct page *)sp);
++	__ClearPageSlab((struct page *)sp);
+ }
+ 
+ static inline struct slob_page *slob_page(const void *addr)
+diff --git a/mm/slub.c b/mm/slub.c
+index 2701419..4c64493 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -840,6 +840,11 @@ static inline unsigned long slabs_node(struct kmem_cache *s, int node)
+ 	return atomic_long_read(&n->nr_slabs);
+ }
+ 
++static inline unsigned long node_nr_slabs(struct kmem_cache_node *n)
++{
++	return atomic_long_read(&n->nr_slabs);
++}
++
+ static inline void inc_slabs_node(struct kmem_cache *s, int node, int objects)
+ {
+ 	struct kmem_cache_node *n = get_node(s, node);
+@@ -1058,6 +1063,8 @@ static inline unsigned long kmem_cache_flags(unsigned long objsize,
+ 
+ static inline unsigned long slabs_node(struct kmem_cache *s, int node)
+ 							{ return 0; }
++static inline unsigned long node_nr_slabs(struct kmem_cache_node *n)
++							{ return 0; }
+ static inline void inc_slabs_node(struct kmem_cache *s, int node,
+ 							int objects) {}
+ static inline void dec_slabs_node(struct kmem_cache *s, int node,
+@@ -1514,6 +1521,65 @@ static inline int node_match(struct kmem_cache_cpu *c, int node)
+ 	return 1;
+ }
+ 
++static int count_free(struct page *page)
++{
++	return page->objects - page->inuse;
++}
++
++static unsigned long count_partial(struct kmem_cache_node *n,
++					int (*get_count)(struct page *))
++{
++	unsigned long flags;
++	unsigned long x = 0;
++	struct page *page;
++
++	spin_lock_irqsave(&n->list_lock, flags);
++	list_for_each_entry(page, &n->partial, lru)
++		x += get_count(page);
++	spin_unlock_irqrestore(&n->list_lock, flags);
++	return x;
++}
++
++static inline unsigned long node_nr_objs(struct kmem_cache_node *n)
++{
++#ifdef CONFIG_SLUB_DEBUG
++	return atomic_long_read(&n->total_objects);
++#else
++	return 0;
++#endif
++}
++
++static noinline void
++slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
++{
++	int node;
++
++	printk(KERN_WARNING
++		"SLUB: Unable to allocate memory on node %d (gfp=0x%x)\n",
++		nid, gfpflags);
++	printk(KERN_WARNING "  cache: %s, object size: %d, buffer size: %d, "
++		"default order: %d, min order: %d\n", s->name, s->objsize,
++		s->size, oo_order(s->oo), oo_order(s->min));
++
++	for_each_online_node(node) {
++		struct kmem_cache_node *n = get_node(s, node);
++		unsigned long nr_slabs;
++		unsigned long nr_objs;
++		unsigned long nr_free;
++
++		if (!n)
++			continue;
++
++		nr_free  = count_partial(n, count_free);
++		nr_slabs = node_nr_slabs(n);
++		nr_objs  = node_nr_objs(n);
++
++		printk(KERN_WARNING
++			"  node %d: slabs: %ld, objs: %ld, free: %ld\n",
++			node, nr_slabs, nr_objs, nr_free);
++	}
++}
++
+ /*
+  * Slow path. The lockless freelist is empty or we need to perform
+  * debugging duties.
+@@ -1595,6 +1661,8 @@ new_slab:
+ 		c->page = new;
+ 		goto load_freelist;
+ 	}
++	if (!(gfpflags & __GFP_NOWARN) && printk_ratelimit())
++		slab_out_of_memory(s, gfpflags, node);
+ 	return NULL;
+ debug:
+ 	if (!alloc_debug_processing(s, c->page, object, addr))
+@@ -2636,6 +2704,7 @@ static noinline struct kmem_cache *dma_kmalloc_cache(int index, gfp_t flags)
+ 	struct kmem_cache *s;
+ 	char *text;
+ 	size_t realsize;
++	unsigned long slabflags;
+ 
+ 	s = kmalloc_caches_dma[index];
+ 	if (s)
+@@ -2657,10 +2726,18 @@ static noinline struct kmem_cache *dma_kmalloc_cache(int index, gfp_t flags)
+ 			 (unsigned int)realsize);
+ 	s = kmalloc(kmem_size, flags & ~SLUB_DMA);
+ 
++	/*
++	 * Must defer sysfs creation to a workqueue because we don't know
++	 * what context we are called from. Before sysfs comes up, we don't
++	 * need to do anything because our sysfs initcall will start by
++	 * adding all existing slabs to sysfs.
++	 */
++	slabflags = SLAB_CACHE_DMA|SLAB_NOTRACK;
++	if (slab_state >= SYSFS)
++		slabflags |= __SYSFS_ADD_DEFERRED;
++
+ 	if (!s || !text || !kmem_cache_open(s, flags, text,
+-			realsize, ARCH_KMALLOC_MINALIGN,
+-			SLAB_CACHE_DMA|SLAB_NOTRACK|__SYSFS_ADD_DEFERRED,
+-			NULL)) {
++			realsize, ARCH_KMALLOC_MINALIGN, slabflags, NULL)) {
+ 		kfree(s);
+ 		kfree(text);
+ 		goto unlock_out;
+@@ -2669,7 +2746,8 @@ static noinline struct kmem_cache *dma_kmalloc_cache(int index, gfp_t flags)
+ 	list_add(&s->list, &slab_caches);
+ 	kmalloc_caches_dma[index] = s;
+ 
+-	schedule_work(&sysfs_add_work);
++	if (slab_state >= SYSFS)
++		schedule_work(&sysfs_add_work);
+ 
+ unlock_out:
+ 	up_write(&slub_lock);
+@@ -3368,20 +3446,6 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+ }
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+-static unsigned long count_partial(struct kmem_cache_node *n,
+-					int (*get_count)(struct page *))
+-{
+-	unsigned long flags;
+-	unsigned long x = 0;
+-	struct page *page;
+-
+-	spin_lock_irqsave(&n->list_lock, flags);
+-	list_for_each_entry(page, &n->partial, lru)
+-		x += get_count(page);
+-	spin_unlock_irqrestore(&n->list_lock, flags);
+-	return x;
+-}
+-
+ static int count_inuse(struct page *page)
+ {
+ 	return page->inuse;
+@@ -3392,11 +3456,6 @@ static int count_total(struct page *page)
+ 	return page->objects;
+ }
+ 
+-static int count_free(struct page *page)
+-{
+-	return page->objects - page->inuse;
+-}
+-
+ static int validate_slab(struct kmem_cache *s, struct page *page,
+ 						unsigned long *map)
+ {
+diff --git a/mm/util.c b/mm/util.c
+index d5d2213..7c35ad9 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -168,6 +168,10 @@ EXPORT_SYMBOL(krealloc);
+  *
+  * The memory of the object @p points to is zeroed before freed.
+  * If @p is %NULL, kzfree() does nothing.
++ *
++ * Note: this function zeroes the whole allocated buffer which can be a good
++ * deal bigger than the requested buffer size passed to kmalloc(). So be
++ * careful when using this function in performance sensitive code.
+  */
+ void kzfree(const void *p)
+ {
