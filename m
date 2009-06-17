@@ -1,49 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760469AbZFQTV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759883AbZFQTWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760469AbZFQTV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 15:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZFQTVu
+	id S1759883AbZFQTWz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 15:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZFQTWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 15:21:50 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:37805 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752945AbZFQTVt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 15:21:49 -0400
-Date: Thu, 18 Jun 2009 00:51:16 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: venkatesh.pallipadi@intel.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch 2/2] RFC sched: Scale the nohz_tracker logic by making
-	it per NUMA node
-Message-ID: <20090617192116.GI7961@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090617182649.604970000@intel.com> <20090617182741.107659000@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090617182741.107659000@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Jun 2009 15:22:48 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:54996 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752773AbZFQTWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 15:22:47 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH][REVISED] x86: efi/e820 table merge fix
+Cc: mingo@elte.hu, hpa@zytor.com, ying.huang@intel.com, yinghai@kernel.org
+Message-Id: <E1MH0jo-0001Kp-O3@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Wed, 17 Jun 2009 14:24:00 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com> [2009-06-17 11:26:51]:
+From: Cliff Wickman <cpw@sgi.com>
 
-> Having one idle CPU doing the rebalancing for all the idle CPUs in
-> nohz mode does not scale well with increasing number of cores and
-> sockets. Make the nohz_tracker per NUMA node. This results in multiple
-> idle load balancing happening at NUMA node level and idle load balancer
-> only does the rebalance domain among all the other nohz CPUs in that
-> NUMA node.
+This patch causes all the RAM reservations of EFI_RESERVED_TYPE
+to be recorded in the e820 table as type E820_RESERVED.
 
-This is a good optimisations but maybe an overkill for single chip
-NUMA node machines like a two socket Nehalems or Optrons.
+(A bit of clarification was added in the comment, per Peter and Huang.)
 
-Some method to create load balancer group based on the scale of the
-machine will be good.
+Without this patch EFI_RESERVED_TYPE memory reservations that are also
+of attribute type EFI_MEMORY_WB are marked usable in the e820 table.
+That would cause a collision between kernel use and some reserver's use
+of this memory.
 
---Vaidy
+(An example use of this functionality is the UV system, which
+ will access extremely large areas of (write-back) memory with a memory
+ engine that allows a user to address beyond the processor's range.
+ Such areas are reserved in the EFI table by the BIOS.
+ Some loaders have a restricted number of entries possible in the e820 table,
+ hence the need to record the reservations in the unrestricted EFI table.)
+
+The call to do_add_efi_memmap() is only made if "add_efi_memmap" is specified
+on the kernel command line.
+
+Diffed against 2.6.30-rc8
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+---
+ arch/x86/kernel/efi.c |   35 ++++++++++++++++++++++++++++++++---
+ 1 file changed, 32 insertions(+), 3 deletions(-)
+
+Index: linux/arch/x86/kernel/efi.c
+===================================================================
+--- linux.orig/arch/x86/kernel/efi.c
++++ linux/arch/x86/kernel/efi.c
+@@ -240,10 +240,39 @@ static void __init do_add_efi_memmap(voi
+ 		unsigned long long size = md->num_pages << EFI_PAGE_SHIFT;
+ 		int e820_type;
+ 
+-		if (md->attribute & EFI_MEMORY_WB)
+-			e820_type = E820_RAM;
+-		else
++		switch (md->type) {
++		case EFI_LOADER_CODE:
++		case EFI_LOADER_DATA:
++		case EFI_BOOT_SERVICES_CODE:
++		case EFI_BOOT_SERVICES_DATA:
++		case EFI_CONVENTIONAL_MEMORY:
++			/*
++			 * make sure that memory that is not write-back does
++			 * not enter the usable memory pool
++			 */
++			if (md->attribute & EFI_MEMORY_WB)
++				e820_type = E820_RAM;
++			else
++				e820_type = E820_RESERVED;
++			break;
++		case EFI_ACPI_RECLAIM_MEMORY:
++			e820_type = E820_ACPI;
++			break;
++		case EFI_ACPI_MEMORY_NVS:
++			e820_type = E820_NVS;
++			break;
++		case EFI_UNUSABLE_MEMORY:
++			e820_type = E820_UNUSABLE;
++			break;
++		default:
++			/*
++			 * EFI_RESERVED_TYPE EFI_RUNTIME_SERVICES_CODE
++			 * EFI_RUNTIME_SERVICES_DATA EFI_MEMORY_MAPPED_IO
++			 * EFI_MEMORY_MAPPED_IO_PORT_SPACE EFI_PAL_CODE
++			 */
+ 			e820_type = E820_RESERVED;
++			break;
++		}
+ 		e820_add_region(start, size, e820_type);
+ 	}
+ 	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
