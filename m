@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765011AbZFQDyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZFQEE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765011AbZFQDyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 23:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764415AbZFQDxF
+	id S1753824AbZFQEE7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 00:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbZFQEEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 23:53:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49533 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764370AbZFQDxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 23:53:03 -0400
-From: Tejun Heo <tj@kernel.org>
-To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
-       mingo@elte.hu, JBeulich@novell.com, andi@firstfloor.org, hpa@zytor.com,
-       tglx@linutronix.de
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 7/7] x86: ensure percpu lpage doesn't consume too much vmalloc space
-Date: Wed, 17 Jun 2009 12:52:19 +0900
-Message-Id: <1245210739-25699-8-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1245210739-25699-1-git-send-email-tj@kernel.org>
-References: <1245210739-25699-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 03:52:40 +0000 (UTC)
+	Wed, 17 Jun 2009 00:04:51 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35845 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbZFQEEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 00:04:50 -0400
+Message-ID: <4A386B14.8030702@zytor.com>
+Date: Tue, 16 Jun 2009 21:03:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Huang Ying <ying.huang@intel.com>
+CC: Cliff Wickman <cpw@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "yinghai@kernel.org" <yinghai@kernel.org>
+Subject: Re: [PATCH] x86: efi/e820 table merge fix
+References: <E1MGgRQ-0002pu-6Z@eag09.americas.sgi.com>	 <1245201005.11965.4.camel@yhuang-dev.sh.intel.com>	 <4A384914.1090900@zytor.com> <1245203099.11965.7.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1245203099.11965.7.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On extreme configuration (e.g. 32bit 32-way NUMA machine), lpage
-percpu first chunk allocator can consume too much of vmalloc space.
-Make it fall back to 4k allocator if the consumption goes over 20%.
+Huang Ying wrote:
+>>> Why does BIOS mark memory region without EFI_MEMORY_WB as these types?
+>>> Any example?
+>>>
+>> Probably not, but if it does, it's broken, and the memory should be
+>> ignored. The original code had the EFI_MEMORY_WB check already, so it
+>> seems prudent to keep it.
+> 
+> Maybe we need a real life example for that "fix". And attribute that to
+> the vendor in comments.
+> 
+> Best Regards,
+> Huang Ying
 
-[ Impact: add sanity check for lpage percpu first chunk allocator ]
+I think you're reading the patch backwards.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Jan Beulich <JBeulich@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/setup_percpu.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
+Before the patch, the EFI code didn't look at the type *AT ALL*, it only
+looked at the EFI_MEMORY_WB attribute.  This broke for SGI when they
+were -- correctly -- reserving real memory (and hence still
+EFI_MEMORY_WB) with the type set to EFI_RESERVED_TYPE.  This is correct
+behavior, but the old code saw that it was EFI_MEMORY_WB and therefore
+considered it usable RAM.  This is obviously broken.
 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 165ebd5..29a3eef 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -163,9 +163,21 @@ static ssize_t __init setup_pcpu_lpage(size_t static_size, bool chosen)
- 	int i, j;
- 	ssize_t ret;
- 
--	/* on non-NUMA, embedding is better */
--	if (!chosen && !pcpu_need_numa())
--		return -EINVAL;
-+	if (!chosen) {
-+		size_t vm_size = VMALLOC_END - VMALLOC_START;
-+		size_t tot_size = num_possible_cpus() * PMD_SIZE;
-+
-+		/* on non-NUMA, embedding is better */
-+		if (!pcpu_need_numa())
-+			return -EINVAL;
-+
-+		/* don't consume more than 20% of vmalloc area */
-+		if (tot_size > vm_size / 5) {
-+			pr_info("PERCPU: too large chunk size %zuMB for "
-+				"large page remap\n", tot_size >> 20);
-+			return -EINVAL;
-+		}
-+	}
- 
- 	/* need PSE */
- 	if (!cpu_has_pse) {
+Now why, you're asking, do we still look at md->attribute at all?
+That's where caution dictates that it is prudent to diverge from the
+previous behavior, but it is not *this* patch that should be the source
+of that question, but from the author of the existing code, which
+appears to be Paul Jackson of SGI.  Unfortunately, his email now bounces
+and noone has that information.
+
+If you think about it, though, we don't want to consider it as usable
+RAM if it isn't EFI_MEMORY_WB, and it would in fact be a bug (or
+workaround for a broken system) to ignore it.  In fact, we go through
+great pains elsewhere in the kernel to remove memory which isn't WB from
+the usable pool.
+	
+	-hpa
+
 -- 
-1.6.0.2
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
