@@ -1,80 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbZFQUZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760444AbZFQU07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761147AbZFQUZH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 16:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbZFQUY6
+	id S1760444AbZFQU07 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 16:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbZFQU0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 16:24:58 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:40092 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755352AbZFQUY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 16:24:57 -0400
-Message-ID: <4A395119.5060108@msgid.tls.msk.ru>
-Date: Thu, 18 Jun 2009 00:24:57 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29.1: nfsd: page allocation failure - nfsd or kernel problem?
-References: <alpine.DEB.2.00.0906161203160.27742@p34.internal.lan> <alpine.DEB.2.00.0906161205260.27742@p34.internal.lan> <4A37FE48.6070306@msgid.tls.msk.ru> <4A38ACC0.3060501@msgid.tls.msk.ru> <alpine.DEB.2.00.0906170542170.3600@p34.internal.lan> <4A38C7CA.7040005@msgid.tls.msk.ru> <20090617185139.GF24040@fieldses.org>
-In-Reply-To: <20090617185139.GF24040@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 17 Jun 2009 16:26:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33963 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754996AbZFQU0v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 16:26:51 -0400
+Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, svaidy@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
+       Nathan Lynch <ntl@pobox.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
+In-Reply-To: <20090617150700.GB20345@elte.hu>
+References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com>
+	 <20090615232318.74b099a6.akpm@linux-foundation.org>
+	 <20090616080715.GB7961@dirshya.in.ibm.com>
+	 <1245223977.13761.21576.camel@twins>
+	 <20090617143804.GA6767@linux.vnet.ibm.com> <20090617150700.GB20345@elte.hu>
+Content-Type: text/plain
+Date: Wed, 17 Jun 2009 22:26:27 +0200
+Message-Id: <1245270387.6670.19.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Wed, Jun 17, 2009 at 02:39:06PM +0400, Michael Tokarev wrote:
->> Justin Piszcz wrote:
->>>
->>> On Wed, 17 Jun 2009, Michael Tokarev wrote:
->>>
->>>> Michael Tokarev wrote:
->>>>> Justin Piszcz wrote:
->>>> ...
->>>>
->>>> Justin, by the way, what's the underlying filesystem on the server?
->>>>
->>>> I've seen this error on 2 machines already (both running 2.6.29.x  
->>>> x86-64),
->>>> and in both cases the filesystem on the server was xfs.  May this be
->>>> related somehow to http://bugzilla.kernel.org/show_bug.cgi?id=13375 ?
->>>> That one is different, but also about xfs and nfs.  I'm trying to
->>>> reproduce the problem on different filesystem...
->>> Hello, I am also running XFS on 2.6.29.x x86-64.
->>>
->>> For me, the error happened when I was running an XFSDUMP from a client  
->>> (and dumping) the stream over NFS to the XFS server/filesystem.  This 
->>> is typically when the error occurs or during heavy I/O.
->> Very similar load was here -- not xfsdump but tar and dump of an ext3
->> filesystems.
->>
->> And no, it's NOT xfs-related: I can trigger the same issue easily on
-
-Note the NOT, in upper case ;)
-
->> ext4 as well.  About 20 minutes of running 'dump' of another fs
->> to the nfs mount and voila, nfs server reports the same page allocation
->> failure.  Note that all file operations are still working, i.e. it
->> produces good (not corrupted) files on the server.
+On Wed, 2009-06-17 at 17:07 +0200, Ingo Molnar wrote:
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> There's a possibly related report for 2.6.30 here:
+> > On Wed, Jun 17, 2009 at 09:32:57AM +0200, Peter Zijlstra wrote:
+> > > On Tue, 2009-06-16 at 13:37 +0530, Vaidyanathan Srinivasan wrote:
+> > > > * Andrew Morton <akpm@linux-foundation.org> [2009-06-15 23:23:18]:
+> > > > 
+> > > > > On Tue, 16 Jun 2009 11:08:39 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+> > > > > 
+> > > > > > Currently on a ppc64 box with 16 CPUs, the time taken for
+> > > > > > a individual cpu-hotplug operation is as follows.
+> > > > > > 
+> > > > > >     # time echo 0 > /sys/devices/system/cpu/cpu2/online
+> > > > > >     real    0m0.025s
+> > > > > >     user    0m0.000s
+> > > > > >     sys     0m0.002s
+> > > > > > 
+> > > > > >     # time echo 1 > /sys/devices/system/cpu/cpu2/online
+> > > > > >     real    0m0.021s
+> > > > > >     user    0m0.000s
+> > > > > >     sys     0m0.000s
+> > > > > 
+> > > > > Surprised.  Do people really online and offline CPUs frequently enough
+> > > > > for this to be a problem?
+> > > > 
+> > > > Certainly not for hardware faults or hardware replacement, but
+> > > > cpu-hotplug interface is useful for changing system configuration to
+> > > > meet different objectives like
+> > > > 
+> > > > * Reduce system capacity to reduce average power and reduce heat
+> > > > 
+> > > > * Increasing number of cores and threads in a CPU package is leading
+> > > >   to multiple cpu offline/online operations for any perceivable effect
+> > > > 
+> > > > * Dynamically change CPU configurations in virtualized environments
+> > > 
+> > > I tend to agree with Andrew, if any of those things are done 
+> > > frequent enough that the hotplug performance matter you're doing 
+> > > something mighty odd.
+> > 
+> > Boot speedup?
 > 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=13518
+> Also, if it brings more attention (and more stability and more 
+> bugfixes) to CPU hotplug that's only good.
 
-Does not look similar.
+Sure, but do we need the extra complexity?
 
-I repeated the issue here.  The slab which is growing here is buffer_head.
-It's growing slowly -- right now, after ~5 minutes of constant writes over
-nfs, its size is 428423 objects, growing at about 5000 objects/minute rate.
-When stopping writing, the cache shrinks slowly back to an acceptable
-size, probably when the data gets actually written to disk.
+I mean, sure bootup speed might be nice, but any of the scenarios given
+should simply not require cpu hotplug actions of a frequent enough
+nature that any performance matters.
 
-It looks like we need a bug entry for this :)
+If you want to switch off all SMT siblings you don't do that 50 times a
+second, you do that once per bootup or something.
 
-I'll re-try 2.6.30 hopefully tomorrow.
+Furthermore we already established that cpu hotlpug is not the proper
+interface for thermal management, and dynamically changing virtualized
+muck isn't something you do at 100Hz either.
 
-/mjt
+So what worries me is the justification for this work. It might be good
+and nice, but if the reasons are wrong it still worries me.
+
+So again, why? -- the bootup thing is the only sane answer so far.
+
