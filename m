@@ -1,92 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764422AbZFQLS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765603AbZFQLTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764422AbZFQLS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 07:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbZFQLSQ
+	id S1765603AbZFQLTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 07:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbZFQLTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 07:18:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56584 "EHLO mx3.mail.elte.hu"
+	Wed, 17 Jun 2009 07:19:09 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60908 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754746AbZFQLSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 07:18:15 -0400
-Date: Wed, 17 Jun 2009 13:18:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, fengguang.wu@intel.com, adobriyan@gmail.com,
-       andi@firstfloor.org, kosaki.motohiro@jp.fujitsu.com, mpm@selenic.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [PATCH] pagemap: add page-types tool, fix build
-Message-ID: <20090617111800.GA15261@elte.hu>
-References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org> <20090616223649.719ea378.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	id S1752366AbZFQLTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 07:19:08 -0400
+To: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: paulmck@linux.vnet.ibm.com
+Subject: [PATCH] TOMOYO: Add garbage collector support. (v3)
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Message-Id: <200906172019.EAE00032.OLOJFQVMtFOFSH@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Wed, 17 Jun 2009 20:19:07 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616223649.719ea378.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+This patchset adds garbage collector for TOMOYO.
+This time, I'm using some sort of RCU-like approach instead of cookie-list
+approach.
 
-> On Tue, 16 Jun 2009 15:32:27 -0700 akpm@linux-foundation.org wrote:
+TOMOYO 1/3: Move sleeping operations to outside the semaphore.
+6 files changed, 231 insertions(+), 345 deletions(-)
+
+TOMOYO 2/3: Replace tomoyo_save_name() with tomoyo_get_name()/tomoyo_put_name().
+5 files changed, 70 insertions(+), 23 deletions(-)
+
+TOMOYO 3/3: Add RCU-like garbage collector.
+7 files changed, 733 insertions(+), 358 deletions(-)
+
+Paul E. McKenney wrote ( http://lkml.org/lkml/2009/5/27/2 ) :
+> I would also recommend the three-part LWN series as a starting point:
 > 
-> > --- a/Documentation/vm/Makefile~pagemap-add-page-types-tool
-> > +++ a/Documentation/vm/Makefile
-> > @@ -2,7 +2,7 @@
-> >  obj- := dummy.o
-> >  
-> >  # List of programs to build
-> > -hostprogs-y := slabinfo
-> > +hostprogs-y := slabinfo slqbinfo page-types
-> 
-> hrm, slqbinfo shouldn't be there.  Thwap at people adding 
-> non-2.6.31 material to linux-next, thwap at me for apparently not 
-> running allmodconfig.
+> #       http://lwn.net/Articles/262464/ (What is RCU, Fundamentally?)
+> #       http://lwn.net/Articles/263130/ (What is RCU's Usage?)
+> #       http://lwn.net/Articles/264090/ (What is RCU's API?)
+I've read these articles. They are very good.
 
-I just ran into this while merging to latest -git - fix below.
+I came up with an idea that we may be able to implement GC while readers are
+permitted to sleep but no read locks are required.
 
-	Ingo
+The idea is to have two counters which hold the number of readers currently
+reading the list, one is active and the other is inactive. Reader increments
+the currently active counter before starts reading and decrements that counter
+after finished reading. GC swaps active counter and inactive counter and waits
+for previously active counter's count to become 0 before releasing elements
+removed from the list.
+Code is shown below.
 
------------------>
->From c89779f6a5c50a8827b803193e87a3e559972391 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 17 Jun 2009 13:14:21 +0200
-Subject: [PATCH] pagemap: add page-types tool, fix build
+atomic_t users_counter[2];
+atomic_t users_counter_idx;
+DEFINE_MUTEX(updator_mutex);
+DEFINE_MUTEX(gc_mutex);
 
-Latest -git fails to build:
+--- reader ---
+{
+	/* Get counter index. */
+	int idx = atomic_read(&users_counter_idx);
+	/* Lock counter. */
+	atomic_inc(&users_counter[idx]);
+	list_for_each_entry_rcu() {
+		... /* Allowed to sleep. */
+	}
+	/* Unlock counter. */
+	atomic_dec(&users_counter[idx]);
+}
 
- make[2]: *** No rule to make target `Documentation/vm/slqbinfo.c',
- needed by `Documentation/vm/slqbinfo'.  Stop.
+--- writer ---
+{
+	bool found = false;
+	/* Get lock for writing. */
+	mutex_lock(&updater_mutex);
+	list_for_each_entry_rcu() {
+		if (...)
+			continue;
+		found = true;
+		break;
+	}
+	if (!found)
+		list_add_rcu(element);
+	/* Release lock for writing. */
+	mutex_unlock(&updater_mutex);
+}
 
-but slqbinfo.c is not yet upstream. Fix the makefile.
+--- garbage collector ---
+{
+	bool element_deleted = false;
+	/* Protect the counters from concurrent GC threads. */
+	mutex_lock(&gc_mutex);
+	/* Get lock for writing. */
+	mutex_lock(&updater_mutex);
+	list_for_each_entry_rcu() {
+		if (...)
+			continue;
+		list_del_rcu(element);
+		element_deleted = true;
+		break;
+	}
+	/* Release lock for writing. */
+	mutex_unlock(&updater_mutex);
+	if (element_deleted) {
+		/* Swap active counter. */
+		const int idx = atomic_read(&users_counter_idx);
+		atomic_set(&users_counter_idx, idx ^ 1);
+		/*
+		 * Wait for readers who are using previously active counter.
+		 * This is similar to synchronize_rcu() while this code allows
+		 * readers to do operations which may sleep.
+		 */
+		while (atomic_read(&users_counter[idx]))
+			msleep(1000);
+		/*
+		 * Nobody is using previously active counter.
+		 * Ready to release memory of elements removed before
+		 * previously active counter became inactive.
+		 */
+		kfree(element);
+	}
+	mutex_unlock(&gc_mutex);
+}
 
-Cc: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- Documentation/vm/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+In this idea, GC's kfree() call may be deferred for unknown duration, but
+defer duration will not matter if we use a dedicated kernel thread for GC.
 
-diff --git a/Documentation/vm/Makefile b/Documentation/vm/Makefile
-index 27479d4..5bd269b 100644
---- a/Documentation/vm/Makefile
-+++ b/Documentation/vm/Makefile
-@@ -2,7 +2,7 @@
- obj- := dummy.o
- 
- # List of programs to build
--hostprogs-y := slabinfo slqbinfo page-types
-+hostprogs-y := slabinfo page-types
- 
- # Tell kbuild to always build the programs
- always := $(hostprogs-y)
+I noticed that there is QRCU in the "RCU has a Family of Wait-to-Finish APIs"
+section. My idea seems to resemble QRCU except grace periods.
+But "Availability" field is empty. Oh, what happened to QRCU?
+
+Regards.
