@@ -1,84 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbZFQMwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933286AbZFQMxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933220AbZFQMwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 08:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759452AbZFQMwp
+	id S933286AbZFQMxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 08:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765463AbZFQMxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 08:52:45 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:52110 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759325AbZFQMwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 08:52:45 -0400
-Subject: [PATCH] kmemleak: Only use GFP_KERNEL|GFP_ATOMIC for the internal
-	allocations
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, fengguang.wu@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090617124034.GE28529@csn.ul.ie>
-References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org>
-	 <20090616223649.719ea378.akpm@linux-foundation.org>
-	 <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu>
-	 <1245240677.11889.17.camel@pc1117.cambridge.arm.com>
-	 <20090617122803.GD28529@csn.ul.ie>
-	 <1245242160.11889.23.camel@pc1117.cambridge.arm.com>
-	 <20090617124034.GE28529@csn.ul.ie>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 17 Jun 2009 13:52:10 +0100
-Message-Id: <1245243130.11889.27.camel@pc1117.cambridge.arm.com>
+	Wed, 17 Jun 2009 08:53:15 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:43808 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759452AbZFQMxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 08:53:13 -0400
+Subject: [BUILD FAILURE 02/04] Next June 04:PPC64 randconfig
+	[drivers/usb/host/ohci-hcd.o]
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: David Brownell <david-b@pacbell.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-usb@vger.kernel.org,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux-Next <linux-next@vger.kernel.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, kernel@wantstofly.org
+In-Reply-To: <1245048679.5239.8.camel@subratamodak.linux.ibm.com>
+References: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
+	 <200906091738.58154.david-b@pacbell.net>
+	 <1244799348.5234.13.camel@subratamodak.linux.ibm.com>
+	 <1245048679.5239.8.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: IBM
+Date: Wed, 17 Jun 2009 18:23:06 +0530
+Message-Id: <1245243186.4870.5.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jun 2009 12:52:11.0860 (UTC) FILETIME=[6E944940:01C9EF4A]
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kmemleak allocates memory for pointer tracking and it tries to avoid
-using GFP_ATOMIC if the caller doesn't require it. However other gfp
-flags may be passed by the caller which aren't required by kmemleak.
-This patch filters the gfp flags so that only GFP_KERNEL | GFP_ATOMIC
-are used.
+On Mon, 2009-06-15 at 12:21 +0530, Subrata Modak wrote:
+> On Fri, 2009-06-12 at 15:05 +0530, Subrata Modak wrote: 
+> > On Tue, 2009-06-09 at 17:38 -0700, David Brownell wrote:
+> > > On Friday 05 June 2009, Subrata Modak wrote:
+> > > > Correct, it fixes the issue. However, since few changes might have gone
+> > > > to the Kconfig, the patch does not apply cleanly. Below is the patch, just
+> > > > a retake of the earlier one, but on the latest code. 
+> > > 
+> > > And it got mangled a bit along the way.  Plus, the original one
+> > > goofed up Kconfig dependency displays ... both issues fixed in
+> > > this version, against current mainline GIT.
+> > > 
+> > > If someone can verify all four PPC/OF/OHCI configs build on
+> > > on PPC64, I'm OK with it.
+> > > 
+> > > - Dave
+> > 
+> > Dave,
+> > 
+> > Sorry for being late. The patch fixes the issue on the latest git for
+> > PPC64. Infact, the whole drivers/usb/host/ builds just fine:
+> > 
+> > linux-2.6 # make drivers/usb/host/
+> >   CHK     include/linux/version.h
+> >   CHK     include/linux/utsrelease.h
+> >   SYMLINK include/asm -> include/asm-powerpc
+> >   CALL    scripts/checksyscalls.sh
+> >   CC      drivers/usb/host/ohci-hcd.o
+> >   CC      drivers/usb/host/pci-quirks.o
+> >   CC      drivers/usb/host/uhci-hcd.o
+> >   LD      drivers/usb/host/built-in.o
+> >   CC [M]  drivers/usb/host/isp116x-hcd.o
+> >   CC [M]  drivers/usb/host/u132-hcd.o
+> > 
+> > You can check in the patch now.
+> 
+> Dave,
+> 
+> Have you checked in this patch ? Or, does it require some more
+> modification/updates from somebody´s side ?
+> 
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
----
- mm/kmemleak.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Dave,
 
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 58ec86c..25e2034 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -109,6 +109,9 @@
- 
- #define BYTES_PER_POINTER	sizeof(void *)
- 
-+/* GFP bitmask for kmemleak internal allocations */
-+#define GFP_KMEMLEAK_MASK	(GFP_KERNEL | GFP_ATOMIC)
-+
- /* scanning area inside a memory block */
- struct kmemleak_scan_area {
- 	struct hlist_node node;
-@@ -462,7 +465,7 @@ static void create_object(unsigned long ptr, size_t size, int min_count,
- 	struct prio_tree_node *node;
- 	struct stack_trace trace;
- 
--	object = kmem_cache_alloc(object_cache, gfp & ~GFP_SLAB_BUG_MASK);
-+	object = kmem_cache_alloc(object_cache, gfp & GFP_KMEMLEAK_MASK);
- 	if (!object) {
- 		kmemleak_panic("kmemleak: Cannot allocate a kmemleak_object "
- 			       "structure\n");
-@@ -636,7 +639,7 @@ static void add_scan_area(unsigned long ptr, unsigned long offset,
- 		return;
- 	}
- 
--	area = kmem_cache_alloc(scan_area_cache, gfp & ~GFP_SLAB_BUG_MASK);
-+	area = kmem_cache_alloc(scan_area_cache, gfp & GFP_KMEMLEAK_MASK);
- 	if (!area) {
- 		kmemleak_warn("kmemleak: Cannot allocate a scan area\n");
- 		goto out;
+Would you consider checking in this patch ?
 
+Regards--
+Subrata
+
+> Regards--
+> Subrata
+> 
+> > 
+> > Regards--
+> > Subrata
+> > 
+> > > 
+> > > 
+> > > ========== CUT HERE
+> > > From: Arnd Bergmann <arnd@arndb.de>
+> > > Subject: fix build failure for PPC64 randconfig [usb/ohci]
+> > > 
+> > > We could just make the USB_OHCI_HCD_PPC_OF option implicit
+> > > and selected only if at least one of USB_OHCI_HCD_PPC_OF_BE
+> > > and USB_OHCI_HCD_PPC_OF_LE are set.
+> > > 
+> > > [ dbrownell@users.sourceforge.net: fix patch manglation and dependencies ]
+> > > 
+> > > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > > Resent-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+> > > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > > ---
+> > >  drivers/usb/host/Kconfig |   29 +++++++++++++++--------------
+> > >  1 file changed, 15 insertions(+), 14 deletions(-)
+> > > 
+> > > --- a/drivers/usb/host/Kconfig
+> > > +++ b/drivers/usb/host/Kconfig
+> > > @@ -180,26 +180,27 @@ config USB_OHCI_HCD_PPC_SOC
+> > >  	  Enables support for the USB controller on the MPC52xx or
+> > >  	  STB03xxx processor chip.  If unsure, say Y.
+> > > 
+> > > -config USB_OHCI_HCD_PPC_OF
+> > > -	bool "OHCI support for PPC USB controller on OF platform bus"
+> > > -	depends on USB_OHCI_HCD && PPC_OF
+> > > -	default y
+> > > -	---help---
+> > > -	  Enables support for the USB controller PowerPC present on the
+> > > -	  OpenFirmware platform bus.
+> > > -
+> > >  config USB_OHCI_HCD_PPC_OF_BE
+> > > -	bool "Support big endian HC"
+> > > -	depends on USB_OHCI_HCD_PPC_OF
+> > > -	default y
+> > > +	bool "OHCI support for OF platform bus (big endian)"
+> > > +	depends on USB_OHCI_HCD && PPC_OF
+> > >  	select USB_OHCI_BIG_ENDIAN_DESC
+> > >  	select USB_OHCI_BIG_ENDIAN_MMIO
+> > > +	---help---
+> > > +	  Enables support for big-endian USB controllers present on the
+> > > +	  OpenFirmware platform bus.
+> > > 
+> > >  config USB_OHCI_HCD_PPC_OF_LE
+> > > -	bool "Support little endian HC"
+> > > -	depends on USB_OHCI_HCD_PPC_OF
+> > > -	default n
+> > > +	bool "OHCI support for OF platform bus (little endian)"
+> > > +	depends on USB_OHCI_HCD && PPC_OF
+> > >  	select USB_OHCI_LITTLE_ENDIAN
+> > > +	---help---
+> > > +	  Enables support for little-endian USB controllers present on the
+> > > +	  OpenFirmware platform bus.
+> > > +
+> > > +config USB_OHCI_HCD_PPC_OF
+> > > +	bool
+> > > +	depends on USB_OHCI_HCD && PPC_OF
+> > > +	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
+> > > 
+> > >  config USB_OHCI_HCD_PCI
+> > >  	bool "OHCI support for PCI-bus USB controllers"
+> > > 
 
