@@ -1,100 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762250AbZFQOPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbZFQORi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762250AbZFQOPo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZFQOPe
+	id S1760751AbZFQORi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZFQORa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:15:34 -0400
-Received: from gate.crashing.org ([63.228.1.57]:52058 "EHLO gate.crashing.org"
+	Wed, 17 Jun 2009 10:17:30 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60763 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbZFQOPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:15:34 -0400
-Cc: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Message-Id: <34BD6A89-A05E-40CC-A495-017BFB08B796@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <19000.55631.802122.696927@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 5/6] perf_counter: powerpc: Add processor back-end for MPC7450 family
-Date: Wed, 17 Jun 2009 09:14:58 -0500
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com> <19000.55631.802122.696927@cargo.ozlabs.ibm.com>
-X-Mailer: Apple Mail (2.935.3)
+	id S1754053AbZFQOR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 10:17:29 -0400
+Subject: Re: [PATCH]x86-tsc.c : fix compile warning
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: "Figo.zhang" <figo1802@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Sumit Panchasara <sumit.panchasara@einfochips.com>,
+       "'Sachin P Sant'" <sachinp@linux.vnet.ibm.com>,
+       "'H. Peter Anvin'" <hpa@zytor.com>, "'Frans Pop'" <elendil@planet.nl>,
+       "'Andi Kleen'" <andi@firstfloor.org>,
+       "'Thomas Gleixner'" <tglx@linutronix.de>,
+       "'Balbir Singh'" <balbir@linux.vnet.ibm.com>
+In-Reply-To: <bb33bcf20906170700i4a4ea802yf1da08e9870d6221@mail.gmail.com>
+References: <1245247057.3312.2.camel@myhost>
+	 <bb33bcf20906170700i4a4ea802yf1da08e9870d6221@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: IBM
+Date: Wed, 17 Jun 2009 19:47:21 +0530
+Message-Id: <1245248241.4870.12.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> fix compile warning:
+> arch/x86/kernel/tsc.c: In function ‘time_cpufreq_notifier’:
+> arch/x86/kernel/tsc.c:635: warning: ‘dummy’ may be used uninitialized in
+> this function
+> 
+> Signed-off-by: Figo.zhang <figo1802@gmail.com>
 
-On Jun 17, 2009, at 6:53 AM, Paul Mackerras wrote:
+Hello Figo,
 
-> This adds support for the performance monitor hardware on the
-> MPC7450 family of processors (7450, 7451, 7455, 7447/7457, 7447A,
-> 7448), used in the later Apple G4 powermacs/powerbooks and other
-> machines.  These machines have 6 hardware counters with a unique
-> set of events which can be counted on each counter, with some
-> events being available on multiple counters.
->
-> Raw event codes for these processors are (PMC << 8) + PMCSEL.
-> If PMC is non-zero then the event is that selected by the given
-> PMCSEL value for that PMC (hardware counter).  If PMC is zero
-> then the event selected is one of the low-numbered ones that are
-> common to several PMCs.  In this case PMCSEL must be <= 22 and
-> the event is what that PMCSEL value would select on PMC1 (but
-> it may be placed any other PMC that has the same event for that
-> PMCSEL value).
->
-> For events that count cycles or occurrences that exceed a threshold,
-> the threshold requested can be specified in the 0x3f000 bits of the
-> raw event codes.  If the event uses the threshold multiplier bit
-> and that bit should be set, that is indicated with the 0x40000 bit
-> of the raw event code.
->
-> This fills in some of the generic cache events.  Unfortunately there
-> are quite a few blank spaces in the table, partly because these
-> processors tend to count cache hits rather than cache accesses.
->
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+Please refer to the following links on discussion on this issue earlier:
+http://lkml.org/lkml/2009/5/19/312
+http://lkml.org/lkml/2009/5/19/301
+http://lkml.org/lkml/2009/5/20/23
+
+I tried to fix it in some other way.
+
+Regards--
+Subrata
+
 > ---
-> arch/powerpc/kernel/Makefile           |    2 +
-> arch/powerpc/kernel/mpc7450-pmu.c      |  417 +++++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/platforms/Kconfig.cputype |    1 +
-> 3 files changed, 420 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/kernel/mpc7450-pmu.c
->
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/ 
-> Makefile
-> index c5f93f0..a9f8829 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -98,6 +98,7 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
-> obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_counter.o
-> obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5- 
-> pmu.o \
-> 				   power5+-pmu.o power6-pmu.o power7-pmu.o
-
-This should be something like:
-
-obj64-$(CONFIG_PPC_PERF_CTRS)-$(PPC_BOOK3S_64)
-
-> +obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
-
-obj32-$(CONFIG_PPC_PERF_CTRS)-$(PPC_BOOK3S_32)
-
-Or use new Kconfig types as I suggested on patch 1/6
+> arch/x86/kernel/tsc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index ae3180c..e65492a 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -632,7 +632,7 @@ static int time_cpufreq_notifier(struct
+> notifier_block *nb, unsigned long val,
+>                                void *data)
+>  {
+>        struct cpufreq_freqs *freq = data;
+> -       unsigned long *lpj, dummy;
+> +       unsigned long *lpj, dummy = 0;
+> 
+>        if (cpu_has(&cpu_data(freq->cpu), X86_FEATURE_CONSTANT_TSC))
+>                return 0;
+> 
 
 
-> obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
->
-> @@ -106,6 +107,7 @@ obj-y				+= iomap.o
-> endif
->
-> obj-$(CONFIG_PPC64)		+= $(obj64-y)
-> +obj-$(CONFIG_PPC32)		+= $(obj32-y)
->
-> ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
-> obj-y				+= ppc_save_regs.o
-> diff --git a/arch/powerpc/kernel/mpc7450-pmu.c b/arch/pow
