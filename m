@@ -1,70 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbZFQNYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbZFQN1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933271AbZFQNYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZFQNYL
+	id S1754841AbZFQN1n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZFQN1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:24:11 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:56563 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753904AbZFQNYK (ORCPT
+	Wed, 17 Jun 2009 09:27:35 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:33612 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbZFQN1e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:24:10 -0400
-Subject: Re: [PATCH] kmemleak: Only use GFP_KERNEL|GFP_ATOMIC for the
-	internal  allocations
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <84144f020906170601l254d3b29udc688d02426ea247@mail.gmail.com>
-References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org>
-	 <20090616223649.719ea378.akpm@linux-foundation.org>
-	 <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu>
-	 <1245240677.11889.17.camel@pc1117.cambridge.arm.com>
-	 <20090617122803.GD28529@csn.ul.ie>
-	 <1245242160.11889.23.camel@pc1117.cambridge.arm.com>
-	 <20090617124034.GE28529@csn.ul.ie>
-	 <1245243130.11889.27.camel@pc1117.cambridge.arm.com>
-	 <84144f020906170601l254d3b29udc688d02426ea247@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 17 Jun 2009 14:23:27 +0100
-Message-Id: <1245245007.11889.42.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jun 2009 13:23:28.0789 (UTC) FILETIME=[CD50EC50:01C9EF4E]
+	Wed, 17 Jun 2009 09:27:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CwNLC9Mnk5gCmzt1uX7xOyYOKSOCfkcsaAjyI6TfyQHEP5r5q51autoRzeBWuRuuSB
+         8N4Vi2SucCfw+odkNzSDeULhz0c9yqUk4hDwDEKDhkB6QfJb9FSC5a5RG0mFoNITJJwW
+         CYx4pH0acC0c/tat9z2qlQZJGAAmQqSPw751A=
+MIME-Version: 1.0
+In-Reply-To: <20090617072319.GA5841@localhost>
+References: <20090615024520.786814520@intel.com>
+	 <20090615031253.530308256@intel.com>
+	 <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com>
+	 <20090615152612.GA11700@localhost>
+	 <20090616090308.bac3b1f7.minchan.kim@barrios-desktop>
+	 <20090616134944.GB7524@localhost>
+	 <20090617092826.56730a10.minchan.kim@barrios-desktop>
+	 <20090617072319.GA5841@localhost>
+Date: Wed, 17 Jun 2009 22:27:36 +0900
+Message-ID: <28c262360906170627p2e57f907y2f8bbdc9fd5804f2@mail.gmail.com>
+Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in 
+	try_to_unmap
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-17 at 16:01 +0300, Pekka Enberg wrote:
-> On Wed, Jun 17, 2009 at 3:52 PM, Catalin Marinas<catalin.marinas@arm.com> wrote:
-> > Kmemleak allocates memory for pointer tracking and it tries to avoid
-> > using GFP_ATOMIC if the caller doesn't require it. However other gfp
-> > flags may be passed by the caller which aren't required by kmemleak.
-> > This patch filters the gfp flags so that only GFP_KERNEL | GFP_ATOMIC
-> > are used.
-> >
-> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> 
-> Is this really safe? What if we're in a middle of a filesystem
-> operation that uses GFP_NOFAIL and all of a sudden kmemleak allocation
-> fails and causes a panic?
+On Wed, Jun 17, 2009 at 4:23 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Wed, Jun 17, 2009 at 08:28:26AM +0800, Minchan Kim wrote:
+>> On Tue, 16 Jun 2009 21:49:44 +0800
+>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+>>
+>> > On Tue, Jun 16, 2009 at 08:03:08AM +0800, Minchan Kim wrote:
+>> > > On Mon, 15 Jun 2009 23:26:12 +0800
+>> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+>> > >
+>> > > > On Mon, Jun 15, 2009 at 09:09:03PM +0800, Minchan Kim wrote:
+>> > > > > On Mon, Jun 15, 2009 at 11:45 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+>> > > > > > From: Andi Kleen <ak@linux.intel.com>
+>> > > > > >
+>> > > > > > When a page has the poison bit set replace the PTE with a poison entry.
+>> > > > > > This causes the right error handling to be done later when a process runs
+>> > > > > > into it.
+>> > > > > >
+>> > > > > > Also add a new flag to not do that (needed for the memory-failure handler
+>> > > > > > later)
+>> > > > > >
+>> > > > > > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+>> > > > > > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+>> > > > > >
+>> > > > > > ---
+>> > > > > >  include/linux/rmap.h |    1 +
+>> > > > > >  mm/rmap.c            |    9 ++++++++-
+>> > > > > >  2 files changed, 9 insertions(+), 1 deletion(-)
+>> > > > > >
+>> > > > > > --- sound-2.6.orig/mm/rmap.c
+>> > > > > > +++ sound-2.6/mm/rmap.c
+>> > > > > > @@ -958,7 +958,14 @@ static int try_to_unmap_one(struct page
+>> > > > > >        /* Update high watermark before we lower rss */
+>> > > > > >        update_hiwater_rss(mm);
+>> > > > > >
+>> > > > > > -       if (PageAnon(page)) {
+>> > > > > > +       if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
+>> > > > > > +               if (PageAnon(page))
+>> > > > > > +                       dec_mm_counter(mm, anon_rss);
+>> > > > > > +               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
+>> > > > >
+>> > > > > Isn't it straightforward to use !is_hwpoison_entry ?
+>> > > >
+>> > > > Good catch!  It looks like a redundant check: the
+>> > > > page_check_address() at the beginning of the function guarantees that
+>> > > > !is_migration_entry() or !is_migration_entry() tests will all be TRUE.
+>> > > > So let's do this?
+>> > > It seems you expand my sight :)
+>> > >
+>> > > I don't know migration well.
+>> > > How page_check_address guarantee it's not migration entry ?
+>> >
+>> > page_check_address() calls pte_present() which returns the
+>> > (_PAGE_PRESENT | _PAGE_PROTNONE) bits. While x86-64 defines
+>> >
+>> > #define __swp_entry(type, offset)       ((swp_entry_t) { \
+>> >                                          ((type) << (_PAGE_BIT_PRESENT + 1)) \
+>> >                                          | ((offset) << SWP_OFFSET_SHIFT) })
+>> >
+>> > where SWP_OFFSET_SHIFT is defined to the bigger one of
+>> > max(_PAGE_BIT_PROTNONE + 1, _PAGE_BIT_FILE + 1) = max(8+1, 6+1) = 9.
+>> >
+>> > So __swp_entry(type, offset) := (type << 1) | (offset << 9)
+>> >
+>> > We know that the swap type is 5 bits. So the bit 0 _PAGE_PRESENT and bit 8
+>> > _PAGE_PROTNONE will all be zero for swap entries.
+>> >
+>>
+>> Thanks for kind explanation :)
+>
+> You are welcome~
+>
+>> >
+>> > > In addtion, If the page is poison while we are going to
+>> > > migration((PAGE_MIGRATION && migration) == TRUE), we should decrease
+>> > > file_rss ?
+>> >
+>> > It will die on trying to migrate the poisoned page so we don't care
+>> > the accounting. But normally the poisoned page shall already be
+>>
+>>
+>> Okay. then, how about this ?
+>> We should not increase file_rss on trying to migrate the poisoned page
+>>
+>> -               else if (!is_migration_entry(pte_to_swp_entry(*pte)))
+>> +               else if (!(PAGE_MIGRATION && migration))
+>
+> This is good if we are going to stop the hwpoison page from being
+> consumed by move_to_new_page(), but I highly doubt we'll ever add
+> PageHWPoison() checks into the migration code.
+>
+> Because this race window is small enough:
+>
+>        TestSetPageHWPoison(p);
+>                                   lock_page(page);
+>                                   try_to_unmap(page, TTU_MIGRATION|...);
+>        lock_page_nosync(p);
+>
+> such small race windows can be found all over the kernel, it's just
+> insane to try to fix any of them.
 
-A kmemleak_panic() call only disables the kmemleak but doesn't stop the
-kernel. The __GFP_NOFAIL allocation had already happened and the pointer
-returned to the caller.
+Sorry for too late response.
 
-If we pass the __GFP_NOFAIL flag via the kmemleak's alloc, we get the
-warning reported by Ingo (though it's not clear to me why this happens
-as a kmemleak_object cache allocation is 192 bytes on a 32 bit machine).
-
-Are there (common) situations where we expect kmemleak's alloc to fail
-without __GFP_NOFAIL?
+I see your point.
+My opinion is that at least we must be notified when such situation happen.
+So I think it would be better to add some warning to fix up it when it
+happen even thought  it is small race window.
 
 -- 
-Catalin
-
+Kinds regards,
+Minchan Kim
