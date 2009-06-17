@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbZFQNxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbZFQNyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933335AbZFQNxl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbZFQNxc
+	id S933071AbZFQNyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765956AbZFQNxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:53:32 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57438 "EHLO mx1.suse.de"
+	Wed, 17 Jun 2009 09:53:49 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36691 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752570AbZFQNxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:53:31 -0400
-Date: Wed, 17 Jun 2009 15:53:31 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 07/11] vfs: Unmap underlying metadata of new data buffers only when buffer is mapped
-Message-ID: <20090617135331.GA20678@wotan.suse.de>
-References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-8-git-send-email-jack@suse.cz> <20090617103543.GB29931@wotan.suse.de> <20090617120520.GD2612@duck.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090617120520.GD2612@duck.suse.cz>
-User-Agent: Mutt/1.5.9i
+	id S1764732AbZFQNxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 09:53:47 -0400
+Cc: subrata@linux.vnet.ibm.com, netdev@vger.kernel.org,
+       Li Yang <leoli@freescale.com>, Nathan Lynch <ntl@pobox.com>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Tony Breeds <tony@bakeyournoodle.com>, michael@ellerman.id.au,
+       Haiying Wang <Haiying.Wang@freescale.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Grant Likely <grant.likely@secretlab.ca>
+Message-Id: <7BC400B3-3BF5-464F-9E0F-6A1427E5742D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20090617233452.03ac78d5.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
+Date: Wed, 17 Jun 2009 08:49:01 -0500
+References: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com> <1245048719.5239.10.camel@subratamodak.linux.ibm.com> <1245243097.4870.3.camel@subratamodak.linux.ibm.com> <6E26D0A1-0FE5-4179-9DA8-FDF0E3D417DA@kernel.crashing.org> <20090617232341.c4543ff2.sfr@canb.auug.org.au> <20090617233452.03ac78d5.sfr@canb.auug.org.au>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 02:05:20PM +0200, Jan Kara wrote:
-> On Wed 17-06-09 12:35:43, Nick Piggin wrote:
-> > On Mon, Jun 15, 2009 at 07:59:54PM +0200, Jan Kara wrote:
-> > > When we do delayed allocation of some buffer, we want to signal to VFS that
-> > > the buffer is new (set buffer_new) so that it properly zeros out everything.
-> > > But we don't have the buffer mapped yet so we cannot really unmap underlying
-> > > metadata in this state. Make VFS avoid doing unmapping of metadata when the
-> > > buffer is not yet mapped.
-> > 
-> > Is this a seperate bugfix for delalloc filesystems? What is the error
-> > case of attempting to unmap underlying metadata of non mapped buffer?
-> > Won't translate to a serious bug will it?
->   If you do unmap_underlying_metadata on !mapped buffer, the kernel will
-> oops because it will try to dereference bh->b_bdev which is NULL. Ext4 or
-> XFS workaround this issue by setting b_bdev to the real device and b_blocknr
-> to ~0 so unmap_underlying_metadata does not oops.  As I didn't want to do
-> the same hack in ext3, I need this patch...
 
-OK, just trying to understand the patchset. It would be nice to
-merge this ASAP as well and remove the ext4 and xfs hacks.
+On Jun 17, 2009, at 8:34 AM, Stephen Rothwell wrote:
 
+> On Wed, 17 Jun 2009 23:23:41 +1000 Stephen Rothwell <sfr@canb.auug.org.au 
+> > wrote:
+>>
+>> Hi Kumar,
+>>
+>> On Wed, 17 Jun 2009 08:07:47 -0500 Kumar Gala <galak@kernel.crashing.org 
+>> > wrote:
+>>>
+>>>
+>>> I'm confused by the proposed fix as we already have *mdio & *ph
+>>> defined in this function:
+>>
+>> Which tree are you looking at?  Linus' tree, and linux-next, do not  
+>> have
+>> those local variables ...
+>
+> Hmmm, commit 0b9da337dca972e7a4144e298ec3adb8f244d4a4 ("net: Rework
+> ucc_geth driver to use of_mdio infrastructure") removed the locals  
+> along
+> with their usages, then commit  
+> 047584ce94108012288554a5f84585d792cc7f8f
+> ("net/ucc_geth: Add SGMII support for UEC GETH driver") added more  
+> uses
+> without adding the variables back.
+>
+> Here is the patch again:
+>
+> From: Subrata Modak <subrata@linux.vnet.ibm.com>
+> Subject: [PATCH] Fix build error in ucc_geth.c
+>
+> Fix the following build error:
+>
+> drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+> drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in  
+> this function)
+> drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is  
+> reported only once
+> drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
+> drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in  
+> this function)
+> make[2]: *** [drivers/net/ucc_geth.o] Error 1
+>
+> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+>
+> --- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10  
+> 11:58:39.000000000 -0500
+> +++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10  
+> 22:28:13.000000000 -0500
+> @@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
+>
+> static int ucc_geth_probe(struct of_device* ofdev, const struct  
+> of_device_id *match)
+> {
+> +	struct device_node *mdio;
+> +	const phandle *ph;
+> 	struct device *device = &ofdev->dev;
+> 	struct device_node *np = ofdev->node;
+> 	struct net_device *dev = NULL;
 
->   You're right it's not directly connected with the mkwrite problem and
-> can go in separately. Given how late it is, I'd like to get patch number 2
-> reviewed (generic mkwrite changes), so that it can go together with patch
-> number 4 (ext4 fixes) in the current merge window. The rest is not that
-> urgent since it's not oopsable and you can hit it only when running out
-> of space (or hitting quota limit)...
+ah... was looking at powerpc next which hasn't pulled in linus's  
+latest tree w/netdev updates.
 
-Sorry I was so late with looking at it. I am reading it now though
-(especially #2) ;)
-
+- k
