@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZFQQh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZFQQhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbZFQQh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZFQQhR
+	id S1758185AbZFQQhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbZFQQhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:37:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:44820 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752828AbZFQQhQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:37:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=SfcWpI7ZuMEtopixTvVK4EBwKXSWC2WEavMqiofscPiMbV88K+I3SvzdyngKnQfiXd
-         O+msoMFhwirCOocPrJyxz0b/FkAJlgT3ANW/Y35UUa+6rcAfPFVNka5p+NxvW4/ABJ0O
-         4mEbW3uEE34A2gi5DqvABgKc2YS6ic1AXPW/k=
-Date: Wed, 17 Jun 2009 20:37:14 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: WARNING: at arch/x86/kernel/apic/apic.c:249
-	native_apic_write_dummy
-Message-ID: <20090617163714.GD10822@lenovo>
-References: <19f34abd0906170811h36a7082asf68294db9490a049@mail.gmail.com> <20090617151439.GC4675@lenovo> <19f34abd0906170846k2a1ab1e9q36f2a47852fbb8a4@mail.gmail.com> <20090617155337.GA10822@lenovo> <19f34abd0906170933m6be38a4cv2e4f49c3b78d71c4@mail.gmail.com>
+	Wed, 17 Jun 2009 12:37:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51967 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755535AbZFQQhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:37:19 -0400
+Date: Wed, 17 Jun 2009 16:36:44 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, efault@gmx.de, mzxreary@0pointer.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de, peterz@infradead.org, mzxreary@0pointer.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1245228482.27326.1.camel@marge.simson.net>
+References: <1245228482.27326.1.camel@marge.simson.net>
+Subject: [tip:sched/core] sched: Add SCHED_RESET_ON_FORK functionality for nice < 0 tasks
+Message-ID: <tip-6c697bdf08a09ce461e305a22362973036e95db3@git.kernel.org>
+Git-Commit-ID: 6c697bdf08a09ce461e305a22362973036e95db3
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <19f34abd0906170933m6be38a4cv2e4f49c3b78d71c4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 16:36:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Vegard Nossum - Wed, Jun 17, 2009 at 06:33:31PM +0200]
-| 2009/6/17 Cyrill Gorcunov <gorcunov@gmail.com>:
-| > Vegard, could you test the patch?
-| >
-| >        -- Cyrill
-| > ---
-| >
-| > If we have apic disabled we don't even switch to APIC mode and do not
-| > calling for connect_bsp_APIC. Though on SMP compiled kernel the
-| > native_machine_shutdown does try to write the apic register anyway.
-| > Fix it with explicit check if we really should touch apic registers.
-| >
-| > Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-| > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-| > ---
-| >  arch/x86/kernel/apic/io_apic.c |    4 +++-
-| >  1 file changed, 3 insertions(+), 1 deletion(-)
-| >
-| > Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-| > =====================================================================
-| > --- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-| > +++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-| > @@ -2003,7 +2003,9 @@ void disable_IO_APIC(void)
-| >        /*
-| >         * Use virtual wire A mode when interrupt remapping is enabled.
-| >         */
-| > -       disconnect_bsp_APIC(!intr_remapping_enabled && ioapic_i8259.pin != -1);
-| > +       if (cpu_has_apic)
-| > +               disconnect_bsp_APIC(!intr_remapping_enabled &&
-| > +                               ioapic_i8259.pin != -1);
-| >  }
-| >
-| >  #ifdef CONFIG_X86_32
-| >
-| 
-| Seems to work here:
-| 
-| [  317.596743] ACPI: Preparing to enter system sleep state S5
-| [  317.633421] Disabling non-boot CPUs ...
-| [  317.637493] Power down.
-| [  317.638305] acpi_power_off called
-| 
-| and no warning.
-| 
-| Thanks!
-| 
-| 
-| Vegard
-|
+Commit-ID:  6c697bdf08a09ce461e305a22362973036e95db3
+Gitweb:     http://git.kernel.org/tip/6c697bdf08a09ce461e305a22362973036e95db3
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Wed, 17 Jun 2009 10:48:02 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 17 Jun 2009 18:34:18 +0200
 
-Thanks for testing Vegard! I'll recheck again and send
-properly formed patch a bit later.
+sched: Add SCHED_RESET_ON_FORK functionality for nice < 0 tasks
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Acked-by: Lennart Poettering <mzxreary@0pointer.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1245228482.27326.1.camel@marge.simson.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/sched.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 50e4e3d..34f9424 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2627,6 +2627,11 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 		if (p->normal_prio < DEFAULT_PRIO)
+ 			p->prio = DEFAULT_PRIO;
  
-	-- Cyrill
++		if (PRIO_TO_NICE(p->static_prio) < 0) {
++			p->static_prio = NICE_TO_PRIO(0);
++			set_load_weight(p);
++		}
++
+ 		/*
+ 		 * We don't need the reset flag anymore after the fork. It has
+ 		 * fulfilled its duty:
