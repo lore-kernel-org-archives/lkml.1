@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761384AbZFQURg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761351AbZFQUWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761384AbZFQURg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 16:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760369AbZFQUR1
+	id S1761351AbZFQUWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 16:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbZFQUWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 16:17:27 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49349 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbZFQUR0 (ORCPT
+	Wed, 17 Jun 2009 16:22:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60819 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756024AbZFQUWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 16:17:26 -0400
-Date: Wed, 17 Jun 2009 14:17:28 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Patterson <andrew.patterson@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in
-	resources trees
-Message-ID: <20090617201727.GV19977@parisc-linux.org>
-References: <20090616220419.14021.84524.stgit@bob.kio> <4A38B3B4.1020304@jp.fujitsu.com> <20090617134311.GR19977@parisc-linux.org> <alpine.LFD.2.01.0906170922380.16802@localhost.localdomain> <1245260533.8234.241.camel@bluto.andrew> <alpine.LFD.2.01.0906171047050.16802@localhost.localdomain> <1245269316.8234.270.camel@bluto.andrew> <alpine.LFD.2.01.0906171309500.16802@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906171309500.16802@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Jun 2009 16:22:08 -0400
+Date: Wed, 17 Jun 2009 13:21:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, jpirko@redhat.com,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, linux-mm@kvack.org,
+       mingo@elte.hu
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+Message-Id: <20090617132118.ef839ad7.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0904060811300.22841@blonde.anvils>
+References: <20090405084902.GA4411@psychotron.englab.brq.redhat.com>
+	<Pine.LNX.4.64.0904051736210.23536@blonde.anvils>
+	<20090406091825.44F0.A69D9226@jp.fujitsu.com>
+	<Pine.LNX.4.64.0904060811300.22841@blonde.anvils>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 01:12:42PM -0700, Linus Torvalds wrote:
-> On Wed, 17 Jun 2009, Andrew Patterson wrote:
-> > > 
-> > > This is why I'd really like to see the output of my test-patch. It would 
-> > > show exactly _where_ that resource is inserted, and the whole call-chain.
-> > > 
-> > > I'm appending a version that only does it for resources that have names 
-> > > starting with "PCI Bus", so it should be less noisy. But again, it's 
-> > > totally untested.
-> > > 
+On Mon, 6 Apr 2009 08:22:07 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
+
+> On Mon, 6 Apr 2009, KOSAKI Motohiro wrote:
 > > 
-> > Here you go (I can provide the full boot log if needed). Note, there is
-> > nothing for c3 here:
+> > > I'm worrying particularly about the fork/exec issue you highlight.
+> > > You're exemplary in providing your test programs, but there's a big
+> > > omission: you don't mention that the first test, "./getrusage -lc",
+> > > gives a very different result on Linux than you say it does on BSD -
+> > > you say the BSD fork line is "fork: self 0 children 0", whereas
+> > > I find my Linux fork line is "fork: self 102636 children 0".
+> > 
+> > FreeBSD update rusage at tick updating point. (I think all bsd do that)
+> > Then, bsd displaing 0 is bsd's problem :)
 > 
-> Ok, so that means it got inserted into the resource tree some other way 
-> entirely. Or maybe the name got changed after-the-fact. Both of which 
-> imply that something is really really wrong.
+> Ah, thank you.
+> 
+> > 
+> > Do I must change test program?
+> 
+> Apparently somebody needs to, please; though it appears to be already
+> well supplied with usleep(1)s - maybe they needed to be usleep(2)s?
+> 
+> And then change results shown in the changelog, and check conclusions
+> drawn from them (if BSD is behaving as we do, it should still show
+> maxrss not inherited over fork, but less obviously - the number goes
+> down slightly, because the history is lost, but nowhere near to zero).
+> 
 
-Yes.
-
-> The ones your trace _does_ show are the ones that got inserted correctly 
-> and aren't buggy. Can anybody see how that buggy resource got inserted?
-
-Carefully studying the results of git grep insert_resource doesn't show
-too many options.  Most are in code which doesn't get executed on ia64.
-add_window is the only one which looks even remotely plausible, and
-that's only supposed to be called for root bridges.
-
-I did notice that pcibios_setup_root_windows() is being called too late.
-It's currently called after pci_scan_bus_parented() when it needs to be
-called from pcibios_fixup_bus() [ie during the scan_bus, before child
-busses are scanned].
-
-Andrew's currently testing this patch:
-
-
-diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
-index 61f1af5..ae5ee8a 100644
---- a/arch/ia64/pci/pci.c
-+++ b/arch/ia64/pci/pci.c
-@@ -371,8 +371,6 @@ pci_acpi_scan_root(struct acpi_device *device, int domain, int bus)
- 	 * such quirk. So we just ignore the case now.
- 	 */
- 	pbus = pci_scan_bus_parented(NULL, bus, &pci_root_ops, controller);
--	if (pbus)
--		pcibios_setup_root_windows(pbus, controller);
- 
- 	return pbus;
- 
-@@ -490,6 +488,8 @@ pcibios_fixup_bus (struct pci_bus *b)
- 	if (b->self) {
- 		pci_read_bridge_bases(b);
- 		pcibios_fixup_bridge_resources(b->self);
-+	} else {
-+		pcibios_setup_root_windows(b, b->sysdata);
- 	}
- 	list_for_each_entry(dev, &b->devices, bus_list)
- 		pcibios_fixup_device_resources(dev);
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+afaik none of this happened, so I have the patch on hold.
