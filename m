@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934014AbZFQO3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbZFQO33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934014AbZFQO3E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:29:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757311AbZFQO2x
+	id S934065AbZFQO33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763585AbZFQO3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:28:53 -0400
-Received: from claw.goop.org ([74.207.240.146]:57653 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141AbZFQO2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:28:53 -0400
-Message-ID: <4A38FD96.6090109@goop.org>
-Date: Wed, 17 Jun 2009 07:28:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH 01/16] x86/oprofile: add module parameter option to	force
- a core 2 cpu
-References: <1245183355-25808-1-git-send-email-jeremy@goop.org> <1245183355-25808-2-git-send-email-jeremy@goop.org> <20090617105725.GS18016@erda.amd.com>
-In-Reply-To: <20090617105725.GS18016@erda.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Jun 2009 10:29:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:16671 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754871AbZFQO3U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 10:29:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=RKxuGHQdmc62jG/affROgBATHuK4zkome01/KNrUF/3tylrZPd/v0cjSwshOEqZwuz
+         /I9alGqvIFI6VYDDYPSA9TyTn3iG4bBf/5KNoA3xUF8bArAdqS4PJ6lcWJP3rjx1luvM
+         NBVPCnmkOk7LQaLKrbKt73ghCufKJVDc0ie9s=
+Subject: Re: [PATCH]io_apic.c: fix compile warning
+From: "Figo.zhang" <figo1802@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090617152846.72804bae@lxorguk.ukuu.org.uk>
+References: <1245248720.3312.27.camel@myhost>
+	 <20090617152846.72804bae@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Jun 2009 22:29:18 +0800
+Message-Id: <1245248958.3312.28.camel@myhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/17/09 03:57, Robert Richter wrote:
-> On 16.06.09 13:15:40, Jeremy Fitzhardinge wrote:
->    
->> From: Robert Richter<robert.richter@amd.com>
->>
->> The current userland does not yet fully support all cpu types
->> implemented in the kernel. With the module parameter:
->>
->>   oprofile.cpu_type=core_2
->>
->> the kernel reports a core_2 cpu to the userland on an Intel system and
->> thus makes oprofile usable with current distros.
->>
->> Cc: Linus Torvalds<torvalds@linux-foundation.org>
->> Cc: Andi Kleen<ak@linux.intel.com>
->> Signed-off-by: Robert Richter<robert.richter@amd.com>
->> ---
->>   Documentation/kernel-parameters.txt |    3 ++-
->>   arch/x86/oprofile/nmi_int.c         |   17 ++++++++++++++---
->>   2 files changed, 16 insertions(+), 4 deletions(-)
->>      
->
-> Jeremy,
->
-> I dropped this patch. See this thread:
->
->   http://lkml.org/lkml/2009/5/6/234
->
-> Does your patch series depends on this?
->    
+On Wed, 2009-06-17 at 15:28 +0100, Alan Cox wrote:
+> On Wed, 17 Jun 2009 22:25:20 +0800
+> "Figo.zhang" <figo1802@gmail.com> wrote:
+> 
+> > fix compile warning:
+> > arch/x86/kernel/apic/io_apic.c: In function ‘ioapic_write_entry’:
+> > arch/x86/kernel/apic/io_apic.c:466: warning: ‘eu’ is used uninitialized in this function
+> > arch/x86/kernel/apic/io_apic.c:465: note: ‘eu’ was declared here
+> 
+> What compiler are you using. Current gcc correctly notices that there are
+> no uninitialized things to worry about ?
 
-Confused.  I haven't done anything with oprofile or nmi lately.  I don't 
-recognize the patch you're quoting.
+hi Alan:
+my gcc is:
 
-     J
+[figo@myhost linux-2.6]$ gcc -v
+Using built-in specs.
+Target: i686-pc-linux-gnu
+Configured with: ../configure --prefix=/usr --enable-shared
+--enable-languages=c,c++,fortran,objc,obj-c++ --enable-threads=posix
+--mandir=/usr/share/man --infodir=/usr/share/info --enable-__cxa_atexit
+--disable-multilib --libdir=/usr/lib --libexecdir=/usr/lib
+--enable-clocale=gnu --disable-libstdcxx-pch --with-tune=generic
+Thread model: posix
+gcc version 4.4.0 20090526 (prerelease) (GCC) 
+[figo@myhost linux-2.6]$ 
+
+
+
+Best Regards,
+Figo.zhang
+
