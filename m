@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765215AbZFQIhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764644AbZFQIlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765215AbZFQIhM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbZFQIg4
+	id S1764644AbZFQIlO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762387AbZFQIlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:36:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37279
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751068AbZFQIgz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:36:55 -0400
-Date: Wed, 17 Jun 2009 01:36:58 -0700 (PDT)
-Message-Id: <20090617.013658.58706664.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net,
-       geert@linux-m68k.org
-Subject: Re: linux-next: net tree build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090617163112.e14e064d.sfr@canb.auug.org.au>
-References: <20090617163112.e14e064d.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 17 Jun 2009 04:41:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45588 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754458AbZFQIlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 04:41:01 -0400
+Subject: [PATCH -tip] x86: msr.h linux/types is only required for __KERNEL__
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: "H. Peter Anvin" <hpa@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 17 Jun 2009 14:11:10 +0530
+Message-Id: <1245228070.2662.1.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 17 Jun 2009 16:31:12 +1000
 
-> Today's linux-next build (m68k defconfig) failed like this:
-> 
-> drivers/net/sonic.c: In function 'sonic_send_packet':
-> drivers/net/sonic.c:227: error: expected ';' before '}' token
-> 
-> Caused by commit 5b548140225c6bbbbd560551dd1048b2c0ce58be ("net: use
-> symbolic values for ndo_start_xmit() return codes") which lost a
-> semicolon in drivers/net/sonic.c.
+<linux/types.h> is only required for __KERNEL__ as whole file is covered with it
 
-I just pushed the following fix, thanks!
+Also fixed some spacing issues for usr/include/asm-x86/msr.h
 
-sonic: Fix build after ndo_start_xmit() changes.
-
-Noticed by Stephen Rothwell.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- drivers/net/sonic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/msr.h |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/sonic.c b/drivers/net/sonic.c
-index e4255d8..753a1fb 100644
---- a/drivers/net/sonic.c
-+++ b/drivers/net/sonic.c
-@@ -223,7 +223,7 @@ static int sonic_send_packet(struct sk_buff *skb, struct net_device *dev)
- 	if (!laddr) {
- 		printk(KERN_ERR "%s: failed to map tx DMA buffer.\n", dev->name);
- 		dev_kfree_skb(skb);
--		return NETDEV_TX_BUSY
-+		return NETDEV_TX_BUSY;
- 	}
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 2260376..48ad9d2 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -3,13 +3,10 @@
  
- 	sonic_tda_put(dev, entry, SONIC_TD_STATUS, 0);       /* clear status */
+ #include <asm/msr-index.h>
+ 
+-#ifndef __ASSEMBLY__
+-# include <linux/types.h>
+-#endif
+-
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+ 
++#include <linux/types.h>
+ #include <asm/asm.h>
+ #include <asm/errno.h>
+ #include <asm/cpumask.h>
+@@ -264,6 +261,4 @@ static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+ #endif  /* CONFIG_SMP */
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+-
+-
+ #endif /* _ASM_X86_MSR_H */
 -- 
-1.6.3.2
+1.6.0.6
+
+
 
