@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764314AbZFQFSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZFQFrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764314AbZFQFSo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 01:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZFQFSg
+	id S1754349AbZFQFrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 01:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbZFQFrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 01:18:36 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39251 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbZFQFSf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 01:18:35 -0400
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       yinghai@kernel.org
-In-Reply-To: <alpine.LFD.2.01.0906161231020.3282@localhost.localdomain>
-References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
-	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
-	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
-	 <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>
-	 <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop>
-	 <20090615112205.GA6012@wotan.suse.de> <20090615112827.GC6012@wotan.suse.de>
-	 <1245101567.12400.38.camel@pasglop>
-	 <alpine.DEB.1.10.0906161104480.26093@gentwo.org>
-	 <alpine.LFD.2.01.0906161208100.3282@localhost.localdomain>
-	 <alpine.DEB.1.10.0906161522370.29941@gentwo.org>
-	 <alpine.LFD.2.01.0906161231020.3282@localhost.localdomain>
-Date: Wed, 17 Jun 2009 08:18:36 +0300
-Message-Id: <1245215916.5604.5.camel@penberg-laptop>
+	Wed, 17 Jun 2009 01:47:13 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41454 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752657AbZFQFrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 01:47:12 -0400
+Date: Wed, 17 Jun 2009 15:46:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: linux-next: ext4 tree build failure
+Message-Id: <20090617154655.73343a5e.sfr@canb.auug.org.au>
+In-Reply-To: <20090616221147.GC14788@mit.edu>
+References: <20090616144413.50e975f9.sfr@canb.auug.org.au>
+	<20090616203034.GB14788@mit.edu>
+	<20090616221147.GC14788@mit.edu>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Jun_2009_15_46_55_+1000_v5cFV8uh8/Pjv4F9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+--Signature=_Wed__17_Jun_2009_15_46_55_+1000_v5cFV8uh8/Pjv4F9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-06-16 at 12:33 -0700, Linus Torvalds wrote:
-> I mean that there should never be any _need_ for dynamically querying 
-> whether slab is available or not. Nothing should ever do it, because we 
-> should strive for slab being available so early that anything that happens 
-> before it _knows_ that it is special case code (eg "set up initial page 
-> tables") and would never have any reason what-so-ever for even 
-> conditionally asking "should I use slab".
+Hi Ted,
 
-So how does the page allocator fit in this new scheme of things? I have
-been looking at doing the cleanups you and Christoph suggested and it
-seems to me we need a 'system_gfp_mask' that's respected by basically
-everyone, including __might_sleep() and other debugging functions.
+On Tue, 16 Jun 2009 18:11:47 -0400 Theodore Tso <tytso@mit.edu> wrote:
+>
+> On Tue, Jun 16, 2009 at 04:30:34PM -0400, Theodore Tso wrote:
+> > On Tue, Jun 16, 2009 at 02:44:13PM +1000, Stephen Rothwell wrote:
+> > > Hi Ted,
+> > >=20
+> > > Today's linux-next build (powerpc ppc64_defconfig) failed like this a=
+fter
+> > > the slab tree was merged:
+> > >=20
+> > > In file included from fs/jbd2/checkpoint.c:26:
+> > > include/trace/events/jbd2.h:11: error: expected ')' before '(' token
+> > > include/trace/events/jbd2.h:31: error: expected ')' before '(' token
+> >=20
+> > Hmm... I wonder why the slab tree would be messing with tracing
+> > include files.
+> >=20
+> > Which slab tree is it?  Is it Pekka's?
+> >=20
+> >       git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git
+> >=20
+>=20
+> Never mind, I see the problem.   Thanks for pointing it out!
 
-If we want to keep the masking within the slab allocator, we need to
-make sure there are two sets of APIs: one for slab and one for the page
-allocator. Otherwise we end up masking in the debugging checks but not
-in page_alloc().
+Because of this, I will use the ext4 tree that was in next-20090615
+(which is actually empty relative to Linus tree) until you can come up
+with a fix.
 
-			Pekka
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Wed__17_Jun_2009_15_46_55_+1000_v5cFV8uh8/Pjv4F9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko4g08ACgkQjjKRsyhoI8zYKwCgiQRtes3ggnw7Z7zzOLaDZe+C
+n2IAoL33I3LmeSABQGH+sFkXfIh/Ob/j
+=C4mv
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Jun_2009_15_46_55_+1000_v5cFV8uh8/Pjv4F9--
