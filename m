@@ -1,162 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764717AbZFQNKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765651AbZFQNKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764717AbZFQNKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbZFQNKY
+	id S1765651AbZFQNKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761874AbZFQNKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:10:24 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40180 "EHLO gate.crashing.org"
+	Wed, 17 Jun 2009 09:10:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49905 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756058AbZFQNKX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:10:23 -0400
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-       Nathan Lynch <ntl@pobox.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Linux-Next <linux-next@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Tony Breeds <tony@bakeyournoodle.com>, michael@ellerman.id.au
-Message-Id: <6E26D0A1-0FE5-4179-9DA8-FDF0E3D417DA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: subrata@linux.vnet.ibm.com
-In-Reply-To: <1245243097.4870.3.camel@subratamodak.linux.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 8BIT
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
-Date: Wed, 17 Jun 2009 08:07:47 -0500
-References: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com> <1245048719.5239.10.camel@subratamodak.linux.ibm.com> <1245243097.4870.3.camel@subratamodak.linux.ibm.com>
-X-Mailer: Apple Mail (2.935.3)
+	id S1763407AbZFQNKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 09:10:38 -0400
+Date: Wed, 17 Jun 2009 23:10:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net,
+       geert@linux-m68k.org
+Subject: Re: linux-next: net tree build failure
+Message-Id: <20090617231034.16717d14.sfr@canb.auug.org.au>
+In-Reply-To: <20090617.013658.58706664.davem@davemloft.net>
+References: <20090617163112.e14e064d.sfr@canb.auug.org.au>
+	<20090617.013658.58706664.davem@davemloft.net>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Jun_2009_23_10_34_+1000_C2+kOpxXKcwE9X+H"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__17_Jun_2009_23_10_34_+1000_C2+kOpxXKcwE9X+H
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Jun 17, 2009, at 7:51 AM, Subrata Modak wrote:
+Hi Dave,
 
-> On Mon, 2009-06-15 at 12:22 +0530, Subrata Modak wrote:
->> Hi Li/Nathan,
->>
->> On Thu, 2009-06-11 at 09:07 +0530, Subrata Modak wrote:
->>> Hi Nathan,
->>>
->>>> On Wed, 2009-06-10 at 21:28 -0500, Nathan Lynch wrote:
->>>> Subrata Modak <subrata@linux.vnet.ibm.com> writes:
->>>>
->>>>> On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
->>>>>> Hi Subrata,
->>>>>>
->>>>>> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com 
->>>>>> > wrote:
->>>>>>>
->>>>>>> 	/* Find the TBI PHY.  If it's not there, we don't support  
->>>>>>> SGMII */
->>>>>>> -	ph = of_get_property(np, "tbi-handle", NULL);
->>>>>>> +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
->>>>>>
->>>>>> You don't need this cast because of_get_property() returns  
->>>>>> "void *".
->>>>>
->>>>> Stephen,
->>>>>
->>>>> True. But without this gcc complains:
->>>>>
->>>>> CC [M]  drivers/net/ucc_geth.o
->>>>> drivers/net/ucc_geth.c: In function bucc_geth_probeb:
->>>>> drivers/net/ucc_geth.c:3824: warning: assignment discards  
->>>>> qualifiers
->>>>> from pointer target type
->>>>
->>>> ph should be declared const phandle *.  Look at other uses of
->>>> of_get_property.
->>>>
->>>
->>> Ok fine. Here is a revised patch again.
->>>
->>> Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64  
->>> randconfig [drivers/net/ucc_geth.o]
->>> Reference(s):
->>> http://lkml.org/lkml/2009/6/4/241,
->>> http://lkml.org/lkml/2009/6/10/338,
->>>
->>> Fix the following build error:
->>>
->>> drivers/net/ucc_geth.c: In function bucc_geth_probeb:
->>> drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in  
->>> this function)
->>> drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is  
->>> reported only once
->>> drivers/net/ucc_geth.c:3822: error: for each function it appears  
->>> in.)
->>> drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use  
->>> in this function)
->>> make[2]: *** [drivers/net/ucc_geth.o] Error 1
->>>
->>> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
->>> ---
->>
->> Is there anything else to be done in this patch. If this is OK, can  
->> this
->> be applied. I am not sure, but, i find Li Yang as the maintainer for
->> this in linux*/MAINTAINERS file. Kindly let me know if this patch  
->> needs
->> to be revisited for some other issue(s).
+On Wed, 17 Jun 2009 01:36:58 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
 >
-> Li,
->
-> Any thoughts on this patch ?
->
->
-> Regards--
-> Subrata
->
->>
->> Regards--
->> Subrata
->>
->>>
->>> --- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10  
->>> 11:58:39.000000000 -0500
->>> +++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10  
->>> 22:28:13.000000000 -0500
->>> @@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
->>>
->>> static int ucc_geth_probe(struct of_device* ofdev, const struct  
->>> of_device_id *match)
->>> {
->>> +	struct device_node *mdio;
->>> +	const phandle *ph;
->>> 	struct device *device = &ofdev->dev;
->>> 	struct device_node *np = ofdev->node;
->>> 	struct net_device *dev = NULL;
->>>
->>> ---
->>> Regards--
->>> Subrata
->>>
+> I just pushed the following fix, thanks!
+>=20
+> sonic: Fix build after ndo_start_xmit() changes.
 
-I'm confused by the proposed fix as we already have *mdio & *ph  
-defined in this function:
+Thanks.
 
-static int ucc_geth_probe(struct of_device* ofdev, const struct  
-of_device_id *match)
-{
-         struct device *device = &ofdev->dev;
-         struct device_node *np = ofdev->node;
-         struct device_node *mdio;
-         struct net_device *dev = NULL;
-         struct ucc_geth_private *ugeth = NULL;
-         struct ucc_geth_info *ug_info;
-         struct resource res;
-         struct device_node *phy;
-         int err, ucc_num, max_speed = 0;
-         const phandle *ph;
-         const u32 *fixed_link;
-         const unsigned int *prop;
-         const char *sprop;
-         const void *mac_addr;
-...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-- k
+--Signature=_Wed__17_Jun_2009_23_10_34_+1000_C2+kOpxXKcwE9X+H
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko460oACgkQjjKRsyhoI8whBACeKIHOKEuKOKvkHkhHCLc5Ci4R
+phAAn1VMl4/HSanshzB8gThdhWz322Kr
+=hjOH
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Jun_2009_23_10_34_+1000_C2+kOpxXKcwE9X+H--
