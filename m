@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbZFQQEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbZFQQEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756190AbZFQQEF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZFQQDn
+	id S1756450AbZFQQEY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZFQQD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:03:43 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:47012 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753358AbZFQQDm (ORCPT
+	Wed, 17 Jun 2009 12:03:59 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:11337
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756271AbZFQQD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:03:42 -0400
-Date: Wed, 17 Jun 2009 10:03:43 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Patterson <andrew.patterson@hp.com>, linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in
-	resources trees
-Message-ID: <20090617160343.GA11935@ldl.fc.hp.com>
-References: <20090616220419.14021.84524.stgit@bob.kio> <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain> <1245192703.8234.226.camel@bluto.andrew> <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain> <1245195498.8234.236.camel@bluto.andrew> <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain> <20090616172811.7f6374f4@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616172811.7f6374f4@jbarnes-g45>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 17 Jun 2009 12:03:58 -0400
+From: Boaz Harrosh <bharrosh@panasas.com>
+To: Jeff Garzik <jeff@garzik.org>, open-osd <osd-dev@open-osd.org>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/6] exofs: Fix bio leak in error handling path (sync read)
+Date: Wed, 17 Jun 2009 19:03:58 +0300
+Message-Id: <1245254638-8595-1-git-send-email-bharrosh@panasas.com>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <4A391373.3050301@panasas.com>
+References: <4A391373.3050301@panasas.com>
+X-OriginalArrivalTime: 17 Jun 2009 16:04:01.0052 (UTC) FILETIME=[3A979DC0:01C9EF65]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesse Barnes <jbarnes@virtuousgeek.org>:
-> 
-> Alex has been fixing up hotplug related code recently too; Alex?  Also
-> you didn't actually include a patch in your last mail that I could
-> see...
+When failing a read request in the sync path, called from
+write_begin, I forgot to free the allocated bio, fix it.
 
-Oh, I'm well aware that Andrew has been working on this, and am
-happy to let him keep driving. :)
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ fs/exofs/inode.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-I may drag out my old machine that I use to test cpqphp and see
-if we have the same issues there, as it's x86, and I did notice
-some BAR collisions last time I checked.
-
-Thanks.
-
-/ac
+diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
+index 77d0a29..bb5d6ed 100644
+--- a/fs/exofs/inode.c
++++ b/fs/exofs/inode.c
+@@ -295,6 +295,9 @@ static int read_exec(struct page_collect *pcol, bool is_sync)
+ err:
+ 	if (!is_sync)
+ 		_unlock_pcol_pages(pcol, ret, READ);
++	else /* Pages unlocked by caller in sync mode only free bio */
++		pcol_free(pcol);
++
+ 	kfree(pcol_copy);
+ 	if (or)
+ 		osd_end_request(or);
+-- 
+1.6.2.1
 
