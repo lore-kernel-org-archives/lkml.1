@@ -1,108 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZFQPE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZFQPH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbZFQPE0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 11:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZFQPET
+	id S1752483AbZFQPH6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 11:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZFQPHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 11:04:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48889 "EHLO hera.kernel.org"
+	Wed, 17 Jun 2009 11:07:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58054 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751487AbZFQPES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 11:04:18 -0400
-Date: Wed, 17 Jun 2009 15:03:50 GMT
-From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090617.222055.374768827975756908.mitake@dcl.info.waseda.ac.jp>
-References: <20090617.222055.374768827975756908.mitake@dcl.info.waseda.ac.jp>
-Subject: [tip:sched/urgent] sched: Hide runqueues from direct refer at source code level
-Message-ID: <tip-d11ad9b3631b942b0d2e5b754a6c62158efb799f@git.kernel.org>
-Git-Commit-ID: d11ad9b3631b942b0d2e5b754a6c62158efb799f
-X-Mailer: tip-git-log-daemon
+	id S1751656AbZFQPHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 11:07:49 -0400
+Date: Wed, 17 Jun 2009 17:07:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, svaidy@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
+       Nathan Lynch <ntl@pobox.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
+Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
+Message-ID: <20090617150700.GB20345@elte.hu>
+References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com> <20090615232318.74b099a6.akpm@linux-foundation.org> <20090616080715.GB7961@dirshya.in.ibm.com> <1245223977.13761.21576.camel@twins> <20090617143804.GA6767@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 15:03:51 +0000 (UTC)
+In-Reply-To: <20090617143804.GA6767@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d11ad9b3631b942b0d2e5b754a6c62158efb799f
-Gitweb:     http://git.kernel.org/tip/d11ad9b3631b942b0d2e5b754a6c62158efb799f
-Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Wed, 17 Jun 2009 22:20:55 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 17 Jun 2009 17:02:38 +0200
 
-sched: Hide runqueues from direct refer at source code level
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-There are some points which refer the per-cpu value "runqueues" directly.
-sched.c provides nice abstraction, such as cpu_rq() and this_rq(),
-so we should use these macros when looking runqueues.
+> On Wed, Jun 17, 2009 at 09:32:57AM +0200, Peter Zijlstra wrote:
+> > On Tue, 2009-06-16 at 13:37 +0530, Vaidyanathan Srinivasan wrote:
+> > > * Andrew Morton <akpm@linux-foundation.org> [2009-06-15 23:23:18]:
+> > > 
+> > > > On Tue, 16 Jun 2009 11:08:39 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+> > > > 
+> > > > > Currently on a ppc64 box with 16 CPUs, the time taken for
+> > > > > a individual cpu-hotplug operation is as follows.
+> > > > > 
+> > > > >     # time echo 0 > /sys/devices/system/cpu/cpu2/online
+> > > > >     real    0m0.025s
+> > > > >     user    0m0.000s
+> > > > >     sys     0m0.002s
+> > > > > 
+> > > > >     # time echo 1 > /sys/devices/system/cpu/cpu2/online
+> > > > >     real    0m0.021s
+> > > > >     user    0m0.000s
+> > > > >     sys     0m0.000s
+> > > > 
+> > > > Surprised.  Do people really online and offline CPUs frequently enough
+> > > > for this to be a problem?
+> > > 
+> > > Certainly not for hardware faults or hardware replacement, but
+> > > cpu-hotplug interface is useful for changing system configuration to
+> > > meet different objectives like
+> > > 
+> > > * Reduce system capacity to reduce average power and reduce heat
+> > > 
+> > > * Increasing number of cores and threads in a CPU package is leading
+> > >   to multiple cpu offline/online operations for any perceivable effect
+> > > 
+> > > * Dynamically change CPU configurations in virtualized environments
+> > 
+> > I tend to agree with Andrew, if any of those things are done 
+> > frequent enough that the hotplug performance matter you're doing 
+> > something mighty odd.
+> 
+> Boot speedup?
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-LKML-Reference: <20090617.222055.374768827975756908.mitake@dcl.info.waseda.ac.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Also, if it brings more attention (and more stability and more 
+bugfixes) to CPU hotplug that's only good.
 
-
----
- kernel/sched.c       |    4 ++--
- kernel/sched_debug.c |    6 +++---
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 0056795..6240309 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6630,7 +6630,7 @@ EXPORT_SYMBOL(yield);
-  */
- void __sched io_schedule(void)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = this_rq();
- 
- 	delayacct_blkio_start();
- 	atomic_inc(&rq->nr_iowait);
-@@ -6642,7 +6642,7 @@ EXPORT_SYMBOL(io_schedule);
- 
- long __sched io_schedule_timeout(long timeout)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = this_rq();
- 	long ret;
- 
- 	delayacct_blkio_start();
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 467ca72..70c7e0b 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -162,7 +162,7 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- {
- 	s64 MIN_vruntime = -1, min_vruntime, max_vruntime = -1,
- 		spread, rq0_min_vruntime, spread0;
--	struct rq *rq = &per_cpu(runqueues, cpu);
-+	struct rq *rq = cpu_rq(cpu);
- 	struct sched_entity *last;
- 	unsigned long flags;
- 
-@@ -191,7 +191,7 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- 	if (last)
- 		max_vruntime = last->vruntime;
- 	min_vruntime = cfs_rq->min_vruntime;
--	rq0_min_vruntime = per_cpu(runqueues, 0).cfs.min_vruntime;
-+	rq0_min_vruntime = cpu_rq(0)->cfs.min_vruntime;
- 	spin_unlock_irqrestore(&rq->lock, flags);
- 	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "MIN_vruntime",
- 			SPLIT_NS(MIN_vruntime));
-@@ -248,7 +248,7 @@ void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
- 
- static void print_cpu(struct seq_file *m, int cpu)
- {
--	struct rq *rq = &per_cpu(runqueues, cpu);
-+	struct rq *rq = cpu_rq(cpu);
- 
- #ifdef CONFIG_X86
- 	{
+	Ingo
