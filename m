@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbZFQORi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932532AbZFQORy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760751AbZFQORi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZFQORa
+	id S932532AbZFQORy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbZFQORo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:17:30 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:60763 "EHLO e4.ny.us.ibm.com"
+	Wed, 17 Jun 2009 10:17:44 -0400
+Received: from kroah.org ([198.145.64.141]:52398 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754053AbZFQOR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:17:29 -0400
-Subject: Re: [PATCH]x86-tsc.c : fix compile warning
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: "Figo.zhang" <figo1802@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       Sumit Panchasara <sumit.panchasara@einfochips.com>,
-       "'Sachin P Sant'" <sachinp@linux.vnet.ibm.com>,
-       "'H. Peter Anvin'" <hpa@zytor.com>, "'Frans Pop'" <elendil@planet.nl>,
-       "'Andi Kleen'" <andi@firstfloor.org>,
-       "'Thomas Gleixner'" <tglx@linutronix.de>,
-       "'Balbir Singh'" <balbir@linux.vnet.ibm.com>
-In-Reply-To: <bb33bcf20906170700i4a4ea802yf1da08e9870d6221@mail.gmail.com>
-References: <1245247057.3312.2.camel@myhost>
-	 <bb33bcf20906170700i4a4ea802yf1da08e9870d6221@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: IBM
-Date: Wed, 17 Jun 2009 19:47:21 +0530
-Message-Id: <1245248241.4870.12.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 8bit
+	id S1754601AbZFQORn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 10:17:43 -0400
+Date: Wed, 17 Jun 2009 06:41:01 -0700
+From: Greg KH <greg@kroah.com>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix OOPS in pl2303
+Message-ID: <20090617134101.GA11209@kroah.com>
+References: <87k53cy697.wl%vmayatsk@redhat.com> <20090616182604.GA28536@kroah.com> <87ws7by73h.wl%vmayatsk@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87ws7by73h.wl%vmayatsk@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> fix compile warning:
-> arch/x86/kernel/tsc.c: In function ‘time_cpufreq_notifier’:
-> arch/x86/kernel/tsc.c:635: warning: ‘dummy’ may be used uninitialized in
-> this function
+On Wed, Jun 17, 2009 at 03:36:18AM +0200, Vitaly Mayatskikh wrote:
+> At Tue, 16 Jun 2009 11:26:04 -0700, Greg KH wrote:
 > 
-> Signed-off-by: Figo.zhang <figo1802@gmail.com>
-
-Hello Figo,
-
-Please refer to the following links on discussion on this issue earlier:
-http://lkml.org/lkml/2009/5/19/312
-http://lkml.org/lkml/2009/5/19/301
-http://lkml.org/lkml/2009/5/20/23
-
-I tried to fix it in some other way.
-
-Regards--
-Subrata
-
-> ---
-> arch/x86/kernel/tsc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> > What kernel version are you seeing this problem on?  And what version is
+> > this patch for?
 > 
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index ae3180c..e65492a 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -632,7 +632,7 @@ static int time_cpufreq_notifier(struct
-> notifier_block *nb, unsigned long val,
->                                void *data)
->  {
->        struct cpufreq_freqs *freq = data;
-> -       unsigned long *lpj, dummy;
-> +       unsigned long *lpj, dummy = 0;
-> 
->        if (cpu_has(&cpu_data(freq->cpu), X86_FEATURE_CONSTANT_TSC))
->                return 0;
-> 
+> I've seen it on 2.6.29.4-167.fc11.x86_64, patch is for git with head
+> at 03347e2592078a90df818670fddf97a33eec70fb.
 
+This should be resolved in Linus's tree now, can you try 2.6.31-rc1 when
+it comes out and let me know if your patch is still needed or not?
 
+thanks,
+
+greg k-h
