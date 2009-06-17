@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZFQRpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbZFQRrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbZFQRpG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 13:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZFQRo4
+	id S1758023AbZFQRrO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 13:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZFQRq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 13:44:56 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60066 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZFQRoz (ORCPT
+	Wed, 17 Jun 2009 13:46:59 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:18109 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbZFQRq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 13:44:55 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 17 Jun 2009 19:44:47 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: What's in linux1394-2.6.git? -- Part II.0/3
-To: linux-kernel@vger.kernel.org
-cc: linux1394-devel@lists.sourceforge.net
-In-Reply-To: <tkrat.70eb865eb2fae29b@s5r6.in-berlin.de>
-Message-ID: <tkrat.c0f2f763744b1215@s5r6.in-berlin.de>
-References: <tkrat.70eb865eb2fae29b@s5r6.in-berlin.de>
+	Wed, 17 Jun 2009 13:46:58 -0400
+Message-ID: <4A392B48.7060206@oracle.com>
+Date: Wed, 17 Jun 2009 10:43:36 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Matthew Wilcox <matthew@wil.cx>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alex Chiang <achiang@hp.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 17 (pci/slot)
+References: <20090617155354.075c60ae.sfr@canb.auug.org.au>	<4A39194B.2060200@oracle.com>	<20090617163604.GT19977@parisc-linux.org> <20090617102901.6e39aac2@jbarnes-g45>
+In-Reply-To: <20090617102901.6e39aac2@jbarnes-g45>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4A392C0D.010D:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is some more in linux1394's for-next branch for which I plan to
-send a pull request on Monday.  There is Jay Fenlason's IPv4 over
-FireWire implementation for the newer firewire stack in it (May 18),
-trivial stylistic changes by me (June 07; sorry for being slow with
-integration), small fixes to the new driver and to newly discovered bugs
-of firewire-core (June 14..16).
+Jesse Barnes wrote:
+> On Wed, 17 Jun 2009 10:36:04 -0600
+> Matthew Wilcox <matthew@wil.cx> wrote:
+> 
+>> On Wed, Jun 17, 2009 at 09:26:51AM -0700, Randy Dunlap wrote:
+>>> Stephen Rothwell wrote:
+>>>> Hi all,
+>>>>
+>>>> Changes since 20090616:
+>>>
+>>> When CONFIG_SYSFS=n:
+>>>
+>>> drivers/pci/slot.c:327: error: 'module_kset' undeclared (first use
+>>> in this function)
+>> Is there any point to pci_slot existing without CONFIG_SYSFS?
+>> I don't see how you can interact with it in any meaningful way.
+>> Perhaps CONFIG_PCI_SLOT should depend on CONFIG_SYSFS?
+> 
+> I've got a code fix queued up, but maybe a Kconfig dependency is the
+> way to go...
 
-This code has not been seen on LKML yet, hence I will post the combined
-diff in replies to this message.
+What is the code fix like?
+The Kconfig fix makes sense to me.
 
-Repo URL:
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-next
-
-Gitweb:
-    http://git.kernel.org/?p=linux/kernel/git/ieee1394/linux1394-2.6.git
-
-Shortlog and diffstat:
-
-Jay Fenlason (1):
-      firewire: add IPv4 support
-
-Stefan Richter (9):
-      firewire: net: add Kconfig item, rename driver
-      firewire: net: style changes
-      firewire: net: allow for unordered unit discovery
-      firewire: net: remove unused code
-      firewire: net: adjust net_device ops
-      firewire: core: fix DMA unmapping in iso buffer removal
-      firewire: core: fix iso context shutdown on card removal
-      firewire: net: fix card driver reloading
-      firewire: net: better FIFO address range check and rcodes
-
- drivers/firewire/Kconfig     |   12 +
- drivers/firewire/Makefile    |    4 +-
- drivers/firewire/core-card.c |   20 +-
- drivers/firewire/core-iso.c  |   11 +-
- drivers/firewire/core.h      |   87 ---
- drivers/firewire/net.c       | 1655 ++++++++++++++++++++++++++++++++++++++++++
- drivers/ieee1394/Kconfig     |    2 +-
- include/linux/firewire.h     |   87 +++
- 8 files changed, 1780 insertions(+), 98 deletions(-)
- create mode 100644 drivers/firewire/net.c
 
 -- 
-Stefan Richter
--=====-==--= -==- =---=
-http://arcgraph.de/sr/
-
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
