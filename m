@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbZFQJ0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759625AbZFQJhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759199AbZFQJ0x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 05:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZFQJ0m
+	id S1759625AbZFQJhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 05:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZFQJhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 05:26:42 -0400
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:8502 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZFQJ0l convert rfc822-to-8bit (ORCPT
+	Wed, 17 Jun 2009 05:37:35 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:30616
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754146AbZFQJhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 05:26:41 -0400
-X-SpamScore: -32
-X-BigFish: VPS-32(zz1432R98dR1447R1805Mzz1202hzzz32i6bh17ch43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KLDM7S-04-33T-01
-Date: Wed, 17 Jun 2009 11:26:29 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-CC: "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: dma-debug warning with ixgbe
-Message-ID: <20090617092629.GP5139@amd.com>
-References: <20090616153417.GN5139@amd.com> <alpine.WNT.2.00.0906160907580.6076@jbrandeb-desk1.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <alpine.WNT.2.00.0906160907580.6076@jbrandeb-desk1.amr.corp.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 17 Jun 2009 09:26:29.0877 (UTC) FILETIME=[B22F2250:01C9EF2D]
+	Wed, 17 Jun 2009 05:37:34 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al8CAKNVOEp8qN0Z/2dsb2JhbAAI1CqECwU
+X-IronPort-AV: E=Sophos;i="4.42,235,1243785600"; 
+   d="scan'208";a="424041707"
+Subject: Re: [PATCH v2] gpiolib: Add gpio_debounce and gpio_alt_func
+	features to GPIOLIB
+From: Ben Nizette <bn@niasdigital.com>
+To: Alek Du <alek.du@intel.com>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ben Dooks <ben-linux@fluff.org>, Florian Fainelli <florian@openwrt.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20090617145955.355ef2a9@dxy.sh.intel.com>
+References: <20090615171502.2a981bf5@dxy.sh.intel.com>
+	 <20090615125146.GC19873@fluff.org.uk>
+	 <200906151504.51934.florian@openwrt.org>
+	 <20090615130906.GA14476@trinity.fluff.org>
+	 <20090616092848.7bb60f21@dxy.sh.intel.com>
+	 <20090616083948.GB14476@trinity.fluff.org>
+	 <20090617145955.355ef2a9@dxy.sh.intel.com>
+Content-Type: text/plain
+Date: Wed, 17 Jun 2009 19:36:44 +1000
+Message-Id: <1245231404.2668.9.camel@linux-51e8.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 09:33:15AM -0700, Brandeburg, Jesse wrote:
-> On Tue, 16 Jun 2009, Joerg Roedel wrote:
-> > today I got this dma-debug warning with the ixgbe driver with a kernel
-> > near 2.6.30-rc8.
+On Wed, 2009-06-17 at 14:59 +0800, Alek Du wrote:
+> Changes from v1:
 > 
-> Hi Joerg, thanks for the report, I thought we had fixed all of these 
-> already but we must have missed this one.
+> Removed gpio_detect since we should do that with irq_chip.set_type function.
 > 
-> > ------------[ cut here ]------------
-> > WARNING: at /data/repos/linux-2.6-iommu/lib/dma-debug.c:806
-> > check_unmap+0x214/0x5c3()
-> > Hardware name: Toonie
-> > ixgbe 0000:02:00.0: DMA-API: device driver frees DMA memory with
-> > different size [device address=0x0000000000045c12] [map size=258
-> > bytes] [unmap size=256 bytes]
 > 
-> The following patch should fix it, compile tested only, but it is pretty 
-> straight forward.
+> From 6b3c9398acf338c263170fcb74c0b2b345ad5369 Mon Sep 17 00:00:00 2001
+> From: Alek Du <alek.du@intel.com>
+> Date: Wed, 17 Jun 2009 14:50:51 +0800
+> Subject: [PATCH] GPIO: Add gpio_debounce and gpio_alt_func features to GPIOLIB
+> 
+> Add gpio_debounce and gpio_alt_func features to GPIOLIB:
+> * gpio_debounce is to adjust signal HW debounce value (need HW support)
+> * gpio_alt_func is to set GPIO as alternative function (need HW support)
 
-Thanks for the quick answer :) But I tested the patch and the warning is
-still there.
 
-	Joerg
+Please justify the existence of these functions, particularly, who's
+supposed to actually call them?  There's no real changelogging here.
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+First the hardware debounce call.  Hardware debounce functionality
+varies massively between chips.  Therefore a driver cannot depend on any
+particular behaviour unless it already knows what platform it's running
+on.  If it knows the platform it can access the functions directly and
+the interface needs no abstraction.  If the driver doesn't know the
+platform it can't get any value from the call.  Worse, people are going
+to start /expecting/ some behaviour from the call and wonder why their
+driver fails subtly on slightly different systems.
+
+Who's supposed to set the alternate functions?  As I see it, only the
+board code.  The driver shouldn't ever have to do this itself, all the
+pin mux'ing should be done well before the driver needs to access its
+pins.  Even if the driver does need to set up it's own pins then it
+needs to know /which/ alternate function it is which once again requires
+platform knowledge.  If it requires platform knowledge it should be done
+in platform code, not driver code, or can at least be done with
+non-abstracted calls.
+
+These both seem like needless feature creep and misdirection to me.
+
+	--Ben.
+
 
