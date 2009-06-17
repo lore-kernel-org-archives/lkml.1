@@ -1,99 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbZFQB0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763883AbZFQBfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763648AbZFQB0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 21:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZFQB0R
+	id S1763883AbZFQBfx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 21:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbZFQBfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 21:26:17 -0400
-Received: from mail-px0-f189.google.com ([209.85.216.189]:47765 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZFQB0Q (ORCPT
+	Tue, 16 Jun 2009 21:35:42 -0400
+Received: from mga12.intel.com ([143.182.124.36]:52291 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752167AbZFQBfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 21:26:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=FoPfzvm1QJv20JqommoxvfjmZMzdAIrR+CkKrsZ4t60+80aA93GneMn9d5o/qwhXBY
-         Z1+HzQoSmCQS4XT87QTHRYgo5dwFcA7NWrqXb+u2jhGeQahaLEyDFEiHkE9w32jghS6F
-         ZLYQq5GDEXrW7MQYVnwC3I8XLs1a1ZibhNceI=
-MIME-Version: 1.0
-Date: Tue, 16 Jun 2009 19:26:18 -0600
-Message-ID: <9b1675090906161826q12db9dd3wdde22e603a395ee6@mail.gmail.com>
-Subject: BUG??? Incorrect metadata area header checksum
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Jun 2009 21:35:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,233,1243839600"; 
+   d="scan'208";a="155389490"
+Subject: Re: [PATCH 0/15] Per-bdi writeback flusher threads v10
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, richard@rsk.demon.co.uk,
+       damien.wyart@free.fr, dedekind1@gmail.com, fweisbec@gmail.com
+In-Reply-To: <20090616080036.GO11363@kernel.dk>
+References: <1244811255-5391-1-git-send-email-jens.axboe@oracle.com>
+	 <1245114397.2560.368.camel@ymzhang>  <20090616080036.GO11363@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 17 Jun 2009 09:35:32 +0800
+Message-Id: <1245202532.2560.402.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Guys,
+On Tue, 2009-06-16 at 10:00 +0200, Jens Axboe wrote:
+> On Tue, Jun 16 2009, Zhang, Yanmin wrote:
+> > On Fri, 2009-06-12 at 14:54 +0200, Jens Axboe wrote:
+> > > Hi,
+> > > 
+> > > Here's the 10th version of the writeback patches. Changes since v9:
+> > > 
+> > > - Fix bdi task exit race leaving work on the list, flush it after we
+> > >   know we cannot be found anymore.
+> > > - Rename flusher tasks from bdi-foo to flush-foo. Should make it more
+> > >   clear to the casual observer.
+> > > - Fix a problem with the btrfs bdi register patch that would spew
+> > >   warnings for > 1 mounted btrfs file system.
+> > > - Rebase to current -git, there were some conflicts with the latest work
+> > >   from viro/hch.
+> > > - Fix a block layer core problem were stacked devices would overwrite
+> > >   the bdi state, causing problems and warning spew.
+> > > - In bdi_writeback_all(), in the race occurence of a work allocation
+> > >   failure, restart scanning from the beginning. Then we can drop the
+> > >   bdi_lock mutex before diving into bdi specific writeback.
+> > > - Convert bdi_lock to a spinlock.
+> > > - Use spin_trylock() in bdi_writeback_all(), if this isn't a data
+> > >   integrity writeback. Debatable, I kind of like it...
+> > > - Get rid of BDI_CAP_FLUSH_FORKER, just check for match with the
+> > >   default_backing_dev_info.
+> > > - Fix race in list checking in bdi_forker_task().
+> > > 
+> > > 
+> > > For ease of patching, I've put the full diff here:
+> > > 
+> > >   http://kernel.dk/writeback-v10.patch
+> > Jens,
+> > 
+> > I applied the patch to 2.6.30 and got a confliction. The attachment is
+> > the patch I ported to 2.6.30. Did I miss anything?
+> > 
+> > 
+> > With the patch, kernel reports below messages on 2 machines.
+> > 
+> > INFO: task sync:29984 blocked for more than 120 seconds.
+> > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> > sync          D ffff88002805e300  6168 29984  24581
+> >  ffff88022f84b780 0000000000000082 7fffffffffffffff ffff880133dbfe70
+> >  0000000000000000 ffff88022e2b4c50 ffff88022e2b4fd8 00000001000c7bb8
+> >  ffff88022f513fd0 ffff880133dbfde8 ffff880133dbfec8 ffff88022d5d13c8
+> > Call Trace:
+> >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
+> >  [<ffffffff80780fde>] ? schedule+0x9/0x1d
+> >  [<ffffffff802b69ed>] ? bdi_sched_wait+0x9/0xd
+> >  [<ffffffff8078158d>] ? __wait_on_bit+0x40/0x6f
+> >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
+> >  [<ffffffff80781628>] ? out_of_line_wait_on_bit+0x6c/0x78
+> >  [<ffffffff8024a426>] ? wake_bit_function+0x0/0x23
+> >  [<ffffffff802b67ac>] ? bdi_writeback_all+0x12a/0x152
+> >  [<ffffffff802b6805>] ? generic_sync_sb_inodes+0x31/0xde
+> >  [<ffffffff802b6935>] ? sync_inodes_sb+0x83/0x88
+> >  [<ffffffff802b6980>] ? __sync_inodes+0x46/0x8f
+> >  [<ffffffff802b94f2>] ? do_sync+0x36/0x5a
+> >  [<ffffffff802b9538>] ? sys_sync+0xe/0x12
+> >  [<ffffffff8020b9ab>] ? system_call_fastpath+0x16/0x1b
+> 
+> I don't think it is your backport, for some reason the v10 missed a
+> change that I think could solve this race. If not, there's another in
+> there that I need to look at.
+> 
+> So against your current base, could you try with the below added as
+> well? The printk() is just so we can see if this triggers for you or
+> not.
+> 
+> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+> index b3e80c5..a065da5 100644
+> --- a/mm/backing-dev.c
+> +++ b/mm/backing-dev.c
+> @@ -384,6 +384,15 @@ static int bdi_start_fn(void *ptr)
+>  	 */
+>  	synchronize_srcu(&bdi->srcu);
+>  
+> +	/*
+> +	 * Flush any pending work. No more can be added, since
+> +	 * the bdi is no longer discoverable.
+> +	 */
+> +	if (!list_empty(&bdi->work_list)) {
+> +		printk("bdi: flushing racy work\n");
+I ran testings with the patch. 2 machines reported the same issues when do sync
+just after mounting filesystems for testing.
 
-I have had problems several times, where my LVM metadata gets
-completely messed up.  I have no idea how it's happening.  When I look
-at /var/log/messages, I am not finding any IO errors of any kind.  Not
-previously, and not this time.  I'm starting to think there is a small
-bug in the kernel somewhere regarding this, that causes it to loose
-it's marbles regarding the LVM metadata.
+These 2 machines did print out above info. One printed it just before dumping the
+blocking info.
 
-A couple of weeks ago, I had to recover my system from the LVM backups
-at the start of the disk.  At first, I had no idea what I was doing,
-but after using pvck, I quickly noticed that it had offsets to the
-metadata backups on the disk.  I was then able to recover from that.
-All I had done is a routine move of my physical extents over to
-another disk.  I rebooted, it worked, I rebooted again, and it quit
-working.
+I ran a series of test cases. Every case does umount filesystems, then mount
+them again for testing.
 
-I had this problem again yesterday/today.  This time it was a backup
-drive, not my primary, so it was easy to restore from the backups kept
-in /etc/lvm/backup/
+> +		wb_do_writeback(wb);
+> +	}
+> +
+>  	bdi_put_wb(bdi, wb);
+>  	return ret;
+>  }
+> 
 
-As you can see, with the example below, there is no disk corruption at
-all, it simply lost it's metadata marbles, and a simple vgcfgrestore
-fixes the problem.  So, what I want to know, is what could possibly
-cause this?  FYI, I had just finished adding a whole bunch more data
-(overnight last night) to the drive when I noticed today that it was
-corrupted.  I reboot, and sure enough, I could not load up the volume
-group or volumes.  So, I'm wondering if somehow there is an erroneous
-overlap in storage area of the disk, mixed up between files, and
-metadata, that could cause this?  After all, it was as simple as
-adding more data to the volume.  The actual LVM info has not changed
-in a couple of weeks, so there is no good reason for LVM to change
-it's metadata without my approval.
-
-tdamac ~ # vgchange -ay
-  Incorrect metadata area header checksum
-  Incorrect metadata area header checksum
-  Incorrect metadata area header checksum
-  Volume group "bak" inconsistent
-  Incorrect metadata area header checksum
-  Incorrect metadata area header checksum
-  WARNING: Inconsistent metadata found for VG bak - updating to use version 23
-  Incorrect metadata area header checksum
-  Automatic metadata correction failed
-  Incorrect metadata area header checksum
-  4 logical volume(s) in volume group "s" now active
-
-tdamac ~ # pvcreate -ff -u 0dNrQJ-torK-1wmT-TxIY-1jMY-QWA4-BHIrKe
---restorefile /etc/lvm/backup/bak /dev/sdb1
-  Incorrect metadata area header checksum
-  Incorrect metadata area header checksum
-  WARNING: Volume group bak is not consistent
-Really INITIALIZE physical volume "/dev/sdb1" of volume group "bak" [y/n]? y
-  WARNING: Forcing physical volume creation on /dev/sdb1 of volume group "bak"
-  Physical volume "/dev/sdb1" successfully created
-tdamac ~ # vgcfgrestore -f /etc/lvm/backup/bak -v bak
-  Restored volume group bak
-tdamac ~ # vgchange -ay
-  1 logical volume(s) in volume group "bak" now active
-tdamac ~ # e2fsck -f /dev/bak/safe
-e2fsck 1.41.3 (12-Oct-2008)
-Pass 1: Checking inodes, blocks, and sizes
-Pass 2: Checking directory structure
-Pass 3: Checking directory connectivity
-Pass 4: Checking reference counts
-Pass 5: Checking group summary information
-/dev/bak/safe: 2234755/91578368 files (0.4% non-contiguous),
-197843954/366283776 blocks
