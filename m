@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbZFQUJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbZFQUNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbZFQUJu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 16:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbZFQUJm
+	id S1760873AbZFQUNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 16:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZFQUNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 16:09:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57541 "EHLO
+	Wed, 17 Jun 2009 16:13:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39289 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756154AbZFQUJl (ORCPT
+	by vger.kernel.org with ESMTP id S1754998AbZFQUNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 16:09:41 -0400
-Date: Wed, 17 Jun 2009 13:09:01 -0700 (PDT)
+	Wed, 17 Jun 2009 16:13:14 -0400
+Date: Wed, 17 Jun 2009 13:12:42 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: David Howells <dhowells@redhat.com>
-cc: Andreas Dilger <adilger@sun.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-afs@lists.infradead.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 00/17] [RFC] AFS: Implement OpenAFS pioctls(version)s
-In-Reply-To: <29249.1245268301@redhat.com>
-Message-ID: <alpine.LFD.2.01.0906171303390.16802@localhost.localdomain>
-References: <alpine.LFD.2.01.0906171112530.16802@localhost.localdomain> <alpine.LFD.2.01.0906171027470.16802@localhost.localdomain> <alpine.LFD.2.01.0906170901480.16802@localhost.localdomain> <20090617001157.065ee652@lxorguk.ukuu.org.uk>
- <20090616203845.4526.60013.stgit@warthog.procyon.org.uk> <10437.1245193192@redhat.com> <11650.1245198358@redhat.com> <20090617075502.GB13073@webber.adilger.int> <28023.1245259479@redhat.com> <28259.1245261823@redhat.com>  <29249.1245268301@redhat.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+cc: Matthew Wilcox <matthew@wil.cx>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
+ trees
+In-Reply-To: <1245269316.8234.270.camel@bluto.andrew>
+Message-ID: <alpine.LFD.2.01.0906171309500.16802@localhost.localdomain>
+References: <20090616220419.14021.84524.stgit@bob.kio>  <4A38B3B4.1020304@jp.fujitsu.com> <20090617134311.GR19977@parisc-linux.org>  <alpine.LFD.2.01.0906170922380.16802@localhost.localdomain>  <1245260533.8234.241.camel@bluto.andrew> 
+ <alpine.LFD.2.01.0906171047050.16802@localhost.localdomain> <1245269316.8234.270.camel@bluto.andrew>
 User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,63 +33,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 17 Jun 2009, David Howells wrote:
+On Wed, 17 Jun 2009, Andrew Patterson wrote:
+> > 
+> > This is why I'd really like to see the output of my test-patch. It would 
+> > show exactly _where_ that resource is inserted, and the whole call-chain.
+> > 
+> > I'm appending a version that only does it for resources that have names 
+> > starting with "PCI Bus", so it should be less noisy. But again, it's 
+> > totally untested.
+> > 
 > 
-> > But if you do that new system call, then what's the point again? You're 
-> > back to pinfo() anyway.
-> 
-> Ummm...  pinfo()?  Did you mean pioctl()?
+> Here you go (I can provide the full boot log if needed). Note, there is
+> nothing for c3 here:
 
-Yes.
+Ok, so that means it got inserted into the resource tree some other way 
+entirely. Or maybe the name got changed after-the-fact. Both of which 
+imply that something is really really wrong.
 
-> > No. It's because it's another _typeless_ multiplexor.
-> 
-> What do you mean by 'typeless'?  Even the master syscall mux is typeless,
-> depending on how you look at it; either that, or it's the superposition of a
-> multiplicity of types selected by an arbitrary number.
+The ones your trace _does_ show are the ones that got inserted correctly 
+and aren't buggy. Can anybody see how that buggy resource got inserted?
 
-No, it's not typeless, and you're just an ugly troll.
-
-The master syscall mutex is VERY WELL DEFINED, and doesn't change randomly 
-depending on what file you happen to look at. It's also somethign where 
-people actually spend time and effort before adding new entries, instead 
-of the incessant cluster-fuck that is always the random ioctl, where 
-subsystems add a new entry at the drop of a hat.
-
-> Short of doing something like an XML or ASN1 structured interface, we aren't
-> going to get that, and do we really want to go down that path?
-> 
-> The difference between the syscall mux and a filesystem's ioctl/pioctl mux is
-> that the both need to check on their arguments.
-
-What kind of idiotic "arguments" are these. Neither of them is in the 
-least true, relevant, or anything sane at all.
-
-Why should I bother reading any further, when you show that your emails 
-are full of pointless crap?
-
-> >  - learn from your mistake, and not do another f*cking disaster that just 
-> >    takes a pathname instead of a fd. Do something else, that actually has 
-> >    semantics and has a well-defined input and output buffer.
-> 
-> That sounds like you want all the pioctl functions promoted to syscalls.
-
-No.
-
-It means that I want more structure. Stop making these things up.
-
-More structure to make _guarantees_ that you will never need a compat 
-layer, for example. More structure so that people can _figure out_ what 
-the supported set of interfaces are, since they are going to differ for 
-different files. More structure so that we can see security issues without 
-having to know every f*cking new entry in that table. Etc etc etc.
-
-> > And guess which one "pioctl()" is. Just take a wild stab at it.
-> 
-> Well, I'd say it's more intelligent that open+ioctl...
-
-Why?
-
-So far, you're just spouting total nonsense.
-
-			Linus
+		Linus
