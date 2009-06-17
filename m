@@ -1,113 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZFQSaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbZFQSbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbZFQSaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 14:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZFQSaS
+	id S1758970AbZFQSbN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 14:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZFQSbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 14:30:18 -0400
-Received: from mga06.intel.com ([134.134.136.21]:48191 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754373AbZFQSaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 14:30:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,239,1243839600"; 
-   d="scan'208";a="423175081"
-Date: Wed, 17 Jun 2009 20:32:20 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Daniel Ribeiro <drwyrm@gmail.com>,
-       Linus Walleij <linus.ml.walleij@gmail.com>,
-       Mike Rapoport <mike@compulab.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
-       Rakib Mullick <rakib.mullick@gmail.com>
-Subject: [GIT] MFD pull request for 2.6.31-rc1
-Message-ID: <20090617183218.GF25896@sortiz.org>
+	Wed, 17 Jun 2009 14:31:05 -0400
+Received: from THUNK.ORG ([69.25.196.29]:35293 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753912AbZFQSbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 14:31:03 -0400
+Date: Wed, 17 Jun 2009 14:30:36 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Howells <dhowells@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-afs@lists.infradead.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 00/17] [RFC] AFS: Implement OpenAFS pioctls(version)s
+Message-ID: <20090617183036.GA7867@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Howells <dhowells@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andreas Dilger <adilger@sun.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+	linux-afs@lists.infradead.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <alpine.LFD.2.01.0906171027470.16802@localhost.localdomain> <alpine.LFD.2.01.0906170901480.16802@localhost.localdomain> <20090617001157.065ee652@lxorguk.ukuu.org.uk> <20090616203845.4526.60013.stgit@warthog.procyon.org.uk> <10437.1245193192@redhat.com> <11650.1245198358@redhat.com> <20090617075502.GB13073@webber.adilger.int> <28023.1245259479@redhat.com> <28259.1245261823@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <28259.1245261823@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wed, Jun 17, 2009 at 07:03:43PM +0100, David Howells wrote:
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > What _I_ mean is that THIS IS IMPOSSIBLE TO DO FROM USER SPACE!
+> > 
+> > Try it. Not doable. User space simply doesn't know enough, and has 
+> > fundamental races with mount/umount.
+> 
+> Ummm...  I'm not sure I completely agree.  If you've managed to open, say,
+> "/afs", where's the race with mount/umount?  You've got a file descriptor you
+> can use as a handle.  Yes, you have to check that it's actually an inode of
+> your fs, but that's not exactly difficult, and that's not going to change just
+> because someone unmounts it or mounts over it whilst you've got it open.
 
-This is the MFD pull request for the 2.6.31 merge window.
-The big changes there are 2 new drivers (PCAP, AB3100), and a fairly big asic3
-update.
+I believe Linus is arguing that in the general case, it's impossible
+to open the mountpoint of an arbitrarily mounted filesystem.  David,
+you're arguing that by convention the afs root is *always* in /afs,
+and that the afs utilities will always simply open "/afs", and thus
+it's not hard to find the mount point, since afs works by having a
+single top-level static mount point --- and AFS hides the
+lookup of what volume server you might need to go to when you open
+/afs/athena.mit.edu/user/t/y/tytso versus /afs/andrew.cmu.edu/usr/shadow.
 
-Thanks in advance for pulling those changes in.
+There are no magic "automounts" such that OS won't know that
+user.tytso AFS Volume in the athena.mit.edu AFS cell is at
+/afs/athena.mit.edu/user/t/y/tytso, so the only "mountpoint" that
+exists as far as AFS is concerned is at /afs --- and that in the AFS
+world, it's essentially a universal convention that AFS pathnames
+begin with "/afs", and so the AFS filesystem will always be mounted in /afs.
 
-The following changes since commit 65795efbd380a832ae508b04dba8f8e53f0b84d9:
-  Linus Torvalds (1):
-        Merge branch 'next-i2c' of git://aeryn.fluff.org.uk/bjdooks/linux
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/sameo/mfd-2.6.git for-next
-
-Adrian Bunk (1):
-      mfd/pcf50633-gpio.c: add MODULE_LICENSE
-
-Daniel Ribeiro (1):
-      mfd: add PCAP driver
-
-Linus Walleij (1):
-      mfd: add U300 AB3100 core support
-
-Mark Brown (3):
-      mfd: Correct readability of WM8350 register 227
-      mfd: Mark WM8350 mask revision as readable to match silicon
-      mfd: Fix Kconfig help text for WM8350
-
-Philipp Zabel (7):
-      mfd: asic3: add asic3_set_register common operation
-      mfd: asic3: add clock handling for MFD cells
-      mfd: add ASIC3 IRQ numbers
-      mfd: asic3: use resource_size macro instead of local variable
-      mfd: asic3: remove SD/SDIO controller register definitions
-      mfd: asic3: enable DS1WM cell
-      mfd: asic3: enable SD/SDIO cell
-
-Rakib Mullick (1):
-      mfd: Mark clocks_init as non-init in twl4030-core.c
-
-Samuel Ortiz (2):
-      mfd: fix tmio related warnings
-      mfd: early init for MFD running regulators
-
-Thomas Gleixner (1):
-      drivers/mfd: remove obsolete irq_desc_t typedef
-
- drivers/mfd/Kconfig          |   24 +-
- drivers/mfd/Makefile         |    5 +-
- drivers/mfd/ab3100-core.c    |  991 ++++++++++++++++++++++++++++++++++++++++++
- drivers/mfd/asic3.c          |  312 +++++++++++++-
- drivers/mfd/da903x.c         |    2 +-
- drivers/mfd/ezx-pcap.c       |  505 +++++++++++++++++++++
- drivers/mfd/pcf50633-core.c  |    2 +-
- drivers/mfd/pcf50633-gpio.c  |    3 +
- drivers/mfd/t7l66xb.c        |    2 +-
- drivers/mfd/tc6387xb.c       |    2 +-
- drivers/mfd/tc6393xb.c       |    2 +-
- drivers/mfd/twl4030-core.c   |    2 +-
- drivers/mfd/twl4030-irq.c    |    2 +-
- drivers/mfd/wm8350-regmap.c  |    4 +-
- drivers/mfd/wm8400-core.c    |    2 +-
- include/linux/mfd/ab3100.h   |  103 +++++
- include/linux/mfd/asic3.h    |  236 +----------
- include/linux/mfd/ezx-pcap.h |  256 +++++++++++
- include/linux/mfd/tmio.h     |    2 +-
- 19 files changed, 2219 insertions(+), 238 deletions(-)
- create mode 100644 drivers/mfd/ab3100-core.c
- create mode 100644 drivers/mfd/ezx-pcap.c
- create mode 100644 include/linux/mfd/ab3100.h
- create mode 100644 include/linux/mfd/ezx-pcap.h
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+      	   	       	      	  	     	  - Ted
