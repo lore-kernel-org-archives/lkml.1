@@ -1,123 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765813AbZFQMvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbZFQMwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765813AbZFQMvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 08:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758253AbZFQMvp
+	id S933220AbZFQMwx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 08:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759452AbZFQMwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 08:51:45 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:39659 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756942AbZFQMvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 08:51:44 -0400
-Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64
-	randconfig [drivers/net/ucc_geth.o]
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>
-Cc: Nathan Lynch <ntl@pobox.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Linux-Next <linux-next@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Tony Breeds <tony@bakeyournoodle.com>, michael@ellerman.id.au
-In-Reply-To: <1245048719.5239.10.camel@subratamodak.linux.ibm.com>
-References: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
-	 <1245048719.5239.10.camel@subratamodak.linux.ibm.com>
+	Wed, 17 Jun 2009 08:52:45 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:52110 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759325AbZFQMwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 08:52:45 -0400
+Subject: [PATCH] kmemleak: Only use GFP_KERNEL|GFP_ATOMIC for the internal
+	allocations
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, fengguang.wu@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090617124034.GE28529@csn.ul.ie>
+References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org>
+	 <20090616223649.719ea378.akpm@linux-foundation.org>
+	 <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu>
+	 <1245240677.11889.17.camel@pc1117.cambridge.arm.com>
+	 <20090617122803.GD28529@csn.ul.ie>
+	 <1245242160.11889.23.camel@pc1117.cambridge.arm.com>
+	 <20090617124034.GE28529@csn.ul.ie>
 Content-Type: text/plain
-Organization: IBM
-Date: Wed, 17 Jun 2009 18:21:37 +0530
-Message-Id: <1245243097.4870.3.camel@subratamodak.linux.ibm.com>
+Organization: ARM Ltd
+Date: Wed, 17 Jun 2009 13:52:10 +0100
+Message-Id: <1245243130.11889.27.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Jun 2009 12:52:11.0860 (UTC) FILETIME=[6E944940:01C9EF4A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-15 at 12:22 +0530, Subrata Modak wrote:
-> Hi Li/Nathan,
-> 
-> On Thu, 2009-06-11 at 09:07 +0530, Subrata Modak wrote: 
-> > Hi Nathan,
-> > 
-> > >On Wed, 2009-06-10 at 21:28 -0500, Nathan Lynch wrote:
-> > >Subrata Modak <subrata@linux.vnet.ibm.com> writes:
-> > > 
-> > > > On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
-> > > >> Hi Subrata,
-> > > >> 
-> > > >> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
-> > > >> >
-> > > >> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
-> > > >> > -	ph = of_get_property(np, "tbi-handle", NULL);
-> > > >> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
-> > > >> 
-> > > >> You don't need this cast because of_get_property() returns "void *".
-> > > >
-> > > > Stephen,
-> > > >
-> > > > True. But without this gcc complains:
-> > > >
-> > > > CC [M]  drivers/net/ucc_geth.o
-> > > > drivers/net/ucc_geth.c: In function bucc_geth_probeb:
-> > > > drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
-> > > > from pointer target type
-> > > 
-> > > ph should be declared const phandle *.  Look at other uses of
-> > > of_get_property.
-> > >
-> > 
-> > Ok fine. Here is a revised patch again.
-> > 
-> > Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
-> > Reference(s):
-> > http://lkml.org/lkml/2009/6/4/241,
-> > http://lkml.org/lkml/2009/6/10/338,
-> > 
-> > Fix the following build error:
-> > 
-> > drivers/net/ucc_geth.c: In function bucc_geth_probeb:
-> > drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
-> > drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
-> > drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
-> > drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
-> > make[2]: *** [drivers/net/ucc_geth.o] Error 1
-> > 
-> > Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> > ---
-> 
-> Is there anything else to be done in this patch. If this is OK, can this
-> be applied. I am not sure, but, i find Li Yang as the maintainer for
-> this in linux*/MAINTAINERS file. Kindly let me know if this patch needs
-> to be revisited for some other issue(s).
+Kmemleak allocates memory for pointer tracking and it tries to avoid
+using GFP_ATOMIC if the caller doesn't require it. However other gfp
+flags may be passed by the caller which aren't required by kmemleak.
+This patch filters the gfp flags so that only GFP_KERNEL | GFP_ATOMIC
+are used.
 
-Li,
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ mm/kmemleak.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-Any thoughts on this patch ?
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 58ec86c..25e2034 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -109,6 +109,9 @@
+ 
+ #define BYTES_PER_POINTER	sizeof(void *)
+ 
++/* GFP bitmask for kmemleak internal allocations */
++#define GFP_KMEMLEAK_MASK	(GFP_KERNEL | GFP_ATOMIC)
++
+ /* scanning area inside a memory block */
+ struct kmemleak_scan_area {
+ 	struct hlist_node node;
+@@ -462,7 +465,7 @@ static void create_object(unsigned long ptr, size_t size, int min_count,
+ 	struct prio_tree_node *node;
+ 	struct stack_trace trace;
+ 
+-	object = kmem_cache_alloc(object_cache, gfp & ~GFP_SLAB_BUG_MASK);
++	object = kmem_cache_alloc(object_cache, gfp & GFP_KMEMLEAK_MASK);
+ 	if (!object) {
+ 		kmemleak_panic("kmemleak: Cannot allocate a kmemleak_object "
+ 			       "structure\n");
+@@ -636,7 +639,7 @@ static void add_scan_area(unsigned long ptr, unsigned long offset,
+ 		return;
+ 	}
+ 
+-	area = kmem_cache_alloc(scan_area_cache, gfp & ~GFP_SLAB_BUG_MASK);
++	area = kmem_cache_alloc(scan_area_cache, gfp & GFP_KMEMLEAK_MASK);
+ 	if (!area) {
+ 		kmemleak_warn("kmemleak: Cannot allocate a scan area\n");
+ 		goto out;
 
-Regards--
-Subrata
-
-> 
-> Regards--
-> Subrata
-> 
-> > 
-> > --- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10 11:58:39.000000000 -0500
-> > +++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10 22:28:13.000000000 -0500
-> > @@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
-> > 
-> >  static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
-> >  {
-> > +	struct device_node *mdio;
-> > +	const phandle *ph;
-> >  	struct device *device = &ofdev->dev;
-> >  	struct device_node *np = ofdev->node;
-> >  	struct net_device *dev = NULL;
-> > 
-> > ---
-> > Regards--
-> > Subrata
-> > 
 
