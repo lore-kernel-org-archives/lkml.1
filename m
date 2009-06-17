@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbZFQHvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764831AbZFQHv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761527AbZFQHvi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 03:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZFQHvb
+	id S1764831AbZFQHv6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 03:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZFQHvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 03:51:31 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45301 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbZFQHva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 03:51:30 -0400
-Date: Wed, 17 Jun 2009 09:51:31 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Russ Anderson <rja@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/5] HWPOISON: define VM_FAULT_HWPOISON to 0 when feature is disabled
-Message-ID: <20090617075131.GC26664@wotan.suse.de>
-References: <20090611142239.192891591@intel.com> <20090611144430.414445947@intel.com> <20090612112258.GA14123@elte.hu> <20090612125741.GA6140@localhost> <20090612131754.GA32105@elte.hu> <alpine.LFD.2.01.0906120827020.3237@localhost.localdomain> <20090612153501.GA5737@elte.hu> <20090615065232.GC18390@wotan.suse.de> <20090616202726.GB31443@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616202726.GB31443@sgi.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 17 Jun 2009 03:51:48 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53907 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753508AbZFQHvr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 03:51:47 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Wed, 17 Jun 2009 01:51:37 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 10/17] AFS: Implement the PWhereIs pioctl
+In-reply-to: <20090616203937.4526.53619.stgit@warthog.procyon.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-afs@lists.infradead.org, linux-fsdevel@vger.kernel.org,
+       Wang Lei <wang840925@gmail.com>
+Message-id: <20090617075137.GA13073@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20090616203845.4526.60013.stgit@warthog.procyon.org.uk>
+ <20090616203937.4526.53619.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 03:27:26PM -0500, Russ Anderson wrote:
-> On Mon, Jun 15, 2009 at 08:52:32AM +0200, Nick Piggin wrote:
-> > On Fri, Jun 12, 2009 at 05:35:01PM +0200, Ingo Molnar wrote:
-> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > > On Fri, 12 Jun 2009, Ingo Molnar wrote:
-> > > > > 
-> > > > > This seems like trying to handle a failure mode that cannot be 
-> > > > > and shouldnt be 'handled' really. If there's an 'already 
-> > > > > corrupted' page then the box should go down hard and fast, and 
-> > > > > we should not risk _even more user data corruption_ by trying to 
-> > > > > 'continue' in the hope of having hit some 'harmless' user 
-> > > > > process that can be killed ...
-> > > > 
-> > > > No, the box should _not_ go down hard-and-fast. That's the last 
-> > > > thing we should *ever* do.
-> > > > 
-> > > > We need to log it. Often at a user level (ie we want to make sure 
-> > > > it actually hits syslog, possibly goes out the network, maybe pops 
-> > > > up a window, whatever).
-> > > > 
-> > > > Shutting down the machine is the last thing we ever want to do.
-> > > > 
-> > > > The whole "let's panic" mentality is a disease.
-> > > 
-> > > No doubt about that - and i'm removing BUG_ON()s and panic()s 
-> > > wherever i can and havent added a single new one myself in the past 
-> > > 5 years or so, its a disease.
-> > 
-> > In HA failover systems you often do want to panic ASAP (after logging
-> > to serial cosole I guess) if anything like this happens so the system
-> > can be rebooted with minimal chance of data corruption spreading.
-> 
-> The whole point of hardware data poisoning is to avoid having to 
-> panic the system due to the potential of undetected data corruption,
-> because the corrupt data is always marked bad.  This has worked
-> well on ia64 where applications that encounter bad data are killed
-> and the memory poisoned and not reallocated, avoiding a system panic.
-> 
-> This has been used at customer sites for a few years.  The type
-> customers that really check their data.  It is nice to see
-> the hardware poison feature moving to the x86 "mainstream".
+On Jun 16, 2009  21:39 +0100, David Howells wrote:
+> Implement the PWhereIs pioctl for AFS.  This will find out on which servers
+> the volume containing the specified file is located and return the IPv4
+> addresses to userspace.
 
-So long as you can get an MCE and panic if the corrupt data
-actually gets consumed anywhere, then yes a "corrupt data
-detected but not consumed" exception would not require a
-panic.
+What happens with IPv6?
 
-I don't know enough about the arch details to know what kinds
-of exceptions happen when.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
