@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765643AbZFQNtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933240AbZFQNuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765643AbZFQNtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbZFQNtY
+	id S933240AbZFQNuT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZFQNuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:49:24 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47783 "EHLO smtps.tip.net.au"
+	Wed, 17 Jun 2009 09:50:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41881 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756072AbZFQNtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:49:23 -0400
-Date: Wed, 17 Jun 2009 23:49:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       scsi <linux-scsi@vger.kernel.org>,
-       open-osd mailing-list <osd-dev@open-osd.org>
-Subject: Re: [PATCH][SQUASHME] osdblk is dependent on SCSI_OSD_ULD
-Message-Id: <20090617234919.dd6e5983.sfr@canb.auug.org.au>
-In-Reply-To: <4A38F15C.5050204@panasas.com>
-References: <20090616165923.8ca4ddcb.sfr@canb.auug.org.au>
-	<4A37CC79.5000907@oracle.com>
-	<4A38E55E.7050006@panasas.com>
-	<20090617231250.4aefe5e8.sfr@canb.auug.org.au>
-	<4A38F15C.5050204@panasas.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__17_Jun_2009_23_49_19_+1000_+6aQ7i/TNBnA+MS/"
+	id S1751174AbZFQNuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 09:50:05 -0400
+Message-ID: <4A38F47F.509@redhat.com>
+Date: Wed, 17 Jun 2009 16:49:51 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: linux-next: kvm/powerpc tree build failure
+References: <20090617150419.e406a69a.sfr@canb.auug.org.au>
+In-Reply-To: <20090617150419.e406a69a.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__17_Jun_2009_23_49_19_+1000_+6aQ7i/TNBnA+MS/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Boaz,
-
-On Wed, 17 Jun 2009 16:36:28 +0300 Boaz Harrosh <bharrosh@panasas.com> wrot=
-e:
+On 06/17/2009 08:04 AM, Stephen Rothwell wrote:
+> From: Stephen Rothwell<sfr@canb.auug.org.au>
+> Date: Wed, 17 Jun 2009 14:57:29 +1000
+> Subject: [PATCH] kvm/powerpc: make 32 bit constant unsigned long
 >
-> Stephen Rothwell wrote:
-> When
-> CONFIG_BLK_DEV_OSD=3Dy
-> CONFIG_SCSI_OSD_INITIATOR=3Dy
-> \# CONFIG_SCSI_OSD_ULD is not set
+> KVM_PAGES_PER_HPAGE needs to be unsigned long since its value is 2^31.
+>
+> Eliminates this compiler warning:
+>
+>    
 
-Actually it was Randy Dunlap.
+Thanks, applied.  For some reason my own build testing didn't fail on this.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
---Signature=_Wed__17_Jun_2009_23_49_19_+1000_+6aQ7i/TNBnA+MS/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko49F8ACgkQjjKRsyhoI8yU/wCfaV0LpwpZKTraLrgXmBm8CPWO
-o1QAn02zYblA05SsQfAE24HmmmAYyoi5
-=zoTO
------END PGP SIGNATURE-----
-
---Signature=_Wed__17_Jun_2009_23_49_19_+1000_+6aQ7i/TNBnA+MS/--
