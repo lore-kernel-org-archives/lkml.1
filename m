@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765346AbZFQNaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbZFQNdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765346AbZFQNaz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZFQNas
+	id S932854AbZFQNdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759944AbZFQNdC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:30:48 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:32971 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbZFQNar (ORCPT
+	Wed, 17 Jun 2009 09:33:02 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34714 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbZFQNdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:30:47 -0400
-Subject: Re: [PATCH] kmemleak: Only use GFP_KERNEL|GFP_ATOMIC for the
- internal  allocations
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1245245007.11889.42.camel@pc1117.cambridge.arm.com>
-References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org>
-	 <20090616223649.719ea378.akpm@linux-foundation.org>
-	 <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu>
-	 <1245240677.11889.17.camel@pc1117.cambridge.arm.com>
-	 <20090617122803.GD28529@csn.ul.ie>
-	 <1245242160.11889.23.camel@pc1117.cambridge.arm.com>
-	 <20090617124034.GE28529@csn.ul.ie>
-	 <1245243130.11889.27.camel@pc1117.cambridge.arm.com>
-	 <84144f020906170601l254d3b29udc688d02426ea247@mail.gmail.com>
-	 <1245245007.11889.42.camel@pc1117.cambridge.arm.com>
-Date: Wed, 17 Jun 2009 16:30:48 +0300
-Message-Id: <1245245448.5604.31.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Wed, 17 Jun 2009 09:33:00 -0400
+Date: Wed, 17 Jun 2009 09:32:51 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-arch@vger.kernel.org, mingo@elte.hu, kyle@mcmartin.ca,
+       cl@linux-foundation.org, Jesper.Nilsson@axis.com,
+       benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com,
+       Paul Mundt <lethal@linux-sh.org>, Russell King <rmk@arm.linux.org.uk>,
+       Mikael Starvik <starvik@axis.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Bryan Wu <cooloney@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Parisc List <linux-parisc@vger.kernel.org>
+Subject: Re: [PATCH 2/9] percpu: use dynamic percpu allocator as the
+	default percpu allocator
+Message-ID: <20090617133251.GB19032@bombadil.infradead.org>
+References: <1245210060-24344-1-git-send-email-tj@kernel.org> <1245210060-24344-3-git-send-email-tj@kernel.org> <1245242459.4503.4.camel@mulgrave.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245242459.4503.4.camel@mulgrave.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-17 at 14:23 +0100, Catalin Marinas wrote:
-> On Wed, 2009-06-17 at 16:01 +0300, Pekka Enberg wrote:
-> > On Wed, Jun 17, 2009 at 3:52 PM, Catalin Marinas<catalin.marinas@arm.com> wrote:
-> > > Kmemleak allocates memory for pointer tracking and it tries to avoid
-> > > using GFP_ATOMIC if the caller doesn't require it. However other gfp
-> > > flags may be passed by the caller which aren't required by kmemleak.
-> > > This patch filters the gfp flags so that only GFP_KERNEL | GFP_ATOMIC
-> > > are used.
-> > >
-> > > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> > 
-> > Is this really safe? What if we're in a middle of a filesystem
-> > operation that uses GFP_NOFAIL and all of a sudden kmemleak allocation
-> > fails and causes a panic?
+On Wed, Jun 17, 2009 at 08:40:59AM -0400, James Bottomley wrote:
+> > * parisc (broken, under investigation)
 > 
-> A kmemleak_panic() call only disables the kmemleak but doesn't stop the
-> kernel. The __GFP_NOFAIL allocation had already happened and the pointer
-> returned to the caller.
+> I haven't seen anything of this on the parisc list ... what's the
+> problem?  and do you need systems or any other help to fix it?
+> 
 
-Ah, ok. I was confused by the name of kmemleak_panic() (which could use
-renaming methinks).
-
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-
-			Pekka
-
+Ah, maybe that was only on linux-kernel or in private mail; we're
+oops-ing again in the oops-handler... I almost had this debugged last
+weekend, but ran out of time.
