@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758995AbZFQQqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbZFQQqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758995AbZFQQqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZFQQqd
+	id S1759195AbZFQQqx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbZFQQqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:46:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54410 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752771AbZFQQqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:46:33 -0400
-Date: Wed, 17 Jun 2009 18:46:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [RFC 6/7] x86: Move kernel_fpu_using to asm/i387.h
-Message-ID: <20090617164622.GB25357@elte.hu>
-References: <1244704236.5320.129.camel@yhuang-dev.sh.intel.com>
+	Wed, 17 Jun 2009 12:46:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41186 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758585AbZFQQqi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:46:38 -0400
+Date: Wed, 17 Jun 2009 09:45:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       yinghai@kernel.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+In-Reply-To: <1245215916.5604.5.camel@penberg-laptop>
+Message-ID: <alpine.LFD.2.01.0906170941490.16802@localhost.localdomain>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>  <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>  <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>  <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> 
+ <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>  <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop>  <20090615112205.GA6012@wotan.suse.de> <20090615112827.GC6012@wotan.suse.de>  <1245101567.12400.38.camel@pasglop>
+  <alpine.DEB.1.10.0906161104480.26093@gentwo.org>  <alpine.LFD.2.01.0906161208100.3282@localhost.localdomain>  <alpine.DEB.1.10.0906161522370.29941@gentwo.org>  <alpine.LFD.2.01.0906161231020.3282@localhost.localdomain>
+ <1245215916.5604.5.camel@penberg-laptop>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244704236.5320.129.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0005]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Huang Ying <ying.huang@intel.com> wrote:
 
-> This is used by AES-NI accelerated AES implementation and PCLMULQDQ
-> accelerated GHASH implementation.
+On Wed, 17 Jun 2009, Pekka Enberg wrote:
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-> ---
->  arch/x86/crypto/aesni-intel_glue.c |    7 -------
->  arch/x86/include/asm/i387.h        |    7 +++++++
->  2 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> --- a/arch/x86/crypto/aesni-intel_glue.c
-> +++ b/arch/x86/crypto/aesni-intel_glue.c
-> @@ -59,13 +59,6 @@ asmlinkage void aesni_cbc_enc(struct cry
->  asmlinkage void aesni_cbc_dec(struct crypto_aes_ctx *ctx, u8 *out,
->  			      const u8 *in, unsigned int len, u8 *iv);
->  
-> -static inline int kernel_fpu_using(void)
-> -{
-> -	if (in_interrupt() && !(read_cr0() & X86_CR0_TS))
-> -		return 1;
-> -	return 0;
-> -}
-> -
->  static inline struct crypto_aes_ctx *aes_ctx(void *raw_ctx)
->  {
->  	unsigned long addr = (unsigned long)raw_ctx;
-> --- a/arch/x86/include/asm/i387.h
-> +++ b/arch/x86/include/asm/i387.h
-> @@ -302,6 +302,13 @@ static inline void kernel_fpu_end(void)
->  	preempt_enable();
->  }
->  
-> +static inline int kernel_fpu_using(void)
-> +{
-> +	if (in_interrupt() && !(read_cr0() & X86_CR0_TS))
-> +		return 1;
-> +	return 0;
-> +}
-> +
+> So how does the page allocator fit in this new scheme of things? I have
+> been looking at doing the cleanups you and Christoph suggested and it
+> seems to me we need a 'system_gfp_mask' that's respected by basically
+> everyone, including __might_sleep() and other debugging functions.
 
-Looks sane to me. Herbert, do you ack it?
+So I'm very much ok with the whole "use magic gfp_mask to indicate what 
+works at what stage". And yes, I think it makes sense to extend it to the 
+page allocator and might_sleep too, because GFP_KERNEL has all the same 
+issues regardless of whether it's about page allocation or about slab 
+allocators. And any "might_sleep" suppression really does tend to be about 
+the exact same thing.
 
-	Ingo
+So the only thing I was arguing against wrt Christoph was really that I 
+think this thing should be an "internal" thing, and never ever be used as 
+a flag for others to decide what to do. We do _not_ want drivers or other 
+crazy people using it to decide what state they are running in. 
+
+Keep it simple, and keep it minimal, in other words.
+
+		Linus
