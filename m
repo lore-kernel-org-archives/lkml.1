@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765858AbZFQM23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbZFQM2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765858AbZFQM23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 08:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765097AbZFQM2S
+	id S933221AbZFQM2x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 08:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbZFQM2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 08:28:18 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:50920 "EHLO bilbo.ozlabs.org"
+	Wed, 17 Jun 2009 08:28:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53564 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765567AbZFQM2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 08:28:17 -0400
+	id S1762661AbZFQM2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 08:28:42 -0400
+Date: Wed, 17 Jun 2009 14:28:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
+Message-ID: <20090617122812.GD13316@elte.hu>
+References: <20090615181555.GA11248@elte.hu> <1245089943.13761.19334.camel@twins> <20090615182549.GD11248@elte.hu> <1245090608.13761.19349.camel@twins> <20090615184217.GG11248@elte.hu> <1245091674.6741.180.camel@laptop> <20090615185259.GK11248@elte.hu> <1245092433.6741.201.camel@laptop> <20090616081348.GC16229@elte.hu> <1245224675.13761.21598.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19000.57673.618229.523229@cargo.ozlabs.ibm.com>
-Date: Wed, 17 Jun 2009 22:27:53 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: benh@kernel.crashing.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
-	powerpc
-In-Reply-To: <20090617120831.GB26454@elte.hu>
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-	<19000.55666.866148.559620@cargo.ozlabs.ibm.com>
-	<20090617120831.GB26454@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <1245224675.13761.21598.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
 
-> ah, it does this:
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Tue, 2009-06-16 at 10:13 +0200, Ingo Molnar wrote:
 > 
-> /*
->  * This is here because we used to use l64 for 64bit powerpc
->  * and we don't want to impact user mode with our change to ll64
->  * in the kernel.
->  */
-> #if defined(__powerpc64__) && !defined(__KERNEL__)
-> # include <asm-generic/int-l64.h>
-> #else
-> # include <asm-generic/int-ll64.h>
-> #endif
+> > > By removing the types it becomes very difficult to verify the max 
+> > > depth. I really don't like removing them.
+> > 
+> > The fact that it implies an atomic section pretty much limits its 
+> > depth in practice, doesnt it?
+> > 
+> > All we need to track in the debug code is 
+> > max-{syscall,softirq,hardirq,nmi}. The sum of these 4 counts 
+> > must be smaller than the max - even if (as you are right to 
+> > point out) we dont hit that magic combo that truly maximizes the 
+> > depth.
 > 
-> That's crappy really.
+> Right, so the thing I'd worry about is someone adding 
+> kmap_atomic() to an interrupt context that didn't have interrupts 
+> disabled and then managing to nest that a few times.
+> 
+> Suppose you put it in some IO completion handler, and someone has 
+> 4 IO controllers installed and all 4 IO interrupts come in at the 
+> 'same' time.
+> 
+> With types you could warn on similarly to what we do today, but 
+> with the simple push/pop that might be a lot harder.
 
-We were concerned that changing the userland-visible type of __u64
-from unsigned long to unsigned long long, etc., would be breaking the
-ABI, even if only in a small way - I thought it could possibly change
-C++ mangled function names, for instance, and it would cause fresh
-compile warnings on existing user code that prints __u64 with %lx,
-which has always been the correct thing to do on ppc64.
+Yes, fixed-purpose allocations are easier to warn about - they imply 
+more constraints, no doubt about that.
 
-A counter-argument would be, I guess, that __u64 et al. are purely for
-use in describing the kernel/user interface, so we have a little more
-latitude than with the type of e.g. u_int64_t.  I dunno.  I don't
-recall getting much of an answer from the glibc guys about what they
-thought of the idea of changing it.
+But we could warn about using kmap-atomic with in irq context with 
+irqs enabled and thus exclude the case you are worried about?
 
-Anyway, of the 64-bit architectures, alpha, ia64, and mips64 also have
-__u64 as unsigned long in userspace, so this issue will still crop up
-even if we change it on powerpc.
+> Anyway, with the whole cr2 fiddling bit being discussed this seems 
+> to become redundant.
 
-Paul.
+It's not just the cr2 fiddling but also conversion of pagefault 
+returns from IRET to RET. The kmap_atomic API change is a nice 
+cleanup in itself.
+
+	Ingo
