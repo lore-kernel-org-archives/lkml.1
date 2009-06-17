@@ -1,68 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbZFQQIC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZFQQJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbZFQQIC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:08:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZFQQHw
+	id S1755454AbZFQQJD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZFQQIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:07:52 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:11580
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754355AbZFQQHv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:07:51 -0400
-From: Boaz Harrosh <bharrosh@panasas.com>
-To: Jeff Garzik <jeff@garzik.org>, open-osd <osd-dev@open-osd.org>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/6] osdblk: Adjust queue limits to lower device's limits
-Date: Wed, 17 Jun 2009 19:07:52 +0300
-Message-Id: <1245254872-8717-1-git-send-email-bharrosh@panasas.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <4A391373.3050301@panasas.com>
-References: <4A391373.3050301@panasas.com>
-X-OriginalArrivalTime: 17 Jun 2009 16:07:54.0528 (UTC) FILETIME=[C5C13A00:01C9EF65]
+	Wed, 17 Jun 2009 12:08:55 -0400
+Received: from fifo99.com ([67.223.236.141]:57460 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754247AbZFQQIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:08:54 -0400
+Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny
+	&&	usage
+From: Daniel Walker <dwalker@fifo99.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Brian Swetland <swetland@google.com>,
+       arve@android.com, linux-kernel@vger.kernel.org
+In-Reply-To: <4A390B9A.40806@goop.org>
+References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+	 <4A380494.6030506@goop.org> <1245249469.5982.251.camel@desktop>
+	 <4A390B9A.40806@goop.org>
+Content-Type: text/plain
+Date: Wed, 17 Jun 2009 09:08:56 -0700
+Message-Id: <1245254936.5982.261.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-call blk_queue_stack_limits() to copy queue limits from
-the underline osd scsi_device. This is absolutely needed
-because osdblk cannot sleep when allocating a lower-request and
-therefore cannot be bouncing.
+On Wed, 2009-06-17 at 08:28 -0700, Jeremy Fitzhardinge wrote:
+> On 06/17/09 07:37, Daniel Walker wrote:
+> > I agree it's reasonable in some cases.. The reason I changed this is
+> > because at first glance I didn't know what those lines were suppose to
+> > do. The equals signs all bleed together combined with the length of the
+> > statement makes it not match other similar usage. The if statement just
+> > makes the whole thing explicit.
+> >    
+> 
+> I definitely see your point, but the if() statement variant has the 
+> downside of only conditionally assigning the variable, and requiring it 
+> to be initialized separately.  I have a general code-cleanup rule to 
+> convert:
+> 
+> 	foo = false;
+> 	if (something_is_true())
+> 		foo = true;
+> 
+> to
+> 
+> 	foo = something_is_true();
 
-TODO: Dynamic changes of limits to the lower device queue
-will not reflect in the upper driver
+Above seems more like a speed up, rather than a clean up. I would think
+it's likely fine for a lot of cases tho.
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/block/osdblk.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> Maybe a bit of reformatting and some tactical use of parens would help?
+> 
+> 	wait_for_proc_work = (!thread->transaction_stack&&  list_empty(&thread->todo));
+> 
+> (I'm not normally a fan of NULL-as-false, but it reads OK here.)
 
-diff --git a/drivers/block/osdblk.c b/drivers/block/osdblk.c
-index e829360..b07e154 100644
---- a/drivers/block/osdblk.c
-+++ b/drivers/block/osdblk.c
-@@ -66,6 +66,7 @@
- #include <scsi/osd_initiator.h>
- #include <scsi/osd_attributes.h>
- #include <scsi/osd_sec.h>
-+#include <scsi/scsi_device.h>
- 
- #define DRV_NAME "osdblk"
- #define PFX DRV_NAME ": "
-@@ -410,6 +411,12 @@ static int osdblk_init_disk(struct osdblk_device *osdev)
- 		return rc;
- 	}
- 
-+	/* Set our limits to the lower device limits, because osdblk cannot
-+	 * sleep when allocating a lower-request and therefore cannot be
-+	 * bouncing.
-+	 */
-+	blk_queue_stack_limits(q, osd_request_queue(osdev->osd));
-+
- 	blk_queue_prep_rq(q, blk_queue_start_tag);
- 	blk_queue_ordered(q, QUEUE_ORDERED_DRAIN_FLUSH, osdblk_prepare_flush);
- 
--- 
-1.6.2.1
+I'm ok with this change for the first of the two, but the second one is
+too long.. However, I reviewed the code a little more and I think the
+wait_for_proc_work variable could likely get eliminated in the second
+case. There is something racy going on wrt. to the variable in the
+second case. So it probably better for me to just drop the second change
+in hopes of a more detailed cleanup.
+
+> > Not to mention this code is a mess, very dense, and has little or no
+> > comments. Anything that can be done to make the code more clear, seem
+> > like a cleanup to me.
+> >    
+> 
+> No argument from me.  Not to mention that I have no idea from reading 
+> the code what the whole subsystem is for; "Android IPC Subsystem" 
+> doesn't tell me much, other than a gnawing feeling about having yet 
+> another IPC subsystem to deal with.
+
+I was hoping Brian could explain this. I also added Arve (the author) to
+the CC list. Maybe they can explain the purpose of the subsystem.
+
+> > As for using "bool" , AFAIK that's only part of C++ ..
+> >    
+> 
+> No, it is also C99, and becoming widely used in the kernel.
+
+Was this a recent change to C99, cause my compiler still doesn't know
+about it .. I also see a couple places in the kernel where bool is
+getting typedef'ed or somehow declared..
+
+Daniel
 
