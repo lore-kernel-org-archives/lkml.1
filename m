@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933523AbZFQMFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbZFQMF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933523AbZFQMFB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 08:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbZFQMEw
+	id S933536AbZFQMF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 08:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933378AbZFQMFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 08:04:52 -0400
-Received: from tau.jukie.net ([216.239.93.128]:43011 "EHLO tau.jukie.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754759AbZFQMEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 08:04:51 -0400
-Date: Wed, 17 Jun 2009 08:04:52 -0400
-From: Bart Trojanowski <bart@jukie.net>
-To: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Cc: linux-cachefs@redhat.com, linux-nfs@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [v2.6.30 nfs+fscache] BUG: unable to handle kernel NULL
-	pointer dereference at 0000000000000078
-Message-ID: <20090617120451.GF30951@jukie.net>
-References: <20090615123658.GC4721@jukie.net> <20090613182721.GA24072@jukie.net> <25357.1245068384@redhat.com> <25124.1245074627@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <25124.1245074627@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Jun 2009 08:05:08 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:6291 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757470AbZFQMFG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 08:05:06 -0400
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
+       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       "'Brice Goglin'" <Brice.Goglin@inria.fr>
+In-Reply-To: <20090617102245.2aec2e6e.kamezawa.hiroyu@jp.fujitsu.com>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+	 <87zldjn597.fsf@basil.nowhere.org>
+	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	 <20090612103251.GJ25568@one.firstfloor.org>
+	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+	 <1245119977.6724.40.camel@lts-notebook>
+	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+	 <1245164395.15138.40.camel@lts-notebook>
+	 <20090617102245.2aec2e6e.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Wed, 17 Jun 2009 08:02:28 -0400
+Message-Id: <1245240148.31940.6.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Wed, 2009-06-17 at 10:22 +0900, KAMEZAWA Hiroyuki wrote:
+> On Tue, 16 Jun 2009 10:59:55 -0400
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > On Tue, 2009-06-16 at 15:58 +0200, Stefan Lankes wrote:
+> > > > 
+> > > > I would like to get these patches working with latest mmotm to test on
+> > > > some newer hardware where I think they will help more.  And I would
+> > > > welcome your support.  However, I think we'll need to get Balbir and
+> > > > Kamezawa-san involved to sort out the interaction with memory control
+> > > > group.
+> > > > 
+> > > > I can send you the more recent rebase that I've done.  This is getting
+> > > > pretty old now:  2.6.28-rc4-mmotm-081110-081117.  I'll try to rebase to
+> > > > the most recent mmotm [that boots on my platforms], at least so that we
+> > > > can build and boot with migrate-on-fault disabled, within the next
+> > > > couple of weeks.
+> > > > 
+> > > 
+> > > Sounds good! Send me your last version and I will try to reconstruct your
+> > > problems. Afterwards, we could try to solve these problems.
+> > > 
+> > 
+> > Stefan:
+> > 
+> > I've placed the last rebased version in :
+> > 
+> > http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.28-rc4-mmotm-081110/
+> > 
+> > As I recall, this version DOES bug out because of reference count
+> > problems due to interaction with the memory controller.
+> > 
+> please report in precise if memcg has bug.
+> An example of test is welcome.
 
-I still owe you a test with cachefilesd caching to ext3 (not xfs), I'll
-have to free up some space on lvm to make a new volume.
+Not an memcg bug.  Just an implementation choice [2 phase migration
+handling:  start/end calls] that is problematic for "lazy" page
+migration--i.e., "migration-on-touch" in the fault path.  I'd be
+interested in your opinion on the feasibility of transferring the
+"charge" against the page--including the "try charge" from
+do_swap_page()--in migrate_page_copy() along with other page state.
 
-I just saw another issue with fscache; setup is the same as in previous
-emails.
+I'll try to rebase my lazy migration series to recent mmotm [as time
+permits] in the "near future" and gather more info on the problem I was
+having.
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000078
-IP: [<ffffffffa00e8cb6>] fscache_object_slow_work_execute+0x44c/0x814 [fscache]
-PGD 396ef8067 PUD 4057a6067 PMD 0 
-Oops: 0002 [#1] SMP 
-last sysfs file: /sys/block/md1/size
-CPU 7 
-Modules linked in: iptable_filter ip_tables x_tables tun virtio_rng virtio_pci virtio_ring virtio_net virtio_console virtio_blk virtio nfs lockd nfs_acl auth_rpcgss sunrpc kvm_amd kvm cachefiles fscache cpufreq_userspace cpufreq_powersave cpufreq_conservative ipv6 bridge stp ext2 mbcache loop pcspkr psmouse ata_generic pata_acpi rtc_cmos rtc_core rtc_lib button
-Pid: 16705, comm: kslowd Not tainted 2.6.30-kvm3-dirty #4 empty
-RIP: 0010:[<ffffffffa00e8cb6>]  [<ffffffffa00e8cb6>] fscache_object_slow_work_execute+0x44c/0x814 [fscache]
-RSP: 0018:ffff88037b2bde50  EFLAGS: 00010206
-RAX: 0000000000000078 RBX: ffff88042d8f5de0 RCX: 00000000ffffffff
-RDX: ffffffff805a21a3 RSI: ffff88042d8f5df8 RDI: 0000000000000246
-RBP: ffff88037b2bdea0 R08: 0000000000000002 R09: ffffffffa00e8ca3
-R10: ffffffffa00fa6e0 R11: ffffffff8023fcf9 R12: 0000000000000101
-R13: ffff88042d8f5e78 R14: ffff88042d8f5dc0 R15: ffff88042d8f5e30
-FS:  00007f1fcfaaa6e0(0000) GS:ffffc20000cda000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000078 CR3: 0000000375cc0000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process kslowd (pid: 16705, threadinfo ffff88037b2bc000, task ffff880407d50000)
-Stack:
- ffffffff807beae0 0000000103bb5248 ffffffff807beae0 0000000000000101
- ffff88037b2bde80 ffff88042d8f5e78 0000000000000101 0000000000000032
- 0000000000000064 ffff88037b2bdec0 ffff88037b2bdf20 ffffffff802a4166
-Call Trace:
- [<ffffffff802a4166>] slow_work_thread+0x278/0x43a
- [<ffffffff8025a31b>] ? autoremove_wake_function+0x0/0x3d
- [<ffffffff802a3eee>] ? slow_work_thread+0x0/0x43a
- [<ffffffff802a3eee>] ? slow_work_thread+0x0/0x43a
- [<ffffffff80259f0c>] kthread+0x5b/0x88
- [<ffffffff8020ce8a>] child_rip+0xa/0x20
- [<ffffffff805a1f50>] ? _spin_unlock_irq+0x30/0x3b
- [<ffffffff8020c850>] ? restore_args+0x0/0x30
- [<ffffffff8023fcf9>] ? finish_task_switch+0x40/0x111
- [<ffffffff80259e8c>] ? kthreadd+0x10f/0x134
- [<ffffffff80259eb1>] ? kthread+0x0/0x88
- [<ffffffff8020ce80>] ? child_rip+0x0/0x20
-Code: 66 68 fd 49 8d 5e 20 4c 89 f7 48 8b 00 ff 50 18 48 89 df e8 9e 94 4b e0 49 8b 45 f0 41 c7 85 48 ff ff ff 06 00 00 00 48 83 c0 78 <f0> 0f ba 30 01 19 d2 85 d2 74 12 49 8b 7d f0 be 01 00 00 00 48 
-RIP  [<ffffffffa00e8cb6>] fscache_object_slow_work_execute+0x44c/0x814 [fscache]
- RSP <ffff88037b2bde50>
-CR2: 0000000000000078
----[ end trace bc3032821b5333dd ]---
+Regards,
+Lee
 
--Bart
-
--- 
-				WebSig: http://www.jukie.net/~bart/sig/
