@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbZFQATT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762938AbZFQAU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760093AbZFQATT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 20:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbZFQATK
+	id S1762938AbZFQAU3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 20:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757560AbZFQAUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 20:19:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37507 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756731AbZFQATJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 20:19:09 -0400
-Date: Tue, 16 Jun 2009 17:19:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Patterson <andrew.patterson@hp.com>
-cc: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
- trees
-In-Reply-To: <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0906161717220.16802@localhost.localdomain>
-References: <20090616220419.14021.84524.stgit@bob.kio>  <alpine.LFD.2.01.0906161511390.16802@localhost.localdomain>  <1245192703.8234.226.camel@bluto.andrew>  <alpine.LFD.2.01.0906161556020.16802@localhost.localdomain> <1245195498.8234.236.camel@bluto.andrew>
- <alpine.LFD.2.01.0906161640250.16802@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 16 Jun 2009 20:20:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51989 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757024AbZFQAUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 20:20:18 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090616205454.GA2181@infradead.org>
+References: <20090616205454.GA2181@infradead.org> <20090616203845.4526.60013.stgit@warthog.procyon.org.uk> <20090616203850.4526.83585.stgit@warthog.procyon.org.uk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jacob Thebault-Spieker <summatusmentis@gmail.com>,
+       linux-afs@lists.infradead.org
+Subject: Re: [PATCH 01/17] VFS: Implement the pioctl() system call
+Date: Wed, 17 Jun 2009 01:19:44 +0100
+Message-ID: <11610.1245197984@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Hellwig <hch@infradead.org> wrote:
 
-
-On Tue, 16 Jun 2009, Linus Torvalds wrote:
+> > Implement the pioctl() system call.  This is used to support a number of AFS
+> > functions, and could also be used for Coda and other filesystems.
 > 
-> I may also be confused, and not have found the right place that actually 
-> inserts the resource.
+> Umm, adding a new system call multiplexer without any structure is a
+> serious no-go.  And this one is much worse than ioctl, which with a
+> fixed [fd,cmd,arg] tuple seems like a stronhold of sanity compred to this
+> monster with multiple arguments and a path that may or may not be there.
 
-Can you try this patch? It's simple and stupid and will be very noisy, but 
-it should hopefully get a call chain for all the cases where we set 
-parenthood, and then we can hopefully see exactly where that incorrect 
-nesting gets done.
+Ummm...  pioctl() has lots of structure.  Standard argument/reply block
+definition, for example: you get one blob of argument, you may return one blob
+of argument, you must structure your blobs such that 32-bit/64-bit
+compatibility problems don't occur.  It's _much_ more structured than ioctl,
+for example.
 
-No guarantees, I didn't test this. But I suspect you see where I'm trying 
-to go.
+The main annoyance with it, as you noted, is the fact that people have treated
+the path as being optional.
 
-			Linus
+> I think you'd be better of writing tools that use a sane interface than
+> adding a big pile of crap like this to the kernel.
+
+Name a single sane interface that can do all that pioctl() can?  There isn't
+one.  You can emulate almost all of pioctl() in userspace by a combination of
+getxattr, lgetxattr, setxattr, lsetxattr, add_key, keyctl_read, and when all
+else fails, open/open-NOFOLLOW + ioctl [IF not a dev file, and IF there are no
+collisions between ioctl numbers and pioctl numbers].  In other words, a mess.
+
+Now, assuming I do produce such a userspace library - that does not address
+the other requirement: that of using a common set of binaries to manipulate
+both OpenAFS and kAFS without the need for recompilation.  I presume you
+advocate making OpenAFS change to suit your requirements?
+
+David
