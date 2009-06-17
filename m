@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764195AbZFQKHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764803AbZFQKJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764195AbZFQKHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 06:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbZFQKHd
+	id S1764803AbZFQKJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 06:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbZFQKI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 06:07:33 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56399 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbZFQKHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 06:07:32 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 17 Jun 2009 12:07:27 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] SCSI: explain the hidden scsi_wait_scan Kconfig variable
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Changli Gao <xiaosuo@gmail.com>, James.Bottomley@HansenPartnership.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20090617021254.GQ19977@parisc-linux.org>
-Message-ID: <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
-References: <4A384FE4.9090703@gmail.com>
- <20090617021254.GQ19977@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Wed, 17 Jun 2009 06:08:56 -0400
+Received: from relay.atmel.no ([80.232.32.139]:56896 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750959AbZFQKI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 06:08:56 -0400
+Date: Wed, 17 Jun 2009 12:08:49 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Rob Emanuele <rob@emanuele.us>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] atmel-mci: Unified Atmel MCI drivers (AVR32 & AT91)
+Message-ID: <20090617120849.4b11386a@hskinnemoen-d830>
+In-Reply-To: <4A38BDB8.5030804@atmel.com>
+References: <1245200079-6323-1-git-send-email-rob@emanuele.us>
+	<4A38BDB8.5030804@atmel.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
-item.  These patches aren't accepted upstream, so let's stop the ongoing
-irritation of people due to this obscure and strange installed module
-and its Kconfig option.
+Nicolas Ferre wrote:
+> > -#define ATMCI_DATA_ERROR_FLAGS	(MCI_DCRCE | MCI_DTOE | MCI_OVRE | MCI_UNRE)
+> > +#define ATMCI_DATA_ERROR_FLAGS	(MCI_RINDE | MCI_RDIRE | MCI_RCRCE  \
+> > +				 | MCI_RENDE | MCI_RTOE | MCI_DCRCE \
+> > +				 | MCI_DTOE | MCI_OVRE | MCI_UNRE)  
+> 
+> Haavard, is it ok to add those flags on an AVR32 platform for now ?
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/scsi/Kconfig |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+It probably doesn't hurt on AVR32. But I'm not a great fan since it
+seems like the wrong thing to do, and it may simply mask the real
+problem.
 
-Index: b/drivers/scsi/Kconfig
-===================================================================
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -259,10 +259,25 @@ config SCSI_SCAN_ASYNC
- 	  or async on the kernel's command line.
- 
- config SCSI_WAIT_SCAN
--	tristate
-+	tristate  # No prompt here, this is a hidden option.
- 	default m
- 	depends on SCSI
- 	depends on MODULES
-+	help
-+	  Wait until all the async scans are complete.  The idea is to use
-+	  it in initrd/ initramfs scripts.  You modprobe it after all the
-+	  modprobes of the root SCSI drivers and it will wait until they
-+	  have all finished scanning their buses before allowing the boot
-+	  to proceed.
-+
-+	  Of course this does not work if targets boot independently of and
-+	  in parallel with the initiator, and/ or with transports with non-
-+	  deterministic target discovery schemes, and/ or if a transport
-+	  driver does not support scsi_wait_scan.
-+
-+	  Still, this option is not exposed as a prompt because little is
-+	  to be gained by disabling it, whereas people who accidentally
-+	  switch it off may wonder why their mkinitrd gets into trouble.
- 
- menu "SCSI Transports"
- 	depends on SCSI
-
--- 
-Stefan Richter
--=====-==--= -==- =---=
-http://arcgraph.de/sr/
-
+Haavard
