@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764900AbZFQHr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbZFQHsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764900AbZFQHr2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 03:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZFQHrU
+	id S1764933AbZFQHsN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 03:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZFQHr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 03:47:20 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45962 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104AbZFQHrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 03:47:19 -0400
-Date: Wed, 17 Jun 2009 09:47:19 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       lizf@cn.fujitsu.com, mingo@elte.hu, yinghai@kernel.org
-Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
-Message-ID: <20090617074719.GB26664@wotan.suse.de>
-References: <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop> <1245059859.23207.16.camel@penberg-laptop> <20090615102737.GA20461@wotan.suse.de> <1245062727.12400.23.camel@pasglop> <20090615112355.GB6012@wotan.suse.de> <1245101498.12400.37.camel@pasglop> <20090616044601.GB28596@wotan.suse.de> <alpine.LFD.2.01.0906161141290.3282@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906161141290.3282@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	Wed, 17 Jun 2009 03:47:58 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53842 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbZFQHr5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 03:47:57 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Wed, 17 Jun 2009 01:47:11 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 03/17] VFS: Implement handling for pathless pioctls
+In-reply-to: <20090616203901.4526.200.stgit@warthog.procyon.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-afs@lists.infradead.org, linux-fsdevel@vger.kernel.org,
+       Wang Lei <wang840925@gmail.com>
+Message-id: <20090617074711.GZ13073@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20090616203845.4526.60013.stgit@warthog.procyon.org.uk>
+ <20090616203901.4526.200.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 11:45:24AM -0700, Linus Torvalds wrote:
+On Jun 16, 2009  21:39 +0100, David Howells wrote:
+> Implement handling for pathless pioctls.  Because these take no path argument,
+> there's no way to know for certain which filesystem they're aimed at, so we
+> have to switch on command number instead.  This patch allows interested parties
+> to register handlers.  Each registered handler function is tried in turn until
+> one doesn't return -EOPNOTSUPP.
 > 
-> 
-> On Tue, 16 Jun 2009, Nick Piggin wrote:
-> 
-> > On Tue, Jun 16, 2009 at 07:31:38AM +1000, Benjamin Herrenschmidt wrote:
-> > > On Mon, 2009-06-15 at 13:23 +0200, Nick Piggin wrote:
-> > > > > I think the main problem isn't necessarily init code per se, but the
-> > > > > pile of -common- code that can be called both at init time and
-> > > > later.
-> > > > 
-> > > > Just seems bogus argument. Everwhere else that does this (ie.
-> > > > allocations that are called from multiple allocation contexts)
-> > > > passes correct gfp flags down.
-> > > 
-> > > So you say we should create new variants of all these APIs that take gfp
-> > > flags as arguments just because they might be called early during boot :
-> > 
-> > No, just create the ones that actually are called in early boot.
-> 
-> No.
-> 
-> Nick, I don't think you've follow the problems.
-> 
-> The thing is, we do end up wanting to do a lot of allocations, and it's 
-> not even very "early" - we've already initialized all the allocators. It's 
-> just that WE HAVE NOT ENABLED INTERRUPTS YET!
+> This is required because OpenAFS implemented a number of AFS calls that don't
+> get given a path as they're aimed at AFS in general, and not at a particular
+> file, volume or cell in the AFS world.
 
-Right, I know.
+Wouldn't it make a lot more sense to create a virtual device, open the
+mountpoint, or do _something_ that associates these calls with AFS
+directly instead of having the kernel magically route the call to a
+specific filesystem?
 
- 
-> So the "hack" is to let everybody act as if everything is normal. Which it 
-> pretty much is. Just use kmalloc/kfree etc, and use _all_ the regular 
-> functions. Setting up the core layers so that we _can_ enable interrupts 
-> involves quite a lot of random crud, they should be able to use regular 
-> code.
+Not that I agree with having a filesystem-specific syscall either
+(sys_reiserfs() was not allowed either :-), but wouldn't even that
+be better suited to doing AFS-specific things?
 
-I just don't quite see why the problem got bigger though. Doing
-earlier slab allocations than we had previously is going to be
-replacing even more specialised code using bootmem right? I know
-there are a few hacks for this, but I don't see anywhere getting
-*worse* and I don't see anywhere that is all that bad today.
-
-
-> And the hack is there because we really are in a magic stage. The memory 
-> management works, but it just can't do certain things yet. It's not the 
-> callers that need to be changed, because the callers are usually regular 
-> routines that work perfectly normally long after boot, and having to add a 
-> magic "I'm now doign this during early boot" argument to the whole stack 
-> is just _stupid_, when the stack itself doesn't actually care - only the 
-> allocators do.
-
-In some cases perhaps it is difficult. In others it should be
-pretty natural. Lots of memory allocating paths pass gfp
-a long way down the stack.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
