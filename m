@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762272AbZFQWmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760385AbZFQWp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762272AbZFQWmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 18:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZFQWmZ
+	id S1760385AbZFQWp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 18:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZFQWpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 18:42:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45295 "EHLO mx2.redhat.com"
+	Wed, 17 Jun 2009 18:45:13 -0400
+Received: from cmpxchg.org ([85.214.51.133]:59733 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754733AbZFQWmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 18:42:24 -0400
-Date: Wed, 17 Jun 2009 18:42:19 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: dm-devel@redhat.com
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, NeilBrown <neilb@suse.de>,
-       linux-raid@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: init_emergency_isa_pool calling mempool_create in non-sleeping
-	context
-Message-ID: <20090617224219.GA9405@redhat.com>
-References: <4A396195.8060503@goop.org> <0f79c2d4513c50184383e223d3d2ee97.squirrel@neil.brown.name>
-MIME-Version: 1.0
+	id S1756583AbZFQWpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 18:45:13 -0400
+Date: Thu, 18 Jun 2009 00:41:49 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.org.uk>,
+       Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       Minchan Kim <minchan.kim@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch v3] swap: virtual swap readahead
+Message-ID: <20090617224149.GA16104@cmpxchg.org>
+References: <20090609190128.GA1785@cmpxchg.org> <20090611143122.108468f1.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0f79c2d4513c50184383e223d3d2ee97.squirrel@neil.brown.name>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090611143122.108468f1.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17 2009 at  6:22pm -0400,
-NeilBrown <neilb@suse.de> wrote:
-
+On Thu, Jun 11, 2009 at 02:31:22PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Tue, 9 Jun 2009 21:01:28 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > [resend with lists cc'd, sorry]
+> > 
+> > +static int swap_readahead_ptes(struct mm_struct *mm,
+> > +			unsigned long addr, pmd_t *pmd,
+> > +			swp_entry_t *entries,
+> > +			unsigned long cluster)
+> > +{
+> > +	unsigned long window, min, max, limit;
+> > +	spinlock_t *ptl;
+> > +	pte_t *ptep;
+> > +	int i, nr;
+> > +
+> > +	window = cluster << PAGE_SHIFT;
+> > +	min = addr & ~(window - 1);
+> > +	max = min + cluster;
 > 
-> You wanted dm-devel@redhat.com, not linux-raid@vger.kernel.org.
+> Johannes, I wonder there is no reason to use "alignment".
+
+I am wondering too.  I digged into the archives but the alignment
+comes from a change older than what history.git documents, so I wasn't
+able to find written down justification for this.
+
+> I think we just need to read "nearby" pages. Then, this function's
+> scan range should be
 > 
-> NeilBrown
+> 	[addr - window/2, addr + window/2)
+> or some.
 > 
+> And here, too
+> > +	if (!entries)	/* XXX: shmem case */
+> > +		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
+> > +	pmin = swp_offset(entry) & ~(cluster - 1);
+> > +	pmax = pmin + cluster;
 > 
-> On Thu, June 18, 2009 7:35 am, Jeremy Fitzhardinge wrote:
-> > I just saw this when booting a current linux-2.6.git kernel
-> > (3fe0344faf7fdcb158bd5c1a9aec960a8d70c8e8).
-> > .config and full bootlog attached.
-> >
-> > BUG: sleeping function called from invalid context at
-> > /home/jeremy/git/linux/mm/slab.c:3029
-> > in_atomic(): 1, irqs_disabled(): 0, pid: 388, name: lvm
-> > Pid: 388, comm: lvm Not tainted 2.6.30 #225
-> > Call Trace:
-> >  [<ffffffff81137a65>] ? __init_rwsem+0x29/0x39
-> >  [<ffffffff81035346>] __might_sleep+0x110/0x112
-> >  [<ffffffff810acf07>] kmem_cache_alloc+0x38/0x12b
-> >  [<ffffffff810a71d4>] ? mempool_alloc_pages_isa+0x0/0x10
-> >  [<ffffffff8108a5df>] mempool_create_node+0x2f/0x152
-> >  [<ffffffff8108a31c>] ? mempool_free_pages+0x0/0xb
-> >  [<ffffffff8108a70f>] mempool_create+0xd/0xf
-> >  [<ffffffff810a71ad>] init_emergency_isa_pool+0x28/0x4f
-> >  [<ffffffff81127b90>] blk_queue_bounce_limit+0x40/0x56
-> >  [<ffffffffa00f856c>] dm_table_set_restrictions+0x82/0xa6 [dm_mod]
-> >  [<ffffffffa00f6415>] dm_swap_table+0x132/0x15a [dm_mod]
-> >  [<ffffffffa00faf61>] dev_suspend+0xfd/0x177 [dm_mod]
-> >  [<ffffffffa00fb959>] dm_ctl_ioctl+0x252/0x2a2 [dm_mod]
-> >  [<ffffffffa00fae64>] ? dev_suspend+0x0/0x177 [dm_mod]
-> >  [<ffffffff810bd4c0>] vfs_ioctl+0x2a/0x77
-> >  [<ffffffff810bd9b4>] do_vfs_ioctl+0x4a7/0x4fa
-> >  [<ffffffff810bda5e>] sys_ioctl+0x57/0x7a
-> >  [<ffffffff81011042>] system_call_fastpath+0x16/0x1b
+> pmin = swp_offset(entry) - cluster/2.
+> pmax = swp_offset(entry) + cluster/2.
+> 
+> I'm sorry if I miss a reason for using "alignment".
 
+Perhas someone else knows a good reason for it, but I think it could
+even be harmful.
 
-This has been resolved and is waiting to be pushed along with the rest
-of the DM changes for 2.6.31.
+Chances are that several processes fault around the same slots
+simultaneously.  By letting them all start at the same aligned offset
+we have a maximum race between them and they all allocate pages for
+the same slots concurrently.
 
-See:
-ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-table-establish-queue-limits-by-copying-table-limits.patch
+By placing the window unaligned we decrease this overlapping, so it
+sounds like a good idea.
 
-Maybe this fix should go now rather than wait a day or so for the larger
-DM push?
-
-Mike
+It would increase the amount of readahead done even more, though, and
+Fengguang already measured degradation in IO latency with my patch, so
+this probably needs more changes to work well.
