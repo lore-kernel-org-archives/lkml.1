@@ -1,70 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765109AbZFQJp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbZFQJzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765109AbZFQJp4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 05:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZFQJps
+	id S1760649AbZFQJzv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 05:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbZFQJzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 05:45:48 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58303 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbZFQJps (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 05:45:48 -0400
-Date: Wed, 17 Jun 2009 11:40:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
+	Wed, 17 Jun 2009 05:55:43 -0400
+Received: from mga03.intel.com ([143.182.124.21]:30026 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581AbZFQJzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 05:55:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,235,1243839600"; 
+   d="scan'208";a="155518727"
+Date: Wed, 17 Jun 2009 17:55:32 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
 To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
-	kernels
-Message-ID: <20090617094015.GC1403@ucw.cz>
-References: <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <20090609093918.GC16940@wotan.suse.de> <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain> <20090609153847.GB9211@wotan.suse.de> <alpine.LFD.2.01.0906090849080.6847@localhost.localdomain> <20090609162125.GC9211@wotan.suse.de> <alpine.LFD.2.01.0906090924580.6847@localhost.localdomain> <20090609164519.GE9211@wotan.suse.de> <alpine.LFD.2.01.0906091005150.6847@localhost.localdomain> <20090610055309.GA27767@wotan.suse.de>
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] HWPOISON: only early kill processes who installed
+	SIGBUS handler
+Message-ID: <20090617095532.GA25001@localhost>
+References: <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de> <20090615142225.GA11167@localhost> <20090617063702.GA20922@localhost> <20090617080404.GB31192@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090610055309.GA27767@wotan.suse.de>
+In-Reply-To: <20090617080404.GB31192@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > > The "problem" is that you could in theory run out of kmap frames, since if 
-> > > > everybody does a kmap() in an interruptible context and you have lots and 
-> > > > lots of threads doing different pages, you'd run out. But that has nothing 
-> > > > to do with kmap_atomic(), which is basically limited to just the number of 
-> > > > CPU's and a (very small) level of nesting.
+On Wed, Jun 17, 2009 at 04:04:04PM +0800, Nick Piggin wrote:
+> On Wed, Jun 17, 2009 at 02:37:02PM +0800, Wu Fengguang wrote:
+> > On Mon, Jun 15, 2009 at 10:22:25PM +0800, Wu Fengguang wrote:
+> > > On Mon, Jun 15, 2009 at 08:25:28PM +0800, Nick Piggin wrote:
+> > > > On Mon, Jun 15, 2009 at 08:10:01PM +0800, Wu Fengguang wrote:
+> > > > > On Mon, Jun 15, 2009 at 03:19:07PM +0800, Nick Piggin wrote:
+> > > > > > > For KVM you need early kill, for the others it remains to be seen.
+> > > > > > 
+> > > > > > Right. It's almost like you need to do a per-process thing, and
+> > > > > > those that can handle things (such as the new SIGBUS or the new
+> > > > > > EIO) could get those, and others could be killed.
+> > > > > 
+> > > > > To send early SIGBUS kills to processes who has called
+> > > > > sigaction(SIGBUS, ...)?  KVM will sure do that. For other apps we
+> > > > > don't mind they can understand that signal at all.
+> > > > 
+> > > > For apps that hook into SIGBUS for some other means and
 > > > 
-> > > This could be avoided with an anti-deadlock pool. If a task
-> > > attempts a nested kmap and already holds a kmap, then give it
-> > > exclusive access to this pool until it releases its last
-> > > nested kmap.
+> > > Yes I was referring to the sigaction(SIGBUS) apps, others will
+> > > be late killed anyway.
+> > > 
+> > > > do not understand the new type of SIGBUS signal? What about
+> > > > those?
+> > > 
+> > > We introduced two new SIGBUS codes:
+> > >         BUS_MCEERR_AO=5         for early kill
+> > >         BUS_MCEERR_AR=4         for late  kill
+> > > I'd assume a legacy application will handle them in the same way (both
+> > > are unexpected code to the application).
+> > > 
+> > > We don't care whether the application can be killed by BUS_MCEERR_AO
+> > > or BUS_MCEERR_AR depending on its SIGBUS handler implementation.
+> > > But (in the rare case) if the handler
+> > > - refused to die on BUS_MCEERR_AR, it may create a busy loop and
+> > >   flooding of SIGBUS signals, which is a bug of the application.
+> > >   BUS_MCEERR_AO is one time and won't lead to busy loops.
+> > > - does something that hurts itself (ie. data safety) on BUS_MCEERR_AO,
+> > >   it may well hurt the same way on BUS_MCEERR_AR. The latter one is
+> > >   unavoidable, so the application must be fixed anyway.
 > > 
-> > We just sleep, waiting for somebody to release their. Again, that 
-> > obviously won't work in atomic context, but it's easy enough to just have 
-> > a "we need to have a few entries free" for the atomic case, and make it 
-> > busy-loop if it runs out (which is not going to happen in practice 
-> > anyway).
+> > This patch materializes the automatically early kill idea.
+> > It aims to remove the vm.memory_failure_ealy_kill sysctl parameter.
+> > 
+> > This is mainly a policy change, please comment.
 > 
-> The really theoretical one (which Andrew likes complaining about) is
-> when *everybody* is holding a kmap and asking for another one ;)
-> But I think it isn't too hard to make a pool for that. And yes we'd
+> Well then you can still early-kill random apps that did not
+> want it, and you may still cause problems if its sigbus
+> handler does something nontrivial.
+> 
+> Can you use a prctl or something so it can expclitly
+> register interest in this?
 
-Does one pool help?
+No I don't think prctl would be much better.
 
-Now you can have '*everyone* is holding the kmaps and is asking for
-another one'.
+- if an application want early/late kill, it can do so with a proper
+  written SIGBUS handler: the prctl call is redundant.
+- if an admin want to control early/late kill for an unmodified app,
+  prctl is as unhelpful as this patch(*).
+- prctl does can help legacy apps whose SIGBUS handler has trouble
+  with the new SIGBUS codes, however such application should be rare
+  and the application should be fixed(why shall it do something wrong
+  on newly introduced code at all? Shall we stop introducing new codes
+  just because some random buggy app cannot handle new codes?)
 
-You could add as many pools as maximum nesting level... Is there
-maximum nesting level?
+So I still prefer this patch, until we come up with some solution that
+allows both app and admin to change the setting.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(*) Or if prctl options can be inherited across exec(), we may write a
+wrapper tool to set early kill preference for some legacy app:
+
+    # this_app_can_be_early_killed  some_legacy_app --legacy-options
+
+Thanks,
+Fengguang
