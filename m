@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763811AbZFQKAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764905AbZFQKG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763811AbZFQKAY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 06:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbZFQKAI
+	id S1764905AbZFQKG4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 06:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZFQKGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 06:00:08 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49865 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757788AbZFQKAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 06:00:07 -0400
-Date: Wed, 17 Jun 2009 12:00:06 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] HWPOISON: only early kill processes who installed SIGBUS handler
-Message-ID: <20090617100006.GC14915@wotan.suse.de>
-References: <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de> <20090615142225.GA11167@localhost> <20090617063702.GA20922@localhost> <20090617080404.GB31192@wotan.suse.de> <20090617095532.GA25001@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090617095532.GA25001@localhost>
-User-Agent: Mutt/1.5.9i
+	Wed, 17 Jun 2009 06:06:47 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51199 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbZFQKGq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 06:06:46 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring behaviour more in line with expectations V3
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       fengguang.wu@intel.com, linuxram@us.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>
+In-Reply-To: <alpine.DEB.1.10.0906161049180.26093@gentwo.org>
+References: <20090616134423.GD14241@csn.ul.ie> <alpine.DEB.1.10.0906161049180.26093@gentwo.org>
+Message-Id: <20090617190204.99C6.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 17 Jun 2009 19:06:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 05:55:32PM +0800, Wu Fengguang wrote:
-> On Wed, Jun 17, 2009 at 04:04:04PM +0800, Nick Piggin wrote:
-> > Well then you can still early-kill random apps that did not
-> > want it, and you may still cause problems if its sigbus
-> > handler does something nontrivial.
-> > 
-> > Can you use a prctl or something so it can expclitly
-> > register interest in this?
+> On Tue, 16 Jun 2009, Mel Gorman wrote:
 > 
-> No I don't think prctl would be much better.
+> > I don't have a particular workload in mind to be perfectly honest. I'm just not
+> > convinced of the wisdom of trying to unmap pages by default in zone_reclaim()
+> > just because the NUMA distances happen to be large.
 > 
-> - if an application want early/late kill, it can do so with a proper
->   written SIGBUS handler: the prctl call is redundant.
+> zone reclaim = 1 is supposed to be light weight with minimal impact. The
+> intend was just to remove potentially unused pagecache pages so that node
+> local allocations can succeed again. So lets not unmap pages.
 
-s/proper written/is switched to new semantics based on the existance
-of a/
+hm, At least major two zone reclaim developer disagree my patch. Thus I have to
+agree with you, because I really don't hope to ignore other developer's opnion.
 
-> - if an admin want to control early/late kill for an unmodified app,
->   prctl is as unhelpful as this patch(*).
+So, as far as I understand, the conclusion of this thread are
+  - Drop my patch
+  - instead, implement improvement patch of (may_unmap && page_mapped()) case
+  - the documentation should be changed
+  - it's my homework(?)
 
-Clearly you can execute a process with a given prctl.
-
-
-> - prctl does can help legacy apps whose SIGBUS handler has trouble
->   with the new SIGBUS codes, however such application should be rare
->   and the application should be fixed(why shall it do something wrong
->   on newly introduced code at all? Shall we stop introducing new codes
->   just because some random buggy app cannot handle new codes?)
-
-Backwards compatibility? Kind of important.
+Can you agree this?
 
 
-> So I still prefer this patch, until we come up with some solution that
-> allows both app and admin to change the setting.
-
-Not only does it allow that, but it also provides backwards
-compatibility. Your patch does not allow admin to change
-anything nor does it guarantee 100% back compat so I can't
-see how you think it is better.
-
-Also it does not allow for an app with a SIGBUS handler to
-use late kill. If late kill is useful to anyone, why would
-it not be useful to some app with a SIGBUS handler (that is
-not KVM)?
 
