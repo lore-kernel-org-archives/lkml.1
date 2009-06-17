@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbZFQVC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbZFQVLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759991AbZFQVC6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 17:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZFQVCu
+	id S1760187AbZFQVLq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 17:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZFQVLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 17:02:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57980 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751342AbZFQVCt (ORCPT
+	Wed, 17 Jun 2009 17:11:38 -0400
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:59074 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751835AbZFQVLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 17:02:49 -0400
-Date: Wed, 17 Jun 2009 14:02:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Matthew Wilcox <willy@linux.intel.com>, jbarnes@virtuousgeek.org,
-       andrew.patterson@hp.com, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] ia64: Fix resource assignment for root busses
-In-Reply-To: <20090617205905.GX19977@parisc-linux.org>
-Message-ID: <alpine.LFD.2.01.0906171402050.16802@localhost.localdomain>
-References: <1245270816-11755-1-git-send-email-willy@linux.intel.com> <1245270816-11755-5-git-send-email-willy@linux.intel.com> <alpine.LFD.2.01.0906171356040.16802@localhost.localdomain> <20090617205905.GX19977@parisc-linux.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 17 Jun 2009 17:11:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=g3KakW2gBXlZYovIDElEawwaIBokM93UFu/UyvAkwciAkl5mOt4ycAGEKuDUsoTquNX/QsAaY+dj4zMd1no0nQWaS+4RjBZdiEQ5Soms7awE9f/j3KjX3DFj3ITbjx1C;
+Date: Wed, 17 Jun 2009 14:11:35 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] make mapped executable pages the first class
+ citizen
+Message-ID: <20090617141135.0d622bfe@jbarnes-g45>
+In-Reply-To: <1242485776.32543.834.camel@laptop>
+References: <20090516090005.916779788@intel.com>
+	<1242485776.32543.834.camel@laptop>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 16 May 2009 16:56:16 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-
-On Wed, 17 Jun 2009, Matthew Wilcox wrote:
-
-> On Wed, Jun 17, 2009 at 01:56:39PM -0700, Linus Torvalds wrote:
+> On Sat, 2009-05-16 at 17:00 +0800, Wu Fengguang wrote:
+> > Andrew,
 > > 
-> > So I assume this "Tested-by:" means that Andrew confirmed that this 
-> > actually fixes the nesting? I wasn't cc'd on that, so I'm just checking..
+> > This patchset makes mapped executable pages the first class citizen.
+> > This version has incorparated many valuable comments from people in
+> > the CC list, and runs OK on my desktop. Let's test it in your -mm?
 > 
-> Yes, he says it fixes the nesting problem, and as a result hotplug now works.
+> Seems like a good set to me. Thanks for following this through Wu!
 
-Ok, I'll take the whole series. Thanks for chasing this down,
+Now that this set has hit the mainline I just wanted to chime in and
+say this makes a big difference.  Under my current load (a parallel
+kernel build and virtualbox session the old kernel would have been
+totally unusable.  With Linus's current bits, things are much better
+(still a little sluggish with a big dd going on in the virtualbox, but
+actually usable).
 
-		Linus
+Thanks!
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
