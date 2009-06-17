@@ -1,94 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbZFQKka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbZFQKs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765497AbZFQKka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 06:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbZFQKkW
+	id S1759389AbZFQKs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 06:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZFQKsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 06:40:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43262 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751372AbZFQKkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 06:40:21 -0400
-Subject: Re: [BUG] timer_migration interface accepts any number as input in
- 2.6.30-git9
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: poornima nayak <mpnayak@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, arun@linux.vnet.ibm.com,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1245229936.3345.67.camel@localhost.localdomain>
-References: <1245229936.3345.67.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 17 Jun 2009 16:11:09 +0530
-Message-Id: <1245235269.2603.2.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Jun 2009 06:48:20 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:43352 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbZFQKsT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 06:48:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=RsBaegVt64D3I9vAsaFu9MZRKvdJj7ugoO1RHFKBmAdrMRacwOcQuQas7BEpc8iQ3T
+         /YWBiTT8ZZyeSk80TfhDdfzwCmunz5kWD2a0X+O1UR+dYcEy68OcThlhw2dVS/SlIU78
+         g/VbHW/OtmeTo67LSepk6OtMLkQjEKvgLlRTw=
+MIME-Version: 1.0
+In-Reply-To: <2ab84cd80906170340w3ad8b938t64b6d0926b18daa4@mail.gmail.com>
+References: <2ab84cd80906170340w3ad8b938t64b6d0926b18daa4@mail.gmail.com>
+Date: Wed, 17 Jun 2009 18:42:14 +0800
+Message-ID: <2ab84cd80906170342ta334955yc69a2648fa979979@mail.gmail.com>
+Subject: surpring results of test_and_set_bit() and test_and_clear_bit() 
+	functions in Linux-2.6.25 kernel at x86_64 architecture
+From: qingbo yuan <yuanbor.maillist@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-17 at 14:42 +0530, poornima nayak wrote:
-> Hi
-> 
-> Timer migration interface /proc/sys/kernel/timer_migration in
-> 2.6.30-git9 accepts any numerical value as input.
-> Steps to reproduce 
-> 1. echo -6666666 > /proc/sys/kernel/timer_migration
-> 2. cat /proc/sys/kernel/timer_migration
-> -6666666
-> 
-> 1. echo 44444444444444444444444444444444444444444444444444444444444 > /proc/sys/kernel/timer_migration
-> 2. cat /proc/sys/kernel/timer_migration
-> -1357789412
-> 
-> Expected behavior: Should 'echo: write error: Invalid argument' while
-> setting any value other then 0 & 1
-> 
+hi,all
+I recently encountered a strange phenomenon about test_and_set_bit()
+and test_and_clear_bit().
+Here are the comments about these functions in Linux-2.6.25 kernel at
+x86_64 architecture:
 
-Is this patch fix your problem:
+/**
+ * test_and_set_bit - Set a bit and return its old value
+ */
 
-[PATCH] kernel/sysctl: fix timer migration interface
+/**
+ * test_and_clear_bit - Clear a bit and return its old value
+ */
 
-Timer migration interface /proc/sys/kernel/timer_migration in
-2.6.30-git9 accepts any numerical value as input.
-Steps to reproduce
-1. echo -6666666 > /proc/sys/kernel/timer_migration
-2. cat /proc/sys/kernel/timer_migration
--6666666
+According to the comments, if the old value is '0', then these
+functions will return 0 to the caller, and
+if the old value is '1', then these functions will return 1. However,
+in my experiment, if the old value is '1', I got -1 instead of 1. Here
+is the code:
 
-1. echo 44444444444444444444444444444444444444444444444444444444444 > /proc/sys/kernel/timer_migration
-2. cat /proc/sys/kernel/timer_migration
--1357789412
+void generos_test_bitmap(void)
+{
+ int cur,ret_clear,ret_set;
+ unsigned long bitmap =0x3721;
+ for(cur = find_first_bit(&bitmap,BITS_PER_LONG);cur <
+BITS_PER_LONG;cur = find_next_bit(&bitmap, BITS_PER_LONG, cur + 1)){
+  ret_clear  = test_and_set_bit(cur, &bitmap);
+  ret_set  = test_and_clear_bit(cur, &bitmap);
+  printk("test_and_set bit [%d] ret [%d]\n",cur,ret_set);
+  printk("test_and_clear bit [%d] ret [%d]\n\n\n",cur,ret_clear);
+ }
+}
 
-Expected behavior: Should 'echo: write error: Invalid argument' while
-setting any value other then 0 & 1
+And here is the results:
+test_and_set bit [0] ret [-1]
+test_and_clear bit [0] ret [-1]
+test_and_set bit [5] ret [-1]
+test_and_clear bit [5] ret [-1]
+test_and_set bit [8] ret [-1]
+test_and_clear bit [8] ret [-1]
+test_and_set bit [9] ret [-1]
+test_and_clear bit [9] ret [-1]
+test_and_set bit [10] ret [-1]
+test_and_clear bit [10] ret [-1]
+test_and_set bit [12] ret [-1]
+test_and_clear bit [12] ret [-1]
+test_and_set bit [13] ret [-1]
+test_and_clear bit [13] ret [-1]
 
-Reported-by: Poornima Nayak <mpnayak@linux.vnet.ibm.com>
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- kernel/sysctl.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+Interesting! Let's take a look at the definition of these funtions in
+Linux-2.6.25:
+ static inline int test_and_set_bit(int nr, volatile void *addr)
+{
+ int oldbit;
+ asm volatile(LOCK_PREFIX "bts %2,%1\n\t"
+       "sbb %0,%0"
+       : "=r" (oldbit), ADDR
+       : "Ir" (nr) : "memory");
+ return oldbit;
+}
 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index ac57832..d0f65e4 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -334,7 +334,10 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_timer_migration,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &zero,
-+		.extra2		= &one,
- 	},
- #endif
- 	{
--- 
-1.6.0.6
+static inline int test_and_clear_bit(int nr, volatile void *addr)
+{
+ int oldbit;
+ asm volatile(LOCK_PREFIX "btr %2,%1\n\t"
+       "sbb %0,%0"
+       : "=r" (oldbit), ADDR
+       : "Ir" (nr) : "memory");
+ return oldbit;
+}
 
+1. bts and btr set/clear the bit and copy the old value to CF flag.
+2. sbb %0,%0 equals (%0-(%0+CF)) -> %0
+3. %0 -> oldbit
 
+So, if the old bit is '0', these functions return 0;
+      if the old bit is '1', these functions return -1;
+Both of these functions were right if the comments modified as
+"test_and_set_bit - Set a bit and return its opposite old value".
 
-
+Can anybody point out what problems exist in my analysis?
