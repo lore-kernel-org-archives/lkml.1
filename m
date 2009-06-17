@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbZFQBVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762438AbZFQBY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763606AbZFQBVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 21:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZFQBVm
+	id S1762438AbZFQBY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 21:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZFQBYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 21:21:42 -0400
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:35436
-	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751995AbZFQBVl (ORCPT
+	Tue, 16 Jun 2009 21:24:20 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52716 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbZFQBYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 21:21:41 -0400
-Message-ID: <4A384580.7030806@bluewatersys.com>
-Date: Wed, 17 Jun 2009 13:23:12 +1200
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Rob Emanuele <rob@emanuele.us>
-CC: nicolas.ferre@atmel.com, haavard.skinnemoen@atmel.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] atmel-mci: Platform driver MMC slot power control
-References: <1245200079-6323-1-git-send-email-rob@emanuele.us> <1245200079-6323-6-git-send-email-rob@emanuele.us>
-In-Reply-To: <1245200079-6323-6-git-send-email-rob@emanuele.us>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Jun 2009 21:24:19 -0400
+Date: Wed, 17 Jun 2009 10:22:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
+       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       "'Brice Goglin'" <Brice.Goglin@inria.fr>
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+Message-Id: <20090617102245.2aec2e6e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1245164395.15138.40.camel@lts-notebook>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+	<87zldjn597.fsf@basil.nowhere.org>
+	<000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	<20090612103251.GJ25568@one.firstfloor.org>
+	<004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+	<1245119977.6724.40.camel@lts-notebook>
+	<003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+	<1245164395.15138.40.camel@lts-notebook>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Emanuele wrote:
-> Add support to the at91sam9g20ek_2mmc platform (board-sam9g20ek-2slot-mmc.c) and support files for a VCC pin using the atmel-mci driver.
+On Tue, 16 Jun 2009 10:59:55 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+
+> On Tue, 2009-06-16 at 15:58 +0200, Stefan Lankes wrote:
+> > > 
+> > > I would like to get these patches working with latest mmotm to test on
+> > > some newer hardware where I think they will help more.  And I would
+> > > welcome your support.  However, I think we'll need to get Balbir and
+> > > Kamezawa-san involved to sort out the interaction with memory control
+> > > group.
+> > > 
+> > > I can send you the more recent rebase that I've done.  This is getting
+> > > pretty old now:  2.6.28-rc4-mmotm-081110-081117.  I'll try to rebase to
+> > > the most recent mmotm [that boots on my platforms], at least so that we
+> > > can build and boot with migrate-on-fault disabled, within the next
+> > > couple of weeks.
+> > > 
+> > 
+> > Sounds good! Send me your last version and I will try to reconstruct your
+> > problems. Afterwards, we could try to solve these problems.
+> > 
 > 
-> Signed-off-by: Rob Emanuele <rob@emanuele.us>
-> ---
->  arch/arm/mach-at91/at91sam9260_devices.c       |    2 ++
->  arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c |    3 +++
->  2 files changed, 5 insertions(+), 0 deletions(-)
+> Stefan:
 > 
-> diff --git a/arch/arm/mach-at91/at91sam9260_devices.c b/arch/arm/mach-at91/at91sam9260_devices.c
-> index c372f4f..7634632 100644
-> --- a/arch/arm/mach-at91/at91sam9260_devices.c
-> +++ b/arch/arm/mach-at91/at91sam9260_devices.c
-> @@ -328,6 +328,8 @@ void __init at91_add_device_mci(short mmc_id, struct mci_platform_data *data)
->  			}
->  			if (data->slot[i].wp_pin)
->  				at91_set_gpio_input(data->slot[i].wp_pin, 1);
-> +			if (data->slot[i].vcc_pin)
-> +				at91_set_gpio_output(data->slot[i].vcc_pin, 0);
->  
+> I've placed the last rebased version in :
+> 
+> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.28-rc4-mmotm-081110/
+> 
+> As I recall, this version DOES bug out because of reference count
+> problems due to interaction with the memory controller.
+> 
+please report in precise if memcg has bug.
+An example of test is welcome.
 
-Can use gpio_direction_output on these.
+Thanks,
+-Kmae
 
-~Ryan
-
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
