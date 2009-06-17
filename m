@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764063AbZFQNVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbZFQNX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764063AbZFQNVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZFQNU5
+	id S1761381AbZFQNX4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZFQNXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:20:57 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:60734 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751325AbZFQNU4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:20:56 -0400
-Date: Wed, 17 Jun 2009 22:20:55 +0900 (JST)
-Message-Id: <20090617.222055.374768827975756908.mitake@dcl.info.waseda.ac.jp>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Hiding runqueues from direct refer at source code level
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Wed, 17 Jun 2009 09:23:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37593 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751174AbZFQNXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 09:23:44 -0400
+Date: Wed, 17 Jun 2009 23:23:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: subrata@linux.vnet.ibm.com, netdev@vger.kernel.org,
+       Li Yang <leoli@freescale.com>, Nathan Lynch <ntl@pobox.com>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Tony Breeds <tony@bakeyournoodle.com>, michael@ellerman.id.au
+Subject: Re: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64
+ randconfig [drivers/net/ucc_geth.o]
+Message-Id: <20090617232341.c4543ff2.sfr@canb.auug.org.au>
+In-Reply-To: <6E26D0A1-0FE5-4179-9DA8-FDF0E3D417DA@kernel.crashing.org>
+References: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
+	<1245048719.5239.10.camel@subratamodak.linux.ibm.com>
+	<1245243097.4870.3.camel@subratamodak.linux.ibm.com>
+	<6E26D0A1-0FE5-4179-9DA8-FDF0E3D417DA@kernel.crashing.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Jun_2009_23_23_41_+1000_.izVW4hEBDoJIIBE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__17_Jun_2009_23_23_41_+1000_.izVW4hEBDoJIIBE
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Kumar,
 
-Hi,
+On Wed, 17 Jun 2009 08:07:47 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+>=20
+> I'm confused by the proposed fix as we already have *mdio & *ph =20
+> defined in this function:
 
-I found a trivial problem in sched.c and sched_debug.c .
-There are some points which refer the per-cpu value "runqueues" directly.
-sched.c provides nice abstraction, such as cpu_rq() and this_rq(),
-so we should use these macros when looking runqueues.
+Which tree are you looking at?  Linus' tree, and linux-next, do not have
+those local variables ...
 
-I fixed these points and made patch.
-If there is a reason to refer runqueues directly, sorry,
-this patch doesn't make sense.
-But I think that someday the abstraction will help someone.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-one-line description: Hiding runqueues from direct refer at source code level
+--Signature=_Wed__17_Jun_2009_23_23_41_+1000_.izVW4hEBDoJIIBE
+Content-Type: application/pgp-signature
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8ec9d13..60dc315 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6625,7 +6625,7 @@ EXPORT_SYMBOL(yield);
-  */
- void __sched io_schedule(void)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = this_rq();
- 
- 	delayacct_blkio_start();
- 	atomic_inc(&rq->nr_iowait);
-@@ -6637,7 +6637,7 @@ EXPORT_SYMBOL(io_schedule);
- 
- long __sched io_schedule_timeout(long timeout)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = this_rq();
- 	long ret;
- 
- 	delayacct_blkio_start();
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 467ca72..70c7e0b 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -162,7 +162,7 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- {
- 	s64 MIN_vruntime = -1, min_vruntime, max_vruntime = -1,
- 		spread, rq0_min_vruntime, spread0;
--	struct rq *rq = &per_cpu(runqueues, cpu);
-+	struct rq *rq = cpu_rq(cpu);
- 	struct sched_entity *last;
- 	unsigned long flags;
- 
-@@ -191,7 +191,7 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- 	if (last)
- 		max_vruntime = last->vruntime;
- 	min_vruntime = cfs_rq->min_vruntime;
--	rq0_min_vruntime = per_cpu(runqueues, 0).cfs.min_vruntime;
-+	rq0_min_vruntime = cpu_rq(0)->cfs.min_vruntime;
- 	spin_unlock_irqrestore(&rq->lock, flags);
- 	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "MIN_vruntime",
- 			SPLIT_NS(MIN_vruntime));
-@@ -248,7 +248,7 @@ void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
- 
- static void print_cpu(struct seq_file *m, int cpu)
- {
--	struct rq *rq = &per_cpu(runqueues, cpu);
-+	struct rq *rq = cpu_rq(cpu);
- 
- #ifdef CONFIG_X86
- 	{
+iEYEARECAAYFAko47l0ACgkQjjKRsyhoI8z1OgCgqkPf9dXeSPtNV2LlDOCBzfGn
+VaUAoJedD4+E4MU3dN11tRAzwqt/7AxN
+=Cphp
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Jun_2009_23_23_41_+1000_.izVW4hEBDoJIIBE--
