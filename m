@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765923AbZFQL5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbZFQL5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765923AbZFQL5i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 07:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764509AbZFQL4Z
+	id S932980AbZFQL5u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 07:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763497AbZFQL41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 07:56:25 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:55609 "EHLO bilbo.ozlabs.org"
+	Wed, 17 Jun 2009 07:56:27 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:55624 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755769AbZFQL4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 07:56:21 -0400
+	id S1756202AbZFQL4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 07:56:23 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <19000.55631.802122.696927@cargo.ozlabs.ibm.com>
-Date: Wed, 17 Jun 2009 21:53:51 +1000
+Message-ID: <19000.55473.26174.331511@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Jun 2009 21:51:13 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/6] perf_counter: powerpc: Add processor back-end for
-   MPC7450 family
+Subject: [PATCH 2/6] perf_counter: powerpc: Use unsigned long for register and constraint values
 In-Reply-To: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
 References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
 X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
@@ -27,495 +26,971 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for the performance monitor hardware on the
-MPC7450 family of processors (7450, 7451, 7455, 7447/7457, 7447A,
-7448), used in the later Apple G4 powermacs/powerbooks and other
-machines.  These machines have 6 hardware counters with a unique
-set of events which can be counted on each counter, with some
-events being available on multiple counters.
+This changes the powerpc perf_counter back-end to use unsigned long
+types for hardware register values and for the value/mask pairs used
+in checking whether a given set of events fit within the hardware
+constraints.  This is in preparation for adding support for the PMU
+on some 32-bit powerpc processors.  On 32-bit processors the hardware
+registers are only 32 bits wide, and the PMU structure is generally
+simpler, so 32 bits should be ample for expressing the hardware
+constraints.  On 64-bit processors, unsigned long is 64 bits wide,
+so using unsigned long vs. u64 (unsigned long long) makes no actual
+difference.
 
-Raw event codes for these processors are (PMC << 8) + PMCSEL.
-If PMC is non-zero then the event is that selected by the given
-PMCSEL value for that PMC (hardware counter).  If PMC is zero
-then the event selected is one of the low-numbered ones that are
-common to several PMCs.  In this case PMCSEL must be <= 22 and
-the event is what that PMCSEL value would select on PMC1 (but
-it may be placed any other PMC that has the same event for that
-PMCSEL value).
-
-For events that count cycles or occurrences that exceed a threshold,
-the threshold requested can be specified in the 0x3f000 bits of the
-raw event codes.  If the event uses the threshold multiplier bit
-and that bit should be set, that is indicated with the 0x40000 bit
-of the raw event code.
-
-This fills in some of the generic cache events.  Unfortunately there
-are quite a few blank spaces in the table, partly because these
-processors tend to count cache hits rather than cache accesses.
+This makes some other very minor changes: adjusting whitespace to line
+things up in initialized structures, and simplifying some code in
+hw_perf_disable().
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kernel/Makefile           |    2 +
- arch/powerpc/kernel/mpc7450-pmu.c      |  417 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype |    1 +
- 3 files changed, 420 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/kernel/mpc7450-pmu.c
+ arch/powerpc/include/asm/perf_counter.h |   35 +++++++------
+ arch/powerpc/kernel/perf_counter.c      |   20 +++----
+ arch/powerpc/kernel/power4-pmu.c        |   74 ++++++++++++++-------------
+ arch/powerpc/kernel/power5+-pmu.c       |   79 +++++++++++++++--------------
+ arch/powerpc/kernel/power5-pmu.c        |   83 ++++++++++++++++---------------
+ arch/powerpc/kernel/power6-pmu.c        |   57 +++++++++++----------
+ arch/powerpc/kernel/power7-pmu.c        |   46 +++++++++--------
+ arch/powerpc/kernel/ppc970-pmu.c        |   47 +++++++++--------
+ 8 files changed, 229 insertions(+), 212 deletions(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index c5f93f0..a9f8829 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -98,6 +98,7 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
- obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_counter.o
- obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
- 				   power5+-pmu.o power6-pmu.o power7-pmu.o
-+obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
+diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
+index 2c2d9f6..2ceb0fe 100644
+--- a/arch/powerpc/include/asm/perf_counter.h
++++ b/arch/powerpc/include/asm/perf_counter.h
+@@ -21,21 +21,22 @@
+  * describe the PMU on a particular POWER-family CPU.
+  */
+ struct power_pmu {
+-	int	n_counter;
+-	int	max_alternatives;
+-	u64	add_fields;
+-	u64	test_adder;
+-	int	(*compute_mmcr)(u64 events[], int n_ev,
+-				unsigned int hwc[], u64 mmcr[]);
+-	int	(*get_constraint)(u64 event, u64 *mskp, u64 *valp);
+-	int	(*get_alternatives)(u64 event, unsigned int flags,
+-				    u64 alt[]);
+-	void	(*disable_pmc)(unsigned int pmc, u64 mmcr[]);
+-	int	(*limited_pmc_event)(u64 event);
+-	u32	flags;
+-	int	n_generic;
+-	int	*generic_events;
+-	int	(*cache_events)[PERF_COUNT_HW_CACHE_MAX]
++	int		n_counter;
++	int		max_alternatives;
++	unsigned long	add_fields;
++	unsigned long	test_adder;
++	int		(*compute_mmcr)(u64 events[], int n_ev,
++				unsigned int hwc[], unsigned long mmcr[]);
++	int		(*get_constraint)(u64 event, unsigned long *mskp,
++				unsigned long *valp);
++	int		(*get_alternatives)(u64 event, unsigned int flags,
++				u64 alt[]);
++	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
++	int		(*limited_pmc_event)(u64 event);
++	u32		flags;
++	int		n_generic;
++	int		*generic_events;
++	int		(*cache_events)[PERF_COUNT_HW_CACHE_MAX]
+ 			       [PERF_COUNT_HW_CACHE_OP_MAX]
+ 			       [PERF_COUNT_HW_CACHE_RESULT_MAX];
+ };
+@@ -68,8 +69,8 @@ extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+ #endif
  
- obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
+ /*
+- * The power_pmu.get_constraint function returns a 64-bit value and
+- * a 64-bit mask that express the constraints between this event and
++ * The power_pmu.get_constraint function returns a 32/64-bit value and
++ * a 32/64-bit mask that express the constraints between this event and
+  * other events.
+  *
+  * The value and mask are divided up into (non-overlapping) bitfields
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index e6dc185..0249252 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -29,7 +29,7 @@ struct cpu_hw_counters {
+ 	struct perf_counter *counter[MAX_HWCOUNTERS];
+ 	u64 events[MAX_HWCOUNTERS];
+ 	unsigned int flags[MAX_HWCOUNTERS];
+-	u64 mmcr[3];
++	unsigned long mmcr[3];
+ 	struct perf_counter *limited_counter[MAX_LIMITED_HWCOUNTERS];
+ 	u8  limited_hwidx[MAX_LIMITED_HWCOUNTERS];
+ };
+@@ -135,15 +135,15 @@ static void write_pmc(int idx, unsigned long val)
+ static int power_check_constraints(u64 event[], unsigned int cflags[],
+ 				   int n_ev)
+ {
+-	u64 mask, value, nv;
++	unsigned long mask, value, nv;
+ 	u64 alternatives[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
+-	u64 amasks[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
+-	u64 avalues[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
+-	u64 smasks[MAX_HWCOUNTERS], svalues[MAX_HWCOUNTERS];
++	unsigned long amasks[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
++	unsigned long avalues[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
++	unsigned long smasks[MAX_HWCOUNTERS], svalues[MAX_HWCOUNTERS];
+ 	int n_alt[MAX_HWCOUNTERS], choice[MAX_HWCOUNTERS];
+ 	int i, j;
+-	u64 addf = ppmu->add_fields;
+-	u64 tadd = ppmu->test_adder;
++	unsigned long addf = ppmu->add_fields;
++	unsigned long tadd = ppmu->test_adder;
  
-@@ -106,6 +107,7 @@ obj-y				+= iomap.o
- endif
+ 	if (n_ev > ppmu->n_counter)
+ 		return -1;
+@@ -403,14 +403,12 @@ static void write_mmcr0(struct cpu_hw_counters *cpuhw, unsigned long mmcr0)
+ void hw_perf_disable(void)
+ {
+ 	struct cpu_hw_counters *cpuhw;
+-	unsigned long ret;
+ 	unsigned long flags;
  
- obj-$(CONFIG_PPC64)		+= $(obj64-y)
-+obj-$(CONFIG_PPC32)		+= $(obj32-y)
+ 	local_irq_save(flags);
+ 	cpuhw = &__get_cpu_var(cpu_hw_counters);
  
- ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
- obj-y				+= ppc_save_regs.o
-diff --git a/arch/powerpc/kernel/mpc7450-pmu.c b/arch/powerpc/kernel/mpc7450-pmu.c
-new file mode 100644
-index 0000000..75ff47f
---- /dev/null
-+++ b/arch/powerpc/kernel/mpc7450-pmu.c
-@@ -0,0 +1,417 @@
-+/*
-+ * Performance counter support for MPC7450-family processors.
-+ *
-+ * Copyright 2008-2009 Paul Mackerras, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <linux/string.h>
-+#include <linux/perf_counter.h>
-+#include <linux/string.h>
-+#include <asm/reg.h>
-+#include <asm/cputable.h>
-+
-+#define N_COUNTER	6	/* Number of hardware counters */
-+#define MAX_ALT		3	/* Maximum number of event alternative codes */
-+
-+/*
-+ * Bits in event code for MPC7450 family
-+ */
-+#define PM_THRMULT_MSKS	0x40000
-+#define PM_THRESH_SH	12
-+#define PM_THRESH_MSK	0x3f
-+#define PM_PMC_SH	8
-+#define PM_PMC_MSK	7
-+#define PM_PMCSEL_MSK	0x7f
-+
-+/*
-+ * Classify events according to how specific their PMC requirements are.
-+ * Result is:
-+ *	0: can go on any PMC
-+ *	1: can go on PMCs 1-4
-+ *	2: can go on PMCs 1,2,4
-+ *	3: can go on PMCs 1 or 2
-+ *	4: can only go on one PMC
-+ *	-1: event code is invalid
-+ */
-+#define N_CLASSES	5
-+
-+static int mpc7450_classify_event(u32 event)
-+{
-+	int pmc;
-+
-+	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
-+	if (pmc) {
-+		if (pmc > N_COUNTER)
-+			return -1;
-+		return 4;
-+	}
-+	event &= PM_PMCSEL_MSK;
-+	if (event <= 1)
-+		return 0;
-+	if (event <= 7)
-+		return 1;
-+	if (event <= 13)
-+		return 2;
-+	if (event <= 22)
-+		return 3;
-+	return -1;
-+}
-+
-+/*
-+ * Events using threshold and possible threshold scale:
-+ *	code	scale?	name
-+ *	11e	N	PM_INSTQ_EXCEED_CYC
-+ *	11f	N	PM_ALTV_IQ_EXCEED_CYC
-+ *	128	Y	PM_DTLB_SEARCH_EXCEED_CYC
-+ *	12b	Y	PM_LD_MISS_EXCEED_L1_CYC
-+ *	220	N	PM_CQ_EXCEED_CYC
-+ *	30c	N	PM_GPR_RB_EXCEED_CYC
-+ *	30d	?	PM_FPR_IQ_EXCEED_CYC ?
-+ *	311	Y	PM_ITLB_SEARCH_EXCEED
-+ *	410	N	PM_GPR_IQ_EXCEED_CYC
-+ */
-+
-+/*
-+ * Return use of threshold and threshold scale bits:
-+ * 0 = uses neither, 1 = uses threshold, 2 = uses both
-+ */
-+static int mpc7450_threshold_use(u32 event)
-+{
-+	int pmc, sel;
-+
-+	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
-+	sel = event & PM_PMCSEL_MSK;
-+	switch (pmc) {
-+	case 1:
-+		if (sel == 0x1e || sel == 0x1f)
-+			return 1;
-+		if (sel == 0x28 || sel == 0x2b)
-+			return 2;
-+		break;
-+	case 2:
-+		if (sel == 0x20)
-+			return 1;
-+		break;
-+	case 3:
-+		if (sel == 0xc || sel == 0xd)
-+			return 1;
-+		if (sel == 0x11)
-+			return 2;
-+		break;
-+	case 4:
-+		if (sel == 0x10)
-+			return 1;
-+		break;
-+	}
-+	return 0;
-+}
-+
-+/*
-+ * Layout of constraint bits:
-+ * 33222222222211111111110000000000
-+ * 10987654321098765432109876543210
-+ *  |<    ><  > < > < ><><><><><><>
-+ *  TS TV   G4   G3  G2P6P5P4P3P2P1
-+ *
-+ * P1 - P6
-+ *	0 - 11: Count of events needing PMC1 .. PMC6
-+ *
-+ * G2
-+ *	12 - 14: Count of events needing PMC1 or PMC2
-+ *
-+ * G3
-+ *	16 - 18: Count of events needing PMC1, PMC2 or PMC4
-+ *
-+ * G4
-+ *	20 - 23: Count of events needing PMC1, PMC2, PMC3 or PMC4
-+ *
-+ * TV
-+ *	24 - 29: Threshold value requested
-+ *
-+ * TS
-+ *	30: Threshold scale value requested
-+ */
-+
-+static u32 pmcbits[N_COUNTER][2] = {
-+	{ 0x00844002, 0x00111001 },	/* PMC1 mask, value: P1,G2,G3,G4 */
-+	{ 0x00844008, 0x00111004 },	/* PMC2: P2,G2,G3,G4 */
-+	{ 0x00800020, 0x00100010 },	/* PMC3: P3,G4 */
-+	{ 0x00840080, 0x00110040 },	/* PMC4: P4,G3,G4 */
-+	{ 0x00000200, 0x00000100 },	/* PMC5: P5 */
-+	{ 0x00000800, 0x00000400 }	/* PMC6: P6 */
-+};
-+
-+static u32 classbits[N_CLASSES - 1][2] = {
-+	{ 0x00000000, 0x00000000 },	/* class 0: no constraint */
-+	{ 0x00800000, 0x00100000 },	/* class 1: G4 */
-+	{ 0x00040000, 0x00010000 },	/* class 2: G3 */
-+	{ 0x00004000, 0x00001000 },	/* class 3: G2 */
-+};
-+
-+static int mpc7450_get_constraint(u64 event, unsigned long *maskp,
+-	ret = cpuhw->disabled;
+-	if (!ret) {
++	if (!cpuhw->disabled) {
+ 		cpuhw->disabled = 1;
+ 		cpuhw->n_added = 0;
+ 
+@@ -1015,7 +1013,7 @@ static void record_and_restart(struct perf_counter *counter, long val,
+ 	u64 period = counter->hw.sample_period;
+ 	s64 prev, delta, left;
+ 	int record = 0;
+-	u64 mmcra, sdsync;
++	unsigned long mmcra, sdsync;
+ 
+ 	/* we don't have to worry about interrupts here */
+ 	prev = atomic64_read(&counter->hw.prev_count);
+diff --git a/arch/powerpc/kernel/power4-pmu.c b/arch/powerpc/kernel/power4-pmu.c
+index 07bd308..81a1708 100644
+--- a/arch/powerpc/kernel/power4-pmu.c
++++ b/arch/powerpc/kernel/power4-pmu.c
+@@ -179,22 +179,22 @@ static short mmcr1_adder_bits[8] = {
+  */
+ 
+ static struct unitinfo {
+-	u64	value, mask;
+-	int	unit;
+-	int	lowerbit;
++	unsigned long	value, mask;
++	int		unit;
++	int		lowerbit;
+ } p4_unitinfo[16] = {
+-	[PM_FPU]  = { 0x44000000000000ull, 0x88000000000000ull, PM_FPU, 0 },
+-	[PM_ISU1] = { 0x20080000000000ull, 0x88000000000000ull, PM_ISU1, 0 },
++	[PM_FPU]  = { 0x44000000000000ul, 0x88000000000000ul, PM_FPU, 0 },
++	[PM_ISU1] = { 0x20080000000000ul, 0x88000000000000ul, PM_ISU1, 0 },
+ 	[PM_ISU1_ALT] =
+-		    { 0x20080000000000ull, 0x88000000000000ull, PM_ISU1, 0 },
+-	[PM_IFU]  = { 0x02200000000000ull, 0x08820000000000ull, PM_IFU, 41 },
++		    { 0x20080000000000ul, 0x88000000000000ul, PM_ISU1, 0 },
++	[PM_IFU]  = { 0x02200000000000ul, 0x08820000000000ul, PM_IFU, 41 },
+ 	[PM_IFU_ALT] =
+-		    { 0x02200000000000ull, 0x08820000000000ull, PM_IFU, 41 },
+-	[PM_IDU0] = { 0x10100000000000ull, 0x80840000000000ull, PM_IDU0, 1 },
+-	[PM_ISU2] = { 0x10140000000000ull, 0x80840000000000ull, PM_ISU2, 0 },
+-	[PM_LSU0] = { 0x01400000000000ull, 0x08800000000000ull, PM_LSU0, 0 },
+-	[PM_LSU1] = { 0x00000000000000ull, 0x00010000000000ull, PM_LSU1, 40 },
+-	[PM_GPS]  = { 0x00000000000000ull, 0x00000000000000ull, PM_GPS, 0 }
++		    { 0x02200000000000ul, 0x08820000000000ul, PM_IFU, 41 },
++	[PM_IDU0] = { 0x10100000000000ul, 0x80840000000000ul, PM_IDU0, 1 },
++	[PM_ISU2] = { 0x10140000000000ul, 0x80840000000000ul, PM_ISU2, 0 },
++	[PM_LSU0] = { 0x01400000000000ul, 0x08800000000000ul, PM_LSU0, 0 },
++	[PM_LSU1] = { 0x00000000000000ul, 0x00010000000000ul, PM_LSU1, 40 },
++	[PM_GPS]  = { 0x00000000000000ul, 0x00000000000000ul, PM_GPS, 0 }
+ };
+ 
+ static unsigned char direct_marked_event[8] = {
+@@ -249,10 +249,11 @@ static int p4_marked_instr_event(u64 event)
+ 	return (mask >> (byte * 8 + bit)) & 1;
+ }
+ 
+-static int p4_get_constraint(u64 event, u64 *maskp, u64 *valp)
++static int p4_get_constraint(u64 event, unsigned long *maskp,
++			     unsigned long *valp)
+ {
+ 	int pmc, byte, unit, lower, sh;
+-	u64 mask = 0, value = 0;
++	unsigned long mask = 0, value = 0;
+ 	int grp = -1;
+ 
+ 	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
+@@ -282,14 +283,14 @@ static int p4_get_constraint(u64 event, u64 *maskp, u64 *valp)
+ 		value |= p4_unitinfo[unit].value;
+ 		sh = p4_unitinfo[unit].lowerbit;
+ 		if (sh > 1)
+-			value |= (u64)lower << sh;
++			value |= (unsigned long)lower << sh;
+ 		else if (lower != sh)
+ 			return -1;
+ 		unit = p4_unitinfo[unit].unit;
+ 
+ 		/* Set byte lane select field */
+ 		mask  |= 0xfULL << (28 - 4 * byte);
+-		value |= (u64)unit << (28 - 4 * byte);
++		value |= (unsigned long)unit << (28 - 4 * byte);
+ 	}
+ 	if (grp == 0) {
+ 		/* increment PMC1/2/5/6 field */
+@@ -353,9 +354,9 @@ static int p4_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ }
+ 
+ static int p4_compute_mmcr(u64 event[], int n_ev,
+-			   unsigned int hwc[], u64 mmcr[])
++			   unsigned int hwc[], unsigned long mmcr[])
+ {
+-	u64 mmcr0 = 0, mmcr1 = 0, mmcra = 0;
++	unsigned long mmcr0 = 0, mmcr1 = 0, mmcra = 0;
+ 	unsigned int pmc, unit, byte, psel, lower;
+ 	unsigned int ttm, grp;
+ 	unsigned int pmc_inuse = 0;
+@@ -429,9 +430,11 @@ static int p4_compute_mmcr(u64 event[], int n_ev,
+ 		return -1;
+ 
+ 	/* Set TTMxSEL fields.  Note, units 1-3 => TTM0SEL codes 0-2 */
+-	mmcr1 |= (u64)(unituse[3] * 2 + unituse[2]) << MMCR1_TTM0SEL_SH;
+-	mmcr1 |= (u64)(unituse[7] * 3 + unituse[6] * 2) << MMCR1_TTM1SEL_SH;
+-	mmcr1 |= (u64)unituse[9] << MMCR1_TTM2SEL_SH;
++	mmcr1 |= (unsigned long)(unituse[3] * 2 + unituse[2])
++		<< MMCR1_TTM0SEL_SH;
++	mmcr1 |= (unsigned long)(unituse[7] * 3 + unituse[6] * 2)
++		<< MMCR1_TTM1SEL_SH;
++	mmcr1 |= (unsigned long)unituse[9] << MMCR1_TTM2SEL_SH;
+ 
+ 	/* Set TTCxSEL fields. */
+ 	if (unitlower & 0xe)
+@@ -456,7 +459,8 @@ static int p4_compute_mmcr(u64 event[], int n_ev,
+ 				ttm = unit - 1;		/* 2->1, 3->2 */
+ 			else
+ 				ttm = unit >> 2;
+-			mmcr1 |= (u64)ttm << (MMCR1_TD_CP_DBG0SEL_SH - 2*byte);
++			mmcr1 |= (unsigned long)ttm
++				<< (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
+ 		}
+ 	}
+ 
+@@ -519,7 +523,7 @@ static int p4_compute_mmcr(u64 event[], int n_ev,
+ 	return 0;
+ }
+ 
+-static void p4_disable_pmc(unsigned int pmc, u64 mmcr[])
++static void p4_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ {
+ 	/*
+ 	 * Setting the PMCxSEL field to 0 disables PMC x.
+@@ -584,15 +588,15 @@ static int power4_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ };
+ 
+ struct power_pmu power4_pmu = {
+-	.n_counter = 8,
+-	.max_alternatives = 5,
+-	.add_fields = 0x0000001100005555ull,
+-	.test_adder = 0x0011083300000000ull,
+-	.compute_mmcr = p4_compute_mmcr,
+-	.get_constraint = p4_get_constraint,
+-	.get_alternatives = p4_get_alternatives,
+-	.disable_pmc = p4_disable_pmc,
+-	.n_generic = ARRAY_SIZE(p4_generic_events),
+-	.generic_events = p4_generic_events,
+-	.cache_events = &power4_cache_events,
++	.n_counter		= 8,
++	.max_alternatives	= 5,
++	.add_fields		= 0x0000001100005555ul,
++	.test_adder		= 0x0011083300000000ul,
++	.compute_mmcr		= p4_compute_mmcr,
++	.get_constraint		= p4_get_constraint,
++	.get_alternatives	= p4_get_alternatives,
++	.disable_pmc		= p4_disable_pmc,
++	.n_generic		= ARRAY_SIZE(p4_generic_events),
++	.generic_events		= p4_generic_events,
++	.cache_events		= &power4_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/power5+-pmu.c b/arch/powerpc/kernel/power5+-pmu.c
+index 41e5d2d..aef144d 100644
+--- a/arch/powerpc/kernel/power5+-pmu.c
++++ b/arch/powerpc/kernel/power5+-pmu.c
+@@ -126,20 +126,21 @@ static const int grsel_shift[8] = {
+ };
+ 
+ /* Masks and values for using events from the various units */
+-static u64 unit_cons[PM_LASTUNIT+1][2] = {
+-	[PM_FPU] =   { 0x3200000000ull, 0x0100000000ull },
+-	[PM_ISU0] =  { 0x0200000000ull, 0x0080000000ull },
+-	[PM_ISU1] =  { 0x3200000000ull, 0x3100000000ull },
+-	[PM_IFU] =   { 0x3200000000ull, 0x2100000000ull },
+-	[PM_IDU] =   { 0x0e00000000ull, 0x0040000000ull },
+-	[PM_GRS] =   { 0x0e00000000ull, 0x0c40000000ull },
++static unsigned long unit_cons[PM_LASTUNIT+1][2] = {
++	[PM_FPU] =   { 0x3200000000ul, 0x0100000000ul },
++	[PM_ISU0] =  { 0x0200000000ul, 0x0080000000ul },
++	[PM_ISU1] =  { 0x3200000000ul, 0x3100000000ul },
++	[PM_IFU] =   { 0x3200000000ul, 0x2100000000ul },
++	[PM_IDU] =   { 0x0e00000000ul, 0x0040000000ul },
++	[PM_GRS] =   { 0x0e00000000ul, 0x0c40000000ul },
+ };
+ 
+-static int power5p_get_constraint(u64 event, u64 *maskp, u64 *valp)
++static int power5p_get_constraint(u64 event, unsigned long *maskp,
 +				  unsigned long *valp)
-+{
-+	int pmc, class;
-+	u32 mask, value;
-+	int thresh, tuse;
-+
-+	class = mpc7450_classify_event(event);
-+	if (class < 0)
-+		return -1;
-+	if (class == 4) {
-+		pmc = ((unsigned int)event >> PM_PMC_SH) & PM_PMC_MSK;
-+		mask  = pmcbits[pmc - 1][0];
-+		value = pmcbits[pmc - 1][1];
-+	} else {
-+		mask  = classbits[class][0];
-+		value = classbits[class][1];
-+	}
-+
-+	tuse = mpc7450_threshold_use(event);
-+	if (tuse) {
-+		thresh = ((unsigned int)event >> PM_THRESH_SH) & PM_THRESH_MSK;
-+		mask  |= 0x3f << 24;
-+		value |= thresh << 24;
-+		if (tuse == 2) {
-+			mask |= 0x40000000;
-+			if ((unsigned int)event & PM_THRMULT_MSKS)
-+				value |= 0x40000000;
-+		}
-+	}
-+
-+	*maskp = mask;
-+	*valp = value;
-+	return 0;
-+}
-+
-+static const unsigned int event_alternatives[][MAX_ALT] = {
-+	{ 0x217, 0x317 },		/* PM_L1_DCACHE_MISS */
-+	{ 0x418, 0x50f, 0x60f },	/* PM_SNOOP_RETRY */
-+	{ 0x502, 0x602 },		/* PM_L2_HIT */
-+	{ 0x503, 0x603 },		/* PM_L3_HIT */
-+	{ 0x504, 0x604 },		/* PM_L2_ICACHE_MISS */
-+	{ 0x505, 0x605 },		/* PM_L3_ICACHE_MISS */
-+	{ 0x506, 0x606 },		/* PM_L2_DCACHE_MISS */
-+	{ 0x507, 0x607 },		/* PM_L3_DCACHE_MISS */
-+	{ 0x50a, 0x623 },		/* PM_LD_HIT_L3 */
-+	{ 0x50b, 0x624 },		/* PM_ST_HIT_L3 */
-+	{ 0x50d, 0x60d },		/* PM_L2_TOUCH_HIT */
-+	{ 0x50e, 0x60e },		/* PM_L3_TOUCH_HIT */
-+	{ 0x512, 0x612 },		/* PM_INT_LOCAL */
-+	{ 0x513, 0x61d },		/* PM_L2_MISS */
-+	{ 0x514, 0x61e },		/* PM_L3_MISS */
-+};
-+
-+/*
-+ * Scan the alternatives table for a match and return the
-+ * index into the alternatives table if found, else -1.
-+ */
-+static int find_alternative(u32 event)
-+{
-+	int i, j;
-+
-+	for (i = 0; i < ARRAY_SIZE(event_alternatives); ++i) {
-+		if (event < event_alternatives[i][0])
-+			break;
-+		for (j = 0; j < MAX_ALT && event_alternatives[i][j]; ++j)
-+			if (event == event_alternatives[i][j])
-+				return i;
-+	}
-+	return -1;
-+}
-+
-+static int mpc7450_get_alternatives(u64 event, unsigned int flags, u64 alt[])
-+{
-+	int i, j, nalt = 1;
-+	u32 ae;
-+
-+	alt[0] = event;
-+	nalt = 1;
-+	i = find_alternative((u32)event);
-+	if (i >= 0) {
-+		for (j = 0; j < MAX_ALT; ++j) {
-+			ae = event_alternatives[i][j];
-+			if (ae && ae != (u32)event)
-+				alt[nalt++] = ae;
-+		}
-+	}
-+	return nalt;
-+}
-+
-+/*
-+ * Bitmaps of which PMCs each class can use for classes 0 - 3.
-+ * Bit i is set if PMC i+1 is usable.
-+ */
-+static const u8 classmap[N_CLASSES] = {
-+	0x3f, 0x0f, 0x0b, 0x03, 0
-+};
-+
-+/* Bit position and width of each PMCSEL field */
-+static const int pmcsel_shift[N_COUNTER] = {
-+	6,	0,	27,	22,	17,	11
-+};
-+static const u32 pmcsel_mask[N_COUNTER] = {
-+	0x7f,	0x3f,	0x1f,	0x1f,	0x1f,	0x3f
-+};
-+
-+/*
-+ * Compute MMCR0/1/2 values for a set of events.
-+ */
-+static int mpc7450_compute_mmcr(u64 event[], int n_ev,
-+				unsigned int hwc[], unsigned long mmcr[])
-+{
-+	u8 event_index[N_CLASSES][N_COUNTER];
-+	int n_classevent[N_CLASSES];
-+	int i, j, class, tuse;
-+	u32 pmc_inuse = 0, pmc_avail;
-+	u32 mmcr0 = 0, mmcr1 = 0, mmcr2 = 0;
-+	u32 ev, pmc, thresh;
-+
-+	if (n_ev > N_COUNTER)
-+		return -1;
-+
-+	/* First pass: count usage in each class */
-+	for (i = 0; i < N_CLASSES; ++i)
-+		n_classevent[i] = 0;
-+	for (i = 0; i < n_ev; ++i) {
-+		class = mpc7450_classify_event(event[i]);
-+		if (class < 0)
-+			return -1;
-+		j = n_classevent[class]++;
-+		event_index[class][j] = i;
-+	}
-+
-+	/* Second pass: allocate PMCs from most specific event to least */
-+	for (class = N_CLASSES - 1; class >= 0; --class) {
-+		for (i = 0; i < n_classevent[class]; ++i) {
-+			ev = event[event_index[class][i]];
-+			if (class == 4) {
-+				pmc = (ev >> PM_PMC_SH) & PM_PMC_MSK;
-+				if (pmc_inuse & (1 << (pmc - 1)))
-+					return -1;
-+			} else {
-+				/* Find a suitable PMC */
-+				pmc_avail = classmap[class] & ~pmc_inuse;
-+				if (!pmc_avail)
-+					return -1;
-+				pmc = ffs(pmc_avail);
-+			}
-+			pmc_inuse |= 1 << (pmc - 1);
-+
-+			tuse = mpc7450_threshold_use(ev);
-+			if (tuse) {
-+				thresh = (ev >> PM_THRESH_SH) & PM_THRESH_MSK;
-+				mmcr0 |= thresh << 16;
-+				if (tuse == 2 && (ev & PM_THRMULT_MSKS))
-+					mmcr2 = 0x80000000;
-+			}
-+			ev &= pmcsel_mask[pmc - 1];
-+			ev <<= pmcsel_shift[pmc - 1];
-+			if (pmc <= 2)
-+				mmcr0 |= ev;
-+			else
-+				mmcr1 |= ev;
-+			hwc[event_index[class][i]] = pmc - 1;
-+		}
-+	}
-+
-+	if (pmc_inuse & 1)
-+		mmcr0 |= MMCR0_PMC1CE;
-+	if (pmc_inuse & 0x3e)
-+		mmcr0 |= MMCR0_PMCnCE;
-+
-+	/* Return MMCRx values */
-+	mmcr[0] = mmcr0;
-+	mmcr[1] = mmcr1;
-+	mmcr[2] = mmcr2;
-+	return 0;
-+}
-+
-+/*
-+ * Disable counting by a PMC.
-+ * Note that the pmc argument is 0-based here, not 1-based.
-+ */
-+static void mpc7450_disable_pmc(unsigned int pmc, unsigned long mmcr[])
-+{
-+	if (pmc <= 1)
-+		mmcr[0] &= ~(pmcsel_mask[pmc] << pmcsel_shift[pmc]);
-+	else
-+		mmcr[1] &= ~(pmcsel_mask[pmc] << pmcsel_shift[pmc]);
-+}
-+
-+static int mpc7450_generic_events[] = {
-+	[PERF_COUNT_HW_CPU_CYCLES]		= 1,
-+	[PERF_COUNT_HW_INSTRUCTIONS]		= 2,
-+	[PERF_COUNT_HW_CACHE_MISSES]		= 0x217, /* PM_L1_DCACHE_MISS */
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS]	= 0x122, /* PM_BR_CMPL */
-+	[PERF_COUNT_HW_BRANCH_MISSES] 		= 0x41c, /* PM_BR_MPRED */
-+};
-+
-+#define C(x)	PERF_COUNT_HW_CACHE_##x
-+
-+/*
-+ * Table of generalized cache-related events.
-+ * 0 means not supported, -1 means nonsensical, other values
-+ * are event codes.
-+ */
-+static int mpc7450_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
-+	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
-+		[C(OP_READ)] = {	0,		0x225	},
-+		[C(OP_WRITE)] = {	0,		0x227	},
-+		[C(OP_PREFETCH)] = {	0,		0	},
-+	},
-+	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
-+		[C(OP_READ)] = {	0x129,		0x115	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	0x634,		0	},
-+	},
-+	[C(LL)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
-+		[C(OP_READ)] = {	0,		0	},
-+		[C(OP_WRITE)] = {	0,		0	},
-+		[C(OP_PREFETCH)] = {	0,		0	},
-+	},
-+	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
-+		[C(OP_READ)] = {	0,		0x312	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	-1,		-1	},
-+	},
-+	[C(ITLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
-+		[C(OP_READ)] = {	0,		0x223	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	-1,		-1	},
-+	},
-+	[C(BPU)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
-+		[C(OP_READ)] = {	0x122,		0x41c	},
-+		[C(OP_WRITE)] = {	-1,		-1	},
-+		[C(OP_PREFETCH)] = {	-1,		-1	},
-+	},
-+};
-+
-+struct power_pmu mpc7450_pmu = {
-+	.name			= "MPC7450 family",
-+	.n_counter		= N_COUNTER,
-+	.max_alternatives	= MAX_ALT,
-+	.add_fields		= 0x00111555ul,
-+	.test_adder		= 0x00301000ul,
-+	.compute_mmcr		= mpc7450_compute_mmcr,
-+	.get_constraint		= mpc7450_get_constraint,
-+	.get_alternatives	= mpc7450_get_alternatives,
-+	.disable_pmc		= mpc7450_disable_pmc,
-+	.n_generic		= ARRAY_SIZE(mpc7450_generic_events),
-+	.generic_events		= mpc7450_generic_events,
-+	.cache_events		= &mpc7450_cache_events,
-+};
-+
-+static int init_mpc7450_pmu(void)
-+{
-+	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
-+		return -ENODEV;
-+
-+	return register_power_pmu(&mpc7450_pmu);
-+}
-+
-+arch_initcall(init_mpc7450_pmu);
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index dd9f3ec..8485c8c 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -75,6 +75,7 @@ config POWER4_ONLY
- config 6xx
- 	def_bool y
- 	depends on PPC32 && PPC_BOOK3S
-+	select PPC_HAVE_PMU_SUPPORT
+ {
+ 	int pmc, byte, unit, sh;
+ 	int bit, fmask;
+-	u64 mask = 0, value = 0;
++	unsigned long mask = 0, value = 0;
  
- config POWER3
- 	bool
+ 	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
+ 	if (pmc) {
+@@ -171,17 +172,18 @@ static int power5p_get_constraint(u64 event, u64 *maskp, u64 *valp)
+ 			bit = event & 7;
+ 			fmask = (bit == 6)? 7: 3;
+ 			sh = grsel_shift[bit];
+-			mask |= (u64)fmask << sh;
+-			value |= (u64)((event >> PM_GRS_SH) & fmask) << sh;
++			mask |= (unsigned long)fmask << sh;
++			value |= (unsigned long)((event >> PM_GRS_SH) & fmask)
++				<< sh;
+ 		}
+ 		/* Set byte lane select field */
+-		mask  |= 0xfULL << (24 - 4 * byte);
+-		value |= (u64)unit << (24 - 4 * byte);
++		mask  |= 0xfUL << (24 - 4 * byte);
++		value |= (unsigned long)unit << (24 - 4 * byte);
+ 	}
+ 	if (pmc < 5) {
+ 		/* need a counter from PMC1-4 set */
+-		mask  |= 0x8000000000000ull;
+-		value |= 0x1000000000000ull;
++		mask  |= 0x8000000000000ul;
++		value |= 0x1000000000000ul;
+ 	}
+ 	*maskp = mask;
+ 	*valp = value;
+@@ -452,10 +454,10 @@ static int power5p_marked_instr_event(u64 event)
+ }
+ 
+ static int power5p_compute_mmcr(u64 event[], int n_ev,
+-				unsigned int hwc[], u64 mmcr[])
++				unsigned int hwc[], unsigned long mmcr[])
+ {
+-	u64 mmcr1 = 0;
+-	u64 mmcra = 0;
++	unsigned long mmcr1 = 0;
++	unsigned long mmcra = 0;
+ 	unsigned int pmc, unit, byte, psel;
+ 	unsigned int ttm;
+ 	int i, isbus, bit, grsel;
+@@ -517,7 +519,7 @@ static int power5p_compute_mmcr(u64 event[], int n_ev,
+ 			continue;
+ 		if (ttmuse++)
+ 			return -1;
+-		mmcr1 |= (u64)i << MMCR1_TTM0SEL_SH;
++		mmcr1 |= (unsigned long)i << MMCR1_TTM0SEL_SH;
+ 	}
+ 	ttmuse = 0;
+ 	for (; i <= PM_GRS; ++i) {
+@@ -525,7 +527,7 @@ static int power5p_compute_mmcr(u64 event[], int n_ev,
+ 			continue;
+ 		if (ttmuse++)
+ 			return -1;
+-		mmcr1 |= (u64)(i & 3) << MMCR1_TTM1SEL_SH;
++		mmcr1 |= (unsigned long)(i & 3) << MMCR1_TTM1SEL_SH;
+ 	}
+ 	if (ttmuse > 1)
+ 		return -1;
+@@ -540,10 +542,11 @@ static int power5p_compute_mmcr(u64 event[], int n_ev,
+ 			unit = PM_ISU0_ALT;
+ 		} else if (unit == PM_LSU1 + 1) {
+ 			/* select lower word of LSU1 for this byte */
+-			mmcr1 |= 1ull << (MMCR1_TTM3SEL_SH + 3 - byte);
++			mmcr1 |= 1ul << (MMCR1_TTM3SEL_SH + 3 - byte);
+ 		}
+ 		ttm = unit >> 2;
+-		mmcr1 |= (u64)ttm << (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
++		mmcr1 |= (unsigned long)ttm
++			<< (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
+ 	}
+ 
+ 	/* Second pass: assign PMCs, set PMCxSEL and PMCx_ADDER_SEL fields */
+@@ -568,7 +571,7 @@ static int power5p_compute_mmcr(u64 event[], int n_ev,
+ 			if (isbus && (byte & 2) &&
+ 			    (psel == 8 || psel == 0x10 || psel == 0x28))
+ 				/* add events on higher-numbered bus */
+-				mmcr1 |= 1ull << (MMCR1_PMC1_ADDER_SEL_SH - pmc);
++				mmcr1 |= 1ul << (MMCR1_PMC1_ADDER_SEL_SH - pmc);
+ 		} else {
+ 			/* Instructions or run cycles on PMC5/6 */
+ 			--pmc;
+@@ -576,7 +579,7 @@ static int power5p_compute_mmcr(u64 event[], int n_ev,
+ 		if (isbus && unit == PM_GRS) {
+ 			bit = psel & 7;
+ 			grsel = (event[i] >> PM_GRS_SH) & PM_GRS_MSK;
+-			mmcr1 |= (u64)grsel << grsel_shift[bit];
++			mmcr1 |= (unsigned long)grsel << grsel_shift[bit];
+ 		}
+ 		if (power5p_marked_instr_event(event[i]))
+ 			mmcra |= MMCRA_SAMPLE_ENABLE;
+@@ -599,7 +602,7 @@ static int power5p_compute_mmcr(u64 event[], int n_ev,
+ 	return 0;
+ }
+ 
+-static void power5p_disable_pmc(unsigned int pmc, u64 mmcr[])
++static void power5p_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ {
+ 	if (pmc <= 3)
+ 		mmcr[1] &= ~(0x7fUL << MMCR1_PMCSEL_SH(pmc));
+@@ -655,17 +658,17 @@ static int power5p_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ };
+ 
+ struct power_pmu power5p_pmu = {
+-	.n_counter = 6,
+-	.max_alternatives = MAX_ALT,
+-	.add_fields = 0x7000000000055ull,
+-	.test_adder = 0x3000040000000ull,
+-	.compute_mmcr = power5p_compute_mmcr,
+-	.get_constraint = power5p_get_constraint,
+-	.get_alternatives = power5p_get_alternatives,
+-	.disable_pmc = power5p_disable_pmc,
+-	.limited_pmc_event = power5p_limited_pmc_event,
+-	.flags = PPMU_LIMITED_PMC5_6,
+-	.n_generic = ARRAY_SIZE(power5p_generic_events),
+-	.generic_events = power5p_generic_events,
+-	.cache_events = &power5p_cache_events,
++	.n_counter		= 6,
++	.max_alternatives	= MAX_ALT,
++	.add_fields		= 0x7000000000055ul,
++	.test_adder		= 0x3000040000000ul,
++	.compute_mmcr		= power5p_compute_mmcr,
++	.get_constraint		= power5p_get_constraint,
++	.get_alternatives	= power5p_get_alternatives,
++	.disable_pmc		= power5p_disable_pmc,
++	.limited_pmc_event	= power5p_limited_pmc_event,
++	.flags			= PPMU_LIMITED_PMC5_6,
++	.n_generic		= ARRAY_SIZE(power5p_generic_events),
++	.generic_events		= power5p_generic_events,
++	.cache_events		= &power5p_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/power5-pmu.c b/arch/powerpc/kernel/power5-pmu.c
+index 05600b6..8694c73 100644
+--- a/arch/powerpc/kernel/power5-pmu.c
++++ b/arch/powerpc/kernel/power5-pmu.c
+@@ -130,20 +130,21 @@ static const int grsel_shift[8] = {
+ };
+ 
+ /* Masks and values for using events from the various units */
+-static u64 unit_cons[PM_LASTUNIT+1][2] = {
+-	[PM_FPU] =   { 0xc0002000000000ull, 0x00001000000000ull },
+-	[PM_ISU0] =  { 0x00002000000000ull, 0x00000800000000ull },
+-	[PM_ISU1] =  { 0xc0002000000000ull, 0xc0001000000000ull },
+-	[PM_IFU] =   { 0xc0002000000000ull, 0x80001000000000ull },
+-	[PM_IDU] =   { 0x30002000000000ull, 0x00000400000000ull },
+-	[PM_GRS] =   { 0x30002000000000ull, 0x30000400000000ull },
++static unsigned long unit_cons[PM_LASTUNIT+1][2] = {
++	[PM_FPU] =   { 0xc0002000000000ul, 0x00001000000000ul },
++	[PM_ISU0] =  { 0x00002000000000ul, 0x00000800000000ul },
++	[PM_ISU1] =  { 0xc0002000000000ul, 0xc0001000000000ul },
++	[PM_IFU] =   { 0xc0002000000000ul, 0x80001000000000ul },
++	[PM_IDU] =   { 0x30002000000000ul, 0x00000400000000ul },
++	[PM_GRS] =   { 0x30002000000000ul, 0x30000400000000ul },
+ };
+ 
+-static int power5_get_constraint(u64 event, u64 *maskp, u64 *valp)
++static int power5_get_constraint(u64 event, unsigned long *maskp,
++				 unsigned long *valp)
+ {
+ 	int pmc, byte, unit, sh;
+ 	int bit, fmask;
+-	u64 mask = 0, value = 0;
++	unsigned long mask = 0, value = 0;
+ 	int grp = -1;
+ 
+ 	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
+@@ -178,8 +179,9 @@ static int power5_get_constraint(u64 event, u64 *maskp, u64 *valp)
+ 			bit = event & 7;
+ 			fmask = (bit == 6)? 7: 3;
+ 			sh = grsel_shift[bit];
+-			mask |= (u64)fmask << sh;
+-			value |= (u64)((event >> PM_GRS_SH) & fmask) << sh;
++			mask |= (unsigned long)fmask << sh;
++			value |= (unsigned long)((event >> PM_GRS_SH) & fmask)
++				<< sh;
+ 		}
+ 		/*
+ 		 * Bus events on bytes 0 and 2 can be counted
+@@ -188,22 +190,22 @@ static int power5_get_constraint(u64 event, u64 *maskp, u64 *valp)
+ 		if (!pmc)
+ 			grp = byte & 1;
+ 		/* Set byte lane select field */
+-		mask  |= 0xfULL << (24 - 4 * byte);
+-		value |= (u64)unit << (24 - 4 * byte);
++		mask  |= 0xfUL << (24 - 4 * byte);
++		value |= (unsigned long)unit << (24 - 4 * byte);
+ 	}
+ 	if (grp == 0) {
+ 		/* increment PMC1/2 field */
+-		mask  |= 0x200000000ull;
+-		value |= 0x080000000ull;
++		mask  |= 0x200000000ul;
++		value |= 0x080000000ul;
+ 	} else if (grp == 1) {
+ 		/* increment PMC3/4 field */
+-		mask  |= 0x40000000ull;
+-		value |= 0x10000000ull;
++		mask  |= 0x40000000ul;
++		value |= 0x10000000ul;
+ 	}
+ 	if (pmc < 5) {
+ 		/* need a counter from PMC1-4 set */
+-		mask  |= 0x8000000000000ull;
+-		value |= 0x1000000000000ull;
++		mask  |= 0x8000000000000ul;
++		value |= 0x1000000000000ul;
+ 	}
+ 	*maskp = mask;
+ 	*valp = value;
+@@ -383,10 +385,10 @@ static int power5_marked_instr_event(u64 event)
+ }
+ 
+ static int power5_compute_mmcr(u64 event[], int n_ev,
+-			       unsigned int hwc[], u64 mmcr[])
++			       unsigned int hwc[], unsigned long mmcr[])
+ {
+-	u64 mmcr1 = 0;
+-	u64 mmcra = 0;
++	unsigned long mmcr1 = 0;
++	unsigned long mmcra = 0;
+ 	unsigned int pmc, unit, byte, psel;
+ 	unsigned int ttm, grp;
+ 	int i, isbus, bit, grsel;
+@@ -457,7 +459,7 @@ static int power5_compute_mmcr(u64 event[], int n_ev,
+ 			continue;
+ 		if (ttmuse++)
+ 			return -1;
+-		mmcr1 |= (u64)i << MMCR1_TTM0SEL_SH;
++		mmcr1 |= (unsigned long)i << MMCR1_TTM0SEL_SH;
+ 	}
+ 	ttmuse = 0;
+ 	for (; i <= PM_GRS; ++i) {
+@@ -465,7 +467,7 @@ static int power5_compute_mmcr(u64 event[], int n_ev,
+ 			continue;
+ 		if (ttmuse++)
+ 			return -1;
+-		mmcr1 |= (u64)(i & 3) << MMCR1_TTM1SEL_SH;
++		mmcr1 |= (unsigned long)(i & 3) << MMCR1_TTM1SEL_SH;
+ 	}
+ 	if (ttmuse > 1)
+ 		return -1;
+@@ -480,10 +482,11 @@ static int power5_compute_mmcr(u64 event[], int n_ev,
+ 			unit = PM_ISU0_ALT;
+ 		} else if (unit == PM_LSU1 + 1) {
+ 			/* select lower word of LSU1 for this byte */
+-			mmcr1 |= 1ull << (MMCR1_TTM3SEL_SH + 3 - byte);
++			mmcr1 |= 1ul << (MMCR1_TTM3SEL_SH + 3 - byte);
+ 		}
+ 		ttm = unit >> 2;
+-		mmcr1 |= (u64)ttm << (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
++		mmcr1 |= (unsigned long)ttm
++			<< (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
+ 	}
+ 
+ 	/* Second pass: assign PMCs, set PMCxSEL and PMCx_ADDER_SEL fields */
+@@ -513,7 +516,7 @@ static int power5_compute_mmcr(u64 event[], int n_ev,
+ 			--pmc;
+ 			if ((psel == 8 || psel == 0x10) && isbus && (byte & 2))
+ 				/* add events on higher-numbered bus */
+-				mmcr1 |= 1ull << (MMCR1_PMC1_ADDER_SEL_SH - pmc);
++				mmcr1 |= 1ul << (MMCR1_PMC1_ADDER_SEL_SH - pmc);
+ 		} else {
+ 			/* Instructions or run cycles on PMC5/6 */
+ 			--pmc;
+@@ -521,7 +524,7 @@ static int power5_compute_mmcr(u64 event[], int n_ev,
+ 		if (isbus && unit == PM_GRS) {
+ 			bit = psel & 7;
+ 			grsel = (event[i] >> PM_GRS_SH) & PM_GRS_MSK;
+-			mmcr1 |= (u64)grsel << grsel_shift[bit];
++			mmcr1 |= (unsigned long)grsel << grsel_shift[bit];
+ 		}
+ 		if (power5_marked_instr_event(event[i]))
+ 			mmcra |= MMCRA_SAMPLE_ENABLE;
+@@ -541,7 +544,7 @@ static int power5_compute_mmcr(u64 event[], int n_ev,
+ 	return 0;
+ }
+ 
+-static void power5_disable_pmc(unsigned int pmc, u64 mmcr[])
++static void power5_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ {
+ 	if (pmc <= 3)
+ 		mmcr[1] &= ~(0x7fUL << MMCR1_PMCSEL_SH(pmc));
+@@ -597,15 +600,15 @@ static int power5_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ };
+ 
+ struct power_pmu power5_pmu = {
+-	.n_counter = 6,
+-	.max_alternatives = MAX_ALT,
+-	.add_fields = 0x7000090000555ull,
+-	.test_adder = 0x3000490000000ull,
+-	.compute_mmcr = power5_compute_mmcr,
+-	.get_constraint = power5_get_constraint,
+-	.get_alternatives = power5_get_alternatives,
+-	.disable_pmc = power5_disable_pmc,
+-	.n_generic = ARRAY_SIZE(power5_generic_events),
+-	.generic_events = power5_generic_events,
+-	.cache_events = &power5_cache_events,
++	.n_counter		= 6,
++	.max_alternatives	= MAX_ALT,
++	.add_fields		= 0x7000090000555ul,
++	.test_adder		= 0x3000490000000ul,
++	.compute_mmcr		= power5_compute_mmcr,
++	.get_constraint		= power5_get_constraint,
++	.get_alternatives	= power5_get_alternatives,
++	.disable_pmc		= power5_disable_pmc,
++	.n_generic		= ARRAY_SIZE(power5_generic_events),
++	.generic_events		= power5_generic_events,
++	.cache_events		= &power5_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/power6-pmu.c b/arch/powerpc/kernel/power6-pmu.c
+index 46f74be..8898622 100644
+--- a/arch/powerpc/kernel/power6-pmu.c
++++ b/arch/powerpc/kernel/power6-pmu.c
+@@ -41,9 +41,9 @@
+ #define MMCR1_NESTSEL_SH	45
+ #define MMCR1_NESTSEL_MSK	0x7
+ #define MMCR1_NESTSEL(m)	(((m) >> MMCR1_NESTSEL_SH) & MMCR1_NESTSEL_MSK)
+-#define MMCR1_PMC1_LLA		((u64)1 << 44)
+-#define MMCR1_PMC1_LLA_VALUE	((u64)1 << 39)
+-#define MMCR1_PMC1_ADDR_SEL	((u64)1 << 35)
++#define MMCR1_PMC1_LLA		(1ul << 44)
++#define MMCR1_PMC1_LLA_VALUE	(1ul << 39)
++#define MMCR1_PMC1_ADDR_SEL	(1ul << 35)
+ #define MMCR1_PMC1SEL_SH	24
+ #define MMCR1_PMCSEL_SH(n)	(MMCR1_PMC1SEL_SH - (n) * 8)
+ #define MMCR1_PMCSEL_MSK	0xff
+@@ -173,10 +173,10 @@ static int power6_marked_instr_event(u64 event)
+  * Assign PMC numbers and compute MMCR1 value for a set of events
+  */
+ static int p6_compute_mmcr(u64 event[], int n_ev,
+-			   unsigned int hwc[], u64 mmcr[])
++			   unsigned int hwc[], unsigned long mmcr[])
+ {
+-	u64 mmcr1 = 0;
+-	u64 mmcra = 0;
++	unsigned long mmcr1 = 0;
++	unsigned long mmcra = 0;
+ 	int i;
+ 	unsigned int pmc, ev, b, u, s, psel;
+ 	unsigned int ttmset = 0;
+@@ -215,7 +215,7 @@ static int p6_compute_mmcr(u64 event[], int n_ev,
+ 			/* check for conflict on this byte of event bus */
+ 			if ((ttmset & (1 << b)) && MMCR1_TTMSEL(mmcr1, b) != u)
+ 				return -1;
+-			mmcr1 |= (u64)u << MMCR1_TTMSEL_SH(b);
++			mmcr1 |= (unsigned long)u << MMCR1_TTMSEL_SH(b);
+ 			ttmset |= 1 << b;
+ 			if (u == 5) {
+ 				/* Nest events have a further mux */
+@@ -224,7 +224,7 @@ static int p6_compute_mmcr(u64 event[], int n_ev,
+ 				    MMCR1_NESTSEL(mmcr1) != s)
+ 					return -1;
+ 				ttmset |= 0x10;
+-				mmcr1 |= (u64)s << MMCR1_NESTSEL_SH;
++				mmcr1 |= (unsigned long)s << MMCR1_NESTSEL_SH;
+ 			}
+ 			if (0x30 <= psel && psel <= 0x3d) {
+ 				/* these need the PMCx_ADDR_SEL bits */
+@@ -243,7 +243,7 @@ static int p6_compute_mmcr(u64 event[], int n_ev,
+ 		if (power6_marked_instr_event(event[i]))
+ 			mmcra |= MMCRA_SAMPLE_ENABLE;
+ 		if (pmc < 4)
+-			mmcr1 |= (u64)psel << MMCR1_PMCSEL_SH(pmc);
++			mmcr1 |= (unsigned long)psel << MMCR1_PMCSEL_SH(pmc);
+ 	}
+ 	mmcr[0] = 0;
+ 	if (pmc_inuse & 1)
+@@ -265,10 +265,11 @@ static int p6_compute_mmcr(u64 event[], int n_ev,
+  *	20-23, 24-27, 28-31 ditto for bytes 1, 2, 3
+  *	32-34	select field: nest (subunit) event selector
+  */
+-static int p6_get_constraint(u64 event, u64 *maskp, u64 *valp)
++static int p6_get_constraint(u64 event, unsigned long *maskp,
++			     unsigned long *valp)
+ {
+ 	int pmc, byte, sh, subunit;
+-	u64 mask = 0, value = 0;
++	unsigned long mask = 0, value = 0;
+ 
+ 	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
+ 	if (pmc) {
+@@ -282,11 +283,11 @@ static int p6_get_constraint(u64 event, u64 *maskp, u64 *valp)
+ 		byte = (event >> PM_BYTE_SH) & PM_BYTE_MSK;
+ 		sh = byte * 4 + (16 - PM_UNIT_SH);
+ 		mask |= PM_UNIT_MSKS << sh;
+-		value |= (u64)(event & PM_UNIT_MSKS) << sh;
++		value |= (unsigned long)(event & PM_UNIT_MSKS) << sh;
+ 		if ((event & PM_UNIT_MSKS) == (5 << PM_UNIT_SH)) {
+ 			subunit = (event >> PM_SUBUNIT_SH) & PM_SUBUNIT_MSK;
+-			mask  |= (u64)PM_SUBUNIT_MSK << 32;
+-			value |= (u64)subunit << 32;
++			mask  |= (unsigned long)PM_SUBUNIT_MSK << 32;
++			value |= (unsigned long)subunit << 32;
+ 		}
+ 	}
+ 	if (pmc <= 4) {
+@@ -458,7 +459,7 @@ static int p6_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ 	return nalt;
+ }
+ 
+-static void p6_disable_pmc(unsigned int pmc, u64 mmcr[])
++static void p6_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ {
+ 	/* Set PMCxSEL to 0 to disable PMCx */
+ 	if (pmc <= 3)
+@@ -516,17 +517,17 @@ static int power6_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ };
+ 
+ struct power_pmu power6_pmu = {
+-	.n_counter = 6,
+-	.max_alternatives = MAX_ALT,
+-	.add_fields = 0x1555,
+-	.test_adder = 0x3000,
+-	.compute_mmcr = p6_compute_mmcr,
+-	.get_constraint = p6_get_constraint,
+-	.get_alternatives = p6_get_alternatives,
+-	.disable_pmc = p6_disable_pmc,
+-	.limited_pmc_event = p6_limited_pmc_event,
+-	.flags = PPMU_LIMITED_PMC5_6 | PPMU_ALT_SIPR,
+-	.n_generic = ARRAY_SIZE(power6_generic_events),
+-	.generic_events = power6_generic_events,
+-	.cache_events = &power6_cache_events,
++	.n_counter		= 6,
++	.max_alternatives	= MAX_ALT,
++	.add_fields		= 0x1555,
++	.test_adder		= 0x3000,
++	.compute_mmcr		= p6_compute_mmcr,
++	.get_constraint		= p6_get_constraint,
++	.get_alternatives	= p6_get_alternatives,
++	.disable_pmc		= p6_disable_pmc,
++	.limited_pmc_event	= p6_limited_pmc_event,
++	.flags			= PPMU_LIMITED_PMC5_6 | PPMU_ALT_SIPR,
++	.n_generic		= ARRAY_SIZE(power6_generic_events),
++	.generic_events		= power6_generic_events,
++	.cache_events		= &power6_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
+index b72e7a1..658d1ae 100644
+--- a/arch/powerpc/kernel/power7-pmu.c
++++ b/arch/powerpc/kernel/power7-pmu.c
+@@ -71,10 +71,11 @@
+  *     0-9: Count of events needing PMC1..PMC5
+  */
+ 
+-static int power7_get_constraint(u64 event, u64 *maskp, u64 *valp)
++static int power7_get_constraint(u64 event, unsigned long *maskp,
++				 unsigned long *valp)
+ {
+ 	int pmc, sh;
+-	u64 mask = 0, value = 0;
++	unsigned long mask = 0, value = 0;
+ 
+ 	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
+ 	if (pmc) {
+@@ -224,10 +225,10 @@ static int power7_marked_instr_event(u64 event)
+ }
+ 
+ static int power7_compute_mmcr(u64 event[], int n_ev,
+-			       unsigned int hwc[], u64 mmcr[])
++			       unsigned int hwc[], unsigned long mmcr[])
+ {
+-	u64 mmcr1 = 0;
+-	u64 mmcra = 0;
++	unsigned long mmcr1 = 0;
++	unsigned long mmcra = 0;
+ 	unsigned int pmc, unit, combine, l2sel, psel;
+ 	unsigned int pmc_inuse = 0;
+ 	int i;
+@@ -265,11 +266,14 @@ static int power7_compute_mmcr(u64 event[], int n_ev,
+ 			--pmc;
+ 		}
+ 		if (pmc <= 3) {
+-			mmcr1 |= (u64) unit << (MMCR1_TTM0SEL_SH - 4 * pmc);
+-			mmcr1 |= (u64) combine << (MMCR1_PMC1_COMBINE_SH - pmc);
++			mmcr1 |= (unsigned long) unit
++				<< (MMCR1_TTM0SEL_SH - 4 * pmc);
++			mmcr1 |= (unsigned long) combine
++				<< (MMCR1_PMC1_COMBINE_SH - pmc);
+ 			mmcr1 |= psel << MMCR1_PMCSEL_SH(pmc);
+ 			if (unit == 6)	/* L2 events */
+-				mmcr1 |= (u64) l2sel << MMCR1_L2SEL_SH;
++				mmcr1 |= (unsigned long) l2sel
++					<< MMCR1_L2SEL_SH;
+ 		}
+ 		if (power7_marked_instr_event(event[i]))
+ 			mmcra |= MMCRA_SAMPLE_ENABLE;
+@@ -287,10 +291,10 @@ static int power7_compute_mmcr(u64 event[], int n_ev,
+ 	return 0;
+ }
+ 
+-static void power7_disable_pmc(unsigned int pmc, u64 mmcr[])
++static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ {
+ 	if (pmc <= 3)
+-		mmcr[1] &= ~(0xffULL << MMCR1_PMCSEL_SH(pmc));
++		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SH(pmc));
+ }
+ 
+ static int power7_generic_events[] = {
+@@ -343,15 +347,15 @@ static int power7_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ };
+ 
+ struct power_pmu power7_pmu = {
+-	.n_counter = 6,
+-	.max_alternatives = MAX_ALT + 1,
+-	.add_fields = 0x1555ull,
+-	.test_adder = 0x3000ull,
+-	.compute_mmcr = power7_compute_mmcr,
+-	.get_constraint = power7_get_constraint,
+-	.get_alternatives = power7_get_alternatives,
+-	.disable_pmc = power7_disable_pmc,
+-	.n_generic = ARRAY_SIZE(power7_generic_events),
+-	.generic_events = power7_generic_events,
+-	.cache_events = &power7_cache_events,
++	.n_counter		= 6,
++	.max_alternatives	= MAX_ALT + 1,
++	.add_fields		= 0x1555ul,
++	.test_adder		= 0x3000ul,
++	.compute_mmcr		= power7_compute_mmcr,
++	.get_constraint		= power7_get_constraint,
++	.get_alternatives	= power7_get_alternatives,
++	.disable_pmc		= power7_disable_pmc,
++	.n_generic		= ARRAY_SIZE(power7_generic_events),
++	.generic_events		= power7_generic_events,
++	.cache_events		= &power7_cache_events,
+ };
+diff --git a/arch/powerpc/kernel/ppc970-pmu.c b/arch/powerpc/kernel/ppc970-pmu.c
+index ba0a357..3ed8833 100644
+--- a/arch/powerpc/kernel/ppc970-pmu.c
++++ b/arch/powerpc/kernel/ppc970-pmu.c
+@@ -183,7 +183,7 @@ static int p970_marked_instr_event(u64 event)
+ }
+ 
+ /* Masks and values for using events from the various units */
+-static u64 unit_cons[PM_LASTUNIT+1][2] = {
++static unsigned long unit_cons[PM_LASTUNIT+1][2] = {
+ 	[PM_FPU] =   { 0xc80000000000ull, 0x040000000000ull },
+ 	[PM_VPU] =   { 0xc80000000000ull, 0xc40000000000ull },
+ 	[PM_ISU] =   { 0x080000000000ull, 0x020000000000ull },
+@@ -192,10 +192,11 @@ static u64 unit_cons[PM_LASTUNIT+1][2] = {
+ 	[PM_STS] =   { 0x380000000000ull, 0x310000000000ull },
+ };
+ 
+-static int p970_get_constraint(u64 event, u64 *maskp, u64 *valp)
++static int p970_get_constraint(u64 event, unsigned long *maskp,
++			       unsigned long *valp)
+ {
+ 	int pmc, byte, unit, sh, spcsel;
+-	u64 mask = 0, value = 0;
++	unsigned long mask = 0, value = 0;
+ 	int grp = -1;
+ 
+ 	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
+@@ -222,7 +223,7 @@ static int p970_get_constraint(u64 event, u64 *maskp, u64 *valp)
+ 			grp = byte & 1;
+ 		/* Set byte lane select field */
+ 		mask  |= 0xfULL << (28 - 4 * byte);
+-		value |= (u64)unit << (28 - 4 * byte);
++		value |= (unsigned long)unit << (28 - 4 * byte);
+ 	}
+ 	if (grp == 0) {
+ 		/* increment PMC1/2/5/6 field */
+@@ -236,7 +237,7 @@ static int p970_get_constraint(u64 event, u64 *maskp, u64 *valp)
+ 	spcsel = (event >> PM_SPCSEL_SH) & PM_SPCSEL_MSK;
+ 	if (spcsel) {
+ 		mask  |= 3ull << 48;
+-		value |= (u64)spcsel << 48;
++		value |= (unsigned long)spcsel << 48;
+ 	}
+ 	*maskp = mask;
+ 	*valp = value;
+@@ -257,9 +258,9 @@ static int p970_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ }
+ 
+ static int p970_compute_mmcr(u64 event[], int n_ev,
+-			     unsigned int hwc[], u64 mmcr[])
++			     unsigned int hwc[], unsigned long mmcr[])
+ {
+-	u64 mmcr0 = 0, mmcr1 = 0, mmcra = 0;
++	unsigned long mmcr0 = 0, mmcr1 = 0, mmcra = 0;
+ 	unsigned int pmc, unit, byte, psel;
+ 	unsigned int ttm, grp;
+ 	unsigned int pmc_inuse = 0;
+@@ -320,7 +321,7 @@ static int p970_compute_mmcr(u64 event[], int n_ev,
+ 			continue;
+ 		ttm = unitmap[i];
+ 		++ttmuse[(ttm >> 2) & 1];
+-		mmcr1 |= (u64)(ttm & ~4) << MMCR1_TTM1SEL_SH;
++		mmcr1 |= (unsigned long)(ttm & ~4) << MMCR1_TTM1SEL_SH;
+ 	}
+ 	/* Check only one unit per TTMx */
+ 	if (ttmuse[0] > 1 || ttmuse[1] > 1)
+@@ -340,7 +341,8 @@ static int p970_compute_mmcr(u64 event[], int n_ev,
+ 			if (unit == PM_LSU1L && byte >= 2)
+ 				mmcr1 |= 1ull << (MMCR1_TTM3SEL_SH + 3 - byte);
+ 		}
+-		mmcr1 |= (u64)ttm << (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
++		mmcr1 |= (unsigned long)ttm
++			<< (MMCR1_TD_CP_DBG0SEL_SH - 2 * byte);
+ 	}
+ 
+ 	/* Second pass: assign PMCs, set PMCxSEL and PMCx_ADDER_SEL fields */
+@@ -386,7 +388,8 @@ static int p970_compute_mmcr(u64 event[], int n_ev,
+ 	for (pmc = 0; pmc < 2; ++pmc)
+ 		mmcr0 |= pmcsel[pmc] << (MMCR0_PMC1SEL_SH - 7 * pmc);
+ 	for (; pmc < 8; ++pmc)
+-		mmcr1 |= (u64)pmcsel[pmc] << (MMCR1_PMC3SEL_SH - 5 * (pmc - 2));
++		mmcr1 |= (unsigned long)pmcsel[pmc]
++			<< (MMCR1_PMC3SEL_SH - 5 * (pmc - 2));
+ 	if (pmc_inuse & 1)
+ 		mmcr0 |= MMCR0_PMC1CE;
+ 	if (pmc_inuse & 0xfe)
+@@ -401,7 +404,7 @@ static int p970_compute_mmcr(u64 event[], int n_ev,
+ 	return 0;
+ }
+ 
+-static void p970_disable_pmc(unsigned int pmc, u64 mmcr[])
++static void p970_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ {
+ 	int shift, i;
+ 
+@@ -468,15 +471,15 @@ static int ppc970_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ };
+ 
+ struct power_pmu ppc970_pmu = {
+-	.n_counter = 8,
+-	.max_alternatives = 2,
+-	.add_fields = 0x001100005555ull,
+-	.test_adder = 0x013300000000ull,
+-	.compute_mmcr = p970_compute_mmcr,
+-	.get_constraint = p970_get_constraint,
+-	.get_alternatives = p970_get_alternatives,
+-	.disable_pmc = p970_disable_pmc,
+-	.n_generic = ARRAY_SIZE(ppc970_generic_events),
+-	.generic_events = ppc970_generic_events,
+-	.cache_events = &ppc970_cache_events,
++	.n_counter		= 8,
++	.max_alternatives	= 2,
++	.add_fields		= 0x001100005555ull,
++	.test_adder		= 0x013300000000ull,
++	.compute_mmcr		= p970_compute_mmcr,
++	.get_constraint		= p970_get_constraint,
++	.get_alternatives	= p970_get_alternatives,
++	.disable_pmc		= p970_disable_pmc,
++	.n_generic		= ARRAY_SIZE(ppc970_generic_events),
++	.generic_events		= ppc970_generic_events,
++	.cache_events		= &ppc970_cache_events,
+ };
 -- 
 1.6.0.4
 
