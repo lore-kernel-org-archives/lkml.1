@@ -1,115 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbZFQKs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbZFQKvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759389AbZFQKs2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 06:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZFQKsU
+	id S1759821AbZFQKvf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 06:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZFQKv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 06:48:20 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:43352 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZFQKsT convert rfc822-to-8bit (ORCPT
+	Wed, 17 Jun 2009 06:51:28 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:42058 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbZFQKv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 06:48:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=RsBaegVt64D3I9vAsaFu9MZRKvdJj7ugoO1RHFKBmAdrMRacwOcQuQas7BEpc8iQ3T
-         /YWBiTT8ZZyeSk80TfhDdfzwCmunz5kWD2a0X+O1UR+dYcEy68OcThlhw2dVS/SlIU78
-         g/VbHW/OtmeTo67LSepk6OtMLkQjEKvgLlRTw=
+	Wed, 17 Jun 2009 06:51:27 -0400
+Message-ID: <4A38CAAC.4090606@in.ibm.com>
+Date: Wed, 17 Jun 2009 16:21:24 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
 MIME-Version: 1.0
-In-Reply-To: <2ab84cd80906170340w3ad8b938t64b6d0926b18daa4@mail.gmail.com>
-References: <2ab84cd80906170340w3ad8b938t64b6d0926b18daa4@mail.gmail.com>
-Date: Wed, 17 Jun 2009 18:42:14 +0800
-Message-ID: <2ab84cd80906170342ta334955yc69a2648fa979979@mail.gmail.com>
-Subject: surpring results of test_and_set_bit() and test_and_clear_bit() 
-	functions in Linux-2.6.25 kernel at x86_64 architecture
-From: qingbo yuan <yuanbor.maillist@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       menage@google.com
+Subject: [BUG] lib/kernel_lock.c:126 with cgroups regression ltp tests
+Content-Type: multipart/mixed;
+ boundary="------------080808090809040803080509"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,all
-I recently encountered a strange phenomenon about test_and_set_bit()
-and test_and_clear_bit().
-Here are the comments about these functions in Linux-2.6.25 kernel at
-x86_64 architecture:
+This is a multi-part message in MIME format.
+--------------080808090809040803080509
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-/**
- * test_and_set_bit - Set a bit and return its old value
- */
+While executing cgroups regression tests from LTP May 2009
+release on a Power6 box came across the following bug.
+This is with 2.6.30-git10 (300df7dc89cc276377fc020704e34875d5c473b6)
 
-/**
- * test_and_clear_bit - Clear a bit and return its old value
- */
+------------[ cut here ]------------
+kernel BUG at lib/kernel_lock.c:126!
+Oops: Exception in kernel mode, sig: 5 [#1]
+SMP NR_CPUS=1024 NUMA pSeries
+Modules linked in: ipv6 fuse loop dm_mod sr_mod ehea cdrom sg ibmveth sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
+NIP: c0000000005c6dac LR: c0000000001965ac CTR: 0000000000000006
+REGS: c00000002a5d3910 TRAP: 0700   Not tainted  (2.6.30-git10)
+MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 82042442  XER: 00000000
+TASK = c0000000407cbc20[9581] 'mount' THREAD: c00000002a5d0000 CPU: 3
+<6>GPR00: 0000000000000001 c00000002a5d3b90 c000000000ef31f0 fffffffffffffff0 
+<6>GPR04: c0000000000f0098 c000000000799813 0000000000000000 0000000000000001 
+<6>GPR08: c000000000e36aa0 c0000000407cbc20 0000000000000002 c0000000407cbc20 
+<6>GPR12: 0000000024042424 c000000000ff2a00 00000fffed50f6fd 00000fffed506e08 
+<6>GPR16: 00000fffed506db8 000000001002b638 0000000000000000 0000000000000000 
+<6>GPR20: 00000000100329a0 00000fffed506e0c c00000003e14b870 0000000000000000 
+<6>GPR24: 0000000000000000 c00000002a030000 0000000000000000 0000000000000000 
+<6>GPR28: c00000003e14b800 fffffffffffffff0 c000000000e7aa40 c00000002a5d3b90 
+NIP [c0000000005c6dac] .unlock_kernel+0x20/0x78
+LR [c0000000001965ac] .do_remount_sb+0x190/0x204
+Call Trace:
+[c00000002a5d3bd0] [c00000000019659c] .do_remount_sb+0x180/0x204
+[c00000002a5d3c70] [c0000000001b8210] .do_mount+0x38c/0x9fc
+[c00000002a5d3d60] [c0000000001b8940] .SyS_mount+0xc0/0x12c
+[c00000002a5d3e30] [c000000000008534] syscall_exit+0x0/0x40
+Instruction dump:
+383f0040 ebc1fff0 ebe1fff8 4e800020 fbc1fff0 fbe1fff8 f821ffc1 7c3f0b78 
+ebc2c0b8 e92d01b0 e809001e 78000fe0 <0b000000> e96d01b0 812b001c 3929ffff 
+---[ end trace 3bf0012ad33d52b2 ]---
 
-According to the comments, if the old value is '0', then these
-functions will return 0 to the caller, and
-if the old value is '1', then these functions will return 1. However,
-in my experiment, if the old value is '1', I got -1 instead of 1. Here
-is the code:
+Corresponding c code is :
 
-void generos_test_bitmap(void)
+void __lockfunc unlock_kernel(void)
 {
- int cur,ret_clear,ret_set;
- unsigned long bitmap =0x3721;
- for(cur = find_first_bit(&bitmap,BITS_PER_LONG);cur <
-BITS_PER_LONG;cur = find_next_bit(&bitmap, BITS_PER_LONG, cur + 1)){
-  ret_clear  = test_and_set_bit(cur, &bitmap);
-  ret_set  = test_and_clear_bit(cur, &bitmap);
-  printk("test_and_set bit [%d] ret [%d]\n",cur,ret_set);
-  printk("test_and_clear bit [%d] ret [%d]\n\n\n",cur,ret_clear);
- }
-}
+        BUG_ON(current->lock_depth < 0);  <<======
+        if (likely(--current->lock_depth < 0))
+                __unlock_kernel();
 
-And here is the results:
-test_and_set bit [0] ret [-1]
-test_and_clear bit [0] ret [-1]
-test_and_set bit [5] ret [-1]
-test_and_clear bit [5] ret [-1]
-test_and_set bit [8] ret [-1]
-test_and_clear bit [8] ret [-1]
-test_and_set bit [9] ret [-1]
-test_and_clear bit [9] ret [-1]
-test_and_set bit [10] ret [-1]
-test_and_clear bit [10] ret [-1]
-test_and_set bit [12] ret [-1]
-test_and_clear bit [12] ret [-1]
-test_and_set bit [13] ret [-1]
-test_and_clear bit [13] ret [-1]
+Have attached the cgroups regression test run log.
 
-Interesting! Let's take a look at the definition of these funtions in
-Linux-2.6.25:
- static inline int test_and_set_bit(int nr, volatile void *addr)
-{
- int oldbit;
- asm volatile(LOCK_PREFIX "bts %2,%1\n\t"
-       "sbb %0,%0"
-       : "=r" (oldbit), ADDR
-       : "Ir" (nr) : "memory");
- return oldbit;
-}
+Thanks
+-Sachin
 
-static inline int test_and_clear_bit(int nr, volatile void *addr)
-{
- int oldbit;
- asm volatile(LOCK_PREFIX "btr %2,%1\n\t"
-       "sbb %0,%0"
-       : "=r" (oldbit), ADDR
-       : "Ir" (nr) : "memory");
- return oldbit;
-}
+-- 
 
-1. bts and btr set/clear the bit and copy the old value to CF flag.
-2. sbb %0,%0 equals (%0-(%0+CF)) -> %0
-3. %0 -> oldbit
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
-So, if the old bit is '0', these functions return 0;
-      if the old bit is '1', these functions return -1;
-Both of these functions were right if the comments modified as
-"test_and_set_bit - Set a bit and return its opposite old value".
 
-Can anybody point out what problems exist in my analysis?
+--------------080808090809040803080509
+Content-Type: text/x-log;
+ name="controller-run.log"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="controller-run.log"
+
+cgroup_regression_test    1  PASS  :  no kernel bug was found
+/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 102:  7036 Terminated              ./fork_processes
+cgroup_regression_test    2  PASS  :  notify_on_release is inherited
+cgroup_regression_test    3  PASS  :  no kernel bug was found
+cgroup_regression_test    4  CONF  :  CONFIG_LOCKDEP is not enabled
+cgroup_regression_test    5  PASS  :  no kernel bug was found
+/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 253:  8781 Terminated              sleep 100
+/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 325:  8800 Terminated              ./test_6_2
+cgroup_regression_test    6  PASS  :  no kernel bug was found
+------------[ cut here ]------------
+Oops: Exception in kernel mode, sig: 5 [#1]
+SMP NR_CPUS=1024 NUMA pSeries
+Modules linked in: ipv6 fuse loop dm_mod sr_mod ehea cdrom sg ibmveth sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
+NIP: c0000000005c6dac LR: c0000000001965ac CTR: 0000000000000006
+REGS: c00000002a5d3910 TRAP: 0700   Not tainted  (2.6.30-git10)
+MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 82042442  XER: 00000000
+TASK = c0000000407cbc20[9581] 'mount' THREAD: c00000002a5d0000 CPU: 3
+<6>GPR00: 0000000000000001 c00000002a5d3b90 c000000000ef31f0 fffffffffffffff0 
+<6>GPR04: c0000000000f0098 c000000000799813 0000000000000000 0000000000000001 
+<6>GPR08: c000000000e36aa0 c0000000407cbc20 0000000000000002 c0000000407cbc20 
+<6>GPR12: 0000000024042424 c000000000ff2a00 00000fffed50f6fd 00000fffed506e08 
+<6>GPR16: 00000fffed506db8 000000001002b638 0000000000000000 0000000000000000 
+<6>GPR20: 00000000100329a0 00000fffed506e0c c00000003e14b870 0000000000000000 
+<6>GPR24: 0000000000000000 c00000002a030000 0000000000000000 0000000000000000 
+<6>GPR28: c00000003e14b800 fffffffffffffff0 c000000000e7aa40 c00000002a5d3b90 
+NIP [c0000000005c6dac] .unlock_kernel+0x20/0x78
+LR [c0000000001965ac] .do_remount_sb+0x190/0x204
+Call Trace:
+[c00000002a5d3bd0] [c00000000019659c] .do_remount_sb+0x180/0x204
+[c00000002a5d3c70] [c0000000001b8210] .do_mount+0x38c/0x9fc
+[c00000002a5d3d60] [c0000000001b8940] .SyS_mount+0xc0/0x12c
+[c00000002a5d3e30] [c000000000008534] syscall_exit+0x0/0x40
+Instruction dump:
+383f0040 ebc1fff0 ebe1fff8 4e800020 fbc1fff0 fbe1fff8 f821ffc1 7c3f0b78 
+ebc2c0b8 e92d01b0 e809001e 78000fe0 <0b000000> e96d01b0 812b001c 3929ffff 
+---[ end trace 3bf0012ad33d52b2 ]---
+/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 347:  9581 Trace/breakpoint trap   mount -t cgroup -o remount xxx cgroup/ 2> /dev/null
+/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 363:  9579 Terminated              sleep 100 < cgroup/0
+Cannot create link /etc/mtab~
+Perhaps there is a stale lock file?
+
+Cannot create link /etc/mtab~
+Perhaps there is a stale lock file?
+
+
+--------------080808090809040803080509--
