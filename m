@@ -1,113 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932818AbZFQLlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbZFQLmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932818AbZFQLlp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 07:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbZFQLli
+	id S933069AbZFQLmI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 07:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756659AbZFQLly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 07:41:38 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56792 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754573AbZFQLlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 07:41:37 -0400
-Date: Wed, 17 Jun 2009 12:41:36 +0100
-From: Mel Gorman <mel@csn.ul.ie>
+	Wed, 17 Jun 2009 07:41:54 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:56995 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754694AbZFQLlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 07:41:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ImG/8w7fZUOS6lbj9dVo92YDr+aD3I7H7QthIf8zy74GiU946g51jyfgNv3Ku8nQ4u
+         ejf0WL+o/8xD8Qv/jnuqW2lkVbbkMM9K3T0thXaeqxXPc5ogyw3PI/qbVqCeIkWGGBd1
+         vqVbk8s5W9S8uAxHwkwcfULBgOEG7x0hWjpSs=
+Date: Wed, 17 Jun 2009 13:41:51 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       torvalds@linux-foundation.org, fengguang.wu@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: WARNING: at mm/page_alloc.c:1159
-	get_page_from_freelist+0x325/0x655()
-Message-ID: <20090617114136.GA28529@csn.ul.ie>
-References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org> <20090616223649.719ea378.akpm@linux-foundation.org> <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       a.p.zijlstra@chello.nl, efault@gmx.de, arjan@infradead.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Subject: Re: [tip:perfcounters/core] perf record/report: Add call graph /
+	call chain profiling
+Message-ID: <20090617114149.GA6064@nowhere>
+References: <tip-3efa1cc99ec51bc7a7ae0011a16619fd20dbe6ea@git.kernel.org> <20090616025750.GB6057@nowhere> <20090616080924.GB16229@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090617113120.GA5061@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090616080924.GB16229@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 01:31:20PM +0200, Ingo Molnar wrote:
+On Tue, Jun 16, 2009 at 10:09:24AM +0200, Ingo Molnar wrote:
 > 
-> a new warning started popping up today, in the new page allocator 
-> code. The allocation came from kmemleak:
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-
-This is not my changes as such. As part of another discussion, a warning
-was added for high-order __GFP_NOFAIL allocations. The changelog for
-commit dab48dab37d2770824420d1e01730a107fade1aa [page-allocator: warn if
-__GFP_NOFAIL is used for a large allocation] has more details.
-
-> WARNING: at mm/page_alloc.c:1159 get_page_from_freelist+0x325/0x655()
-> Hardware name: System Product Name
-> Modules linked in:
-> Pid: 4367, comm: ifup Not tainted 2.6.30-tip-04303-g5ada65e-dirty #54431
-> Call Trace:
->  [<ffffffff810dba73>] ? get_page_from_freelist+0x325/0x655
->  [<ffffffff8106f140>] warn_slowpath_common+0x88/0xcb
->  [<ffffffff8106f1a5>] warn_slowpath_null+0x22/0x38
->  [<ffffffff810dba73>] get_page_from_freelist+0x325/0x655
->  [<ffffffff810dc18c>] __alloc_pages_nodemask+0x14c/0x5b0
->  [<ffffffff811063e1>] ? deactivate_slab+0xce/0x16b
->  [<ffffffff8103b1c8>] ? native_sched_clock+0x40/0x79
->  [<ffffffff811063e1>] ? deactivate_slab+0xce/0x16b
->  [<ffffffff811063e1>] ? deactivate_slab+0xce/0x16b
->  [<ffffffff81102417>] alloc_pages_current+0xcc/0xeb
->  [<ffffffff81107a78>] alloc_slab_page+0x2a/0x7e
->  [<ffffffff81107b27>] new_slab+0x5b/0x210
->  [<ffffffff811063fa>] ? deactivate_slab+0xe7/0x16b
->  [<ffffffff81108253>] __slab_alloc+0x214/0x3da
->  [<ffffffff8110f58d>] ? kmemleak_alloc+0x83/0x35a
->  [<ffffffff8110f58d>] ? kmemleak_alloc+0x83/0x35a
->  [<ffffffff8110863c>] kmem_cache_alloc+0xac/0x14e
->  [<ffffffff8110f58d>] kmemleak_alloc+0x83/0x35a
->  [<ffffffff812b6436>] ? cfq_get_queue+0x101/0x231
-
-No super sure who is responsible here but could you check
-/proc/slabinfo. Is cfq_queue now requiring high-order allocations for
-its slabs?
-
->  [<ffffffff81108511>] kmem_cache_alloc_node+0xf8/0x177
->  [<ffffffff812b6436>] ? cfq_get_queue+0x101/0x231
->  [<ffffffff812b6436>] cfq_get_queue+0x101/0x231
->  [<ffffffff81847362>] ? _spin_lock_irqsave+0x7f/0xa1
->  [<ffffffff812b68b1>] cfq_set_request+0x2a0/0x34c
->  [<ffffffff812a390a>] elv_set_request+0x29/0x4e
->  [<ffffffff812a7e3b>] get_request+0x208/0x2ea
->  [<ffffffff812a8101>] ? __make_request+0x48/0x3c8
->  [<ffffffff812a7f54>] get_request_wait+0x37/0x19c
->  [<ffffffff812a8101>] ? __make_request+0x48/0x3c8
->  [<ffffffff812a8332>] __make_request+0x279/0x3c8
->  [<ffffffff812a6385>] generic_make_request+0x2ed/0x352
->  [<ffffffff812a64bf>] submit_bio+0xd5/0xf2
->  [<ffffffff81137aa8>] submit_bh+0x110/0x14a
->  [<ffffffff81139982>] ll_rw_block+0xc4/0x120
->  [<ffffffff81180bde>] ext3_bread+0x47/0x87
->  [<ffffffff81183f4f>] ext3_find_entry+0x13a/0x5f2
->  [<ffffffff8109999b>] ? __lock_acquire+0x1f2/0x40e
->  [<ffffffff81125ed3>] ? d_alloc+0x19c/0x1ef
->  [<ffffffff81098d7f>] ? lock_release_holdtime+0x3f/0x14c
->  [<ffffffff81125ed3>] ? d_alloc+0x19c/0x1ef
->  [<ffffffff81184cbd>] ext3_lookup+0x43/0x10c
->  [<ffffffff8111b7cf>] do_lookup+0xe4/0x182
->  [<ffffffff8111c652>] __link_path_walk+0x667/0x7d3
->  [<ffffffff8111cdc1>] path_walk+0x78/0xf7
->  [<ffffffff8111e157>] do_path_lookup+0x39/0xac
->  [<ffffffff8111fa5f>] user_path_at+0x61/0xaf
->  [<ffffffff8112c0c1>] ? mntput_no_expire+0x33/0xdb
->  [<ffffffff81116230>] ? cp_new_stat+0xf8/0x119
->  [<ffffffff8111645c>] vfs_fstatat+0x44/0x85
->  [<ffffffff81116622>] vfs_stat+0x29/0x3f
->  [<ffffffff81116661>] sys_newstat+0x29/0x5e
->  [<ffffffff818469c8>] ? lockdep_sys_exit_thunk+0x35/0x67
->  [<ffffffff81032f02>] system_call_fastpath+0x16/0x1b
-> ---[ end trace 2fb5866b65128972 ]---
->  4k 262128 large 0 gb 0 x 262128[ffff880000000000-ffff88003ffef000] miss 0
+> > > @@ -43,11 +44,19 @@ static int		full_paths;
+> > >  static unsigned long	page_size;
+> > >  static unsigned long	mmap_window = 32;
+> > >  
+> > > +struct ip_chain_event {
+> > > +	__u16 nr;
+> > 
+> > Is it needed to have the nr encoded in the ip_chain? We can 
+> > already find it by doing kernel + user.
 > 
+> That's a good observation. Since we havent exposed the call-chain 
+> bits in upstream version of the tools, we could still improve on 
+> this a little bit.
+> 
+> I think the best would be context separators which occupy a special 
+> address in some quiet corner of the 64-bit address space.
+> 
+> That way we'd have streams of u64 entries:
+> 
+>    ip-1
+>    ip-2
+>    CONTEXT_IRQ
+>    ip-3
+>    ip-4
+>    CONTEXT_SYSCALL
+>    ip-5
+>    ip-6
+> 
+> The following contexts IDs would be useful:
+> 
+>   CONTEXT_NMI
+>   CONTEXT_HARDIRQ
+>   CONTEXT_SOFTIRQ
+>   CONTEXT_KERNEL
+>   CONTEXT_USER
+>   CONTEXT_GUEST_NMI
+>   CONTEXT_GUEST_HARDIRQ
+>   CONTEXT_GUEST_SOFTIRQ
+>   CONTEXT_GUEST_KERNEL
+>   CONTEXT_GUEST_USER
+> 
+> The context IDs would occupy some rare and 
+> unlikely-to-be-allocated-soon corner of the address space - say 
+> startig at 0x8765432112345000. (and real RIPs would be filtered and 
+> nudged just outside that space of a handful IDs.)
+> 
+> The advantage would be that this is infinitely flexible and 
+> extensible - any level of nesting can be expressed without having 
+> separate fields for nr_hv_guest_irq, etc. It's also pretty fast to 
+> parse.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
+
+Indeed, nice idea!
+
+
+ 
+> Hm?
+> 
+> 	Ingo
+
