@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764446AbZFQD27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbZFQDlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764446AbZFQD27 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 23:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZFQD2u
+	id S1763444AbZFQDlm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 23:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbZFQDlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 23:28:50 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:61973 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753438AbZFQD2t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 23:28:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlEGANf4N0pMROLw/2dsb2JhbACBUNE1hAsF
-Date: Tue, 16 Jun 2009 23:16:24 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6.30 BUG] CPU hotplug and alternatives problem when going 2 ->
-	1 CPU
-Message-ID: <20090617031624.GA30905@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:11:43 up 108 days, 23:37,  4 users,  load average: 0.34, 0.26,
-	0.41
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Jun 2009 23:41:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57196 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752950AbZFQDlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 23:41:32 -0400
+From: Tejun Heo <tj@kernel.org>
+To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
+       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
+       paulmck@linux.vnet.ibm.com
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Tejun Heo <tj@kernel.org>
+Subject: [PATCH 3/9] CRIS: Change DEFINE_PER_CPU of current_pgd to be non volatile.
+Date: Wed, 17 Jun 2009 12:40:54 +0900
+Message-Id: <1245210060-24344-4-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1245210060-24344-1-git-send-email-tj@kernel.org>
+References: <1245210060-24344-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 03:41:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Jesper Nilsson <jesper.nilsson@axis.com>
 
-I ran into a "stucked process" when trying to bring down all my CPUs on
-a 2.6.30 kernel (+ lttng patchset). It's Intel Core2 Xeon.
+The DEFINE_PER_CPU of current_pgd was on CRIS defined using volatile,
+which is not needed. Remove volatile.
 
-My printk output showed :
+Tested on an ARTPEC-3 (CRISv32) board.
 
-[  133.866683] CPU 1 is now offline                                   
-[  134.958702] CPU 2 is now offline                                             
-[  136.054832] CPU 3 is now offline                                             
-[  137.148867] CPU 4 is now offline                                             
-[  138.252997] CPU 5 is now offline                                             
-[  139.455014] CPU 6 is now offline                                             
-[  140.561271] CPU 7 is now offline                                             
-[  140.570979] SMP alternatives: switching to UP code                           
+[ Impact: code cleanup ]
 
-Booting with noreplace-smp makes everything work fine. Maybe it's a new
-bug in 2.6.30 ?
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ arch/cris/include/asm/mmu_context.h |    3 ++-
+ arch/cris/mm/fault.c                |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-Mathieu
-
-
+diff --git a/arch/cris/include/asm/mmu_context.h b/arch/cris/include/asm/mmu_context.h
+index 72ba08d..476cd9e 100644
+--- a/arch/cris/include/asm/mmu_context.h
++++ b/arch/cris/include/asm/mmu_context.h
+@@ -17,7 +17,8 @@ extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+  * registers like cr3 on the i386
+  */
+ 
+-extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
++/* defined in arch/cris/mm/fault.c */
++extern DEFINE_PER_CPU(pgd_t *, current_pgd);
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+diff --git a/arch/cris/mm/fault.c b/arch/cris/mm/fault.c
+index c4c76db..84d22ae 100644
+--- a/arch/cris/mm/fault.c
++++ b/arch/cris/mm/fault.c
+@@ -29,7 +29,7 @@ extern void die_if_kernel(const char *, struct pt_regs *, long);
+ 
+ /* current active page directory */
+ 
+-volatile DEFINE_PER_CPU(pgd_t *,current_pgd);
++DEFINE_PER_CPU(pgd_t *, current_pgd);
+ unsigned long cris_signal_return_page;
+ 
+ /*
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.6.0.2
+
