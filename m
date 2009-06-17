@@ -1,112 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758478AbZFQRC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbZFQRCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758478AbZFQRC0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 13:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbZFQRCC
+	id S1758759AbZFQRCj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 13:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758006AbZFQRCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 13:02:02 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:58686 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756653AbZFQRB7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 13:01:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=JdMdqWgpAB6xuQjcFzKmnxTF80BB1/9c+2cG4NFAIwb5Kl8XGtJQOy2o1wAqJ8Qu23
-         lcLB7fGVFxIXNFELr52q2NcxD6DpZ23daGPQwXn4Zgm097pbXCvh1qHQ3vgWkcK4DCSl
-         QgjsWnKVqAWLNJFMcA9FmNbDdZkUDBUysZd00=
-Message-ID: <4A392098.9060205@gmail.com>
-Date: Wed, 17 Jun 2009 18:58:00 +0200
-From: Marco <marco.stornelli@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 17 Jun 2009 13:02:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40742 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757878AbZFQRCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 13:02:16 -0400
+Date: Wed, 17 Jun 2009 17:01:45 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com, hpa@kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com, hpa@kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1245228070.2662.1.camel@ht.satnam>
+References: <1245228070.2662.1.camel@ht.satnam>
+Subject: [tip:x86/urgent] x86: msr.h linux/types.h is only required for __KERNEL__
+Message-ID: <tip-8fa62ad9d24e24707164ac7a97cbe59fe78a8591@git.kernel.org>
+Git-Commit-ID: 8fa62ad9d24e24707164ac7a97cbe59fe78a8591
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Linux FS Devel <linux-fsdevel@vger.kernel.org>, linux@arm.linux.org.uk,
-       linux-m68k@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-CC: Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 13/14] Pramfs: Write Protection
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 17:01:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jared Hulbert wrote:
-> > > +/* init_mm.page_table_lock must be held before calling! */
-> > > +static void pram_page_writeable(unsigned long addr, int rw)
-> > > +{
-> > > + ? ? ? pgd_t *pgdp;
-> > > + ? ? ? pud_t *pudp;
-> > > + ? ? ? pmd_t *pmdp;
-> > > + ? ? ? pte_t *ptep;
-> > > +
-> > > + ? ? ? pgdp = pgd_offset_k(addr);
-> > > + ? ? ? if (!pgd_none(*pgdp)) {
-> > > + ? ? ? ? ? ? ? pudp = pud_offset(pgdp, addr);
-> > > + ? ? ? ? ? ? ? if (!pud_none(*pudp)) {
-> > > + ? ? ? ? ? ? ? ? ? ? ? pmdp = pmd_offset(pudp, addr);
-> > > + ? ? ? ? ? ? ? ? ? ? ? if (!pmd_none(*pmdp)) {
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte_t pte;
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ptep = pte_offset_kernel(pmdp, addr);
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte = *ptep;
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? if (pte_present(pte)) {
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte = rw ? pte_mkwrite(pte) :
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? pte_wrprotect(pte);
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? set_pte(ptep, pte);
-> > > + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? }
-> > > + ? ? ? ? ? ? ? ? ? ? ? }
-> > > + ? ? ? ? ? ? ? }
-> > > + ? ? ? }
-> > > +}
-> > 
-> > Wow.  Don't we want to do this pte walking in mm/ someplace?
-> > 
-> > Do you really intend to protect just the PTE in question rather than
-> > the entire physical page, regardless of which PTE is talking to it?
-> > Maybe I'm missing something.
-> > 
-> follow_pfn() ought to be fine for this, optionally follow_pte() could be
-> exported and used.
+Commit-ID:  8fa62ad9d24e24707164ac7a97cbe59fe78a8591
+Gitweb:     http://git.kernel.org/tip/8fa62ad9d24e24707164ac7a97cbe59fe78a8591
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Wed, 17 Jun 2009 14:11:10 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 17 Jun 2009 18:56:01 +0200
+
+x86: msr.h linux/types.h is only required for __KERNEL__
+
+<linux/types.h> is only required for __KERNEL__ as whole file is covered with it
+
+Also fixed some spacing issues for usr/include/asm-x86/msr.h
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: "H. Peter Anvin" <hpa@kernel.org>
+LKML-Reference: <1245228070.2662.1.camel@ht.satnam>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Ok I can create a new exported function follow_pte().
+---
+ arch/x86/include/asm/msr.h |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-> > > +#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_H8300) || \
-> > > + ? ? ? defined(CONFIG_BLACKFIN)
-> > > + ? ? ? /*
-> > > + ? ? ? ?* FIXME: so far only these archs have flush_tlb_kernel_page(),
-> > > + ? ? ? ?* for the rest just use flush_tlb_kernel_range(). Not ideal
-> > > + ? ? ? ?* to use _range() because many archs just flush the whole TLB.
-> > > + ? ? ? ?*/
-> > > + ? ? ? if (end <= start + PAGE_SIZE)
-> > > + ? ? ? ? ? ? ? flush_tlb_kernel_page(start);
-> > > + ? ? ? else
-> > > +#endif
-> > > + ? ? ? ? ? ? ? flush_tlb_kernel_range(start, end);
-> > > +}
-> > 
-> > Why not just fix flush_tlb_range()?
-> > 
-> > If an arch has a flush_tlb_kernel_page() that works then it stands to
-> > reason that the flush_tlb_kernel_range() shouldn't work with minimal
-> > effort, no?
-> 
-> flush_tlb_kernel_page() is a new one to me, it doesn't have any mention
-> in Documentation/cachetlb.txt anyways.
-> 
-> Many of the flush_tlb_kernel_range() implementations do ranged checks
-> with tunables to determine whether it is more expensive to selectively
-> flush vs just blowing the entire TLB away.
-> 
-> Likewise, there is no reason why those 4 architectures can not just shove
-> that if (end <= start + PAGE_SIZE) check in the beginning of their
-> flush_tlb_kernel_range() and fall back on flush_tlb_kernel_page() for
-> those cases. Hiding this in generic code is definitely not the way to go.
-
-Ok I'll change that function at arch level and I'll remove the ifdef, I'll call only flush_tlb_kernel_page(), but I'd like to know what is the opinion of the arch maintainers to do that.
-(Who is the maintainer of H8300 arch?)
-
-Marco
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 2260376..48ad9d2 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -3,13 +3,10 @@
+ 
+ #include <asm/msr-index.h>
+ 
+-#ifndef __ASSEMBLY__
+-# include <linux/types.h>
+-#endif
+-
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+ 
++#include <linux/types.h>
+ #include <asm/asm.h>
+ #include <asm/errno.h>
+ #include <asm/cpumask.h>
+@@ -264,6 +261,4 @@ static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+ #endif  /* CONFIG_SMP */
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+-
+-
+ #endif /* _ASM_X86_MSR_H */
