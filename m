@@ -1,127 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbZFQQpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758995AbZFQQqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbZFQQpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbZFQQpV
+	id S1758995AbZFQQqm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZFQQqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:45:21 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:45424 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755844AbZFQQpT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:45:19 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: Ian Abbott <abbotti@mev.co.uk>
-Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based cards
-Date: Wed, 17 Jun 2009 13:45:18 -0300
-User-Agent: KMail/1.11.90 (Linux/2.6.30-desktop-1mnb; KDE/4.2.90; i686; ; )
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>
-References: <200906161701.45234.herton@mandriva.com.br> <200906161830.02308.herton@mandriva.com.br> <4A38E0D8.1000202@mev.co.uk>
-In-Reply-To: <4A38E0D8.1000202@mev.co.uk>
+	Wed, 17 Jun 2009 12:46:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54410 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752771AbZFQQqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:46:33 -0400
+Date: Wed, 17 Jun 2009 18:46:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [RFC 6/7] x86: Move kernel_fpu_using to asm/i387.h
+Message-ID: <20090617164622.GB25357@elte.hu>
+References: <1244704236.5320.129.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200906171345.19815.herton@mandriva.com.br>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244704236.5320.129.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0005]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Quarta-feira 17 Junho 2009, às 09:26:00, Ian Abbott escreveu:
-> Herton Ronaldo Krzesinski wrote:
-> > Em Terça-feira 16 Junho 2009, às 17:51:21, Greg KH escreveu:
-> >> On Tue, Jun 16, 2009 at 05:01:44PM -0300, Herton Ronaldo Krzesinski wrote:
-> >>> Hi,
-> >>>
-> >>> The s626 (comedi) driver in staging conflicts with philips SAA7146
-> >>> media/dvb based cards, because it claims the same vendor:device pci id
-> >>> for all subdevice/subvendor ids. What happens is that for people that
-> >>> have a philips SAA7146 based card, s626 if available gets loaded by udev
-> >>> and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
-> >> So a PCI device that does different things has the same device ids?
-> >> ick, stupid vendors...
-> >>
-> >>> Looks like s626 shouldn't claim all 1131:7146 devices, either by
-> >>> specifying specific subdevice/subvendor ids specific to s626 devices or
-> >>> doing additional checks in its probe/attach function.
-> >> If you can propose the proper sub ids, or the needed checks, please send
-> >> a patch.
-> > 
-> > Can't propose proper sub ids here etc., as I don't know about/don't have s626 
-> > device, s626 author is CC'ed here to check this. But I could send a patch to 
-> > disable just the build of s626 if acceptable/desired for the moment.
+
+* Huang Ying <ying.huang@intel.com> wrote:
+
+> This is used by AES-NI accelerated AES implementation and PCLMULQDQ
+> accelerated GHASH implementation.
 > 
-> The Windows driver (<http://www.sensoray.com/downloads/sdk626.zip>) has
-> this in the models section of the INF file:
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 > 
-> %sx26.DeviceDesc%=sxdrv.Device,PCI\VEN_1131&DEV_7146&SUBSYS_02726000
+> ---
+>  arch/x86/crypto/aesni-intel_glue.c |    7 -------
+>  arch/x86/include/asm/i387.h        |    7 +++++++
+>  2 files changed, 7 insertions(+), 7 deletions(-)
 > 
-> And it looks like the correct device because this the strings section
-> contains:
-> 
-> sx26.DeviceDesc=   "Sensoray Model 626 Analog/Digital I/O"
-> 
-> Interpreting the above information gives us:
-> 
-> PCI Vendor ID = 0x1131
-> PCI Device ID = 0x7146
-> PCI Subvendor ID = 0x6000
-> PCI Subdevice ID = 0x0272 (626)
-> 
-> The Linux SDK for this board
-> (<http://www.sensoray.com/downloads/s626-1.0.1.tar.gz> has the same info
-> in the s626core.h file.
+> --- a/arch/x86/crypto/aesni-intel_glue.c
+> +++ b/arch/x86/crypto/aesni-intel_glue.c
+> @@ -59,13 +59,6 @@ asmlinkage void aesni_cbc_enc(struct cry
+>  asmlinkage void aesni_cbc_dec(struct crypto_aes_ctx *ctx, u8 *out,
+>  			      const u8 *in, unsigned int len, u8 *iv);
+>  
+> -static inline int kernel_fpu_using(void)
+> -{
+> -	if (in_interrupt() && !(read_cr0() & X86_CR0_TS))
+> -		return 1;
+> -	return 0;
+> -}
+> -
+>  static inline struct crypto_aes_ctx *aes_ctx(void *raw_ctx)
+>  {
+>  	unsigned long addr = (unsigned long)raw_ctx;
+> --- a/arch/x86/include/asm/i387.h
+> +++ b/arch/x86/include/asm/i387.h
+> @@ -302,6 +302,13 @@ static inline void kernel_fpu_end(void)
+>  	preempt_enable();
+>  }
+>  
+> +static inline int kernel_fpu_using(void)
+> +{
+> +	if (in_interrupt() && !(read_cr0() & X86_CR0_TS))
+> +		return 1;
+> +	return 0;
+> +}
+> +
 
-Ok thanks. So lets limit s626 by its subvendor:subdevice id, patch follows:
+Looks sane to me. Herbert, do you ack it?
 
->From 6f4d2430959a378ab754c5dbd3903fdcf33abe36 Mon Sep 17 00:00:00 2001
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Date: Wed, 17 Jun 2009 13:31:15 -0300
-Subject: [PATCH] Staging: comedi: use subvendor:subdevice ids for its pci id device table
-
-The current s626 comedi driver in staging conflicts with philips SAA7146
-media/dvb based cards, because it claims the same vendor:device pci id
-for all subdevice/subvendor ids. What happens is that for people that
-have a philips SAA7146 based card, s626 if available gets loaded by udev
-and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
-
-The s626 driver shouldn't claim all 1131:7146 devices. Fix this by
-specifying specific known subvendor:subdevice ids in its pci id table
-list.
-
-Reference: http://lkml.org/lkml/2009/6/16/552
-
-Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
----
- drivers/staging/comedi/drivers/s626.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
-index 30dec9d..b4b7713 100644
---- a/drivers/staging/comedi/drivers/s626.c
-+++ b/drivers/staging/comedi/drivers/s626.c
-@@ -110,9 +110,13 @@ static const struct s626_board s626_boards[] = {
- #define PCI_VENDOR_ID_S626 0x1131
- #define PCI_DEVICE_ID_S626 0x7146
- 
-+/*
-+ * Note: always specify subvendor:subdevice ids in table below, to avoid
-+ * clash with Philips SAA7146 media/dvb based cards which have same
-+ * vendor:device ids as S626
-+ */
- static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) = {
--	{PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		0},
-+	{PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
- 	{0}
- };
- 
--- 
-1.6.3.2
-
---
-[]'s
-Herton
+	Ingo
