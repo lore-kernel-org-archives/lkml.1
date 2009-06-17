@@ -1,292 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759135AbZFQEH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764533AbZFQEIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759135AbZFQEH5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 00:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764769AbZFQEHk
+	id S1764533AbZFQEIZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 00:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764965AbZFQEH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 00:07:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41900 "EHLO hera.kernel.org"
+	Wed, 17 Jun 2009 00:07:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41913 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764812AbZFQEHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 00:07:38 -0400
+	id S1764995AbZFQEH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 00:07:56 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
        mingo@elte.hu, andi@firstfloor.org, hpa@zytor.com, tglx@linutronix.de
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 3/6] x86,percpu: generalize 4k first chunk allocator
-Date: Wed, 17 Jun 2009 13:04:33 +0900
-Message-Id: <1245211476-27015-4-git-send-email-tj@kernel.org>
+Subject: [PATCH 6/6] percpu: simplify pcpu_setup_first_chunk()
+Date: Wed, 17 Jun 2009 13:04:36 +0900
+Message-Id: <1245211476-27015-7-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1245211476-27015-1-git-send-email-tj@kernel.org>
 References: <1245211476-27015-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 04:04:53 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 04:04:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generalize and move x86 setup_pcpu_4k() into pcpu_4k_first_chunk().
-setup_pcpu_4k() now is a simple wrapper around the generalized
-version.  Other than taking size parameters and using arch supplied
-callbacks to allocate/free memory, pcpu_4k_first_chunk() is identical
-to the original implementation.
+Now that all first chunk allocator helpers allocate and map the first
+chunk themselves, there's no need to have optional default alloc/map
+in pcpu_setup_first_chunk().  Drop @populate_pte_fn and only leave
+@dyn_size optional and make all other params mandatory.
 
-This simplifies arch code and will help converting more archs to
-dynamic percpu allocator.
+This makes it much easier to follow what pcpu_setup_first_chunk() is
+doing and what actual differences tweaking each parameter results in.
 
-While at it, s/pcpu_populate_pte_fn_t/pcpu_fc_populate_pte_fn_t/ for
-consistency.
-
-[ Impact: code reorganization and generalization ]
+[ Impact: drop unused code path ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/setup_percpu.c |   78 +++++++++---------------------------
- include/linux/percpu.h         |   12 +++++-
- mm/percpu.c                    |   85 +++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 113 insertions(+), 62 deletions(-)
+ include/linux/percpu.h |    5 +-
+ mm/percpu.c            |  104 ++++++++++++++----------------------------------
+ 2 files changed, 32 insertions(+), 77 deletions(-)
 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 1472820..ab896b3 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -124,6 +124,19 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
- }
- 
- /*
-+ * Helpers for first chunk memory allocation
-+ */
-+static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size)
-+{
-+	return pcpu_alloc_bootmem(cpu, size, size);
-+}
-+
-+static void __init pcpu_fc_free(void *ptr, size_t size)
-+{
-+	free_bootmem(__pa(ptr), size);
-+}
-+
-+/*
-  * Large page remap allocator
-  *
-  * This allocator uses PMD page as unit.  A PMD page is allocated for
-@@ -346,22 +359,11 @@ static ssize_t __init setup_pcpu_embed(size_t static_size, bool chosen)
- }
- 
- /*
-- * 4k page allocator
-+ * 4k allocator
-  *
-- * This is the basic allocator.  Static percpu area is allocated
-- * page-by-page and most of initialization is done by the generic
-- * setup function.
-+ * Boring fallback 4k allocator.  This allocator puts more pressure on
-+ * PTE TLBs but other than that behaves nicely on both UMA and NUMA.
-  */
--static struct page **pcpu4k_pages __initdata;
--static int pcpu4k_nr_static_pages __initdata;
--
--static struct page * __init pcpu4k_get_page(unsigned int cpu, int pageno)
--{
--	if (pageno < pcpu4k_nr_static_pages)
--		return pcpu4k_pages[cpu * pcpu4k_nr_static_pages + pageno];
--	return NULL;
--}
--
- static void __init pcpu4k_populate_pte(unsigned long addr)
- {
- 	populate_extra_pte(addr);
-@@ -369,51 +371,9 @@ static void __init pcpu4k_populate_pte(unsigned long addr)
- 
- static ssize_t __init setup_pcpu_4k(size_t static_size)
- {
--	size_t pages_size;
--	unsigned int cpu;
--	int i, j;
--	ssize_t ret;
--
--	pcpu4k_nr_static_pages = PFN_UP(static_size);
--
--	/* unaligned allocations can't be freed, round up to page size */
--	pages_size = PFN_ALIGN(pcpu4k_nr_static_pages * num_possible_cpus()
--			       * sizeof(pcpu4k_pages[0]));
--	pcpu4k_pages = alloc_bootmem(pages_size);
--
--	/* allocate and copy */
--	j = 0;
--	for_each_possible_cpu(cpu)
--		for (i = 0; i < pcpu4k_nr_static_pages; i++) {
--			void *ptr;
--
--			ptr = pcpu_alloc_bootmem(cpu, PAGE_SIZE, PAGE_SIZE);
--			if (!ptr) {
--				pr_warning("PERCPU: failed to allocate "
--					   "4k page for cpu%u\n", cpu);
--				goto enomem;
--			}
--
--			memcpy(ptr, __per_cpu_load + i * PAGE_SIZE, PAGE_SIZE);
--			pcpu4k_pages[j++] = virt_to_page(ptr);
--		}
--
--	/* we're ready, commit */
--	pr_info("PERCPU: Allocated %d 4k pages, static data %zu bytes\n",
--		pcpu4k_nr_static_pages, static_size);
--
--	ret = pcpu_setup_first_chunk(pcpu4k_get_page, static_size,
--				     PERCPU_FIRST_CHUNK_RESERVE, -1,
--				     -1, NULL, pcpu4k_populate_pte);
--	goto out_free_ar;
--
--enomem:
--	while (--j >= 0)
--		free_bootmem(__pa(page_address(pcpu4k_pages[j])), PAGE_SIZE);
--	ret = -ENOMEM;
--out_free_ar:
--	free_bootmem(__pa(pcpu4k_pages), pages_size);
--	return ret;
-+	return pcpu_4k_first_chunk(static_size, PERCPU_FIRST_CHUNK_RESERVE,
-+				   pcpu_fc_alloc, pcpu_fc_free,
-+				   pcpu4k_populate_pte);
- }
- 
- /* for explicit first chunk allocator selection */
 diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 83bff05..41b5bfa 100644
+index 9f6bfd7..ec64357 100644
 --- a/include/linux/percpu.h
 +++ b/include/linux/percpu.h
-@@ -59,18 +59,26 @@
- extern void *pcpu_base_addr;
- 
- typedef struct page * (*pcpu_get_page_fn_t)(unsigned int cpu, int pageno);
--typedef void (*pcpu_populate_pte_fn_t)(unsigned long addr);
-+typedef void * (*pcpu_fc_alloc_fn_t)(unsigned int cpu, size_t size);
-+typedef void (*pcpu_fc_free_fn_t)(void *ptr, size_t size);
-+typedef void (*pcpu_fc_populate_pte_fn_t)(unsigned long addr);
+@@ -66,9 +66,8 @@ typedef void (*pcpu_fc_map_fn_t)(void *ptr, size_t size, void *addr);
  
  extern size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
  				size_t static_size, size_t reserved_size,
- 				ssize_t dyn_size, ssize_t unit_size,
- 				void *base_addr,
--				pcpu_populate_pte_fn_t populate_pte_fn);
-+				pcpu_fc_populate_pte_fn_t populate_pte_fn);
+-				ssize_t dyn_size, ssize_t unit_size,
+-				void *base_addr,
+-				pcpu_fc_populate_pte_fn_t populate_pte_fn);
++				ssize_t dyn_size, size_t unit_size,
++				void *base_addr);
  
  extern ssize_t __init pcpu_embed_first_chunk(
  				size_t static_size, size_t reserved_size,
- 				ssize_t dyn_size);
- 
-+extern ssize_t __init pcpu_4k_first_chunk(
-+				size_t static_size, size_t reserved_size,
-+				pcpu_fc_alloc_fn_t alloc_fn,
-+				pcpu_fc_free_fn_t free_fn,
-+				pcpu_fc_populate_pte_fn_t populate_pte_fn);
-+
- /*
-  * Use this to get to a cpu's version of the per-cpu object
-  * dynamically allocated. Non-atomic access to the current CPU's
 diff --git a/mm/percpu.c b/mm/percpu.c
-index fe34b6b..39f4022 100644
+index 17dfb7c..452d3f3 100644
 --- a/mm/percpu.c
 +++ b/mm/percpu.c
-@@ -1037,7 +1037,7 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+@@ -983,24 +983,22 @@ EXPORT_SYMBOL_GPL(free_percpu);
+  * pcpu_setup_first_chunk - initialize the first percpu chunk
+  * @get_page_fn: callback to fetch page pointer
+  * @static_size: the size of static percpu area in bytes
+- * @reserved_size: the size of reserved percpu area in bytes
++ * @reserved_size: the size of reserved percpu area in bytes, 0 for none
+  * @dyn_size: free size for dynamic allocation in bytes, -1 for auto
+- * @unit_size: unit size in bytes, must be multiple of PAGE_SIZE, -1 for auto
+- * @base_addr: mapped address, NULL for auto
+- * @populate_pte_fn: callback to allocate pagetable, NULL if unnecessary
++ * @unit_size: unit size in bytes, must be multiple of PAGE_SIZE
++ * @base_addr: mapped address
+  *
+  * Initialize the first percpu chunk which contains the kernel static
+  * perpcu area.  This function is to be called from arch percpu area
+- * setup path.  The first two parameters are mandatory.  The rest are
+- * optional.
++ * setup path.
+  *
+  * @get_page_fn() should return pointer to percpu page given cpu
+  * number and page number.  It should at least return enough pages to
+  * cover the static area.  The returned pages for static area should
+- * have been initialized with valid data.  If @unit_size is specified,
+- * it can also return pages after the static area.  NULL return
+- * indicates end of pages for the cpu.  Note that @get_page_fn() must
+- * return the same number of pages for all cpus.
++ * have been initialized with valid data.  It can also return pages
++ * after the static area.  NULL return indicates end of pages for the
++ * cpu.  Note that @get_page_fn() must return the same number of pages
++ * for all cpus.
+  *
+  * @reserved_size, if non-zero, specifies the amount of bytes to
+  * reserve after the static area in the first chunk.  This reserves
+@@ -1015,17 +1013,12 @@ EXPORT_SYMBOL_GPL(free_percpu);
+  * non-negative value makes percpu leave alone the area beyond
+  * @static_size + @reserved_size + @dyn_size.
+  *
+- * @unit_size, if non-negative, specifies unit size and must be
+- * aligned to PAGE_SIZE and equal to or larger than @static_size +
+- * @reserved_size + if non-negative, @dyn_size.
+- *
+- * Non-null @base_addr means that the caller already allocated virtual
+- * region for the first chunk and mapped it.  percpu must not mess
+- * with the chunk.  Note that @base_addr with 0 @unit_size or non-NULL
+- * @populate_pte_fn doesn't make any sense.
++ * @unit_size specifies unit size and must be aligned to PAGE_SIZE and
++ * equal to or larger than @static_size + @reserved_size + if
++ * non-negative, @dyn_size.
+  *
+- * @populate_pte_fn is used to populate the pagetable.  NULL means the
+- * caller already populated the pagetable.
++ * The caller should have mapped the first chunk at @base_addr and
++ * copied static data to each unit.
+  *
+  * If the first chunk ends up with both reserved and dynamic areas, it
+  * is served by two chunks - one to serve the core static and reserved
+@@ -1040,9 +1033,8 @@ EXPORT_SYMBOL_GPL(free_percpu);
+  */
+ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
  				     size_t static_size, size_t reserved_size,
- 				     ssize_t dyn_size, ssize_t unit_size,
- 				     void *base_addr,
--				     pcpu_populate_pte_fn_t populate_pte_fn)
-+				     pcpu_fc_populate_pte_fn_t populate_pte_fn)
+-				     ssize_t dyn_size, ssize_t unit_size,
+-				     void *base_addr,
+-				     pcpu_fc_populate_pte_fn_t populate_pte_fn)
++				     ssize_t dyn_size, size_t unit_size,
++				     void *base_addr)
  {
  	static struct vm_struct first_vm;
  	static int smap[2], dmap[2];
-@@ -1271,6 +1271,89 @@ ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
+@@ -1050,27 +1042,18 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 			  (dyn_size >= 0 ? dyn_size : 0);
+ 	struct pcpu_chunk *schunk, *dchunk = NULL;
+ 	unsigned int cpu;
+-	int nr_pages;
+-	int err, i;
++	int i, nr_pages;
+ 
+ 	/* santiy checks */
+ 	BUILD_BUG_ON(ARRAY_SIZE(smap) >= PCPU_DFL_MAP_ALLOC ||
+ 		     ARRAY_SIZE(dmap) >= PCPU_DFL_MAP_ALLOC);
+ 	BUG_ON(!static_size);
+-	if (unit_size >= 0) {
+-		BUG_ON(unit_size < size_sum);
+-		BUG_ON(unit_size & ~PAGE_MASK);
+-		BUG_ON(unit_size < PCPU_MIN_UNIT_SIZE);
+-	} else
+-		BUG_ON(base_addr);
+-	BUG_ON(base_addr && populate_pte_fn);
+-
+-	if (unit_size >= 0)
+-		pcpu_unit_pages = unit_size >> PAGE_SHIFT;
+-	else
+-		pcpu_unit_pages = max_t(int, PCPU_MIN_UNIT_SIZE >> PAGE_SHIFT,
+-					PFN_UP(size_sum));
++	BUG_ON(!base_addr);
++	BUG_ON(unit_size < size_sum);
++	BUG_ON(unit_size & ~PAGE_MASK);
++	BUG_ON(unit_size < PCPU_MIN_UNIT_SIZE);
+ 
++	pcpu_unit_pages = unit_size >> PAGE_SHIFT;
+ 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
+ 	pcpu_chunk_size = num_possible_cpus() * pcpu_unit_size;
+ 	pcpu_chunk_struct_size = sizeof(struct pcpu_chunk)
+@@ -1079,6 +1062,10 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 	if (dyn_size < 0)
+ 		dyn_size = pcpu_unit_size - static_size - reserved_size;
+ 
++	first_vm.flags = VM_ALLOC;
++	first_vm.size = pcpu_chunk_size;
++	first_vm.addr = base_addr;
++
+ 	/*
+ 	 * Allocate chunk slots.  The additional last slot is for
+ 	 * empty chunks.
+@@ -1101,6 +1088,7 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 	schunk->map = smap;
+ 	schunk->map_alloc = ARRAY_SIZE(smap);
+ 	schunk->page = schunk->page_ar;
++	schunk->immutable = true;
+ 
+ 	if (reserved_size) {
+ 		schunk->free_size = reserved_size;
+@@ -1124,31 +1112,13 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 		dchunk->map = dmap;
+ 		dchunk->map_alloc = ARRAY_SIZE(dmap);
+ 		dchunk->page = schunk->page_ar;	/* share page map with schunk */
++		dchunk->immutable = true;
+ 
+ 		dchunk->contig_hint = dchunk->free_size = dyn_size;
+ 		dchunk->map[dchunk->map_used++] = -pcpu_reserved_chunk_limit;
+ 		dchunk->map[dchunk->map_used++] = dchunk->free_size;
+ 	}
+ 
+-	/* allocate vm address */
+-	first_vm.flags = VM_ALLOC;
+-	first_vm.size = pcpu_chunk_size;
+-
+-	if (!base_addr)
+-		vm_area_register_early(&first_vm, PAGE_SIZE);
+-	else {
+-		/*
+-		 * Pages already mapped.  No need to remap into
+-		 * vmalloc area.  In this case the first chunks can't
+-		 * be mapped or unmapped by percpu and are marked
+-		 * immutable.
+-		 */
+-		first_vm.addr = base_addr;
+-		schunk->immutable = true;
+-		if (dchunk)
+-			dchunk->immutable = true;
+-	}
+-
+ 	/* assign pages */
+ 	nr_pages = -1;
+ 	for_each_possible_cpu(cpu) {
+@@ -1168,19 +1138,6 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 			BUG_ON(nr_pages != i);
+ 	}
+ 
+-	/* map them */
+-	if (populate_pte_fn) {
+-		for_each_possible_cpu(cpu)
+-			for (i = 0; i < nr_pages; i++)
+-				populate_pte_fn(pcpu_chunk_addr(schunk,
+-								cpu, i));
+-
+-		err = pcpu_map(schunk, 0, nr_pages);
+-		if (err)
+-			panic("failed to setup static percpu area, err=%d\n",
+-			      err);
+-	}
+-
+ 	/* link the first chunk in */
+ 	pcpu_first_chunk = dchunk ?: schunk;
+ 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
+@@ -1282,7 +1239,7 @@ ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
+ 
+ 	return pcpu_setup_first_chunk(pcpue_get_page, static_size,
+ 				      reserved_size, dyn_size,
+-				      pcpue_unit_size, pcpue_ptr, NULL);
++				      pcpue_unit_size, pcpue_ptr);
  }
  
  /*
-+ * 4k page first chunk setup helper.
-+ */
-+static struct page **pcpu4k_pages __initdata;
-+static int pcpu4k_nr_static_pages __initdata;
-+
-+static struct page * __init pcpu4k_get_page(unsigned int cpu, int pageno)
-+{
-+	if (pageno < pcpu4k_nr_static_pages)
-+		return pcpu4k_pages[cpu * pcpu4k_nr_static_pages + pageno];
-+	return NULL;
-+}
-+
-+/**
-+ * pcpu_4k_first_chunk - map the first chunk using PAGE_SIZE pages
-+ * @static_size: the size of static percpu area in bytes
-+ * @reserved_size: the size of reserved percpu area in bytes
-+ * @alloc_fn: function to allocate percpu page, always called with PAGE_SIZE
-+ * @free_fn: funtion to free percpu page, always called with PAGE_SIZE
-+ * @populate_pte_fn: function to populate pte
-+ *
-+ * This is a helper to ease setting up embedded first percpu chunk and
-+ * can be called where pcpu_setup_first_chunk() is expected.
-+ *
-+ * This is the basic allocator.  Static percpu area is allocated
-+ * page-by-page into vmalloc area.
-+ *
-+ * RETURNS:
-+ * The determined pcpu_unit_size which can be used to initialize
-+ * percpu access on success, -errno on failure.
-+ */
-+ssize_t __init pcpu_4k_first_chunk(size_t static_size, size_t reserved_size,
-+				   pcpu_fc_alloc_fn_t alloc_fn,
-+				   pcpu_fc_free_fn_t free_fn,
-+				   pcpu_fc_populate_pte_fn_t populate_pte_fn)
-+{
-+	size_t pages_size;
-+	unsigned int cpu;
-+	int i, j;
-+	ssize_t ret;
-+
-+	pcpu4k_nr_static_pages = PFN_UP(static_size);
-+
-+	/* unaligned allocations can't be freed, round up to page size */
-+	pages_size = PFN_ALIGN(pcpu4k_nr_static_pages * num_possible_cpus() *
-+			       sizeof(pcpu4k_pages[0]));
-+	pcpu4k_pages = alloc_bootmem(pages_size);
-+
-+	/* allocate and copy */
-+	j = 0;
-+	for_each_possible_cpu(cpu)
-+		for (i = 0; i < pcpu4k_nr_static_pages; i++) {
-+			void *ptr;
-+
-+			ptr = alloc_fn(cpu, PAGE_SIZE);
-+			if (!ptr) {
-+				pr_warning("PERCPU: failed to allocate "
-+					   "4k page for cpu%u\n", cpu);
-+				goto enomem;
-+			}
-+
-+			memcpy(ptr, __per_cpu_load + i * PAGE_SIZE, PAGE_SIZE);
-+			pcpu4k_pages[j++] = virt_to_page(ptr);
-+		}
-+
-+	/* we're ready, commit */
-+	pr_info("PERCPU: Allocated %d 4k pages, static data %zu bytes\n",
-+		pcpu4k_nr_static_pages, static_size);
-+
-+	ret = pcpu_setup_first_chunk(pcpu4k_get_page, static_size,
-+				     reserved_size, -1,
-+				     -1, NULL, populate_pte_fn);
-+	goto out_free_ar;
-+
-+enomem:
-+	while (--j >= 0)
-+		free_fn(page_address(pcpu4k_pages[j]), PAGE_SIZE);
-+	ret = -ENOMEM;
-+out_free_ar:
-+	free_bootmem(__pa(pcpu4k_pages), pages_size);
-+	return ret;
-+}
-+
-+/*
-  * Generic percpu area setup.
-  *
-  * The embedding helper is used because its behavior closely resembles
+@@ -1387,8 +1344,7 @@ ssize_t __init pcpu_4k_first_chunk(size_t static_size, size_t reserved_size,
+ 
+ 	ret = pcpu_setup_first_chunk(pcpu4k_get_page, static_size,
+ 				     reserved_size, -1,
+-				     pcpu4k_unit_pages << PAGE_SHIFT, vm.addr,
+-				     NULL);
++				     pcpu4k_unit_pages << PAGE_SHIFT, vm.addr);
+ 	goto out_free_ar;
+ 
+ enomem:
+@@ -1521,7 +1477,7 @@ ssize_t __init pcpu_lpage_first_chunk(size_t static_size, size_t reserved_size,
+ 
+ 	ret = pcpu_setup_first_chunk(pcpul_get_page, static_size,
+ 				     reserved_size, dyn_size, pcpul_unit_size,
+-				     pcpul_vm.addr, NULL);
++				     pcpul_vm.addr);
+ 
+ 	/* sort pcpul_map array for pcpu_lpage_remapped() */
+ 	for (i = 0; i < num_possible_cpus() - 1; i++)
 -- 
 1.6.0.2
 
