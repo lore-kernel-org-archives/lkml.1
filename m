@@ -1,101 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbZFQMFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765635AbZFQMIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933578AbZFQMFs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 08:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbZFQMFY
+	id S1765635AbZFQMIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 08:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbZFQMIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 08:05:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54244 "EHLO mx2.suse.de"
+	Wed, 17 Jun 2009 08:08:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47721 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933487AbZFQMFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 08:05:21 -0400
-Date: Wed, 17 Jun 2009 14:05:20 +0200
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 07/11] vfs: Unmap underlying metadata of new data
-	buffers only when buffer is mapped
-Message-ID: <20090617120520.GD2612@duck.suse.cz>
-References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-8-git-send-email-jack@suse.cz> <20090617103543.GB29931@wotan.suse.de>
+	id S1758300AbZFQMIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 08:08:36 -0400
+Date: Wed, 17 Jun 2009 14:08:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: benh@kernel.crashing.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
+	powerpc
+Message-ID: <20090617120831.GB26454@elte.hu>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com> <19000.55666.866148.559620@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090617103543.GB29931@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <19000.55666.866148.559620@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 17-06-09 12:35:43, Nick Piggin wrote:
-> On Mon, Jun 15, 2009 at 07:59:54PM +0200, Jan Kara wrote:
-> > When we do delayed allocation of some buffer, we want to signal to VFS that
-> > the buffer is new (set buffer_new) so that it properly zeros out everything.
-> > But we don't have the buffer mapped yet so we cannot really unmap underlying
-> > metadata in this state. Make VFS avoid doing unmapping of metadata when the
-> > buffer is not yet mapped.
-> 
-> Is this a seperate bugfix for delalloc filesystems? What is the error
-> case of attempting to unmap underlying metadata of non mapped buffer?
-> Won't translate to a serious bug will it?
-  If you do unmap_underlying_metadata on !mapped buffer, the kernel will
-oops because it will try to dereference bh->b_bdev which is NULL. Ext4 or
-XFS workaround this issue by setting b_bdev to the real device and b_blocknr
-to ~0 so unmap_underlying_metadata does not oops.  As I didn't want to do
-the same hack in ext3, I need this patch...
-  You're right it's not directly connected with the mkwrite problem and
-can go in separately. Given how late it is, I'd like to get patch number 2
-reviewed (generic mkwrite changes), so that it can go together with patch
-number 4 (ext4 fixes) in the current merge window. The rest is not that
-urgent since it's not oopsable and you can hit it only when running out
-of space (or hitting quota limit)...
 
-								Honza
+* Paul Mackerras <paulus@samba.org> wrote:
 
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > ---
-> >  fs/buffer.c |   12 +++++++-----
-> >  1 files changed, 7 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/fs/buffer.c b/fs/buffer.c
-> > index 80e2630..7eb1710 100644
-> > --- a/fs/buffer.c
-> > +++ b/fs/buffer.c
-> > @@ -1683,8 +1683,9 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
-> >  			if (buffer_new(bh)) {
-> >  				/* blockdev mappings never come here */
-> >  				clear_buffer_new(bh);
-> > -				unmap_underlying_metadata(bh->b_bdev,
-> > -							bh->b_blocknr);
-> > +				if (buffer_mapped(bh))
-> > +					unmap_underlying_metadata(bh->b_bdev,
-> > +						bh->b_blocknr);
-> >  			}
-> >  		}
-> >  		bh = bh->b_this_page;
-> > @@ -1869,8 +1870,9 @@ static int __block_prepare_write(struct inode *inode, struct page *page,
-> >  			if (err)
-> >  				break;
-> >  			if (buffer_new(bh)) {
-> > -				unmap_underlying_metadata(bh->b_bdev,
-> > -							bh->b_blocknr);
-> > +				if (buffer_mapped(bh))
-> > +					unmap_underlying_metadata(bh->b_bdev,
-> > +						bh->b_blocknr);
-> >  				if (PageUptodate(page)) {
-> >  					clear_buffer_new(bh);
-> >  					set_buffer_uptodate(bh);
-> > @@ -2683,7 +2685,7 @@ int nobh_write_begin(struct file *file, struct address_space *mapping,
-> >  			goto failed;
-> >  		if (!buffer_mapped(bh))
-> >  			is_mapped_to_disk = 0;
-> > -		if (buffer_new(bh))
-> > +		if (buffer_new(bh) && buffer_mapped(bh))
-> >  			unmap_underlying_metadata(bh->b_bdev, bh->b_blocknr);
-> >  		if (PageUptodate(page)) {
-> >  			set_buffer_uptodate(bh);
-> > -- 
-> > 1.6.0.2
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> +++ b/tools/perf/Makefile
+> @@ -157,9 +157,21 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+>  uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+>  uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+>  
+> +# If we're on a 64-bit kernel, use -m64
+> +ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+> +  M64 := -m64
+> +endif
+
+this is fine.
+
+> +# Don't use -Werror on ppc64; we get warnings due to using
+> +# %Lx formats on __u64, which is unsigned long.
+> +Werror := -Werror
+> +ifeq ($(uname_M),ppc64)
+> +  Werror :=
+> +endif
+
+hm, i dont really like this one - it just adds a special case on an 
+arch. Why is __u64 unsigned long on powerpc and not unsigned long 
+long? I thought the whole mess with u64 was fixed there recently and 
+powerpc too now uses include/asm-generic/int-ll64.h ?
+
+ah, it does this:
+
+/*
+ * This is here because we used to use l64 for 64bit powerpc
+ * and we don't want to impact user mode with our change to ll64
+ * in the kernel.
+ */
+#if defined(__powerpc64__) && !defined(__KERNEL__)
+# include <asm-generic/int-l64.h>
+#else
+# include <asm-generic/int-ll64.h>
+#endif
+
+That's crappy really.
+
+	Ingo
