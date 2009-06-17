@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762680AbZFQXWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762403AbZFQXYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762680AbZFQXWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 19:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZFQXWH
+	id S1762403AbZFQXYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 19:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758189AbZFQXYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 19:22:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34980 "EHLO hera.kernel.org"
+	Wed, 17 Jun 2009 19:24:10 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:46563 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754871AbZFQXWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 19:22:06 -0400
-Message-ID: <4A397A7D.5090608@kernel.org>
-Date: Wed, 17 Jun 2009 16:21:33 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1758056AbZFQXYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 19:24:09 -0400
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: use zalloc_cpumask_var for mce_dev_initialized -v2
-References: <4A396361.2000302@kernel.org>
-In-Reply-To: <4A396361.2000302@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19001.31402.236289.767105@cargo.ozlabs.ibm.com>
+Date: Thu, 18 Jun 2009 09:22:18 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org,
+       linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] perf_counter: powerpc: Enable use of software counters on 32-bit powerpc
+In-Reply-To: <A731338A-E954-46D9-8BF7-6E74C797209C@kernel.crashing.org>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+	<A731338A-E954-46D9-8BF7-6E74C797209C@kernel.crashing.org>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kumar Gala writes:
 
-need to get cleared cpu_mask about if mce device is initialized.
-esp when MAXSMP is used.
+> On Jun 17, 2009, at 6:50 AM, Paul Mackerras wrote:
 
-used zalloc_... instead
+> > +config PPC_HAVE_PMU_SUPPORT
+> > +       bool
+> 
+> what does this mean?
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: stable@kernel.org
----
- arch/x86/kernel/cpu/mcheck/mce.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+At the moment it means that arch/powerpc/kernel/perf_counters.c works
+for at least some processors in the selected processor family.
 
-Index: linux-2.6/arch/x86/kernel/cpu/mcheck/mce.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mcheck/mce.c
-+++ linux-2.6/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1969,7 +1969,7 @@ static __init int mce_init_device(void)
- 	if (!mce_available(&boot_cpu_data))
- 		return -EIO;
- 
--	alloc_cpumask_var(&mce_dev_initialized, GFP_KERNEL);
-+	zalloc_cpumask_var(&mce_dev_initialized, GFP_KERNEL);
- 
- 	err = mce_init_banks();
- 	if (err)
+> > +
+> > +config PPC_PERF_CTRS
+> > +       def_bool y
+> > +       depends on PERF_COUNTERS && PPC_HAVE_PMU_SUPPORT
+> > +       help
+> > +         This enables the powerpc-specific perf_counter back-end.
+> 
+> Can we distinguish between the two different architected perf counters  
+> programming models to start with.  Maybe something like:
+> 
+> PPC_BOOK3S_PERF_CTRS and PPC_BOOK3E_PERF_CTRS (or  
+> PPC_SERVER_PERF_CTRS / PPC_EMB_PERF_CTRS)
+
+We can do that once we have code to support the Freescale embedded PMU
+and we know how much of arch/powerpc/kernel/perf_counters.c is or
+isn't useful there.  We don't have to get to the final state in one
+patch.  I'd rather put this patch in as-is and then see a patch series
+that adds the Freescale embedded PMU support and makes whatever
+Kconfig changes are necessary later.
+
+Paul.
