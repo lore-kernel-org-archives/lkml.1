@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbZFQIUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764546AbZFQIUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756607AbZFQIUb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZFQIUQ
+	id S1764546AbZFQIUx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763077AbZFQIU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:20:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41782 "EHLO mx2.redhat.com"
+	Wed, 17 Jun 2009 04:20:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43442 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753916AbZFQIUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:20:15 -0400
-Date: Wed, 17 Jun 2009 10:13:54 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roland McGrath <roland@redhat.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] wait_task_zombie: do not use thread_group_cputime()
-Message-ID: <20090617101354.4100a910@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <20090615212651.GA22759@redhat.com>
-References: <20090615212651.GA22759@redhat.com>
-Organization: RedHat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755729AbZFQIUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 04:20:25 -0400
+Message-ID: <4A38A719.2030709@kernel.org>
+Date: Wed, 17 Jun 2009 17:19:37 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: cl@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
+Subject: Re: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_*
+ operations
+References: <20090605191819.376530498@gentwo.org> <20090605191850.441840884@gentwo.org>
+In-Reply-To: <20090605191850.441840884@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 08:19:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009 23:26:51 +0200
-Oleg Nesterov <oleg@redhat.com> wrote:
+Hello,
 
-> There is no reason for thread_group_cputime() in wait_task_zombie(),
-> there must be no other threads.
-> 
-> This call was previously needed to collect the per-cpu data which
-> we do not have any longer.
+cl@linux-foundation.org wrote:
+> +#ifndef this_cpu_write
+> +# define this_cpu_write(pcp, val)	__this_cpu_write((pcp), (val))
+> +#endif
 
-Is similar change for posix_cpu_timers_exit_group() correct and worthwhile ?
+Is this safe?  Write itself would always be atomic but this means that
+a percpu variable may change its value while a thread is holding the
+processor by disabling preemption.  ie,
 
- void posix_cpu_timers_exit_group(struct task_struct *tsk)
- {
--       struct task_cputime cputime;
-+       struct signal_struct *const sig = tsk->signal;
- 
--       thread_group_cputimer(tsk, &cputime);
-        cleanup_timers(tsk->signal->cpu_timers,
--                      cputime.utime, cputime.stime, cputime.sum_exec_runtime);
-+                      cputime_add(tsk->utime, sig->utime),
-+                      cputime_add(tsk->stime, sig->stime),
-+                      tsk->se.sum_exec_runtime + sig->sum_sched_runtime);
- }
+0. v contains A for cpu0
 
-Regards
-Stanislaw
+1. task0 on cpu0 does this_cpu_write(v, B), looks up cpu but gets
+   preemted out.
+
+2. task1 gets scheduled on cpu1, disables preemption and does
+   __this_cpu_read(v) and gets A and goes on with preemtion disabled.
+
+3. task0 gets scheduled on cpu1 and executes the assignment.
+
+4. task1 does __this_cpu_read(v) again and oops gets B this time.
+
+Please note that this can also happen between addition or other
+modifying ops and cause incorrect result.
+
+Also, these macros depricate percpu_OP() macros, right?
+
+Thanks.
+
+-- 
+tejun
