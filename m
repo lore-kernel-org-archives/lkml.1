@@ -1,75 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765009AbZFQL4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765517AbZFQL4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765009AbZFQL4e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 07:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbZFQL4V
+	id S1765517AbZFQL4t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 07:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757748AbZFQL4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 07:56:21 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:55612 "EHLO bilbo.ozlabs.org"
+	Wed, 17 Jun 2009 07:56:22 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:55600 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756202AbZFQL4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754302AbZFQL4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 17 Jun 2009 07:56:20 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <19000.55666.866148.559620@cargo.ozlabs.ibm.com>
-Date: Wed, 17 Jun 2009 21:54:26 +1000
+Message-ID: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Jun 2009 21:50:04 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit powerpc
-In-Reply-To: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+Subject: [PATCH 1/6] perf_counter: powerpc: Enable use of software
+   counters on 32-bit powerpc
 X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 64-bit powerpc, perf needs to be built as a 64-bit executable.
-This arranges to add the -m64 flag to CFLAGS if we are running on
-a 64-bit machine, indicated by the result of uname -m ending in "64".
-This means that we'll use -m64 on x86_64 machines as well.
+This enables the perf_counter subsystem on 32-bit powerpc.  Since we
+don't have any support for hardware counters on 32-bit powerpc yet,
+only software counters can be used.
 
-This also removes the -Werror flag when building on a 64-bit powerpc
-machine.  The userspace definition of u64 is unsigned long rather
-than unsigned long long, meaning that gcc warns every time a u64
-is printed with %Lx or %llx (though that does work properly).
-In future we may use PRI64 etc. for printing 64-bit quantities,
-which would eliminate these warnings.
+Besides selecting HAVE_PERF_COUNTERS for 32-bit powerpc as well as
+64-bit, the main thing this does is add an implementation of
+set_perf_counter_pending().  This needs to arrange for
+perf_counter_do_pending() to be called when interrupts are enabled.
+Rather than add code to local_irq_restore as 64-bit does, the 32-bit
+set_perf_counter_pending() generates an interrupt by setting the
+decrementer to 1 so that a decrementer interrupt will become pending
+in 1 or 2 timebase ticks (if a decrementer interrupt isn't already
+pending).  When interrupts are enabled, timer_interrupt() will be
+called, and some new code in there calls perf_counter_do_pending().
+We use a per-cpu array of flags to indicate whether we need to call
+perf_counter_do_pending() or not.
+
+This introduces a couple of new Kconfig symbols: PPC_HAVE_PMU_SUPPORT,
+which is selected by processor families for which we have hardware PMU
+support (currently only PPC64), and PPC_PERF_CTRS, which enables the
+powerpc-specific perf_counter back-end.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- tools/perf/Makefile |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+This depends on the generic atomic64_t patches, which are now in
+Linus' tree.  Ingo, if you're putting these in, please pull Linus'
+tree in first.
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index e8346f9..eddd61a 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -157,9 +157,21 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
- uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
- uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+ arch/powerpc/Kconfig                    |    1 +
+ arch/powerpc/include/asm/hw_irq.h       |    5 ++++-
+ arch/powerpc/include/asm/perf_counter.h |   10 ++++++++--
+ arch/powerpc/kernel/Makefile            |    6 +++---
+ arch/powerpc/kernel/time.c              |   25 +++++++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype  |   11 ++++++++++-
+ 6 files changed, 51 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9fb344d..bf6cedf 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -126,6 +126,7 @@ config PPC
+ 	select HAVE_OPROFILE
+ 	select HAVE_SYSCALL_WRAPPERS if PPC64
+ 	select GENERIC_ATOMIC64 if PPC32
++	select HAVE_PERF_COUNTERS
  
-+# If we're on a 64-bit kernel, use -m64
-+ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
-+  M64 := -m64
-+endif
-+
-+# Don't use -Werror on ppc64; we get warnings due to using
-+# %Lx formats on __u64, which is unsigned long.
-+Werror := -Werror
-+ifeq ($(uname_M),ppc64)
-+  Werror :=
-+endif
-+
- # CFLAGS and LDFLAGS are for the users to override from the command line.
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 10a642d..867ab8e 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -131,6 +131,8 @@ static inline int irqs_disabled_flags(unsigned long flags)
+ struct irq_chip;
  
--CFLAGS = -ggdb3 -Wall -Werror -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
-+CFLAGS = $(M64) -ggdb3 -Wall $(Werror) -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
- LDFLAGS = -lpthread -lrt -lelf -lm
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
+ #ifdef CONFIG_PERF_COUNTERS
++
++#ifdef CONFIG_PPC64
+ static inline unsigned long test_perf_counter_pending(void)
+ {
+ 	unsigned long x;
+@@ -154,8 +156,9 @@ static inline void clear_perf_counter_pending(void)
+ 		"r" (0),
+ 		"i" (offsetof(struct paca_struct, perf_counter_pending)));
+ }
++#endif /* CONFIG_PPC64 */
+ 
+-#else
++#else  /* CONFIG_PERF_COUNTERS */
+ 
+ static inline unsigned long test_perf_counter_pending(void)
+ {
+diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
+index b398a84..2c2d9f6 100644
+--- a/arch/powerpc/include/asm/perf_counter.h
++++ b/arch/powerpc/include/asm/perf_counter.h
+@@ -57,11 +57,17 @@ extern struct power_pmu *ppmu;
+ 
+ struct pt_regs;
+ extern unsigned long perf_misc_flags(struct pt_regs *regs);
+-#define perf_misc_flags(regs)	perf_misc_flags(regs)
+-
+ extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+ 
+ /*
++ * Only override the default definitions in include/linux/perf_counter.h
++ * if we have hardware PMU support.
++ */
++#ifdef CONFIG_PPC_PERF_CTRS
++#define perf_misc_flags(regs)	perf_misc_flags(regs)
++#endif
++
++/*
+  * The power_pmu.get_constraint function returns a 64-bit value and
+  * a 64-bit mask that express the constraints between this event and
+  * other events.
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 612b0c4..c5f93f0 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -95,9 +95,9 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ 
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+-obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o power4-pmu.o ppc970-pmu.o \
+-				   power5-pmu.o power5+-pmu.o power6-pmu.o \
+-				   power7-pmu.o
++obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_counter.o
++obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
++				   power5+-pmu.o power6-pmu.o power7-pmu.o
+ 
+ obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
+ 
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 15391c2..eae4511 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -53,6 +53,7 @@
+ #include <linux/posix-timers.h>
+ #include <linux/irq.h>
+ #include <linux/delay.h>
++#include <linux/perf_counter.h>
+ 
+ #include <asm/io.h>
+ #include <asm/processor.h>
+@@ -525,6 +526,26 @@ void __init iSeries_time_init_early(void)
+ }
+ #endif /* CONFIG_PPC_ISERIES */
+ 
++#if defined(CONFIG_PERF_COUNTERS) && defined(CONFIG_PPC32)
++DEFINE_PER_CPU(u8, perf_counter_pending);
++
++void set_perf_counter_pending(void)
++{
++	get_cpu_var(perf_counter_pending) = 1;
++	set_dec(1);
++	put_cpu_var(perf_counter_pending);
++}
++
++#define test_perf_counter_pending()	__get_cpu_var(perf_counter_pending)
++#define clear_perf_counter_pending()	__get_cpu_var(perf_counter_pending) = 0
++
++#else  /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
++
++#define test_perf_counter_pending()	0
++#define clear_perf_counter_pending()
++
++#endif /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
++
+ /*
+  * For iSeries shared processors, we have to let the hypervisor
+  * set the hardware decrementer.  We set a virtual decrementer
+@@ -551,6 +572,10 @@ void timer_interrupt(struct pt_regs * regs)
+ 	set_dec(DECREMENTER_MAX);
+ 
+ #ifdef CONFIG_PPC32
++	if (test_perf_counter_pending()) {
++		clear_perf_counter_pending();
++		perf_counter_do_pending();
++	}
+ 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+ 		do_IRQ(regs);
+ #endif
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index cca6b4f..dd9f3ec 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -1,7 +1,7 @@
+ config PPC64
+ 	bool "64-bit kernel"
+ 	default n
+-	select HAVE_PERF_COUNTERS
++	select PPC_HAVE_PMU_SUPPORT
+ 	help
+ 	  This option selects whether a 32-bit or a 64-bit kernel
+ 	  will be built.
+@@ -243,6 +243,15 @@ config VIRT_CPU_ACCOUNTING
+ 
+ 	  If in doubt, say Y here.
+ 
++config PPC_HAVE_PMU_SUPPORT
++       bool
++
++config PPC_PERF_CTRS
++       def_bool y
++       depends on PERF_COUNTERS && PPC_HAVE_PMU_SUPPORT
++       help
++         This enables the powerpc-specific perf_counter back-end.
++
+ config SMP
+ 	depends on PPC_STD_MMU || FSL_BOOKE
+ 	bool "Symmetric multi-processing support"
 -- 
 1.6.0.4
 
