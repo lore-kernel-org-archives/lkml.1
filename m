@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZFQQCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZFQQDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbZFQQCQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZFQQCA
+	id S1754725AbZFQQDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZFQQDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:02:00 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:11315
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752256AbZFQQCA (ORCPT
+	Wed, 17 Jun 2009 12:03:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47512 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753285AbZFQQDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:02:00 -0400
-Message-ID: <4A391373.3050301@panasas.com>
-Date: Wed, 17 Jun 2009 19:01:55 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 17 Jun 2009 12:03:13 -0400
+Date: Wed, 17 Jun 2009 09:01:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <npiggin@suse.de>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       lizf@cn.fujitsu.com, mingo@elte.hu, yinghai@kernel.org
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+In-Reply-To: <20090617074719.GB26664@wotan.suse.de>
+Message-ID: <alpine.LFD.2.01.0906170853580.16802@localhost.localdomain>
+References: <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com> <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop> <1245059859.23207.16.camel@penberg-laptop> <20090615102737.GA20461@wotan.suse.de> <1245062727.12400.23.camel@pasglop>
+ <20090615112355.GB6012@wotan.suse.de> <1245101498.12400.37.camel@pasglop> <20090616044601.GB28596@wotan.suse.de> <alpine.LFD.2.01.0906161141290.3282@localhost.localdomain> <20090617074719.GB26664@wotan.suse.de>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>,
-       open-osd mailing-list <osd-dev@open-osd.org>
-CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCHSET 0/6] exofs: few patches for Linux 2.6.31
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jun 2009 16:01:58.0813 (UTC) FILETIME=[F1BB6CD0:01C9EF64]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For review the few exofs patches I would like included for current merge window
-(Linux 2.6.31)
 
-The main effort on the exofs front was to make it pnfs-exportable. Which for now
-only lives in the pnfs tree. So there was not much left outside of that.
 
-Also for final review is the osdblk stacking block driver which is ready
-for submission but is missing a supporting user-mode tool, and some more
-testing love.
+On Wed, 17 Jun 2009, Nick Piggin wrote:
+> 
+> In some cases perhaps it is difficult. In others it should be
+> pretty natural. Lots of memory allocating paths pass gfp
+> a long way down the stack.
 
-The list of patches:
-  [PATCH 1/6] exofs: Fix bio leak in error handling path (sync read)
+I agree that some cases would be pretty natural. In fact, that's what we 
+started out doing. On the x86 side, we didn't have a lot of issues in 
+testing, and we fixed them up by using GFP_NOWAIT (see for example 
+cpupri_init() in kernel/sched_cpupri.c, or init_irq_default_affinity() in 
+kernel/irq/handle.c - both of which were fixed up in that phase).
 
-	A small and rare bug fix
+Those paths, in fact, in general already had "bootmem" flags etc. And x86 
+doesn't need to initialize a lot of state at bootup. 
 
-  [PATCH 2/6] exofs: Remove IBM copyrights
+Then Ben happened, and crazy PPC ioremap crap. 
 
-	As requested by Original author and IBM folks. The code does not belong
-	to IBM. (Never was)
+So the problem is exactly that it was perfectly natural to pass down a gfp 
+or other flag in _some_ cases. And then in a few cases it's much more 
+painful.
 
-  [PATCH 3/6] exofs: Avoid using file_fsync()
-
-	This one is left like this. Since other options suggested are not good
-	for exofs since it does not have a block-device and any of the BH stuff.
-
-  [PATCH 4/6] MAINTAINERS: Add osd maintained files (F:)
-
-	Use the new MAINTAINERS F: annotation for the OSD files
-
-  [PATCH 5/6] osdblk: a Linux block device for OSD objects
-  [PATCH 6/6] osdblk: Adjust queue limits to lower device's limits
-
-	This is the proposed osdblk driver by Jeff Garzik. It as all the Kernel
-	pre-requisites, but is missing a user-mode tool and more testing. So I'm
-	not sure it will make it into this Kernel. But for review.
-
-Thanks
-Boaz
+		Linus
