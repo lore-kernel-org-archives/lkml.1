@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764720AbZFQIXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZFQI3C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764720AbZFQIXN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZFQIW7
+	id S1757924AbZFQI3C (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:29:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZFQI2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:22:59 -0400
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:50294 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753422AbZFQIW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:22:57 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/69+9ihjT0nmT3p7UrWiKQ
-Date: Wed, 17 Jun 2009 01:22:56 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Alan Cox <alan@linux.intel.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH resend v3] UART regs: add OMAP wakeup-enable register
-Message-ID: <20090617082256.GE6605@atomide.com>
-References: <1244828486-13666-1-git-send-email-khilman@ti.deeprootsystems.com>
+	Wed, 17 Jun 2009 04:28:48 -0400
+Received: from mail.hevs.ch ([153.109.23.10]:55582 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754430AbZFQI2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 04:28:47 -0400
+X-Greylist: delayed 1180 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Jun 2009 04:28:47 EDT
+From: Marc Pignat <marc.pignat@hevs.ch>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 5/6] atmel-mci: Power control option for each MMC Slot
+Date: Wed, 17 Jun 2009 10:08:57 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.26-2-686; KDE/4.2.2; i686; ; )
+Cc: Rob Emanuele <rob@emanuele.us>, nicolas.ferre@atmel.com,
+       haavard.skinnemoen@atmel.com, linux-kernel@vger.kernel.org
+References: <1245200079-6323-1-git-send-email-rob@emanuele.us> <1245200079-6323-5-git-send-email-rob@emanuele.us>
+In-Reply-To: <1245200079-6323-5-git-send-email-rob@emanuele.us>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1244828486-13666-1-git-send-email-khilman@ti.deeprootsystems.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906171008.58382.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kevin Hilman <khilman@deeprootsystems.com> [090612 10:42]:
-> From: Kevin Hilman <khilman@deeprootsystems.com>
-> 
-> Add the wakeup enable register to the list of OMAP-specific UART
-> registers.
+Hi!
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+On Wednesday 17 June 2009 02:54:38 Rob Emanuele wrote:
+> Add support to the atmel-mci driver for a VCC pin in order to conserve power by removing power from an MMC Slot.
+...
 
-Ping.. Alan, could you please queue this too?
-
-Regards,
-
-Tony
-
-> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-> ---
->  include/linux/serial_reg.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
-> index 96c0d93..850db2e 100644
-> --- a/include/linux/serial_reg.h
-> +++ b/include/linux/serial_reg.h
-> @@ -323,6 +323,7 @@
->  #define UART_OMAP_MVER		0x14	/* Module version register */
->  #define UART_OMAP_SYSC		0x15	/* System configuration register */
->  #define UART_OMAP_SYSS		0x16	/* System status register */
-> +#define UART_OMAP_WER		0x17	/* Wake-up enable register */
+> @@ -1544,6 +1544,13 @@ static int __init atmci_init_slot(struct atmel_mci *host,
+>  		}
+>  	}
 >  
->  #endif /* _LINUX_SERIAL_REG_H */
->  
-> -- 
-> 1.6.2.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> +	if (gpio_is_valid(slot->vcc_pin)) {
+> +		if (gpio_request(slot->vcc_pin, "mmc_pow")) {
+
+gpio_request will check for "gpio_is_valid" so this is not necessary.
+
+> +			dev_dbg(&mmc->class_dev, "no power pin available\n");
+> +			slot->vcc_pin = -EBUSY;
+> +		}
+> +	}
+> +
+...
+
+Best regards
+
+Marc
