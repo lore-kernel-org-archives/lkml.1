@@ -1,76 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZFQQlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZFQQln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbZFQQlA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZFQQkw
+	id S1757482AbZFQQln (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbZFQQle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:40:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52066 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753572AbZFQQkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:40:51 -0400
-Date: Wed, 17 Jun 2009 16:39:34 GMT
-From: tip-bot for Christian Engelmayer 
-	<christian.engelmayer@frequentis.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, christian.engelmayer@frequentis.com,
-       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, christian.engelmayer@frequentis.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090616103512.0c846e51@frequentis.com>
-References: <20090616103512.0c846e51@frequentis.com>
-Subject: [tip:sched/urgent] sched: Fix out of scope variable access in sched_slice()
-Message-ID: <tip-3104bf03a923c72043a9c5009d9cd56724304916@git.kernel.org>
-Git-Commit-ID: 3104bf03a923c72043a9c5009d9cd56724304916
-X-Mailer: tip-git-log-daemon
+	Wed, 17 Jun 2009 12:41:34 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:38504 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754436AbZFQQld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:41:33 -0400
+Message-ID: <4A391CB4.8090405@novell.com>
+Date: Wed, 17 Jun 2009 12:41:24 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Jun 2009 16:39:39 +0000 (UTC)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based	notifier
+ interface
+References: <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com> <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <20090616175300.GA24514@redhat.com> <4A37DFE2.2020506@novell.com> <20090617144540.GB3089@redhat.com> <4A39056E.1060409@novell.com> <20090617162521.GE3089@redhat.com>
+In-Reply-To: <20090617162521.GE3089@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBF33B196201A38A51CD4336B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3104bf03a923c72043a9c5009d9cd56724304916
-Gitweb:     http://git.kernel.org/tip/3104bf03a923c72043a9c5009d9cd56724304916
-Author:     Christian Engelmayer <christian.engelmayer@frequentis.com>
-AuthorDate: Tue, 16 Jun 2009 10:35:12 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 17 Jun 2009 18:37:54 +0200
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBF33B196201A38A51CD4336B
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-sched: Fix out of scope variable access in sched_slice()
+Michael S. Tsirkin wrote:
+> On Wed, Jun 17, 2009 at 11:02:06AM -0400, Gregory Haskins wrote:
+>  =20
+>> Michael S. Tsirkin wrote:
+>>    =20
+>>> On Tue, Jun 16, 2009 at 02:09:38PM -0400, Gregory Haskins wrote:
+>>>  =20
+>>>      =20
+>>>>> What do you mean by copy_to_user(other->mm) here?  If you are going=
+ to switch
+>>>>> to another mm, then I think current->mm must be valid (I think it's=
+ not enough
+>>>>> that you can sleep). So preemptible() might not be enough.
+>>>>>  =20
+>>>>>      =20
+>>>>>          =20
+>>>> I dont currently use switch_mm, if that is what you mean.  I save th=
+e
+>>>> task_struct into the appropriate context so current->mm doesn't matt=
+er
+>>>> to me.  I never use it.  All I need (afaik) is to acquire the proper=
 
-Access to local variable lw is aliased by usage of pointer load.
-Access to pointer load in calc_delta_mine() happens when lw is
-already out of scope.
+>>>> mutex first.  I am not an MM expert, so perhaps I have this wrong bu=
+t it
+>>>> does appear to work properly even from kthread context.
+>>>>
+>>>> -Greg
+>>>>
+>>>>
+>>>>    =20
+>>>>        =20
+>>> I think I saw get_user_pages + memcpy in your patch. Yes, that works
+>>> without switching contexts but it's slower than copy to user if you a=
+re
+>>> in the right context, and AFAIK it's slower than get_user_pages_fast.=
 
-[ Reported by static code analysis. ]
+>>>
+>>>  =20
+>>>      =20
+>> Yeah, understood.  It will definitely be interesting to try that
+>> optimization with switch_mm that you suggested.
+>>    =20
+>
+> BTW, I'm kind of confused - in your patch you do get_task_struct: does =
+this
+> guarantee that mm is not going aways?
+>  =20
 
-Signed-off-by: Christian Engelmayer <christian.engelmayer@frequentis.com>
-LKML-Reference: <20090616103512.0c846e51@frequentis.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Well, again, I am not an expert on MM, but I would think so.  If p holds
+a reference to p->mm (which I would think it would have to), and we hold
+a reference to p, p->mm should be indirectly stable coincident with the
+lifetime of our p reference.  OTOH, I have not actually looked at
+whether p actually takes a p->mm reference or not via inspection, so
+this is just an educated guess at this point. ;)
+
+I guess if this is broken, the solution is simple:  Modify the code to
+take an mm reference as well.
+
+-Greg
 
 
----
- kernel/sched_fair.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+--------------enigBF33B196201A38A51CD4336B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 5f9650e..ba7fd6e 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -430,12 +430,13 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 
- 	for_each_sched_entity(se) {
- 		struct load_weight *load;
-+		struct load_weight lw;
- 
- 		cfs_rq = cfs_rq_of(se);
- 		load = &cfs_rq->load;
- 
- 		if (unlikely(!se->on_rq)) {
--			struct load_weight lw = cfs_rq->load;
-+			lw = cfs_rq->load;
- 
- 			update_load_add(&lw, se->load.weight);
- 			load = &lw;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko5HLQACgkQlOSOBdgZUxlYlACeMTxkttrV4Y90D8yutsr7Dbza
+dAMAnj1rj9NLdbkVSB/wYYQeldTxkT3N
+=+UiO
+-----END PGP SIGNATURE-----
+
+--------------enigBF33B196201A38A51CD4336B--
