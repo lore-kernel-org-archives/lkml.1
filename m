@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZFQGcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZFQGf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753623AbZFQGcb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 02:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZFQGcY
+	id S1756501AbZFQGf7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 02:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZFQGfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 02:32:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56676 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752640AbZFQGcX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 02:32:23 -0400
-Date: Tue, 16 Jun 2009 23:31:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Char: tty, fix tty_port_block_til_ready waiting
-Message-Id: <20090616233152.41e43277.akpm@linux-foundation.org>
-In-Reply-To: <1245179580-25402-1-git-send-email-jirislaby@gmail.com>
-References: <1245179580-25402-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 17 Jun 2009 02:35:51 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37372 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752249AbZFQGfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 02:35:50 -0400
+Date: Wed, 17 Jun 2009 16:35:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: mips tree build failure
+Message-Id: <20090617163549.84cfc4b6.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Jun_2009_16_35_49_+1000_68gPaN.muPzkfNVh"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Jun 2009 21:13:00 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+--Signature=_Wed__17_Jun_2009_16_35_49_+1000_68gPaN.muPzkfNVh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Use DEFINE_WAIT instead of DECLARE_WAITQUEUE, because we use
-> prepare/finish_wait since commit
-> 3e3b5c087799e536871c8261b05bc28e4783c8da
-> (tty: use prepare/finish_wait)
-> 
-> Otherwise we would oops in finish_wait.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> ---
->  drivers/char/tty_port.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
-> index 62dadfc..a8ed648 100644
-> --- a/drivers/char/tty_port.c
-> +++ b/drivers/char/tty_port.c
-> @@ -193,7 +193,7 @@ int tty_port_block_til_ready(struct tty_port *port,
->  {
->  	int do_clocal = 0, retval;
->  	unsigned long flags;
-> -	DECLARE_WAITQUEUE(wait, current);
-> +	DEFINE_WAIT(wait, current);
+Hi Ralf,
 
-That won't compile.  DEFINE_WAIT(wait) will though.
+Yesterday's linux-next build (mips defconfig) failed like this:
+
+arch/mips/lib/delay.c:54: error: 'us' undeclared (first use in this functio=
+n)
+
+Caused by commit 5636919b5c909fee54a6ef5226475ecae012ad02 ("MIPS: Outline
+udelay and fix a few issues") which is now in Linus' tree (sorry I didn't
+report it earlier).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__17_Jun_2009_16_35_49_+1000_68gPaN.muPzkfNVh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko4jsUACgkQjjKRsyhoI8wNHACdEgadS669yowT8ZwI1cUUKuiP
+f2EAn17I6yYS4MC/1MD5jDfu2yaxSENn
+=vT20
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Jun_2009_16_35_49_+1000_68gPaN.muPzkfNVh--
