@@ -1,89 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbZFQMF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbZFQMFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933536AbZFQMF3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 08:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933378AbZFQMFI
+	id S933578AbZFQMFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 08:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbZFQMFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 08:05:08 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:6291 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757470AbZFQMFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 08:05:06 -0400
-Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
-       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
-       "'Brice Goglin'" <Brice.Goglin@inria.fr>
-In-Reply-To: <20090617102245.2aec2e6e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
-	 <87zldjn597.fsf@basil.nowhere.org>
-	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
-	 <20090612103251.GJ25568@one.firstfloor.org>
-	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
-	 <1245119977.6724.40.camel@lts-notebook>
-	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
-	 <1245164395.15138.40.camel@lts-notebook>
-	 <20090617102245.2aec2e6e.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Wed, 17 Jun 2009 08:02:28 -0400
-Message-Id: <1245240148.31940.6.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Jun 2009 08:05:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54244 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933487AbZFQMFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 08:05:21 -0400
+Date: Wed, 17 Jun 2009 14:05:20 +0200
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 07/11] vfs: Unmap underlying metadata of new data
+	buffers only when buffer is mapped
+Message-ID: <20090617120520.GD2612@duck.suse.cz>
+References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-8-git-send-email-jack@suse.cz> <20090617103543.GB29931@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617103543.GB29931@wotan.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-17 at 10:22 +0900, KAMEZAWA Hiroyuki wrote:
-> On Tue, 16 Jun 2009 10:59:55 -0400
-> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+On Wed 17-06-09 12:35:43, Nick Piggin wrote:
+> On Mon, Jun 15, 2009 at 07:59:54PM +0200, Jan Kara wrote:
+> > When we do delayed allocation of some buffer, we want to signal to VFS that
+> > the buffer is new (set buffer_new) so that it properly zeros out everything.
+> > But we don't have the buffer mapped yet so we cannot really unmap underlying
+> > metadata in this state. Make VFS avoid doing unmapping of metadata when the
+> > buffer is not yet mapped.
 > 
-> > On Tue, 2009-06-16 at 15:58 +0200, Stefan Lankes wrote:
-> > > > 
-> > > > I would like to get these patches working with latest mmotm to test on
-> > > > some newer hardware where I think they will help more.  And I would
-> > > > welcome your support.  However, I think we'll need to get Balbir and
-> > > > Kamezawa-san involved to sort out the interaction with memory control
-> > > > group.
-> > > > 
-> > > > I can send you the more recent rebase that I've done.  This is getting
-> > > > pretty old now:  2.6.28-rc4-mmotm-081110-081117.  I'll try to rebase to
-> > > > the most recent mmotm [that boots on my platforms], at least so that we
-> > > > can build and boot with migrate-on-fault disabled, within the next
-> > > > couple of weeks.
-> > > > 
-> > > 
-> > > Sounds good! Send me your last version and I will try to reconstruct your
-> > > problems. Afterwards, we could try to solve these problems.
-> > > 
-> > 
-> > Stefan:
-> > 
-> > I've placed the last rebased version in :
-> > 
-> > http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.28-rc4-mmotm-081110/
-> > 
-> > As I recall, this version DOES bug out because of reference count
-> > problems due to interaction with the memory controller.
-> > 
-> please report in precise if memcg has bug.
-> An example of test is welcome.
+> Is this a seperate bugfix for delalloc filesystems? What is the error
+> case of attempting to unmap underlying metadata of non mapped buffer?
+> Won't translate to a serious bug will it?
+  If you do unmap_underlying_metadata on !mapped buffer, the kernel will
+oops because it will try to dereference bh->b_bdev which is NULL. Ext4 or
+XFS workaround this issue by setting b_bdev to the real device and b_blocknr
+to ~0 so unmap_underlying_metadata does not oops.  As I didn't want to do
+the same hack in ext3, I need this patch...
+  You're right it's not directly connected with the mkwrite problem and
+can go in separately. Given how late it is, I'd like to get patch number 2
+reviewed (generic mkwrite changes), so that it can go together with patch
+number 4 (ext4 fixes) in the current merge window. The rest is not that
+urgent since it's not oopsable and you can hit it only when running out
+of space (or hitting quota limit)...
 
-Not an memcg bug.  Just an implementation choice [2 phase migration
-handling:  start/end calls] that is problematic for "lazy" page
-migration--i.e., "migration-on-touch" in the fault path.  I'd be
-interested in your opinion on the feasibility of transferring the
-"charge" against the page--including the "try charge" from
-do_swap_page()--in migrate_page_copy() along with other page state.
+								Honza
 
-I'll try to rebase my lazy migration series to recent mmotm [as time
-permits] in the "near future" and gather more info on the problem I was
-having.
-
-Regards,
-Lee
-
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > ---
+> >  fs/buffer.c |   12 +++++++-----
+> >  1 files changed, 7 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/fs/buffer.c b/fs/buffer.c
+> > index 80e2630..7eb1710 100644
+> > --- a/fs/buffer.c
+> > +++ b/fs/buffer.c
+> > @@ -1683,8 +1683,9 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+> >  			if (buffer_new(bh)) {
+> >  				/* blockdev mappings never come here */
+> >  				clear_buffer_new(bh);
+> > -				unmap_underlying_metadata(bh->b_bdev,
+> > -							bh->b_blocknr);
+> > +				if (buffer_mapped(bh))
+> > +					unmap_underlying_metadata(bh->b_bdev,
+> > +						bh->b_blocknr);
+> >  			}
+> >  		}
+> >  		bh = bh->b_this_page;
+> > @@ -1869,8 +1870,9 @@ static int __block_prepare_write(struct inode *inode, struct page *page,
+> >  			if (err)
+> >  				break;
+> >  			if (buffer_new(bh)) {
+> > -				unmap_underlying_metadata(bh->b_bdev,
+> > -							bh->b_blocknr);
+> > +				if (buffer_mapped(bh))
+> > +					unmap_underlying_metadata(bh->b_bdev,
+> > +						bh->b_blocknr);
+> >  				if (PageUptodate(page)) {
+> >  					clear_buffer_new(bh);
+> >  					set_buffer_uptodate(bh);
+> > @@ -2683,7 +2685,7 @@ int nobh_write_begin(struct file *file, struct address_space *mapping,
+> >  			goto failed;
+> >  		if (!buffer_mapped(bh))
+> >  			is_mapped_to_disk = 0;
+> > -		if (buffer_new(bh))
+> > +		if (buffer_new(bh) && buffer_mapped(bh))
+> >  			unmap_underlying_metadata(bh->b_bdev, bh->b_blocknr);
+> >  		if (PageUptodate(page)) {
+> >  			set_buffer_uptodate(bh);
+> > -- 
+> > 1.6.0.2
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
