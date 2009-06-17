@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZFQQLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbZFQQLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754467AbZFQQLJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZFQQK4
+	id S1757454AbZFQQLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbZFQQLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:10:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42574 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752656AbZFQQKz (ORCPT
+	Wed, 17 Jun 2009 12:11:34 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:42243 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752747AbZFQQLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:10:55 -0400
-Date: Wed, 17 Jun 2009 09:09:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andreas Dilger <adilger@sun.com>
-cc: David Howells <dhowells@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-afs@lists.infradead.org
-Subject: Re: [PATCH 00/17] [RFC] AFS: Implement OpenAFS pioctls(version)s
-In-Reply-To: <20090617075502.GB13073@webber.adilger.int>
-Message-ID: <alpine.LFD.2.01.0906170901480.16802@localhost.localdomain>
-References: <20090617001157.065ee652@lxorguk.ukuu.org.uk> <20090616203845.4526.60013.stgit@warthog.procyon.org.uk> <10437.1245193192@redhat.com> <11650.1245198358@redhat.com> <20090617075502.GB13073@webber.adilger.int>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 17 Jun 2009 12:11:33 -0400
+Subject: Re: [PATCH]x86-tsc.c : fix compile warning
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Figo.zhang" <figo1802@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       Sumit Panchasara <sumit.panchasara@einfochips.com>,
+       "'Sachin P Sant'" <sachinp@linux.vnet.ibm.com>,
+       "'H. Peter Anvin'" <hpa@zytor.com>, "'Frans Pop'" <elendil@planet.nl>,
+       "'Andi Kleen'" <andi@firstfloor.org>,
+       "'Thomas Gleixner'" <tglx@linutronix.de>,
+       "'Balbir Singh'" <balbir@linux.vnet.ibm.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+In-Reply-To: <20090617152802.GB6042@elte.hu>
+References: <1245247057.3312.2.camel@myhost>
+	 <bb33bcf20906170700i4a4ea802yf1da08e9870d6221@mail.gmail.com>
+	 <1245248241.4870.12.camel@subratamodak.linux.ibm.com>
+	 <20090617152802.GB6042@elte.hu>
+Content-Type: text/plain; charset=utf-8
+Organization: IBM
+Date: Wed, 17 Jun 2009 21:41:02 +0530
+Message-Id: <1245255064.6255.0.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 17 Jun 2009, Andreas Dilger wrote:
+On Wed, 2009-06-17 at 17:28 +0200, Ingo Molnar wrote:
+> * Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
 > 
-> What about opening the mountpoint (which HAS to be available) and then
-> calling an ioctl() on that?
+> > > fix compile warning:
+> > > arch/x86/kernel/tsc.c: In function ‘time_cpufreq_notifier’:
+> > > arch/x86/kernel/tsc.c:635: warning: ‘dummy’ may be used uninitialized in
+> > > this function
+> > > 
+> > > Signed-off-by: Figo.zhang <figo1802@gmail.com>
+> > 
+> > Hello Figo,
+> > 
+> > Please refer to the following links on discussion on this issue earlier:
+> > http://lkml.org/lkml/2009/5/19/312
+> > http://lkml.org/lkml/2009/5/19/301
+> > http://lkml.org/lkml/2009/5/20/23
+> > 
+> > I tried to fix it in some other way.
+> 
+> Ah, and you fixed in what a superior way: you improved the code in 
+> the process :-) This is how warnings should be fixed really.
 
-It's very hard to "open the mountpoint" in user space. How would you even 
-do it? Remember: we're not living in the 1980's any more, and disco is 
-dead. ABBA may have made a comeback, but static mountpoints are long gone, 
-and won't be coming back.
+Thanks Ingo. I would do whenever i find again one.
 
-These days, you can mount individual files, you can have per-process 
-mounts, and automounters have been a fact for a long time. 
+> 
+> Applied.
+> 
+> We apparently missed it when you sent it in May - generally feel 
+> free to re-send patches if you dont see a commit notification within 
+> a few days.
 
-So I _agree_ that pioctl's are problematic, but please don't argue against 
-them using _stupid_ arguments. And "open the mountpoint" really is a 
-stupid argument. It not only isn't possible to do in user space, but you 
-may well want to do operations on a particular path, not just the mount.
+My mistake. I did not keep track.
 
-So you'd need to open the file itself. Which might be a symlink or a 
-device node, depending on the exact semantics of pioctl.
+Regards--
+Subrata
 
-We've traditionally had that magic "open with flag=3" to do a magic open 
-of device files without waiting, and we have O_NOFOLLOW to open symlinks 
-without following them (sadly, it just errors out, rather than opening the 
-symlink, but that's another detail). 
+> 
+> Thanks,
+> 
+> 	Ingo
 
-So I think it should be solvable some way, but not by trying to find the 
-mount point.
-
-			Linus
