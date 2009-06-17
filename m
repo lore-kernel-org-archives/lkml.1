@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbZFQUNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760714AbZFQUQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbZFQUNX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 16:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZFQUNP
+	id S1760714AbZFQUQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 16:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZFQUQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 16:13:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39289 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754998AbZFQUNO (ORCPT
+	Wed, 17 Jun 2009 16:16:11 -0400
+Received: from colo3.heeltoe.com ([207.210.106.184]:47721 "EHLO
+	colo3.heeltoe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752742AbZFQUQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 16:13:14 -0400
-Date: Wed, 17 Jun 2009 13:12:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Patterson <andrew.patterson@hp.com>
-cc: Matthew Wilcox <matthew@wil.cx>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
- trees
-In-Reply-To: <1245269316.8234.270.camel@bluto.andrew>
-Message-ID: <alpine.LFD.2.01.0906171309500.16802@localhost.localdomain>
-References: <20090616220419.14021.84524.stgit@bob.kio>  <4A38B3B4.1020304@jp.fujitsu.com> <20090617134311.GR19977@parisc-linux.org>  <alpine.LFD.2.01.0906170922380.16802@localhost.localdomain>  <1245260533.8234.241.camel@bluto.andrew> 
- <alpine.LFD.2.01.0906171047050.16802@localhost.localdomain> <1245269316.8234.270.camel@bluto.andrew>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 17 Jun 2009 16:16:10 -0400
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] forced recalibration for the OLPC hgpk touchpad 
+From: Paul Fox <pgf@laptop.org>
+cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dsaxena@laptop.org, Andres Salomon <dilinger@collabora.co.uk>
+In-reply-to: <20090604001740.490f747e@mycelium.queued.net> 
+References: <3026.1243972079@foxharp.boston.ma.us> <200906030804.57340.dmitry.torokhov@gmail.com> <19417.1244087913@foxharp.boston.ma.us> <20090604001740.490f747e@mycelium.queued.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <31135.1245269771.1@foxharp.boston.ma.us>
+Date: Wed, 17 Jun 2009 16:16:11 -0400
+Message-ID: <31138.1245269771@foxharp.boston.ma.us>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hi dmitry --
 
+have you had a chance to think any more about this?  i'm open to
+suggestions on implementation detail, but i think that a full
+reset of the device won't really work, because of the time it
+adds to the recalibration.
 
-On Wed, 17 Jun 2009, Andrew Patterson wrote:
-> > 
-> > This is why I'd really like to see the output of my test-patch. It would 
-> > show exactly _where_ that resource is inserted, and the whole call-chain.
-> > 
-> > I'm appending a version that only does it for resources that have names 
-> > starting with "PCI Bus", so it should be less noisy. But again, it's 
-> > totally untested.
-> > 
-> 
-> Here you go (I can provide the full boot log if needed). Note, there is
-> nothing for c3 here:
+paul
 
-Ok, so that means it got inserted into the resource tree some other way 
-entirely. Or maybe the name got changed after-the-fact. Both of which 
-imply that something is really really wrong.
+andres wrote:
+ > On Wed, 03 Jun 2009 23:58:33 -0400
+ > Paul Fox <pgf@laptop.org> wrote:
+ > 
+ > > dmitry wrote:
+ > >  > Hi Paul,
+ > >  > 
+ > >  > On Tuesday 02 June 2009 12:47:59 pgf@laptop.org wrote:
+ > >  > > The OLPC XO laptop incorporates a combination touchpad/tablet
+ > >  > > device which unfortunately requires frequent recalibration.  The
+ > >  > > driver will force this automatically when various suspicious
+ > >  > > behaviors are observed, and the user can recalibrate manually
+ > >  > > (with a special keyboard sequence).  There's currently no way,
+ > >  > > however, for an external program to cause recalibration.
+ > >  > >
+ > >  > > This patch creates a new node in /sys which, when written with
+ > >  > > '1', will force a touchpad recalibration.  No other writes (or
+ > >  > > reads) of this node are supported.
+ > >  > >
+ > >  > 
+ > >  > 
+ > >  > Instead of creating a new sysfs attribute maybe we should make
+ > >  > the touchpad recalibrate upon resume (reconnect)? Userspace can
+ > >  > already request reconnect via sysfs.
+ > > 
+ > > dmitry -- thanks for the suggestion.
+ > > 
+ > > i took a look, and tried it.  the problem is that doing a full
+ > > reset of the touchpad takes quite a long time -- 1.1 or 1.2
+ > > seconds.  recalibration deprives the user of their touchpad for
+ > > long enough as it is -- i don't think we can afford that time.
+ > > (remember that this is a workaround for bad hardware -- the XO
+ > > no longer uses this touchpad at least partly due to this very
+ > > issue, but there are enough in use that we're still trying to
+ > > improve things.)
+ > > 
+ > 
+ > I do like the idea of having a sysfs trigger for recalibrations.  We've
+ > never been successful in having the kernel driver handle recalibrations
+ > seamlessly.  Perhaps touchpad hardware screwups would be easier to
+ > detect in userspace, given a daemon that can keep a history of the last
+ > N touchpad coordinates?
 
-The ones your trace _does_ show are the ones that got inserted correctly 
-and aren't buggy. Can anybody see how that buggy resource got inserted?
-
-		Linus
+=---------------------
+ paul fox, pgf@laptop.org
