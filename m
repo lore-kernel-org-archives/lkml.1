@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZFQHmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759223AbZFQHou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZFQHmL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 03:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZFQHl6
+	id S1759223AbZFQHou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 03:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZFQHom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 03:41:58 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:55129 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbZFQHl6 (ORCPT
+	Wed, 17 Jun 2009 03:44:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34469 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbZFQHol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 03:41:58 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Greg Ungerer <gerg@snapgear.com>
-Subject: Re: [PATCH] m68k: merge the non-mmu and mmu versions of hardirq.h
-Date: Wed, 17 Jun 2009 09:41:43 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, gerg@uclinux.org, linux-m68k@vger.kernel.org
-References: <200906170710.n5H7AxxV009015@localhost.localdomain>
-In-Reply-To: <200906170710.n5H7AxxV009015@localhost.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Wed, 17 Jun 2009 03:44:41 -0400
+Subject: Re: [tip:perfcounters/core] x86: Add NMI types for kmap_atomic
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       efault@gmx.de, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090616081348.GC16229@elte.hu>
+References: <1245080486.6800.561.camel@laptop>
+	 <1245089065.13761.19316.camel@twins> <20090615181555.GA11248@elte.hu>
+	 <1245089943.13761.19334.camel@twins> <20090615182549.GD11248@elte.hu>
+	 <1245090608.13761.19349.camel@twins> <20090615184217.GG11248@elte.hu>
+	 <1245091674.6741.180.camel@laptop> <20090615185259.GK11248@elte.hu>
+	 <1245092433.6741.201.camel@laptop>  <20090616081348.GC16229@elte.hu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906170941.44383.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18yy5IyAqqzUt81FuGYJb13WyZMJZ3cU7xe9kR
- zuXZ++QP8kut8dI8+gduKttwFmC4KZ8ZrEN6Ids4AfqvIfHfIu
- WUKZWaqQIiYpswBhDHuVQ==
+Date: Wed, 17 Jun 2009 09:44:35 +0200
+Message-Id: <1245224675.13761.21598.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 June 2009, Greg Ungerer wrote:
-> [PATCH] m68k: merge the non-mmu and mmu versions of hardirq.h
-> 
-> There is nothing different required between the non-mmu and mmu
-> versions of hardirq.h, so merge them back into a single file.
-> 
-> Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+On Tue, 2009-06-16 at 10:13 +0200, Ingo Molnar wrote:
 
-AFAICT this file is also the same in the new asm-generic version, so you
-could fall back to that directly.
+> > By removing the types it becomes very difficult to verify the max 
+> > depth. I really don't like removing them.
+> 
+> The fact that it implies an atomic section pretty much limits its 
+> depth in practice, doesnt it?
+> 
+> All we need to track in the debug code is 
+> max-{syscall,softirq,hardirq,nmi}. The sum of these 4 counts must be 
+> smaller than the max - even if (as you are right to point out) we 
+> dont hit that magic combo that truly maximizes the depth.
 
-	Arnd <><
+Right, so the thing I'd worry about is someone adding kmap_atomic() to
+an interrupt context that didn't have interrupts disabled and then
+managing to nest that a few times.
+
+Suppose you put it in some IO completion handler, and someone has 4 IO
+controllers installed and all 4 IO interrupts come in at the 'same'
+time.
+
+With types you could warn on similarly to what we do today, but with the
+simple push/pop that might be a lot harder.
+
+Anyway, with the whole cr2 fiddling bit being discussed this seems to
+become redundant.
+
+> And note that in practice many of the current types are exclusive to 
+> each other - so using the stack would _reduce_ the amount of 
+> kmap-atomic space we need.
+
+Yeah, I did realize that.
