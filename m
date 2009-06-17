@@ -1,120 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZFQBqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZFQCA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZFQBqG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 21:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZFQBp4
+	id S1759493AbZFQCA6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 22:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbZFQCAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 21:45:56 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36653 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbZFQBpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 21:45:55 -0400
-Subject: [PATCH] driver/core: Fix various warnings due to dev_set_name()
- usage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 17 Jun 2009 11:45:50 +1000
-Message-Id: <1245203150.21602.10.camel@pasglop>
+	Tue, 16 Jun 2009 22:00:50 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:40296 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752261AbZFQCAt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 22:00:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=BOsJhuuSEFlecbyjCFsBe+JBilwXk8dAxBBkBdluvkhRV6B7qO222vUF5nGbMu7WcM
+         w61X8bTY5j6EDXe0U/Nwv8BXo93tFseDJXX5oINOatjNcppsgmYtlCaUNa1oR0ezQNIF
+         Lx4UxERjHYUG9T/RtAY5Qb2qZmjDOtZxQ1+Eg=
+Date: Wed, 17 Jun 2009 11:00:34 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       Rik van Riel <riel@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] mm: remove task assumptions from swap token
+Message-Id: <20090617110034.db01479b.minchan.kim@barrios-desktop>
+In-Reply-To: <1245189037-22961-2-git-send-email-hannes@cmpxchg.org>
+References: <Pine.LNX.4.64.0906162152250.12770@sister.anvils>
+	<1245189037-22961-2-git-send-email-hannes@cmpxchg.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gcc is too smart, we get:
+Hi, Hannes. 
 
-drivers/base/core.c: In function ‘device_add’:
-drivers/base/core.c:877: warning: format not a string literal and no format arguments
-drivers/base/core.c: In function ‘__root_device_register’:
-drivers/base/core.c:1274: warning: format not a string literal and no format arguments
+How about adding Hugh's comment ?
 
-With 4.3.3 and later. This fixes a bunch of them in drivers/base
+I think that is more straightforward and easy.
+And it explained even real example like KSM. 
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+So I suggest following as.. 
 
-There's still more of these elsewhere in the tree and I may send
-patches to fix them some day but for now, this takes care of the
-driver core.
+==
+grab_swap_token() should not make any assumptions about the running
+process as the swap token is an attribute of the address space and the
+faulting mm is not necessarily current->mm.
 
-Index: linux-work/drivers/base/core.c
-===================================================================
---- linux-work.orig/drivers/base/core.c	2009-06-17 11:40:09.000000000 +1000
-+++ linux-work/drivers/base/core.c	2009-06-17 11:40:27.000000000 +1000
-@@ -874,7 +874,7 @@ int device_add(struct device *dev)
- 	 * the name, and force the use of dev_name()
- 	 */
- 	if (dev->init_name) {
--		dev_set_name(dev, dev->init_name);
-+		dev_set_name(dev, "%s", dev->init_name);
- 		dev->init_name = NULL;
- 	}
- 
-@@ -1271,7 +1271,7 @@ struct device *__root_device_register(co
- 	if (!root)
- 		return ERR_PTR(err);
- 
--	err = dev_set_name(&root->dev, name);
-+	err = dev_set_name(&root->dev, "%s", name);
- 	if (err) {
- 		kfree(root);
- 		return ERR_PTR(err);
-Index: linux-work/drivers/base/sys.c
-===================================================================
---- linux-work.orig/drivers/base/sys.c	2009-06-17 11:40:39.000000000 +1000
-+++ linux-work/drivers/base/sys.c	2009-06-17 11:40:41.000000000 +1000
-@@ -138,7 +138,7 @@ int sysdev_class_register(struct sysdev_
- 	cls->kset.kobj.parent = &system_kset->kobj;
- 	cls->kset.kobj.ktype = &ktype_sysdev_class;
- 	cls->kset.kobj.kset = system_kset;
--	kobject_set_name(&cls->kset.kobj, cls->name);
-+	kobject_set_name(&cls->kset.kobj, "%s", cls->name);
- 	return kset_register(&cls->kset);
- }
- 
-Index: linux-work/drivers/base/attribute_container.c
-===================================================================
---- linux-work.orig/drivers/base/attribute_container.c	2009-06-17 11:43:19.000000000 +1000
-+++ linux-work/drivers/base/attribute_container.c	2009-06-17 11:43:22.000000000 +1000
-@@ -167,7 +167,7 @@ attribute_container_add_device(struct de
- 		ic->classdev.parent = get_device(dev);
- 		ic->classdev.class = cont->class;
- 		cont->class->dev_release = attribute_container_release;
--		dev_set_name(&ic->classdev, dev_name(dev));
-+		dev_set_name(&ic->classdev, "%s", dev_name(dev));
- 		if (fn)
- 			fn(cont, dev, &ic->classdev);
- 		else
-Index: linux-work/drivers/base/firmware_class.c
-===================================================================
---- linux-work.orig/drivers/base/firmware_class.c	2009-06-17 11:43:33.000000000 +1000
-+++ linux-work/drivers/base/firmware_class.c	2009-06-17 11:43:38.000000000 +1000
-@@ -392,7 +392,7 @@ static int fw_register_device(struct dev
- 	fw_priv->timeout.data = (u_long) fw_priv;
- 	init_timer(&fw_priv->timeout);
- 
--	dev_set_name(f_dev, dev_name(device));
-+	dev_set_name(f_dev, "%s", dev_name(device));
- 	f_dev->parent = device;
- 	f_dev->class = &firmware_class;
- 	dev_set_drvdata(f_dev, fw_priv);
-Index: linux-work/drivers/base/platform.c
-===================================================================
---- linux-work.orig/drivers/base/platform.c	2009-06-17 11:43:00.000000000 +1000
-+++ linux-work/drivers/base/platform.c	2009-06-17 11:43:02.000000000 +1000
-@@ -244,7 +244,7 @@ int platform_device_add(struct platform_
- 	if (pdev->id != -1)
- 		dev_set_name(&pdev->dev, "%s.%d", pdev->name,  pdev->id);
- 	else
--		dev_set_name(&pdev->dev, pdev->name);
-+		dev_set_name(&pdev->dev, "%s", pdev->name);
- 
- 	for (i = 0; i < pdev->num_resources; i++) {
- 		struct resource *p, *r = &pdev->resource[i];
+If a kthread happens to use get_user_pages() on an mm (as KSM does),
+there's a chance that it will end up trying to read in a swap page,
+then oops in grab_swap_token() because the kthread has no mm: GUP
+passes down the right mm, so grab_swap_token() ought to be using it.
+==
 
+Anyway, It looks good to me. 
+It might be just nitpick :)
+If you feel it, ignore me. 
+Anyway I am OK. 
 
+On Tue, 16 Jun 2009 23:50:37 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
+
+> From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> 
+> grab_swap_token() should not make any assumptions about the running
+> process as the swap token is an attribute of the address space and the
+> faulting mm is not necessarily current->mm.
+> 
+> This fixes get_user_pages() from kernel threads which would blow up
+> when encountering a swapped out page and grab_swap_token()
+> dereferencing the unset for kernel threads current->mm.
+> 
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+
+-- 
+Kinds Regards
+Minchan Kim
