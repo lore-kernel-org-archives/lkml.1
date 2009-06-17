@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbZFQNdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765485AbZFQNeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932854AbZFQNdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 09:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759944AbZFQNdC
+	id S1765485AbZFQNeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 09:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZFQNem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 09:33:02 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34714 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbZFQNdA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 09:33:00 -0400
-Date: Wed, 17 Jun 2009 09:32:51 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, mingo@elte.hu, kyle@mcmartin.ca,
-       cl@linux-foundation.org, Jesper.Nilsson@axis.com,
-       benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com,
-       Paul Mundt <lethal@linux-sh.org>, Russell King <rmk@arm.linux.org.uk>,
-       Mikael Starvik <starvik@axis.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Bryan Wu <cooloney@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Parisc List <linux-parisc@vger.kernel.org>
-Subject: Re: [PATCH 2/9] percpu: use dynamic percpu allocator as the
-	default percpu allocator
-Message-ID: <20090617133251.GB19032@bombadil.infradead.org>
-References: <1245210060-24344-1-git-send-email-tj@kernel.org> <1245210060-24344-3-git-send-email-tj@kernel.org> <1245242459.4503.4.camel@mulgrave.site>
+	Wed, 17 Jun 2009 09:34:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56909 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753800AbZFQNel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 09:34:41 -0400
+Date: Wed, 17 Jun 2009 15:29:47 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: naresh kamboju <naresh.kernel@gmail.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: open_posix_testsuite: STOP + CONT + wait hang?
+Message-ID: <20090617132947.GA6476@redhat.com>
+References: <20090525185502.GA20781@redhat.com> <20090526210514.C1C91FC2BD@magilla.sf.frob.com> <20090526213346.GA7073@redhat.com> <20090527005527.B50B7FC36B@magilla.sf.frob.com> <20090602045418.GB8219@us.ibm.com> <f5a7b3810906050843g6cbf5067o5ba1b9e07e5e2f5b@mail.gmail.com> <20090606064749.GA13508@redhat.com> <f5a7b3810906170135q3fd90f8fy8c5e06ab77e26b52@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245242459.4503.4.camel@mulgrave.site>
+In-Reply-To: <f5a7b3810906170135q3fd90f8fy8c5e06ab77e26b52@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 08:40:59AM -0400, James Bottomley wrote:
-> > * parisc (broken, under investigation)
-> 
-> I haven't seen anything of this on the parisc list ... what's the
-> problem?  and do you need systems or any other help to fix it?
-> 
+On 06/17, naresh kamboju wrote:
+>
+> please find inline comments
 
-Ah, maybe that was only on linux-kernel or in private mail; we're
-oops-ing again in the oops-handler... I almost had this debugged last
-weekend, but ran out of time.
+Thanks Naresh.
+
+> >> ARCH: ARM
+> >
+> > is it ARM specific? I can't reproduce the problem on x86.
+> yes it is specific to ARM. test cases are PASSED on X86-2.6.29 Kernels.
+
+Not good, because I know nothing about arm and don't have the arm machine ;)
+Will try to look...
+
+> > If you can reproduce the problem, please send the content of
+> > /proc/CHILD_PID/status and /proc/PARENT_PID/status.
+>
+> i have attached  strace and proc_log
+> please review the same.
+
+Thanks.
+
+Could you reproduce without strace, and send the output of /proc/xxx/status ?
+I don't really expect we will see something interesting, but just in case.
+
+Also, the output of sysrq-t may help. (the part which relates to these 2
+processes).
+
+Oleg.
+
