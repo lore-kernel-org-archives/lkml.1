@@ -1,116 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbZFQXeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbZFQXjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758752AbZFQXeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 19:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZFQXeM
+	id S1757741AbZFQXjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 19:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbZFQXjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 19:34:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45449 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753101AbZFQXeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 19:34:11 -0400
-From: Neil Brown <neilb@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 18 Jun 2009 09:34:46 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19001.32150.348268.35201@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PULL REQUEST] md updates for 2.6.31
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	Wed, 17 Jun 2009 19:39:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33657 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755086AbZFQXjo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 19:39:44 -0400
+Message-Id: <20090617232630.762597258@goodmis.org>
+References: <20090617232555.164629684@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 17 Jun 2009 19:26:01 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 6/7] ring-buffer: do not grab locks in nmi
+Content-Disposition: inline; filename=0006-ring-buffer-do-not-grab-locks-in-nmi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Hi Linus,
- here is the merge-window pull request for md.
+If ftrace_dump_on_oops is set, and an NMI detects a lockup, then it
+will need to read from the ring buffer. But the read side of the
+ring buffer still takes locks. This patch adds a check on the read
+side that if it is in an NMI, then it will disable the ring buffer
+and not take any locks.
 
- The only real functional change is that we now support non-power-of-2
- chunk sizes in raid0.
- Apart from that there is a lot of simplification and clean up in
- raid0 and linear, some minor refactorisation, and assorted bug fixes.
+Reads can still happen on a disabled ring buffer.
 
-thanks,
-NeilBrown
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/ring_buffer.c |   59 ++++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 51 insertions(+), 8 deletions(-)
 
-The following changes since commit 45e3e1935e2857c54783291107d33323b3ef33c8:
-  Linus Torvalds (1):
-        Merge branch 'master' of git://git.kernel.org/.../sam/kbuild-next
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 969f7cb..589b3ee 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2466,6 +2466,21 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+ }
+ EXPORT_SYMBOL_GPL(ring_buffer_iter_peek);
+ 
++static inline int rb_ok_to_lock(void)
++{
++	/*
++	 * If an NMI die dumps out the content of the ring buffer
++	 * do not grab locks. We also permanently disable the ring
++	 * buffer too. A one time deal is all you get from reading
++	 * the ring buffer from an NMI.
++	 */
++	if (likely(!in_nmi() && !oops_in_progress))
++		return 1;
++
++	tracing_off_permanent();
++	return 0;
++}
++
+ /**
+  * ring_buffer_peek - peek at the next event to be read
+  * @buffer: The ring buffer to read
+@@ -2481,14 +2496,20 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
+ 	struct ring_buffer_event *event;
+ 	unsigned long flags;
++	int dolock;
+ 
+ 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+ 		return NULL;
+ 
++	dolock = rb_ok_to_lock();
+  again:
+-	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++	local_irq_save(flags);
++	if (dolock)
++		spin_lock(&cpu_buffer->reader_lock);
+ 	event = rb_buffer_peek(buffer, cpu, ts);
+-	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
++	if (dolock)
++		spin_unlock(&cpu_buffer->reader_lock);
++	local_irq_restore(flags);
+ 
+ 	if (event && event->type_len == RINGBUF_TYPE_PADDING) {
+ 		cpu_relax();
+@@ -2540,6 +2561,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 	struct ring_buffer_event *event = NULL;
+ 	unsigned long flags;
++	int dolock;
++
++	dolock = rb_ok_to_lock();
+ 
+  again:
+ 	/* might be called in atomic */
+@@ -2549,7 +2573,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 		goto out;
+ 
+ 	cpu_buffer = buffer->buffers[cpu];
+-	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++	local_irq_save(flags);
++	if (dolock)
++		spin_lock(&cpu_buffer->reader_lock);
+ 
+ 	event = rb_buffer_peek(buffer, cpu, ts);
+ 	if (!event)
+@@ -2558,7 +2584,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	rb_advance_reader(cpu_buffer);
+ 
+  out_unlock:
+-	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
++	if (dolock)
++		spin_unlock(&cpu_buffer->reader_lock);
++	local_irq_restore(flags);
+ 
+  out:
+ 	preempt_enable();
+@@ -2757,15 +2785,23 @@ int ring_buffer_empty(struct ring_buffer *buffer)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 	unsigned long flags;
++	int dolock;
+ 	int cpu;
+ 	int ret;
+ 
++	dolock = rb_ok_to_lock();
++
+ 	/* yes this is racy, but if you don't like the race, lock the buffer */
+ 	for_each_buffer_cpu(buffer, cpu) {
+ 		cpu_buffer = buffer->buffers[cpu];
+-		spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++		local_irq_save(flags);
++		if (dolock)
++			spin_lock(&cpu_buffer->reader_lock);
+ 		ret = rb_per_cpu_empty(cpu_buffer);
+-		spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
++		if (dolock)
++			spin_unlock(&cpu_buffer->reader_lock);
++		local_irq_restore(flags);
++
+ 		if (!ret)
+ 			return 0;
+ 	}
+@@ -2783,15 +2819,22 @@ int ring_buffer_empty_cpu(struct ring_buffer *buffer, int cpu)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 	unsigned long flags;
++	int dolock;
+ 	int ret;
+ 
+ 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+ 		return 1;
+ 
++	dolock = rb_ok_to_lock();
++
+ 	cpu_buffer = buffer->buffers[cpu];
+-	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++	local_irq_save(flags);
++	if (dolock)
++		spin_lock(&cpu_buffer->reader_lock);
+ 	ret = rb_per_cpu_empty(cpu_buffer);
+-	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
++	if (dolock)
++		spin_unlock(&cpu_buffer->reader_lock);
++	local_irq_restore(flags);
+ 
+ 	return ret;
+ }
+-- 
+1.6.3.1
 
-are available in the git repository at:
-
-  git://neil.brown.name/md for-linus
-
-Andre Noll (13):
-      md: raid0: Replace hash table lookup by looping over all strip_zones.
-      md: raid0: Remove hash table.
-      md: raid0: Remove hash spacing and sector shift.
-      md: raid0: Make raid0_run() return a proper error code.
-      md: raid0: Allocate all buffers for the raid0 configuration in one function.
-      md: raid0: Fix a memory leak when stopping a raid0 array.
-      md: Make mddev->chunk_size sector-based.
-      md: Convert mddev->new_chunk to sectors.
-      md: convert conf->chunk_size and conf->prev_chunk to sectors.
-      md/raid5: Use is_power_of_2() in raid5_reconfig()/raid6_reconfig().
-      md: fix some comments.
-      md: Push down reconstruction log message to personality code.
-      md: Move check for bitmap presence to personality code.
-
-Dan Williams (1):
-      md/raid5: add missing call to schedule() after prepare_to_wait()
-
-NeilBrown (14):
-      md/raid0: two cleanups in create_stripe_zones.
-      md: raid0: remove ->sectors from the strip_zone structure.
-      md: raid0: remove ->dev pointer from strip_zone structure
-      md: raid0:  remove setting of segment boundary.
-      md: remove mddev_to_conf "helper" macro
-      md: raid0: chunk_sectors cleanups.
-      md: raid5: check stripe cache is large enough in start_reshape
-      md: remove unnecessary arguments from ->reconfig method.
-      md: merge reconfig and check_reshape methods.
-      md: move assignment of ->utime so that it never gets skipped.
-      md: raid0/linear: ensure device sizes are rounded to chunk size.
-      md: remove chunksize rounding from common code.
-      md/linear: use call_rcu to free obsolete 'conf' structures.
-      md/raid5: correctly update sync_completed when we reach max_resync
-
-Sandeep K Sinha (3):
-      md: Removal of hash table in linear raid
-      md: Removing num_sector and replacing start_sector with end_sector
-      md: Binary search in linear raid
-
-SandeepKsinha (1):
-      md linear: Protecting mddev with rcu locks to avoid races
-
-raz ben yehuda (7):
-      md: have raid0 compile with MD_DEBUG on
-      md: have raid0 report its formation
-      md: raid0: chunk size check in raid0_run
-      md: raid10: chunk size check in run
-      md: raid5: chunk size check in setup_conf
-      md: prepare for non-power-of-two chunk sizes
-      md: raid0 :Enables chunk size other than powers of 2.
-
- drivers/md/faulty.c       |   21 ++-
- drivers/md/linear.c       |  218 ++++++++++--------------
- drivers/md/linear.h       |   12 +-
- drivers/md/md.c           |  196 +++++++++--------------
- drivers/md/md.h           |   14 +-
- drivers/md/multipath.c    |   23 ++-
- drivers/md/multipath.h    |    6 -
- drivers/md/raid0.c        |  403 +++++++++++++++++++++++---------------------
- drivers/md/raid0.h        |   10 +-
- drivers/md/raid1.c        |   46 +++---
- drivers/md/raid1.h        |    6 -
- drivers/md/raid10.c       |   62 ++++---
- drivers/md/raid10.h       |    6 -
- drivers/md/raid5.c        |  218 +++++++++++++------------
- drivers/md/raid5.h        |    8 +-
- include/linux/raid/md_p.h |    2 +-
- 16 files changed, 588 insertions(+), 663 deletions(-)
+-- 
