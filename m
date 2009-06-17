@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761054AbZFQSl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbZFQSpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761054AbZFQSl3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 14:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbZFQSlW
+	id S1757817AbZFQSpa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 14:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZFQSpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 14:41:22 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:48177 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755106AbZFQSlV (ORCPT
+	Wed, 17 Jun 2009 14:45:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54357 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752470AbZFQSpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 14:41:21 -0400
-Date: Wed, 17 Jun 2009 14:41:17 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
-Subject: Re: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_*
- operations
-In-Reply-To: <4A38A719.2030709@kernel.org>
-Message-ID: <alpine.DEB.1.10.0906171343370.30060@gentwo.org>
-References: <20090605191819.376530498@gentwo.org> <20090605191850.441840884@gentwo.org> <4A38A719.2030709@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 17 Jun 2009 14:45:19 -0400
+Date: Wed, 17 Jun 2009 11:44:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Andreas Dilger <adilger@sun.com>, David Howells <dhowells@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-afs@lists.infradead.org
+Subject: Re: [PATCH 00/17] [RFC] AFS: Implement OpenAFS pioctls(version)s
+In-Reply-To: <20090617183745.GI8633@ZenIV.linux.org.uk>
+Message-ID: <alpine.LFD.2.01.0906171142580.16802@localhost.localdomain>
+References: <20090617001157.065ee652@lxorguk.ukuu.org.uk> <20090616203845.4526.60013.stgit@warthog.procyon.org.uk> <10437.1245193192@redhat.com> <11650.1245198358@redhat.com> <20090617075502.GB13073@webber.adilger.int> <alpine.LFD.2.01.0906170901480.16802@localhost.localdomain>
+ <20090617183745.GI8633@ZenIV.linux.org.uk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Jun 2009, Tejun Heo wrote:
 
-> cl@linux-foundation.org wrote:
-> > +#ifndef this_cpu_write
-> > +# define this_cpu_write(pcp, val)	__this_cpu_write((pcp), (val))
-> > +#endif
->
-> Is this safe?  Write itself would always be atomic but this means that
-> a percpu variable may change its value while a thread is holding the
-> processor by disabling preemption.  ie,
->
-> 0. v contains A for cpu0
->
-> 1. task0 on cpu0 does this_cpu_write(v, B), looks up cpu but gets
->    preemted out.
->
-> 2. task1 gets scheduled on cpu1, disables preemption and does
->    __this_cpu_read(v) and gets A and goes on with preemtion disabled.
->
-> 3. task0 gets scheduled on cpu1 and executes the assignment.
->
-> 4. task1 does __this_cpu_read(v) again and oops gets B this time.
->
-> Please note that this can also happen between addition or other
-> modifying ops and cause incorrect result.
 
-Per cpu operations are only safe for the current processor. One issue
-there may be that the store after rescheduling may not occur to the
-current processors per cpu instance but the prior cpu. At that point
-another thread may be running on the prior cpu and be disturbed like you
-point out. So it needs a preempt disable there too.
+On Wed, 17 Jun 2009, Al Viro wrote:
 
-> Also, these macros depricate percpu_OP() macros, right?
+> On Wed, Jun 17, 2009 at 09:09:47AM -0700, Linus Torvalds wrote:
+> > We've traditionally had that magic "open with flag=3" to do a magic open 
+> > of device files without waiting, and we have O_NOFOLLOW to open symlinks 
+> > without following them (sadly, it just errors out, rather than opening the 
+> > symlink, but that's another detail). 
+> > 
+> > So I think it should be solvable some way, but not by trying to find the 
+> > mount point.
+> 
+> O_NOFOLLOW *will* open their mountpoints just fine, without triggering
+> automount.
 
-They are different. percpu_OP() macros require a percpu variable name
-to be passed.
+That's not the problem with O_NOFOLLOW.
 
-this_cpu_* macros require a reference to a variable in a
-structure allocated with the new per cpu allocator.
+The problem is that if you want to actually open the symlink itself (say, 
+you do some filesystem cleanup operation on it, like saying "drop the 
+caches of this file"), you can't do it. O_NOFOLLOW won't open the symlink, 
+it will just refuse to follow it, and return an error.
 
-It is possible to simply pass the full variable name of a percpu variable
-to this_cpu_* macros. See the patch of the vm statistics handling.
-
-It uses
-
-	per_cpu_var(per_cpu_name_without_prefix)
-
-to generate the full name.
-
+			Linus
