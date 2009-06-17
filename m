@@ -1,471 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbZFQGhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762250AbZFQGhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbZFQGhG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 02:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZFQGg4
+	id S1762250AbZFQGhX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 02:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758833AbZFQGhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 02:36:56 -0400
-Received: from tango.tkos.co.il ([62.219.50.35]:34100 "EHLO tango.tkos.co.il"
+	Wed, 17 Jun 2009 02:37:05 -0400
+Received: from mga14.intel.com ([143.182.124.37]:25611 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752348AbZFQGgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 02:36:55 -0400
-From: Baruch Siach <baruch@tkos.co.il>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	id S1757283AbZFQGhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 02:37:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,234,1243839600"; 
+   d="scan'208";a="155464362"
+Date: Wed, 17 Jun 2009 14:37:02 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Baruch Siach <baruch@tkos.co.il>
-Subject: [PATCH v6] gpio: driver for PrimeCell PL061 GPIO controller
-Date: Wed, 17 Jun 2009 09:34:37 +0300
-Message-Id: <1245220477-6904-1-git-send-email-baruch@tkos.co.il>
-X-Mailer: git-send-email 1.6.3.1
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [RFC][PATCH] HWPOISON: only early kill processes who installed
+	SIGBUS handler
+Message-ID: <20090617063702.GA20922@localhost>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de> <20090615142225.GA11167@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090615142225.GA11167@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a driver for the ARM PrimeCell PL061 GPIO AMBA peripheral. The driver
-is implemented using the gpiolib framework.
+On Mon, Jun 15, 2009 at 10:22:25PM +0800, Wu Fengguang wrote:
+> On Mon, Jun 15, 2009 at 08:25:28PM +0800, Nick Piggin wrote:
+> > On Mon, Jun 15, 2009 at 08:10:01PM +0800, Wu Fengguang wrote:
+> > > On Mon, Jun 15, 2009 at 03:19:07PM +0800, Nick Piggin wrote:
+> > > > > For KVM you need early kill, for the others it remains to be seen.
+> > > > 
+> > > > Right. It's almost like you need to do a per-process thing, and
+> > > > those that can handle things (such as the new SIGBUS or the new
+> > > > EIO) could get those, and others could be killed.
+> > > 
+> > > To send early SIGBUS kills to processes who has called
+> > > sigaction(SIGBUS, ...)?  KVM will sure do that. For other apps we
+> > > don't mind they can understand that signal at all.
+> > 
+> > For apps that hook into SIGBUS for some other means and
+> 
+> Yes I was referring to the sigaction(SIGBUS) apps, others will
+> be late killed anyway.
+> 
+> > do not understand the new type of SIGBUS signal? What about
+> > those?
+> 
+> We introduced two new SIGBUS codes:
+>         BUS_MCEERR_AO=5         for early kill
+>         BUS_MCEERR_AR=4         for late  kill
+> I'd assume a legacy application will handle them in the same way (both
+> are unexpected code to the application).
+> 
+> We don't care whether the application can be killed by BUS_MCEERR_AO
+> or BUS_MCEERR_AR depending on its SIGBUS handler implementation.
+> But (in the rare case) if the handler
+> - refused to die on BUS_MCEERR_AR, it may create a busy loop and
+>   flooding of SIGBUS signals, which is a bug of the application.
+>   BUS_MCEERR_AO is one time and won't lead to busy loops.
+> - does something that hurts itself (ie. data safety) on BUS_MCEERR_AO,
+>   it may well hurt the same way on BUS_MCEERR_AR. The latter one is
+>   unavoidable, so the application must be fixed anyway.
 
-This driver also includes support for the use of the PL061 as an interrupt
-controller (secondary).
+This patch materializes the automatically early kill idea.
+It aims to remove the vm.memory_failure_ealy_kill sysctl parameter.
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+This is mainly a policy change, please comment.
+
+Thanks,
+Fengguang
+
 ---
-Changes in v6:
-	- Address the comments of David Brownell:
-	  * remove gpio_request() from the IRQ code
-	  * remove irq_to_gpio() from the IRQ code
-	- Use a bitmap to track initialized trigger IRQ
+HWPOISON: only early kill processes who installed SIGBUS handler
 
-Changes in v5:
-	- Use resource_size() as suggested by Linus Walleij
-	- Add a comment about the list member of pl061_gpio
+We want to send SIGBUS.BUS_MCEERR_AO signals to KVM ASAP, so that
+it is able to take actions to isolate the corrupted page. In fact,
+any applications that does extensive internal caching (KVM, Oracle,
+etc.) is advised to install a SIGBUS handler to get early notifications
+of corrupted memory, so that it has good possibility to find and remove
+the page from its cache. If don't do so, they will later receive the
+SIGBUS.BUS_MCEERR_AR signal on accessing the corrupted memory, which
+can be deadly (too hard to rescue).
 
-Changes in v4:
-	- Depend on CONFIG_ARM_AMBA
-	- Do not request the gpio for IRQ automatically, just warn if it's not 
-	  requested
-	- Remove SZ_4K
-	- Iterate through a linked list find the source of interrupt when 
-	  multiple PL061s are connected to the same IRQ trigger
-	- Move hardware register defines into the .c file
+For applications that don't care the signal, let them continue to run
+until they try to consume the corrupted data.
 
-Changes in v3:
-	- amba driver instead of a platform driver
-	- Move include/linux/gpio/pl061.h => include/linux/amba/pl061.h
+For applications that used to catch the SIGBUS handler but don't understand
+the new BUS_MCEERR_AO/BUS_MCEERR_AR codes, they may
+- refused to die on BUS_MCEERR_AR, creating a busy loop and
+  flooding of SIGBUS signals, which is a bug of the application.
+  BUS_MCEERR_AO is an one shot event and won't lead to busy loops.
+- does something that hurts itself (ie. data safety) on BUS_MCEERR_AO,
+  it may well hurt the same way on BUS_MCEERR_AR. The latter one is
+  unavoidable, so the application must be fixed anyway.
 
-Changes in v2:
-	- Address Andrew Morton's comments
-	- Pass checkpatch.pl
-	- Add changelog comment
 
- drivers/gpio/Kconfig       |    6 +
- drivers/gpio/Makefile      |    1 +
- drivers/gpio/pl061.c       |  341 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/amba/pl061.h |   15 ++
- 4 files changed, 363 insertions(+), 0 deletions(-)
- create mode 100644 drivers/gpio/pl061.c
- create mode 100644 include/linux/amba/pl061.h
+CC: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/memory-failure.c |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index edb0253..585376f 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -67,6 +67,12 @@ config GPIO_SYSFS
+--- sound-2.6.orig/mm/memory-failure.c
++++ sound-2.6/mm/memory-failure.c
+@@ -205,6 +205,20 @@ static void kill_procs_ao(struct list_he
+ 	}
+ }
  
- comment "Memory mapped GPIO expanders:"
++static bool task_early_kill_elegible(struct task_struct *tsk)
++{
++	__sighandler_t handler;
++
++	if (!tsk->mm)
++		return false;
++
++	handler = tsk->sighand->action[SIGBUS-1].sa.sa_handler;
++	if (handler == SIG_DFL || handler == SIG_IGN)
++		return false;
++
++	return true;
++}
++
+ /*
+  * Collect processes when the error hit an anonymous page.
+  */
+@@ -222,7 +236,7 @@ static void collect_procs_anon(struct pa
+ 		goto out;
  
-+config GPIO_PL061
-+	bool "PrimeCell PL061 GPIO support"
-+	depends on ARM_AMBA
-+	help
-+	  Say yes here to support the PrimeCell PL061 GPIO device
-+
- config GPIO_XILINX
- 	bool "Xilinx GPIO support"
- 	depends on PPC_OF
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 49ac64e..ef90203 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
- obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
- obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
- obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
-+obj-$(CONFIG_GPIO_PL061)	+= pl061.o
- obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
- obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-diff --git a/drivers/gpio/pl061.c b/drivers/gpio/pl061.c
-new file mode 100644
-index 0000000..aa8e7cb
---- /dev/null
-+++ b/drivers/gpio/pl061.c
-@@ -0,0 +1,341 @@
-+/*
-+ *  linux/drivers/gpio/pl061.c
-+ *
-+ *  Copyright (C) 2008, 2009 Provigent Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Driver for the ARM PrimeCell(tm) General Purpose Input/Output (PL061)
-+ *
-+ * Data sheet: ARM DDI 0190B, September 2000
-+ */
-+#include <linux/spinlock.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/list.h>
-+#include <linux/io.h>
-+#include <linux/ioport.h>
-+#include <linux/irq.h>
-+#include <linux/bitops.h>
-+#include <linux/workqueue.h>
-+#include <linux/gpio.h>
-+#include <linux/device.h>
-+#include <linux/amba/bus.h>
-+#include <linux/amba/pl061.h>
-+
-+#define GPIODIR 0x400
-+#define GPIOIS  0x404
-+#define GPIOIBE 0x408
-+#define GPIOIEV 0x40C
-+#define GPIOIE  0x410
-+#define GPIORIS 0x414
-+#define GPIOMIS 0x418
-+#define GPIOIC  0x41C
-+
-+#define PL061_GPIO_NR	8
-+
-+struct pl061_gpio {
-+	/* We use a list of pl061_gpio structs for each trigger IRQ in the main
-+	 * interrupts controller of the system. We need this to support systems
-+	 * in which more that one PL061s are connected to the same IRQ. The ISR
-+	 * interates through this list to find the source of the interrupt.
-+	 */
-+	struct list_head	list;
-+
-+	/* Each of the two spinlocks protects a different set of hardware
-+	 * regiters and data structurs. This decouples the code of the IRQ from
-+	 * the GPIO code. This also makes the case of a GPIO routine call from
-+	 * the IRQ code simpler.
-+	 */
-+	spinlock_t		lock;		/* GPIO registers */
-+	spinlock_t		irq_lock;	/* IRQ registers */
-+
-+	void __iomem		*base;
-+	unsigned		irq_base;
-+	struct gpio_chip	gc;
-+};
-+
-+static int pl061_direction_input(struct gpio_chip *gc, unsigned offset)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+	unsigned long flags;
-+	unsigned char gpiodir;
-+
-+	if (offset >= gc->ngpio)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	gpiodir = readb(chip->base + GPIODIR);
-+	gpiodir &= ~(1 << offset);
-+	writeb(gpiodir, chip->base + GPIODIR);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int pl061_direction_output(struct gpio_chip *gc, unsigned offset,
-+		int value)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+	unsigned long flags;
-+	unsigned char gpiodir;
-+
-+	if (offset >= gc->ngpio)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	writeb(!!value << offset, chip->base + (1 << (offset + 2)));
-+	gpiodir = readb(chip->base + GPIODIR);
-+	gpiodir |= 1 << offset;
-+	writeb(gpiodir, chip->base + GPIODIR);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int pl061_get_value(struct gpio_chip *gc, unsigned offset)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+
-+	return !!readb(chip->base + (1 << (offset + 2)));
-+}
-+
-+static void pl061_set_value(struct gpio_chip *gc, unsigned offset, int value)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+
-+	writeb(!!value << offset, chip->base + (1 << (offset + 2)));
-+}
-+
-+/*
-+ * PL061 GPIO IRQ
-+ */
-+static void pl061_irq_disable(unsigned irq)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq - chip->irq_base;
-+	unsigned long flags;
-+	u8 gpioie;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+	gpioie = readb(chip->base + GPIOIE);
-+	gpioie &= ~(1 << offset);
-+	writeb(gpioie, chip->base + GPIOIE);
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+}
-+
-+static void pl061_irq_enable(unsigned irq)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq - chip->irq_base;
-+	unsigned long flags;
-+	u8 gpioie;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+	gpioie = readb(chip->base + GPIOIE);
-+	gpioie |= 1 << offset;
-+	writeb(gpioie, chip->base + GPIOIE);
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+}
-+
-+static int pl061_irq_type(unsigned irq, unsigned trigger)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq - chip->irq_base;
-+	unsigned long flags;
-+	u8 gpiois, gpioibe, gpioiev;
-+
-+	if (offset < 0 || offset > PL061_GPIO_NR)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+
-+	gpioiev = readb(chip->base + GPIOIEV);
-+
-+	gpiois = readb(chip->base + GPIOIS);
-+	if (trigger & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW)) {
-+		gpiois |= 1 << offset;
-+		if (trigger & IRQ_TYPE_LEVEL_HIGH)
-+			gpioiev |= 1 << offset;
-+		else
-+			gpioiev &= ~(1 << offset);
-+	} else
-+		gpiois &= ~(1 << offset);
-+	writeb(gpiois, chip->base + GPIOIS);
-+
-+	gpioibe = readb(chip->base + GPIOIBE);
-+	if ((trigger & IRQ_TYPE_EDGE_BOTH) == IRQ_TYPE_EDGE_BOTH)
-+		gpioibe |= 1 << offset;
-+	else {
-+		gpioibe &= ~(1 << offset);
-+		if (trigger & IRQ_TYPE_EDGE_RISING)
-+			gpioiev |= 1 << offset;
-+		else
-+			gpioiev &= ~(1 << offset);
-+	}
-+	writeb(gpioibe, chip->base + GPIOIBE);
-+
-+	writeb(gpioiev, chip->base + GPIOIEV);
-+
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+
-+	return 0;
-+}
-+
-+static struct irq_chip pl061_irqchip = {
-+	.name		= "GPIO",
-+	.enable		= pl061_irq_enable,
-+	.disable	= pl061_irq_disable,
-+	.set_type	= pl061_irq_type,
-+};
-+
-+static void pl061_irq_handler(unsigned irq, struct irq_desc *desc)
-+{
-+	struct list_head *chip_list = get_irq_chip_data(irq);
-+	struct list_head *ptr;
-+	struct pl061_gpio *chip;
-+
-+	desc->chip->ack(irq);
-+	list_for_each(ptr, chip_list) {
-+		unsigned long pending;
-+		int gpio;
-+
-+		chip = list_entry(ptr, struct pl061_gpio, list);
-+		pending = readb(chip->base + GPIOMIS);
-+		writeb(pending, chip->base + GPIOIC);
-+
-+		if (pending == 0)
-+			continue;
-+
-+		for_each_bit(gpio, &pending, PL061_GPIO_NR)
-+			generic_handle_irq(gpio_to_irq(gpio));
-+	}
-+	desc->chip->unmask(irq);
-+}
-+
-+static int __init pl061_probe(struct amba_device *dev, struct amba_id *id)
-+{
-+	struct pl061_platform_data *pdata;
-+	struct pl061_gpio *chip;
-+	struct list_head *chip_list;
-+	int ret, irq, i;
-+	static unsigned long init_irq[BITS_TO_LONGS(NR_IRQS)];
-+
-+	pdata = dev->dev.platform_data;
-+	if (pdata == NULL)
-+		return -ENODEV;
-+
-+	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+	if (chip == NULL)
-+		return -ENOMEM;
-+
-+	if (!request_mem_region(dev->res.start,
-+				resource_size(&dev->res), "pl061")) {
-+		ret = -EBUSY;
-+		goto free_mem;
-+	}
-+
-+	chip->base = ioremap(dev->res.start, resource_size(&dev->res));
-+	if (chip->base == NULL) {
-+		ret = -ENOMEM;
-+		goto release_region;
-+	}
-+
-+	spin_lock_init(&chip->lock);
-+	spin_lock_init(&chip->irq_lock);
-+	INIT_LIST_HEAD(&chip->list);
-+
-+	chip->gc.direction_input = pl061_direction_input;
-+	chip->gc.direction_output = pl061_direction_output;
-+	chip->gc.get = pl061_get_value;
-+	chip->gc.set = pl061_set_value;
-+	chip->gc.base = pdata->gpio_base;
-+	chip->gc.ngpio = PL061_GPIO_NR;
-+	chip->gc.label = dev_name(&dev->dev);
-+	chip->gc.dev = &dev->dev;
-+	chip->gc.owner = THIS_MODULE;
-+
-+	chip->irq_base = pdata->irq_base;
-+
-+	ret = gpiochip_add(&chip->gc);
-+	if (ret)
-+		goto iounmap;
-+
-+	/*
-+	 * irq_chip support
-+	 */
-+
-+	if (chip->irq_base == (unsigned) -1)
-+		return 0;
-+
-+	writeb(0, chip->base + GPIOIE); /* disable irqs */
-+	irq = dev->irq[0];
-+	if (irq < 0) {
-+		ret = -ENODEV;
-+		goto iounmap;
-+	}
-+	set_irq_chained_handler(irq, pl061_irq_handler);
-+	if (!test_and_set_bit(irq, init_irq)) { /* list initialized? */
-+		chip_list = kmalloc(sizeof(*chip_list), GFP_KERNEL);
-+		if (chip_list == NULL) {
-+			ret = -ENOMEM;
-+			goto iounmap;
-+		}
-+		INIT_LIST_HEAD(chip_list);
-+		set_irq_chip_data(irq, chip_list);
-+	} else
-+		chip_list = get_irq_chip_data(irq);
-+	list_add(&chip->list, chip_list);
-+
-+	for (i = 0; i < PL061_GPIO_NR; i++) {
-+		if (pdata->directions & (1 << i))
-+			pl061_direction_output(&chip->gc, i,
-+					pdata->values & (1 << i));
-+		else
-+			pl061_direction_input(&chip->gc, i);
-+
-+		set_irq_chip(i+chip->irq_base, &pl061_irqchip);
-+		set_irq_handler(i+chip->irq_base, handle_simple_irq);
-+		set_irq_flags(i+chip->irq_base, IRQF_VALID);
-+		set_irq_chip_data(i+chip->irq_base, chip);
-+	}
-+
-+	return 0;
-+
-+iounmap:
-+	iounmap(chip->base);
-+release_region:
-+	release_mem_region(dev->res.start, resource_size(&dev->res));
-+free_mem:
-+	kfree(chip);
-+
-+	return ret;
-+}
-+
-+static struct amba_id pl061_ids[] __initdata = {
-+	{
-+		.id	= 0x00041061,
-+		.mask	= 0x000fffff,
-+	},
-+	{ 0, 0 },
-+};
-+
-+static struct amba_driver pl061_gpio_driver = {
-+	.drv = {
-+		.name	= "pl061_gpio",
-+	},
-+	.id_table	= pl061_ids,
-+	.probe		= pl061_probe,
-+};
-+
-+static int __init pl061_gpio_init(void)
-+{
-+	return amba_driver_register(&pl061_gpio_driver);
-+}
-+subsys_initcall(pl061_gpio_init);
-+
-+MODULE_AUTHOR("Baruch Siach <baruch@tkos.co.il>");
-+MODULE_DESCRIPTION("PL061 GPIO driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/amba/pl061.h b/include/linux/amba/pl061.h
-new file mode 100644
-index 0000000..b4fbd98
---- /dev/null
-+++ b/include/linux/amba/pl061.h
-@@ -0,0 +1,15 @@
-+/* platform data for the PL061 GPIO driver */
-+
-+struct pl061_platform_data {
-+	/* number of the first GPIO */
-+	unsigned	gpio_base;
-+
-+	/* number of the first IRQ.
-+	 * If the IRQ functionality in not desired this must be set to
-+	 * (unsigned) -1.
-+	 */
-+	unsigned	irq_base;
-+
-+	u8		directions;	/* startup directions, 1: out, 0: in */
-+	u8		values;		/* startup values */
-+};
--- 
-1.6.3.1
-
+ 	for_each_process (tsk) {
+-		if (!tsk->mm)
++		if (!task_early_kill_elegible(tsk))
+ 			continue;
+ 		list_for_each_entry (vma, &av->head, anon_vma_node) {
+ 			if (!page_mapped_in_vma(page, vma))
+@@ -262,7 +276,7 @@ static void collect_procs_file(struct pa
+ 	for_each_process(tsk) {
+ 		pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+ 
+-		if (!tsk->mm)
++		if (!task_early_kill_elegible(tsk))
+ 			continue;
+ 
+ 		vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff,
