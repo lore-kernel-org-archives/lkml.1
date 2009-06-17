@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbZFQO33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760334AbZFQOfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934065AbZFQO33 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 10:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763585AbZFQO3V
+	id S1760334AbZFQOfF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 10:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbZFQOez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 10:29:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:16671 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754871AbZFQO3U (ORCPT
+	Wed, 17 Jun 2009 10:34:55 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:58297 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754928AbZFQOey convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 10:29:20 -0400
+	Wed, 17 Jun 2009 10:34:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=RKxuGHQdmc62jG/affROgBATHuK4zkome01/KNrUF/3tylrZPd/v0cjSwshOEqZwuz
-         /I9alGqvIFI6VYDDYPSA9TyTn3iG4bBf/5KNoA3xUF8bArAdqS4PJ6lcWJP3rjx1luvM
-         NBVPCnmkOk7LQaLKrbKt73ghCufKJVDc0ie9s=
-Subject: Re: [PATCH]io_apic.c: fix compile warning
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090617152846.72804bae@lxorguk.ukuu.org.uk>
-References: <1245248720.3312.27.camel@myhost>
-	 <20090617152846.72804bae@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 17 Jun 2009 22:29:18 +0800
-Message-Id: <1245248958.3312.28.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 8bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XGYYUR9lt98RfJnNoGwOwMuUmSu7Obn6vjg7OVqssCsKMVpD8CLKFYrPJHJeVXwxjZ
+         ATgTyqA8VCncR1oO04Hh46KeBfOX24tt9jBZAbZX2V6KZn4mN7y/K51a81Mxe5lURFZi
+         BOAeag09pYvgj8NKe5aaNugmHe3Iwk2YY7yVw=
+MIME-Version: 1.0
+In-Reply-To: <20090617132947.GA6476@redhat.com>
+References: <20090525185502.GA20781@redhat.com>
+	 <20090526210514.C1C91FC2BD@magilla.sf.frob.com>
+	 <20090526213346.GA7073@redhat.com>
+	 <20090527005527.B50B7FC36B@magilla.sf.frob.com>
+	 <20090602045418.GB8219@us.ibm.com>
+	 <f5a7b3810906050843g6cbf5067o5ba1b9e07e5e2f5b@mail.gmail.com>
+	 <20090606064749.GA13508@redhat.com>
+	 <f5a7b3810906170135q3fd90f8fy8c5e06ab77e26b52@mail.gmail.com>
+	 <20090617132947.GA6476@redhat.com>
+Date: Wed, 17 Jun 2009 20:04:57 +0530
+Message-ID: <f5a7b3810906170734q814c616o155509561e961244@mail.gmail.com>
+Subject: Re: open_posix_testsuite: STOP + CONT + wait hang?
+From: naresh kamboju <naresh.kernel@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-17 at 15:28 +0100, Alan Cox wrote:
-> On Wed, 17 Jun 2009 22:25:20 +0800
-> "Figo.zhang" <figo1802@gmail.com> wrote:
-> 
-> > fix compile warning:
-> > arch/x86/kernel/apic/io_apic.c: In function ‘ioapic_write_entry’:
-> > arch/x86/kernel/apic/io_apic.c:466: warning: ‘eu’ is used uninitialized in this function
-> > arch/x86/kernel/apic/io_apic.c:465: note: ‘eu’ was declared here
-> 
-> What compiler are you using. Current gcc correctly notices that there are
-> no uninitialized things to worry about ?
-
-hi Alan:
-my gcc is:
-
-[figo@myhost linux-2.6]$ gcc -v
-Using built-in specs.
-Target: i686-pc-linux-gnu
-Configured with: ../configure --prefix=/usr --enable-shared
---enable-languages=c,c++,fortran,objc,obj-c++ --enable-threads=posix
---mandir=/usr/share/man --infodir=/usr/share/info --enable-__cxa_atexit
---disable-multilib --libdir=/usr/lib --libexecdir=/usr/lib
---enable-clocale=gnu --disable-libstdcxx-pch --with-tune=generic
-Thread model: posix
-gcc version 4.4.0 20090526 (prerelease) (GCC) 
-[figo@myhost linux-2.6]$ 
+Thank you very much.
+just before i have reported the same issue to ARM Kernel mailing list.
 
 
+Best regards,
+Naresh Kamboju
 
-Best Regards,
-Figo.zhang
-
+On Wed, Jun 17, 2009 at 6:59 PM, Oleg Nesterov<oleg@redhat.com> wrote:
+> On 06/17, naresh kamboju wrote:
+>>
+>> please find inline comments
+>
+> Thanks Naresh.
+>
+>> >> ARCH: ARM
+>> >
+>> > is it ARM specific? I can't reproduce the problem on x86.
+>> yes it is specific to ARM. test cases are PASSED on X86-2.6.29 Kernels.
+>
+> Not good, because I know nothing about arm and don't have the arm machine ;)
+> Will try to look...
+>
+>> > If you can reproduce the problem, please send the content of
+>> > /proc/CHILD_PID/status and /proc/PARENT_PID/status.
+>>
+>> i have attached �strace and proc_log
+>> please review the same.
+>
+> Thanks.
+>
+> Could you reproduce without strace, and send the output of /proc/xxx/status ?
+> I don't really expect we will see something interesting, but just in case.
+>
+> Also, the output of sysrq-t may help. (the part which relates to these 2
+> processes).
+>
+> Oleg.
+>
+>
