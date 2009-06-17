@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZFQCPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbZFQCXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbZFQCPX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 22:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZFQCPN
+	id S1763444AbZFQCXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 22:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZFQCXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 22:15:13 -0400
-Received: from sh.osrg.net ([192.16.179.4]:42359 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751704AbZFQCPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 22:15:13 -0400
-Date: Wed, 17 Jun 2009 11:15:01 +0900
-To: alan@linux.intel.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       malcolm.blaney@maptek.com.au
-Subject: [PATCH] parport_pc: set properly the dma_mask for parport_pc device
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 16 Jun 2009 22:23:19 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:28203 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbZFQCXS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 22:23:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=F2qaQByCHDWUKE1bSAKcLHLZbaFdHVxJazfipGgpvza6LAhf7ZXrSHFeLeBZyAt3cE
+         zVUQCyC7br3ZbEAax1X14KNp43UW3NrOMGlpvA5S+MR042J0iw6J1NVoNILc2cklfQJp
+         BLIeYmFSvoywXful7Hh/+vv5tpjxCd+wFSjSk=
+MIME-Version: 1.0
+In-Reply-To: <4A34A3C0.80103@gmail.com>
+References: <4A33A841.6080902@gmail.com>
+	 <20090613140647.GD30053@uranus.ravnborg.org>
+	 <4A34A3C0.80103@gmail.com>
+Date: Tue, 16 Jun 2009 19:15:03 -0700
+Message-ID: <6934efce0906161915t280bf69ek450b3c6220a7d379@mail.gmail.com>
+Subject: Re: [PATCH 14/14] Pramfs: XIP operations
+From: Jared Hulbert <jaredeh@gmail.com>
+To: Marco <marco.stornelli@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090617111443B.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 17 Jun 2009 11:15:02 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-parport_pc_probe_port() creates the own 'parport_pc' device if the
-device argument is NULL. Then parport_pc_probe_port() doesn't
-initialize the dma_mask and coherent_dma_mask of the device and calls
-dma_alloc_coherent with it. dma_alloc_coherent fails because
-dma_alloc_coherent() doesn't accept the uninitialized dma_mask:
+> I know. It wasn't my intention to introduce it but as I said in my first
+> patch I've done a porting of this code from 2.6.10 and to remove it I
+> need time to analyze well the code to avoid deadlock and so on. If
+> someone would like to help me I'd really appreciate it. However I see
+> the use of BKL even in other recent "mainlined" fs as ext4, so I
+> preferred to move the porting effort on other areas. However it's the
+> first item on my todo list.
 
-http://lkml.org/lkml/2009/6/16/150
 
-Long ago, X86_32 and X86_64 had the own dma_alloc_coherent
-implementations; X86_32 accepted a device having dma_mask that is not
-initialized however X86_64 didn't. When we merged them, we chose to
-prohibit a device having dma_mask that is not initialized. I think
-that it's good to require drivers to set up dma_mask (and
-coherent_dma_mask) properly if the drivers want DMA.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Reported-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
-Tested-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
-Cc: stable@kernel.org
----
- drivers/parport/parport_pc.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-index 151bf5b..1af57b7 100644
---- a/drivers/parport/parport_pc.c
-+++ b/drivers/parport/parport_pc.c
-@@ -2271,6 +2271,9 @@ struct parport *parport_pc_probe_port(unsigned long int base,
- 		if (IS_ERR(pdev))
- 			return NULL;
- 		dev = &pdev->dev;
-+
-+		dev->coherent_dma_mask = DMA_BIT_MASK(24);
-+		dev->dma_mask = &dev->coherent_dma_mask;
- 	}
- 
- 	ops = kmalloc(sizeof(struct parport_operations), GFP_KERNEL);
--- 
-1.6.0.6
-
+Why do you need the lock in pram_find_and_alloc_blocks() to begin
+with?  Why wouldn't a mutex work?
