@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbZFQQYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbZFQQXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbZFQQYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbZFQQYI
+	id S1757936AbZFQQXo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbZFQQXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 12:24:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33233 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755680AbZFQQYH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 12:24:07 -0400
-Date: Wed, 17 Jun 2009 09:23:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Andrew Patterson <andrew.patterson@hp.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
-Subject: Re: [PATCH 0/1] Recurse when searching for empty slots in resources
- trees
-In-Reply-To: <20090617134311.GR19977@parisc-linux.org>
-Message-ID: <alpine.LFD.2.01.0906170922380.16802@localhost.localdomain>
-References: <20090616220419.14021.84524.stgit@bob.kio> <4A38B3B4.1020304@jp.fujitsu.com> <20090617134311.GR19977@parisc-linux.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 17 Jun 2009 12:23:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54871 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757375AbZFQQXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 12:23:19 -0400
+Date: Wed, 17 Jun 2009 18:23:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frans Pop <elendil@planet.nl>
+Cc: Subrata Modak <subrata@linux.vnet.ibm.com>,
+       "Figo.zhang" <figo1802@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       Sumit Panchasara <sumit.panchasara@einfochips.com>,
+       "'Sachin P Sant'" <sachinp@linux.vnet.ibm.com>,
+       "'H. Peter Anvin'" <hpa@zytor.com>,
+       "'Andi Kleen'" <andi@firstfloor.org>,
+       "'Thomas Gleixner'" <tglx@linutronix.de>,
+       "'Balbir Singh'" <balbir@linux.vnet.ibm.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [PATCH]x86-tsc.c : fix compile warning
+Message-ID: <20090617162303.GA10158@elte.hu>
+References: <1245247057.3312.2.camel@myhost> <1245248241.4870.12.camel@subratamodak.linux.ibm.com> <20090617152802.GB6042@elte.hu> <200906171812.51478.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906171812.51478.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Frans Pop <elendil@planet.nl> wrote:
 
-On Wed, 17 Jun 2009, Matthew Wilcox wrote:
+> On Wednesday 17 June 2009, Ingo Molnar wrote:
+> > Ah, and you fixed in what a superior way: you improved the code in
+> > the process :-) This is how warnings should be fixed really.
 > 
-> Anyway, this should fix pci_claim_resource (untested):
+> Hmm. Did you also see Pavel's reply to that patch [1]:
+> ! But that's a bug to be fixed, I'd say? ... actually I believe you are
+> ! introducing a bug here. Yes, old code would put random numbers in
+> ! loops_per_jiffy_ref for !CPUFREQ_CONST_LOOPS, but you are introducing
+> ! oops there.
+> 
+> Was his comment incorrect?
+> 
+> Cheers,
+> FJP
+> 
+> [1] http://lkml.org/lkml/2009/5/24/159
 
-Ack. This looks very sane. I'll happily commit this, but would be even 
-happier to hear that it got some testing too, so I'll hold off for a 
-while.
+hm, Pavel seems right - i missed that. Subrata, mind sending an 
+updated patch?
 
-		Linus
+Thanks,
+
+	Ingo
