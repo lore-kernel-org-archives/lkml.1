@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932738AbZFQIgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765215AbZFQIhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932738AbZFQIgL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765149AbZFQIfk
+	id S1765215AbZFQIhM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbZFQIg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:35:40 -0400
-Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:38894 "HELO
-	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1765129AbZFQIfh (ORCPT
+	Wed, 17 Jun 2009 04:36:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37279
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751068AbZFQIgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:35:37 -0400
-Message-ID: <971371.70253.qm@web32604.mail.mud.yahoo.com>
-X-YMail-OSG: 7qrMRSEVM1nJGfcNZEKTxDdtb9EXxFp1k0OcrP.NwAMxaokaSUe.GF7EKgn9ayARcUGaBWCIVcbdDcYa6IGaP3FcvyZvOC79MwgFK6q1UPJVnedpBH1KzQYSYkD8_Za_B8RrWl0ewcO8tOlWp3aVq6WLOtc.Pw.nvk5Cc6mW6O7rhQWzOACCG4BSGhBU6fhY1UO94b78FIEZUFTwXWEh2sL0lLlf5KZOTCKWbdc3amUZ2Q8Kqdm5.8cPkU70.0Yzm42Q61g3I066tAoMxO_4wN6ouQo2e31llGVRHTYHjFh70Q--
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.15
-References: <488605.71443.qm@web32605.mail.mud.yahoo.com> <20090527133125.c36381b5.akpm@linux-foundation.org> <ac3eb2510905271356n1b01f273jca1f7aa8fc65c78b@mail.gmail.com> <170150.72851.qm@web32604.mail.mud.yahoo.com> <20090616122547.1323d2d4@jbarnes-g45>
-Date: Wed, 17 Jun 2009 01:35:38 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, efault@gmx.de,
-       viro@zeniv.linux.org.uk, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, matthew@wil.cx, mike.miller@hp.com,
-       James Owens <JOwens@hp.com>
-In-Reply-To: <20090616122547.1323d2d4@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 17 Jun 2009 04:36:55 -0400
+Date: Wed, 17 Jun 2009 01:36:58 -0700 (PDT)
+Message-Id: <20090617.013658.58706664.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net,
+       geert@linux-m68k.org
+Subject: Re: linux-next: net tree build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090617163112.e14e064d.sfr@canb.auug.org.au>
+References: <20090617163112.e14e064d.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 17 Jun 2009 16:31:12 +1000
 
------ Original Message ----
-
-> From: Jesse Barnes <jbarnes@virtuousgeek.org>
-> To: Martin Knoblauch <knobi@knobisoft.de>
-> Cc: Kay Sievers <kay.sievers@vrfy.org>; Andrew Morton <akpm@linux-foundation.org>; efault@gmx.de; viro@zeniv.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; shemminger@vyatta.com; matthew@wil.cx; mike.miller@hp.com
-> Sent: Tuesday, June 16, 2009 9:25:47 PM
-> Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+> Today's linux-next build (m68k defconfig) failed like this:
 > 
-> On Thu, 28 May 2009 02:14:46 -0700 (PDT)
-> Martin Knoblauch wrote:
-> > > I expect the duplicate comes from a left-over mount in initramfs
-> > > which isn't a duplicate in the sense of a bug in vfs or mount or
-> > > anything. I guess, it is just still mounted in the initial kernel
-> > > rootfs, below the root from the disk. It could be that a umount
-> > > from initramfs did go wrong because of a changed timing.
-> > > 
-> > 
-> >  This is what I suspect as well. I know for sure that the first
-> > sysfs-line in /proc/mounts
-> > 
-> > | none /sys sysfs rw 0 0
-> > 
-> > is already there (2.6.29-rc1 and up) when entering startup-skripts.
-> > It is supposed to be unmounted before, but something seems to prevent
-> > it. I have idea how to capture debug output from the initrd/init
-> > script :-(
+> drivers/net/sonic.c: In function 'sonic_send_packet':
+> drivers/net/sonic.c:227: error: expected ';' before '}' token
 > 
-> What's the latest here Martin?  It sounded like this was a userspace
-> issue, with something reading the VPD over and over?  Or was it just a
-> longer timeout that caused a specific driver to slow everything down?
-> 
+> Caused by commit 5b548140225c6bbbbd560551dd1048b2c0ce58be ("net: use
+> symbolic values for ndo_start_xmit() return codes") which lost a
+> semicolon in drivers/net/sonic.c.
 
- Not sure about the VPD thing. Anyway, no real news. Still happens in 2.6.30. But it only happens on a certain HW platform (HP/DL380G4). The folks at HP try to reproduce in their environment.
+I just pushed the following fix, thanks!
 
-Cheers
-Martin
+sonic: Fix build after ndo_start_xmit() changes.
+
+Noticed by Stephen Rothwell.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/net/sonic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/sonic.c b/drivers/net/sonic.c
+index e4255d8..753a1fb 100644
+--- a/drivers/net/sonic.c
++++ b/drivers/net/sonic.c
+@@ -223,7 +223,7 @@ static int sonic_send_packet(struct sk_buff *skb, struct net_device *dev)
+ 	if (!laddr) {
+ 		printk(KERN_ERR "%s: failed to map tx DMA buffer.\n", dev->name);
+ 		dev_kfree_skb(skb);
+-		return NETDEV_TX_BUSY
++		return NETDEV_TX_BUSY;
+ 	}
+ 
+ 	sonic_tda_put(dev, entry, SONIC_TD_STATUS, 0);       /* clear status */
+-- 
+1.6.3.2
 
