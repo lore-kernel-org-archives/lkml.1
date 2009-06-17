@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760539AbZFQBCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbZFQBDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760539AbZFQBCD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Jun 2009 21:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758431AbZFQBBy
+	id S1759950AbZFQBDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Jun 2009 21:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZFQBDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Jun 2009 21:01:54 -0400
-Received: from mga01.intel.com ([192.55.52.88]:41634 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969AbZFQBBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Jun 2009 21:01:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,233,1243839600"; 
-   d="scan'208";a="700028688"
-Date: Wed, 17 Jun 2009 09:01:40 +0800
-From: "Li, Yan I" <yan.i.li@intel.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "greg@kroah.com" <greg@kroah.com>, yanli@infradead.org
-Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
-Message-ID: <20090617010138.GA13479@thyme.bj.intel.com>
-Mail-Followup-To: Matthew Garrett <mjg59@srcf.ucam.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	"linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"greg@kroah.com" <greg@kroah.com>, yanli@infradead.org
-References: <20090615141613.GA7876@sage.bj.intel.com> <20090615143446.GB19451@srcf.ucam.org> <20090615144748.GA25734@thyme.bj.intel.com> <20090616154200.GA12715@srcf.ucam.org> <20090616173618.353901ee@lxorguk.ukuu.org.uk> <20090616164351.GA14353@srcf.ucam.org> <20090616181549.496ae0f2@lxorguk.ukuu.org.uk> <20090616171732.GA14912@srcf.ucam.org>
+	Tue, 16 Jun 2009 21:03:32 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:62757 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZFQBDb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Jun 2009 21:03:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OvS2TQsL5eEO+2QNF7eIzMzfrTTT2ODPm7blS8JXFtx19H4Dn0VxcwqQYlZnQE40iv
+         NDD1THFRfYMLdojNNDBYJqr7F0L98j5Dqx7obaQmBT0gMB1KrR/SizCWEJ6fi/P0yslW
+         0gTxUyE1kl/PX2+CHo3lJH1z8HNP+90GIvQJQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616171732.GA14912@srcf.ucam.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090617093654B.fujita.tomonori@lab.ntt.co.jp>
+References: <4A37DB0F.7060801@freescale.com> <200906162002.12376.arnd@arndb.de>
+	 <1245197925.21602.0.camel@pasglop>
+	 <20090617093654B.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 17 Jun 2009 02:56:17 +0200
+Message-ID: <c384c5ea0906161756j4b701abfj2a8908b9c93ddd04@mail.gmail.com>
+Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: benh@kernel.crashing.org, arnd@arndb.de, scottwood@freescale.com,
+       chris.pringle@oxtel.com, linuxppc-dev@lists.ozlabs.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 01:17:32AM +0800, Matthew Garrett wrote:
-> So the touchpad on these machines doesn't work with generic Windows? I'm 
-> interested in the specifics, not general issues with i8042 
-> implementations. We've repeatedly seen that these quirk tables end up 
-> inadequately comprehensive and in several cases have masked the actual 
-> problem.
+Hello all,
 
-Now we have more than 99% machines work well with current i8042 code
-path, and less than 1% of machines (those MSI Wind & clones) that
-don't work unless being added to this list.
+On Wed, Jun 17, 2009 at 2:37 AM, FUJITA
+Tomonori<fujita.tomonori@lab.ntt.co.jp> wrote:
+> On Wed, 17 Jun 2009 10:18:45 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+>> On Tue, 2009-06-16 at 20:02 +0200, Arnd Bergmann wrote:
+>> > On Tuesday 16 June 2009, Scott Wood wrote:
+>> > > > If the
+>> > > > device is the only one, you can also use dma_alloc_noncoherent() and
+>> > > > flush explicitly with dma_cache_sync().
+>> > >
+>> > > I don't see how that would help -- aren't those also controlled by
+>> > > CONFIG_NOT_COHERENT_CACHE?
+>> >
+>> > Ah, yes you are right. PowerPC implements dma_alloc_noncoherent as
+>> > dma_alloc_coherent, so dma_cache_sync() is actually a NOP (or should be).
+>>
+>> But we still need to sync the result of dma_map_* when used multiple
+>> times for a single mapping.
+>
+> We have dma_sync_{single|sg}_for_{cpu|device} API for the above
+> purpose.
+>
+> dma_cache_sync is supposed to be used only with the buffers that
+> dma_alloc_noncoherent() returns. On architecutures that maps
+> dma_alloc_noncoherent to dma_alloc_coherent, dma_cache_sync() is
+> supposed to be NOP.
 
-If we do multiple-resetting unconditionally (for all machines), we are
-effectively:
-1. fixing things that works well
-2. make >99% machines (the good citizens) untested
+This discussion raised some doubt with me about my use case:
 
-This seems a change too aggressive for me. Do we have a good reason
-for taking this risk? 
+I my case (note I am not the poster) I am using (what LDD3 calls)
+streaming mappings:
 
-Of course if we found the "actual problem" we'd conjure up a better
-fix. But before that, I'd prefer the conservative way.
+I use pci_map_sg(), have the device perform either DMA master reads or
+writes to the bus address using PCIe.
+After that, I use pci_unmap_sg().
+
+My assumption is that pci_unmap_sg() either makes the cache coherent
+or invalidated and thus I do not need to take further actions.
+This is on a MPC83xx or 85xx system.
+
+Is this assumption correct?
+
+Regards,
+
+Leon/
 
 -- 
-Best regards,
-Li, Yan
-
-Moblin Team, Opensource Technology Center, SSG, Intel
-Office tel.: +86-10-82171695 (inet: 8-758-1695)
-OpenPGP key: 5C6C31EF
-IRC: yanli on network irc.freenode.net
+Leon
