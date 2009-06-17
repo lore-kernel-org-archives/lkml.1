@@ -1,350 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764717AbZFQIpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762942AbZFQIpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764717AbZFQIpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZFQIp2
+	id S1762942AbZFQIpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765239AbZFQIpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:45:28 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50113 "EHLO song.cn.fujitsu.com"
+	Wed, 17 Jun 2009 04:45:38 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64088 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbZFQIp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:45:27 -0400
-Message-ID: <4A38AD7F.2070408@cn.fujitsu.com>
-Date: Wed, 17 Jun 2009 16:46:55 +0800
+	id S1765285AbZFQIpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 04:45:35 -0400
+Message-ID: <4A38AD93.4070300@cn.fujitsu.com>
+Date: Wed, 17 Jun 2009 16:47:15 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
 CC: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] tracing/filters: restore orignal filter when new filter
- isn't applicable
+Subject: [PATCH 2/2] tracing/filters: remove error messages
+References: <4A38AD7F.2070408@cn.fujitsu.com>
+In-Reply-To: <4A38AD7F.2070408@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-| commit 7ce7e4249921d5073e764f7ff7ad83cfa9894bd7
-| Author: Tom Zanussi <tzanussi@gmail.com>
-| Date:   Sun Mar 22 03:31:04 2009 -0500
-|
-|     tracing: add per-event filtering
-|     ...
-|
-|     Filters can also be set or cleared for a complete subsystem by writing
-|     the same filter as would be written to an individual event to the
-|     filter file at the root of the subsytem.  Note however, that if any
-|     event in the subsystem lacks a field specified in the filter being
-|     set, the set will fail and all filters in the subsytem are
-|     automatically cleared.  This change from the previous version was made
-|     because using only the fields that happen to exist for a given event
-|     would most likely result in a meaningless filter.
+Now we restore original filter is the new one can't be applied,
+and no long show error messages, so we can remove them totally.
 
-I really don't like this change. It is inconvenient, and makes subsystem
-filter much less useful:
-
-  # echo 'vec == 1' > irq/softirq_entry/filter
-  # echo 'irq == 5' > irq/filter
-  bash: echo: write error: Invalid argument
-  # cat irq/softirq_entry/filter
-  none
-
-I'd expect this will set the filter for irq_handler_entry and
-irq_handler_exit, and won't touch softirq_entry and softirq_exit.
-
-But it just failed, and what's worse, each event's filter was
-cleared.
-
-The basic idea of this patch is, save the filter before applying
-the new one, and fall back to it if the new one can't be applied:
-
-  # echo 'vec == 1' > softirq_entry/filter
-  # echo 'irq == 5' > filter
-  # cat irq_handler_entry/filter
-  irq == 5
-  # cat softirq_entry/filter
-  vec == 1
-
-[ Impact: allow subsystem filter be applied to parts of the subsys ]
+Another reason is, I don't think it's good to show error messages
+when reading a control file.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/trace.h               |    2 +
- kernel/trace/trace_events_filter.c |  138 +++++++++++++++++++++++++++++-------
- 2 files changed, 114 insertions(+), 26 deletions(-)
+ kernel/trace/trace_events_filter.c |  168 ++++++------------------------------
+ 1 files changed, 27 insertions(+), 141 deletions(-)
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 7d5cc37..b5153e9 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -763,6 +763,8 @@ struct event_filter {
- 	int			n_preds;
- 	struct filter_pred	**preds;
- 	char			*filter_string;
-+	char			*old_filter;
-+	bool			need_reset;
- };
- 
- struct event_subsystem {
 diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 936c621..2f706e5 100644
+index 2f706e5..cd7a928 100644
 --- a/kernel/trace/trace_events_filter.c
 +++ b/kernel/trace/trace_events_filter.c
-@@ -246,6 +246,29 @@ static int replace_filter_string(struct event_filter *filter,
- 	return 0;
+@@ -60,36 +60,6 @@ static struct filter_op filter_ops[] = {
+ 	{ OP_OPEN_PAREN, "(", 0 },
+ };
+ 
+-enum {
+-	FILT_ERR_NONE,
+-	FILT_ERR_INVALID_OP,
+-	FILT_ERR_UNBALANCED_PAREN,
+-	FILT_ERR_TOO_MANY_OPERANDS,
+-	FILT_ERR_OPERAND_TOO_LONG,
+-	FILT_ERR_FIELD_NOT_FOUND,
+-	FILT_ERR_ILLEGAL_FIELD_OP,
+-	FILT_ERR_ILLEGAL_INTVAL,
+-	FILT_ERR_BAD_SUBSYS_FILTER,
+-	FILT_ERR_TOO_MANY_PREDS,
+-	FILT_ERR_MISSING_FIELD,
+-	FILT_ERR_INVALID_FILTER,
+-};
+-
+-static char *err_text[] = {
+-	"No error",
+-	"Invalid operator",
+-	"Unbalanced parens",
+-	"Too many operands",
+-	"Operand too long",
+-	"Field not found",
+-	"Illegal operation for field type",
+-	"Illegal integer value",
+-	"Couldn't find or set field in one of a subsystem's events",
+-	"Too many terms in predicate expression",
+-	"Missing field name and/or value",
+-	"Meaningless filter expression",
+-};
+-
+ struct opstack_op {
+ 	int op;
+ 	struct list_head list;
+@@ -105,8 +75,6 @@ struct filter_parse_state {
+ 	struct filter_op *ops;
+ 	struct list_head opstack;
+ 	struct list_head postfix;
+-	int lasterr;
+-	int lasterr_pos;
+ 
+ 	struct {
+ 		char *string;
+@@ -223,12 +191,6 @@ int filter_match_preds(struct ftrace_event_call *call, void *rec)
+ }
+ EXPORT_SYMBOL_GPL(filter_match_preds);
+ 
+-static void parse_error(struct filter_parse_state *ps, int err, int pos)
+-{
+-	ps->lasterr = err;
+-	ps->lasterr_pos = pos;
+-}
+-
+ static void remove_filter_string(struct event_filter *filter)
+ {
+ 	kfree(filter->filter_string);
+@@ -269,48 +231,6 @@ static void free_old_filter(struct event_filter *filter)
+ 	filter->old_filter = NULL;
  }
  
-+static int save_old_filter(struct event_filter *filter)
-+{
-+	char *old = filter->old_filter;
-+
-+	kfree(old);
-+
-+	if (filter->filter_string)
-+		old = kstrdup(filter->filter_string, GFP_KERNEL);
-+	else
-+		old = kstrdup("0", GFP_KERNEL);
-+	filter->old_filter = old;
-+
-+	if (!old)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+static void free_old_filter(struct event_filter *filter)
-+{
-+	kfree(filter->old_filter);
-+	filter->old_filter = NULL;
-+}
-+
- static int append_filter_string(struct event_filter *filter,
- 				char *string)
+-static int append_filter_string(struct event_filter *filter,
+-				char *string)
+-{
+-	int newlen;
+-	char *new_filter_string;
+-
+-	BUG_ON(!filter->filter_string);
+-	newlen = strlen(filter->filter_string) + strlen(string) + 1;
+-	new_filter_string = kmalloc(newlen, GFP_KERNEL);
+-	if (!new_filter_string)
+-		return -ENOMEM;
+-
+-	strcpy(new_filter_string, filter->filter_string);
+-	strcat(new_filter_string, string);
+-	kfree(filter->filter_string);
+-	filter->filter_string = new_filter_string;
+-
+-	return 0;
+-}
+-
+-static void append_filter_err(struct filter_parse_state *ps,
+-			      struct event_filter *filter)
+-{
+-	int pos = ps->lasterr_pos;
+-	char *buf, *pbuf;
+-
+-	buf = (char *)__get_free_page(GFP_TEMPORARY);
+-	if (!buf)
+-		return;
+-
+-	append_filter_string(filter, "\n");
+-	memset(buf, ' ', PAGE_SIZE);
+-	if (pos > PAGE_SIZE - 128)
+-		pos = 0;
+-	buf[pos] = '^';
+-	pbuf = &buf[pos] + 1;
+-
+-	sprintf(pbuf, "\nparse_error: %s\n", err_text[ps->lasterr]);
+-	append_filter_string(filter, buf);
+-	free_page((unsigned long) buf);
+-}
+-
+ void print_event_filter(struct ftrace_event_call *call, struct trace_seq *s)
  {
-@@ -374,6 +397,8 @@ void destroy_preds(struct ftrace_event_call *call)
  	struct event_filter *filter = call->filter;
- 	int i;
- 
-+	WARN_ON(filter->old_filter);
-+
- 	for (i = 0; i < MAX_FILTER_PRED; i++) {
- 		if (filter->preds[i])
- 			filter_free_pred(filter->preds[i]);
-@@ -418,10 +443,9 @@ oom:
- }
- EXPORT_SYMBOL_GPL(init_preds);
- 
--static void filter_free_subsystem_preds(struct event_subsystem *system)
-+static void __filter_free_subsystem_preds(struct event_subsystem *system)
- {
- 	struct event_filter *filter = system->filter;
--	struct ftrace_event_call *call;
- 	int i;
- 
- 	if (filter->n_preds) {
-@@ -431,11 +455,22 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 		filter->preds = NULL;
- 		filter->n_preds = 0;
+@@ -478,18 +398,15 @@ static void filter_free_subsystem_preds(struct event_subsystem *system,
  	}
-+}
-+
-+static void filter_free_subsystem_preds(struct event_subsystem *system,
-+					bool save_old)
-+{
-+	struct ftrace_event_call *call;
-+
-+	__filter_free_subsystem_preds(system);
+ }
  
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		if (!call->define_fields)
- 			continue;
+-static int filter_add_pred_fn(struct filter_parse_state *ps,
+-			      struct ftrace_event_call *call,
++static int filter_add_pred_fn(struct ftrace_event_call *call,
+ 			      struct filter_pred *pred,
+ 			      filter_pred_fn_t fn)
+ {
+ 	struct event_filter *filter = call->filter;
+ 	int idx, err;
  
-+		if (save_old)
-+			save_old_filter(call->filter);
-+
- 		if (!strcmp(call->system, system->name)) {
- 			filter_disable_preds(call);
- 			remove_filter_string(call->filter);
-@@ -608,8 +643,9 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+-	if (filter->n_preds == MAX_FILTER_PRED) {
+-		parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
++	if (filter->n_preds == MAX_FILTER_PRED)
+ 		return -ENOSPC;
+-	}
+ 
+ 	idx = filter->n_preds;
+ 	filter_clear_pred(filter->preds[idx]);
+@@ -570,8 +487,7 @@ static filter_pred_fn_t select_comparison_fn(int op, int field_size,
+ 	return fn;
+ }
+ 
+-static int filter_add_pred(struct filter_parse_state *ps,
+-			   struct ftrace_event_call *call,
++static int filter_add_pred(struct ftrace_event_call *call,
+ 			   struct filter_pred *pred)
+ {
+ 	struct ftrace_event_field *field;
+@@ -584,24 +500,20 @@ static int filter_add_pred(struct filter_parse_state *ps,
+ 
+ 	if (pred->op == OP_AND) {
+ 		pred->pop_n = 2;
+-		return filter_add_pred_fn(ps, call, pred, filter_pred_and);
++		return filter_add_pred_fn(call, pred, filter_pred_and);
+ 	} else if (pred->op == OP_OR) {
+ 		pred->pop_n = 2;
+-		return filter_add_pred_fn(ps, call, pred, filter_pred_or);
++		return filter_add_pred_fn(call, pred, filter_pred_or);
+ 	}
+ 
+ 	field = find_event_field(call, pred->field_name);
+-	if (!field) {
+-		parse_error(ps, FILT_ERR_FIELD_NOT_FOUND, 0);
++	if (!field)
+ 		return -EINVAL;
+-	}
+ 
+ 	pred->offset = field->offset;
+ 
+-	if (!is_legal_op(field, pred->op)) {
+-		parse_error(ps, FILT_ERR_ILLEGAL_FIELD_OP, 0);
++	if (!is_legal_op(field, pred->op))
+ 		return -EINVAL;
+-	}
+ 
+ 	string_type = is_string_field(field->type);
+ 	if (string_type) {
+@@ -612,33 +524,28 @@ static int filter_add_pred(struct filter_parse_state *ps,
+ 		pred->str_len = field->size;
+ 		if (pred->op == OP_NE)
+ 			pred->not = 1;
+-		return filter_add_pred_fn(ps, call, pred, fn);
++		return filter_add_pred_fn(call, pred, fn);
+ 	} else {
+ 		if (field->is_signed)
+ 			ret = strict_strtoll(pred->str_val, 0, &val);
+ 		else
+ 			ret = strict_strtoull(pred->str_val, 0, &val);
+-		if (ret) {
+-			parse_error(ps, FILT_ERR_ILLEGAL_INTVAL, 0);
++		if (ret)
+ 			return -EINVAL;
+-		}
+ 		pred->val = val;
+ 	}
+ 
+ 	fn = select_comparison_fn(pred->op, field->size, field->is_signed);
+-	if (!fn) {
+-		parse_error(ps, FILT_ERR_INVALID_OP, 0);
++	if (!fn)
+ 		return -EINVAL;
+-	}
+ 
+ 	if (pred->op == OP_NE)
+ 		pred->not = 1;
+ 
+-	return filter_add_pred_fn(ps, call, pred, fn);
++	return filter_add_pred_fn(call, pred, fn);
+ }
+ 
+-static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+-				     struct event_subsystem *system,
++static int filter_add_subsystem_pred(struct event_subsystem *system,
+ 				     struct filter_pred *pred,
  				     char *filter_string)
  {
- 	struct event_filter *filter = system->filter;
-+	struct event_filter *call_filter;
- 	struct ftrace_event_call *call;
--	int err = 0;
-+	int err;
- 
- 	if (!filter->preds) {
- 		filter->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred),
-@@ -629,22 +665,23 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 
- 	list_for_each_entry(call, &ftrace_events, list) {
- 
-+		call_filter = call->filter;
-+
- 		if (!call->define_fields)
- 			continue;
- 
- 		if (strcmp(call->system, system->name))
- 			continue;
- 
-+		if (call_filter->need_reset)
-+			continue;
-+
- 		err = filter_add_pred(ps, call, pred);
--		if (err) {
--			filter_free_subsystem_preds(system);
--			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
--			goto out;
--		}
--		replace_filter_string(call->filter, filter_string);
-+		if (err)
-+			call_filter->need_reset = true;
+@@ -655,10 +562,8 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+ 			return -ENOMEM;
  	}
--out:
--	return err;
-+
-+	return 0;
- }
  
- static void parse_init(struct filter_parse_state *ps,
-@@ -1063,25 +1100,21 @@ static int replace_preds(struct event_subsystem *system,
+-	if (filter->n_preds == MAX_FILTER_PRED) {
+-		parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
++	if (filter->n_preds == MAX_FILTER_PRED)
+ 		return -ENOSPC;
+-	}
+ 
+ 	filter->preds[filter->n_preds] = pred;
+ 	filter->n_preds++;
+@@ -676,7 +581,7 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+ 		if (call_filter->need_reset)
+ 			continue;
+ 
+-		err = filter_add_pred(ps, call, pred);
++		err = filter_add_pred(call, pred);
+ 		if (err)
+ 			call_filter->need_reset = true;
+ 	}
+@@ -906,10 +811,8 @@ static int filter_parse(struct filter_parse_state *ps)
+ 
+ 		if (is_op_char(ps, ch)) {
+ 			op = infix_get_op(ps, ch);
+-			if (op == OP_NONE) {
+-				parse_error(ps, FILT_ERR_INVALID_OP, 0);
++			if (op == OP_NONE)
+ 				return -EINVAL;
+-			}
+ 
+ 			if (strlen(curr_operand(ps))) {
+ 				postfix_append_operand(ps, curr_operand(ps));
+@@ -948,17 +851,13 @@ static int filter_parse(struct filter_parse_state *ps)
+ 				postfix_append_op(ps, top_op);
+ 				top_op = filter_opstack_pop(ps);
+ 			}
+-			if (top_op == OP_NONE) {
+-				parse_error(ps, FILT_ERR_UNBALANCED_PAREN, 0);
++			if (top_op == OP_NONE)
+ 				return -EINVAL;
+-			}
+ 			continue;
+ 		}
+ parse_operand:
+-		if (append_operand_char(ps, ch)) {
+-			parse_error(ps, FILT_ERR_OPERAND_TOO_LONG, 0);
++		if (append_operand_char(ps, ch))
+ 			return -EINVAL;
+-		}
+ 	}
+ 
+ 	if (strlen(curr_operand(ps)))
+@@ -968,10 +867,8 @@ parse_operand:
+ 		top_op = filter_opstack_pop(ps);
+ 		if (top_op == OP_NONE)
+ 			break;
+-		if (top_op == OP_OPEN_PAREN) {
+-			parse_error(ps, FILT_ERR_UNBALANCED_PAREN, 0);
++		if (top_op == OP_OPEN_PAREN)
+ 			return -EINVAL;
+-		}
+ 		postfix_append_op(ps, top_op);
+ 	}
+ 
+@@ -1029,10 +926,8 @@ static int check_preds(struct filter_parse_state *ps)
+ 		n_normal_preds++;
+ 	}
+ 
+-	if (!n_normal_preds || n_logical_preds >= n_normal_preds) {
+-		parse_error(ps, FILT_ERR_INVALID_FILTER, 0);
++	if (!n_normal_preds || n_logical_preds >= n_normal_preds)
+ 		return -EINVAL;
+-	}
+ 
  	return 0;
  }
+@@ -1057,21 +952,19 @@ static int replace_preds(struct event_subsystem *system,
+ 				operand1 = elt->operand;
+ 			else if (!operand2)
+ 				operand2 = elt->operand;
+-			else {
+-				parse_error(ps, FILT_ERR_TOO_MANY_OPERANDS, 0);
++			else
+ 				return -EINVAL;
+-			}
+ 			continue;
+ 		}
  
--int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
-+int __apply_event_filter(struct ftrace_event_call *call, char *filter_string)
- {
- 	int err;
+ 		if (elt->op == OP_AND || elt->op == OP_OR) {
+ 			pred = create_logical_pred(elt->op);
+ 			if (call) {
+-				err = filter_add_pred(ps, call, pred);
++				err = filter_add_pred(call, pred);
+ 				filter_free_pred(pred);
+ 			} else
+-				err = filter_add_subsystem_pred(ps, system,
+-							pred, filter_string);
++				err = filter_add_subsystem_pred(system, pred,
++								filter_string);
+ 			if (err)
+ 				return err;
  
- 	struct filter_parse_state *ps;
+@@ -1079,17 +972,15 @@ static int replace_preds(struct event_subsystem *system,
+ 			continue;
+ 		}
  
--	mutex_lock(&event_mutex);
--
- 	if (!strcmp(strstrip(filter_string), "0")) {
- 		filter_disable_preds(call);
- 		remove_filter_string(call->filter);
--		mutex_unlock(&event_mutex);
- 		return 0;
- 	}
+-		if (!operand1 || !operand2) {
+-			parse_error(ps, FILT_ERR_MISSING_FIELD, 0);
++		if (!operand1 || !operand2)
+ 			return -EINVAL;
+-		}
  
--	err = -ENOMEM;
- 	ps = kzalloc(sizeof(*ps), GFP_KERNEL);
- 	if (!ps)
--		goto out_unlock;
-+		return -ENOMEM;
- 
- 	filter_disable_preds(call);
- 	replace_filter_string(call->filter, filter_string);
-@@ -1101,23 +1134,52 @@ out:
- 	filter_opstack_clear(ps);
- 	postfix_clear(ps);
- 	kfree(ps);
--out_unlock:
--	mutex_unlock(&event_mutex);
- 
- 	return err;
- }
- 
-+void __apply_event_old_filter(struct ftrace_event_call *call)
-+{
-+	struct event_filter *filter = call->filter;
-+	int ret;
-+
-+	ret = __apply_event_filter(call, filter->old_filter);
-+	if (ret) {
-+		ret = __apply_event_filter(call, "0");
-+		WARN_ON(ret);
-+	}
-+}
-+
-+int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
-+{
-+	int ret;
-+
-+	ret = save_old_filter(call->filter);
-+	if (ret)
-+		return ret;
-+
-+	mutex_lock(&event_mutex);
-+	ret = __apply_event_filter(call, filter_string);
-+	if (ret)
-+		__apply_event_old_filter(call);
-+	mutex_unlock(&event_mutex);
-+
-+	free_old_filter(call->filter);
-+	return ret;
-+}
-+
- int apply_subsystem_event_filter(struct event_subsystem *system,
- 				 char *filter_string)
- {
--	int err;
--
-+	struct event_filter *filter;
-+	struct ftrace_event_call *call;
- 	struct filter_parse_state *ps;
-+	int err;
- 
- 	mutex_lock(&event_mutex);
- 
- 	if (!strcmp(strstrip(filter_string), "0")) {
--		filter_free_subsystem_preds(system);
-+		filter_free_subsystem_preds(system, false);
- 		remove_filter_string(system->filter);
- 		mutex_unlock(&event_mutex);
- 		return 0;
-@@ -1128,24 +1190,48 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
- 	if (!ps)
- 		goto out_unlock;
- 
--	filter_free_subsystem_preds(system);
--	replace_filter_string(system->filter, filter_string);
-+	filter = system->filter;
-+	filter_free_subsystem_preds(system, true);
-+	save_old_filter(filter);
-+	replace_filter_string(filter, filter_string);
+ 		pred = create_pred(elt->op, operand1, operand2);
+ 		if (call) {
+-			err = filter_add_pred(ps, call, pred);
++			err = filter_add_pred(call, pred);
+ 			filter_free_pred(pred);
+ 		} else
+-			err = filter_add_subsystem_pred(ps, system, pred,
++			err = filter_add_subsystem_pred(system, pred,
+ 							filter_string);
+ 		if (err)
+ 			return err;
+@@ -1121,15 +1012,10 @@ int __apply_event_filter(struct ftrace_event_call *call, char *filter_string)
  
  	parse_init(ps, filter_ops, filter_string);
  	err = filter_parse(ps);
- 	if (err) {
--		append_filter_err(ps, system->filter);
-+		replace_filter_string(filter, filter->old_filter);
+-	if (err) {
+-		append_filter_err(ps, call->filter);
++	if (err)
  		goto out;
- 	}
+-	}
  
- 	err = replace_preds(system, NULL, ps, filter_string);
- 	if (err)
--		append_filter_err(ps, system->filter);
-+		replace_filter_string(filter, filter->old_filter);
-+
-+	/*
-+	 * For those events that the filter can't be applied to,
-+	 * reset them with their original filters.
-+	 */
-+	list_for_each_entry(call, &ftrace_events, list) {
-+		if (!call->define_fields)
-+			continue;
-+
-+		if (strcmp(call->system, system->name) != 0)
-+			continue;
-+
-+		filter = call->filter;
-+		if (filter->need_reset || err) {
-+			filter->need_reset = false;
-+			__apply_event_old_filter(call);
-+		} else
-+			replace_filter_string(filter, filter_string);
-+
-+		free_old_filter(filter);
-+	}
- 
+ 	err = replace_preds(NULL, call, ps, filter_string);
+-	if (err)
+-		append_filter_err(ps, call->filter);
+-
  out:
  	filter_opstack_clear(ps);
  	postfix_clear(ps);
- 	kfree(ps);
-+	free_old_filter(system->filter);
- out_unlock:
- 	mutex_unlock(&event_mutex);
- 
 -- 1.5.4.rc3 
