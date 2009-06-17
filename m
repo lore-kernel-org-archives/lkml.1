@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbZFQQAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZFQQCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbZFQQAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 12:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZFQP7v
+	id S1754997AbZFQQCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 12:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZFQQCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 11:59:51 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44851 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752734AbZFQP7u (ORCPT
+	Wed, 17 Jun 2009 12:02:00 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:11315
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752256AbZFQQCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 11:59:50 -0400
-Date: Wed, 17 Jun 2009 11:59:51 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] driver core: remove unheeded warning about driver methods
-Message-ID: <Pine.LNX.4.44L0.0906171158190.2820-100000@iolanthe.rowland.org>
+	Wed, 17 Jun 2009 12:02:00 -0400
+Message-ID: <4A391373.3050301@panasas.com>
+Date: Wed, 17 Jun 2009 19:01:55 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>,
+       open-osd mailing-list <osd-dev@open-osd.org>
+CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCHSET 0/6] exofs: few patches for Linux 2.6.31
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Jun 2009 16:01:58.0813 (UTC) FILETIME=[F1BB6CD0:01C9EF64]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (as1263) removes a warning which has been present for so
-long, and consistently ignored, that it obviously is not doing any
-good.  It gets triggered on pretty much every boot by the SCSI disk
-and cdrom drivers.  Evidently nobody cares.
+For review the few exofs patches I would like included for current merge window
+(Linux 2.6.31)
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+The main effort on the exofs front was to make it pnfs-exportable. Which for now
+only lives in the pnfs tree. So there was not much left outside of that.
 
----
+Also for final review is the osdblk stacking block driver which is ready
+for submission but is missing a supporting user-mode tool, and some more
+testing love.
 
-Index: usb-2.6/drivers/base/driver.c
-===================================================================
---- usb-2.6.orig/drivers/base/driver.c
-+++ usb-2.6/drivers/base/driver.c
-@@ -225,12 +225,6 @@ int driver_register(struct device_driver
- 
- 	BUG_ON(!drv->bus->p);
- 
--	if ((drv->bus->probe && drv->probe) ||
--	    (drv->bus->remove && drv->remove) ||
--	    (drv->bus->shutdown && drv->shutdown))
--		printk(KERN_WARNING "Driver '%s' needs updating - please use "
--			"bus_type methods\n", drv->name);
--
- 	other = driver_find(drv->name, drv->bus);
- 	if (other) {
- 		put_driver(other);
+The list of patches:
+  [PATCH 1/6] exofs: Fix bio leak in error handling path (sync read)
 
+	A small and rare bug fix
+
+  [PATCH 2/6] exofs: Remove IBM copyrights
+
+	As requested by Original author and IBM folks. The code does not belong
+	to IBM. (Never was)
+
+  [PATCH 3/6] exofs: Avoid using file_fsync()
+
+	This one is left like this. Since other options suggested are not good
+	for exofs since it does not have a block-device and any of the BH stuff.
+
+  [PATCH 4/6] MAINTAINERS: Add osd maintained files (F:)
+
+	Use the new MAINTAINERS F: annotation for the OSD files
+
+  [PATCH 5/6] osdblk: a Linux block device for OSD objects
+  [PATCH 6/6] osdblk: Adjust queue limits to lower device's limits
+
+	This is the proposed osdblk driver by Jeff Garzik. It as all the Kernel
+	pre-requisites, but is missing a user-mode tool and more testing. So I'm
+	not sure it will make it into this Kernel. But for review.
+
+Thanks
+Boaz
