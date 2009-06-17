@@ -1,138 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764807AbZFQICx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZFQIEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764807AbZFQICx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 04:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZFQICg
+	id S1753916AbZFQIEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 04:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZFQIEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 04:02:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39970 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751727AbZFQICb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 04:02:31 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18PA4dpIlsP2zNTLez9nimOlP8j1cIg/vPOi1NUdR
-	VCmsDip42bqVzl
-Subject: Re: Scheduler fails to allow for "niceness" with new/fast processes
-From: Mike Galbraith <efault@gmx.de>
-To: Robert Bradbury <robert.bradbury@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <deaa866a0906160723k78c3c54bv35e2e2406e3d13d1@mail.gmail.com>
-References: <deaa866a0906160723k78c3c54bv35e2e2406e3d13d1@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 17 Jun 2009 10:02:28 +0200
-Message-Id: <1245225748.13620.92.camel@marge.simson.net>
+	Wed, 17 Jun 2009 04:04:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46723 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751727AbZFQIEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 04:04:05 -0400
+Date: Wed, 17 Jun 2009 10:04:04 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] HWPOISON: only early kill processes who installed SIGBUS handler
+Message-ID: <20090617080404.GB31192@wotan.suse.de>
+References: <20090615024520.786814520@intel.com> <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de> <20090615142225.GA11167@localhost> <20090617063702.GA20922@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617063702.GA20922@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 2009-06-16 at 10:23 -0400, Robert Bradbury wrote:
-> I primarily use my system (Gentoo) for 3 tasks: (a) Browsing the web
-> related to biomedical research (I may often have dozens of windows and
-> hundreds of tabs open in several browsers); (b) Running fairly CPU &
-> Disk I/O intensive genetics programs; (c) Performing low priority
-> rebuilds of various packages (Gentoo packages, firefox/chrome
-> releases, etc.
+On Wed, Jun 17, 2009 at 02:37:02PM +0800, Wu Fengguang wrote:
+> On Mon, Jun 15, 2009 at 10:22:25PM +0800, Wu Fengguang wrote:
+> > On Mon, Jun 15, 2009 at 08:25:28PM +0800, Nick Piggin wrote:
+> > > On Mon, Jun 15, 2009 at 08:10:01PM +0800, Wu Fengguang wrote:
+> > > > On Mon, Jun 15, 2009 at 03:19:07PM +0800, Nick Piggin wrote:
+> > > > > > For KVM you need early kill, for the others it remains to be seen.
+> > > > > 
+> > > > > Right. It's almost like you need to do a per-process thing, and
+> > > > > those that can handle things (such as the new SIGBUS or the new
+> > > > > EIO) could get those, and others could be killed.
+> > > > 
+> > > > To send early SIGBUS kills to processes who has called
+> > > > sigaction(SIGBUS, ...)?  KVM will sure do that. For other apps we
+> > > > don't mind they can understand that signal at all.
+> > > 
+> > > For apps that hook into SIGBUS for some other means and
+> > 
+> > Yes I was referring to the sigaction(SIGBUS) apps, others will
+> > be late killed anyway.
+> > 
+> > > do not understand the new type of SIGBUS signal? What about
+> > > those?
+> > 
+> > We introduced two new SIGBUS codes:
+> >         BUS_MCEERR_AO=5         for early kill
+> >         BUS_MCEERR_AR=4         for late  kill
+> > I'd assume a legacy application will handle them in the same way (both
+> > are unexpected code to the application).
+> > 
+> > We don't care whether the application can be killed by BUS_MCEERR_AO
+> > or BUS_MCEERR_AR depending on its SIGBUS handler implementation.
+> > But (in the rare case) if the handler
+> > - refused to die on BUS_MCEERR_AR, it may create a busy loop and
+> >   flooding of SIGBUS signals, which is a bug of the application.
+> >   BUS_MCEERR_AO is one time and won't lead to busy loops.
+> > - does something that hurts itself (ie. data safety) on BUS_MCEERR_AO,
+> >   it may well hurt the same way on BUS_MCEERR_AR. The latter one is
+> >   unavoidable, so the application must be fixed anyway.
 > 
-> Now (a) is my top priority -- I want my active browser to get all of
-> the CPU if it requires it (fast window/tab opens, quick page reloads &
-> redraws, etc.);  (b) is of lesser priority and (c) is lowest priority.
->  This is on a 2.8 GHz Pentium IV (Prescott) with 3GB of RAM and 12GB
-> of swap on two drives.
+> This patch materializes the automatically early kill idea.
+> It aims to remove the vm.memory_failure_ealy_kill sysctl parameter.
 > 
-> Now I normally run (c) processes at nice -n 19 to (in theory) get the
-> least CPU allocation.  But it would appear that this does not work.
+> This is mainly a policy change, please comment.
 
-Can you some supporting data?  I don't think anyone is aware of such a
-CPU distribution problem.
+Well then you can still early-kill random apps that did not
+want it, and you may still cause problems if its sigbus
+handler does something nontrivial.
 
-BTW, which kernel are you running, and which filesystem?
-
->   I
-> often experience extremely poor user (esp. browser) performance when
-> running package builds.  In monitoring the package builds I find that
-> they seem to be stopping at nothing, presumably because the build
-> tools, directories, etc. are all cached in memory as are most of the
-> header files (Gentoo ebuilds have a cache for this).  If the package
-> source files are small or disk read-ahead is working or the source
-> files are entirely cached (many packages which have just been unpacked
-> during the build preparation process are presumably still in the
-> system buffer cache) -- there is no I/O required for them to build.
-
-You still have to get the output to disk, so there is IO.  VM limits and
-IO schedulers come into play, which affect your browsers and whatnot.
-
-> I believe I glanced at an IBM technical report a number of months ago
-> that suggested something to the effect that ongoing "handoffs" to
-> newly started processes could be a way to bypass the regulation of
-> process priorities by the kernel.  This being due to some bias in how
-> the scheduler works in that one has to accumulate some minimum amount
-> of CPU time in order for process "niceness" to have any effect.  (One
-> could imagine setting up a shared memory region to retain any data in
-> memory and continually execing new processes which attach to the
-> memory and avoid any sysadmin imposed CPU use restrictions).
-
-Pointer?
-
-> So my questions are:
-> 1) Are people aware of this problem (CPU intensive cached programs
-> severely impact User Interface program performance and nicing the CPU
-> intensive programs (if they execute quickly) fails to correct the
-> problem)?
-
-I'm aware of _IO_ negatively affecting interactivity, but I'm not aware
-of any CPU distribution problem.
-
-WRT IO, if you're using the CFQ elevator you can try ionice -c3 -p $$
-for your package build shell.
-
->From the scheduler side, nice 19 tasks will still wakeup preempt higher
-priority tasks if they haven't had their fair share of CPU already.  You
-can run your package builds as SCHED_BATCH to avoid that.  There is also
-a SCHED_IDLE scheduling policy which only gives tasks CPU if there is
-nothing else runnable on their current CPU.  This class of task will
-never preempt, and will always be preempted by SCHED_NORMAL tasks.
-
-I don't know what tool distributions provide for juggling scheduling
-policies, but I have a tool (schedctl - posted to LKML some years ago)
-that I hack up regularly.  If you don't have such a tool, and want to
-try these policies, I can send you a copy offline.
-
-> 2) Can this be resolved in any way by altering the scheduler or its
-> parameters in Linux configuration?
-
-We don't yet know that the problems you're experiencing are process
-scheduler related.  As Arjan mentioned, running latencytop may shed some
-light.  Any data or method of reproduction wrt bad behaviors much
-appreciated.
-
->From my own experiences, I strongly suspect IO, but certainly don't want
-to exclude the possibility of a scheduler bug.
-
-> 3) Is there any quick "hack" to the kernel (sched.c?) which forces it
-> to more strongly favor UI programs over niced background tasks (to the
-> extent that if the UI programs, e.g. firefox-bin, X, bash, etc. *want*
-> the CPU or disk (or network even) then they immediately get it by
-> preempting niced processes.  I.e. UI programs always preferentially go
-> to the head of various queues?
-
-Aside from the normal nice levels (which absolutely must work as
-advertised), recent kernels support group scheduling, ie CPU bandwidth
-allocation for groups of tasks.
-
-> The trend seems to be to migrate towards multi-core CPU's rather than
-> fix the scheduler so that "nice" *really* means "only run this if you
-> have nothing else to do".
-
-It may appear that way from your perspective, but I assure you that this
-is not the case.  Nice levels are critical core scheduler functionality.
-
-	-Mike
+Can you use a prctl or something so it can expclitly
+register interest in this?
 
