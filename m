@@ -1,152 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZFQHGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbZFQHHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbZFQHGK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 03:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZFQHF7
+	id S1758521AbZFQHHh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 03:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZFQHH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 03:05:59 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29142 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbZFQHF6 convert rfc822-to-8bit (ORCPT
+	Wed, 17 Jun 2009 03:07:29 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35275 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbZFQHH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 03:05:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,234,1243839600"; 
-   d="scan'208";a="422953527"
-Date: Wed, 17 Jun 2009 14:59:55 +0800
-From: Alek Du <alek.du@intel.com>
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Ben Dooks <ben-linux@fluff.org>, Florian Fainelli <florian@openwrt.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH v2] gpiolib: Add gpio_debounce and gpio_alt_func features to
- GPIOLIB
-Message-ID: <20090617145955.355ef2a9@dxy.sh.intel.com>
-In-Reply-To: <20090616083948.GB14476@trinity.fluff.org>
-References: <20090615171502.2a981bf5@dxy.sh.intel.com>
-	<20090615125146.GC19873@fluff.org.uk>
-	<200906151504.51934.florian@openwrt.org>
-	<20090615130906.GA14476@trinity.fluff.org>
-	<20090616092848.7bb60f21@dxy.sh.intel.com>
-	<20090616083948.GB14476@trinity.fluff.org>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Wed, 17 Jun 2009 03:07:29 -0400
+Date: Wed, 17 Jun 2009 08:07:31 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] vfs patches, part 2
+Message-ID: <20090617070731.GH8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes from v1:
+Mostlty BKL removal in VFS and filesystems. Please, pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git for-linus
 
-Removed gpio_detect since we should do that with irq_chip.set_type function.
+Al Viro (8):
+      No instance of ->bmap() needs BKL
+      fuse doesn't need BKL in ->umount_begin()
+      9P doesn't need BKL in ->umount_begin()
+      Cleanup of adfs headers
+      befs ->pust_super() doesn't need BKL
+      get rid of BKL in fs/efs
+      get rid of BKL in fs/minix
+      get rid of BKL in fs/sysv
 
+J. R. Okajima (1):
+      remove unlock_kernel() left accidentally
 
->From 6b3c9398acf338c263170fcb74c0b2b345ad5369 Mon Sep 17 00:00:00 2001
-From: Alek Du <alek.du@intel.com>
-Date: Wed, 17 Jun 2009 14:50:51 +0800
-Subject: [PATCH] GPIO: Add gpio_debounce and gpio_alt_func features to GPIOLIB
+Linus Torvalds (1):
+      ext3: avoid unnecessary spinlock in critical POSIX ACL path
 
-Add gpio_debounce and gpio_alt_func features to GPIOLIB:
-* gpio_debounce is to adjust signal HW debounce value (need HW support)
-* gpio_alt_func is to set GPIO as alternative function (need HW support)
+Theodore Ts'o (1):
+      ext4: avoid unnecessary spinlock in critical POSIX ACL path
 
-Signed-off-by: Alek Du <alek.du@intel.com>
----
- drivers/gpio/gpiolib.c     |   22 ++++++++++++++++++++++
- include/asm-generic/gpio.h |   11 ++++++++++-
- include/linux/gpio.h       |   10 ++++++++++
- 3 files changed, 42 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 51a8d41..6365038 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1066,6 +1066,28 @@ void __gpio_set_value(unsigned gpio, int value)
- }
- EXPORT_SYMBOL_GPL(__gpio_set_value);
- 
-+void gpio_debounce(unsigned gpio, int value)
-+{
-+	struct gpio_chip	*chip;
-+
-+	chip = gpio_to_chip(gpio);
-+	WARN_ON(extra_checks && chip->can_sleep);
-+	if (chip->debounce)
-+		chip->debounce(chip, gpio - chip->base, value);
-+}
-+EXPORT_SYMBOL_GPL(gpio_debounce);
-+
-+void gpio_alt_func(unsigned gpio, int value)
-+{
-+	struct gpio_chip	*chip;
-+
-+	chip = gpio_to_chip(gpio);
-+	WARN_ON(extra_checks && chip->can_sleep);
-+	if (chip->alt_func)
-+		chip->alt_func(chip, gpio - chip->base, value);
-+}
-+EXPORT_SYMBOL_GPL(gpio_alt_func);
-+
- /**
-  * __gpio_cansleep() - report whether gpio value access will sleep
-  * @gpio: gpio in question
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index d6c379d..bc98c96 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -44,6 +44,8 @@ struct module;
-  *	returns either the value actually sensed, or zero
-  * @direction_output: configures signal "offset" as output, or returns error
-  * @set: assigns output value for signal "offset"
-+ * @debounce: Adjust signal hardware debounce level
-+ * @alt_func: configures signal as GPIO or alternative function
-  * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
-  *	implementation may not sleep
-  * @dbg_show: optional routine to show contents in debugfs; default code
-@@ -89,6 +91,12 @@ struct gpio_chip {
- 	void			(*set)(struct gpio_chip *chip,
- 						unsigned offset, int value);
- 
-+	void			(*debounce)(struct gpio_chip *chip,
-+						unsigned offset,
-+						int value);
-+	void			(*alt_func)(struct gpio_chip *chip,
-+						unsigned offset, int value);
-+
- 	int			(*to_irq)(struct gpio_chip *chip,
- 						unsigned offset);
- 
-@@ -118,7 +126,8 @@ extern void gpio_free(unsigned gpio);
- 
- extern int gpio_direction_input(unsigned gpio);
- extern int gpio_direction_output(unsigned gpio, int value);
--
-+extern void gpio_debounce(unsigned gpio, int value);
-+extern void gpio_alt_func(unsigned gpio, int value);
- extern int gpio_get_value_cansleep(unsigned gpio);
- extern void gpio_set_value_cansleep(unsigned gpio, int value);
- 
-diff --git a/include/linux/gpio.h b/include/linux/gpio.h
-index e10c49a..cf005d5 100644
---- a/include/linux/gpio.h
-+++ b/include/linux/gpio.h
-@@ -82,6 +82,16 @@ static inline void gpio_set_value_cansleep(unsigned gpio, int value)
- 	WARN_ON(1);
- }
- 
-+static inline void gpio_debounce(unsigned gpio, int value)
-+{
-+	WARN_ON(1);
-+}
-+
-+static inline void gpio_alt_func(unsigned gpio, int value)
-+{
-+	WARN_ON(1);
-+}
-+
- static inline int gpio_export(unsigned gpio, bool direction_may_change)
- {
- 	/* GPIO can never have been requested or set as {in,out}put */
--- 
-1.6.0.4
+ Documentation/filesystems/Locking |    2 +-
+ fs/9p/vfs_super.c                 |    3 --
+ fs/adfs/adfs.h                    |   55 +++++++++++++++++++++++++++++++++++++
+ fs/adfs/dir.c                     |    8 -----
+ fs/adfs/dir_f.c                   |    8 -----
+ fs/adfs/dir_fplus.c               |    8 -----
+ fs/adfs/file.c                    |    4 ---
+ fs/adfs/inode.c                   |   10 -------
+ fs/adfs/map.c                     |    6 ----
+ fs/adfs/super.c                   |   17 +----------
+ fs/befs/linuxvfs.c                |    4 ---
+ fs/efs/dir.c                      |    5 +---
+ fs/efs/namei.c                    |    9 +-----
+ fs/efs/symlink.c                  |    7 +----
+ fs/ext3/acl.c                     |   13 +++++---
+ fs/ext4/acl.c                     |   15 ++++++----
+ fs/fuse/inode.c                   |    3 --
+ fs/ioctl.c                        |    2 -
+ fs/minix/bitmap.c                 |   25 +++++++++--------
+ fs/minix/dir.c                    |    5 +---
+ fs/minix/inode.c                  |    4 ---
+ fs/super.c                        |   12 ++------
+ fs/sysv/dir.c                     |    5 +---
+ fs/sysv/inode.c                   |   11 -------
+ include/linux/adfs_fs.h           |   13 ---------
+ include/linux/adfs_fs_i.h         |   24 ----------------
+ include/linux/adfs_fs_sb.h        |   38 -------------------------
+ 27 files changed, 96 insertions(+), 220 deletions(-)
+ delete mode 100644 include/linux/adfs_fs_i.h
+ delete mode 100644 include/linux/adfs_fs_sb.h
