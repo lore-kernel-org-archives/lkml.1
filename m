@@ -1,206 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZFRMPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbZFRMVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755344AbZFRMPU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 08:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZFRMPJ
+	id S1757830AbZFRMVc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 08:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbZFRMVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 08:15:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:10734 "EHLO mga03.intel.com"
+	Thu, 18 Jun 2009 08:21:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33796 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751578AbZFRMPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 08:15:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,244,1243839600"; 
-   d="scan'208";a="155984421"
-Date: Thu, 18 Jun 2009 20:14:30 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in
-	try_to_unmap
-Message-ID: <20090618121430.GA6746@localhost>
-References: <20090615031253.530308256@intel.com> <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com> <20090615152612.GA11700@localhost> <20090616090308.bac3b1f7.minchan.kim@barrios-desktop> <20090616134944.GB7524@localhost> <20090617092826.56730a10.minchan.kim@barrios-desktop> <20090617072319.GA5841@localhost> <28c262360906170644w65c08a8y2d2805fb08045804@mail.gmail.com> <20090617135543.GA8079@localhost> <28c262360906170703h3363b68dp74471358f647921e@mail.gmail.com>
+	id S1753094AbZFRMVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 08:21:22 -0400
+Message-ID: <4A3A315A.5090204@redhat.com>
+Date: Thu, 18 Jun 2009 15:21:46 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360906170703h3363b68dp74471358f647921e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [KVM PATCH v7 2/2] KVM: add iosignalfd support
+References: <20090616133751.14362.12674.stgit@dev.haskins.net> <20090616134235.14362.64014.stgit@dev.haskins.net> <4A3A28DF.5090803@redhat.com> <4A3A2E90.6090900@novell.com>
+In-Reply-To: <4A3A2E90.6090900@novell.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 10:03:37PM +0800, Minchan Kim wrote:
-> On Wed, Jun 17, 2009 at 10:55 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > On Wed, Jun 17, 2009 at 09:44:39PM +0800, Minchan Kim wrote:
-> >> It is private mail for my question.
-> >> I don't want to make noise in LKML.
-> >> And I don't want to disturb your progress to merge HWPoison.
-> >>
-> >> > Because this race window is small enough:
-> >> >
-> >> >        TestSetPageHWPoison(p);
-> >> >                                   lock_page(page);
-> >> >                                   try_to_unmap(page, TTU_MIGRATION|...);
-> >> >        lock_page_nosync(p);
-> >> >
-> >> > such small race windows can be found all over the kernel, it's just
-> >> > insane to try to fix any of them.
-> >>
-> >> I don't know there are intentional small race windows in kernel until you said.
-> >> I thought kernel code is perfect so it wouldn't allow race window
-> >> although it is very small. But you pointed out. Until now, My thought
-> >> is wrong.
-> >>
-> >> Do you know else small race windows by intention ?
-> >> If you know it, tell me, please. It can expand my sight. :)
-> >
-> > The memory failure code does not aim to rescue 100% page corruptions.
-> > That's unreasonable goal - the kernel pages, slab pages (including the
-> > big dcache/icache) are almost impossible to isolate.
-> >
-> > Comparing to the big slab pools, the migration and other race windows are
-> > really too small to care about :)
-> 
-> Also, If you will mention this contents as annotation, I will add my
-> review sign.
+On 06/18/2009 03:09 PM, Gregory Haskins wrote:
+>>> +config KVM_MAX_IOSIGNALFD_ITEMS
+>>> +    int "Maximum IOSIGNALFD items per address"
+>>> +    depends on KVM
+>>> +    default "32"
+>>> +    ---help---
+>>> +      This option influences the maximum number of fd's per PIO/MMIO
+>>> +      address that are allowed to register
+>>> +
+>>>
+>>>        
+>> Is there a per-vm limit on iosignalfds?  if not, userspace can exhaust
+>> kernel memory in that way.
+>>      
+>
+> Yeah, its already naturally limited by the maximum number of MMIO/PIO
+> devices we can register (today this is 6 per VM).  I should have
+> documented that fact somewhere, tho.
+>    
 
-Good suggestion. Here is a patch for comment updates.
+We need to raise this limit drastically and to expose it.  I suggest 
+counting an all iosignalfd_items as part of the iodevice limit, so we 
+don't have a bunch of little limits which no one understands.
 
-> Thanks for kind reply for my boring discussion.
+>>> +struct _iosignalfd_item {
+>>> +    struct list_head     list;
+>>> +    struct file         *file;
+>>> +    unsigned char       *match;
+>>> +    struct rcu_head      rcu;
+>>> +};
+>>>
+>>>        
+>> Why not u64 match?
+>>      
+>
+> Well, tbh it was primarily because it was starting to make my head hurt
+> w.r.t. endianness ;).  For instance, if someone wanted a u16 match, I
+> would presumably have to understand the relevant endianess of the u64 so
+> I compare the appropriate bytes against the data-register coming in from
+> the [MM|P]IO.  Using a pointer, I simply copy/memcmp the specified
+> number of bytes and never have to worry about endianness.
+>    
 
-Boring? Not at all :)
+No, a u16 will naturally expand to a u64, and the emulator will generate 
+the correct value.  As long as we don't allow mismatched access sizes, 
+we should be fine.
 
-Thanks,
-Fengguang
+> As a minor bonus, item->match == NULL tells me its a wildcard.  If I had
+> item->match as a u64, I'd need a different state flag for "wildcard".
+> NBD, but thought I would point it out.
+>    
 
----
- mm/memory-failure.c |   76 +++++++++++++++++++++++++-----------------
- 1 file changed, 47 insertions(+), 29 deletions(-)
+True, a pointer also supplies extra information.  But until we get 
+garbage collection as part of the Java rewrite, resource management is a 
+pain and I prefer as few pointers as possible.
 
---- sound-2.6.orig/mm/memory-failure.c
-+++ sound-2.6/mm/memory-failure.c
-@@ -1,4 +1,8 @@
- /*
-+ * linux/mm/memory-failure.c
-+ *
-+ * High level machine check handler.
-+ *
-  * Copyright (C) 2008, 2009 Intel Corporation
-  * Authors: Andi Kleen, Fengguang Wu
-  *
-@@ -6,29 +10,36 @@
-  * the GNU General Public License ("GPL") version 2 only as published by the
-  * Free Software Foundation.
-  *
-- * High level machine check handler. Handles pages reported by the
-- * hardware as being corrupted usually due to a 2bit ECC memory or cache
-- * failure.
-- *
-- * This focuses on pages detected as corrupted in the background.
-- * When the current CPU tries to consume corruption the currently
-- * running process can just be killed directly instead. This implies
-- * that if the error cannot be handled for some reason it's safe to
-- * just ignore it because no corruption has been consumed yet. Instead
-- * when that happens another machine check will happen.
-- *
-- * Handles page cache pages in various states.	The tricky part
-- * here is that we can access any page asynchronous to other VM
-- * users, because memory failures could happen anytime and anywhere,
-- * possibly violating some of their assumptions. This is why this code
-- * has to be extremely careful. Generally it tries to use normal locking
-- * rules, as in get the standard locks, even if that means the
-- * error handling takes potentially a long time.
-- *
-- * The operation to map back from RMAP chains to processes has to walk
-- * the complete process list and has non linear complexity with the number
-- * mappings. In short it can be quite slow. But since memory corruptions
-- * are rare we hope to get away with this.
-+ * Pages are reported by the hardware as being corrupted usually due to a
-+ * 2bit ECC memory or cache failure. Machine check can either be raised when
-+ * corruption is found in background memory scrubbing, or when someone tries to
-+ * consume the corruption. This code focuses on the former case.  If it cannot
-+ * handle the error for some reason it's safe to just ignore it because no
-+ * corruption has been consumed yet. Instead when that happens another (deadly)
-+ * machine check will happen.
-+ *
-+ * The tricky part here is that we can access any page asynchronous to other VM
-+ * users, because memory failures could happen anytime and anywhere, possibly
-+ * violating some of their assumptions. This is why this code has to be
-+ * extremely careful. Generally it tries to use normal locking rules, as in get
-+ * the standard locks, even if that means the error handling takes potentially
-+ * a long time.
-+ *
-+ * We don't aim to rescue 100% corruptions. That's unreasonable goal - the
-+ * kernel text and slab pages (including the big dcache/icache) are almost
-+ * impossible to isolate. We also try to keep the code clean by ignoring the
-+ * other thousands of small corruption windows.
-+ *
-+ * When the corrupted page data is not recoverable, the tasks mapped the page
-+ * have to be killed. We offer two kill options:
-+ * - early kill with SIGBUS.BUS_MCEERR_AO (optional)
-+ * - late  kill with SIGBUS.BUS_MCEERR_AR (mandatory)
-+ * A task will be early killed as soon as corruption is found in its virtual
-+ * address space, if it has called prctl(PR_MEMORY_FAILURE_EARLY_KILL, 1, ...);
-+ * Any task will be late killed when it tries to access its corrupted virtual
-+ * address. The early kill option offers KVM or other apps with large caches an
-+ * opportunity to isolate the corrupted page from its internal cache, so as to
-+ * avoid being late killed.
-  */
- 
- /*
-@@ -275,6 +286,12 @@ static void collect_procs_file(struct pa
- 
- 		vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff,
- 				      pgoff)
-+			/*
-+			 * Send early kill signal to tasks whose vma covers
-+			 * the page but not necessarily mapped it in its pte.
-+			 * Applications who requested early kill normally want
-+			 * to be informed of such data corruptions.
-+			 */
- 			if (vma->vm_mm == tsk->mm)
- 				add_to_kill(tsk, page, vma, to_kill, tkc);
- 	}
-@@ -284,6 +301,12 @@ static void collect_procs_file(struct pa
- 
- /*
-  * Collect the processes who have the corrupted page mapped to kill.
-+ *
-+ * The operation to map back from RMAP chains to processes has to walk
-+ * the complete process list and has non linear complexity with the number
-+ * mappings. In short it can be quite slow. But since memory corruptions
-+ * are rare and only tasks flagged PF_EARLY_KILL will be searched, we hope to
-+ * get away with this.
-  */
- static void collect_procs(struct page *page, struct list_head *tokill)
- {
-@@ -439,7 +462,7 @@ static int me_pagecache_dirty(struct pag
-  * Dirty swap cache page is tricky to handle. The page could live both in page
-  * cache and swap cache(ie. page is freshly swapped in). So it could be
-  * referenced concurrently by 2 types of PTEs:
-- * normal PTEs and swap PTEs. We try to handle them consistently by calling u
-+ * normal PTEs and swap PTEs. We try to handle them consistently by calling
-  * try_to_unmap(TTU_IGNORE_HWPOISON) to convert the normal PTEs to swap PTEs,
-  * and then
-  *      - clear dirty bit to prevent IO
-@@ -647,11 +670,6 @@ static void hwpoison_user_mappings(struc
- 	 * mapped.  This has to be done before try_to_unmap,
- 	 * because ttu takes the rmap data structures down.
- 	 *
--	 * This also has the side effect to propagate the dirty
--	 * bit from PTEs into the struct page. This is needed
--	 * to actually decide if something needs to be killed
--	 * or errored, or if it's ok to just drop the page.
--	 *
- 	 * Error handling: We ignore errors here because
- 	 * there's nothing that can be done.
- 	 */
+>>> +static int
+>>> +iosignalfd_is_match(struct _iosignalfd_group *group,
+>>> +            struct _iosignalfd_item *item,
+>>> +            const void *val,
+>>> +            int len)
+>>> +{
+>>> +    if (!item->match)
+>>> +        /* wildcard is a hit */
+>>> +        return true;
+>>> +
+>>> +    if (len != group->length)
+>>> +        /* mis-matched length is a miss */
+>>> +        return false;
+>>>
+>>>        
+>> Should check length before match (i.e. require correctly sized access).
+>>      
+>
+> Perhaps, but my thinking is that group->length only matters for
+> data-matching.  You could conceivably have a larger window registered if
+> you are using all wildcards.  Not sure if this is really useful, but its
+> the reason the code is that way today.
+>    
+
+My thinking is to have the code behave the same way.  If you require 
+matching lengths on data match, require it on wildcard as well.
+
+-- 
+error compiling committee.c: too many arguments to function
+
