@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbZFRV1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZFRVl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754322AbZFRV1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 17:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZFRV1B
+	id S1753165AbZFRVl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 17:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZFRVlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 17:27:01 -0400
-Received: from rosi.naasa.net ([212.8.0.13]:38884 "EHLO rosi.naasa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751699AbZFRV1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 17:27:00 -0400
-From: Joerg Platte <jplatte@naasa.net>
-Reply-To: jplatte@naasa.net
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [2.6.30] Kernel bug with dock driver
-Date: Thu, 18 Jun 2009 23:26:56 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; i686; ; )
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-References: <200906142100.48621.jplatte@naasa.net> <1245222796.9076.93.camel@rzhang-dt>
-In-Reply-To: <1245222796.9076.93.camel@rzhang-dt>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200906182326.57887.jplatte@naasa.net>
+	Thu, 18 Jun 2009 17:41:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38855 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750925AbZFRVlU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 17:41:20 -0400
+Date: Thu, 18 Jun 2009 14:39:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: tj@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       kyle@mcmartin.ca
+Subject: Re: [GIT PULL] percpu for 2.6.31
+Message-Id: <20090618143959.62858ef6.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.01.0906181421460.16802@localhost.localdomain>
+References: <4A39F5B4.1070305@kernel.org>
+	<alpine.LFD.2.01.0906181421460.16802@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wednesday, 17. June 2009 schrieb Zhang Rui:
+On Thu, 18 Jun 2009 14:22:20 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> jplatte,
-> it would be great if you can verify if this is a regression or not.
+> On Thu, 18 Jun 2009, Tejun Heo wrote:
+> > 
+> > Please pull from percpu-for-linus git tree from:
+> > 
+> >     git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
+> 
+> I'm very unhappy with this kind of crap.
 
-I'm not sure where to start. I'm not using the bay that frequent and the bug 
-is not that easy to trigger. Sometimes I can trigger it directly, sometimes it 
-takes a day.
+AFACIT none of these patches have ever been in linux-next.  Half or
+more of them turned up on the mailing list for the first time two days
+ago and there's little evidence that anyone has even looked at them.
 
-> And please file a new bug report at
-> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-> attach the full dmesg after the bug and the acpidump output there.
+If this doesn't mean "you missed 2.6.31" then what does?
 
-I'll file a bug if Henrique is unable to find the bug. Maybe his debugging 
-output helps to find the problem.
 
-regards,
-Jörg
+
+Yes, things like this can be messy and hard to develop and maintain
+outside the merge window.  We understand this.  There are special
+cases.  But when this happens, let's talk about it and see what we can
+do!  Please let's not pretend that this is an ordinary old git merge
+like all the others.
