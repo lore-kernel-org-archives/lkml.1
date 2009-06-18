@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbZFRO1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764489AbZFRO1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761563AbZFRO1Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 10:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758840AbZFRO0j
+	id S1764489AbZFRO1h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 10:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbZFRO0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 10:26:39 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:5331 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753966AbZFRO0g (ORCPT
+	Thu, 18 Jun 2009 10:26:46 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:58265 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754835AbZFRO0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 10:26:36 -0400
+	Thu, 18 Jun 2009 10:26:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=viLy2qPKRuUrILyA5ia2GKlxVoXg89HnsJWRm2WaHV1/fN+GsXTDbeabU2wT18TZeC
-         dOUNPeOaLxPsCp21u4vjwtQppmkHlCfzRwFB7/NwESZLw29cbmCpu/viRnuU/nx2Ma8n
-         yj/tRF0TLDzyhQLF/DHdVw1P1jREbXpDHFlQg=
+        b=JXT39LCvZd57i8WLlJF/rMytGSd8ckQGyvFsVLHpUxqwJvdqYOR3AxJgoGUENizyyP
+         0yOWwmeHjd5BH9y+sBf0VXGnBjAExDYDMH7VWRNGWpNsUxF3zUSzsRvg12nkv5PuMxbm
+         0gvpN/g2MKqPkDMUmCTW+b6f3vkdfpSTELoHA=
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Sergey Lapin <slapin@ossfans.org>
-Subject: [PATCH 1/5] ieee802154: use standard routine for printing dumps
-Date: Thu, 18 Jun 2009 18:26:13 +0400
-Message-Id: <1245335177-16810-2-git-send-email-dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Sergey Lapin <slapin@ossfans.org>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: [PATCH 2/5] crc-itu-t: add bit-reversed calculation
+Date: Thu, 18 Jun 2009 18:26:14 +0400
+Message-Id: <1245335177-16810-3-git-send-email-dbaryshkov@gmail.com>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1245335177-16810-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1245335177-16810-2-git-send-email-dbaryshkov@gmail.com>
 References: <1245335177-16810-1-git-send-email-dbaryshkov@gmail.com>
+ <1245335177-16810-2-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use print_hex_dump_bytes instead of self-written dumping function
-for outputting packet dumps.
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
 
+Changes since original patch by Darren:
+* add 'select BITREVERSE'
+* fix kerneldoc
+
+Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- net/ieee802154/af_ieee802154.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
+ include/linux/crc-itu-t.h |   10 ++++++++++
+ lib/Kconfig               |    1 +
+ lib/crc-itu-t.c           |   17 +++++++++++++++++
+ 3 files changed, 28 insertions(+), 0 deletions(-)
 
-diff --git a/net/ieee802154/af_ieee802154.c b/net/ieee802154/af_ieee802154.c
-index 882a927..3bb6bdb 100644
---- a/net/ieee802154/af_ieee802154.c
-+++ b/net/ieee802154/af_ieee802154.c
-@@ -39,14 +39,6 @@
- 
- #include "af802154.h"
- 
--#define DBG_DUMP(data, len) { \
--	int i; \
--	pr_debug("function: %s: data: len %d:\n", __func__, len); \
--	for (i = 0; i < len; i++) {\
--		pr_debug("%02x: %02x\n", i, (data)[i]); \
--	} \
--}
--
- /*
-  * Utility function for families
+diff --git a/include/linux/crc-itu-t.h b/include/linux/crc-itu-t.h
+index 84920f3..7b2b7ba 100644
+--- a/include/linux/crc-itu-t.h
++++ b/include/linux/crc-itu-t.h
+@@ -6,6 +6,9 @@
+  *   Poly  0x0x1021 (x^16 + x^12 + x^15 + 1)
+  *   Init  0
+  *
++ * The bit-reversed buffer variants may be non-standard, but some firmware
++ * loaders require them.
++ *
+  * This source code is licensed under the GNU General Public License,
+  * Version 2. See the file COPYING for more details.
   */
-@@ -302,10 +294,12 @@ static struct net_proto_family ieee802154_family_ops = {
- static int ieee802154_rcv(struct sk_buff *skb, struct net_device *dev,
- 	struct packet_type *pt, struct net_device *orig_dev)
- {
--	DBG_DUMP(skb->data, skb->len);
- 	if (!netif_running(dev))
- 		return -ENODEV;
- 	pr_debug("got frame, type %d, dev %p\n", dev->type, dev);
-+#ifdef DEBUG
-+	print_hex_dump_bytes("ieee802154_rcv ", DUMP_PREFIX_NONE, skb->data, skb->len);
-+#endif
+@@ -14,15 +17,22 @@
+ #define CRC_ITU_T_H
  
- 	if (!net_eq(dev_net(dev), &init_net))
- 		goto drop;
+ #include <linux/types.h>
++#include <linux/bitrev.h>
+ 
+ extern u16 const crc_itu_t_table[256];
+ 
+ extern u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len);
++extern u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len);
+ 
+ static inline u16 crc_itu_t_byte(u16 crc, const u8 data)
+ {
+ 	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ data) & 0xff];
+ }
+ 
++static inline u16 crc_itu_t_bitreversed_byte(u16 crc, const u8 data)
++{
++	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ bitrev8(data)) & 0xff];
++}
++
+ #endif /* CRC_ITU_T_H */
+ 
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 8ade0a7..0ec01c3 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -45,6 +45,7 @@ config CRC_T10DIF
+ 
+ config CRC_ITU_T
+ 	tristate "CRC ITU-T V.41 functions"
++	select BITREVERSE
+ 	help
+ 	  This option is provided for the case where no in-kernel-tree
+ 	  modules require CRC ITU-T V.41 functions, but a module built outside
+diff --git a/lib/crc-itu-t.c b/lib/crc-itu-t.c
+index a63472b..a1422d8 100644
+--- a/lib/crc-itu-t.c
++++ b/lib/crc-itu-t.c
+@@ -64,6 +64,23 @@ u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len)
+ }
+ EXPORT_SYMBOL(crc_itu_t);
+ 
++/**
++ * crc_itu_t_bitreversed - Compute the CRC-ITU-T for the bit-reversed data buffer;
++ *
++ * @crc:     previous CRC value
++ * @buffer:  data pointer
++ * @len:     number of bytes in the buffer
++ *
++ * Returns the updated CRC value
++ */
++u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len)
++{
++	while (len--)
++		crc = crc_itu_t_bitreversed_byte(crc, *buffer++);
++	return crc;
++}
++EXPORT_SYMBOL(crc_itu_t_bitreversed);
++
+ MODULE_DESCRIPTION("CRC ITU-T V.41 calculations");
+ MODULE_LICENSE("GPL");
+ 
 -- 
 1.6.3.1
 
