@@ -1,148 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbZFRD0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759710AbZFRD0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759764AbZFRD0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 23:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZFRD0G
+	id S1759710AbZFRD0c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 23:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759666AbZFRD0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 23:26:06 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51711 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752144AbZFRD0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 23:26:04 -0400
-Message-ID: <4A39B3E4.6060004@cn.fujitsu.com>
-Date: Thu, 18 Jun 2009 11:26:28 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>
-Subject: [PATCH v2] ftrace: change the export format of trace_kfree_skb()
-References: <4A2DF91F.7030906@cn.fujitsu.com> <20090609182730.GA6057@nowhere> <4A2F0F1D.7010101@cn.fujitsu.com> <20090610072618.GA6016@nowhere>
-In-Reply-To: <20090610072618.GA6016@nowhere>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 17 Jun 2009 23:26:12 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44634 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759464AbZFRD0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 23:26:10 -0400
+Subject: Re: [GIT PULL v2] Early SLAB fixes for 2.6.31
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       yinghai@kernel.org
+In-Reply-To: <1245290413.21602.40.camel@pasglop>
+References: <Pine.LNX.4.64.0906121624280.2937@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121859420.5963@melkki.cs.Helsinki.FI>
+	 <20090615081831.GA5411@osiris.boeblingen.de.ibm.com>
+	 <84144f020906150210w7fa29042xc12efb4a087e3d26@mail.gmail.com>
+	 <20090615094148.GC1314@wotan.suse.de> <1245059476.12400.7.camel@pasglop>
+	 <20090615101254.GB10294@wotan.suse.de> <1245062388.12400.17.camel@pasglop>
+	 <20090615112205.GA6012@wotan.suse.de> <20090615112827.GC6012@wotan.suse.de>
+	 <1245101567.12400.38.camel@pasglop>
+	 <alpine.DEB.1.10.0906161104480.26093@gentwo.org>
+	 <alpine.LFD.2.01.0906161208100.3282@localhost.localdomain>
+	 <alpine.DEB.1.10.0906161522370.29941@gentwo.org>
+	 <alpine.LFD.2.01.0906161231020.3282@localhost.localdomain>
+	 <1245215916.5604.5.camel@penberg-laptop>
+	 <alpine.LFD.2.01.0906170941490.16802@localhost.localdomain>
+	 <1245290413.21602.40.camel@pasglop>
+Content-Type: text/plain
+Date: Thu, 18 Jun 2009 13:24:12 +1000
+Message-Id: <1245295452.21602.42.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use %pf instead of %p to output the function's address and print the
-protocol's name.
+On Thu, 2009-06-18 at 12:00 +1000, Benjamin Herrenschmidt wrote:
+> > So I'm very much ok with the whole "use magic gfp_mask to indicate what 
+> > works at what stage". And yes, I think it makes sense to extend it to the 
+> > page allocator and might_sleep too, because GFP_KERNEL has all the same 
+> > issues regardless of whether it's about page allocation or about slab 
+> > allocators. And any "might_sleep" suppression really does tend to be about 
+> > the exact same thing.
+> 
+> Argh... still broken.
+> 
+> In fact, my initial patch added it to the page allocator, which worked
+> for me. Pekka patch removed that and made it slab-only. So I'm blowing
+> up at boot in lockdep or so because I'm allocating page tables on
+> ppc32 with __get_free_pages() and GFP_KERNEL.
+> 
+> I'll cook up a patch.
 
-Before patch:
+Here it is:
 
-  <idle>-0     [000] 60144.542521: kfree_skb: skbaddr=de7b8240 protocol=2048 location=c1365429
-  <idle>-0     [000] 60164.488153: kfree_skb: skbaddr=da66f900 protocol=2048 location=c1365429
-  <idle>-0     [000] 60193.493933: kfree_skb: skbaddr=deaeb480 protocol=4 location=c134ec25
-  <idle>-0     [000] 60253.118421: kfree_skb: skbaddr=de7c4900 protocol=4 location=c134ec25
-          
-After patch:
+mm: Extend gfp masking to the page allocator
 
-  <idle>-0     [000]   169.979205: kfree_skb: skbaddr=ceddc240 protocol=ETH_P_802_2 location=netif_receive_skb
-  <idle>-0     [000]   172.587000: kfree_skb: skbaddr=ceddc300 protocol=ETH_P_802_2 location=netif_receive_skb
-    ping-3391  [000]   192.109803: kfree_skb: skbaddr=ceddc900 protocol=ETH_P_IP location=icmp_rcv
-    ping-3391  [000]   192.109902: kfree_skb: skbaddr=ceddc780 protocol=ETH_P_IP location=icmp_rcv
+The page allocator also needs the masking of gfp flags during boot,
+so this moves it out of slab/slub and uses it with the page allocator
+as well.
 
-Changelog v1->v2:
-Convert protocol from raw numeric to its name as Frederic's suggestion
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- include/trace/events/skb.h |   70 ++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 68 insertions(+), 2 deletions(-)
 
-diff --git a/include/trace/events/skb.h b/include/trace/events/skb.h
-index 1e8fabb..2496060 100644
---- a/include/trace/events/skb.h
-+++ b/include/trace/events/skb.h
-@@ -7,6 +7,71 @@
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM skb
+This will also make it easier to use it for limiting allocations that
+can block during suspend/resume, though doing this really fool-proof
+will require some kind of synchronization in set_gfp_allowed_mask()
+vs. allocations that have already started sleeping waiting for IOs.
+
+Index: linux-work/include/linux/gfp.h
+===================================================================
+--- linux-work.orig/include/linux/gfp.h	2009-06-18 12:03:14.000000000 +1000
++++ linux-work/include/linux/gfp.h	2009-06-18 12:08:21.000000000 +1000
+@@ -99,7 +99,7 @@ struct vm_area_struct;
+ 			__GFP_NORETRY|__GFP_NOMEMALLOC)
  
-+#define protocol_name(protocol) { protocol, #protocol }
-+#define show_protocol_name(val)					\
-+	__print_symbolic(val,					\
-+			 protocol_name(ETH_P_LOOP),		\
-+			 protocol_name(ETH_P_PUP),		\
-+			 protocol_name(ETH_P_PUPAT),		\
-+			 protocol_name(ETH_P_IP),		\
-+			 protocol_name(ETH_P_X25),		\
-+			 protocol_name(ETH_P_ARP),		\
-+			 protocol_name(ETH_P_BPQ),		\
-+			 protocol_name(ETH_P_IEEEPUP),		\
-+			 protocol_name(ETH_P_IEEEPUPAT),	\
-+			 protocol_name(ETH_P_DEC),		\
-+			 protocol_name(ETH_P_DNA_DL),		\
-+			 protocol_name(ETH_P_DNA_RC),		\
-+			 protocol_name(ETH_P_DNA_RT),		\
-+			 protocol_name(ETH_P_LAT),		\
-+			 protocol_name(ETH_P_DIAG),		\
-+			 protocol_name(ETH_P_CUST),		\
-+			 protocol_name(ETH_P_SCA),		\
-+			 protocol_name(ETH_P_TEB),		\
-+			 protocol_name(ETH_P_RARP),		\
-+			 protocol_name(ETH_P_ATALK),		\
-+			 protocol_name(ETH_P_AARP),		\
-+			 protocol_name(ETH_P_8021Q),		\
-+			 protocol_name(ETH_P_IPX),		\
-+			 protocol_name(ETH_P_IPV6),		\
-+			 protocol_name(ETH_P_PAUSE),		\
-+			 protocol_name(ETH_P_SLOW),		\
-+			 protocol_name(ETH_P_WCCP),		\
-+			 protocol_name(ETH_P_PPP_DISC),		\
-+			 protocol_name(ETH_P_PPP_SES),		\
-+			 protocol_name(ETH_P_MPLS_UC),		\
-+			 protocol_name(ETH_P_MPLS_MC),		\
-+			 protocol_name(ETH_P_ATMMPOA),		\
-+			 protocol_name(ETH_P_ATMFATE),		\
-+			 protocol_name(ETH_P_PAE),		\
-+			 protocol_name(ETH_P_AOE),		\
-+			 protocol_name(ETH_P_TIPC),		\
-+			 protocol_name(ETH_P_FCOE),		\
-+			 protocol_name(ETH_P_FIP),		\
-+			 protocol_name(ETH_P_EDSA),		\
-+			 protocol_name(ETH_P_802_3),		\
-+			 protocol_name(ETH_P_AX25),		\
-+			 protocol_name(ETH_P_ALL),		\
-+			 protocol_name(ETH_P_802_2),		\
-+			 protocol_name(ETH_P_SNAP),		\
-+			 protocol_name(ETH_P_DDCMP),		\
-+			 protocol_name(ETH_P_WAN_PPP),		\
-+			 protocol_name(ETH_P_PPP_MP),		\
-+			 protocol_name(ETH_P_LOCALTALK),	\
-+			 protocol_name(ETH_P_CAN),		\
-+			 protocol_name(ETH_P_PPPTALK),		\
-+			 protocol_name(ETH_P_TR_802_2),		\
-+			 protocol_name(ETH_P_MOBITEX),		\
-+			 protocol_name(ETH_P_CONTROL),		\
-+			 protocol_name(ETH_P_IRDA),		\
-+			 protocol_name(ETH_P_ECONET),		\
-+			 protocol_name(ETH_P_HDLC),		\
-+			 protocol_name(ETH_P_ARCNET),		\
-+			 protocol_name(ETH_P_DSA),		\
-+			 protocol_name(ETH_P_TRAILER),		\
-+			 protocol_name(ETH_P_PHONET),		\
-+			 protocol_name(ETH_P_IEEE802154))
+ /* Control slab gfp mask during early boot */
+-#define SLAB_GFP_BOOT_MASK __GFP_BITS_MASK & ~(__GFP_WAIT|__GFP_IO|__GFP_FS)
++#define GFP_BOOT_MASK __GFP_BITS_MASK & ~(__GFP_WAIT|__GFP_IO|__GFP_FS)
+ 
+ /* Control allocation constraints */
+ #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
+@@ -348,4 +348,11 @@ static inline void oom_killer_enable(voi
+ 	oom_killer_disabled = false;
+ }
+ 
++extern gfp_t gfp_allowed_mask;
 +
++static inline void set_gfp_allowed_mask(gfp_t mask)
++{
++	gfp_allowed_mask = mask;
++}
++
+ #endif /* __LINUX_GFP_H */
+Index: linux-work/init/main.c
+===================================================================
+--- linux-work.orig/init/main.c	2009-06-18 12:06:49.000000000 +1000
++++ linux-work/init/main.c	2009-06-18 12:08:35.000000000 +1000
+@@ -642,6 +642,10 @@ asmlinkage void __init start_kernel(void
+ 				 "enabled early\n");
+ 	early_boot_irqs_on();
+ 	local_irq_enable();
++
++	/* Interrupts are enabled now so all GFP allocations are safe. */
++	set_gfp_allowed_mask(__GFP_BITS_MASK);
++
+ 	kmem_cache_init_late();
+ 
+ 	/*
+Index: linux-work/mm/page_alloc.c
+===================================================================
+--- linux-work.orig/mm/page_alloc.c	2009-06-18 12:04:58.000000000 +1000
++++ linux-work/mm/page_alloc.c	2009-06-18 12:09:27.000000000 +1000
+@@ -73,6 +73,7 @@ unsigned long totalram_pages __read_most
+ unsigned long totalreserve_pages __read_mostly;
+ unsigned long highest_memmap_pfn __read_mostly;
+ int percpu_pagelist_fraction;
++gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
+ 
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+ int pageblock_order __read_mostly;
+@@ -1863,6 +1864,8 @@ __alloc_pages_nodemask(gfp_t gfp_mask, u
+ 	struct page *page;
+ 	int migratetype = allocflags_to_migratetype(gfp_mask);
+ 
++	gfp_mask &= gfp_allowed_mask;
++
+ 	lockdep_trace_alloc(gfp_mask);
+ 
+ 	might_sleep_if(gfp_mask & __GFP_WAIT);
+Index: linux-work/mm/slab.c
+===================================================================
+--- linux-work.orig/mm/slab.c	2009-06-18 12:05:47.000000000 +1000
++++ linux-work/mm/slab.c	2009-06-18 12:06:19.000000000 +1000
+@@ -305,12 +305,6 @@ struct kmem_list3 {
+ };
+ 
  /*
-  * Tracepoint for free an sk_buff:
+- * The slab allocator is initialized with interrupts disabled. Therefore, make
+- * sure early boot allocations don't accidentally enable interrupts.
+- */
+-static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
+-
+-/*
+  * Need this for bootstrapping a per node allocator.
   */
-@@ -30,8 +95,9 @@ TRACE_EVENT(kfree_skb,
- 		__entry->location = location;
- 	),
+ #define NUM_INIT_LISTS (3 * MAX_NUMNODES)
+@@ -1559,11 +1553,6 @@ void __init kmem_cache_init_late(void)
+ {
+ 	struct kmem_cache *cachep;
  
--	TP_printk("skbaddr=%p protocol=%u location=%p",
--		__entry->skbaddr, __entry->protocol, __entry->location)
-+	TP_printk("skbaddr=%p protocol=%s location=%pf",
-+		  __entry->skbaddr, show_protocol_name(__entry->protocol),
-+		  __entry->location)
- );
+-	/*
+-	 * Interrupts are enabled now so all GFP allocations are safe.
+-	 */
+-	slab_gfp_mask = __GFP_BITS_MASK;
+-
+ 	/* 6) resize the head arrays to their final sizes */
+ 	mutex_lock(&cache_chain_mutex);
+ 	list_for_each_entry(cachep, &cache_chain, next)
+@@ -3307,7 +3296,7 @@ __cache_alloc_node(struct kmem_cache *ca
+ 	unsigned long save_flags;
+ 	void *ptr;
  
- #endif /* _TRACE_SKB_H */
--- 
-1.6.1.2
+-	flags &= slab_gfp_mask;
++	flags &= gfp_allowed_mask;
+ 
+ 	lockdep_trace_alloc(flags);
+ 
+@@ -3392,7 +3381,7 @@ __cache_alloc(struct kmem_cache *cachep,
+ 	unsigned long save_flags;
+ 	void *objp;
+ 
+-	flags &= slab_gfp_mask;
++	flags &= gfp_allowed_mask;
+ 
+ 	lockdep_trace_alloc(flags);
+ 
+Index: linux-work/mm/slub.c
+===================================================================
+--- linux-work.orig/mm/slub.c	2009-06-18 12:02:46.000000000 +1000
++++ linux-work/mm/slub.c	2009-06-18 12:06:35.000000000 +1000
+@@ -179,12 +179,6 @@ static enum {
+ 	SYSFS		/* Sysfs up */
+ } slab_state = DOWN;
+ 
+-/*
+- * The slab allocator is initialized with interrupts disabled. Therefore, make
+- * sure early boot allocations don't accidentally enable interrupts.
+- */
+-static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
+-
+ /* A list of all slab caches on the system */
+ static DECLARE_RWSEM(slub_lock);
+ static LIST_HEAD(slab_caches);
+@@ -1692,7 +1686,7 @@ static __always_inline void *slab_alloc(
+ 	unsigned long flags;
+ 	unsigned int objsize;
+ 
+-	gfpflags &= slab_gfp_mask;
++	gfpflags &= gfp_allowed_mask;
+ 
+ 	lockdep_trace_alloc(gfpflags);
+ 	might_sleep_if(gfpflags & __GFP_WAIT);
+@@ -3220,10 +3214,6 @@ void __init kmem_cache_init(void)
+ 
+ void __init kmem_cache_init_late(void)
+ {
+-	/*
+-	 * Interrupts are enabled now so all GFP allocations are safe.
+-	 */
+-	slab_gfp_mask = __GFP_BITS_MASK;
+ }
+ 
+ /*
 
 
