@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbZFRFti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZFRFxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbZFRFti (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 01:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZFRFtb
+	id S1757371AbZFRFxd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 01:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZFRFx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 01:49:31 -0400
-Received: from mail-px0-f189.google.com ([209.85.216.189]:54857 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753353AbZFRFtb convert rfc822-to-8bit (ORCPT
+	Thu, 18 Jun 2009 01:53:26 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34177 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbZFRFxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 01:49:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mScyFeER9jOWIQSibg2ZJ2FdUvLfWCvg3dnXXbvtlvPtENtQSGzHbJ2JmXHF01z8q5
-         DXsxFbD4eei3m0Idnr90hXqTq/k6rIzoX4aiyVGxdYuaYF+38UL7yS0LKDGJ5gTchEZ6
-         JAY99RPmnSB8Kbwo3plUeGVP/vb4P/hbgjKBM=
+	Thu, 18 Jun 2009 01:53:25 -0400
+Message-ID: <4A39D654.3050001@jp.fujitsu.com>
+Date: Thu, 18 Jun 2009 14:53:24 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <4A3605A2.6000206@jp.fujitsu.com>
-References: <4A3601BF.2000201@jp.fujitsu.com> <4A3605A2.6000206@jp.fujitsu.com>
-Date: Thu, 18 Jun 2009 13:49:33 +0800
-Message-ID: <851fc09e0906172249q40c99fc6n26662b533b063b9e@mail.gmail.com>
-Subject: Re: [PATCH 12/16] x86, mce: squash mce_intel.c into therm_throt.c
-From: huang ying <huang.ying.caritas@gmail.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] x86, mce: fix error path in mce_create_device()
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/15 Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>:
-> move intel_init_thermal() into therm_throt.c
->
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> ---
->  arch/x86/kernel/cpu/mcheck/Makefile      |    2 +-
->  arch/x86/kernel/cpu/mcheck/mce_intel.c   |   73 ------------------------------
->  arch/x86/kernel/cpu/mcheck/therm_throt.c |   66 +++++++++++++++++++++++++++
->  3 files changed, 67 insertions(+), 74 deletions(-)
->  delete mode 100644 arch/x86/kernel/cpu/mcheck/mce_intel.c
+Don't skip removing mce_attrs in route from error2.
 
-Why we need this patch? I think the design principle behind MCE is to
-separate vendor/cpu specific code into different files. At least
-#ifdef CONFIG_X86_MCE_INTEL should be used around moved code.
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Best Regards,
-Huang Ying
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 81f69b7..260e219 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1791,7 +1791,7 @@ static cpumask_var_t mce_dev_initialized;
+ static __cpuinit int mce_create_device(unsigned int cpu)
+ {
+ 	int err;
+-	int i;
++	int i, j;
+ 
+ 	if (!mce_available(&boot_cpu_data))
+ 		return -EIO;
+@@ -1809,9 +1809,9 @@ static __cpuinit int mce_create_device(unsigned int cpu)
+ 		if (err)
+ 			goto error;
+ 	}
+-	for (i = 0; i < banks; i++) {
++	for (j = 0; j < banks; j++) {
+ 		err = sysdev_create_file(&per_cpu(mce_dev, cpu),
+-					&bank_attrs[i]);
++					&bank_attrs[j]);
+ 		if (err)
+ 			goto error2;
+ 	}
+@@ -1819,8 +1819,8 @@ static __cpuinit int mce_create_device(unsigned int cpu)
+ 
+ 	return 0;
+ error2:
+-	while (--i >= 0)
+-		sysdev_remove_file(&per_cpu(mce_dev, cpu), &bank_attrs[i]);
++	while (--j >= 0)
++		sysdev_remove_file(&per_cpu(mce_dev, cpu), &bank_attrs[j]);
+ error:
+ 	while (--i >= 0)
+ 		sysdev_remove_file(&per_cpu(mce_dev, cpu), mce_attrs[i]);
+-- 
+1.6.3
+
