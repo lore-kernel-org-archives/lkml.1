@@ -1,237 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765057AbZFRPOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbZFRPTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765057AbZFRPOj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 11:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761392AbZFRPNR
+	id S1759902AbZFRPTT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 11:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZFRPTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 11:13:17 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:38718 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761008AbZFRPNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 11:13:13 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: avictor.za@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk
-Cc: patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
-       Hong Xu <hong.xu@atmel.com>
-Subject: [PATCH 3/5] at91: Support for at91sam9g10: core chip & board support
-Date: Thu, 18 Jun 2009 18:16:10 +0200
-Message-Id: <1245341772-1689-4-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com>
+	Thu, 18 Jun 2009 11:19:05 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:58373 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbZFRPTD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 11:19:03 -0400
+Message-ID: <4A3A59DD.4070004@oracle.com>
+Date: Thu, 18 Jun 2009 08:14:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       a.beregalov@gmail.com, lenb@kernel.org
+Subject: Re: linux-next: Tree for June 17 (pci/slot)
+References: <20090617155354.075c60ae.sfr@canb.auug.org.au> <4A39194B.2060200@oracle.com> <20090617163604.GT19977@parisc-linux.org> <20090617102901.6e39aac2@jbarnes-g45> <4A392B48.7060206@oracle.com> <20090617161001.734321be@jbarnes-g45> <20090618003808.GA29472@ldl.fc.hp.com> <20090618004612.GB29472@ldl.fc.hp.com> <20090618010357.GC29472@ldl.fc.hp.com>
+In-Reply-To: <20090618010357.GC29472@ldl.fc.hp.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.4A3A5AA0.022B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hong Xu <hong.xu@atmel.com>
+Alex Chiang wrote:
+> * Alex Chiang <achiang@hp.com>:
+>> diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+>> index ba6af16..0be4efd 100644
+>> --- a/drivers/pci/Makefile
+>> +++ b/drivers/pci/Makefile
+>> @@ -2,10 +2,11 @@
+>>  # Makefile for the PCI bus specific drivers.
+>>  #
+>>  
+>> -obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o slot.o \
+>> -			pci-driver.o search.o pci-sysfs.o rom.o setup-res.o \
+>> +obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
+>> +			pci-driver.o search.o rom.o setup-res.o \
+>>  			irq.o
+>>  obj-$(CONFIG_PROC_FS) += proc.o
+>> +obj-$(CONFIG_SYSFS) += slot.o pci-sysfs.o
+> 
+> Sigh, this won't work because the PCI core blithely assumes we have
+> sysfs:
+> 
+> drivers/built-in.o: In function `pci_bus_add_device':
+> /kio/work/achiang/kernels/linux-2.6/drivers/pci/bus.c:89: undefined reference to `pci_create_sysfs_dev_files'
+> drivers/built-in.o: In function `pci_stop_dev':
+> /kio/work/achiang/kernels/linux-2.6/drivers/pci/remove.c:24: undefined reference to `pci_remove_sysfs_dev_files'
+> 
+> So, here is v3 that actually does build with !CONFIG_SYSFS. It
+> touches a bit more now, but I believe it is still appropriate
+> because neither pci_slot.ko nor any of the drivers in
+> drivers/pci/hotplug/ are useful without sysfs.
+> 
+> From: Alex Chiang <achiang@hp.com>
+> 
+> PCI: drivers/pci/slot.c should depend on CONFIG_SYSFS
+> 
+> There is no way to interact with a physical PCI slot without
+> sysfs, so encode the dependency and prevent this build error:
+> 
+> 	drivers/pci/slot.c: In function 'pci_hp_create_module_link':
+> 	drivers/pci/slot.c:327: error: 'module_kset' undeclared
+> 
+> This patch _should_ make pci-sysfs.o depend on CONFIG_SYSFS too,
+> but we cannot (yet) because the PCI core merrily assumes the
+> existence of sysfs:
+> 
+> 	drivers/built-in.o: In function `pci_bus_add_device':
+> 	drivers/pci/bus.c:89: undefined reference to `pci_create_sysfs_dev_files'
+> 	drivers/built-in.o: In function `pci_stop_dev':
+> 	drivers/pci/remove.c:24: undefined reference to `pci_remove_sysfs_dev_files'
+> 
+> So do the minimal bit for now and figure out how to untangle it
+> later.
+> 
+> Cc: Len Brown <lenb@kernel.org>
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Here are the modification to at91sam9261 files dedicated to the support of
-at91sam9g10. This direction has been adopted to minimize code duplication.
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-All at91sam9261 drivers are enabled in _devices and board- files. Modificaton
-to peripherals that support at91sam9g10 will be added in future patches.
 
-Signed-off-by: Hong Xu <hong.xu@atmel.com>
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- arch/arm/mach-at91/Kconfig           |   25 +++++++++++++++++++++++--
- arch/arm/mach-at91/Makefile          |    2 ++
- arch/arm/mach-at91/at91sam9261.c     |   22 +++++++++++++++++++++-
- arch/arm/mach-at91/board-sam9261ek.c |   14 ++++++++++++++
- arch/arm/mach-at91/pm.c              |    3 ++-
- 5 files changed, 62 insertions(+), 4 deletions(-)
+> Fix-suggested-by: Matthew Wilcox <matthew@wil.cx>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 431f8b4..7ec7d88 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -266,6 +266,7 @@ config ACPI_DEBUG_FUNC_TRACE
+>  
+>  config ACPI_PCI_SLOT
+>  	tristate "PCI slot detection driver"
+> +	depends on SYSFS
+>  	default n
+>  	help
+>  	  This driver creates entries in /sys/bus/pci/slots/ for all PCI
+> diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+> index ba6af16..ed32f67 100644
+> --- a/drivers/pci/Makefile
+> +++ b/drivers/pci/Makefile
+> @@ -2,10 +2,11 @@
+>  # Makefile for the PCI bus specific drivers.
+>  #
+>  
+> -obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o slot.o \
+> +obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
+>  			pci-driver.o search.o pci-sysfs.o rom.o setup-res.o \
+>  			irq.o
+>  obj-$(CONFIG_PROC_FS) += proc.o
+> +obj-$(CONFIG_SYSFS) += slot.o
+>  
+>  # Build PCI Express stuff if needed
+>  obj-$(CONFIG_PCIEPORTBUS) += pcie/
+> diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
+> index 9aa4fe1..522c360 100644
+> --- a/drivers/pci/hotplug/Kconfig
+> +++ b/drivers/pci/hotplug/Kconfig
+> @@ -4,7 +4,7 @@
+>  
+>  menuconfig HOTPLUG_PCI
+>  	tristate "Support for PCI Hotplug"
+> -	depends on PCI && HOTPLUG
+> +	depends on PCI && HOTPLUG && SYSFS
+>  	---help---
+>  	  Say Y here if you have a motherboard with a PCI Hotplug controller.
+>  	  This allows you to add and remove PCI cards while the machine is
 
-diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-index 22309ba..8f3e15a 100644
---- a/arch/arm/mach-at91/Kconfig
-+++ b/arch/arm/mach-at91/Kconfig
-@@ -23,6 +23,12 @@ config ARCH_AT91SAM9261
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 
-+config ARCH_AT91SAM9G10
-+	bool "AT91SAM9G10"
-+	select CPU_ARM926T
-+	select GENERIC_TIME
-+	select GENERIC_CLOCKEVENTS
-+
- config ARCH_AT91SAM9263
- 	bool "AT91SAM9263"
- 	select CPU_ARM926T
-@@ -230,6 +236,21 @@ endif
- 
- # ----------------------------------------------------------
- 
-+if ARCH_AT91SAM9G10
-+
-+comment "AT91SAM9G10 Board Type"
-+
-+config MACH_AT91SAM9G10EK
-+	bool "Atmel AT91SAM9G10-EK Evaluation Kit"
-+	depends on ARCH_AT91SAM9G10
-+	help
-+	  Select this if you are using Atmel's AT91SAM9G10-EK Evaluation Kit.
-+	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4588>
-+
-+endif
-+
-+# ----------------------------------------------------------
-+
- if ARCH_AT91SAM9263
- 
- comment "AT91SAM9263 Board Type"
-@@ -337,13 +358,13 @@ comment "AT91 Board Options"
- 
- config MTD_AT91_DATAFLASH_CARD
- 	bool "Enable DataFlash Card support"
--	depends on (ARCH_AT91RM9200DK || MACH_AT91RM9200EK || MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_ECBAT91 || MACH_SAM9_L9260 || MACH_AT91CAP9ADK || MACH_NEOCORE926)
-+	depends on (ARCH_AT91RM9200DK || MACH_AT91RM9200EK || MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_ECBAT91 || MACH_SAM9_L9260 || MACH_AT91CAP9ADK || MACH_NEOCORE926)
- 	help
- 	  Enable support for the DataFlash card.
- 
- config MTD_NAND_ATMEL_BUSWIDTH_16
- 	bool "Enable 16-bit data bus interface to NAND flash"
--	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
-+	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
- 	help
- 	  On AT91SAM926x boards both types of NAND flash can be present
- 	  (8 and 16 bit data bus width).
-diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
-index 2975f9a..4eaf80a 100644
---- a/arch/arm/mach-at91/Makefile
-+++ b/arch/arm/mach-at91/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_AT91_PMC_UNIT)	+= clock.o
- obj-$(CONFIG_ARCH_AT91RM9200)	+= at91rm9200.o at91rm9200_time.o at91rm9200_devices.o
- obj-$(CONFIG_ARCH_AT91SAM9260)	+= at91sam9260.o at91sam926x_time.o at91sam9260_devices.o sam9_smc.o
- obj-$(CONFIG_ARCH_AT91SAM9261)	+= at91sam9261.o at91sam926x_time.o at91sam9261_devices.o sam9_smc.o
-+obj-$(CONFIG_ARCH_AT91SAM9G10)	+= at91sam9261.o at91sam926x_time.o at91sam9261_devices.o sam9_smc.o
- obj-$(CONFIG_ARCH_AT91SAM9263)	+= at91sam9263.o at91sam926x_time.o at91sam9263_devices.o sam9_smc.o
- obj-$(CONFIG_ARCH_AT91SAM9RL)	+= at91sam9rl.o at91sam926x_time.o at91sam9rl_devices.o sam9_smc.o
- obj-$(CONFIG_ARCH_AT91SAM9G20)	+= at91sam9260.o at91sam926x_time.o at91sam9260_devices.o  sam9_smc.o
-@@ -44,6 +45,7 @@ obj-$(CONFIG_MACH_AFEB9260)	+= board-afeb-9260v1.o
- 
- # AT91SAM9261 board-specific support
- obj-$(CONFIG_MACH_AT91SAM9261EK) += board-sam9261ek.o
-+obj-$(CONFIG_MACH_AT91SAM9G10EK) += board-sam9261ek.o
- 
- # AT91SAM9263 board-specific support
- obj-$(CONFIG_MACH_AT91SAM9263EK) += board-sam9263ek.o
-diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
-index 3acd7d7..4ecf379 100644
---- a/arch/arm/mach-at91/at91sam9261.c
-+++ b/arch/arm/mach-at91/at91sam9261.c
-@@ -16,6 +16,7 @@
- #include <asm/irq.h>
- #include <asm/mach/arch.h>
- #include <asm/mach/map.h>
-+#include <mach/cpu.h>
- #include <mach/at91sam9261.h>
- #include <mach/at91_pmc.h>
- #include <mach/at91_rstc.h>
-@@ -30,7 +31,11 @@ static struct map_desc at91sam9261_io_desc[] __initdata = {
- 		.pfn		= __phys_to_pfn(AT91_BASE_SYS),
- 		.length		= SZ_16K,
- 		.type		= MT_DEVICE,
--	}, {
-+	},
-+};
-+
-+static struct map_desc at91sam9261_sram_desc[] __initdata = {
-+	{
- 		.virtual	= AT91_IO_VIRT_BASE - AT91SAM9261_SRAM_SIZE,
- 		.pfn		= __phys_to_pfn(AT91SAM9261_SRAM_BASE),
- 		.length		= AT91SAM9261_SRAM_SIZE,
-@@ -38,6 +43,15 @@ static struct map_desc at91sam9261_io_desc[] __initdata = {
- 	},
- };
- 
-+static struct map_desc at91sam9g10_sram_desc[] __initdata = {
-+	{
-+		.virtual	= AT91_IO_VIRT_BASE - AT91SAM9G10_SRAM_SIZE,
-+		.pfn		= __phys_to_pfn(AT91SAM9G10_SRAM_BASE),
-+		.length		= AT91SAM9G10_SRAM_SIZE,
-+		.type		= MT_DEVICE,
-+	},
-+};
-+
- /* --------------------------------------------------------------------
-  *  Clocks
-  * -------------------------------------------------------------------- */
-@@ -263,6 +277,12 @@ void __init at91sam9261_initialize(unsigned long main_clock)
- 	/* Map peripherals */
- 	iotable_init(at91sam9261_io_desc, ARRAY_SIZE(at91sam9261_io_desc));
- 
-+	if (cpu_is_at91sam9g10())
-+		iotable_init(at91sam9g10_sram_desc, ARRAY_SIZE(at91sam9g10_sram_desc));
-+	else
-+		iotable_init(at91sam9261_sram_desc, ARRAY_SIZE(at91sam9261_sram_desc));
-+
-+
- 	at91_arch_reset = at91sam9261_reset;
- 	pm_power_off = at91sam9261_poweroff;
- 	at91_extern_irq = (1 << AT91SAM9261_ID_IRQ0) | (1 << AT91SAM9261_ID_IRQ1)
-diff --git a/arch/arm/mach-at91/board-sam9261ek.c b/arch/arm/mach-at91/board-sam9261ek.c
-index d5266da..f9b1999 100644
---- a/arch/arm/mach-at91/board-sam9261ek.c
-+++ b/arch/arm/mach-at91/board-sam9261ek.c
-@@ -287,7 +287,11 @@ static void __init ek_add_device_ts(void) {}
-  */
- static struct at73c213_board_info at73c213_data = {
- 	.ssc_id		= 1,
-+#if defined(CONFIG_MACH_AT91SAM9261EK)
- 	.shortname	= "AT91SAM9261-EK external DAC",
-+#else
-+	.shortname	= "AT91SAM9G10-EK external DAC",
-+#endif
- };
- 
- #if defined(CONFIG_SND_AT73C213) || defined(CONFIG_SND_AT73C213_MODULE)
-@@ -414,6 +418,9 @@ static struct atmel_lcdfb_info __initdata ek_lcdc_data = {
- 	.default_monspecs		= &at91fb_default_stn_monspecs,
- 	.atmel_lcdfb_power_control	= at91_lcdc_stn_power_control,
- 	.guard_time			= 1,
-+#if defined(CONFIG_MACH_AT91SAM9G10EK)
-+	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
-+#endif
- };
- 
- #else
-@@ -467,6 +474,9 @@ static struct atmel_lcdfb_info __initdata ek_lcdc_data = {
- 	.default_monspecs		= &at91fb_default_tft_monspecs,
- 	.atmel_lcdfb_power_control	= at91_lcdc_tft_power_control,
- 	.guard_time			= 1,
-+#if defined(CONFIG_MACH_AT91SAM9G10EK)
-+	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
-+#endif
- };
- #endif
- 
-@@ -600,7 +610,11 @@ static void __init ek_board_init(void)
- 	at91_gpio_leds(ek_leds, ARRAY_SIZE(ek_leds));
- }
- 
-+#if defined(CONFIG_MACH_AT91SAM9261EK)
- MACHINE_START(AT91SAM9261EK, "Atmel AT91SAM9261-EK")
-+#else
-+MACHINE_START(AT91SAM9G10EK, "Atmel AT91SAM9G10-EK")
-+#endif
- 	/* Maintainer: Atmel */
- 	.phys_io	= AT91_BASE_SYS,
- 	.io_pg_offst	= (AT91_VA_BASE_SYS >> 18) & 0xfffc,
-diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-index e26c4fe..4028724 100644
---- a/arch/arm/mach-at91/pm.c
-+++ b/arch/arm/mach-at91/pm.c
-@@ -201,7 +201,8 @@ static int at91_pm_verify_clocks(void)
- 			pr_err("AT91: PM - Suspend-to-RAM with USB still active\n");
- 			return 0;
- 		}
--	} else if (cpu_is_at91sam9260() || cpu_is_at91sam9261() || cpu_is_at91sam9263() || cpu_is_at91sam9g20()) {
-+	} else if (cpu_is_at91sam9260() || cpu_is_at91sam9261() || cpu_is_at91sam9263()
-+			|| cpu_is_at91sam9g20() || cpu_is_at91sam9g10()) {
- 		if ((scsr & (AT91SAM926x_PMC_UHP | AT91SAM926x_PMC_UDP)) != 0) {
- 			pr_err("AT91: PM - Suspend-to-RAM with USB still active\n");
- 			return 0;
+
 -- 
-1.5.3.7
-
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
