@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZFRSvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbZFRSwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbZFRSvJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZFRSu5
+	id S1753822AbZFRSwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZFRSwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:50:57 -0400
-Received: from mga11.intel.com ([192.55.52.93]:31673 "EHLO mga11.intel.com"
+	Thu, 18 Jun 2009 14:52:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54015 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753449AbZFRSu4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:50:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,246,1243839600"; 
-   d="scan'208";a="700617350"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Muli Ben-Yehuda'" <muli@il.ibm.com>,
-       "'Chris Wright'" <chrisw@redhat.com>
-CC: "'David Woodhouse'" <dwmw2@infradead.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>, "Kay, Allen M" <allen.m.kay@intel.com>,
-       "'lkml'" <linux-kernel@vger.kernel.org>,
-       "'iommu'" <iommu@lists.linux-foundation.org>
-Date: Thu, 18 Jun 2009 11:50:57 -0700
-Subject: RE: [PATCH 1/2] IOMMU Identity Mapping Support:
-	iommu_identity_mapping definition
-Thread-Topic: [PATCH 1/2] IOMMU Identity Mapping Support:
-	iommu_identity_mapping definition
-Thread-Index: AcnwRMv0Vz0wJFNqRdKjIV9sYRzfcwAAHEhg
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B0044F7D@orsmsx505.amr.corp.intel.com>
-References: <1240135508.3589.75.camel@macbook.infradead.org>
- <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com>
- <20090513231351.GA22386@linux-os.sc.intel.com>
- <1242314271.3393.11.camel@macbook.infradead.org>
- <20090514175944.GA5168@linux-os.sc.intel.com>
- <20090618180514.GA24082@linux-os.sc.intel.com>
- <20090618180835.GB6838@il.ibm.com>
- <A6AD88C3F2289247BE726C37303E1EB8B0044EC0@orsmsx505.amr.corp.intel.com>
- <20090618182545.GC6838@il.ibm.com> <20090618183121.GB2500@x200.localdomain>
- <20090618184101.GE6838@il.ibm.com>
-In-Reply-To: <20090618184101.GE6838@il.ibm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751548AbZFRSwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 14:52:12 -0400
+Date: Thu, 18 Jun 2009 20:47:08 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Stanislaw Gruszka <sgruszka@redhat.com>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH]
+	ptrace-wait_task_zombie-do-not-account-traced-sub-threads-fix
+Message-ID: <20090618184708.GA15790@redhat.com>
+References: <20090615212648.GA22751@redhat.com> <20090616004510.2885FFC3D3@magilla.sf.frob.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090616004510.2885FFC3D3@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/15, Roland McGrath wrote:
 >
->On Thu, Jun 18, 2009 at 11:31:21AM -0700, Chris Wright wrote:
->
->> The 1-1 mapping is for all the host devices _not_ assigned to
->> guests.  To eliminate the i/o overhead imposed on all guests not
->> using an assigned device or from i/o from host.
->>
->> It's just the same as VT-d PassThrough mode for hardware that
->> doesn't support it.
->
->Ok, that makes sense. Thanks, Chris. However, that doesn't appear to
->be what the patch does---unless I'm misreading, if
->iommu_identity_mapping is set, *all* devices get identity
->mapping. Instead of a global command line option, we need to provide a
->way to enable/disable pt or identity mapping (I agree that the user
->shouldn't know or care which is used, the kernel should pick the best
->one automatically) on a per BDF basis.
+> ACK, but I think it warrants a comment explaining that task_detached() here
+> always means "ptrace'd but not reparented".
 
-The device in kvm is attached to a kvm domain by intel_iommu_attach_device(). In this function, domain_context_mapping() changes the device's domain to kvm domain from si_domain.
+Please see below. Not sure my comment is more clear...
 
-Actually there is a bug when a device is detached from kvm domain...in intel_iommu_detach_device(), I should assigned the device back to the si_domain. So the device can be used in native again.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-Thanks.
-
--Fenghua
+--- PTRACE/kernel/exit.c~1_WAIT_REPARENTED_COMMENT	2009-06-18 20:39:07.000000000 +0200
++++ PTRACE/kernel/exit.c	2009-06-18 20:42:05.000000000 +0200
+@@ -1188,7 +1188,10 @@ static int wait_task_zombie(struct wait_
+ 	}
+ 
+ 	traced = ptrace_reparented(p);
+-
++	/*
++	 * It can be ptraced but not reparented, check
++	 * !task_detached() to filter out sub-threads.
++	 */
+ 	if (likely(!traced) && likely(!task_detached(p))) {
+ 		struct signal_struct *psig;
+ 		struct signal_struct *sig;
 
