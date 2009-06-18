@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbZFRKNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbZFRKO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbZFRKNW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 06:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbZFRKNP
+	id S1758959AbZFRKO6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 06:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbZFRKOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 06:13:15 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56255 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756276AbZFRKNO (ORCPT
+	Thu, 18 Jun 2009 06:14:51 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:55433 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755436AbZFRKOu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 06:13:14 -0400
-Date: Thu, 18 Jun 2009 12:13:09 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: Brian Swetland <swetland@google.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       san@android.com, rlove@google.com, Greg KH <greg@kroah.com>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090618101309.GC28892@elf.ucw.cz>
-References: <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com> <20090611082532.GE8592@elf.ucw.cz> <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com> <20090612150504.GA15084@elf.ucw.cz> <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com> <20090615170103.GE25040@elf.ucw.cz> <a55d774e0906151132m5584409epe0b7581fde5ec184@mail.gmail.com> <20090617091139.GA4536@elf.ucw.cz> <a55d774e0906170240w631cdfbfq52647d1c438647cb@mail.gmail.com> <d6200be20906171436y5280ed8do561d2d53d73ca78@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d6200be20906171436y5280ed8do561d2d53d73ca78@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 18 Jun 2009 06:14:50 -0400
+Date: Thu, 18 Jun 2009 19:14:48 +0900 (JST)
+Message-Id: <20090618.191448.886429908004553840.mitake@dcl.info.waseda.ac.jp>
+To: mingo@elte.hu
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at
+ source code level
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <20090617163111.GA16128@elte.hu>
+References: <20090617.222055.374768827975756908.mitake@dcl.info.waseda.ac.jp>
+	<tip-d11ad9b3631b942b0d2e5b754a6c62158efb799f@git.kernel.org>
+	<20090617163111.GA16128@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-06-17 14:36:50, Arve Hj?nnev?g wrote:
-> On Wed, Jun 17, 2009 at 2:40 AM, Brian Swetland<swetland@google.com> wrote:
-> > On Wed, Jun 17, 2009 at 2:11 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> ...
-> >> One more question... do you have keymap.map to make console usable? By
-> >> default, keyboard lacks any special characters...
-> >
-> > I don't think we ever put together a full keymap for the console,
-> > since we don't use it much.  Arve might have done something with
-> > setkey once upon a time.
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at source code level
+Date: Wed, 17 Jun 2009 18:31:11 +0200
+
+> ition: inline
+> Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at source code level
+> From: Ingo Molnar <mingo@elte.hu>
+> To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+> 	mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de
+> Cc: linux-tip-commits@vger.kernel.org
+> Date: Wed, 17 Jun 2009 18:31:11 +0200
+> User-Agent: Mutt/1.5.18 (2008-05-17)
+> Received-SPF: neutral (mx2.mail.elte.hu: 157.181.1.14 is neither permitted nor denied by domain of elte.hu) client-ip=157.181.1.14; envelope-from=mingo@elte.hu; helo=elvis.elte.hu;
+> X-Mew: tab/spc characters on Subject: are simplified.
 > 
-> I used setkey on older hardware to get a usable console, but the
-> original dream keyboards did not need a special keymap to be useful.
-> We change the keymap in vendor/htc/dream/init.trout.rc, but it is
-> probably the opposite of what you want.
+> 
+> * tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> 
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -6630,7 +6630,7 @@ EXPORT_SYMBOL(yield);
+> >   */
+> >  void __sched io_schedule(void)
+> >  {
+> > -	struct rq *rq = &__raw_get_cpu_var(runqueues);
+> > +	struct rq *rq = this_rq();
+> >  
+> >  	delayacct_blkio_start();
+> >  	atomic_inc(&rq->nr_iowait);
+> > @@ -6642,7 +6642,7 @@ EXPORT_SYMBOL(io_schedule);
+> >  
+> >  long __sched io_schedule_timeout(long timeout)
+> >  {
+> > -	struct rq *rq = &__raw_get_cpu_var(runqueues);
+> > +	struct rq *rq = this_rq();
+> >  	long ret;
+> 
+> I removed these two changes. Did you notice the __raw prefix?
+> 
+> 	Ingo
+> 
 
-Ok, I created something useful in the meantime. Question is, what to
-do with the new keymap? I can obviously keep it at local patch, but...
+Thanks for your fix, I didn't notice...
+I wrote a patch to fix these two points.
 
-PC defkeymap.map makes HTC Dream useless.
+After applying this patch,
+all direct reference to runqueues is in macros. How is this?
 
-HTC Dream defkeymap.map makes PC useless :-(.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 8ec9d13..e2ca8c1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -692,6 +692,7 @@ static inline int cpu_of(struct rq *rq)
+ #define this_rq()		(&__get_cpu_var(runqueues))
+ #define task_rq(p)		cpu_rq(task_cpu(p))
+ #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
++#define raw_rq()		(&__raw_get_cpu_var(runqueues))
+ 
+ inline void update_rq_clock(struct rq *rq)
+ {
+@@ -6625,7 +6626,7 @@ EXPORT_SYMBOL(yield);
+  */
+ void __sched io_schedule(void)
+ {
+-	struct rq *rq = &__raw_get_cpu_var(runqueues);
++	struct rq *rq = raw_rq();
+ 
+ 	delayacct_blkio_start();
+ 	atomic_inc(&rq->nr_iowait);
+@@ -6637,7 +6638,7 @@ EXPORT_SYMBOL(io_schedule);
+ 
+ long __sched io_schedule_timeout(long timeout)
+ {
+-	struct rq *rq = &__raw_get_cpu_var(runqueues);
++	struct rq *rq = raw_rq();
+ 	long ret;
+ 
+ 	delayacct_blkio_start();
