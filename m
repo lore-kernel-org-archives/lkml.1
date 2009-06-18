@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbZFRSJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751936AbZFRSJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760163AbZFRSJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbZFRSIN
+	id S1751936AbZFRSJe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbZFRSIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:08:13 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1521 "EHLO
+	Thu, 18 Jun 2009 14:08:07 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1512 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756558AbZFRSII (ORCPT
+	with ESMTP id S1754041AbZFRSIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:08:08 -0400
+	Thu, 18 Jun 2009 14:08:05 -0400
 From: Joe Perches <joe@perches.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Zhao Lei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 5/5] MAINTAINERS: kmemtrace pattern update
-Date: Thu, 18 Jun 2009 11:08:05 -0700
-Message-Id: <d9a9c82a20e0b5129dce854eb670f7dd73ee98aa.1245345515.git.joe@perches.com>
+       Bob Copeland <me@bobcopeland.com>,
+       "Luis R . Rodriguez" <lrodriguez@atheros.com>,
+       Nick Kossifidis <mickflemm@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
+       ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH 1/5] MAINTAINERS: Fix Atheros pattern paths
+Date: Thu, 18 Jun 2009 11:08:01 -0700
+Message-Id: <8ee51d1f4d9f1076ae013721d189c7b0d9db2df8.1245345515.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1245345515.git.joe@perches.com>
 References: <cover.1245345515.git.joe@perches.com>
@@ -28,22 +30,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- MAINTAINERS |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ MAINTAINERS |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 2375de3..4cf7ba2 100644
+index fb94add..4e73646 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -3407,7 +3407,7 @@ P:	Eduard - Gabriel Munteanu
- M:	eduard.munteanu@linux360.ro
+@@ -946,7 +946,7 @@ M:	me@bobcopeland.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ath5k-devel@lists.ath5k.org
  S:	Maintained
- F:	Documentation/trace/kmemtrace.txt
--F:	include/trace/kmemtrace.h
-+F:	include/linux/kmemtrace.h
- F:	kernel/trace/kmemtrace.c
+-F:	drivers/net/wireless/ath5k/
++F:	drivers/net/wireless/ath/ath5k/
  
- KPROBES
+ ATHEROS ATH9K WIRELESS DRIVER
+ P:	Luis R. Rodriguez
+@@ -962,7 +962,7 @@ M:	senthilkumar@atheros.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ath9k-devel@lists.ath9k.org
+ S:	Supported
+-F:	drivers/net/wireless/ath9k/
++F:	drivers/net/wireless/ath/ath9k/
+ 
+ ATHEROS AR9170 WIRELESS DRIVER
+ P:	Christian Lamparter
+@@ -970,7 +970,7 @@ M:	chunkeey@web.de
+ L:	linux-wireless@vger.kernel.org
+ W:	http://wireless.kernel.org/en/users/Drivers/ar9170
+ S:	Maintained
+-F:	drivers/net/wireless/ar9170/
++F:	drivers/net/wireless/ath/ar9170/
+ 
+ ATI_REMOTE2 DRIVER
+ P:	Ville Syrjala
 -- 
 1.6.3.1.10.g659a0.dirty
 
