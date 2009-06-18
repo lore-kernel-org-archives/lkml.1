@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbZFRThR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZFRTiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbZFRThR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbZFRThH
+	id S1755665AbZFRTiy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbZFRTin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:37:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46755
+	Thu, 18 Jun 2009 15:38:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46759
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750728AbZFRThG (ORCPT
+	by vger.kernel.org with ESMTP id S1753959AbZFRTim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:37:06 -0400
-Date: Thu, 18 Jun 2009 12:37:08 -0700 (PDT)
-Message-Id: <20090618.123708.78849607.davem@davemloft.net>
-To: rientjes@google.com
-Cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
+	Thu, 18 Jun 2009 15:38:42 -0400
+Date: Thu, 18 Jun 2009 12:38:45 -0700 (PDT)
+Message-Id: <20090618.123845.232783995.davem@davemloft.net>
+To: swetland@google.com
+Cc: pavel@ucw.cz, arve@android.com, linux@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       san@android.com, rlove@google.com, greg@kroah.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com>
-	<20090618.120034.246557840.davem@davemloft.net>
-	<alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com>
+In-Reply-To: <a55d774e0906181233p35b60cd2ga401bd1304267643@mail.gmail.com>
+References: <d6200be20906171436y5280ed8do561d2d53d73ca78@mail.gmail.com>
+	<20090618101309.GC28892@elf.ucw.cz>
+	<a55d774e0906181233p35b60cd2ga401bd1304267643@mail.gmail.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,40 +30,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Rientjes <rientjes@google.com>
-Date: Thu, 18 Jun 2009 12:23:28 -0700 (PDT)
+From: Brian Swetland <swetland@google.com>
+Date: Thu, 18 Jun 2009 12:33:48 -0700
 
-> On Thu, 18 Jun 2009, David Miller wrote:
-> 
->> > I disagree, page allocation failure messages show vital information about 
->> > the state of the VM so that we can find bugs and GFP_ATOMIC allocations 
->> > are the most common trigger for these diagnostic messages since 
->> > __GFP_WAIT allocations can trigger direct reclaim (and __GFP_FS 
->> > allocations can trigger the oom killer) to free memory and will retry the 
->> > allocation if ~__GFP_NORETRY.
->> 
->> It's COMPLETELY and ABSOLUTELY normal for GFP_ATOMIC allocations to
->> fail in the networking.
->> 
-> 
-> __GFP_NOWARN exists for that reason.
+> Yeah, I wasn't sure how to handle this.  We try to keep the msm/dream
+> stuff in a state that doesn't break other parts of the tree, but there
+> doesn't seem to be support for different keymaps for different
+> devices.
 
-You're going to have to put that into every driver, every part of
-the core networking, every protocol.
+How it's supposed to work is that you have a specific keyboard driver
+and that emits PC keyboard codes into the core kernel using a
+translation table in your driver.
 
-That's dumb.
-
-> I understand what you're trying to avoid, but I disagree with the
-> approach of altering the default behavior of GFP_ATOMIC.
-
-The default got changed at some point because it never did
-crap like this before.
-
-> I may suggest that emitting the page allocation failures become a
-> compile time option; CONFIG_DEBUG_VM would be my suggestion.
-
-Use statistics gathering and tracing for this, not log spam.
-
-It serves all of your needs without spewing junk into the log.  It
-allows complete diagnosis and gathering of whatever information you
-may need.
+For example on Sparc machines we have a Sun Type-4/5 keyboard driver,
+but all applications and the kernel see PC keycodes.
