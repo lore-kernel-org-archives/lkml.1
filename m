@@ -1,174 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763699AbZFRNkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763557AbZFRNnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763699AbZFRNkt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 09:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbZFRNkm
+	id S1763557AbZFRNnj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 09:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbZFRNna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 09:40:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40883 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753609AbZFRNkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 09:40:41 -0400
-Date: Thu, 18 Jun 2009 13:39:50 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Filter to parent set by default
-Message-ID: <tip-b8e6d829729d1a5991a9f628205b671cac2ec06f@git.kernel.org>
-Git-Commit-ID: b8e6d829729d1a5991a9f628205b671cac2ec06f
-X-Mailer: tip-git-log-daemon
+	Thu, 18 Jun 2009 09:43:30 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:47712 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753830AbZFRNn3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 09:43:29 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 18 Jun 2009 13:40:04 +0000 (UTC)
+In-Reply-To: <20090618065814.GA12942@pengutronix.de>
+References: <20090618025030.12363.69402.stgit@localhost.localdomain> 
+	<20090618065814.GA12942@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 18 Jun 2009 07:35:28 -0600
+Message-ID: <fa686aa40906180635g45724119x99cd4d1e4ede59f9@mail.gmail.com>
+Subject: Re: [spi-devel-general] [PATCH v4] powerpc/5200: Add mpc5200-spi 
+	(non-PSC) device driver
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       jonsmirl@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b8e6d829729d1a5991a9f628205b671cac2ec06f
-Gitweb:     http://git.kernel.org/tip/b8e6d829729d1a5991a9f628205b671cac2ec06f
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 18 Jun 2009 14:32:19 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 18 Jun 2009 14:32:19 +0200
+On Thu, Jun 18, 2009 at 12:58 AM, Wolfram Sang<w.sang@pengutronix.de> wrote:
+> Hi Grant,
+>
+> some comments below:
 
-perf report: Filter to parent set by default
+Hi Wolfram.  Thanks for the review.
 
-Make it easier to use parent filtering - default to a filtered
-output. Also add the parent column so that we get collapsing but
-dont display it by default.
+> On Wed, Jun 17, 2009 at 08:55:01PM -0600, Grant Likely wrote:
+>> +#include <linux/spi/mpc52xx_spi.h>
+>
+> Is this still needed? See last comment...
 
-add --no-exclude-other to override this.
+No, not needed at all.  Will remove.
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> +#include <linux/of_spi.h>
+>> +#include <linux/io.h>
+>> +#include <asm/time.h>
+>
+> Really asm?
 
+Yes, really asm.  Needed for get_tlb()
 
----
- tools/perf/Makefile         |    2 +-
- tools/perf/builtin-report.c |   30 +++++++++++++++++++++++++++---
- 2 files changed, 28 insertions(+), 4 deletions(-)
+>> +#include <asm/mpc52xx.h>
+>> +
+>> +MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
+>> +MODULE_DESCRIPTION("MPC52xx SPI (non-PSC) Driver");
+>> +MODULE_LICENSE("GPL");
+>> +
+>> +/* Register offsets */
+>> +#define SPI_CTRL1    0x00
+>> +#define SPI_CTRL1_SPIE               (1 << 7)
+>> +#define SPI_CTRL1_SPE                (1 << 6)
+>> +#define SPI_CTRL1_MSTR               (1 << 4)
+>> +#define SPI_CTRL1_CPOL               (1 << 3)
+>> +#define SPI_CTRL1_CPHA               (1 << 2)
+>> +#define SPI_CTRL1_SSOE               (1 << 1)
+>> +#define SPI_CTRL1_LSBFE              (1 << 0)
+>> +
+>> +#define SPI_CTRL2    0x01
+>> +#define SPI_BRR              0x04
+>> +
+>> +#define SPI_STATUS   0x05
+>> +#define SPI_STATUS_SPIF              (1 << 7)
+>> +#define SPI_STATUS_WCOL              (1 << 6)
+>> +#define SPI_STATUS_MODF              (1 << 4)
+>> +
+>> +#define SPI_DATA     0x09
+>> +#define SPI_PORTDATA 0x0d
+>> +#define SPI_DATADIR  0x10
+>> +
+>> +/* FSM state return values */
+>> +#define FSM_STOP     0       /* Nothing more for the state machine to */
+>> +                             /* do.  If something interesting happens */
+>> +                             /* then and IRQ will be received */
+>
+> s/and/an/? Throughout the comments, there is sometimes a double space.
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 714db73..672c5f0 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -164,7 +164,7 @@ endif
- 
- # CFLAGS and LDFLAGS are for the users to override from the command line.
- 
--CFLAGS = $(M64) -ggdb3 -Wall -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
-+CFLAGS = $(M64) -ggdb3 -Wall -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -Werror -O6
- LDFLAGS = -lpthread -lrt -lelf -lm
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index fe66895..86981bd 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -46,9 +46,12 @@ static int		full_paths;
- static unsigned long	page_size;
- static unsigned long	mmap_window = 32;
- 
--static char		*parent_pattern = "^sys_|^do_page_fault";
-+static char		default_parent_pattern[] = "^sys_|^do_page_fault";
-+static char		*parent_pattern = default_parent_pattern;
- static regex_t		parent_regex;
- 
-+static int		exclude_other = 1;
-+
- struct ip_event {
- 	struct perf_event_header header;
- 	__u64 ip;
-@@ -742,6 +745,9 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, __u64 total_samples)
- 	struct sort_entry *se;
- 	size_t ret;
- 
-+	if (exclude_other && !self->parent)
-+		return 0;
-+
- 	if (total_samples) {
- 		double percent = self->count * 100.0 / total_samples;
- 		char *color = PERF_COLOR_NORMAL;
-@@ -764,6 +770,9 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, __u64 total_samples)
- 		ret = fprintf(fp, "%12Ld ", self->count);
- 
- 	list_for_each_entry(se, &hist_entry__sort_list, list) {
-+		if (exclude_other && (se == &sort_parent))
-+			continue;
-+
- 		fprintf(fp, "  ");
- 		ret += se->print(fp, self);
- 	}
-@@ -855,6 +864,7 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
- 		.ip	= ip,
- 		.level	= level,
- 		.count	= count,
-+		.parent = NULL,
- 	};
- 	int cmp;
- 
-@@ -1029,14 +1039,20 @@ static size_t output__fprintf(FILE *fp, __u64 total_samples)
- 	fprintf(fp, "#\n");
- 
- 	fprintf(fp, "# Overhead");
--	list_for_each_entry(se, &hist_entry__sort_list, list)
-+	list_for_each_entry(se, &hist_entry__sort_list, list) {
-+		if (exclude_other && (se == &sort_parent))
-+			continue;
- 		fprintf(fp, "  %s", se->header);
-+	}
- 	fprintf(fp, "\n");
- 
- 	fprintf(fp, "# ........");
- 	list_for_each_entry(se, &hist_entry__sort_list, list) {
- 		int i;
- 
-+		if (exclude_other && (se == &sort_parent))
-+			continue;
-+
- 		fprintf(fp, "  ");
- 		for (i = 0; i < strlen(se->header); i++)
- 			fprintf(fp, ".");
-@@ -1050,7 +1066,8 @@ static size_t output__fprintf(FILE *fp, __u64 total_samples)
- 		ret += hist_entry__fprintf(fp, pos, total_samples);
- 	}
- 
--	if (!strcmp(sort_order, default_sort_order)) {
-+	if (sort_order == default_sort_order &&
-+			parent_pattern == default_parent_pattern) {
- 		fprintf(fp, "#\n");
- 		fprintf(fp, "# (For more details, try: perf report --sort comm,dso,symbol)\n");
- 		fprintf(fp, "#\n");
-@@ -1508,6 +1525,8 @@ static const struct option options[] = {
- 		    "Don't shorten the pathnames taking into account the cwd"),
- 	OPT_STRING('p', "parent", &parent_pattern, "regex",
- 		   "regex filter to identify parent, see: '--sort parent'"),
-+	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
-+		    "Only display entries with parent-match"),
- 	OPT_END()
- };
- 
-@@ -1536,6 +1555,11 @@ int cmd_report(int argc, const char **argv, const char *prefix)
- 
- 	setup_sorting();
- 
-+	if (parent_pattern != default_parent_pattern)
-+		sort_dimension__add("parent");
-+	else
-+		exclude_other = 0;
-+
- 	/*
- 	 * Any (unrecognized) arguments left?
- 	 */
+The double spaces at the end of sentences are intentional.  It is
+perhaps a bit quaint and old fashioned, but it is my writing style.
+
+>
+>> +#define FSM_POLL     1       /* need to poll for completion, an IRQ is */
+>> +                             /* not expected */
+>> +#define FSM_CONTINUE 2       /* Keep iterating the state machine */
+>> +
+>> +/* Driver internal data */
+>> +struct mpc52xx_spi {
+>> +     struct spi_master *master;
+>> +     u32 sysclk;
+>
+> unused?
+
+yes, fixed.
+
+>> +     void __iomem *regs;
+>> +     int irq0;       /* MODF irq */
+>> +     int irq1;       /* SPIF irq */
+>> +     int ipb_freq;
+>
+> unsigned int will suit it better IMHO.
+
+right.
+
+>> +
+>> +     /* Statistics */
+>> +     int msg_count;
+>> +     int wcol_count;
+>> +     int wcol_ticks;
+>> +     u32 wcol_tx_timestamp;
+>> +     int modf_count;
+>> +     int byte_count;
+>
+> Hmm, there isn't even a debug-printout for those. Putting #ifdef DEBUG around
+> them will be ugly. Well, I can't make up if this is just overhead or useful
+> debugging aid, so no real objection :)
+
+There used to be a sysfs interface for dumping these, but it was an
+ugly misuse.  I'd like to leave these in.  I still have the sysfs bits
+in a private patch and I'm going to rework them for debugfs.
+
+> But I wonder more about the usage of the SS pin and if this chipsel is needed
+> at all (sadly I cannot test as I don't have any board with SPI connected to
+> that device). You define the SS-pin as output, but do not set the SSOE-bit.
+> More, you use the MODF-feature, so the SS-pin should be defined as input?
+> According to Table 17.3 in the PM, you have that pin defined as generic purpose
+> output.
+
+That's right.  The SS handling by the SPI device is completely
+useless, so this driver uses it as a GPIO and asserts it manually.
+The MODF irq is probably irrelevant, but I'd like to leave it in for
+completeness.
+
+>> +     /* initialize the device */
+>> +     out_8(regs+SPI_CTRL1, SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR);
+>
+> spaces around operator.
+
+Intentional to keep from spilling past column 80; but I'll move the
+missing spaces to around the | operators.  I think it is easier to
+read that way.
+
+>> diff --git a/include/linux/spi/mpc52xx_spi.h b/include/linux/spi/mpc52xx_spi.h
+>> new file mode 100644
+>> index 0000000..d1004cf
+>> --- /dev/null
+>> +++ b/include/linux/spi/mpc52xx_spi.h
+>> @@ -0,0 +1,10 @@
+>> +
+>> +#ifndef INCLUDE_MPC5200_SPI_H
+>> +#define INCLUDE_MPC5200_SPI_H
+>> +
+>> +extern void mpc52xx_spi_set_premessage_hook(struct spi_master *master,
+>> +                                         void (*hook)(struct spi_message *m,
+>> +                                                      void *context),
+>> +                                         void *hook_context);
+>> +
+>> +#endif
+>
+> This can be dropped for now and reintroduced when needed, I think.
+
+Yeah, this is cruft.  Removed.
+
+Thanks!
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
