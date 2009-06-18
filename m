@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbZFRSsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZFRSvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757026AbZFRSsj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZFRSsa
+	id S1754717AbZFRSvJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZFRSu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:48:30 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38122 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbZFRSsa (ORCPT
+	Thu, 18 Jun 2009 14:50:57 -0400
+Received: from mga11.intel.com ([192.55.52.93]:31673 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753449AbZFRSu4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:48:30 -0400
-Message-ID: <4A3A8BF0.4020907@novell.com>
-Date: Thu, 18 Jun 2009 14:48:16 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 18 Jun 2009 14:50:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,246,1243839600"; 
+   d="scan'208";a="700617350"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Muli Ben-Yehuda'" <muli@il.ibm.com>,
+       "'Chris Wright'" <chrisw@redhat.com>
+CC: "'David Woodhouse'" <dwmw2@infradead.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>, "Kay, Allen M" <allen.m.kay@intel.com>,
+       "'lkml'" <linux-kernel@vger.kernel.org>,
+       "'iommu'" <iommu@lists.linux-foundation.org>
+Date: Thu, 18 Jun 2009 11:50:57 -0700
+Subject: RE: [PATCH 1/2] IOMMU Identity Mapping Support:
+	iommu_identity_mapping definition
+Thread-Topic: [PATCH 1/2] IOMMU Identity Mapping Support:
+	iommu_identity_mapping definition
+Thread-Index: AcnwRMv0Vz0wJFNqRdKjIV9sYRzfcwAAHEhg
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B0044F7D@orsmsx505.amr.corp.intel.com>
+References: <1240135508.3589.75.camel@macbook.infradead.org>
+ <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com>
+ <20090513231351.GA22386@linux-os.sc.intel.com>
+ <1242314271.3393.11.camel@macbook.infradead.org>
+ <20090514175944.GA5168@linux-os.sc.intel.com>
+ <20090618180514.GA24082@linux-os.sc.intel.com>
+ <20090618180835.GB6838@il.ibm.com>
+ <A6AD88C3F2289247BE726C37303E1EB8B0044EC0@orsmsx505.amr.corp.intel.com>
+ <20090618182545.GC6838@il.ibm.com> <20090618183121.GB2500@x200.localdomain>
+ <20090618184101.GE6838@il.ibm.com>
+In-Reply-To: <20090618184101.GE6838@il.ibm.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, mst@redhat.com, avi@redhat.com,
-       paulmck@linux.vnet.ibm.com, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [KVM PATCH 3/4] eventfd: add generalized notifier interface
-References: <20090618173534.24119.95115.stgit@dev.haskins.net> <20090618174426.24119.69689.stgit@dev.haskins.net> <alpine.DEB.1.10.0906181044160.32646@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906181044160.32646@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE9C91C8052F31087C27D572B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE9C91C8052F31087C27D572B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Davide Libenzi wrote:
-> On Thu, 18 Jun 2009, Gregory Haskins wrote:
 >
->  =20
->> We currently open-code notification registration via the f_ops->poll()=
-
->> method of the eventfd.  Lets abstract this into a notification API
->> extension of eventfd, while still using the wait-queue as the underlyi=
-ng
->> mechanism.  This will allow us to manage the notification mechanism
->> internal to eventfd without requiring the clients to change.  This als=
-o
->> gives us the opportunity to implement race-free release() callbacks,
->> which we do later in the series.
->>    =20
+>On Thu, Jun 18, 2009 at 11:31:21AM -0700, Chris Wright wrote:
 >
-> Another attempt to push KVM stuff into eventfd.
+>> The 1-1 mapping is for all the host devices _not_ assigned to
+>> guests.  To eliminate the i/o overhead imposed on all guests not
+>> using an assigned device or from i/o from host.
+>>
+>> It's just the same as VT-d PassThrough mode for hardware that
+>> doesn't support it.
+>
+>Ok, that makes sense. Thanks, Chris. However, that doesn't appear to
+>be what the patch does---unless I'm misreading, if
+>iommu_identity_mapping is set, *all* devices get identity
+>mapping. Instead of a global command line option, we need to provide a
+>way to enable/disable pt or identity mapping (I agree that the user
+>shouldn't know or care which is used, the kernel should pick the best
+>one automatically) on a per BDF basis.
 
-Also, could you please detail how you expect someone to use the POLLHUP
-release in a race free way without patches 3/4 + 4/4?  That is not a KVM
-specific problem either, afaict.
+The device in kvm is attached to a kvm domain by intel_iommu_attach_device(). In this function, domain_context_mapping() changes the device's domain to kvm domain from si_domain.
 
--Greg
+Actually there is a bug when a device is detached from kvm domain...in intel_iommu_detach_device(), I should assigned the device back to the si_domain. So the device can be used in native again.
 
+Thanks.
 
+-Fenghua
 
---------------enigE9C91C8052F31087C27D572B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko6i/AACgkQlOSOBdgZUxmi2QCgjpuklaETO6r9iE/CVp7Ku+lE
-K+kAn1N8/mabpP6ok2J4oCnSqM/g51TQ
-=p2N4
------END PGP SIGNATURE-----
-
---------------enigE9C91C8052F31087C27D572B--
