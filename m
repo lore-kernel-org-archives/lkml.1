@@ -1,82 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZFRTRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbZFRTXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbZFRTRl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbZFRTRe
+	id S1752954AbZFRTXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbZFRTXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:17:34 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:48193 "EHLO e3.ny.us.ibm.com"
+	Thu, 18 Jun 2009 15:23:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45099 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbZFRTRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:17:33 -0400
-Subject: Re: [PATCH] clocksource: save mult_orig in clocksource_disable()
-From: john stultz <johnstul@us.ibm.com>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, lethal@linux-sh.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-In-Reply-To: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
-References: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
+	id S1750728AbZFRTXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 15:23:09 -0400
+Subject: Re: [Patch] mm tracepoints update - use case.
+From: Larry Woodman <lwoodman@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?Q?Fr=E9=A6=98=E9=A7=BBic?= Weisbecker 
+	<fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, rostedt@goodmis.org
+In-Reply-To: <20090616170811.99A6.A69D9226@jp.fujitsu.com>
+References: <20090423092933.F6E9.A69D9226@jp.fujitsu.com>
+	 <4A36925D.4090000@redhat.com> <20090616170811.99A6.A69D9226@jp.fujitsu.com>
 Content-Type: text/plain
-Date: Thu, 18 Jun 2009 12:17:12 -0700
-Message-Id: <1245352632.7508.1.camel@localhost.localdomain>
+Date: Thu, 18 Jun 2009 15:22:34 -0400
+Message-Id: <1245352954.3212.67.camel@dhcp-100-19-198.bos.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-19 at 00:24 +0900, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
-> 
-> Save clocksource mult_orig in clocksource_disable().
-> 
-> To fix the common case where ->enable() does not setup
-> mult, make sure mult_orig is saved in mult on disable.
-> 
-> Also add comments to explain why we do this.
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+On Thu, 2009-06-18 at 16:57 +0900, KOSAKI Motohiro wrote:
 
-Acked-by: John Stultz <johnstul@us.ibm.com>
-
-Thomas, Andrew, please push this for 2.6.31.
-
-thanks
--john
+Thanks for the feedback Kosaki!
 
 
-> ---
+> Scenario 1. OOM killer happend. why? and who bring it?
+
+Doesnt the showmem() and stack trace to the console when the OOM kill
+occurred show enough in the majority of cases?  I realize that direct
+alloc_pages() calls are not accounted for here but that can be really
+invasive.
+
+> Scenario 2. page allocation failure by memory fragmentation
+
+Are you talking about order>0 allocation failures here?  Most of the
+slabs are single page allocations now.
+
+> Scenario 3. try_to_free_pages() makes very long latency. why?
+
+This is available in the mm tracepoints, they all include timestamps.
+
+> Scenario 4. sar output that free memory dramatically reduced at 10 minute ago, and
+>             it already recover now. What's happen?
+
+Is this really important?  It would take buffering lots of data to
+figure out what happened in the past.
+
 > 
->  include/linux/clocksource.h |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
+>   - suspects
+>     - kernel memory leak
+
+Other than direct callers to the page allocator isnt that covered with
+the kmemtrace stuff?
+
+>     - userland memory leak
+
+The mm tracepoints track all user space allocations and frees(perhaps
+too many?).
+
+>     - stupid driver use too much memory
+
+hopefully kmemtrace will catch this?
+
+>     - userland application suddenly start to use much memory
+
+The mm tracepoints track all user space allocations and frees.
+
 > 
-> --- 0001/include/linux/clocksource.h
-> +++ work/include/linux/clocksource.h	2009-06-19 00:12:16.000000000 +0900
-> @@ -293,7 +293,11 @@ static inline int clocksource_enable(str
->  	if (cs->enable)
->  		ret = cs->enable(cs);
+>   - what information are valuable?
+>     - slab usage information (kmemtrace already does)
+>     - page allocator usage information
+>     - rss of all processes at oom happend
+>     - why recent try_to_free_pages() can't reclaim any page?
+
+The counters in the mm tracepoints do give counts but not the reasons
+that the pagereclaim code fails.
+
+>     - recent sycall history
+>     - buddy fragmentation info
 > 
-> -	/* save mult_orig on enable */
-> +	/* The frequency may have changed while the clocksource
-> +	 * was disabled. If so the code in ->enable() must update
-> +	 * the mult value to reflect the new frequency. Make sure
-> +	 * mult_orig follows this change.
-> +	 */
->  	cs->mult_orig = cs->mult;
 > 
->  	return ret;
-> @@ -309,6 +313,12 @@ static inline int clocksource_enable(str
->   */
->  static inline void clocksource_disable(struct clocksource *cs)
->  {
-> +	/* Save mult_orig in mult so clocksource_enable() can
-> +	 * restore the value regardless if ->enable() updates
-> +	 * the value of mult or not.
-> +	 */
-> +	cs->mult = cs->mult_orig;
-> +
->  	if (cs->disable)
->  		cs->disable(cs);
->  }
+> Plus, another requirement here
+> 1. trace page refault distance (likes past Rik's /proc/refault patch)
+> 
+> 2. file cache visualizer - Which file use many page-cache?
+>    - afaik, Wu Fengguang is working on this issue.
+> 
+> 
+> --------------------------------------------
+> And, here is my reviewing comment to his patch.
+> btw, I haven't full review it yet. perhaps I might be overlooking something.
+> 
+> 
+> First, this is general review comment.
+> 
+> - Please don't display mm and/or another kernel raw pointer.
+>   if we assume non stop system, we can't use kernel-dump. Thus kernel pointer
+>   logging is not so useful.
+
+OK, I just dont know how valuable the trace output is with out some raw
+data like the mm_struct.
+
+>   Any userland tools can't parse it. (/proc/kcore don't help this situation,
+>   the pointer might be freed before parsing)
+> - Please makes patch series. one big patch is harder review.
+
+OK.
+
+> - Please write patch description and use-case.
+
+OK.
+
+> - Please consider how do this feature works on mem-cgroup.
+>   (IOW, please don't ignore many "if (scanning_global_lru())")
+> - tracepoint caller shouldn't have any assumption of displaying representation.
+>   e.g.
+>     wrong)  trace_mm_pagereclaim_pgout(mapping, page->index<<PAGE_SHIFT, PageAnon(page));
+>     good)   trace_mm_pagereclaim_pgout(mapping, page)
+
+OK.
+
+>   that's general and good callback and/or hook manner.
+> 
+> 
+> 
+
 
