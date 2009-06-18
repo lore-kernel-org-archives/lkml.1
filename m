@@ -1,87 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbZFRDZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbZFRD0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbZFRDZW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 23:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZFRDZJ
+	id S1759764AbZFRD0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 23:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZFRD0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 23:25:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36020 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbZFRDZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 23:25:08 -0400
-Date: Wed, 17 Jun 2009 23:23:57 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: Jan Rekorajski <baggins@sith.mimuw.edu.pl>, Jan Blunck <jblunck@suse.de>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
-       mszeredi@suse.cz
-Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
-Message-ID: <20090618032357.GE15048@shell>
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <20090521125419.GM30663@sith.mimuw.edu.pl> <20090608195752.GD4363@fsbox> <20090608224406.GA6801@sith.mimuw.edu.pl> <20090608224831.GF24586@fsbox> <20090615095528.GG4379@sith.mimuw.edu.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090615095528.GG4379@sith.mimuw.edu.pl>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 17 Jun 2009 23:26:06 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51711 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752144AbZFRD0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 23:26:04 -0400
+Message-ID: <4A39B3E4.6060004@cn.fujitsu.com>
+Date: Thu, 18 Jun 2009 11:26:28 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>
+Subject: [PATCH v2] ftrace: change the export format of trace_kfree_skb()
+References: <4A2DF91F.7030906@cn.fujitsu.com> <20090609182730.GA6057@nowhere> <4A2F0F1D.7010101@cn.fujitsu.com> <20090610072618.GA6016@nowhere>
+In-Reply-To: <20090610072618.GA6016@nowhere>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 15, 2009 at 11:55:28AM +0200, Jan Rekorajski wrote:
-> On Mon, 08 Jun 2009, Valerie Aurora wrote:
-> 
-> > On Tue, Jun 09, 2009 at 12:44:06AM +0200, Jan Rekorajski wrote:
-> > > On Mon, 08 Jun 2009, Valerie Aurora wrote:
-> > > 
-> > > > You'll get -EBUSY on the second mount of any NFS file system over
-> > > > another - try it again with the --union flag.  Support for NFS on NFS
-> > > > union mount would have to change this.
-> > > 
-> > > I did just that, --union didn't change standard NFS behaviour.
-> > 
-> > Er, excuse me - I mean to type "try it again WITHOUT the --union
-> > flag."  My apologies!
-> 
-> I did, see below.
-> 
-> > > 
-> > > mount -t nfs server:/export/system /mnt
-> > > mount --union -t nfs server:/export/profile /mnt
-> > > mount.nfs: /mnt is busy or already mounted
-> > > 
-> > > I did an experiment by using different IP of the server (same machine)
-> > > when mounting the second fs, mount worked then, but 'ls -1 /mnt' oopsed.
-> > > I can reproduce this and send you the oops next week.
-> > 
-> > Interesting!  Does this happen without the --union flag?
-> 
-> Filesystems are exported ro, all mounts nfs3,ro,tcp.
-> 
-> Without --union:
-> 
-> mount -t nfs 10.1.0.4:/nfs/system /mnt -oro,nolock,vers=3,tcp
-> OK
-> 
-> mount -t nfs 10.1.0.4:/nfs/profile /mnt -oro,nolock,vers=3,tcp
-> -EBUSY (as expected)
-> 
-> mount -t nfs 10.1.0.3:/nfs/profile /mnt -oro,nolock,vers=3,tcp
->  (notice different IP - but it's the same machine)
-> Works, just overmounts /mnt, ls shown contents of /nfs/profile
-> 
-> Now, --union:
-> 
-> mount -t nfs 10.1.0.4:/nfs/system /mnt -oro,nolock,vers=3,tcp
-> OK
-> 
-> mount --union -t nfs 10.1.0.4:/nfs/profile /mnt -oro,nolock,vers=3,tcp
-> -EBUSY (/mnt busy or already mounted)
-> 
-> mount --union -t nfs 10.1.0.3:/nfs/profile /mnt -oro,nolock,vers=3,tcp
->  (notice different IP - but it's the same machine)
-> mount command works, ls Oopses:
+Use %pf instead of %p to output the function's address and print the
+protocol's name.
 
-Sorry for the delay in reply!  This is on our to-do list, thanks for
-doing a little more testing.
+Before patch:
 
--VAL
+  <idle>-0     [000] 60144.542521: kfree_skb: skbaddr=de7b8240 protocol=2048 location=c1365429
+  <idle>-0     [000] 60164.488153: kfree_skb: skbaddr=da66f900 protocol=2048 location=c1365429
+  <idle>-0     [000] 60193.493933: kfree_skb: skbaddr=deaeb480 protocol=4 location=c134ec25
+  <idle>-0     [000] 60253.118421: kfree_skb: skbaddr=de7c4900 protocol=4 location=c134ec25
+          
+After patch:
+
+  <idle>-0     [000]   169.979205: kfree_skb: skbaddr=ceddc240 protocol=ETH_P_802_2 location=netif_receive_skb
+  <idle>-0     [000]   172.587000: kfree_skb: skbaddr=ceddc300 protocol=ETH_P_802_2 location=netif_receive_skb
+    ping-3391  [000]   192.109803: kfree_skb: skbaddr=ceddc900 protocol=ETH_P_IP location=icmp_rcv
+    ping-3391  [000]   192.109902: kfree_skb: skbaddr=ceddc780 protocol=ETH_P_IP location=icmp_rcv
+
+Changelog v1->v2:
+Convert protocol from raw numeric to its name as Frederic's suggestion
+
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ include/trace/events/skb.h |   70 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 68 insertions(+), 2 deletions(-)
+
+diff --git a/include/trace/events/skb.h b/include/trace/events/skb.h
+index 1e8fabb..2496060 100644
+--- a/include/trace/events/skb.h
++++ b/include/trace/events/skb.h
+@@ -7,6 +7,71 @@
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM skb
+ 
++#define protocol_name(protocol) { protocol, #protocol }
++#define show_protocol_name(val)					\
++	__print_symbolic(val,					\
++			 protocol_name(ETH_P_LOOP),		\
++			 protocol_name(ETH_P_PUP),		\
++			 protocol_name(ETH_P_PUPAT),		\
++			 protocol_name(ETH_P_IP),		\
++			 protocol_name(ETH_P_X25),		\
++			 protocol_name(ETH_P_ARP),		\
++			 protocol_name(ETH_P_BPQ),		\
++			 protocol_name(ETH_P_IEEEPUP),		\
++			 protocol_name(ETH_P_IEEEPUPAT),	\
++			 protocol_name(ETH_P_DEC),		\
++			 protocol_name(ETH_P_DNA_DL),		\
++			 protocol_name(ETH_P_DNA_RC),		\
++			 protocol_name(ETH_P_DNA_RT),		\
++			 protocol_name(ETH_P_LAT),		\
++			 protocol_name(ETH_P_DIAG),		\
++			 protocol_name(ETH_P_CUST),		\
++			 protocol_name(ETH_P_SCA),		\
++			 protocol_name(ETH_P_TEB),		\
++			 protocol_name(ETH_P_RARP),		\
++			 protocol_name(ETH_P_ATALK),		\
++			 protocol_name(ETH_P_AARP),		\
++			 protocol_name(ETH_P_8021Q),		\
++			 protocol_name(ETH_P_IPX),		\
++			 protocol_name(ETH_P_IPV6),		\
++			 protocol_name(ETH_P_PAUSE),		\
++			 protocol_name(ETH_P_SLOW),		\
++			 protocol_name(ETH_P_WCCP),		\
++			 protocol_name(ETH_P_PPP_DISC),		\
++			 protocol_name(ETH_P_PPP_SES),		\
++			 protocol_name(ETH_P_MPLS_UC),		\
++			 protocol_name(ETH_P_MPLS_MC),		\
++			 protocol_name(ETH_P_ATMMPOA),		\
++			 protocol_name(ETH_P_ATMFATE),		\
++			 protocol_name(ETH_P_PAE),		\
++			 protocol_name(ETH_P_AOE),		\
++			 protocol_name(ETH_P_TIPC),		\
++			 protocol_name(ETH_P_FCOE),		\
++			 protocol_name(ETH_P_FIP),		\
++			 protocol_name(ETH_P_EDSA),		\
++			 protocol_name(ETH_P_802_3),		\
++			 protocol_name(ETH_P_AX25),		\
++			 protocol_name(ETH_P_ALL),		\
++			 protocol_name(ETH_P_802_2),		\
++			 protocol_name(ETH_P_SNAP),		\
++			 protocol_name(ETH_P_DDCMP),		\
++			 protocol_name(ETH_P_WAN_PPP),		\
++			 protocol_name(ETH_P_PPP_MP),		\
++			 protocol_name(ETH_P_LOCALTALK),	\
++			 protocol_name(ETH_P_CAN),		\
++			 protocol_name(ETH_P_PPPTALK),		\
++			 protocol_name(ETH_P_TR_802_2),		\
++			 protocol_name(ETH_P_MOBITEX),		\
++			 protocol_name(ETH_P_CONTROL),		\
++			 protocol_name(ETH_P_IRDA),		\
++			 protocol_name(ETH_P_ECONET),		\
++			 protocol_name(ETH_P_HDLC),		\
++			 protocol_name(ETH_P_ARCNET),		\
++			 protocol_name(ETH_P_DSA),		\
++			 protocol_name(ETH_P_TRAILER),		\
++			 protocol_name(ETH_P_PHONET),		\
++			 protocol_name(ETH_P_IEEE802154))
++
+ /*
+  * Tracepoint for free an sk_buff:
+  */
+@@ -30,8 +95,9 @@ TRACE_EVENT(kfree_skb,
+ 		__entry->location = location;
+ 	),
+ 
+-	TP_printk("skbaddr=%p protocol=%u location=%p",
+-		__entry->skbaddr, __entry->protocol, __entry->location)
++	TP_printk("skbaddr=%p protocol=%s location=%pf",
++		  __entry->skbaddr, show_protocol_name(__entry->protocol),
++		  __entry->location)
+ );
+ 
+ #endif /* _TRACE_SKB_H */
+-- 
+1.6.1.2
+
+
