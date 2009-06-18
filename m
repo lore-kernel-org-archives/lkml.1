@@ -1,154 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbZFRWBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbZFRWJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbZFRWBV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 18:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbZFRWBE
+	id S1758245AbZFRWJd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 18:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZFRWJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 18:01:04 -0400
-Received: from cmpxchg.org ([85.214.51.133]:54703 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757062AbZFRWBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 18:01:03 -0400
-Date: Thu, 18 Jun 2009 23:57:45 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joe Perches <joe@perches.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Tejun Heo <tj@kernel.org>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] bootmem.c: Avoid c90 declaration warning
-Message-ID: <20090618215744.GA10816@cmpxchg.org>
-References: <1245355633.29927.16.camel@Joe-Laptop.home> <20090618132410.0b55cd90.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090618132410.0b55cd90.akpm@linux-foundation.org>
+	Thu, 18 Jun 2009 18:09:28 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:45800 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755924AbZFRWJ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 18:09:27 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 18 Jun 2009 15:03:19 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based notifier
+ interface
+In-Reply-To: <4A3A8FBC.10905@novell.com>
+Message-ID: <alpine.DEB.1.10.0906181500350.32646@makko.or.mcafeemobile.com>
+References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com> <4A37A7FC.4090403@novell.com> <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com>
+ <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <alpine.DEB.1.10.0906160915340.25664@makko.or.mcafeemobile.com> <4A37CFDA.4000602@novell.com>
+ <alpine.DEB.1.10.0906170932290.7891@makko.or.mcafeemobile.com> <4A3927C0.5060607@novell.com> <alpine.DEB.1.10.0906171034030.7891@makko.or.mcafeemobile.com> <4A39415C.9060803@novell.com> <alpine.DEB.1.10.0906171247120.7891@makko.or.mcafeemobile.com>
+ <4A39649C.4020602@novell.com> <alpine.DEB.1.10.0906171457000.7891@makko.or.mcafeemobile.com> <4A3A48AB.2080206@novell.com> <alpine.DEB.1.10.0906181011140.32646@makko.or.mcafeemobile.com> <4A3A8FBC.10905@novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 01:24:10PM -0700, Andrew Morton wrote:
-> On Thu, 18 Jun 2009 13:07:13 -0700
-> Joe Perches <joe@perches.com> wrote:
+On Thu, 18 Jun 2009, Gregory Haskins wrote:
+
+> Davide Libenzi wrote:
+> > On Thu, 18 Jun 2009, Gregory Haskins wrote:
+> >
+> >   
+> >> Actually there is only one (the tx-thread) aside from the eventfd
+> >> imposed workqueue one.  Incidentally, I would love to get rid of the
+> >> other thread too, so I am not just picking on eventfd ;).  The other is
+> >> a lot harder since it has to update the virtio-ring and may need to page
+> >> in guest memory to do so.
+> >>     
+> >
+> > No, there is the interface rx softirq too, that makes two.
 > 
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> > 
-> > diff --git a/mm/bootmem.c b/mm/bootmem.c
-> > index 282df0a..09d9c98 100644
-> > --- a/mm/bootmem.c
-> > +++ b/mm/bootmem.c
-> > @@ -536,11 +536,13 @@ static void * __init alloc_arch_preferred_bootmem(bootmem_data_t *bdata,
-> >  		return kzalloc(size, GFP_NOWAIT);
-> >  
-> >  #ifdef CONFIG_HAVE_ARCH_BOOTMEM
-> > +	{
-> >  	bootmem_data_t *p_bdata;
-> >  
-> >  	p_bdata = bootmem_arch_preferred_node(bdata, size, align, goal, limit);
-> >  	if (p_bdata)
-> >  		return alloc_bootmem_core(p_bdata, size, align, goal, limit);
-> > +	}
-> >  #endif
-> >  	return NULL;
-> >  }
+> Actually, I believe you are mistaken.  It normally executes the softirq
+> in interrupt context, not a thread.
 > 
-> Well yes.
+> But I digress.  Lets just shelve the SRCU conversation for another day. 
+> It was my bad for introducing it now prematurely to solve a mostly
+> unrelated problem: the module-reference thing.  I didn't realize the
+> SRCU change would be so controversial, and I didn't think to split
+> things apart as I have done today.
 > 
-> We'll be needing some tabs there.
-> 
-> Unrelatedly, I'm struggling a bit with bootmem_arch_preferred_node(). 
-> It's only defined if CONFIG_X86_32=y && CONFIG_NEED_MULTIPLE_NODES=y,
-> but it gets called if CONFIG_HAVE_ARCH_BOOTMEM=y.
-> 
-> Is this correct, logical and as simple as we can make it??
+> But the fact is: I do not see any way to actually use your referenceless
+> POLLHUP release code in a race free way without doing something like I
+> propose in 3/4, 4/4.   Lets keep the discussion focused on that for now,
+> if we could.
 
-x86_32 numa is the only setter of HAVE_ARCH_BOOTMEM.  I don't know why
-this arch has a strict preference/requirement(?) for bootmem on node
-0.
+OK, since I got literally swamped by the amount of talks and patches over 
+this theoretically simple topic, would you mind  1) posting the global 
+patch over eventfd  2) describe exactly what races are you talking about 
+3) explain why this should be any concern of eventfd at all?
 
-I found this mail from Yinghai
 
-  http://marc.info/?l=linux-kernel&m=123614990906256&w=2
 
-where he says that it expects all bootmem on node zero but with the
-current code and alloc_arch_preferred_bootmem() failing, we could fall
-back to another node.  Won't this break?  Yinghai?
+- Davide
 
-Otherwise, could we perhaps use something as simple as this?
 
-diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
-index ede6998..b68a672 100644
---- a/arch/x86/include/asm/mmzone_32.h
-+++ b/arch/x86/include/asm/mmzone_32.h
-@@ -92,8 +92,7 @@ static inline int pfn_valid(int pfn)
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- /* always use node 0 for bootmem on this numa platform */
--#define bootmem_arch_preferred_node(__bdata, size, align, goal, limit)	\
--	(NODE_DATA(0)->bdata)
-+#define bootmem_arch_preferred_node (NODE(0)->bdata)
- #endif /* CONFIG_NEED_MULTIPLE_NODES */
- 
- #endif /* _ASM_X86_MMZONE_32_H */
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 282df0a..0097fa2 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -528,23 +528,6 @@ find_block:
- 	return NULL;
- }
- 
--static void * __init alloc_arch_preferred_bootmem(bootmem_data_t *bdata,
--					unsigned long size, unsigned long align,
--					unsigned long goal, unsigned long limit)
--{
--	if (WARN_ON_ONCE(slab_is_available()))
--		return kzalloc(size, GFP_NOWAIT);
--
--#ifdef CONFIG_HAVE_ARCH_BOOTMEM
--	bootmem_data_t *p_bdata;
--
--	p_bdata = bootmem_arch_preferred_node(bdata, size, align, goal, limit);
--	if (p_bdata)
--		return alloc_bootmem_core(p_bdata, size, align, goal, limit);
--#endif
--	return NULL;
--}
--
- static void * __init ___alloc_bootmem_nopanic(unsigned long size,
- 					unsigned long align,
- 					unsigned long goal,
-@@ -553,11 +536,15 @@ static void * __init ___alloc_bootmem_nopanic(unsigned long size,
- 	bootmem_data_t *bdata;
- 	void *region;
- 
-+	if (WARN_ON_ONCE(slab_is_available()))
-+		return kzalloc(size, GFP_NOWAIT);
- restart:
--	region = alloc_arch_preferred_bootmem(NULL, size, align, goal, limit);
-+#ifdef bootmem_arch_preferred_node
-+	region = alloc_bootmem_core(bootmem_arch_preferred_node,
-+				size, align, goal, limit);
- 	if (region)
- 		return region;
--
-+#endif
- 	list_for_each_entry(bdata, &bdata_list, list) {
- 		if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
- 			continue;
-@@ -636,13 +623,11 @@ static void * __init ___alloc_bootmem_node(bootmem_data_t *bdata,
- {
- 	void *ptr;
- 
--	ptr = alloc_arch_preferred_bootmem(bdata, size, align, goal, limit);
--	if (ptr)
--		return ptr;
--
-+#ifndef bootmem_arch_preferred_node
- 	ptr = alloc_bootmem_core(bdata, size, align, goal, limit);
- 	if (ptr)
- 		return ptr;
-+#endif
- 
- 	return ___alloc_bootmem(size, align, goal, limit);
- }
