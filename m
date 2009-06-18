@@ -1,77 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbZFRWoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbZFRWrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbZFRWoi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 18:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758330AbZFRWo2
+	id S1759016AbZFRWrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 18:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758660AbZFRWrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 18:44:28 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:56554 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758329AbZFRWo1 convert rfc822-to-8bit (ORCPT
+	Thu, 18 Jun 2009 18:47:04 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:53059 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758565AbZFRWrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 18:44:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oPwyPpF61OwAPMgTpzpBbLkLRccF6e0NyfOjkDzSTI7N0BUqJ1r7erdG6duCh0Oay8
-         1OGeUEcytgcyFgzjE/6YfSXZuC06ogj7UlvITXUUO91Gb0VCp/nsnF2ZzZNhc86DwGU0
-         FBe/ZleifbBmJn8REGmMdznNJGb/9nheIwhwc=
+	Thu, 18 Jun 2009 18:47:03 -0400
+Message-ID: <4A3AC3B3.2030002@gmail.com>
+Date: Fri, 19 Jun 2009 00:46:11 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <9b2b86520906180633i2bc2ad6bk20c43d8426798b18@mail.gmail.com>
-References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-	 <9b2b86520906131051t32183554r8208cf886609e09c@mail.gmail.com>
-	 <71cd59b00906141226k37b90b9ey7347ed85ec17a17b@mail.gmail.com>
-	 <61b223ba0906150109r3a69e98aq949c7f2df5563c6e@mail.gmail.com>
-	 <15e53e180906160133j7055536cqe5b9515704fd4d94@mail.gmail.com>
-	 <4A375914.5050800@tuffmail.co.uk>
-	 <15e53e180906160147w1fa6282dl50e8e728f067e090@mail.gmail.com>
-	 <71cd59b00906160244t21bc0553tc8e209c70497687d@mail.gmail.com>
-	 <15e53e180906160304u37f8c702m808ece710359ef9a@mail.gmail.com>
-	 <9b2b86520906180633i2bc2ad6bk20c43d8426798b18@mail.gmail.com>
-Date: Fri, 19 Jun 2009 00:44:28 +0200
-Message-ID: <71cd59b00906181544j4fa957b1n6dcd3bdf34efc423@mail.gmail.com>
-Subject: Re: [gpm] [PATCH 2.6.29] eeepc-laptop: report brightness control 
-	events via the input layer
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Richard Hughes <hughsient@gmail.com>, gnome-power-manager-list@gnome.org,
-       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Patrick McHardy <kaber@trash.net>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
+Subject: [PATCH] netfilter: conntrack: death_by_timeout() fix
+References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com> <4A3A0D45.8090806@trash.net> <4A3A5599.4080906@trash.net> <4A3A6143.3040607@gmail.com> <4A3A66CC.4090205@trash.net>
+In-Reply-To: <4A3A66CC.4090205@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 19 Jun 2009 00:46:15 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 3:33 PM, Alan
-Jenkins<sourcejedi.lkml@googlemail.com> wrote:
-> On 6/16/09, Richard Hughes <hughsient@gmail.com> wrote:
->> On Tue, Jun 16, 2009 at 10:44 AM, Corentin
->> Chary<corentin.chary@gmail.com> wrote:
->>> Ok, so we just need to patch this file :
->>> http://cgit.freedesktop.org/hal-info/tree/fdi/information/10freedesktop/10-laptop-panel-hardware.fdi
+Patrick McHardy a écrit :
+> Eric Dumazet wrote:
+>> In my own analysis, I found death_by_timeout() might be problematic,
+>> with RCU and lockless lookups.
 >>
->> Yes
+>> static void death_by_timeout(unsigned long ul_conntrack)
+>> {
+>>         struct nf_conn *ct = (void *)ul_conntrack;
 >>
->>> But I'm not sure how to do it to make it works on all Eeepc.
+>>         if (!test_bit(IPS_DYING_BIT, &ct->status) &&
+>>             unlikely(nf_conntrack_event(IPCT_DESTROY, ct) < 0)) {
+>>                 /* destroy event was not delivered */
+>>                 nf_ct_delete_from_lists(ct);
+>> << HERE >>
 >>
->> Well, really we want to match "classes of eeepc", so matching with
->> prefix might be a good idea.
+>>                 nf_ct_insert_dying_list(ct);
+>>                 return;
+>>         }
+>>         set_bit(IPS_DYING_BIT, &ct->status);
+>>         nf_ct_delete_from_lists(ct);
+>>         nf_ct_put(ct);
+>> }
 >>
->> Richard.
->
-> Yes please!  I see the 701 is (just added?) on the list, but this
+>>
+>> We delete ct from a list and insert it in a new list.
+>>
+>> I believe a reader could "*catch*" ct while doing a lookup and miss
+>> the end
+>> of its chain. (nulls algo check the null value at the end of lookup
+>> and can
+>> decide to restart the lookup if the null value is not the expected one)
+>>
+>> We need to change nf_conntrack_init_net() and use a different "null"
+>> value,
+>> guaranteed not being used in regular lists
+> 
+> Good catch. This is a new bug, but it shouldn't matter in this case
+> since nf_conntrack_event() can't fail unless you have a userspace
+> listener that makes use of reliable delivery, which I think hasn't
+> even been released yet.
+> 
+>> Patch follows :
+> 
+> Looks good. If you send me a Signed-off-by: I'll already apply it.
 
-The 701 was already here when I checked.
+Sure, here it is.
 
-> But I hope there's a nicer solution.  Corentin, do you think it would
-> be correct to apply this quirk to _all_ Asus laptops?
+Thank you
 
-I can confirm that all the asus laptop I know change the brightness in the
-firmware. So, in my opinion, we can safely apply this quirk to all Asus laptops.
+[PATCH] netfilter: conntrack: death_by_timeout() fix
 
+death_by_timeout() might delete a conntrack from hash list
+and insert it in dying list.
 
--- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+ nf_ct_delete_from_lists(ct);
+ nf_ct_insert_dying_list(ct);
+
+I believe a (lockless) reader could *catch* ct while doing a lookup 
+and miss the end of its chain.
+(nulls lookup algo must check the null value at the end of lookup and
+should restart if the null value is not the expected one.
+cf Documentation/RCU/rculist_nulls.txt for details)
+
+We need to change nf_conntrack_init_net() and use a different "null" value,
+guaranteed not being used in regular lists. Choose very large values, since
+hash table uses [0..size-1] null values.
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Acked-by: Pablo Neira Ayuso <pablo@netfilter.org>
+Acked-by: Patrick McHardy <kaber@trash.net>
+---
+
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index 5f72b94..5276a2d 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -1267,13 +1267,19 @@ err_cache:
+ 	return ret;
+ }
+ 
++/*
++ * We need to use special "null" values, not used in hash table
++ */
++#define UNCONFIRMED_NULLS_VAL	((1<<30)+0)
++#define DYING_NULLS_VAL		((1<<30)+1)
++
+ static int nf_conntrack_init_net(struct net *net)
+ {
+ 	int ret;
+ 
+ 	atomic_set(&net->ct.count, 0);
+-	INIT_HLIST_NULLS_HEAD(&net->ct.unconfirmed, 0);
+-	INIT_HLIST_NULLS_HEAD(&net->ct.dying, 0);
++	INIT_HLIST_NULLS_HEAD(&net->ct.unconfirmed, UNCONFIRMED_NULLS_VAL);
++	INIT_HLIST_NULLS_HEAD(&net->ct.dying, DYING_NULLS_VAL);
+ 	net->ct.stat = alloc_percpu(struct ip_conntrack_stat);
+ 	if (!net->ct.stat) {
+ 		ret = -ENOMEM;
+
