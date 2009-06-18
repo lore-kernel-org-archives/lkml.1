@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbZFRVJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbZFRVJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043AbZFRVJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 17:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZFRVJV
+	id S1755684AbZFRVJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 17:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbZFRVJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 17:09:21 -0400
-Received: from claw.goop.org ([74.207.240.146]:47716 "EHLO claw.goop.org"
+	Thu, 18 Jun 2009 17:09:25 -0400
+Received: from local.xorcom.com ([62.90.10.53]:40755 "EHLO local.xorcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753173AbZFRVJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 17:09:21 -0400
-Message-ID: <4A3AACFD.5020805@goop.org>
-Date: Thu, 18 Jun 2009 14:09:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1754501AbZFRVJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 17:09:24 -0400
+Date: Fri, 19 Jun 2009 00:09:25 +0300
+From: Tzafrir Cohen <tzafrir.cohen@xorcom.com>
+To: Open Source Line Echo Canceller 
+	<freetel-oslec@lists.sourceforge.net>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [freetel-oslec] [PATCH] fix Pstate growing in OSLEC
+Message-ID: <20090618210925.GU3311@xorcom.com>
+References: <20090618174540.GT3311@xorcom.com> <1245358446.6714.3.camel@localhost>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's
- no local APIC
-References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>	<4A35ACB3.9040501@goop.org> <m1k53dbwo2.fsf@fess.ebiederm.org>	<4A36B3EC.7010004@goop.org> <m1fxe117n5.fsf@fess.ebiederm.org>	<4A37F4AE.5050902@goop.org> <m1vdmvxe3u.fsf@fess.ebiederm.org>	<4A392896.9090408@goop.org> <m1zlc6memu.fsf@fess.ebiederm.org>	<4A3A96BC.1000302@goop.org> <m1ab45i8vs.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ab45i8vs.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245358446.6714.3.camel@localhost>
+X-Forced-Service: Sadly Using Gmail [tm]
+Organization: Xorcom*
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/18/09 13:28, Eric W. Biederman wrote:
->>> How does Xen handle domU with hardware directly mapped?
->>>   
->>>       
->> We call that "pci passthrough".  Dom0 will bind the gsi to a pirq as
->> usual, and then pass the pirq through to the domU.  The domU will bind
->> the pirq to an event channel, which gets mapped to a Linux irq and
->> handled as usual.
->>     
->
-> Interesting.  How does domU find out the pirq -> pci device mapping?
->   
+On Fri, Jun 19, 2009 at 06:24:06AM +0930, David Rowe wrote:
 
-Hm, I haven't looked at it closely, but conventionally it would be via
-xenbus (which is how all the split frontend-backend drivers communicate).
+> Re gathering dust, on the contrary I understand that many people are
+> using Oslec from the kernel staging directory with the Asterisk DAHDI
+> interface.
 
->> It is already; once the pirq is prepared, the process is the same in
->> both cases.
->>     
->
-> I 3/4 believe that.  map_domain_pirq  appears to setup a per domain
-> mapping between the hardware vector and the irq name it is known as.
-> So I don't see how that works for other domains.
->
-> msi is setup on a per domain basis.
->   
+... and thus creating interesting artifacts such as:
 
-Ah, OK.  The pirq is set up for a specific domain rather than being
-global (otherwise it would need some kind of "which domain can access
-which pirq" table).  dom0 can either create a pirq for itself or someone
-else, and the final user of the pirq binds it to a domain-local evtchn.
+  http://svn.asterisk.org/svn/dahdi/linux/trunk/drivers/dahdi/dahdi_echocan_oslec.c
+  http://svn.asterisk.org/svn/dahdi/linux/trunk/drivers/dahdi/Kbuild
+  https://issues.asterisk.org/view.php?id=15251
 
-I think.  I really haven't looked into the pci-passthrough parts very
-closely yet.
+Note the line '#include "../staging/echo/oslec.h"
 
-    J
+-- 
+               Tzafrir Cohen
+icq#16849755              jabber:tzafrir.cohen@xorcom.com
++972-50-7952406           mailto:tzafrir.cohen@xorcom.com
+http://www.xorcom.com  iax:guest@local.xorcom.com/tzafrir
