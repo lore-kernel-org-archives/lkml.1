@@ -1,92 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbZFRPnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbZFRPqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbZFRPnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 11:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZFRPnb
+	id S1752658AbZFRPqq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 11:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZFRPqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 11:43:31 -0400
-Received: from mail-fx0-f212.google.com ([209.85.220.212]:49890 "EHLO
-	mail-fx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753768AbZFRPna (ORCPT
+	Thu, 18 Jun 2009 11:46:36 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:42475 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbZFRPqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 11:43:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TWx6lu4Dkp5DIqk5XTKyjXeWZqKHbUCMq1crclmQy8ujTA9HSdmlbUPFsuH57YY6jY
-         GsOmNNmpXCI2n3qP0pif11RVlJpP3bVe4Mg6S4yQq3p1ArhTB42UmGNnavznSWDucacn
-         bROolNEfHQIwbcw01HeLtSIyPOli+L9UnlbzE=
+	Thu, 18 Jun 2009 11:46:35 -0400
+Message-ID: <4A3A6143.3040607@gmail.com>
+Date: Thu, 18 Jun 2009 17:46:11 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <87vdmt8ugm.fsf@fever.mssgmbh.com>
-References: <87zlc58xgd.fsf@fever.mssgmbh.com>
-	 <9ea470500906180739qdabce04u7c7875acc05358f@mail.gmail.com>
-	 <87vdmt8ugm.fsf@fever.mssgmbh.com>
-Date: Thu, 18 Jun 2009 17:43:31 +0200
-Message-ID: <9ea470500906180843w73435e74sade8a78894f75be5@mail.gmail.com>
-Subject: Re: [PATCH] ide-cd: prevent null pointer deref via cdrom_newpc_intr
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Rainer Weikusat <rweikusat@mssgmbh.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Patrick McHardy <kaber@trash.net>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
+Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
+ __list_add+0x7d/0xad()
+References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com> <4A3A0D45.8090806@trash.net> <4A3A5599.4080906@trash.net>
+In-Reply-To: <4A3A5599.4080906@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 18 Jun 2009 17:46:11 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, Jun 18, 2009 at 4:52 PM, Rainer Weikusat<rweikusat@mssgmbh.com> wrote:
-> Borislav Petkov <petkovbb@googlemail.com> writes:
->> On Thu, Jun 18, 2009 at 3:48 PM, Rainer Weikusat<rweikusat@mssgmbh.com> wrote:
->>> From: Rainer Weikusat <rweikusat@mssgmbh.com>
+Patrick McHardy a écrit :
+> Patrick McHardy wrote:
+>> Eric Dumazet wrote:
+>>>> a test-box still triggered this crash overnight:
+>>>>
+>>>> [  252.433471] ------------[ cut here ]------------
+>>>> [  252.436031] WARNING: at lib/list_debug.c:30 __list_add+0x95/0xa0()
+>>>> ...
+>>>> With your patch (repeated below) applied. Is Patrick's alternative
+>>>> patch supposed to fix something that yours does not?
 >>>
->>> With 2.6.30, the error handling code in cdrom_newpc_intr was changed
->>> to deal with partial request failures by normally completing the 'good'
->>> parts of a request and only 'error' the last (and presumably,
->>> incompletely transferred) bio associated with a particular
->>> request. This doesn't work for requests which don't have bios
->>> associated with them ('GPCMD_READ_DISC_INFO'), because the first call
->>> to ide_end_rq, done via ide_complete_rq in order to do the
->>> partial completion part, returns with a code of zero for all non-bio
->>> requests, causing the drive->hwif->rq pointer to be set to NULL.
+>>> Hmm, not really, Patrick patch should fix same problem, but without
+>>> extra locking
+>>> as mine.
+>>>
+>>> This new stack trace is somewhat different, as corruption is detected
+>>> in the add_timer()
+>>> call in __nf_conntrack_confirm()
+>>>
+>>> So there is another problem. CCed Pablo Neira Ayuso who added some stuff
+>>> in netfilter and timeout logic recently.
 >>
->> This is a bit misleading, it should be more like: "ide_complete_rq is
->> called over ide_cd_error_cmd() to partially complete the rq but the rq
->> is without a bio and the block layer does partial completion only for
->> requests with bio's so this request is completed as a whole and the rq
->> freed."
->
-> Technically, this is not quite correct (assuming I haven't overlooked
-> something), because ide_cd_queue_pc still has a reference to the rq.
+>> That timeout logic shouldn't be relevant in this case, its only
+>> activated when netlink event delivery is used, a userspace process
+>> is actually listening and it has the socket marked for reliable
+>> delivery.
+>>
+>> I think its still the same problem, the detection is just noticed
+>> at a different point.
+> 
+> I can't find anything wrong with the conntrack timer use itself.
+> Since its the timer base that is corrupted, its possible that
+> something else is using timers incorrectly and conntrack just
+> happens to hit the problem afterwards, but it seems rather
+> unlikely since the first backtrace originated in a network driver,
+> the second one in the socket layer.
+> 
+> But I've noticed a different problem, the lockless lookup might
+> incorrectly return an conntrack entry that is supposed to be
+> invisible. This can happen because we only check for equal tuples
+> and !atomic_inc_not_zero(refcnt), but the conntrack can be removed
+> from the lists and still have references to it. It should never
+> have an active timer at that point however, so all following
+> mod_timer_pending() calls *should* do nothing unless I'm missing
+> something.
+> 
+> Ingo, could you please try whether this patch (combined with the
+> last one) makes any difference? Enabling CONFIG_NETFILTER_DEBUG
+> could also help.
+> 
+> 
 
-That doesn't matter because the OOPS happens after the command has been
-issued and _before_ ide_cd_queue_pc() gets to access the rq ptr again.
+Interesting !
 
-ide_cd_queue_pc() does blk_execute_rq() which does wait for completion
-of the request so it doesn't access the rq pointer before the IRQ
-handler has completed. Even if it would reach the blk_put_request part,
-the OOPS would have already happened.
+In my own analysis, I found death_by_timeout() might be problematic,
+with RCU and lockless lookups.
 
-ide_complete_rq simply does
+static void death_by_timeout(unsigned long ul_conntrack)
+{
+        struct nf_conn *ct = (void *)ul_conntrack;
 
-blk_end_request
-|->blk_end_bidi_request
-   |->blk_finish_request
+        if (!test_bit(IPS_DYING_BIT, &ct->status) &&
+            unlikely(nf_conntrack_event(IPCT_DESTROY, ct) < 0)) {
+                /* destroy event was not delivered */
+                nf_ct_delete_from_lists(ct);
+<< HERE >>
 
-after checking the rq->bio pointer through blk_update_bidi_request() and
-if the prior is NULL it does __blk_put_request in blk_finish_request and
-this is where the thing vanishes.
-
-The second time ide_complete_rq() comes to run at the end of the IRQ
-handler the rq is already 0xdeadbeef :).
-
-(this is all latest git but the old code (without the bidi stuff) did
-the same thing wrt to rq->bio).
+                nf_ct_insert_dying_list(ct);
+                return;
+        }
+        set_bit(IPS_DYING_BIT, &ct->status);
+        nf_ct_delete_from_lists(ct);
+        nf_ct_put(ct);
+}
 
 
--- 
-Regards/Gruss,
-Boris
+We delete ct from a list and insert it in a new list.
+
+I believe a reader could "*catch*" ct while doing a lookup and miss the end
+of its chain. (nulls algo check the null value at the end of lookup and can
+decide to restart the lookup if the null value is not the expected one)
+
+We need to change nf_conntrack_init_net() and use a different "null" value,
+guaranteed not being used in regular lists
+
+Patch follows :
+
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index 5f72b94..5276a2d 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -1267,13 +1267,19 @@ err_cache:
+ 	return ret;
+ }
+ 
++/*
++ * We need to use special "null" values, not used in hash table
++ */
++#define UNCONFIRMED_NULLS_VAL	((1<<30)+0)
++#define DYING_NULLS_VAL		((1<<30)+1)
++
+ static int nf_conntrack_init_net(struct net *net)
+ {
+ 	int ret;
+ 
+ 	atomic_set(&net->ct.count, 0);
+-	INIT_HLIST_NULLS_HEAD(&net->ct.unconfirmed, 0);
+-	INIT_HLIST_NULLS_HEAD(&net->ct.dying, 0);
++	INIT_HLIST_NULLS_HEAD(&net->ct.unconfirmed, UNCONFIRMED_NULLS_VAL);
++	INIT_HLIST_NULLS_HEAD(&net->ct.dying, DYING_NULLS_VAL);
+ 	net->ct.stat = alloc_percpu(struct ip_conntrack_stat);
+ 	if (!net->ct.stat) {
+ 		ret = -ENOMEM;
