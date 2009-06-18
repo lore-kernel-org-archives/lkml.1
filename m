@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbZFRTAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZFRTDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbZFRTAi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZFRTAb
+	id S1756784AbZFRTDk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZFRTDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:00:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39055
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751078AbZFRTAa (ORCPT
+	Thu, 18 Jun 2009 15:03:31 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41302 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754120AbZFRTDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:00:30 -0400
-Date: Thu, 18 Jun 2009 12:00:34 -0700 (PDT)
-Message-Id: <20090618.120034.246557840.davem@davemloft.net>
-To: rientjes@google.com
-Cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com>
-References: <4A396EA2.60705@gmail.com>
-	<20090617.160840.58571632.davem@davemloft.net>
-	<alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Jun 2009 15:03:30 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 18 Jun 2009 21:03:17 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update 1] SCSI: explain the hidden scsi_wait_scan Kconfig
+ variable
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Sam Ravnborg <sam@ravnborg.org>, Matthew Wilcox <matthew@wil.cx>,
+       Changli Gao <xiaosuo@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20090618165926.GA13229@uranus.ravnborg.org>
+Message-ID: <tkrat.7b61f3efc75de80e@s5r6.in-berlin.de>
+References: <4A384FE4.9090703@gmail.com>
+ <20090617021254.GQ19977@parisc-linux.org>
+ <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
+ <1245338486.7586.13.camel@mulgrave.site>
+ <20090618165926.GA13229@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Rientjes <rientjes@google.com>
-Date: Thu, 18 Jun 2009 09:56:14 -0700 (PDT)
+People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
+item.  These patches aren't accepted upstream, so let's stop the ongoing
+irritation of people due to the unconditionally installed module and its
+Kconfig symbol.
 
-> I disagree, page allocation failure messages show vital information about 
-> the state of the VM so that we can find bugs and GFP_ATOMIC allocations 
-> are the most common trigger for these diagnostic messages since 
-> __GFP_WAIT allocations can trigger direct reclaim (and __GFP_FS 
-> allocations can trigger the oom killer) to free memory and will retry the 
-> allocation if ~__GFP_NORETRY.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+update 1: more precise wording
 
-It's COMPLETELY and ABSOLUTELY normal for GFP_ATOMIC allocations to
-fail in the networking.
+ drivers/scsi/Kconfig |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-If you warn it will just spam the logs, and on a router forwarding
-millions of packets per second are you sure that can ever be sane?
+Index: b/drivers/scsi/Kconfig
+===================================================================
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -259,10 +259,23 @@ config SCSI_SCAN_ASYNC
+ 	  or async on the kernel's command line.
+ 
+ config SCSI_WAIT_SCAN
+-	tristate
++	tristate  # No prompt here, this is an invisible symbol.
+ 	default m
+ 	depends on SCSI
+ 	depends on MODULES
++	help
++	  Wait until all the async scans are complete.  The idea is to use
++	  it in initrd/ initramfs scripts.  You modprobe it after all the
++	  modprobes of the root SCSI drivers and it will wait until they
++	  have all finished scanning their buses before allowing the boot
++	  to proceed.  (This method is not applicable if targets boot
++	  independently in parallel with the initiator, or with transports
++	  with non-deterministic target discovery schemes, or if a transport
++	  driver does not support scsi_wait_scan.)
++
++	  This symbol is not exposed as a prompt because little is to be
++	  gained by disabling it, whereas people who accidentally switch it
++	  off may wonder why their mkinitrd gets into trouble.
+ 
+ menu "SCSI Transports"
+ 	depends on SCSI
 
-Use statistics and tracing if necessary, but log spam no way...
+-- 
+Stefan Richter
+-=====-==--= -==- =--=-
+http://arcgraph.de/sr/
+
