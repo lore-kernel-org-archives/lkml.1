@@ -1,191 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZFRAep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756367AbZFRAe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbZFRAep (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 20:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZFRAeX
+	id S1756367AbZFRAe4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 20:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZFRAeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 20:34:23 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:36281 "EHLO
+	Wed, 17 Jun 2009 20:34:24 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:36287 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754832AbZFRAeV (ORCPT
+	with ESMTP id S1753348AbZFRAeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 20:34:21 -0400
+	Wed, 17 Jun 2009 20:34:23 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-	b=xEfmljssu4ciHe9EcQaCvR98w1fFUNJOoBlMbg28cBiJ+N7ddpUdup2OTZ58XQoIx
-	mvbErupEpOzsVX5wWgEYw==
+	b=wc1MyMvfdZXfqfYDUH1G5BA7DD+AYYA8KoJoq+gGq7xlIy4wOoaJOGYBuJl8IVh2d
+	ASs94gvuVsv5lu3od4+JA==
 From: Brian Swetland <swetland@google.com>
 To: linux-arm-kernel@lists.arm.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, pavel@ucw.cz,
        Brian Swetland <swetland@google.com>
-Subject: [PATCH 2/3] [ARM] msm: make debugging UART (for DEBUG_LL) configurable
-Date: Wed, 17 Jun 2009 17:31:14 -0700
-Message-Id: <1245285075-20022-3-git-send-email-swetland@google.com>
+Subject: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream device
+Date: Wed, 17 Jun 2009 17:31:15 -0700
+Message-Id: <1245285075-20022-4-git-send-email-swetland@google.com>
 X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <1245285075-20022-2-git-send-email-swetland@google.com>
+In-Reply-To: <1245285075-20022-3-git-send-email-swetland@google.com>
 References: <1245285075-20022-1-git-send-email-swetland@google.com>
  <1245285075-20022-2-git-send-email-swetland@google.com>
+ <1245285075-20022-3-git-send-email-swetland@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provides options to select one of the three "lowspeed" UARTs
-on MSM7k SoCs for DEBUG_LL output from the zImage decompressor
-and kernel.
+This is just enough to get the device booting and serial console
+working.  Sufficient for debugging further MSM7k/Dream Support.
+This will support HTC Dream / T-Mobile G1 / Android ADP1 (which
+are all the same hardware, known as "trout" to the ARM machine
+database).
 
 Signed-off-by: Brian Swetland <swetland@google.com>
 ---
- arch/arm/mach-msm/Kconfig                    |   24 ++++++++++++++++++++++++
- arch/arm/mach-msm/include/mach/debug-macro.S |   24 +++++++++++++++++-------
- arch/arm/mach-msm/include/mach/msm_iomap.h   |   12 ++++++++++++
- arch/arm/mach-msm/include/mach/uncompress.h  |    7 +++++++
- arch/arm/mach-msm/io.c                       |    3 +++
- 5 files changed, 63 insertions(+), 7 deletions(-)
+ arch/arm/mach-msm/Kconfig       |    6 +++
+ arch/arm/mach-msm/Makefile      |    1 +
+ arch/arm/mach-msm/board-dream.c |   84 +++++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-msm/board-dream.h |    5 ++
+ 4 files changed, 96 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-msm/board-dream.c
+ create mode 100644 arch/arm/mach-msm/board-dream.h
 
 diff --git a/arch/arm/mach-msm/Kconfig b/arch/arm/mach-msm/Kconfig
-index d140abc..35f2a90 100644
+index 35f2a90..f780086 100644
 --- a/arch/arm/mach-msm/Kconfig
 +++ b/arch/arm/mach-msm/Kconfig
-@@ -3,6 +3,30 @@ if ARCH_MSM
- comment "MSM Board Type"
- 	depends on ARCH_MSM
+@@ -34,4 +34,10 @@ config MACH_HALIBUT
+ 	help
+ 	  Support for the Qualcomm SURF7201A eval board.
  
-+config MSM_DEBUG_UART
-+	int
-+	default 1 if MSM_DEBUG_UART1
-+	default 2 if MSM_DEBUG_UART2
-+	default 3 if MSM_DEBUG_UART3
++config MACH_TROUT
++	default y
++	bool "HTC Dream (aka trout)"
++	help
++	  Support for the HTC Dream, T-Mobile G1, Android ADP1 devices.
 +
-+choice
-+	prompt "Debug UART"
-+
-+	default MSM_DEBUG_UART_NONE
-+
-+	config MSM_DEBUG_UART_NONE
-+		bool "None"
-+
-+	config MSM_DEBUG_UART1
-+		bool "UART1"
-+
-+	config MSM_DEBUG_UART2
-+		bool "UART2"
-+
-+	config MSM_DEBUG_UART3
-+		bool "UART3"
-+endchoice
-+
- config MACH_HALIBUT
- 	depends on ARCH_MSM
- 	default y
-diff --git a/arch/arm/mach-msm/include/mach/debug-macro.S b/arch/arm/mach-msm/include/mach/debug-macro.S
-index 1db3c97..d48747e 100644
---- a/arch/arm/mach-msm/include/mach/debug-macro.S
-+++ b/arch/arm/mach-msm/include/mach/debug-macro.S
-@@ -14,15 +14,18 @@
-  *
-  */
+ endif
+diff --git a/arch/arm/mach-msm/Makefile b/arch/arm/mach-msm/Makefile
+index 1aa4700..91e6f5c 100644
+--- a/arch/arm/mach-msm/Makefile
++++ b/arch/arm/mach-msm/Makefile
+@@ -6,3 +6,4 @@ obj-y += clock.o clock-7x01a.o
  
-+
-+
- #include <mach/hardware.h>
- #include <mach/msm_iomap.h>
+ obj-$(CONFIG_MACH_HALIBUT) += board-halibut.o
  
++obj-$(CONFIG_MACH_TROUT) += board-dream.o
+diff --git a/arch/arm/mach-msm/board-dream.c b/arch/arm/mach-msm/board-dream.c
+new file mode 100644
+index 0000000..6eae7e3
+--- /dev/null
++++ b/arch/arm/mach-msm/board-dream.c
+@@ -0,0 +1,84 @@
++/* linux/arch/arm/mach-msm/board-dream.c
++ *
++ * Copyright (C) 2009 Google, Inc.
++ * Author: Brian Swetland <swetland@google.com>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++
++#include <asm/mach-types.h>
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++
++#include <mach/board.h>
++#include <mach/hardware.h>
++#include <mach/msm_iomap.h>
++
++#include "devices.h"
++#include "board-dream.h"
++
++static struct platform_device *devices[] __initdata = {
++	&msm_device_uart3,
++	&msm_device_smd,
++	&msm_device_nand,
++	&msm_device_hsusb,
++	&msm_device_i2c,
++};
++
++extern struct sys_timer msm_timer;
++
++static void __init trout_init_irq(void)
++{
++	msm_init_irq();
++}
++
++static void __init trout_init(void)
++{
++	platform_add_devices(devices, ARRAY_SIZE(devices));
++}
++
++static struct map_desc trout_io_desc[] __initdata = {
++	{
++		.virtual = TROUT_CPLD_BASE,
++		.pfn     = __phys_to_pfn(TROUT_CPLD_START),
++		.length  = TROUT_CPLD_SIZE,
++		.type    = MT_DEVICE_NONSHARED
++	}
++};
++
++static void __init trout_map_io(void)
++{
++	msm_map_common_io();
++	iotable_init(trout_io_desc, ARRAY_SIZE(trout_io_desc));
++
++#ifdef CONFIG_MSM_DEBUG_UART3
++	/* route UART3 to the "H2W" extended usb connector */
++	writeb(0x80, TROUT_CPLD_BASE + 0x00);
++#endif
++
++	msm_clock_init();
++}
++
++MACHINE_START(TROUT, "HTC Dream")
 +#ifdef CONFIG_MSM_DEBUG_UART
- 	.macro	addruart,rx
- 	@ see if the MMU is enabled and select appropriate base address
- 	mrc	p15, 0, \rx, c1, c0
- 	tst	\rx, #1
--	ldreq	\rx, =MSM_UART1_PHYS
--	movne	\rx, #0
-+	ldreq	\rx, =MSM_DEBUG_UART_PHYS
-+	ldrne	\rx, =MSM_DEBUG_UART_BASE
- 	.endm
- 
- 	.macro	senduart,rd,rx
-@@ -32,13 +35,20 @@
- 
- 	.macro	waituart,rd,rx
- 	@ wait for TX_READY
--	teq	\rx, #0
--	bne	2f
--1:	ldr	\rd, [\rx, #0x08]
-+1001:	ldr	\rd, [\rx, #0x08]
- 	tst	\rd, #0x04
--	beq	1b
--2:
-+	beq	1001b
-+	.endm
-+#else
-+	.macro	addruart,rx
-+	.endm
++	.phys_io	= MSM_DEBUG_UART_PHYS,
++	.io_pg_offst	= ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
++#endif
++	.boot_params	= 0x10000100,
++	.map_io		= trout_map_io,
++	.init_irq	= trout_init_irq,
++	.init_machine	= trout_init,
++	.timer		= &msm_timer,
++MACHINE_END
+diff --git a/arch/arm/mach-msm/board-dream.h b/arch/arm/mach-msm/board-dream.h
+new file mode 100644
+index 0000000..4f345a5
+--- /dev/null
++++ b/arch/arm/mach-msm/board-dream.h
+@@ -0,0 +1,5 @@
 +
-+	.macro	senduart,rd,rx
-+	.endm
++#define TROUT_CPLD_BASE   0xE8100000
++#define TROUT_CPLD_START  0x98000000
++#define TROUT_CPLD_SIZE   SZ_4K
 +
-+	.macro	waituart,rd,rx
- 	.endm
-+#endif
- 
- 	.macro	busyuart,rd,rx
- 	.endm
-diff --git a/arch/arm/mach-msm/include/mach/msm_iomap.h b/arch/arm/mach-msm/include/mach/msm_iomap.h
-index 2f7b4c8..9dae1a9 100644
---- a/arch/arm/mach-msm/include/mach/msm_iomap.h
-+++ b/arch/arm/mach-msm/include/mach/msm_iomap.h
-@@ -84,6 +84,18 @@
- #define MSM_UART3_PHYS        0xA9C00000
- #define MSM_UART3_SIZE        SZ_4K
- 
-+#ifdef CONFIG_MSM_DEBUG_UART
-+#define MSM_DEBUG_UART_BASE   0xE1000000
-+#if CONFIG_MSM_DEBUG_UART == 1
-+#define MSM_DEBUG_UART_PHYS   MSM_UART1_PHYS
-+#elif CONFIG_MSM_DEBUG_UART == 2
-+#define MSM_DEBUG_UART_PHYS   MSM_UART2_PHYS
-+#elif CONFIG_MSM_DEBUG_UART == 3
-+#define MSM_DEBUG_UART_PHYS   MSM_UART3_PHYS
-+#endif
-+#define MSM_DEBUG_UART_SIZE   SZ_4K
-+#endif
-+
- #define MSM_SDC1_PHYS         0xA0400000
- #define MSM_SDC1_SIZE         SZ_4K
- 
-diff --git a/arch/arm/mach-msm/include/mach/uncompress.h b/arch/arm/mach-msm/include/mach/uncompress.h
-index 026e895..d94292c 100644
---- a/arch/arm/mach-msm/include/mach/uncompress.h
-+++ b/arch/arm/mach-msm/include/mach/uncompress.h
-@@ -16,9 +16,16 @@
- #ifndef __ASM_ARCH_MSM_UNCOMPRESS_H
- 
- #include "hardware.h"
-+#include "linux/io.h"
-+#include "mach/msm_iomap.h"
- 
- static void putc(int c)
- {
-+#if defined(MSM_DEBUG_UART_PHYS)
-+	unsigned base = MSM_DEBUG_UART_PHYS;
-+	while (!(readl(base + 0x08) & 0x04)) ;
-+	writel(c, base + 0x0c);
-+#endif
- }
- 
- static inline void flush(void)
-diff --git a/arch/arm/mach-msm/io.c b/arch/arm/mach-msm/io.c
-index 6e7692f..1c5e7da 100644
---- a/arch/arm/mach-msm/io.c
-+++ b/arch/arm/mach-msm/io.c
-@@ -42,6 +42,9 @@ static struct map_desc msm_io_desc[] __initdata = {
- 	MSM_DEVICE(GPIO1),
- 	MSM_DEVICE(GPIO2),
- 	MSM_DEVICE(CLK_CTL),
-+#ifdef CONFIG_MSM_DEBUG_UART
-+	MSM_DEVICE(DEBUG_UART),
-+#endif
- 	{
- 		.virtual =  (unsigned long) MSM_SHARED_RAM_BASE,
- 		.pfn =      __phys_to_pfn(MSM_SHARED_RAM_PHYS),
 -- 
 1.6.2.4
 
