@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZFRQsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZFRQva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbZFRQsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 12:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZFRQsI
+	id S1754127AbZFRQva (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 12:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZFRQvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 12:48:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36389 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbZFRQsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 12:48:07 -0400
-Subject: Re: NFS: possible circular locking  i_mutex <> mmap_sem
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090618030238.GA850@localhost>
-References: <20090618023208.GA28572@localhost>
-	 <20090617195251.e648dbb8.akpm@linux-foundation.org>
-	 <20090618030238.GA850@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 18 Jun 2009 18:48:08 +0200
-Message-Id: <1245343689.13761.23623.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 18 Jun 2009 12:51:22 -0400
+Received: from THUNK.ORG ([69.25.196.29]:59492 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751887AbZFRQvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 12:51:21 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] more ext4 updates
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1MHKpU-0007FN-RQ@closure.thunk.org>
+Date: Thu, 18 Jun 2009 12:51:12 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-18 at 11:02 +0800, Wu Fengguang wrote:
 
-> > > [ 2638.515865] =======================================================
-> > > [ 2638.519743] [ INFO: possible circular locking dependency detected ]
-> > > [ 2638.519743] 2.6.30-rc8-mm1 #307
-> > > [ 2638.519743] -------------------------------------------------------
-> > > [ 2638.519743] firefox-bin/3399 is trying to acquire lock:
-> > > [ 2638.519743]  (&mm->mmap_sem){++++++}, at: [<ffffffff81548471>] do_page_fault+0x301/0x330
-> > > [ 2638.519743]
-> > > [ 2638.519743] but task is already holding lock:
-> > > [ 2638.519743]  (&sb->s_type->i_mutex_key#6){+.+.+.}, at: [<ffffffff810c2bd2>] generic_file_aio_write+0x52/0xd0
-> > > [ 2638.519743]
-> > > [ 2638.519743] which lock already depends on the new lock.
-> > > [ 2638.519743]
-> > > [ 2638.519743]
-> > > [ 2638.519743] the existing dependency chain (in reverse order) is:
-> > > [ 2638.519743]
-> > > [ 2638.519743] -> #1 (&sb->s_type->i_mutex_key#6){+.+.+.}:
-> > > [ 2638.519743]        [<ffffffff8107c066>] __lock_acquire+0x12b6/0x1b40
-> > > [ 2638.519743]        [<ffffffff8107c9d1>] lock_acquire+0xe1/0x120
-> > > [ 2638.519743]        [<ffffffff8154328e>] mutex_lock_nested+0x5e/0x390
-> > > [ 2638.519743]        [<ffffffff811be15c>] nfs_revalidate_mapping+0xac/0x110    ==> takes i_mutex in nfs_invalidate_mapping()
-> > > [ 2638.519743]        [<ffffffff811bba25>] nfs_file_mmap+0x55/0x80
-> > > [ 2638.519743]        [<ffffffff810e2bb7>] mmap_region+0x427/0x600
-> > > [ 2638.519743]        [<ffffffff810e305e>] do_mmap_pgoff+0x2ce/0x3f0
-> > > [ 2638.519743]        [<ffffffff81010c26>] sys_mmap+0x106/0x130                 ==> takes mmap_sem
-> > > [ 2638.519743]        [<ffffffff8100bf42>] system_call_fastpath+0x16/0x1b
-> > > [ 2638.519743]        [<ffffffffffffffff>] 0xffffffffffffffff
-> > 
-> > This is the faulty code path.  mmap_sem is supposed to nest inside i_mutex.
-> 
-> This could be a long stand bug: the nfs_revalidate_mapping() call was
-> there in the very beginning of git history.
+Hi Linus,
 
-http://programming.kicks-ass.net/kernel-patches/mmap-vs-nfs/
+Please pull from:
+
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+
+to get the following updates for ext4.
+
+                                                - Ted
 
 
+Akira Fujita (1):
+      ext4: online defrag -- Add EXT4_IOC_MOVE_EXT ioctl
+
+Andreas Dilger (1):
+      ext4: teach the inode allocator to use a goal inode number
+
+Hisashi Hifumi (1):
+      jbd2: clean up jbd2_journal_try_to_free_buffers()
+
+Linus Torvalds (1):
+      ext3: avoid unnecessary spinlock in critical POSIX ACL path
+
+Theodore Ts'o (11):
+      jbd2: convert instrumentation from markers to tracepoints
+      ext4: convert instrumentation from markers to tracepoints
+      ext4: avoid unnecessary spinlock in critical POSIX ACL path
+      ext4: change s_mount_opt to be an unsigned int
+      ext4: update the s_last_mounted field in the superblock
+      ext4: move the abort flag from s_mount_opts to s_mount_flags
+      ext4: document the "abort" mount option
+      ext4: Use a hash of the topdir directory name for the Orlov parent group
+      ext4: Fix 64-bit block type problem on 32-bit platforms
+      ext4: Fix up whitespace issues in fs/ext4/inode.c
+      ext4: Don't update ctime for non-extent-mapped inodes
+
+ Documentation/ABI/testing/sysfs-fs-ext4 |   10 +
+ Documentation/filesystems/ext4.txt      |    4 +
+ fs/ext3/acl.c                           |   13 +-
+ fs/ext4/Makefile                        |    2 +-
+ fs/ext4/acl.c                           |   15 +-
+ fs/ext4/ext4.h                          |   39 +-
+ fs/ext4/ext4_extents.h                  |    4 +
+ fs/ext4/extents.c                       |    4 +-
+ fs/ext4/file.c                          |   36 +-
+ fs/ext4/fsync.c                         |    8 +-
+ fs/ext4/ialloc.c                        |   48 +-
+ fs/ext4/inode.c                         |  281 +++----
+ fs/ext4/ioctl.c                         |   36 +
+ fs/ext4/mballoc.c                       |   85 +--
+ fs/ext4/mballoc.h                       |    1 -
+ fs/ext4/migrate.c                       |    8 +-
+ fs/ext4/move_extent.c                   | 1320 +++++++++++++++++++++++++++++++
+ fs/ext4/namei.c                         |   10 +-
+ fs/ext4/super.c                         |   20 +-
+ fs/jbd2/checkpoint.c                    |    5 +-
+ fs/jbd2/commit.c                        |   13 +-
+ fs/jbd2/journal.c                       |   69 ++
+ fs/jbd2/transaction.c                   |   49 --
+ include/linux/jbd2.h                    |    6 +
+ include/trace/events/ext4.h             |  719 +++++++++++++++++
+ include/trace/events/jbd2.h             |  168 ++++
+ 26 files changed, 2638 insertions(+), 335 deletions(-)
