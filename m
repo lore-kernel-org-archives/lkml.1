@@ -1,103 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbZFRJsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbZFRJtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbZFRJsE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 05:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZFRJrw
+	id S1758295AbZFRJtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 05:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZFRJtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 05:47:52 -0400
-Received: from stinky.trash.net ([213.144.137.162]:57816 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035AbZFRJru (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 05:47:50 -0400
-Message-ID: <4A3A0D45.8090806@trash.net>
-Date: Thu, 18 Jun 2009 11:47:49 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 18 Jun 2009 05:49:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55159 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752358AbZFRJto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 05:49:44 -0400
+Message-ID: <4A3A0D94.4000803@redhat.com>
+Date: Thu, 18 Jun 2009 12:49:08 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
-Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
- __list_add+0x7d/0xad()
-References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com>
-In-Reply-To: <4A39D778.9020607@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>
+Subject: Re: linux-next: kvm tree build failure
+References: <20090618111120.9c226ab7.sfr@canb.auug.org.au> <1245299157.2871.1.camel@ht.satnam>
+In-Reply-To: <1245299157.2871.1.camel@ht.satnam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Ingo Molnar a écrit :
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>>> IPS_CONFIRMED_BIT is set under nf_conntrack_lock (in 
->>>> __nf_conntrack_confirm()), we probably want to add a 
->>>> synchronisation under ct->lock as well, or 
->>>> __nf_ct_refresh_acct() could set ct->timeout.expires to 
->>>> extra_jiffies, while a different cpu could confirm the 
->>>> conntrack.
->>>>
->>>> Following patch as RFC
->>> A quick test suggests that it seems to works here - thanks Eric!
->> a test-box still triggered this crash overnight:
->>
->> [  252.433471] ------------[ cut here ]------------
->> [  252.436031] WARNING: at lib/list_debug.c:30 __list_add+0x95/0xa0()
->> [  252.436031] Hardware name: System Product Name
->> [  252.436031] list_add corruption. prev->next should be next (ffff88003fa1d460), but was ffffffff82e560a0. (prev=ffff880003b458c0).
->> [  252.436031] Pid: 7348, comm: ssh Tainted: G        W  2.6.30-tip #54604
->> [  252.436031] Call Trace:
->> [  252.436031]  [<ffffffff8149eda5>] ? __list_add+0x95/0xa0
->> [  252.436031]  [<ffffffff8105c79b>] warn_slowpath_common+0x7b/0xd0
->> [  252.436031]  [<ffffffff8105c851>] warn_slowpath_fmt+0x41/0x50
->> [  252.436031]  [<ffffffff8149eda5>] __list_add+0x95/0xa0
->> [  252.436031]  [<ffffffff8106937e>] internal_add_timer+0x9e/0xf0
->> [  252.436031]  [<ffffffff8106a5ef>] mod_timer+0x10f/0x160
->> [  252.436031]  [<ffffffff8106a658>] add_timer+0x18/0x20
->> [  252.436031]  [<ffffffff81f6e42a>] __nf_conntrack_confirm+0x1da/0x3c0
->> [  252.436031]  [<ffffffff81fdb8dd>] ipv4_confirm+0xfd/0x160
->> [  252.436031]  [<ffffffff81f6a130>] nf_iterate+0x70/0xd0
->> [  252.436031]  [<ffffffff81f99180>] ? ip_finish_output+0x0/0x380
->> [  252.436031]  [<ffffffff81f6a4c4>] nf_hook_slow+0xe4/0x160
->> [  252.436031]  [<ffffffff81f99180>] ? ip_finish_output+0x0/0x380
->> [  252.436031]  [<ffffffff81f995f5>] ip_output+0xf5/0x110
->> [  252.436031]  [<ffffffff81f96b05>] ip_local_out+0x25/0x40
->> [  252.436031]  [<ffffffff81f97434>] ip_queue_xmit+0x224/0x420
->> [  252.436031]  [<ffffffff81111118>] ? __kmalloc_node_track_caller+0xd8/0x1f0
->> [  252.436031]  [<ffffffff8108df19>] ? trace_hardirqs_on_caller+0x29/0x1f0
->> [  252.436031]  [<ffffffff81fae0dd>] tcp_transmit_skb+0x50d/0x7e0
->> [  252.436031]  [<ffffffff81faf547>] tcp_connect+0x3c7/0x500
->> [  252.436031]  [<ffffffff81fb4693>] tcp_v4_connect+0x433/0x520
->> [  252.436031]  [<ffffffff81fc446f>] inet_stream_connect+0x22f/0x2d0
->> [  252.436031]  [<ffffffff81118719>] ? fget_light+0x19/0x110
->> [  252.436031]  [<ffffffff81f294b8>] sys_connect+0xb8/0xd0
->> [  252.436031]  [<ffffffff8100ccf9>] ? retint_swapgs+0x13/0x1b
->> [  252.436031]  [<ffffffff8108df19>] ? trace_hardirqs_on_caller+0x29/0x1f0
->> [  252.436031]  [<ffffffff8217a49f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->> [  252.436031]  [<ffffffff8100c252>] system_call_fastpath+0x16/0x1b
->> [  252.436031] ---[ end trace a7919e7f17c0a73d ]---
->>
->> With your patch (repeated below) applied. Is Patrick's alternative 
->> patch supposed to fix something that yours does not?
-> 
-> Hmm, not really, Patrick patch should fix same problem, but without extra locking
-> as mine.
-> 
-> This new stack trace is somewhat different, as corruption is detected in the add_timer()
-> call in __nf_conntrack_confirm()
-> 
-> So there is another problem. CCed Pablo Neira Ayuso who added some stuff
-> in netfilter and timeout logic recently.
+On 06/18/2009 07:25 AM, Jaswinder Singh Rajput wrote:
+> [PATCH] KVM: use MSR_K7_HWCR for MSRC001_0015 Hardware Configuration Register (HWCR)
+>
+> MSR_K8_MSR is removed as it is duplicating MSRC001_0015 Hardware
+> Configuration Register (HWCR), which is already defined as MSR_K7_HWCR
+>
+> Fix x86_64 allmodconfig :
+>
+> arch/x86/kvm/svm.c: In function 'svm_set_msr':
+> arch/x86/kvm/svm.c:2152: error: 'MSR_K8_HWCR' undeclared (first use in this function)
+>
+>    
 
-That timeout logic shouldn't be relevant in this case, its only
-activated when netlink event delivery is used, a userspace process
-is actually listening and it has the socket marked for reliable
-delivery.
+Applied, thanks.
 
-I think its still the same problem, the detection is just noticed
-at a different point.
+-- 
+error compiling committee.c: too many arguments to function
 
