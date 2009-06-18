@@ -1,169 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbZFRNb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761793AbZFRNeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762213AbZFRNb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 09:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbZFRNbu
+	id S1761793AbZFRNeH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 09:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbZFRNd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 09:31:50 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:57106 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbZFRNbu convert rfc822-to-8bit (ORCPT
+	Thu, 18 Jun 2009 09:33:56 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:55476 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZFRNd4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 09:31:50 -0400
+	Thu, 18 Jun 2009 09:33:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
+        d=googlemail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=Bs/RQTBAh8Cv9hw0mzjS7yuqmUkuaXaAGsNfwAvhAUipLpgIUw6XUQ3HKgB9+YYmGC
-         Wme+y/11iSmuSH+di5Yu71SnoVHKzoObfFF+ss3pfIRR8z1rzoAPj7zYtTmkm16w3lgs
-         zizUqxduPwswFHMSwwt9D3boci3vjnWnVe2mg=
+        b=AJtwHua4Is2Dy+TMa5ZdP4/sluWGzHKCdsPtj82j9joRH8hNd1F8v7y2d0MPboCutk
+         oz+24FoV4eWcleTjATMLufXqRT072EU6Uq8k5GPuUXo3nwfxrS0ZodxIvJSPM465HB94
+         aEbQvmbnGGiFKw9FiizHFP4qvnwP9v/SJpo0A=
 MIME-Version: 1.0
-In-Reply-To: <20090618121430.GA6746@localhost>
-References: <20090615031253.530308256@intel.com>
-	 <20090615152612.GA11700@localhost>
-	 <20090616090308.bac3b1f7.minchan.kim@barrios-desktop>
-	 <20090616134944.GB7524@localhost>
-	 <20090617092826.56730a10.minchan.kim@barrios-desktop>
-	 <20090617072319.GA5841@localhost>
-	 <28c262360906170644w65c08a8y2d2805fb08045804@mail.gmail.com>
-	 <20090617135543.GA8079@localhost>
-	 <28c262360906170703h3363b68dp74471358f647921e@mail.gmail.com>
-	 <20090618121430.GA6746@localhost>
-Date: Thu, 18 Jun 2009 22:31:52 +0900
-Message-ID: <28c262360906180631i25ea6a18mbdc5be31c2346c04@mail.gmail.com>
-Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in 
-	try_to_unmap
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <15e53e180906160304u37f8c702m808ece710359ef9a@mail.gmail.com>
+References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
+	 <507032D758%linux@youmustbejoking.demon.co.uk>
+	 <9b2b86520906131051t32183554r8208cf886609e09c@mail.gmail.com>
+	 <71cd59b00906141226k37b90b9ey7347ed85ec17a17b@mail.gmail.com>
+	 <61b223ba0906150109r3a69e98aq949c7f2df5563c6e@mail.gmail.com>
+	 <15e53e180906160133j7055536cqe5b9515704fd4d94@mail.gmail.com>
+	 <4A375914.5050800@tuffmail.co.uk>
+	 <15e53e180906160147w1fa6282dl50e8e728f067e090@mail.gmail.com>
+	 <71cd59b00906160244t21bc0553tc8e209c70497687d@mail.gmail.com>
+	 <15e53e180906160304u37f8c702m808ece710359ef9a@mail.gmail.com>
+Date: Thu, 18 Jun 2009 14:33:57 +0100
+Message-ID: <9b2b86520906180633i2bc2ad6bk20c43d8426798b18@mail.gmail.com>
+Subject: Re: [gpm] [PATCH 2.6.29] eeepc-laptop: report brightness control 
+	events via the input layer
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Richard Hughes <hughsient@gmail.com>
+Cc: Corentin Chary <corentin.chary@gmail.com>,
+       gnome-power-manager-list@gnome.org,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 9:14 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> On Wed, Jun 17, 2009 at 10:03:37PM +0800, Minchan Kim wrote:
->> On Wed, Jun 17, 2009 at 10:55 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
->> > On Wed, Jun 17, 2009 at 09:44:39PM +0800, Minchan Kim wrote:
->> >> It is private mail for my question.
->> >> I don't want to make noise in LKML.
->> >> And I don't want to disturb your progress to merge HWPoison.
->> >>
->> >> > Because this race window is small enough:
->> >> >
->> >> >        TestSetPageHWPoison(p);
->> >> >                                   lock_page(page);
->> >> >                                   try_to_unmap(page, TTU_MIGRATION|...);
->> >> >        lock_page_nosync(p);
->> >> >
->> >> > such small race windows can be found all over the kernel, it's just
->> >> > insane to try to fix any of them.
->> >>
->> >> I don't know there are intentional small race windows in kernel until you said.
->> >> I thought kernel code is perfect so it wouldn't allow race window
->> >> although it is very small. But you pointed out. Until now, My thought
->> >> is wrong.
->> >>
->> >> Do you know else small race windows by intention ?
->> >> If you know it, tell me, please. It can expand my sight. :)
->> >
->> > The memory failure code does not aim to rescue 100% page corruptions.
->> > That's unreasonable goal - the kernel pages, slab pages (including the
->> > big dcache/icache) are almost impossible to isolate.
->> >
->> > Comparing to the big slab pools, the migration and other race windows are
->> > really too small to care about :)
->>
->> Also, If you will mention this contents as annotation, I will add my
->> review sign.
+On 6/16/09, Richard Hughes <hughsient@gmail.com> wrote:
+> On Tue, Jun 16, 2009 at 10:44 AM, Corentin
+> Chary<corentin.chary@gmail.com> wrote:
+>> Ok, so we just need to patch this file :
+>> http://cgit.freedesktop.org/hal-info/tree/fdi/information/10freedesktop/10-laptop-panel-hardware.fdi
 >
-> Good suggestion. Here is a patch for comment updates.
+> Yes
 >
->> Thanks for kind reply for my boring discussion.
+>> But I'm not sure how to do it to make it works on all Eeepc.
 >
-> Boring? Not at all :)
+> Well, really we want to match "classes of eeepc", so matching with
+> prefix might be a good idea.
 >
-> Thanks,
-> Fengguang
->
-> ---
->  mm/memory-failure.c |   76 +++++++++++++++++++++++++-----------------
->  1 file changed, 47 insertions(+), 29 deletions(-)
->
-> --- sound-2.6.orig/mm/memory-failure.c
-> +++ sound-2.6/mm/memory-failure.c
-> @@ -1,4 +1,8 @@
->  /*
-> + * linux/mm/memory-failure.c
-> + *
-> + * High level machine check handler.
-> + *
->  * Copyright (C) 2008, 2009 Intel Corporation
->  * Authors: Andi Kleen, Fengguang Wu
->  *
-> @@ -6,29 +10,36 @@
->  * the GNU General Public License ("GPL") version 2 only as published by the
->  * Free Software Foundation.
->  *
-> - * High level machine check handler. Handles pages reported by the
-> - * hardware as being corrupted usually due to a 2bit ECC memory or cache
-> - * failure.
-> - *
-> - * This focuses on pages detected as corrupted in the background.
-> - * When the current CPU tries to consume corruption the currently
-> - * running process can just be killed directly instead. This implies
-> - * that if the error cannot be handled for some reason it's safe to
-> - * just ignore it because no corruption has been consumed yet. Instead
-> - * when that happens another machine check will happen.
-> - *
-> - * Handles page cache pages in various states. The tricky part
-> - * here is that we can access any page asynchronous to other VM
-> - * users, because memory failures could happen anytime and anywhere,
-> - * possibly violating some of their assumptions. This is why this code
-> - * has to be extremely careful. Generally it tries to use normal locking
-> - * rules, as in get the standard locks, even if that means the
-> - * error handling takes potentially a long time.
-> - *
-> - * The operation to map back from RMAP chains to processes has to walk
-> - * the complete process list and has non linear complexity with the number
-> - * mappings. In short it can be quite slow. But since memory corruptions
-> - * are rare we hope to get away with this.
-> + * Pages are reported by the hardware as being corrupted usually due to a
-> + * 2bit ECC memory or cache failure. Machine check can either be raised when
-> + * corruption is found in background memory scrubbing, or when someone tries to
-> + * consume the corruption. This code focuses on the former case.  If it cannot
-> + * handle the error for some reason it's safe to just ignore it because no
-> + * corruption has been consumed yet. Instead when that happens another (deadly)
-> + * machine check will happen.
-> + *
-> + * The tricky part here is that we can access any page asynchronous to other VM
-> + * users, because memory failures could happen anytime and anywhere, possibly
-> + * violating some of their assumptions. This is why this code has to be
-> + * extremely careful. Generally it tries to use normal locking rules, as in get
-> + * the standard locks, even if that means the error handling takes potentially
-> + * a long time.
-> + *
-> + * We don't aim to rescue 100% corruptions. That's unreasonable goal - the
-> + * kernel text and slab pages (including the big dcache/icache) are almost
-> + * impossible to isolate. We also try to keep the code clean by ignoring the
-> + * other thousands of small corruption windows.
+> Richard.
 
-other thousands of small corruption windows(ex, migration, ...)
-As far as you know , please write down them.
+Yes please!  I see the 701 is (just added?) on the list, but this
+applies to any hardware which is driven by the eeepc-laptop driver.
+There is no "brightness up key" or "brightness down key" notification
+recognised by the driver, only "brightness level is now equal to X".
 
-Anyway, I already added my sign.
-Thanks for your effort never get exhausted. :)
+Btw, I looked at other drivers and fujistsu-laptop is implemented in
+the same way.
 
+I guess the problem is the DMI manufacturer and product name don't
+mention "EeePC".  At least on my model, the serial number starts with
+"EeePC-", so we _could_ try to use that.
 
--- 
-Kinds regards,
-Minchan Kim
+But I hope there's a nicer solution.  Corentin, do you think it would
+be correct to apply this quirk to _all_ Asus laptops?
+
+At the moment asus-laptop doesn't generate brightness events.  The
+deprecated asus-acpi driver generates brightness events (via the old
+procfs interface).   But the BR_UP/BR_DOWN events carry an absolute
+brightness value; it strongly suggests that the firmware modifies the
+brightness.  asus-acpi uses the brightness value to update a generic
+backlight device - so we already rely on the value being correct,
+otherwise g-p-m's heuristic won't work.
+
+Thanks
+Alan
