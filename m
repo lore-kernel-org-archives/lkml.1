@@ -1,121 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZFRRck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZFRRfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbZFRRck (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 13:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZFRRcb
+	id S1755551AbZFRRfW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 13:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZFRRfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 13:32:31 -0400
-Received: from mail.mev.co.uk ([62.49.15.74]:45381 "EHLO mail.mev.co.uk"
+	Thu, 18 Jun 2009 13:35:11 -0400
+Received: from sh.osrg.net ([192.16.179.4]:51841 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbZFRRcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 13:32:31 -0400
-Message-ID: <4A3A7A2F.3020800@mev.co.uk>
-Date: Thu, 18 Jun 2009 18:32:31 +0100
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090502)
-MIME-Version: 1.0
-To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-CC: "fmhess@users.sourceforge.net" <fmhess@users.sourceforge.net>,
-       Ian Abbott <ian.abbott@mev.co.uk>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>
-Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based
- cards
-References: <200906161701.45234.herton@mandriva.com.br> <200906172137.43870.herton@mandriva.com.br> <200906180328.07976.fmhess@speakeasy.net> <200906181423.11245.herton@mandriva.com.br>
-In-Reply-To: <200906181423.11245.herton@mandriva.com.br>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+	id S1753173AbZFRRfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 13:35:09 -0400
+Date: Fri, 19 Jun 2009 02:34:55 +0900 (JST)
+Message-Id: <20090619.023455.111674749.ryusuke@osrg.net>
+To: Leandro Lucarella <llucax@gmail.com>
+Cc: konishi.ryusuke@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       albertito@blitiri.com.ar, users@nilfs.org
+Subject: [PATCH] nilfs2: fix hang problem after bio_alloc() failed
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <20090614181313.GA16597@homero.springfield.home>
+References: <20090614153256.GA4020@homero.springfield.home>
+	<20090615.030245.104791670.konishi.ryusuke@gmail.com>
+	<20090614181313.GA16597@homero.springfield.home>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 19 Jun 2009 02:34:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/06/09 18:23, Herton Ronaldo Krzesinski wrote:
-> Let me know if there is any problem remaining with this version:
-> 
-> Staging: comedi: s626: use subvendor:subdevice ids for SAA7146 board
-> 
-> The current s626 comedi driver in staging conflicts with philips SAA7146
-> media/dvb based cards, because it claims the same vendor:device pci id
-> for all subdevice/subvendor ids. What happens is that for people that have a
-> philips SAA7146 media/dvb based card, s626 if available gets loaded by udev
-> and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
-> 
-> The s626 driver shouldn't claim all 1131:7146 devices. Fix this by
-> specifying specific known subvendor:subdevice ids in its pci id table
-> list.
-> 
-> Also s626_attach is modified to use now pci_get_subsys instead of
-> pci_get_device as reported by Ian Abbott, and now we loop over pci id
-> table entries in case more ids are added in the future.
-> 
-> Reference: http://lkml.org/lkml/2009/6/16/552
-> 
-> Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-> 
-> diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
-> index 30dec9d..4210590 100644
-> --- a/drivers/staging/comedi/drivers/s626.c
-> +++ b/drivers/staging/comedi/drivers/s626.c
-> @@ -110,9 +110,13 @@ static const struct s626_board s626_boards[] = {
->  #define PCI_VENDOR_ID_S626 0x1131
->  #define PCI_DEVICE_ID_S626 0x7146
-> 
-> +/*
-> + * For devices with vendor:device id == 0x1131:0x7146 you must specify
-> + * also subvendor:subdevice ids, because otherwise it will conflict with
-> + * Philips SAA7146 media/dvb based cards.
-> + */
->  static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) = {
-> -       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> -               0},
-> +       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
->         {0}
->  };
-> 
-> @@ -498,25 +502,26 @@ static int s626_attach(struct comedi_device *dev, struct comedi_devconfig *it)
->         resource_size_t resourceStart;
->         dma_addr_t appdma;
->         struct comedi_subdevice *s;
-> -       struct pci_dev *pdev;
-> +       const struct pci_device_id *ids;
-> +       struct pci_dev *pdev = NULL;
-> 
->         if (alloc_private(dev, sizeof(struct s626_private)) < 0)
->                 return -ENOMEM;
-> 
-> -       for (pdev = pci_get_device(PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626,
-> -                       NULL); pdev != NULL;
-> -               pdev = pci_get_device(PCI_VENDOR_ID_S626,
-> -                       PCI_DEVICE_ID_S626, pdev)) {
-> -               if (it->options[0] || it->options[1]) {
-> -                       if (pdev->bus->number == it->options[0] &&
-> -                               PCI_SLOT(pdev->devfn) == it->options[1]) {
-> +       for (i = 0; i < ARRAY_SIZE(s626_pci_table) && !pdev; i++) {
-> +               ids = &s626_pci_table[i];
-> +               do {
-> +                       pdev = pci_get_subsys(ids->vendor, ids->device, ids->subvendor,
-> +                                             ids->subdevice, pdev);
-> +
-> +                       if ((it->options[0] || it->options[1]) && pdev) {
->                                 /* matches requested bus/slot */
-> +                               if (pdev->bus->number == it->options[0] &&
-> +                                   PCI_SLOT(pdev->devfn) == it->options[1])
-> +                                       break;
-> +                       } else
->                                 break;
-> -                       }
-> -               } else {
-> -                       /* no bus/slot specified */
-> -                       break;
-> -               }
-> +               } while (1);
->         }
->         devpriv->pdev = pdev;
+Hi Leandro,
+On Sun, 14 Jun 2009 15:13:13 -0300, Leandro Lucarella wrote:
+> Ryusuke Konishi, el 15 de junio a las 03:02 me escribiste:
+> [snip]
+> > > Here is the complete trace:
+> > > http://pastebin.lugmen.org.ar/4931
+> > 
+> > Thank you for your help.
+> > 
+> > According to your log, there seems to be a leakage in clear processing
+> > of the writeback flag on pages.  I will review the error path of log
+> > writer to narrow down the cause.
 
-The outer for loop iterates once too often - it doesn't need to iterate 
-over the sentinel at the end of the id table as that shouldn't match any 
-PCI device.
+Here is a patch that hopefully fixes the hang problem after
+bio_alloc() failed.  This is composed of three separate patches, but I
+now attach them together.
 
+If you still see problems with it, please let me know.
+ 
+> Oh! I forgot to tell you that the cleanerd process was not running. When
+> I mounted the NILFS2 filesystem the cleanerd daemon said:
+> 
+> nilfs_cleanerd[29534]: start
+> nilfs_cleanerd[29534]: cannot create cleanerd on /dev/loop0
+> nilfs_cleanerd[29534]: shutdown
+> 
+> I thought I might have an old utilities version and that could be because
+> of that (since the nilfs website was down I couldn't check), but now
+> I checked in the backup nilfs website that latest version is 2.0.12 and
+> I have that (Debian package), so I don't know why the cleanerd failed to
+> start in the first place.
+
+The message indicates that initialization of the cleanerd failed.
+
+I don't know for sure, but another memory allocation failure might
+cause it.
+
+Thanks,
+Ryusuke Konishi
+---
+Ryusuke Konishi (3):
+      nilfs2: fix mis-conversion of error code by unlikely directive
+      nilfs2: fix hang problem of log writer that follows on write failures
+      nilfs2: remove incorrect warning in nilfs_dat_commit_start function
+
+ fs/nilfs2/dat.c     |    9 ---------
+ fs/nilfs2/segment.c |   28 +++++++---------------------
+ 2 files changed, 7 insertions(+), 30 deletions(-)
+
+diff --git a/fs/nilfs2/dat.c b/fs/nilfs2/dat.c
+index bb8a581..e2646c3 100644
+--- a/fs/nilfs2/dat.c
++++ b/fs/nilfs2/dat.c
+@@ -149,15 +149,6 @@ void nilfs_dat_commit_start(struct inode *dat, struct nilfs_palloc_req *req,
+ 	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
+ 					     req->pr_entry_bh, kaddr);
+ 	entry->de_start = cpu_to_le64(nilfs_mdt_cno(dat));
+-	if (entry->de_blocknr != cpu_to_le64(0) ||
+-	    entry->de_end != cpu_to_le64(NILFS_CNO_MAX)) {
+-		printk(KERN_CRIT
+-		       "%s: vbn = %llu, start = %llu, end = %llu, pbn = %llu\n",
+-		       __func__, (unsigned long long)req->pr_entry_nr,
+-		       (unsigned long long)le64_to_cpu(entry->de_start),
+-		       (unsigned long long)le64_to_cpu(entry->de_end),
+-		       (unsigned long long)le64_to_cpu(entry->de_blocknr));
+-	}
+ 	entry->de_blocknr = cpu_to_le64(blocknr);
+ 	kunmap_atomic(kaddr, KM_USER0);
+ 
+diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
+index 22c7f65..e8f188b 100644
+--- a/fs/nilfs2/segment.c
++++ b/fs/nilfs2/segment.c
+@@ -1846,26 +1846,13 @@ static int nilfs_segctor_write(struct nilfs_sc_info *sci,
+ 		err = nilfs_segbuf_write(segbuf, &wi);
+ 
+ 		res = nilfs_segbuf_wait(segbuf, &wi);
+-		err = unlikely(err) ? : res;
++		err = unlikely(err) ? err : res;
+ 		if (unlikely(err))
+ 			return err;
+ 	}
+ 	return 0;
+ }
+ 
+-static int nilfs_page_has_uncleared_buffer(struct page *page)
+-{
+-	struct buffer_head *head, *bh;
+-
+-	head = bh = page_buffers(page);
+-	do {
+-		if (buffer_dirty(bh) && !list_empty(&bh->b_assoc_buffers))
+-			return 1;
+-		bh = bh->b_this_page;
+-	} while (bh != head);
+-	return 0;
+-}
+-
+ static void __nilfs_end_page_io(struct page *page, int err)
+ {
+ 	if (!err) {
+@@ -1889,12 +1876,11 @@ static void nilfs_end_page_io(struct page *page, int err)
+ 	if (!page)
+ 		return;
+ 
+-	if (buffer_nilfs_node(page_buffers(page)) &&
+-	    nilfs_page_has_uncleared_buffer(page))
+-		/* For b-tree node pages, this function may be called twice
+-		   or more because they might be split in a segment.
+-		   This check assures that cleanup has been done for all
+-		   buffers in a split btnode page. */
++	if (buffer_nilfs_node(page_buffers(page)) && !PageWriteback(page))
++		/*
++		 * For b-tree node pages, this function may be called twice
++		 * or more because they might be split in a segment.
++		 */
+ 		return;
+ 
+ 	__nilfs_end_page_io(page, err);
+@@ -1957,7 +1943,7 @@ static void nilfs_segctor_abort_write(struct nilfs_sc_info *sci,
+ 			}
+ 			if (bh->b_page != fs_page) {
+ 				nilfs_end_page_io(fs_page, err);
+-				if (unlikely(fs_page == failed_page))
++				if (fs_page && fs_page == failed_page)
+ 					goto done;
+ 				fs_page = bh->b_page;
+ 			}
 -- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
+1.6.2
+
