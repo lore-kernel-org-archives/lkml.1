@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZFRA5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbZFRA5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754296AbZFRA5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 20:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZFRA5Y
+	id S1755227AbZFRA5u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 20:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZFRA5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 20:57:24 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:50235 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbZFRA5X (ORCPT
+	Wed, 17 Jun 2009 20:57:39 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35075 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753093AbZFRA5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 20:57:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=G54/TfVUqVh78xgXnDAIj6Xh6o32BsgKaKmgC415ofoWsQwYV3eK+K1cSRUbaZWKpc
-         oDeiGc6S96AjfS1a5KRdCF+KSRkfZb5U3Kuiu2qylJrTinLN4oelIlrobKfoLooUmGmI
-         vmLLXNmYt1QNmzxPe+eQlR6nvWOKcvxD0UyQ8=
+	Wed, 17 Jun 2009 20:57:38 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+Cc: kosaki.motohiro@jp.fujitsu.com, Hugh Dickins <hugh@veritas.com>,
+       jpirko@redhat.com, linux-kernel@vger.kernel.org, oleg@redhat.com,
+       linux-mm@kvack.org, mingo@elte.hu
+In-Reply-To: <20090617132118.ef839ad7.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0904060811300.22841@blonde.anvils> <20090617132118.ef839ad7.akpm@linux-foundation.org>
+Message-Id: <20090618095705.99D2.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
-References: <4A384FE4.9090703@gmail.com>
-	 <20090617021254.GQ19977@parisc-linux.org>
-	 <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
-Date: Thu, 18 Jun 2009 08:57:25 +0800
-Message-ID: <412e6f7f0906171757x673ad9d2u2e116161cba550a0@mail.gmail.com>
-Subject: Re: [PATCH] SCSI: explain the hidden scsi_wait_scan Kconfig variable
-From: Changli Gao <xiaosuo@gmail.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Matthew Wilcox <matthew@wil.cx>, James.Bottomley@hansenpartnership.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 18 Jun 2009 09:57:36 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 6:07 PM, Stefan
-Richter<stefanr@s5r6.in-berlin.de> wrote:
-> People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
-> item.  These patches aren't accepted upstream, so let's stop the ongoing
-> irritation of people due to this obscure and strange installed module
-> and its Kconfig option.
-Aha, I really like this, and think it works. :)
+> On Mon, 6 Apr 2009 08:22:07 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> > On Mon, 6 Apr 2009, KOSAKI Motohiro wrote:
+> > > 
+> > > > I'm worrying particularly about the fork/exec issue you highlight.
+> > > > You're exemplary in providing your test programs, but there's a big
+> > > > omission: you don't mention that the first test, "./getrusage -lc",
+> > > > gives a very different result on Linux than you say it does on BSD -
+> > > > you say the BSD fork line is "fork: self 0 children 0", whereas
+> > > > I find my Linux fork line is "fork: self 102636 children 0".
+> > > 
+> > > FreeBSD update rusage at tick updating point. (I think all bsd do that)
+> > > Then, bsd displaing 0 is bsd's problem :)
+> > 
+> > Ah, thank you.
+> > 
+> > > 
+> > > Do I must change test program?
+> > 
+> > Apparently somebody needs to, please; though it appears to be already
+> > well supplied with usleep(1)s - maybe they needed to be usleep(2)s?
+> > 
+> > And then change results shown in the changelog, and check conclusions
+> > drawn from them (if BSD is behaving as we do, it should still show
+> > maxrss not inherited over fork, but less obviously - the number goes
+> > down slightly, because the history is lost, but nowhere near to zero).
+> > 
+> 
+> afaik none of this happened, so I have the patch on hold.
+
+Grr, my fault.
+I recognize it. sorry.
 
 
--- 
-Regards，
-Changli Gao(xiaosuo@gmail.com)
+
+
+
