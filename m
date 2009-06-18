@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZFRWfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZFRWn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbZFRWfS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 18:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZFRWfG
+	id S1755977AbZFRWn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 18:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZFRWnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 18:35:06 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:65039 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbZFRWfF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 18:35:05 -0400
-Message-ID: <4A3AC0FF.20808@nortel.com>
-Date: Thu, 18 Jun 2009 16:34:39 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Thu, 18 Jun 2009 18:43:21 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:51865 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751770AbZFRWnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 18:43:20 -0400
 MIME-Version: 1.0
-To: Ben Hutchings <ben@decadent.org.uk>
-CC: linux-kernel@vger.kernel.org, Chris Adams <cmadams@hiwaay.net>,
-       510478@bugs.debian.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] v2 Re: Bug: Status/Summary of slashdot leap-second crash
- on new years 2008-2009
-References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>	 <20090103002114.GA1538533@hiwaay.net>	 <20090103022358.GA2454@dastardly.home.dghda.com>	 <20090103044143.GB1538533@hiwaay.net>	 <20090103045227.GA5994@dastardly.home.dghda.com>	 <20090103180148.GA1375968@hiwaay.net> <1244427498.21215.200.camel@deadeye>
-In-Reply-To: <1244427498.21215.200.camel@deadeye>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jun 2009 22:34:41.0156 (UTC) FILETIME=[F8656440:01C9F064]
+Message-ID: <19002.44369.638997.584055@cargo.ozlabs.ibm.com>
+Date: Fri, 19 Jun 2009 07:10:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 5/6] perf_counter: powerpc: Add processor back-end for MPC7450 family
+In-Reply-To: <E57BFC08-F847-463A-9D0F-55979C4B0524@kernel.crashing.org>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+	<19000.55631.802122.696927@cargo.ozlabs.ibm.com>
+	<34BD6A89-A05E-40CC-A495-017BFB08B796@kernel.crashing.org>
+	<19001.31508.901222.288946@cargo.ozlabs.ibm.com>
+	<E57BFC08-F847-463A-9D0F-55979C4B0524@kernel.crashing.org>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Hutchings wrote:
-> On Sat, 2009-01-03 at 12:01 -0600, Chris Adams wrote:
->> Once upon a time, Duane Griffin <duaneg@dghda.com> said:
->>> How about instead of a switch statement, assigning the message to a
->>> variable and printing that. I.e. something like:
->> Good point.  Here's an updated version that also adds a comment to the
->> xtime_lock definition about not using printk.
->> -- 
->> Chris Adams <cmadams@hiwaay.net>
->> Systems and Network Administrator - HiWAAY Internet Services
->> I don't speak for anybody but myself - that's enough trouble.
->>
->>
->> From: Chris Adams <cmadams@hiwaay.net>
->>
->> The code to handle leap seconds printks an information message when the
->> second is inserted or deleted.  It does this while holding xtime_lock.
->> However, printk wakes up klogd, and in some cases, the scheduler tries
->> to get the current kernel time, trying to get xtime_lock (which results
->> in a deadlock).  This moved the printks outside of the lock.  It also
->> adds a comment to not use printk while holding xtime_lock.
-> [...]
-> 
-> This patch doesn't seem to have gone anywhere.  Was this bug fixed in
-> some other way or has it been forgotten?
+Kumar Gala writes:
 
-I'm interested in this as well...the current code still issues a
-printk() while holding the xtime_lock for writing.  Is this allowed or not?
+> In looking at doing this what suggestions do you have in implementing  
+> perf_instruction_pointer() if we don't have the equivalent of SIAR.   
+> Just use regs->nip ?
 
-In addition, is it allowed for older kernels also or is Chris Adams'
-patch something that should get picked up for the 2.6.27 stable series?
+Yes, exactly.  If you don't have SIAR/SDAR/MMCRA, the default
+definitions for perf_instruction_pointer and perf_misc_flags in
+include/linux/perf_counter.h are fine, and you get them if
+perf_misc_flags is not defined.
 
-Chris
+Paul.
