@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZFRT5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZFRT6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZFRT5n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZFRT5e
+	id S1754503AbZFRT6o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZFRT6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:57:34 -0400
-Received: from mga14.intel.com ([143.182.124.37]:11769 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750956AbZFRT5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:57:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,246,1243839600"; 
-   d="scan'208";a="156152159"
-Date: Thu, 18 Jun 2009 12:57:33 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: kaneshige.kenji@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, Alexander Beregalov <a.beregalov@gmail.com>
-Subject: Re: [PATCH next] PCI hotplug: fix build when !SYSFS
-Message-ID: <20090618125733.254ffa0d@jbarnes-g45>
-In-Reply-To: <1245241397-6781-1-git-send-email-a.beregalov@gmail.com>
-References: <1245241397-6781-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 18 Jun 2009 15:58:36 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:8772 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbZFRT6g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 15:58:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=p5FbgWT29OO+DCDhrZKnC2OY+0r1uGw6puJDLQ7bEamPANcB9wKy7GVaI4Tl07NB0s
+         I8Cee2B2pTbqNOf3rHbNF91MXpRhjBObJLjZelk52n1RicYnsDdMuHjNVblGkJzrdqis
+         17ujqj6ulobgp7SoavljlU7BgI2yCQXCawPlg=
+MIME-Version: 1.0
+In-Reply-To: <1245200079-6323-2-git-send-email-rob@emanuele.us>
+References: <1245200079-6323-1-git-send-email-rob@emanuele.us>
+	 <1245200079-6323-2-git-send-email-rob@emanuele.us>
+Date: Thu, 18 Jun 2009 21:58:37 +0200
+Message-ID: <cd73a99e0906181258v51372258n5fd134be9605cb11@mail.gmail.com>
+Subject: Re: [PATCH 2/6] atmel-mci: Platform configuration to the the 
+	atmel-mci driver
+From: Andrew Victor <avictor.za@gmail.com>
+To: Rob Emanuele <rob@emanuele.us>
+Cc: nicolas.ferre@atmel.com, haavard.skinnemoen@atmel.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Jun 2009 16:23:17 +0400
-Alexander Beregalov <a.beregalov@gmail.com> wrote:
+hi,
 
-> Fix this build error when CONFIG_SYSFS is not set:
-> drivers/pci/slot.c: In function 'pci_hp_create_module_link':
-> drivers/pci/slot.c:327: error: 'module_kset' undeclared
-> 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
->  drivers/pci/slot.c |    9 +++++++++
->  1 files changed, 9 insertions(+), 0 deletions(-)
+> +          if (data->slot[i].bus_width) {
+> +                       /* input/irq */
+> +                       if (data->slot[i].detect_pin) {
+> +                               at91_set_gpio_input(data->slot[i].detect_pin, 1);
+> +                               at91_set_deglitch(data->slot[i].detect_pin, 1);
+> +                       }
+> +                       if (data->slot[i].wp_pin)
+> +                               at91_set_gpio_input(data->slot[i].wp_pin, 1);
 
-Thanks Alexander, but this one has been obsoleted by the one from Alex
-Chiang, which describes the dependencies in Kconfig instead...
+The current at91_mci also allows the driver to control the "vcc_pin".
+Can that functionality be merged into atmel_mci driver?
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+Regards.
+  Andre Victor
