@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbZFRB5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbZFRB55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756854AbZFRB5M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 21:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZFRB4z
+	id S1757629AbZFRB55 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 21:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbZFRB5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 21:56:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54910
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753094AbZFRB4y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 21:56:54 -0400
-Date: Wed, 17 Jun 2009 18:56:58 -0700 (PDT)
-Message-Id: <20090617.185658.226201750.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: robert.olsson@its.uu.se, zheng.yan@oracle.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/1 v2] Re: [BUG] fib_tries related Oops in 2.6.30
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090615160800.GC2767@ami.dom.local>
-References: <20090615065333.GA4378@ff.dom.local>
-	<20090615160800.GC2767@ami.dom.local>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 17 Jun 2009 21:57:49 -0400
+Received: from mga01.intel.com ([192.55.52.88]:42947 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753436AbZFRB5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 21:57:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,240,1243839600"; 
+   d="scan'208";a="700378675"
+Subject: Re: [RFC 6/7] x86: Move kernel_fpu_using to asm/i387.h
+From: Huang Ying <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <4A3922A4.1080300@zytor.com>
+References: <1244704236.5320.129.camel@yhuang-dev.sh.intel.com>
+	 <20090617164622.GB25357@elte.hu>  <4A3922A4.1080300@zytor.com>
+Content-Type: text/plain
+Date: Thu, 18 Jun 2009 09:57:48 +0800
+Message-Id: <1245290268.11965.190.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Mon, 15 Jun 2009 18:08:01 +0200
+On Thu, 2009-06-18 at 01:06 +0800, H. Peter Anvin wrote:
+> Ingo Molnar wrote:
+> >>  
+> >> +static inline int kernel_fpu_using(void)
+> >> +{
+> >> +	if (in_interrupt() && !(read_cr0() & X86_CR0_TS))
+> >> +		return 1;
+> >> +	return 0;
+> >> +}
+> >> +
+> > 
+> > Looks sane to me. Herbert, do you ack it?
+> > 
+> 
+> Although I have to say, the structure of:
+> 
+> if (boolean test)
+> 	return 1;
+> return 0;
+> 
+> ... truly was hit with the ugly stick.  It really should be:
+> 
+> static inline bool kernel_fpu_using(void)
+> {
+> 	return in_interrupt() && !(read_cr0() && C86_CR0_TS);
+> }
 
-> ipv4: Fix fib_trie rebalancing, part 2
-> 
-> My previous patch, which explicitly delays freeing of tnodes by adding
-> them to the list to flush them after the update is finished, isn't
-> strict enough. It treats exceptionally tnodes without parent, assuming
-> they are newly created, so "invisible" for the read side yet.
-> 
-> But the top tnode doesn't have parent as well, so we have to exclude
-> all exceptions (at least until a better way is found). Additionally we
-> need to move rcu assignment of this node before flushing, so the
-> return type of the trie_rebalance() function is changed.
-> 
-> Reported-by: Yan Zheng <zheng.yan@oracle.com>
-> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+Yes. This is better. I will change this.
 
-Applied, thanks a lot Jarek.
+> Huang: if I recall correctly, these functions were originally designed
+> to deal with the fact that VIA processors generate spurious #TS faults
+> due to broken design of the Padlock instructions.  The AES and PCLMUL
+> instructions actually use SSE registers and so will require different
+> structure.
+
+They are a little different. VIA want to make sure that they can deal
+with spurious #TS faults, while AES and PCLMUL need to check whether
+MMX/SSE registers are available.
+
+After some thinking, I think something as follow may be more
+appropriate:
+
+/* This may be useful for someone else */
+static inline bool fpu_using(void)
+{
+	return !(read_cr0() & X86_CR0_TS);
+}
+
+static inline bool irq_fpu_using(void)
+{
+	return in_interrupt() && fpu_using();
+}
+
+Best Regards,
+Huang Ying
+
+
