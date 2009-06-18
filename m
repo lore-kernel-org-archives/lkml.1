@@ -1,182 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbZFRJ4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbZFRKLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758075AbZFRJ4z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 05:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbZFRJ4r
+	id S1757220AbZFRKLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 06:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZFRKLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 05:56:47 -0400
-Received: from mga14.intel.com ([143.182.124.37]:27127 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbZFRJ4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 05:56:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,243,1243839600"; 
-   d="scan'208";a="155950854"
-Date: Thu, 18 Jun 2009 17:56:44 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] HWPOISON: only early kill processes who installed
-	SIGBUS handler
-Message-ID: <20090618095644.GA1422@localhost>
-References: <4A35BD7A.9070208@linux.vnet.ibm.com> <20090615042753.GA20788@localhost> <20090615064447.GA18390@wotan.suse.de> <20090615070914.GC31969@one.firstfloor.org> <20090615071907.GA8665@wotan.suse.de> <20090615121001.GA10944@localhost> <20090615122528.GA13256@wotan.suse.de> <20090615142225.GA11167@localhost> <20090617063702.GA20922@localhost> <20090617080404.GB31192@wotan.suse.de>
+	Thu, 18 Jun 2009 06:11:11 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:34598 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753874AbZFRKLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 06:11:09 -0400
+Date: Thu, 18 Jun 2009 19:10:17 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.31-rc1, part 2.
+Message-ID: <20090618101017.GA30285@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090617080404.GB31192@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 04:04:04PM +0800, Nick Piggin wrote:
-> On Wed, Jun 17, 2009 at 02:37:02PM +0800, Wu Fengguang wrote:
-> > On Mon, Jun 15, 2009 at 10:22:25PM +0800, Wu Fengguang wrote:
-> > > On Mon, Jun 15, 2009 at 08:25:28PM +0800, Nick Piggin wrote:
-> > > > On Mon, Jun 15, 2009 at 08:10:01PM +0800, Wu Fengguang wrote:
-> > > > > On Mon, Jun 15, 2009 at 03:19:07PM +0800, Nick Piggin wrote:
-> > > > > > > For KVM you need early kill, for the others it remains to be seen.
-> > > > > > 
-> > > > > > Right. It's almost like you need to do a per-process thing, and
-> > > > > > those that can handle things (such as the new SIGBUS or the new
-> > > > > > EIO) could get those, and others could be killed.
-> > > > > 
-> > > > > To send early SIGBUS kills to processes who has called
-> > > > > sigaction(SIGBUS, ...)?  KVM will sure do that. For other apps we
-> > > > > don't mind they can understand that signal at all.
-> > > > 
-> > > > For apps that hook into SIGBUS for some other means and
-> > > 
-> > > Yes I was referring to the sigaction(SIGBUS) apps, others will
-> > > be late killed anyway.
-> > > 
-> > > > do not understand the new type of SIGBUS signal? What about
-> > > > those?
-> > > 
-> > > We introduced two new SIGBUS codes:
-> > >         BUS_MCEERR_AO=5         for early kill
-> > >         BUS_MCEERR_AR=4         for late  kill
-> > > I'd assume a legacy application will handle them in the same way (both
-> > > are unexpected code to the application).
-> > > 
-> > > We don't care whether the application can be killed by BUS_MCEERR_AO
-> > > or BUS_MCEERR_AR depending on its SIGBUS handler implementation.
-> > > But (in the rare case) if the handler
-> > > - refused to die on BUS_MCEERR_AR, it may create a busy loop and
-> > >   flooding of SIGBUS signals, which is a bug of the application.
-> > >   BUS_MCEERR_AO is one time and won't lead to busy loops.
-> > > - does something that hurts itself (ie. data safety) on BUS_MCEERR_AO,
-> > >   it may well hurt the same way on BUS_MCEERR_AR. The latter one is
-> > >   unavoidable, so the application must be fixed anyway.
-> > 
-> > This patch materializes the automatically early kill idea.
-> > It aims to remove the vm.memory_failure_ealy_kill sysctl parameter.
-> > 
-> > This is mainly a policy change, please comment.
-> 
-> Well then you can still early-kill random apps that did not
-> want it, and you may still cause problems if its sigbus
-> handler does something nontrivial.
-> 
-> Can you use a prctl or something so it can expclitly
-> register interest in this?
+Please pull from:
 
-OK, this patch allows one to request early kill by calling
-prctl(PR_MEMORY_FAILURE_EARLY_KILL, 1, ...).
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-Now either app or admin can choose to enable/disable early kill on
-a per-process basis. But still, an admin won't be able to change the
-behavior of an application who calls prctl() to set the option by itself.
+Which contains:
 
-Thanks,
-Fengguang
+Christoph Hellwig (1):
+      sh: remove stray markers.
 
----
- include/linux/prctl.h |    6 ++++++
- include/linux/sched.h |    1 +
- kernel/sys.c          |    6 ++++++
- mm/memory-failure.c   |   12 ++++++++++--
- 4 files changed, 23 insertions(+), 2 deletions(-)
+Guennadi Liakhovetski (3):
+      soc-camera: unify i2c camera device platform data
+      SH: convert ap325rxa to soc-camera as platform-device
+      SH: convert migor to soc-camera as platform-device
 
---- sound-2.6.orig/include/linux/prctl.h
-+++ sound-2.6/include/linux/prctl.h
-@@ -88,4 +88,10 @@
- #define PR_TASK_PERF_COUNTERS_DISABLE		31
- #define PR_TASK_PERF_COUNTERS_ENABLE		32
- 
-+/*
-+ * Send early SIGBUS.BUS_MCEERR_AO notification on memory corruption?
-+ * Useful for KVM and mission critical apps.
-+ */
-+#define PR_MEMORY_FAILURE_EARLY_KILL		33
-+
- #endif /* _LINUX_PRCTL_H */
---- sound-2.6.orig/include/linux/sched.h
-+++ sound-2.6/include/linux/sched.h
-@@ -1666,6 +1666,7 @@ extern cputime_t task_gtime(struct task_
- #define PF_MEMALLOC	0x00000800	/* Allocating memory */
- #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
- #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
-+#define PF_EARLY_KILL	0x00004000	/* early kill me on memory failure */
- #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
- #define PF_FROZEN	0x00010000	/* frozen for system suspend */
- #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
---- sound-2.6.orig/kernel/sys.c
-+++ sound-2.6/kernel/sys.c
-@@ -1545,6 +1545,12 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
- 				current->timer_slack_ns = arg2;
- 			error = 0;
- 			break;
-+		case PR_MEMORY_FAILURE_EARLY_KILL:
-+			if (arg2)
-+				me->flags |= PF_EARLY_KILL;
-+			else
-+				me->flags &= ~PF_EARLY_KILL;
-+			break;
- 		default:
- 			error = -EINVAL;
- 			break;
---- sound-2.6.orig/mm/memory-failure.c
-+++ sound-2.6/mm/memory-failure.c
-@@ -205,6 +205,14 @@ static void kill_procs_ao(struct list_he
- 	}
- }
- 
-+static bool task_early_kill_elegible(struct task_struct *tsk)
-+{
-+	if (!tsk->mm)
-+		return false;
-+
-+	return tsk->flags & PF_EARLY_KILL;
-+}
-+
- /*
-  * Collect processes when the error hit an anonymous page.
-  */
-@@ -222,7 +230,7 @@ static void collect_procs_anon(struct pa
- 		goto out;
- 
- 	for_each_process (tsk) {
--		if (!tsk->mm)
-+		if (!task_early_kill_elegible(tsk))
- 			continue;
- 		list_for_each_entry (vma, &av->head, anon_vma_node) {
- 			if (!page_mapped_in_vma(page, vma))
-@@ -262,7 +270,7 @@ static void collect_procs_file(struct pa
- 	for_each_process(tsk) {
- 		pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
- 
--		if (!tsk->mm)
-+		if (!task_early_kill_elegible(tsk))
- 			continue;
- 
- 		vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff,
+Huang Weiyi (1):
+      sh: pci: remove duplicated #include's
+
+Magnus Damm (4):
+      sh: smsc911x support for the rsk7203 board
+      sh: unbreak WARN_ON()
+      sh: use kzalloc() for cpg clocks
+      sh: turn off irqs when disabling CMT/TMU timers
+
+Matt Fleming (4):
+      sh: Update my email address
+      sh: Fix dynamic ftrace's NOP action.
+      sh: Make the atomic functions safe for irqsoff tracing
+      sh: Fix declaration of __kernel_sigreturn and __kernel_rt_sigreturn
+
+Nobuhiro Iwamatsu (3):
+      sh: Add support mtd mapping for highlander
+      sh: Update r7780mp defconfig
+      sh: Revised clock function in highlander
+
+Paul Mundt (31):
+      sh: Wire up sys_perf_counter_open.
+      sh: intc: alloc_bootmem() -> kzalloc() conversion.
+      sh: Bump the earlytimer bits back to time_init().
+      sh: Use generic sched_clock().
+      sh: Bump the earlytimer probe devices up.
+      clocksource: Drop unused irqaction.mask from SH drivers.
+      sh: Convert to asm-generic/current.h.
+      sh: Convert to asm-generic/dma.h.
+      sh: Convert to asm-generic/posix_types.h.
+      sh: Convert to asm-generic/termbits.h and termios.h.
+      sh: Convert ipc/shm bits to their asm-generic versions.
+      sh: Tidy up duplication in irq/swab/timex.h.
+      sh: Conver to asm-generic/mmu_context.h.
+      sh: Convert to asm-generic/module.h.
+      sh: Convert to asm-generic/unaligned.h.
+      sh: Convert to asm-generic/scatterlist.h.
+      sh: Convert to asm-generic/types.h.
+      sh: Convert to asm-generic/signal.h.
+      sh: Switch to asm-generic versions for identical headers.
+      sh: Derive COMMAND_LINE_SIZE from asm-generic/setup.h.
+      sh: Convert sh64 to use the generic checksum code.
+      serial: sh-sci: Move over to dev_pm_ops.
+      sh: urquell: Add system FPGA mode pin support.
+      sh: Set EARLY_SCIF_CONSOLE_PORT sanely for SH7786.
+      sh: pci: Allow register_pci_controller() to handle overlapping regions.
+      sh: pci: SH7786 PCI ops.
+      sh: Use generic atomic64_t implementation.
+      sh: Generic HAVE_PERF_COUNTER support.
+      sh: pci: Initial PCI-Express support for SH7786 Urquell board.
+      sh: defconfig updates.
+      sh: Enable soc-camera in ap325rxa/migor/se7724 defconfigs.
+
+Rusty Russell (4):
+      cpumask: remove the now-obsoleted pcibus_to_cpumask(): sh
+      cpumask: arch_send_call_function_ipi_mask: sh
+      cpumask: use mm_cpumask() wrapper: sh
+      cpumask: Use accessors for cpu_*_mask: sh
+
+Yoshihiro Shimoda (5):
+      sh: sh7785lcr: add platform data for r8a66597-hcd
+      sh: highlander: add platform data for r8a66597-hcd
+      sh: x3proto: add platform data for r8a66597-hcd
+      sh: add platform data for r8a66597-hcd in setup-sh7366
+      sh: add platform data for r8a66597-hcd in setup-sh7723
+
+ arch/sh/Kconfig                               |    6 +
+ arch/sh/Kconfig.debug                         |    1 +
+ arch/sh/boards/Kconfig                        |    1 +
+ arch/sh/boards/board-ap325rxa.c               |   52 ++-
+ arch/sh/boards/board-sh7785lcr.c              |   14 +-
+ arch/sh/boards/board-urquell.c                |    7 +
+ arch/sh/boards/mach-highlander/setup.c        |   64 +++-
+ arch/sh/boards/mach-migor/setup.c             |   79 +++--
+ arch/sh/boards/mach-rsk/devices-rsk7203.c     |    8 +-
+ arch/sh/boards/mach-se/7780/irq.c             |    1 -
+ arch/sh/boards/mach-x3proto/setup.c           |   12 +-
+ arch/sh/configs/ap325rxa_defconfig            |   70 ++--
+ arch/sh/configs/cayman_defconfig              |  165 +++-----
+ arch/sh/configs/dreamcast_defconfig           |   78 ++--
+ arch/sh/configs/edosk7705_defconfig           |   62 +--
+ arch/sh/configs/edosk7760_defconfig           |   79 ++--
+ arch/sh/configs/espt_defconfig                |   78 ++--
+ arch/sh/configs/hp6xx_defconfig               |   70 ++--
+ arch/sh/configs/landisk_defconfig             |  136 ++----
+ arch/sh/configs/lboxre2_defconfig             |   83 ++--
+ arch/sh/configs/magicpanelr2_defconfig        |   75 ++--
+ arch/sh/configs/microdev_defconfig            |   76 ++--
+ arch/sh/configs/migor_defconfig               |   78 ++--
+ arch/sh/configs/polaris_defconfig             |   67 ++--
+ arch/sh/configs/r7780mp_defconfig             |  183 ++++++--
+ arch/sh/configs/r7785rp_defconfig             |   89 ++--
+ arch/sh/configs/rsk7201_defconfig             |   77 ++--
+ arch/sh/configs/rsk7203_defconfig             |  141 ++++--
+ arch/sh/configs/rts7751r2d1_defconfig         |  106 +++---
+ arch/sh/configs/rts7751r2dplus_defconfig      |  107 +++---
+ arch/sh/configs/sdk7780_defconfig             |   88 ++--
+ arch/sh/configs/se7206_defconfig              |   93 +++--
+ arch/sh/configs/se7343_defconfig              |  219 ++++------
+ arch/sh/configs/se7619_defconfig              |   70 ++--
+ arch/sh/configs/se7705_defconfig              |   74 ++--
+ arch/sh/configs/se7712_defconfig              |   78 ++--
+ arch/sh/configs/se7721_defconfig              |   87 ++--
+ arch/sh/configs/se7722_defconfig              |   80 ++--
+ arch/sh/configs/se7724_defconfig              |   71 ++--
+ arch/sh/configs/se7750_defconfig              |   80 ++--
+ arch/sh/configs/se7751_defconfig              |   75 ++--
+ arch/sh/configs/se7780_defconfig              |   90 ++---
+ arch/sh/configs/sh03_defconfig                |   90 ++---
+ arch/sh/configs/sh7710voipgw_defconfig        |   75 ++--
+ arch/sh/configs/sh7724_generic_defconfig      |   72 ++--
+ arch/sh/configs/sh7763rdp_defconfig           |   84 ++--
+ arch/sh/configs/sh7770_generic_defconfig      |   66 ++--
+ arch/sh/configs/sh7785lcr_32bit_defconfig     |   85 ++--
+ arch/sh/configs/sh7785lcr_defconfig           |   85 ++--
+ arch/sh/configs/shmin_defconfig               |   74 ++--
+ arch/sh/configs/shx3_defconfig                |  125 ++++--
+ arch/sh/configs/snapgear_defconfig            |   76 ++--
+ arch/sh/configs/systemh_defconfig             |   66 +--
+ arch/sh/configs/titan_defconfig               |   91 ++--
+ arch/sh/configs/ul2_defconfig                 |   79 ++--
+ arch/sh/configs/urquell_defconfig             |  584 +++++++++++++++++++++----
+ arch/sh/drivers/pci/Makefile                  |    2 +
+ arch/sh/drivers/pci/ops-dreamcast.c           |    1 -
+ arch/sh/drivers/pci/ops-sh7786.c              |  134 ++++++
+ arch/sh/drivers/pci/pci.c                     |   14 +-
+ arch/sh/drivers/pci/pcie-sh7786.c             |  355 +++++++++++++++
+ arch/sh/drivers/pci/pcie-sh7786.h             |  589 +++++++++++++++++++++++++
+ arch/sh/include/asm/atomic-irq.h              |   24 +-
+ arch/sh/include/asm/atomic.h                  |    2 +
+ arch/sh/include/asm/checksum.h                |    2 +-
+ arch/sh/include/asm/checksum_64.h             |   78 ----
+ arch/sh/include/asm/current.h                 |   21 +-
+ arch/sh/include/asm/dma.h                     |   10 +-
+ arch/sh/include/asm/ipcbuf.h                  |   30 +--
+ arch/sh/include/asm/irq.h                     |    2 +-
+ arch/sh/include/asm/mman.h                    |   18 +-
+ arch/sh/include/asm/mmu_context.h             |   22 +-
+ arch/sh/include/asm/module.h                  |   12 +-
+ arch/sh/include/asm/msgbuf.h                  |   32 +--
+ arch/sh/include/asm/param.h                   |   23 +-
+ arch/sh/include/asm/parport.h                 |   17 +-
+ arch/sh/include/asm/perf_counter.h            |    7 +
+ arch/sh/include/asm/posix_types_32.h          |  119 +-----
+ arch/sh/include/asm/posix_types_64.h          |  127 +-----
+ arch/sh/include/asm/scatterlist.h             |   24 +-
+ arch/sh/include/asm/sembuf.h                  |   26 +-
+ arch/sh/include/asm/serial.h                  |   20 +-
+ arch/sh/include/asm/setup.h                   |    2 +-
+ arch/sh/include/asm/shmbuf.h                  |   43 +--
+ arch/sh/include/asm/signal.h                  |  147 +------
+ arch/sh/include/asm/smp.h                     |    3 +-
+ arch/sh/include/asm/socket.h                  |   61 +---
+ arch/sh/include/asm/swab.h                    |    3 +-
+ arch/sh/include/asm/termbits.h                |  199 +---------
+ arch/sh/include/asm/termios.h                 |   91 +----
+ arch/sh/include/asm/timex.h                   |    7 +-
+ arch/sh/include/asm/topology.h                |    3 -
+ arch/sh/include/asm/types.h                   |   16 +-
+ arch/sh/include/asm/ucontext.h                |   13 +-
+ arch/sh/include/asm/unaligned.h               |   14 +-
+ arch/sh/include/asm/unistd_32.h               |    3 +-
+ arch/sh/include/asm/unistd_64.h               |    3 +-
+ arch/sh/include/mach-common/mach/highlander.h |    3 +
+ arch/sh/kernel/cpu/clock-cpg.c                |   16 +-
+ arch/sh/kernel/cpu/sh4a/setup-sh7366.c        |   10 +-
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c        |    9 +-
+ arch/sh/kernel/cpu/sh4a/smp-shx3.c            |    5 +-
+ arch/sh/kernel/ftrace.c                       |   60 ++--
+ arch/sh/kernel/process_32.c                   |    2 -
+ arch/sh/kernel/process_64.c                   |    7 +-
+ arch/sh/kernel/sh_ksyms_64.c                  |    7 -
+ arch/sh/kernel/signal_32.c                    |    4 +-
+ arch/sh/kernel/smp.c                          |   10 +-
+ arch/sh/kernel/sys_sh.c                       |    2 -
+ arch/sh/kernel/syscalls_32.S                  |    1 +
+ arch/sh/kernel/syscalls_64.S                  |    1 +
+ arch/sh/kernel/time.c                         |   27 +-
+ arch/sh/kernel/traps.c                        |    1 +
+ arch/sh/lib64/Makefile                        |    2 +-
+ arch/sh/lib64/c-checksum.c                    |  214 ---------
+ arch/sh/mm/fault_32.c                         |    4 -
+ drivers/clocksource/sh_cmt.c                  |    4 +-
+ drivers/clocksource/sh_mtu2.c                 |    1 -
+ drivers/clocksource/sh_tmu.c                  |    4 +-
+ drivers/media/video/ov772x.c                  |    6 +-
+ drivers/media/video/tw9910.c                  |    6 +-
+ drivers/serial/sh-sci.c                       |   18 +-
+ drivers/sh/intc.c                             |   13 +-
+ 123 files changed, 3835 insertions(+), 3743 deletions(-)
+ create mode 100644 arch/sh/drivers/pci/ops-sh7786.c
+ create mode 100644 arch/sh/drivers/pci/pcie-sh7786.c
+ create mode 100644 arch/sh/drivers/pci/pcie-sh7786.h
+ delete mode 100644 arch/sh/include/asm/checksum_64.h
+ create mode 100644 arch/sh/include/asm/perf_counter.h
+ delete mode 100644 arch/sh/lib64/c-checksum.c
