@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZFRTXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZFRT1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZFRTXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZFRTXd
+	id S1752432AbZFRT1u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbZFRT1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:23:33 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:33702 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbZFRTXc (ORCPT
+	Thu, 18 Jun 2009 15:27:43 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:49414 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbZFRT1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:23:32 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=re0iXq+6ntK5e9HPZUOd1mOTk2eoje8rN0frh8Jz/0153wIiWCtLCiB2t4eL+9GKm
-	wFiXmP+tt2c28U0kWtHzw==
-Date: Thu, 18 Jun 2009 12:23:28 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: David Miller <davem@davemloft.net>
-cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
-In-Reply-To: <20090618.120034.246557840.davem@davemloft.net>
-Message-ID: <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com>
-References: <4A396EA2.60705@gmail.com> <20090617.160840.58571632.davem@davemloft.net> <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com> <20090618.120034.246557840.davem@davemloft.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 18 Jun 2009 15:27:43 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
+References: <4A329CF8.4050502@goop.org>
+	<alpine.LFD.2.00.0906181206190.4213@localhost.localdomain>
+	<4A3A9220.4070807@goop.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 18 Jun 2009 12:27:39 -0700
+In-Reply-To: <4A3A9220.4070807@goop.org> (Jeremy Fitzhardinge's message of "Thu\, 18 Jun 2009 12\:14\:40 -0700")
+Message-ID: <m1zlc5jqac.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: jeremy@goop.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com, lenb@kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Jun 2009, David Miller wrote:
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-> > I disagree, page allocation failure messages show vital information about 
-> > the state of the VM so that we can find bugs and GFP_ATOMIC allocations 
-> > are the most common trigger for these diagnostic messages since 
-> > __GFP_WAIT allocations can trigger direct reclaim (and __GFP_FS 
-> > allocations can trigger the oom killer) to free memory and will retry the 
-> > allocation if ~__GFP_NORETRY.
-> 
-> It's COMPLETELY and ABSOLUTELY normal for GFP_ATOMIC allocations to
-> fail in the networking.
-> 
+> On 06/18/09 09:08, Len Brown wrote:
+>>> In principle, the local APIC and the I/O APIC are distinct (but related)
+>>> components, which can be independently present.
+>>>     
+>>
+>> bzzzzt, but thanks for playing:-)
+>>   
+>
+> Perhaps I should have expressed that a bit more clearly:  you could, if
+> mad, build a machine with I/O APICs and some other mechanism for
+> delivering the interrupts to CPUs.  In practice, I doubt anyone ever
+> has, or ever would.
+>
+> The only actual exception I know of is Xen's replacement of the physical
+> local APIC with a paravirtualized interrupt interface.
 
-__GFP_NOWARN exists for that reason.
+No one ever has.  Xen doesn't have I/O APICs either.  Not in any real
+sense.  Xen just has devices that looking like I/O apics if you don't
+look close.
 
-> If you warn it will just spam the logs, and on a router forwarding
-> millions of packets per second are you sure that can ever be sane?
-> 
+Eric
 
-The spamming is ratelimited, but GFP_ATOMIC is really the only time we get 
-such diagnostic information since __GFP_WAIT allocations can reclaim, 
-__GFP_FS allocations can utilize the oom killer, and other order-0 
-allocations are implicitly ~__GFP_NORETRY.
-
-As previously mentioned, GFP_ATOMIC allocations that are not __GFP_NOWARN 
-have been emitting these diagnostics since 2.5.53.  This has been on your 
-TODO list for 6 1/2 years and now you insist all GFP_ATOMIC allocations 
-change their default behavior?
-
-I understand what you're trying to avoid, but I disagree with the approach 
-of altering the default behavior of GFP_ATOMIC.  I may suggest that 
-emitting the page allocation failures become a compile time option; 
-CONFIG_DEBUG_VM would be my suggestion.
-
-> Use statistics and tracing if necessary, but log spam no way...
-> 
-
-You need the meminfo that is emitted at the time of failure for it to be 
-useful.
