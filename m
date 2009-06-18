@@ -1,62 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbZFRCoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbZFRCxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757896AbZFRCoX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 22:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZFRCoN
+	id S1756986AbZFRCxH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 22:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZFRCwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 22:44:13 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:47071 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbZFRCoM convert rfc822-to-8bit (ORCPT
+	Wed, 17 Jun 2009 22:52:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46477 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752608AbZFRCwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 22:44:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=RqaLbtgpw8YAp8G25jlxbftNyZTPdnJRiNlJadi/YZm5J6yGZ7ctYfL3qdFDl6D+J
-	gGGNxm3kT4ndjEQ+L5m1Q==
-MIME-Version: 1.0
-In-Reply-To: <49b7c2350906171856n4f7f7ca8u5f5302be2b4ae8a9@mail.gmail.com>
-References: <1245285075-20022-1-git-send-email-swetland@google.com>
-	 <1245285075-20022-2-git-send-email-swetland@google.com>
-	 <1245285075-20022-3-git-send-email-swetland@google.com>
-	 <1245285075-20022-4-git-send-email-swetland@google.com>
-	 <49b7c2350906171856n4f7f7ca8u5f5302be2b4ae8a9@mail.gmail.com>
-Date: Wed, 17 Jun 2009 19:44:11 -0700
-Message-ID: <a55d774e0906171944x7d96c20dhb5c29e8ce2c6772b@mail.gmail.com>
-Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream 
-	device
-From: Brian Swetland <swetland@google.com>
-To: GeunSik Lim <leemgs1@gmail.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Wed, 17 Jun 2009 22:52:54 -0400
+Date: Wed, 17 Jun 2009 19:52:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: linux-nfs@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: NFS: possible circular locking  i_mutex <> mmap_sem
+Message-Id: <20090617195251.e648dbb8.akpm@linux-foundation.org>
+In-Reply-To: <20090618023208.GA28572@localhost>
+References: <20090618023208.GA28572@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 6:56 PM, GeunSik Lim<leemgs1@gmail.com> wrote:
-> On Thu, Jun 18, 2009 at 9:31 AM, Brian Swetland<swetland@google.com> wrote:
->> This is just enough to get the device booting and serial console
->> working.  Sufficient for debugging further MSM7k/Dream Support.
->> This will support HTC Dream / T-Mobile G1 / Android ADP1 (which
->> are all the same hardware, known as "trout" to the ARM machine
->> database).
-> Hi Brian,
-> I have one silly question.
-> I still not understand "trout" meaning with your description.
->
->> +config MACH_TROUT
->> +       default y
->> +       bool "HTC Dream (aka trout)"
->> +       help
->> +         Support for the HTC Dream, T-Mobile G1, Android ADP1 devices.
->> +
-> "trout" word just means HTC Dream Model. Is it right?
+On Thu, 18 Jun 2009 10:32:08 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-Yes -- this is the ARM linux kernel machine ID for this hardware:
-http://www.arm.linux.org.uk/developer/machines/list.php?id=1440
+> Hi,
+> 
+> I got a lockdep warning on a stress testing a nfsroot desktop.
+> The bits puzzled me is how come the page_fault() happens in
+> generic_file_buffered_write()?
 
-Brian
+write(fd, buf, count).  If the page at *buf isn't present, we take a
+fault to instantiate that page so we can copy_to_user() into it.
+
+> Thanks,
+> Fengguang
+> 
+> [ 2638.515865] =======================================================
+> [ 2638.519743] [ INFO: possible circular locking dependency detected ]
+> [ 2638.519743] 2.6.30-rc8-mm1 #307
+> [ 2638.519743] -------------------------------------------------------
+> [ 2638.519743] firefox-bin/3399 is trying to acquire lock:
+> [ 2638.519743]  (&mm->mmap_sem){++++++}, at: [<ffffffff81548471>] do_page_fault+0x301/0x330
+> [ 2638.519743]
+> [ 2638.519743] but task is already holding lock:
+> [ 2638.519743]  (&sb->s_type->i_mutex_key#6){+.+.+.}, at: [<ffffffff810c2bd2>] generic_file_aio_write+0x52/0xd0
+> [ 2638.519743]
+> [ 2638.519743] which lock already depends on the new lock.
+> [ 2638.519743]
+> [ 2638.519743]
+> [ 2638.519743] the existing dependency chain (in reverse order) is:
+> [ 2638.519743]
+> [ 2638.519743] -> #1 (&sb->s_type->i_mutex_key#6){+.+.+.}:
+> [ 2638.519743]        [<ffffffff8107c066>] __lock_acquire+0x12b6/0x1b40
+> [ 2638.519743]        [<ffffffff8107c9d1>] lock_acquire+0xe1/0x120
+> [ 2638.519743]        [<ffffffff8154328e>] mutex_lock_nested+0x5e/0x390
+> [ 2638.519743]        [<ffffffff811be15c>] nfs_revalidate_mapping+0xac/0x110    ==> takes i_mutex in nfs_invalidate_mapping()
+> [ 2638.519743]        [<ffffffff811bba25>] nfs_file_mmap+0x55/0x80
+> [ 2638.519743]        [<ffffffff810e2bb7>] mmap_region+0x427/0x600
+> [ 2638.519743]        [<ffffffff810e305e>] do_mmap_pgoff+0x2ce/0x3f0
+> [ 2638.519743]        [<ffffffff81010c26>] sys_mmap+0x106/0x130                 ==> takes mmap_sem
+> [ 2638.519743]        [<ffffffff8100bf42>] system_call_fastpath+0x16/0x1b
+> [ 2638.519743]        [<ffffffffffffffff>] 0xffffffffffffffff
+
+This is the faulty code path.  mmap_sem is supposed to nest inside i_mutex.
+
+> [ 2638.519743] -> #0 (&mm->mmap_sem){++++++}:
+> [ 2638.519743]        [<ffffffff8107c206>] __lock_acquire+0x1456/0x1b40
+> [ 2638.519743]        [<ffffffff8107c9d1>] lock_acquire+0xe1/0x120
+> [ 2638.519743]        [<ffffffff81543d3b>] down_read+0x4b/0x80
+> [ 2638.519743]        [<ffffffff81548471>] do_page_fault+0x301/0x330            ==> takes mmap_sem
+> [ 2638.519743]        [<ffffffff81545b55>] page_fault+0x25/0x30
+> [ 2638.519743]        [<ffffffff810c1970>] generic_file_buffered_write+0x100/0x320
+> [ 2638.519743]        [<ffffffff810c202d>] __generic_file_aio_write_nolock+0x25d/0x450
+> [ 2638.519743]        [<ffffffff810c2be9>] generic_file_aio_write+0x69/0xd0     ==> takes i_mutex
+> [ 2638.519743]        [<ffffffff811bbd36>] nfs_file_write+0x136/0x230
+> [ 2638.519743]        [<ffffffff810fc991>] do_sync_write+0xf1/0x140
+> [ 2638.519743]        [<ffffffff810fd59b>] vfs_write+0xcb/0x1a0
+> [ 2638.519743]        [<ffffffff810fd760>] sys_write+0x50/0x90
+> [ 2638.519743]        [<ffffffff8100bf42>] system_call_fastpath+0x16/0x1b
+> [ 2638.519743]        [<ffffffffffffffff>] 0xffffffffffffffff
+> [ 2638.519743]
+
+<digs around a bit>
+
+afaict this was added by a fix-a-compile-warning patch!
+
+: commit e1ebfd33be068ec933f8954060a499bd22ad6f69
+: Author:     Trond Myklebust <Trond.Myklebust@netapp.com>
+: AuthorDate: Wed Mar 11 14:37:54 2009 -0400
+: Commit:     Trond Myklebust <Trond.Myklebust@netapp.com>
+: CommitDate: Wed Mar 11 14:37:54 2009 -0400
+: 
+:     NFS: Kill the "defined but not used" compile error on nommu machines
+:     
+:     Bryan Wu reports that when compiling NFS on nommu machines he gets a
+:     "defined but not used" error on nfs_file_mmap().
+:     
+:     The easiest fix is simply to get rid of the special casing in NFS, and
+:     just always call generic_file_mmap() to set up the file.
+:     
+:     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+: 
+: diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+: index 404c19c..1eab9c9 100644
+: --- a/fs/nfs/file.c
+: +++ b/fs/nfs/file.c
+: @@ -64,11 +64,7 @@ const struct file_operations nfs_file_operations = {
+:  	.write		= do_sync_write,
+:  	.aio_read	= nfs_file_read,
+:  	.aio_write	= nfs_file_write,
+: -#ifdef CONFIG_MMU
+:  	.mmap		= nfs_file_mmap,
+: -#else
+: -	.mmap		= generic_file_mmap,
+: -#endif
+:  	.open		= nfs_file_open,
+:  	.flush		= nfs_file_flush,
+:  	.release	= nfs_file_release,
+: @@ -304,11 +300,13 @@ nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
+:  	dprintk("NFS: mmap(%s/%s)\n",
+:  		dentry->d_parent->d_name.name, dentry->d_name.name);
+:  
+: -	status = nfs_revalidate_mapping(inode, file->f_mapping);
+: +	/* Note: generic_file_mmap() returns ENOSYS on nommu systems
+: +	 *       so we call that before revalidating the mapping
+: +	 */
+: +	status = generic_file_mmap(file, vma);
+:  	if (!status) {
+:  		vma->vm_ops = &nfs_file_vm_ops;
+: -		vma->vm_flags |= VM_CAN_NONLINEAR;
+: -		file_accessed(file);
+: +		status = nfs_revalidate_mapping(inode, file->f_mapping);
+:  	}
+:  	return status;
+:  }
+
+It's odd/worrying that this problem sat in linux-next for a month
+and nobody noticed.
