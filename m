@@ -1,99 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZFRXSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZFRXm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbZFRXSu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 19:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbZFRXSl
+	id S1756340AbZFRXm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 19:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZFRXmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 19:18:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49951 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458AbZFRXSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 19:18:40 -0400
-Date: Thu, 18 Jun 2009 19:18:42 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tom Zanussi <tzanussi@gmail.com>
-cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/filters: restore orignal filter when new
- filter isn't applicable
-In-Reply-To: <1245304705.6207.78.camel@tropicana>
-Message-ID: <alpine.DEB.2.00.0906181915350.6890@gandalf.stny.rr.com>
-References: <4A38AD7F.2070408@cn.fujitsu.com> <1245304705.6207.78.camel@tropicana>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 18 Jun 2009 19:42:51 -0400
+Received: from mga09.intel.com ([134.134.136.24]:23269 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753368AbZFRXmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 19:42:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,248,1243839600"; 
+   d="scan'208";a="526041068"
+Subject: Re: [patch 0/2] RFC sched: Change nohz ilb logic from poll to push
+ model
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+In-Reply-To: <20090617191619.GH7961@dirshya.in.ibm.com>
+References: <20090617182649.604970000@intel.com>
+	 <20090617191619.GH7961@dirshya.in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 18 Jun 2009 16:41:13 -0700
+Message-Id: <1245368473.4534.10512.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
-On Thu, 18 Jun 2009, Tom Zanussi wrote:
-
-> Hi,
+On Wed, 2009-06-17 at 12:16 -0700, Vaidyanathan Srinivasan wrote:
+> * venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com> [2009-06-17 11:26:49]:
 > 
-> On Wed, 2009-06-17 at 16:46 +0800, Li Zefan wrote:
-> > | commit 7ce7e4249921d5073e764f7ff7ad83cfa9894bd7
-> > | Author: Tom Zanussi <tzanussi@gmail.com>
-> > | Date:   Sun Mar 22 03:31:04 2009 -0500
-> > |
-> > |     tracing: add per-event filtering
-> > |     ...
-> > |
-> > |     Filters can also be set or cleared for a complete subsystem by writing
-> > |     the same filter as would be written to an individual event to the
-> > |     filter file at the root of the subsytem.  Note however, that if any
-> > |     event in the subsystem lacks a field specified in the filter being
-> > |     set, the set will fail and all filters in the subsytem are
-> > |     automatically cleared.  This change from the previous version was made
-> > |     because using only the fields that happen to exist for a given event
-> > |     would most likely result in a meaningless filter.
+> > Existing nohz idle load balance (ilb) logic uses the pull model, with one
+> > idle load balancer CPU nominated on any partially idle system and that
+> > balancer CPU not going into nohz mode. With the periodic tick, the
+> > balancer does the idle balancing on behalf of all the CPUs in nohz mode.
 > > 
-> > I really don't like this change. It is inconvenient, and makes subsystem
-> > filter much less useful:
+> > This is not very optimal and has few issues:
+> > * the balancer will continue to have periodic ticks and wakeup
+> >   frequently (HZ rate), even though it may not have any rebalancing to do on
+> >   behalf of any of the idle CPUs.
+> > * On x86 and CPUs that have APIC timer stoppage on idle CPUs, this periodic
+> >   wakeup can result in an additional interrupt on a CPU doing the timer
+> >   broadcast.
+> > * The balancer may end up spending a lot of time doing the balancing on
+> >   behalf of nohz CPUs, especially with increasing number of sockets and
+> >   cores in the platform.
 > > 
-> >   # echo 'vec == 1' > irq/softirq_entry/filter
-> >   # echo 'irq == 5' > irq/filter
-> >   bash: echo: write error: Invalid argument
-> >   # cat irq/softirq_entry/filter
-> >   none
-> > 
-> > I'd expect this will set the filter for irq_handler_entry and
-> > irq_handler_exit, and won't touch softirq_entry and softirq_exit.
-> > 
-> > But it just failed, and what's worse, each event's filter was
-> > cleared.
-> > 
+> > The alternative is to have a push model, where all idle CPUs can enter nohz
+> > mode and busy CPU kicks one of the idle CPUs to take care of idle balancing
+> > on behalf of a group of idle CPUs.
 > 
-> The idea behind the change was that after setting a subsystem filter,
-> you'd be guaranteed that all or none of the events in the subsystem
-> would have the same filter at that point, and not some mix of different
-> filters depending on which ones failed or not, which to me seemed
-> nonintuitive.
+> Hi Venki,
 > 
-> If I set a filter like "vec == 1 && irq == 5", which really has no
-> overall meaning, I wouldn't expect softirq_entry to get "vec == 1" and
-> irq_handler_entry to get "irq == 5" - I'd rather get an error, but
-> that's just me.
+> The idea is very useful and further extends the power savings in idle
+> system.  However the kick method from busy CPU should not add to
+> scheduling latency during a sudden burst of work.
 > 
-> So if it makes more sense to users to have subsystem filters propagate
-> to whichever events will take them, this patch would be fine with me.
+> Does adding nohz_balancer_kick() in trigger_load_balance() path in
+> a busy CPU add to its overhead?
 > 
+>  
+> > Following patches tries that approach. There are still some rough edges
+> > in the patches related to use of #defines around the code. But, wanted
+> > to get opinion on this approach as an RFC (not for inclusion into the
+> > tree yet).
+> 
+> I like the idea but my only concern is the performance impact on busy
+> cpus with this push model. 
 
-I disagree. If a subsystem filter is set, it should be valid for all 
-filters underneath, if it is not, it should error.
+Vaidy,
 
-But Li has a point, if you get an error, it should not reset all filters 
-underneath. That is, if the irq/filter setting took an error, then 
-irq/softirq_entry/filter should still stay the same.
+I tried to keep the overhead on the busy CPU low in this RFC. There is a
+check the for next_balance time and if there is a load balance CPU
+nominated we just send a resched to the load balance CPU. We do look at
+cpu_mask to find the first bit set, when there is no assigned
+load_balance CPU (that is when say load balance CPU started running and
+no other CPU has nominated himself yet). But, that's the only overhead
+there. All the other complexities are handled on the idle CPU side.
 
-Perhaps you need to run through it twice. See if the setting of a filter 
-is valid for all filters underneath, if it is not, then fail. If it is, 
-then reset all of them, and assign the filter.
-
--- Steve
+Thanks,
+Venki
 
