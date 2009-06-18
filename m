@@ -1,73 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZFRQ41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZFRQ5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbZFRQ41 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 12:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZFRQ4U
+	id S1754901AbZFRQ5V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 12:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZFRQ5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 12:56:20 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:21989 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbZFRQ4T (ORCPT
+	Thu, 18 Jun 2009 12:57:09 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:47373 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750989AbZFRQ5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 12:56:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=lFKXD6XNVRcLguVO1Ad9QjOuMYV00yeO0FaK7jNGCLBWUd0ZXenFgBKi8p39+LJCY
-	mVRxk1HpvpAVFhTfjeekA==
-Date: Thu, 18 Jun 2009 09:56:14 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: David Miller <davem@davemloft.net>
-cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
-In-Reply-To: <20090617.160840.58571632.davem@davemloft.net>
-Message-ID: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com>
-References: <4A3957A1.5030407@gmail.com> <alpine.DEB.2.00.0906171401440.7198@chino.kir.corp.google.com> <4A396EA2.60705@gmail.com> <20090617.160840.58571632.davem@davemloft.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 18 Jun 2009 12:57:08 -0400
+Date: Thu, 18 Jun 2009 18:59:26 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Matthew Wilcox <matthew@wil.cx>, Changli Gao <xiaosuo@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] SCSI: explain the hidden scsi_wait_scan Kconfig variable
+Message-ID: <20090618165926.GA13229@uranus.ravnborg.org>
+References: <4A384FE4.9090703@gmail.com> <20090617021254.GQ19977@parisc-linux.org> <tkrat.ad6f8fb712020451@s5r6.in-berlin.de> <1245338486.7586.13.camel@mulgrave.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245338486.7586.13.camel@mulgrave.site>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Jun 2009, David Miller wrote:
-
-> From: Eric Dumazet <eric.dumazet@gmail.com>
-> Date: Thu, 18 Jun 2009 00:30:58 +0200
+On Thu, Jun 18, 2009 at 03:21:26PM +0000, James Bottomley wrote:
+> On Wed, 2009-06-17 at 12:07 +0200, Stefan Richter wrote:
+> > People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
+> > item.  These patches aren't accepted upstream, so let's stop the ongoing
+> > irritation of people due to this obscure and strange installed module
+> > and its Kconfig option.
+> > 
+> > Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> > ---
+> >  drivers/scsi/Kconfig |   17 ++++++++++++++++-
+> >  1 file changed, 16 insertions(+), 1 deletion(-)
+> > 
+> > Index: b/drivers/scsi/Kconfig
+> > ===================================================================
+> > --- a/drivers/scsi/Kconfig
+> > +++ b/drivers/scsi/Kconfig
+> > @@ -259,10 +259,25 @@ config SCSI_SCAN_ASYNC
+> >  	  or async on the kernel's command line.
+> >  
+> >  config SCSI_WAIT_SCAN
+> > -	tristate
+> > +	tristate  # No prompt here, this is a hidden option.
 > 
-> > My point is that 99% of callers know allocation failures are
-> > recoverable.
+> Adding comments explaining this is good, I think.
 > 
-> I agree that, surely for GFP_ATOMIC, warnings should be off
-> by default.
+> >  	default m
+> >  	depends on SCSI
+> >  	depends on MODULES
+> > +	help
+> > +	  Wait until all the async scans are complete.  The idea is to use
+> > +	  it in initrd/ initramfs scripts.  You modprobe it after all the
+> > +	  modprobes of the root SCSI drivers and it will wait until they
+> > +	  have all finished scanning their buses before allowing the boot
+> > +	  to proceed.
+> > +
+> > +	  Of course this does not work if targets boot independently of and
+> > +	  in parallel with the initiator, and/ or with transports with non-
+> > +	  deterministic target discovery schemes, and/ or if a transport
+> > +	  driver does not support scsi_wait_scan.
+> > +
+> > +	  Still, this option is not exposed as a prompt because little is
+> > +	  to be gained by disabling it, whereas people who accidentally
+> > +	  switch it off may wonder why their mkinitrd gets into trouble.
 > 
+> But not a help text that can never be shown.  Turn this into a comment
+> and I'll apply the patch.
+> 
+> The reason is the fact that this could be construed as a detectable bug
+> (option with help that can never be displayed) and someone with too much
+> time on their hands someday might make a static checker for it.
 
-I disagree, page allocation failure messages show vital information about 
-the state of the VM so that we can find bugs and GFP_ATOMIC allocations 
-are the most common trigger for these diagnostic messages since 
-__GFP_WAIT allocations can trigger direct reclaim (and __GFP_FS 
-allocations can trigger the oom killer) to free memory and will retry the 
-allocation if ~__GFP_NORETRY.
+In another thread we discussed that the help text should be visible when
+searching for an invisible symbol.
+There are arguments both ways.
 
-GFP_ATOMIC allocations are allowed to access memory deeper in zone 
-watermarks so that they are more likely to succeed; page allocation 
-failure messages indicate that the system is either completely oom or that 
-there is a serious VM bug.
+Personally I like the help syntax that we one day can benefit from
+and would not accept a warning for help text on symbols with no prompt.
 
-Defining GFP_ATOMIC as (__GFP_HIGH | __GFP_NOWARN) would also require the 
-bit to be masked off if page allocation failure messages should be 
-emitted.  GFP_ATOMIC | GFP_DMA allocations become
-(GFP_ATOMIC | GFP_DMA) & ~__GFP_NOWARN, for example.  This is not normally 
-how GFP_* macros are composed from __GFP_* bits because of the increasing 
-complexity.
-
-It's again my opinion that allocators that can recover ("recover" used 
-here in the sense of simply delaying an ack such as the ipv4 case 
-discussed earlier, for example) without side effects (like a failed 
-syscall) should specify __GFP_NOWARN.
-
-Page allocation failures have emitted warnings for all gfp masks without 
-__GFP_NOWARN since 2.5.53 over six and a half years ago.
+	Sam
