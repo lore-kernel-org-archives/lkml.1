@@ -1,94 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZFRNjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763699AbZFRNkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbZFRNjc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 09:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZFRNjY
+	id S1763699AbZFRNkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 09:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbZFRNkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 09:39:24 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:38116 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756063AbZFRNjY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 09:39:24 -0400
-References: <20090604211103.4214303f.peter@piie.net> <200906160747.04094.edt@aei.ca> <20090616205747.GA6356@rhlx01.hs-esslingen.de> <20090617001435.e2d86780.peter@piie.net> <20090617122022.GA13141@rhlx01.hs-esslingen.de> <cone.1245309039.632882.31537.1000@arca> <9ea470500906180329w7c8975b0ra60fa219221d53f6@mail.gmail.com> <cone.1245322548.289821.31537.1000@arca> <9ea470500906180442r7beb49a8odcb3bf602df78b47@mail.gmail.com> <cone.1245325770.489357.31537.1000@arca> <9ea470500906180545j5e1a78f7qcb887ad843b489f3@mail.gmail.com>
-Message-ID: <cone.1245331895.30957.31537.1000@arca>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <pfe@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Andreas Mohr <andi@lisas.de>, Ed Tomlinson <edt@aei.ca>,
-       akpm@linux-foundation.org, Len Brown <len.brown@intel.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Request driver inclusion - acer aspire one fan control
-Date: Thu, 18 Jun 2009 15:31:35 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="UTF-8"
+	Thu, 18 Jun 2009 09:40:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40883 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753609AbZFRNkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 09:40:41 -0400
+Date: Thu, 18 Jun 2009 13:39:50 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf report: Filter to parent set by default
+Message-ID: <tip-b8e6d829729d1a5991a9f628205b671cac2ec06f@git.kernel.org>
+Git-Commit-ID: b8e6d829729d1a5991a9f628205b671cac2ec06f
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Df-Sender: 404094
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 18 Jun 2009 13:40:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit-ID:  b8e6d829729d1a5991a9f628205b671cac2ec06f
+Gitweb:     http://git.kernel.org/tip/b8e6d829729d1a5991a9f628205b671cac2ec06f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Thu, 18 Jun 2009 14:32:19 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 18 Jun 2009 14:32:19 +0200
 
-Borislav Petkov writes:
+perf report: Filter to parent set by default
 
-> Hi,
-> 
-> On Thu, Jun 18, 2009 at 1:49 PM, Peter Feuerer<peter@piie.net> wrote:
->>>>>> Actually I think pre_suspend_kernelmode is needed, so it won't be
->>>>>> dropped.
->>>>>
->>>>> and it is needed, because...?
->>>>
->>>> It's needed because we do now a clean revert to bios mode before we
->>>> suspend.
->>>> And after resume we have to switch to kernelmode again, if the driver was
->>>> in
->>>> kernelmode before suspend. So we need to keep track of in what state the
->>>> driver was before suspending. That's what's this variable is for.
->>>
->>> You've got that state in the 'kernelmode' variable. See full comment:
->>> http://marc.info/?l=linux-kernel&m=124482114200865
->>
->> We are talking about patch 0.5.9 and not 0.5.8, are we?
->> http://patchwork.kernel.org/patch/30733/mbox/
->>
->> have a look at at line 543:
->> +       /* remember previous setting */
->> +       pre_suspend_kernelmode = kernelmode;
->> +
->> +       if (kernelmode) {
->> +               acerhdf_revert_to_bios_mode();
->> +               if (acerhdf_thz_dev)
->> +                       thermal_zone_device_update(acerhdf_thz_dev);
->> +       }
-> 
-> ok, this starts to look quite a bit overengineered for no reason. First,
-> acerhdf_revert_to_bios_mode() sets the fan to auto. Then, you've added
-> a thermal_zone_device_update() call in there which does set the fan to
-> auto indirectly _again_. And we end up with _three_ variables which
-> represent only _one_ state. Here's what it should do:
+Make it easier to use parent filtering - default to a filtered
+output. Also add the parent column so that we get collapsing but
+dont display it by default.
 
-You are partly right, setting the fan to auto in 
-"acerhdf_revert_to_bios_mode" can be removed, as this is done by the thermal 
-layer when calling "acerhdf_set_cur_state" with disable_kernelmode=1.
-But besides that I think it is a clean way. 
-This way we _completely_ disable the thermal polling before going suspend 
-and ensure the thermal layer doesn't handle the fan anymore. When we resume 
-we let the thermal layer take over the fan again. In my opinion this is much 
-cleaner than just switching the fan to auto without keeping the polling of 
-the thermal layer in mind.
-The big problem with the polling is, that you don't know when the next 
-thermal polling shot arrives. Is it after acerhdf_suspend was called, or 
-after system-resume but before acerhdf_resume was called, or after 
-acerhdf_resume was called… You can't know! That's why in my opinion 
-completely disabling our kernelmode is the only clean solution.
+add --no-exclude-other to override this.
 
---peter
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-P.S. I built the official 2.6.30 release (because current git is freezing 
-all the time), patched it with acerhdf 0.5.9 and was testing suspend/resume 
-about 40 times now. Was always hitting the suspend button while working ;). 
-I wasn't able to reproduce the "unexpected fanstate" issue, <=0.5.8 had.
+
+---
+ tools/perf/Makefile         |    2 +-
+ tools/perf/builtin-report.c |   30 +++++++++++++++++++++++++++---
+ 2 files changed, 28 insertions(+), 4 deletions(-)
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 714db73..672c5f0 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -164,7 +164,7 @@ endif
+ 
+ # CFLAGS and LDFLAGS are for the users to override from the command line.
+ 
+-CFLAGS = $(M64) -ggdb3 -Wall -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
++CFLAGS = $(M64) -ggdb3 -Wall -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -Werror -O6
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index fe66895..86981bd 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -46,9 +46,12 @@ static int		full_paths;
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+ 
+-static char		*parent_pattern = "^sys_|^do_page_fault";
++static char		default_parent_pattern[] = "^sys_|^do_page_fault";
++static char		*parent_pattern = default_parent_pattern;
+ static regex_t		parent_regex;
+ 
++static int		exclude_other = 1;
++
+ struct ip_event {
+ 	struct perf_event_header header;
+ 	__u64 ip;
+@@ -742,6 +745,9 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, __u64 total_samples)
+ 	struct sort_entry *se;
+ 	size_t ret;
+ 
++	if (exclude_other && !self->parent)
++		return 0;
++
+ 	if (total_samples) {
+ 		double percent = self->count * 100.0 / total_samples;
+ 		char *color = PERF_COLOR_NORMAL;
+@@ -764,6 +770,9 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, __u64 total_samples)
+ 		ret = fprintf(fp, "%12Ld ", self->count);
+ 
+ 	list_for_each_entry(se, &hist_entry__sort_list, list) {
++		if (exclude_other && (se == &sort_parent))
++			continue;
++
+ 		fprintf(fp, "  ");
+ 		ret += se->print(fp, self);
+ 	}
+@@ -855,6 +864,7 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
+ 		.ip	= ip,
+ 		.level	= level,
+ 		.count	= count,
++		.parent = NULL,
+ 	};
+ 	int cmp;
+ 
+@@ -1029,14 +1039,20 @@ static size_t output__fprintf(FILE *fp, __u64 total_samples)
+ 	fprintf(fp, "#\n");
+ 
+ 	fprintf(fp, "# Overhead");
+-	list_for_each_entry(se, &hist_entry__sort_list, list)
++	list_for_each_entry(se, &hist_entry__sort_list, list) {
++		if (exclude_other && (se == &sort_parent))
++			continue;
+ 		fprintf(fp, "  %s", se->header);
++	}
+ 	fprintf(fp, "\n");
+ 
+ 	fprintf(fp, "# ........");
+ 	list_for_each_entry(se, &hist_entry__sort_list, list) {
+ 		int i;
+ 
++		if (exclude_other && (se == &sort_parent))
++			continue;
++
+ 		fprintf(fp, "  ");
+ 		for (i = 0; i < strlen(se->header); i++)
+ 			fprintf(fp, ".");
+@@ -1050,7 +1066,8 @@ static size_t output__fprintf(FILE *fp, __u64 total_samples)
+ 		ret += hist_entry__fprintf(fp, pos, total_samples);
+ 	}
+ 
+-	if (!strcmp(sort_order, default_sort_order)) {
++	if (sort_order == default_sort_order &&
++			parent_pattern == default_parent_pattern) {
+ 		fprintf(fp, "#\n");
+ 		fprintf(fp, "# (For more details, try: perf report --sort comm,dso,symbol)\n");
+ 		fprintf(fp, "#\n");
+@@ -1508,6 +1525,8 @@ static const struct option options[] = {
+ 		    "Don't shorten the pathnames taking into account the cwd"),
+ 	OPT_STRING('p', "parent", &parent_pattern, "regex",
+ 		   "regex filter to identify parent, see: '--sort parent'"),
++	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
++		    "Only display entries with parent-match"),
+ 	OPT_END()
+ };
+ 
+@@ -1536,6 +1555,11 @@ int cmd_report(int argc, const char **argv, const char *prefix)
+ 
+ 	setup_sorting();
+ 
++	if (parent_pattern != default_parent_pattern)
++		sort_dimension__add("parent");
++	else
++		exclude_other = 0;
++
+ 	/*
+ 	 * Any (unrecognized) arguments left?
+ 	 */
