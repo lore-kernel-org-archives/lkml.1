@@ -1,139 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbZFRTXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZFRTXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752954AbZFRTXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbZFRTXK
+	id S1754856AbZFRTXl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZFRTXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:23:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45099 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750728AbZFRTXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:23:09 -0400
-Subject: Re: [Patch] mm tracepoints update - use case.
-From: Larry Woodman <lwoodman@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?Q?Fr=E9=A6=98=E9=A7=BBic?= Weisbecker 
-	<fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rostedt@goodmis.org
-In-Reply-To: <20090616170811.99A6.A69D9226@jp.fujitsu.com>
-References: <20090423092933.F6E9.A69D9226@jp.fujitsu.com>
-	 <4A36925D.4090000@redhat.com> <20090616170811.99A6.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Thu, 18 Jun 2009 15:22:34 -0400
-Message-Id: <1245352954.3212.67.camel@dhcp-100-19-198.bos.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Jun 2009 15:23:33 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:33702 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbZFRTXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 15:23:32 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=re0iXq+6ntK5e9HPZUOd1mOTk2eoje8rN0frh8Jz/0153wIiWCtLCiB2t4eL+9GKm
+	wFiXmP+tt2c28U0kWtHzw==
+Date: Thu, 18 Jun 2009 12:23:28 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: David Miller <davem@davemloft.net>
+cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
+In-Reply-To: <20090618.120034.246557840.davem@davemloft.net>
+Message-ID: <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com>
+References: <4A396EA2.60705@gmail.com> <20090617.160840.58571632.davem@davemloft.net> <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com> <20090618.120034.246557840.davem@davemloft.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-18 at 16:57 +0900, KOSAKI Motohiro wrote:
+On Thu, 18 Jun 2009, David Miller wrote:
 
-Thanks for the feedback Kosaki!
-
-
-> Scenario 1. OOM killer happend. why? and who bring it?
-
-Doesnt the showmem() and stack trace to the console when the OOM kill
-occurred show enough in the majority of cases?  I realize that direct
-alloc_pages() calls are not accounted for here but that can be really
-invasive.
-
-> Scenario 2. page allocation failure by memory fragmentation
-
-Are you talking about order>0 allocation failures here?  Most of the
-slabs are single page allocations now.
-
-> Scenario 3. try_to_free_pages() makes very long latency. why?
-
-This is available in the mm tracepoints, they all include timestamps.
-
-> Scenario 4. sar output that free memory dramatically reduced at 10 minute ago, and
->             it already recover now. What's happen?
-
-Is this really important?  It would take buffering lots of data to
-figure out what happened in the past.
-
+> > I disagree, page allocation failure messages show vital information about 
+> > the state of the VM so that we can find bugs and GFP_ATOMIC allocations 
+> > are the most common trigger for these diagnostic messages since 
+> > __GFP_WAIT allocations can trigger direct reclaim (and __GFP_FS 
+> > allocations can trigger the oom killer) to free memory and will retry the 
+> > allocation if ~__GFP_NORETRY.
 > 
->   - suspects
->     - kernel memory leak
-
-Other than direct callers to the page allocator isnt that covered with
-the kmemtrace stuff?
-
->     - userland memory leak
-
-The mm tracepoints track all user space allocations and frees(perhaps
-too many?).
-
->     - stupid driver use too much memory
-
-hopefully kmemtrace will catch this?
-
->     - userland application suddenly start to use much memory
-
-The mm tracepoints track all user space allocations and frees.
-
-> 
->   - what information are valuable?
->     - slab usage information (kmemtrace already does)
->     - page allocator usage information
->     - rss of all processes at oom happend
->     - why recent try_to_free_pages() can't reclaim any page?
-
-The counters in the mm tracepoints do give counts but not the reasons
-that the pagereclaim code fails.
-
->     - recent sycall history
->     - buddy fragmentation info
-> 
-> 
-> Plus, another requirement here
-> 1. trace page refault distance (likes past Rik's /proc/refault patch)
-> 
-> 2. file cache visualizer - Which file use many page-cache?
->    - afaik, Wu Fengguang is working on this issue.
-> 
-> 
-> --------------------------------------------
-> And, here is my reviewing comment to his patch.
-> btw, I haven't full review it yet. perhaps I might be overlooking something.
-> 
-> 
-> First, this is general review comment.
-> 
-> - Please don't display mm and/or another kernel raw pointer.
->   if we assume non stop system, we can't use kernel-dump. Thus kernel pointer
->   logging is not so useful.
-
-OK, I just dont know how valuable the trace output is with out some raw
-data like the mm_struct.
-
->   Any userland tools can't parse it. (/proc/kcore don't help this situation,
->   the pointer might be freed before parsing)
-> - Please makes patch series. one big patch is harder review.
-
-OK.
-
-> - Please write patch description and use-case.
-
-OK.
-
-> - Please consider how do this feature works on mem-cgroup.
->   (IOW, please don't ignore many "if (scanning_global_lru())")
-> - tracepoint caller shouldn't have any assumption of displaying representation.
->   e.g.
->     wrong)  trace_mm_pagereclaim_pgout(mapping, page->index<<PAGE_SHIFT, PageAnon(page));
->     good)   trace_mm_pagereclaim_pgout(mapping, page)
-
-OK.
-
->   that's general and good callback and/or hook manner.
-> 
-> 
+> It's COMPLETELY and ABSOLUTELY normal for GFP_ATOMIC allocations to
+> fail in the networking.
 > 
 
+__GFP_NOWARN exists for that reason.
 
+> If you warn it will just spam the logs, and on a router forwarding
+> millions of packets per second are you sure that can ever be sane?
+> 
+
+The spamming is ratelimited, but GFP_ATOMIC is really the only time we get 
+such diagnostic information since __GFP_WAIT allocations can reclaim, 
+__GFP_FS allocations can utilize the oom killer, and other order-0 
+allocations are implicitly ~__GFP_NORETRY.
+
+As previously mentioned, GFP_ATOMIC allocations that are not __GFP_NOWARN 
+have been emitting these diagnostics since 2.5.53.  This has been on your 
+TODO list for 6 1/2 years and now you insist all GFP_ATOMIC allocations 
+change their default behavior?
+
+I understand what you're trying to avoid, but I disagree with the approach 
+of altering the default behavior of GFP_ATOMIC.  I may suggest that 
+emitting the page allocation failures become a compile time option; 
+CONFIG_DEBUG_VM would be my suggestion.
+
+> Use statistics and tracing if necessary, but log spam no way...
+> 
+
+You need the meminfo that is emitted at the time of failure for it to be 
+useful.
