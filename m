@@ -1,251 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZFRR0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZFRRck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbZFRR0J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 13:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZFRRZ4
+	id S1755524AbZFRRck (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 13:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZFRRcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 13:25:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39422 "EHLO mx2.redhat.com"
+	Thu, 18 Jun 2009 13:32:31 -0400
+Received: from mail.mev.co.uk ([62.49.15.74]:45381 "EHLO mail.mev.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753803AbZFRRZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 13:25:55 -0400
-Message-ID: <4A3A77E3.1010908@RedHat.com>
-Date: Thu, 18 Jun 2009 13:22:43 -0400
-From: Steve Dickson <SteveD@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752886AbZFRRcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 13:32:31 -0400
+Message-ID: <4A3A7A2F.3020800@mev.co.uk>
+Date: Thu, 18 Jun 2009 18:32:31 +0100
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090502)
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Linux NFS Mailing list <linux-nfs@vger.kernel.org>,
-       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH] sunrpc: Adding trace points to status routines (take
- 2)
-References: <4A2EA789.60608@RedHat.com> <1245113811.7470.15.camel@heimdal.trondhjem.org>
-In-Reply-To: <1245113811.7470.15.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+CC: "fmhess@users.sourceforge.net" <fmhess@users.sourceforge.net>,
+       Ian Abbott <ian.abbott@mev.co.uk>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>
+Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based
+ cards
+References: <200906161701.45234.herton@mandriva.com.br> <200906172137.43870.herton@mandriva.com.br> <200906180328.07976.fmhess@speakeasy.net> <200906181423.11245.herton@mandriva.com.br>
+In-Reply-To: <200906181423.11245.herton@mandriva.com.br>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Tue, 2009-06-09 at 14:18 -0400, Steve Dickson wrote:
->> Hey Trond,
->>
->> Here is an updated version of the patch I sent out a while
->> back... all that has changed was the addtion of 'rpc_'  to
->> the name of the trace points which coincides with the
->> other trace points naming convention.
->>
->> Here is a pointer to the previous email that has the 
->> fairly long winded explanation of how all this works:
->>
->>    http://marc.info/?l=linux-kernel&m=124058933520183&w=2
->>
->> And below is the updated patch which is based on Ingo's
->> linux-2.6-tip.git tree. 
->>
->> Comments?
->>
->> steved.
->>  
->> Author: Steve Dickson <steved@redhat.com>
->> Date:   Tue Jun  9 14:12:07 EDT 2009
->>
->>     Adds three trace points to the status routines in the
->>     sunrpc state machine. The trace points will only execute
->>     in error conditions.
->>     
->>     The goal of these trace points it to make it easier to
->>     debug process that spin or get hung up in the NFS and
->>     related subsystems.
+On 18/06/09 18:23, Herton Ronaldo Krzesinski wrote:
+> Let me know if there is any problem remaining with this version:
 > 
-> Would this replace the existing dprint_status()? How does it differ from
-> the existing DYNAMIC_DEBUG functionality that was merged in 2.6.30?
-I believe it would be an addition to... Its my understanding the dynamic
-debug uses printks, which ultimately causes messages to be log to
-/var/log/messages... The trace points are used by a systemtap script 
-which is much more efficent and lightweight...
-
-
->     
->>     Signed-off-by: Steve Dickson <steved@redhat.com>
->>
->> diff --git a/include/trace/events/sunrpc.h b/include/trace/events/sunrpc.h
->> new file mode 100644
->> index 0000000..f502eb4
->> --- /dev/null
->> +++ b/include/trace/events/sunrpc.h
->> @@ -0,0 +1,86 @@
->> +#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
->> +#define _TRACE_SUNRPC_H
->> +
->> +#include <linux/tracepoint.h>
->> +
->> +#undef TRACE_SYSTEM
->> +#define TRACE_SYSTEM sunrpc
->> +
->> +TRACE_EVENT(rpc_call_status,
->> +
->> +	TP_PROTO(struct rpc_task *task),
->> +
->> +	TP_ARGS(task),
->> +
->> +	TP_STRUCT__entry(
->> +		__field(u32, cl_prog)
->> +		__field(u32, cl_vers)
->> +		__field(u32, p_proc)
->> +		__field(int, tk_status)
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__entry->cl_prog = task->tk_client->cl_prog;
->> +		__entry->cl_vers = task->tk_client->cl_vers;
->> +		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
->> +		__entry->cl_prog = task->tk_client->cl_prog;
+> Staging: comedi: s626: use subvendor:subdevice ids for SAA7146 board
 > 
-> You should only need to set entry->cl_prog once, right?
-Point... its redundant... Here is the updated patch:
- 
-Author: Steve Dickson <steved@redhat.com>
-Date:   Tue Jun  18 14:12:07 EDT 2009
+> The current s626 comedi driver in staging conflicts with philips SAA7146
+> media/dvb based cards, because it claims the same vendor:device pci id
+> for all subdevice/subvendor ids. What happens is that for people that have a
+> philips SAA7146 media/dvb based card, s626 if available gets loaded by udev
+> and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
+> 
+> The s626 driver shouldn't claim all 1131:7146 devices. Fix this by
+> specifying specific known subvendor:subdevice ids in its pci id table
+> list.
+> 
+> Also s626_attach is modified to use now pci_get_subsys instead of
+> pci_get_device as reported by Ian Abbott, and now we loop over pci id
+> table entries in case more ids are added in the future.
+> 
+> Reference: http://lkml.org/lkml/2009/6/16/552
+> 
+> Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+> 
+> diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
+> index 30dec9d..4210590 100644
+> --- a/drivers/staging/comedi/drivers/s626.c
+> +++ b/drivers/staging/comedi/drivers/s626.c
+> @@ -110,9 +110,13 @@ static const struct s626_board s626_boards[] = {
+>  #define PCI_VENDOR_ID_S626 0x1131
+>  #define PCI_DEVICE_ID_S626 0x7146
+> 
+> +/*
+> + * For devices with vendor:device id == 0x1131:0x7146 you must specify
+> + * also subvendor:subdevice ids, because otherwise it will conflict with
+> + * Philips SAA7146 media/dvb based cards.
+> + */
+>  static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) = {
+> -       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+> -               0},
+> +       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
+>         {0}
+>  };
+> 
+> @@ -498,25 +502,26 @@ static int s626_attach(struct comedi_device *dev, struct comedi_devconfig *it)
+>         resource_size_t resourceStart;
+>         dma_addr_t appdma;
+>         struct comedi_subdevice *s;
+> -       struct pci_dev *pdev;
+> +       const struct pci_device_id *ids;
+> +       struct pci_dev *pdev = NULL;
+> 
+>         if (alloc_private(dev, sizeof(struct s626_private)) < 0)
+>                 return -ENOMEM;
+> 
+> -       for (pdev = pci_get_device(PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626,
+> -                       NULL); pdev != NULL;
+> -               pdev = pci_get_device(PCI_VENDOR_ID_S626,
+> -                       PCI_DEVICE_ID_S626, pdev)) {
+> -               if (it->options[0] || it->options[1]) {
+> -                       if (pdev->bus->number == it->options[0] &&
+> -                               PCI_SLOT(pdev->devfn) == it->options[1]) {
+> +       for (i = 0; i < ARRAY_SIZE(s626_pci_table) && !pdev; i++) {
+> +               ids = &s626_pci_table[i];
+> +               do {
+> +                       pdev = pci_get_subsys(ids->vendor, ids->device, ids->subvendor,
+> +                                             ids->subdevice, pdev);
+> +
+> +                       if ((it->options[0] || it->options[1]) && pdev) {
+>                                 /* matches requested bus/slot */
+> +                               if (pdev->bus->number == it->options[0] &&
+> +                                   PCI_SLOT(pdev->devfn) == it->options[1])
+> +                                       break;
+> +                       } else
+>                                 break;
+> -                       }
+> -               } else {
+> -                       /* no bus/slot specified */
+> -                       break;
+> -               }
+> +               } while (1);
+>         }
+>         devpriv->pdev = pdev;
 
-    Adds three trace points to the status routines in the
-    sunrpc state machine. The trace points will only execute
-    in error conditions.
-    
-    The goal of these trace points it to make it easier to
-    debug process that spin or get hung up in the NFS and
-    related subsystems.
-    
-    Signed-off-by: Steve Dickson <steved@redhat.com>
+The outer for loop iterates once too often - it doesn't need to iterate 
+over the sentinel at the end of the id table as that shouldn't match any 
+PCI device.
 
-diff --git a/include/trace/events/sunrpc.h b/include/trace/events/sunrpc.h
-new file mode 100644
-index 0000000..f502eb4
---- /dev/null
-+++ b/include/trace/events/sunrpc.h
-@@ -0,0 +1,86 @@
-+#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_SUNRPC_H
-+
-+#include <linux/tracepoint.h>
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM sunrpc
-+
-+TRACE_EVENT(rpc_call_status,
-+
-+	TP_PROTO(struct rpc_task *task),
-+
-+	TP_ARGS(task),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, cl_prog)
-+		__field(u32, cl_vers)
-+		__field(u32, p_proc)
-+		__field(int, tk_status)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->cl_vers = task->tk_client->cl_vers;
-+		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
-+		__entry->tk_status = task->tk_status;
-+	),
-+
-+	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
-+		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
-+);
-+
-+TRACE_EVENT(rpc_bind_status,
-+
-+	TP_PROTO(struct rpc_task *task),
-+
-+	TP_ARGS(task),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, cl_prog)
-+		__field(u32, cl_vers)
-+		__field(u32, p_proc)
-+		__field(int, tk_status)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->cl_vers = task->tk_client->cl_vers;
-+		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
-+		__entry->tk_status = task->tk_status;
-+	),
-+
-+	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
-+		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
-+);
-+TRACE_EVENT(rpc_connect_status,
-+
-+	TP_PROTO(struct rpc_task *task, int status),
-+
-+	TP_ARGS(task, status),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, cl_prog)
-+		__field(u32, cl_vers)
-+		__field(u32, p_proc)
-+		__field(int, tk_status)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->cl_vers = task->tk_client->cl_vers;
-+		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
-+		__entry->tk_status = status;
-+	),
-+
-+	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
-+		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
-+
-+);
-+#endif /* __TRACE_SUNRPC_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-index 5abab09..b86ee2a 100644
---- a/net/sunrpc/clnt.c
-+++ b/net/sunrpc/clnt.c
-@@ -37,6 +37,9 @@
- #include <linux/sunrpc/rpc_pipe_fs.h>
- #include <linux/sunrpc/metrics.h>
- 
-+#include <linux/ftrace.h>
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/sunrpc.h>
- 
- #ifdef RPC_DEBUG
- # define RPCDBG_FACILITY	RPCDBG_CALL
-@@ -957,6 +960,7 @@ call_bind_status(struct rpc_task *task)
- 		return;
- 	}
- 
-+	trace_rpc_bind_status(task);
- 	switch (task->tk_status) {
- 	case -ENOMEM:
- 		dprintk("RPC: %5u rpcbind out of memory\n", task->tk_pid);
-@@ -1038,6 +1042,7 @@ call_connect_status(struct rpc_task *task)
- 		return;
- 	}
- 
-+	trace_rpc_connect_status(task, status);
- 	switch (status) {
- 		/* if soft mounted, test if we've timed out */
- 	case -ETIMEDOUT:
-@@ -1141,6 +1146,7 @@ call_status(struct rpc_task *task)
- 		return;
- 	}
- 
-+	trace_rpc_call_status(task);
- 	task->tk_status = 0;
- 	switch(status) {
- 	case -EHOSTDOWN:
-
-
+-- 
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
