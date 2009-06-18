@@ -1,231 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbZFRTGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbZFRTHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758450AbZFRTGs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZFRTGj
+	id S1757576AbZFRTHq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZFRTHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:06:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33176 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753830AbZFRTGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:06:37 -0400
-Date: Thu, 18 Jun 2009 15:05:59 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: hooanon05@yahoo.co.jp
-Cc: Arnd Bergmann <arnd@arndb.de>, Jan Blunck <jblunck@suse.de>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
-       mszeredi@suse.cz
-Subject: Re: [PATCH 15/32] union-mount: Documentation
-Message-ID: <20090618190558.GB22206@shell>
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <1242662968-11684-16-git-send-email-jblunck@suse.de> <8417.1243232743@jrobl> <200905250903.08165.arnd@arndb.de> <7294.1243240990@jrobl>
+	Thu, 18 Jun 2009 15:07:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33976 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752318AbZFRTHh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 15:07:37 -0400
+Date: Thu, 18 Jun 2009 12:07:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, jmorris@namei.org, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rework/fix is_single_threaded()
+Message-Id: <20090618120716.fd1e4d92.akpm@linux-foundation.org>
+In-Reply-To: <20090416145444.GA12884@redhat.com>
+References: <20090413214513.GA1119@redhat.com>
+	<14878.1239876272@redhat.com>
+	<20090416133658.GA6532@redhat.com>
+	<20090416145444.GA12884@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7294.1243240990@jrobl>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2009 at 05:43:10PM +0900, hooanon05@yahoo.co.jp wrote:
+On Thu, 16 Apr 2009 16:54:44 +0200
+Oleg Nesterov <oleg@redhat.com> wrote:
+
+> On 04/16, Oleg Nesterov wrote:
+> >
+> > Suppose we have a process P which shares ->mm with "task" (the argument), so
+> > we should return "false".
+> >
+> > P does clone(CLONE_VM) and exits. rcu_read_lock() can't guarantee we will
+> > see the new task with the same ->mm. And without ->mmap_sem P can call
+> > exit_mm() and set P->mm = NULL.
+> >
+> > Hmm. But we can just add a barrier?
+> >
+> > 	bool is_single_threaded(struct task_struct *task)
+> > 	{
+> > 		struct mm_struct *mm = task->mm;
+> > 		struct task_struct *p, *t;
+> > 		bool ret;
+> >
+> > 		if (atomic_read(&task->signal->live) != 1)
+> > 			return false;
+> >
+> > 		if (atomic_read(&mm->mm_users) == 1)
+> > 			return true;
+> >
+> > 		ret = false;
+> > 		rcu_read_lock();
+> > 		for_each_process(p) {
+> > 			if (unlikely(p->flags & PF_KTHREAD))
+> > 				continue;
+> > 			if (unlikely(p == task->group_leader))
+> > 				continue;
+> >
+> > 			t = p;
+> > 			do {
+> > 				if (unlikely(t->mm == mm))
+> > 					goto found;
+> > 				if (likely(t->mm))
+> > 					break;
+> >
+> > 				/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> > 				   t->mm == NULL. Perhaps it had the same ->mm ?
+> > 				   If t has forked CLONE_VM task and called exit_mm(),
+> > 				   make sure next_thread() or for_each_process()->next_task()
+> > 				   will see it.
+> > 				   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> > 				*/
+> > 				smp_rmb();
 > 
-> Arnd Bergmann:
-> > Right, but that is consistent with how the kernel would treat a
-> > rename from one mount point to another, and tools like 'mv'
-> > can handle this in user space.
+> Sorry, forgot to mention...
 > 
-> Yes, that is the description in the union mount document.
-> While it says to rename a regular file is implemented, the code differs
-> actually.
-> ----------------------------------------
-> +Rename across different levels of the union is implemented as a copy-up
-> +operation for regular files. Rename of directories simply returns EXDEV, the
-> +same as if we tried to rename across different mounts. Most applications have
-> 	:::
-> ----------------------------------------
+> But what if P does clone(CLONE_VM), exits, and for_each_process/while_each_thread
+> doesn't see it? IOW, what if we already see the result of list_del_rcu() ?
+> 
+> I think, in that case we must also see the result of clone()->list_add_tail_rcu()
+> which has a barrier, so we are safe.
+> 
+> Hmm. I feel this all has a simpler explanation, or I missed something...
+> 
 
-Ah, we did implement that in an earlier version.  I don't know if we
-dropped the patch by accident or on purpose, but the original version
-is below.  We will either put this feature back or fix the
-documentation.  Thanks!
+It appears that this patch is rather stuck.  Should I drop it?
 
--VAL
 
-Subject: union-mount: copyup on rename
+From: Oleg Nesterov <oleg@redhat.com>
 
-Add copyup renaming of regular files on union mounts. Directories are still
-lazyly copied with the help of user-space.
+- Fix the comment, is_single_threaded(p) actually means that nobody shares
+  ->mm with p.
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
+  I think this helper should be renamed, and it should not have arguments.
+  With or without this patch it must not be used unless p == current,
+  otherwise we can't safely use p->signal or p->mm.
+
+- "if (atomic_read(&p->signal->count) != 1)" is not right when we have a
+  zombie group leader, use signal->live instead.
+
+- Add PF_KTHREAD check to skip kernel threads which may borrow p->mm,
+  otherwise we can return the wrong "false".
+
+- Use for_each_process() instead of do_each_thread(), all threads must use
+  the same ->mm.
+
+- Use down_write(mm->mmap_sem) + rcu_read_lock() instead of tasklist_lock
+  to iterate over the process list. If there is another CLONE_VM process
+  it can't pass exit_mm() which takes the same mm->mmap_sem. We can miss
+  a freshly forked CLONE_VM task, but this doesn't matter because we must
+  see its parent and return false.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- fs/namei.c |  131 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 124 insertions(+), 7 deletions(-)
 
-Index: b/fs/namei.c
-===================================================================
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1532,6 +1532,8 @@ static int do_path_lookup(int dfd, const
- 		nd->path = fs->pwd;
- 		path_get(&fs->pwd);
- 		read_unlock(&fs->lock);
-+		/* Force a union_relookup() */
-+		nd->um_flags = LAST_LOWLEVEL;
- 	} else {
- 		struct dentry *dentry;
+ lib/is_single_threaded.c |   62 +++++++++++++++++++++----------------
+ 1 file changed, 36 insertions(+), 26 deletions(-)
+
+diff -puN lib/is_single_threaded.c~rework-fix-is_single_threaded lib/is_single_threaded.c
+--- a/lib/is_single_threaded.c~rework-fix-is_single_threaded
++++ a/lib/is_single_threaded.c
+@@ -12,34 +12,44 @@
  
-@@ -3684,6 +3686,97 @@ int vfs_rename(struct inode *old_dir, st
- 	return error;
- }
+ #include <linux/sched.h>
  
-+int vfs_rename_union(struct nameidata *oldnd, struct path *old,
-+		     struct nameidata *newnd, struct path *new)
-+{
-+	struct inode *old_dir = oldnd->path.dentry->d_inode;
-+	struct inode *new_dir = newnd->path.dentry->d_inode;
-+	struct qstr old_name;
-+	char *name;
-+	struct dentry *dentry;
-+	int error;
-+
-+	if (old->dentry->d_inode == new->dentry->d_inode)
-+		return 0;
-+
-+	error = may_whiteout(old->dentry, 0);
-+	if (error)
-+		return error;
-+	if (!old_dir->i_op || !old_dir->i_op->whiteout)
-+		return -EPERM;
-+
-+	if (!new->dentry->d_inode)
-+		error = may_create(new_dir, new->dentry, NULL);
-+	else
-+		error = may_delete(new_dir, new->dentry, 0);
-+	if (error)
-+		return error;
-+
-+	DQUOT_INIT(old_dir);
-+	DQUOT_INIT(new_dir);
-+
-+	error = security_inode_rename(old_dir, old->dentry,
-+				      new_dir, new->dentry);
-+	if (error)
-+		return error;
-+
-+	error = -EBUSY;
-+	if (d_mountpoint(old->dentry) || d_mountpoint(new->dentry))
-+		return error;
-+
-+	error = -ENOMEM;
-+	name = kmalloc(old->dentry->d_name.len, GFP_KERNEL);
-+	if (!name)
-+		return error;
-+	strncpy(name, old->dentry->d_name.name, old->dentry->d_name.len);
-+	name[old->dentry->d_name.len] = 0;
-+	old_name.len = old->dentry->d_name.len;
-+	old_name.hash = old->dentry->d_name.hash;
-+	old_name.name = name;
-+
-+	/* possibly delete the existing new file */
-+	if ((newnd->path.dentry == new->dentry->d_parent) && new->dentry->d_inode) {
-+		/* FIXME: inode may be truncated while we hold a lock */
-+		error = vfs_unlink(new_dir, new->dentry);
-+		if (error)
-+			goto freename;
-+
-+		dentry = __lookup_hash(&new->dentry->d_name,
-+				       newnd->path.dentry, newnd);
-+		if (IS_ERR(dentry))
-+			goto freename;
-+
-+		dput(new->dentry);
-+		new->dentry = dentry;
-+	}
-+
-+	/* copyup to the new file */
-+	error = __union_copyup(old, newnd, new);
-+	if (error)
-+		goto freename;
-+
-+	/* whiteout the old file */
-+	dentry = __lookup_hash(&old_name, oldnd->path.dentry, oldnd);
-+	error = PTR_ERR(dentry);
-+	if (IS_ERR(dentry))
-+		goto freename;
-+	error = vfs_whiteout(old_dir, dentry);
-+	dput(dentry);
-+
-+	/* FIXME: This is acutally unlink() && create() ... */
+-/**
+- * is_single_threaded - Determine if a thread group is single-threaded or not
+- * @p: A task in the thread group in question
+- *
+- * This returns true if the thread group to which a task belongs is single
+- * threaded, false if it is not.
 +/*
-+	if (!error) {
-+		const char *new_name = old_dentry->d_name.name;
-+		fsnotify_move(old_dir, new_dir, old_name.name, new_name, 0,
-+			      new_dentry->d_inode, old_dentry->d_inode);
-+	}
-+*/
-+freename:
-+	kfree(old_name.name);
-+	return error;
-+}
-+
-+
- static int do_rename(int olddfd, const char *oldname,
- 			int newdfd, const char *newname)
++ * Returns true if the task does not share ->mm with another thread/process.
+  */
+-bool is_single_threaded(struct task_struct *p)
++bool is_single_threaded(struct task_struct *task)
  {
-@@ -3701,10 +3794,7 @@ static int do_rename(int olddfd, const c
- 	if (error)
- 		goto exit1;
- 
--	error = -EXDEV;
--	if (oldnd.path.mnt != newnd.path.mnt)
--		goto exit2;
+-	struct task_struct *g, *t;
+-	struct mm_struct *mm = p->mm;
 -
-+lock:
- 	old_dir = oldnd.path.dentry;
- 	error = -EBUSY;
- 	if (oldnd.last_type != LAST_NORM)
-@@ -3742,12 +3832,39 @@ static int do_rename(int olddfd, const c
- 	error = -ENOTEMPTY;
- 	if (new.dentry == trap)
- 		goto exit5;
--	/* renaming on unions is done by the user-space */
-+	/* renaming of directories on unions is done by the user-space */
-+	error = -EXDEV;
-+	if (is_unionized(oldnd.path.dentry, oldnd.path.mnt) &&
-+	    S_ISDIR(old.dentry->d_inode->i_mode))
-+		goto exit5;
-+	/* renameing of other files on unions is done by copyup */
-+	if ((is_unionized(oldnd.path.dentry, oldnd.path.mnt) &&
-+	     (oldnd.um_flags & LAST_LOWLEVEL)) ||
-+	    (is_unionized(newnd.path.dentry, newnd.path.mnt) &&
-+	     (newnd.um_flags & LAST_LOWLEVEL))) {
-+		path_put_conditional(&new, &newnd);
-+		path_put_conditional(&old, &oldnd);
-+		unlock_rename(new_dir, old_dir);
-+		error = union_relookup_topmost(&oldnd,
-+					       oldnd.flags & ~LOOKUP_PARENT);
-+		if (error)
-+			goto exit2;
-+		error = union_relookup_topmost(&newnd,
-+					       newnd.flags & ~LOOKUP_PARENT);
-+		if (error)
-+			goto exit2;
-+		goto lock;
-+	}
+-	if (atomic_read(&p->signal->count) != 1)
+-		goto no;
+-
+-	if (atomic_read(&p->mm->mm_users) != 1) {
+-		read_lock(&tasklist_lock);
+-		do_each_thread(g, t) {
+-			if (t->mm == mm && t != p)
+-				goto no_unlock;
+-		} while_each_thread(g, t);
+-		read_unlock(&tasklist_lock);
++	struct mm_struct *mm = task->mm;
++	struct task_struct *p, *t;
++	bool ret;
 +
- 	error = -EXDEV;
--	if (is_unionized(oldnd.path.dentry, oldnd.path.mnt))
-+	if (oldnd.path.mnt != newnd.path.mnt)
- 		goto exit5;
--	if (is_unionized(newnd.path.dentry, newnd.path.mnt))
++	might_sleep();
 +
-+	if (is_unionized(oldnd.path.dentry, oldnd.path.mnt) &&
-+	    (old.dentry->d_parent != oldnd.path.dentry)) {
-+		error = vfs_rename_union(&oldnd, &old, &newnd, &new);
- 		goto exit5;
-+	}
++	if (atomic_read(&task->signal->live) != 1)
++		return false;
++
++	if (atomic_read(&mm->mm_users) == 1)
++		return true;
++
++	ret = false;
++	down_write(&mm->mmap_sem);
++	rcu_read_lock();
++	for_each_process(p) {
++		if (unlikely(p->flags & PF_KTHREAD))
++			continue;
++		if (unlikely(p == task->group_leader))
++			continue;
++
++		t = p;
++		do {
++			if (unlikely(t->mm == mm))
++				goto found;
++			if (likely(t->mm))
++				break;
++		} while_each_thread(p, t);
+ 	}
++	ret = true;
++found:
++	rcu_read_unlock();
++	up_write(&mm->mmap_sem);
  
- 	error = mnt_want_write(oldnd.path.mnt);
- 	if (error)
+-	return true;
+-
+-no_unlock:
+-	read_unlock(&tasklist_lock);
+-no:
+-	return false;
++	return ret;
+ }
+_
 
