@@ -1,276 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZFRFAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZFRFNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbZFRFAP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 01:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbZFRFAD
+	id S1752475AbZFRFNr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 01:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZFRFNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 01:00:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58434 "EHLO smtps.tip.net.au"
+	Thu, 18 Jun 2009 01:13:38 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:43967 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750809AbZFRFAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 01:00:01 -0400
-Date: Thu, 18 Jun 2009 14:59:49 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 18
-Message-Id: <20090618145949.d933719a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__18_Jun_2009_14_59_49_+1000_jCTX./nNKrkEguQh"
+	id S1750809AbZFRFNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 01:13:37 -0400
+Date: Thu, 18 Jun 2009 07:13:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, richard@rsk.demon.co.uk,
+       damien.wyart@free.fr, dedekind1@gmail.com, fweisbec@gmail.com
+Subject: Re: [PATCH 0/15] Per-bdi writeback flusher threads v10
+Message-ID: <20090618051338.GH11363@kernel.dk>
+References: <1244811255-5391-1-git-send-email-jens.axboe@oracle.com> <1245114397.2560.368.camel@ymzhang> <20090616080036.GO11363@kernel.dk> <20090616195329.GH11363@kernel.dk> <1245286866.2560.407.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245286866.2560.407.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__18_Jun_2009_14_59_49_+1000_jCTX./nNKrkEguQh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jun 18 2009, Zhang, Yanmin wrote:
+> On Tue, 2009-06-16 at 21:53 +0200, Jens Axboe wrote:
+> > On Tue, Jun 16 2009, Jens Axboe wrote:
+> > > On Tue, Jun 16 2009, Zhang, Yanmin wrote:
+> > > > On Fri, 2009-06-12 at 14:54 +0200, Jens Axboe wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > Here's the 10th version of the writeback patches. Changes since v9:
+> > > > > 
+> > > > > - Fix bdi task exit race leaving work on the list, flush it after we
+> > > > >   know we cannot be found anymore.
+> > > > > - Rename flusher tasks from bdi-foo to flush-foo. Should make it more
+> > > > >   clear to the casual observer.
+> > > > > - Fix a problem with the btrfs bdi register patch that would spew
+> > > > >   warnings for > 1 mounted btrfs file system.
+> > > > > - Rebase to current -git, there were some conflicts with the latest work
+> > > > >   from viro/hch.
+> > > > > - Fix a block layer core problem were stacked devices would overwrite
+> > > > >   the bdi state, causing problems and warning spew.
+> > > > > - In bdi_writeback_all(), in the race occurence of a work allocation
+> > > > >   failure, restart scanning from the beginning. Then we can drop the
+> > > > >   bdi_lock mutex before diving into bdi specific writeback.
+> > > > > - Convert bdi_lock to a spinlock.
+> > > > > - Use spin_trylock() in bdi_writeback_all(), if this isn't a data
+> > > > >   integrity writeback. Debatable, I kind of like it...
+> > > > > - Get rid of BDI_CAP_FLUSH_FORKER, just check for match with the
+> > > > >   default_backing_dev_info.
+> > > > > - Fix race in list checking in bdi_forker_task().
+> > > > > 
+> > > > > 
+> > > > > For ease of patching, I've put the full diff here:
+> > > > > 
+> > > > >   http://kernel.dk/writeback-v10.patch
+> > > > Jens,
+> > > > 
+> > > > I applied the patch to 2.6.30 and got a confliction. The attachment is
+> > > > the patch I ported to 2.6.30. Did I miss anything?
+> > > > 
+> > > > 
+> > > > With the patch, kernel reports below messages on 2 machines.
+> > > > 
+> > > > INFO: task sync:29984 blocked for more than 120 seconds.
+> > > > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> > > > sync          D ffff88002805e300  6168 29984  24581
+> > > >  ffff88022f84b780 0000000000000082 7fffffffffffffff ffff880133dbfe70
+> > > >  0000000000000000 ffff88022e2b4c50 ffff88022e2b4fd8 00000001000c7bb8
+> > > >  ffff88022f513fd0 ffff880133dbfde8 ffff880133dbfec8 ffff88022d5d13c8
+> > > > Call Trace:
+> > > >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
+> > > >  [<ffffffff80780fde>] ? schedule+0x9/0x1d
+> > > >  [<ffffffff802b69ed>] ? bdi_sched_wait+0x9/0xd
+> > > >  [<ffffffff8078158d>] ? __wait_on_bit+0x40/0x6f
+> > > >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
+> > > >  [<ffffffff80781628>] ? out_of_line_wait_on_bit+0x6c/0x78
+> > > >  [<ffffffff8024a426>] ? wake_bit_function+0x0/0x23
+> > > >  [<ffffffff802b67ac>] ? bdi_writeback_all+0x12a/0x152
+> > > >  [<ffffffff802b6805>] ? generic_sync_sb_inodes+0x31/0xde
+> > > >  [<ffffffff802b6935>] ? sync_inodes_sb+0x83/0x88
+> > > >  [<ffffffff802b6980>] ? __sync_inodes+0x46/0x8f
+> > > >  [<ffffffff802b94f2>] ? do_sync+0x36/0x5a
+> > > >  [<ffffffff802b9538>] ? sys_sync+0xe/0x12
+> > > >  [<ffffffff8020b9ab>] ? system_call_fastpath+0x16/0x1b
+> > > 
+> > > I don't think it is your backport, for some reason the v10 missed a
+> > > change that I think could solve this race. If not, there's another in
+> > > there that I need to look at.
+> > > 
+> > > So against your current base, could you try with the below added as
+> > > well? The printk() is just so we can see if this triggers for you or
+> > > not.
+> > 
+> > OK that wont work, since we need to actually wait for the work to be
+> > flushed, otherwise we wreak things when we free the bdi immediately
+> > after that.
+> > 
+> > Can you try with this patch?
+> Jens,
+> 
+> I tested below patch on 4 machines (run all fio sub-test cases twice which
+> need more than 10 hours). The previous 2 machines don't stop this time.
+> Unfortunately, the 3rd machine stops. I double-check the disassembled codes
+> of kernel and make sure bdi_start_fn really calls wb_do_writeback.
 
-Hi all,
+Sorry I should have made that more clear when posting v11. This patch
+wont fully solve the problem, however the v11 patch series should. So if
+you test with that, hopefully all soft hangs should be gone.
 
-Changes since 20090617:
+-- 
+Jens Axboe
 
-My fixes tree contains these two commits:
-
-	Fix build error in ucc_geth.c (a better fix is in net-next for
-tomorrow).
-	kallsyms: fix inverted valid symbol checking (hopefully this will make arm=
- configs build reliably again).
-
-There are various conflicts due to slightly different versions of commits
-being merged into Linus' tree from what is already in linux-next.
-
-This tree fails to build for powerpc allyesconfig.
-
-The kvm tree gained a build failure so I am using the version from
-next-20090617.
-
-The wireless tree gained a conflict against the acpi tree.
-
-The tip tree lost its 3 conflicts.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 128 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ext4/next
-$ git reset --hard HEAD^
-Merging refs/next/20090615/ext4
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/platform/x86/Kconfig
-CONFLICT (content): Merge conflict in drivers/platform/x86/toshiba_acpi.c
-[master 28e994e] Revert "Merge branch 'oqo-wmi-EXPECT-REFRESH' into test"
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-$ git reset --hard HEAD^
-Merging refs/next/20090617/kvm
-CONFLICT (content): Merge conflict in arch/x86/include/asm/mce.h
-Applying: kvm/powerpc: make 32 bit constant unsigned long
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/platform/x86/eeepc-laptop.c
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/sh/include/asm/smp.h
-CONFLICT (content): Merge conflict in drivers/net/sfc/efx.c
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-CONFLICT (content): Merge conflict in mm/Makefile
-Merging uclinux/for-next
-Merging md/for-next
-CONFLICT (content): Merge conflict in drivers/md/md.c
-CONFLICT (content): Merge conflict in drivers/md/raid5.c
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-CONFLICT (content): Merge conflict in drivers/watchdog/Makefile
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging tip/auto-latest
-Merging asm-generic/next
-Merging quilt/driver-core
-CONFLICT (rename/modify): Merge conflict in drivers/net/wireless/ath/ath5k/=
-Kconfig
-CONFLICT (content): Merge conflict in drivers/block/ps3disk.c
-CONFLICT (content): Merge conflict in drivers/block/ps3vram.c
-CONFLICT (content): Merge conflict in drivers/scsi/lpfc/lpfc_debugfs.c
-CONFLICT (content): Merge conflict in kernel/trace/trace.c
-CONFLICT (content): Merge conflict in scripts/tracing/draw_functrace.py
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-CONFLICT (add/add): Merge conflict in drivers/staging/octeon/Kconfig
-Merging scsi-post-merge/master
-
---Signature=_Thu__18_Jun_2009_14_59_49_+1000_jCTX./nNKrkEguQh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko5ycUACgkQjjKRsyhoI8zfqwCff70gwisuY5IhZiQNlLu+0vSW
-v2QAn13L4FbanmNagVewkF1DZdMKViAU
-=kn0x
------END PGP SIGNATURE-----
-
---Signature=_Thu__18_Jun_2009_14_59_49_+1000_jCTX./nNKrkEguQh--
