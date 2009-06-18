@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZFRBtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbZFRBxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbZFRBtn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 21:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZFRBtc
+	id S1755948AbZFRBxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 21:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZFRBxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 21:49:32 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:34330 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751756AbZFRBtb (ORCPT
+	Wed, 17 Jun 2009 21:53:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51079
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752131AbZFRBxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 21:49:31 -0400
-Date: Thu, 18 Jun 2009 09:48:58 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [RFC 6/7] x86: Move kernel_fpu_using to asm/i387.h
-Message-ID: <20090618014858.GA1368@gondor.apana.org.au>
-References: <1244704236.5320.129.camel@yhuang-dev.sh.intel.com> <20090617164622.GB25357@elte.hu> <4A3922A4.1080300@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A3922A4.1080300@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Jun 2009 21:53:34 -0400
+Date: Wed, 17 Jun 2009 18:53:38 -0700 (PDT)
+Message-Id: <20090617.185338.20860763.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Cc: sfr@canb.auug.org.au, subrata@linux.vnet.ibm.com, netdev@vger.kernel.org,
+       galak@kernel.crashing.org, leoli@freescale.com, ntl@pobox.com,
+       sachinp@linux.vnet.ibm.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
+       Linuxppc-dev@ozlabs.org, tony@bakeyournoodle.com,
+       michael@ellerman.id.au, Haiying.Wang@freescale.com
+Subject: Re: [PATCH 0/2] Revert and reimplement Add SGMII support to UCC
+ GETH
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090617231306.7051.56146.stgit@localhost.localdomain>
+References: <20090617231306.7051.56146.stgit@localhost.localdomain>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 10:06:44AM -0700, H. Peter Anvin wrote:
-> Ingo Molnar wrote:
-> >>  
-> >> +static inline int kernel_fpu_using(void)
-> >> +{
-> >> +	if (in_interrupt() && !(read_cr0() & X86_CR0_TS))
-> >> +		return 1;
-> >> +	return 0;
-> >> +}
-> >> +
-> > 
-> > Looks sane to me. Herbert, do you ack it?
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 17 Jun 2009 17:15:58 -0600
 
-Ack.  Please pick it up in your tree.  Thanks!
+> (REPOST; I messed up an email address first time around and apparently my
+> posting got rejected.  If you've already received this message, then
+> I apologize for the noise)
+> 
+> Here is a fix for the build failure discovered during the 2.6.31 merge
+> window on ucc_geth.c.  I decided to revert and reapply a fixed version
+> of the patch to make the new version easier to review and bisect if I
+> got the fixup wrong.  I've compile tested both patches, but I do not have
+> hardware to run test.
+> 
+> Haiying, please confirm that I haven't horribly trashed your hard work
+> with my changes.
 
-> Huang: if I recall correctly, these functions were originally designed
-> to deal with the fact that VIA processors generate spurious #TS faults
-> due to broken design of the Padlock instructions.  The AES and PCLMUL
-> instructions actually use SSE registers and so will require different
-> structure.
-
-No irq_ts_save was the one designed for the VIA, the Intel stuff
-does save the FPU state.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I've applied these to net-next-2.6, thanks!
