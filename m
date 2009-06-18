@@ -1,154 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZFRV6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbZFRWBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755489AbZFRV6u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 17:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZFRV6f
+	id S1757185AbZFRWBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 18:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbZFRWBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 17:58:35 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:56697 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754219AbZFRV6e convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 17:58:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=qIRN8B28kx7r2PTEiD56suAWSXEfQWUWXUO6qju+1lZlUbpvnWBtin1o8PVkaxRnVl
-         MDd4iqbj+j4DZkOsyzEFplNEqYr9NpaYISelLrRzhbmRpu48x+3D8OPgkq8TT6smK4r/
-         RiQ/Yu8nqYuAhrgpmnXH3srHkuViYWyjFCPsc=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <20090612102804.GA15914@elte.hu>
-References: <20090611160329.GA3366@elte.hu>
-	 <7c86c4470906120256m545363d4h85a3e84a88291ac7@mail.gmail.com>
-	 <20090612102804.GA15914@elte.hu>
-Date: Thu, 18 Jun 2009 23:58:35 +0200
-Message-ID: <7c86c4470906181458l6985e13av6c503b34e4f3b1d3@mail.gmail.com>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-From: stephane eranian <eranian@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 18 Jun 2009 18:01:04 -0400
+Received: from cmpxchg.org ([85.214.51.133]:54703 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757062AbZFRWBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 18:01:03 -0400
+Date: Thu, 18 Jun 2009 23:57:45 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Tejun Heo <tj@kernel.org>, Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] bootmem.c: Avoid c90 declaration warning
+Message-ID: <20090618215744.GA10816@cmpxchg.org>
+References: <1245355633.29927.16.camel@Joe-Laptop.home> <20090618132410.0b55cd90.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090618132410.0b55cd90.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jun 18, 2009 at 01:24:10PM -0700, Andrew Morton wrote:
+> On Thu, 18 Jun 2009 13:07:13 -0700
+> Joe Perches <joe@perches.com> wrote:
+> 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > 
+> > diff --git a/mm/bootmem.c b/mm/bootmem.c
+> > index 282df0a..09d9c98 100644
+> > --- a/mm/bootmem.c
+> > +++ b/mm/bootmem.c
+> > @@ -536,11 +536,13 @@ static void * __init alloc_arch_preferred_bootmem(bootmem_data_t *bdata,
+> >  		return kzalloc(size, GFP_NOWAIT);
+> >  
+> >  #ifdef CONFIG_HAVE_ARCH_BOOTMEM
+> > +	{
+> >  	bootmem_data_t *p_bdata;
+> >  
+> >  	p_bdata = bootmem_arch_preferred_node(bdata, size, align, goal, limit);
+> >  	if (p_bdata)
+> >  		return alloc_bootmem_core(p_bdata, size, align, goal, limit);
+> > +	}
+> >  #endif
+> >  	return NULL;
+> >  }
+> 
+> Well yes.
+> 
+> We'll be needing some tabs there.
+> 
+> Unrelatedly, I'm struggling a bit with bootmem_arch_preferred_node(). 
+> It's only defined if CONFIG_X86_32=y && CONFIG_NEED_MULTIPLE_NODES=y,
+> but it gets called if CONFIG_HAVE_ARCH_BOOTMEM=y.
+> 
+> Is this correct, logical and as simple as we can make it??
 
-On Fri, Jun 12, 2009 at 12:28 PM, Ingo Molnar<mingo@elte.hu> wrote:
->
->>
->> On Thu, Jun 11, 2009 at 6:03 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>
->> > The counter concept got objected to in past discussions on lkml,
->> > by DaveM and by Stephane Eranian (i've Cc:-ed them) - so this
->> > code was not eligible for linux-next testing - nevertheless we
->> > gave it good testing on PowerPC and x86 and i've done a wide
->> > cross-build test as well to try to make sure it breaks no other
->> > architecture.
->>
->> I don't think you can quote me saying "I object to this code".
->> [...]
->
-> I never saw you retract/change this negative opinion of yours about
-> the whole separate-counters concept:
->
->  " In summary, although the idea of simplifying tools by moving the
->    complexity elsewhere is legitimate, pushing it down to the
->    kernel is the wrong approach in my opinion, perfmon has avoided
->    that as much as possible for good reasons. "
->
->    http://lkml.org/lkml/2008/12/5/359
->
+x86_32 numa is the only setter of HAVE_ARCH_BOOTMEM.  I don't know why
+this arch has a strict preference/requirement(?) for bootmem on node
+0.
 
-I, indeed, did not retract because I still have reservations about the approach
-even after 6 months of intense development.
+I found this mail from Yinghai
 
-> Do you like the concept now? That would be great news - you have a
-> lot of experience with various PMU details and we could certainly
-> welcome help with the perf tool and with the kernel side of
-> perfcounters!
->
+  http://marc.info/?l=linux-kernel&m=123614990906256&w=2
 
-I still have reservations. I could be convinced, though. But for that to happen,
-there are a couple of milestones that need to be reached:
-        - Full Intel Nehalem support: core PMU, uncore PMU, LBR, PEBS
-(incl. load latency),
-          offcore_response.
-        - Full Intel Itanium 2 dual-core (Montecito) support: D-EAR,
-I-EAR, opcode matching, range
-          restrictions, user level control
+where he says that it expects all bootmem on node zero but with the
+current code and alloc_arch_preferred_bootmem() failing, we could fall
+back to another node.  Won't this break?  Yinghai?
 
-Those represent very advanced and very useful PMUs. Having implemented
-user and kernel
-support for both of  them, I can attest that they challenge any
-interfaces. But perfmon is the proof
-that those can be  exposed with their full strength thru a generic
-kernel API. Therefore, I am
-relatively hopeful, there should be a way to expose them through your API.
+Otherwise, could we perhaps use something as simple as this?
 
-Another important consequence of your design is that the event
-assignment logic is in the kernel.
-As discussed early on, this can be quite complicated. Today, you only
-have very partial support
-for architected Intel X86 and AMD64 processors (I know about Power). I
-am sure you will update
-this shortly. But I think getting complete support for Intel Nehalem
-and Itanium 2 in that area is
-another important milestone.
-
-Concerning help, I am sure you realize I am already helping you out by posting
-detailed reviews. I have yet to see anybody else posting this kind of
-information
-concerning your API. I will keep posting as I find new issues. My goal is not to
-torpedo this API, it's already upstream anyway, but instead I am
-trying to ensure
-it does what I want based on my experience developing tools, talking with PMU
-architects and feedback from tool developers.
-
-I think we could have a much more constructive working relationship if
-people showed
-some more respect for the work I and many others have done. Perfmon
-certainly has
-issues and could be implemented better. You certainly have better
-skills than me in that
-area. I have no problem admitting that. But I do not think perfmon
-deserves the kind of
-comments I have seen, repeated over and over, from you and Zijlstra
-since December.
-Regardless of your personal opinion, perfmon deserves some credit for
-what it has offered
-to many people around the world. If it had been as bad as you
-described it, it could not
-possibly have supported all the PMUs and their advanced features.
-Nobody would have
-used it. But this is not what happened.
-
->> [...]  I posted a detailed review of the API and implementation on
->> X86 outlining lots of issues. Some got fixed, but many others are
->> left unresolved at this point. And I will post some more shortly.
->
-> Hm, Peter replied to you mail a week ago, in detail. We addressed a
-> good number of issues pointed out by you, and we credited you for
-> them:
->
-> earth4:~/tip> git log v2.6.30..linus | grep 'Reported-by: Stephane Eranian'
->    Reported-by: Stephane Eranian <eranian@googlemail.com>
->    Reported-by: Stephane Eranian <eranian@googlemail.com>
->    Reported-by: Stephane Eranian <eranian@googlemail.com>
->    Reported-by: Stephane Eranian <eranian@googlemail.com>
->    Reported-by: Stephane Eranian <eranian@googlemail.com>
->    Reported-by: Stephane Eranian <eranian@googlemail.com>
->    Reported-by: Stephane Eranian <eranian@googlemail.com>
->
-I know. I appreciate that. I wish you had also acknowledged the fact
-that I suggested that you split the config field into type and config fields
-in my initial posting. I had to discover this change by looking at the GIT
-log.
+diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
+index ede6998..b68a672 100644
+--- a/arch/x86/include/asm/mmzone_32.h
++++ b/arch/x86/include/asm/mmzone_32.h
+@@ -92,8 +92,7 @@ static inline int pfn_valid(int pfn)
+ 
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+ /* always use node 0 for bootmem on this numa platform */
+-#define bootmem_arch_preferred_node(__bdata, size, align, goal, limit)	\
+-	(NODE_DATA(0)->bdata)
++#define bootmem_arch_preferred_node (NODE(0)->bdata)
+ #endif /* CONFIG_NEED_MULTIPLE_NODES */
+ 
+ #endif /* _ASM_X86_MMZONE_32_H */
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index 282df0a..0097fa2 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -528,23 +528,6 @@ find_block:
+ 	return NULL;
+ }
+ 
+-static void * __init alloc_arch_preferred_bootmem(bootmem_data_t *bdata,
+-					unsigned long size, unsigned long align,
+-					unsigned long goal, unsigned long limit)
+-{
+-	if (WARN_ON_ONCE(slab_is_available()))
+-		return kzalloc(size, GFP_NOWAIT);
+-
+-#ifdef CONFIG_HAVE_ARCH_BOOTMEM
+-	bootmem_data_t *p_bdata;
+-
+-	p_bdata = bootmem_arch_preferred_node(bdata, size, align, goal, limit);
+-	if (p_bdata)
+-		return alloc_bootmem_core(p_bdata, size, align, goal, limit);
+-#endif
+-	return NULL;
+-}
+-
+ static void * __init ___alloc_bootmem_nopanic(unsigned long size,
+ 					unsigned long align,
+ 					unsigned long goal,
+@@ -553,11 +536,15 @@ static void * __init ___alloc_bootmem_nopanic(unsigned long size,
+ 	bootmem_data_t *bdata;
+ 	void *region;
+ 
++	if (WARN_ON_ONCE(slab_is_available()))
++		return kzalloc(size, GFP_NOWAIT);
+ restart:
+-	region = alloc_arch_preferred_bootmem(NULL, size, align, goal, limit);
++#ifdef bootmem_arch_preferred_node
++	region = alloc_bootmem_core(bootmem_arch_preferred_node,
++				size, align, goal, limit);
+ 	if (region)
+ 		return region;
+-
++#endif
+ 	list_for_each_entry(bdata, &bdata_list, list) {
+ 		if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
+ 			continue;
+@@ -636,13 +623,11 @@ static void * __init ___alloc_bootmem_node(bootmem_data_t *bdata,
+ {
+ 	void *ptr;
+ 
+-	ptr = alloc_arch_preferred_bootmem(bdata, size, align, goal, limit);
+-	if (ptr)
+-		return ptr;
+-
++#ifndef bootmem_arch_preferred_node
+ 	ptr = alloc_bootmem_core(bdata, size, align, goal, limit);
+ 	if (ptr)
+ 		return ptr;
++#endif
+ 
+ 	return ___alloc_bootmem(size, align, goal, limit);
+ }
