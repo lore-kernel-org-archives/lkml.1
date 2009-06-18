@@ -1,64 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZFRMNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZFRMPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbZFRMNt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 08:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbZFRMNm
+	id S1755344AbZFRMPU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 08:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZFRMPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 08:13:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36379 "EHLO mx2.redhat.com"
+	Thu, 18 Jun 2009 08:15:09 -0400
+Received: from mga03.intel.com ([143.182.124.21]:10734 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZFRMNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 08:13:41 -0400
-Date: Thu, 18 Jun 2009 14:13:20 +0200
-From: Miroslav Lichvar <mlichvar@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT pull] ntp updates for 2.6.31
-Message-ID: <20090618121320.GA13025@localhost>
-References: <alpine.LFD.2.00.0906151452000.2800@localhost.localdomain> <1f1b08da0906151316s7d25f8ceraa1bc967a8abe172@mail.gmail.com> <1f1b08da0906151641u4cd964e6vf1a61afe50cc1d90@mail.gmail.com> <20090616090647.GD13771@elte.hu> <20090616125248.GA23541@localhost> <1245253102.6067.94.camel@jstultz-laptop> <20090617172325.GA32332@localhost> <20090617172601.GA3493@elte.hu>
+	id S1751578AbZFRMPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 08:15:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,244,1243839600"; 
+   d="scan'208";a="155984421"
+Date: Thu, 18 Jun 2009 20:14:30 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in
+	try_to_unmap
+Message-ID: <20090618121430.GA6746@localhost>
+References: <20090615031253.530308256@intel.com> <28c262360906150609gd736bf7p7a57de1b81cedd97@mail.gmail.com> <20090615152612.GA11700@localhost> <20090616090308.bac3b1f7.minchan.kim@barrios-desktop> <20090616134944.GB7524@localhost> <20090617092826.56730a10.minchan.kim@barrios-desktop> <20090617072319.GA5841@localhost> <28c262360906170644w65c08a8y2d2805fb08045804@mail.gmail.com> <20090617135543.GA8079@localhost> <28c262360906170703h3363b68dp74471358f647921e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090617172601.GA3493@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360906170703h3363b68dp74471358f647921e@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 07:26:01PM +0200, Ingo Molnar wrote:
-> * Miroslav Lichvar <mlichvar@redhat.com> wrote:
+On Wed, Jun 17, 2009 at 10:03:37PM +0800, Minchan Kim wrote:
+> On Wed, Jun 17, 2009 at 10:55 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> > On Wed, Jun 17, 2009 at 09:44:39PM +0800, Minchan Kim wrote:
+> >> It is private mail for my question.
+> >> I don't want to make noise in LKML.
+> >> And I don't want to disturb your progress to merge HWPoison.
+> >>
+> >> > Because this race window is small enough:
+> >> >
+> >> >        TestSetPageHWPoison(p);
+> >> >                                   lock_page(page);
+> >> >                                   try_to_unmap(page, TTU_MIGRATION|...);
+> >> >        lock_page_nosync(p);
+> >> >
+> >> > such small race windows can be found all over the kernel, it's just
+> >> > insane to try to fix any of them.
+> >>
+> >> I don't know there are intentional small race windows in kernel until you said.
+> >> I thought kernel code is perfect so it wouldn't allow race window
+> >> although it is very small. But you pointed out. Until now, My thought
+> >> is wrong.
+> >>
+> >> Do you know else small race windows by intention ?
+> >> If you know it, tell me, please. It can expand my sight. :)
+> >
+> > The memory failure code does not aim to rescue 100% page corruptions.
+> > That's unreasonable goal - the kernel pages, slab pages (including the
+> > big dcache/icache) are almost impossible to isolate.
+> >
+> > Comparing to the big slab pools, the migration and other race windows are
+> > really too small to care about :)
 > 
-> > Still, I'd really like to see the original behavior restored. Most 
-> > of the users complaining about slow convergence are probably just 
-> > hitting the calibration problem, which needs to be fixed by other 
-> > means than making PLL faster. Also, users of other systems seem to 
-> > be happy with their slow convergence. At least that's the 
-> > impression I have from NTP lists.
-> 
-> Wouldnt the goal be to calibrate as fast as possible? (Without any 
-> bad oscillation)
+> Also, If you will mention this contents as annotation, I will add my
+> review sign.
 
-Not really. It depends on how noisy is the input signal. On an idle
-LAN the jitter is just few microseconds, but over internet it easily
-reaches miliseconds. Over a certain point faster PLL will just make
-things worse.
+Good suggestion. Here is a patch for comment updates.
 
-PLL is mainly about handling the signal noise, frequency adjusting is
-secondary. When the noise is very low or the update interval is long
-enough, the frequency variations caused by temperature changes will
-dominate the signal noise and this is where FLL should kick in.
+> Thanks for kind reply for my boring discussion.
 
-The PLL/FLL switching is controlled by update interval. Ideally it
-would be adaptive, but NTP is not that sophisticated. By default, FLL
-is enabled when the interval is longer than 2048 seconds. This is of
-course not the optimal value for all systems.
+Boring? Not at all :)
 
-Unfortunately in kernel it can be configured only to 2048 or 256 and
-NTP never uses the shorter one. The NTP daemon has its own loop which
-can be used instead and it allows to use arbitrary values though.
+Thanks,
+Fengguang
 
--- 
-Miroslav Lichvar
+---
+ mm/memory-failure.c |   76 +++++++++++++++++++++++++-----------------
+ 1 file changed, 47 insertions(+), 29 deletions(-)
+
+--- sound-2.6.orig/mm/memory-failure.c
++++ sound-2.6/mm/memory-failure.c
+@@ -1,4 +1,8 @@
+ /*
++ * linux/mm/memory-failure.c
++ *
++ * High level machine check handler.
++ *
+  * Copyright (C) 2008, 2009 Intel Corporation
+  * Authors: Andi Kleen, Fengguang Wu
+  *
+@@ -6,29 +10,36 @@
+  * the GNU General Public License ("GPL") version 2 only as published by the
+  * Free Software Foundation.
+  *
+- * High level machine check handler. Handles pages reported by the
+- * hardware as being corrupted usually due to a 2bit ECC memory or cache
+- * failure.
+- *
+- * This focuses on pages detected as corrupted in the background.
+- * When the current CPU tries to consume corruption the currently
+- * running process can just be killed directly instead. This implies
+- * that if the error cannot be handled for some reason it's safe to
+- * just ignore it because no corruption has been consumed yet. Instead
+- * when that happens another machine check will happen.
+- *
+- * Handles page cache pages in various states.	The tricky part
+- * here is that we can access any page asynchronous to other VM
+- * users, because memory failures could happen anytime and anywhere,
+- * possibly violating some of their assumptions. This is why this code
+- * has to be extremely careful. Generally it tries to use normal locking
+- * rules, as in get the standard locks, even if that means the
+- * error handling takes potentially a long time.
+- *
+- * The operation to map back from RMAP chains to processes has to walk
+- * the complete process list and has non linear complexity with the number
+- * mappings. In short it can be quite slow. But since memory corruptions
+- * are rare we hope to get away with this.
++ * Pages are reported by the hardware as being corrupted usually due to a
++ * 2bit ECC memory or cache failure. Machine check can either be raised when
++ * corruption is found in background memory scrubbing, or when someone tries to
++ * consume the corruption. This code focuses on the former case.  If it cannot
++ * handle the error for some reason it's safe to just ignore it because no
++ * corruption has been consumed yet. Instead when that happens another (deadly)
++ * machine check will happen.
++ *
++ * The tricky part here is that we can access any page asynchronous to other VM
++ * users, because memory failures could happen anytime and anywhere, possibly
++ * violating some of their assumptions. This is why this code has to be
++ * extremely careful. Generally it tries to use normal locking rules, as in get
++ * the standard locks, even if that means the error handling takes potentially
++ * a long time.
++ *
++ * We don't aim to rescue 100% corruptions. That's unreasonable goal - the
++ * kernel text and slab pages (including the big dcache/icache) are almost
++ * impossible to isolate. We also try to keep the code clean by ignoring the
++ * other thousands of small corruption windows.
++ *
++ * When the corrupted page data is not recoverable, the tasks mapped the page
++ * have to be killed. We offer two kill options:
++ * - early kill with SIGBUS.BUS_MCEERR_AO (optional)
++ * - late  kill with SIGBUS.BUS_MCEERR_AR (mandatory)
++ * A task will be early killed as soon as corruption is found in its virtual
++ * address space, if it has called prctl(PR_MEMORY_FAILURE_EARLY_KILL, 1, ...);
++ * Any task will be late killed when it tries to access its corrupted virtual
++ * address. The early kill option offers KVM or other apps with large caches an
++ * opportunity to isolate the corrupted page from its internal cache, so as to
++ * avoid being late killed.
+  */
+ 
+ /*
+@@ -275,6 +286,12 @@ static void collect_procs_file(struct pa
+ 
+ 		vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff,
+ 				      pgoff)
++			/*
++			 * Send early kill signal to tasks whose vma covers
++			 * the page but not necessarily mapped it in its pte.
++			 * Applications who requested early kill normally want
++			 * to be informed of such data corruptions.
++			 */
+ 			if (vma->vm_mm == tsk->mm)
+ 				add_to_kill(tsk, page, vma, to_kill, tkc);
+ 	}
+@@ -284,6 +301,12 @@ static void collect_procs_file(struct pa
+ 
+ /*
+  * Collect the processes who have the corrupted page mapped to kill.
++ *
++ * The operation to map back from RMAP chains to processes has to walk
++ * the complete process list and has non linear complexity with the number
++ * mappings. In short it can be quite slow. But since memory corruptions
++ * are rare and only tasks flagged PF_EARLY_KILL will be searched, we hope to
++ * get away with this.
+  */
+ static void collect_procs(struct page *page, struct list_head *tokill)
+ {
+@@ -439,7 +462,7 @@ static int me_pagecache_dirty(struct pag
+  * Dirty swap cache page is tricky to handle. The page could live both in page
+  * cache and swap cache(ie. page is freshly swapped in). So it could be
+  * referenced concurrently by 2 types of PTEs:
+- * normal PTEs and swap PTEs. We try to handle them consistently by calling u
++ * normal PTEs and swap PTEs. We try to handle them consistently by calling
+  * try_to_unmap(TTU_IGNORE_HWPOISON) to convert the normal PTEs to swap PTEs,
+  * and then
+  *      - clear dirty bit to prevent IO
+@@ -647,11 +670,6 @@ static void hwpoison_user_mappings(struc
+ 	 * mapped.  This has to be done before try_to_unmap,
+ 	 * because ttu takes the rmap data structures down.
+ 	 *
+-	 * This also has the side effect to propagate the dirty
+-	 * bit from PTEs into the struct page. This is needed
+-	 * to actually decide if something needs to be killed
+-	 * or errored, or if it's ok to just drop the page.
+-	 *
+ 	 * Error handling: We ignore errors here because
+ 	 * there's nothing that can be done.
+ 	 */
