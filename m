@@ -1,819 +1,741 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762986AbZFRG4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759136AbZFRG7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762986AbZFRG4N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 02:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbZFRGzv
+	id S1759136AbZFRG7J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 02:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZFRG65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 02:55:51 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49824 "EHLO
+	Thu, 18 Jun 2009 02:58:57 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55379 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762855AbZFRGzt (ORCPT
+	with ESMTP id S1751296AbZFRG64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 02:55:49 -0400
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 2/2] SPI: Add SPI driver for most known i.MX SoCs
-Date: Thu, 18 Jun 2009 08:54:32 +0200
-Message-Id: <1245308072-14392-3-git-send-email-s.hauer@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1245308072-14392-2-git-send-email-s.hauer@pengutronix.de>
-References: <1245308072-14392-1-git-send-email-s.hauer@pengutronix.de>
- <1245308072-14392-2-git-send-email-s.hauer@pengutronix.de>
+	Thu, 18 Jun 2009 02:58:56 -0400
+Date: Thu, 18 Jun 2009 08:58:14 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       jonsmirl@gmail.com
+Subject: Re: [spi-devel-general] [PATCH v4] powerpc/5200: Add mpc5200-spi
+	(non-PSC) device driver
+Message-ID: <20090618065814.GA12942@pengutronix.de>
+References: <20090618025030.12363.69402.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
+Content-Disposition: inline
+In-Reply-To: <20090618025030.12363.69402.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Mail-From: wsa@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v2: Updated and tested on i.MX35
 
-While there already is a SPI driver for i.MX1 in the tree there are
-good reasons to replace it:
+--k1lZvvs/B4yU6o8G
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-- The inkernel driver implements a full blown SPI driver, but
-  the hardware can be fully supported using a bitbang driver.
-  This greatly reduces the size and complexity of the driver.
-- The inkernel driver only works on i.MX1 SoCs. Unfortunately
-  Freescale decided to randomly mix the register bits for each
-  new SoC, This is quite hard to handle with the current driver
-  since it has register accesses in many places.
-- The DMA API of the durrent driver is broken for arch-mx1 (as opposed
-  to arch-imx) and nobody cared to fix it yet.
+Hi Grant,
 
-This driver has been tested on i.MX1/i.MX27/i.MX35 with an AT25 type
-EEPROM and on i.MX27/i.MX31 with a Freescale MC13783 PMIC.
+some comments below:
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
- arch/arm/plat-mxc/include/mach/spi.h |   27 ++
- drivers/spi/Kconfig                  |    8 +
- drivers/spi/Makefile                 |    1 +
- drivers/spi/mxc_spi.c                |  685 ++++++++++++++++++++++++++++++++++
- 4 files changed, 721 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/plat-mxc/include/mach/spi.h
- create mode 100644 drivers/spi/mxc_spi.c
+(by the way, have you tested this patch on hardware? I wonder because of the
+SSOE-issue, but maybe it works despite the documentation.)
 
-diff --git a/arch/arm/plat-mxc/include/mach/spi.h b/arch/arm/plat-mxc/include/mach/spi.h
-new file mode 100644
-index 0000000..08be445
---- /dev/null
-+++ b/arch/arm/plat-mxc/include/mach/spi.h
-@@ -0,0 +1,27 @@
-+
-+#ifndef __MACH_SPI_H_
-+#define __MACH_SPI_H_
-+
-+/*
-+ * struct spi_imx_master - device.platform_data for SPI controller devices.
-+ * @chipselect: Array of chipselects for this master. Numbers >= 0 mean gpio
-+ *              pins, numbers < 0 mean internal CSPI chipselects according
-+ *              to MXC_SPI_CS(). Normally you want to use gpio based chip
-+ *              selects as the CSPI module tries to be intelligent about
-+ *              when to assert the chipselect: The CSPI module deasserts the
-+ *              chipselect once it runs out of input data. The other problem
-+ *              is that it is not possible to mix between high active and low
-+ *              active chipselects on one single bus using the internal
-+ *              chipselects. Unfortunately Freescale decided to put some
-+ *              chipselects on dedicated pins which are not usable as gpios,
-+ *              so we have to support the internal chipselects.
-+ * @num_chipselect: ARRAY_SIZE(chipselect)
-+ */
-+struct spi_imx_master {
-+	int	*chipselect;
-+	int	num_chipselect;
-+};
-+
-+#define MXC_SPI_CS(no)	((no) - 32)
-+
-+#endif /* __MACH_SPI_H_*/
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 3c0590a..9d1874f 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -116,6 +116,14 @@ config SPI_GPIO
- 	  GPIO operations, you should be able to leverage that for better
- 	  speed with a custom version of this driver; see the source code.
- 
-+config SPI_IMX
-+	tristate "Freescale i.MX SPI controllers"
-+	depends on ARCH_MXC
-+	select SPI_BITBANG
-+	help
-+	  This enables using the Freescale i.MX SPI controllers in master
-+	  mode.
-+
- config SPI_LM70_LLP
- 	tristate "Parallel port adapter for LM70 eval board (DEVELOPMENT)"
- 	depends on PARPORT && EXPERIMENTAL
-diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index 55a862d..482c9b3 100644
---- a/drivers/spi/Makefile
-+++ b/drivers/spi/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_SPI_BITBANG)		+= spi_bitbang.o
- obj-$(CONFIG_SPI_AU1550)		+= au1550_spi.o
- obj-$(CONFIG_SPI_BUTTERFLY)		+= spi_butterfly.o
- obj-$(CONFIG_SPI_GPIO)			+= spi_gpio.o
-+obj-$(CONFIG_SPI_IMX)			+= mxc_spi.o
- obj-$(CONFIG_SPI_LM70_LLP)		+= spi_lm70llp.o
- obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
- obj-$(CONFIG_SPI_OMAP_UWIRE)		+= omap_uwire.o
-diff --git a/drivers/spi/mxc_spi.c b/drivers/spi/mxc_spi.c
-new file mode 100644
-index 0000000..b144723
---- /dev/null
-+++ b/drivers/spi/mxc_spi.c
-@@ -0,0 +1,685 @@
-+/*
-+ * Copyright 2004-2007 Freescale Semiconductor, Inc. All Rights Reserved.
-+ * Copyright (C) 2008 Juergen Beisert
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the
-+ * Free Software Foundation
-+ * 51 Franklin Street, Fifth Floor
-+ * Boston, MA  02110-1301, USA.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/completion.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/gpio.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/spi_bitbang.h>
-+#include <linux/types.h>
-+
-+#include <mach/spi.h>
-+
-+#define DRIVER_NAME "spi_imx"
-+
-+#define MXC_CSPIRXDATA		0x00
-+#define MXC_CSPITXDATA		0x04
-+#define MXC_CSPICTRL		0x08
-+#define MXC_CSPIINT		0x0c
-+#define MXC_RESET		0x1c
-+
-+/* generic defines to abstract from the different register layouts */
-+#define MXC_INT_RR	(1 << 0) /* Receive data ready interrupt */
-+#define MXC_INT_TE	(1 << 1) /* Transmit FIFO empty interrupt */
-+
-+struct mxc_spi_config {
-+	unsigned int speed_hz;
-+	unsigned int bpw;
-+	unsigned int mode;
-+	int cs;
-+};
-+
-+struct mxc_spi_data {
-+	struct spi_bitbang bitbang;
-+
-+	struct completion xfer_done;
-+	void *base;
-+	int irq;
-+	struct clk *clk;
-+	unsigned long spi_clk;
-+	int *chipselect;
-+
-+	unsigned int count;
-+	void (*tx)(struct mxc_spi_data *);
-+	void (*rx)(struct mxc_spi_data *);
-+	void *rx_buf;
-+	const void *tx_buf;
-+	unsigned int txfifo; /* number of words pushed in tx FIFO */
-+
-+	/* SoC specific functions */
-+	void (*intctrl)(struct mxc_spi_data *, int);
-+	int (*config)(struct mxc_spi_data *, struct mxc_spi_config *);
-+	void (*trigger)(struct mxc_spi_data *);
-+	int (*rx_available)(struct mxc_spi_data *);
-+};
-+
-+#define MXC_SPI_BUF_RX(type)						\
-+static void mxc_spi_buf_rx_##type(struct mxc_spi_data *mxc_spi)		\
-+{									\
-+	unsigned int val = readl(mxc_spi->base + MXC_CSPIRXDATA);	\
-+									\
-+	if (mxc_spi->rx_buf) {						\
-+		*(type *)mxc_spi->rx_buf = val;				\
-+		mxc_spi->rx_buf += sizeof(type);			\
-+	}								\
-+}
-+
-+#define MXC_SPI_BUF_TX(type)						\
-+static void mxc_spi_buf_tx_##type(struct mxc_spi_data *mxc_spi)		\
-+{									\
-+	type val = 0;							\
-+									\
-+	if (mxc_spi->tx_buf) {						\
-+		val = *(type *)mxc_spi->tx_buf;				\
-+		mxc_spi->tx_buf += sizeof(type);			\
-+	}								\
-+									\
-+	mxc_spi->count -= sizeof(type);					\
-+									\
-+	writel(val, mxc_spi->base + MXC_CSPITXDATA);			\
-+}
-+
-+MXC_SPI_BUF_RX(u8)
-+MXC_SPI_BUF_TX(u8)
-+MXC_SPI_BUF_RX(u16)
-+MXC_SPI_BUF_TX(u16)
-+MXC_SPI_BUF_RX(u32)
-+MXC_SPI_BUF_TX(u32)
-+
-+/* First entry is reserved, second entry is valid only if SDHC_SPIEN is set
-+ * (which is currently not the case in this driver)
-+ */
-+static int mxc_clkdivs[] = {0, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
-+	256, 384, 512, 768, 1024};
-+
-+/* MX21, MX27 */
-+static unsigned int mxc_spi_clkdiv_1(unsigned int fin,
-+		unsigned int fspi)
-+{
-+	int i, max;
-+
-+	if (cpu_is_mx21())
-+		max = 18;
-+	else
-+		max = 16;
-+
-+	for (i = 2; i < max; i++)
-+		if (fspi * mxc_clkdivs[i] >= fin)
-+			return i;
-+
-+	return max;
-+}
-+
-+/* MX1, MX31, MX35 */
-+static unsigned int mxc_spi_clkdiv_2(unsigned int fin,
-+		unsigned int fspi)
-+{
-+	int i, div = 4;
-+
-+	for (i = 0; i < 7; i++) {
-+		if (fspi * div >= fin)
-+			return i;
-+		div <<= 1;
-+	}
-+
-+	return 7;
-+}
-+
-+#define MX31_INTREG_TEEN	(1 << 0)
-+#define MX31_INTREG_RREN	(1 << 3)
-+
-+#define MX31_CSPICTRL_ENABLE	(1 << 0)
-+#define MX31_CSPICTRL_MASTER	(1 << 1)
-+#define MX31_CSPICTRL_XCH	(1 << 2)
-+#define MX31_CSPICTRL_POL	(1 << 4)
-+#define MX31_CSPICTRL_PHA	(1 << 5)
-+#define MX31_CSPICTRL_SSCTL	(1 << 6)
-+#define MX31_CSPICTRL_SSPOL	(1 << 7)
-+#define MX31_CSPICTRL_BC_SHIFT	8
-+#define MX35_CSPICTRL_BL_SHIFT	20
-+#define MX31_CSPICTRL_CS_SHIFT	24
-+#define MX35_CSPICTRL_CS_SHIFT	12
-+#define MX31_CSPICTRL_DR_SHIFT	16
-+
-+#define MX31_CSPISTATUS		0x14
-+#define MX31_STATUS_RR		(1 << 3)
-+
-+/* These functions also work for the i.MX35, but be aware that
-+ * the i.MX35 has a slightly different register layout for bits
-+ * we do not use here.
-+ */
-+static void mx31_intctrl(struct mxc_spi_data *mxc_spi, int enable)
-+{
-+	unsigned int val = 0;
-+
-+	if (enable & MXC_INT_TE)
-+		val |= MX31_INTREG_TEEN;
-+	if (enable & MXC_INT_RR)
-+		val |= MX31_INTREG_RREN;
-+
-+	writel(val, mxc_spi->base + MXC_CSPIINT);
-+}
-+
-+static void mx31_trigger(struct mxc_spi_data *mxc_spi)
-+{
-+	unsigned int reg;
-+
-+	reg = readl(mxc_spi->base + MXC_CSPICTRL);
-+	reg |= MX31_CSPICTRL_XCH;
-+	writel(reg, mxc_spi->base + MXC_CSPICTRL);
-+}
-+
-+static int mx31_config(struct mxc_spi_data *mxc_spi,
-+		struct mxc_spi_config *config)
-+{
-+	unsigned int reg = MX31_CSPICTRL_ENABLE | MX31_CSPICTRL_MASTER;
-+
-+	reg |= mxc_spi_clkdiv_2(mxc_spi->spi_clk, config->speed_hz) <<
-+		MX31_CSPICTRL_DR_SHIFT;
-+
-+	if (cpu_is_mx31())
-+		reg |= (config->bpw - 1) << MX31_CSPICTRL_BC_SHIFT;
-+	else if (cpu_is_mx35()) {
-+		reg |= (config->bpw - 1) << MX35_CSPICTRL_BL_SHIFT;
-+		reg |= MX31_CSPICTRL_SSCTL;
-+	}
-+
-+	if (config->mode & SPI_CPHA)
-+		reg |= MX31_CSPICTRL_PHA;
-+	if (config->mode & SPI_CPOL)
-+		reg |= MX31_CSPICTRL_POL;
-+	if (config->mode & SPI_CS_HIGH)
-+		reg |= MX31_CSPICTRL_SSPOL;
-+	if (config->cs < 0) {
-+		if (cpu_is_mx31())
-+			reg |= (config->cs + 32) << MX31_CSPICTRL_CS_SHIFT;
-+		else if (cpu_is_mx35())
-+			reg |= (config->cs + 32) << MX35_CSPICTRL_CS_SHIFT;
-+	}
-+
-+	writel(reg, mxc_spi->base + MXC_CSPICTRL);
-+
-+	return 0;
-+}
-+
-+static int mx31_rx_available(struct mxc_spi_data *mxc_spi)
-+{
-+	return readl(mxc_spi->base + MX31_CSPISTATUS) & MX31_STATUS_RR;
-+}
-+
-+#define MX27_INTREG_RR		(1 << 4)
-+#define MX27_INTREG_TEEN	(1 << 9)
-+#define MX27_INTREG_RREN	(1 << 13)
-+
-+#define MX27_CSPICTRL_POL	(1 << 5)
-+#define MX27_CSPICTRL_PHA	(1 << 6)
-+#define MX27_CSPICTRL_SSPOL	(1 << 8)
-+#define MX27_CSPICTRL_XCH	(1 << 9)
-+#define MX27_CSPICTRL_ENABLE	(1 << 10)
-+#define MX27_CSPICTRL_MASTER	(1 << 11)
-+#define MX27_CSPICTRL_DR_SHIFT	14
-+#define MX27_CSPICTRL_CS_SHIFT	19
-+
-+static void mx27_intctrl(struct mxc_spi_data *mxc_spi, int enable)
-+{
-+	unsigned int val = 0;
-+
-+	if (enable & MXC_INT_TE)
-+		val |= MX27_INTREG_TEEN;
-+	if (enable & MXC_INT_RR)
-+		val |= MX27_INTREG_RREN;
-+
-+	writel(val, mxc_spi->base + MXC_CSPIINT);
-+}
-+
-+static void mx27_trigger(struct mxc_spi_data *mxc_spi)
-+{
-+	unsigned int reg;
-+
-+	reg = readl(mxc_spi->base + MXC_CSPICTRL);
-+	reg |= MX27_CSPICTRL_XCH;
-+	writel(reg, mxc_spi->base + MXC_CSPICTRL);
-+}
-+
-+static int mx27_config(struct mxc_spi_data *mxc_spi,
-+		struct mxc_spi_config *config)
-+{
-+	unsigned int reg = MX27_CSPICTRL_ENABLE | MX27_CSPICTRL_MASTER;
-+
-+	reg |= mxc_spi_clkdiv_1(mxc_spi->spi_clk, config->speed_hz) <<
-+		MX27_CSPICTRL_DR_SHIFT;
-+	reg |= config->bpw - 1;
-+
-+	if (config->mode & SPI_CPHA)
-+		reg |= MX27_CSPICTRL_PHA;
-+	if (config->mode & SPI_CPOL)
-+		reg |= MX27_CSPICTRL_POL;
-+	if (config->mode & SPI_CS_HIGH)
-+		reg |= MX27_CSPICTRL_SSPOL;
-+	if (config->cs < 0)
-+		reg |= (config->cs + 32) << MX27_CSPICTRL_CS_SHIFT;
-+
-+	writel(reg, mxc_spi->base + MXC_CSPICTRL);
-+
-+	return 0;
-+}
-+
-+static int mx27_rx_available(struct mxc_spi_data *mxc_spi)
-+{
-+	return readl(mxc_spi->base + MXC_CSPIINT) & MX27_INTREG_RR;
-+}
-+
-+#define MX1_INTREG_RR		(1 << 3)
-+#define MX1_INTREG_TEEN		(1 << 8)
-+#define MX1_INTREG_RREN		(1 << 11)
-+
-+#define MX1_CSPICTRL_POL	(1 << 4)
-+#define MX1_CSPICTRL_PHA	(1 << 5)
-+#define MX1_CSPICTRL_XCH	(1 << 8)
-+#define MX1_CSPICTRL_ENABLE	(1 << 9)
-+#define MX1_CSPICTRL_MASTER	(1 << 10)
-+#define MX1_CSPICTRL_DR_SHIFT	13
-+
-+static void mx1_intctrl(struct mxc_spi_data *mxc_spi, int enable)
-+{
-+	unsigned int val = 0;
-+
-+	if (enable & MXC_INT_TE)
-+		val |= MX1_INTREG_TEEN;
-+	if (enable & MXC_INT_RR)
-+		val |= MX1_INTREG_RREN;
-+
-+	writel(val, mxc_spi->base + MXC_CSPIINT);
-+}
-+
-+static void mx1_trigger(struct mxc_spi_data *mxc_spi)
-+{
-+	unsigned int reg;
-+
-+	reg = readl(mxc_spi->base + MXC_CSPICTRL);
-+	reg |= MX1_CSPICTRL_XCH;
-+	writel(reg, mxc_spi->base + MXC_CSPICTRL);
-+}
-+
-+static int mx1_config(struct mxc_spi_data *mxc_spi,
-+		struct mxc_spi_config *config)
-+{
-+	unsigned int reg = MX1_CSPICTRL_ENABLE | MX1_CSPICTRL_MASTER;
-+
-+	reg |= mxc_spi_clkdiv_2(mxc_spi->spi_clk, config->speed_hz) <<
-+		MX1_CSPICTRL_DR_SHIFT;
-+	reg |= config->bpw - 1;
-+
-+	if (config->mode & SPI_CPHA)
-+		reg |= MX1_CSPICTRL_PHA;
-+	if (config->mode & SPI_CPOL)
-+		reg |= MX1_CSPICTRL_POL;
-+
-+	writel(reg, mxc_spi->base + MXC_CSPICTRL);
-+
-+	return 0;
-+}
-+
-+static int mx1_rx_available(struct mxc_spi_data *mxc_spi)
-+{
-+	return readl(mxc_spi->base + MXC_CSPIINT) & MX1_INTREG_RR;
-+}
-+
-+static void mxc_spi_chipselect(struct spi_device *spi, int is_active)
-+{
-+	struct mxc_spi_data *mxc_spi = spi_master_get_devdata(spi->master);
-+	unsigned int cs = 0;
-+	int gpio = mxc_spi->chipselect[spi->chip_select];
-+	struct mxc_spi_config config;
-+
-+	if (spi->mode & SPI_CS_HIGH)
-+		cs = 1;
-+
-+	if (is_active == BITBANG_CS_INACTIVE) {
-+		if (gpio >= 0)
-+			gpio_set_value(gpio, !cs);
-+		return;
-+	}
-+
-+	config.bpw = spi->bits_per_word;
-+	config.speed_hz = spi->max_speed_hz;
-+	config.mode = spi->mode;
-+	config.cs = mxc_spi->chipselect[spi->chip_select];
-+
-+	mxc_spi->config(mxc_spi, &config);
-+
-+	/* Initialize the functions for transfer */
-+	if (config.bpw <= 8) {
-+		mxc_spi->rx = mxc_spi_buf_rx_u8;
-+		mxc_spi->tx = mxc_spi_buf_tx_u8;
-+	} else if (config.bpw <= 16) {
-+		mxc_spi->rx = mxc_spi_buf_rx_u16;
-+		mxc_spi->tx = mxc_spi_buf_tx_u16;
-+	} else if (config.bpw <= 32) {
-+		mxc_spi->rx = mxc_spi_buf_rx_u32;
-+		mxc_spi->tx = mxc_spi_buf_tx_u32;
-+	} else
-+		BUG();
-+
-+	if (gpio >= 0)
-+		gpio_set_value(gpio, cs);
-+
-+	return;
-+}
-+
-+static void mxc_spi_push(struct mxc_spi_data *mxc_spi)
-+{
-+	while (mxc_spi->txfifo < 8) {
-+		if (!mxc_spi->count)
-+			break;
-+		mxc_spi->tx(mxc_spi);
-+		mxc_spi->txfifo++;
-+	}
-+
-+	mxc_spi->trigger(mxc_spi);
-+}
-+
-+static irqreturn_t mxc_spi_isr(int irq, void *dev_id)
-+{
-+	struct mxc_spi_data *mxc_spi = dev_id;
-+
-+	while (mxc_spi->rx_available(mxc_spi)) {
-+		mxc_spi->rx(mxc_spi);
-+		mxc_spi->txfifo--;
-+	}
-+
-+	if (mxc_spi->count) {
-+		mxc_spi_push(mxc_spi);
-+		return IRQ_HANDLED;
-+	}
-+
-+	if (mxc_spi->txfifo) {
-+		/* No data left to push, but still waiting for rx data,
-+		 * enable receive data available interrupt.
-+		 */
-+		mxc_spi->intctrl(mxc_spi, MXC_INT_RR);
-+		return IRQ_HANDLED;
-+	}
-+
-+	mxc_spi->intctrl(mxc_spi, 0);
-+	complete(&mxc_spi->xfer_done);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int mxc_spi_setupxfer(struct spi_device *spi,
-+				 struct spi_transfer *t)
-+{
-+	struct mxc_spi_data *mxc_spi = spi_master_get_devdata(spi->master);
-+	struct mxc_spi_config config;
-+
-+	config.bpw = t ? t->bits_per_word : spi->bits_per_word;
-+	config.speed_hz  = t ? t->speed_hz : spi->max_speed_hz;
-+	config.mode = spi->mode;
-+
-+	mxc_spi->config(mxc_spi, &config);
-+
-+	return 0;
-+}
-+
-+static int mxc_spi_transfer(struct spi_device *spi,
-+				struct spi_transfer *transfer)
-+{
-+	struct mxc_spi_data *mxc_spi = spi_master_get_devdata(spi->master);
-+
-+	mxc_spi->tx_buf = transfer->tx_buf;
-+	mxc_spi->rx_buf = transfer->rx_buf;
-+	mxc_spi->count = transfer->len;
-+	mxc_spi->txfifo = 0;
-+
-+	init_completion(&mxc_spi->xfer_done);
-+
-+	mxc_spi_push(mxc_spi);
-+
-+	mxc_spi->intctrl(mxc_spi, MXC_INT_TE);
-+
-+	wait_for_completion(&mxc_spi->xfer_done);
-+
-+	return transfer->len;
-+}
-+
-+static int mxc_spi_setup(struct spi_device *spi)
-+{
-+	if (!spi->bits_per_word)
-+		spi->bits_per_word = 8;
-+
-+	pr_debug("%s: mode %d, %u bpw, %d hz\n", __func__,
-+		 spi->mode, spi->bits_per_word, spi->max_speed_hz);
-+
-+	mxc_spi_chipselect(spi, BITBANG_CS_INACTIVE);
-+
-+	return 0;
-+}
-+
-+static void mxc_spi_cleanup(struct spi_device *spi)
-+{
-+}
-+
-+static int __init mxc_spi_probe(struct platform_device *pdev)
-+{
-+	struct spi_imx_master *mxc_platform_info;
-+	struct spi_master *master;
-+	struct mxc_spi_data *mxc_spi;
-+	struct resource *res;
-+	int i, ret;
-+
-+	mxc_platform_info = (struct spi_imx_master *)pdev->dev.platform_data;
-+	if (!mxc_platform_info) {
-+		dev_err(&pdev->dev, "can't get the platform data\n");
-+		return -EINVAL;
-+	}
-+
-+	master = spi_alloc_master(&pdev->dev, sizeof(struct mxc_spi_data));
-+	if (!master)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, master);
-+
-+	master->bus_num = pdev->id;
-+	master->num_chipselect = mxc_platform_info->num_chipselect;
-+
-+	mxc_spi = spi_master_get_devdata(master);
-+	mxc_spi->bitbang.master = spi_master_get(master);
-+	mxc_spi->chipselect = mxc_platform_info->chipselect;
-+
-+	for (i = 0; i < master->num_chipselect; i++) {
-+		if (mxc_spi->chipselect[i] < 0)
-+			continue;
-+		ret = gpio_request(mxc_spi->chipselect[i], DRIVER_NAME);
-+		if (ret) {
-+			i--;
-+			while (i > 0)
-+				if (mxc_spi->chipselect[i] >= 0)
-+					gpio_free(mxc_spi->chipselect[i--]);
-+			dev_err(&pdev->dev, "can't get cs gpios");
-+			goto out_master_put;
-+		}
-+		gpio_direction_output(mxc_spi->chipselect[i], 1);
-+	}
-+
-+	mxc_spi->bitbang.chipselect = mxc_spi_chipselect;
-+	mxc_spi->bitbang.setup_transfer = mxc_spi_setupxfer;
-+	mxc_spi->bitbang.txrx_bufs = mxc_spi_transfer;
-+	mxc_spi->bitbang.master->setup = mxc_spi_setup;
-+	mxc_spi->bitbang.master->cleanup = mxc_spi_cleanup;
-+
-+	init_completion(&mxc_spi->xfer_done);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(&pdev->dev, "can't get platform resource\n");
-+		ret = -ENOMEM;
-+		goto out_gpio_free;
-+	}
-+
-+	if (!request_mem_region(res->start, resource_size(res), pdev->name)) {
-+		dev_err(&pdev->dev, "request_mem_region failed\n");
-+		ret = -EBUSY;
-+		goto out_gpio_free;
-+	}
-+
-+	mxc_spi->base = ioremap(res->start, resource_size(res));
-+	if (!mxc_spi->base) {
-+		ret = -EINVAL;
-+		goto out_release_mem;
-+	}
-+
-+	mxc_spi->irq = platform_get_irq(pdev, 0);
-+	if (!mxc_spi->irq) {
-+		ret = -EINVAL;
-+		goto out_iounmap;
-+	}
-+
-+	ret = request_irq(mxc_spi->irq, mxc_spi_isr, 0, DRIVER_NAME, mxc_spi);
-+	if (ret) {
-+		dev_err(&pdev->dev, "can't get irq%d: %d\n", mxc_spi->irq, ret);
-+		goto out_iounmap;
-+	}
-+
-+	if (cpu_is_mx31() || cpu_is_mx35()) {
-+		mxc_spi->intctrl = mx31_intctrl;
-+		mxc_spi->config = mx31_config;
-+		mxc_spi->trigger = mx31_trigger;
-+		mxc_spi->rx_available = mx31_rx_available;
-+	} else  if (cpu_is_mx27() || cpu_is_mx21()) {
-+		mxc_spi->intctrl = mx27_intctrl;
-+		mxc_spi->config = mx27_config;
-+		mxc_spi->trigger = mx27_trigger;
-+		mxc_spi->rx_available = mx27_rx_available;
-+	} else if (cpu_is_mx1()) {
-+		mxc_spi->intctrl = mx1_intctrl;
-+		mxc_spi->config = mx1_config;
-+		mxc_spi->trigger = mx1_trigger;
-+		mxc_spi->rx_available = mx1_rx_available;
-+	} else
-+		BUG();
-+
-+	mxc_spi->clk = clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(mxc_spi->clk)) {
-+		dev_err(&pdev->dev, "unable to get clock\n");
-+		ret = PTR_ERR(mxc_spi->clk);
-+		goto out_free_irq;
-+	}
-+
-+	clk_enable(mxc_spi->clk);
-+	mxc_spi->spi_clk = clk_get_rate(mxc_spi->clk);
-+
-+	if (!cpu_is_mx31() || !cpu_is_mx35())
-+		writel(1, mxc_spi->base + MXC_RESET);
-+
-+	mxc_spi->intctrl(mxc_spi, 0);
-+
-+	ret = spi_bitbang_start(&mxc_spi->bitbang);
-+	if (ret) {
-+		dev_err(&pdev->dev, "bitbang start failed with %d\n", ret);
-+		goto out_clk_put;
-+	}
-+
-+	dev_info(&pdev->dev, "probed\n");
-+
-+	return ret;
-+
-+out_clk_put:
-+	clk_disable(mxc_spi->clk);
-+	clk_put(mxc_spi->clk);
-+out_free_irq:
-+	free_irq(mxc_spi->irq, mxc_spi);
-+out_iounmap:
-+	iounmap(mxc_spi->base);
-+out_release_mem:
-+	release_mem_region(res->start, resource_size(res));
-+out_gpio_free:
-+	for (i = 0; i < master->num_chipselect; i++)
-+		if (mxc_spi->chipselect[i] >= 0)
-+			gpio_free(mxc_spi->chipselect[i]);
-+out_master_put:
-+	spi_master_put(master);
-+	kfree(master);
-+	platform_set_drvdata(pdev, NULL);
-+	return ret;
-+}
-+
-+static int __exit mxc_spi_remove(struct platform_device *pdev)
-+{
-+	struct spi_master *master = platform_get_drvdata(pdev);
-+	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct mxc_spi_data *mxc_spi = spi_master_get_devdata(master);
-+	int i;
-+
-+	spi_bitbang_stop(&mxc_spi->bitbang);
-+
-+	writel(0, mxc_spi->base + MXC_CSPICTRL);
-+	clk_disable(mxc_spi->clk);
-+	clk_put(mxc_spi->clk);
-+	free_irq(mxc_spi->irq, mxc_spi);
-+	iounmap(mxc_spi->base);
-+
-+	for (i = 0; i < master->num_chipselect; i++)
-+		if (mxc_spi->chipselect[i] >= 0)
-+			gpio_free(mxc_spi->chipselect[i]);
-+
-+	spi_master_put(master);
-+
-+	release_mem_region(res->start, resource_size(res));
-+
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver mxc_spi_driver = {
-+	.driver = {
-+		   .name = DRIVER_NAME,
-+		   .owner = THIS_MODULE,
-+		   },
-+	.probe = mxc_spi_probe,
-+	.remove = __exit_p(mxc_spi_remove),
-+};
-+
-+static int __init mxc_spi_init(void)
-+{
-+	return platform_driver_register(&mxc_spi_driver);
-+}
-+
-+static void __exit mxc_spi_exit(void)
-+{
-+	platform_driver_unregister(&mxc_spi_driver);
-+}
-+
-+module_init(mxc_spi_init);
-+module_exit(mxc_spi_exit);
-+
-+MODULE_DESCRIPTION("SPI Master Controller driver");
-+MODULE_AUTHOR("Sascha Hauer, Pengutronix");
-+MODULE_LICENSE("GPL");
--- 
-1.6.3.1
+On Wed, Jun 17, 2009 at 08:55:01PM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> Adds support for the dedicated SPI device on the Freescale MPC5200(b)
+> SoC.
+>=20
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>=20
+> Hi David,
+>=20
+> It's been a while since I've posted this, but I believe I've addressed
+> all the outstanding comments against v3, and people are asking me for it.
+> The pre-message stuff is all gone and the error handling should be
+> better now.
+>=20
+> BTW, the premessage stuff was to handle a platform I had where some of
+> the CS lines were controlled with a separate SPI transaction to the
+> same SPI controller.  It almost looks like an SPI bridge.  It requires
+> more thought before I try again.
+>=20
+> Being a new driver, it would be nice to get it into 2.6.31, but
+> definitely not critical.
+>=20
+> g.
+>=20
+>  drivers/spi/Kconfig             |    8 +
+>  drivers/spi/Makefile            |    1=20
+>  drivers/spi/mpc52xx_spi.c       |  520 +++++++++++++++++++++++++++++++++=
+++++++
+>  include/linux/spi/mpc52xx_spi.h |   10 +
+>  4 files changed, 539 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/spi/mpc52xx_spi.c
+>  create mode 100644 include/linux/spi/mpc52xx_spi.h
+>=20
+>=20
+> diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+> index 83a185d..1994bcd 100644
+> --- a/drivers/spi/Kconfig
+> +++ b/drivers/spi/Kconfig
+> @@ -132,6 +132,14 @@ config SPI_LM70_LLP
+>  	  which interfaces to an LM70 temperature sensor using
+>  	  a parallel port.
+> =20
+> +config SPI_MPC52xx
+> +	tristate "Freescale MPC52xx SPI (non-PSC) controller support"
+> +	depends on PPC_MPC52xx && SPI
+> +	select SPI_MASTER_OF
+> +	help
+> +	  This drivers supports the MPC52xx SPI controller in master SPI
+> +	  mode.
+> +
+>  config SPI_MPC52xx_PSC
+>  	tristate "Freescale MPC52xx PSC SPI controller"
+>  	depends on PPC_MPC52xx && EXPERIMENTAL
+> diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+> index 5d04519..8de32c7 100644
+> --- a/drivers/spi/Makefile
+> +++ b/drivers/spi/Makefile
+> @@ -24,6 +24,7 @@ obj-$(CONFIG_SPI_OMAP_UWIRE)		+=3D omap_uwire.o
+>  obj-$(CONFIG_SPI_OMAP24XX)		+=3D omap2_mcspi.o
+>  obj-$(CONFIG_SPI_ORION)			+=3D orion_spi.o
+>  obj-$(CONFIG_SPI_MPC52xx_PSC)		+=3D mpc52xx_psc_spi.o
+> +obj-$(CONFIG_SPI_MPC52xx)		+=3D mpc52xx_spi.o
+>  obj-$(CONFIG_SPI_MPC83xx)		+=3D spi_mpc83xx.o
+>  obj-$(CONFIG_SPI_S3C24XX_GPIO)		+=3D spi_s3c24xx_gpio.o
+>  obj-$(CONFIG_SPI_S3C24XX)		+=3D spi_s3c24xx.o
+> diff --git a/drivers/spi/mpc52xx_spi.c b/drivers/spi/mpc52xx_spi.c
+> new file mode 100644
+> index 0000000..ef8379b
+> --- /dev/null
+> +++ b/drivers/spi/mpc52xx_spi.c
+> @@ -0,0 +1,520 @@
+> +/*
+> + * MPC52xx SPI bus driver.
+> + *
+> + * Copyright (C) 2008 Secret Lab Technologies Ltd.
+> + *
+> + * This file is released under the GPLv2
+> + *
+> + * This is the driver for the MPC5200's dedicated SPI controller.
+> + *
+> + * Note: this driver does not support the MPC5200 PSC in SPI mode.  For
+> + * that driver see drivers/spi/mpc52xx_psc_spi.c
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/errno.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/delay.h>
+> +#include <linux/spi/spi.h>
+> +#include <linux/spi/mpc52xx_spi.h>
 
+Is this still needed? See last comment...
+
+> +#include <linux/of_spi.h>
+> +#include <linux/io.h>
+> +#include <asm/time.h>
+
+Really asm?
+
+> +#include <asm/mpc52xx.h>
+> +
+> +MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
+> +MODULE_DESCRIPTION("MPC52xx SPI (non-PSC) Driver");
+> +MODULE_LICENSE("GPL");
+> +
+> +/* Register offsets */
+> +#define SPI_CTRL1	0x00
+> +#define SPI_CTRL1_SPIE		(1 << 7)
+> +#define SPI_CTRL1_SPE		(1 << 6)
+> +#define SPI_CTRL1_MSTR		(1 << 4)
+> +#define SPI_CTRL1_CPOL		(1 << 3)
+> +#define SPI_CTRL1_CPHA		(1 << 2)
+> +#define SPI_CTRL1_SSOE		(1 << 1)
+> +#define SPI_CTRL1_LSBFE		(1 << 0)
+> +
+> +#define SPI_CTRL2	0x01
+> +#define SPI_BRR		0x04
+> +
+> +#define SPI_STATUS	0x05
+> +#define SPI_STATUS_SPIF		(1 << 7)
+> +#define SPI_STATUS_WCOL		(1 << 6)
+> +#define SPI_STATUS_MODF		(1 << 4)
+> +
+> +#define SPI_DATA	0x09
+> +#define SPI_PORTDATA	0x0d
+> +#define SPI_DATADIR	0x10
+> +
+> +/* FSM state return values */
+> +#define FSM_STOP	0	/* Nothing more for the state machine to */
+> +				/* do.  If something interesting happens */
+> +				/* then and IRQ will be received */
+
+s/and/an/? Throughout the comments, there is sometimes a double space.
+
+> +#define FSM_POLL	1	/* need to poll for completion, an IRQ is */
+> +				/* not expected */
+> +#define FSM_CONTINUE	2	/* Keep iterating the state machine */
+> +
+> +/* Driver internal data */
+> +struct mpc52xx_spi {
+> +	struct spi_master *master;
+> +	u32 sysclk;
+
+unused?
+
+> +	void __iomem *regs;
+> +	int irq0;	/* MODF irq */
+> +	int irq1;	/* SPIF irq */
+> +	int ipb_freq;
+
+unsigned int will suit it better IMHO.
+
+> +
+> +	/* Statistics */
+> +	int msg_count;
+> +	int wcol_count;
+> +	int wcol_ticks;
+> +	u32 wcol_tx_timestamp;
+> +	int modf_count;
+> +	int byte_count;
+
+Hmm, there isn't even a debug-printout for those. Putting #ifdef DEBUG arou=
+nd
+them will be ugly. Well, I can't make up if this is just overhead or useful
+debugging aid, so no real objection :)
+
+> +
+> +	struct list_head queue;		/* queue of pending messages */
+> +	spinlock_t lock;
+> +	struct work_struct work;
+> +
+> +
+> +	/* Details of current transfer (length, and buffer pointers) */
+> +	struct spi_message *message;	/* current message */
+> +	struct spi_transfer *transfer;	/* current transfer */
+> +	int (*state)(int irq, struct mpc52xx_spi *ms, u8 status, u8 data);
+> +	int len;
+> +	int timestamp;
+> +	u8 *rx_buf;
+> +	const u8 *tx_buf;
+> +	int cs_change;
+> +};
+> +
+> +/*
+> + * CS control function
+> + */
+> +static void mpc52xx_spi_chipsel(struct mpc52xx_spi *ms, int value)
+> +{
+> +	out_8(ms->regs + SPI_PORTDATA, value ? 0 : 0x08);
+
+Magic value.
+
+But I wonder more about the usage of the SS pin and if this chipsel is need=
+ed
+at all (sadly I cannot test as I don't have any board with SPI connected to
+that device). You define the SS-pin as output, but do not set the SSOE-bit.
+More, you use the MODF-feature, so the SS-pin should be defined as input?
+According to Table 17.3 in the PM, you have that pin defined as generic pur=
+pose
+output.
+
+> +}
+> +
+> +/*
+> + * Start a new transfer.  This is called both by the idle state
+> + * for the first transfer in a message, and by the wait state when the
+> + * previous transfer in a message is complete.
+> + */
+> +static void mpc52xx_spi_start_transfer(struct mpc52xx_spi *ms)
+> +{
+> +	ms->rx_buf =3D ms->transfer->rx_buf;
+> +	ms->tx_buf =3D ms->transfer->tx_buf;
+> +	ms->len =3D ms->transfer->len;
+> +
+> +	/* Activate the chip select */
+> +	if (ms->cs_change)
+> +		mpc52xx_spi_chipsel(ms, 1);
+> +	ms->cs_change =3D ms->transfer->cs_change;
+> +
+> +	/* Write out the first byte */
+> +	ms->wcol_tx_timestamp =3D get_tbl();
+> +	if (ms->tx_buf)
+> +		out_8(ms->regs + SPI_DATA, *ms->tx_buf++);
+> +	else
+> +		out_8(ms->regs + SPI_DATA, 0);
+> +}
+> +
+> +/* Forward declaration of state handlers */
+> +static int mpc52xx_spi_fsmstate_transfer(int irq, struct mpc52xx_spi *ms,
+> +					 u8 status, u8 data);
+> +static int mpc52xx_spi_fsmstate_wait(int irq, struct mpc52xx_spi *ms,
+> +				     u8 status, u8 data);
+> +
+> +/*
+> + * IDLE state
+> + *
+> + * No transfers are in progress; if another transfer is pending then ret=
+rieve
+> + * it and kick it off.  Otherwise, stop processing the state machine
+> + */
+> +static int
+> +mpc52xx_spi_fsmstate_idle(int irq, struct mpc52xx_spi *ms, u8 status, u8=
+ data)
+> +{
+> +	struct spi_device *spi;
+> +	int spr, sppr;
+> +	u8 ctrl1;
+> +
+> +	if (status && (irq !=3D NO_IRQ))
+> +		dev_err(&ms->master->dev, "spurious irq, status=3D0x%.2x\n",
+> +			status);
+> +
+> +	/* Check if there is another transfer waiting. */
+> +	if (list_empty(&ms->queue))
+> +		return FSM_STOP;
+> +
+> +	/* get the head of the queue */
+> +	ms->message =3D list_first_entry(&ms->queue, struct spi_message, queue);
+> +	list_del_init(&ms->message->queue);
+> +
+> +	/* Setup the controller parameters */
+> +	ctrl1 =3D SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR;
+> +	spi =3D ms->message->spi;
+> +	if (spi->mode & SPI_CPHA)
+> +		ctrl1 |=3D SPI_CTRL1_CPHA;
+> +	if (spi->mode & SPI_CPOL)
+> +		ctrl1 |=3D SPI_CTRL1_CPOL;
+> +	if (spi->mode & SPI_LSB_FIRST)
+> +		ctrl1 |=3D SPI_CTRL1_LSBFE;
+> +	out_8(ms->regs + SPI_CTRL1, ctrl1);
+> +
+> +	/* Setup the controller speed */
+> +	/* minimum divider is '2'.  Also, add '1' to force rounding the
+> +	 * divider up. */
+> +	sppr =3D ((ms->ipb_freq / ms->message->spi->max_speed_hz) + 1) >> 1;
+> +	spr =3D 0;
+> +	if (sppr < 1)
+> +		sppr =3D 1;
+> +	while (((sppr - 1) & ~0x7) !=3D 0) {
+> +		sppr =3D (sppr + 1) >> 1; /* add '1' to force rounding up */
+> +		spr++;
+> +	}
+> +	sppr--;		/* sppr quantity in register is offset by 1 */
+> +	if (spr > 7) {
+> +		/* Don't overrun limits of SPI baudrate register */
+> +		spr =3D 7;
+> +		sppr =3D 7;
+> +	}
+> +	out_8(ms->regs + SPI_BRR, sppr << 4 | spr); /* Set speed */
+> +
+> +	ms->cs_change =3D 1;
+> +	ms->transfer =3D container_of(ms->message->transfers.next,
+> +				    struct spi_transfer, transfer_list);
+> +
+> +	mpc52xx_spi_start_transfer(ms);
+> +	ms->state =3D mpc52xx_spi_fsmstate_transfer;
+> +
+> +	return FSM_CONTINUE;
+> +}
+> +
+> +/*
+> + * TRANSFER state
+> + *
+> + * In the middle of a transfer.  If the SPI core has completed processing
+> + * a byte, then read out the received data and write out the next byte
+> + * (unless this transfer is finished; in which case go on to the wait
+> + * state)
+> + */
+> +static int mpc52xx_spi_fsmstate_transfer(int irq, struct mpc52xx_spi *ms,
+> +					 u8 status, u8 data)
+> +{
+> +	if (!status)
+> +		return ms->irq0 ? FSM_STOP : FSM_POLL;
+> +
+> +	if (status & SPI_STATUS_WCOL) {
+> +		/* The SPI controller is stoopid.  At slower speeds, it may
+> +		 * raise the SPIF flag before the state machine is actually
+> +		 * finished, which causes a collision (internal to the state
+> +		 * machine only).  The manual recommends inserting a delay
+> +		 * between receiving the interrupt and sending the next byte,
+> +		 * but it can also be worked around simply by retrying the
+> +		 * transfer which is what we do here. */
+> +		ms->wcol_count++;
+> +		ms->wcol_ticks +=3D get_tbl() - ms->wcol_tx_timestamp;
+> +		ms->wcol_tx_timestamp =3D get_tbl();
+> +		data =3D 0;
+> +		if (ms->tx_buf)
+> +			data =3D *(ms->tx_buf-1);
+
+spaces around operator.
+
+> +		out_8(ms->regs + SPI_DATA, data); /* try again */
+> +		return FSM_CONTINUE;
+> +	} else if (status & SPI_STATUS_MODF) {
+> +		ms->modf_count++;
+> +		dev_err(&ms->master->dev, "mode fault\n");
+> +		mpc52xx_spi_chipsel(ms, 0);
+> +		ms->message->status =3D -EIO;
+> +		ms->message->complete(ms->message->context);
+> +		ms->state =3D mpc52xx_spi_fsmstate_idle;
+> +		return FSM_CONTINUE;
+> +	}
+> +
+> +	/* Read data out of the spi device */
+> +	ms->byte_count++;
+> +	if (ms->rx_buf)
+> +		*ms->rx_buf++ =3D data;
+> +
+> +	/* Is the transfer complete? */
+> +	ms->len--;
+> +	if (ms->len =3D=3D 0) {
+> +		ms->timestamp =3D get_tbl();
+> +		ms->timestamp +=3D ms->transfer->delay_usecs * tb_ticks_per_usec;
+> +		ms->state =3D mpc52xx_spi_fsmstate_wait;
+> +		return FSM_CONTINUE;
+> +	}
+> +
+> +	/* Write out the next byte */
+> +	ms->wcol_tx_timestamp =3D get_tbl();
+> +	if (ms->tx_buf)
+> +		out_8(ms->regs + SPI_DATA, *ms->tx_buf++);
+> +	else
+> +		out_8(ms->regs + SPI_DATA, 0);
+> +
+> +	return FSM_CONTINUE;
+> +}
+> +
+> +/*
+> + * WAIT state
+> + *
+> + * A transfer has completed; need to wait for the delay period to comple=
+te
+> + * before starting the next transfer
+> + */
+> +static int
+> +mpc52xx_spi_fsmstate_wait(int irq, struct mpc52xx_spi *ms, u8 status, u8=
+ data)
+> +{
+> +	if (status && irq)
+> +		dev_err(&ms->master->dev, "spurious irq, status=3D0x%.2x\n",
+> +			status);
+> +
+> +	if (((int)get_tbl()) - ms->timestamp < 0)
+> +		return FSM_POLL;
+> +
+> +	ms->message->actual_length +=3D ms->transfer->len;
+> +
+> +	/* Check if there is another transfer in this message.  If there
+> +	 * aren't then deactivate CS, notify sender, and drop back to idle
+> +	 * to start the next message. */
+> +	if (ms->transfer->transfer_list.next =3D=3D &ms->message->transfers) {
+> +		ms->msg_count++;
+> +		mpc52xx_spi_chipsel(ms, 0);
+> +		ms->message->status =3D 0;
+> +		ms->message->complete(ms->message->context);
+> +		ms->state =3D mpc52xx_spi_fsmstate_idle;
+> +		return FSM_CONTINUE;
+> +	}
+> +
+> +	/* There is another transfer; kick it off */
+> +
+> +	if (ms->cs_change)
+> +		mpc52xx_spi_chipsel(ms, 0);
+> +
+> +	ms->transfer =3D container_of(ms->transfer->transfer_list.next,
+> +				    struct spi_transfer, transfer_list);
+> +	mpc52xx_spi_start_transfer(ms);
+> +	ms->state =3D mpc52xx_spi_fsmstate_transfer;
+> +	return FSM_CONTINUE;
+> +}
+> +
+> +/**
+> + * mpc52xx_spi_fsm_process - Finite State Machine iteration function
+> + * @irq: irq number that triggered the FSM or 0 for polling
+> + * @ms: pointer to mpc52xx_spi driver data
+> + */
+> +static void mpc52xx_spi_fsm_process(int irq, struct mpc52xx_spi *ms)
+> +{
+> +	int rc =3D FSM_CONTINUE;
+> +	u8 status, data;
+> +
+> +	while (rc =3D=3D FSM_CONTINUE) {
+> +		/* Interrupt cleared by read of STATUS followed by
+> +		 * read of DATA registers */
+> +		status =3D in_8(ms->regs + SPI_STATUS);
+> +		data =3D in_8(ms->regs + SPI_DATA);
+> +		rc =3D ms->state(irq, ms, status, data);
+> +	}
+> +
+> +	if (rc =3D=3D FSM_POLL)
+> +		schedule_work(&ms->work);
+> +}
+> +
+> +/**
+> + * mpc52xx_spi_irq - IRQ handler
+> + */
+> +static irqreturn_t mpc52xx_spi_irq(int irq, void *_ms)
+> +{
+> +	struct mpc52xx_spi *ms =3D _ms;
+> +	spin_lock(&ms->lock);
+> +	mpc52xx_spi_fsm_process(irq, ms);
+> +	spin_unlock(&ms->lock);
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +/**
+> + * mpc52xx_spi_wq - Workqueue function for polling the state machine
+> + */
+> +static void mpc52xx_spi_wq(struct work_struct *work)
+> +{
+> +	struct mpc52xx_spi *ms =3D container_of(work, struct mpc52xx_spi, work);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&ms->lock, flags);
+> +	mpc52xx_spi_fsm_process(0, ms);
+> +	spin_unlock_irqrestore(&ms->lock, flags);
+> +}
+> +
+> +/*
+> + * spi_master ops
+> + */
+> +
+> +static int mpc52xx_spi_setup(struct spi_device *spi)
+> +{
+> +	if (spi->bits_per_word % 8)
+> +		return -EINVAL;
+> +
+> +	if (spi->mode & ~(SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST))
+> +		return -EINVAL;
+> +
+> +	if (spi->chip_select >=3D spi->master->num_chipselect)
+> +		return -EINVAL;
+> +
+> +	return 0;
+> +}
+> +
+> +static int mpc52xx_spi_transfer(struct spi_device *spi, struct spi_messa=
+ge *m)
+> +{
+> +	struct mpc52xx_spi *ms =3D spi_master_get_devdata(spi->master);
+> +	unsigned long flags;
+> +
+> +	m->actual_length =3D 0;
+> +	m->status =3D -EINPROGRESS;
+> +
+> +	spin_lock_irqsave(&ms->lock, flags);
+> +	list_add_tail(&m->queue, &ms->queue);
+> +	spin_unlock_irqrestore(&ms->lock, flags);
+> +	schedule_work(&ms->work);
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * OF Platform Bus Binding
+> + */
+> +static int __devinit mpc52xx_spi_probe(struct of_device *op,
+> +				       const struct of_device_id *match)
+> +{
+> +	struct spi_master *master;
+> +	struct mpc52xx_spi *ms;
+> +	void __iomem *regs;
+> +	int rc;
+> +
+> +	/* MMIO registers */
+> +	dev_dbg(&op->dev, "probing mpc5200 SPI device\n");
+> +	regs =3D of_iomap(op->node, 0);
+> +	if (!regs)
+> +		return -ENODEV;
+> +
+> +	/* initialize the device */
+> +	out_8(regs+SPI_CTRL1, SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR);
+
+spaces around operator.
+
+> +	out_8(regs + SPI_CTRL2, 0x0);
+> +	out_8(regs + SPI_DATADIR, 0xe);	/* Set output pins */
+> +	out_8(regs + SPI_PORTDATA, 0x8);	/* Deassert /SS signal */
+> +
+> +	/* Clear the status register and re-read it to check for a MODF
+> +	 * failure.  This driver cannot currently handle multiple masters
+> +	 * on the SPI bus.  This fault will also occur if the SPI signals
+> +	 * are not connected to any pins (port_config setting) */
+> +	in_8(regs + SPI_STATUS);
+> +	in_8(regs + SPI_DATA);
+> +	if (in_8(regs + SPI_STATUS) & SPI_STATUS_MODF) {
+> +		dev_err(&op->dev, "mode fault; is port_config correct?\n");
+> +		rc =3D -EIO;
+> +		goto err_init;
+> +	}
+> +
+> +	dev_dbg(&op->dev, "allocating spi_master struct\n");
+> +	master =3D spi_alloc_master(&op->dev, sizeof *ms);
+> +	if (!master) {
+> +		rc =3D -ENOMEM;
+> +		goto err_alloc;
+> +	}
+> +	master->bus_num =3D -1;
+> +	master->num_chipselect =3D 1;
+> +	master->setup =3D mpc52xx_spi_setup;
+> +	master->transfer =3D mpc52xx_spi_transfer;
+> +	dev_set_drvdata(&op->dev, master);
+> +
+> +	ms =3D spi_master_get_devdata(master);
+> +	ms->master =3D master;
+> +	ms->regs =3D regs;
+> +	ms->irq0 =3D irq_of_parse_and_map(op->node, 0);
+> +	ms->irq1 =3D irq_of_parse_and_map(op->node, 1);
+> +	ms->state =3D mpc52xx_spi_fsmstate_idle;
+> +	ms->ipb_freq =3D mpc5xxx_get_bus_frequency(op->node);
+> +	spin_lock_init(&ms->lock);
+> +	INIT_LIST_HEAD(&ms->queue);
+> +	INIT_WORK(&ms->work, mpc52xx_spi_wq);
+> +
+> +	/* Decide if interrupts can be used */
+> +	if (ms->irq0 && ms->irq1) {
+> +		rc =3D request_irq(ms->irq0, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
+> +				  "mpc5200-spi-modf", ms);
+> +		rc |=3D request_irq(ms->irq1, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
+> +				  "mpc5200-spi-spiF", ms);
+
+Capital 'F' wanted?
+
+> +		if (rc) {
+> +			free_irq(ms->irq0, ms);
+> +			free_irq(ms->irq1, ms);
+> +			ms->irq0 =3D ms->irq1 =3D 0;
+> +		}
+> +	} else {
+> +		/* operate in polled mode */
+> +		ms->irq0 =3D ms->irq1 =3D 0;
+> +	}
+> +
+> +	if (!ms->irq0)
+> +		dev_info(&op->dev, "using polled mode\n");
+> +
+> +	dev_dbg(&op->dev, "registering spi_master struct\n");
+> +	rc =3D spi_register_master(master);
+> +	if (rc)
+> +		goto err_register;
+> +
+> +	of_register_spi_devices(master, op->node);
+> +	dev_info(&ms->master->dev, "registered MPC5200 SPI bus\n");
+> +
+> +	return rc;
+> +
+> + err_register:
+> +	dev_err(&ms->master->dev, "initialization failed\n");
+> +	spi_master_put(master);
+> + err_alloc:
+> + err_init:
+> +	iounmap(regs);
+> +	return rc;
+> +}
+> +
+> +static int __devexit mpc52xx_spi_remove(struct of_device *op)
+> +{
+> +	struct spi_master *master =3D dev_get_drvdata(&op->dev);
+> +	struct mpc52xx_spi *ms =3D spi_master_get_devdata(master);
+> +
+> +	free_irq(ms->irq0, ms);
+> +	free_irq(ms->irq1, ms);
+> +
+> +	spi_unregister_master(master);
+> +	spi_master_put(master);
+> +	iounmap(ms->regs);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct of_device_id mpc52xx_spi_match[] __devinitdata =3D {
+> +	{ .compatible =3D "fsl,mpc5200-spi", },
+> +	{}
+> +};
+> +MODULE_DEVICE_TABLE(of, mpc52xx_spi_match);
+> +
+> +static struct of_platform_driver mpc52xx_spi_of_driver =3D {
+> +	.owner =3D THIS_MODULE,
+> +	.name =3D "mpc52xx-spi",
+> +	.match_table =3D mpc52xx_spi_match,
+> +	.probe =3D mpc52xx_spi_probe,
+> +	.remove =3D __exit_p(mpc52xx_spi_remove),
+> +};
+> +
+> +static int __init mpc52xx_spi_init(void)
+> +{
+> +	return of_register_platform_driver(&mpc52xx_spi_of_driver);
+> +}
+> +module_init(mpc52xx_spi_init);
+> +
+> +static void __exit mpc52xx_spi_exit(void)
+> +{
+> +	of_unregister_platform_driver(&mpc52xx_spi_of_driver);
+> +}
+> +module_exit(mpc52xx_spi_exit);
+> +
+> diff --git a/include/linux/spi/mpc52xx_spi.h b/include/linux/spi/mpc52xx_=
+spi.h
+> new file mode 100644
+> index 0000000..d1004cf
+> --- /dev/null
+> +++ b/include/linux/spi/mpc52xx_spi.h
+> @@ -0,0 +1,10 @@
+> +
+> +#ifndef INCLUDE_MPC5200_SPI_H
+> +#define INCLUDE_MPC5200_SPI_H
+> +
+> +extern void mpc52xx_spi_set_premessage_hook(struct spi_master *master,
+> +					    void (*hook)(struct spi_message *m,
+> +							 void *context),
+> +					    void *hook_context);
+> +
+> +#endif
+
+This can be dropped for now and reintroduced when needed, I think.
+
+>=20
+>=20
+> -------------------------------------------------------------------------=
+-----
+> Crystal Reports - New Free Runtime and 30 Day Trial
+> Check out the new simplified licensing option that enables unlimited
+> royalty-free distribution of the report engine for externally facing=20
+> server and web deployment.
+> http://p.sf.net/sfu/businessobjects
+> _______________________________________________
+> spi-devel-general mailing list
+> spi-devel-general@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/spi-devel-general
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--k1lZvvs/B4yU6o8G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko55YYACgkQD27XaX1/VRsfJACcCa2y0a1uIcE3raajPCIxudof
+W2YAoIb/8abUQtssKTYBab4wAu5Lol4q
+=dpdH
+-----END PGP SIGNATURE-----
+
+--k1lZvvs/B4yU6o8G--
