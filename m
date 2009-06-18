@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbZFRLkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbZFRLkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761391AbZFRLkN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 07:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZFRLkB
+	id S1761180AbZFRLkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 07:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZFRLkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 07:40:01 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39290 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbZFRLkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 07:40:00 -0400
-Subject: [PATCH -tip] x86: oprofile/op_model_amd.c set return values for
- op_amd_handle_ibs()
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Robert Richter <robert.richter@amd.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Jun 2009 17:09:27 +0530
-Message-Id: <1245325167.7189.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	Thu, 18 Jun 2009 07:40:32 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:47414 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750821AbZFRLkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 07:40:32 -0400
+Date: Thu, 18 Jun 2009 19:40:33 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [BUGFIX 2/3] crypto: Remove CRYPTO_TFM_REQ_MAY_SLEEP flag in
+	AES-NI accelerated ecb/cbc mode
+Message-ID: <20090618114032.GB6596@gondor.apana.org.au>
+References: <1245056697.5320.350.camel@yhuang-dev.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245056697.5320.350.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 15, 2009 at 05:04:57PM +0800, Huang Ying wrote:
+> Because AES-NI instructions will touch XMM state, corresponding code
+> must be enclosed within kernel_fpu_begin/end, which used
+> preempt_disable/enable. So sleep should be prevented between
+> kernel_fpu_begin/end.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-op_amd_handle_ibs() should return 0 when IBS is not present or not defined.
+I'll apply this for now.  But it would be much better to allow
+sleeping in this case.
 
-Fix compilation warning:
- CC [M]  arch/x86/oprofile/op_model_amd.o
- arch/x86/oprofile/op_model_amd.c: In function ‘op_amd_handle_ibs’:
- arch/x86/oprofile/op_model_amd.c:217: warning: no return statement in function returning non-void
+Couldn't we simply move the kernel_fpu_begin/end inside the loop?
+It shouldn't be too expensive when it runs the 2nd time since it
+doesn't have to save anything, right?
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/oprofile/op_model_amd.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
-index cc93046..e95268e 100644
---- a/arch/x86/oprofile/op_model_amd.c
-+++ b/arch/x86/oprofile/op_model_amd.c
-@@ -132,7 +132,7 @@ op_amd_handle_ibs(struct pt_regs * const regs,
- 	struct op_entry entry;
- 
- 	if (!has_ibs)
--		return 1;
-+		return 0;
- 
- 	if (ibs_config.fetch_enabled) {
- 		rdmsrl(MSR_AMD64_IBSFETCHCTL, ctl);
-@@ -214,7 +214,10 @@ static void op_amd_stop_ibs(void)
- #else
- 
- static inline int op_amd_handle_ibs(struct pt_regs * const regs,
--				    struct op_msrs const * const msrs) { }
-+				    struct op_msrs const * const msrs)
-+{
-+	return 0;
-+}
- static inline void op_amd_start_ibs(void) { }
- static inline void op_amd_stop_ibs(void) { }
- 
+Cheer,
 -- 
-1.6.0.6
-
-
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
