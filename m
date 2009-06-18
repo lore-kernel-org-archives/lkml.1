@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZFRTec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbZFRThR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbZFRTec (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbZFRTeZ
+	id S1755260AbZFRThR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbZFRThH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:34:25 -0400
-Received: from claw.goop.org ([74.207.240.146]:41571 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZFRTeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:34:24 -0400
-Message-ID: <4A3A96BC.1000302@goop.org>
-Date: Thu, 18 Jun 2009 12:34:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's
- no local APIC
-References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>	<4A35ACB3.9040501@goop.org> <m1k53dbwo2.fsf@fess.ebiederm.org>	<4A36B3EC.7010004@goop.org> <m1fxe117n5.fsf@fess.ebiederm.org>	<4A37F4AE.5050902@goop.org> <m1vdmvxe3u.fsf@fess.ebiederm.org>	<4A392896.9090408@goop.org> <m1zlc6memu.fsf@fess.ebiederm.org>
-In-Reply-To: <m1zlc6memu.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 18 Jun 2009 15:37:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46755
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750728AbZFRThG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 15:37:06 -0400
+Date: Thu, 18 Jun 2009 12:37:08 -0700 (PDT)
+Message-Id: <20090618.123708.78849607.davem@davemloft.net>
+To: rientjes@google.com
+Cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com>
+	<20090618.120034.246557840.davem@davemloft.net>
+	<alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/17/09 19:58, Eric W. Biederman wrote:
->> One of the options we discussed was changing the API to get rid of the exposed
->> vector, and just replace it with an operation to directly bind a gsi to a pirq
->> (internal Xen physical interrupt handle, if you will), so that Xen ends up doing
->> all the I/O APIC programming internally, as well as the local APIC.
->>     
->
-> As an abstraction layer I think that will work out a lot better long term.
->
-> Given what iommus with irqs and DMA I expect you want something like
-> that, that can be used from domU.  Then you just make allowing the
-> operation conditional on if you happen to have the associated hardware
-> mapped into your domain.
->   
+From: David Rientjes <rientjes@google.com>
+Date: Thu, 18 Jun 2009 12:23:28 -0700 (PDT)
 
-A domU with a PCI passthrough device can bind a pirq to one of its event
-channels.  All the gsi->pirq binding happens in dom0, but binding a pirq
-to event channel can happen anywhere (that's why it doesn't bind gsi
-directly to event channel, as they're strictly per-domain).
+> On Thu, 18 Jun 2009, David Miller wrote:
+> 
+>> > I disagree, page allocation failure messages show vital information about 
+>> > the state of the VM so that we can find bugs and GFP_ATOMIC allocations 
+>> > are the most common trigger for these diagnostic messages since 
+>> > __GFP_WAIT allocations can trigger direct reclaim (and __GFP_FS 
+>> > allocations can trigger the oom killer) to free memory and will retry the 
+>> > allocation if ~__GFP_NORETRY.
+>> 
+>> It's COMPLETELY and ABSOLUTELY normal for GFP_ATOMIC allocations to
+>> fail in the networking.
+>> 
+> 
+> __GFP_NOWARN exists for that reason.
 
-MSI interrupts also get bound to pirqs, so once the binding is created,
-MSI and GSI interrupts can be treated identically (I think, I haven't
-looked into the details yet).
+You're going to have to put that into every driver, every part of
+the core networking, every protocol.
 
->> On the Linux side, I think it means we can just point pcibios_enable/disable_irq
->> to our own xen_pci_irq_enable/disable functions to create the binding between a
->> PCI device and an irq.
->>     
->
-> If you want xen to assign the linux irq number that is absolutely the properly place
-> to hook.
->   
+That's dumb.
 
-Yes.  We'd want to keep the irq==gsi mapping for non-MSI interrupts, but
-that's easy enough to arrange.
+> I understand what you're trying to avoid, but I disagree with the
+> approach of altering the default behavior of GFP_ATOMIC.
 
-> When I was messing with the irq code I did not recall finding many
-> cases where migrating irqs from process context worked without hitting
-> hardware bugs.  ioapic state machine lockups and the like.
->   
+The default got changed at some point because it never did
+crap like this before.
 
-Keir mentioned that Xen avoids masking/unmasking interrupts in the I/O
-APIC too much, because that has been problematic in the past.  Is that
-related to the problems you're talking about?  Is there anywhere which
-documents them?
+> I may suggest that emitting the page allocation failures become a
+> compile time option; CONFIG_DEBUG_VM would be my suggestion.
 
-> How does Xen handle domU with hardware directly mapped?
->   
+Use statistics gathering and tracing for this, not log spam.
 
-We call that "pci passthrough".  Dom0 will bind the gsi to a pirq as
-usual, and then pass the pirq through to the domU.  The domU will bind
-the pirq to an event channel, which gets mapped to a Linux irq and
-handled as usual.
-
-> Temporally ignoring what we have to do to work with Xen 3.4.  I'm curious
-> if we could make the Xen dom0 irq case the same as the Xen domU case.
->   
-
-It is already; once the pirq is prepared, the process is the same in
-both cases.
-
-    J
+It serves all of your needs without spewing junk into the log.  It
+allows complete diagnosis and gathering of whatever information you
+may need.
