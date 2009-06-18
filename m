@@ -1,263 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbZFRTsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZFRTss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbZFRTsf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbZFRTsY
+	id S1757562AbZFRTss (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbZFRTsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:48:24 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:58805 "EHLO
+	Thu, 18 Jun 2009 15:48:25 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:50716 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbZFRTsX (ORCPT
+	with ESMTP id S1752644AbZFRTsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:48:23 -0400
+	Thu, 18 Jun 2009 15:48:24 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: x86 maintainers <x86@kernel.org>,
        Jaswinder Singh Rajput <jaswinder@kernel.org>,
        Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/5] x86: add copies of some headers to convert to asm-generic
-Date: Thu, 18 Jun 2009 21:48:16 +0200
-Message-Id: <24f2094ecfd0d61058ddd3783a0c8af9fd22a781.1245354003.git.arnd@arndb.de>
+Subject: [PATCH 4/5] x86: convert termios.h to the asm-generic version
+Date: Thu, 18 Jun 2009 21:48:19 +0200
+Message-Id: <4d9eb92e8119810045e521076a30af5ea1ad3821.1245354003.git.arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <cover.1245354003.git.arnd@arndb.de>
 References: <cover.1245354003.git.arnd@arndb.de>
 In-Reply-To: <cover.1245354003.git.arnd@arndb.de>
 References: <cover.1245354003.git.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Kc2GmeJU4ZRGM87gtEe3mSApK0b1zOsNKtE8
- fc2ATo5QNK7EHoZdBDZyVsVvpg44hnkXHy0sHx4jq8bibWkiSh
- fTeDn8qw5a6yxzmBR9W3w==
+X-Provags-ID: V01U2FsdGVkX1/1YZwwViBY+js4utAdW9V4sOpBXLi5KTzfeFM
+ m0axTy8VmweLbvyU+cElNHgT0xn+Qg5MFWcnkJ4OCM9KLopLYy
+ qJcmZvIw2A0QgjxEOPD3w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just an intermediate step to make reviewing easier.
-These files are identical copies of the existing headers.
+This patch turned out more controversial than expected
+and may get dropped in the future. I'm including it
+for reference anyway.
+
+The user_termio_to_kernel_termios and kernel_termios_to_user_termio
+functions on x86 are lacking error checking from get_user and
+are not portable to big-endian systems, so the asm-generic
+header has to differ in this regard.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/x86/include/asm/generic-mman.h        |   20 +++++++
- arch/x86/include/asm/generic-module.h      |   80 ++++++++++++++++++++++++++++
- arch/x86/include/asm/generic-scatterlist.h |   33 +++++++++++
- arch/x86/include/asm/generic-types.h       |   30 ++++++++++
- arch/x86/include/asm/generic-ucontext.h    |   18 ++++++
- 5 files changed, 181 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/include/asm/generic-mman.h
- create mode 100644 arch/x86/include/asm/generic-module.h
- create mode 100644 arch/x86/include/asm/generic-scatterlist.h
- create mode 100644 arch/x86/include/asm/generic-types.h
- create mode 100644 arch/x86/include/asm/generic-ucontext.h
+ arch/x86/include/asm/termios.h |   86 +++++++++++++++++++++++++++++-----------
+ 1 files changed, 63 insertions(+), 23 deletions(-)
 
-diff --git a/arch/x86/include/asm/generic-mman.h b/arch/x86/include/asm/generic-mman.h
-new file mode 100644
-index 0000000..751af25
---- /dev/null
-+++ b/arch/x86/include/asm/generic-mman.h
-@@ -0,0 +1,20 @@
-+#ifndef _ASM_X86_MMAN_H
-+#define _ASM_X86_MMAN_H
-+
-+#include <asm-generic/mman-common.h>
-+
-+#define MAP_32BIT	0x40		/* only give out 32bit addresses */
-+
-+#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
-+#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
-+#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
-+#define MAP_LOCKED	0x2000		/* pages are locked */
-+#define MAP_NORESERVE	0x4000		/* don't check for reservations */
-+#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
-+#define MAP_NONBLOCK	0x10000		/* do not block on IO */
-+#define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
-+
-+#define MCL_CURRENT	1		/* lock all current mappings */
-+#define MCL_FUTURE	2		/* lock all future mappings */
-+
-+#endif /* _ASM_X86_MMAN_H */
-diff --git a/arch/x86/include/asm/generic-module.h b/arch/x86/include/asm/generic-module.h
-new file mode 100644
-index 0000000..47d6274
---- /dev/null
-+++ b/arch/x86/include/asm/generic-module.h
-@@ -0,0 +1,80 @@
-+#ifndef _ASM_X86_MODULE_H
-+#define _ASM_X86_MODULE_H
-+
-+/* x86_32/64 are simple */
-+struct mod_arch_specific {};
-+
-+#ifdef CONFIG_X86_32
-+# define Elf_Shdr Elf32_Shdr
-+# define Elf_Sym Elf32_Sym
-+# define Elf_Ehdr Elf32_Ehdr
-+#else
-+# define Elf_Shdr Elf64_Shdr
-+# define Elf_Sym Elf64_Sym
-+# define Elf_Ehdr Elf64_Ehdr
-+#endif
-+
-+#ifdef CONFIG_X86_64
-+/* X86_64 does not define MODULE_PROC_FAMILY */
-+#elif defined CONFIG_M386
-+#define MODULE_PROC_FAMILY "386 "
-+#elif defined CONFIG_M486
-+#define MODULE_PROC_FAMILY "486 "
-+#elif defined CONFIG_M586
-+#define MODULE_PROC_FAMILY "586 "
-+#elif defined CONFIG_M586TSC
-+#define MODULE_PROC_FAMILY "586TSC "
-+#elif defined CONFIG_M586MMX
-+#define MODULE_PROC_FAMILY "586MMX "
-+#elif defined CONFIG_MCORE2
-+#define MODULE_PROC_FAMILY "CORE2 "
-+#elif defined CONFIG_M686
-+#define MODULE_PROC_FAMILY "686 "
-+#elif defined CONFIG_MPENTIUMII
-+#define MODULE_PROC_FAMILY "PENTIUMII "
-+#elif defined CONFIG_MPENTIUMIII
-+#define MODULE_PROC_FAMILY "PENTIUMIII "
-+#elif defined CONFIG_MPENTIUMM
-+#define MODULE_PROC_FAMILY "PENTIUMM "
-+#elif defined CONFIG_MPENTIUM4
-+#define MODULE_PROC_FAMILY "PENTIUM4 "
-+#elif defined CONFIG_MK6
-+#define MODULE_PROC_FAMILY "K6 "
-+#elif defined CONFIG_MK7
-+#define MODULE_PROC_FAMILY "K7 "
-+#elif defined CONFIG_MK8
-+#define MODULE_PROC_FAMILY "K8 "
-+#elif defined CONFIG_X86_ELAN
-+#define MODULE_PROC_FAMILY "ELAN "
-+#elif defined CONFIG_MCRUSOE
-+#define MODULE_PROC_FAMILY "CRUSOE "
-+#elif defined CONFIG_MEFFICEON
-+#define MODULE_PROC_FAMILY "EFFICEON "
-+#elif defined CONFIG_MWINCHIPC6
-+#define MODULE_PROC_FAMILY "WINCHIPC6 "
-+#elif defined CONFIG_MWINCHIP3D
-+#define MODULE_PROC_FAMILY "WINCHIP3D "
-+#elif defined CONFIG_MCYRIXIII
-+#define MODULE_PROC_FAMILY "CYRIXIII "
-+#elif defined CONFIG_MVIAC3_2
-+#define MODULE_PROC_FAMILY "VIAC3-2 "
-+#elif defined CONFIG_MVIAC7
-+#define MODULE_PROC_FAMILY "VIAC7 "
-+#elif defined CONFIG_MGEODEGX1
-+#define MODULE_PROC_FAMILY "GEODEGX1 "
-+#elif defined CONFIG_MGEODE_LX
-+#define MODULE_PROC_FAMILY "GEODE "
-+#else
-+#error unknown processor family
-+#endif
-+
-+#ifdef CONFIG_X86_32
-+# ifdef CONFIG_4KSTACKS
-+#  define MODULE_STACKSIZE "4KSTACKS "
-+# else
-+#  define MODULE_STACKSIZE ""
-+# endif
-+# define MODULE_ARCH_VERMAGIC MODULE_PROC_FAMILY MODULE_STACKSIZE
-+#endif
-+
-+#endif /* _ASM_X86_MODULE_H */
-diff --git a/arch/x86/include/asm/generic-scatterlist.h b/arch/x86/include/asm/generic-scatterlist.h
-new file mode 100644
-index 0000000..263d397
---- /dev/null
-+++ b/arch/x86/include/asm/generic-scatterlist.h
-@@ -0,0 +1,33 @@
-+#ifndef _ASM_X86_SCATTERLIST_H
-+#define _ASM_X86_SCATTERLIST_H
-+
-+#include <asm/types.h>
-+
-+struct scatterlist {
-+#ifdef CONFIG_DEBUG_SG
-+	unsigned long	sg_magic;
-+#endif
-+	unsigned long	page_link;
-+	unsigned int	offset;
-+	unsigned int	length;
-+	dma_addr_t	dma_address;
-+	unsigned int	dma_length;
-+};
-+
-+#define ARCH_HAS_SG_CHAIN
-+#define ISA_DMA_THRESHOLD (0x00ffffff)
-+
+diff --git a/arch/x86/include/asm/termios.h b/arch/x86/include/asm/termios.h
+index c4ee805..d0922ad 100644
+--- a/arch/x86/include/asm/termios.h
++++ b/arch/x86/include/asm/termios.h
+@@ -1,5 +1,12 @@
+-#ifndef _ASM_X86_TERMIOS_H
+-#define _ASM_X86_TERMIOS_H
++#ifndef _ASM_GENERIC_TERMIOS_H
++#define _ASM_GENERIC_TERMIOS_H
 +/*
-+ * These macros should be used after a pci_map_sg call has been done
-+ * to get bus addresses of each of the SG entries and their lengths.
-+ * You should only work with the number of sg entries pci_map_sg
-+ * returns.
++ * Most architectures have straight copies of the x86 code, with
++ * varying levels of bug fixes on top. Usually it's a good idea
++ * to use this generic version instead, but be careful to avoid
++ * ABI changes.
++ * New architectures should not provide their own version.
 + */
-+#define sg_dma_address(sg)	((sg)->dma_address)
-+#ifdef CONFIG_X86_32
-+# define sg_dma_len(sg)		((sg)->length)
-+#else
-+# define sg_dma_len(sg)		((sg)->dma_length)
-+#endif
+ 
+ #include <asm/termbits.h>
+ #include <asm/ioctls.h>
+@@ -54,37 +61,57 @@ struct termio {
+ /*
+  * Translate a "termio" structure into a "termios". Ugh.
+  */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	*(unsigned short *) &(termios)->x = __tmp; \
+-}
+-
+ static inline int user_termio_to_kernel_termios(struct ktermios *termios,
+-						struct termio __user *termio)
++						const struct termio __user *termio)
+ {
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag);
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag);
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag);
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag);
+-	get_user(termios->c_line, &termio->c_line);
+-	return copy_from_user(termios->c_cc, termio->c_cc, NCC);
++	unsigned short tmp;
 +
-+#endif /* _ASM_X86_SCATTERLIST_H */
-diff --git a/arch/x86/include/asm/generic-types.h b/arch/x86/include/asm/generic-types.h
-new file mode 100644
-index 0000000..09b9774
---- /dev/null
-+++ b/arch/x86/include/asm/generic-types.h
-@@ -0,0 +1,30 @@
-+#ifndef _ASM_X86_TYPES_H
-+#define _ASM_X86_TYPES_H
++	if (get_user(tmp, &termio->c_iflag) < 0)
++		goto fault;
++	termios->c_iflag = (0xffff0000 & termios->c_iflag) | tmp;
 +
-+#include <asm-generic/int-ll64.h>
++	if (get_user(tmp, &termio->c_oflag) < 0)
++		goto fault;
++	termios->c_oflag = (0xffff0000 & termios->c_oflag) | tmp;
 +
-+#ifndef __ASSEMBLY__
++	if (get_user(tmp, &termio->c_cflag) < 0)
++		goto fault;
++	termios->c_cflag = (0xffff0000 & termios->c_cflag) | tmp;
 +
-+typedef unsigned short umode_t;
++	if (get_user(tmp, &termio->c_lflag) < 0)
++		goto fault;
++	termios->c_lflag = (0xffff0000 & termios->c_lflag) | tmp;
 +
-+#endif /* __ASSEMBLY__ */
++	if (get_user(termios->c_line, &termio->c_line) < 0)
++		goto fault;
 +
-+/*
-+ * These aren't exported outside the kernel to avoid name space clashes
-+ */
-+#ifdef __KERNEL__
++	if (copy_from_user(termios->c_cc, termio->c_cc, NCC) != 0)
++		goto fault;
 +
-+#ifndef __ASSEMBLY__
++	return 0;
 +
-+typedef u64 dma64_addr_t;
-+#if defined(CONFIG_X86_64) || defined(CONFIG_HIGHMEM64G)
-+/* DMA addresses come in 32-bit and 64-bit flavours. */
-+typedef u64 dma_addr_t;
-+#else
-+typedef u32 dma_addr_t;
-+#endif
++ fault:
++	return -EFAULT;
+ }
+ 
+ /*
+  * Translate a "termios" structure into a "termio". Ugh.
+  */
+ static inline int kernel_termios_to_user_termio(struct termio __user *termio,
+-					    struct ktermios *termios)
++						struct ktermios *termios)
+ {
+-	put_user((termios)->c_iflag, &(termio)->c_iflag);
+-	put_user((termios)->c_oflag, &(termio)->c_oflag);
+-	put_user((termios)->c_cflag, &(termio)->c_cflag);
+-	put_user((termios)->c_lflag, &(termio)->c_lflag);
+-	put_user((termios)->c_line,  &(termio)->c_line);
+-	return copy_to_user((termio)->c_cc, (termios)->c_cc, NCC);
++	if (put_user(termios->c_iflag, &termio->c_iflag) < 0 ||
++	    put_user(termios->c_oflag, &termio->c_oflag) < 0 ||
++	    put_user(termios->c_cflag, &termio->c_cflag) < 0 ||
++	    put_user(termios->c_lflag, &termio->c_lflag) < 0 ||
++	    put_user(termios->c_line,  &termio->c_line) < 0 ||
++	    copy_to_user(termio->c_cc, termios->c_cc, NCC) != 0)
++		return -EFAULT;
 +
-+#endif /* __ASSEMBLY__ */
-+#endif /* __KERNEL__ */
++	return 0;
+ }
+ 
++#ifdef TCGETS2
+ static inline int user_termios_to_kernel_termios(struct ktermios *k,
+ 						 struct termios2 __user *u)
+ {
+@@ -108,7 +135,20 @@ static inline int kernel_termios_to_user_termios_1(struct termios __user *u,
+ {
+ 	return copy_to_user(u, k, sizeof(struct termios));
+ }
++#else /* TCGETS2 */
++static inline int user_termios_to_kernel_termios(struct ktermios *k,
++						 struct termios __user *u)
++{
++	return copy_from_user(k, u, sizeof(struct termios));
++}
 +
-+#endif /* _ASM_X86_TYPES_H */
-diff --git a/arch/x86/include/asm/generic-ucontext.h b/arch/x86/include/asm/generic-ucontext.h
-new file mode 100644
-index 0000000..87324cf
---- /dev/null
-+++ b/arch/x86/include/asm/generic-ucontext.h
-@@ -0,0 +1,18 @@
-+#ifndef _ASM_X86_UCONTEXT_H
-+#define _ASM_X86_UCONTEXT_H
-+
-+#define UC_FP_XSTATE	0x1	/* indicates the presence of extended state
-+				 * information in the memory layout pointed
-+				 * by the fpstate pointer in the ucontext's
-+				 * sigcontext struct (uc_mcontext).
-+				 */
-+
-+struct ucontext {
-+	unsigned long	  uc_flags;
-+	struct ucontext  *uc_link;
-+	stack_t		  uc_stack;
-+	struct sigcontext uc_mcontext;
-+	sigset_t	  uc_sigmask;	/* mask last for extensibility */
-+};
-+
-+#endif /* _ASM_X86_UCONTEXT_H */
++static inline int kernel_termios_to_user_termios(struct termios __user *u,
++						 struct ktermios *k)
++{
++	return copy_to_user(u, k, sizeof(struct termios));
++}
++#endif /* TCGETS2 */
+ 
+ #endif	/* __KERNEL__ */
+ 
+-#endif /* _ASM_X86_TERMIOS_H */
++#endif /* _ASM_GENERIC_TERMIOS_H */
 -- 
 1.6.3.1
 
