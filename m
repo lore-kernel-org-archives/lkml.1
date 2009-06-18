@@ -1,48 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbZFRCF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZFRCIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbZFRCF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 22:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZFRCFu
+	id S1758141AbZFRCIh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 22:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbZFRCI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 22:05:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48983
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752615AbZFRCFt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 22:05:49 -0400
-Date: Wed, 17 Jun 2009 19:05:52 -0700 (PDT)
-Message-Id: <20090617.190552.127426863.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: correct off-by-one write allocations reports
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A389031.1060902@gmail.com>
-References: <4A37F495.9030101@gmail.com>
-	<4A37FC93.7070403@gmail.com>
-	<4A389031.1060902@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 17 Jun 2009 22:08:28 -0400
+Received: from mga09.intel.com ([134.134.136.24]:12441 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755319AbZFRCI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 22:08:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,240,1243839600"; 
+   d="scan'208";a="525747616"
+Subject: Re: [RFC 1/7] crypto: Add GHASH digest algorithm for GCM
+From: Huang Ying <ying.huang@intel.com>
+To: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090617200410.GB28694@Chamillionaire.breakpoint.cc>
+References: <1244704226.5320.124.camel@yhuang-dev.sh.intel.com>
+	 <20090617200410.GB28694@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain
+Date: Thu, 18 Jun 2009 10:08:27 +0800
+Message-Id: <1245290907.11965.201.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Wed, 17 Jun 2009 08:41:53 +0200
+On Thu, 2009-06-18 at 04:04 +0800, Sebastian Andrzej Siewior wrote:
+> * Huang Ying | 2009-06-11 15:10:26 [+0800]:
+> 
+> >GHASH is implemented as a shash algorithm. The actual implementation
+> >is copied from gcm.c. This makes it possible to add
+> >architecture/hardware accelerated GHASH implementation.
+> >
+> >Signed-off-by: Huang Ying <ying.huang@intel.com>
+> >
+> >---
+> > crypto/Kconfig         |    7 +
+> > crypto/Makefile        |    2 
+> > crypto/ghash-generic.c |  179 +++++++++++++++++++++++++++++++++++++++++++++++++
+> > 3 files changed, 188 insertions(+)
+> >
+> >--- /dev/null
+> >+++ b/crypto/ghash-generic.c
+> >@@ -0,0 +1,179 @@
+> >+/*
+> >+ * GHASH: digest algorithm for GCM (Galois/Counter Mode).
+> >+ *
+> >+ * Copyright (c) 2007 Nokia Siemens Networks - Mikko Herranen <mh1@iki.fi>
+> >+ * Copyright (c) 2009 Intel Corp.
+> >+ *   Author: Huang Ying <ying.huang@intel.com>
+> >+ *
+> >+ * The algorithm implementation is copied from gcm.c.
+> >+ *
+> >+ * This program is free software; you can redistribute it and/or modify it
+> >+ * under the terms of the GNU General Public License version 2 as published
+> >+ * by the Free Software Foundation.
+> >+ */
+> >+
+> >+#include <linux/module.h>
+> >+#include <linux/init.h>
+> >+#include <linux/kernel.h>
+> >+#include <linux/crypto.h>
+> >+#include <crypto/gf128mul.h>
+> >+#include <crypto/algapi.h>
+> >+#include <crypto/internal/hash.h>
+> Do you mind to sort them?
 
-> [PATCH] net: correct off-by-one write allocations reports
-> 
-> commit 2b85a34e911bf483c27cfdd124aeb1605145dc80 
-> (net: No more expensive sock_hold()/sock_put() on each tx)
-> changed initial sk_wmem_alloc value.
-> 
-> We need to take into account this offset when reporting
-> sk_wmem_alloc to user, in PROC_FS files or various
-> ioctls (SIOCOUTQ/TIOCOUTQ)
-> 
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Sorry, can you tell me what is the better order?
 
-Applied.
+> >+
+> >+#define GHASH_BLOCK_SIZE	16
+> >+#define GHASH_DIGEST_SIZE	16
+> >+
+> >+struct ghash_ctx {
+> >+	struct gf128mul_4k *gf128;
+> >+};
+> >+
+> >+struct ghash_desc_ctx {
+> >+	u8 buffer[16];
+> >+	u32 bytes;
+> >+};
+> >+
+> >+static int ghash_init(struct shash_desc *desc)
+> >+{
+> >+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
+> >+
+> >+	dctx->bytes = 0;
+> >+	memset(dctx->buffer, 0, 16);
+> >+
+> you could memset() the whole struct at once
+
+Yes. That is better, you are right.
+
+> >+	return 0;
+> >+}
+> >+
+> >+static int ghash_setkey(struct crypto_shash *tfm,
+> >+			const u8 *key, unsigned int keylen)
+> >+{
+> >+	struct ghash_ctx *ctx = crypto_shash_ctx(tfm);
+> >+
+> >+	if (keylen != 16) {
+> >+		crypto_shash_set_flags(tfm, CRYPTO_TFM_RES_BAD_KEY_LEN);
+> >+		return -EINVAL;
+> >+	}
+> >+
+> >+	if (ctx->gf128)
+> >+		gf128mul_free_4k(ctx->gf128);
+> >+	ctx->gf128 = gf128mul_init_4k_lle((be128 *)key);
+> >+	if (!ctx->gf128)
+> >+		return -ENOMEM;
+> >+
+> >+	return 0;
+> >+}
+> >+
+> >+static int ghash_update(struct shash_desc *desc,
+> >+			 const u8 *src, unsigned int srclen)
+> >+{
+> >+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
+> >+	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
+> >+	u8 *dst = dctx->buffer;
+> >+
+> >+	if (dctx->bytes) {
+> >+		int n = min(srclen, dctx->bytes);
+> >+		u8 *pos = dst + (16 - dctx->bytes);
+> >+
+> >+		dctx->bytes -= n;
+> >+		srclen -= n;
+> >+
+> >+		while (n--)
+> >+			*pos++ ^= *src++;
+> >+
+> >+		if (!dctx->bytes)
+> >+			gf128mul_4k_lle((be128 *)dst, ctx->gf128);
+> >+	}
+> >+
+> >+	while (srclen >= 16) {
+> >+		crypto_xor(dst, src, 16);
+> >+		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
+> >+		src += 16;
+> >+		srclen -= 16;
+> >+	}
+> >+
+> >+	if (srclen) {
+> >+		dctx->bytes = 16 - srclen;
+> >+		while (srclen--)
+> >+			*dst++ ^= *src++;
+> >+	}
+> >+
+> 16 here looks like GHASH_BLOCK_SIZE to me
+
+Yes. I will change most 16 to corresponding symbol name.
+
+> >+	return 0;
+> >+}
+> >+
+> >+static void ghash_flush(struct ghash_ctx *ctx, struct ghash_desc_ctx *dctx)
+> >+{
+> >+	u8 *dst = dctx->buffer;
+> >+
+> >+	if (dctx->bytes) {
+> >+		u8 *tmp = dst + (16 - dctx->bytes);
+> >+
+> >+		while (dctx->bytes--)
+> >+			*tmp++ ^= 0;
+> >+
+> >+		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
+> >+	}
+> >+
+> >+	dctx->bytes = 0;
+> >+}
+> >+
+> >+static int ghash_final(struct shash_desc *desc, u8 *dst)
+> >+{
+> >+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
+> >+	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
+> >+	u8 *buf = dctx->buffer;
+> >+
+> >+	ghash_flush(ctx, dctx);
+> >+	memcpy(dst, buf, 16);
+> >+
+> >+	return 0;
+> >+}
+> >+
+> >+static int ghash_init_tfm(struct crypto_tfm *tfm)
+> >+{
+> >+	struct ghash_ctx *ctx = crypto_tfm_ctx(tfm);
+> >+	ctx->gf128 = NULL;
+> 
+> Unless I'm mistaken, this is called once on allocation and this ctx is
+> allocated via kzalloc().
+
+Yes. it is alloced via kzalloc. Can we just rely on this? Should we add
+that assumption to somewhere such as document of comments.
+
+> >+	return 0;
+> >+}
+> >+
+> >+static void ghash_exit_tfm(struct crypto_tfm *tfm)
+> >+{
+> >+	struct ghash_ctx *ctx = crypto_tfm_ctx(tfm);
+> >+	if (ctx->gf128)
+> >+		gf128mul_free_4k(ctx->gf128);
+> >+}
+> >+
+> >+static struct shash_alg ghash_alg = {
+> >+	.digestsize	= GHASH_DIGEST_SIZE,
+> >+	.init		= ghash_init,
+> >+	.update		= ghash_update,
+> >+	.final		= ghash_final,
+> >+	.setkey		= ghash_setkey,
+> >+	.descsize	= sizeof(struct ghash_desc_ctx),
+> >+	.base		= {
+> >+		.cra_name		= "ghash",
+> >+		.cra_driver_name	= "ghash-generic",
+> >+		.cra_priority		= 100,
+> >+		.cra_flags		= CRYPTO_ALG_TYPE_SHASH,
+> >+		.cra_blocksize		= GHASH_BLOCK_SIZE,
+> >+		.cra_ctxsize		= sizeof(struct ghash_ctx),
+> >+		.cra_module		= THIS_MODULE,
+> >+		.cra_list		= LIST_HEAD_INIT(ghash_alg.base.cra_list),
+> >+		.cra_init		= ghash_init_tfm,
+> >+		.cra_exit		= ghash_exit_tfm,
+> >+	},
+> >+};
+> >+
+> >+static int __init ghash_mod_init(void)
+> >+{
+> >+	return crypto_register_shash(&ghash_alg);
+> >+}
+> >+
+> >+static void __exit ghash_mod_exit(void)
+> >+{
+> >+	crypto_unregister_shash(&ghash_alg);
+> >+}
+> >+
+> >+module_init(ghash_mod_init);
+> >+module_exit(ghash_mod_exit);
+> >+
+> >+MODULE_LICENSE("GPL");
+> >+MODULE_DESCRIPTION("GHASH Message Digest Algorithm");
+> >+MODULE_ALIAS("ghash");
+> >--- a/crypto/Kconfig
+> >+++ b/crypto/Kconfig
+> >@@ -419,6 +419,13 @@ config CRYPTO_WP512
+> > 	  See also:
+> > 	  <http://planeta.terra.com.br/informatica/paulobarreto/WhirlpoolPage.html>
+> > 
+> >+config CRYPTO_GHASH
+> >+	tristate "GHASH digest algorithm"
+> >+	select CRYPTO_SHASH
+> >+	select CRYPTO_GF128MUL
+> >+	help
+> >+	  GHASH is message digest algorithm for GCM (Galois/Counter Mode).
+> >+
+> Could you please move it to the 'G' section
+
+OK. I will do this.
+
+> > comment "Ciphers"
+> > 
+> > config CRYPTO_AES
+> >--- a/crypto/Makefile
+> >+++ b/crypto/Makefile
+> >@@ -83,6 +83,8 @@ obj-$(CONFIG_CRYPTO_RNG2) += rng.o
+> > obj-$(CONFIG_CRYPTO_RNG2) += krng.o
+> > obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
+> > obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
+> >+obj-$(CONFIG_CRYPTO_MD5) += md5.o
+> md5?
+
+Sorry, I will remove this, and move GHASH line to appropriate position.
+
+> >+obj-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
+> > 
+> > #
+> > # generic algorithms and the async_tx api
+> >
+> >
+
+Best Regards,
+Huang Ying
+
