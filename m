@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762924AbZFRNZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762828AbZFRN3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762924AbZFRNZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 09:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758734AbZFRNZK
+	id S1762828AbZFRN3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 09:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZFRN30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 09:25:10 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:48314 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757039AbZFRNZJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 09:25:09 -0400
-Date: Thu, 18 Jun 2009 15:25:10 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Peter Feuerer <peter@piie.net>, Andreas Mohr <andi@lisas.de>,
-       Ed Tomlinson <edt@aei.ca>, akpm@linux-foundation.org,
-       Len Brown <len.brown@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Request driver inclusion - acer aspire one fan control
-Message-ID: <20090618132510.GA1131@rhlx01.hs-esslingen.de>
-References: <200906160747.04094.edt@aei.ca> <20090616205747.GA6356@rhlx01.hs-esslingen.de> <20090617001435.e2d86780.peter@piie.net> <20090617122022.GA13141@rhlx01.hs-esslingen.de> <cone.1245309039.632882.31537.1000@arca> <9ea470500906180329w7c8975b0ra60fa219221d53f6@mail.gmail.com> <cone.1245322548.289821.31537.1000@arca> <9ea470500906180442r7beb49a8odcb3bf602df78b47@mail.gmail.com> <cone.1245325770.489357.31537.1000@arca> <9ea470500906180545j5e1a78f7qcb887ad843b489f3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9ea470500906180545j5e1a78f7qcb887ad843b489f3@mail.gmail.com>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 18 Jun 2009 09:29:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34582 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751396AbZFRN3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 09:29:25 -0400
+Subject: [PATCH -tip] x86: perf_counter fix L1-data-Cache-Store-Referencees
+ for AMD
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 18 Jun 2009 18:58:51 +0530
+Message-Id: <1245331731.3215.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Thu, Jun 18, 2009 at 02:45:41PM +0200, Borislav Petkov wrote:
-> ok, this starts to look quite a bit overengineered for no reason. First,
-> acerhdf_revert_to_bios_mode() sets the fan to auto. Then, you've added
-> a thermal_zone_device_update() call in there which does set the fan to
-> auto indirectly _again_. And we end up with _three_ variables which
-> represent only _one_ state. Here's what it should do:
-> 
-> suspend:
->  - set fan to auto
-> 
-> resume:
->  - the thermal layer figures out what to do based on the 'kernelmode' and
->  current temperature.
-> 
-> That's it, everything else is too much.
+Fix AMD event for Data Cache Refills from System.
 
-No, I'd say it's not as easy as that.
-If you want to discover any weird state changes behind your back (and we
-want that, that driver should be _safe_), then we need to record the current fan state
-as set by us.
+By this patch :
 
-But that then means that during interruption of normal operation
-(suspend), we need to temporarily stop this checking.
+./tools/perf/perf stat -e l1d -e l1d-misses -e l1d-write -e l1d-prefetch -e l1d-prefetch-miss -e l1i -e l1i-misses -e l1i-prefetch -e l2 -e l2-misses -e l2-write -e dtlb -e dtlb-misses -e itlb -e itlb-misses -e bpu -e bpu-misses ls /dev/ > /dev/null
 
-IOW, we need some more variable(s) to indicate:
-OPERATION_SUSPENDED (set by .suspend)
-OPERATION_ABOUT_TO_CONTINUE (set by .resume)
-OPERATING
+ Performance counter stats for 'ls /dev/':
 
-In state OPERATION_ABOUT_TO_CONTINUE the thermal layer function
-would know that they shouldn't check fan state consistency, would
-refresh fan state to the current state and then set it to OPERATING.
+        2499484  L1-data-Cache-Load-Referencees  (scaled from 3.97%)
+          70347  L1-data-Cache-Load-Misses  (scaled from 7.30%)
+           9360  L1-data-Cache-Store-Referencees  (scaled from 8.64%)
+          32804  L1-data-Cache-Prefetch-Referencees  (scaled from 17.72%)
+           7693  L1-data-Cache-Prefetch-Misses  (scaled from 22.97%)
+        2180945  L1-instruction-Cache-Load-Referencees  (scaled from 28.48%)
+          14518  L1-instruction-Cache-Load-Misses  (scaled from 35.00%)
+           2405  L1-instruction-Cache-Prefetch-Referencees  (scaled from 34.89%)
+          71387  L2-Cache-Load-Referencees  (scaled from 34.94%)
+          18732  L2-Cache-Load-Misses  (scaled from 34.92%)
+          79918  L2-Cache-Store-Referencees  (scaled from 36.02%)
+        1295294  Data-TLB-Cache-Load-Referencees  (scaled from 35.99%)
+          30896  Data-TLB-Cache-Load-Misses  (scaled from 33.36%)
+        1222030  Instruction-TLB-Cache-Load-Referencees  (scaled from 29.46%)
+            357  Instruction-TLB-Cache-Load-Misses  (scaled from 20.46%)
+         530888  Branch-Cache-Load-Referencees  (scaled from 11.48%)
+           8638  Branch-Cache-Load-Misses  (scaled from 5.09%)
 
-Or some such (would need further analysis).
+    0.011295149  seconds time elapsed.
 
-Andreas Mohr
+Earlier it always shows value 0.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/cpu/perf_counter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index ce1ae3f..37facc5 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -401,7 +401,7 @@ static const u64 amd_hw_cache_event_ids
+ 		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
+ 	},
+ 	[ C(OP_WRITE) ] = {
+-		[ C(RESULT_ACCESS) ] = 0x0042, /* Data Cache Refills from L2 */
++		[ C(RESULT_ACCESS) ] = 0x0142, /* Data Cache Refills :system */
+ 		[ C(RESULT_MISS)   ] = 0,
+ 	},
+ 	[ C(OP_PREFETCH) ] = {
+-- 
+1.6.0.6
+
+
+
