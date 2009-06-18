@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764153AbZFRPAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbZFRPET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764153AbZFRPAQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 11:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757357AbZFRPAF
+	id S1762910AbZFRPET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 11:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZFRPEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 11:00:05 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:53777 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755735AbZFRPAE (ORCPT
+	Thu, 18 Jun 2009 11:04:07 -0400
+Received: from mss-uk.mssgmbh.com ([217.174.251.109]:37728 "EHLO
+	mss-uk.mssgmbh.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757357AbZFRPEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 11:00:04 -0400
-Date: Thu, 18 Jun 2009 16:53:38 +0200
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sdhci: Specific quirk vor VIA SDHCI controller in VX855ES
-Message-ID: <20090618145338.GX7692@prithivi.gnumonks.org>
+	Thu, 18 Jun 2009 11:04:06 -0400
+X-Greylist: delayed 657 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Jun 2009 11:04:05 EDT
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH] ide-cd: prevent null pointer deref via cdrom_newpc_intr
+In-Reply-To: <9ea470500906180739qdabce04u7c7875acc05358f@mail.gmail.com> (Borislav Petkov's message of "Thu\, 18 Jun 2009 16\:39\:40 +0200")
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+References: <87zlc58xgd.fsf@fever.mssgmbh.com>
+	<9ea470500906180739qdabce04u7c7875acc05358f@mail.gmail.com>
+From: Rainer Weikusat <rweikusat@mssgmbh.com>
+Date: Thu, 18 Jun 2009 17:04:00 +0200
+Message-ID: <87r5xh8ty7.fsf@fever.mssgmbh.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (mss-uk.mssgmbh.com [217.174.251.109]); Thu, 18 Jun 2009 17:04:07 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The SDHCI controller found in the VX855ES requires 10ms
-delay between applying power and applying clock.
+From: Rainer Weikusat <rweikusat@mssgmbh.com>
 
-This issue has been discovered and documented by the OLPC XO1.5 team.
+With 2.6.30, the error handling code in cdrom_newpc_intr was changed
+to deal with partial request failures by normally completing the 'good'
+parts of a request and only 'error' the last (and presumably,
+incompletely transferred) bio associated with a particular
+request. In order to do this, ide_complete_rq is called over
+ide_cd_error_cmd() to partially complete the rq. The block layer
+does partial completion only for requests with bio's and if the
+rq doesn't have one (eg 'GPCMD_READ_DISC_INFO') the request is
+completed as a whole and the drive->hwif->rq pointer set to NULL
+afterwards. When calling ide_complete_rq again to report
+the error, this null pointer is derefenced, resulting in a kernel
+crash.
 
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+Signed-Off-By: Rainer Weikusat <rweikusat@mssgmbh.com>
+
 ---
- drivers/mmc/host/sdhci-pci.c |   20 ++++++++++++++++++++
- drivers/mmc/host/sdhci.c     |    7 +++++++
- drivers/mmc/host/sdhci.h     |    2 ++
- 3 files changed, 29 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
-index 65be279..2f15cc1 100644
---- a/drivers/mmc/host/sdhci-pci.c
-+++ b/drivers/mmc/host/sdhci-pci.c
-@@ -284,6 +284,18 @@ static const struct sdhci_pci_fixes sdhci_jmicron = {
- 	.resume		= jmicron_resume,
- };
+--- drivers/ide/ide-cd.c.orig	2009-06-18 15:10:24.000000000 +0200
++++ drivers/ide/ide-cd.c	2009-06-18 14:10:16.000000000 +0200
+@@ -758,7 +758,7 @@ out_end:
+ 				rq->errors = -EIO;
+ 		}
  
-+static int via_probe(struct sdhci_pci_chip *chip)
-+{
-+	if (chip->pdev->revision == 0x10)
-+		chip->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
-+
-+	return 0;
-+}
-+
-+static const struct sdhci_pci_fixes sdhci_via = {
-+	.probe		= via_probe,
-+};
-+
- static const struct pci_device_id pci_ids[] __devinitdata = {
- 	{
- 		.vendor		= PCI_VENDOR_ID_RICOH,
-@@ -349,6 +361,14 @@ static const struct pci_device_id pci_ids[] __devinitdata = {
- 		.driver_data	= (kernel_ulong_t)&sdhci_jmicron,
- 	},
+-		if (uptodate == 0)
++		if (uptodate == 0 && rq->bio)
+ 			ide_cd_error_cmd(drive, cmd);
  
-+	{
-+		.vendor		= PCI_VENDOR_ID_VIA,
-+		.device		= 0x95d0,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.driver_data	= (kernel_ulong_t)&sdhci_via,
-+	},
-+
- 	{	/* Generic SD host controller */
- 		PCI_DEVICE_CLASS((PCI_CLASS_SYSTEM_SDHCI << 8), 0xFFFF00)
- 	},
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 35789c6..62e2a63 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1057,6 +1057,13 @@ static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
- 	pwr |= SDHCI_POWER_ON;
- 
- 	sdhci_writeb(host, pwr, SDHCI_POWER_CONTROL);
-+
-+	/*
-+	 * Some controllers need an extra 10ms delay of 10ms before they
-+	 * can apply clock after applying power
-+	 */
-+	if ((host->quirks & SDHCI_QUIRK_DELAY_AFTER_POWER))
-+		mdelay(10);
- }
- 
- /*****************************************************************************\
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 2de0834..9832a5f 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -226,6 +226,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET		(1<<19)
- /* Controller has to be forced to use block size of 2048 bytes */
- #define SDHCI_QUIRK_FORCE_BLK_SZ_2048			(1<<20)
-+/* Controller needs 10ms delay between applying power and clock */
-+#define SDHCI_QUIRK_DELAY_AFTER_POWER			(1<<21)
- 
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
--- 
-1.6.3.1
+ 		/* make sure it's fully ended */
