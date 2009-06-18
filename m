@@ -1,73 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbZFRPnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbZFRPnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbZFRPnG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 11:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZFRPmy
+	id S1757394AbZFRPnk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 11:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZFRPnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 11:42:54 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:38135 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057AbZFRPmy (ORCPT
+	Thu, 18 Jun 2009 11:43:31 -0400
+Received: from mail-fx0-f212.google.com ([209.85.220.212]:49890 "EHLO
+	mail-fx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753768AbZFRPna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 11:42:54 -0400
-Date: Thu, 18 Jun 2009 16:42:50 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: yan.i.li@intel.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "greg@kroah.com" <greg@kroah.com>
-Subject: Re: [PATCH] More i8042-reset quirks for MSI Wind-clone netbooks
-Message-ID: <20090618154250.GA30209@srcf.ucam.org>
-References: <20090615143446.GB19451@srcf.ucam.org> <20090615144748.GA25734@thyme.bj.intel.com> <20090616154200.GA12715@srcf.ucam.org> <20090616173618.353901ee@lxorguk.ukuu.org.uk> <20090616164351.GA14353@srcf.ucam.org> <20090616181549.496ae0f2@lxorguk.ukuu.org.uk> <20090616171732.GA14912@srcf.ucam.org> <20090617010138.GA13479@thyme.bj.intel.com> <20090617025101.GA27595@srcf.ucam.org> <20090618000809.GB16835@thyme.bj.intel.com>
+	Thu, 18 Jun 2009 11:43:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TWx6lu4Dkp5DIqk5XTKyjXeWZqKHbUCMq1crclmQy8ujTA9HSdmlbUPFsuH57YY6jY
+         GsOmNNmpXCI2n3qP0pif11RVlJpP3bVe4Mg6S4yQq3p1ArhTB42UmGNnavznSWDucacn
+         bROolNEfHQIwbcw01HeLtSIyPOli+L9UnlbzE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090618000809.GB16835@thyme.bj.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <87vdmt8ugm.fsf@fever.mssgmbh.com>
+References: <87zlc58xgd.fsf@fever.mssgmbh.com>
+	 <9ea470500906180739qdabce04u7c7875acc05358f@mail.gmail.com>
+	 <87vdmt8ugm.fsf@fever.mssgmbh.com>
+Date: Thu, 18 Jun 2009 17:43:31 +0200
+Message-ID: <9ea470500906180843w73435e74sade8a78894f75be5@mail.gmail.com>
+Subject: Re: [PATCH] ide-cd: prevent null pointer deref via cdrom_newpc_intr
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Rainer Weikusat <rweikusat@mssgmbh.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 08:08:09AM +0800, Li, Yan wrote:
-> On Wed, Jun 17, 2009 at 03:51:01AM +0100, Matthew Garrett wrote:
-> > On Wed, Jun 17, 2009 at 09:01:40AM +0800, Li, Yan I wrote:
-> > > This seems a change too aggressive for me. Do we have a good reason
-> > > for taking this risk? 
-> > 
-> > It's generally much easier to find regressions (people complain) than it 
-> > is to find things that have never worked (people just assume Linux is 
-> > broken).
-> 
-> That's true. But we are not sure how many regressions we'll meet and
-> whether the efforts devoted to handle them is worthy. (How to handle
-> regressions? Perhaps, ironically, we'll need another 'whitelist' for
-> them!)
+Hi,
 
-If we hit regressions then it's the wrong fix and would have to be 
-reverted. Better a small blacklist than a large whitelist (though, in 
-the general case, the presence of either is an indication of a bug)
+On Thu, Jun 18, 2009 at 4:52 PM, Rainer Weikusat<rweikusat@mssgmbh.com> wrote:
+> Borislav Petkov <petkovbb@googlemail.com> writes:
+>> On Thu, Jun 18, 2009 at 3:48 PM, Rainer Weikusat<rweikusat@mssgmbh.com> wrote:
+>>> From: Rainer Weikusat <rweikusat@mssgmbh.com>
+>>>
+>>> With 2.6.30, the error handling code in cdrom_newpc_intr was changed
+>>> to deal with partial request failures by normally completing the 'good'
+>>> parts of a request and only 'error' the last (and presumably,
+>>> incompletely transferred) bio associated with a particular
+>>> request. This doesn't work for requests which don't have bios
+>>> associated with them ('GPCMD_READ_DISC_INFO'), because the first call
+>>> to ide_end_rq, done via ide_complete_rq in order to do the
+>>> partial completion part, returns with a code of zero for all non-bio
+>>> requests, causing the drive->hwif->rq pointer to be set to NULL.
+>>
+>> This is a bit misleading, it should be more like: "ide_complete_rq is
+>> called over ide_cd_error_cmd() to partially complete the rq but the rq
+>> is without a bio and the block layer does partial completion only for
+>> requests with bio's so this request is completed as a whole and the rq
+>> freed."
+>
+> Technically, this is not quite correct (assuming I haven't overlooked
+> something), because ide_cd_queue_pc still has a reference to the rq.
 
-> > > Of course if we found the "actual problem" we'd conjure up a better 
-> > > fix. But before that, I'd prefer the conservative way.
-> > 
-> > Does stock Windows work on the machine? I think this really ought to be 
-> > a pretty obvious minimal test before adding quirks to the kernel.
-> 
-> Does this matter?  Does whether Windows fail or not affect our
-> decision here?  (Worse that I have no "stock Windows XP" for
-> testing. All I have are those companion Windows Recovery CDs that
-> include all drivers).
+That doesn't matter because the OOPS happens after the command has been
+issued and _before_ ide_cd_queue_pc() gets to access the rq ptr again.
 
-Yes. If Windows works without hardware specific drivers then there's a 
-flaw in our i8042 setup code that's affecting an unknown number of 
-machines, and adding more entries to a static table tells us nothing 
-about what proportion of those machines are now fixed - it just tells us 
-that we've worked around the issue for the ones that Intel happen to be 
-testing.
+ide_cd_queue_pc() does blk_execute_rq() which does wait for completion
+of the request so it doesn't access the rq pointer before the IRQ
+handler has completed. Even if it would reach the blk_put_request part,
+the OOPS would have already happened.
+
+ide_complete_rq simply does
+
+blk_end_request
+|->blk_end_bidi_request
+   |->blk_finish_request
+
+after checking the rq->bio pointer through blk_update_bidi_request() and
+if the prior is NULL it does __blk_put_request in blk_finish_request and
+this is where the thing vanishes.
+
+The second time ide_complete_rq() comes to run at the end of the IRQ
+handler the rq is already 0xdeadbeef :).
+
+(this is all latest git but the old code (without the bidi stuff) did
+the same thing wrt to rq->bio).
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Regards/Gruss,
+Boris
