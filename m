@@ -1,72 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbZFROxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbZFRO4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761417AbZFROxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 10:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbZFROxJ
+	id S1761201AbZFRO4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 10:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757357AbZFRO4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 10:53:09 -0400
-Received: from mss-uk.mssgmbh.com ([217.174.251.109]:34462 "EHLO
-	mss-uk.mssgmbh.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753966AbZFROxJ (ORCPT
+	Thu, 18 Jun 2009 10:56:25 -0400
+Received: from stinky.trash.net ([213.144.137.162]:32854 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755071AbZFRO4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 10:53:09 -0400
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH] ide-cd: prevent null pointer deref via cdrom_newpc_intr
-In-Reply-To: <9ea470500906180739qdabce04u7c7875acc05358f@mail.gmail.com> (Borislav Petkov's message of "Thu\, 18 Jun 2009 16\:39\:40 +0200")
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-References: <87zlc58xgd.fsf@fever.mssgmbh.com>
-	<9ea470500906180739qdabce04u7c7875acc05358f@mail.gmail.com>
-From: Rainer Weikusat <rweikusat@mssgmbh.com>
-Date: Thu, 18 Jun 2009 16:52:57 +0200
-Message-ID: <87vdmt8ugm.fsf@fever.mssgmbh.com>
+	Thu, 18 Jun 2009 10:56:24 -0400
+Message-ID: <4A3A5599.4080906@trash.net>
+Date: Thu, 18 Jun 2009 16:56:25 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (mss-uk.mssgmbh.com [217.174.251.109]); Thu, 18 Jun 2009 16:53:04 +0200 (CEST)
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
+Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
+ __list_add+0x7d/0xad()
+References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com> <4A3A0D45.8090806@trash.net>
+In-Reply-To: <4A3A0D45.8090806@trash.net>
+Content-Type: multipart/mixed;
+ boundary="------------080308000508060707010501"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov <petkovbb@googlemail.com> writes:
-> On Thu, Jun 18, 2009 at 3:48 PM, Rainer Weikusat<rweikusat@mssgmbh.com> wrote:
->> From: Rainer Weikusat <rweikusat@mssgmbh.com>
+This is a multi-part message in MIME format.
+--------------080308000508060707010501
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Patrick McHardy wrote:
+> Eric Dumazet wrote:
+>>> a test-box still triggered this crash overnight:
+>>>
+>>> [  252.433471] ------------[ cut here ]------------
+>>> [  252.436031] WARNING: at lib/list_debug.c:30 __list_add+0x95/0xa0()
+>>> ...
+>>> With your patch (repeated below) applied. Is Patrick's alternative 
+>>> patch supposed to fix something that yours does not?
 >>
->> With 2.6.30, the error handling code in cdrom_newpc_intr was changed
->> to deal with partial request failures by normally completing the 'good'
->> parts of a request and only 'error' the last (and presumably,
->> incompletely transferred) bio associated with a particular
->> request. This doesn't work for requests which don't have bios
->> associated with them ('GPCMD_READ_DISC_INFO'), because the first call
->> to ide_end_rq, done via ide_complete_rq in order to do the
->> partial completion part, returns with a code of zero for all non-bio
->> requests, causing the drive->hwif->rq pointer to be set to NULL.
->
-> This is a bit misleading, it should be more like: "ide_complete_rq is
-> called over ide_cd_error_cmd() to partially complete the rq but the rq
-> is without a bio and the block layer does partial completion only for
-> requests with bio's so this request is completed as a whole and the rq
-> freed."
+>> Hmm, not really, Patrick patch should fix same problem, but without 
+>> extra locking
+>> as mine.
+>>
+>> This new stack trace is somewhat different, as corruption is detected 
+>> in the add_timer()
+>> call in __nf_conntrack_confirm()
+>>
+>> So there is another problem. CCed Pablo Neira Ayuso who added some stuff
+>> in netfilter and timeout logic recently.
+> 
+> That timeout logic shouldn't be relevant in this case, its only
+> activated when netlink event delivery is used, a userspace process
+> is actually listening and it has the socket marked for reliable
+> delivery.
+> 
+> I think its still the same problem, the detection is just noticed
+> at a different point.
 
-Technically, this is not quite correct (assuming I haven't overlooked
-something), because ide_cd_queue_pc still has a reference to the rq.
+I can't find anything wrong with the conntrack timer use itself.
+Since its the timer base that is corrupted, its possible that
+something else is using timers incorrectly and conntrack just
+happens to hit the problem afterwards, but it seems rather
+unlikely since the first backtrace originated in a network driver,
+the second one in the socket layer.
 
-> please fix.
+But I've noticed a different problem, the lockless lookup might
+incorrectly return an conntrack entry that is supposed to be
+invisible. This can happen because we only check for equal tuples
+and !atomic_inc_not_zero(refcnt), but the conntrack can be removed
+from the lists and still have references to it. It should never
+have an active timer at that point however, so all following
+mod_timer_pending() calls *should* do nothing unless I'm missing
+something.
 
-I will send a modified 'patch e-mail' soon.
+Ingo, could you please try whether this patch (combined with the
+last one) makes any difference? Enabling CONFIG_NETFILTER_DEBUG
+could also help.
 
-Something I would like to add: The DVD-ROM mentioned below has exactly
-the same 32/30 issue w/ READ DISC INFO. This used to just be an
-unnoticed failure in older kernels.
 
-[...]
 
->> This is fixed in the linux-ide tree since at about 2009/06/10 [Bug
->> 13399, also happens w/ TSSTcorpDVD-ROM SH-D162C],
->
-> really, because I can't find it in Bart's trees. Do you have a commit
-> id?
+--------------080308000508060707010501
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
 
-No, I just assumed that, since I found the bio-check among beginnings
-of code intended to deal with the 32/30 issue.
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index 5f72b94..ce17a69 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -335,7 +335,8 @@ begin:
+ 	h = __nf_conntrack_find(net, tuple);
+ 	if (h) {
+ 		ct = nf_ct_tuplehash_to_ctrack(h);
+-		if (unlikely(!atomic_inc_not_zero(&ct->ct_general.use)))
++		if (unlikely(nf_ct_is_dying(ct) ||
++			     !atomic_inc_not_zero(&ct->ct_general.use)))
+ 			h = NULL;
+ 		else {
+ 			if (unlikely(!nf_ct_tuple_equal(tuple, &h->tuple))) {
+@@ -503,7 +504,8 @@ static noinline int early_drop(struct net *net, unsigned int hash)
+ 			cnt++;
+ 		}
+ 
+-		if (ct && unlikely(!atomic_inc_not_zero(&ct->ct_general.use)))
++		if (ct && unlikely(nf_ct_is_dying(ct) ||
++				   !atomic_inc_not_zero(&ct->ct_general.use)))
+ 			ct = NULL;
+ 		if (ct || cnt >= NF_CT_EVICTION_RANGE)
+ 			break;
+
+--------------080308000508060707010501--
