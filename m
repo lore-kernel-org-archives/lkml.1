@@ -1,144 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZFRRZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZFRR0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbZFRRZi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 13:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZFRRZb
+	id S1756805AbZFRR0J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 13:26:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZFRRZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 13:25:31 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:60229 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbZFRRZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 13:25:30 -0400
-Date: Thu, 18 Jun 2009 22:55:22 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch 2/2] ksym_tracer:Handle machine stall when cat
-	trace_pipe for ksym tracer
-Message-ID: <20090618172522.GA4590@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090616225257.041883212@prasadkr_t60p.in.ibm.com> <20090616230527.GC14753@in.ibm.com> <20090617051235.GD7411@nowhere>
+	Thu, 18 Jun 2009 13:25:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39422 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753803AbZFRRZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 13:25:55 -0400
+Message-ID: <4A3A77E3.1010908@RedHat.com>
+Date: Thu, 18 Jun 2009 13:22:43 -0400
+From: Steve Dickson <SteveD@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090617051235.GD7411@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Linux NFS Mailing list <linux-nfs@vger.kernel.org>,
+       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] sunrpc: Adding trace points to status routines (take
+ 2)
+References: <4A2EA789.60608@RedHat.com> <1245113811.7470.15.camel@heimdal.trondhjem.org>
+In-Reply-To: <1245113811.7470.15.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 07:12:36AM +0200, Frederic Weisbecker wrote:
-> On Wed, Jun 17, 2009 at 04:35:27AM +0530, K.Prasad wrote:
-> > 'trace_pipe' does not handle a TRACE_TYPE_PARTIAL_LINE well and causes the
-> > machine to stall.
+Trond Myklebust wrote:
+> On Tue, 2009-06-09 at 14:18 -0400, Steve Dickson wrote:
+>> Hey Trond,
+>>
+>> Here is an updated version of the patch I sent out a while
+>> back... all that has changed was the addtion of 'rpc_'  to
+>> the name of the trace points which coincides with the
+>> other trace points naming convention.
+>>
+>> Here is a pointer to the previous email that has the 
+>> fairly long winded explanation of how all this works:
+>>
+>>    http://marc.info/?l=linux-kernel&m=124058933520183&w=2
+>>
+>> And below is the updated patch which is based on Ingo's
+>> linux-2.6-tip.git tree. 
+>>
+>> Comments?
+>>
+>> steved.
+>>  
+>> Author: Steve Dickson <steved@redhat.com>
+>> Date:   Tue Jun  9 14:12:07 EDT 2009
+>>
+>>     Adds three trace points to the status routines in the
+>>     sunrpc state machine. The trace points will only execute
+>>     in error conditions.
+>>     
+>>     The goal of these trace points it to make it easier to
+>>     debug process that spin or get hung up in the NFS and
+>>     related subsystems.
 > 
-> 
-> 
-> No, if it stalls here, it means it handles it well :)
->
+> Would this replace the existing dprint_status()? How does it differ from
+> the existing DYNAMIC_DEBUG functionality that was merged in 2.6.30?
+I believe it would be an addition to... Its my understanding the dynamic
+debug uses printks, which ultimately causes messages to be log to
+/var/log/messages... The trace points are used by a systemtap script 
+which is much more efficent and lightweight...
 
-Okay. As stated earlier, the cause is an incorrect
-TRACE_TYPE_PARTIAL_LINE return.
+
+>     
+>>     Signed-off-by: Steve Dickson <steved@redhat.com>
+>>
+>> diff --git a/include/trace/events/sunrpc.h b/include/trace/events/sunrpc.h
+>> new file mode 100644
+>> index 0000000..f502eb4
+>> --- /dev/null
+>> +++ b/include/trace/events/sunrpc.h
+>> @@ -0,0 +1,86 @@
+>> +#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
+>> +#define _TRACE_SUNRPC_H
+>> +
+>> +#include <linux/tracepoint.h>
+>> +
+>> +#undef TRACE_SYSTEM
+>> +#define TRACE_SYSTEM sunrpc
+>> +
+>> +TRACE_EVENT(rpc_call_status,
+>> +
+>> +	TP_PROTO(struct rpc_task *task),
+>> +
+>> +	TP_ARGS(task),
+>> +
+>> +	TP_STRUCT__entry(
+>> +		__field(u32, cl_prog)
+>> +		__field(u32, cl_vers)
+>> +		__field(u32, p_proc)
+>> +		__field(int, tk_status)
+>> +	),
+>> +
+>> +	TP_fast_assign(
+>> +		__entry->cl_prog = task->tk_client->cl_prog;
+>> +		__entry->cl_vers = task->tk_client->cl_vers;
+>> +		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
+>> +		__entry->cl_prog = task->tk_client->cl_prog;
+> 
+> You should only need to set entry->cl_prog once, right?
+Point... its redundant... Here is the updated patch:
  
-> > While a TRACE_TYPE_UNHANDLED return causes the tracer to
-> > output unrelated data, a TRACE_TYPE_HANDLED return presents a clean output
-> > (minus all partial traces).
-> > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > ---
-> >  kernel/trace/trace_ksym.c |    6 ++++++
-> >  1 file changed, 6 insertions(+)
-> > 
-> > Index: linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
-> > ===================================================================
-> > --- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
-> > +++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
-> > @@ -389,6 +389,12 @@ static enum print_line_t ksym_trace_outp
-> >  
-> >  	trace_assign_type(field, entry);
-> >  
-> > +	/*
-> > +	 * Return early without any output if we don't have sufficient
-> > +	 * information
-> > +	 */
-> > +	if ((!field->ksym_hbp->info.type) || (!field->ip))
-> > +		return TRACE_TYPE_HANDLED;
-> 
-> 
-> 
-> Yeah that seems a good fix. But such silent ignored traces may
-> hide bugs (current or futures).
-> Is it a common situation to have a zero ip or an undefined
-> breakpoint type? How can that happen?
-> 
-> Thanks.
->
+Author: Steve Dickson <steved@redhat.com>
+Date:   Tue Jun  18 14:12:07 EDT 2009
 
-When a symbol is removed from ksym's trace list, it causes
-unregistration of the breakpoints and the breakpoint structure is
-kfree()-ed.
+    Adds three trace points to the status routines in the
+    sunrpc state machine. The trace points will only execute
+    in error conditions.
+    
+    The goal of these trace points it to make it easier to
+    debug process that spin or get hung up in the NFS and
+    related subsystems.
+    
+    Signed-off-by: Steve Dickson <steved@redhat.com>
 
-Now, looking at the relevant code in ksym_hbp_handler() in trace_ksym.c
-
- 88         entry = ring_buffer_event_data(event);
- 89         strlcpy(entry->ksym_name, hbp->info.name, KSYM_SYMBOL_LEN);
- 90         entry->ksym_hbp = hbp;
- 91         entry->ip = instruction_pointer(regs);
- 92         strlcpy(entry->p_name, current->comm, TASK_COMM_LEN);
-
-While the ksym_name and p_name fields are copied into the ring buffer,
-only a pointer to the structure is provided (in line 90). So, when
-ksym_hbp is unregistered the fields contained in it, namely 'type' and
-'ip' are lost (I'm not sure how the fields beyond 'field->ksym_hbp' is
-accessible in ksym_trace_output() when it is supposed to be already
-free).
-
-This patch would cause an early return when such is the case. I also
-plan to remove the 'default case' in ksym_trace_output() as it was meant
-to handle a zero value for type (other values are eliminated at the time
-of breakpoint registration itself).
-
-Please find a patch below that eliminates the two issues of output
-concatenation and machine stall, excepting for one issue which I'm
-unable to reason out.
-
-A 'cat trace_pipe' done immediately after removal of an entry (without a
-preceding 'cat trace') terminates only with a SIGTERM (kill <pid>) and
-not a SIGINT (Ctrl+C). However, if the trace buffer receives any new
-data subsequently, it responds to the Ctrl+C signal. I would be glad to
-receive your suggestions in this regard.
-
-===================================================================
---- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
-+++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
-@@ -388,6 +388,12 @@ static enum print_line_t ksym_trace_outp
- 		return TRACE_TYPE_UNHANDLED;
+diff --git a/include/trace/events/sunrpc.h b/include/trace/events/sunrpc.h
+new file mode 100644
+index 0000000..f502eb4
+--- /dev/null
++++ b/include/trace/events/sunrpc.h
+@@ -0,0 +1,86 @@
++#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_SUNRPC_H
++
++#include <linux/tracepoint.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM sunrpc
++
++TRACE_EVENT(rpc_call_status,
++
++	TP_PROTO(struct rpc_task *task),
++
++	TP_ARGS(task),
++
++	TP_STRUCT__entry(
++		__field(u32, cl_prog)
++		__field(u32, cl_vers)
++		__field(u32, p_proc)
++		__field(int, tk_status)
++	),
++
++	TP_fast_assign(
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->cl_vers = task->tk_client->cl_vers;
++		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
++		__entry->tk_status = task->tk_status;
++	),
++
++	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
++		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
++);
++
++TRACE_EVENT(rpc_bind_status,
++
++	TP_PROTO(struct rpc_task *task),
++
++	TP_ARGS(task),
++
++	TP_STRUCT__entry(
++		__field(u32, cl_prog)
++		__field(u32, cl_vers)
++		__field(u32, p_proc)
++		__field(int, tk_status)
++	),
++
++	TP_fast_assign(
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->cl_vers = task->tk_client->cl_vers;
++		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
++		__entry->tk_status = task->tk_status;
++	),
++
++	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
++		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
++);
++TRACE_EVENT(rpc_connect_status,
++
++	TP_PROTO(struct rpc_task *task, int status),
++
++	TP_ARGS(task, status),
++
++	TP_STRUCT__entry(
++		__field(u32, cl_prog)
++		__field(u32, cl_vers)
++		__field(u32, p_proc)
++		__field(int, tk_status)
++	),
++
++	TP_fast_assign(
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->cl_vers = task->tk_client->cl_vers;
++		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
++		__entry->tk_status = status;
++	),
++
++	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
++		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
++
++);
++#endif /* __TRACE_SUNRPC_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+index 5abab09..b86ee2a 100644
+--- a/net/sunrpc/clnt.c
++++ b/net/sunrpc/clnt.c
+@@ -37,6 +37,9 @@
+ #include <linux/sunrpc/rpc_pipe_fs.h>
+ #include <linux/sunrpc/metrics.h>
  
- 	trace_assign_type(field, entry);
-+	/*
-+	 * Return early without any output if we don't have sufficient
-+	 * information
-+	 */
-+	if ((!field->ksym_hbp->info.type) || (!field->ip))
-+		return TRACE_TYPE_HANDLED;
++#include <linux/ftrace.h>
++#define CREATE_TRACE_POINTS
++#include <trace/events/sunrpc.h>
  
- 	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ",
-field->p_name,
- 				entry->pid, iter->cpu,
-field->ksym_name);
-@@ -401,10 +407,7 @@ static enum print_line_t ksym_trace_outp
- 	case HW_BREAKPOINT_RW:
- 		ret = trace_seq_printf(s, " RW ");
- 		break;
--	default:
--		return TRACE_TYPE_PARTIAL_LINE;
+ #ifdef RPC_DEBUG
+ # define RPCDBG_FACILITY	RPCDBG_CALL
+@@ -957,6 +960,7 @@ call_bind_status(struct rpc_task *task)
+ 		return;
  	}
--
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
  
-Thanks,
-K.Prasad
++	trace_rpc_bind_status(task);
+ 	switch (task->tk_status) {
+ 	case -ENOMEM:
+ 		dprintk("RPC: %5u rpcbind out of memory\n", task->tk_pid);
+@@ -1038,6 +1042,7 @@ call_connect_status(struct rpc_task *task)
+ 		return;
+ 	}
+ 
++	trace_rpc_connect_status(task, status);
+ 	switch (status) {
+ 		/* if soft mounted, test if we've timed out */
+ 	case -ETIMEDOUT:
+@@ -1141,6 +1146,7 @@ call_status(struct rpc_task *task)
+ 		return;
+ 	}
+ 
++	trace_rpc_call_status(task);
+ 	task->tk_status = 0;
+ 	switch(status) {
+ 	case -EHOSTDOWN:
+
 
