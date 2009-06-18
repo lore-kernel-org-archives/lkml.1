@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZFRXtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZFRX4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbZFRXtv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 19:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZFRXtp
+	id S1756458AbZFRX4W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 19:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZFRX4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 19:49:45 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:39938 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbZFRXtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 19:49:45 -0400
-In-Reply-To: <8916.1245303178@jrobl>
-References: <8916.1245303178@jrobl>
-To: hooanon05@yahoo.co.jp
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com
+	Thu, 18 Jun 2009 19:56:16 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:46999 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbZFRX4P convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 19:56:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=gh1RyL1ZSJMQSOyV1efVCNKxGnWbor5FMDxQEc/TWa8JK0djOw18qy6E1y0Y77sD3B
+         JOGb9Hx2o6cyi/Jo5Hx5WGlTiU5O2+MlFBwYF/xQoV+2/PZQxr1JEhhUKzcVBFOrGBIt
+         2PIsFU4tbApNTlfBYSY5EsiP7JX+1EcljeWQ8=
 MIME-Version: 1.0
-Subject: Re: IMA and ETXTBSY
-X-KeepSent: B9B7AF8E:87B0E629-852575D9:0080E2A1;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OFB9B7AF8E.87B0E629-ON852575D9.0080E2A1-852575D9.0082E67A@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Thu, 18 Jun 2009 19:49:46 -0400
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5|December 05, 2008) at
- 06/18/2009 19:49:46,
-	Serialize complete at 06/18/2009 19:49:46
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>
+References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 18 Jun 2009 19:55:58 -0400
+Message-ID: <8bd0f97a0906181655jd68835fg10fe0783b6a6068d@mail.gmail.com>
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
+To: Paul Mackerras <paulus@samba.org>
+Cc: benh@kernel.crashing.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hooanon05@yahoo.co.jp wrote on 06/18/2009 01:32:58 AM:
+On Sat, Jun 13, 2009 at 03:10, Paul Mackerras wrote:
+> +typedef struct {
+> +       long long counter;
+> +} atomic64_t;
 
-> After the failure of open(2) with ETXTBSY, IMA produces wrong messages.
-> Here is a simple test script.
-> 
-> dir=/tmp
-> cp /bin/sleep $dir
-> ls -l $dir/sleep
-> stat -f $dir
-> $dir/sleep 3 & sleep 1
-> echo | /bin/dd of=$dir/sleep conv=notrunc && false
-> wait
-> rm $dir/sleep
-> 
-> 
-> The result.
-> + cp /bin/sleep /tmp
-> + ls -l /tmp/sleep
-> -rwxr-xr-x 1 jro jro 23504 Jun 18 14:26 /tmp/sleep
-> + stat -f /tmp
->   File: "/tmp"
->     ID: 4e22c34ea8177d80 Namelen: 255     Type: ext2/ext3
-> Block size: 1024       Fundamental block size: 1024
-> Blocks: Total: 918322     Free: 918281     Available: 869285
-> Inodes: Total: 490560     Free: 490545
-> + /tmp/sleep 3
-> + sleep 1
-> + echo
-> + /bin/dd of=/tmp/sleep conv=notrunc
-> /bin/dd: opening `/tmp/sleep': Text file busy
-> + wait
-> + rm /tmp/sleep
-> $ iint_free: writecount: 1
-> iint_free: opencount: 1
-> 
-> 
-> J. R. Okajima
-
-The problem is that IMA measures the file and increments the 
-open/read/write counters before the file is actually opened,
-but if the open fails it doesn't decrement the counters.  I'll
-post a patch. Thanks for bringing this to my attention.
-
-Mimi
+lack of volatile seems odd compared to:
+include/linux/types.h:
+typedef struct {
+    volatile int counter;
+} atomic_t;
+-mike
