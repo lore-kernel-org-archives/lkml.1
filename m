@@ -1,112 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbZFRKO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760330AbZFRKQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758959AbZFRKO6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 06:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbZFRKOv
+	id S1760330AbZFRKQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 06:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbZFRKQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 06:14:51 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:55433 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755436AbZFRKOu (ORCPT
+	Thu, 18 Jun 2009 06:16:21 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:48157 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756815AbZFRKQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 06:14:50 -0400
-Date: Thu, 18 Jun 2009 19:14:48 +0900 (JST)
-Message-Id: <20090618.191448.886429908004553840.mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at
- source code level
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <20090617163111.GA16128@elte.hu>
-References: <20090617.222055.374768827975756908.mitake@dcl.info.waseda.ac.jp>
-	<tip-d11ad9b3631b942b0d2e5b754a6c62158efb799f@git.kernel.org>
-	<20090617163111.GA16128@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Jun 2009 06:16:20 -0400
+Date: Thu, 18 Jun 2009 15:46:20 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 11 (cnic)
+Message-ID: <20090618101620.GB16657@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090611191420.1f4d5e4f.sfr@canb.auug.org.au> <4A318358.20804@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4A318358.20804@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at source code level
-Date: Wed, 17 Jun 2009 18:31:11 +0200
+* Randy Dunlap <randy.dunlap@oracle.com> [2009-06-11 15:21:12]:
 
-> ition: inline
-> Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at source code level
-> From: Ingo Molnar <mingo@elte.hu>
-> To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-> 	mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de
-> Cc: linux-tip-commits@vger.kernel.org
-> Date: Wed, 17 Jun 2009 18:31:11 +0200
-> User-Agent: Mutt/1.5.18 (2008-05-17)
-> Received-SPF: neutral (mx2.mail.elte.hu: 157.181.1.14 is neither permitted nor denied by domain of elte.hu) client-ip=157.181.1.14; envelope-from=mingo@elte.hu; helo=elvis.elte.hu;
-> X-Mew: tab/spc characters on Subject: are simplified.
+> Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20090610:
 > 
 > 
-> * tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> In 2 separate builds:
 > 
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -6630,7 +6630,7 @@ EXPORT_SYMBOL(yield);
-> >   */
-> >  void __sched io_schedule(void)
-> >  {
-> > -	struct rq *rq = &__raw_get_cpu_var(runqueues);
-> > +	struct rq *rq = this_rq();
-> >  
-> >  	delayacct_blkio_start();
-> >  	atomic_inc(&rq->nr_iowait);
-> > @@ -6642,7 +6642,7 @@ EXPORT_SYMBOL(io_schedule);
-> >  
-> >  long __sched io_schedule_timeout(long timeout)
-> >  {
-> > -	struct rq *rq = &__raw_get_cpu_var(runqueues);
-> > +	struct rq *rq = this_rq();
-> >  	long ret;
+> ERROR: "ip_route_output_key" [drivers/net/cnic.ko] undefined!
 > 
-> I removed these two changes. Did you notice the __raw prefix?
+> when CONFIG_INET=n
 > 
-> 	Ingo
+> and
 > 
+> drivers/net/cnic.c:2520: error: implicit declaration of function '__symbol_get'
+> 
+> when CONFIG_MODULES=n
 
-Thanks for your fix, I didn't notice...
-I wrote a patch to fix these two points.
+this build failure is also visible with 20090618.
+> 
+> 
+> -- 
+> ~Randy
+> LPC 2009, Sept. 23-25, Portland, Oregon
+> http://linuxplumbersconf.org/2009/
 
-After applying this patch,
-all direct reference to runqueues is in macros. How is this?
-
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8ec9d13..e2ca8c1 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -692,6 +692,7 @@ static inline int cpu_of(struct rq *rq)
- #define this_rq()		(&__get_cpu_var(runqueues))
- #define task_rq(p)		cpu_rq(task_cpu(p))
- #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
-+#define raw_rq()		(&__raw_get_cpu_var(runqueues))
- 
- inline void update_rq_clock(struct rq *rq)
- {
-@@ -6625,7 +6626,7 @@ EXPORT_SYMBOL(yield);
-  */
- void __sched io_schedule(void)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = raw_rq();
- 
- 	delayacct_blkio_start();
- 	atomic_inc(&rq->nr_iowait);
-@@ -6637,7 +6638,7 @@ EXPORT_SYMBOL(io_schedule);
- 
- long __sched io_schedule_timeout(long timeout)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = raw_rq();
- 	long ret;
- 
- 	delayacct_blkio_start();
+-- 
+Kamalesh
