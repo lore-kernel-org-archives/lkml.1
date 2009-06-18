@@ -1,53 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbZFRNQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763230AbZFRNQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761483AbZFRNQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 09:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760529AbZFRNQN
+	id S1763230AbZFRNQt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 09:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760494AbZFRNQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 09:16:13 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:21094
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758484AbZFRNQM (ORCPT
+	Thu, 18 Jun 2009 09:16:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35040 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761912AbZFRNQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 09:16:12 -0400
-Message-ID: <4A3A3E1D.1050806@panasas.com>
-Date: Thu, 18 Jun 2009 16:16:13 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Andy Whitcroft <apw@canonical.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: checkpatch doing the wrong thing with "*" in return statement
-Content-Type: text/plain; charset=UTF-8
+	Thu, 18 Jun 2009 09:16:39 -0400
+Date: Thu, 18 Jun 2009 14:17:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 01/13] Char: cyclades, add tty refcounting
+Message-ID: <20090618141730.7c4351a0@lxorguk.ukuu.org.uk>
+In-Reply-To: <1245310908-27691-1-git-send-email-jirislaby@gmail.com>
+References: <1245310908-27691-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jun 2009 13:16:15.0282 (UTC) FILETIME=[F556C120:01C9F016]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For example the below patch will warn as:
-
-ERROR: Aspace prohibited after that '*' (ctx:WxW)
-#23: FILE: drivers/block/osdblk.c:144:
-+       return ret * timeout;
-                   ^
-
-clearly it missed the multiplication possibility of "*"
-
-Thanks Boaz
-
-<for_example>
-diff --git a/drivers/block/osdblk.c b/drivers/block/osdblk.c
-index b07e154..e8b5fba 100644
---- a/drivers/block/osdblk.c
-+++ b/drivers/block/osdblk.c
-@@ -141,7 +141,7 @@ static int osd_sync_op(struct osd_request *or, int timeout, uint8_t *credential)
- 	ret = osd_execute_request(or);
- 
- 	/* osd_req_decode_sense(or, ret); */
--	return ret;
-+	return ret * timeout;
- }
- 
- /*
-</for_example>
+Series merged into ttydev tree ready for 2.6.32 window
