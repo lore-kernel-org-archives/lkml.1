@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZFRVFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbZFRVJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbZFRVFS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 17:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZFRVFH
+	id S1755043AbZFRVJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 17:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZFRVJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 17:05:07 -0400
-Received: from mail-fx0-f212.google.com ([209.85.220.212]:64099 "EHLO
-	mail-fx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbZFRVFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 17:05:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=GFGMGQScNmARIpE5A2NbIhhOtKvph4EnmhpSsjDKXpXvq0Sx4w1GLJsKFFx+vpXnNH
-         m8TowDldzCH0xMaSIt2J91C1iCsCheO2sE+i2uGbQ38uma+QoDIsU2tovTTDVN5PAcOB
-         GxCoaAABwT2T0wAw5CTxBUGlhisKKlNHxVVpw=
-Message-ID: <4A3AAC01.7050805@googlemail.com>
-Date: Thu, 18 Jun 2009 23:05:05 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
+	Thu, 18 Jun 2009 17:09:21 -0400
+Received: from claw.goop.org ([74.207.240.146]:47716 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753173AbZFRVJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 17:09:21 -0400
+Message-ID: <4A3AACFD.5020805@goop.org>
+Date: Thu, 18 Jun 2009 14:09:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Rudolf Marek <r.marek@assembler.cz>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] Enable coretemp driver on Intel Atom
-References: <49E7C34A.60007@googlemail.com> <20090618121326.42ab9c2f.akpm@linux-foundation.org>
-In-Reply-To: <20090618121326.42ab9c2f.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.91.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's
+ no local APIC
+References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>	<4A35ACB3.9040501@goop.org> <m1k53dbwo2.fsf@fess.ebiederm.org>	<4A36B3EC.7010004@goop.org> <m1fxe117n5.fsf@fess.ebiederm.org>	<4A37F4AE.5050902@goop.org> <m1vdmvxe3u.fsf@fess.ebiederm.org>	<4A392896.9090408@goop.org> <m1zlc6memu.fsf@fess.ebiederm.org>	<4A3A96BC.1000302@goop.org> <m1ab45i8vs.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ab45i8vs.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 06/18/09 13:28, Eric W. Biederman wrote:
+>>> How does Xen handle domU with hardware directly mapped?
+>>>   
+>>>       
+>> We call that "pci passthrough".  Dom0 will bind the gsi to a pirq as
+>> usual, and then pass the pirq through to the domU.  The domU will bind
+>> the pirq to an event channel, which gets mapped to a Linux irq and
+>> handled as usual.
+>>     
+>
+> Interesting.  How does domU find out the pirq -> pci device mapping?
+>   
 
-Andrew Morton wrote:
+Hm, I haven't looked at it closely, but conventionally it would be via
+xenbus (which is how all the split frontend-backend drivers communicate).
 
-> I'm not 100% sure what to do about this patch.  I'm inclined to merge
-> it, even though you think it might be giving the wrong numbers,
-> because then someone might fix it.
+>> It is already; once the pirq is prepared, the process is the same in
+>> both cases.
+>>     
+>
+> I 3/4 believe that.  map_domain_pirq  appears to setup a per domain
+> mapping between the hardware vector and the irq name it is known as.
+> So I don't see how that works for other domains.
+>
+> msi is setup on a per domain basis.
+>   
 
-That was the basic idea :-)
+Ah, OK.  The pirq is set up for a specific domain rather than being
+global (otherwise it would need some kind of "which domain can access
+which pirq" table).  dom0 can either create a pirq for itself or someone
+else, and the final user of the pirq binds it to a domain-local evtchn.
 
-> otoh, if giving the wrong numbers leads to people's machines needlessly
-> shutting down or something like that, then that's not so good.
+I think.  I really haven't looked into the pci-passthrough parts very
+closely yet.
 
-I don't think that that will happen. Core temperatures on my 330 are
-lower than those reported by the other sensors (core 0/1: 27/35 °C on an
-idle system - hardly alarming in my opinion).
-
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+    J
