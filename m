@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZFRTl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZFRTp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbZFRTl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370AbZFRTlT
+	id S1754694AbZFRTp3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZFRTpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:41:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45705 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752980AbZFRTlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:41:19 -0400
-Message-ID: <4A3A9844.8030004@redhat.com>
-Date: Thu, 18 Jun 2009 15:40:52 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Thu, 18 Jun 2009 15:45:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45983 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654AbZFRTpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 15:45:20 -0400
+Date: Thu, 18 Jun 2009 15:45:21 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: linux-kernel@vger.kernel.org, gerg@uclinux.org, linux-m68k@vger.kernel.org
+Subject: Re: [PATCH] m68k: merge the mmu and non-mmu versions of checksum.h
+Message-ID: <20090618194521.GA7464@infradead.org>
+References: <200906170711.n5H7BFw9009030@localhost.localdomain>
 MIME-Version: 1.0
-To: Larry Woodman <lwoodman@redhat.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?RnLpppjpp7tpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rostedt@goodmis.org
-Subject: Re: [Patch] mm tracepoints update - use case.
-References: <20090423092933.F6E9.A69D9226@jp.fujitsu.com>	 <4A36925D.4090000@redhat.com> <20090616170811.99A6.A69D9226@jp.fujitsu.com> <1245352954.3212.67.camel@dhcp-100-19-198.bos.redhat.com>
-In-Reply-To: <1245352954.3212.67.camel@dhcp-100-19-198.bos.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906170711.n5H7BFw9009030@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Woodman wrote:
+On Wed, Jun 17, 2009 at 05:11:15PM +1000, Greg Ungerer wrote:
+> +#ifdef CONFIG_MMU
+>  /*
+>   *	This is a version of ip_compute_csum() optimized for IP headers,
+>   *	which always checksum on 4 octet boundaries.
+> @@ -59,6 +61,9 @@ static inline __sum16 ip_fast_csum(const void *iph, unsigned int ihl)
+>  		 : "memory");
+>  	return (__force __sum16)~sum;
+>  }
+> +#else
+> +__sum16 ip_fast_csum(const void *iph, unsigned int ihl);
+> +#endif
 
->> - Please don't display mm and/or another kernel raw pointer.
->>   if we assume non stop system, we can't use kernel-dump. Thus kernel pointer
->>   logging is not so useful.
-> 
-> OK, I just dont know how valuable the trace output is with out some raw
-> data like the mm_struct.
+Any good reason this is inline for all mmu processors and out of line
+for nommu, independent of the actual cpu variant?
 
-I believe that we do want something like the mm_struct in
-the trace info, so we can figure out which process was
-allocating pages, etc...
+>  static inline __sum16 csum_fold(__wsum sum)
+>  {
+>  	unsigned int tmp = (__force u32)sum;
+> +#ifdef CONFIG_COLDFIRE
+> +	tmp = (tmp & 0xffff) + (tmp >> 16);
+> +	tmp = (tmp & 0xffff) + (tmp >> 16);
+> +	return (__force __sum16)~tmp;
+> +#else
+>  	__asm__("swap %1\n\t"
+>  		"addw %1, %0\n\t"
+>  		"clrw %1\n\t"
+> @@ -74,6 +84,7 @@ static inline __sum16 csum_fold(__wsum sum)
+>  		: "=&d" (sum), "=&d" (tmp)
+>  		: "0" (sum), "1" (tmp));
+>  	return (__force __sum16)~sum;
+> +#endif
+>  }
 
->> - Please consider how do this feature works on mem-cgroup.
->>   (IOW, please don't ignore many "if (scanning_global_lru())")
+I think this would be cleaner by having totally separate functions
+for both cases, e.g.
 
-Good point, we want to trace cgroup vs non-cgroup reclaims,
-too.
+#ifdef CONFIG_COLDFIRE
+static inline __sum16 csum_fold(__wsum sum)
+{
+	unsigned int tmp = (__force u32)sum;
 
->> - tracepoint caller shouldn't have any assumption of displaying representation.
->>   e.g.
->>     wrong)  trace_mm_pagereclaim_pgout(mapping, page->index<<PAGE_SHIFT, PageAnon(page));
->>     good)   trace_mm_pagereclaim_pgout(mapping, page)
-> 
-> OK.
-> 
->>   that's general and good callback and/or hook manner.
+	tmp = (tmp & 0xffff) + (tmp >> 16);
+	tmp = (tmp & 0xffff) + (tmp >> 16);
 
-How do we figure those out from the page pointer at the time
-the tracepoint triggers?
-
-I believe that it would be useful to export that info in the
-trace point, since we cannot expect the userspace trace tool
-to figure out these things from the struct page address.
-
-Or did I overlook something here?
-
--- 
-All rights reversed.
+	return (__force __sum16)~tmp;
+}
+#else
+...
+#endif
