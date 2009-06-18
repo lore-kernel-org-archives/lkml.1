@@ -1,154 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbZFRRXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZFRRZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbZFRRXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 13:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZFRRXP
+	id S1755513AbZFRRZi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 13:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZFRRZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 13:23:15 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:51777 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751918AbZFRRXO convert rfc822-to-8bit (ORCPT
+	Thu, 18 Jun 2009 13:25:31 -0400
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:60229 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbZFRRZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 13:23:14 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: fmhess@users.sourceforge.net
-Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based cards
-Date: Thu, 18 Jun 2009 14:23:09 -0300
-User-Agent: KMail/1.11.90 (Linux/2.6.30-desktop-1mnb; KDE/4.2.90; i686; ; )
-Cc: Ian Abbott <abbotti@mev.co.uk>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>
-References: <200906161701.45234.herton@mandriva.com.br> <200906172137.43870.herton@mandriva.com.br> <200906180328.07976.fmhess@speakeasy.net>
-In-Reply-To: <200906180328.07976.fmhess@speakeasy.net>
+	Thu, 18 Jun 2009 13:25:30 -0400
+Date: Thu, 18 Jun 2009 22:55:22 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch 2/2] ksym_tracer:Handle machine stall when cat
+	trace_pipe for ksym tracer
+Message-ID: <20090618172522.GA4590@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090616225257.041883212@prasadkr_t60p.in.ibm.com> <20090616230527.GC14753@in.ibm.com> <20090617051235.GD7411@nowhere>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200906181423.11245.herton@mandriva.com.br>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617051235.GD7411@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Quinta-feira 18 Junho 2009, às 04:28:04, Frank Mori Hess escreveu:
-> On Wednesday 17 June 2009, Herton Ronaldo Krzesinski wrote:
-> > >
-> > > Your patch breaks configuration of the board unless the bus and slot
-> > > are explicitly specified.  Just make a minimal patch that replaces
-> > > pci_get_device with pci_get_subsys and fixes the problem that was
-> > > reported.
-> >
-> > Hmm that's not what the patch does, it doesn't break configuration,
-> > keeps the same logic as before (I was wrong in my last email replying to
-> > myself), check it, if it->options[0] and it->options[1] isn't specified,
-> > the pdev is valid so the for loop exits (see !pdev check).
+On Wed, Jun 17, 2009 at 07:12:36AM +0200, Frederic Weisbecker wrote:
+> On Wed, Jun 17, 2009 at 04:35:27AM +0530, K.Prasad wrote:
+> > 'trace_pipe' does not handle a TRACE_TYPE_PARTIAL_LINE well and causes the
+> > machine to stall.
 > 
-> Your right.  However, it also turns a loop over pci devices into a loop 
-> over pci ids, which appears to break the case of multiple s626 boards 
-> where the bus/slot of the second s626 board is specified.  If you're not 
-> willing to provide a minimal patch that just fixes the reported problem, 
-> just say so.  It would have been less effort for me to do it myself than 
-> analyze what your changes are breaking.
+> 
+> 
+> No, if it stalls here, it means it handles it well :)
+>
 
-That's part of reviewing process, I just wanted to enhance it in case more pci
-ids are added in the future along with the switch to pci_get_subsys, I don't
-know why you act like that, you don't want the code to be enhanced? Other
-comedi driver loop over ids, for example gsc_hpdi
-
-And indeed what you say it's true, there is a bug in the patch now that you
-checked it out properly, it has a problem with this multiple s626 case, fixed
-that now. Pointing out the problem instead just saying it's broken helps :)
-
-I also removed the obligation to add sub ids and re-factored the patch, that
-was too much and not good, just a simpler loop over pci id array is used now,
-and a comment was added in pci id list telling people that they should add
-subvendor:subdevice ids for boards with vendor:device == 0x1131:0x7146,
-in case new boards with this id appear.
-
-Let me know if there is any problem remaining with this version:
-
-Staging: comedi: s626: use subvendor:subdevice ids for SAA7146 board
-
-The current s626 comedi driver in staging conflicts with philips SAA7146
-media/dvb based cards, because it claims the same vendor:device pci id
-for all subdevice/subvendor ids. What happens is that for people that have a
-philips SAA7146 media/dvb based card, s626 if available gets loaded by udev
-and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
-
-The s626 driver shouldn't claim all 1131:7146 devices. Fix this by
-specifying specific known subvendor:subdevice ids in its pci id table
-list.
-
-Also s626_attach is modified to use now pci_get_subsys instead of
-pci_get_device as reported by Ian Abbott, and now we loop over pci id
-table entries in case more ids are added in the future.
-
-Reference: http://lkml.org/lkml/2009/6/16/552
-
-Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-
-diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
-index 30dec9d..4210590 100644
---- a/drivers/staging/comedi/drivers/s626.c
-+++ b/drivers/staging/comedi/drivers/s626.c
-@@ -110,9 +110,13 @@ static const struct s626_board s626_boards[] = {
- #define PCI_VENDOR_ID_S626 0x1131
- #define PCI_DEVICE_ID_S626 0x7146
+Okay. As stated earlier, the cause is an incorrect
+TRACE_TYPE_PARTIAL_LINE return.
  
-+/*
-+ * For devices with vendor:device id == 0x1131:0x7146 you must specify
-+ * also subvendor:subdevice ids, because otherwise it will conflict with
-+ * Philips SAA7146 media/dvb based cards.
-+ */
- static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) = {
--	{PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		0},
-+	{PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
- 	{0}
- };
+> > While a TRACE_TYPE_UNHANDLED return causes the tracer to
+> > output unrelated data, a TRACE_TYPE_HANDLED return presents a clean output
+> > (minus all partial traces).
+> > 
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > ---
+> >  kernel/trace/trace_ksym.c |    6 ++++++
+> >  1 file changed, 6 insertions(+)
+> > 
+> > Index: linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+> > ===================================================================
+> > --- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
+> > +++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+> > @@ -389,6 +389,12 @@ static enum print_line_t ksym_trace_outp
+> >  
+> >  	trace_assign_type(field, entry);
+> >  
+> > +	/*
+> > +	 * Return early without any output if we don't have sufficient
+> > +	 * information
+> > +	 */
+> > +	if ((!field->ksym_hbp->info.type) || (!field->ip))
+> > +		return TRACE_TYPE_HANDLED;
+> 
+> 
+> 
+> Yeah that seems a good fix. But such silent ignored traces may
+> hide bugs (current or futures).
+> Is it a common situation to have a zero ip or an undefined
+> breakpoint type? How can that happen?
+> 
+> Thanks.
+>
+
+When a symbol is removed from ksym's trace list, it causes
+unregistration of the breakpoints and the breakpoint structure is
+kfree()-ed.
+
+Now, looking at the relevant code in ksym_hbp_handler() in trace_ksym.c
+
+ 88         entry = ring_buffer_event_data(event);
+ 89         strlcpy(entry->ksym_name, hbp->info.name, KSYM_SYMBOL_LEN);
+ 90         entry->ksym_hbp = hbp;
+ 91         entry->ip = instruction_pointer(regs);
+ 92         strlcpy(entry->p_name, current->comm, TASK_COMM_LEN);
+
+While the ksym_name and p_name fields are copied into the ring buffer,
+only a pointer to the structure is provided (in line 90). So, when
+ksym_hbp is unregistered the fields contained in it, namely 'type' and
+'ip' are lost (I'm not sure how the fields beyond 'field->ksym_hbp' is
+accessible in ksym_trace_output() when it is supposed to be already
+free).
+
+This patch would cause an early return when such is the case. I also
+plan to remove the 'default case' in ksym_trace_output() as it was meant
+to handle a zero value for type (other values are eliminated at the time
+of breakpoint registration itself).
+
+Please find a patch below that eliminates the two issues of output
+concatenation and machine stall, excepting for one issue which I'm
+unable to reason out.
+
+A 'cat trace_pipe' done immediately after removal of an entry (without a
+preceding 'cat trace') terminates only with a SIGTERM (kill <pid>) and
+not a SIGINT (Ctrl+C). However, if the trace buffer receives any new
+data subsequently, it responds to the Ctrl+C signal. I would be glad to
+receive your suggestions in this regard.
+
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
++++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+@@ -388,6 +388,12 @@ static enum print_line_t ksym_trace_outp
+ 		return TRACE_TYPE_UNHANDLED;
  
-@@ -498,25 +502,26 @@ static int s626_attach(struct comedi_device *dev, struct comedi_devconfig *it)
- 	resource_size_t resourceStart;
- 	dma_addr_t appdma;
- 	struct comedi_subdevice *s;
--	struct pci_dev *pdev;
-+	const struct pci_device_id *ids;
-+	struct pci_dev *pdev = NULL;
+ 	trace_assign_type(field, entry);
++	/*
++	 * Return early without any output if we don't have sufficient
++	 * information
++	 */
++	if ((!field->ksym_hbp->info.type) || (!field->ip))
++		return TRACE_TYPE_HANDLED;
  
- 	if (alloc_private(dev, sizeof(struct s626_private)) < 0)
- 		return -ENOMEM;
- 
--	for (pdev = pci_get_device(PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626,
--			NULL); pdev != NULL;
--		pdev = pci_get_device(PCI_VENDOR_ID_S626,
--			PCI_DEVICE_ID_S626, pdev)) {
--		if (it->options[0] || it->options[1]) {
--			if (pdev->bus->number == it->options[0] &&
--				PCI_SLOT(pdev->devfn) == it->options[1]) {
-+	for (i = 0; i < ARRAY_SIZE(s626_pci_table) && !pdev; i++) {
-+		ids = &s626_pci_table[i];
-+		do {
-+			pdev = pci_get_subsys(ids->vendor, ids->device, ids->subvendor,
-+					      ids->subdevice, pdev);
-+
-+			if ((it->options[0] || it->options[1]) && pdev) {
- 				/* matches requested bus/slot */
-+				if (pdev->bus->number == it->options[0] &&
-+				    PCI_SLOT(pdev->devfn) == it->options[1])
-+					break;
-+			} else
- 				break;
--			}
--		} else {
--			/* no bus/slot specified */
--			break;
--		}
-+		} while (1);
+ 	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ",
+field->p_name,
+ 				entry->pid, iter->cpu,
+field->ksym_name);
+@@ -401,10 +407,7 @@ static enum print_line_t ksym_trace_outp
+ 	case HW_BREAKPOINT_RW:
+ 		ret = trace_seq_printf(s, " RW ");
+ 		break;
+-	default:
+-		return TRACE_TYPE_PARTIAL_LINE;
  	}
- 	devpriv->pdev = pdev;
+-
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
  
+Thanks,
+K.Prasad
 
-
--- 
-[]'s
-Herton
