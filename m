@@ -1,83 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761099AbZFRMES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbZFRMKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761099AbZFRMES (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 08:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZFRMEE
+	id S1761577AbZFRMKR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 08:10:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZFRMKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 08:04:04 -0400
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:56974 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756627AbZFRMED (ORCPT
+	Thu, 18 Jun 2009 08:10:05 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:41810 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754069AbZFRMKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 08:04:03 -0400
-Message-ID: <4A3A2D2B.7070704@in.ibm.com>
-Date: Thu, 18 Jun 2009 17:33:55 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Thu, 18 Jun 2009 08:10:03 -0400
+Message-ID: <4A3A2E90.6090900@novell.com>
+Date: Thu, 18 Jun 2009 08:09:52 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: alan@lxorguk.ukuu.org.uk, linuxppc-dev@ozlabs.org
-Subject: [PowerPC] Badness at drivers/char/tty_ldisc.c:210 during shutdown
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, davidel@xmailserver.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [KVM PATCH v7 2/2] KVM: add iosignalfd support
+References: <20090616133751.14362.12674.stgit@dev.haskins.net> <20090616134235.14362.64014.stgit@dev.haskins.net> <4A3A28DF.5090803@redhat.com>
+In-Reply-To: <4A3A28DF.5090803@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigDC6C96BB064497E4F34E2722"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I came across the following badness message during shutdown on a Power6 box.
-This was with 2.6.30-git12(3fe0344faf7fdcb158bd5c1a9aec960a8d70c8e8)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigDC6C96BB064497E4F34E2722
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-------------[ cut here ]------------
-Badness at drivers/char/tty_ldisc.c:210
-NIP: c000000000409428 LR: c000000000409410 CTR: 0000000000000000
-REGS: c0000000374f37f0 TRAP: 0700   Not tainted  (2.6.30-git12)
-MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000484  XER: 00000001
-TASK = c00000003d941ae0[8535] 'vhangup' THREAD: c0000000374f0000 CPU: 1
-<6>GPR00: 0000000000000001 c0000000374f3a70 c000000000ef4550 0000000000000001
-<6>GPR04: c000000000409410 c00000003e99f000 c000000000406ba0 0000000000000000
-<6>GPR08: 0000000000000000 0000000000000000 0000000000000000 c0000000374f3a70
-<6>GPR12: 0000000024000488 c000000001002600 00000000ffffffff ffffffffffffffff
-<6>GPR16: 00000000320c8a50 0000000000000002 0000000000000000 00000000320b03b0
-<6>GPR20: 0000000000000000 0000000000000000 c00000003e1d3d00 0000000000000001
-<6>GPR24: 0000000000000000 0000000000000000 0000000000000001 c00000003d4a05e0
-<6>GPR28: 0000000000000000 c0000000013ffd38 c000000000e7e610 c0000000374f3a70
-NIP [c000000000409428] .tty_ldisc_put+0xbc/0xf4
-LR [c000000000409410] .tty_ldisc_put+0xa4/0xf4
-Call Trace:
-[c0000000374f3a70] [c000000000409410] .tty_ldisc_put+0xa4/0xf4 (unreliable)
-[c0000000374f3b10] [c000000000409808] .tty_ldisc_reinit+0x38/0x80
-[c0000000374f3ba0] [c00000000040a218] .tty_ldisc_hangup+0x190/0x260
-[c0000000374f3c40] [c0000000004000d0] .do_tty_hangup+0x188/0x4c0
-[c0000000374f3d20] [c000000000400480] .tty_vhangup_self+0x34/0x54
-[c0000000374f3db0] [c0000000001917c8] .sys_vhangup+0x38/0x58
-[c0000000374f3e30] [c000000000008534] syscall_exit+0x0/0x40
-Instruction dump:
-912b0088 4bcd2201 60000000 e87e8008 7f44d378 481c0735 60000000 801b0008
-7c09fe70 7d200278 7c004850 54000ffe <0b000000> 7f63db78 4bd7cf0d 60000000
+Avi Kivity wrote:
+> On 06/16/2009 04:42 PM, Gregory Haskins wrote:
+>> iosignalfd is a mechanism to register PIO/MMIO regions to trigger an
+>> eventfd
+>> signal when written to by a guest.  Host userspace can register any
+>> arbitrary
+>> IO address with a corresponding eventfd and then pass the eventfd to a=
 
-Not sure if this is a new issue. I haven't really paid attention
-to messages that are displayed during shutdown.
+>> specific end-point of interest for handling.
+>>
+>> Normal IO requires a blocking round-trip since the operation may cause=
 
-Line 210 corresponds to the following code.
+>> side-effects in the emulated model or may return data to the caller.
+>> Therefore, an IO in KVM traps from the guest to the host, causes a
+>> VMX/SVM
+>> "heavy-weight" exit back to userspace, and is ultimately serviced by
+>> qemu's
+>> device model synchronously before returning control back to the vcpu.
+>>
+>> However, there is a subclass of IO which acts purely as a trigger for
+>> other IO (such as to kick off an out-of-band DMA request, etc).  For
+>> these
+>> patterns, the synchronous call is particularly expensive since we real=
+ly
+>> only want to simply get our notification transmitted asychronously and=
 
-static void tty_ldisc_put(struct tty_ldisc *ld)
-{
-......
-	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
-	WARN_ON(ld->refcount); <<===
-.......
+>> return as quickly as possible.  All the sychronous infrastructure to
+>> ensure
+>> proper data-dependencies are met in the normal IO case are just
+>> unecessary
+>> overhead for signalling.  This adds additional computational load on t=
+he
+>> system, as well as latency to the signalling path.
+>>
+>> Therefore, we provide a mechanism for registration of an in-kernel
+>> trigger
+>> point that allows the VCPU to only require a very brief, lightweight
+>> exit just long enough to signal an eventfd.  This also means that any
+>> clients compatible with the eventfd interface (which includes userspac=
+e
+>> and kernelspace equally well) can now register to be notified. The end=
 
-Thanks
--Sachin
+>> result should be a more flexible and higher performance notification A=
+PI
+>> for the backend KVM hypervisor and perhipheral components.
+>>
+>> To test this theory, we built a test-harness called "doorbell".  This
+>> module has a function called "doorbell_ring()" which simply increments=
+ a
+>> counter for each time the doorbell is signaled.  It supports signallin=
+g
+>> from either an eventfd, or an ioctl().
+>>
+>> We then wired up two paths to the doorbell: One via QEMU via a
+>> registered
+>> io region and through the doorbell ioctl().  The other is direct via
+>> iosignalfd.
+>>
+>> You can download this test harness here:
+>>
+>> ftp://ftp.novell.com/dev/ghaskins/doorbell.tar.bz2
+>>
+>> The measured results are as follows:
+>>
+>> qemu-mmio:       110000 iops, 9.09us rtt
+>> iosignalfd-mmio: 200100 iops, 5.00us rtt
+>> iosignalfd-pio:  367300 iops, 2.72us rtt
+>>
+>> I didn't measure qemu-pio, because I have to figure out how to
+>> register a
+>> PIO region with qemu's device model, and I got lazy.  However, for
+>> now we
+>> can extrapolate based on the data from the NULLIO runs of +2.56us for
+>> MMIO,
+>> and -350ns for HC, we get:
+>>
+>> qemu-pio:      153139 iops, 6.53us rtt
+>> iosignalfd-hc: 412585 iops, 2.37us rtt
+>>
+>> these are just for fun, for now, until I can gather more data.
+>>
+>> Here is a graph for your convenience:
+>>
+>> http://developer.novell.com/wiki/images/7/76/Iofd-chart.png
+>>
+>> The conclusion to draw is that we save about 4us by skipping the
+>> userspace
+>> hop.
+>>
+>>
+>> +config KVM_MAX_IOSIGNALFD_ITEMS
+>> +    int "Maximum IOSIGNALFD items per address"
+>> +    depends on KVM
+>> +    default "32"
+>> +    ---help---
+>> +      This option influences the maximum number of fd's per PIO/MMIO
+>> +      address that are allowed to register
+>> +
+>>   =20
+>
+> Is there a per-vm limit on iosignalfds?  if not, userspace can exhaust
+> kernel memory in that way.
+
+Yeah, its already naturally limited by the maximum number of MMIO/PIO
+devices we can register (today this is 6 per VM).  I should have
+documented that fact somewhere, tho.
+
+>
+> We could limit the just total number of iosignafds, it's somewhat more
+> natural.
+>> diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
+>> index daece36..a4b427f 100644
+>> --- a/virt/kvm/Kconfig
+>> +++ b/virt/kvm/Kconfig
+>> @@ -12,3 +12,5 @@ config HAVE_KVM_EVENTFD
+>>
+>>   config KVM_APIC_ARCHITECTURE
+>>          bool
+>> +
+>> +
+>>   =20
+>
+> Spurious, please drop.
+
+Ack
+
+>> +/*
+>> + * Design note: We create one PIO/MMIO device (iosignalfd_group) whic=
+h
+>> + * aggregates  one or more iosignalfd_items.  Each item points to
+>> exactly one
+>> + * eventfd, and can be registered to trigger on any write to the grou=
+p
+>> + * (wildcard), or to a write of a specific value.  If more than one
+>> item is to
+>> + * be supported, the addr/len ranges must all be identical in the
+>> group.  If a
+>> + * trigger value is to be supported on a particular item, the group
+>> range must
+>> + * be exactly the width of the trigger.
+>> + */
+>> +
+>> +struct _iosignalfd_item {
+>> +    struct list_head     list;
+>> +    struct file         *file;
+>> +    unsigned char       *match;
+>> +    struct rcu_head      rcu;
+>> +};
+>>   =20
+>
+> Why not u64 match?
+
+Well, tbh it was primarily because it was starting to make my head hurt
+w.r.t. endianness ;).  For instance, if someone wanted a u16 match, I
+would presumably have to understand the relevant endianess of the u64 so
+I compare the appropriate bytes against the data-register coming in from
+the [MM|P]IO.  Using a pointer, I simply copy/memcmp the specified
+number of bytes and never have to worry about endianness.
+
+As a minor bonus, item->match =3D=3D NULL tells me its a wildcard.  If I =
+had
+item->match as a u64, I'd need a different state flag for "wildcard".=20
+NBD, but thought I would point it out.
+
+>
+>> +static int
+>> +iosignalfd_is_match(struct _iosignalfd_group *group,
+>> +            struct _iosignalfd_item *item,
+>> +            const void *val,
+>> +            int len)
+>> +{
+>> +    if (!item->match)
+>> +        /* wildcard is a hit */
+>> +        return true;
+>> +
+>> +    if (len !=3D group->length)
+>> +        /* mis-matched length is a miss */
+>> +        return false;
+>>   =20
+>
+> Should check length before match (i.e. require correctly sized access).=
+
+
+Perhaps, but my thinking is that group->length only matters for
+data-matching.  You could conceivably have a larger window registered if
+you are using all wildcards.  Not sure if this is really useful, but its
+the reason the code is that way today.
+
+Thanks Avi,
+-Greg
 
 
 
--- 
+--------------enigDC6C96BB064497E4F34E2722
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
+iEYEARECAAYFAko6LpAACgkQlOSOBdgZUxmaQgCeKrUBpvnNA/GgXBRBdbNLZOGE
+aI0Anj/YiC2SO3srMhao69UtSTnqKq/l
+=TPsy
+-----END PGP SIGNATURE-----
+
+--------------enigDC6C96BB064497E4F34E2722--
