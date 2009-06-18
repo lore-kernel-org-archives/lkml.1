@@ -1,217 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbZFRFey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZFRFll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757625AbZFRFey (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 01:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZFRFeq
+	id S1757201AbZFRFll (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 01:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbZFRFld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 01:34:46 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:50235 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbZFRFep (ORCPT
+	Thu, 18 Jun 2009 01:41:33 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:45940 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbZFRFlc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 01:34:45 -0400
-Message-Id: <200906180534.n5I5YgMY080614@www262.sakura.ne.jp>
-Subject: Re: [PATCH] TOMOYO: Add garbage collector support. (v3)
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+	Thu, 18 Jun 2009 01:41:32 -0400
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: Tao Ma <tao.ma@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [Patch BUGFIX] kcore: fix its wrong size on x86_64
+References: <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com>
+	<m1ab4i11zx.fsf@fess.ebiederm.org>
+	<20090611050929.GA2706@cr0.nay.redhat.com>
+	<m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0>
+	<m17hzdhkr8.fsf@fess.ebiederm.org>
+	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
+	<m1my88568n.fsf@fess.ebiederm.org>
+	<20090618030051.GA6133@cr0.nay.redhat.com>
+	<m1tz2ei54r.fsf@fess.ebiederm.org>
+	<20090618044055.GB6133@cr0.nay.redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 17 Jun 2009 22:41:32 -0700
+In-Reply-To: <20090618044055.GB6133@cr0.nay.redhat.com> (Amerigo Wang's message of "Thu\, 18 Jun 2009 12\:40\:55 +0800")
+Message-ID: <m1prd2rtdf.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Thu, 18 Jun 2009 14:34:42 +0900
-References: <200906172019.EAE00032.OLOJFQVMtFOFSH@I-love.SAKURA.ne.jp> <20090617163122.GC6767@linux.vnet.ibm.com>
-In-Reply-To: <20090617163122.GC6767@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 18062009 #2132583, status: clean
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: xiyou.wangcong@gmail.com, adobriyan@gmail.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, tao.ma@oracle.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Amerigo Wang <xiyou.wangcong@gmail.com> writes:
 
-Paul E. McKenney wrote:
-> Consider the following sequence of events:
-> 
-> o	CPU 0 picks up users_counter_idx int local variable idx.
-> 	Let's assume that the value is zero.
-> 
-> o	CPU 0 is now preempted, interrupted, or otherwise delayed.
-> 
-> o	CPU 1 starts garbage collection, finding some elements to
-> 	delete, thus setting "element_deleted" to true.
-> 
-> o	CPU 1 continues garbage collection, inverting the value of
-> 	users_counter_idx, so that the value is now one, waiting
-> 	for the value-zero readers, and freeing up the old elements.
-> 
-> o	CPU 0 continues execution, first atomically incrementing
-> 	users_counter[0], then traversing the list, possibly sleeping.
-> 
-> o	CPU 2 starts a new round of garbage collection, again finding
-> 	some elements to delete, and thus again setting
-> 	"elements_deleted" to true.  One of the elements deleted
-> 	is the one that CPU 0 is currently referencing while asleep.
-> 
-No. CPU 2 can't start a new round of GC because GC function is exclusively
-executed because of gc_mutex mutex.
-
-> o	CPU 2 continues garbage collection, inverting the value of
-> 	users_counter_idx, so that the value is now zero, waiting
-> 	for the value-one readers, and freeing up the old elements.
-> 	Note that CPU 0 is a value-zero reader, so that CPU 2 will
-> 	not wait on it.
-> 
-> 	CPU 2 therefore kfree()s the element that CPU 0 is currently
-> 	referencing.
-> 
-CPU 2 won't continue GC, for CPU 2 can't start a new round of GC.
-
-> o	CPU 0 wakes up, and suffers possibly fatal disappointment upon
-> 	attempting to reference an element that has been freed -- and,
-> 	worse yet, possibly re-allocated as some other type of
-> 	structure.
+> On Wed, Jun 17, 2009 at 08:37:40PM -0700, Eric W. Biederman wrote:
+>>Amerigo Wang <xiyou.wangcong@gmail.com> writes:
+>>
+>>> On Tue, Jun 16, 2009 at 12:27:36PM -0700, Eric W. Biederman wrote:
+>>>>Américo Wang <xiyou.wangcong@gmail.com> writes:
+>>>>>> I think a case can be made either way.  In practice neither answer
+>>>>>> gives us a dense offset space on x86_64 so I think I prefer the
+>>>>>> current definition which sets or clears the high bits as opposed
+>>>>>> to something that mangles the address more.
+>>>>>>
+>>>>>
+>>>>> I am trying to dig more... There must be something wrong there.
+>>>>
+>>>>How so?
+>>>
+>>> See what you will get for kc_vaddr_to_offset(__va(0))?
+>>> It is supposed to be 0.
+>>
+>>I see: 0x0000880000001000  That extra 0x1000 looks suspicous.
 >
-CPU 0 won't suffer, for first round of GC (by CPU 1) prevents CPU 2 from
-starting a new round of GC.
+>
+> huh? 0x0000880000000000 not?
+>
+>>
+>>It MUST NOT be 0. That is where the ELF header lives in the file.
+>
+> Of course I knew this.
+>
+> Just read the code:
+>
+>      phdr->p_offset = kc_vaddr_to_offset(m->addr) + dataoff;
+>
+> So it should be 0, 'dataoff' is there...
 
-> Or am I missing something in your pseudocode?
-I think you missed that GC function is executed exclusively.
+Sorry.  The naming then is horrible.  It is really
+kc_vaddr_to_something_like_the_offset.
 
-The race between readers and GC is avoided as below.
+I still don't see the need for a flat offset space.
 
-(a-1) A reader reads users_counter_idx and saves to r_idx
-(a-2) GC removes element from the list using RCU
-(a-3) GC reads users_counter_idx and saves to g_idx
-(a-4) GC inverts users_counter_idx
-(a-5) GC releases the removed element
-(a-6) A reader increments users_counter[r_idx]
-(a-7) A reader won't see the element removed by GC because
-      the reader has not started list traversal as of (a-2)
+I can see a real point of only having a single kc_vaddr_to_offset
+function.  Instead of the 3 in existence.
 
-(b-1) A reader reads users_counter_idx and saves to r_idx
-(b-2) A reader increments users_counter[r_idx]
-(b-3) GC removes element from the list using RCU
-(b-4) A reader won't see the element removed by GC
-(b-5) GC reads users_counter_idx and saves to g_idx
-(b-6) GC inverts users_counter_idx
-(b-7) GC waits for users_counter[g_idx] to become 0
-(b-8) A reader decrements users_counter[r_idx]
-(b-9) GC releases the removed element
+No point in cluttering the whole world with the oddities of the kcore
+code.  Especially when it should get cleaned up.
 
-(c-1) A reader reads users_counter_idx and saves to r_idx
-(c-2) A reader increments users_counter[r_idx]
-(c-3) A reader sees the element
-(c-4) GC removes element from the list using RCU
-(c-5) GC reads users_counter_idx and saves to g_idx
-(c-6) GC inverts users_counter_idx
-(c-7) GC waits for users_counter[g_idx] to become 0
-(c-8) A reader decrements users_counter[r_idx]
-(c-9) GC releases the removed element
+My real point earlier is that kc_vaddr_to_offset and
+kc_offset_to_vaddr actually on x86_64 aren't broken.  They are just
+peculiar.  There is some small point to their oddities, in that if
+something is in the upper half of the address space (like xen) but
+below PAGE_OFFSET you have a chance of accessing it with /proc/kcore.
+But that is a very minor benefit.
 
-What I worry is that some memory barriers might be needed between
-
-> > {
-> > 	/* Get counter index. */
-> > 	int idx = atomic_read(&users_counter_idx);
-> > 	/* Lock counter. */
-> > 	atomic_inc(&users_counter[idx]);
-- here -
-> > 	list_for_each_entry_rcu() {
-> > 		... /* Allowed to sleep. */
-> > 	}
-- here -
-> > 	/* Unlock counter. */
-> > 	atomic_dec(&users_counter[idx]);
-> > }
-
-and
-
-> > 	if (element_deleted) {
-> > 		/* Swap active counter. */
-> > 		const int idx = atomic_read(&users_counter_idx);
-- here -
-> > 		atomic_set(&users_counter_idx, idx ^ 1);
-- here -
-> > 		/*
-> > 		 * Wait for readers who are using previously active counter.
-> > 		 * This is similar to synchronize_rcu() while this code allows
-> > 		 * readers to do operations which may sleep.
-> > 		 */
-> > 		while (atomic_read(&users_counter[idx]))
-> > 			msleep(1000);
-> > 		/*
-> > 		 * Nobody is using previously active counter.
-> > 		 * Ready to release memory of elements removed before
-> > 		 * previously active counter became inactive.
-> > 		 */
-> > 		kfree(element);
-> > 	}
-
-in order to enforce ordering.
+Eric
 
 
-
-> Also, if you have lots of concurrent readers, you can suffer high memory
-> contention on the users_counter[] array, correct?
-
-Excuse me. I couldn't understand "memory contention"...
-
-( http://www.answers.com/topic/memory-contention )
-| A situation in which two different programs, or two parts of a program,
-| try to read items in the same block of memory at the same time. 
-Why suffered by atomic_read() at the same time?
-Cache invalidation by atomic_inc()/atomic_dec() a shared variable?
-
-( http://wiki.answers.com/Q/What_is_memory_contention )
-| Memory contention is a state a OS memory manager can reside in when to many
-| memory requests (alloc, realloc, free) are issued to it from an active
-| application possibly leading to a DOS condition specific to that
-| application. 
-No memory allocation for users_counter[] array.
-
-
-
-> I recommend that you look into use of SRCU in this case.
-
-I have one worry regarding SRCU.
-Inside synchronize_srcu(), there is a loop
-
-	while (srcu_readers_active_idx(sp, idx))
-		schedule_timeout_interruptible(1);
-
-but the reader's sleeping duration varies from less than one second to
-more than hours.
-
-Checking for counters for every jiffies sounds too much waste of CPU.
-Delaying kfree() for seconds or minutes won't cause troubles for TOMOYO.
-It would be nice if checking interval is configurable like
-"schedule_timeout_interruptible(sp->timeout);".
-
-
-
-> Anyway, the general approach would be to make changes to your code
-> roughly as follows:
-> 
-> 1.	replace your users_counter and users_counter_idx with a
-> 	struct srcu_struct.
-> 
-> 2.	In the reader, replace the fetch from users_counter_idx and
-> 	the atomic_inc() with srcu_read_lock().
-> 
-> 3.	In the garbage collector, replace the fetch/update of
-> 	users_counter_idx and the "while" loop with synchronize_srcu().
-> 
-I see. Since I isolated the GC as a dedicated kernel thread, writers no longer
-wait for elements to be kfree()ed. I can use SRCU.
-
-
-
-> Or is there some reason why SRCU does not work for you?
-None for mainline version.
-
-I'm also maintaining TOMOYO for older/distributor kernels for those who want to
-enable both SELinux/SMACK/AppArmor/grsecurity etc. and TOMOYO at the same time.
-Thus, if my idea works, I want to backport it to TOMOYO for these kernels.
-
-
-
-Regards.
