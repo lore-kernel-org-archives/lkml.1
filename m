@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762150AbZFRPZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762315AbZFRP2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762150AbZFRPZO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 11:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZFRPZD
+	id S1762315AbZFRP2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 11:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZFRP2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 11:25:03 -0400
-Received: from mail-yx0-f192.google.com ([209.85.210.192]:38285 "EHLO
-	mail-yx0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbZFRPZB (ORCPT
+	Thu, 18 Jun 2009 11:28:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:40331 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbZFRP2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 11:25:01 -0400
+	Thu, 18 Jun 2009 11:28:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=oKeQ80ESldTgcmVBwcIvC2PJhdIHNcsOCKYz49toBWdGaVOvmlSnBDkPi8m4lZd40C
-         HdxNYU1LwiF0dX+lYjFYvSufxeH7oinNVByqFNkzMSpwhzNMTR2znObtfBi0ziXfuRVw
-         O6pllZwtdActoMokDvnVEzCP9/Igw4rkvYJN8=
-MIME-Version: 1.0
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 18 Jun 2009 11:24:44 -0400
-Message-ID: <8bd0f97a0906180824y17a00110i57565aee16207e5@mail.gmail.com>
-Subject: module version magic and arches with symbol prefixes
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Robin Getz <rgetz@blackfin.uclinux.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:date:message-id:subject;
+        b=QQ203zm4rTwmBPXHOT+1cUmIpiKeTh5eDtAFiuUJiG+PRg5AQH5f7JlZ2WLdWGv3dk
+         8/vhOx3BJYBkAoWZY2xaqLWdQ6aNta5UfUB+FcCfvXDQMVQuC/qvDNz+2/GH4iZdBHyy
+         J5pMzGmMAc7eEclrlZgn1MTihZG4MLe/5qfK4=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: johnstul@us.ibm.com, mingo@elte.hu, lethal@linux-sh.org,
+       tglx@linutronix.de, akpm@linux-foundation.org,
+       Magnus Damm <magnus.damm@gmail.com>
+Date: Fri, 19 Jun 2009 00:24:32 +0900
+Message-Id: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
+Subject: [PATCH] clocksource: save mult_orig in clocksource_disable()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the current check_modstruct_version() does this:
-{
-    const unsigned long *crc;
+From: Magnus Damm <damm@igel.co.jp>
 
-    if (!find_symbol("module_layout", NULL, &crc, true, false))
-        BUG();
-    return check_version(sechdrs, versindex, "module_layout", mod, crc);
-}
-the trouble here is that it looks for a literal "module_layout" symbol
-and for ports that have symbol prefixes (a quick check shows Blackfin
-& h8300), this aint going to work.
+Save clocksource mult_orig in clocksource_disable().
 
-i tried to hack it in the Blackfin port by add this to the linker script:
-module_layout = _module_layout
-but that didnt seem to work.  maybe kallsysms couldnt find it or i
-need to hack a different name ...
+To fix the common case where ->enable() does not setup
+mult, make sure mult_orig is saved in mult on disable.
 
-we could add a new function to asm-generic/sections.h:
-#ifndef arch_symbol_name
-#define arch_symbol_name(sym) sym
-#endif
-and in the case of Blackfin systems, we'd do:
-#define arch_symbol_name(sym) "_" sym
+Also add comments to explain why we do this.
 
-no other consumer of find_symbol() has a problem because they're all
-dynamic -- they scan the modules for required symbols and then scan
-the kernel for those, so all the symbol prefixes line up.
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-that would fix the find_symbol() invocation, and check_version()
-wouldnt need changing because in that case, it's look for the literal
-symbol that scripts/mod/modpost.c is adding -- "module_layout" in this
-case.
+ include/linux/clocksource.h |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-also, using BUG() here seems pretty damn harsh.  wouldnt it make more
-sense to do something like:
-    if (WARN_ON(!find_symbol("module_layout", NULL, &crc, true, false)))
-        return 0;
-this way the module is simply not loaded rather than killing the kernel
--mike
+--- 0001/include/linux/clocksource.h
++++ work/include/linux/clocksource.h	2009-06-19 00:12:16.000000000 +0900
+@@ -293,7 +293,11 @@ static inline int clocksource_enable(str
+ 	if (cs->enable)
+ 		ret = cs->enable(cs);
+ 
+-	/* save mult_orig on enable */
++	/* The frequency may have changed while the clocksource
++	 * was disabled. If so the code in ->enable() must update
++	 * the mult value to reflect the new frequency. Make sure
++	 * mult_orig follows this change.
++	 */
+ 	cs->mult_orig = cs->mult;
+ 
+ 	return ret;
+@@ -309,6 +313,12 @@ static inline int clocksource_enable(str
+  */
+ static inline void clocksource_disable(struct clocksource *cs)
+ {
++	/* Save mult_orig in mult so clocksource_enable() can
++	 * restore the value regardless if ->enable() updates
++	 * the value of mult or not.
++	 */
++	cs->mult = cs->mult_orig;
++
+ 	if (cs->disable)
+ 		cs->disable(cs);
+ }
