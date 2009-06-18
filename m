@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763322AbZFRNzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763777AbZFRN4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763322AbZFRNzE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 09:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbZFRNyz
+	id S1763777AbZFRN4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 09:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbZFRN43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 09:54:55 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:45345 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756099AbZFRNyz (ORCPT
+	Thu, 18 Jun 2009 09:56:29 -0400
+Received: from mss-uk.mssgmbh.com ([217.174.251.109]:40133 "EHLO
+	mss-uk.mssgmbh.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756369AbZFRN42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 09:54:55 -0400
-Date: Thu, 18 Jun 2009 15:54:57 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Peter Feuerer <pfe@piie.net>
-Cc: Borislav Petkov <petkovbb@googlemail.com>, Andreas Mohr <andi@lisas.de>,
-       Ed Tomlinson <edt@aei.ca>, akpm@linux-foundation.org,
-       Len Brown <len.brown@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Request driver inclusion - acer aspire one fan control
-Message-ID: <20090618135457.GA927@rhlx01.hs-esslingen.de>
-References: <20090616205747.GA6356@rhlx01.hs-esslingen.de> <20090617001435.e2d86780.peter@piie.net> <20090617122022.GA13141@rhlx01.hs-esslingen.de> <cone.1245309039.632882.31537.1000@arca> <9ea470500906180329w7c8975b0ra60fa219221d53f6@mail.gmail.com> <cone.1245322548.289821.31537.1000@arca> <9ea470500906180442r7beb49a8odcb3bf602df78b47@mail.gmail.com> <cone.1245325770.489357.31537.1000@arca> <9ea470500906180545j5e1a78f7qcb887ad843b489f3@mail.gmail.com> <cone.1245331895.30957.31537.1000@arca>
+	Thu, 18 Jun 2009 09:56:28 -0400
+X-Greylist: delayed 479 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Jun 2009 09:56:27 EDT
+To: linux-kernel@vger.kernel.org
+Cc: petkovbb@gmail.com
+Subject: [PATCH] ide-cd: prevent null pointer deref via cdrom_newpc_intr
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+From: Rainer Weikusat <rweikusat@mssgmbh.com>
+Date: Thu, 18 Jun 2009 15:48:18 +0200
+Message-ID: <87zlc58xgd.fsf@fever.mssgmbh.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cone.1245331895.30957.31537.1000@arca>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (mss-uk.mssgmbh.com [217.174.251.109]); Thu, 18 Jun 2009 15:48:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Rainer Weikusat <rweikusat@mssgmbh.com>
 
-On Thu, Jun 18, 2009 at 03:31:35PM +0200, Peter Feuerer wrote:
-> You are partly right, setting the fan to auto in  
-> "acerhdf_revert_to_bios_mode" can be removed, as this is done by the 
-> thermal layer when calling "acerhdf_set_cur_state" with 
-> disable_kernelmode=1.
+With 2.6.30, the error handling code in cdrom_newpc_intr was changed
+to deal with partial request failures by normally completing the 'good'
+parts of a request and only 'error' the last (and presumably,
+incompletely transferred) bio associated with a particular
+request. This doesn't work for requests which don't have bios
+associated with them ('GPCMD_READ_DISC_INFO'), because the first call
+to ide_end_rq, done via ide_complete_rq in order to do the
+partial completion part, returns with a code of zero for all non-bio
+requests, causing the drive->hwif->rq pointer to be set to NULL. Upon
+calling ide_complete_rq a second time, it is attempted to de-reference
+this null pointer, resulting in a kernel crash.
 
-No, it was done _specifically_ this way to make sure that _exactly when_
-switching away from kernel mode FAN_AUTO _always_ (by asking people to
-always call this central function) gets set, too.
-I don't want to depend on a separate, _uncontrollable_ entity
-(thermal layer function) to have to run sometime later
-in order to set the fan to FAN_AUTO (IOW, BIOS-controlled mode) accordingly.
-_Of course_ this FAN_AUTO call is redundant in _most_ cases, but very
-intentionally so. Anything else would be woefully unsafe (with a fan
-remaining in FAN_OFF position until machine meltdown).
+Signed-Off-By: Rainer Weikusat <rweikusat@mssgmbh.com>
 
-Andreas Mohr
+---
+
+This is fixed in the linux-ide tree since at about 2009/06/10 [Bug
+13399, also happens w/ TSSTcorpDVD-ROM SH-D162C], but a patch
+against 2.6.30 AFAIK doesn't exist (and I didn't find the
+corresponding thread before digging through all of this ...).
+
+--- drivers/ide/ide-cd.c.orig	2009-06-18 15:10:24.000000000 +0200
++++ drivers/ide/ide-cd.c	2009-06-18 14:10:16.000000000 +0200
+@@ -758,7 +758,7 @@ out_end:
+ 				rq->errors = -EIO;
+ 		}
+ 
+-		if (uptodate == 0)
++		if (uptodate == 0 && rq->bio)
+ 			ide_cd_error_cmd(drive, cmd);
+ 
+ 		/* make sure it's fully ended */
