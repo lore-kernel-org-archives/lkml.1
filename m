@@ -1,108 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbZFRMW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZFRM0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760881AbZFRMW4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 08:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbZFRMWr
+	id S1752637AbZFRM0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 08:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZFRM01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 08:22:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33841 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755326AbZFRMWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 08:22:46 -0400
-Date: Thu, 18 Jun 2009 15:22:19 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org,
-       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org
-Subject: Re: [KVM PATCH v2 2/2] kvm: use POLLHUP to close an irqfd instead
-	of an explicit ioctl
-Message-ID: <20090618122219.GE16838@redhat.com>
-References: <20090604124047.10544.38861.stgit@dev.haskins.net> <4A3639B2.7080006@novell.com> <20090615125439.GI6351@redhat.com> <200906181446.31373.rusty@rustcorp.com.au> <20090618064908.GB11155@redhat.com> <4A3A2C67.4030406@novell.com>
+	Thu, 18 Jun 2009 08:26:27 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:34804 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbZFRM00 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 08:26:26 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
+References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>
+	<4A35ACB3.9040501@goop.org> <m1k53dbwo2.fsf@fess.ebiederm.org>
+	<4A36B3EC.7010004@goop.org> <m1fxe117n5.fsf@fess.ebiederm.org>
+	<4A37F4AE.5050902@goop.org> <m1vdmvxe3u.fsf@fess.ebiederm.org>
+	<4A392896.9090408@goop.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 18 Jun 2009 05:26:16 -0700
+In-Reply-To: <4A392896.9090408@goop.org> (Jeremy Fitzhardinge's message of "Wed\, 17 Jun 2009 10\:32\:06 -0700")
+Message-ID: <m1hbydohhz.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A3A2C67.4030406@novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: jeremy@goop.org, keir.fraser@eu.citrix.com, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 08:00:39AM -0400, Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
-> > On Thu, Jun 18, 2009 at 02:46:30PM +0930, Rusty Russell wrote:
-> >   
-> >> On Mon, 15 Jun 2009 10:24:39 pm Michael S. Tsirkin wrote:
-> >>     
-> >>> On Mon, Jun 15, 2009 at 08:08:18AM -0400, Gregory Haskins wrote:
-> >>>       
-> >>>> Hmm.  I understand what you are saying conceptually (i.e. the .text
-> >>>> could get yanked before we hit the next line of code, in this case the
-> >>>> "return 0").  However, holding a reference when you _know_ someone else
-> >>>> holds a reference to me says that one of the references is redundant.
-> >>>> In addition, there is certainly plenty of precedence for
-> >>>> module_put(THIS_MODULE) all throughout the kernel (including
-> >>>> module_put_and_exit()).  Are those broken as well?
-> >>>>         
-> >>> Maybe not, but I don't know why. It works fine as long as you don't
-> >>> unload any modules though :) Rusty, could you enlighten us please?
-> >>>       
-> >> Yep, they're almost all broken.  A few have comments indicating that someone 
-> >> else is holding a reference (eg. loopback).
-> >>
-> >> But at some point you give up playing whack-a-mole for random drivers.
-> >>
-> >> module_put_and_exit() does *not* have this problem, BTW.
-> >>
-> >> Rusty.
-> >>     
-> >
-> > I see that, the .text for module_put_and_exit is never modular itself.
-> > Thanks, Rusty!
-> >   
-> 
-> Ah!  That is the trick I wasn't understanding.
-> > BTW, Gregory, this can be used to fix the race in the design: create a
-> > thread and let it drop the module reference with module_put_and_exit.
-> >   
-> 
-> I had thought of doing something like this initially too, but I think
-> its racy as well.  Ultimately, you need to make sure the eventfd
-> callback is completely out before its safe to run, and deferring to a
-> thread would not change this race.  The only sane way I can see to do
-> that is to have the caller infrastructure annotate the event somehow
-> (either directly with a module_put(), or indirectly with some kind of
-> state transition that can be tracked with something like
-> synchronize_sched().
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Here's what one could do: create a thread for each irqfd, and increment
-module ref count, put that thread to sleep.  When done with
-irqfd, don't delete it and don't decrement module refcount, wake thread
-instead.  thread kills irqfd and calls module_put_and_exit.
+> Actually I was discussing this with Keir yesterday.  We're definitely open to
+> changing the dom0 API to make things simpler on the Linux side.  (The dom0 ABI
+> is more fluid than the domU one, and these changes would be backwards-compatible
+> anyway.)
+>
+> One of the options we discussed was changing the API to get rid of the exposed
+> vector, and just replace it with an operation to directly bind a gsi to a pirq
+> (internal Xen physical interrupt handle, if you will), so that Xen ends up doing
+> all the I/O APIC programming internally, as well as the local APIC.
+>
+> On the Linux side, I think it means we can just point pcibios_enable/disable_irq
+> to our own xen_pci_irq_enable/disable functions to create the binding between a
+> PCI device and an irq.
 
-I don't think it's racy but I won't call it sane either.
+Then let's make this the plan.  Design a supportable dom0 <-> kernel
+irq abi.  Essentially binding a gsi to an event channel mapping
+function.  Get that into Xen.  Then get that into the mainstream linux
+kernel.
 
-> > Which will work, but I guess at this point we should ask ourselves
-> > whether all the hearburn with srcu, threads and module references is
-> > better than just asking the user to call and ioctl.
-> >   
-> 
-> I am starting to agree with you, here. :)
-> 
-> Note one thing: the SRCU stuff is mostly orthogonal from the rest of the
-> conversation re: the module_put() races.  I only tied it into the
-> current thread because the eventfd_notifier_register() thread gave me a
-> convenient way to hook some other context to do the module_put().  In
-> the long term, the srcu changes are for the can_sleep() stuff.  So on
-> that note, lets see if I can convince Davide that the srcu stuff is not
-> so evil before we revert the POLLHUP patches, since the module_put() fix
-> is trivial once that is in place.
+Regardless of the upstream linux kernel merge status cleaning up the
+irq handling is going to have to happen to move past 2.6.18.  I cleaned the
+irq code up and changed it to work in incompatible ways starting in 2.6.19.
 
-Can this help with DEASSIGN as well? We need it for migration.
+I really REALLY don't want to see support for Xen 3.4 domU irq
+handling in the mainline linux kernel.  It is an evolutionary dead
+end, and I have already ripped that code out of linux once.  Vectors
+should be an implementation detail not an exposed part of the ABI.
 
-> Thanks Michael (and Rusty),
-> -Greg
-> 
-> 
-
-
+Eric
