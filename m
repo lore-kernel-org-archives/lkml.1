@@ -1,119 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZFRFNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZFRFQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752475AbZFRFNr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 01:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZFRFNi
+	id S1752877AbZFRFQm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 01:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZFRFQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 01:13:38 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:43967 "EHLO kernel.dk"
+	Thu, 18 Jun 2009 01:16:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:46813 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750809AbZFRFNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 01:13:37 -0400
-Date: Thu, 18 Jun 2009 07:13:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr, dedekind1@gmail.com, fweisbec@gmail.com
-Subject: Re: [PATCH 0/15] Per-bdi writeback flusher threads v10
-Message-ID: <20090618051338.GH11363@kernel.dk>
-References: <1244811255-5391-1-git-send-email-jens.axboe@oracle.com> <1245114397.2560.368.camel@ymzhang> <20090616080036.GO11363@kernel.dk> <20090616195329.GH11363@kernel.dk> <1245286866.2560.407.camel@ymzhang>
+	id S1751541AbZFRFQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 01:16:33 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [KVM PATCH v2 2/2] kvm: use POLLHUP to close an irqfd instead of an explicit ioctl
+Date: Thu, 18 Jun 2009 14:46:30 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org,
+       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org
+References: <20090604124047.10544.38861.stgit@dev.haskins.net> <4A3639B2.7080006@novell.com> <20090615125439.GI6351@redhat.com>
+In-Reply-To: <20090615125439.GI6351@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245286866.2560.407.camel@ymzhang>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906181446.31373.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18 2009, Zhang, Yanmin wrote:
-> On Tue, 2009-06-16 at 21:53 +0200, Jens Axboe wrote:
-> > On Tue, Jun 16 2009, Jens Axboe wrote:
-> > > On Tue, Jun 16 2009, Zhang, Yanmin wrote:
-> > > > On Fri, 2009-06-12 at 14:54 +0200, Jens Axboe wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > Here's the 10th version of the writeback patches. Changes since v9:
-> > > > > 
-> > > > > - Fix bdi task exit race leaving work on the list, flush it after we
-> > > > >   know we cannot be found anymore.
-> > > > > - Rename flusher tasks from bdi-foo to flush-foo. Should make it more
-> > > > >   clear to the casual observer.
-> > > > > - Fix a problem with the btrfs bdi register patch that would spew
-> > > > >   warnings for > 1 mounted btrfs file system.
-> > > > > - Rebase to current -git, there were some conflicts with the latest work
-> > > > >   from viro/hch.
-> > > > > - Fix a block layer core problem were stacked devices would overwrite
-> > > > >   the bdi state, causing problems and warning spew.
-> > > > > - In bdi_writeback_all(), in the race occurence of a work allocation
-> > > > >   failure, restart scanning from the beginning. Then we can drop the
-> > > > >   bdi_lock mutex before diving into bdi specific writeback.
-> > > > > - Convert bdi_lock to a spinlock.
-> > > > > - Use spin_trylock() in bdi_writeback_all(), if this isn't a data
-> > > > >   integrity writeback. Debatable, I kind of like it...
-> > > > > - Get rid of BDI_CAP_FLUSH_FORKER, just check for match with the
-> > > > >   default_backing_dev_info.
-> > > > > - Fix race in list checking in bdi_forker_task().
-> > > > > 
-> > > > > 
-> > > > > For ease of patching, I've put the full diff here:
-> > > > > 
-> > > > >   http://kernel.dk/writeback-v10.patch
-> > > > Jens,
-> > > > 
-> > > > I applied the patch to 2.6.30 and got a confliction. The attachment is
-> > > > the patch I ported to 2.6.30. Did I miss anything?
-> > > > 
-> > > > 
-> > > > With the patch, kernel reports below messages on 2 machines.
-> > > > 
-> > > > INFO: task sync:29984 blocked for more than 120 seconds.
-> > > > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > > > sync          D ffff88002805e300  6168 29984  24581
-> > > >  ffff88022f84b780 0000000000000082 7fffffffffffffff ffff880133dbfe70
-> > > >  0000000000000000 ffff88022e2b4c50 ffff88022e2b4fd8 00000001000c7bb8
-> > > >  ffff88022f513fd0 ffff880133dbfde8 ffff880133dbfec8 ffff88022d5d13c8
-> > > > Call Trace:
-> > > >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
-> > > >  [<ffffffff80780fde>] ? schedule+0x9/0x1d
-> > > >  [<ffffffff802b69ed>] ? bdi_sched_wait+0x9/0xd
-> > > >  [<ffffffff8078158d>] ? __wait_on_bit+0x40/0x6f
-> > > >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
-> > > >  [<ffffffff80781628>] ? out_of_line_wait_on_bit+0x6c/0x78
-> > > >  [<ffffffff8024a426>] ? wake_bit_function+0x0/0x23
-> > > >  [<ffffffff802b67ac>] ? bdi_writeback_all+0x12a/0x152
-> > > >  [<ffffffff802b6805>] ? generic_sync_sb_inodes+0x31/0xde
-> > > >  [<ffffffff802b6935>] ? sync_inodes_sb+0x83/0x88
-> > > >  [<ffffffff802b6980>] ? __sync_inodes+0x46/0x8f
-> > > >  [<ffffffff802b94f2>] ? do_sync+0x36/0x5a
-> > > >  [<ffffffff802b9538>] ? sys_sync+0xe/0x12
-> > > >  [<ffffffff8020b9ab>] ? system_call_fastpath+0x16/0x1b
-> > > 
-> > > I don't think it is your backport, for some reason the v10 missed a
-> > > change that I think could solve this race. If not, there's another in
-> > > there that I need to look at.
-> > > 
-> > > So against your current base, could you try with the below added as
-> > > well? The printk() is just so we can see if this triggers for you or
-> > > not.
-> > 
-> > OK that wont work, since we need to actually wait for the work to be
-> > flushed, otherwise we wreak things when we free the bdi immediately
-> > after that.
-> > 
-> > Can you try with this patch?
-> Jens,
-> 
-> I tested below patch on 4 machines (run all fio sub-test cases twice which
-> need more than 10 hours). The previous 2 machines don't stop this time.
-> Unfortunately, the 3rd machine stops. I double-check the disassembled codes
-> of kernel and make sure bdi_start_fn really calls wb_do_writeback.
+On Mon, 15 Jun 2009 10:24:39 pm Michael S. Tsirkin wrote:
+> On Mon, Jun 15, 2009 at 08:08:18AM -0400, Gregory Haskins wrote:
+> > Hmm.  I understand what you are saying conceptually (i.e. the .text
+> > could get yanked before we hit the next line of code, in this case the
+> > "return 0").  However, holding a reference when you _know_ someone else
+> > holds a reference to me says that one of the references is redundant.
+> > In addition, there is certainly plenty of precedence for
+> > module_put(THIS_MODULE) all throughout the kernel (including
+> > module_put_and_exit()).  Are those broken as well?
+>
+> Maybe not, but I don't know why. It works fine as long as you don't
+> unload any modules though :) Rusty, could you enlighten us please?
 
-Sorry I should have made that more clear when posting v11. This patch
-wont fully solve the problem, however the v11 patch series should. So if
-you test with that, hopefully all soft hangs should be gone.
+Yep, they're almost all broken.  A few have comments indicating that someone 
+else is holding a reference (eg. loopback).
 
--- 
-Jens Axboe
+But at some point you give up playing whack-a-mole for random drivers.
 
+module_put_and_exit() does *not* have this problem, BTW.
+
+Rusty.
