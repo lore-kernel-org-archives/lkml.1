@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbZFRLYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761518AbZFRLZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761393AbZFRLYw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 07:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759811AbZFRLYo
+	id S1761518AbZFRLZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 07:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbZFRLZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 07:24:44 -0400
-Received: from mail.oxtel.com ([193.200.114.15]:1574 "EHLO oxtel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755837AbZFRLYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 07:24:43 -0400
-Message-ID: <4A3A23FA.1000407@oxtel.com>
-Date: Thu, 18 Jun 2009 12:24:42 +0100
-From: Chris Pringle <chris.pringle@oxtel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-References: <4A37A503.3030209@oxtel.com>
- <20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
- <4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
- <4A37D073.6020802@freescale.com> <4A38A21B.5060306@oxtel.com>
- <4A38ED31.9030705@oxtel.com>
-In-Reply-To: <4A38ED31.9030705@oxtel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 18 Jun 2009 07:25:16 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60287 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759212AbZFRLZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 07:25:15 -0400
+Subject: Re: [PATCH] inotify: inotify_destroy_mark_entry could get called
+ twice
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+In-Reply-To: <20090612202647.11976.87920.stgit@paris.rdu.redhat.com>
+References: <20090612202647.11976.87920.stgit@paris.rdu.redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: chris.pringle
-X-Server: VPOP3 Enterprise V2.6.0b - Registered
+Date: Thu, 18 Jun 2009 13:25:18 +0200
+Message-Id: <1245324318.13761.23295.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Pringle wrote:
-> Chris Pringle wrote:
->>> You could enable CONFIG_NOT_COHERENT_CACHE.
->>>
->> I've just tried this (I had to edit Kconfig in power/platforms to 
->> make the build system accept it), and interestingly it's making no 
->> difference. I'm using streaming mappings, and are using the 
->> pci_map_sg functions to ensure the memory is mapped/flushed 
->> correctly. I've also explicitly put in a pci_dma_sync_sg_for_device, 
->> however that's also not made any difference. Turning the cpu cache 
->> snoop off has the same affect as it did without 
->> CONFIG_NOT_COHERENT_CACHE; it gets much worse. Any other ideas?
->>
->> Will back off the low latency patches next, and give 2.6.30 a try - 
->> see if that makes any difference.
->>
-> Low latency patches made no difference. Tried it with 2.6.30 and it 
-> now works. There are a couple of commits contributing to the fix, 
-> including one introduced between 2.6.29-rc8 and 2.6.29 proper in 
-> powerpc/kernel/head_32.S (couple of commits with the name "Fix Respect 
-> _PAGE_COHERENT on classic ppc32 SW TLB load machines"). I've tried 
-> backporting this to 2.6.29-rc8 and it then worked. Backporting to 
-> 2.6.26 made no difference however, so I suspect there are other things 
-> fixed which are also contributing.
->
-> I'm going to move to 2.6.29/2.6.30 which should resolve our issue.
->
-> Thanks to all who have contributed to this thread.
->
-The other part of the fix is in asm-powerpc/pgtable32.h. _PAGE_BASE 
-needs _PAGE_COHERENT in order to work correctly, and in fact there is 
-now a comment in there to that affect in 2.6.29. Backporting that change 
-has made it work on 2.6.26. Both this patch, and the fix to head_32.S 
-are needed for it to work correctly on older kernels.
+On Fri, 2009-06-12 at 16:26 -0400, Eric Paris wrote:
+> inotify_destroy_mark_entry could get called twice for the same mark since it
+> is called directly in inotify_rm_watch and when the mark is being destroyed for
+> another reason.  As an example assume that the file being watched was just
+> deleted so inotify_destroy_mark_entry would get called from the path
+> fsnotify_inoderemove() -> fsnotify_destroy_marks_by_inode() ->
+> fsnotify_destroy_mark_entry() -> inotify_destroy_mark_entry().  If this
+> happened at the same time as userspace tried to remove a watch via
+> inotify_rm_watch we could attempt to remove the mark from the idr twice and
+> could thus double dec the ref cnt and potentially could be in a use after
+> free/double free situation.  The fix is to have inotify_rm_watch use the
+> generic recursive safe fsnotify_destroy_mark_by_entry() so we are sure the
+> inotify_destroy_mark_entry() function can only be called one.
+> 
+> This patch also renames the function to inotify_ingored_remove_idr() so it is
+> clear what is actually going on in the function.
+> 
+> Hopefully this fixes:
+> [   20.342058] idr_remove called for id=20 which is not allocated.
+> [   20.348000] Pid: 1860, comm: udevd Not tainted 2.6.30-tip #1077
+> [   20.353933] Call Trace:
+> [   20.356410]  [<ffffffff811a82b7>] idr_remove+0x115/0x18f
+> [   20.361737]  [<ffffffff8134259d>] ? _spin_lock+0x6d/0x75
+> [   20.367061]  [<ffffffff8111640a>] ? inotify_destroy_mark_entry+0xa3/0xcf
+> [   20.373771]  [<ffffffff8111641e>] inotify_destroy_mark_entry+0xb7/0xcf
+> [   20.380306]  [<ffffffff81115913>] inotify_freeing_mark+0xe/0x10
+> [   20.386238]  [<ffffffff8111410d>] fsnotify_destroy_mark_by_entry+0x143/0x170
+> [   20.393293]  [<ffffffff811163a3>] inotify_destroy_mark_entry+0x3c/0xcf
+> [   20.399829]  [<ffffffff811164d1>] sys_inotify_rm_watch+0x9b/0xc6
+> [   20.405850]  [<ffffffff8100bcdb>] system_call_fastpath+0x16/0x1b
+> 
+> Reported-by: Peter Zijlstra <peterz@infradead.org>
 
-Chris
+Tested-by: Peter Zijlstra <peterz@infradead.org>
 
--- 
+Thanks Eric!!
 
-______________________________
-Chris Pringle
-Software Engineer
-
-Miranda Technologies Ltd.
-Hithercroft Road
-Wallingford
-Oxfordshire OX10 9DG
-UK
-
-Tel. +44 1491 820206
-Fax. +44 1491 820001
-www.miranda.com
-
-____________________________
-
-Miranda Technologies Limited
-Registered in England and Wales CN 02017053
-Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
