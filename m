@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZFRKyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbZFRKzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZFRKyR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 06:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbZFRKyD
+	id S1759704AbZFRKzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 06:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZFRKzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 06:54:03 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:38158 "EHLO slimlogic.co.uk"
+	Thu, 18 Jun 2009 06:55:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48057 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753281AbZFRKyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 06:54:03 -0400
-Subject: Re: [PATCH] regulator: Allow consumer supplies to be set up with
- dev_name()
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>
-In-Reply-To: <1245257799-29752-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1245257799-29752-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	id S1753298AbZFRKzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 06:55:35 -0400
+Subject: [PATCH -tip] x86: ptrace ptrace_get_debugreg() should be static
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
 Content-Type: text/plain
-Date: Thu, 18 Jun 2009 11:54:03 +0100
-Message-Id: <1245322443.21421.254.camel@vega.slimlogic.co.uk>
+Date: Thu, 18 Jun 2009 16:25:02 +0530
+Message-Id: <1245322502.7189.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-17 at 17:56 +0100, Mark Brown wrote:
-> Follow the approach suggested by Russell King and implemented by him in
-> the clkdev API and allow consumer device supply mapings to be set up
-> using the dev_name() for the consumer instead of the struct device.
-> In order to avoid making existing machines instabuggy and creating merge
-> issues the use of struct device is still supported for the time being.
-> 
 
-We should probably mark this as deprecated in the docs.
+ptrace_get_debugreg() is used only by the same file, so it should be static.
 
-> This resolves problems working with buses such as I2C which make the
-> struct device available late providing that the final device name is
-> known, which is the case for most embedded systems with fixed setups.
-> 
-> Consumers must still use the struct device when calling regulator_get().
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
-> For the avoidance of doubt this is most definately 2.6.32 material, not
-> 2.6.31.
-> 
->  drivers/regulator/core.c          |   62 ++++++++++++++++++++++++++++--------
->  include/linux/regulator/machine.h |    7 +++-
->  2 files changed, 54 insertions(+), 15 deletions(-)
-> 
+Also fixed sparse warning :
 
-Applied.
+  CHECK   arch/x86/kernel/ptrace.c
+  arch/x86/kernel/ptrace.c:560:15: warning: symbol 'ptrace_get_debugreg' was not declared. Should it be static?
 
-Thanks
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/ptrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Liam
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index b457f78..cabdabc 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -557,7 +557,7 @@ restore:
+ /*
+  * Handle PTRACE_PEEKUSR calls for the debug register area.
+  */
+-unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
++static unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
+ {
+ 	struct thread_struct *thread = &(tsk->thread);
+ 	unsigned long val = 0;
+-- 
+1.6.0.6
+
+
 
