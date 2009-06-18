@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbZFRW24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZFRWbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbZFRW24 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 18:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbZFRW2s
+	id S1758049AbZFRWbd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 18:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbZFRWbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 18:28:48 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:45834 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752118AbZFRW2s (ORCPT
+	Thu, 18 Jun 2009 18:31:25 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:57618 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbZFRWbX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 18:28:48 -0400
-Date: Fri, 19 Jun 2009 00:24:13 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: avictor.za@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
-       Hong Xu <hong.xu@atmel.com>
-Subject: Re: [PATCH 5/5] at91/atmel_lcdfb: add at91sam9g10 support to atmel
-	LCD driver
-Message-ID: <20090618222413.GC19515@game.jcrosoft.org>
-References: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com> <1245341772-1689-6-git-send-email-nicolas.ferre@atmel.com>
+	Thu, 18 Jun 2009 18:31:23 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 01/11] ipc: use __ARCH_WANT_IPC_PARSE_VERSION in ipc/util.h
+Date: Fri, 19 Jun 2009 00:31:17 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: microblaze-uclinux@itee.uq.edu.au, LKML <linux-kernel@vger.kernel.org>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+References: <cover.1245345894.git.arnd@arndb.de> <24d10c58e2739bacec05d641ab2a2c95ce6d69a9.1245347640.git.arnd@arndb.de>
+In-Reply-To: <24d10c58e2739bacec05d641ab2a2c95ce6d69a9.1245347640.git.arnd@arndb.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245341772-1689-6-git-send-email-nicolas.ferre@atmel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Ovh-Tracer-Id: 13806910559365868396
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906190031.17786.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/lHd+lDUkpK18JrMO7zVAIuuUKMhcAzeuJxTB
+ Vjz0Y/IkOMflKK9FTX0GPN/ZcAaZ8Kstna+J+HcY1oeZQipw/r
+ WKSqtvmjXWTl5+SlTxz3XWQqXzM/VZo
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18:16 Thu 18 Jun     , Nicolas Ferre wrote:
-> From: Hong Xu <hong.xu@atmel.com>
+On Thursday 18 June 2009, Arnd Bergmann wrote:
+> The definition of ipc_parse_version depends on
+> __ARCH_WANT_IPC_PARSE_VERSION, but the header file
+> declares it conditionally based on the architecture.
 > 
-> Modify atmel LCD driver: atmel_lcdfb for at91sam9g10.  This add a clock
-> management equivalent to at91sam9261.
+> Use the macro consistently to make it easier to add
+> new architectures.
 > 
-> Signed-off-by: Hong Xu <hong.xu@atmel.com>
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
->  drivers/video/Kconfig           |    4 ++--
->  drivers/video/atmel_lcdfb.c     |    6 ++++--
->  drivers/video/backlight/Kconfig |    2 +-
->  3 files changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 5152168..2dbede4 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -933,7 +933,7 @@ config FB_S1D13XXX
->  
->  config FB_ATMEL
->  	tristate "AT91/AT32 LCD Controller support"
-> -	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
-> +	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9G10 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
-create a ARCH_ATMEL_HAS_FB then select it at the soc will allow to reduce this || xx... by
-	depends on FB && ARCH_ATMEL_HAS_FB
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Best Regards,
-J.
+Michal, you can ignore this one now, it just went in.
+
+	Arnd <><
