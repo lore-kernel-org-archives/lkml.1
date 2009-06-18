@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZFRUkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZFRUy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbZFRUkE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 16:40:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZFRUjz
+	id S1754533AbZFRUy3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 16:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZFRUyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 16:39:55 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46124 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbZFRUjz (ORCPT
+	Thu, 18 Jun 2009 16:54:20 -0400
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:45432 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752644AbZFRUyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 16:39:55 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
-References: <4A329CF8.4050502@goop.org>
-	<alpine.LFD.2.00.0906181206190.4213@localhost.localdomain>
-	<4A3A9220.4070807@goop.org> <m1zlc5jqac.fsf@fess.ebiederm.org>
-	<4A3A99FB.7070807@goop.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 18 Jun 2009 13:39:53 -0700
-In-Reply-To: <4A3A99FB.7070807@goop.org> (Jeremy Fitzhardinge's message of "Thu\, 18 Jun 2009 12\:48\:11 -0700")
-Message-ID: <m1vdmtgtt2.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: jeremy@goop.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com, lenb@kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+	Thu, 18 Jun 2009 16:54:19 -0400
+Subject: Re: [freetel-oslec] [PATCH] fix Pstate growing in OSLEC
+From: David Rowe <david@rowetel.com>
+To: Open Source Line Echo Canceller 
+	<freetel-oslec@lists.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+In-Reply-To: <20090618174540.GT3311@xorcom.com>
+References: <20090618174540.GT3311@xorcom.com>
+Content-Type: text/plain
+Date: Fri, 19 Jun 2009 06:24:06 +0930
+Message-Id: <1245358446.6714.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Hi Tzafrir,
 
-> On 06/18/09 12:27, Eric W. Biederman wrote:
->>> The only actual exception I know of is Xen's replacement of the physical
->>> local APIC with a paravirtualized interrupt interface.
->>>     
->>
->> No one ever has.  Xen doesn't have I/O APICs either.  Not in any real
->> sense.  Xen just has devices that looking like I/O apics if you don't
->> look close.
->>   
->
-> Well, if acpi_pci_irq_lookup() and friends return the right things
-> without having parsed the MADT and set up the secondary state, then we
-> should be fine either way.
->
-> acpi_irq_model gets tested in all sorts of random places, so I wonder if
-> we'll need to set it to ACPI_IRQ_MODEL_IOAPIC (or something else?) to
-> make things work properly.
+I submitted the patch to Greg a few weeks ago (as well as checking it
+into Oslec SVN).
 
-And this is where things get interesting.  Xen strictly speaking has
-already made that decision.  Unless you support non APIC mode it
-should always be ACPI_IRQ_MODEL_IOAPIC.
+Re gathering dust, on the contrary I understand that many people are
+using Oslec from the kernel staging directory with the Asterisk DAHDI
+interface.
 
-But Xen runs the hardware so Xen knows, and Xen should be running
-all of the acpi and what not to make it happen.
+Cheers,
 
-> Hm, and principle we just get the SCI gsi from the FADT, but there's all
-> that other mucking about with it in the MADT processing... Wonder what
-> needs to happen there...
+David
 
-Good question.  What does the domU case do?
-
-Eric
+On Thu, 2009-06-18 at 20:45 +0300, Tzafrir Cohen wrote:
+> The following fix has been posted in the OSLEC mailing list by Ruslan
+> Cray (and shortly afterwards acepted into the OSLEC SVN tree). Sadly it
+> has not been forwarded the kernel.org tree until now.
+> 
+> See:
+> 
+> http://sourceforge.net/mailarchive/forum.php?thread_name=000b01c9d88f%24ec689690%2475a8a8c0%40rcraydvlpmnt&forum_name=freetel-oslec
+> 
+> As a side note, the OSLEC code is gathering dust in the staging tree.
+> As-is it is mostly useless without providing an interface for its code.
+> I was hoping to see the mISDN code starting to use it but so far no 
+> change in that front.
+> 
+> ---
+>  drivers/staging/echo/echo.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
+> index 6d7217e..faab26d 100644
+> --- a/drivers/staging/echo/echo.c
+> +++ b/drivers/staging/echo/echo.c
+> @@ -395,7 +395,7 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+>  		old = (int)ec->fir_state.history[ec->fir_state.curr_pos] *
+>  		    (int)ec->fir_state.history[ec->fir_state.curr_pos];
+>  		ec->Pstates +=
+> -		    ((new - old) + (1 << ec->log2taps)) >> ec->log2taps;
+> +		    ((new - old) + (1 << (ec->log2taps - 1))) >> ec->log2taps;
+>  		if (ec->Pstates < 0)
+>  			ec->Pstates = 0;
+>  	}
+> -- 
+> 1.5.6.5
+> 
+> 
+-- 
+Free Telephony Project
+open embedded IP-PBX hardware and software
+http://www.rowetel.com/ucasterisk
 
