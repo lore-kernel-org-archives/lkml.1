@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZFRRsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbZFRRsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757245AbZFRRsL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 13:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZFRRr7
+	id S1758526AbZFRRsh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 13:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZFRRs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 13:47:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52218 "EHLO hera.kernel.org"
+	Thu, 18 Jun 2009 13:48:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52247 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbZFRRr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 13:47:58 -0400
-Subject: [GIT-PULL -tip V2][PATCH 0/4 -tip] x86: headers fixes
+	id S1752467AbZFRRs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 13:48:28 -0400
+Subject: [PATCH 1/4 -tip V2] x86: unification of posix_types.h
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: x86 maintainers <x86@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
        LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
        Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <1245314365.31204.7.camel@ht.satnam>
+In-Reply-To: <1245346986.2481.10.camel@ht.satnam>
 References: <1245314365.31204.7.camel@ht.satnam>
+	 <1245346986.2481.10.camel@ht.satnam>
 Content-Type: text/plain
-Date: Thu, 18 Jun 2009 23:13:06 +0530
-Message-Id: <1245346986.2481.10.camel@ht.satnam>
+Date: Thu, 18 Jun 2009 23:14:42 +0530
+Message-Id: <1245347082.2481.12.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -27,36 +28,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
 
-Please pull X86 headers fixes patches.
+Use <asm-generic/posix_types.h> for default types and
+only override the ones that are different.
 
-The following changes since commit ce46441b95bcde36649a17d053dc7dc76272f539:
-  Ingo Molnar (1):
-        Merge branch 'perfcounters/core'
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
-
-Jaswinder Singh Rajput (4):
-      x86: unification of posix_types.h
-      x86: asm/unistd.h common for kernel and user space
-      x86: asm/termios.h remove irrelevant comment for userspace
-      x86: asm/types.h remove irrelevant comment for userspace
-
+Reported-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
  arch/x86/include/asm/Kbuild           |    2 -
  arch/x86/include/asm/posix_types.h    |   96 +++++++++++++++++++++++---
  arch/x86/include/asm/posix_types_32.h |   85 -----------------------
  arch/x86/include/asm/posix_types_64.h |  119 ---------------------------------
- arch/x86/include/asm/termios.h        |   25 +++----
- arch/x86/include/asm/types.h          |    3 +-
- arch/x86/include/asm/unistd.h         |   15 ++---
- 7 files changed, 104 insertions(+), 241 deletions(-)
+ 4 files changed, 85 insertions(+), 217 deletions(-)
  delete mode 100644 arch/x86/include/asm/posix_types_32.h
  delete mode 100644 arch/x86/include/asm/posix_types_64.h
-
-Complete diff:
 
 diff --git a/arch/x86/include/asm/Kbuild b/arch/x86/include/asm/Kbuild
 index 4a8e80c..786bb67 100644
@@ -390,105 +376,8 @@ index eb8d2d9..0000000
 -#endif /* defined(__KERNEL__) */
 -
 -#endif /* _ASM_X86_POSIX_TYPES_64_H */
-diff --git a/arch/x86/include/asm/termios.h b/arch/x86/include/asm/termios.h
-index c4ee805..ee6f0c8 100644
---- a/arch/x86/include/asm/termios.h
-+++ b/arch/x86/include/asm/termios.h
-@@ -5,20 +5,20 @@
- #include <asm/ioctls.h>
- 
- struct winsize {
--	unsigned short ws_row;
--	unsigned short ws_col;
--	unsigned short ws_xpixel;
--	unsigned short ws_ypixel;
-+	unsigned short	ws_row;
-+	unsigned short	ws_col;
-+	unsigned short	ws_xpixel;
-+	unsigned short	ws_ypixel;
- };
- 
- #define NCC 8
- struct termio {
--	unsigned short c_iflag;		/* input mode flags */
--	unsigned short c_oflag;		/* output mode flags */
--	unsigned short c_cflag;		/* control mode flags */
--	unsigned short c_lflag;		/* local mode flags */
--	unsigned char c_line;		/* line discipline */
--	unsigned char c_cc[NCC];	/* control characters */
-+	unsigned short	c_iflag;	/* input mode flags	*/
-+	unsigned short	c_oflag;	/* output mode flags	*/
-+	unsigned short	c_cflag;	/* control mode flags	*/
-+	unsigned short	c_lflag;	/* local mode flags	*/
-+	unsigned char	c_line;		/* line discipline	*/
-+	unsigned char	c_cc[NCC];	/* control characters	*/
- };
- 
- /* modem lines */
-@@ -37,10 +37,10 @@ struct termio {
- #define TIOCM_OUT2	0x4000
- #define TIOCM_LOOP	0x8000
- 
--/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
--
- #ifdef __KERNEL__
- 
-+/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
-+
- #include <asm/uaccess.h>
- 
- /*	intr=^C		quit=^\		erase=del	kill=^U
-@@ -110,5 +110,4 @@ static inline int kernel_termios_to_user_termios_1(struct termios __user *u,
- }
- 
- #endif	/* __KERNEL__ */
--
- #endif /* _ASM_X86_TERMIOS_H */
-diff --git a/arch/x86/include/asm/types.h b/arch/x86/include/asm/types.h
-index 09b9774..bebc9f3 100644
---- a/arch/x86/include/asm/types.h
-+++ b/arch/x86/include/asm/types.h
-@@ -9,10 +9,10 @@ typedef unsigned short umode_t;
- 
- #endif /* __ASSEMBLY__ */
- 
-+#ifdef __KERNEL__
- /*
-  * These aren't exported outside the kernel to avoid name space clashes
-  */
--#ifdef __KERNEL__
- 
- #ifndef __ASSEMBLY__
- 
-@@ -26,5 +26,4 @@ typedef u32 dma_addr_t;
- 
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
--
- #endif /* _ASM_X86_TYPES_H */
-diff --git a/arch/x86/include/asm/unistd.h b/arch/x86/include/asm/unistd.h
-index 2a58ed3..0de8cb3 100644
---- a/arch/x86/include/asm/unistd.h
-+++ b/arch/x86/include/asm/unistd.h
-@@ -1,13 +1,10 @@
--#ifdef __KERNEL__
--# ifdef CONFIG_X86_32
-+#ifndef _ASM_X86_UNISTD_H
-+#define _ASM_X86_UNISTD_H
-+
-+# if defined(CONFIG_X86_32) || defined(__i386__)
- #  include "unistd_32.h"
- # else
- #  include "unistd_64.h"
- # endif
--#else
--# ifdef __i386__
--#  include "unistd_32.h"
--# else
--#  include "unistd_64.h"
--# endif
--#endif
-+
-+#endif /* _ASM_X86_UNISTD_H */
+-- 
+1.6.0.6
+
 
 
