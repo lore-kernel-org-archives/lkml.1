@@ -1,417 +1,1143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751436AbZFREFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZFRELE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751436AbZFREFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 00:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbZFREFn
+	id S1752217AbZFRELE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 00:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZFREKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 00:05:43 -0400
-Received: from mail-fx0-f212.google.com ([209.85.220.212]:55425 "EHLO
-	mail-fx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbZFREFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 00:05:41 -0400
-Message-ID: <4A39BD13.2050206@nodomain.org>
-Date: Thu, 18 Jun 2009 05:05:39 +0100
-From: Tony Hoyle <tmh@nodomain.org>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 18 Jun 2009 00:10:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:42788 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbZFREKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 00:10:52 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_* operations
+Date: Thu, 18 Jun 2009 12:31:48 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
+References: <20090605191819.376530498@gentwo.org> <4A38A719.2030709@kernel.org> <alpine.DEB.1.10.0906171343370.30060@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0906171343370.30060@gentwo.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Bug(?) in linux kernel EFI support
-References: <4A39AD4C.6020807@nodomain.org>
-In-Reply-To: <4A39AD4C.6020807@nodomain.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906181231.49816.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 3:58 am, Tony Hoyle <t...@nodomain.org> wrote:
- > Hi,
- >
- > I'm building kernels on an embedded system which uses an odd version of
- > EFI (elilo/egrub don't run for example, only its own shipped boot.efi
- > that loads a raw vmlinux).  I've been unable to get it to boot with any
- > kernel > 2.6.24.7 - as in it doesn't start up far enough to get 
-netconsole.
- >
-More info - this is the boot from a 'correct' build (the one just before 
-the breaking commit.. lots of warnings but it does boot:
+On Thu, 18 Jun 2009 04:11:17 am Christoph Lameter wrote:
+> It is possible to simply pass the full variable name of a percpu variable
+> to this_cpu_* macros. See the patch of the vm statistics handling.
+>
+> It uses
+>
+> 	per_cpu_var(per_cpu_name_without_prefix)
+>
+> to generate the full name.
 
-Tony
+I have a patch to rip out the prefixes and use sparse annotations instead; I'll
+dig it out...
 
-[    0.000000] Linux version 2.6.24-19-lpia (root@sisko) (gcc version 
-4.2.3 (Ubuntu 4.2.3-2ubuntu7)) #36 SMP Thu Jun 18 03:42:56 UTC 2009
-[    0.000000] EFI: EFI v0.00 by American Megatrends
-[    0.000000]  ACPI 2.0=0x1fa08f90
-[    0.000000] 506MB LOWMEM available.
-[    0.000000] Zone PFN ranges:
-[    0.000000]   DMA             0 ->     4096
-[    0.000000]   Normal       4096 ->   129776
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[1] active PFN ranges
-[    0.000000]     0:        0 ->   129776
-[    0.000000] DMI not present or invalid.
-[    0.000000] ACPI: RSDP 1FA08F90, 0024 (r2 ALASKA)
-[    0.000000] ACPI: XSDT 1FA07F10, 005C (r1 ALASKA CRNBEACH  6222004 
-MSFT    10013)
-[    0.000000] ACPI: FACP 1F9E0D90, 00F4 (r4 ALASKA CRNBEACH  6222004 
-MSFT    10013)
-[    0.000000] ACPI Warning (tbfadt-0442): Optional field 
-"Pm2ControlBlock" has zero address or length: 00000000000009F4/0 [20070126]
-[    0.000000] ACPI: DSDT 1FA01010, 4112 (r1 ALASKA CRNBEACH        0 
-INTL 20051117)
-[    0.000000] ACPI: FACS 1FA0BD40, 0040
-[    0.000000] ACPI: APIC 1FA08E90, 005C (r2 ALASKA CRNBEACH  6222004 
-MSFT    10013)
-[    0.000000] ACPI: MCFG 1FA0FD10, 003C (r1 A M I  OEMMCFG   6222004 
-MSFT       97)
-[    0.000000] ACPI: HPET 1FA0FC90, 0038 (r1 A M I  OEMHPET   6222004 
-AMI.        3)
-[    0.000000] ACPI: SSDT 1F9FC510, 04CE (r2  PmRef    CpuPm     3000 
-INTL 20051117)
-[    0.000000] ACPI: SSDT 1F9E2A10, 0232 (r2  PmRef  Cpu0Tst     3000 
-INTL 20051117)
-[    0.000000] ACPI: SSDT 1FA0BA10, 00A0 (r2  PmRef  Cpu1Tst     3000 
-INTL 20051117)
-[    0.000000] ACPI: no DMI BIOS year, acpi=force is required to enable ACPI
-[    0.000000] ACPI: acpi=force override
-[    0.000000] ACPI: PM-Timer IO Port: 0x908
-[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-[    0.000000] Processor #0 7:12 APIC version 20
-[    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-[    0.000000] Processor #1 7:12 APIC version 20
-[    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-[    0.000000] IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 
-0-23
-[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-[    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
-[    0.000000] ACPI: HPET id: 0x8086a201 base: 0xfed00000
-[    0.000000] Using ACPI (MADT) for SMP configuration information
-[    0.000000] Allocating PCI resources starting at 10100000 (gap: 
-10000000:00400000)
-[    0.000000] Built 1 zonelists in Zone order, mobility grouping on. 
-Total pages: 128763
-[    0.000000] Kernel command line: acpi=force vga=0301 
-netconsole=6665@192.168.44.112/eth0,6666@192.168.44.111/00:50:56:3f:58:50 
-root=/dev/mmcblk0p2 rootdelay=2
-[    0.000000] Enabling fast FPU save and restore... done.
-[    0.000000] Enabling unmasked SIMD FPU exception support... done.
-[    0.000000] Initializing CPU#0
-[    0.000000] PID hash table entries: 2048 (order: 11, 8192 bytes)
-[    0.000000] Detected 1330.055 MHz processor.
-[    0.004000] Console: colour dummy device 80x25
-[    0.004000] console [tty0] enabled
-[    0.004000] Dentry cache hash table entries: 65536 (order: 6, 262144 
-bytes)
-[    0.004000] Inode-cache hash table entries: 32768 (order: 5, 131072 
-bytes)
-[    0.004000] Memory: 508684k/519104k available (2775k kernel code, 
-9268k reserved, 1213k data, 256k init, 0k highmem)
-[    0.004000] virtual kernel memory layout:
-[    0.004000]     fixmap  : 0xfffb5000 - 0xfffff000   ( 296 kB)
-[    0.004000]     vmalloc : 0xe0800000 - 0xfffb3000   ( 503 MB)
-[    0.004000]     lowmem  : 0xc0000000 - 0xdfaf0000   ( 506 MB)
-[    0.004000]       .init : 0xc04ec000 - 0xc052c000   ( 256 kB)
-[    0.004000]       .data : 0xc03b5d5d - 0xc04e5378   (1213 kB)
-[    0.004000]       .text : 0xc0100000 - 0xc03b5d5d   (2775 kB)
-[    0.004000] Checking if this processor honours the WP bit even in 
-supervisor mode... Ok.
-[    0.004000] SLUB: Genslabs=11, HWalign=64, Order=0-1, MinObjects=4, 
-CPUs=2, Nodes=1
-[    0.080008] Calibrating delay using timer specific routine.. 2662.40 
-BogoMIPS (lpj=5324808)
-[    0.080053] allocation failed: out of vmalloc space - use 
-vmalloc=<size> to increase size.
-[    0.080069] EFI: ioremap of 0x1FB00000 failed
-[    0.081015] Mount-cache hash table entries: 512
-[    0.081235] monitor/mwait feature present.
-[    0.081247] using mwait in idle threads.
-[    0.081259] CPU: L1 I cache: 32K, L1 D cache: 24K
-[    0.081269] CPU: L2 cache: 512K
-[    0.081278] CPU: Physical Processor ID: 0
-[    0.081303] Compat vDSO mapped to ffffe000.
-[    0.081325] Checking 'hlt' instruction... OK.
-[    0.096483] SMP alternatives: switching to UP code
-[    0.097189] ACPI: Core revision 20070126
-[    0.103527] CPU0: Intel(R) Atom(TM) CPU Z520   @ 1.33GHz stepping 02
-[    0.103573] SMP alternatives: switching to SMP code
-[    0.104017] Booting processor 1/1 ip 3000
-[    0.004000] Initializing CPU#1
-[    0.004000] Calibrating delay using timer specific routine.. 2659.97 
-BogoMIPS (lpj=5319948)
-[    0.004000] monitor/mwait feature present.
-[    0.004000] CPU: L1 I cache: 32K, L1 D cache: 24K
-[    0.004000] CPU: L2 cache: 512K
-[    0.004000] CPU: Physical Processor ID: 0
-[    0.192321] CPU1: Intel(R) Atom(TM) CPU Z520   @ 1.33GHz stepping 02
-[    0.192413] Total of 2 processors activated (5322.37 BogoMIPS).
-[    0.192519] ENABLING IO-APIC IRQs
-[    0.192764] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=0 pin2=0
-[    0.236014] checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-[    0.236034] Brought up 2 CPUs
-[    0.004006] net_namespace: 164 bytes
-[    0.004006] Time:  1:38:44  Date: 01/01/05
-[    0.004006] NET: Registered protocol family 16
-[    0.004006] ACPI: bus type pci registered
-[    0.004006] PCI: BIOS Bug: MCFG area at e0000000 is not E820-reserved
-[    0.004006] PCI: Not using MMCONFIG.
-[    0.089426] PCI: Using configuration type 1
-[    0.089437] Setting up standard PCI resources
-[    0.102218] ACPI: BIOS _OSI(Linux) query ignored
-[    0.102235] ACPI: [please extract dmidecode output]
-[    0.102246] ACPI: Please send DMI info above to 
-linux-acpi@vger.kernel.org
-[    0.102258] ACPI: If "acpi_osi=Linux" works better, please notify 
-linux-acpi@vger.kernel.org
-[    0.102934] ACPI: Interpreter enabled
-[    0.102946] ACPI: (supports S0 S3 S4 S5)
-[    0.102987] ACPI: Using IOAPIC for interrupt routing
-[    0.103730] ACPI: BIOS _OSI(Linux) query ignored
-[    0.103745] ACPI: [please extract dmidecode output]
-[    0.103755] ACPI: Please send DMI info above to 
-linux-acpi@vger.kernel.org
-[    0.103767] ACPI: If "acpi_osi=Linux" works better, please notify 
-linux-acpi@vger.kernel.org
-[    0.352195] ACPI: PCI Root Bridge [PCI0] (0000:00)
-[    0.133742] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.134084] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.134418] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.134751] ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.135089] ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.135420] ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.135753] ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.136103] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 11 12 
-14 15) *0, disabled.
-[    0.136439] ACPI: Power Resource [FN00] (off)
-[    0.136563] Linux Plug and Play Support v0.97 (c) Adam Belay
-[    0.136654] pnp: PnP ACPI init
-[    0.136677] ACPI: bus type pnp registered
-[    0.142856] pnp: PnP ACPI: found 12 devices
-[    0.142872] ACPI: ACPI bus type pnp unregistered
-[    0.143302] SCSI subsystem initialized
-[    0.143683] usbcore: registered new interface driver usbfs
-[    0.143791] usbcore: registered new interface driver hub
-[    0.143916] usbcore: registered new device driver usb
-[    0.144612] PCI: Using ACPI for IRQ routing
-[    0.144627] PCI: If a device doesn't work, try "pci=routeirq".  If it 
-helps, post a report
-[    0.416076] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 11
-[    0.416097] hpet0: 3 64-bit timers, 14318180 Hz
-[    0.420029] Time: tsc clocksource has been installed.
-[    0.432072] system 00:01: iomem range 0xe0000000-0xefffffff could not 
-be reserved
-[    0.432092] system 00:01: iomem range 0x1fb00000-0x1fbfffff could not 
-be reserved
-[    0.432109] system 00:01: iomem range 0x1fc00000-0x1fffffff could not 
-be reserved
-[    0.432126] system 00:01: iomem range 0x20000000-0x7fffffff could not 
-be reserved
-[    0.432149] system 00:02: ioport range 0xa20-0xa3f has been reserved
-[    0.432162] system 00:02: ioport range 0xa00-0xa3f could not be reserved
-[    0.432175] system 00:02: ioport range 0xa10-0xa1f has been reserved
-[    0.432188] system 00:02: ioport range 0xa40-0xa4f has been reserved
-[    0.432211] system 00:06: ioport range 0x4d0-0x4d1 has been reserved
-[    0.432231] system 00:08: ioport range 0x810-0x810 has been reserved
-[    0.432244] system 00:08: ioport range 0x800-0x80f has been reserved
-[    0.432257] system 00:08: ioport range 0xffff-0xffff has been reserved
-[    0.432276] system 00:09: ioport range 0x900-0x97f has been reserved
-[    0.432289] system 00:09: ioport range 0x400-0x40f has been reserved
-[    0.432302] system 00:09: ioport range 0x480-0x4bf has been reserved
-[    0.432317] system 00:09: iomem range 0xfec00000-0xfec85fff could not 
-be reserved
-[    0.432339] system 00:09: iomem range 0xfed1c000-0xfed1ffff could not 
-be reserved
-[    0.432355] system 00:09: iomem range 0xc0000-0xdffff has been reserved
-[    0.432368] system 00:09: iomem range 0xe0000-0xeffff has been reserved
-[    0.432381] system 00:09: iomem range 0xf0000-0xfffff has been reserved
-[    0.432395] system 00:09: iomem range 0xffc00000-0xffffffff could not 
-be reserved
-[    0.432420] system 00:0b: iomem range 0x1faf0000-0x1fafffff could not 
-be reserved
-[    0.227304] PCI: Bridge: 0000:00:1c.0
-[    0.227319]   IO window: e000-efff
-[    0.227332]   MEM window: d0000000-d00fffff
-[    0.227344]   PREFETCH window: fef00000-feffffff
-[    0.227382] PCI: Enabling device 0000:00:1c.0 (0000 -> 0003)
-[    0.227405] ACPI: PCI Interrupt 0000:00:1c.0[A] -> GSI 16 (level, 
-low) -> IRQ 16
-[    0.227452] NET: Registered protocol family 2
-[    0.276135] IP route cache hash table entries: 4096 (order: 2, 16384 
-bytes)
-[    0.276563] TCP established hash table entries: 16384 (order: 5, 
-131072 bytes)
-[    0.276736] TCP bind hash table entries: 16384 (order: 5, 131072 bytes)
-[    0.276910] TCP: Hash tables configured (established 16384 bind 16384)
-[    0.276923] TCP reno registered
-[    0.290088] audit: initializing netlink socket (disabled)
-[    0.290121] audit(3071822179.520:1): initialized
-[    0.295970] fuse init (API version 7.9)
-[    0.296660] io scheduler noop registered
-[    0.296674] io scheduler anticipatory registered
-[    0.296684] io scheduler deadline registered
-[    0.296832] io scheduler cfq registered (default)
-[    0.380097] Real Time Clock Driver v1.12ac
-[    0.380516] Linux agpgart interface v0.102
-[    0.380720] intelfb: Framebuffer driver for Intel(R) 
-830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM chipsets
-[    0.380739] intelfb: Version 0.9.4
-[    0.380845] ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, 
-low) -> IRQ 16
-[    0.380876] intelfb: Cannot reserve MMIO region.
-[    0.381002] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ 
-sharing enabled
-[    0.383960] RAMDISK driver initialized: 16 RAM disks of 65536K size 
-1024 blocksize
-[    0.384015] r8169 Gigabit Ethernet driver 2.2LK loaded
-[    0.384116] PCI: Enabling device 0000:01:00.0 (0000 -> 0003)
-[    0.384136] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, 
-low) -> IRQ 16
-[    0.384194] r8169 0000:01:00.0: no MSI. Back to INTx.
-[    0.384682] eth0: RTL8168c/8111c at 0xe086a000, 00:0e:8e:22:ab:5f, 
-XID 3c4000c0 IRQ 16
-[    0.386500] netconsole: local port 6665
-[    0.386512] netconsole: local IP 192.168.44.112
-[    0.386521] netconsole: interface eth0
-[    0.386530] netconsole: remote port 6666
-[    0.386539] netconsole: remote IP 192.168.44.111
-[    0.386552] netconsole: remote ethernet address 00:50:56:3f:58:50
-[    0.386565] netconsole: device eth0 not up yet, forcing it
-[    0.386835] r8169: eth0: link down
-[    0.619876] r8169: eth0: link down
-[    3.670232] r8169: eth0: link up
-[    3.456239] console [netcon0] enabled
-[    3.458016] netconsole: network logging started
-[    3.458027] Linux video capture interface: v2.00
-[    3.691267] Driver 'sd' needs updating - please use bus_type methods
-[    3.691668] PCI: Enabling device 0000:00:1f.1 (0000 -> 0001)
-[    3.692192] ACPI: PCI Interrupt 0000:00:1d.7[D] -> GSI 19 (level, 
-low) -> IRQ 19
-[    3.692257] ehci_hcd 0000:00:1d.7: EHCI Host Controller
-[    3.692499] ehci_hcd 0000:00:1d.7: new USB bus registered, assigned 
-bus number 1
-[    3.696445] ehci_hcd 0000:00:1d.7: debug port 1
-[    3.696484] ehci_hcd 0000:00:1d.7: irq 19, io mem 0xd01c4000
-[    3.712250] ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 
-10 Dec 2004
-[    3.712670] usb usb1: configuration #1 chosen from 1 choice
-[    3.712791] hub 1-0:1.0: USB hub found
-[    3.712816] hub 1-0:1.0: 8 ports detected
-[    3.728605] USB Universal Host Controller Interface driver v3.0
-[    3.728676] ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 16 (level, 
-low) -> IRQ 16
-[    3.728713] uhci_hcd 0000:00:1d.0: UHCI Host Controller
-[    3.728933] uhci_hcd 0000:00:1d.0: new USB bus registered, assigned 
-bus number 2
-[    3.728982] uhci_hcd 0000:00:1d.0: irq 16, io base 0x0000f040
-[    3.729338] usb usb2: configuration #1 chosen from 1 choice
-[    3.729461] hub 2-0:1.0: USB hub found
-[    3.729486] hub 2-0:1.0: 2 ports detected
-[    3.744428] ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 17 (level, 
-low) -> IRQ 17
-[    3.744466] uhci_hcd 0000:00:1d.1: UHCI Host Controller
-[    3.744688] uhci_hcd 0000:00:1d.1: new USB bus registered, assigned 
-bus number 3
-[    3.744739] uhci_hcd 0000:00:1d.1: irq 17, io base 0x0000f020
-[    3.745095] usb usb3: configuration #1 chosen from 1 choice
-[    3.745215] hub 3-0:1.0: USB hub found
-[    3.745239] hub 3-0:1.0: 2 ports detected
-[    3.760422] ACPI: PCI Interrupt 0000:00:1d.2[C] -> GSI 18 (level, 
-low) -> IRQ 18
-[    3.760464] uhci_hcd 0000:00:1d.2: UHCI Host Controller
-[    3.760684] uhci_hcd 0000:00:1d.2: new USB bus registered, assigned 
-bus number 4
-[    3.760734] uhci_hcd 0000:00:1d.2: irq 18, io base 0x0000f000
-[    3.761094] usb usb4: configuration #1 chosen from 1 choice
-[    3.761232] hub 4-0:1.0: USB hub found
-[    3.761256] hub 4-0:1.0: 2 ports detected
-[    3.540227] usb 1-4: new high speed USB device using ehci_hcd and 
-address 2
-[    3.792508] Initializing USB Mass Storage driver...
-[    3.820938] usb 1-4: configuration #1 chosen from 1 choice
-[    3.821153] hub 1-4:1.0: USB hub found
-[    3.821299] hub 1-4:1.0: 4 ports detected
-[    3.856277] usb 1-5: new high speed USB device using ehci_hcd and 
-address 3
-[    3.893947] usb 1-5: configuration #1 chosen from 1 choice
-[    3.992270] usb 4-2: new full speed USB device using uhci_hcd and 
-address 2
-[    4.014273] usb 4-2: configuration #1 chosen from 1 choice
-[    4.096262] usb 1-4.2: new high speed USB device using ehci_hcd and 
-address 5
-[    4.134764] usb 1-4.2: configuration #1 chosen from 1 choice
-[    4.208370] usb 1-4.3: new full speed USB device using ehci_hcd and 
-address 6
-[    4.243755] usb 1-4.3: configuration #1 chosen from 1 choice
-[    4.244091] hub 1-4.3:1.0: USB hub found
-[    4.244485] hub 1-4.3:1.0: 3 ports detected
-[    3.760241] scsi0 : SCSI emulation for USB Mass Storage devices
-[    4.348608] usb 1-4.3.3: new full speed USB device using ehci_hcd and 
-address 7
-[    4.391626] usb 1-4.3.3: configuration #1 chosen from 1 choice
-[    3.808244] usbcore: registered new interface driver usb-storage
-[    3.808244] USB Mass Storage support registered.
-[    3.808244] mice: PS/2 mouse device common for all mice
-[    3.808244] i2c /dev entries driver
-[    3.808244] Software Watchdog Timer: 0.07 initialized. soft_noboot=0 
-soft_margin=60 sec (nowayout= 0)
-[    3.808244] cpuidle: using governor ladder
-[    3.808244] cpuidle: using governor menu
-[    3.808244] sdhci: Secure Digital Host Controller Interface driver
-[    3.808244] sdhci: Copyright(c) Pierre Ossman
-[    3.808244] sdhci: SDHCI controller found at 0000:00:1e.0 [8086:811c] 
-(rev 7)
-[    3.808244] ACPI: PCI Interrupt 0000:00:1e.0[A] -> GSI 16 (level, 
-low) -> IRQ 16
-[    3.808397] mmc0: SDHCI at 0xd01c4600 irq 16 DMA
-[    3.808428] sdhci: SDHCI controller found at 0000:00:1e.1 [8086:811d] 
-(rev 7)
-[    3.808454] ACPI: PCI Interrupt 0000:00:1e.1[B] -> GSI 17 (level, 
-low) -> IRQ 17
-[    3.812319] mmc1: SDHCI at 0xd01c4500 irq 17 DMA
-[    3.812350] sdhci: SDHCI controller found at 0000:00:1e.2 [8086:811e] 
-(rev 7)
-[    3.812376] ACPI: PCI Interrupt 0000:00:1e.2[C] -> GSI 18 (level, 
-low) -> IRQ 18
-[    3.812539] mmc2: SDHCI at 0xd01c4400 irq 18 DMA
-[    3.812661] ricoh-mmc: Ricoh MMC Controller disabling driver
-[    3.812681] ricoh-mmc: Copyright(c) Philip Langdale
-[    3.812999] usbcore: registered new interface driver hiddev
-[    3.819697] input: AmSC OpenPeak Touchscreen Hyup02 as 
-/devices/pci0000:00/0000:00:1d.2/usb4/4-2/4-2:1.0/input/input0
-[    4.437476] input,hidraw0: USB HID v1.11 Mouse [AmSC OpenPeak 
-Touchscreen Hyup02] on usb-0000:00:1d.2-2
-[    4.441102] input: Mitsumi Electric Apple Extended USB Keyboard as 
-/devices/pci0000:00/0000:00:1d.7/usb1/1-4/1-4.3/1-4.3.3/1-4.3.3:1.0/input/input1
-[    4.476474] input,hidraw1: USB HID v1.10 Keyboard [Mitsumi Electric 
-Apple Extended USB Keyboard] on usb-0000:00:1d.7-4.3.3
-[    4.480059] mmc2: new MMC card at address 0001
-[    4.480239] mmcblk0: mmc2:0001  1004032KiB
-[    4.480657]  mmcblk0:<6>input: Mitsumi Electric Apple Extended USB 
-Keyboard as 
-/devices/pci0000:00/0000:00:1d.7/usb1/1-4/1-4.3/1-4.3.3/1-4.3.3:1.1/input/input2
-[    3.892727]  p1 p2 p3 p4
-[    4.516482] input,hidraw2: USB HID v1.10 Device [Mitsumi Electric 
-Apple Extended USB Keyboard] on usb-0000:00:1d.7-4.3.3
-[    4.516616] usbcore: registered new interface driver usbhid
-[    4.516637] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-[    4.516753] Advanced Linux Sound Architecture Driver Version 1.0.15 
-(Tue Nov 20 19:16:42 2007 UTC).
-[    4.517109] usbcore: registered new interface driver snd-usb-audio
-[    4.517130] ALSA device list:
-[    4.517140]   No soundcards found.
-[    4.517991] TCP cubic registered
-[    4.518041] NET: Registered protocol family 1
-[    4.518073] NET: Registered protocol family 17
-[    4.518102] Starting balanced_irq
-[    4.518153] Using IPI No-Shortcut mode
-[    4.518382]   Magic number: 5:724:608
-[    4.518504]   hash matches device ptyaf
-[    4.518629] Waiting 2sec before mounting root device...
+OK, was a series of three.  Probably bitrotted, but here they are:
+
+alloc_percpu: rename percpu vars which cause name clashes.
+
+Currently DECLARE_PER_CPU vars have per_cpu__ prefixed to them, and
+this effectively puts them in a separate namespace.  No surprise that
+they clash with other names when that prefix is removed.
+
+There may be others I've missed, but if so the transform is simple.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/ia64/kernel/crash.c                |    4 ++--
+ arch/ia64/kernel/setup.c                |    8 ++++----
+ arch/mn10300/kernel/kprobes.c           |    2 +-
+ arch/powerpc/platforms/cell/interrupt.c |   14 +++++++-------
+ arch/x86/include/asm/processor.h        |    2 +-
+ arch/x86/include/asm/timer.h            |    5 +++--
+ arch/x86/kernel/cpu/common.c            |    4 ++--
+ arch/x86/kernel/dumpstack_64.c          |    2 +-
+ arch/x86/kernel/tsc.c                   |    4 ++--
+ arch/x86/kvm/svm.c                      |   14 +++++++-------
+ drivers/cpufreq/cpufreq.c               |   16 ++++++++--------
+ drivers/s390/net/netiucv.c              |    8 ++++----
+ kernel/lockdep.c                        |   11 ++++++-----
+ kernel/sched.c                          |   14 ++++++++------
+ kernel/softirq.c                        |    4 ++--
+ kernel/softlockup.c                     |   20 ++++++++++----------
+ mm/slab.c                               |    8 ++++----
+ mm/vmstat.c                             |    6 +++---
+ 18 files changed, 75 insertions(+), 71 deletions(-)
+
+diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
+--- a/arch/ia64/kernel/crash.c
++++ b/arch/ia64/kernel/crash.c
+@@ -50,7 +50,7 @@ final_note(void *buf)
+ 
+ extern void ia64_dump_cpu_regs(void *);
+ 
+-static DEFINE_PER_CPU(struct elf_prstatus, elf_prstatus);
++static DEFINE_PER_CPU(struct elf_prstatus, elf_prstatus_pcpu);
+ 
+ void
+ crash_save_this_cpu(void)
+@@ -59,7 +59,7 @@ crash_save_this_cpu(void)
+ 	unsigned long cfm, sof, sol;
+ 
+ 	int cpu = smp_processor_id();
+-	struct elf_prstatus *prstatus = &per_cpu(elf_prstatus, cpu);
++	struct elf_prstatus *prstatus = &per_cpu(elf_prstatus_pcpu, cpu);
+ 
+ 	elf_greg_t *dst = (elf_greg_t *)&(prstatus->pr_reg);
+ 	memset(prstatus, 0, sizeof(*prstatus));
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -939,7 +939,7 @@ cpu_init (void)
+ 	unsigned long num_phys_stacked;
+ 	pal_vm_info_2_u_t vmi;
+ 	unsigned int max_ctx;
+-	struct cpuinfo_ia64 *cpu_info;
++	struct cpuinfo_ia64 *cpuinfo;
+ 	void *cpu_data;
+ 
+ 	cpu_data = per_cpu_init();
+@@ -972,15 +972,15 @@ cpu_init (void)
+ 	 * depends on the data returned by identify_cpu().  We break the dependency by
+ 	 * accessing cpu_data() through the canonical per-CPU address.
+ 	 */
+-	cpu_info = cpu_data + ((char *) &__ia64_per_cpu_var(cpu_info) - __per_cpu_start);
+-	identify_cpu(cpu_info);
++	cpuinfo = cpu_data + ((char *) &__ia64_per_cpu_var(cpu_info) - __per_cpu_start);
++	identify_cpu(cpuinfo);
+ 
+ #ifdef CONFIG_MCKINLEY
+ 	{
+ #		define FEATURE_SET 16
+ 		struct ia64_pal_retval iprv;
+ 
+-		if (cpu_info->family == 0x1f) {
++		if (cpuinfo->family == 0x1f) {
+ 			PAL_CALL_PHYS(iprv, PAL_PROC_GET_FEATURES, 0, FEATURE_SET, 0);
+ 			if ((iprv.status == 0) && (iprv.v0 & 0x80) && (iprv.v2 & 0x80))
+ 				PAL_CALL_PHYS(iprv, PAL_PROC_SET_FEATURES,
+diff --git a/arch/mn10300/kernel/kprobes.c b/arch/mn10300/kernel/kprobes.c
+--- a/arch/mn10300/kernel/kprobes.c
++++ b/arch/mn10300/kernel/kprobes.c
+@@ -39,7 +39,7 @@ static kprobe_opcode_t current_kprobe_ss
+ static kprobe_opcode_t current_kprobe_ss_buf[MAX_INSN_SIZE + 2];
+ static unsigned long current_kprobe_bp_addr;
+ 
+-DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
++DEFINE_PER_CPU(struct kprobe *, current_kprobe_pcpu) = NULL;
+ 
+ 
+ /* singlestep flag bits */
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -54,7 +54,7 @@ struct iic {
+ 	struct device_node *node;
+ };
+ 
+-static DEFINE_PER_CPU(struct iic, iic);
++static DEFINE_PER_CPU(struct iic, iic_pcpu);
+ #define IIC_NODE_COUNT	2
+ static struct irq_host *iic_host;
+ 
+@@ -82,7 +82,7 @@ static void iic_unmask(unsigned int irq)
+ 
+ static void iic_eoi(unsigned int irq)
+ {
+-	struct iic *iic = &__get_cpu_var(iic);
++	struct iic *iic = &__get_cpu_var(iic_pcpu);
+ 	out_be64(&iic->regs->prio, iic->eoi_stack[--iic->eoi_ptr]);
+ 	BUG_ON(iic->eoi_ptr < 0);
+ }
+@@ -146,7 +146,7 @@ static unsigned int iic_get_irq(void)
+ 	struct iic *iic;
+ 	unsigned int virq;
+ 
+-	iic = &__get_cpu_var(iic);
++	iic = &__get_cpu_var(iic_pcpu);
+ 	*(unsigned long *) &pending =
+ 		in_be64((u64 __iomem *) &iic->regs->pending_destr);
+ 	if (!(pending.flags & CBE_IIC_IRQ_VALID))
+@@ -161,12 +161,12 @@ static unsigned int iic_get_irq(void)
+ 
+ void iic_setup_cpu(void)
+ {
+-	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
++	out_be64(&__get_cpu_var(iic_pcpu).regs->prio, 0xff);
+ }
+ 
+ u8 iic_get_target_id(int cpu)
+ {
+-	return per_cpu(iic, cpu).target_id;
++	return per_cpu(iic_pcpu, cpu).target_id;
+ }
+ 
+ EXPORT_SYMBOL_GPL(iic_get_target_id);
+@@ -181,7 +181,7 @@ static inline int iic_ipi_to_irq(int ipi
+ 
+ void iic_cause_IPI(int cpu, int mesg)
+ {
+-	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
++	out_be64(&per_cpu(iic_pcpu, cpu).regs->generate, (0xf - mesg) << 4);
+ }
+ 
+ struct irq_host *iic_get_irq_host(int node)
+@@ -350,7 +350,7 @@ static void __init init_one_iic(unsigned
+ 	/* XXX FIXME: should locate the linux CPU number from the HW cpu
+ 	 * number properly. We are lucky for now
+ 	 */
+-	struct iic *iic = &per_cpu(iic, hw_cpu);
++	struct iic *iic = &per_cpu(iic_pcpu, hw_cpu);
+ 
+ 	iic->regs = ioremap(addr, sizeof(struct cbe_iic_thread_regs));
+ 	BUG_ON(iic->regs == NULL);
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -377,7 +377,7 @@ union thread_xstate {
+ };
+ 
+ #ifdef CONFIG_X86_64
+-DECLARE_PER_CPU(struct orig_ist, orig_ist);
++DECLARE_PER_CPU(struct orig_ist, orig_ist_pcpu);
+ #endif
+ 
+ extern void print_cpu_info(struct cpuinfo_x86 *);
+diff --git a/arch/x86/include/asm/timer.h b/arch/x86/include/asm/timer.h
+--- a/arch/x86/include/asm/timer.h
++++ b/arch/x86/include/asm/timer.h
+@@ -42,13 +42,14 @@ extern int no_timer_check;
+  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+ 
+-DECLARE_PER_CPU(unsigned long, cyc2ns);
++DECLARE_PER_CPU(unsigned long, percpu_cyc2ns);
+ 
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+ 
+ static inline unsigned long long __cycles_2_ns(unsigned long long cyc)
+ {
+-	return cyc * per_cpu(cyc2ns, smp_processor_id()) >> CYC2NS_SCALE_FACTOR;
++	return cyc * per_cpu(percpu_cyc2ns, smp_processor_id()) >>
++		CYC2NS_SCALE_FACTOR;
+ }
+ 
+ static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -955,7 +955,7 @@ unsigned long kernel_eflags;
+  * Copies of the original ist values from the tss are only accessed during
+  * debugging, no special alignment required.
+  */
+-DEFINE_PER_CPU(struct orig_ist, orig_ist);
++DEFINE_PER_CPU(struct orig_ist, orig_ist_pcpu);
+ 
+ #else
+ 
+@@ -980,7 +980,7 @@ void __cpuinit cpu_init(void)
+ {
+ 	int cpu = stack_smp_processor_id();
+ 	struct tss_struct *t = &per_cpu(init_tss, cpu);
+-	struct orig_ist *orig_ist = &per_cpu(orig_ist, cpu);
++	struct orig_ist *orig_ist = &per_cpu(orig_ist_pcpu, cpu);
+ 	unsigned long v;
+ 	char *estacks = NULL;
+ 	struct task_struct *me;
+diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
+--- a/arch/x86/kernel/dumpstack_64.c
++++ b/arch/x86/kernel/dumpstack_64.c
+@@ -40,7 +40,7 @@ static unsigned long *in_exception_stack
+ 	 * 'stack' is in one of them:
+ 	 */
+ 	for (k = 0; k < N_EXCEPTION_STACKS; k++) {
+-		unsigned long end = per_cpu(orig_ist, cpu).ist[k];
++		unsigned long end = per_cpu(orig_ist_pcpu, cpu).ist[k];
+ 		/*
+ 		 * Is 'stack' above this exception frame's end?
+ 		 * If yes then skip to the next frame.
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -570,7 +570,7 @@ EXPORT_SYMBOL(recalibrate_cpu_khz);
+  *                      -johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+ 
+-DEFINE_PER_CPU(unsigned long, cyc2ns);
++DEFINE_PER_CPU(unsigned long, percpu_cyc2ns);
+ 
+ static void set_cyc2ns_scale(unsigned long cpu_khz, int cpu)
+ {
+@@ -580,7 +580,7 @@ static void set_cyc2ns_scale(unsigned lo
+ 	local_irq_save(flags);
+ 	sched_clock_idle_sleep_event();
+ 
+-	scale = &per_cpu(cyc2ns, cpu);
++	scale = &per_cpu(percpu_cyc2ns, cpu);
+ 
+ 	rdtscll(tsc_now);
+ 	ns_now = __cycles_2_ns(tsc_now);
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -90,7 +90,7 @@ struct svm_cpu_data {
+ 	struct page *save_area;
+ };
+ 
+-static DEFINE_PER_CPU(struct svm_cpu_data *, svm_data);
++static DEFINE_PER_CPU(struct svm_cpu_data *, svm_data_pcpu);
+ static uint32_t svm_features;
+ 
+ struct svm_init_data {
+@@ -275,7 +275,7 @@ static void svm_hardware_enable(void *ga
+ 		printk(KERN_ERR "svm_cpu_init: err EOPNOTSUPP on %d\n", me);
+ 		return;
+ 	}
+-	svm_data = per_cpu(svm_data, me);
++	svm_data = per_cpu(svm_data_pcpu, me);
+ 
+ 	if (!svm_data) {
+ 		printk(KERN_ERR "svm_cpu_init: svm_data is NULL on %d\n",
+@@ -301,12 +301,12 @@ static void svm_cpu_uninit(int cpu)
+ static void svm_cpu_uninit(int cpu)
+ {
+ 	struct svm_cpu_data *svm_data
+-		= per_cpu(svm_data, raw_smp_processor_id());
++		= per_cpu(svm_data_pcpu, raw_smp_processor_id());
+ 
+ 	if (!svm_data)
+ 		return;
+ 
+-	per_cpu(svm_data, raw_smp_processor_id()) = NULL;
++	per_cpu(svm_data_pcpu, raw_smp_processor_id()) = NULL;
+ 	__free_page(svm_data->save_area);
+ 	kfree(svm_data);
+ }
+@@ -325,7 +325,7 @@ static int svm_cpu_init(int cpu)
+ 	if (!svm_data->save_area)
+ 		goto err_1;
+ 
+-	per_cpu(svm_data, cpu) = svm_data;
++	per_cpu(svm_data_pcpu, cpu) = svm_data;
+ 
+ 	return 0;
+ 
+@@ -1508,7 +1508,7 @@ static void reload_tss(struct kvm_vcpu *
+ {
+ 	int cpu = raw_smp_processor_id();
+ 
+-	struct svm_cpu_data *svm_data = per_cpu(svm_data, cpu);
++	struct svm_cpu_data *svm_data = per_cpu(svm_data_pcpu, cpu);
+ 	svm_data->tss_desc->type = 9; /* available 32/64-bit TSS */
+ 	load_TR_desc();
+ }
+@@ -1517,7 +1517,7 @@ static void pre_svm_run(struct vcpu_svm 
+ {
+ 	int cpu = raw_smp_processor_id();
+ 
+-	struct svm_cpu_data *svm_data = per_cpu(svm_data, cpu);
++	struct svm_cpu_data *svm_data = per_cpu(svm_data_pcpu, cpu);
+ 
+ 	svm->vmcb->control.tlb_ctl = TLB_CONTROL_DO_NOTHING;
+ 	if (svm->vcpu.cpu != cpu ||
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -62,14 +62,14 @@ static DEFINE_SPINLOCK(cpufreq_driver_lo
+  * - Governor routines that can be called in cpufreq hotplug path should not
+  *   take this sem as top level hotplug notifier handler takes this.
+  */
+-static DEFINE_PER_CPU(int, policy_cpu);
++static DEFINE_PER_CPU(int, policy_cpu_pcpu);
+ static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
+ 
+ #define lock_policy_rwsem(mode, cpu)					\
+ int lock_policy_rwsem_##mode						\
+ (int cpu)								\
+ {									\
+-	int policy_cpu = per_cpu(policy_cpu, cpu);			\
++	int policy_cpu = per_cpu(policy_cpu_pcpu, cpu);			\
+ 	BUG_ON(policy_cpu == -1);					\
+ 	down_##mode(&per_cpu(cpu_policy_rwsem, policy_cpu));		\
+ 	if (unlikely(!cpu_online(cpu))) {				\
+@@ -88,7 +88,7 @@ EXPORT_SYMBOL_GPL(lock_policy_rwsem_writ
+ 
+ void unlock_policy_rwsem_read(int cpu)
+ {
+-	int policy_cpu = per_cpu(policy_cpu, cpu);
++	int policy_cpu = per_cpu(policy_cpu_pcpu, cpu);
+ 	BUG_ON(policy_cpu == -1);
+ 	up_read(&per_cpu(cpu_policy_rwsem, policy_cpu));
+ }
+@@ -96,7 +96,7 @@ EXPORT_SYMBOL_GPL(unlock_policy_rwsem_re
+ 
+ void unlock_policy_rwsem_write(int cpu)
+ {
+-	int policy_cpu = per_cpu(policy_cpu, cpu);
++	int policy_cpu = per_cpu(policy_cpu_pcpu, cpu);
+ 	BUG_ON(policy_cpu == -1);
+ 	up_write(&per_cpu(cpu_policy_rwsem, policy_cpu));
+ }
+@@ -822,7 +822,7 @@ static int cpufreq_add_dev(struct sys_de
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 
+ 	/* Initially set CPU itself as the policy_cpu */
+-	per_cpu(policy_cpu, cpu) = cpu;
++	per_cpu(policy_cpu_pcpu, cpu) = cpu;
+ 	lock_policy_rwsem_write(cpu);
+ 
+ 	init_completion(&policy->kobj_unregister);
+@@ -866,7 +866,7 @@ static int cpufreq_add_dev(struct sys_de
+ 
+ 			/* Set proper policy_cpu */
+ 			unlock_policy_rwsem_write(cpu);
+-			per_cpu(policy_cpu, cpu) = managed_policy->cpu;
++			per_cpu(policy_cpu_pcpu, cpu) = managed_policy->cpu;
+ 
+ 			if (lock_policy_rwsem_write(cpu) < 0)
+ 				goto err_out_driver_exit;
+@@ -929,7 +929,7 @@ static int cpufreq_add_dev(struct sys_de
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	for_each_cpu(j, policy->cpus) {
+ 		per_cpu(cpufreq_cpu_data, j) = policy;
+-		per_cpu(policy_cpu, j) = policy->cpu;
++		per_cpu(policy_cpu_pcpu, j) = policy->cpu;
+ 	}
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+@@ -1937,7 +1937,7 @@ static int __init cpufreq_core_init(void
+ 	int cpu;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		per_cpu(policy_cpu, cpu) = -1;
++		per_cpu(policy_cpu_pcpu, cpu) = -1;
+ 		init_rwsem(&per_cpu(cpu_policy_rwsem, cpu));
+ 	}
+ 	return 0;
+diff --git a/drivers/s390/net/netiucv.c b/drivers/s390/net/netiucv.c
+--- a/drivers/s390/net/netiucv.c
++++ b/drivers/s390/net/netiucv.c
+@@ -98,7 +98,7 @@ MODULE_DESCRIPTION ("Linux for S/390 IUC
+ 		debug_event(iucv_dbf_##name,level,(void*)(addr),len); \
+ 	} while (0)
+ 
+-DECLARE_PER_CPU(char[256], iucv_dbf_txt_buf);
++DECLARE_PER_CPU(char[256], iucv_dbf_txt_buf_pcpu);
+ 
+ /* Allow to sort out low debug levels early to avoid wasted sprints */
+ static inline int iucv_dbf_passes(debug_info_t *dbf_grp, int level)
+@@ -110,11 +110,11 @@ static inline int iucv_dbf_passes(debug_
+ 	do { \
+ 		if (iucv_dbf_passes(iucv_dbf_##name, level)) { \
+ 			char* iucv_dbf_txt_buf = \
+-					get_cpu_var(iucv_dbf_txt_buf); \
++					get_cpu_var(iucv_dbf_txt_buf_pcpu); \
+ 			sprintf(iucv_dbf_txt_buf, text); \
+ 			debug_text_event(iucv_dbf_##name, level, \
+ 						iucv_dbf_txt_buf); \
+-			put_cpu_var(iucv_dbf_txt_buf); \
++			put_cpu_var(iucv_dbf_txt_buf_pcpu); \
+ 		} \
+ 	} while (0)
+ 
+@@ -462,7 +462,7 @@ static debug_info_t *iucv_dbf_data = NUL
+ static debug_info_t *iucv_dbf_data = NULL;
+ static debug_info_t *iucv_dbf_trace = NULL;
+ 
+-DEFINE_PER_CPU(char[256], iucv_dbf_txt_buf);
++DEFINE_PER_CPU(char[256], iucv_dbf_txt_buf_pcpu);
+ 
+ static void iucv_unregister_dbf_views(void)
+ {
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -135,7 +135,8 @@ static inline struct lock_class *hlock_c
+ }
+ 
+ #ifdef CONFIG_LOCK_STAT
+-static DEFINE_PER_CPU(struct lock_class_stats[MAX_LOCKDEP_KEYS], lock_stats);
++static DEFINE_PER_CPU(struct lock_class_stats[MAX_LOCKDEP_KEYS],
++		      percpu_lock_stats);
+ 
+ static int lock_point(unsigned long points[], unsigned long ip)
+ {
+@@ -181,7 +182,7 @@ struct lock_class_stats lock_stats(struc
+ 	memset(&stats, 0, sizeof(struct lock_class_stats));
+ 	for_each_possible_cpu(cpu) {
+ 		struct lock_class_stats *pcs =
+-			&per_cpu(lock_stats, cpu)[class - lock_classes];
++			&per_cpu(percpu_lock_stats, cpu)[class - lock_classes];
+ 
+ 		for (i = 0; i < ARRAY_SIZE(stats.contention_point); i++)
+ 			stats.contention_point[i] += pcs->contention_point[i];
+@@ -208,7 +209,7 @@ void clear_lock_stats(struct lock_class 
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		struct lock_class_stats *cpu_stats =
+-			&per_cpu(lock_stats, cpu)[class - lock_classes];
++			&per_cpu(percpu_lock_stats, cpu)[class - lock_classes];
+ 
+ 		memset(cpu_stats, 0, sizeof(struct lock_class_stats));
+ 	}
+@@ -218,12 +219,12 @@ void clear_lock_stats(struct lock_class 
+ 
+ static struct lock_class_stats *get_lock_stats(struct lock_class *class)
+ {
+-	return &get_cpu_var(lock_stats)[class - lock_classes];
++	return &get_cpu_var(percpu_lock_stats)[class - lock_classes];
+ }
+ 
+ static void put_lock_stats(struct lock_class_stats *stats)
+ {
+-	put_cpu_var(lock_stats);
++	put_cpu_var(percpu_lock_stats);
+ }
+ 
+ static void lock_release_holdtime(struct held_lock *hlock)
+diff --git a/kernel/sched.c b/kernel/sched.c
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -315,12 +315,14 @@ struct task_group root_task_group;
+ /* Default task group's sched entity on each cpu */
+ static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
+ /* Default task group's cfs_rq on each cpu */
+-static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU(struct cfs_rq, percpu_init_cfs_rq)
++	____cacheline_aligned_in_smp;
+ #endif /* CONFIG_FAIR_GROUP_SCHED */
+ 
+ #ifdef CONFIG_RT_GROUP_SCHED
+ static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+-static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU(struct rt_rq, percpu_init_rt_rq)
++	____cacheline_aligned_in_smp;
+ #endif /* CONFIG_RT_GROUP_SCHED */
+ #else /* !CONFIG_USER_SCHED */
+ #define root_task_group init_task_group
+@@ -7213,14 +7215,14 @@ struct static_sched_domain {
+  */
+ #ifdef CONFIG_SCHED_SMT
+ static DEFINE_PER_CPU(struct static_sched_domain, cpu_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_cpus);
++static DEFINE_PER_CPU(struct static_sched_group, sched_group_cpus_pcpu);
+ 
+ static int
+ cpu_to_cpu_group(int cpu, const struct cpumask *cpu_map,
+ 		 struct sched_group **sg, struct cpumask *unused)
+ {
+ 	if (sg)
+-		*sg = &per_cpu(sched_group_cpus, cpu).sg;
++		*sg = &per_cpu(sched_group_cpus_pcpu, cpu).sg;
+ 	return cpu;
+ }
+ #endif /* CONFIG_SCHED_SMT */
+@@ -8408,7 +8410,7 @@ void __init sched_init(void)
+ 		 * tasks in rq->cfs (i.e init_task_group->se[] != NULL).
+ 		 */
+ 		init_tg_cfs_entry(&init_task_group,
+-				&per_cpu(init_cfs_rq, i),
++				&per_cpu(percpu_init_cfs_rq, i),
+ 				&per_cpu(init_sched_entity, i), i, 1,
+ 				root_task_group.se[i]);
+ 
+@@ -8423,7 +8425,7 @@ void __init sched_init(void)
+ #elif defined CONFIG_USER_SCHED
+ 		init_tg_rt_entry(&root_task_group, &rq->rt, NULL, i, 0, NULL);
+ 		init_tg_rt_entry(&init_task_group,
+-				&per_cpu(init_rt_rq, i),
++				&per_cpu(percpu_init_rt_rq, i),
+ 				&per_cpu(init_sched_rt_entity, i), i, 1,
+ 				root_task_group.rt_se[i]);
+ #endif
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -602,7 +602,7 @@ void __init softirq_init(void)
+ 	open_softirq(HI_SOFTIRQ, tasklet_hi_action);
+ }
+ 
+-static int ksoftirqd(void * __bind_cpu)
++static int run_ksoftirqd(void *__bind_cpu)
+ {
+ 	set_current_state(TASK_INTERRUPTIBLE);
+ 
+@@ -714,7 +714,7 @@ static int __cpuinit cpu_callback(struct
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		p = kthread_create(ksoftirqd, hcpu, "ksoftirqd/%d", hotcpu);
++		p = kthread_create(run_ksoftirqd, hcpu, "ksoftirqd/%d", hotcpu);
+ 		if (IS_ERR(p)) {
+ 			printk("ksoftirqd for %i failed\n", hotcpu);
+ 			return NOTIFY_BAD;
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -95,28 +95,28 @@ void softlockup_tick(void)
+ void softlockup_tick(void)
+ {
+ 	int this_cpu = smp_processor_id();
+-	unsigned long touch_timestamp = per_cpu(touch_timestamp, this_cpu);
+-	unsigned long print_timestamp;
++	unsigned long touch_ts = per_cpu(touch_timestamp, this_cpu);
++	unsigned long print_ts;
+ 	struct pt_regs *regs = get_irq_regs();
+ 	unsigned long now;
+ 
+ 	/* Is detection switched off? */
+ 	if (!per_cpu(watchdog_task, this_cpu) || softlockup_thresh <= 0) {
+ 		/* Be sure we don't false trigger if switched back on */
+-		if (touch_timestamp)
++		if (touch_ts)
+ 			per_cpu(touch_timestamp, this_cpu) = 0;
+ 		return;
+ 	}
+ 
+-	if (touch_timestamp == 0) {
++	if (touch_ts == 0) {
+ 		__touch_softlockup_watchdog();
+ 		return;
+ 	}
+ 
+-	print_timestamp = per_cpu(print_timestamp, this_cpu);
++	print_ts = per_cpu(print_timestamp, this_cpu);
+ 
+ 	/* report at most once a second */
+-	if (print_timestamp == touch_timestamp || did_panic)
++	if (print_ts == touch_ts || did_panic)
+ 		return;
+ 
+ 	/* do not print during early bootup: */
+@@ -131,18 +131,18 @@ void softlockup_tick(void)
+ 	 * Wake up the high-prio watchdog task twice per
+ 	 * threshold timespan.
+ 	 */
+-	if (now > touch_timestamp + softlockup_thresh/2)
++	if (now > touch_ts + softlockup_thresh/2)
+ 		wake_up_process(per_cpu(watchdog_task, this_cpu));
+ 
+ 	/* Warn about unreasonable delays: */
+-	if (now <= (touch_timestamp + softlockup_thresh))
++	if (now <= (touch_ts + softlockup_thresh))
+ 		return;
+ 
+-	per_cpu(print_timestamp, this_cpu) = touch_timestamp;
++	per_cpu(print_timestamp, this_cpu) = touch_ts;
+ 
+ 	spin_lock(&print_lock);
+ 	printk(KERN_ERR "BUG: soft lockup - CPU#%d stuck for %lus! [%s:%d]\n",
+-			this_cpu, now - touch_timestamp,
++			this_cpu, now - touch_ts,
+ 			current->comm, task_pid_nr(current));
+ 	print_modules();
+ 	print_irqtrace_events(current);
+diff --git a/mm/slab.c b/mm/slab.c
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -933,17 +933,17 @@ static void next_reap_node(void)
+  */
+ static void __cpuinit start_cpu_timer(int cpu)
+ {
+-	struct delayed_work *reap_work = &per_cpu(reap_work, cpu);
++	struct delayed_work *reap = &per_cpu(reap_work, cpu);
+ 
+ 	/*
+ 	 * When this gets called from do_initcalls via cpucache_init(),
+ 	 * init_workqueues() has already run, so keventd will be setup
+ 	 * at that time.
+ 	 */
+-	if (keventd_up() && reap_work->work.func == NULL) {
++	if (keventd_up() && reap->work.func == NULL) {
+ 		init_reap_node(cpu);
+-		INIT_DELAYED_WORK(reap_work, cache_reap);
+-		schedule_delayed_work_on(cpu, reap_work,
++		INIT_DELAYED_WORK(reap, cache_reap);
++		schedule_delayed_work_on(cpu, reap,
+ 					__round_jiffies_relative(HZ, cpu));
+ 	}
+ }
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -903,10 +903,10 @@ static void vmstat_update(struct work_st
+ 
+ static void __cpuinit start_cpu_timer(int cpu)
+ {
+-	struct delayed_work *vmstat_work = &per_cpu(vmstat_work, cpu);
++	struct delayed_work *vw = &per_cpu(vmstat_work, cpu);
+ 
+-	INIT_DELAYED_WORK_DEFERRABLE(vmstat_work, vmstat_update);
+-	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
++	INIT_DELAYED_WORK_DEFERRABLE(vw, vmstat_update);
++	schedule_delayed_work_on(cpu, vw, HZ + cpu);
+ }
+ 
+ /*
+alloc_percpu: remove per_cpu__ prefix.
+
+Now that the return from alloc_percpu is compatible with the address
+of per-cpu vars, it makes sense to hand around the address of per-cpu
+variables.  To make this sane, we remove the per_cpu__ prefix we used
+created to stop people accidentally using these vars directly.
+
+Now we have sparse, we can use that (next patch).
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/alpha/include/asm/percpu.h         |    4 ++--
+ arch/cris/arch-v10/kernel/entry.S       |    2 +-
+ arch/cris/arch-v32/mm/mmu.S             |    2 +-
+ arch/ia64/include/asm/percpu.h          |    4 ++--
+ arch/ia64/kernel/ia64_ksyms.c           |    4 ++--
+ arch/ia64/mm/discontig.c                |    2 +-
+ arch/parisc/lib/fixup.S                 |    8 ++++----
+ arch/powerpc/platforms/pseries/hvCall.S |    2 +-
+ arch/sparc/kernel/rtrap_64.S            |    8 ++++----
+ arch/x86/include/asm/percpu.h           |   20 ++++++++++----------
+ arch/x86/kernel/entry_64.S              |    4 ++--
+ arch/x86/kernel/head_32.S               |    2 +-
+ arch/x86/kernel/head_64.S               |    2 +-
+ arch/x86/xen/xen-asm_32.S               |    4 ++--
+ include/asm-generic/percpu.h            |    2 +-
+ include/linux/percpu.h                  |   12 ++++++------
+ 16 files changed, 41 insertions(+), 41 deletions(-)
+
+diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
+--- a/arch/alpha/include/asm/percpu.h
++++ b/arch/alpha/include/asm/percpu.h
+@@ -7,7 +7,7 @@
+  * Determine the real variable name from the name visible in the
+  * kernel sources.
+  */
+-#define per_cpu_var(var) per_cpu__##var
++#define per_cpu_var(var) var
+ 
+ #ifdef CONFIG_SMP
+ 
+@@ -43,7 +43,7 @@ extern unsigned long __per_cpu_offset[NR
+ 	unsigned long __ptr, tmp_gp;			\
+ 	asm (  "br	%1, 1f		  	      \n\
+ 	1:	ldgp	%1, 0(%1)	    	      \n\
+-		ldq %0, per_cpu__" #var"(%1)\t!literal"		\
++		ldq %0, "#var"(%1)\t!literal"		\
+ 		: "=&r"(__ptr), "=&r"(tmp_gp));		\
+ 	(typeof(&per_cpu_var(var)))(__ptr + (offset)); })
+ 
+diff --git a/arch/cris/arch-v10/kernel/entry.S b/arch/cris/arch-v10/kernel/entry.S
+--- a/arch/cris/arch-v10/kernel/entry.S
++++ b/arch/cris/arch-v10/kernel/entry.S
+@@ -358,7 +358,7 @@ 1:	btstq	12, $r1		   ; Refill?
+ 1:	btstq	12, $r1		   ; Refill?
+ 	bpl	2f
+ 	lsrq	24, $r1     ; Get PGD index (bit 24-31)
+-	move.d  [per_cpu__current_pgd], $r0 ; PGD for the current process
++	move.d  [current_pgd], $r0 ; PGD for the current process
+ 	move.d	[$r0+$r1.d], $r0   ; Get PMD
+ 	beq	2f
+ 	nop
+diff --git a/arch/cris/arch-v32/mm/mmu.S b/arch/cris/arch-v32/mm/mmu.S
+--- a/arch/cris/arch-v32/mm/mmu.S
++++ b/arch/cris/arch-v32/mm/mmu.S
+@@ -115,7 +115,7 @@ 3:	; Probably not in a loop, continue no
+ #ifdef CONFIG_SMP
+ 	move    $s7, $acr	; PGD
+ #else
+-	move.d  per_cpu__current_pgd, $acr ; PGD
++	move.d  current_pgd, $acr ; PGD
+ #endif
+ 	; Look up PMD in PGD
+ 	lsrq	24, $r0	; Get PMD index into PGD (bit 24-31)
+diff --git a/arch/ia64/include/asm/percpu.h b/arch/ia64/include/asm/percpu.h
+--- a/arch/ia64/include/asm/percpu.h
++++ b/arch/ia64/include/asm/percpu.h
+@@ -9,7 +9,7 @@
+ #define PERCPU_ENOUGH_ROOM PERCPU_PAGE_SIZE
+ 
+ #ifdef __ASSEMBLY__
+-# define THIS_CPU(var)	(per_cpu__##var)  /* use this to mark accesses to per-CPU variables... */
++# define THIS_CPU(var)	(var)  /* use this to mark accesses to per-CPU variables... */
+ #else /* !__ASSEMBLY__ */
+ 
+ 
+@@ -39,7 +39,7 @@ extern void *per_cpu_init(void);
+  * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
+  * more efficient.
+  */
+-#define __ia64_per_cpu_var(var)	per_cpu__##var
++#define __ia64_per_cpu_var(var)	var
+ 
+ #include <asm-generic/percpu.h>
+ 
+diff --git a/arch/ia64/kernel/ia64_ksyms.c b/arch/ia64/kernel/ia64_ksyms.c
+--- a/arch/ia64/kernel/ia64_ksyms.c
++++ b/arch/ia64/kernel/ia64_ksyms.c
+@@ -29,9 +29,9 @@ EXPORT_SYMBOL(max_low_pfn);	/* defined b
+ #endif
+ 
+ #include <asm/processor.h>
+-EXPORT_SYMBOL(per_cpu__cpu_info);
++EXPORT_SYMBOL(cpu_info);
+ #ifdef CONFIG_SMP
+-EXPORT_SYMBOL(per_cpu__local_per_cpu_offset);
++EXPORT_SYMBOL(local_per_cpu_offset);
+ #endif
+ 
+ #include <asm/uaccess.h>
+diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
+--- a/arch/ia64/mm/discontig.c
++++ b/arch/ia64/mm/discontig.c
+@@ -360,7 +360,7 @@ static void __init initialize_pernode_da
+ 		cpu = 0;
+ 		node = node_cpuid[cpu].nid;
+ 		cpu0_cpu_info = (struct cpuinfo_ia64 *)(__phys_per_cpu_start +
+-			((char *)&per_cpu__cpu_info - __per_cpu_start));
++			((char *)&cpu_info - __per_cpu_start));
+ 		cpu0_cpu_info->node_data = mem_data[node].node_data;
+ 	}
+ #endif /* CONFIG_SMP */
+diff --git a/arch/parisc/lib/fixup.S b/arch/parisc/lib/fixup.S
+--- a/arch/parisc/lib/fixup.S
++++ b/arch/parisc/lib/fixup.S
+@@ -36,8 +36,8 @@
+ #endif
+ 	/* t2 = &__per_cpu_offset[smp_processor_id()]; */
+ 	LDREGX \t2(\t1),\t2 
+-	addil LT%per_cpu__exception_data,%r27
+-	LDREG RT%per_cpu__exception_data(%r1),\t1
++	addil LT%exception_data,%r27
++	LDREG RT%exception_data(%r1),\t1
+ 	/* t1 = &__get_cpu_var(exception_data) */
+ 	add,l \t1,\t2,\t1
+ 	/* t1 = t1->fault_ip */
+@@ -46,8 +46,8 @@
+ #else
+ 	.macro  get_fault_ip t1 t2
+ 	/* t1 = &__get_cpu_var(exception_data) */
+-	addil LT%per_cpu__exception_data,%r27
+-	LDREG RT%per_cpu__exception_data(%r1),\t2
++	addil LT%exception_data,%r27
++	LDREG RT%exception_data(%r1),\t2
+ 	/* t1 = t2->fault_ip */
+ 	LDREG EXCDATA_IP(\t2), \t1
+ 	.endm
+diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
+--- a/arch/powerpc/platforms/pseries/hvCall.S
++++ b/arch/powerpc/platforms/pseries/hvCall.S
+@@ -55,7 +55,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_PURR);				
+ 	/* calculate address of stat structure r4 = opcode */	\
+ 	srdi	r4,r4,2;		/* index into array */	\
+ 	mulli	r4,r4,HCALL_STAT_SIZE;				\
+-	LOAD_REG_ADDR(r7, per_cpu__hcall_stats);		\
++	LOAD_REG_ADDR(r7, hcall_stats);				\
+ 	add	r4,r4,r7;					\
+ 	ld	r7,PACA_DATA_OFFSET(r13); /* per cpu offset */	\
+ 	add	r4,r4,r7;					\
+diff --git a/arch/sparc/kernel/rtrap_64.S b/arch/sparc/kernel/rtrap_64.S
+--- a/arch/sparc/kernel/rtrap_64.S
++++ b/arch/sparc/kernel/rtrap_64.S
+@@ -149,11 +149,11 @@ rtrap_irq:
+ rtrap_irq:
+ rtrap:
+ #ifndef CONFIG_SMP
+-		sethi			%hi(per_cpu____cpu_data), %l0
+-		lduw			[%l0 + %lo(per_cpu____cpu_data)], %l1
++		sethi			%hi(__cpu_data), %l0
++		lduw			[%l0 + %lo(__cpu_data)], %l1
+ #else
+-		sethi			%hi(per_cpu____cpu_data), %l0
+-		or			%l0, %lo(per_cpu____cpu_data), %l0
++		sethi			%hi(__cpu_data), %l0
++		or			%l0, %lo(__cpu_data), %l0
+ 		lduw			[%l0 + %g5], %l1
+ #endif
+ 		cmp			%l1, 0
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -66,13 +66,13 @@ DECLARE_PER_CPU(struct x8664_pda, pda);
+  */
+ #ifdef CONFIG_SMP
+ #define PER_CPU(var, reg)				\
+-	movl %fs:per_cpu__##this_cpu_off, reg;		\
+-	lea per_cpu__##var(reg), reg
+-#define PER_CPU_VAR(var)	%fs:per_cpu__##var
++	movl %fs:this_cpu_off, reg;			\
++	lea var(reg), reg
++#define PER_CPU_VAR(var)	%fs:var
+ #else /* ! SMP */
+ #define PER_CPU(var, reg)			\
+-	movl $per_cpu__##var, reg
+-#define PER_CPU_VAR(var)	per_cpu__##var
++	movl $var, reg
++#define PER_CPU_VAR(var)	var
+ #endif	/* SMP */
+ 
+ #else /* ...!ASSEMBLY */
+@@ -162,11 +162,11 @@ do {							\
+ 	ret__;						\
+ })
+ 
+-#define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
+-#define x86_write_percpu(var, val) percpu_to_op("mov", per_cpu__##var, val)
+-#define x86_add_percpu(var, val) percpu_to_op("add", per_cpu__##var, val)
+-#define x86_sub_percpu(var, val) percpu_to_op("sub", per_cpu__##var, val)
+-#define x86_or_percpu(var, val) percpu_to_op("or", per_cpu__##var, val)
++#define x86_read_percpu(var) percpu_from_op("mov", var)
++#define x86_write_percpu(var, val) percpu_to_op("mov", var, val)
++#define x86_add_percpu(var, val) percpu_to_op("add", var, val)
++#define x86_sub_percpu(var, val) percpu_to_op("sub", var, val)
++#define x86_or_percpu(var, val) percpu_to_op("or", var, val)
+ #endif /* !__ASSEMBLY__ */
+ #endif /* !CONFIG_X86_64 */
+ 
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -1073,9 +1073,9 @@ ENTRY(\sym)
+ 	movq %rsp,%rdi		/* pt_regs pointer */
+ 	xorl %esi,%esi		/* no error code */
+ 	movq %gs:pda_data_offset, %rbp
+-	subq $EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
++	subq $EXCEPTION_STKSZ, init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
+ 	call \do_sym
+-	addq $EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
++	addq $EXCEPTION_STKSZ, init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
+ 	jmp paranoid_exit	/* %ebx: no swapgs flag */
+ 	CFI_ENDPROC
+ END(\sym)
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -702,7 +702,7 @@ idt_descr:
+ 	.word 0				# 32 bit align gdt_desc.address
+ ENTRY(early_gdt_descr)
+ 	.word GDT_ENTRIES*8-1
+-	.long per_cpu__gdt_page		/* Overwritten for secondary CPUs */
++	.long gdt_page			/* Overwritten for secondary CPUs */
+ 
+ /*
+  * The boot_gdt must mirror the equivalent in setup.S and is
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -401,7 +401,7 @@ NEXT_PAGE(level2_spare_pgt)
+ 	.globl early_gdt_descr
+ early_gdt_descr:
+ 	.word	GDT_ENTRIES*8-1
+-	.quad   per_cpu__gdt_page
++	.quad   gdt_page
+ 
+ ENTRY(phys_base)
+ 	/* This must match the first entry in level2_kernel_pgt */
+diff --git a/arch/x86/xen/xen-asm_32.S b/arch/x86/xen/xen-asm_32.S
+--- a/arch/x86/xen/xen-asm_32.S
++++ b/arch/x86/xen/xen-asm_32.S
+@@ -164,9 +164,9 @@ ENTRY(xen_iret)
+ 	GET_THREAD_INFO(%eax)
+ 	movl TI_cpu(%eax),%eax
+ 	movl __per_cpu_offset(,%eax,4),%eax
+-	mov per_cpu__xen_vcpu(%eax),%eax
++	mov xen_vcpu(%eax),%eax
+ #else
+-	movl per_cpu__xen_vcpu, %eax
++	movl xen_vcpu, %eax
+ #endif
+ 
+ 	/* check IF state we're restoring */
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -7,7 +7,7 @@
+  * Determine the real variable name from the name visible in the
+  * kernel sources.
+  */
+-#define per_cpu_var(var) per_cpu__##var
++#define per_cpu_var(var) var
+ 
+ #ifdef CONFIG_SMP
+ 
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -11,7 +11,7 @@
+ #ifdef CONFIG_SMP
+ #define DEFINE_PER_CPU(type, name)					\
+ 	__attribute__((__section__(".data.percpu")))			\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
++	PER_CPU_ATTRIBUTES __typeof__(type) name
+ 
+ #ifdef MODULE
+ #define SHARED_ALIGNED_SECTION ".data.percpu"
+@@ -21,15 +21,15 @@
+ 
+ #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
+ 	__attribute__((__section__(SHARED_ALIGNED_SECTION)))		\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
++	PER_CPU_ATTRIBUTES __typeof__(type) name			\
+ 	____cacheline_aligned_in_smp
+ 
+ #define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)			\
+ 	__attribute__((__section__(".data.percpu.page_aligned")))	\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
++	PER_CPU_ATTRIBUTES __typeof__(type) name
+ #else
+ #define DEFINE_PER_CPU(type, name)					\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
++	PER_CPU_ATTRIBUTES __typeof__(type) name
+ 
+ #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
+ 	DEFINE_PER_CPU(type, name)
+@@ -38,8 +38,8 @@
+ 	DEFINE_PER_CPU(type, name)
+ #endif
+ 
+-#define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+-#define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
++#define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(var)
++#define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(var)
+ 
+ #ifndef PERCPU_ENOUGH_ROOM
+ extern unsigned int percpu_reserve;
+alloc_percpu: use __percpu annotation for sparse.
+
+Add __percpu for sparse.
+
+We have to make __kernel "__attribute__((address_space(0)))" so we can
+cast to it.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+---
+ include/asm-generic/percpu.h |   19 ++++++++++++-------
+ include/linux/compiler.h     |    4 +++-
+ include/linux/percpu.h       |    8 ++++----
+ 3 files changed, 19 insertions(+), 12 deletions(-)
+
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -45,7 +45,9 @@ extern unsigned long __per_cpu_offset[NR
+  * Only S390 provides its own means of moving the pointer.
+  */
+ #ifndef SHIFT_PERCPU_PTR
+-#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++/* Weird cast keeps both GCC and sparse happy. */
++#define SHIFT_PERCPU_PTR(__p, __offset)	\
++	((typeof(*__p) __kernel __force *)RELOC_HIDE((__p), (__offset)))
+ #endif
+ 
+ /*
+@@ -61,16 +63,19 @@ extern unsigned long __per_cpu_offset[NR
+ 	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset))
+ 
+ /* Use RELOC_HIDE: some arch's SHIFT_PERCPU_PTR really want an identifier. */
++#define RELOC_PERCPU(addr, off) \
++	((typeof(*addr) __kernel __force *)RELOC_HIDE((addr), (off)))
++
+ /**
+  * per_cpu_ptr - get a pointer to a particular cpu's allocated memory
+- * @ptr: the pointer returned from alloc_percpu
++ * @ptr: the pointer returned from alloc_percpu, or &per-cpu var
+  * @cpu: the cpu whose memory you want to access
+  *
+  * Similar to per_cpu(), except for dynamic memory.
+  * cpu_possible(@cpu) must be true.
+  */
+ #define per_cpu_ptr(ptr, cpu) \
+-	RELOC_HIDE((ptr), (per_cpu_offset(cpu)))
++	RELOC_PERCPU((ptr), (per_cpu_offset(cpu)))
+ 
+ /**
+  * __get_cpu_ptr - get a pointer to this cpu's allocated memory
+@@ -78,8 +83,8 @@ extern unsigned long __per_cpu_offset[NR
+  *
+  * Similar to __get_cpu_var(), except for dynamic memory.
+  */
+-#define __get_cpu_ptr(ptr) RELOC_HIDE(ptr, my_cpu_offset)
+-#define __raw_get_cpu_ptr(ptr) RELOC_HIDE(ptr, __my_cpu_offset)
++#define __get_cpu_ptr(ptr) RELOC_PERCPU(ptr, my_cpu_offset)
++#define __raw_get_cpu_ptr(ptr) RELOC_PERCPU(ptr, __my_cpu_offset)
+ 
+ #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ extern void setup_per_cpu_areas(void);
+@@ -100,7 +105,7 @@ extern void setup_per_cpu_areas(void);
+ #define PER_CPU_ATTRIBUTES
+ #endif
+ 
+-#define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
+-					__typeof__(type) per_cpu_var(name)
++#define DECLARE_PER_CPU(type, name) \
++	extern PER_CPU_ATTRIBUTES __percpu __typeof__(type) per_cpu_var(name)
+ 
+ #endif /* _ASM_GENERIC_PERCPU_H_ */
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -5,7 +5,7 @@
+ 
+ #ifdef __CHECKER__
+ # define __user		__attribute__((noderef, address_space(1)))
+-# define __kernel	/* default address space */
++# define __kernel	__attribute__((address_space(0)))
+ # define __safe		__attribute__((safe))
+ # define __force	__attribute__((force))
+ # define __nocast	__attribute__((nocast))
+@@ -15,6 +15,7 @@
+ # define __acquire(x)	__context__(x,1)
+ # define __release(x)	__context__(x,-1)
+ # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
++# define __percpu	__attribute__((noderef, address_space(3)))
+ extern void __chk_user_ptr(const volatile void __user *);
+ extern void __chk_io_ptr(const volatile void __iomem *);
+ #else
+@@ -32,6 +33,7 @@ extern void __chk_io_ptr(const volatile 
+ # define __acquire(x) (void)0
+ # define __release(x) (void)0
+ # define __cond_lock(x,c) (c)
++# define __percpu
+ #endif
+ 
+ #ifdef __KERNEL__
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -11,7 +11,7 @@
+ #ifdef CONFIG_SMP
+ #define DEFINE_PER_CPU(type, name)					\
+ 	__attribute__((__section__(".data.percpu")))			\
+-	PER_CPU_ATTRIBUTES __typeof__(type) name
++	PER_CPU_ATTRIBUTES __typeof__(type) __percpu name
+ 
+ #ifdef MODULE
+ #define SHARED_ALIGNED_SECTION ".data.percpu"
+@@ -21,15 +21,15 @@
+ 
+ #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
+ 	__attribute__((__section__(SHARED_ALIGNED_SECTION)))		\
+-	PER_CPU_ATTRIBUTES __typeof__(type) name			\
++	PER_CPU_ATTRIBUTES __typeof__(type) __percpu name		\
+ 	____cacheline_aligned_in_smp
+ 
+ #define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)			\
+ 	__attribute__((__section__(".data.percpu.page_aligned")))	\
+-	PER_CPU_ATTRIBUTES __typeof__(type) name
++	PER_CPU_ATTRIBUTES __typeof__(type) __percpu name
+ #else
+ #define DEFINE_PER_CPU(type, name)					\
+-	PER_CPU_ATTRIBUTES __typeof__(type) name
++	PER_CPU_ATTRIBUTES __typeof__(type) __percpu name
+ 
+ #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
+ 	DEFINE_PER_CPU(type, name)
+
