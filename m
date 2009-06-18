@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbZFRBJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZFRBLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbZFRBJf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 21:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZFRBJ1
+	id S1757368AbZFRBLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 21:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZFRBL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 21:09:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59322 "EHLO hera.kernel.org"
+	Wed, 17 Jun 2009 21:11:27 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58370 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbZFRBJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 21:09:27 -0400
-Message-ID: <4A3993A2.9070109@kernel.org>
-Date: Thu, 18 Jun 2009 10:08:50 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>, davem@davemloft.net
-Subject: Re: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_*
- operations
-References: <20090605191819.376530498@gentwo.org> <20090605191850.441840884@gentwo.org> <4A38A719.2030709@kernel.org> <alpine.DEB.1.10.0906171343370.30060@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0906171343370.30060@gentwo.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 18 Jun 2009 01:08:54 +0000 (UTC)
+	id S1752558AbZFRBL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 21:11:26 -0400
+Date: Thu, 18 Jun 2009 11:11:20 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alexander Graf <agraf@suse.de>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: linux-next: kvm tree build failure
+Message-Id: <20090618111120.9c226ab7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__18_Jun_2009_11_11_20_+1000_.b_jVDOvifQx06zF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--Signature=_Thu__18_Jun_2009_11_11_20_+1000_.b_jVDOvifQx06zF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Christoph Lameter wrote:
-> On Wed, 17 Jun 2009, Tejun Heo wrote:
->> Please note that this can also happen between addition or other
->> modifying ops and cause incorrect result.
-> 
-> Per cpu operations are only safe for the current processor. One issue
-> there may be that the store after rescheduling may not occur to the
-> current processors per cpu instance but the prior cpu. At that point
-> another thread may be running on the prior cpu and be disturbed like you
-> point out. So it needs a preempt disable there too.
+Hi Avi,
 
-Yeap, to summarize, the problem is that the address determination and
-the actual memory write aren't atomic with respect to preeamption.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
->> Also, these macros depricate percpu_OP() macros, right?
-> 
-> They are different. percpu_OP() macros require a percpu variable name
-> to be passed.
-> 
-> this_cpu_* macros require a reference to a variable in a
-> structure allocated with the new per cpu allocator.
-> 
-> It is possible to simply pass the full variable name of a percpu variable
-> to this_cpu_* macros. See the patch of the vm statistics handling.
-> 
-> It uses
-> 
-> 	per_cpu_var(per_cpu_name_without_prefix)
-> 
-> to generate the full name.
+arch/x86/kvm/svm.c: In function 'svm_set_msr':
+arch/x86/kvm/svm.c:2152: error: 'MSR_K8_HWCR' undeclared (first use in this=
+ function)
 
-Yeap, I guess it's about time to ressurect Rusty's drop-per_cpu_
-prefix patch; then, we can truly handle static and dynamic variables
-in the same manner.
+Caused by commit 6878bf85dfc107cea4660f1167693c15754c1660 ("KVM:
+Implement MSRs used by Hyper-V").  MSR_K8_HWCR was removed by commit
+bf8b9a63c18a1a7777571650de0c9f4fd4368ca0 ("x86: msr-index.h remove
+duplicate MSR C001_0015 declaration") which is now in Linus' tree (it
+entered Linus' tree on Jun 10 via commit
+7dc3ca39cb1e22eedbf1207ff9ac7bf682fc0f6d "Merge branch
+'x86-cleanups-for-linus' of
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip").
 
-Thanks.
+I have used the version of the kvm tree from 20090617.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-tejun
+--Signature=_Thu__18_Jun_2009_11_11_20_+1000_.b_jVDOvifQx06zF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko5lDgACgkQjjKRsyhoI8xRKwCfTipW++UBrNRwLrTiANUOD4ku
+YucAn3zGTvkK+30TofN6EpKurgkWY4kt
+=r30b
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__18_Jun_2009_11_11_20_+1000_.b_jVDOvifQx06zF--
