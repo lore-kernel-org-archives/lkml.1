@@ -1,135 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbZFRGxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762488AbZFRGyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762354AbZFRGxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 02:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758634AbZFRGxI
+	id S1762488AbZFRGyo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 02:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZFRGyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 02:53:08 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33381 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754627AbZFRGxH (ORCPT
+	Thu, 18 Jun 2009 02:54:36 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49798 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbZFRGyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 02:53:07 -0400
-Message-ID: <4A39E451.2020100@jp.fujitsu.com>
-Date: Thu, 18 Jun 2009 15:53:05 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-CC: Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       kexec@lists.infradead.org
-Subject: [PATCH 7/7] ia64, kdump: Short path to freeze CPUs
-References: <4A39E247.4030908@jp.fujitsu.com>
-In-Reply-To: <4A39E247.4030908@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Jun 2009 02:54:36 -0400
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: 
+Date: Thu, 18 Jun 2009 08:54:30 +0200
+Message-Id: <1245308072-14392-1-git-send-email-s.hauer@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.1
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Setting monarch_cpu = -1 to let slaves frozen might not work, because
-there might be slaves being late, not entered the rendezvous yet.
-Such slaves might be caught in while (monarch_cpu == -1) loop.
+Hi Andrew et al,
 
-Use kdump_in_progress instead of monarch_cpus to break INIT rendezvous
-and let all slaves enter DIE_INIT_SLAVE_LEAVE smoothly.
+This series contains a SPI master driver for i.MX SoCs, it has been
+posted several times on the arm linux kernel list and the spi devel list
+without objections. As David Brownell doesn't seem to be available, maybe
+you could pick it up?
 
-And monarch no longer need to manage rendezvous if once kdump_in_progress
-is set, catch the monarch in DIE_INIT_MONARCH_ENTER then.
+Thanks
+  Sascha
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>
-Cc: Haren Myneni <hbabu@us.ibm.com>
-Cc: kexec@lists.infradead.org
----
- arch/ia64/kernel/crash.c |   15 ++++++---------
- arch/ia64/kernel/mca.c   |   15 +++++++++++++--
- 2 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
-index f43eccf..cf833af 100644
---- a/arch/ia64/kernel/crash.c
-+++ b/arch/ia64/kernel/crash.c
-@@ -129,14 +129,13 @@ machine_crash_shutdown(struct pt_regs *pt)
- 	 * If an INIT is asserted here:
- 	 * - All receivers might be slaves, since some of cpus could already
- 	 *   be frozen and INIT might be masked on monarch.  In this case,
--	 *   all slaves will park in while (monarch_cpu == -1) loop before
--	 *   DIE_INIT_SLAVE_ENTER that for waiting monarch enters.
--	 *	=> TBD: freeze all slaves
-+	 *   all slaves will be frozen soon since kdump_in_progress will let
-+	 *   them into DIE_INIT_SLAVE_LEAVE.
- 	 * - One might be a monarch, but INIT rendezvous will fail since
- 	 *   at least this cpu already have INIT masked so it never join
- 	 *   to the rendezvous.  In this case, all slaves and monarch will
--	 *   be frozen after timeout of the INIT rendezvous.
--	 *	=> TBD: freeze them without waiting timeout
-+	 *   be frozen soon with no wait since the INIT rendezvous is skipped
-+	 *   by kdump_in_progress.
- 	 */
- 	kdump_smp_send_stop();
- 	/* not all cpu response to IPI, send INIT to freeze them */
-@@ -189,6 +188,7 @@ kdump_init_notifier(struct notifier_block *self, unsigned long val, void *data)
- 				break;
- 			/* fall through */
- 		case DIE_INIT_SLAVE_LEAVE:
-+		case DIE_INIT_MONARCH_ENTER:
- 		case DIE_MCA_RENDZVOUS_LEAVE:
- 			unw_init_running(kdump_cpu_freeze, NULL);
- 			break;
-@@ -219,7 +219,6 @@ kdump_init_notifier(struct notifier_block *self, unsigned long val, void *data)
- 		if (kdump_on_init && (nd->sos->rv_rc != 1)) {
- 			if (atomic_inc_return(&kdump_in_progress) != 1)
- 				kdump_freeze_monarch = 1;
--			*(nd->monarch_cpu) = -1;
- 		}
- 		break;
- 	case DIE_INIT_MONARCH_LEAVE:
-@@ -230,10 +229,8 @@ kdump_init_notifier(struct notifier_block *self, unsigned long val, void *data)
- 	case DIE_MCA_MONARCH_LEAVE:
- 		/* *(nd->data) indicate if MCA is recoverable */
- 		if (kdump_on_fatal_mca && !(*(nd->data))) {
--			if (atomic_inc_return(&kdump_in_progress) == 1) {
--				*(nd->monarch_cpu) = -1;
-+			if (atomic_inc_return(&kdump_in_progress) == 1)
- 				machine_kdump_on_init();
--			}
- 			/* We got fatal MCA while kdump!? No way!! */
- 		}
- 		break;
-diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
-index 8f33a88..7a34c6c 100644
---- a/arch/ia64/kernel/mca.c
-+++ b/arch/ia64/kernel/mca.c
-@@ -1682,14 +1682,25 @@ ia64_init_handler(struct pt_regs *regs, struct switch_stack *sw,
- 
- 	if (!sos->monarch) {
- 		ia64_mc_info.imi_rendez_checkin[cpu] = IA64_MCA_RENDEZ_CHECKIN_INIT;
-+
-+#ifdef CONFIG_KEXEC
-+		while (monarch_cpu == -1 && !atomic_read(&kdump_in_progress))
-+			udelay(1000);
-+#else
- 		while (monarch_cpu == -1)
--		       cpu_relax();	/* spin until monarch enters */
-+			cpu_relax();	/* spin until monarch enters */
-+#endif
- 
- 		NOTIFY_INIT(DIE_INIT_SLAVE_ENTER, regs, (long)&nd, 1);
- 		NOTIFY_INIT(DIE_INIT_SLAVE_PROCESS, regs, (long)&nd, 1);
- 
-+#ifdef CONFIG_KEXEC
-+		while (monarch_cpu != -1 && !atomic_read(&kdump_in_progress))
-+			udelay(1000);
-+#else
- 		while (monarch_cpu != -1)
--		       cpu_relax();	/* spin until monarch leaves */
-+			cpu_relax();	/* spin until monarch leaves */
-+#endif
- 
- 		NOTIFY_INIT(DIE_INIT_SLAVE_LEAVE, regs, (long)&nd, 1);
- 
--- 
-1.6.0
+The following changes since commit 65795efbd380a832ae508b04dba8f8e53f0b84d9:
+  Linus Torvalds (1):
+        Merge branch 'next-i2c' of git://aeryn.fluff.org.uk/bjdooks/linux
 
+are available in the git repository at:
+
+  git://git.pengutronix.de/git/sha/linux-2.6.git for-david
+
+Sascha Hauer (2):
+      remove i.MX SPI driver
+      SPI: Add SPI driver for most known i.MX SoCs
+
+ arch/arm/plat-mxc/include/mach/spi.h |   27 +
+ drivers/spi/Kconfig                  |    7 +-
+ drivers/spi/Makefile                 |    2 +-
+ drivers/spi/mxc_spi.c                |  685 +++++++++++++
+ drivers/spi/spi_imx.c                | 1779 ----------------------------------
+ 5 files changed, 717 insertions(+), 1783 deletions(-)
+ create mode 100644 arch/arm/plat-mxc/include/mach/spi.h
+ create mode 100644 drivers/spi/mxc_spi.c
+ delete mode 100644 drivers/spi/spi_imx.c
 
