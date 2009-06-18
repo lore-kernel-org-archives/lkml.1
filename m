@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZFRSRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbZFRSR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbZFRSRK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZFRSQ5
+	id S1758937AbZFRSR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZFRSRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:16:57 -0400
-Received: from sous-sol.org ([216.99.217.87]:42655 "EHLO sequoia.sous-sol.org"
+	Thu, 18 Jun 2009 14:17:15 -0400
+Received: from local.xorcom.com ([62.90.10.53]:38968 "EHLO local.xorcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751161AbZFRSQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:16:57 -0400
-Date: Thu, 18 Jun 2009 11:13:35 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Fenghua Yu <fenghua.yu@intel.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Christopher Wright'" <chrisw@redhat.com>,
-       "'Allen Kay'" <allen.m.kay@intel.com>,
-       "'iommu'" <iommu@lists.linux-foundation.org>,
-       "'lkml'" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] IOMMU Identity Mapping Support:
-	iommu_identity_mapping definition
-Message-ID: <20090618181335.GB19771@sequoia.sous-sol.org>
-References: <20090327212241.234500000@intel.com> <20090327212321.070229000@intel.com> <20090416001957.GA1527@linux-os.sc.intel.com> <1240135508.3589.75.camel@macbook.infradead.org> <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com> <20090513231351.GA22386@linux-os.sc.intel.com> <1242314271.3393.11.camel@macbook.infradead.org> <20090514175944.GA5168@linux-os.sc.intel.com> <20090618180514.GA24082@linux-os.sc.intel.com>
+	id S1756511AbZFRSRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 14:17:14 -0400
+X-Greylist: delayed 1893 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Jun 2009 14:17:13 EDT
+Date: Thu, 18 Jun 2009 20:45:40 +0300
+From: Tzafrir Cohen <tzafrir.cohen@xorcom.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg KH <greg@kroah.com>, OSLEC list <freetel-oslec@lists.sourceforge.net>
+Subject: [PATCH] fix Pstate growing in OSLEC
+Message-ID: <20090618174540.GT3311@xorcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090618180514.GA24082@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Forced-Service: Sadly Using Gmail [tm]
+Organization: Xorcom*
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Fenghua Yu (fenghua.yu@intel.com) wrote:
-> IOMMU Identity Mapping Support: iommu_identity_mapping definition
-> 
-> Identity mapping for IOMMU defines a single domain to 1:1 map all pci devices
-> to all usable memory.
-> 
-> This will reduces map/unmap overhead in DMA API's and improve IOMMU performance.
-> On 10Gb network cards, Netperf shows no performance degradation compared to
-> non-IOMMU performance.
-> 
-> This method may lose some of DMA remapping benefits like isolation.
-> 
-> The first patch defines iommu_identity_mapping varialbe which controls the
-> identity mapping code and is 0 by default.
+The following fix has been posted in the OSLEC mailing list by Ruslan
+Cray (and shortly afterwards acepted into the OSLEC SVN tree). Sadly it
+has not been forwarded the kernel.org tree until now.
 
-The only real difference between "pt" and "identity" is hardware support.
-We should have a single value we don't have to tell users to do different
-things depending on their hardware (they won't even know what they have)
-to achieve the same result.
+See:
 
-thanks,
--chris
+http://sourceforge.net/mailarchive/forum.php?thread_name=000b01c9d88f%24ec689690%2475a8a8c0%40rcraydvlpmnt&forum_name=freetel-oslec
+
+As a side note, the OSLEC code is gathering dust in the staging tree.
+As-is it is mostly useless without providing an interface for its code.
+I was hoping to see the mISDN code starting to use it but so far no 
+change in that front.
+
+---
+ drivers/staging/echo/echo.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
+index 6d7217e..faab26d 100644
+--- a/drivers/staging/echo/echo.c
++++ b/drivers/staging/echo/echo.c
+@@ -395,7 +395,7 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+ 		old = (int)ec->fir_state.history[ec->fir_state.curr_pos] *
+ 		    (int)ec->fir_state.history[ec->fir_state.curr_pos];
+ 		ec->Pstates +=
+-		    ((new - old) + (1 << ec->log2taps)) >> ec->log2taps;
++		    ((new - old) + (1 << (ec->log2taps - 1))) >> ec->log2taps;
+ 		if (ec->Pstates < 0)
+ 			ec->Pstates = 0;
+ 	}
+-- 
+1.5.6.5
+
+
+-- 
+               Tzafrir Cohen
+icq#16849755              jabber:tzafrir.cohen@xorcom.com
++972-50-7952406           mailto:tzafrir.cohen@xorcom.com
+http://www.xorcom.com  iax:guest@local.xorcom.com/tzafrir
