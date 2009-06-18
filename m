@@ -1,249 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbZFRWdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbZFRWdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758480AbZFRWdj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 18:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZFRWdc
+	id S1758615AbZFRWdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 18:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZFRWdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 18:33:32 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:53281 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753304AbZFRWdb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 18:33:31 -0400
-Date: Fri, 19 Jun 2009 00:28:56 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: avictor.za@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
-       Hong Xu <hong.xu@atmel.com>
-Subject: Re: [PATCH 3/5] at91: Support for at91sam9g10: core chip & board
-	support
-Message-ID: <20090618222856.GD19515@game.jcrosoft.org>
-References: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com> <1245341772-1689-4-git-send-email-nicolas.ferre@atmel.com>
+	Thu, 18 Jun 2009 18:33:44 -0400
+Received: from claw.goop.org ([74.207.240.146]:38021 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754877AbZFRWdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 18:33:44 -0400
+Message-ID: <4A3AC0C4.6060508@goop.org>
+Date: Thu, 18 Jun 2009 15:33:40 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245341772-1689-4-git-send-email-nicolas.ferre@atmel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Ovh-Tracer-Id: 13886849451153206124
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's
+ no local APIC
+References: <4A329CF8.4050502@goop.org>	<alpine.LFD.2.00.0906181206190.4213@localhost.localdomain>	<4A3A9220.4070807@goop.org> <m1zlc5jqac.fsf@fess.ebiederm.org>	<4A3A99FB.7070807@goop.org> <m1vdmtgtt2.fsf@fess.ebiederm.org>
+In-Reply-To: <m1vdmtgtt2.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18:16 Thu 18 Jun     , Nicolas Ferre wrote:
-> From: Hong Xu <hong.xu@atmel.com>
-> 
-> Here are the modification to at91sam9261 files dedicated to the support of
-> at91sam9g10. This direction has been adopted to minimize code duplication.
-> 
-> All at91sam9261 drivers are enabled in _devices and board- files. Modificaton
-> to peripherals that support at91sam9g10 will be added in future patches.
-> 
-> Signed-off-by: Hong Xu <hong.xu@atmel.com>
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
->  arch/arm/mach-at91/Kconfig           |   25 +++++++++++++++++++++++--
->  arch/arm/mach-at91/Makefile          |    2 ++
->  arch/arm/mach-at91/at91sam9261.c     |   22 +++++++++++++++++++++-
->  arch/arm/mach-at91/board-sam9261ek.c |   14 ++++++++++++++
->  arch/arm/mach-at91/pm.c              |    3 ++-
->  5 files changed, 62 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-> index 22309ba..8f3e15a 100644
-> --- a/arch/arm/mach-at91/Kconfig
-> +++ b/arch/arm/mach-at91/Kconfig
-> @@ -23,6 +23,12 @@ config ARCH_AT91SAM9261
->  	select GENERIC_TIME
->  	select GENERIC_CLOCKEVENTS
->  
-> +config ARCH_AT91SAM9G10
-> +	bool "AT91SAM9G10"
-> +	select CPU_ARM926T
-> +	select GENERIC_TIME
-> +	select GENERIC_CLOCKEVENTS
-> +
->  config ARCH_AT91SAM9263
->  	bool "AT91SAM9263"
->  	select CPU_ARM926T
-> @@ -230,6 +236,21 @@ endif
->  
->  # ----------------------------------------------------------
->  
-> +if ARCH_AT91SAM9G10
-> +
-> +comment "AT91SAM9G10 Board Type"
-> +
-> +config MACH_AT91SAM9G10EK
-> +	bool "Atmel AT91SAM9G10-EK Evaluation Kit"
-> +	depends on ARCH_AT91SAM9G10
-> +	help
-> +	  Select this if you are using Atmel's AT91SAM9G10-EK Evaluation Kit.
-> +	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4588>
-> +
-> +endif
-> +
-> +# ----------------------------------------------------------
-> +
->  if ARCH_AT91SAM9263
->  
->  comment "AT91SAM9263 Board Type"
-> @@ -337,13 +358,13 @@ comment "AT91 Board Options"
->  
->  config MTD_AT91_DATAFLASH_CARD
->  	bool "Enable DataFlash Card support"
-> -	depends on (ARCH_AT91RM9200DK || MACH_AT91RM9200EK || MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_ECBAT91 || MACH_SAM9_L9260 || MACH_AT91CAP9ADK || MACH_NEOCORE926)
-> +	depends on (ARCH_AT91RM9200DK || MACH_AT91RM9200EK || MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_ECBAT91 || MACH_SAM9_L9260 || MACH_AT91CAP9ADK || MACH_NEOCORE926)
-	can we reduce it and do as the propostion for the FB and create a new
-	config and then select it at the board?
->  	help
->  	  Enable support for the DataFlash card.
->  
->  config MTD_NAND_ATMEL_BUSWIDTH_16
->  	bool "Enable 16-bit data bus interface to NAND flash"
-> -	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
-> +	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
-ditto
->  	help
->  	  On AT91SAM926x boards both types of NAND flash can be present
->  	  (8 and 16 bit data bus width).
-> diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
-> index 2975f9a..4eaf80a 100644
-> --- a/arch/arm/mach-at91/Makefile
-> +++ b/arch/arm/mach-at91/Makefile
-> @@ -13,6 +13,7 @@ obj-$(CONFIG_AT91_PMC_UNIT)	+= clock.o
->  obj-$(CONFIG_ARCH_AT91RM9200)	+= at91rm9200.o at91rm9200_time.o at91rm9200_devices.o
->  obj-$(CONFIG_ARCH_AT91SAM9260)	+= at91sam9260.o at91sam926x_time.o at91sam9260_devices.o sam9_smc.o
->  obj-$(CONFIG_ARCH_AT91SAM9261)	+= at91sam9261.o at91sam926x_time.o at91sam9261_devices.o sam9_smc.o
-> +obj-$(CONFIG_ARCH_AT91SAM9G10)	+= at91sam9261.o at91sam926x_time.o at91sam9261_devices.o sam9_smc.o
->  obj-$(CONFIG_ARCH_AT91SAM9263)	+= at91sam9263.o at91sam926x_time.o at91sam9263_devices.o sam9_smc.o
->  obj-$(CONFIG_ARCH_AT91SAM9RL)	+= at91sam9rl.o at91sam926x_time.o at91sam9rl_devices.o sam9_smc.o
->  obj-$(CONFIG_ARCH_AT91SAM9G20)	+= at91sam9260.o at91sam926x_time.o at91sam9260_devices.o  sam9_smc.o
-> @@ -44,6 +45,7 @@ obj-$(CONFIG_MACH_AFEB9260)	+= board-afeb-9260v1.o
->  
->  # AT91SAM9261 board-specific support
->  obj-$(CONFIG_MACH_AT91SAM9261EK) += board-sam9261ek.o
-> +obj-$(CONFIG_MACH_AT91SAM9G10EK) += board-sam9261ek.o
->  
->  # AT91SAM9263 board-specific support
->  obj-$(CONFIG_MACH_AT91SAM9263EK) += board-sam9263ek.o
-> diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
-> index 3acd7d7..4ecf379 100644
-> --- a/arch/arm/mach-at91/at91sam9261.c
-> +++ b/arch/arm/mach-at91/at91sam9261.c
-> @@ -16,6 +16,7 @@
->  #include <asm/irq.h>
->  #include <asm/mach/arch.h>
->  #include <asm/mach/map.h>
-> +#include <mach/cpu.h>
->  #include <mach/at91sam9261.h>
->  #include <mach/at91_pmc.h>
->  #include <mach/at91_rstc.h>
-> @@ -30,7 +31,11 @@ static struct map_desc at91sam9261_io_desc[] __initdata = {
->  		.pfn		= __phys_to_pfn(AT91_BASE_SYS),
->  		.length		= SZ_16K,
->  		.type		= MT_DEVICE,
-> -	}, {
-> +	},
-> +};
-> +
-> +static struct map_desc at91sam9261_sram_desc[] __initdata = {
-> +	{
->  		.virtual	= AT91_IO_VIRT_BASE - AT91SAM9261_SRAM_SIZE,
->  		.pfn		= __phys_to_pfn(AT91SAM9261_SRAM_BASE),
->  		.length		= AT91SAM9261_SRAM_SIZE,
-> @@ -38,6 +43,15 @@ static struct map_desc at91sam9261_io_desc[] __initdata = {
->  	},
->  };
->  
-> +static struct map_desc at91sam9g10_sram_desc[] __initdata = {
-> +	{
-> +		.virtual	= AT91_IO_VIRT_BASE - AT91SAM9G10_SRAM_SIZE,
-> +		.pfn		= __phys_to_pfn(AT91SAM9G10_SRAM_BASE),
-> +		.length		= AT91SAM9G10_SRAM_SIZE,
-> +		.type		= MT_DEVICE,
-> +	},
-> +};
-> +
->  /* --------------------------------------------------------------------
->   *  Clocks
->   * -------------------------------------------------------------------- */
-> @@ -263,6 +277,12 @@ void __init at91sam9261_initialize(unsigned long main_clock)
->  	/* Map peripherals */
->  	iotable_init(at91sam9261_io_desc, ARRAY_SIZE(at91sam9261_io_desc));
->  
-> +	if (cpu_is_at91sam9g10())
-> +		iotable_init(at91sam9g10_sram_desc, ARRAY_SIZE(at91sam9g10_sram_desc));
-> +	else
-> +		iotable_init(at91sam9261_sram_desc, ARRAY_SIZE(at91sam9261_sram_desc));
-> +
-> +
->  	at91_arch_reset = at91sam9261_reset;
->  	pm_power_off = at91sam9261_poweroff;
->  	at91_extern_irq = (1 << AT91SAM9261_ID_IRQ0) | (1 << AT91SAM9261_ID_IRQ1)
-> diff --git a/arch/arm/mach-at91/board-sam9261ek.c b/arch/arm/mach-at91/board-sam9261ek.c
-> index d5266da..f9b1999 100644
-> --- a/arch/arm/mach-at91/board-sam9261ek.c
-> +++ b/arch/arm/mach-at91/board-sam9261ek.c
-> @@ -287,7 +287,11 @@ static void __init ek_add_device_ts(void) {}
->   */
->  static struct at73c213_board_info at73c213_data = {
->  	.ssc_id		= 1,
-> +#if defined(CONFIG_MACH_AT91SAM9261EK)
->  	.shortname	= "AT91SAM9261-EK external DAC",
-> +#else
-> +	.shortname	= "AT91SAM9G10-EK external DAC",
-> +#endif
->  };
->  
->  #if defined(CONFIG_SND_AT73C213) || defined(CONFIG_SND_AT73C213_MODULE)
-> @@ -414,6 +418,9 @@ static struct atmel_lcdfb_info __initdata ek_lcdc_data = {
->  	.default_monspecs		= &at91fb_default_stn_monspecs,
->  	.atmel_lcdfb_power_control	= at91_lcdc_stn_power_control,
->  	.guard_time			= 1,
-> +#if defined(CONFIG_MACH_AT91SAM9G10EK)
-> +	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
-> +#endif
->  };
->  
->  #else
-> @@ -467,6 +474,9 @@ static struct atmel_lcdfb_info __initdata ek_lcdc_data = {
->  	.default_monspecs		= &at91fb_default_tft_monspecs,
->  	.atmel_lcdfb_power_control	= at91_lcdc_tft_power_control,
->  	.guard_time			= 1,
-> +#if defined(CONFIG_MACH_AT91SAM9G10EK)
-> +	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
-> +#endif
->  };
->  #endif
->  
-> @@ -600,7 +610,11 @@ static void __init ek_board_init(void)
->  	at91_gpio_leds(ek_leds, ARRAY_SIZE(ek_leds));
->  }
->  
-> +#if defined(CONFIG_MACH_AT91SAM9261EK)
->  MACHINE_START(AT91SAM9261EK, "Atmel AT91SAM9261-EK")
-> +#else
-> +MACHINE_START(AT91SAM9G10EK, "Atmel AT91SAM9G10-EK")
-> +#endif
->  	/* Maintainer: Atmel */
->  	.phys_io	= AT91_BASE_SYS,
->  	.io_pg_offst	= (AT91_VA_BASE_SYS >> 18) & 0xfffc,
-> diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-> index e26c4fe..4028724 100644
-> --- a/arch/arm/mach-at91/pm.c
-> +++ b/arch/arm/mach-at91/pm.c
-> @@ -201,7 +201,8 @@ static int at91_pm_verify_clocks(void)
->  			pr_err("AT91: PM - Suspend-to-RAM with USB still active\n");
->  			return 0;
->  		}
-> -	} else if (cpu_is_at91sam9260() || cpu_is_at91sam9261() || cpu_is_at91sam9263() || cpu_is_at91sam9g20()) {
-> +	} else if (cpu_is_at91sam9260() || cpu_is_at91sam9261() || cpu_is_at91sam9263()
-> +			|| cpu_is_at91sam9g20() || cpu_is_at91sam9g10()) {
-instead add more and more cpu_is why not cpu_has_pmc_uhp() ?
+On 06/18/09 13:39, Eric W. Biederman wrote:
+>> Well, if acpi_pci_irq_lookup() and friends return the right things
+>> without having parsed the MADT and set up the secondary state, then we
+>> should be fine either way.
+>>
+>> acpi_irq_model gets tested in all sorts of random places, so I wonder if
+>> we'll need to set it to ACPI_IRQ_MODEL_IOAPIC (or something else?) to
+>> make things work properly.
+>>     
+>
+> And this is where things get interesting.  Xen strictly speaking has
+> already made that decision.  Unless you support non APIC mode it
+> should always be ACPI_IRQ_MODEL_IOAPIC.
+>   
 
-Best Regards,
-J.
+We could decide by fiat to not support non-APIC machines (which is more
+or less the case), but they do happen to work at the moment; Gerd even
+has one and provided fixes to make it work.  (Ditto non-ACPI, though
+they're commonly related.)
+
+> But Xen runs the hardware so Xen knows, and Xen should be running
+> all of the acpi and what not to make it happen.
+>   
+
+There are two separate issues:
+
+   1. If we intercept interrupt routing at the pcibios_pci_irq_enable
+      level, will anything in the kernel care about the state of its
+      acpi_irq_model variable?  At first glance it *shouldn't* care,
+      because its just handing the whole problem off to Xen.
+   2. Xen has no AML interpreter, so its use of ACPI is limited to
+      parsing tables.  It looks like we'll need to set acpi_irq_model
+      appropriately and then get acpi_bus_init_irq() to run.
+
+(Related to this is making sure any chipset configuration that happens
+in the depths of the DSDT does in fact happen.)
+
+>> Hm, and principle we just get the SCI gsi from the FADT, but there's all
+>> that other mucking about with it in the MADT processing... Wonder what
+>> needs to happen there...
+>>     
+>
+> Good question.  What does the domU case do?
+>   
+
+DomU doesn't know or care about ACPI at all.  There's no reason for it
+to get any kind of ACPI event.
+
+    J
