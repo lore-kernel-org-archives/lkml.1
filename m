@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZFRTDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZFRTEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbZFRTDw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 15:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbZFRTDl
+	id S1757703AbZFRTEn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 15:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZFRTEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 15:03:41 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41310 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757357AbZFRTDk (ORCPT
+	Thu, 18 Jun 2009 15:04:33 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:47018 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbZFRTEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 15:03:40 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 18 Jun 2009 21:03:23 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH update 2] SCSI: explain the hidden scsi_wait_scan Kconfig
- variable
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Sam Ravnborg <sam@ravnborg.org>, Matthew Wilcox <matthew@wil.cx>,
-       Changli Gao <xiaosuo@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20090618165926.GA13229@uranus.ravnborg.org>
-Message-ID: <tkrat.da2728358fccf96e@s5r6.in-berlin.de>
-References: <4A384FE4.9090703@gmail.com>
- <20090617021254.GQ19977@parisc-linux.org>
- <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
- <1245338486.7586.13.camel@mulgrave.site>
- <20090618165926.GA13229@uranus.ravnborg.org>
+	Thu, 18 Jun 2009 15:04:32 -0400
+Message-ID: <4A3A8FBC.10905@novell.com>
+Date: Thu, 18 Jun 2009 15:04:28 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based notifier
+ interface
+References: <20090616022041.23890.90120.stgit@dev.haskins.net> <20090616022956.23890.63776.stgit@dev.haskins.net> <20090616140240.GA9401@redhat.com> <4A37A7FC.4090403@novell.com> <20090616143816.GA18196@redhat.com> <4A37B0BB.3020005@novell.com> <20090616145502.GA1102@redhat.com> <4A37B832.6040206@novell.com> <20090616154150.GA17494@redhat.com> <4A37C592.2030407@novell.com> <alpine.DEB.1.10.0906160915340.25664@makko.or.mcafeemobile.com> <4A37CFDA.4000602@novell.com> <alpine.DEB.1.10.0906170932290.7891@makko.or.mcafeemobile.com> <4A3927C0.5060607@novell.com> <alpine.DEB.1.10.0906171034030.7891@makko.or.mcafeemobile.com> <4A39415C.9060803@novell.com> <alpine.DEB.1.10.0906171247120.7891@makko.or.mcafeemobile.com> <4A39649C.4020602@novell.com> <alpine.DEB.1.10.0906171457000.7891@makko.or.mcafeemobile.com> <4A3A48AB.2080206@novell.com> <alpine.DEB.1.10.0906181011140.32646@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0906181011140.32646@makko.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6AECB8376F4617BC9394DD59"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
-item.  These patches aren't accepted upstream, so let's stop the ongoing
-irritation of people due to the unconditionally installed module and its
-Kconfig symbol.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6AECB8376F4617BC9394DD59
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
-update 1: more precise wording
-update 2: same as comment instead of help (pick what you like better)
+Davide Libenzi wrote:
+> On Thu, 18 Jun 2009, Gregory Haskins wrote:
+>
+>  =20
+>> Actually there is only one (the tx-thread) aside from the eventfd
+>> imposed workqueue one.  Incidentally, I would love to get rid of the
+>> other thread too, so I am not just picking on eventfd ;).  The other i=
+s
+>> a lot harder since it has to update the virtio-ring and may need to pa=
+ge
+>> in guest memory to do so.
+>>    =20
+>
+> No, there is the interface rx softirq too, that makes two.
 
- drivers/scsi/Kconfig |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+Actually, I believe you are mistaken.  It normally executes the softirq
+in interrupt context, not a thread.
 
-Index: b/drivers/scsi/Kconfig
-===================================================================
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -259,10 +259,21 @@ config SCSI_SCAN_ASYNC
- 	  or async on the kernel's command line.
- 
- config SCSI_WAIT_SCAN
--	tristate
-+	tristate  # No prompt here, this is an invisible symbol.
- 	default m
- 	depends on SCSI
- 	depends on MODULES
-+# scsi_wait_scan is a loadable module which waits until all the async scans are
-+# complete.  The idea is to use it in initrd/ initramfs scripts.  You modprobe
-+# it after all the modprobes of the root SCSI drivers and it will wait until
-+# they have all finished scanning their buses before allowing the boot to
-+# proceed.  (This method is not applicable if targets boot independently in
-+# parallel with the initiator, or with transports with non-deterministic target
-+# discovery schemes, or if a transport driver does not support scsi_wait_scan.)
-+#
-+# This symbol is not exposed as a prompt because little is to be gained by
-+# disabling it, whereas people who accidentally switch it off may wonder why
-+# their mkinitrd gets into trouble.
- 
- menu "SCSI Transports"
- 	depends on SCSI
+But I digress.  Lets just shelve the SRCU conversation for another day.=20
+It was my bad for introducing it now prematurely to solve a mostly
+unrelated problem: the module-reference thing.  I didn't realize the
+SRCU change would be so controversial, and I didn't think to split
+things apart as I have done today.
 
--- 
-Stefan Richter
--=====-==--= -==- =--=-
-http://arcgraph.de/sr/
+But the fact is: I do not see any way to actually use your referenceless
+POLLHUP release code in a race free way without doing something like I
+propose in 3/4, 4/4.   Lets keep the discussion focused on that for now,
+if we could.
 
+Later, after we get this thing all built, I will re-run the numbers and
+post some results so that Davide may have better proof that the context
+switch overhead isn't just lost in the noise.  I think that is all he is
+asking for anyway, which is understandable.
+
+Regards,
+-Greg
+
+
+--------------enig6AECB8376F4617BC9394DD59
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko6j7wACgkQlOSOBdgZUxl2SQCfW12+7N2f6y92X0RrvFfCq83q
+WP0An0pxg0ilTJt2wqJ0nUcUYLfcWfGB
+=EeWe
+-----END PGP SIGNATURE-----
+
+--------------enig6AECB8376F4617BC9394DD59--
