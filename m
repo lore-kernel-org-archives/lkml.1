@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZFRSqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZFRSro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbZFRSqn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:46:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZFRSqe
+	id S1754923AbZFRSro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZFRSre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:46:34 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:56272 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbZFRSqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:46:34 -0400
-Message-ID: <4A3A8B83.5040002@novell.com>
-Date: Thu, 18 Jun 2009 14:46:27 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 18 Jun 2009 14:47:34 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:4949 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753533AbZFRSrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 14:47:33 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: [PATCH -next] bnx2i/cnic: kconfig interactions
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+cc: "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Anil Veerabhadrappa" <anilgv@broadcom.com>,
+       scsi <linux-scsi@vger.kernel.org>,
+       "James Bottomley" <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <4A3A7175.8080006@oracle.com>
+References: <20090618145949.d933719a.sfr@canb.auug.org.au>
+ <4A3A7175.8080006@oracle.com>
+Date: Thu, 18 Jun 2009 11:39:21 -0700
+Message-ID: <1245350361.12000.219.camel@nseg_linux_HP1.broadcom.com>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, mst@redhat.com, avi@redhat.com,
-       paulmck@linux.vnet.ibm.com, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [KVM PATCH 3/4] eventfd: add generalized notifier interface
-References: <20090618173534.24119.95115.stgit@dev.haskins.net> <20090618174426.24119.69689.stgit@dev.haskins.net> <alpine.DEB.1.10.0906181044160.32646@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906181044160.32646@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig072B9475A978F15C139CF398"
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 6624544A0YS13234161-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig072B9475A978F15C139CF398
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Davide Libenzi wrote:
-> On Thu, 18 Jun 2009, Gregory Haskins wrote:
->
->  =20
->> We currently open-code notification registration via the f_ops->poll()=
+On Thu, 2009-06-18 at 09:55 -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> NETDEVICES + NETDEV_1000 need to be enabled so that kconfig will check
+> those branches for selects and enforce "select UIO" under CNIC.
+> Otherwise the build fails with:
 
->> method of the eventfd.  Lets abstract this into a notification API
->> extension of eventfd, while still using the wait-queue as the underlyi=
-ng
->> mechanism.  This will allow us to manage the notification mechanism
->> internal to eventfd without requiring the clients to change.  This als=
-o
->> gives us the opportunity to implement race-free release() callbacks,
->> which we do later in the series.
->>    =20
->
-> Another attempt to push KVM stuff into eventfd.
+I think this patch is better than your previous patch to select UIO.
+Other iSCSI drivers that select net drivers will probably need something
+similar too.
 
-??  I do not believe there is a single iota of KVM specific code in that
-patch.  Can you elaborate?
+Thanks.
+Acked-by: Michael Chan <mchan@broadcom.com>
 
--Greg
+> 
+> ERROR: "uio_unregister_device" [drivers/net/cnic.ko] undefined!
+> ERROR: "uio_event_notify" [drivers/net/cnic.ko] undefined!
+> ERROR: "__uio_register_device" [drivers/net/cnic.ko] undefined!
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Anil Veerabhadrappa <anilgv@broadcom.com>
+> Cc: Michael Chan <mchan@broadcom.com>
+> ---
+>  drivers/scsi/bnx2i/Kconfig |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- linux-next-20090618.orig/drivers/scsi/bnx2i/Kconfig
+> +++ linux-next-20090618/drivers/scsi/bnx2i/Kconfig
+> @@ -1,6 +1,8 @@
+>  config SCSI_BNX2_ISCSI
+>  	tristate "Broadcom NetXtreme II iSCSI support"
+>  	select SCSI_ISCSI_ATTRS
+> +	select NETDEVICES
+> +	select NETDEV_1000
+>  	select CNIC
+>  	depends on PCI
+>  	---help---
+> 
+> 
+> 
 
 
---------------enig072B9475A978F15C139CF398
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko6i4MACgkQlOSOBdgZUxmgbQCfUeGhin0K1Y/zU+AqCjv+raBI
-DcAAoIxHJ+zusGEDBDfroFox9QCtDU81
-=5aMu
------END PGP SIGNATURE-----
-
---------------enig072B9475A978F15C139CF398--
