@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbZFRH22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZFRHbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759315AbZFRH22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 03:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758645AbZFRH2I
+	id S1756761AbZFRHbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 03:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZFRHbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 03:28:08 -0400
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:40845 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758389AbZFRH2G (ORCPT
+	Thu, 18 Jun 2009 03:31:09 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38901 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbZFRHbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 03:28:06 -0400
-From: Frank Mori Hess <fmhess@speakeasy.net>
-Reply-To: fmhess@users.sourceforge.net
-To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based cards
-Date: Thu, 18 Jun 2009 03:28:04 -0400
-User-Agent: KMail/1.9.9
-Cc: fmhess@users.sourceforge.net, Ian Abbott <abbotti@mev.co.uk>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>
-References: <200906161701.45234.herton@mandriva.com.br> <200906172021.51400.fmhess@speakeasy.net> <200906172137.43870.herton@mandriva.com.br>
-In-Reply-To: <200906172137.43870.herton@mandriva.com.br>
+	Thu, 18 Jun 2009 03:31:08 -0400
+Message-ID: <4A39ED3B.2060800@jp.fujitsu.com>
+Date: Thu, 18 Jun 2009 16:31:07 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1430269.N1ItGMetJm";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: huang ying <huang.ying.caritas@gmail.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 12/16] x86, mce: squash mce_intel.c into therm_throt.c
+References: <4A3601BF.2000201@jp.fujitsu.com> <4A3605A2.6000206@jp.fujitsu.com> <851fc09e0906172249q40c99fc6n26662b533b063b9e@mail.gmail.com>
+In-Reply-To: <851fc09e0906172249q40c99fc6n26662b533b063b9e@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906180328.07976.fmhess@speakeasy.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1430269.N1ItGMetJm
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+huang ying wrote:
+> 2009/6/15 Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>:
+>> move intel_init_thermal() into therm_throt.c
+>>
+>> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+>> ---
+>>  arch/x86/kernel/cpu/mcheck/Makefile      |    2 +-
+>>  arch/x86/kernel/cpu/mcheck/mce_intel.c   |   73 ------------------------------
+>>  arch/x86/kernel/cpu/mcheck/therm_throt.c |   66 +++++++++++++++++++++++++++
+>>  3 files changed, 67 insertions(+), 74 deletions(-)
+>>  delete mode 100644 arch/x86/kernel/cpu/mcheck/mce_intel.c
+> 
+> Why we need this patch? I think the design principle behind MCE is to
+> separate vendor/cpu specific code into different files. At least
+> #ifdef CONFIG_X86_MCE_INTEL should be used around moved code.
 
-On Wednesday 17 June 2009, Herton Ronaldo Krzesinski wrote:
-> >
-> > Your patch breaks configuration of the board unless the bus and slot
-> > are explicitly specified.  Just make a minimal patch that replaces
-> > pci_get_device with pci_get_subsys and fixes the problem that was
-> > reported.
->
-> Hmm that's not what the patch does, it doesn't break configuration,
-> keeps the same logic as before (I was wrong in my last email replying to
-> myself), check it, if it->options[0] and it->options[1] isn't specified,
-> the pdev is valid so the for loop exits (see !pdev check).
+Because at this time there are no vendor other than Intel that uses
+thermal codes here.  I don't know much about AMD, whether there are
+any plan to implement AMD specific thermal codes or not, and why they
+have to make such specific thing here in future (patent?).
 
-Your right.  However, it also turns a loop over pci devices into a loop=20
-over pci ids, which appears to break the case of multiple s626 boards=20
-where the bus/slot of the second s626 board is specified.  If you're not=20
-willing to provide a minimal patch that just fixes the reported problem,=20
-just say so.  It would have been less effort for me to do it myself than=20
-analyze what your changes are breaking.
+You can pull out "codes may not be shared" from therm_throt.c and
+put it again into mce_intel.c (that was mce_intel_64.c).  But I
+believe it is not needed now, until another code is available.
+Or you can rename therm_throt.c to thermal_intel.c or so for a while.
+
+(BTW, now CONFIG_X86_MCE_INTEL enables both of cmci and thermal,
+ are there possible option to disable thermal while cmci is on?)
 
 
---nextPart1430269.N1ItGMetJm
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Thanks.
+H.Seto
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBKOeyF5vihyNWuA4URAqQEAKDAH7AapqoeHYl64m3ygr5IcwIpZQCeL4zm
-QyK2/Pzry2QosR2pNL0mZfY=
-=o3gv
------END PGP SIGNATURE-----
-
---nextPart1430269.N1ItGMetJm--
