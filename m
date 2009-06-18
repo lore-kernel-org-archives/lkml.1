@@ -1,81 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbZFRH0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbZFRH1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757166AbZFRH0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 03:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbZFRH0R
+	id S1757922AbZFRH1i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 03:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbZFRH13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 03:26:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50805 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755100AbZFRH0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 03:26:15 -0400
-Message-ID: <4A39EC49.6060709@kernel.org>
-Date: Thu, 18 Jun 2009 16:27:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 18 Jun 2009 03:27:29 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:56312 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752556AbZFRH12 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 03:27:28 -0400
+Date: Thu, 18 Jun 2009 09:27:28 +0200
+From: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [RFC 1/7] crypto: Add GHASH digest algorithm for GCM
+Message-ID: <20090618072728.GA2770@Chamillionaire.breakpoint.cc>
+References: <1244704226.5320.124.camel@yhuang-dev.sh.intel.com> <20090617200410.GB28694@Chamillionaire.breakpoint.cc> <1245290907.11965.201.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
-       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
-       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
-       paulmck@linux.vnet.ibm.com
-Subject: [UPDATED PATCH 3/9] CRIS: Change DEFINE_PER_CPU of current_pgd to
- be non volatile.
-References: <1245210060-24344-1-git-send-email-tj@kernel.org> <1245210060-24344-4-git-send-email-tj@kernel.org>
-In-Reply-To: <1245210060-24344-4-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 18 Jun 2009 07:25:21 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1245290907.11965.201.camel@yhuang-dev.sh.intel.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: CRIS: Change DEFINE_PER_CPU of current_pgd to be non volatile.
+* Huang Ying | 2009-06-18 10:08:27 [+0800]:
 
-The DEFINE_PER_CPU of current_pgd was on CRIS defined using volatile,
-which is not needed. Remove volatile.
+>On Thu, 2009-06-18 at 04:04 +0800, Sebastian Andrzej Siewior wrote:
+>> >+#include <linux/module.h>
+>> >+#include <linux/init.h>
+>> >+#include <linux/kernel.h>
+>> >+#include <linux/crypto.h>
+>> >+#include <crypto/gf128mul.h>
+>> >+#include <crypto/algapi.h>
+>> >+#include <crypto/internal/hash.h>
+>> Do you mind to sort them?
+>
+>Sorry, can you tell me what is the better order?
 
-Tested on an ARTPEC-3 (CRISv32) board.
+For header files it shouldn't matter if you include linux/module.h
+followed by linux/init.h or the other way around. If you have them in
+one place and sorted you can easily find out where to put the next one
+and tell whether a specific header file is allready included. You also
+make it a little harder to include one header file twice. If you think
+this does not happen, a quick grep over the scsi tree shows:
 
-tj: extern DEFINE_PER_CPU() replaced with DECLARE_PER_CPU()
+|$ fgrep -R '#include ' drivers/scsi/ | sort > sort.txt
+|$ fgrep -R '#include ' drivers/scsi/ | sort -u > sort-u.txt
+|$ diff -u sort.txt sort-u.txt
+|--- sort.txt  2009-06-18 09:12:27.551876506 +0200
+|+++ sort-u.txt  2009-06-18 09:12:36.226342283 +0200
+|@@ -1347,7 +1347,6 @@
+| drivers/scsi/fcoe/libfcoe.c:#include <linux/list.h>
+| drivers/scsi/fcoe/libfcoe.c:#include <linux/module.h>
+| drivers/scsi/fcoe/libfcoe.c:#include <linux/netdevice.h>
+|-drivers/scsi/fcoe/libfcoe.c:#include <linux/netdevice.h>
+| drivers/scsi/fcoe/libfcoe.c:#include <linux/spinlock.h>
+| drivers/scsi/fcoe/libfcoe.c:#include <linux/timer.h>
+| drivers/scsi/fcoe/libfcoe.c:#include <linux/types.h>
+|@@ -1623,7 +1622,6 @@
+| drivers/scsi/gdth.h:#include <linux/types.h>
+| drivers/scsi/gdth_proc.c:#include <linux/completion.h>
+| drivers/scsi/gvp11.c:#include "gvp11.h"
+|-drivers/scsi/gvp11.c:#include "gvp11.h"
+| drivers/scsi/gvp11.c:#include "scsi.h"
+| drivers/scsi/gvp11.c:#include "scsi_module.c"
+| drivers/scsi/gvp11.c:#include "wd33c93.h"
+|@@ -1718,7 +1716,6 @@
+| drivers/scsi/ibmvscsi/ibmvfc.h:#include <linux/types.h>
+| drivers/scsi/ibmvscsi/ibmvscsi.c:#include "ibmvscsi.h"
+| drivers/scsi/ibmvscsi/ibmvscsi.c:#include <asm/firmware.h>
+|-drivers/scsi/ibmvscsi/ibmvscsi.c:#include <asm/firmware.h>
+| drivers/scsi/ibmvscsi/ibmvscsi.c:#include <asm/vio.h>
+| drivers/scsi/ibmvscsi/ibmvscsi.c:#include <linux/delay.h>
+| drivers/scsi/ibmvscsi/ibmvscsi.c:#include <linux/dma-mapping.h>
+|@@ -2633,7 +2630,6 @@
+| drivers/scsi/mpt2sas/mpt2sas_transport.c:#include <scsi/scsi_host.h>
+| drivers/scsi/mpt2sas/mpt2sas_transport.c:#include <scsi/scsi_transport_sas.h>
+| drivers/scsi/mvme147.c:#include "mvme147.h"
+|-drivers/scsi/mvme147.c:#include "mvme147.h"
+| drivers/scsi/mvme147.c:#include "scsi.h"
+| drivers/scsi/mvme147.c:#include "scsi_module.c"
+| drivers/scsi/mvme147.c:#include "wd33c93.h"
 
-[ Impact: code cleanup ]
+SCSI was just a random example.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
-Updated such that extern DEFINE -> DECLARE change is done here not
-later in the series as suggested by Christoph Lameter.
+>Best Regards,
+>Huang Ying
 
- arch/cris/include/asm/mmu_context.h |    3 ++-
- arch/cris/mm/fault.c                |    2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-Index: work/arch/cris/include/asm/mmu_context.h
-===================================================================
---- work.orig/arch/cris/include/asm/mmu_context.h
-+++ work/arch/cris/include/asm/mmu_context.h
-@@ -17,7 +17,8 @@ extern void switch_mm(struct mm_struct *
-  * registers like cr3 on the i386
-  */
- 
--extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
-+/* defined in arch/cris/mm/fault.c */
-+DECLARE_PER_CPU(pgd_t *, current_pgd);
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-Index: work/arch/cris/mm/fault.c
-===================================================================
---- work.orig/arch/cris/mm/fault.c
-+++ work/arch/cris/mm/fault.c
-@@ -29,7 +29,7 @@ extern void die_if_kernel(const char *,
- 
- /* current active page directory */
- 
--volatile DEFINE_PER_CPU(pgd_t *,current_pgd);
-+DEFINE_PER_CPU(pgd_t *, current_pgd);
- unsigned long cris_signal_return_page;
- 
- /*
+Sebastian
