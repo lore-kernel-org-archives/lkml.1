@@ -1,393 +1,475 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763497AbZFRMvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764368AbZFRMwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763497AbZFRMvL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 08:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762638AbZFRMuK
+	id S1764368AbZFRMwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 08:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763476AbZFRMvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 08:50:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38197 "EHLO hera.kernel.org"
+	Thu, 18 Jun 2009 08:51:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38268 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762787AbZFRMuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 08:50:06 -0400
-Date: Thu, 18 Jun 2009 12:49:31 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
+	id S1763534AbZFRMvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 08:51:07 -0400
+Date: Thu, 18 Jun 2009 12:50:25 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <19000.55590.634126.876084@cargo.ozlabs.ibm.com>
-References: <19000.55590.634126.876084@cargo.ozlabs.ibm.com>
-Subject: [tip:perfcounters/core] perf_counter: powerpc: Make powerpc perf_counter code safe for 32-bit kernels
-Message-ID: <tip-98fb1807b97e3e631b940f67544e265c64b984dc@git.kernel.org>
-Git-Commit-ID: 98fb1807b97e3e631b940f67544e265c64b984dc
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter: Add event overlow handling
+Message-ID: <tip-43a21ea81a2400992561146327c4785ce7f7be38@git.kernel.org>
+Git-Commit-ID: 43a21ea81a2400992561146327c4785ce7f7be38
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 18 Jun 2009 12:49:31 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 18 Jun 2009 12:50:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  98fb1807b97e3e631b940f67544e265c64b984dc
-Gitweb:     http://git.kernel.org/tip/98fb1807b97e3e631b940f67544e265c64b984dc
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Wed, 17 Jun 2009 21:53:10 +1000
+Commit-ID:  43a21ea81a2400992561146327c4785ce7f7be38
+Gitweb:     http://git.kernel.org/tip/43a21ea81a2400992561146327c4785ce7f7be38
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 25 Mar 2009 19:39:37 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 18 Jun 2009 11:11:46 +0200
+CommitDate: Thu, 18 Jun 2009 14:46:11 +0200
 
-perf_counter: powerpc: Make powerpc perf_counter code safe for 32-bit kernels
+perf_counter: Add event overlow handling
 
-This abstracts a few things in arch/powerpc/kernel/perf_counter.c
-that are specific to 64-bit kernels, and provides definitions for
-32-bit kernels.  In particular,
+Alternative method of mmap() data output handling that provides
+better overflow management and a more reliable data stream.
 
-* Only 64-bit has MMCRA and the bits in it that give information
-  about a PMU interrupt (sampled PR, HV, slot number etc.)
-* Only 64-bit has the lppaca and the lppaca->pmcregs_in_use field
-* Use of SDAR is confined to 64-bit for now
-* Only 64-bit has soft/lazy interrupt disable and therefore
-  pseudo-NMIs (interrupts that occur while interrupts are soft-disabled)
-* Only 64-bit has PMC7 and PMC8
-* Only 64-bit has the MSR_HV bit.
+Unlike the previous method, that didn't have any user->kernel
+feedback and relied on userspace keeping up, this method relies on
+userspace writing its last read position into the control page.
 
-This also fixes the types used in a couple of places, where we were
-using long types for things that need to be 64-bit.
+It will ensure new output doesn't overwrite not-yet read events,
+new events for which there is no space left are lost and the
+overflow counter is incremented, providing exact event loss
+numbers.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linuxppc-dev@ozlabs.org
-Cc: benh@kernel.crashing.org
-LKML-Reference: <19000.55590.634126.876084@cargo.ozlabs.ibm.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/powerpc/kernel/perf_counter.c |  193 +++++++++++++++++++++++++-----------
- 1 files changed, 133 insertions(+), 60 deletions(-)
+ include/linux/perf_counter.h |   40 +++++++---
+ kernel/perf_counter.c        |  185 +++++++++++++++++++++++++++++-------------
+ 2 files changed, 158 insertions(+), 67 deletions(-)
 
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 25e656c..809fdf9 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -46,6 +46,115 @@ struct power_pmu *ppmu;
-  */
- static unsigned int freeze_counters_kernel = MMCR0_FCS;
- 
-+/*
-+ * 32-bit doesn't have MMCRA but does have an MMCR2,
-+ * and a few other names are different.
-+ */
-+#ifdef CONFIG_PPC32
-+
-+#define MMCR0_FCHV		0
-+#define MMCR0_PMCjCE		MMCR0_PMCnCE
-+
-+#define SPRN_MMCRA		SPRN_MMCR2
-+#define MMCRA_SAMPLE_ENABLE	0
-+
-+static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
-+{
-+	return 0;
-+}
-+static inline void perf_set_pmu_inuse(int inuse) { }
-+static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp) { }
-+static inline u32 perf_get_misc_flags(struct pt_regs *regs)
-+{
-+	return 0;
-+}
-+static inline void perf_read_regs(struct pt_regs *regs) { }
-+static inline int perf_intr_is_nmi(struct pt_regs *regs)
-+{
-+	return 0;
-+}
-+
-+#endif /* CONFIG_PPC32 */
-+
-+/*
-+ * Things that are specific to 64-bit implementations.
-+ */
-+#ifdef CONFIG_PPC64
-+
-+static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
-+{
-+	unsigned long mmcra = regs->dsisr;
-+
-+	if ((mmcra & MMCRA_SAMPLE_ENABLE) && !(ppmu->flags & PPMU_ALT_SIPR)) {
-+		unsigned long slot = (mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT;
-+		if (slot > 1)
-+			return 4 * (slot - 1);
-+	}
-+	return 0;
-+}
-+
-+static inline void perf_set_pmu_inuse(int inuse)
-+{
-+	get_lppaca()->pmcregs_in_use = inuse;
-+}
-+
-+/*
-+ * The user wants a data address recorded.
-+ * If we're not doing instruction sampling, give them the SDAR
-+ * (sampled data address).  If we are doing instruction sampling, then
-+ * only give them the SDAR if it corresponds to the instruction
-+ * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC
-+ * bit in MMCRA.
-+ */
-+static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp)
-+{
-+	unsigned long mmcra = regs->dsisr;
-+	unsigned long sdsync = (ppmu->flags & PPMU_ALT_SIPR) ?
-+		POWER6_MMCRA_SDSYNC : MMCRA_SDSYNC;
-+
-+	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
-+		*addrp = mfspr(SPRN_SDAR);
-+}
-+
-+static inline u32 perf_get_misc_flags(struct pt_regs *regs)
-+{
-+	unsigned long mmcra = regs->dsisr;
-+
-+	if (TRAP(regs) != 0xf00)
-+		return 0;	/* not a PMU interrupt */
-+
-+	if (ppmu->flags & PPMU_ALT_SIPR) {
-+		if (mmcra & POWER6_MMCRA_SIHV)
-+			return PERF_EVENT_MISC_HYPERVISOR;
-+		return (mmcra & POWER6_MMCRA_SIPR) ?
-+			PERF_EVENT_MISC_USER : PERF_EVENT_MISC_KERNEL;
-+	}
-+	if (mmcra & MMCRA_SIHV)
-+		return PERF_EVENT_MISC_HYPERVISOR;
-+	return (mmcra & MMCRA_SIPR) ? PERF_EVENT_MISC_USER :
-+		PERF_EVENT_MISC_KERNEL;
-+}
-+
-+/*
-+ * Overload regs->dsisr to store MMCRA so we only need to read it once
-+ * on each interrupt.
-+ */
-+static inline void perf_read_regs(struct pt_regs *regs)
-+{
-+	regs->dsisr = mfspr(SPRN_MMCRA);
-+}
-+
-+/*
-+ * If interrupts were soft-disabled when a PMU interrupt occurs, treat
-+ * it as an NMI.
-+ */
-+static inline int perf_intr_is_nmi(struct pt_regs *regs)
-+{
-+	return !regs->softe;
-+}
-+
-+#endif /* CONFIG_PPC64 */
-+
- static void perf_counter_interrupt(struct pt_regs *regs);
- 
- void perf_counter_print_debug(void)
-@@ -78,12 +187,14 @@ static unsigned long read_pmc(int idx)
- 	case 6:
- 		val = mfspr(SPRN_PMC6);
- 		break;
-+#ifdef CONFIG_PPC64
- 	case 7:
- 		val = mfspr(SPRN_PMC7);
- 		break;
- 	case 8:
- 		val = mfspr(SPRN_PMC8);
- 		break;
-+#endif /* CONFIG_PPC64 */
- 	default:
- 		printk(KERN_ERR "oops trying to read PMC%d\n", idx);
- 		val = 0;
-@@ -115,12 +226,14 @@ static void write_pmc(int idx, unsigned long val)
- 	case 6:
- 		mtspr(SPRN_PMC6, val);
- 		break;
-+#ifdef CONFIG_PPC64
- 	case 7:
- 		mtspr(SPRN_PMC7, val);
- 		break;
- 	case 8:
- 		mtspr(SPRN_PMC8, val);
- 		break;
-+#endif /* CONFIG_PPC64 */
- 	default:
- 		printk(KERN_ERR "oops trying to write PMC%d\n", idx);
- 	}
-@@ -283,7 +396,7 @@ static int check_excludes(struct perf_counter **ctrs, unsigned int cflags[],
- 
- static void power_pmu_read(struct perf_counter *counter)
- {
--	long val, delta, prev;
-+	s64 val, delta, prev;
- 
- 	if (!counter->hw.idx)
- 		return;
-@@ -477,7 +590,7 @@ void hw_perf_enable(void)
- 		mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
- 		mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
- 		if (cpuhw->n_counters == 0)
--			get_lppaca()->pmcregs_in_use = 0;
-+			perf_set_pmu_inuse(0);
- 		goto out_enable;
- 	}
- 
-@@ -510,7 +623,7 @@ void hw_perf_enable(void)
- 	 * bit set and set the hardware counters to their initial values.
- 	 * Then unfreeze the counters.
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index a7d3a61..0765e8e 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -236,10 +236,16 @@ struct perf_counter_mmap_page {
+ 	/*
+ 	 * Control data for the mmap() data buffer.
+ 	 *
+-	 * User-space reading this value should issue an rmb(), on SMP capable
+-	 * platforms, after reading this value -- see perf_counter_wakeup().
++	 * User-space reading the @data_head value should issue an rmb(), on
++	 * SMP capable platforms, after reading this value -- see
++	 * perf_counter_wakeup().
++	 *
++	 * When the mapping is PROT_WRITE the @data_tail value should be
++	 * written by userspace to reflect the last read data. In this case
++	 * the kernel will not over-write unread data.
  	 */
--	get_lppaca()->pmcregs_in_use = 1;
-+	perf_set_pmu_inuse(1);
- 	mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
- 	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
- 	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
-@@ -1007,11 +1120,10 @@ const struct pmu *hw_perf_counter_init(struct perf_counter *counter)
-  * things if requested.  Note that interrupts are hard-disabled
-  * here so there is no possibility of being interrupted.
-  */
--static void record_and_restart(struct perf_counter *counter, long val,
-+static void record_and_restart(struct perf_counter *counter, unsigned long val,
- 			       struct pt_regs *regs, int nmi)
- {
- 	u64 period = counter->hw.sample_period;
--	unsigned long mmcra, sdsync;
- 	s64 prev, delta, left;
- 	int record = 0;
+ 	__u64   data_head;		/* head in the data section */
++	__u64	data_tail;		/* user-space written tail */
+ };
  
-@@ -1033,8 +1145,8 @@ static void record_and_restart(struct perf_counter *counter, long val,
- 				left = period;
- 			record = 1;
- 		}
--		if (left < 0x80000000L)
--			val = 0x80000000L - left;
-+		if (left < 0x80000000LL)
-+			val = 0x80000000LL - left;
- 	}
+ #define PERF_EVENT_MISC_CPUMODE_MASK		(3 << 0)
+@@ -275,6 +281,15 @@ enum perf_event_type {
  
  	/*
-@@ -1047,22 +1159,9 @@ static void record_and_restart(struct perf_counter *counter, long val,
- 			.period	= counter->hw.last_period,
- 		};
- 
--		if (counter->attr.sample_type & PERF_SAMPLE_ADDR) {
--			/*
--			 * The user wants a data address recorded.
--			 * If we're not doing instruction sampling,
--			 * give them the SDAR (sampled data address).
--			 * If we are doing instruction sampling, then only
--			 * give them the SDAR if it corresponds to the
--			 * instruction pointed to by SIAR; this is indicated
--			 * by the [POWER6_]MMCRA_SDSYNC bit in MMCRA.
--			 */
--			mmcra = regs->dsisr;
--			sdsync = (ppmu->flags & PPMU_ALT_SIPR) ?
--				POWER6_MMCRA_SDSYNC : MMCRA_SDSYNC;
--			if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
--				data.addr = mfspr(SPRN_SDAR);
--		}
-+		if (counter->attr.sample_type & PERF_SAMPLE_ADDR)
-+			perf_get_data_addr(regs, &data.addr);
+ 	 * struct {
++	 * 	struct perf_event_header	header;
++	 * 	u64				id;
++	 * 	u64				lost;
++	 * };
++	 */
++	PERF_EVENT_LOST			= 2,
 +
- 		if (perf_counter_overflow(counter, nmi, &data)) {
- 			/*
- 			 * Interrupts are coming too fast - throttle them
-@@ -1088,25 +1187,12 @@ static void record_and_restart(struct perf_counter *counter, long val,
-  */
- unsigned long perf_misc_flags(struct pt_regs *regs)
- {
--	unsigned long mmcra;
-+	u32 flags = perf_get_misc_flags(regs);
++	/*
++	 * struct {
+ 	 *	struct perf_event_header	header;
+ 	 *
+ 	 *	u32				pid, tid;
+@@ -313,26 +328,26 @@ enum perf_event_type {
  
--	if (TRAP(regs) != 0xf00) {
--		/* not a PMU interrupt */
--		return user_mode(regs) ? PERF_EVENT_MISC_USER :
--			PERF_EVENT_MISC_KERNEL;
--	}
+ 	/*
+ 	 * When header.misc & PERF_EVENT_MISC_OVERFLOW the event_type field
+-	 * will be PERF_RECORD_*
++	 * will be PERF_SAMPLE_*
+ 	 *
+ 	 * struct {
+ 	 *	struct perf_event_header	header;
+ 	 *
+-	 *	{ u64			ip;	  } && PERF_RECORD_IP
+-	 *	{ u32			pid, tid; } && PERF_RECORD_TID
+-	 *	{ u64			time;     } && PERF_RECORD_TIME
+-	 *	{ u64			addr;     } && PERF_RECORD_ADDR
+-	 *	{ u64			config;   } && PERF_RECORD_CONFIG
+-	 *	{ u32			cpu, res; } && PERF_RECORD_CPU
++	 *	{ u64			ip;	  } && PERF_SAMPLE_IP
++	 *	{ u32			pid, tid; } && PERF_SAMPLE_TID
++	 *	{ u64			time;     } && PERF_SAMPLE_TIME
++	 *	{ u64			addr;     } && PERF_SAMPLE_ADDR
++	 *	{ u64			config;   } && PERF_SAMPLE_CONFIG
++	 *	{ u32			cpu, res; } && PERF_SAMPLE_CPU
+ 	 *
+ 	 *	{ u64			nr;
+-	 *	  { u64 id, val; }	cnt[nr];  } && PERF_RECORD_GROUP
++	 *	  { u64 id, val; }	cnt[nr];  } && PERF_SAMPLE_GROUP
+ 	 *
+ 	 *	{ u16			nr,
+ 	 *				hv,
+ 	 *				kernel,
+ 	 *				user;
+-	 *	  u64			ips[nr];  } && PERF_RECORD_CALLCHAIN
++	 *	  u64			ips[nr];  } && PERF_SAMPLE_CALLCHAIN
+ 	 * };
+ 	 */
+ };
+@@ -424,6 +439,7 @@ struct file;
+ struct perf_mmap_data {
+ 	struct rcu_head			rcu_head;
+ 	int				nr_pages;	/* nr of data pages  */
++	int				writable;	/* are we writable   */
+ 	int				nr_locked;	/* nr pages mlocked  */
+ 
+ 	atomic_t			poll;		/* POLL_ for wakeups */
+@@ -433,8 +449,8 @@ struct perf_mmap_data {
+ 	atomic_long_t			done_head;	/* completed head    */
+ 
+ 	atomic_t			lock;		/* concurrent writes */
 -
--	mmcra = regs->dsisr;
--	if (ppmu->flags & PPMU_ALT_SIPR) {
--		if (mmcra & POWER6_MMCRA_SIHV)
--			return PERF_EVENT_MISC_HYPERVISOR;
--		return (mmcra & POWER6_MMCRA_SIPR) ? PERF_EVENT_MISC_USER :
--			PERF_EVENT_MISC_KERNEL;
--	}
--	if (mmcra & MMCRA_SIHV)
--		return PERF_EVENT_MISC_HYPERVISOR;
--	return (mmcra & MMCRA_SIPR) ? PERF_EVENT_MISC_USER :
--			PERF_EVENT_MISC_KERNEL;
-+	if (flags)
-+		return flags;
-+	return user_mode(regs) ? PERF_EVENT_MISC_USER :
-+		PERF_EVENT_MISC_KERNEL;
+ 	atomic_t			wakeup;		/* needs a wakeup    */
++	atomic_t			lost;		/* nr records lost   */
+ 
+ 	struct perf_counter_mmap_page   *user_page;
+ 	void				*data_pages[0];
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 109a957..7e9108e 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1794,6 +1794,12 @@ static int perf_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	struct perf_mmap_data *data;
+ 	int ret = VM_FAULT_SIGBUS;
+ 
++	if (vmf->flags & FAULT_FLAG_MKWRITE) {
++		if (vmf->pgoff == 0)
++			ret = 0;
++		return ret;
++	}
++
+ 	rcu_read_lock();
+ 	data = rcu_dereference(counter->data);
+ 	if (!data)
+@@ -1807,9 +1813,16 @@ static int perf_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 		if ((unsigned)nr > data->nr_pages)
+ 			goto unlock;
+ 
++		if (vmf->flags & FAULT_FLAG_WRITE)
++			goto unlock;
++
+ 		vmf->page = virt_to_page(data->data_pages[nr]);
+ 	}
++
+ 	get_page(vmf->page);
++	vmf->page->mapping = vma->vm_file->f_mapping;
++	vmf->page->index   = vmf->pgoff;
++
+ 	ret = 0;
+ unlock:
+ 	rcu_read_unlock();
+@@ -1862,6 +1875,14 @@ fail:
+ 	return -ENOMEM;
+ }
+ 
++static void perf_mmap_free_page(unsigned long addr)
++{
++	struct page *page = virt_to_page(addr);
++
++	page->mapping = NULL;
++	__free_page(page);
++}
++
+ static void __perf_mmap_data_free(struct rcu_head *rcu_head)
+ {
+ 	struct perf_mmap_data *data;
+@@ -1869,9 +1890,10 @@ static void __perf_mmap_data_free(struct rcu_head *rcu_head)
+ 
+ 	data = container_of(rcu_head, struct perf_mmap_data, rcu_head);
+ 
+-	free_page((unsigned long)data->user_page);
++	perf_mmap_free_page((unsigned long)data->user_page);
+ 	for (i = 0; i < data->nr_pages; i++)
+-		free_page((unsigned long)data->data_pages[i]);
++		perf_mmap_free_page((unsigned long)data->data_pages[i]);
++
+ 	kfree(data);
+ }
+ 
+@@ -1908,9 +1930,10 @@ static void perf_mmap_close(struct vm_area_struct *vma)
+ }
+ 
+ static struct vm_operations_struct perf_mmap_vmops = {
+-	.open  = perf_mmap_open,
+-	.close = perf_mmap_close,
+-	.fault = perf_mmap_fault,
++	.open		= perf_mmap_open,
++	.close		= perf_mmap_close,
++	.fault		= perf_mmap_fault,
++	.page_mkwrite	= perf_mmap_fault,
+ };
+ 
+ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+@@ -1924,7 +1947,7 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+ 	long user_extra, extra;
+ 	int ret = 0;
+ 
+-	if (!(vma->vm_flags & VM_SHARED) || (vma->vm_flags & VM_WRITE))
++	if (!(vma->vm_flags & VM_SHARED))
+ 		return -EINVAL;
+ 
+ 	vma_size = vma->vm_end - vma->vm_start;
+@@ -1983,10 +2006,12 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+ 	atomic_long_add(user_extra, &user->locked_vm);
+ 	vma->vm_mm->locked_vm += extra;
+ 	counter->data->nr_locked = extra;
++	if (vma->vm_flags & VM_WRITE)
++		counter->data->writable = 1;
++
+ unlock:
+ 	mutex_unlock(&counter->mmap_mutex);
+ 
+-	vma->vm_flags &= ~VM_MAYWRITE;
+ 	vma->vm_flags |= VM_RESERVED;
+ 	vma->vm_ops = &perf_mmap_vmops;
+ 
+@@ -2163,11 +2188,38 @@ struct perf_output_handle {
+ 	unsigned long		head;
+ 	unsigned long		offset;
+ 	int			nmi;
+-	int			overflow;
++	int			sample;
+ 	int			locked;
+ 	unsigned long		flags;
+ };
+ 
++static bool perf_output_space(struct perf_mmap_data *data,
++			      unsigned int offset, unsigned int head)
++{
++	unsigned long tail;
++	unsigned long mask;
++
++	if (!data->writable)
++		return true;
++
++	mask = (data->nr_pages << PAGE_SHIFT) - 1;
++	/*
++	 * Userspace could choose to issue a mb() before updating the tail
++	 * pointer. So that all reads will be completed before the write is
++	 * issued.
++	 */
++	tail = ACCESS_ONCE(data->user_page->data_tail);
++	smp_rmb();
++
++	offset = (offset - tail) & mask;
++	head   = (head   - tail) & mask;
++
++	if ((int)(head - offset) < 0)
++		return false;
++
++	return true;
++}
++
+ static void perf_output_wakeup(struct perf_output_handle *handle)
+ {
+ 	atomic_set(&handle->data->poll, POLL_IN);
+@@ -2258,12 +2310,57 @@ out:
+ 	local_irq_restore(handle->flags);
+ }
+ 
++static void perf_output_copy(struct perf_output_handle *handle,
++			     const void *buf, unsigned int len)
++{
++	unsigned int pages_mask;
++	unsigned int offset;
++	unsigned int size;
++	void **pages;
++
++	offset		= handle->offset;
++	pages_mask	= handle->data->nr_pages - 1;
++	pages		= handle->data->data_pages;
++
++	do {
++		unsigned int page_offset;
++		int nr;
++
++		nr	    = (offset >> PAGE_SHIFT) & pages_mask;
++		page_offset = offset & (PAGE_SIZE - 1);
++		size	    = min_t(unsigned int, PAGE_SIZE - page_offset, len);
++
++		memcpy(pages[nr] + page_offset, buf, size);
++
++		len	    -= size;
++		buf	    += size;
++		offset	    += size;
++	} while (len);
++
++	handle->offset = offset;
++
++	/*
++	 * Check we didn't copy past our reservation window, taking the
++	 * possible unsigned int wrap into account.
++	 */
++	WARN_ON_ONCE(((long)(handle->head - handle->offset)) < 0);
++}
++
++#define perf_output_put(handle, x) \
++	perf_output_copy((handle), &(x), sizeof(x))
++
+ static int perf_output_begin(struct perf_output_handle *handle,
+ 			     struct perf_counter *counter, unsigned int size,
+-			     int nmi, int overflow)
++			     int nmi, int sample)
+ {
+ 	struct perf_mmap_data *data;
+ 	unsigned int offset, head;
++	int have_lost;
++	struct {
++		struct perf_event_header header;
++		u64			 id;
++		u64			 lost;
++	} lost_event;
+ 
+ 	/*
+ 	 * For inherited counters we send all the output towards the parent.
+@@ -2276,19 +2373,25 @@ static int perf_output_begin(struct perf_output_handle *handle,
+ 	if (!data)
+ 		goto out;
+ 
+-	handle->data	 = data;
+-	handle->counter	 = counter;
+-	handle->nmi	 = nmi;
+-	handle->overflow = overflow;
++	handle->data	= data;
++	handle->counter	= counter;
++	handle->nmi	= nmi;
++	handle->sample	= sample;
+ 
+ 	if (!data->nr_pages)
+ 		goto fail;
+ 
++	have_lost = atomic_read(&data->lost);
++	if (have_lost)
++		size += sizeof(lost_event);
++
+ 	perf_output_lock(handle);
+ 
+ 	do {
+ 		offset = head = atomic_long_read(&data->head);
+ 		head += size;
++		if (unlikely(!perf_output_space(data, offset, head)))
++			goto fail;
+ 	} while (atomic_long_cmpxchg(&data->head, offset, head) != offset);
+ 
+ 	handle->offset	= offset;
+@@ -2297,55 +2400,27 @@ static int perf_output_begin(struct perf_output_handle *handle,
+ 	if ((offset >> PAGE_SHIFT) != (head >> PAGE_SHIFT))
+ 		atomic_set(&data->wakeup, 1);
+ 
++	if (have_lost) {
++		lost_event.header.type = PERF_EVENT_LOST;
++		lost_event.header.misc = 0;
++		lost_event.header.size = sizeof(lost_event);
++		lost_event.id          = counter->id;
++		lost_event.lost        = atomic_xchg(&data->lost, 0);
++
++		perf_output_put(handle, lost_event);
++	}
++
+ 	return 0;
+ 
+ fail:
+-	perf_output_wakeup(handle);
++	atomic_inc(&data->lost);
++	perf_output_unlock(handle);
+ out:
+ 	rcu_read_unlock();
+ 
+ 	return -ENOSPC;
+ }
+ 
+-static void perf_output_copy(struct perf_output_handle *handle,
+-			     const void *buf, unsigned int len)
+-{
+-	unsigned int pages_mask;
+-	unsigned int offset;
+-	unsigned int size;
+-	void **pages;
+-
+-	offset		= handle->offset;
+-	pages_mask	= handle->data->nr_pages - 1;
+-	pages		= handle->data->data_pages;
+-
+-	do {
+-		unsigned int page_offset;
+-		int nr;
+-
+-		nr	    = (offset >> PAGE_SHIFT) & pages_mask;
+-		page_offset = offset & (PAGE_SIZE - 1);
+-		size	    = min_t(unsigned int, PAGE_SIZE - page_offset, len);
+-
+-		memcpy(pages[nr] + page_offset, buf, size);
+-
+-		len	    -= size;
+-		buf	    += size;
+-		offset	    += size;
+-	} while (len);
+-
+-	handle->offset = offset;
+-
+-	/*
+-	 * Check we didn't copy past our reservation window, taking the
+-	 * possible unsigned int wrap into account.
+-	 */
+-	WARN_ON_ONCE(((long)(handle->head - handle->offset)) < 0);
+-}
+-
+-#define perf_output_put(handle, x) \
+-	perf_output_copy((handle), &(x), sizeof(x))
+-
+ static void perf_output_end(struct perf_output_handle *handle)
+ {
+ 	struct perf_counter *counter = handle->counter;
+@@ -2353,7 +2428,7 @@ static void perf_output_end(struct perf_output_handle *handle)
+ 
+ 	int wakeup_events = counter->attr.wakeup_events;
+ 
+-	if (handle->overflow && wakeup_events) {
++	if (handle->sample && wakeup_events) {
+ 		int events = atomic_inc_return(&data->events);
+ 		if (events >= wakeup_events) {
+ 			atomic_sub(wakeup_events, &data->events);
+@@ -2958,7 +3033,7 @@ static void perf_log_throttle(struct perf_counter *counter, int enable)
  }
  
  /*
-@@ -1115,20 +1201,12 @@ unsigned long perf_misc_flags(struct pt_regs *regs)
+- * Generic counter overflow handling.
++ * Generic counter overflow handling, sampling.
   */
- unsigned long perf_instruction_pointer(struct pt_regs *regs)
- {
--	unsigned long mmcra;
- 	unsigned long ip;
--	unsigned long slot;
  
- 	if (TRAP(regs) != 0xf00)
- 		return regs->nip;	/* not a PMU interrupt */
- 
--	ip = mfspr(SPRN_SIAR);
--	mmcra = regs->dsisr;
--	if ((mmcra & MMCRA_SAMPLE_ENABLE) && !(ppmu->flags & PPMU_ALT_SIPR)) {
--		slot = (mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT;
--		if (slot > 1)
--			ip += 4 * (slot - 1);
--	}
-+	ip = mfspr(SPRN_SIAR) + perf_ip_adjust(regs);
- 	return ip;
- }
- 
-@@ -1140,7 +1218,7 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 	int i;
- 	struct cpu_hw_counters *cpuhw = &__get_cpu_var(cpu_hw_counters);
- 	struct perf_counter *counter;
--	long val;
-+	unsigned long val;
- 	int found = 0;
- 	int nmi;
- 
-@@ -1148,16 +1226,9 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 		freeze_limited_counters(cpuhw, mfspr(SPRN_PMC5),
- 					mfspr(SPRN_PMC6));
- 
--	/*
--	 * Overload regs->dsisr to store MMCRA so we only need to read it once.
--	 */
--	regs->dsisr = mfspr(SPRN_MMCRA);
-+	perf_read_regs(regs);
- 
--	/*
--	 * If interrupts were soft-disabled when this PMU interrupt
--	 * occurred, treat it as an NMI.
--	 */
--	nmi = !regs->softe;
-+	nmi = perf_intr_is_nmi(regs);
- 	if (nmi)
- 		nmi_enter();
- 	else
-@@ -1223,11 +1294,13 @@ int register_power_pmu(struct power_pmu *pmu)
- 	pr_info("%s performance monitor hardware support registered\n",
- 		pmu->name);
- 
-+#ifdef MSR_HV
- 	/*
- 	 * Use FCHV to ignore kernel events if MSR.HV is set.
- 	 */
- 	if (mfmsr() & MSR_HV)
- 		freeze_counters_kernel = MMCR0_FCHV;
-+#endif /* CONFIG_PPC64 */
- 
- 	return 0;
- }
+ int perf_counter_overflow(struct perf_counter *counter, int nmi,
