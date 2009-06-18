@@ -1,150 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbZFRSRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZFRSZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760255AbZFRSRq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZFRSRh
+	id S1754031AbZFRSZZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZFRSZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:17:37 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:51104 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755489AbZFRSRg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:17:36 -0400
-Date: Thu, 18 Jun 2009 14:17:38 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
-       <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [patch update 2 fix] PM: Introduce core framework for run-time
- PM of I/O devices
-In-Reply-To: <200906180107.34764.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906181336500.1445-100000@netrider.rowland.org>
+	Thu, 18 Jun 2009 14:25:12 -0400
+Received: from mail.mev.co.uk ([62.49.15.74]:51994 "EHLO mail.mev.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752499AbZFRSZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 14:25:11 -0400
+Message-ID: <4A3A8687.6090000@mev.co.uk>
+Date: Thu, 18 Jun 2009 19:25:11 +0100
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090502)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+CC: Ian Abbott <ian.abbott@mev.co.uk>,
+       "fmhess@users.sourceforge.net" <fmhess@users.sourceforge.net>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>
+Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based
+ cards
+References: <200906161701.45234.herton@mandriva.com.br> <200906181423.11245.herton@mandriva.com.br> <4A3A7A2F.3020800@mev.co.uk> <200906181443.57660.herton@mandriva.com.br>
+In-Reply-To: <200906181443.57660.herton@mandriva.com.br>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Jun 2009, Rafael J. Wysocki wrote:
-
-> Not only then.  The dev->power.depth counter was meant to be a "disable
-> everything" one, because there are situations in which we don't want even
-> resume to run (probe, release, system-wide suspend, hibernation, resume from
-> a system sleep state, possibly others).
+On 18/06/09 18:43, Herton Ronaldo Krzesinski wrote:
+> Em Quinta-feira 18 Junho 2009, às 14:32:31, Ian Abbott escreveu:
+>> On 18/06/09 18:23, Herton Ronaldo Krzesinski wrote:
+>>> Let me know if there is any problem remaining with this version:
+>>>
+>>> Staging: comedi: s626: use subvendor:subdevice ids for SAA7146 board
+>>>
+>>> The current s626 comedi driver in staging conflicts with philips SAA7146
+>>> media/dvb based cards, because it claims the same vendor:device pci id
+>>> for all subdevice/subvendor ids. What happens is that for people that have a
+>>> philips SAA7146 media/dvb based card, s626 if available gets loaded by udev
+>>> and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
+>>>
+>>> The s626 driver shouldn't claim all 1131:7146 devices. Fix this by
+>>> specifying specific known subvendor:subdevice ids in its pci id table
+>>> list.
+>>>
+>>> Also s626_attach is modified to use now pci_get_subsys instead of
+>>> pci_get_device as reported by Ian Abbott, and now we loop over pci id
+>>> table entries in case more ids are added in the future.
+>>>
+>>> Reference: http://lkml.org/lkml/2009/6/16/552
+>>>
+>>> Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+>>>
+>>> diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
+>>> index 30dec9d..4210590 100644
+>>> --- a/drivers/staging/comedi/drivers/s626.c
+>>> +++ b/drivers/staging/comedi/drivers/s626.c
+>>> @@ -110,9 +110,13 @@ static const struct s626_board s626_boards[] = {
+>>>  #define PCI_VENDOR_ID_S626 0x1131
+>>>  #define PCI_DEVICE_ID_S626 0x7146
+>>>
+>>> +/*
+>>> + * For devices with vendor:device id == 0x1131:0x7146 you must specify
+>>> + * also subvendor:subdevice ids, because otherwise it will conflict with
+>>> + * Philips SAA7146 media/dvb based cards.
+>>> + */
+>>>  static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) = {
+>>> -       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+>>> -               0},
+>>> +       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
+>>>         {0}
+>>>  };
+>>>
+>>> @@ -498,25 +502,26 @@ static int s626_attach(struct comedi_device *dev, struct comedi_devconfig *it)
+>>>         resource_size_t resourceStart;
+>>>         dma_addr_t appdma;
+>>>         struct comedi_subdevice *s;
+>>> -       struct pci_dev *pdev;
+>>> +       const struct pci_device_id *ids;
+>>> +       struct pci_dev *pdev = NULL;
+>>>
+>>>         if (alloc_private(dev, sizeof(struct s626_private)) < 0)
+>>>                 return -ENOMEM;
+>>>
+>>> -       for (pdev = pci_get_device(PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626,
+>>> -                       NULL); pdev != NULL;
+>>> -               pdev = pci_get_device(PCI_VENDOR_ID_S626,
+>>> -                       PCI_DEVICE_ID_S626, pdev)) {
+>>> -               if (it->options[0] || it->options[1]) {
+>>> -                       if (pdev->bus->number == it->options[0] &&
+>>> -                               PCI_SLOT(pdev->devfn) == it->options[1]) {
+>>> +       for (i = 0; i < ARRAY_SIZE(s626_pci_table) && !pdev; i++) {
+>>> +               ids = &s626_pci_table[i];
+>>> +               do {
+>>> +                       pdev = pci_get_subsys(ids->vendor, ids->device, ids->subvendor,
+>>> +                                             ids->subdevice, pdev);
+>>> +
+>>> +                       if ((it->options[0] || it->options[1]) && pdev) {
+>>>                                 /* matches requested bus/slot */
+>>> +                               if (pdev->bus->number == it->options[0] &&
+>>> +                                   PCI_SLOT(pdev->devfn) == it->options[1])
+>>> +                                       break;
+>>> +                       } else
+>>>                                 break;
+>>> -                       }
+>>> -               } else {
+>>> -                       /* no bus/slot specified */
+>>> -                       break;
+>>> -               }
+>>> +               } while (1);
+>>>         }
+>>>         devpriv->pdev = pdev;
+>> The outer for loop iterates once too often - it doesn't need to iterate
+>> over the sentinel at the end of the id table as that shouldn't match any
+>> PCI device.
 > 
-> That said, I overlooked some problems related to it.  So, I think to disable
-> the runtime PM of given device, it will be necessary to run a synchronous
-> runtime resume with taking a ref to block suspend.
-
-There should also be an async version, which increases depth while
-submitting a resume request.
-
-In fact, maybe it would be best if pm_request_resume always increments
-depth (unless it fails for some other reason) and __pm_runtime_resume
-increments depth whenever called synchronously.  And likewise for the
-suspend paths.
-
-> > Instead of a costly device_for_each_child(), would it be better to
-> > maintain a counter with the number of unsuspended children?
+> Ouch, yep didn't saw that, new version:
 > 
-> Hmm.  How exactly are we going to count them?  The only way I see at the moment
-> would be to increase this number by one when running pm_runtime_init() for a
-> new child.  Seems doable.
-
-That's right.  You also have to decrement the number when an
-unsuspended child device is removed, obviously.  The one thing to
-watch out for is what happens if a device is removed while its
-runtime_resume callback is running.  :-)
-
-> > > +	spin_lock(&dev->power.lock);
-> > 
-> > Should be spin_lock_irq().  Same in other places.
+> Staging: comedi: s626: use subvendor:subdevice ids for SAA7146 board
 > 
-> OK, I wasn't sure about that.
-
-The reasoning isn't complicated.  If a spinlock can be taken by an
-interrupt handler (or any other code that might run in interrupt
-context) then you have the possibility of a deadlock as follows:
-
-	spin_lock(&lock);
-	<Interrupt occurs>
-		irq_handler() {
-			spin_lock(&lock);
-
-The handler can't acquire the lock because it is already in use, and
-it can't be released until the handler returns.
-
-As a result, if a spinlock is ever taken within an interrupt handler
-then it always has to be acquired with interrupts disabled.
-Similarly, if it is never taken within an interrupt handler but it is
-taken within a bottom-half routine, then it always has to be acquired
-with bottom halves disabled.
-
-> From the functionality point of view, nothing wrong happens if runtime suspend
-> fails as long as an error code is returned and the caller has to be prepared
-> for a failure anyway.  Moreover, we never know why the resume is carried out,
-> so it's not clear whether it will be valid to carry out the suspend after that.
-
-Your first point certainly is correct.  As for the second point, if
-whoever did the resume doesn't want the device suspended again, he
-should have incremented depth.  So making the suspend wait until the
-resume is finished and then failing because the depth is positive
-would be a valid approach.
-
-However there's no use worrying about this until we have some real
-examples.
-
-> > > +		spin_unlock(&dev->parent->power.lock);
-> > > +
-> > > +		/* The device's parent is not active.  Resume it and repeat. */
-> > > +		error = __pm_runtime_resume(dev->parent, false);
-> > > +		if (error)
-> > > +			return error;
-> > 
-> > Need to reset error to -EINVAL.
+> The current s626 comedi driver in staging conflicts with philips SAA7146
+> media/dvb based cards, because it claims the same vendor:device pci id
+> for all subdevice/subvendor ids. What happens is that for people that have a
+> philips SAA7146 media/dvb based card, s626 if available gets loaded by udev
+> and makes system freeze (https://qa.mandriva.com/show_bug.cgi?id=51445).
 > 
-> Why -EINVAL?
-
-We have lost the context because of email trimming.  Briefly, when you
-jump back to "repeat:", the code there expects error to have been
-initialized to -EINVAL.  Some of the pathways will return error
-unchanged, expecting it to have that value.
-
-Alternatively, you could have those pathways set error and then you
-wouldn't have to initialize it.  Either way.
-
-
-> > The equivalent code in USB does this automatically.  The
-> > runtime-disable routine does a resume if the depth value was
-> > originally 0,
+> The s626 driver shouldn't claim all 1131:7146 devices. Fix this by
+> specifying specific known subvendor:subdevice ids in its pci id table
+> list.
 > 
-> Yes, we should do that in general.
+> Also s626_attach is modified to use now pci_get_subsys instead of
+> pci_get_device as reported by Ian Abbott, and now we loop over pci id
+> table entries in case more ids are added in the future.
 > 
-> > and the runtime-enable routine queues a delayed autosuspend request if the
-> > final depth value is 0.
+> Reference: http://lkml.org/lkml/2009/6/16/552
 > 
-> I don't like this.
+> Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
 
-I guess this a question of how you view things.  My view has been that
-whever depth (or pm_usage_cnt in the USB code) is 0, it means neither
-the driver nor anyone else has any reason to keep the device at full
-power.  By definition, since that's what depth is -- a count of the
-reasons for not suspending.
+This looks fine now, though I think it's unlikely this driver will 
+support more than one subdevice ID.
 
-There might be some obscure other reason, but in general depth going
-to 0 means a delayed autosuspend request should be queued.
+Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
 
-Which reminds me... Something to think about: In an async call to
-__pm_runtime_suspend, if the runtime_suspend callback returns -EBUSY
-then perhaps your code should automatically requeue a new delayed
-autosuspend request.  Which implies, of course, that the autosuspend
-delay has to be stored in the dev_pm_info structure.  This isn't a bad
-thing, since exposing the value in sysfs gives userspace a consistent
-way to set the delay.
+> 
+> diff --git a/drivers/staging/comedi/drivers/s626.c b/drivers/staging/comedi/drivers/s626.c
+> index 30dec9d..7bf2a79 100644
+> --- a/drivers/staging/comedi/drivers/s626.c
+> +++ b/drivers/staging/comedi/drivers/s626.c
+> @@ -110,9 +110,13 @@ static const struct s626_board s626_boards[] = {
+>  #define PCI_VENDOR_ID_S626 0x1131
+>  #define PCI_DEVICE_ID_S626 0x7146
+> 
+> +/*
+> + * For devices with vendor:device id == 0x1131:0x7146 you must specify
+> + * also subvendor:subdevice ids, because otherwise it will conflict with
+> + * Philips SAA7146 media/dvb based cards.
+> + */
+>  static DEFINE_PCI_DEVICE_TABLE(s626_pci_table) = {
+> -       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+> -               0},
+> +       {PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626, 0x6000, 0x0272, 0, 0, 0},
+>         {0}
+>  };
+> 
+> @@ -498,25 +502,26 @@ static int s626_attach(struct comedi_device *dev, struct comedi_devconfig *it)
+>         resource_size_t resourceStart;
+>         dma_addr_t appdma;
+>         struct comedi_subdevice *s;
+> -       struct pci_dev *pdev;
+> +       const struct pci_device_id *ids;
+> +       struct pci_dev *pdev = NULL;
+> 
+>         if (alloc_private(dev, sizeof(struct s626_private)) < 0)
+>                 return -ENOMEM;
+> 
+> -       for (pdev = pci_get_device(PCI_VENDOR_ID_S626, PCI_DEVICE_ID_S626,
+> -                       NULL); pdev != NULL;
+> -               pdev = pci_get_device(PCI_VENDOR_ID_S626,
+> -                       PCI_DEVICE_ID_S626, pdev)) {
+> -               if (it->options[0] || it->options[1]) {
+> -                       if (pdev->bus->number == it->options[0] &&
+> -                               PCI_SLOT(pdev->devfn) == it->options[1]) {
+> +       for (i = 0; i < (ARRAY_SIZE(s626_pci_table) - 1) && !pdev; i++) {
+> +               ids = &s626_pci_table[i];
+> +               do {
+> +                       pdev = pci_get_subsys(ids->vendor, ids->device, ids->subvendor,
+> +                                             ids->subdevice, pdev);
+> +
+> +                       if ((it->options[0] || it->options[1]) && pdev) {
+>                                 /* matches requested bus/slot */
+> +                               if (pdev->bus->number == it->options[0] &&
+> +                                   PCI_SLOT(pdev->devfn) == it->options[1])
+> +                                       break;
+> +                       } else
+>                                 break;
+> -                       }
+> -               } else {
+> -                       /* no bus/slot specified */
+> -                       break;
+> -               }
+> +               } while (1);
+>         }
+>         devpriv->pdev = pdev;
+> 
+> 
+> 
+> --
+> []'s
+> Herton
 
-Alan Stern
 
+-- 
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
