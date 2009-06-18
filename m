@@ -1,147 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbZFRPTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763303AbZFRPVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759902AbZFRPTT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 11:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZFRPTF
+	id S1763303AbZFRPVh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 11:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757231AbZFRPV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 11:19:05 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:58373 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753441AbZFRPTD (ORCPT
+	Thu, 18 Jun 2009 11:21:28 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45420 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754907AbZFRPV1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 11:19:03 -0400
-Message-ID: <4A3A59DD.4070004@oracle.com>
-Date: Thu, 18 Jun 2009 08:14:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       a.beregalov@gmail.com, lenb@kernel.org
-Subject: Re: linux-next: Tree for June 17 (pci/slot)
-References: <20090617155354.075c60ae.sfr@canb.auug.org.au> <4A39194B.2060200@oracle.com> <20090617163604.GT19977@parisc-linux.org> <20090617102901.6e39aac2@jbarnes-g45> <4A392B48.7060206@oracle.com> <20090617161001.734321be@jbarnes-g45> <20090618003808.GA29472@ldl.fc.hp.com> <20090618004612.GB29472@ldl.fc.hp.com> <20090618010357.GC29472@ldl.fc.hp.com>
-In-Reply-To: <20090618010357.GC29472@ldl.fc.hp.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 18 Jun 2009 11:21:27 -0400
+Subject: Re: [PATCH] SCSI: explain the hidden scsi_wait_scan Kconfig
+ variable
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Matthew Wilcox <matthew@wil.cx>, Changli Gao <xiaosuo@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
+References: <4A384FE4.9090703@gmail.com>
+	 <20090617021254.GQ19977@parisc-linux.org>
+	 <tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Thu, 18 Jun 2009 15:21:26 +0000
+Message-Id: <1245338486.7586.13.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.4A3A5AA0.022B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Alex Chiang <achiang@hp.com>:
->> diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
->> index ba6af16..0be4efd 100644
->> --- a/drivers/pci/Makefile
->> +++ b/drivers/pci/Makefile
->> @@ -2,10 +2,11 @@
->>  # Makefile for the PCI bus specific drivers.
->>  #
->>  
->> -obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o slot.o \
->> -			pci-driver.o search.o pci-sysfs.o rom.o setup-res.o \
->> +obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
->> +			pci-driver.o search.o rom.o setup-res.o \
->>  			irq.o
->>  obj-$(CONFIG_PROC_FS) += proc.o
->> +obj-$(CONFIG_SYSFS) += slot.o pci-sysfs.o
+On Wed, 2009-06-17 at 12:07 +0200, Stefan Richter wrote:
+> People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
+> item.  These patches aren't accepted upstream, so let's stop the ongoing
+> irritation of people due to this obscure and strange installed module
+> and its Kconfig option.
 > 
-> Sigh, this won't work because the PCI core blithely assumes we have
-> sysfs:
-> 
-> drivers/built-in.o: In function `pci_bus_add_device':
-> /kio/work/achiang/kernels/linux-2.6/drivers/pci/bus.c:89: undefined reference to `pci_create_sysfs_dev_files'
-> drivers/built-in.o: In function `pci_stop_dev':
-> /kio/work/achiang/kernels/linux-2.6/drivers/pci/remove.c:24: undefined reference to `pci_remove_sysfs_dev_files'
-> 
-> So, here is v3 that actually does build with !CONFIG_SYSFS. It
-> touches a bit more now, but I believe it is still appropriate
-> because neither pci_slot.ko nor any of the drivers in
-> drivers/pci/hotplug/ are useful without sysfs.
-> 
-> From: Alex Chiang <achiang@hp.com>
-> 
-> PCI: drivers/pci/slot.c should depend on CONFIG_SYSFS
-> 
-> There is no way to interact with a physical PCI slot without
-> sysfs, so encode the dependency and prevent this build error:
-> 
-> 	drivers/pci/slot.c: In function 'pci_hp_create_module_link':
-> 	drivers/pci/slot.c:327: error: 'module_kset' undeclared
-> 
-> This patch _should_ make pci-sysfs.o depend on CONFIG_SYSFS too,
-> but we cannot (yet) because the PCI core merrily assumes the
-> existence of sysfs:
-> 
-> 	drivers/built-in.o: In function `pci_bus_add_device':
-> 	drivers/pci/bus.c:89: undefined reference to `pci_create_sysfs_dev_files'
-> 	drivers/built-in.o: In function `pci_stop_dev':
-> 	drivers/pci/remove.c:24: undefined reference to `pci_remove_sysfs_dev_files'
-> 
-> So do the minimal bit for now and figure out how to untangle it
-> later.
-> 
-> Cc: Len Brown <lenb@kernel.org>
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
-Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-
-> Fix-suggested-by: Matthew Wilcox <matthew@wil.cx>
-> Signed-off-by: Alex Chiang <achiang@hp.com>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 > ---
-> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> index 431f8b4..7ec7d88 100644
-> --- a/drivers/acpi/Kconfig
-> +++ b/drivers/acpi/Kconfig
-> @@ -266,6 +266,7 @@ config ACPI_DEBUG_FUNC_TRACE
+>  drivers/scsi/Kconfig |   17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
+> 
+> Index: b/drivers/scsi/Kconfig
+> ===================================================================
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -259,10 +259,25 @@ config SCSI_SCAN_ASYNC
+>  	  or async on the kernel's command line.
 >  
->  config ACPI_PCI_SLOT
->  	tristate "PCI slot detection driver"
-> +	depends on SYSFS
->  	default n
->  	help
->  	  This driver creates entries in /sys/bus/pci/slots/ for all PCI
-> diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-> index ba6af16..ed32f67 100644
-> --- a/drivers/pci/Makefile
-> +++ b/drivers/pci/Makefile
-> @@ -2,10 +2,11 @@
->  # Makefile for the PCI bus specific drivers.
->  #
->  
-> -obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o slot.o \
-> +obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
->  			pci-driver.o search.o pci-sysfs.o rom.o setup-res.o \
->  			irq.o
->  obj-$(CONFIG_PROC_FS) += proc.o
-> +obj-$(CONFIG_SYSFS) += slot.o
->  
->  # Build PCI Express stuff if needed
->  obj-$(CONFIG_PCIEPORTBUS) += pcie/
-> diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
-> index 9aa4fe1..522c360 100644
-> --- a/drivers/pci/hotplug/Kconfig
-> +++ b/drivers/pci/hotplug/Kconfig
-> @@ -4,7 +4,7 @@
->  
->  menuconfig HOTPLUG_PCI
->  	tristate "Support for PCI Hotplug"
-> -	depends on PCI && HOTPLUG
-> +	depends on PCI && HOTPLUG && SYSFS
->  	---help---
->  	  Say Y here if you have a motherboard with a PCI Hotplug controller.
->  	  This allows you to add and remove PCI cards while the machine is
+>  config SCSI_WAIT_SCAN
+> -	tristate
+> +	tristate  # No prompt here, this is a hidden option.
+
+Adding comments explaining this is good, I think.
+
+>  	default m
+>  	depends on SCSI
+>  	depends on MODULES
+> +	help
+> +	  Wait until all the async scans are complete.  The idea is to use
+> +	  it in initrd/ initramfs scripts.  You modprobe it after all the
+> +	  modprobes of the root SCSI drivers and it will wait until they
+> +	  have all finished scanning their buses before allowing the boot
+> +	  to proceed.
+> +
+> +	  Of course this does not work if targets boot independently of and
+> +	  in parallel with the initiator, and/ or with transports with non-
+> +	  deterministic target discovery schemes, and/ or if a transport
+> +	  driver does not support scsi_wait_scan.
+> +
+> +	  Still, this option is not exposed as a prompt because little is
+> +	  to be gained by disabling it, whereas people who accidentally
+> +	  switch it off may wonder why their mkinitrd gets into trouble.
+
+But not a help text that can never be shown.  Turn this into a comment
+and I'll apply the patch.
+
+The reason is the fact that this could be construed as a detectable bug
+(option with help that can never be displayed) and someone with too much
+time on their hands someday might make a static checker for it.
+
+James
 
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
