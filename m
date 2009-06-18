@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbZFRWdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZFRWfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbZFRWdw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 18:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZFRWdo
+	id S1758593AbZFRWfS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 18:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZFRWfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 18:33:44 -0400
-Received: from claw.goop.org ([74.207.240.146]:38021 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754877AbZFRWdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 18:33:44 -0400
-Message-ID: <4A3AC0C4.6060508@goop.org>
-Date: Thu, 18 Jun 2009 15:33:40 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Thu, 18 Jun 2009 18:35:06 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:65039 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbZFRWfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 18:35:05 -0400
+Message-ID: <4A3AC0FF.20808@nortel.com>
+Date: Thu, 18 Jun 2009 16:34:39 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's
- no local APIC
-References: <4A329CF8.4050502@goop.org>	<alpine.LFD.2.00.0906181206190.4213@localhost.localdomain>	<4A3A9220.4070807@goop.org> <m1zlc5jqac.fsf@fess.ebiederm.org>	<4A3A99FB.7070807@goop.org> <m1vdmtgtt2.fsf@fess.ebiederm.org>
-In-Reply-To: <m1vdmtgtt2.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 0.96a
+To: Ben Hutchings <ben@decadent.org.uk>
+CC: linux-kernel@vger.kernel.org, Chris Adams <cmadams@hiwaay.net>,
+       510478@bugs.debian.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] v2 Re: Bug: Status/Summary of slashdot leap-second crash
+ on new years 2008-2009
+References: <3ae3aa420901021125n1153053fsdf2378e7d11abbc0@mail.gmail.com>	 <20090103002114.GA1538533@hiwaay.net>	 <20090103022358.GA2454@dastardly.home.dghda.com>	 <20090103044143.GB1538533@hiwaay.net>	 <20090103045227.GA5994@dastardly.home.dghda.com>	 <20090103180148.GA1375968@hiwaay.net> <1244427498.21215.200.camel@deadeye>
+In-Reply-To: <1244427498.21215.200.camel@deadeye>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Jun 2009 22:34:41.0156 (UTC) FILETIME=[F8656440:01C9F064]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/18/09 13:39, Eric W. Biederman wrote:
->> Well, if acpi_pci_irq_lookup() and friends return the right things
->> without having parsed the MADT and set up the secondary state, then we
->> should be fine either way.
+Ben Hutchings wrote:
+> On Sat, 2009-01-03 at 12:01 -0600, Chris Adams wrote:
+>> Once upon a time, Duane Griffin <duaneg@dghda.com> said:
+>>> How about instead of a switch statement, assigning the message to a
+>>> variable and printing that. I.e. something like:
+>> Good point.  Here's an updated version that also adds a comment to the
+>> xtime_lock definition about not using printk.
+>> -- 
+>> Chris Adams <cmadams@hiwaay.net>
+>> Systems and Network Administrator - HiWAAY Internet Services
+>> I don't speak for anybody but myself - that's enough trouble.
 >>
->> acpi_irq_model gets tested in all sorts of random places, so I wonder if
->> we'll need to set it to ACPI_IRQ_MODEL_IOAPIC (or something else?) to
->> make things work properly.
->>     
->
-> And this is where things get interesting.  Xen strictly speaking has
-> already made that decision.  Unless you support non APIC mode it
-> should always be ACPI_IRQ_MODEL_IOAPIC.
->   
+>>
+>> From: Chris Adams <cmadams@hiwaay.net>
+>>
+>> The code to handle leap seconds printks an information message when the
+>> second is inserted or deleted.  It does this while holding xtime_lock.
+>> However, printk wakes up klogd, and in some cases, the scheduler tries
+>> to get the current kernel time, trying to get xtime_lock (which results
+>> in a deadlock).  This moved the printks outside of the lock.  It also
+>> adds a comment to not use printk while holding xtime_lock.
+> [...]
+> 
+> This patch doesn't seem to have gone anywhere.  Was this bug fixed in
+> some other way or has it been forgotten?
 
-We could decide by fiat to not support non-APIC machines (which is more
-or less the case), but they do happen to work at the moment; Gerd even
-has one and provided fixes to make it work.  (Ditto non-ACPI, though
-they're commonly related.)
+I'm interested in this as well...the current code still issues a
+printk() while holding the xtime_lock for writing.  Is this allowed or not?
 
-> But Xen runs the hardware so Xen knows, and Xen should be running
-> all of the acpi and what not to make it happen.
->   
+In addition, is it allowed for older kernels also or is Chris Adams'
+patch something that should get picked up for the 2.6.27 stable series?
 
-There are two separate issues:
-
-   1. If we intercept interrupt routing at the pcibios_pci_irq_enable
-      level, will anything in the kernel care about the state of its
-      acpi_irq_model variable?  At first glance it *shouldn't* care,
-      because its just handing the whole problem off to Xen.
-   2. Xen has no AML interpreter, so its use of ACPI is limited to
-      parsing tables.  It looks like we'll need to set acpi_irq_model
-      appropriately and then get acpi_bus_init_irq() to run.
-
-(Related to this is making sure any chipset configuration that happens
-in the depths of the DSDT does in fact happen.)
-
->> Hm, and principle we just get the SCI gsi from the FADT, but there's all
->> that other mucking about with it in the MADT processing... Wonder what
->> needs to happen there...
->>     
->
-> Good question.  What does the domU case do?
->   
-
-DomU doesn't know or care about ACPI at all.  There's no reason for it
-to get any kind of ACPI event.
-
-    J
+Chris
