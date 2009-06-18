@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751936AbZFRSJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbZFRSLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751936AbZFRSJe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbZFRSIH
+	id S1756312AbZFRSLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZFRSLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:08:07 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1512 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754041AbZFRSIF (ORCPT
+	Thu, 18 Jun 2009 14:11:39 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:38553 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576AbZFRSLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:08:05 -0400
-From: Joe Perches <joe@perches.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Bob Copeland <me@bobcopeland.com>,
-       "Luis R . Rodriguez" <lrodriguez@atheros.com>,
-       Nick Kossifidis <mickflemm@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
-       ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH 1/5] MAINTAINERS: Fix Atheros pattern paths
-Date: Thu, 18 Jun 2009 11:08:01 -0700
-Message-Id: <8ee51d1f4d9f1076ae013721d189c7b0d9db2df8.1245345515.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
-In-Reply-To: <cover.1245345515.git.joe@perches.com>
-References: <cover.1245345515.git.joe@perches.com>
+	Thu, 18 Jun 2009 14:11:38 -0400
+Date: Thu, 18 Jun 2009 21:08:35 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Christopher Wright'" <chrisw@redhat.com>,
+       "'Allen Kay'" <allen.m.kay@intel.com>,
+       "'lkml'" <linux-kernel@vger.kernel.org>,
+       "'iommu'" <iommu@lists.linux-foundation.org>
+Subject: Re: [PATCH 1/2] IOMMU Identity Mapping Support:
+	iommu_identity_mapping definition
+Message-ID: <20090618180835.GB6838@il.ibm.com>
+References: <20090327212241.234500000@intel.com> <20090327212321.070229000@intel.com> <20090416001957.GA1527@linux-os.sc.intel.com> <1240135508.3589.75.camel@macbook.infradead.org> <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com> <20090513231351.GA22386@linux-os.sc.intel.com> <1242314271.3393.11.camel@macbook.infradead.org> <20090514175944.GA5168@linux-os.sc.intel.com> <20090618180514.GA24082@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090618180514.GA24082@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- MAINTAINERS |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+On Thu, Jun 18, 2009 at 11:05:14AM -0700, Fenghua Yu wrote:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fb94add..4e73646 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -946,7 +946,7 @@ M:	me@bobcopeland.com
- L:	linux-wireless@vger.kernel.org
- L:	ath5k-devel@lists.ath5k.org
- S:	Maintained
--F:	drivers/net/wireless/ath5k/
-+F:	drivers/net/wireless/ath/ath5k/
- 
- ATHEROS ATH9K WIRELESS DRIVER
- P:	Luis R. Rodriguez
-@@ -962,7 +962,7 @@ M:	senthilkumar@atheros.com
- L:	linux-wireless@vger.kernel.org
- L:	ath9k-devel@lists.ath9k.org
- S:	Supported
--F:	drivers/net/wireless/ath9k/
-+F:	drivers/net/wireless/ath/ath9k/
- 
- ATHEROS AR9170 WIRELESS DRIVER
- P:	Christian Lamparter
-@@ -970,7 +970,7 @@ M:	chunkeey@web.de
- L:	linux-wireless@vger.kernel.org
- W:	http://wireless.kernel.org/en/users/Drivers/ar9170
- S:	Maintained
--F:	drivers/net/wireless/ar9170/
-+F:	drivers/net/wireless/ath/ar9170/
- 
- ATI_REMOTE2 DRIVER
- P:	Ville Syrjala
+> IOMMU Identity Mapping Support: iommu_identity_mapping definition
+> 
+> Identity mapping for IOMMU defines a single domain to 1:1 map all
+> pci devices to all usable memory.
+
+Why use VT-d at all in this case? Do you have a use-case in mind?
+
+Cheers,
+Muli
+
+> This method may lose some of DMA remapping benefits like isolation.
+
+I think you meant s/may/will/.
+
+Cheers,
+Muli
 -- 
-1.6.3.1.10.g659a0.dirty
-
+Muli Ben-Yehuda | muli@il.ibm.com | +972-4-8281080
+Manager, Virtualization and Systems Architecture
+Master Inventor, IBM Haifa Research Laboratory
