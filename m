@@ -1,99 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760062AbZFRGKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760277AbZFRGLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760062AbZFRGKd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 02:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZFRGKZ
+	id S1760277AbZFRGLB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 02:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZFRGKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 02:10:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51801 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754613AbZFRGKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 02:10:24 -0400
-Date: Thu, 18 Jun 2009 06:09:45 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Tidy up the --collapse call-chain feature
-Message-ID: <tip-9e2e73305665c363fe173b2da53ae98dd6e7ae0d@git.kernel.org>
-Git-Commit-ID: 9e2e73305665c363fe173b2da53ae98dd6e7ae0d
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 18 Jun 2009 06:09:47 +0000 (UTC)
+	Thu, 18 Jun 2009 02:10:53 -0400
+Received: from mail-yx0-f180.google.com ([209.85.210.180]:56816 "EHLO
+	mail-yx0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755213AbZFRGKw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 02:10:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=pxZkfqcymK0U67H+nfFj4pXlcrc3lDID7yvJXf7c/rZ5A2RBb+spbTDT9x4xEm7zuv
+         xJ2cK/wcRuwAlWSp6SGWSbl4G9Yx9Qexcx2whRzkDnS//O0JLcsAg/FAwxrYpUPN1idt
+         rEBM0fb9FnLC2lJTv0OmwdWA1kCSeoCghHvJs=
+Subject: Re: [PATCH 2/2] tracing/filters: remove error messages
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A39958C.4010801@cn.fujitsu.com>
+References: <4A38AD7F.2070408@cn.fujitsu.com>
+	 <4A38AD93.4070300@cn.fujitsu.com> <20090617120216.GB6064@nowhere>
+	 <4A39958C.4010801@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 18 Jun 2009 01:10:52 -0500
+Message-Id: <1245305452.6207.91.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9e2e73305665c363fe173b2da53ae98dd6e7ae0d
-Gitweb:     http://git.kernel.org/tip/9e2e73305665c363fe173b2da53ae98dd6e7ae0d
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 18 Jun 2009 07:01:03 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 18 Jun 2009 07:01:03 +0200
+On Thu, 2009-06-18 at 09:17 +0800, Li Zefan wrote:
+> Frederic Weisbecker wrote:
+> > On Wed, Jun 17, 2009 at 04:47:15PM +0800, Li Zefan wrote:
+> >> Now we restore original filter is the new one can't be applied,
+> >> and no long show error messages, so we can remove them totally.
+> > 
+> > Why?
+> > These messages are very powerful to point a user to its mistakes
+> > in filters syntaxes or semantics.
+> > 
+> > I really think we are removing a very useful feature in this patch.
+> > 
+> 
+> I think it's better done by providing a user-space program/script.
+> 
+> So what's the criterion to decide what should be in kernel and
+> what should be in user-space?
+> 
 
-perf report: Tidy up the --collapse call-chain feature
+I thought there wasn't supposed to be any userspace for non-binary
+tracing.  If there is, then yeah, you can get rid of the error messages
+in the kernel because your userspace program can arrange to never submit
+an erroneous filter.
 
- - rename --call <regex> to --collapse <regex>
+> btw, this feature is not full-fledged, that it can't point to the
+> exact position where error occured, and the implementation will add
+> complexity and I'm sure it's worthy or not.
+> 
 
- - add pagefaults to the default collapsing pattern too
+It could, it just doesn't yet.  But even without exact position
+information, the messages should still be useful in most cases.
 
- - rename [unmatched] to [other] - to signal that this is not
-   an error but the inverse set
+Tom
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > May be we can keep the previous filter in case of new filter string
+> > inserting failure, though if the user wanted to insert a new one, there
+> > are few chances that the previous one is still relevant for him.
+> > I don't know.
+> > 
+> >> Another reason is, I don't think it's good to show error messages
+> >> when reading a control file.
+> > 
+> > So, why not create a filter_error file in this case? One for each
+> > event and subsys that would print the last error?
+> > 
+> 
+> Yeah, if we do want to keep this feature in the kernel.
 
-
----
- tools/perf/builtin-report.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 707f60c..57b6e2f 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -44,7 +44,7 @@ static int		full_paths;
- static unsigned long	page_size;
- static unsigned long	mmap_window = 32;
- 
--static char		*call = "^sys_";
-+static char		*call = "^sys_|^do_page_fault";
- static regex_t		call_regex;
- 
- struct ip_chain_event {
-@@ -637,7 +637,7 @@ sort__call_print(FILE *fp, struct hist_entry *self)
- {
- 	size_t ret = 0;
- 
--	ret += fprintf(fp, "%-20s", self->call ? self->call->name : "[unmatched]");
-+	ret += fprintf(fp, "%-20s", self->call ? self->call->name : "[other]");
- 
- 	return ret;
- }
-@@ -1457,11 +1457,11 @@ static const struct option options[] = {
- 		    "dump raw trace in ASCII"),
- 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
- 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
--		   "sort by key(s): pid, comm, dso, symbol. Default: pid,symbol"),
-+		   "sort by key(s): pid, comm, dso, symbol, call"),
- 	OPT_BOOLEAN('P', "full-paths", &full_paths,
- 		    "Don't shorten the pathnames taking into account the cwd"),
--	OPT_STRING('c', "call", &call, "regex",
--		   "regex to use for --sort call"),
-+	OPT_STRING('g', "grep", &call, "regex",
-+		   "regex filter to use for '--sort call'"),
- 	OPT_END()
- };
- 
