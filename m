@@ -1,57 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbZFRLYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbZFRLYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761293AbZFRLYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 07:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbZFRLYL
+	id S1761393AbZFRLYw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 07:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759811AbZFRLYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 07:24:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41846 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758007AbZFRLYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 07:24:10 -0400
-Subject: [PATCH -tip][KVM] x86: kvm/x86_emulate.c toggle_interruptibility()
- should be static
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, KVM list <kvm@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 18 Jun 2009 16:53:25 +0530
-Message-Id: <1245324205.7189.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Thu, 18 Jun 2009 07:24:44 -0400
+Received: from mail.oxtel.com ([193.200.114.15]:1574 "EHLO oxtel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755837AbZFRLYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 07:24:43 -0400
+Message-ID: <4A3A23FA.1000407@oxtel.com>
+Date: Thu, 18 Jun 2009 12:24:42 +0100
+From: Chris Pringle <chris.pringle@oxtel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
+References: <4A37A503.3030209@oxtel.com>
+ <20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
+ <4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
+ <4A37D073.6020802@freescale.com> <4A38A21B.5060306@oxtel.com>
+ <4A38ED31.9030705@oxtel.com>
+In-Reply-To: <4A38ED31.9030705@oxtel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: chris.pringle
+X-Server: VPOP3 Enterprise V2.6.0b - Registered
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Pringle wrote:
+> Chris Pringle wrote:
+>>> You could enable CONFIG_NOT_COHERENT_CACHE.
+>>>
+>> I've just tried this (I had to edit Kconfig in power/platforms to 
+>> make the build system accept it), and interestingly it's making no 
+>> difference. I'm using streaming mappings, and are using the 
+>> pci_map_sg functions to ensure the memory is mapped/flushed 
+>> correctly. I've also explicitly put in a pci_dma_sync_sg_for_device, 
+>> however that's also not made any difference. Turning the cpu cache 
+>> snoop off has the same affect as it did without 
+>> CONFIG_NOT_COHERENT_CACHE; it gets much worse. Any other ideas?
+>>
+>> Will back off the low latency patches next, and give 2.6.30 a try - 
+>> see if that makes any difference.
+>>
+> Low latency patches made no difference. Tried it with 2.6.30 and it 
+> now works. There are a couple of commits contributing to the fix, 
+> including one introduced between 2.6.29-rc8 and 2.6.29 proper in 
+> powerpc/kernel/head_32.S (couple of commits with the name "Fix Respect 
+> _PAGE_COHERENT on classic ppc32 SW TLB load machines"). I've tried 
+> backporting this to 2.6.29-rc8 and it then worked. Backporting to 
+> 2.6.26 made no difference however, so I suspect there are other things 
+> fixed which are also contributing.
+>
+> I'm going to move to 2.6.29/2.6.30 which should resolve our issue.
+>
+> Thanks to all who have contributed to this thread.
+>
+The other part of the fix is in asm-powerpc/pgtable32.h. _PAGE_BASE 
+needs _PAGE_COHERENT in order to work correctly, and in fact there is 
+now a comment in there to that affect in 2.6.29. Backporting that change 
+has made it work on 2.6.26. Both this patch, and the fix to head_32.S 
+are needed for it to work correctly on older kernels.
 
-toggle_interruptibility() is used only by same file, it should be static.
+Chris
 
-Fixed following sparse warning :
-
-  arch/x86/kvm/x86_emulate.c:1364:6: warning: symbol 'toggle_interruptibility' was not declared. Should it be static?
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kvm/x86_emulate.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index c1b6c23..616de46 100644
---- a/arch/x86/kvm/x86_emulate.c
-+++ b/arch/x86/kvm/x86_emulate.c
-@@ -1361,7 +1361,7 @@ static inline int writeback(struct x86_emulate_ctxt *ctxt,
- 	return 0;
- }
- 
--void toggle_interruptibility(struct x86_emulate_ctxt *ctxt, u32 mask)
-+static void toggle_interruptibility(struct x86_emulate_ctxt *ctxt, u32 mask)
- {
- 	u32 int_shadow = kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu, mask);
- 	/*
 -- 
-1.6.0.6
 
+______________________________
+Chris Pringle
+Software Engineer
 
+Miranda Technologies Ltd.
+Hithercroft Road
+Wallingford
+Oxfordshire OX10 9DG
+UK
 
+Tel. +44 1491 820206
+Fax. +44 1491 820001
+www.miranda.com
+
+____________________________
+
+Miranda Technologies Limited
+Registered in England and Wales CN 02017053
+Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
