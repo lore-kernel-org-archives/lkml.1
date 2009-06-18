@@ -1,162 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZFRRfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZFRRnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbZFRRfW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 13:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZFRRfL
+	id S1753764AbZFRRnS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 13:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbZFRRnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 13:35:11 -0400
-Received: from sh.osrg.net ([192.16.179.4]:51841 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753173AbZFRRfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 13:35:09 -0400
-Date: Fri, 19 Jun 2009 02:34:55 +0900 (JST)
-Message-Id: <20090619.023455.111674749.ryusuke@osrg.net>
-To: Leandro Lucarella <llucax@gmail.com>
-Cc: konishi.ryusuke@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       albertito@blitiri.com.ar, users@nilfs.org
-Subject: [PATCH] nilfs2: fix hang problem after bio_alloc() failed
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <20090614181313.GA16597@homero.springfield.home>
-References: <20090614153256.GA4020@homero.springfield.home>
-	<20090615.030245.104791670.konishi.ryusuke@gmail.com>
-	<20090614181313.GA16597@homero.springfield.home>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 19 Jun 2009 02:34:58 +0900 (JST)
+	Thu, 18 Jun 2009 13:43:08 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:51615 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbZFRRnG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 13:43:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LPIwStXICMFuGIO7ju3H0ObJkm203pd+ajkX/IW8Ni5xjFr2H8ZWfE/zs8OBZziIgZ
+         2B1+cqvs4LcyUTrxg7wVy6Hdk4gZhzJJv7lK7NOlh0diuXOqFrcFFejO7BlHWwoHI1fR
+         49rqWiGin3OSv9fYBdWIwv29NQcQj/FawV1rk=
+MIME-Version: 1.0
+In-Reply-To: <200906181423.11245.herton@mandriva.com.br>
+References: <200906161701.45234.herton@mandriva.com.br>
+	 <200906172137.43870.herton@mandriva.com.br>
+	 <200906180328.07976.fmhess@speakeasy.net>
+	 <200906181423.11245.herton@mandriva.com.br>
+Date: Thu, 18 Jun 2009 21:43:07 +0400
+Message-ID: <1a297b360906181043l7291817du8e8de0048b73d9e1@mail.gmail.com>
+Subject: Re: staging driver s626 clashes with philips SAA7146 media/dvb based 
+	cards
+From: Manu Abraham <abraham.manu@gmail.com>
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Cc: fmhess@users.sourceforge.net, Ian Abbott <abbotti@mev.co.uk>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Gianluca Palli <gpalli@deis.unibo.it>, David Schleef <ds@schleef.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Leandro,
-On Sun, 14 Jun 2009 15:13:13 -0300, Leandro Lucarella wrote:
-> Ryusuke Konishi, el 15 de junio a las 03:02 me escribiste:
-> [snip]
-> > > Here is the complete trace:
-> > > http://pastebin.lugmen.org.ar/4931
-> > 
-> > Thank you for your help.
-> > 
-> > According to your log, there seems to be a leakage in clear processing
-> > of the writeback flag on pages.  I will review the error path of log
-> > writer to narrow down the cause.
+Hi Herton,
 
-Here is a patch that hopefully fixes the hang problem after
-bio_alloc() failed.  This is composed of three separate patches, but I
-now attach them together.
+On Thu, Jun 18, 2009 at 9:23 PM, Herton Ronaldo
+Krzesinski<herton@mandriva.com.br> wrote:
+> Em Quinta-feira 18 Junho 2009, às 04:28:04, Frank Mori Hess escreveu:
+>> On Wednesday 17 June 2009, Herton Ronaldo Krzesinski wrote:
+>> > >
+>> > > Your patch breaks configuration of the board unless the bus and slot
+>> > > are explicitly specified.  Just make a minimal patch that replaces
+>> > > pci_get_device with pci_get_subsys and fixes the problem that was
+>> > > reported.
+>> >
+>> > Hmm that's not what the patch does, it doesn't break configuration,
+>> > keeps the same logic as before (I was wrong in my last email replying to
+>> > myself), check it, if it->options[0] and it->options[1] isn't specified,
+>> > the pdev is valid so the for loop exits (see !pdev check).
+>>
+>> Your right.  However, it also turns a loop over pci devices into a loop
+>> over pci ids, which appears to break the case of multiple s626 boards
+>> where the bus/slot of the second s626 board is specified.  If you're not
+>> willing to provide a minimal patch that just fixes the reported problem,
+>> just say so.  It would have been less effort for me to do it myself than
+>> analyze what your changes are breaking.
+>
+> That's part of reviewing process, I just wanted to enhance it in case more pci
+> ids are added in the future along with the switch to pci_get_subsys, I don't
+> know why you act like that, you don't want the code to be enhanced? Other
+> comedi driver loop over ids, for example gsc_hpdi
+>
+> And indeed what you say it's true, there is a bug in the patch now that you
+> checked it out properly, it has a problem with this multiple s626 case, fixed
+> that now. Pointing out the problem instead just saying it's broken helps :)
+>
+> I also removed the obligation to add sub ids and re-factored the patch, that
+> was too much and not good, just a simpler loop over pci id array is used now,
+> and a comment was added in pci id list telling people that they should add
+> subvendor:subdevice ids for boards with vendor:device == 0x1131:0x7146,
+> in case new boards with this id appear.
 
-If you still see problems with it, please let me know.
- 
-> Oh! I forgot to tell you that the cleanerd process was not running. When
-> I mounted the NILFS2 filesystem the cleanerd daemon said:
-> 
-> nilfs_cleanerd[29534]: start
-> nilfs_cleanerd[29534]: cannot create cleanerd on /dev/loop0
-> nilfs_cleanerd[29534]: shutdown
-> 
-> I thought I might have an old utilities version and that could be because
-> of that (since the nilfs website was down I couldn't check), but now
-> I checked in the backup nilfs website that latest version is 2.0.12 and
-> I have that (Debian package), so I don't know why the cleanerd failed to
-> start in the first place.
 
-The message indicates that initialization of the cleanerd failed.
+Since there is valid subsystem information: why do you have to loop
+over the ID's
+manually in the driver ?
 
-I don't know for sure, but another memory allocation failure might
-cause it.
+Can't the ID's be set into the PCI ID table and a normal pci_probe be
+used instead ?
+Not that i am familiar with the comedi stuff though ...
 
-Thanks,
-Ryusuke Konishi
----
-Ryusuke Konishi (3):
-      nilfs2: fix mis-conversion of error code by unlikely directive
-      nilfs2: fix hang problem of log writer that follows on write failures
-      nilfs2: remove incorrect warning in nilfs_dat_commit_start function
+We use the probe method directly (rather than pci_get_ ) for most of
+the multimedia drivers. As an example this is what i do:
+http://jusst.de/hg/saa716x/file/59dd985d4473/linux/drivers/media/dvb/saa716x/saa716x_budget.c
 
- fs/nilfs2/dat.c     |    9 ---------
- fs/nilfs2/segment.c |   28 +++++++---------------------
- 2 files changed, 7 insertions(+), 30 deletions(-)
+Maybe it helps you in some way.
 
-diff --git a/fs/nilfs2/dat.c b/fs/nilfs2/dat.c
-index bb8a581..e2646c3 100644
---- a/fs/nilfs2/dat.c
-+++ b/fs/nilfs2/dat.c
-@@ -149,15 +149,6 @@ void nilfs_dat_commit_start(struct inode *dat, struct nilfs_palloc_req *req,
- 	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
- 					     req->pr_entry_bh, kaddr);
- 	entry->de_start = cpu_to_le64(nilfs_mdt_cno(dat));
--	if (entry->de_blocknr != cpu_to_le64(0) ||
--	    entry->de_end != cpu_to_le64(NILFS_CNO_MAX)) {
--		printk(KERN_CRIT
--		       "%s: vbn = %llu, start = %llu, end = %llu, pbn = %llu\n",
--		       __func__, (unsigned long long)req->pr_entry_nr,
--		       (unsigned long long)le64_to_cpu(entry->de_start),
--		       (unsigned long long)le64_to_cpu(entry->de_end),
--		       (unsigned long long)le64_to_cpu(entry->de_blocknr));
--	}
- 	entry->de_blocknr = cpu_to_le64(blocknr);
- 	kunmap_atomic(kaddr, KM_USER0);
- 
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index 22c7f65..e8f188b 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -1846,26 +1846,13 @@ static int nilfs_segctor_write(struct nilfs_sc_info *sci,
- 		err = nilfs_segbuf_write(segbuf, &wi);
- 
- 		res = nilfs_segbuf_wait(segbuf, &wi);
--		err = unlikely(err) ? : res;
-+		err = unlikely(err) ? err : res;
- 		if (unlikely(err))
- 			return err;
- 	}
- 	return 0;
- }
- 
--static int nilfs_page_has_uncleared_buffer(struct page *page)
--{
--	struct buffer_head *head, *bh;
--
--	head = bh = page_buffers(page);
--	do {
--		if (buffer_dirty(bh) && !list_empty(&bh->b_assoc_buffers))
--			return 1;
--		bh = bh->b_this_page;
--	} while (bh != head);
--	return 0;
--}
--
- static void __nilfs_end_page_io(struct page *page, int err)
- {
- 	if (!err) {
-@@ -1889,12 +1876,11 @@ static void nilfs_end_page_io(struct page *page, int err)
- 	if (!page)
- 		return;
- 
--	if (buffer_nilfs_node(page_buffers(page)) &&
--	    nilfs_page_has_uncleared_buffer(page))
--		/* For b-tree node pages, this function may be called twice
--		   or more because they might be split in a segment.
--		   This check assures that cleanup has been done for all
--		   buffers in a split btnode page. */
-+	if (buffer_nilfs_node(page_buffers(page)) && !PageWriteback(page))
-+		/*
-+		 * For b-tree node pages, this function may be called twice
-+		 * or more because they might be split in a segment.
-+		 */
- 		return;
- 
- 	__nilfs_end_page_io(page, err);
-@@ -1957,7 +1943,7 @@ static void nilfs_segctor_abort_write(struct nilfs_sc_info *sci,
- 			}
- 			if (bh->b_page != fs_page) {
- 				nilfs_end_page_io(fs_page, err);
--				if (unlikely(fs_page == failed_page))
-+				if (fs_page && fs_page == failed_page)
- 					goto done;
- 				fs_page = bh->b_page;
- 			}
--- 
-1.6.2
-
+Regards,
+Manu
