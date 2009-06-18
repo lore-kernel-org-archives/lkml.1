@@ -1,213 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZFRARd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZFRAUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZFRARd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 20:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZFRARY
+	id S1753110AbZFRAUO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 20:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZFRAUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 20:17:24 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:50900 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbZFRARX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 20:17:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=swwd1+m0/FKMTxAc0bXp48d4rjQphzUdzGixulhFkqXD1rnGix+V9H6Fx8LsdMQmNI
-         8kuUp4hJsjLz7AE+YPRHY0phToB5cCMg8sQLsdG8V90GSKWnnWenlPoPmS3qFENBIsWY
-         aohsTEkVL0ymWCoNs0nEpZAKThMr64wX3ZyGA=
-Date: Thu, 18 Jun 2009 02:17:21 +0200
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] fs: fix overflow in sys_mount() for in-kernel calls
-Message-ID: <20090618001721.GA14500@damson.getinternet.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Jun 2009 20:20:04 -0400
+Received: from main.gmane.org ([80.91.229.2]:35879 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbZFRAUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Jun 2009 20:20:03 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Zdenek Kaspar <zkaspar82@gmail.com>
+Subject: Re: 2.6.29.1: nfsd: page allocation failure - nfsd or kernel problem?
+Date: Thu, 18 Jun 2009 02:14:17 +0200
+Message-ID: <4A3986D9.5020204@gmail.com>
+References: <alpine.DEB.2.00.0906161203160.27742@p34.internal.lan> <alpine.DEB.2.00.0906161205260.27742@p34.internal.lan> <4A37FE48.6070306@msgid.tls.msk.ru> <4A38ACC0.3060501@msgid.tls.msk.ru> <alpine.DEB.2.00.0906170542170.3600@p34.internal.lan> <4A38C7CA.7040005@msgid.tls.msk.ru> <20090617185139.GF24040@fieldses.org> <4A395119.5060108@msgid.tls.msk.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+X-Gmane-NNTP-Posting-Host: r9hh95.net.upc.cz
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+In-Reply-To: <4A395119.5060108@msgid.tls.msk.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c81d9980492c96cf693a76af6bfe4db0294fac70 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 18 Jun 2009 01:37:58 +0200
-Subject: [PATCH] fs: fix overflow in sys_mount() for in-kernel calls
-
-2009/6/17 Ingo Molnar <mingo@elte.hu> reported:
->
-> btw., here's an old friend of a warning:
->
-> async_continuing @ 1 after 0 usec
-> WARNING: kmemcheck: Caught 8-bit read from freed memory (f5f33004)
-> 0040f3f57400686f74706c756700000000000000000000000000000000000000
->  i i i i f f f f f f f f f f f f f f f f f f f f f f f f f f f f
->          ^
+Michael Tokarev napsal(a):
+> J. Bruce Fields wrote:
+>> On Wed, Jun 17, 2009 at 02:39:06PM +0400, Michael Tokarev wrote:
+>>> Justin Piszcz wrote:
+>>>>
+>>>> On Wed, 17 Jun 2009, Michael Tokarev wrote:
+>>>>
+>>>>> Michael Tokarev wrote:
+>>>>>> Justin Piszcz wrote:
+>>>>> ...
+>>>>>
+>>>>> Justin, by the way, what's the underlying filesystem on the server?
+>>>>>
+>>>>> I've seen this error on 2 machines already (both running 2.6.29.x 
+>>>>> x86-64),
+>>>>> and in both cases the filesystem on the server was xfs.  May this be
+>>>>> related somehow to http://bugzilla.kernel.org/show_bug.cgi?id=13375 ?
+>>>>> That one is different, but also about xfs and nfs.  I'm trying to
+>>>>> reproduce the problem on different filesystem...
+>>>> Hello, I am also running XFS on 2.6.29.x x86-64.
+>>>>
+>>>> For me, the error happened when I was running an XFSDUMP from a
+>>>> client  (and dumping) the stream over NFS to the XFS
+>>>> server/filesystem.  This is typically when the error occurs or
+>>>> during heavy I/O.
+>>> Very similar load was here -- not xfsdump but tar and dump of an ext3
+>>> filesystems.
+>>>
+>>> And no, it's NOT xfs-related: I can trigger the same issue easily on
 > 
-> Pid: 1, comm: swapper Not tainted (2.6.30-tip-04303-g5ada65e-dirty #767) P4DC6
-> EIP: 0060:[<c1248df4>] EFLAGS: 00010246 CPU: 0
-> EIP is at exact_copy_from_user+0x64/0x130
-> EAX: 00000000 EBX: 00000001 ECX: 000000f5 EDX: 000000f5
-> ESI: f5fdeffb EDI: f5f33004 EBP: f6c48ee8 ESP: c29598cc
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> CR0: 8005003b CR2: f6c20044 CR3: 0294d000 CR4: 000006d0
-> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> DR6: ffff4ff0 DR7: 00000400
->  [<c124916a>] copy_mount_options+0xba/0x1c0
->  [<c124dc0a>] sys_mount+0x1a/0x170
->  [<c263c937>] do_mount_root+0x27/0xe0
->  [<c263ca33>] mount_block_root+0x43/0x140
->  [<c263cc02>] mount_root+0xd2/0x160
->  [<c263ce49>] prepare_namespace+0x1b9/0x380
->  [<c263c4c8>] kernel_init+0xb8/0x110
->  [<c103ab13>] kernel_thread_helper+0x7/0x14
->  [<ffffffff>] 0xffffffff
-> EXT3-fs: INFO: recovery required on readonly filesystem.
-> EXT3-fs: write access will be enabled during recovery.
+> Note the NOT, in upper case ;)
+> 
+>>> ext4 as well.  About 20 minutes of running 'dump' of another fs
+>>> to the nfs mount and voila, nfs server reports the same page allocation
+>>> failure.  Note that all file operations are still working, i.e. it
+>>> produces good (not corrupted) files on the server.
+>>
+>> There's a possibly related report for 2.6.30 here:
+>>
+>>     http://bugzilla.kernel.org/show_bug.cgi?id=13518
+> 
+> Does not look similar.
+> 
+> I repeated the issue here.  The slab which is growing here is buffer_head.
+> It's growing slowly -- right now, after ~5 minutes of constant writes over
+> nfs, its size is 428423 objects, growing at about 5000 objects/minute rate.
+> When stopping writing, the cache shrinks slowly back to an acceptable
+> size, probably when the data gets actually written to disk.
+> 
+> It looks like we need a bug entry for this :)
+> 
+> I'll re-try 2.6.30 hopefully tomorrow.
+> 
+> /mjt
 
-sys_mount() reads/copies a whole page for its "type" parameter. When
-do_mount_root() passes a kernel address that points to an object
-which is smaller than a whole page, copy_mount_options() will happily
-go past this memory object, possibly dereferencing "wild" pointers
-that could be in any state (hence the kmemcheck warning, which shows
-that parts of the next page are not even allocated).
+Can you try if increasing vm.min_free_kbytes will help you? I
+"temp-fixed" heavy I/O problems with vm.min_free_kbytes=32768 on machine
+with 4G memory.
 
-(The likelyhood of something going wrong here is pretty low -- first
-of all this only applies to kernel calls to sys_mount(), which are
-mostly found in the boot code. Secondly, I guess if the page was not
-mapped, exact_copy_from_user() _would_ in fact handle it correctly
-because of its access_ok(), etc. checks.)
-
-But it is much nicer to avoid the dubious reads altogether, by
-stopping as soon as we find a NUL byte. Is there a good reason why we
-can't do something like this, using the already existing
-strndup_from_user()?
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- fs/namespace.c |   77 ++++++++++++++++++++++++++++++++++---------------------
- 1 files changed, 47 insertions(+), 30 deletions(-)
-
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 2dd333b..eb7fa90 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -1620,7 +1620,7 @@ static int do_new_mount(struct path *path, char *type, int flags,
- {
- 	struct vfsmount *mnt;
- 
--	if (!type || !memchr(type, 0, PAGE_SIZE))
-+	if (!type)
- 		return -EINVAL;
- 
- 	/* we need capabilities... */
-@@ -1851,6 +1851,23 @@ int copy_mount_options(const void __user * data, unsigned long *where)
- 	return 0;
- }
- 
-+int copy_mount_string(const void __user *data, char **where)
-+{
-+	char *tmp;
-+
-+	if (!data) {
-+		*where = NULL;
-+		return 0;
-+	}
-+
-+	tmp = strndup_user(data, PAGE_SIZE);
-+	if (IS_ERR(tmp))
-+		return PTR_ERR(tmp);
-+
-+	*where = tmp;
-+	return 0;
-+}
-+
- /*
-  * Flags is a 32-bit value that allows up to 31 non-fs dependent flags to
-  * be given to the mount() call (ie: read-only, no-dev, no-suid etc).
-@@ -1880,8 +1897,6 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
- 
- 	if (!dir_name || !*dir_name || !memchr(dir_name, 0, PAGE_SIZE))
- 		return -EINVAL;
--	if (dev_name && !memchr(dev_name, 0, PAGE_SIZE))
--		return -EINVAL;
- 
- 	if (data_page)
- 		((char *)data_page)[PAGE_SIZE - 1] = 0;
-@@ -2022,40 +2037,42 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
- SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
- 		char __user *, type, unsigned long, flags, void __user *, data)
- {
--	int retval;
-+	int ret;
-+	char *kernel_type;
-+	char *kernel_dir;
-+	char *kernel_dev;
- 	unsigned long data_page;
--	unsigned long type_page;
--	unsigned long dev_page;
--	char *dir_page;
- 
--	retval = copy_mount_options(type, &type_page);
--	if (retval < 0)
--		return retval;
-+	ret = copy_mount_string(type, &kernel_type);
-+	if (ret < 0)
-+		goto out_type;
- 
--	dir_page = getname(dir_name);
--	retval = PTR_ERR(dir_page);
--	if (IS_ERR(dir_page))
--		goto out1;
-+	kernel_dir = getname(dir_name);
-+	if (IS_ERR(kernel_dir)) {
-+		ret = PTR_ERR(kernel_dir);
-+		goto out_dir;
-+	}
- 
--	retval = copy_mount_options(dev_name, &dev_page);
--	if (retval < 0)
--		goto out2;
-+	ret = copy_mount_string(dev_name, &kernel_dev);
-+	if (ret < 0)
-+		goto out_dev;
- 
--	retval = copy_mount_options(data, &data_page);
--	if (retval < 0)
--		goto out3;
-+	ret = copy_mount_options(data, &data_page);
-+	if (ret < 0)
-+		goto out_data;
- 
--	retval = do_mount((char *)dev_page, dir_page, (char *)type_page,
--			  flags, (void *)data_page);
--	free_page(data_page);
-+	ret = do_mount(kernel_dev, kernel_dir, kernel_type, flags,
-+		(void *) data_page);
- 
--out3:
--	free_page(dev_page);
--out2:
--	putname(dir_page);
--out1:
--	free_page(type_page);
--	return retval;
-+	free_page(data_page);
-+out_data:
-+	kfree(kernel_dev);
-+out_dev:
-+	putname(kernel_dir);
-+out_dir:
-+	kfree(kernel_type);
-+out_type:
-+	return ret;
- }
- 
- /*
--- 
-1.6.0.6
+Z.
 
