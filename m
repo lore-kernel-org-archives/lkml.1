@@ -1,104 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbZFRAjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZFRAkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbZFRAjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Jun 2009 20:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZFRAj3
+	id S1756730AbZFRAkU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Jun 2009 20:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZFRAkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Jun 2009 20:39:29 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:42168 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbZFRAj2 (ORCPT
+	Wed, 17 Jun 2009 20:40:09 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:17632 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbZFRAkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Jun 2009 20:39:28 -0400
-Date: Wed, 17 Jun 2009 18:38:08 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Matthew Wilcox <matthew@wil.cx>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       a.beregalov@gmail.com
-Subject: Re: linux-next: Tree for June 17 (pci/slot)
-Message-ID: <20090618003808.GA29472@ldl.fc.hp.com>
-References: <20090617155354.075c60ae.sfr@canb.auug.org.au> <4A39194B.2060200@oracle.com> <20090617163604.GT19977@parisc-linux.org> <20090617102901.6e39aac2@jbarnes-g45> <4A392B48.7060206@oracle.com> <20090617161001.734321be@jbarnes-g45>
+	Wed, 17 Jun 2009 20:40:08 -0400
+Message-ID: <4A398BFF.2090308@oracle.com>
+Date: Wed, 17 Jun 2009 17:36:15 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090617161001.734321be@jbarnes-g45>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       samr <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] kernel-doc: ignore kmemcheck_bitfield_begin/end
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4A398CC3.027A:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesse Barnes <jbarnes@virtuousgeek.org>:
-> On Wed, 17 Jun 2009 10:43:36 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > Jesse Barnes wrote:
-> > > On Wed, 17 Jun 2009 10:36:04 -0600
-> > > Matthew Wilcox <matthew@wil.cx> wrote:
-> > > 
-> > >> On Wed, Jun 17, 2009 at 09:26:51AM -0700, Randy Dunlap wrote:
-> > >>> Stephen Rothwell wrote:
-> > >>>> Hi all,
-> > >>>>
-> > >>>> Changes since 20090616:
-> > >>>
-> > >>> When CONFIG_SYSFS=n:
-> > >>>
-> > >>> drivers/pci/slot.c:327: error: 'module_kset' undeclared (first use
-> > >>> in this function)
-> > >> Is there any point to pci_slot existing without CONFIG_SYSFS?
-> > >> I don't see how you can interact with it in any meaningful way.
-> > >> Perhaps CONFIG_PCI_SLOT should depend on CONFIG_SYSFS?
-> > > 
-> > > I've got a code fix queued up, but maybe a Kconfig dependency is the
-> > > way to go...
-> > 
-> > What is the code fix like?
-> > The Kconfig fix makes sense to me.
-> > 
-> > 
-> Here's the patch I have (sorry cut & paste):
-> 
-> Fix this build error when CONFIG_SYSFS is not set:
-> drivers/pci/slot.c: In function 'pci_hp_create_module_link':
-> drivers/pci/slot.c:327: error: 'module_kset' undeclared
-> 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I agree with Matthew. You can't do anything useful with the
-functionality in drivers/pci/slot.o unless you have sysfs, so a
-Kconfig dependency is more appropriate.
+Teach kernel-doc to ignore kmemcheck_bitfield_{begin,end} sugar
+so that it won't generate warnings like this:
 
-From: Alex Chiang <achiang@hp.com>
+Warning(include/net/sock.h:297): No description found for parameter 'kmemcheck_bitfield_begin(flags)'
+Warning(include/net/sock.h:297): No description found for parameter 'kmemcheck_bitfield_end(flags)'
 
-PCI: drivers/pci/slot.c should depend on CONFIG_SYSFS
-
-There is no way to interact with a physical PCI slot without
-sysfs, so encode the dependency and prevent this build error:
-
-	drivers/pci/slot.c: In function 'pci_hp_create_module_link':
-	drivers/pci/slot.c:327: error: 'module_kset' undeclared
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Fix-suggested-by: Matthew Wilcox <matthew@wil.cx>
-Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index ba6af16..ed32f67 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -2,10 +2,11 @@
- # Makefile for the PCI bus specific drivers.
- #
+ scripts/kernel-doc |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- linux-2.6.30-git11.orig/scripts/kernel-doc
++++ linux-2.6.30-git11/scripts/kernel-doc
+@@ -1468,6 +1468,8 @@ sub dump_enum($$) {
+ 	    }
  
--obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o slot.o \
-+obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
- 			pci-driver.o search.o pci-sysfs.o rom.o setup-res.o \
- 			irq.o
- obj-$(CONFIG_PROC_FS) += proc.o
-+obj-$(CONFIG_SYSFS) += slot.o
+ 	}
++	# strip kmemcheck_bitfield_{begin,end}.*;
++	$members =~ s/kmemcheck_bitfield_.*?;//gos;
  
- # Build PCI Express stuff if needed
- obj-$(CONFIG_PCIEPORTBUS) += pcie/
+ 	output_declaration($declaration_name,
+ 			   'enum',
+
+
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
