@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbZFRSf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZFRSo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbZFRSf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 14:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbZFRSfv
+	id S1755102AbZFRSo1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 14:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZFRSoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 14:35:51 -0400
-Received: from sous-sol.org ([216.99.217.87]:49125 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753402AbZFRSfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 14:35:50 -0400
-Date: Thu, 18 Jun 2009 11:34:05 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-Cc: "'Chris Wright'" <chrisw@sous-sol.org>,
+	Thu, 18 Jun 2009 14:44:19 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:37465 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZFRSoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 14:44:18 -0400
+Date: Thu, 18 Jun 2009 21:41:01 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Chris Wright <chrisw@redhat.com>
+Cc: "Yu, Fenghua" <fenghua.yu@intel.com>,
        "'David Woodhouse'" <dwmw2@infradead.org>,
        "'Linus Torvalds'" <torvalds@linux-foundation.org>,
        "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
        "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Christopher Wright'" <chrisw@redhat.com>,
-       "Kay, Allen M" <allen.m.kay@intel.com>,
-       "'iommu'" <iommu@lists.linux-foundation.org>,
-       "'lkml'" <linux-kernel@vger.kernel.org>
+       "'Ingo Molnar'" <mingo@elte.hu>, "Kay, Allen M" <allen.m.kay@intel.com>,
+       "'lkml'" <linux-kernel@vger.kernel.org>,
+       "'iommu'" <iommu@lists.linux-foundation.org>
 Subject: Re: [PATCH 1/2] IOMMU Identity Mapping Support:
 	iommu_identity_mapping definition
-Message-ID: <20090618183405.GC19771@sequoia.sous-sol.org>
-References: <20090327212321.070229000@intel.com> <20090416001957.GA1527@linux-os.sc.intel.com> <1240135508.3589.75.camel@macbook.infradead.org> <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com> <20090513231351.GA22386@linux-os.sc.intel.com> <1242314271.3393.11.camel@macbook.infradead.org> <20090514175944.GA5168@linux-os.sc.intel.com> <20090618180514.GA24082@linux-os.sc.intel.com> <20090618181335.GB19771@sequoia.sous-sol.org> <A6AD88C3F2289247BE726C37303E1EB8B0044F04@orsmsx505.amr.corp.intel.com>
+Message-ID: <20090618184101.GE6838@il.ibm.com>
+References: <1240135508.3589.75.camel@macbook.infradead.org> <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com> <20090513231351.GA22386@linux-os.sc.intel.com> <1242314271.3393.11.camel@macbook.infradead.org> <20090514175944.GA5168@linux-os.sc.intel.com> <20090618180514.GA24082@linux-os.sc.intel.com> <20090618180835.GB6838@il.ibm.com> <A6AD88C3F2289247BE726C37303E1EB8B0044EC0@orsmsx505.amr.corp.intel.com> <20090618182545.GC6838@il.ibm.com> <20090618183121.GB2500@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B0044F04@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090618183121.GB2500@x200.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yu, Fenghua (fenghua.yu@intel.com) wrote:
-> >>
-> >> The first patch defines iommu_identity_mapping varialbe which controls
-> >the
-> >> identity mapping code and is 0 by default.
-> >
-> >The only real difference between "pt" and "identity" is hardware support.
-> >We should have a single value we don't have to tell users to do different
-> >things depending on their hardware (they won't even know what they have)
-> >to achieve the same result.
-> 
-> Technically keeping two separate options in base kernel might be clear and easy to understand. A distro might merge them together or have other usage model.
+On Thu, Jun 18, 2009 at 11:31:21AM -0700, Chris Wright wrote:
 
-This pushes burden to distros and users for no obvious gain.  Just like
-queued invalidation vs. register based invalidation...it's a hardware
-detail that users don't really care that much about, they just care
-about user visible functionality.
+> The 1-1 mapping is for all the host devices _not_ assigned to
+> guests.  To eliminate the i/o overhead imposed on all guests not
+> using an assigned device or from i/o from host.
+>
+> It's just the same as VT-d PassThrough mode for hardware that
+> doesn't support it.
 
-thanks,
--chris
+Ok, that makes sense. Thanks, Chris. However, that doesn't appear to
+be what the patch does---unless I'm misreading, if
+iommu_identity_mapping is set, *all* devices get identity
+mapping. Instead of a global command line option, we need to provide a
+way to enable/disable pt or identity mapping (I agree that the user
+shouldn't know or care which is used, the kernel should pick the best
+one automatically) on a per BDF basis.
+
+Cheers,
+Muli
+-- 
+Muli Ben-Yehuda | muli@il.ibm.com | +972-4-8281080
+Manager, Virtualization and Systems Architecture
+Master Inventor, IBM Haifa Research Laboratory
