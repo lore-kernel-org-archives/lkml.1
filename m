@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZFSTqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbZFSTz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZFSTqD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 15:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZFSTpz
+	id S1752683AbZFSTz2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 15:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbZFSTzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 15:45:55 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:56144 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbZFSTpz (ORCPT
+	Fri, 19 Jun 2009 15:55:20 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:51416 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbZFSTzT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 15:45:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=bn3GbvvLmyrKd6q8jqBdXxTohxZuBVsaTVsqCYsU7OwLcb6WuwyBLi6/0dkguuDWZ
-	D1jKabIUvWh+269Nd3nEQ==
-Date: Fri, 19 Jun 2009 12:45:50 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: David Miller <davem@davemloft.net>
-cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
-In-Reply-To: <20090618.123708.78849607.davem@davemloft.net>
-Message-ID: <alpine.DEB.2.00.0906191239170.20822@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com> <20090618.120034.246557840.davem@davemloft.net> <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com> <20090618.123708.78849607.davem@davemloft.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 19 Jun 2009 15:55:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=awTGSW256I4ZX/4maA9WxAF2cqR5XINB4Sw5jWnGzyWXFnabeFkMSoexbFKQaE2ZF4
+         ZmlE9VPrcKhlK1kRKYIkhgrmryyzoRWYG5iXiZlx9QL4orM2z27xmRqV+seWh9luIbWx
+         Lc9piZ8kuUFKS0yFLBPRun08QZOkkG9QHIEDE=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <4A3BE7EA.4050800@msgid.tls.msk.ru>
+References: <1245439404.25076.7.camel@ronispc.chem.mcgill.ca>
+	 <4A3BE7EA.4050800@msgid.tls.msk.ru>
+Date: Fri, 19 Jun 2009 12:55:20 -0700
+Message-ID: <dd18b0c30906191255h7d0c6bcfx58f32d4b34e13c34@mail.gmail.com>
+Subject: Re: Panic booting 2.6.30
+From: Justin Mattock <justinmattock@gmail.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: ronis@ronispc.chem.mcgill.ca, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Jun 2009, David Miller wrote:
+On Fri, Jun 19, 2009 at 12:32 PM, Michael Tokarev<mjt@tls.msk.ru> wrote:
+> David Ronis wrote:
+>>
+>> I've just upgraded an older machine (a P3 running slackware 11.0) from
+>> 2.6.26.5 to 2.6.30; the build was uneventful.  However, on reboot (using
+>> lilo) I get:
+>>
+>> VSF:  Cannot open root device "hda2" or unknown-block(0,0)
+>> Please append a correct root= boot option; here are the available
+>> partions:     <====== nothing shows here...
+>> Kernel-Panic - not syncing.
+>>
+>> I had rebooted with and without root=hda2.   The old kernel is still
+>> usable.
+>>
+>> Lilo.conf looks like:
+>
+> Add large-memory option to lilo.conf
+>
+> /mjt
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-> > I understand what you're trying to avoid, but I disagree with the
-> > approach of altering the default behavior of GFP_ATOMIC.
-> 
-> The default got changed at some point because it never did
-> crap like this before.
-> 
+check  /dev/hda*  to see
+if it renamed itself to /dev/sda*
+(noticed this a few months ago with
+2.6.17(I think) to 2.6.24)
 
-Wrong, the page allocator has warned about page allocation failures when 
-__GFP_NOWARN was not specified since 2.5.53.  __GFP_NOWARN was never a 
-default for GFP_ATOMIC.
+-- 
+Justin P. Mattock
