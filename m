@@ -1,39 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbZFSHSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZFSHUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbZFSHSV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 03:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbZFSHSM
+	id S1755931AbZFSHUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 03:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZFSHU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 03:18:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42334 "EHLO kernel.dk"
+	Fri, 19 Jun 2009 03:20:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44623 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754369AbZFSHSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 03:18:11 -0400
-Date: Fri, 19 Jun 2009 09:18:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] block: fix blk-settings kernel-doc warning
-Message-ID: <20090619071813.GH11363@kernel.dk>
-References: <4A3AFA06.1000107@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A3AFA06.1000107@oracle.com>
+	id S1751824AbZFSHU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 03:20:26 -0400
+Date: Fri, 19 Jun 2009 03:19:57 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Amerigo Wang <amwang@redhat.com>
+Message-Id: <20090619072212.6519.10915.sendpatchset@localhost.localdomain>
+Subject: [Patch] sysctl: forbid too long numbers
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18 2009, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix kernel-doc parameter name typo in blk-settings.c:
-> 
-> Warning(block/blk-settings.c:108): No description found for parameter 'lim'
-> Warning(block/blk-settings.c:108): Excess function parameter 'limits' description in 'blk_set_default_limits'
 
-Thanks Randy, applied.
+For some file under /proc/sys/kernel, the valid values for them
+are < ULONG_MAX if they don't have they own max value defined. Thus,
+numbers longer than are invalid.
 
--- 
-Jens Axboe
+So use strict_strtoul() instead of simple_strtoul(), and
+make strict_strtoul() more strict.
 
+[I don't know whom I should Cc...]
+Signed-off-by: WANG Cong <amwang@redhat.com>
+
+---
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index ab462b9..bc27e00 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -2331,7 +2331,8 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
+ 			if (*p < '0' || *p > '9')
+ 				break;
+ 
+-			lval = simple_strtoul(p, &p, 0);
++			if (strict_strtoul(p, 0, &lval))
++				return -EINVAL;
+ 
+ 			len = p-buf;
+ 			if ((len < left) && *p && !isspace(*p))
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 756ccaf..ff2ca5c 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -163,11 +163,14 @@ int strict_strtoul(const char *cp, unsigned int base, unsigned long *res)
+ 	char *tail;
+ 	unsigned long val;
+ 	size_t len;
++	char tmp[32];
+ 
+ 	*res = 0;
+ 	len = strlen(cp);
+ 	if (len == 0)
+ 		return -EINVAL;
++	if (len > snprintf(tmp, "%ld", ULONG_MAX))
++		return -EINVAL;
+ 
+ 	val = simple_strtoul(cp, &tail, base);
+ 	if (tail == cp)
