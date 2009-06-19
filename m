@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbZFSKEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbZFSKEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbZFSKEk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 06:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbZFSKD5
+	id S1758162AbZFSKEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 06:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbZFSKEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 06:03:57 -0400
-Received: from simmts8-qfe0.srvr.bell.ca ([206.47.199.166]:63665 "EHLO
-	simmts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754186AbZFSKDy (ORCPT
+	Fri, 19 Jun 2009 06:04:01 -0400
+Received: from simmts12-qfe0.srvr.bell.ca ([206.47.199.141]:47758 "EHLO
+	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755123AbZFSKD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 06:03:54 -0400
+	Fri, 19 Jun 2009 06:03:56 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: AtLCALL3OkrOL8eg/2dsb2JhbACBUYoFgwsBkkyiHIsjg3QF
 X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
@@ -18,11 +18,11 @@ From: Online Winner <n6kph@nb.aibn.com>
 Reply-To: cokeprize1@btinternet.com
 To: <info@winner.org>
 Subject: You won =?iso-8859-1?B?ozEsMDAwLDAwMC4wMDA=?=
-Date: Fri, 19 Jun 2009 6:03:54 -0400
+Date: Fri, 19 Jun 2009 6:03:58 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090619100356.MFRA1670.simmts8-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+Message-Id: <20090619100358.HVBQ1599.simmts12-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
