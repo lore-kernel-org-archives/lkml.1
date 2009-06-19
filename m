@@ -1,135 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZFSRsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZFSRzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZFSRsY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 13:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZFSRsR
+	id S1754236AbZFSRzd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 13:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZFSRzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 13:48:17 -0400
-Received: from cmpxchg.org ([85.214.51.133]:56653 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753046AbZFSRsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 13:48:16 -0400
-Date: Fri, 19 Jun 2009 19:45:02 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Peter Chubb <peter.chubb@nicta.com.au>
-Cc: linux-kernel@vger.kernel.org, mel@csn.ul.ie, akpm@linux-foundation.org
-Subject: Re: [BUG] Bad page flags when process using mlock()ed memory exits
-Message-ID: <20090619174502.GA2477@cmpxchg.org>
-References: <87y6ro6exi.wl%peter@chubb.wattle.id.au>
+	Fri, 19 Jun 2009 13:55:25 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51817 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbZFSRzZ (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 13:55:25 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Pavel Machek <pavel@ucw.cz>
+Cc: James Morris <jmorris@namei.org>, Joseph Cihula <joseph.cihula@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, hpa@zytor.com, andi@firstfloor.org,
+       Chris Wright <chrisw@sous-sol.org>, jbeulich@novell.com,
+       peterm@redhat.com, gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v4][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel support
+In-Reply-To: Your message of "Fri, 19 Jun 2009 17:05:14 +0200."
+             <20090619150514.GE1389@ucw.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <4A299051.40405@intel.com> <alpine.LRH.2.00.0906121509001.14633@tundra.namei.org>
+            <20090619150514.GE1389@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87y6ro6exi.wl%peter@chubb.wattle.id.au>
+Content-Type: multipart/signed; boundary="==_Exmh_1245433922_4243P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 19 Jun 2009 13:52:02 -0400
+Message-ID: <33858.1245433922@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 02:11:21PM +1000, Peter Chubb wrote:
+--==_Exmh_1245433922_4243P
+Content-Type: text/plain; charset=us-ascii
+
+On Fri, 19 Jun 2009 17:05:14 +0200, Pavel Machek said:
+> On Fri 2009-06-12 15:12:59, James Morris wrote:
+> > On Fri, 5 Jun 2009, Joseph Cihula wrote:
+> > 
+> > > Linux support for Intel(R) Trusted Execution Technology.
+> > 
+> > > Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
+> > > Signed-off-by:  Shane Wang <shane.wang@intel.com>
+> > > Signed-off-by:  Gang Wei <gang.wei@intel.com>
+> > 
+> > Reviewed-by: James Morris <jmorris@namei.org>
+> > 
+> > There have been no comments on this since you posted it, so we might 
+> > assume there are no further technical issues.
 > 
-> In recent kernels I've been seeing many mesages of the form:
+> I believe the code at best useless and at worst dangerous. We don't
+> merge useless code to the kernel.
 > 
-> BUG: Bad page state in process reiserfsck  pfn:79c58
-> page:c3d03b00 flags:8050000c count:0 mapcount:0 mapping:(null) index:8095
-> Pid: 3927, comm: reiserfsck Not tainted 2.6.30-test-05456-gda456f1 #60
-> Call Trace:
->  [<c134a67c>] ? printk+0xf/0x13
->  [<c10774dc>] bad_page+0xc9/0xe2
->  [<c1078041>] free_hot_cold_page+0x5c/0x204
->  [<c1078206>] __pagevec_free+0x1d/0x25
->  [<c107ac3e>] release_pages+0x14e/0x18e)
->  [<c108ef8a>] free_pages_and_swap_cache+0x69/0x82
->  [<c1089458>] exit_mmap+0xf6/0x11f
->  [<c102afcd>] mmput+0x39/0xaf
->  [<c102e534>] exit_mm+0xe5/0xed
->  [<c102fa66>] do_exit+0x13f/0x578
->  [<c102fefd>] do_group_exit+0x5e/0x85
->  [<c102ff37>] sys_exit_group+0x13/0x17
->  [<c10031ef>] sysenter_do_call+0x12/0x3c
-> Disabling lock debugging due to kernel taint
-> 
-> This appears to have been introduced by patch 
->     da456f14d2f2d7350f2b9440af79c85a34c7eed5
->     page allocator: do not disable interrupts in free_page_mlock()
-> 
-> That patch removed the free_page_mlock() from free_pages_check(), so
-> if free_hot_cold_page() is called on an Mlocked page (e.g., if a
-> process that used mlock() calls exit()) free_pages_check() will always
-> barf, whereas before it would just unlock the page.
+> What are non-evil uses of this code?
 
-I prepared a fix, thanks for chasing it down.
+Yes, most of the uses contemplated for this are for evil DRM schemes.  On the
+other hand, the code is equally useful to help make sure that mo miscreant has
+snuck evil DRM (or other evil code) in behind my back.
 
-Mel, to keep this simple I just used the atomic test-clear, but if I
-am not mistaken we should not need any atomicity here, so we could
-probably add a __TestClearPage version and use this instead...?
+"Somebody has screwed with this kernel image, and you're not booting what you
+thought you were booting."
 
----
->From 493b74e8615db4e3323b5b169b0b8265dfd7c3f4 Mon Sep 17 00:00:00 2001
-From: Johannes Weiner <hannes@cmpxchg.org>
-Date: Fri, 19 Jun 2009 19:30:56 +0200
-Subject: [patch] mm: page_alloc: clear PG_locked before checking flags on free
+Seems worth it to me.
 
-da456f1 "page allocator: do not disable interrupts in free_page_mlock()" moved
-the PG_mlocked clearing after the flag sanity checking which makes mlocked
-pages always trigger 'bad page'.  Fix this by clearing the bit up front.
+--==_Exmh_1245433922_4243P
+Content-Type: application/pgp-signature
 
-Reported-by: Peter Chubb <peter.chubb@nicta.com.au>
-Debugged-by: Peter Chubb <peter.chubb@nicta.com.au>
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Mel Gorman <mel@csn.ul.ie>
----
- mm/page_alloc.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 6f0753f..30d5093 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -488,7 +488,6 @@ static inline void __free_one_page(struct page *page,
-  */
- static inline void free_page_mlock(struct page *page)
- {
--	__ClearPageMlocked(page);
- 	__dec_zone_page_state(page, NR_MLOCK);
- 	__count_vm_event(UNEVICTABLE_MLOCKFREED);
- }
-@@ -558,7 +557,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
- 	unsigned long flags;
- 	int i;
- 	int bad = 0;
--	int clearMlocked = PageMlocked(page);
-+	int wasMlocked = TestClearPageMlocked(page);
- 
- 	kmemcheck_free_shadow(page, order);
- 
-@@ -576,7 +575,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
- 	kernel_map_pages(page, 1 << order, 0);
- 
- 	local_irq_save(flags);
--	if (unlikely(clearMlocked))
-+	if (unlikely(wasMlocked))
- 		free_page_mlock(page);
- 	__count_vm_events(PGFREE, 1 << order);
- 	free_one_page(page_zone(page), page, order,
-@@ -1022,7 +1021,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 	struct zone *zone = page_zone(page);
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
--	int clearMlocked = PageMlocked(page);
-+	int wasMlocked = TestClearPageMlocked(page);
- 
- 	kmemcheck_free_shadow(page, 0);
- 
-@@ -1041,7 +1040,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 	pcp = &zone_pcp(zone, get_cpu())->pcp;
- 	set_page_private(page, get_pageblock_migratetype(page));
- 	local_irq_save(flags);
--	if (unlikely(clearMlocked))
-+	if (unlikely(wasMlocked))
- 		free_page_mlock(page);
- 	__count_vm_event(PGFREE);
- 
--- 
-1.6.3
+iD8DBQFKO9BCcC3lWbTT17ARAuAgAJ40//fVU5Nx/Bu6h5El7s2TUJOdxwCeJUcg
+XwqUqrR4sZZsunOXTIGXI7o=
+=ErSc
+-----END PGP SIGNATURE-----
 
-
-
+--==_Exmh_1245433922_4243P--
