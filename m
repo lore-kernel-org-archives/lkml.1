@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbZFSUfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZFSUfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757406AbZFSUfU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 16:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZFSUfK
+	id S1756270AbZFSUfg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 16:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbZFSUf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 16:35:10 -0400
-Received: from khc.piap.pl ([195.187.100.11]:57327 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbZFSUfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 16:35:09 -0400
-To: Dave Airlie <airlied@linux.ie>, Keith Packard <keithp@keithp.com>
-Cc: <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net
-Subject: Trivial fixes #2 for drivers/gpu/drm/i915/: debug code
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 19 Jun 2009 22:35:09 +0200
-Message-ID: <m33a9w55du.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 19 Jun 2009 16:35:26 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:34153 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751616AbZFSUfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 16:35:25 -0400
+Subject: Re: Trivial fixes for drivers/gpu/drm/i915/
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Dave Airlie <airlied@linux.ie>, Keith Packard <keithp@keithp.com>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+In-Reply-To: <m34ouc55ka.fsf@intrepid.localdomain>
+References: <m34ouc55ka.fsf@intrepid.localdomain>
+Content-Type: text/plain
+Date: Fri, 19 Jun 2009 22:35:18 +0200
+Message-Id: <1245443718.15367.46.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-obj_priv->page_list has been recently renamed to obj_priv->pages.
-Fix the normally disabled debug code, too.
+Hi Krzysztof,
 
-Signed-off-by:  Krzysztof Halasa <khc@pm.waw.pl>
+> size_t is (some sort of) int on x86-32 and long on x86-64, eliminate
+> compiler warnings by casting to long.
 
-diff --git a/drivers/gpu/drm/i915/i915_gem_debug.c b/drivers/gpu/drm/i915/i915_gem_debug.c
-index 8d0b943..88e9c3f 100644
---- a/drivers/gpu/drm/i915/i915_gem_debug.c
-+++ b/drivers/gpu/drm/i915/i915_gem_debug.c
-@@ -87,7 +87,7 @@ i915_gem_dump_object(struct drm_gem_object *obj, int len,
- 			chunk_len = page_len - chunk;
- 			if (chunk_len > 128)
- 				chunk_len = 128;
--			i915_gem_dump_page(obj_priv->page_list[page],
-+			i915_gem_dump_page(obj_priv->pages[page],
- 					   chunk, chunk + chunk_len,
- 					   obj_priv->gtt_offset +
- 					   page * PAGE_SIZE,
-@@ -157,7 +157,7 @@ i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle)
- 	for (page = 0; page < obj->size / PAGE_SIZE; page++) {
- 		int i;
- 
--		backing_map = kmap_atomic(obj_priv->page_list[page], KM_USER0);
-+		backing_map = kmap_atomic(obj_priv->pages[page], KM_USER0);
- 
- 		if (backing_map == NULL) {
- 			DRM_ERROR("failed to map backing page\n");
+just using %zd or %zu would do the same trick and avoid stupid casts.
 
--- 
-Krzysztof Halasa
+Regards
+
+Marcel
+
+
