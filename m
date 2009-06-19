@@ -1,217 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbZFSWgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbZFSWi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbZFSWgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759499AbZFSWch
+	id S1761386AbZFSWi7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760994AbZFSWhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:32:37 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:44769 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757991AbZFSWbF (ORCPT
+	Fri, 19 Jun 2009 18:37:23 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:8619 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760972AbZFSWhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:31:05 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       greg@kroah.com
-Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 17/21] ceph: nfs re-export support
-Date: Fri, 19 Jun 2009 15:31:38 -0700
-Message-Id: <1245450702-31343-18-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1245450702-31343-17-git-send-email-sage@newdream.net>
-References: <1245450702-31343-1-git-send-email-sage@newdream.net>
- <1245450702-31343-2-git-send-email-sage@newdream.net>
- <1245450702-31343-3-git-send-email-sage@newdream.net>
- <1245450702-31343-4-git-send-email-sage@newdream.net>
- <1245450702-31343-5-git-send-email-sage@newdream.net>
- <1245450702-31343-6-git-send-email-sage@newdream.net>
- <1245450702-31343-7-git-send-email-sage@newdream.net>
- <1245450702-31343-8-git-send-email-sage@newdream.net>
- <1245450702-31343-9-git-send-email-sage@newdream.net>
- <1245450702-31343-10-git-send-email-sage@newdream.net>
- <1245450702-31343-11-git-send-email-sage@newdream.net>
- <1245450702-31343-12-git-send-email-sage@newdream.net>
- <1245450702-31343-13-git-send-email-sage@newdream.net>
- <1245450702-31343-14-git-send-email-sage@newdream.net>
- <1245450702-31343-15-git-send-email-sage@newdream.net>
- <1245450702-31343-16-git-send-email-sage@newdream.net>
- <1245450702-31343-17-git-send-email-sage@newdream.net>
+	Fri, 19 Jun 2009 18:37:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=hrNPi2XM8+C2m4Mx38brxoybl1BaJYAMFZDryjb9Nrs9Wi0eaWrOA7cnJMU9+To0i
+	X1x3JxIaqZRQEw1c944Tw==
+Date: Fri, 19 Jun 2009 15:37:17 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: David Miller <davem@davemloft.net>, eric.dumazet@gmail.com,
+       jpiszcz@lucidpixels.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
+In-Reply-To: <m1ljnoyn0e.fsf@fess.ebiederm.org>
+Message-ID: <alpine.DEB.2.00.0906191524470.30455@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com> <20090618.120034.246557840.davem@davemloft.net> <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com> <20090618.123708.78849607.davem@davemloft.net>
+ <m1ljnoyn0e.fsf@fess.ebiederm.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Basic NFS re-export support is included.  This mostly works.  However,
-Ceph's MDS design precludes the ability to generate a (small)
-filehandle that will be valid forever, so this is of limited utility.
+On Fri, 19 Jun 2009, Eric W. Biederman wrote:
 
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- fs/staging/ceph/export.c |  156 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 156 insertions(+), 0 deletions(-)
- create mode 100644 fs/staging/ceph/export.c
+> But Mr. Reintjes if you really want the traces I can set up 
+> an script to email them to you every time it happens.  Say about
+> 1 a minute from my paltry little farm of machines.
+> 
 
-diff --git a/fs/staging/ceph/export.c b/fs/staging/ceph/export.c
-new file mode 100644
-index 0000000..9e87065
---- /dev/null
-+++ b/fs/staging/ceph/export.c
-@@ -0,0 +1,156 @@
-+#include <linux/exportfs.h>
-+
-+#include "super.h"
-+#include "ceph_debug.h"
-+
-+int ceph_debug_export __read_mostly = -1;
-+#define DOUT_MASK DOUT_MASK_EXPORT
-+#define DOUT_VAR ceph_debug_export
-+
-+/*
-+ * fh is N tuples of
-+ *  <ino, parent's d_name.hash>
-+ *
-+ * This is only a semi-reliable strategy.  The fundamental issue is
-+ * that ceph doesn't not have a way to locate an arbitrary inode by
-+ * ino.  Keeping a few parents in the handle increases the probability
-+ * that we'll find it in one of the MDS caches, but it is by no means
-+ * a guarantee.
-+ *
-+ * Also, the FINDINODE request is currently directed at a single MDS.
-+ * It should probably try all MDS's before giving up.  For a single MDS
-+ * system that isn't a problem.
-+ *
-+ * In the meantime, this works reasonably well for basic usage.
-+ */
-+
-+
-+struct ceph_export_item {
-+	struct ceph_vino ino;
-+	struct ceph_vino parent_ino;
-+	u32 parent_name_hash;
-+};
-+
-+#define IPSZ ((sizeof(struct ceph_export_item) + sizeof(u32) + 1) / sizeof(u32))
-+
-+static int ceph_encode_fh(struct dentry *dentry, u32 *rawfh, int *max_len,
-+		   int connectable)
-+{
-+	int type = 1;
-+	struct ceph_export_item *fh =
-+		(struct ceph_export_item *)rawfh;
-+	int max = *max_len / IPSZ;
-+	int len;
-+	struct dentry *d_parent;
-+
-+	dout(10, "encode_fh %p max_len %d u32s (%d export items)%s\n", dentry,
-+	     *max_len, max, connectable ? " connectable" : "");
-+
-+	if (max < 1 || (connectable && max < 2))
-+		return -ENOSPC;
-+
-+	for (len = 0; len < max; len++) {
-+		d_parent = dentry->d_parent;
-+		fh[len].ino = ceph_vino(dentry->d_inode);
-+		fh[len].parent_ino = ceph_vino(d_parent->d_inode);
-+		fh[len].parent_name_hash = dentry->d_parent->d_name.hash;
-+
-+		if (IS_ROOT(dentry))
-+			break;
-+
-+		dentry = dentry->d_parent;
-+
-+		if (!dentry)
-+			break;
-+	}
-+
-+	if (len > 1)
-+		type = 2;
-+
-+	*max_len = len * IPSZ;
-+	return type;
-+}
-+
-+static struct dentry *__fh_to_dentry(struct super_block *sb,
-+			      struct ceph_export_item *fh, int len)
-+{
-+	struct ceph_mds_client *mdsc = &ceph_client(sb)->mdsc;
-+	struct inode *inode;
-+	struct dentry *dentry;
-+	int err;
-+#define BUF_SIZE 16
-+	char path2[BUF_SIZE];
-+	u32 hash = fh->parent_name_hash;
-+
-+	inode = ceph_find_inode(sb, fh->ino);
-+	if (!inode) {
-+		struct ceph_mds_request *req;
-+		derr(10, "fh_to_dentry %llx.%x -- no inode\n", fh->ino.ino,
-+		     hash);
-+		req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LOOKUPHASH,
-+					       USE_ANY_MDS);
-+		if (IS_ERR(req))
-+			return ERR_PTR(PTR_ERR(req));
-+
-+		req->r_path1 = "";
-+		req->r_ino1 = fh->ino;
-+		snprintf(path2, BUF_SIZE, "%d", hash);
-+		req->r_path2 = "";
-+		req->r_ino2 = fh->parent_ino;
-+		req->r_num_caps = 1;
-+		err = ceph_mdsc_do_request(mdsc, NULL, req);
-+		ceph_mdsc_put_request(req);
-+		inode = ceph_find_inode(sb, fh->ino);
-+		if (!inode)
-+			return ERR_PTR(err ? err : -ESTALE);
-+	}
-+
-+	dentry = d_obtain_alias(inode);
-+
-+	if (!dentry) {
-+		derr(10, "fh_to_dentry %llx.%x -- inode %p but ENOMEM\n",
-+		     fh->ino.ino,
-+		     hash, inode);
-+		iput(inode);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+	err = ceph_init_dentry(dentry);
-+
-+	if (err < 0) {
-+		iput(inode);
-+		return ERR_PTR(err);
-+	}
-+	dout(10, "fh_to_dentry %llx.%x -- inode %p dentry %p\n", fh->ino.ino,
-+	     hash, inode, dentry);
-+	return dentry;
-+
-+}
-+
-+static struct dentry *ceph_fh_to_dentry(struct super_block *sb, struct fid *fid,
-+				 int fh_len, int fh_type)
-+{
-+	u32 *fh = fid->raw;
-+	return __fh_to_dentry(sb, (struct ceph_export_item *)fh, fh_len/IPSZ);
-+}
-+
-+static struct dentry *ceph_fh_to_parent(struct super_block *sb, struct fid *fid,
-+				 int fh_len, int fh_type)
-+{
-+	u32 *fh = fid->raw;
-+	u64 ino = *(u64 *)fh;
-+	u32 hash = fh[2];
-+
-+	derr(10, "fh_to_parent %llx.%x\n", ino, hash);
-+
-+	if (fh_len < 6)
-+		return ERR_PTR(-ESTALE);
-+
-+	return __fh_to_dentry(sb, (struct ceph_export_item *)fh + 1,
-+			      fh_len/IPSZ - 1);
-+}
-+
-+const struct export_operations ceph_export_ops = {
-+	.encode_fh = ceph_encode_fh,
-+	.fh_to_dentry = ceph_fh_to_dentry,
-+	.fh_to_parent = ceph_fh_to_parent,
-+};
--- 
-1.5.6.5
+Perhaps you missed my email where I suggested emitting the page allocation 
+warnings only when CONFIG_DEBUG_VM is enabled.  It's at 
+http://lkml.org/lkml/2009/6/18/355.
 
+We can then keep the __GFP_NOFAIL flag to indicate that the warnings 
+should never be emitted for that allocation, regardless of the .config.
+
+It's funny, though, that the problem that originally started this thread 
+was quickly diagnosed because of these messages.  As far as I know, my 
+suggestion to increase /proc/sys/vm/dirty_background_ratio to kick pdflush 
+earlier has prevented the slab allocation failures and not required 
+delayed acks for nfsd.
+
+That was possible because of the page allocation failure messages that 
+were noticed by the user; without this evidence, the only symptom would 
+have been extremely slow I/O over nfs.  This could involve any number of 
+subsystems and I doubt the first reaction would have been to enable 
+CONFIG_DEBUG_VM.
