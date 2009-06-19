@@ -1,190 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752263AbZFSEou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZFSExT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752263AbZFSEou (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 00:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZFSEok
+	id S1753312AbZFSExT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 00:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZFSExK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 00:44:40 -0400
-Received: from mga05.intel.com ([192.55.52.89]:28212 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751114AbZFSEoj (ORCPT
+	Fri, 19 Jun 2009 00:53:10 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:53495 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751199AbZFSExJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 00:44:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,248,1243839600"; 
-   d="scan'208";a="700752330"
-Subject: Re: [PATCH 0/15] Per-bdi writeback flusher threads v10
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr, dedekind1@gmail.com, fweisbec@gmail.com
-In-Reply-To: <20090618123503.GV11363@kernel.dk>
-References: <1244811255-5391-1-git-send-email-jens.axboe@oracle.com>
-	 <1245114397.2560.368.camel@ymzhang> <20090616080036.GO11363@kernel.dk>
-	 <20090616195329.GH11363@kernel.dk> <1245286866.2560.407.camel@ymzhang>
-	 <20090618051338.GH11363@kernel.dk> <1245302369.2560.410.camel@ymzhang>
-	 <20090618123503.GV11363@kernel.dk>
+	Fri, 19 Jun 2009 00:53:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=h0rYTtiEnyZnDRPfky9ZraHX55Dm2vOCKPeBLWb1lQTFMyRtoY5ynoErByeGQCLC7v
+         CoCgw3wMHtGeMXL5TUsUG+5o4pw2BQPhLJHzJewhLr4Xcu/aODj6/Frh1frPTVl8xOBw
+         2sZk8ge3wJ7ifDI3SNgV29XkR1tvhGfiRjBNQ=
+Subject: Re: [PATCH 1/2] tracing/filters: restore orignal filter when new
+ filter isn't applicable
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.00.0906181915350.6890@gandalf.stny.rr.com>
+References: <4A38AD7F.2070408@cn.fujitsu.com>
+	 <1245304705.6207.78.camel@tropicana>
+	 <alpine.DEB.2.00.0906181915350.6890@gandalf.stny.rr.com>
 Content-Type: text/plain
-Date: Fri, 19 Jun 2009 12:44:40 +0800
-Message-Id: <1245386680.2560.416.camel@ymzhang>
+Date: Thu, 18 Jun 2009 23:46:42 -0500
+Message-Id: <1245386803.9918.49.camel@tropicana>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-18 at 14:35 +0200, Jens Axboe wrote:
-> On Thu, Jun 18 2009, Zhang, Yanmin wrote:
-> > On Thu, 2009-06-18 at 07:13 +0200, Jens Axboe wrote:
-> > > On Thu, Jun 18 2009, Zhang, Yanmin wrote:
-> > > > On Tue, 2009-06-16 at 21:53 +0200, Jens Axboe wrote:
-> > > > > On Tue, Jun 16 2009, Jens Axboe wrote:
-> > > > > > On Tue, Jun 16 2009, Zhang, Yanmin wrote:
-> > > > > > > On Fri, 2009-06-12 at 14:54 +0200, Jens Axboe wrote:
-> > > > > > > > Hi,
-> > > > > > > > 
-> > > > > > > > Here's the 10th version of the writeback patches. Changes since v9:
-> > > > > > > > 
-> > > > > > > > - Fix bdi task exit race leaving work on the list, flush it after we
-> > > > > > > >   know we cannot be found anymore.
-> > > > > > > > - Rename flusher tasks from bdi-foo to flush-foo. Should make it more
-> > > > > > > >   clear to the casual observer.
-> > > > > > > > - Fix a problem with the btrfs bdi register patch that would spew
-> > > > > > > >   warnings for > 1 mounted btrfs file system.
-> > > > > > > > - Rebase to current -git, there were some conflicts with the latest work
-> > > > > > > >   from viro/hch.
-> > > > > > > > - Fix a block layer core problem were stacked devices would overwrite
-> > > > > > > >   the bdi state, causing problems and warning spew.
-> > > > > > > > - In bdi_writeback_all(), in the race occurence of a work allocation
-> > > > > > > >   failure, restart scanning from the beginning. Then we can drop the
-> > > > > > > >   bdi_lock mutex before diving into bdi specific writeback.
-> > > > > > > > - Convert bdi_lock to a spinlock.
-> > > > > > > > - Use spin_trylock() in bdi_writeback_all(), if this isn't a data
-> > > > > > > >   integrity writeback. Debatable, I kind of like it...
-> > > > > > > > - Get rid of BDI_CAP_FLUSH_FORKER, just check for match with the
-> > > > > > > >   default_backing_dev_info.
-> > > > > > > > - Fix race in list checking in bdi_forker_task().
-> > > > > > > > 
-> > > > > > > > 
-> > > > > > > > For ease of patching, I've put the full diff here:
-> > > > > > > > 
-> > > > > > > >   http://kernel.dk/writeback-v10.patch
-> > > > > > > Jens,
-> > > > > > > 
-> > > > > > > I applied the patch to 2.6.30 and got a confliction. The attachment is
-> > > > > > > the patch I ported to 2.6.30. Did I miss anything?
-> > > > > > > 
-> > > > > > > 
-> > > > > > > With the patch, kernel reports below messages on 2 machines.
-> > > > > > > 
-> > > > > > > INFO: task sync:29984 blocked for more than 120 seconds.
-> > > > > > > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > > > > > > sync          D ffff88002805e300  6168 29984  24581
-> > > > > > >  ffff88022f84b780 0000000000000082 7fffffffffffffff ffff880133dbfe70
-> > > > > > >  0000000000000000 ffff88022e2b4c50 ffff88022e2b4fd8 00000001000c7bb8
-> > > > > > >  ffff88022f513fd0 ffff880133dbfde8 ffff880133dbfec8 ffff88022d5d13c8
-> > > > > > > Call Trace:
-> > > > > > >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
-> > > > > > >  [<ffffffff80780fde>] ? schedule+0x9/0x1d
-> > > > > > >  [<ffffffff802b69ed>] ? bdi_sched_wait+0x9/0xd
-> > > > > > >  [<ffffffff8078158d>] ? __wait_on_bit+0x40/0x6f
-> > > > > > >  [<ffffffff802b69e4>] ? bdi_sched_wait+0x0/0xd
-> > > > > > >  [<ffffffff80781628>] ? out_of_line_wait_on_bit+0x6c/0x78
-> > > > > > >  [<ffffffff8024a426>] ? wake_bit_function+0x0/0x23
-> > > > > > >  [<ffffffff802b67ac>] ? bdi_writeback_all+0x12a/0x152
-> > > > > > >  [<ffffffff802b6805>] ? generic_sync_sb_inodes+0x31/0xde
-> > > > > > >  [<ffffffff802b6935>] ? sync_inodes_sb+0x83/0x88
-> > > > > > >  [<ffffffff802b6980>] ? __sync_inodes+0x46/0x8f
-> > > > > > >  [<ffffffff802b94f2>] ? do_sync+0x36/0x5a
-> > > > > > >  [<ffffffff802b9538>] ? sys_sync+0xe/0x12
-> > > > > > >  [<ffffffff8020b9ab>] ? system_call_fastpath+0x16/0x1b
-> > > > > > 
-> > > > > > I don't think it is your backport, for some reason the v10 missed a
-> > > > > > change that I think could solve this race. If not, there's another in
-> > > > > > there that I need to look at.
-> > > > > > 
-> > > > > > So against your current base, could you try with the below added as
-> > > > > > well? The printk() is just so we can see if this triggers for you or
-> > > > > > not.
-> > > > > 
-> > > > > OK that wont work, since we need to actually wait for the work to be
-> > > > > flushed, otherwise we wreak things when we free the bdi immediately
-> > > > > after that.
-> > > > > 
-> > > > > Can you try with this patch?
-> > > > Jens,
-> > > > 
-> > > > I tested below patch on 4 machines (run all fio sub-test cases twice which
-> > > > need more than 10 hours). The previous 2 machines don't stop this time.
-> > > > Unfortunately, the 3rd machine stops. I double-check the disassembled codes
-> > > > of kernel and make sure bdi_start_fn really calls wb_do_writeback.
+On Thu, 2009-06-18 at 19:18 -0400, Steven Rostedt wrote:
+> 
+> 
+> On Thu, 18 Jun 2009, Tom Zanussi wrote:
+> 
+> > Hi,
+> > 
+> > On Wed, 2009-06-17 at 16:46 +0800, Li Zefan wrote:
+> > > | commit 7ce7e4249921d5073e764f7ff7ad83cfa9894bd7
+> > > | Author: Tom Zanussi <tzanussi@gmail.com>
+> > > | Date:   Sun Mar 22 03:31:04 2009 -0500
+> > > |
+> > > |     tracing: add per-event filtering
+> > > |     ...
+> > > |
+> > > |     Filters can also be set or cleared for a complete subsystem by writing
+> > > |     the same filter as would be written to an individual event to the
+> > > |     filter file at the root of the subsytem.  Note however, that if any
+> > > |     event in the subsystem lacks a field specified in the filter being
+> > > |     set, the set will fail and all filters in the subsytem are
+> > > |     automatically cleared.  This change from the previous version was made
+> > > |     because using only the fields that happen to exist for a given event
+> > > |     would most likely result in a meaningless filter.
 > > > 
-> > > Sorry I should have made that more clear when posting v11. This patch
-> > > wont fully solve the problem, however the v11 patch series should. So if
-> > > you test with that, hopefully all soft hangs should be gone.
-> > Ok. I will start new testing against V11. I also add some debugging codes into
-> > V11.
+> > > I really don't like this change. It is inconvenient, and makes subsystem
+> > > filter much less useful:
+> > > 
+> > >   # echo 'vec == 1' > irq/softirq_entry/filter
+> > >   # echo 'irq == 5' > irq/filter
+> > >   bash: echo: write error: Invalid argument
+> > >   # cat irq/softirq_entry/filter
+> > >   none
+> > > 
+> > > I'd expect this will set the filter for irq_handler_entry and
+> > > irq_handler_exit, and won't touch softirq_entry and softirq_exit.
+> > > 
+> > > But it just failed, and what's worse, each event's filter was
+> > > cleared.
+> > > 
+> > 
+> > The idea behind the change was that after setting a subsystem filter,
+> > you'd be guaranteed that all or none of the events in the subsystem
+> > would have the same filter at that point, and not some mix of different
+> > filters depending on which ones failed or not, which to me seemed
+> > nonintuitive.
+> > 
+> > If I set a filter like "vec == 1 && irq == 5", which really has no
+> > overall meaning, I wouldn't expect softirq_entry to get "vec == 1" and
+> > irq_handler_entry to get "irq == 5" - I'd rather get an error, but
+> > that's just me.
+> > 
+> > So if it makes more sense to users to have subsystem filters propagate
+> > to whichever events will take them, this patch would be fine with me.
+> > 
 > 
-> Great, thanks! There's a small issue with v11 that you should be aware
-> of. The test for bdi_add_default_flusher_task() was inverted. I'm
-> attaching a diff at the end. The interesting bit is the 2nd hunk of
-> backing-dev.c, the others are just a cleanup.
-Jens,
-
-I did entensive testing with fio (especially the aio randread which triggers
-the hang)/ffsb and a couple of other testing and didn't hit the hang issue.
-So V11 does fix the issue.
-
->From performance point of view, there is no big difference than old versions.
-
-Yanmin
-
+> I disagree. If a subsystem filter is set, it should be valid for all 
+> filters underneath, if it is not, it should error.
 > 
-> diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-> index 6815f8b..e623c57 100644
-> --- a/include/linux/backing-dev.h
-> +++ b/include/linux/backing-dev.h
-> @@ -107,7 +107,6 @@ void bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
->  			 long nr_pages, enum writeback_sync_modes sync_mode);
->  int bdi_writeback_task(struct bdi_writeback *wb);
->  void bdi_writeback_all(struct super_block *sb, struct writeback_control *wbc);
-> -void bdi_add_default_flusher_task(struct backing_dev_info *bdi);
->  void bdi_add_flusher_task(struct backing_dev_info *bdi);
->  int bdi_has_dirty_io(struct backing_dev_info *bdi);
->  
-> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-> index b4517ee..c2eec72 100644
-> --- a/mm/backing-dev.c
-> +++ b/mm/backing-dev.c
-> @@ -37,6 +37,8 @@ static int bdi_sync_supers(void *);
->  static void sync_supers_timer_fn(unsigned long);
->  static void arm_supers_timer(void);
->  
-> +static void bdi_add_default_flusher_task(struct backing_dev_info *bdi);
-> +
->  #ifdef CONFIG_DEBUG_FS
->  #include <linux/debugfs.h>
->  #include <linux/seq_file.h>
-> @@ -496,7 +498,7 @@ static int bdi_forker_task(void *ptr)
->  		list_for_each_entry_safe(bdi, tmp, &bdi_list, bdi_list) {
->  			if (bdi->wb.task)
->  				continue;
-> -			if (!list_empty(&bdi->work_list) &&
-> +			if (list_empty(&bdi->work_list) &&
->  			    !bdi_has_dirty_io(bdi))
->  				continue;
->  
-> @@ -607,7 +609,7 @@ static int flusher_add_helper_test(struct backing_dev_info *bdi)
->   * Add the default flusher task that gets created for any bdi
->   * that has dirty data pending writeout
->   */
-> -void bdi_add_default_flusher_task(struct backing_dev_info *bdi)
-> +void static bdi_add_default_flusher_task(struct backing_dev_info *bdi)
->  {
->  	bdi_add_one_flusher_task(bdi, flusher_add_helper_test);
->  }
+> But Li has a point, if you get an error, it should not reset all filters 
+> underneath. That is, if the irq/filter setting took an error, then 
+> irq/softirq_entry/filter should still stay the same.
+> 
+> Perhaps you need to run through it twice. See if the setting of a filter 
+> is valid for all filters underneath, if it is not, then fail. If it is, 
+> then reset all of them, and assign the filter.
+> 
+
+Yeah, I agree that this is better than just clearing them all on an
+error, but it still means that a subsystem filter will succeed only when
+it names common_ (or commonly named) fields.
+
+I think what Li is saying is that that restriction makes the subsystem
+filters less useful, and you should for convenience' sake be allowed to
+propagate a filter to a subset and ignore the ones that don't make
+sense.
+
+Note that there's a danger in this case that a filter might be applied
+but not really make sense e.g. two events might have a 'vec' field that
+mean completely different things but the filter would be applied to both
+just because they have the same name.  The only way to ensure that they
+would always make sense would be to restrict the subsystem filter to
+just the common_ fields.
+
+But that's less useful, and maybe it would be better to leave the choice
+up the user...
+
+Tom
+
+> -- Steve
 > 
 
