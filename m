@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZFSTkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZFSTqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZFSTkw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 15:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZFSTko
+	id S1752795AbZFSTqD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 15:46:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZFSTpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 15:40:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45694 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751654AbZFSTko (ORCPT
+	Fri, 19 Jun 2009 15:45:55 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:56144 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbZFSTpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 15:40:44 -0400
-Date: Fri, 19 Jun 2009 12:39:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Tejun Heo <tj@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, kyle@mcmartin.ca
-Subject: Re: [GIT PULL] percpu for 2.6.31
-In-Reply-To: <20090619053944.GB8162@elte.hu>
-Message-ID: <alpine.LFD.2.01.0906191235490.16802@localhost.localdomain>
-References: <4A39F5B4.1070305@kernel.org> <alpine.LFD.2.01.0906181421460.16802@localhost.localdomain> <4A3AC0BA.4000407@kernel.org> <4A3AEE42.4010300@kernel.org> <20090619053944.GB8162@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 19 Jun 2009 15:45:55 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=bn3GbvvLmyrKd6q8jqBdXxTohxZuBVsaTVsqCYsU7OwLcb6WuwyBLi6/0dkguuDWZ
+	D1jKabIUvWh+269Nd3nEQ==
+Date: Fri, 19 Jun 2009 12:45:50 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: David Miller <davem@davemloft.net>
+cc: eric.dumazet@gmail.com, jpiszcz@lucidpixels.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
+In-Reply-To: <20090618.123708.78849607.davem@davemloft.net>
+Message-ID: <alpine.DEB.2.00.0906191239170.20822@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com> <20090618.120034.246557840.davem@davemloft.net> <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com> <20090618.123708.78849607.davem@davemloft.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 18 Jun 2009, David Miller wrote:
 
-
-On Fri, 19 Jun 2009, Ingo Molnar wrote:
+> > I understand what you're trying to avoid, but I disagree with the
+> > approach of altering the default behavior of GFP_ATOMIC.
 > 
-> ( Many wont btw: we still dont have lockdep support in all
->   architectures - 3 years and counting. It's a highly useful purely
->   sw feature with zero hardware dependencies. Fortunately it's
->   well-modularized and the functionality is non-essential. Percpu
->   allocation is not so lucky as it's essential functionality. )
+> The default got changed at some point because it never did
+> crap like this before.
+> 
 
-When it coems to code coverage, x86 matters _so_ much more than any other 
-architecture, that verification features like lockdep etc are way more 
-important on x86 than on anything else.
-
-Sure, there may be locking issues in some arch-specific code, and other 
-architectures could be better off caring. But the advantage of lockdep for 
-some pissant architecture that has a very limited user base (maybe lots of 
-chips, but much more limited _use_ - fewer drivers, fewer workloads etc) 
-is much lower, since those architectures know that x86 will give them 99% 
-of the coverage.
-
-So it's quite reasonable to think that other architectures simply care 
-less.
-
-			Linus
+Wrong, the page allocator has warned about page allocation failures when 
+__GFP_NOWARN was not specified since 2.5.53.  __GFP_NOWARN was never a 
+default for GFP_ATOMIC.
