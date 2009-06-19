@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZFSAdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZFSAhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbZFSAdl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 20:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZFSAda
+	id S1758601AbZFSAhO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 20:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZFSAhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 20:33:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55435 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbZFSAd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 20:33:29 -0400
-Date: Thu, 18 Jun 2009 20:33:31 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH v2] ftrace: change the export format of
- trace_kfree_skb()
-In-Reply-To: <4A39B3E4.6060004@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0906182033101.6890@gandalf.stny.rr.com>
-References: <4A2DF91F.7030906@cn.fujitsu.com> <20090609182730.GA6057@nowhere> <4A2F0F1D.7010101@cn.fujitsu.com> <20090610072618.GA6016@nowhere> <4A39B3E4.6060004@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 18 Jun 2009 20:37:03 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:36270 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbZFSAhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 20:37:01 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] rmap: fixup page_referenced() for nommu systems
+Date: Thu, 18 Jun 2009 20:36:53 -0400
+Message-Id: <1245371813-30954-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After the recent changes that went into mm/vmscan.c to overhaul stuff, we
+ended up with these warnings on no-mmu systems:
+mm/vmscan.c: In function ‘shrink_page_list’:
+mm/vmscan.c:580: warning: unused variable ‘vm_flags’
+mm/vmscan.c: In function ‘shrink_active_list’:
+mm/vmscan.c:1294: warning: ‘vm_flags’ may be used uninitialized in this function
+mm/vmscan.c:1242: note: ‘vm_flags’ was declared here
 
-On Thu, 18 Jun 2009, Xiao Guangrong wrote:
+This is because the no-mmu function defines page_referenced() to work on
+the first argument only (the page).  It does not clear the vm_flags given
+to it because for no-mmu systems, they never actually get utilized.  Since
+that is no longer strictly true, we need to set vm_flags to 0 like everyone
+else so gcc can do proper dead code elimination without annoying us with
+unused warnings.
 
-> Use %pf instead of %p to output the function's address and print the
-> protocol's name.
-> 
-> Before patch:
-> 
->   <idle>-0     [000] 60144.542521: kfree_skb: skbaddr=de7b8240 protocol=2048 location=c1365429
->   <idle>-0     [000] 60164.488153: kfree_skb: skbaddr=da66f900 protocol=2048 location=c1365429
->   <idle>-0     [000] 60193.493933: kfree_skb: skbaddr=deaeb480 protocol=4 location=c134ec25
->   <idle>-0     [000] 60253.118421: kfree_skb: skbaddr=de7c4900 protocol=4 location=c134ec25
->           
-> After patch:
-> 
->   <idle>-0     [000]   169.979205: kfree_skb: skbaddr=ceddc240 protocol=ETH_P_802_2 location=netif_receive_skb
->   <idle>-0     [000]   172.587000: kfree_skb: skbaddr=ceddc300 protocol=ETH_P_802_2 location=netif_receive_skb
->     ping-3391  [000]   192.109803: kfree_skb: skbaddr=ceddc900 protocol=ETH_P_IP location=icmp_rcv
->     ping-3391  [000]   192.109902: kfree_skb: skbaddr=ceddc780 protocol=ETH_P_IP location=icmp_rcv
-> 
-> Changelog v1->v2:
-> Convert protocol from raw numeric to its name as Frederic's suggestion
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ include/linux/rmap.h |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-I get this:
+diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+index 216d024..bf116d0 100644
+--- a/include/linux/rmap.h
++++ b/include/linux/rmap.h
+@@ -118,7 +118,14 @@ int try_to_munlock(struct page *);
+ #define anon_vma_prepare(vma)	(0)
+ #define anon_vma_link(vma)	do {} while (0)
+ 
+-#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
++static inline int page_referenced(struct page *page, int is_locked,
++				  struct mem_cgroup *cnt,
++				  unsigned long *vm_flags)
++{
++	*vm_flags = 0;
++	return TestClearPageReferenced(page);
++}
++
+ #define try_to_unmap(page, refs) SWAP_FAIL
+ 
+ static inline int page_mkclean(struct page *page)
+-- 
+1.6.3.1
 
-  CC      net/core/net-traces.o
-In file included from include/trace/ftrace.h:262,
-                 from include/trace/define_trace.h:57,
-                 from include/trace/events/skb.h:107,
-                 from net/core/net-traces.c:28:
-include/trace/events/skb.h: In function 'ftrace_raw_output_kfree_skb':
-include/trace/events/skb.h:78: error: 'ETH_P_IEEE802154' undeclared (first 
-use in this function)
-include/trace/events/skb.h:78: error: (Each undeclared identifier is 
-reported only once
-include/trace/events/skb.h:78: error: for each function it appears in.)
-
--- Steve
