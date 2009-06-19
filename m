@@ -1,289 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZFSIyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZFSJA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbZFSIyW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 04:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZFSIyJ
+	id S1754818AbZFSJA1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 05:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZFSJAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 04:54:09 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:38101 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbZFSIyF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 04:54:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=idyzClC6fiy0ayukwAg3pLAh7LScrOhJwCRJLuQgI+NRbUStoB6+cMwUP86PCj1DSC
-         Hdcg1qTKU+HIrth35fCaXcTLtkdlmFInEgrRj4ba0GTsqc9f6+A9qiZJPPSlEIEwt/1u
-         m2qfWiWSoReygV3a/zRImM3nAdtLMO/IbiS2Y=
-Date: Fri, 19 Jun 2009 10:54:02 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Rainer Weikusat <rweikusat@mssgmbh.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH] ide-cd: prevent null pointer deref via cdrom_newpc_intr
-Message-ID: <20090619085402.GA24674@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Rainer Weikusat <rweikusat@mssgmbh.com>,
-	linux-kernel@vger.kernel.org,
-	Linux IDE mailing list <linux-ide@vger.kernel.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <87zlc58xgd.fsf@fever.mssgmbh.com> <9ea470500906180739qdabce04u7c7875acc05358f@mail.gmail.com> <87vdmt8ugm.fsf@fever.mssgmbh.com> <9ea470500906180843w73435e74sade8a78894f75be5@mail.gmail.com> <87my858qhn.fsf@fever.mssgmbh.com> <9ea470500906181007y4cff3e58n440a64c807fd14df@mail.gmail.com> <87iqitiel3.fsf@fever.mssgmbh.com>
+	Fri, 19 Jun 2009 05:00:15 -0400
+Received: from mga14.intel.com ([143.182.124.37]:42424 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752709AbZFSJAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 05:00:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,251,1243839600"; 
+   d="scan'208";a="156362451"
+Date: Fri, 19 Jun 2009 17:00:11 +0800
+From: "Wu, Fengguang" <fengguang.wu@intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Wang, Roger" <roger.wang@intel.com>
+Subject: Re: [PATCH 0/3] make mapped executable pages the first class
+	citizen
+Message-ID: <20090619090011.GA30561@localhost>
+References: <20090516090005.916779788@intel.com> <1242485776.32543.834.camel@laptop> <20090617141135.0d622bfe@jbarnes-g45> <20090618012532.GB19732@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87iqitiel3.fsf@fever.mssgmbh.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090618012532.GB19732@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[add CC]
 
-On Thu, Jun 18, 2009 at 08:25:44PM +0200, Rainer Weikusat wrote:
-> Borislav Petkov <petkovbb@googlemail.com> writes:
-> > On Thu, Jun 18, 2009 at 6:18 PM, Rainer Weikusat<rweikusat@mssgmbh.com> wrote:
-> >> Borislav Petkov <petkovbb@googlemail.com> writes:
-> >>> On Thu, Jun 18, 2009 at 4:52 PM, Rainer Weikusat<rweikusat@mssgmbh.com> wrote:
-> >>>> Borislav Petkov <petkovbb@googlemail.com> writes:
-> >>
-> >> [...]
-> >>
-> >>>>> so this request is completed as a whole and the rq
-> >>>>> freed."
-> >>>>
-> >>>> Technically, this is not quite correct (assuming I haven't overlooked
-> >>>> something), because ide_cd_queue_pc still has a reference to the rq.
-> >>>
-> >>> That doesn't matter because the OOPS happens after the command has been
-> >>> issued and _before_ ide_cd_queue_pc() gets to access the rq ptr
-> >>> again.
-> >>
-> >> Yes. Because the pointer I already mentioned has been reset.
-> 
-> And this happens here (!!!, code from 2.6.30 vanilla):
-> 
-> int ide_complete_rq(ide_drive_t *drive, int error, unsigned int nr_bytes)
-> {
-> 	ide_hwif_t *hwif = drive->hwif;
-> 	struct request *rq = hwif->rq;
-> 	int rc;
-> 
-> 	/*
-> 	 * if failfast is set on a request, override number of sectors
-> 	 * and complete the whole request right now
-> 	 */
-> 	if (blk_noretry_request(rq) && error <= 0)
-> 		nr_bytes = rq->hard_nr_sectors << 9;
-> 
-> 	rc = ide_end_rq(drive, rq, error, nr_bytes); 
-> 	if (rc == 0)
-> 		hwif->rq = NULL; /* !!! */
-> 
-> 	return rc;
-> }
-> [explanation below]
-> 
-> My first attempt at getting this to work again actually looked like
-> this (as addition to cdrom_newpc_intr)
-> 
->                 if (uptodate == 0) {
->                         ide_cd_error_cmd(drive, cmd);
->                         rq = drive->hwif->rq;
->                 }
-> 
->                 if (rq) {
->                 	/* code up to the 2nd complete call */
->                 }
-> 
->                 if (sense && rc == 2)
->                         ide_error(drive, "request sense failure", stat);
-> 
-> [...]
-> 
-> That was before I had any idea why complete was being called twice and
-> that what this is supposed to do won't be done for bio-less requests,
-> anyway, and it worked fine. 
-> 
-> > and now here we do the second direct ide_complete_rq and here the rq is freed:
-> >
-> > BUG: unable to handle kernel NULL pointer dereference at
-> > 0000000000000048
-> 
-> I have just restored the original file to generate another crash
-> dump. [the relevant part of] What I get is EIP == c0251311, edx == 0.
-> This corresponds with the following machine code:
-> 
-> c02512fc <ide_complete_rq>:
-> c02512fc:       55                      push   %ebp
-> c02512fd:       89 e5                   mov    %esp,%ebp
-> c02512ff:       56                      push   %esi
-> c0251300:       53                      push   %ebx
-> c0251301:       83 ec 04                sub    $0x4,%esp
-> c0251304:       89 c3                   mov    %eax,%ebx
-> c0251306:       89 d0                   mov    %edx,%eax
-> 
-> /* ide_hwif_t *hwif = drive->hwif; */
-> c0251308:       8b 73 28                mov    0x28(%ebx),%esi 
-> 
-> /* struct request *rq = hwif->rq; */
-> c025130b:       8b 96 c8 01 00 00       mov    0x1c8(%esi),%edx
-> 
-> /* if (blk_noretry_request(rq) .... */
-> c0251311:       f6 42 24 0e             testb  $0xe,0x24(%edx) /* !!! */
-> c0251315:       74 04                   je     c025131b <ide_complete_rq+0x1f>
-> 
-> blk_notretry_request is 
-> 
-> #define blk_noretry_request(rq)	(blk_failfast_dev(rq) ||	\
-> 				 blk_failfast_transport(rq) ||	\
-> 				 blk_failfast_driver(rq))
-> 
-> and
->                                  
-> #define blk_failfast_dev(rq)	((rq)->cmd_flags & REQ_FAILFAST_DEV)
-> #define blk_failfast_transport(rq) ((rq)->cmd_flags & REQ_FAILFAST_TRANSPORT)
-> #define blk_failfast_driver(rq)	((rq)->cmd_flags & REQ_FAILFAST_DRIVER)
-> 
-> and
-> 
-> #define REQ_FAILFAST_DEV        (1 << __REQ_FAILFAST_DEV)
-> #define REQ_FAILFAST_TRANSPORT  (1 << __REQ_FAILFAST_TRANSPORT)
-> #define REQ_FAILFAST_DRIVER     (1 << __REQ_FAILFAST_DRIVER)
-> 
-> and
-> 
-> enum rq_flag_bits {
->         __REQ_RW,               /* not set, read. set, write */
->         __REQ_FAILFAST_DEV,     /* no driver retries of device errors */
->         __REQ_FAILFAST_TRANSPORT, /* no driver retries of transport errors */
->         __REQ_FAILFAST_DRIVER,  /* no driver retries of driver errors */
->         __REQ_DISCARD,          /* request to discard sectors */
-> 
->         [...]
-> 
-> This means the values of the relevant __REQ_-constants are 1, 2, and
-> 3 and (1 << 1) | (1 << 2) | (1 << 3) == 2 + 4 + 8 == 14 (== 0xe),
-> hence testb $0xe, 0x24(%edx) (optimized by compiler). edx is 0.
-> 0x24(%edx) is the field at offset 36 in a struct request, which is
-> cmd_flags (on my computer).
-> 
-> blk_end_io always returns zero for bio-less requests. More precisely,
-> it calls end_that_request_data, which is
-> 
-> static int end_that_request_data(struct request *rq, int error,
->                                  unsigned int nr_bytes, unsigned int bidi_bytes)
-> {
->         if (rq->bio) {
->                 if (__end_that_request_first(rq, error, nr_bytes))
->                         return 1;
-> 
->                 /* Bidi request must be completed as a whole */
->                 if (blk_bidi_rq(rq) &&
->                     __end_that_request_first(rq->next_rq, error, bidi_bytes))
->                         return 1;
->         }
-> 
->         return 0;
-> }
-> 
-> ie it returns 0 for a request w/o a bio, and looks itself like this:
-> 
-> static int blk_end_io(struct request *rq, int error, unsigned int nr_bytes,
->                       unsigned int bidi_bytes,
->                       int (drv_callback)(struct request *))
-> {
->         struct request_queue *q = rq->q;
->         unsigned long flags = 0UL;
-> 
->         if (end_that_request_data(rq, error, nr_bytes, bidi_bytes))
->                 return 1;
-> 
->         /* Special feature for tricky drivers */
->         if (drv_callback && drv_callback(rq))
->                 return 1;
-> 
->         add_disk_randomness(rq->rq_disk);
-> 
->         spin_lock_irqsave(q->queue_lock, flags);
->         end_that_request_last(rq, error);
->         spin_unlock_irqrestore(q->queue_lock, flags);
-> 
->         return 0;
-> }
-> 
-> drv_callback is NULL and the 'final return value' is ultimatively
-> returned from the ide_end_rq-call mentioned at the beginning of this
-> overly long e-mail.
-> 
-> An easy way to verify that would be a
-> 
-> 	BUG_ON(!rq)
-> 
-> inserted before the blkdev_noretry_request in ide_complete_rq (which I
-> also did -- I have been doing this for long enough to never trust my
-> own assumptions blindly ...).
-> 
-> He who doesn't understand assembly will have a more difficult life
-> because of that :-).
+This OOM case looks like the same bug encountered by David Howells.
 
-Well, this is a very good code analysis, I'd say, one for the books :)
+> Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426766] Active_anon:290797 active_file:28 inactive_anon:97034
+> Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426767]  inactive_file:61 unevictable:11322 dirty:0 writeback:0 unstable:0
+> Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426768]  free:3341 slab:13776 mapped:5880 pagetables:6851 bounce:0
 
-> While this is interesting, my boss [righfully] hates it and I will now
-> have to do at least an hour of additional overtime.
+active/inactive_anon pages take up 4/5 memory.  Are you using TMPFS a lot?
 
-Sorry about that, same here :)
+Thanks,
+Fengguang
 
-Here's another trace I did:
 
-[  266.037646] ide-cd: ide_cd_queue_pc: cmd[0]: 0x51, write: 0x0, timeout: 7000, cmd_flags: 0x8000
-[  266.037662] ide-cd: ide_cd_do_request: cmd: 0x51, block: 4294967295, marker: 114
-[  266.037667] ide_cd_do_request: dev hdc: type=a, flags=128a440
-[  266.037670]   sector 4294967295, nr/cnr 0/0
-[  266.037675]   bio dde1e840, biotail dde1e840, buffer (null), len 2
-[  266.037678] ide-cd: cdrom_do_block_pc: rq->cmd[0]: 0x51, rq->cmd_type: 0xa
-[  266.066559] ide-cd: cdrom_newpc_intr: cmd: 0x51, write: 0x0
-[  266.066567] ide-cd: cdrom_newpc_intr: DRQ: stat: 0x58, thislen: 2
-[  266.066570] ide-cd: ide_cd_check_ireason: ireason: 0x2, rw: 0x0
-[  266.066572] ide-cd: cdrom_newpc_intr: data transfer, rq->cmd_type: 0xa, ireason: 0x2
-[  266.149000] ide-cd: cdrom_newpc_intr: cmd: 0x51, write: 0x0
-[  266.149010] ide-cd: cdrom_newpc_intr: DRQ: stat: 0x50, thislen: 0
-[  266.149014] ide-cd: ide_cd_request_sense_fixup: rq->cmd[0]: 0x51
-[  266.149017] ide_complete_rq: completing rq, marker: 114
+On Thu, 18 Jun 2009 09:25:32 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-this is the end of the IRQ handler
+> On Thu, Jun 18, 2009 at 05:11:35AM +0800, Jesse Barnes wrote:
+> > On Sat, 16 May 2009 16:56:16 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Sat, 2009-05-16 at 17:00 +0800, Wu Fengguang wrote:
+> > > > Andrew,
+> > > > 
+> > > > This patchset makes mapped executable pages the first class
+> > > > citizen. This version has incorparated many valuable comments
+> > > > from people in the CC list, and runs OK on my desktop. Let's
+> > > > test it in your -mm?
+> > > 
+> > > Seems like a good set to me. Thanks for following this through Wu!
+> > 
+> > Now that this set has hit the mainline I just wanted to chime in and
+> > say this makes a big difference.  Under my current load (a parallel
+> > kernel build and virtualbox session the old kernel would have been
+> > totally unusable.  With Linus's current bits, things are much better
+> > (still a little sluggish with a big dd going on in the virtualbox,
+> > but actually usable).
+> > 
+> > Thanks!
+> 
+> Jesse, thank you for the feedback :)  And I'd like to credit Rik for
+> his patch on protecting active file LRU pages from being flushed by
+> streaming IO!
 
-[  266.149023] __blk_put_request: marker: 114, ref_count: 2
-[  266.149033] ide_cd_queue_pc: putting rq, marker: 114
+Unfortunately I came in this morning to an OOM'd machine.  I do push it
+pretty hard, but this is the first time I've seen an OOM.  It happened
+yesterday evening while I was away from the machine:
 
-and here ide_cd_queue_pc comes _after_ that and frees the rq due to refcount ==
-1.
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426677] apt-check invoked oom-killer: gfp_mask=0x201da, order=0, oom_adj=0
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426682] apt-check cpuset=/ mems_allowed=0
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426686] Pid: 23105, comm: apt-check Tainted: G    B   W  2.6.30 #11
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426688] Call Trace:
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426696]  [<ffffffff810861fd>] ? cpuset_print_task_mems_allowed+0x8d/0xa0
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426701]  [<ffffffff810b984e>] oom_kill_process+0x17e/0x290
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426705]  [<ffffffff810b9e0b>] ? select_bad_process+0x8b/0x110
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426708]  [<ffffffff810b9ee0>] __out_of_memory+0x50/0xb0
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426712]  [<ffffffff810b9f9f>] out_of_memory+0x5f/0xc0
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426715]  [<ffffffff810bc5a3>] __alloc_pages_nodemask+0x623/0x640
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426719]  [<ffffffff810bf8ea>] __do_page_cache_readahead+0xda/0x210
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426722]  [<ffffffff810bfa3c>] ra_submit+0x1c/0x20
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426725]  [<ffffffff810b886e>] filemap_fault+0x3ce/0x3e0
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426729]  [<ffffffff810ce3a3>] __do_fault+0x53/0x510
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426732]  [<ffffffff810d27ea>] handle_mm_fault+0x1da/0x8c0
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426737]  [<ffffffff814b5724>] do_page_fault+0x1a4/0x310
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426740]  [<ffffffff814b31d5>] page_fault+0x25/0x30
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426742] Mem-Info:
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426744] DMA per-cpu:
+Jun 18 07:44:52 jbarnes-g45 kernel: [64377.426746] CPU    0: hi:    0, btch:   1 usd:   0
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426748] CPU    1: hi:    0, btch:   1 usd:   0
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426750] CPU    2: hi:    0, btch:   1 usd:   0
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426752] CPU    3: hi:    0, btch:   1 usd:   0
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426754] DMA32 per-cpu:
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426756] CPU    0: hi:  186, btch:  31 usd: 103
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426758] CPU    1: hi:  186, btch:  31 usd: 117
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426760] CPU    2: hi:  186, btch:  31 usd: 181
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426762] CPU    3: hi:  186, btch:  31 usd: 181
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426766] Active_anon:290797 active_file:28 inactive_anon:97034
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426767]  inactive_file:61 unevictable:11322 dirty:0 writeback:0 unstable:0
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426768]  free:3341 slab:13776 mapped:5880 pagetables:6851 bounce:0
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426772] DMA free:7776kB min:40kB low:48kB high:60kB active_anon:556kB inactive_anon:524kB active_file:16kB inactive_file:0kB unevictable:0kB present:15340kB pages_scanned:30 all_unreclaimable? no
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426775] lowmem_reserve[]: 0 1935 1935 1935
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426781] DMA32 free:5588kB min:5608kB low:7008kB high:8412kB active_anon:1162632kB inactive_anon:387612kB active_file:96kB inactive_file:256kB unevictable:45288kB present:1982128kB pages_scanned:980 all_unreclaimable? no
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426784] lowmem_reserve[]: 0 0 0 0
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426787] DMA: 64*4kB 77*8kB 45*16kB 18*32kB 4*64kB 2*128kB 2*256kB 3*512kB 1*1024kB 1*2048kB 0*4096kB = 7800kB
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426796] DMA32: 871*4kB 149*8kB 1*16kB 2*32kB 1*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 5588kB
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426804] 151250 total pagecache pages
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426806] 18973 pages in swap cache
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426808] Swap cache stats: add 610640, delete 591667, find 144356/181468
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426810] Free swap  = 0kB
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426811] Total swap = 979956kB
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.434828] 507136 pages RAM
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.434831] 23325 pages reserved
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.434832] 190892 pages shared
+Jun 18 07:44:53 jbarnes-g45 kernel: [64377.434833] 248816 pages non-shared
 
-[  266.149039] __blk_put_request: marker: 114, ref_count: 1
-[  266.149045] blk_free_request: marker: 114, ref_count: 0
-
-Now in the fragmented packet command case - that what you call 32/30 -
-you'll have the first ide_complete_rq() call from ide_cd_error_cmd() and
-the first decrement of the refcount. Had the rq had a bio, it'd never be
-come to do a __blk_put_request and decrement the refcount.
-
-But even if it did decrement it, as it does in the real case, that
-wouldn't be a problem since the rq is still alive (refcount is now 1)
-and it will be only freed in the second ide_complete_rq() at the end of
-the IRQ handler.
-
-But, it seems that ide_cd_queue_pc() goes after that first
-ide_complete_rq() and decrements the refcount, as you suggest, right?
-
-What bothers me here is that we're in IRQ context and running with
-interrupts disabled so _actually_ the blk_put_request() part of
-ide_cd_queue_pc() should be getting to run only _after_ the IRQ
-handler is done and we should be getting the NULL ptr deref in
-ide_cd_queue_pc(), but we don't. I guess I'm missing something here.
-
+As you can see, all my swap has been eaten and my anon lists are pretty
+huge (relative to memory size, I only have 2G in this box).  I suspect
+the gfx driver is eating quite a bit of the anon memory, but this is
+the first OOM I've seen...  I'll look around for some tools to analyze
+my anon memory usage; maybe Virtualbox is doing something pathological;
+clearly something is out of control here at any rate.
 -- 
-Regards/Gruss,
-    Boris.
+Jesse Barnes, Intel Open Source Technology Center
