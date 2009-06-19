@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZFSSUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbZFSSZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbZFSSUh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 14:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZFSSU2
+	id S1756539AbZFSSZU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 14:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbZFSSZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 14:20:28 -0400
-Received: from verein.lst.de ([213.95.11.210]:41609 "EHLO verein.lst.de"
+	Fri, 19 Jun 2009 14:25:06 -0400
+Received: from mail.pxnet.com ([195.227.45.7]:52967 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbZFSSU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 14:20:27 -0400
-Date: Fri, 19 Jun 2009 20:20:22 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: rusty@rustcorp.com.au
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: [PATCH] virtio_blk: don't bounce highmem requests
-Message-ID: <20090619182022.GA10999@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	id S1751084AbZFSSZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 14:25:04 -0400
+From: Tilman Schmidt <tilman@imap.cc>
+Subject: [PATCH] isdn: clean up documentation index
+To: David Miller <davem@davemloft.net>
+CC: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Karsten Keil <karsten-keil@t-online.de>,
+       isdn4linux@listserv.isdn4linux.de
+Message-Id: <20090619182453.52725111835@xenon.ts.pxnet.com>
+Date: Fri, 19 Jun 2009 20:24:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove duplicates, a stray merge conflict marker, and an entry for a file
+which doesn't exist, and move one entry to its correct alphabetical place.
 
-By default a block driver bounces highmem requests, but virtio-blk is
-perfectly fine with any request that fit into it's 64 bit addressing scheme,
-mapped in the kernel virtual space or not.
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+---
+ Documentation/isdn/00-INDEX |   19 ++-----------------
+ 1 files changed, 2 insertions(+), 17 deletions(-)
 
-Besides improving performance on highmem systems this also makes the
-reproducible oops in __bounce_end_io go away (but hiding the real cause).
+diff --git a/Documentation/isdn/00-INDEX b/Documentation/isdn/00-INDEX
+index f6010a5..e87e336 100644
+--- a/Documentation/isdn/00-INDEX
++++ b/Documentation/isdn/00-INDEX
+@@ -14,25 +14,14 @@ README
+ 	- general info on what you need and what to do for Linux ISDN.
+ README.FAQ
+ 	- general info for FAQ.
+-README.audio
+-	- info for running audio over ISDN.
+-README.fax
+-	- info for using Fax over ISDN.
+-README.gigaset
+-	- info on the drivers for Siemens Gigaset ISDN adapters.
+-README.icn
+-	- info on the ICN-ISDN-card and its driver.
+->>>>>>> 93af7aca44f0e82e67bda10a0fb73d383edcc8bd:Documentation/isdn/00-INDEX
+ README.HiSax
+ 	- info on the HiSax driver which replaces the old teles.
++README.act2000
++	- info on driver for IBM ACT-2000 card.
+ README.audio
+ 	- info for running audio over ISDN.
+ README.avmb1
+ 	- info on driver for AVM-B1 ISDN card.
+-README.act2000
+-	- info on driver for IBM ACT-2000 card.
+-README.eicon
+-	- info on driver for Eicon active cards.
+ README.concap
+ 	- info on "CONCAP" encapsulation protocol interface used for X.25.
+ README.diversion
+@@ -59,7 +48,3 @@ README.x25
+ 	- info for running X.25 over ISDN.
+ syncPPP.FAQ
+ 	- frequently asked questions about running PPP over ISDN.
+-README.hysdn
+-	- info on driver for Hypercope active HYSDN cards
+-README.mISDN
+-	- info on the Modular ISDN subsystem (mISDN).
+-- 
+1.6.2.1.214.ge986c
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6/drivers/block/virtio_blk.c
-===================================================================
---- linux-2.6.orig/drivers/block/virtio_blk.c	2009-06-15 16:28:24.225815322 +0200
-+++ linux-2.6/drivers/block/virtio_blk.c	2009-06-19 18:03:12.469805377 +0200
-@@ -360,6 +360,9 @@ static int __devinit virtblk_probe(struc
- 	blk_queue_max_phys_segments(vblk->disk->queue, vblk->sg_elems-2);
- 	blk_queue_max_hw_segments(vblk->disk->queue, vblk->sg_elems-2);
- 
-+	/* No need to bounce any requests */
-+	blk_queue_bounce_limit(brd->brd_queue, BLK_BOUNCE_ANY);
-+
- 	/* No real sector limit. */
- 	blk_queue_max_sectors(vblk->disk->queue, -1U);
- 
