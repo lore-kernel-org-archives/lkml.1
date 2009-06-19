@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbZFSWf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760722AbZFSWf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760610AbZFSWf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759317AbZFSWcN
+	id S1760722AbZFSWf6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758231AbZFSWcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:32:13 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:44727 "EHLO
+	Fri, 19 Jun 2009 18:32:24 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:44750 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757994AbZFSWbD (ORCPT
+	with ESMTP id S1758255AbZFSWbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:31:03 -0400
+	Fri, 19 Jun 2009 18:31:01 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        greg@kroah.com
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 15/21] ceph: snapshot management
-Date: Fri, 19 Jun 2009 15:31:36 -0700
-Message-Id: <1245450702-31343-16-git-send-email-sage@newdream.net>
+Subject: [PATCH 13/21] ceph: monitor client
+Date: Fri, 19 Jun 2009 15:31:34 -0700
+Message-Id: <1245450702-31343-14-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1245450702-31343-15-git-send-email-sage@newdream.net>
+In-Reply-To: <1245450702-31343-13-git-send-email-sage@newdream.net>
 References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-2-git-send-email-sage@newdream.net>
  <1245450702-31343-3-git-send-email-sage@newdream.net>
@@ -32,930 +32,621 @@ References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-11-git-send-email-sage@newdream.net>
  <1245450702-31343-12-git-send-email-sage@newdream.net>
  <1245450702-31343-13-git-send-email-sage@newdream.net>
- <1245450702-31343-14-git-send-email-sage@newdream.net>
- <1245450702-31343-15-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ceph snapshots rely on client cooperation in determining which
-operations apply to which snapshots, and appropriately flushing
-snapshotted data and metadata back to the OSD and MDS clusters.
-Because snapshots apply to subtrees of the file hierarchy and can be
-created at any time, there is a fair bit of bookkeeping required to
-make this work.
-
-Portions of the hierarchy that belong to the same set of snapshots
-are described by a single 'snap realm.'  A 'snap context' describes
-the set of snapshots that exist for a given piece of metadata.
+The monitor cluster is responsible for managing cluster membership
+and state.  The monitor client handles what minimal interaction
+the Ceph client has with it: checking for updated versions of the
+MDS and OSD maps, and getting statfs() information.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/staging/ceph/snap.c |  895 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 895 insertions(+), 0 deletions(-)
- create mode 100644 fs/staging/ceph/snap.c
+ fs/staging/ceph/mon_client.c |  451 ++++++++++++++++++++++++++++++++++++++++++
+ fs/staging/ceph/mon_client.h |  135 +++++++++++++
+ 2 files changed, 586 insertions(+), 0 deletions(-)
+ create mode 100644 fs/staging/ceph/mon_client.c
+ create mode 100644 fs/staging/ceph/mon_client.h
 
-diff --git a/fs/staging/ceph/snap.c b/fs/staging/ceph/snap.c
+diff --git a/fs/staging/ceph/mon_client.c b/fs/staging/ceph/mon_client.c
 new file mode 100644
-index 0000000..8944fe5
+index 0000000..5551787
 --- /dev/null
-+++ b/fs/staging/ceph/snap.c
-@@ -0,0 +1,895 @@
++++ b/fs/staging/ceph/mon_client.c
+@@ -0,0 +1,451 @@
 +
-+#include <linux/radix-tree.h>
-+#include <linux/sort.h>
++#include <linux/types.h>
++#include <linux/random.h>
++#include <linux/sched.h>
++#include "mon_client.h"
 +
 +#include "ceph_debug.h"
 +
-+int ceph_debug_snap __read_mostly = -1;
-+#define DOUT_MASK DOUT_MASK_SNAP
-+#define DOUT_VAR ceph_debug_snap
-+
++int ceph_debug_mon __read_mostly = -1;
++#define DOUT_MASK DOUT_MASK_MON
++#define DOUT_VAR ceph_debug_mon
 +#include "super.h"
 +#include "decode.h"
 +
 +/*
-+ * Snapshots in ceph are driven in large part by cooperation from the
-+ * client.  In contrast to local file systems or file servers that
-+ * implement snapshots at a single point in the system, ceph's
-+ * distributed access to storage requires clients to help decide
-+ * whether a write logically occurs before or after a recently created
-+ * snapshot.
-+ *
-+ * This provides a perfect instantanous client-wide snapshot.  Between
-+ * clients, however, snapshots may appear to be applied at slightly
-+ * different points in time, depending on delays in delivering the
-+ * snapshot notification.
-+ *
-+ * Snapshots are _not_ file system-wide.  Instead, each snapshot
-+ * applies to the subdirectory nested beneath some directory.  This
-+ * effectively divides the hierarchy into multiple "realms," where all
-+ * of the files contained by each realm share the same set of
-+ * snapshots.  An individual realm's snap set contains snapshots
-+ * explicitly created on that realm, as well as any snaps in its
-+ * parent's snap set _after_ the point at which the parent became it's
-+ * parent (due to, say, a rename).  Similarly, snaps from prior parents
-+ * during the time intervals during which they were the parent are included.
-+ *
-+ * The client is spared most of this detail, fortunately... it must only
-+ * maintains a hierarchy of realms reflecting the current parent/child
-+ * realm relationship, and for each realm has an explicit list of snaps
-+ * inherited from prior parents.
-+ *
-+ * A snap_realm struct is maintained for realms containing every inode
-+ * with an open cap in the system.  (The needed snap realm information is
-+ * provided by the MDS whenever a cap is issued, i.e., on open.)  A 'seq'
-+ * version number is used to ensure that as realm parameters change (new
-+ * snapshot, new parent, etc.) the client's realm hierarchy is updated.
-+ *
-+ * The realm hierarchy drives the generation of a 'snap context' for each
-+ * realm, which simply lists the resulting set of snaps for the realm.  This
-+ * is attached to any writes sent to OSDs.
++ * Decode a monmap blob (e.g., during mount).
 + */
-+/*
-+ * Unfortunately error handling is a bit mixed here.  If we get a snap
-+ * update, but don't have enough memory to update our realm hierarchy,
-+ * it's not clear what we can do about it (besides complaining to the
-+ * console).
-+ */
-+
-+
-+/*
-+ * increase ref count for the realm
-+ *
-+ * caller must hold snap_rwsem for write.
-+ */
-+void ceph_get_snap_realm(struct ceph_mds_client *mdsc,
-+			 struct ceph_snap_realm *realm)
++struct ceph_monmap *ceph_monmap_decode(void *p, void *end)
 +{
-+	dout(20, "get_realm %p %d -> %d\n", realm,
-+	     atomic_read(&realm->nref), atomic_read(&realm->nref)+1);
-+	/*
-+	 * since we _only_ increment realm refs or empty the empty
-+	 * list with snap_rwsem held, adjusting the empty list here is
-+	 * safe.  we do need to protect against concurrent empty list
-+	 * additions, however.
-+	 */
-+	if (atomic_read(&realm->nref) == 0) {
-+		spin_lock(&mdsc->snap_empty_lock);
-+		list_del_init(&realm->empty_item);
-+		spin_unlock(&mdsc->snap_empty_lock);
-+	}
++	struct ceph_monmap *m;
++	int i, err = -EINVAL;
++	__le64 major, minor;
 +
-+	atomic_inc(&realm->nref);
-+}
++	dout(30, "monmap_decode %p %p len %d\n", p, end, (int)(end-p));
 +
-+/*
-+ * create and get the realm rooted at @ino and bump its ref count.
-+ *
-+ * caller must hold snap_rwsem for write.
-+ */
-+static struct ceph_snap_realm *ceph_create_snap_realm(struct ceph_mds_client *mdsc,
-+					       u64 ino)
-+{
-+	struct ceph_snap_realm *realm;
-+
-+	realm = kzalloc(sizeof(*realm), GFP_NOFS);
-+	if (!realm)
++	/* The encoded and decoded sizes match. */
++	m = kmalloc(end-p, GFP_NOFS);
++	if (m == NULL)
 +		return ERR_PTR(-ENOMEM);
 +
-+	radix_tree_insert(&mdsc->snap_realms, ino, realm);
-+
-+	atomic_set(&realm->nref, 0);    /* tree does not take a ref */
-+	realm->ino = ino;
-+	INIT_LIST_HEAD(&realm->children);
-+	INIT_LIST_HEAD(&realm->child_item);
-+	INIT_LIST_HEAD(&realm->empty_item);
-+	INIT_LIST_HEAD(&realm->inodes_with_caps);
-+	spin_lock_init(&realm->inodes_with_caps_lock);
-+	dout(20, "create_snap_realm %llx %p\n", realm->ino, realm);
-+	return realm;
-+}
-+
-+/*
-+ * find and get (if found) the realm rooted at @ino and bump its ref count.
-+ *
-+ * caller must hold snap_rwsem for write.
-+ */
-+struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
-+					       u64 ino)
-+{
-+	struct ceph_snap_realm *realm;
-+
-+	realm = radix_tree_lookup(&mdsc->snap_realms, ino);
-+	if (realm)
-+		dout(20, "lookup_snap_realm %llx %p\n", realm->ino, realm);
-+	return realm;
-+}
-+
-+static void __put_snap_realm(struct ceph_mds_client *mdsc,
-+			     struct ceph_snap_realm *realm);
-+
-+/*
-+ * called with snap_rwsem (write)
-+ */
-+static void __destroy_snap_realm(struct ceph_mds_client *mdsc,
-+				 struct ceph_snap_realm *realm)
-+{
-+	dout(10, "__destroy_snap_realm %p %llx\n", realm, realm->ino);
-+
-+	radix_tree_delete(&mdsc->snap_realms, realm->ino);
-+
-+	if (realm->parent) {
-+		list_del_init(&realm->child_item);
-+		__put_snap_realm(mdsc, realm->parent);
-+	}
-+
-+	kfree(realm->prior_parent_snaps);
-+	kfree(realm->snaps);
-+	ceph_put_snap_context(realm->cached_context);
-+	kfree(realm);
-+}
-+
-+/*
-+ * caller holds snap_rwsem (write)
-+ */
-+static void __put_snap_realm(struct ceph_mds_client *mdsc,
-+			     struct ceph_snap_realm *realm)
-+{
-+	dout(20, "__put_snap_realm %llx %p %d -> %d\n", realm->ino, realm,
-+	     atomic_read(&realm->nref), atomic_read(&realm->nref)-1);
-+	if (atomic_dec_and_test(&realm->nref))
-+		__destroy_snap_realm(mdsc, realm);
-+}
-+
-+/*
-+ * caller needn't hold any locks
-+ */
-+void ceph_put_snap_realm(struct ceph_mds_client *mdsc,
-+			 struct ceph_snap_realm *realm)
-+{
-+	dout(20, "put_snap_realm %llx %p %d -> %d\n", realm->ino, realm,
-+	     atomic_read(&realm->nref), atomic_read(&realm->nref)-1);
-+	if (!atomic_dec_and_test(&realm->nref))
-+		return;
-+
-+	if (down_write_trylock(&mdsc->snap_rwsem)) {
-+		__destroy_snap_realm(mdsc, realm);
-+		up_write(&mdsc->snap_rwsem);
-+	} else {
-+		spin_lock(&mdsc->snap_empty_lock);
-+		list_add(&mdsc->snap_empty, &realm->empty_item);
-+		spin_unlock(&mdsc->snap_empty_lock);
-+	}
-+}
-+
-+/*
-+ * Clean up any realms whose ref counts have dropped to zero.  Note
-+ * that this does not include realms who were created but not yet
-+ * used.
-+ *
-+ * Called under snap_rwsem (write)
-+ */
-+static void __cleanup_empty_realms(struct ceph_mds_client *mdsc)
-+{
-+	struct ceph_snap_realm *realm;
-+
-+	spin_lock(&mdsc->snap_empty_lock);
-+	while (!list_empty(&mdsc->snap_empty)) {
-+		realm = list_first_entry(&mdsc->snap_empty,
-+				   struct ceph_snap_realm, empty_item);
-+		list_del(&realm->empty_item);
-+		spin_unlock(&mdsc->snap_empty_lock);
-+		__destroy_snap_realm(mdsc, realm);
-+		spin_lock(&mdsc->snap_empty_lock);
-+	}
-+	spin_unlock(&mdsc->snap_empty_lock);
-+}
-+
-+void ceph_cleanup_empty_realms(struct ceph_mds_client *mdsc)
-+{
-+	down_write(&mdsc->snap_rwsem);
-+	__cleanup_empty_realms(mdsc);
-+	up_write(&mdsc->snap_rwsem);
-+}
-+
-+/*
-+ * adjust the parent realm of a given @realm.  adjust child list, and parent
-+ * pointers, and ref counts appropriately.
-+ *
-+ * return true if parent was changed, 0 if unchanged, <0 on error.
-+ *
-+ * caller must hold snap_rwsem for write.
-+ */
-+static int adjust_snap_realm_parent(struct ceph_mds_client *mdsc,
-+				    struct ceph_snap_realm *realm,
-+				    u64 parentino)
-+{
-+	struct ceph_snap_realm *parent;
-+
-+	if (realm->parent_ino == parentino)
-+		return 0;
-+
-+	parent = ceph_lookup_snap_realm(mdsc, parentino);
-+	if (IS_ERR(parent))
-+		return PTR_ERR(parent);
-+	if (!parent) {
-+		parent = ceph_create_snap_realm(mdsc, parentino);
-+		if (IS_ERR(parent))
-+			return PTR_ERR(parent);
-+	}
-+	dout(20, "adjust_snap_realm_parent %llx %p: %llx %p -> %llx %p\n",
-+	     realm->ino, realm, realm->parent_ino, realm->parent,
-+	     parentino, parent);
-+	if (realm->parent) {
-+		list_del_init(&realm->child_item);
-+		ceph_put_snap_realm(mdsc, realm->parent);
-+	}
-+	realm->parent_ino = parentino;
-+	realm->parent = parent;
-+	ceph_get_snap_realm(mdsc, parent);
-+	list_add(&realm->child_item, &parent->children);
-+	return 1;
-+}
-+
-+
-+static int cmpu64_rev(const void *a, const void *b)
-+{
-+	if (*(u64 *)a < *(u64 *)b)
-+		return 1;
-+	if (*(u64 *)a > *(u64 *)b)
-+		return -1;
-+	return 0;
-+}
-+
-+/*
-+ * build the snap context for a given realm.
-+ */
-+static int build_snap_context(struct ceph_snap_realm *realm)
-+{
-+	struct ceph_snap_realm *parent = realm->parent;
-+	struct ceph_snap_context *snapc;
-+	int err = 0;
-+	int i;
-+	int num = realm->num_prior_parent_snaps + realm->num_snaps;
-+
-+	/*
-+	 * build parent context, if it hasn't been built.
-+	 * conservatively estimate that all parent snaps might be
-+	 * included by us.
-+	 */
-+	if (parent) {
-+		if (!parent->cached_context) {
-+			err = build_snap_context(parent);
-+			if (err)
-+				goto fail;
-+		}
-+		num += parent->cached_context->num_snaps;
-+	}
-+
-+	/* do i actually need to update?  not if my context seq
-+	   matches realm seq, and my parents' does to.  (this works
-+	   because we rebuild_snap_realms() works _downward_ in
-+	   hierarchy after each update.) */
-+	if (realm->cached_context &&
-+	    realm->cached_context->seq <= realm->seq &&
-+	    (!parent ||
-+	     realm->cached_context->seq <= parent->cached_context->seq)) {
-+		dout(10, "build_snap_context %llx %p: %p seq %lld (%d snaps)"
-+		     " (unchanged)\n",
-+		     realm->ino, realm, realm->cached_context,
-+		     realm->cached_context->seq,
-+		     realm->cached_context->num_snaps);
-+		return 0;
-+	}
-+
-+	/* alloc new snap context */
-+	err = -ENOMEM;
-+	snapc = kzalloc(sizeof(*snapc) + num*sizeof(u64), GFP_NOFS);
-+	if (!snapc)
-+		goto fail;
-+	atomic_set(&snapc->nref, 1);
-+
-+	/* build (reverse sorted) snap vector */
-+	num = 0;
-+	snapc->seq = realm->seq;
-+	if (parent) {
-+		/* include any of parent's snaps occuring _after_ my
-+		   parent became my parent */
-+		for (i = 0; i < parent->cached_context->num_snaps; i++)
-+			if (parent->cached_context->snaps[i] >=
-+			    realm->parent_since)
-+				snapc->snaps[num++] =
-+					parent->cached_context->snaps[i];
-+		if (parent->cached_context->seq > snapc->seq)
-+			snapc->seq = parent->cached_context->seq;
-+	}
-+	memcpy(snapc->snaps + num, realm->snaps,
-+	       sizeof(u64)*realm->num_snaps);
-+	num += realm->num_snaps;
-+	memcpy(snapc->snaps + num, realm->prior_parent_snaps,
-+	       sizeof(u64)*realm->num_prior_parent_snaps);
-+	num += realm->num_prior_parent_snaps;
-+
-+	sort(snapc->snaps, num, sizeof(u64), cmpu64_rev, NULL);
-+	snapc->num_snaps = num;
-+	dout(10, "build_snap_context %llx %p: %p seq %lld (%d snaps)\n",
-+	     realm->ino, realm, snapc, snapc->seq, snapc->num_snaps);
-+
-+	if (realm->cached_context)
-+		ceph_put_snap_context(realm->cached_context);
-+	realm->cached_context = snapc;
-+	return 0;
-+
-+fail:
-+	/*
-+	 * if we fail, clear old (incorrect) cached_context... hopefully
-+	 * we'll have better luck building it later
-+	 */
-+	if (realm->cached_context) {
-+		ceph_put_snap_context(realm->cached_context);
-+		realm->cached_context = NULL;
-+	}
-+	derr(0, "build_snap_context %llx %p fail %d\n", realm->ino,
-+	     realm, err);
-+	return err;
-+}
-+
-+/*
-+ * rebuild snap context for the given realm and all of its children.
-+ */
-+static void rebuild_snap_realms(struct ceph_snap_realm *realm)
-+{
-+	struct list_head *p;
-+	struct ceph_snap_realm *child;
-+
-+	dout(10, "rebuild_snap_realms %llx %p\n", realm->ino, realm);
-+	build_snap_context(realm);
-+
-+	list_for_each(p, &realm->children) {
-+		child = list_entry(p, struct ceph_snap_realm, child_item);
-+		rebuild_snap_realms(child);
-+	}
-+}
-+
-+
-+/*
-+ * helper to allocate and decode an array of snapids.  free prior
-+ * instance, if any.
-+ */
-+static int dup_array(u64 **dst, __le64 *src, int num)
-+{
-+	int i;
-+
-+	kfree(*dst);
-+	if (num) {
-+		*dst = kmalloc(sizeof(u64) * num, GFP_NOFS);
-+		if (!*dst)
-+			return -ENOMEM;
-+		for (i = 0; i < num; i++)
-+			(*dst)[i] = le64_to_cpu(src[i]);
-+	} else {
-+		*dst = NULL;
-+	}
-+	return 0;
-+}
-+
-+
-+/*
-+ * When a snapshot is applied, the size/mtime inode metadata is queued
-+ * in a ceph_cap_snap (one for each snapshot) until writeback
-+ * completes and the metadata can be flushed back to the MDS.
-+ *
-+ * However, if a (sync) write is currently in-progress when we apply
-+ * the snapshot, we have to wait until the write succeeds or fails
-+ * (and a final size/mtime is known).  In this case the
-+ * cap_snap->writing = 1, and is said to be "pending."  When the write
-+ * finishes, we __ceph_finish_cap_snap().
-+ *
-+ * Caller must hold snap_rwsem for read (i.e., the realm topology won't
-+ * change).
-+ */
-+void ceph_queue_cap_snap(struct ceph_inode_info *ci,
-+			 struct ceph_snap_context *snapc)
-+{
-+	struct inode *inode = &ci->vfs_inode;
-+	struct ceph_cap_snap *capsnap;
-+	int used;
-+
-+	capsnap = kzalloc(sizeof(*capsnap), GFP_NOFS);
-+	if (!capsnap) {
-+		derr(10, "ENOMEM allocating ceph_cap_snap on %p\n", inode);
-+		return;
-+	}
-+	atomic_set(&capsnap->nref, 1);
-+
-+	spin_lock(&inode->i_lock);
-+	used = __ceph_caps_used(ci);
-+	if (__ceph_have_pending_cap_snap(ci)) {
-+		/* there is no point in queuing multiple "pending" cap_snaps,
-+		   as no new writes are allowed to start when pending, so any
-+		   writes in progress now were started before the previous
-+		   cap_snap.  lucky us. */
-+		dout(10, "queue_cap_snap %p snapc %p seq %llu used %d"
-+		     " already pending\n", inode, snapc, snapc->seq, used);
-+		kfree(capsnap);
-+	} else if (ci->i_wrbuffer_ref_head || (used & CEPH_CAP_FILE_WR)) {
-+		igrab(inode);
-+		capsnap->follows = snapc->seq - 1;
-+		capsnap->context = ceph_get_snap_context(snapc);
-+		capsnap->issued = __ceph_caps_issued(ci, NULL);
-+		capsnap->dirty = __ceph_caps_dirty(ci);
-+
-+		capsnap->mode = inode->i_mode;
-+		capsnap->uid = inode->i_uid;
-+		capsnap->gid = inode->i_gid;
-+
-+		/* fixme? */
-+		capsnap->xattr_blob = NULL;
-+		capsnap->xattr_len = 0;
-+
-+		/* dirty page count moved from _head to this cap_snap;
-+		   all subsequent writes page dirties occur _after_ this
-+		   snapshot. */
-+		capsnap->dirty_pages = ci->i_wrbuffer_ref_head;
-+		ci->i_wrbuffer_ref_head = 0;
-+		ceph_put_snap_context(ci->i_head_snapc);
-+		ci->i_head_snapc = NULL;
-+		list_add_tail(&capsnap->ci_item, &ci->i_cap_snaps);
-+
-+		if (used & CEPH_CAP_FILE_WR) {
-+			dout(10, "queue_cap_snap %p cap_snap %p snapc %p"
-+			     " seq %llu used WR, now pending\n", inode,
-+			     capsnap, snapc, snapc->seq);
-+			capsnap->writing = 1;
-+		} else {
-+			/* note mtime, size NOW. */
-+			__ceph_finish_cap_snap(ci, capsnap);
-+		}
-+	} else {
-+		dout(10, "queue_cap_snap %p nothing dirty|writing\n", inode);
-+		kfree(capsnap);
-+	}
-+
-+	spin_unlock(&inode->i_lock);
-+}
-+
-+/*
-+ * Finalize the size, mtime for a cap_snap.. that is, settle on final values
-+ * to be used for the snapshot, to be flushed back to the mds.
-+ *
-+ * If capsnap can now be flushed, add to snap_flush list, and return 1.
-+ *
-+ * Caller must hold i_lock.
-+ */
-+int __ceph_finish_cap_snap(struct ceph_inode_info *ci,
-+			    struct ceph_cap_snap *capsnap)
-+{
-+	struct inode *inode = &ci->vfs_inode;
-+	struct ceph_mds_client *mdsc = &ceph_client(inode->i_sb)->mdsc;
-+
-+	BUG_ON(capsnap->writing);
-+	capsnap->size = inode->i_size;
-+	capsnap->mtime = inode->i_mtime;
-+	capsnap->atime = inode->i_atime;
-+	capsnap->ctime = inode->i_ctime;
-+	capsnap->time_warp_seq = ci->i_time_warp_seq;
-+	if (capsnap->dirty_pages) {
-+		dout(10, "finish_cap_snap %p cap_snap %p snapc %p %llu s=%llu "
-+		     "still has %d dirty pages\n", inode, capsnap,
-+		     capsnap->context, capsnap->context->seq,
-+		     capsnap->size, capsnap->dirty_pages);
-+		return 0;
-+	}
-+	dout(10, "finish_cap_snap %p cap_snap %p snapc %p %llu s=%llu clean\n",
-+	     inode, capsnap, capsnap->context,
-+	     capsnap->context->seq, capsnap->size);
-+
-+	spin_lock(&mdsc->snap_flush_lock);
-+	list_add_tail(&ci->i_snap_flush_item, &mdsc->snap_flush_list);
-+	spin_unlock(&mdsc->snap_flush_lock);
-+	return 1;  /* caller may want to ceph_flush_snaps */
-+}
-+
-+
-+/*
-+ * Parse and apply a snapblob "snap trace" from the MDS.  This specifies
-+ * the snap realm parameters from a given realm and all of its ancestors,
-+ * up to the root.
-+ *
-+ * Caller must hold snap_rwsem for write.
-+ */
-+int ceph_update_snap_trace(struct ceph_mds_client *mdsc,
-+			   void *p, void *e, bool deletion)
-+{
-+	struct ceph_mds_snap_realm *ri;    /* encoded */
-+	__le64 *snaps;                     /* encoded */
-+	__le64 *prior_parent_snaps;        /* encoded */
-+	struct ceph_snap_realm *realm;
-+	int invalidate = 0;
-+	int err = -ENOMEM;
-+
-+	dout(10, "update_snap_trace deletion=%d\n", deletion);
-+more:
-+	ceph_decode_need(&p, e, sizeof(*ri), bad);
-+	ri = p;
-+	p += sizeof(*ri);
-+	ceph_decode_need(&p, e, sizeof(u64)*(le32_to_cpu(ri->num_snaps) +
-+			    le32_to_cpu(ri->num_prior_parent_snaps)), bad);
-+	snaps = p;
-+	p += sizeof(u64) * le32_to_cpu(ri->num_snaps);
-+	prior_parent_snaps = p;
-+	p += sizeof(u64) * le32_to_cpu(ri->num_prior_parent_snaps);
-+
-+	realm = ceph_lookup_snap_realm(mdsc, le64_to_cpu(ri->ino));
-+	if (IS_ERR(realm)) {
-+		err = PTR_ERR(realm);
-+		goto fail;
-+	}
-+	if (!realm) {
-+		realm = ceph_create_snap_realm(mdsc, le64_to_cpu(ri->ino));
-+		if (IS_ERR(realm)) {
-+			err = PTR_ERR(realm);
-+			goto fail;
-+		}
-+	}
-+
-+	if (le64_to_cpu(ri->seq) > realm->seq) {
-+		dout(10, "update_snap_trace updating %llx %p %lld -> %lld\n",
-+		     realm->ino, realm, realm->seq, le64_to_cpu(ri->seq));
-+		/*
-+		 * if the realm seq has changed, queue a cap_snap for every
-+		 * inode with open caps.  we do this _before_ we update
-+		 * the realm info so that we prepare for writeback under the
-+		 * _previous_ snap context.
-+		 *
-+		 * ...unless it's a snap deletion!
-+		 */
-+		if (!deletion) {
-+			struct list_head *pi;
-+			struct inode *inode;
-+			spin_lock(&realm->inodes_with_caps_lock);
-+			list_for_each(pi, &realm->inodes_with_caps) {
-+				struct ceph_inode_info *ci =
-+					list_entry(pi, struct ceph_inode_info,
-+						   i_snap_realm_item);
-+				inode = igrab(&ci->vfs_inode);
-+				spin_unlock(&realm->inodes_with_caps_lock);
-+				if (inode) {
-+					ceph_queue_cap_snap(ci,
-+						    realm->cached_context);
-+					iput(inode);
-+				}
-+				spin_lock(&realm->inodes_with_caps_lock);
-+			}
-+			spin_unlock(&realm->inodes_with_caps_lock);
-+			dout(20, "update_snap_trace cap_snaps queued\n");
-+		}
-+
-+	} else {
-+		dout(10, "update_snap_trace %llx %p seq %lld unchanged\n",
-+		     realm->ino, realm, realm->seq);
-+	}
-+
-+	/* ensure the parent is correct */
-+	err = adjust_snap_realm_parent(mdsc, realm, le64_to_cpu(ri->parent));
-+	if (err < 0)
-+		goto fail;
-+	invalidate += err;
-+
-+	if (le64_to_cpu(ri->seq) > realm->seq) {
-+		/* update realm parameters, snap lists */
-+		realm->seq = le64_to_cpu(ri->seq);
-+		realm->created = le64_to_cpu(ri->created);
-+		realm->parent_since = le64_to_cpu(ri->parent_since);
-+
-+		realm->num_snaps = le32_to_cpu(ri->num_snaps);
-+		err = dup_array(&realm->snaps, snaps, realm->num_snaps);
-+		if (err < 0)
-+			goto fail;
-+
-+		realm->num_prior_parent_snaps =
-+			le32_to_cpu(ri->num_prior_parent_snaps);
-+		err = dup_array(&realm->prior_parent_snaps, prior_parent_snaps,
-+				realm->num_prior_parent_snaps);
-+		if (err < 0)
-+			goto fail;
-+
-+		invalidate = 1;
-+	} else if (!realm->cached_context) {
-+		invalidate = 1;
-+	}
-+
-+	dout(10, "done with %llx %p, invalidated=%d, %p %p\n", realm->ino,
-+	     realm, invalidate, p, e);
-+
-+	if (p < e)
-+		goto more;
-+
-+	/* invalidate when we reach the _end_ (root) of the trace */
-+	if (invalidate)
-+		rebuild_snap_realms(realm);
-+
-+	__cleanup_empty_realms(mdsc);
-+	return 0;
-+
-+bad:
-+	err = -EINVAL;
-+fail:
-+	derr(10, "update_snap_trace error %d\n", err);
-+	return err;
-+}
-+
-+
-+/*
-+ * Send any cap_snaps that are queued for flush.  Try to carry
-+ * s_mutex across multiple snap flushes to avoid locking overhead.
-+ *
-+ * Caller holds no locks.
-+ */
-+static void flush_snaps(struct ceph_mds_client *mdsc)
-+{
-+	struct ceph_inode_info *ci;
-+	struct inode *inode;
-+	struct ceph_mds_session *session = NULL;
-+
-+	dout(10, "flush_snaps\n");
-+	spin_lock(&mdsc->snap_flush_lock);
-+	while (!list_empty(&mdsc->snap_flush_list)) {
-+		ci = list_first_entry(&mdsc->snap_flush_list,
-+				struct ceph_inode_info, i_snap_flush_item);
-+		inode = &ci->vfs_inode;
-+		igrab(inode);
-+		spin_unlock(&mdsc->snap_flush_lock);
-+		spin_lock(&inode->i_lock);
-+		__ceph_flush_snaps(ci, &session);
-+		spin_unlock(&inode->i_lock);
-+		iput(inode);
-+		spin_lock(&mdsc->snap_flush_lock);
-+	}
-+	spin_unlock(&mdsc->snap_flush_lock);
-+
-+	if (session) {
-+		mutex_unlock(&session->s_mutex);
-+		ceph_put_mds_session(session);
-+	}
-+	dout(10, "flush_snaps done\n");
-+}
-+
-+
-+/*
-+ * Handle a snap notification from the MDS.
-+ *
-+ * This can take two basic forms: the simplest is just a snap creation
-+ * or deletion notification on an existing realm.  This should update the
-+ * realm and its children.
-+ *
-+ * The more difficult case is realm creation, due to snap creation at a
-+ * new point in the file hierarchy, or due to a rename that moves a file or
-+ * directory into another realm.
-+ */
-+void ceph_handle_snap(struct ceph_mds_client *mdsc,
-+		      struct ceph_msg *msg)
-+{
-+	struct super_block *sb = mdsc->client->sb;
-+	struct ceph_mds_session *session;
-+	int mds;
-+	u64 split;
-+	int op;
-+	int trace_len;
-+	struct ceph_snap_realm *realm = NULL;
-+	void *p = msg->front.iov_base;
-+	void *e = p + msg->front.iov_len;
-+	struct ceph_mds_snap_head *h;
-+	int num_split_inos, num_split_realms;
-+	__le64 *split_inos = NULL, *split_realms = NULL;
-+	int i;
-+	int locked_rwsem = 0;
-+
-+	if (le32_to_cpu(msg->hdr.src.name.type) != CEPH_ENTITY_TYPE_MDS)
-+		return;
-+	mds = le32_to_cpu(msg->hdr.src.name.num);
-+
-+	/* decode */
-+	if (msg->front.iov_len < sizeof(*h))
++	ceph_decode_need(&p, end, 2*sizeof(u32) + 2*sizeof(u64), bad);
++	ceph_decode_64_le(&p, major);
++	__ceph_fsid_set_major(&m->fsid, major);
++	ceph_decode_64_le(&p, minor);
++	__ceph_fsid_set_minor(&m->fsid, minor);
++	ceph_decode_32(&p, m->epoch);
++	ceph_decode_32(&p, m->num_mon);
++	ceph_decode_need(&p, end, m->num_mon*sizeof(m->mon_inst[0]), bad);
++	ceph_decode_copy(&p, m->mon_inst, m->num_mon*sizeof(m->mon_inst[0]));
++	if (p != end)
 +		goto bad;
-+	h = p;
-+	op = le32_to_cpu(h->op);
-+	split = le64_to_cpu(h->split);   /* non-zero if we are splitting an
-+					  * existing realm */
-+	num_split_inos = le32_to_cpu(h->num_split_inos);
-+	num_split_realms = le32_to_cpu(h->num_split_realms);
-+	trace_len = le32_to_cpu(h->trace_len);
-+	p += sizeof(*h);
 +
-+	dout(10, "handle_snap from mds%d op %s split %llx tracelen %d\n", mds,
-+	     ceph_snap_op_name(op), split, trace_len);
-+
-+	/* find session */
-+	mutex_lock(&mdsc->mutex);
-+	session = __ceph_lookup_mds_session(mdsc, mds);
-+	mutex_unlock(&mdsc->mutex);
-+	if (!session) {
-+		dout(10, "WTF, got snap but no session for mds%d\n", mds);
-+		return;
-+	}
-+
-+	mutex_lock(&session->s_mutex);
-+	session->s_seq++;
-+	mutex_unlock(&session->s_mutex);
-+
-+	down_write(&mdsc->snap_rwsem);
-+	locked_rwsem = 1;
-+
-+	if (op == CEPH_SNAP_OP_SPLIT) {
-+		struct ceph_mds_snap_realm *ri;
-+
-+		/*
-+		 * A "split" breaks part of an existing realm off into
-+		 * a new realm.  The MDS provides a list of inodes
-+		 * (with caps) and child realms that belong to the new
-+		 * child.
-+		 */
-+		split_inos = p;
-+		p += sizeof(u64) * num_split_inos;
-+		split_realms = p;
-+		p += sizeof(u64) * num_split_realms;
-+		ceph_decode_need(&p, e, sizeof(*ri), bad);
-+		/* we will peek at realm info here, but will _not_
-+		 * advance p, as the realm update will occur below in
-+		 * ceph_update_snap_trace. */
-+		ri = p;
-+
-+		realm = ceph_lookup_snap_realm(mdsc, split);
-+		if (IS_ERR(realm))
-+			goto out;
-+		if (!realm) {
-+			realm = ceph_create_snap_realm(mdsc, split);
-+			if (IS_ERR(realm))
-+				goto out;
-+		}
-+		ceph_get_snap_realm(mdsc, realm);
-+
-+		dout(10, "splitting snap_realm %llx %p\n", realm->ino, realm);
-+		for (i = 0; i < num_split_inos; i++) {
-+			struct ceph_vino vino = {
-+				.ino = le64_to_cpu(split_inos[i]),
-+				.snap = CEPH_NOSNAP,
-+			};
-+			struct inode *inode = ceph_find_inode(sb, vino);
-+			struct ceph_inode_info *ci;
-+
-+			if (!inode)
-+				continue;
-+			ci = ceph_inode(inode);
-+
-+			spin_lock(&inode->i_lock);
-+			if (!ci->i_snap_realm)
-+				goto skip_inode;
-+			/*
-+			 * If this inode belongs to a realm that was
-+			 * created after our new realm, we experienced
-+			 * a race (due to another split notifications
-+			 * arriving from a different MDS).  So skip
-+			 * this inode.
-+			 */
-+			if (ci->i_snap_realm->created >
-+			    le64_to_cpu(ri->created)) {
-+				dout(15, " leaving %p in newer realm %llx %p\n",
-+				     inode, ci->i_snap_realm->ino,
-+				     ci->i_snap_realm);
-+				goto skip_inode;
-+			}
-+			dout(15, " will move %p to split realm %llx %p\n",
-+			     inode, realm->ino, realm);
-+			/*
-+			 * Remove the inode from the realm's inode
-+			 * list, but don't add it to the new realm
-+			 * yet.  We don't want the cap_snap to be
-+			 * queued (again) by ceph_update_snap_trace()
-+			 * below.  Queue it _now_, under the old context.
-+			 */
-+			list_del_init(&ci->i_snap_realm_item);
-+			spin_unlock(&inode->i_lock);
-+
-+			ceph_queue_cap_snap(ci,
-+					    ci->i_snap_realm->cached_context);
-+
-+			iput(inode);
-+			continue;
-+
-+		skip_inode:
-+			spin_unlock(&inode->i_lock);
-+			iput(inode);
-+		}
-+
-+		/* we may have taken some of the old realm's children. */
-+		for (i = 0; i < num_split_realms; i++) {
-+			struct ceph_snap_realm *child =
-+				ceph_lookup_snap_realm(mdsc,
-+					   le64_to_cpu(split_realms[i]));
-+			if (IS_ERR(child))
-+				continue;
-+			if (!child)
-+				continue;
-+			adjust_snap_realm_parent(mdsc, child, realm->ino);
-+		}
-+	}
-+
-+	/*
-+	 * update using the provided snap trace. if we are deleting a
-+	 * snap, we can avoid queueing cap_snaps.
-+	 */
-+	ceph_update_snap_trace(mdsc, p, e,
-+			       op == CEPH_SNAP_OP_DESTROY);
-+
-+	if (op == CEPH_SNAP_OP_SPLIT) {
-+		/*
-+		 * ok, _now_ add the inodes into the new realm.
-+		 */
-+		for (i = 0; i < num_split_inos; i++) {
-+			struct ceph_vino vino = {
-+				.ino = le64_to_cpu(split_inos[i]),
-+				.snap = CEPH_NOSNAP,
-+			};
-+			struct inode *inode = ceph_find_inode(sb, vino);
-+			struct ceph_inode_info *ci;
-+
-+			if (!inode)
-+				continue;
-+			ci = ceph_inode(inode);
-+			spin_lock(&inode->i_lock);
-+			if (!ci->i_snap_realm)
-+				goto split_skip_inode;
-+			ceph_put_snap_realm(mdsc, ci->i_snap_realm);
-+			spin_lock(&realm->inodes_with_caps_lock);
-+			list_add(&ci->i_snap_realm_item,
-+				 &realm->inodes_with_caps);
-+			ci->i_snap_realm = realm;
-+			spin_unlock(&realm->inodes_with_caps_lock);
-+			ceph_get_snap_realm(mdsc, realm);
-+		split_skip_inode:
-+			spin_unlock(&inode->i_lock);
-+			iput(inode);
-+		}
-+
-+		/* we took a reference when we created the realm, above */
-+		ceph_put_snap_realm(mdsc, realm);
-+	}
-+
-+	__cleanup_empty_realms(mdsc);
-+
-+	up_write(&mdsc->snap_rwsem);
-+
-+	flush_snaps(mdsc);
-+	return;
++	dout(30, "monmap_decode epoch %d, num_mon %d\n", m->epoch,
++	     m->num_mon);
++	for (i = 0; i < m->num_mon; i++)
++		dout(30, "monmap_decode  mon%d is %u.%u.%u.%u:%u\n", i,
++		     IPQUADPORT(m->mon_inst[i].addr.ipaddr));
++	return m;
 +
 +bad:
-+	derr(10, "corrupt snap message from mds%d\n", mds);
-+out:
-+	if (locked_rwsem)
-+		up_write(&mdsc->snap_rwsem);
-+	return;
++	dout(30, "monmap_decode failed with %d\n", err);
++	kfree(m);
++	return ERR_PTR(err);
++}
++
++/*
++ * return true if *addr is included in the monmap.
++ */
++int ceph_monmap_contains(struct ceph_monmap *m, struct ceph_entity_addr *addr)
++{
++	int i;
++
++	for (i = 0; i < m->num_mon; i++)
++		if (ceph_entity_addr_equal(addr, &m->mon_inst[i].addr))
++			return 1;
++	return 0;
++}
++
++/*
++ * Choose a monitor.  If @notmon >= 0, choose a different monitor than
++ * last time.
++ */
++static int pick_mon(struct ceph_mon_client *monc, int newmon)
++{
++	char r;
++
++	if (!newmon && monc->last_mon >= 0)
++		return monc->last_mon;
++	get_random_bytes(&r, 1);
++	monc->last_mon = r % monc->monmap->num_mon;
++	return monc->last_mon;
++}
++
++/*
++ * Generic timeout mechanism for monitor requests
++ */
++static void reschedule_timeout(struct ceph_mon_request *req)
++{
++	schedule_delayed_work(&req->delayed_work, req->delay);
++	if (req->delay < MAX_DELAY_INTERVAL)
++		req->delay *= 2;
++	else
++		req->delay = MAX_DELAY_INTERVAL;
++}
++
++static void retry_request(struct work_struct *work)
++{
++	struct ceph_mon_request *req =
++		container_of(work, struct ceph_mon_request,
++			     delayed_work.work);
++
++	/*
++	 * if lock is contended, reschedule sooner.  we can't wait for
++	 * mutex because we cancel the timeout sync with lock held.
++	 */
++	if (mutex_trylock(&req->monc->req_mutex)) {
++		req->do_request(req->monc, 1);
++		reschedule_timeout(req);
++		mutex_unlock(&req->monc->req_mutex);
++	} else
++		schedule_delayed_work(&req->delayed_work, BASE_DELAY_INTERVAL);
++}
++
++static void cancel_timeout(struct ceph_mon_request *req)
++{
++	cancel_delayed_work_sync(&req->delayed_work);
++	req->delay = BASE_DELAY_INTERVAL;
++}
++
++static void init_request_type(struct ceph_mon_client *monc,
++			      struct ceph_mon_request *req,
++			      ceph_monc_request_func_t func)
++{
++	req->monc = monc;
++	INIT_DELAYED_WORK(&req->delayed_work, retry_request);
++	req->delay = 0;
++	req->do_request = func;
 +}
 +
 +
++/*
++ * mds map
++ */
++static void request_mdsmap(struct ceph_mon_client *monc, int newmon)
++{
++	struct ceph_msg *msg;
++	struct ceph_mds_getmap *h;
++	int mon = pick_mon(monc, newmon);
 +
++	dout(5, "request_mdsmap from mon%d want %u\n", mon, monc->want_mdsmap);
++	msg = ceph_msg_new(CEPH_MSG_MDS_GETMAP, sizeof(*h), 0, 0, NULL);
++	if (IS_ERR(msg))
++		return;
++	h = msg->front.iov_base;
++	h->fsid = monc->monmap->fsid;
++	h->want = cpu_to_le32(monc->want_mdsmap);
++	msg->hdr.dst = monc->monmap->mon_inst[mon];
++	ceph_msg_send(monc->client->msgr, msg, 0);
++}
++
++/*
++ * Register our desire for an mdsmap >= epoch @want.
++ */
++void ceph_monc_request_mdsmap(struct ceph_mon_client *monc, u32 want)
++{
++	dout(5, "request_mdsmap want %u\n", want);
++	mutex_lock(&monc->req_mutex);
++	if (want > monc->want_mdsmap) {
++		monc->want_mdsmap = want;
++		monc->mdsreq.delay = BASE_DELAY_INTERVAL;
++		request_mdsmap(monc, 0);
++		reschedule_timeout(&monc->mdsreq);
++	}
++	mutex_unlock(&monc->req_mutex);
++}
++
++/*
++ * Possibly cancel our desire for a new map
++ */
++int ceph_monc_got_mdsmap(struct ceph_mon_client *monc, u32 got)
++{
++	int ret = 0;
++
++	mutex_lock(&monc->req_mutex);
++	if (got < monc->want_mdsmap) {
++		dout(5, "got_mdsmap %u < wanted %u\n", got, monc->want_mdsmap);
++		ret = -EAGAIN;
++	} else {
++		dout(5, "got_mdsmap %u >= wanted %u\n", got, monc->want_mdsmap);
++		monc->want_mdsmap = 0;
++		cancel_timeout(&monc->mdsreq);
++	}
++	mutex_unlock(&monc->req_mutex);
++	return ret;
++}
++
++
++/*
++ * osd map
++ */
++static void request_osdmap(struct ceph_mon_client *monc, int newmon)
++{
++	struct ceph_msg *msg;
++	struct ceph_osd_getmap *h;
++	int mon = pick_mon(monc, newmon);
++
++	dout(5, "request_osdmap from mon%d want %u\n", mon, monc->want_osdmap);
++	msg = ceph_msg_new(CEPH_MSG_OSD_GETMAP, sizeof(*h), 0, 0, NULL);
++	if (IS_ERR(msg))
++		return;
++	h = msg->front.iov_base;
++	h->fsid = monc->monmap->fsid;
++	h->start = cpu_to_le32(monc->want_osdmap);
++	msg->hdr.dst = monc->monmap->mon_inst[mon];
++	ceph_msg_send(monc->client->msgr, msg, 0);
++}
++
++void ceph_monc_request_osdmap(struct ceph_mon_client *monc, u32 want)
++{
++	dout(5, "request_osdmap want %u\n", want);
++	mutex_lock(&monc->req_mutex);
++	monc->osdreq.delay = BASE_DELAY_INTERVAL;
++	monc->want_osdmap = want;
++	request_osdmap(monc, 0);
++	reschedule_timeout(&monc->osdreq);
++	mutex_unlock(&monc->req_mutex);
++}
++
++int ceph_monc_got_osdmap(struct ceph_mon_client *monc, u32 got)
++{
++	int ret = 0;
++
++	mutex_lock(&monc->req_mutex);
++	if (got < monc->want_osdmap) {
++		dout(5, "got_osdmap %u < wanted %u\n", got, monc->want_osdmap);
++		ret = -EAGAIN;
++	} else {
++		dout(5, "got_osdmap %u >= wanted %u\n", got, monc->want_osdmap);
++		monc->want_osdmap = 0;
++		cancel_timeout(&monc->osdreq);
++	}
++	mutex_unlock(&monc->req_mutex);
++	return ret;
++}
++
++
++/*
++ * umount
++ */
++static void request_umount(struct ceph_mon_client *monc, int newmon)
++{
++	struct ceph_msg *msg;
++	int mon = pick_mon(monc, newmon);
++
++	dout(5, "request_umount from mon%d\n", mon);
++	msg = ceph_msg_new(CEPH_MSG_CLIENT_UNMOUNT, 0, 0, 0, NULL);
++	if (IS_ERR(msg))
++		return;
++	msg->hdr.dst = monc->monmap->mon_inst[mon];
++	ceph_msg_send(monc->client->msgr, msg, 0);
++}
++
++void ceph_monc_request_umount(struct ceph_mon_client *monc)
++{
++	struct ceph_client *client = monc->client;
++
++	/* don't bother if forced unmount */
++	if (client->mount_state == CEPH_MOUNT_SHUTDOWN)
++		return;
++
++	mutex_lock(&monc->req_mutex);
++	monc->umountreq.delay = BASE_DELAY_INTERVAL;
++	request_umount(monc, 0);
++	reschedule_timeout(&monc->umountreq);
++	mutex_unlock(&monc->req_mutex);
++}
++
++void ceph_monc_handle_umount(struct ceph_mon_client *monc,
++			     struct ceph_msg *msg)
++{
++	dout(5, "handle_umount\n");
++	mutex_lock(&monc->req_mutex);
++	cancel_timeout(&monc->umountreq);
++	monc->client->mount_state = CEPH_MOUNT_UNMOUNTED;
++	mutex_unlock(&monc->req_mutex);
++	wake_up(&monc->client->mount_wq);
++}
++
++
++/*
++ * statfs
++ */
++void ceph_monc_handle_statfs_reply(struct ceph_mon_client *monc,
++				   struct ceph_msg *msg)
++{
++	struct ceph_mon_statfs_request *req;
++	struct ceph_mon_statfs_reply *reply = msg->front.iov_base;
++	u64 tid;
++
++	if (msg->front.iov_len != sizeof(*reply))
++		goto bad;
++	tid = le64_to_cpu(reply->tid);
++	dout(10, "handle_statfs_reply %p tid %llu\n", msg, tid);
++
++	mutex_lock(&monc->statfs_mutex);
++	req = radix_tree_lookup(&monc->statfs_request_tree, tid);
++	if (req) {
++		*req->buf = reply->st;
++		req->result = 0;
++	}
++	mutex_unlock(&monc->statfs_mutex);
++	if (req)
++		complete(&req->completion);
++	return;
++
++bad:
++	derr(10, "corrupt statfs reply, no tid\n");
++}
++
++/*
++ * (re)send a statfs request
++ */
++static int send_statfs(struct ceph_mon_client *monc,
++		       struct ceph_mon_statfs_request *req,
++		       int newmon)
++{
++	struct ceph_msg *msg;
++	struct ceph_mon_statfs *h;
++	int mon = pick_mon(monc, newmon ? 1 : -1);
++
++	dout(10, "send_statfs to mon%d tid %llu\n", mon, req->tid);
++	msg = ceph_msg_new(CEPH_MSG_STATFS, sizeof(*h), 0, 0, NULL);
++	if (IS_ERR(msg))
++		return PTR_ERR(msg);
++	req->request = msg;
++	h = msg->front.iov_base;
++	h->fsid = monc->monmap->fsid;
++	h->tid = cpu_to_le64(req->tid);
++	msg->hdr.dst = monc->monmap->mon_inst[mon];
++	ceph_msg_send(monc->client->msgr, msg, 0);
++	return 0;
++}
++
++/*
++ * Do a synchronous statfs().
++ */
++int ceph_monc_do_statfs(struct ceph_mon_client *monc, struct ceph_statfs *buf)
++{
++	struct ceph_mon_statfs_request req;
++	int err;
++
++	req.buf = buf;
++	init_completion(&req.completion);
++
++	/* register request */
++	mutex_lock(&monc->statfs_mutex);
++	req.tid = ++monc->last_tid;
++	req.last_attempt = jiffies;
++	req.delay = BASE_DELAY_INTERVAL;
++	memset(&req.kobj, 0, sizeof(req.kobj));
++	if (radix_tree_insert(&monc->statfs_request_tree, req.tid, &req) < 0) {
++		mutex_unlock(&monc->statfs_mutex);
++		derr(10, "ENOMEM in do_statfs\n");
++		return -ENOMEM;
++	}
++	if (monc->num_statfs_requests == 0)
++		schedule_delayed_work(&monc->statfs_delayed_work,
++				      round_jiffies_relative(1*HZ));
++	monc->num_statfs_requests++;
++	mutex_unlock(&monc->statfs_mutex);
++
++	/* send request and wait */
++	err = send_statfs(monc, &req, 0);
++	if (!err)
++		err = wait_for_completion_interruptible(&req.completion);
++
++	mutex_lock(&monc->statfs_mutex);
++	radix_tree_delete(&monc->statfs_request_tree, req.tid);
++	monc->num_statfs_requests--;
++	if (monc->num_statfs_requests == 0)
++		cancel_delayed_work(&monc->statfs_delayed_work);
++	mutex_unlock(&monc->statfs_mutex);
++
++	if (!err)
++		err = req.result;
++	return err;
++}
++
++/*
++ * Resend any statfs requests that have timed out.
++ */
++static void do_statfs_check(struct work_struct *work)
++{
++	struct ceph_mon_client *monc =
++		container_of(work, struct ceph_mon_client,
++			     statfs_delayed_work.work);
++	u64 next_tid = 0;
++	int got;
++	int did = 0;
++	int newmon = 1;
++	struct ceph_mon_statfs_request *req;
++
++	dout(10, "do_statfs_check\n");
++	mutex_lock(&monc->statfs_mutex);
++	while (1) {
++		got = radix_tree_gang_lookup(&monc->statfs_request_tree,
++					     (void **)&req,
++					     next_tid, 1);
++		if (got == 0)
++			break;
++		did++;
++		next_tid = req->tid + 1;
++		if (time_after(jiffies, req->last_attempt + req->delay)) {
++			req->last_attempt = jiffies;
++			if (req->delay < MAX_DELAY_INTERVAL)
++				req->delay *= 2;
++			send_statfs(monc, req, newmon);
++			newmon = 0;
++		}
++	}
++	mutex_unlock(&monc->statfs_mutex);
++
++	if (did)
++		schedule_delayed_work(&monc->statfs_delayed_work,
++				      round_jiffies_relative(1*HZ));
++}
++
++
++int ceph_monc_init(struct ceph_mon_client *monc, struct ceph_client *cl)
++{
++	dout(5, "init\n");
++	memset(monc, 0, sizeof(*monc));
++	monc->client = cl;
++	monc->monmap = kzalloc(sizeof(struct ceph_monmap) +
++		       sizeof(struct ceph_entity_addr) * MAX_MON_MOUNT_ADDR,
++		       GFP_KERNEL);
++	if (monc->monmap == NULL)
++		return -ENOMEM;
++	mutex_init(&monc->statfs_mutex);
++	INIT_RADIX_TREE(&monc->statfs_request_tree, GFP_NOFS);
++	monc->num_statfs_requests = 0;
++	monc->last_tid = 0;
++	INIT_DELAYED_WORK(&monc->statfs_delayed_work, do_statfs_check);
++	init_request_type(monc, &monc->mdsreq, request_mdsmap);
++	init_request_type(monc, &monc->osdreq, request_osdmap);
++	init_request_type(monc, &monc->umountreq, request_umount);
++	mutex_init(&monc->req_mutex);
++	monc->want_mdsmap = 0;
++	monc->want_osdmap = 0;
++	return 0;
++}
++
++void ceph_monc_stop(struct ceph_mon_client *monc)
++{
++	dout(5, "stop\n");
++	cancel_timeout(&monc->mdsreq);
++	cancel_timeout(&monc->osdreq);
++	cancel_timeout(&monc->umountreq);
++	cancel_delayed_work_sync(&monc->statfs_delayed_work);
++	kfree(monc->monmap);
++}
+diff --git a/fs/staging/ceph/mon_client.h b/fs/staging/ceph/mon_client.h
+new file mode 100644
+index 0000000..77f44b8
+--- /dev/null
++++ b/fs/staging/ceph/mon_client.h
+@@ -0,0 +1,135 @@
++#ifndef _FS_CEPH_MON_CLIENT_H
++#define _FS_CEPH_MON_CLIENT_H
++
++#include "messenger.h"
++#include <linux/completion.h>
++#include <linux/radix-tree.h>
++
++/*
++ * A small cluster of Ceph "monitors" are responsible for managing critical
++ * cluster configuration and state information.  An odd number (e.g., 3, 5)
++ * of cmon daemons use a modified version of the Paxos part-time parliament
++ * algorithm to manage the MDS map (mds cluster membership), OSD map, and
++ * list of clients who have mounted the file system.
++ *
++ * Communication with the monitor cluster is lossy, so requests for
++ * information may have to be resent if we time out waiting for a response.
++ * As long as we do not time out, we continue to send all requests to the
++ * same monitor.  If there is a problem, we randomly pick a new monitor from
++ * the cluster to try.
++ */
++
++struct ceph_client;
++struct ceph_mount_args;
++
++/*
++ * The monitor map enumerates the set of all monitors.
++ *
++ * Make sure this structure size matches the encoded map size, or change
++ * ceph_monmap_decode().
++ */
++struct ceph_monmap {
++	ceph_fsid_t fsid;
++	u32 epoch;
++	u32 num_mon;
++	struct ceph_entity_inst mon_inst[0];
++};
++
++struct ceph_mon_client;
++struct ceph_mon_statfs_request;
++
++struct ceph_mon_client_attr {
++	struct attribute attr;
++	ssize_t (*show)(struct ceph_mon_client *, struct ceph_mon_client_attr *,
++			char *);
++	ssize_t (*store)(struct ceph_mon_client *,
++			 struct ceph_mon_client_attr *,
++			 const char *, size_t);
++};
++
++struct ceph_mon_statfs_request_attr {
++	struct attribute attr;
++	ssize_t (*show)(struct ceph_mon_statfs_request *,
++			struct ceph_mon_statfs_request_attr *,
++			char *);
++	ssize_t (*store)(struct ceph_mon_statfs_request *,
++			 struct ceph_mon_statfs_request_attr *,
++			const char *, size_t);
++	struct ceph_entity_inst dst;
++};
++
++/*
++ * Generic mechanism for resending monitor requests.
++ */
++typedef void (*ceph_monc_request_func_t)(struct ceph_mon_client *monc,
++					 int newmon);
++struct ceph_mon_request {
++	struct ceph_mon_client *monc;
++	struct delayed_work delayed_work;
++	unsigned long delay;
++	ceph_monc_request_func_t do_request;
++};
++
++/* statfs() is done a bit differently */
++struct ceph_mon_statfs_request {
++	u64 tid;
++	struct kobject kobj;
++	struct ceph_mon_statfs_request_attr k_op, k_mon;
++	int result;
++	struct ceph_statfs *buf;
++	struct completion completion;
++	unsigned long last_attempt, delay; /* jiffies */
++	struct ceph_msg  *request;  /* original request */
++};
++
++struct ceph_mon_client {
++	struct ceph_client *client;
++	int last_mon;                       /* last monitor i contacted */
++	struct ceph_monmap *monmap;
++
++	/* pending statfs requests */
++	struct mutex statfs_mutex;
++	struct radix_tree_root statfs_request_tree;
++	int num_statfs_requests;
++	u64 last_tid;
++	struct delayed_work statfs_delayed_work;
++
++	/* mds/osd map or umount requests */
++	struct mutex req_mutex;
++	struct ceph_mon_request mdsreq, osdreq, umountreq;
++	u32 want_mdsmap;
++	u32 want_osdmap;
++
++	struct dentry *debugfs_file;
++};
++
++extern struct ceph_monmap *ceph_monmap_decode(void *p, void *end);
++extern int ceph_monmap_contains(struct ceph_monmap *m,
++				struct ceph_entity_addr *addr);
++
++extern int ceph_monc_init(struct ceph_mon_client *monc, struct ceph_client *cl);
++extern void ceph_monc_stop(struct ceph_mon_client *monc);
++
++/*
++ * The model here is to indicate that we need a new map of at least epoch
++ * @want, and to indicate which maps receive.  Periodically rerequest the map
++ * from the monitor cluster until we get what we want.
++ */
++extern void ceph_monc_request_mdsmap(struct ceph_mon_client *monc, u32 want);
++extern int ceph_monc_got_mdsmap(struct ceph_mon_client *monc, u32 have);
++
++extern void ceph_monc_request_osdmap(struct ceph_mon_client *monc, u32 want);
++extern int ceph_monc_got_osdmap(struct ceph_mon_client *monc, u32 have);
++
++extern void ceph_monc_request_umount(struct ceph_mon_client *monc);
++
++extern int ceph_monc_do_statfs(struct ceph_mon_client *monc,
++			       struct ceph_statfs *buf);
++extern void ceph_monc_handle_statfs_reply(struct ceph_mon_client *monc,
++					  struct ceph_msg *msg);
++
++extern void ceph_monc_request_umount(struct ceph_mon_client *monc);
++extern void ceph_monc_handle_umount(struct ceph_mon_client *monc,
++				    struct ceph_msg *msg);
++
++#endif
 -- 
 1.5.6.5
 
