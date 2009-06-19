@@ -1,1363 +1,2210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbZFSSLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754370AbZFSSPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbZFSSLm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 14:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZFSSLd
+	id S1754370AbZFSSPV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 14:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZFSSPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 14:11:33 -0400
-Received: from kroah.org ([198.145.64.141]:41914 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752771AbZFSSLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 14:11:30 -0400
-Date: Fri, 19 Jun 2009 11:07:28 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: [GIT PATCH] STAGING patches for 2.6.30-git tree
-Message-ID: <20090619180728.GA21529@kroah.com>
+	Fri, 19 Jun 2009 14:15:08 -0400
+Received: from [212.98.175.89] ([212.98.175.89]:48441 "EHLO localdomain.by"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752619AbZFSSPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 14:15:00 -0400
+Date: Fri, 19 Jun 2009 21:15:29 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: BUG: scheduling while atomic
+Message-ID: <20090619181529.GA3593@localdomain.by>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the big staging series of patches for your git tree.
 
-They contain a few new drivers, and lots of fixes for the existing
-staging drivers.
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-And hey, look:
- 658 files changed, 165585 insertions(+), 240493 deletions(-)
+Hello.
+I see lots of "BUG: scheduling while atomic" with current kernels (started with 2.6.30-git1, 2.6.30 is ok).
+For example (2.6.30-git14):
 
-We are removing more crap than we are adding, looks like progress to me!
-:)
+kernel: [27404.945372] BUG: scheduling while atomic: pptpgw/4637/0x00000400
+kernel: [27404.945378] INFO: lockdep is turned off.
+kernel: [27404.945383] Modules linked in: ppp_deflate zlib_deflate ppp_async crc_ccitt ppp_generic slhc ipv6 fuse sbp2 loop snd_hda_codec_si3054 snd_hda_codec_realtek
+snd_hda_intel snd_hda_codec snd_pcm snd_seq_mi
+di snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device pcspkr snd i2c_i801 psmouse serio_raw rng_core soundcore snd_page_alloc asus_laptop evdev usbhid hid sg sr_mod
+cdrom sd_mod sdhci_pci sdhci mmc_co
+re ohci1394 ata_generic pata_acpi ricoh_mmc uhci_hcd led_class ata_piix ieee1394 ide_pci_generic ehci_hcd usbcore r8169 mii
+kernel: [27404.945532] 
+kernel: [27404.945540] Pid: 4637, comm: pptpgw Not tainted (2.6.30-dbgnv-git14 #4) F3JC                
+kernel: [27404.945549] EIP: 0060:[<c104a3d5>] EFLAGS: 00200246 CPU: 0
+kernel: [27404.945559] EIP is at __tasklet_schedule+0x65/0xb0
+kernel: [27404.945566] EAX: 00000000 EBX: f6077c6c ECX: 00000000 EDX: 00000000
+kernel: [27404.945573] ESI: 00200246 EDI: 00000001 EBP: e2807e60 ESP: e2807e54
+kernel: [27404.945581]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+kernel: [27404.945589] CR0: 8005003b CR2: b5f027ac CR3: 35993000 CR4: 000006d0
+kernel: [27404.945596] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+kernel: [27404.945603] DR6: ffff0ff0 DR7: 00000400
+kernel: [27404.945609] Call Trace:
+kernel: [27404.945621]  [<f90be38b>] ppp_asynctty_wakeup+0x6b/0x80 [ppp_async]
+kernel: [27404.945632]  [<c12de902>] tty_wakeup+0x72/0x90
+kernel: [27404.945643]  [<c12e70d3>] pty_unthrottle+0x23/0x50
+kernel: [27404.945653]  [<c12e3b22>] tty_unthrottle+0x42/0x70
+kernel: [27404.945663]  [<c12e1c2f>] n_tty_read+0x48f/0x730
+kernel: [27404.945676]  [<c103e150>] ? default_wake_function+0x0/0x40
+kernel: [27404.945688]  [<c12dcc20>] tty_read+0xa0/0xe0
+kernel: [27404.945698]  [<c12e17a0>] ? n_tty_read+0x0/0x730
+kernel: [27404.945709]  [<c10faf2b>] vfs_read+0xbb/0x1c0
+kernel: [27404.945720]  [<c12dcb80>] ? tty_read+0x0/0xe0
+kernel: [27404.945730]  [<c10fb138>] sys_read+0x58/0xa0
+kernel: [27404.945741]  [<c100325b>] sysenter_do_call+0x12/0x32
 
-All of these are contained within the drivers/staging tree, and have
-been in the linux-next and -mm trees for a while now.
+/USR/SBIN/CRON[10140]: CMD (fetchmail -sk -m '/usr/bin/procmail' > /dev/null 2>&1)
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+kernel: [27729.047046] BUG: spinlock lockup on CPU#1, pppd/4636, f5928dc0
+kernel: [27729.047060] Pid: 4636, comm: pppd Not tainted 2.6.30-dbgnv-git14 #4
+kernel: [27729.047067] Call Trace:
+kernel: [27729.047084]  [<c141786b>] ? printk+0x23/0x36
+kernel: [27729.047099]  [<c125da29>] _raw_spin_lock+0x159/0x170
+kernel: [27729.047111]  [<c141b7f2>] _spin_lock_bh+0x62/0x90
+kernel: [27729.047130]  [<f90aabe7>] ? ppp_channel_push+0x27/0xd0 [ppp_generic]
+kernel: [27729.047145]  [<f90aabe7>] ppp_channel_push+0x27/0xd0 [ppp_generic]
+kernel: [27729.047159]  [<f90aad67>] ppp_write+0xd7/0xe0 [ppp_generic]
+kernel: [27729.047172]  [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [27729.047186]  [<f90aac90>] ? ppp_write+0x0/0xe0 [ppp_generic]
+kernel: [27729.047197]  [<c10fae28>] sys_write+0x58/0xa0
+kernel: [27729.047209]  [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [27787.880283] SysRq : Keyboard mode set to system default
 
-The patches will all be copied to the driverdev mailing list, if people
-want to see them there.
+//Truncated. See attachment for details.
 
-thanks,
+Hardware: ASUS F3Jc
 
-greg k-h
+Reported: http://bugzilla.kernel.org/show_bug.cgi?id=13522
 
---------------
 
- MAINTAINERS                                        |    1 +
- drivers/staging/Kconfig                            |   14 +-
- drivers/staging/Makefile                           |    7 +-
- drivers/staging/agnx/debug.h                       |    9 +-
- drivers/staging/agnx/pci.c                         |   57 +-
- drivers/staging/agnx/phy.c                         |    4 +-
- drivers/staging/agnx/phy.h                         |    2 +-
- drivers/staging/agnx/sta.c                         |    2 +-
- drivers/staging/agnx/sta.h                         |    2 +-
- drivers/staging/altpciechdma/altpciechdma.c        |   34 +-
- drivers/staging/android/Kconfig                    |   10 +-
- drivers/staging/android/Makefile                   |    1 +
- drivers/staging/android/binder.c                   |  436 +-
- drivers/staging/android/logger.c                   |   12 +-
- drivers/staging/android/lowmemorykiller.c          |  101 +-
- drivers/staging/android/ram_console.c              |    9 +-
- drivers/staging/android/timed_gpio.c               |   98 +-
- drivers/staging/android/timed_gpio.h               |    4 +-
- drivers/staging/android/timed_output.c             |  121 +
- drivers/staging/android/timed_output.h             |   37 +
- drivers/staging/asus_oled/asus_oled.c              |    2 +-
- drivers/staging/b3dfg/b3dfg.c                      |    3 +-
- drivers/staging/comedi/Kconfig                     |   11 +-
- drivers/staging/comedi/Makefile                    |    5 -
- drivers/staging/comedi/comedi.h                    |    1 -
- drivers/staging/comedi/comedi_fops.c               |  504 +-
- drivers/staging/comedi/comedi_ksyms.c              |    7 -
- drivers/staging/comedi/comedi_rt.h                 |  149 -
- drivers/staging/comedi/comedidev.h                 |   17 +-
- drivers/staging/comedi/drivers.c                   |   19 +-
- drivers/staging/comedi/drivers/8253.h              |   50 +-
- drivers/staging/comedi/drivers/8255.c              |   23 +-
- drivers/staging/comedi/drivers/8255.h              |   14 +-
- drivers/staging/comedi/drivers/Makefile            |    5 +-
- drivers/staging/comedi/drivers/acl7225b.c          |   22 +-
- .../comedi/drivers/addi-data/APCI1710_82x54.c      |  372 +-
- .../comedi/drivers/addi-data/APCI1710_82x54.h      |   32 +-
- .../comedi/drivers/addi-data/APCI1710_Chrono.c     |  402 +-
- .../comedi/drivers/addi-data/APCI1710_Chrono.h     |   36 +-
- .../comedi/drivers/addi-data/APCI1710_Dig_io.c     |  309 +-
- .../comedi/drivers/addi-data/APCI1710_Dig_io.h     |    8 +-
- .../comedi/drivers/addi-data/APCI1710_INCCPT.c     | 1012 +-
- .../comedi/drivers/addi-data/APCI1710_INCCPT.h     |  188 +-
- .../comedi/drivers/addi-data/APCI1710_Inp_cpt.c    |  204 +-
- .../comedi/drivers/addi-data/APCI1710_Inp_cpt.h    |    8 +-
- .../comedi/drivers/addi-data/APCI1710_Pwm.c        | 1314 ++--
- .../comedi/drivers/addi-data/APCI1710_Pwm.h        |   70 +-
- .../comedi/drivers/addi-data/APCI1710_Ssi.c        |  230 +-
- .../comedi/drivers/addi-data/APCI1710_Ssi.h        |    6 +-
- .../comedi/drivers/addi-data/APCI1710_Tor.c        |  432 +-
- .../comedi/drivers/addi-data/APCI1710_Tor.h        |    8 +-
- .../comedi/drivers/addi-data/APCI1710_Ttl.c        |  198 +-
- .../comedi/drivers/addi-data/APCI1710_Ttl.h        |    8 +-
- .../comedi/drivers/addi-data/addi_amcc_S5920.c     |  119 +-
- .../comedi/drivers/addi-data/addi_amcc_S5920.h     |    6 +-
- .../comedi/drivers/addi-data/addi_amcc_s5933.h     |   12 +-
- .../staging/comedi/drivers/addi-data/addi_common.c |  191 +-
- .../staging/comedi/drivers/addi-data/addi_common.h |  356 +-
- .../staging/comedi/drivers/addi-data/addi_eeprom.c |  438 +-
- .../comedi/drivers/addi-data/amcc_s5933_58.h       |   43 +-
- .../comedi/drivers/addi-data/hwdrv_APCI1710.c      |  169 +-
- .../comedi/drivers/addi-data/hwdrv_APCI1710.h      |    2 +-
- .../comedi/drivers/addi-data/hwdrv_apci035.c       |  214 +-
- .../comedi/drivers/addi-data/hwdrv_apci035.h       |   34 +-
- .../comedi/drivers/addi-data/hwdrv_apci1032.c      |  106 +-
- .../comedi/drivers/addi-data/hwdrv_apci1032.h      |   29 +-
- .../comedi/drivers/addi-data/hwdrv_apci1500.c      |  532 +-
- .../comedi/drivers/addi-data/hwdrv_apci1500.h      |    4 +-
- .../comedi/drivers/addi-data/hwdrv_apci1516.c      |  174 +-
- .../comedi/drivers/addi-data/hwdrv_apci1516.h      |   29 +-
- .../comedi/drivers/addi-data/hwdrv_apci1564.c      |  507 +-
- .../comedi/drivers/addi-data/hwdrv_apci1564.h      |   52 +-
- .../comedi/drivers/addi-data/hwdrv_apci16xx.c      |  134 +-
- .../comedi/drivers/addi-data/hwdrv_apci2016.c      |  136 +-
- .../comedi/drivers/addi-data/hwdrv_apci2016.h      |   26 +-
- .../comedi/drivers/addi-data/hwdrv_apci2032.c      |  176 +-
- .../comedi/drivers/addi-data/hwdrv_apci2032.h      |   32 +-
- .../comedi/drivers/addi-data/hwdrv_apci2200.c      |  174 +-
- .../comedi/drivers/addi-data/hwdrv_apci2200.h      |   26 +-
- .../comedi/drivers/addi-data/hwdrv_apci3120.c      | 1055 +-
- .../comedi/drivers/addi-data/hwdrv_apci3120.h      |  142 +-
- .../comedi/drivers/addi-data/hwdrv_apci3200.c      | 1701 ++--
- .../comedi/drivers/addi-data/hwdrv_apci3200.h      |  176 +-
- .../comedi/drivers/addi-data/hwdrv_apci3501.c      |  225 +-
- .../comedi/drivers/addi-data/hwdrv_apci3501.h      |   44 +-
- .../comedi/drivers/addi-data/hwdrv_apci3xxx.c      |  274 +-
- drivers/staging/comedi/drivers/addi_apci_035.c     |    2 +-
- drivers/staging/comedi/drivers/adl_pci6208.c       |  177 +-
- drivers/staging/comedi/drivers/adl_pci7296.c       |   22 +-
- drivers/staging/comedi/drivers/adl_pci7432.c       |   32 +-
- drivers/staging/comedi/drivers/adl_pci8164.c       |  325 +-
- drivers/staging/comedi/drivers/adl_pci9111.c       |  135 +-
- drivers/staging/comedi/drivers/adl_pci9118.c       |  648 +-
- drivers/staging/comedi/drivers/adq12b.c            |   82 +-
- drivers/staging/comedi/drivers/adv_pci1710.c       |  348 +-
- drivers/staging/comedi/drivers/adv_pci1723.c       |  122 +-
- drivers/staging/comedi/drivers/adv_pci_dio.c       |  112 +-
- drivers/staging/comedi/drivers/aio_aio12_8.c       |   46 +-
- drivers/staging/comedi/drivers/aio_iiro_16.c       |   44 +-
- drivers/staging/comedi/drivers/am9513.h            |   16 +-
- drivers/staging/comedi/drivers/amcc_s5933.h        |   10 +-
- drivers/staging/comedi/drivers/amplc_dio200.c      |  226 +-
- drivers/staging/comedi/drivers/amplc_pc236.c       |  138 +-
- drivers/staging/comedi/drivers/amplc_pc263.c       |   82 +-
- drivers/staging/comedi/drivers/amplc_pci224.c      |  131 +-
- drivers/staging/comedi/drivers/amplc_pci230.c      |  306 +-
- drivers/staging/comedi/drivers/c6xdigio.c          |  140 +-
- drivers/staging/comedi/drivers/cb_das16_cs.c       |  160 +-
- drivers/staging/comedi/drivers/cb_pcidas.c         |  842 +-
- drivers/staging/comedi/drivers/cb_pcidas64.c       | 1755 ++--
- drivers/staging/comedi/drivers/cb_pcidda.c         |  323 +-
- drivers/staging/comedi/drivers/cb_pcidio.c         |   75 +-
- drivers/staging/comedi/drivers/cb_pcimdas.c        |  187 +-
- drivers/staging/comedi/drivers/cb_pcimdda.c        |   71 +-
- drivers/staging/comedi/drivers/comedi_bond.c       |    2 +-
- drivers/staging/comedi/drivers/comedi_fc.c         |    2 +-
- drivers/staging/comedi/drivers/comedi_parport.c    |    9 +-
- drivers/staging/comedi/drivers/comedi_rt_timer.c   |  728 --
- drivers/staging/comedi/drivers/comedi_test.c       |    3 +-
- drivers/staging/comedi/drivers/contec_pci_dio.c    |   46 +-
- drivers/staging/comedi/drivers/daqboard2000.c      |  230 +-
- drivers/staging/comedi/drivers/das08.c             |  542 +-
- drivers/staging/comedi/drivers/das08.h             |   24 +-
- drivers/staging/comedi/drivers/das08_cs.c          |   65 +-
- drivers/staging/comedi/drivers/das16.c             |  816 +-
- drivers/staging/comedi/drivers/das16m1.c           |  152 +-
- drivers/staging/comedi/drivers/das1800.c           |  689 +-
- drivers/staging/comedi/drivers/das6402.c           |   47 +-
- drivers/staging/comedi/drivers/das800.c            |  213 +-
- drivers/staging/comedi/drivers/dmm32at.c           |  128 +-
- drivers/staging/comedi/drivers/dt2801.c            |  214 +-
- drivers/staging/comedi/drivers/dt2811.c            |   92 +-
- drivers/staging/comedi/drivers/dt2814.c            |   48 +-
- drivers/staging/comedi/drivers/dt2815.c            |   36 +-
- drivers/staging/comedi/drivers/dt2817.c            |   27 +-
- drivers/staging/comedi/drivers/dt282x.c            |  391 +-
- drivers/staging/comedi/drivers/dt3000.c            |  220 +-
- drivers/staging/comedi/drivers/fl512.c             |   42 +-
- drivers/staging/comedi/drivers/gsc_hpdi.c          |  234 +-
- drivers/staging/comedi/drivers/icp_multi.c         |   15 +-
- drivers/staging/comedi/drivers/icp_multi.h         |   12 +-
- drivers/staging/comedi/drivers/ii_pci20kc.c        |   83 +-
- drivers/staging/comedi/drivers/jr3_pci.c           |  211 +-
- drivers/staging/comedi/drivers/jr3_pci.h           |    8 +-
- drivers/staging/comedi/drivers/ke_counter.c        |   47 +-
- drivers/staging/comedi/drivers/me4000.c            |    9 +-
- drivers/staging/comedi/drivers/me_daq.c            |    1 +
- drivers/staging/comedi/drivers/mite.c              |   28 +-
- drivers/staging/comedi/drivers/mite.h              |    2 +-
- drivers/staging/comedi/drivers/mpc624.c            |  218 +-
- drivers/staging/comedi/drivers/mpc8260cpm.c        |   32 +-
- drivers/staging/comedi/drivers/multiq3.c           |   43 +-
- drivers/staging/comedi/drivers/ni_6527.c           |   73 +-
- drivers/staging/comedi/drivers/ni_65xx.c           |  251 +-
- drivers/staging/comedi/drivers/ni_660x.c           |  232 +-
- drivers/staging/comedi/drivers/ni_670x.c           |   84 +-
- drivers/staging/comedi/drivers/ni_at_a2150.c       |  275 +-
- drivers/staging/comedi/drivers/ni_at_ao.c          |   90 +-
- drivers/staging/comedi/drivers/ni_atmio.c          |  327 +-
- drivers/staging/comedi/drivers/ni_atmio16d.c       |  117 +-
- drivers/staging/comedi/drivers/ni_daq_700.c        |  113 +-
- drivers/staging/comedi/drivers/ni_daq_dio24.c      |  110 +-
- drivers/staging/comedi/drivers/ni_labpc.c          |  693 +-
- drivers/staging/comedi/drivers/ni_labpc.h          |   50 +-
- drivers/staging/comedi/drivers/ni_labpc_cs.c       |  105 +-
- drivers/staging/comedi/drivers/ni_mio_common.c     |  970 +-
- drivers/staging/comedi/drivers/ni_mio_cs.c         |  256 +-
- drivers/staging/comedi/drivers/ni_pcidio.c         |  188 +-
- drivers/staging/comedi/drivers/ni_pcimio.c         |  139 +-
- drivers/staging/comedi/drivers/ni_stc.h            |  148 +-
- drivers/staging/comedi/drivers/ni_tio.c            |   18 +-
- drivers/staging/comedi/drivers/ni_tio.h            |   18 +-
- drivers/staging/comedi/drivers/ni_tio_internal.h   |   14 +-
- drivers/staging/comedi/drivers/ni_tiocmd.c         |   40 +-
- drivers/staging/comedi/drivers/pcl711.c            |   68 +-
- drivers/staging/comedi/drivers/pcl724.c            |   54 +-
- drivers/staging/comedi/drivers/pcl725.c            |   24 +-
- drivers/staging/comedi/drivers/pcl726.c            |   72 +-
- drivers/staging/comedi/drivers/pcl730.c            |   34 +-
- drivers/staging/comedi/drivers/pcl812.c            |  320 +-
- drivers/staging/comedi/drivers/pcl816.c            |  417 +-
- drivers/staging/comedi/drivers/pcl818.c            |  578 +-
- drivers/staging/comedi/drivers/pcm3724.c           |   67 +-
- drivers/staging/comedi/drivers/pcm3730.c           |   28 +-
- drivers/staging/comedi/drivers/pcm_common.c        |  111 +
- drivers/staging/comedi/drivers/pcm_common.h        |    8 +
- drivers/staging/comedi/drivers/pcmad.c             |   42 +-
- drivers/staging/comedi/drivers/pcmda12.c           |   45 +-
- drivers/staging/comedi/drivers/pcmmio.c            |  268 +-
- drivers/staging/comedi/drivers/pcmuio.c            |  241 +-
- drivers/staging/comedi/drivers/plx9080.h           |    8 +-
- drivers/staging/comedi/drivers/poc.c               |  104 +-
- drivers/staging/comedi/drivers/quatech_daqp_cs.c   |   79 +-
- drivers/staging/comedi/drivers/rtd520.c            |   78 +-
- drivers/staging/comedi/drivers/rti800.c            |   77 +-
- drivers/staging/comedi/drivers/rti802.c            |   24 +-
- drivers/staging/comedi/drivers/s526.c              |  386 +-
- drivers/staging/comedi/drivers/s626.c              |  282 +-
- drivers/staging/comedi/drivers/s626.h              |    2 +-
- drivers/staging/comedi/drivers/serial2002.c        |  100 +-
- drivers/staging/comedi/drivers/skel.c              |   90 +-
- drivers/staging/comedi/drivers/ssv_dnp.c           |   49 +-
- drivers/staging/comedi/drivers/unioxx5.c           |   86 +-
- drivers/staging/comedi/drivers/usbdux.c            |  181 +-
- drivers/staging/comedi/drivers/usbduxfast.c        |  213 +-
- drivers/staging/comedi/drivers/vmk80xx.c           | 1399 +++
- drivers/staging/comedi/interrupt.h                 |   51 -
- drivers/staging/comedi/kcomedilib/data.c           |    5 +-
- .../staging/comedi/kcomedilib/kcomedilib_main.c    |   33 +-
- drivers/staging/comedi/kcomedilib/ksyms.c          |   49 +-
- drivers/staging/comedi/range.c                     |    9 +-
- drivers/staging/comedi/rt.c                        |  411 -
- drivers/staging/comedi/rt_pend_tq.c                |  113 -
- drivers/staging/comedi/rt_pend_tq.h                |   10 -
- drivers/staging/cpc-usb/Kconfig                    |    4 +
- drivers/staging/cpc-usb/Makefile                   |    3 +
- drivers/staging/{serqt_usb => cpc-usb}/TODO        |    5 +-
- drivers/staging/cpc-usb/cpc-usb_drv.c              | 1185 ++
- drivers/staging/cpc-usb/cpc.h                      |  440 +
- drivers/staging/cpc-usb/cpc_int.h                  |   83 +
- drivers/staging/cpc-usb/cpcusb.h                   |   86 +
- drivers/staging/cpc-usb/sja2m16c.h                 |   41 +
- drivers/staging/cpc-usb/sja2m16c_2.c               |  452 +
- drivers/staging/echo/echo.c                        |    2 +-
- drivers/staging/epl/EplSdoUdpu.c                   |    3 +-
- drivers/staging/epl/ShbIpc-LinuxKernel.c           |    8 +-
- drivers/staging/frontier/alphatrack.c              |    1 -
- drivers/staging/frontier/tranzport.c               |    1 -
- drivers/staging/go7007/wis-sony-tuner.c            |    2 +-
- drivers/staging/heci/heci.h                        |    1 -
- drivers/staging/heci/heci_data_structures.h        |    1 -
- drivers/staging/heci/heci_init.c                   |   14 +-
- drivers/staging/heci/heci_interface.c              |   17 +-
- drivers/staging/heci/heci_interface.h              |    2 +-
- drivers/staging/heci/heci_main.c                   |   50 +-
- drivers/staging/heci/interrupt.c                   |   28 +-
- drivers/staging/heci/io_heci.c                     |   47 +-
- drivers/staging/meilhaus/me0600_ext_irq.c          |    5 -
- drivers/staging/meilhaus/me0900_di.c               |    1 -
- drivers/staging/meilhaus/me1400_device.c           |    1 -
- drivers/staging/meilhaus/me1400_ext_irq.c          |    5 -
- drivers/staging/meilhaus/me4600_ai.c               |    4 -
- drivers/staging/meilhaus/me4600_ai.h               |    1 -
- drivers/staging/meilhaus/me4600_ao.c               |    6 +-
- drivers/staging/meilhaus/me4600_ext_irq.c          |    5 -
- drivers/staging/meilhaus/me6000_ao.c               |    4 -
- drivers/staging/meilhaus/me6000_ao.h               |    1 -
- drivers/staging/meilhaus/me8100_di.c               |    5 -
- drivers/staging/meilhaus/me8200_di.c               |    9 -
- drivers/staging/meilhaus/me8200_do.c               |    5 -
- drivers/staging/meilhaus/memain.c                  |  184 +-
- drivers/staging/meilhaus/memain.h                  |  194 -
- drivers/staging/otus/80211core/ccmd.c              | 2982 +++---
- drivers/staging/otus/80211core/coid.c              |    2 +-
- drivers/staging/p9auth/p9auth.c                    |   24 +-
- drivers/staging/pata_rdc/Kconfig                   |    6 +
- drivers/staging/pata_rdc/Makefile                  |    2 +
- drivers/staging/pata_rdc/pata_rdc.c                |  955 ++
- drivers/staging/pata_rdc/pata_rdc.h                |  144 +
- drivers/staging/pohmelfs/crypto.c                  |    3 +-
- drivers/staging/pohmelfs/dir.c                     |    9 +-
- drivers/staging/pohmelfs/inode.c                   |   15 +-
- drivers/staging/pohmelfs/net.c                     |    7 +-
- drivers/staging/pohmelfs/netfs.h                   |   65 +-
- drivers/staging/pohmelfs/trans.c                   |    7 +-
- drivers/staging/rspiusb/rspiusb.c                  |  559 +-
- drivers/staging/rspiusb/rspiusb.h                  |   28 +-
- drivers/staging/rt2860/2860_main_dev.c             |   41 +-
- drivers/staging/rt2860/Makefile                    |    5 +-
- drivers/staging/rt2860/ap.h                        |   40 +-
- drivers/staging/rt2860/chlist.h                    |   56 +-
- drivers/staging/rt2860/common/2860_rtmp_init.c     |   25 -
- drivers/staging/rt2860/common/action.c             |  444 +-
- drivers/staging/rt2860/common/action.h             |    7 -
- drivers/staging/rt2860/common/ba_action.c          |  179 +-
- drivers/staging/rt2860/common/cmm_data.c           |  647 +-
- drivers/staging/rt2860/common/cmm_data_2860.c      |  105 +-
- drivers/staging/rt2860/common/cmm_info.c           |  273 +-
- drivers/staging/rt2860/common/cmm_sanity.c         |  401 +-
- drivers/staging/rt2860/common/cmm_sync.c           |  113 +-
- drivers/staging/rt2860/common/cmm_wpa.c            |   28 +-
- drivers/staging/rt2860/common/dfs.c                |   21 -
- drivers/staging/rt2860/common/eeprom.c             | 1268 ++-
- drivers/staging/rt2860/common/md5.c                |   12 -
- drivers/staging/rt2860/common/mlme.c               | 1890 ++--
- drivers/staging/rt2860/common/netif_block.c        |  144 -
- drivers/staging/rt2860/common/netif_block.h        |   58 -
- drivers/staging/rt2860/common/rtmp_init.c          | 1253 ++-
- drivers/staging/rt2860/common/rtmp_tkip.c          |   21 -
- drivers/staging/rt2860/common/rtmp_wep.c           |    2 -
- drivers/staging/rt2860/common/spectrum.c           |   57 +-
- drivers/staging/rt2860/leap.h                      |  215 -
- drivers/staging/rt2860/mlme.h                      |  309 -
- drivers/staging/rt2860/oid.h                       |  173 +-
- drivers/staging/rt2860/rt28xx.h                    | 1218 +--
- drivers/staging/rt2860/rt_ate.c                    | 6009 ----------
- drivers/staging/rt2860/rt_ate.h                    |  347 -
- drivers/staging/rt2860/rt_config.h                 |   33 +-
- drivers/staging/rt2860/rt_linux.c                  |   45 +-
- drivers/staging/rt2860/rt_linux.h                  |  188 +-
- drivers/staging/rt2860/rt_main_dev.c               |  717 +-
- drivers/staging/rt2860/rt_profile.c                |  161 +-
- drivers/staging/rt2860/rtmp.h                      | 1831 ++--
- drivers/staging/rt2860/rtmp_def.h                  |  210 +-
- drivers/staging/rt2860/spectrum.h                  |   30 -
- drivers/staging/rt2860/sta/assoc.c                 |  586 +-
- drivers/staging/rt2860/sta/auth.c                  |   14 -
- drivers/staging/rt2860/sta/auth_rsp.c              |   19 -
- drivers/staging/rt2860/sta/connect.c               |  602 +-
- drivers/staging/rt2860/sta/dls.c                   | 2197 ----
- drivers/staging/rt2860/sta/rtmp_data.c             |  336 +-
- drivers/staging/rt2860/sta/sanity.c                |    2 -
- drivers/staging/rt2860/sta/sync.c                  |  290 +-
- drivers/staging/rt2860/sta/wpa.c                   |   12 +-
- drivers/staging/rt2860/sta_ioctl.c                 | 1236 +--
- drivers/staging/rt2860/wpa.h                       |   31 +-
- drivers/staging/rt2870/2870_main_dev.c             |  264 +-
- drivers/staging/rt2870/Makefile                    |    4 -
- drivers/staging/rt2870/aironet.h                   |  211 +-
- drivers/staging/rt2870/ap.h                        |  563 +-
- drivers/staging/rt2870/chlist.h                    | 1297 +--
- drivers/staging/rt2870/common/2870_rtmp_init.c     |  123 +-
- drivers/staging/rt2870/common/action.c             | 1047 +--
- drivers/staging/rt2870/common/action.h             |   69 +-
- drivers/staging/rt2870/common/ba_action.c          | 1799 +---
- drivers/staging/rt2870/common/cmm_data.c           | 2732 +-----
- drivers/staging/rt2870/common/cmm_data_2870.c      |   73 +-
- drivers/staging/rt2870/common/cmm_info.c           | 3713 +------
- drivers/staging/rt2870/common/cmm_sanity.c         | 1664 +---
- drivers/staging/rt2870/common/cmm_sync.c           |  712 +--
- drivers/staging/rt2870/common/cmm_wpa.c            | 1655 +---
- drivers/staging/rt2870/common/dfs.c                |  454 +-
- drivers/staging/rt2870/common/eeprom.c             |  255 +-
- drivers/staging/rt2870/common/md5.c                | 1428 +---
- drivers/staging/rt2870/common/mlme.c               | 8610 +--------------
- drivers/staging/rt2870/common/netif_block.c        |  144 -
- drivers/staging/rt2870/common/rtmp_init.c          | 4133 +-------
- drivers/staging/rt2870/common/rtmp_tkip.c          | 1614 +---
- drivers/staging/rt2870/common/rtmp_wep.c           |  509 +-
- drivers/staging/rt2870/common/rtusb_bulk.c         |  775 +--
- drivers/staging/rt2870/common/rtusb_data.c         |   13 -
- drivers/staging/rt2870/common/rtusb_io.c           |  211 +-
- drivers/staging/rt2870/common/spectrum.c           | 1877 +---
- drivers/staging/rt2870/dfs.h                       |  101 +-
- drivers/staging/rt2870/leap.h                      |  215 -
- drivers/staging/rt2870/link_list.h                 |  135 +-
- drivers/staging/rt2870/md5.h                       |  108 +-
- drivers/staging/rt2870/mlme.h                      | 1472 +---
- drivers/staging/rt2870/netif_block.h               |   58 -
- drivers/staging/rt2870/oid.h                       | 1092 +--
- drivers/staging/rt2870/rt2870.h                    |  252 +-
- drivers/staging/rt2870/rt28xx.h                    | 2690 +-----
- drivers/staging/rt2870/rt_ate.c                    | 6452 ----------
- drivers/staging/rt2870/rt_ate.h                    |  315 -
- drivers/staging/rt2870/rt_config.h                 |  105 +-
- drivers/staging/rt2870/rt_linux.c                  | 1096 +--
- drivers/staging/rt2870/rt_linux.h                  |  907 +--
- drivers/staging/rt2870/rt_main_dev.c               | 1866 +---
- drivers/staging/rt2870/rt_profile.c                | 2021 +----
- drivers/staging/rt2870/rtmp.h                      | 7587 +------------
- drivers/staging/rt2870/rtmp_ckipmic.h              |  114 +-
- drivers/staging/rt2870/rtmp_def.h                  | 1623 +---
- drivers/staging/rt2870/rtmp_type.h                 |   95 +-
- drivers/staging/rt2870/spectrum.h                  |  323 +-
- drivers/staging/rt2870/spectrum_def.h              |   96 +-
- drivers/staging/rt2870/sta/aironet.c               | 1313 +--
- drivers/staging/rt2870/sta/assoc.c                 | 2040 +----
- drivers/staging/rt2870/sta/auth.c                  |  475 +-
- drivers/staging/rt2870/sta/auth_rsp.c              |  167 +-
- drivers/staging/rt2870/sta/connect.c               | 2823 +-----
- drivers/staging/rt2870/sta/dls.c                   | 2210 ----
- drivers/staging/rt2870/sta/rtmp_data.c             | 2620 +----
- drivers/staging/rt2870/sta/sanity.c                |  421 +-
- drivers/staging/rt2870/sta/sync.c                  | 1754 +---
- drivers/staging/rt2870/sta/wpa.c                   | 2108 +----
- drivers/staging/rt2870/sta_ioctl.c                 | 7069 +-----------
- drivers/staging/rt2870/sta_ioctl.c.patch           |   18 -
- drivers/staging/rt2870/tmp60                       | 7037 -----------
- drivers/staging/rt2870/tmp61                       | 7037 -----------
- drivers/staging/rt2870/wpa.h                       |  358 +-
- drivers/staging/rt3070/2870_main_dev.c             | 1628 +---
- drivers/staging/rt3070/Makefile                    |    4 -
- drivers/staging/rt3070/action.h                    |   69 +-
- drivers/staging/rt3070/aironet.h                   |  211 +-
- drivers/staging/rt3070/ap.h                        |  558 +-
- drivers/staging/rt3070/chlist.h                    | 1254 +--
- drivers/staging/rt3070/common/2870_rtmp_init.c     | 1763 +---
- drivers/staging/rt3070/common/action.c             | 1039 +--
- drivers/staging/rt3070/common/ba_action.c          | 1811 +---
- drivers/staging/rt3070/common/cmm_data.c           | 2828 +-----
- drivers/staging/rt3070/common/cmm_data_2870.c      |  981 +--
- drivers/staging/rt3070/common/cmm_info.c           | 3396 +------
- drivers/staging/rt3070/common/cmm_sanity.c         | 1670 +---
- drivers/staging/rt3070/common/cmm_sync.c           |  712 +--
- drivers/staging/rt3070/common/cmm_wpa.c            | 1607 +---
- drivers/staging/rt3070/common/dfs.c                |  442 +-
- drivers/staging/rt3070/common/eeprom.c             | 1499 +---
- drivers/staging/rt3070/common/md5.c                | 1428 +---
- drivers/staging/rt3070/common/mlme.c               | 9137 +--------------
- drivers/staging/rt3070/common/netif_block.c        |  136 -
- drivers/staging/rt3070/common/rtmp_init.c          | 4198 +-------
- drivers/staging/rt3070/common/rtmp_tkip.c          | 1614 +---
- drivers/staging/rt3070/common/rtmp_wep.c           |  509 +-
- drivers/staging/rt3070/common/rtusb_bulk.c         | 1383 +---
- drivers/staging/rt3070/common/rtusb_data.c         |  219 +-
- drivers/staging/rt3070/common/rtusb_io.c           | 1909 +---
- drivers/staging/rt3070/common/spectrum.c           | 1877 +---
- drivers/staging/rt3070/dfs.h                       |  101 +-
- drivers/staging/rt3070/leap.h                      |  215 -
- drivers/staging/rt3070/link_list.h                 |  135 +-
- drivers/staging/rt3070/md5.h                       |  108 +-
- drivers/staging/rt3070/mlme.h                      | 1469 +---
- drivers/staging/rt3070/netif_block.h               |   58 -
- drivers/staging/rt3070/oid.h                       | 1143 +--
- drivers/staging/rt3070/rt2870.h                    |  757 +--
- drivers/staging/rt3070/rt28xx.h                    | 2726 +-----
- drivers/staging/rt3070/rt_ate.c                    | 6506 ----------
- drivers/staging/rt3070/rt_ate.h                    |  294 -
- drivers/staging/rt3070/rt_config.h                 |  122 +-
- drivers/staging/rt3070/rt_linux.c                  | 1064 +--
- drivers/staging/rt3070/rt_linux.h                  |  888 +--
- drivers/staging/rt3070/rt_main_dev.c               | 1802 +---
- drivers/staging/rt3070/rt_profile.c                | 2042 +----
- drivers/staging/rt3070/rtmp.h                      | 7729 +------------
- drivers/staging/rt3070/rtmp_ckipmic.h              |  114 +-
- drivers/staging/rt3070/rtmp_def.h                  | 1560 +---
- drivers/staging/rt3070/rtmp_type.h                 |   96 +-
- drivers/staging/rt3070/spectrum.h                  |  323 +-
- drivers/staging/rt3070/spectrum_def.h              |   96 +-
- drivers/staging/rt3070/sta/aironet.c               | 1313 +--
- drivers/staging/rt3070/sta/assoc.c                 | 2061 +----
- drivers/staging/rt3070/sta/auth.c                  |  476 +-
- drivers/staging/rt3070/sta/auth_rsp.c              |  168 +-
- drivers/staging/rt3070/sta/connect.c               | 2857 +-----
- drivers/staging/rt3070/sta/dls.c                   | 2170 ----
- drivers/staging/rt3070/sta/rtmp_data.c             | 2638 +-----
- drivers/staging/rt3070/sta/sanity.c                |  421 +-
- drivers/staging/rt3070/sta/sync.c                  | 1756 +---
- drivers/staging/rt3070/sta/wpa.c                   | 2100 +----
- drivers/staging/rt3070/sta_ioctl.c                 | 7204 +-----------
- drivers/staging/rt3070/wpa.h                       |  357 +-
- drivers/staging/rtl8187se/Kconfig                  |    2 +-
- .../staging/rtl8187se/ieee80211/ieee80211_module.c |    1 -
- drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c |    2 +-
- drivers/staging/rtl8187se/r8180_core.c             |   25 +-
- drivers/staging/rtl8187se/r8180_dm.c               |    6 +-
- drivers/staging/rtl8187se/r8180_pm.c               |    6 +-
- drivers/staging/rtl8192su/Kconfig                  |    6 +
- drivers/staging/rtl8192su/Makefile                 |   66 +
- drivers/staging/rtl8192su/authors                  |    1 +
- drivers/staging/rtl8192su/dot11d.h                 |  102 +
- drivers/staging/rtl8192su/ieee80211.h              | 2901 +++++
- drivers/staging/rtl8192su/ieee80211/EndianFree.h   |  199 +
- drivers/staging/rtl8192su/ieee80211/Makefile       |   31 +
- drivers/staging/rtl8192su/ieee80211/aes.c          |  469 +
- drivers/staging/rtl8192su/ieee80211/api.c          |  246 +
- drivers/staging/rtl8192su/ieee80211/arc4.c         |  103 +
- drivers/staging/rtl8192su/ieee80211/autoload.c     |   40 +
- drivers/staging/rtl8192su/ieee80211/cipher.c       |  299 +
- drivers/staging/rtl8192su/ieee80211/compress.c     |   64 +
- .../staging/rtl8192su/ieee80211/crypto_compat.h    |   90 +
- drivers/staging/rtl8192su/ieee80211/digest.c       |  108 +
- drivers/staging/rtl8192su/ieee80211/dot11d.c       |  239 +
- drivers/staging/rtl8192su/ieee80211/dot11d.h       |  102 +
- drivers/staging/rtl8192su/ieee80211/ieee80211.h    | 2901 +++++
- .../staging/rtl8192su/ieee80211/ieee80211_crypt.c  |  273 +
- .../staging/rtl8192su/ieee80211/ieee80211_crypt.h  |   93 +
- .../rtl8192su/ieee80211/ieee80211_crypt_ccmp.c     |  534 +
- .../rtl8192su/ieee80211/ieee80211_crypt_tkip.c     | 1034 ++
- .../rtl8192su/ieee80211/ieee80211_crypt_wep.c      |  397 +
- .../staging/rtl8192su/ieee80211/ieee80211_module.c |  394 +
- drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c | 2832 +++++
- .../rtl8192su/ieee80211/ieee80211_softmac.c        | 3580 ++++++
- .../rtl8192su/ieee80211/ieee80211_softmac_wx.c     |  711 ++
- drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c |  947 ++
- drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c | 1032 ++
- drivers/staging/rtl8192su/ieee80211/internal.h     |  115 +
- drivers/staging/rtl8192su/ieee80211/kmap_types.h   |   20 +
- drivers/staging/rtl8192su/ieee80211/michael_mic.c  |  194 +
- drivers/staging/rtl8192su/ieee80211/proc.c         |  116 +
- drivers/staging/rtl8192su/ieee80211/readme         |  162 +
- drivers/staging/rtl8192su/ieee80211/rtl819x_BA.h   |   69 +
- .../staging/rtl8192su/ieee80211/rtl819x_BAProc.c   |  781 ++
- drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h   |  517 +
- .../staging/rtl8192su/ieee80211/rtl819x_HTProc.c   | 2037 ++++
- drivers/staging/rtl8192su/ieee80211/rtl819x_Qos.h  |  749 ++
- drivers/staging/rtl8192su/ieee80211/rtl819x_TS.h   |   56 +
- .../staging/rtl8192su/ieee80211/rtl819x_TSProc.c   |  667 ++
- drivers/staging/rtl8192su/ieee80211/rtl_crypto.h   |  399 +
- drivers/staging/rtl8192su/ieee80211/scatterwalk.c  |  126 +
- drivers/staging/rtl8192su/ieee80211/scatterwalk.h  |   51 +
- drivers/staging/rtl8192su/ieee80211_crypt.h        |   86 +
- drivers/staging/rtl8192su/r8180_93cx6.c            |  146 +
- drivers/staging/rtl8192su/r8180_93cx6.h            |   45 +
- drivers/staging/rtl8192su/r8190_rtl8256.c          |  312 +
- drivers/staging/rtl8192su/r8190_rtl8256.h          |   27 +
- drivers/staging/rtl8192su/r8192SU_HWImg.c          | 4902 ++++++++
- drivers/staging/rtl8192su/r8192SU_HWImg.h          |   44 +
- drivers/staging/rtl8192su/r8192S_Efuse.c           | 2442 ++++
- drivers/staging/rtl8192su/r8192S_Efuse.h           |  101 +
- drivers/staging/rtl8192su/r8192S_FwImgDTM.h        | 3797 ++++++
- drivers/staging/rtl8192su/r8192S_firmware.c        | 1023 ++
- drivers/staging/rtl8192su/r8192S_firmware.h        |  212 +
- drivers/staging/rtl8192su/r8192S_hw.h              | 1677 +++
- drivers/staging/rtl8192su/r8192S_phy.c             | 5028 ++++++++
- drivers/staging/rtl8192su/r8192S_phy.h             |  138 +
- drivers/staging/rtl8192su/r8192S_phyreg.h          | 1033 ++
- drivers/staging/rtl8192su/r8192S_rtl6052.c         |  946 ++
- drivers/staging/rtl8192su/r8192S_rtl6052.h         |  134 +
- drivers/staging/rtl8192su/r8192S_rtl8225.c         |  292 +
- drivers/staging/rtl8192su/r8192S_rtl8225.h         |   30 +
- drivers/staging/rtl8192su/r8192U.h                 | 2112 ++++
- drivers/staging/rtl8192su/r8192U_core.c            |12460 ++++++++++++++++++++
- drivers/staging/rtl8192su/r8192U_dm.c              | 4521 +++++++
- drivers/staging/rtl8192su/r8192U_dm.h              |  309 +
- drivers/staging/rtl8192su/r8192U_hw.h              |  746 ++
- drivers/staging/rtl8192su/r8192U_pm.c              |   77 +
- drivers/staging/rtl8192su/r8192U_pm.h              |   27 +
- drivers/staging/rtl8192su/r8192U_wx.c              | 1350 +++
- drivers/staging/rtl8192su/r8192U_wx.h              |   23 +
- drivers/staging/rtl8192su/r819xU_HTGen.h           |   22 +
- drivers/staging/rtl8192su/r819xU_HTType.h          |  392 +
- drivers/staging/rtl8192su/r819xU_cmdpkt.c          |  826 ++
- drivers/staging/rtl8192su/r819xU_cmdpkt.h          |  219 +
- drivers/staging/rtl8192su/r819xU_firmware.c        |  707 ++
- drivers/staging/rtl8192su/r819xU_firmware.h        |  106 +
- drivers/staging/rtl8192su/r819xU_firmware_img.c    | 3447 ++++++
- drivers/staging/rtl8192su/r819xU_firmware_img.h    |   35 +
- drivers/staging/rtl8192su/r819xU_phy.c             | 1826 +++
- drivers/staging/rtl8192su/r819xU_phy.h             |   94 +
- drivers/staging/rtl8192su/r819xU_phyreg.h          |  871 ++
- drivers/staging/serqt_usb/Makefile                 |    1 -
- drivers/staging/serqt_usb/serqt_usb.c              | 2656 -----
- drivers/staging/{serqt_usb => serqt_usb2}/Kconfig  |    4 +-
- drivers/staging/serqt_usb2/Makefile                |    1 +
- drivers/staging/serqt_usb2/serqt_usb2.c            | 1664 +++
- drivers/staging/slicoss/slicoss.c                  |    3 +-
- drivers/staging/stlc45xx/stlc45xx.c                |   11 +-
- drivers/staging/sxg/sxg.c                          |   40 +-
- drivers/staging/sxg/sxg_ethtool.c                  |    2 +-
- drivers/staging/udlfb/Kconfig                      |    8 +
- drivers/staging/udlfb/Makefile                     |    1 +
- drivers/staging/udlfb/udlfb.c                      |  937 ++
- drivers/staging/udlfb/udlfb.h                      |  225 +
- drivers/staging/vt6655/80211hdr.h                  |  357 +
- drivers/staging/vt6655/80211mgr.c                  | 1050 ++
- drivers/staging/vt6655/80211mgr.h                  |  832 ++
- drivers/staging/vt6655/IEEE11h.c                   |  324 +
- drivers/staging/vt6655/IEEE11h.h                   |   68 +
- drivers/staging/vt6655/Kconfig                     |    6 +
- drivers/staging/vt6655/Makefile                    |   38 +
- drivers/staging/vt6655/Makefile.arm                |  181 +
- drivers/staging/vt6655/Makefile.x86                |  209 +
- drivers/staging/vt6655/aes_ccmp.c                  |  410 +
- drivers/staging/vt6655/aes_ccmp.h                  |   48 +
- drivers/staging/vt6655/baseband.c                  | 2990 +++++
- drivers/staging/vt6655/baseband.h                  |  198 +
- drivers/staging/vt6655/bssdb.c                     | 1786 +++
- drivers/staging/vt6655/bssdb.h                     |  380 +
- drivers/staging/vt6655/card.c                      | 3126 +++++
- drivers/staging/vt6655/card.h                      |  273 +
- drivers/staging/vt6655/country.h                   |  192 +
- drivers/staging/vt6655/datarate.c                  |  455 +
- drivers/staging/vt6655/datarate.h                  |   95 +
- drivers/staging/vt6655/desc.h                      |  697 ++
- drivers/staging/vt6655/device.h                    | 1063 ++
- drivers/staging/vt6655/device_cfg.h                |  142 +
- drivers/staging/vt6655/device_main.c               | 4074 +++++++
- drivers/staging/vt6655/dpc.c                       | 1668 +++
- drivers/staging/vt6655/dpc.h                       |   75 +
- drivers/staging/vt6655/hostap.c                    |  914 ++
- drivers/staging/vt6655/hostap.h                    |   94 +
- drivers/staging/vt6655/iocmd.h                     |  481 +
- drivers/staging/vt6655/ioctl.c                     |  775 ++
- drivers/staging/vt6655/ioctl.h                     |   74 +
- drivers/staging/vt6655/iowpa.h                     |  159 +
- drivers/staging/vt6655/iwctl.c                     | 2397 ++++
- drivers/staging/vt6655/iwctl.h                     |  332 +
- drivers/staging/vt6655/kcompat.h                   |   84 +
- drivers/staging/vt6655/key.c                       |  836 ++
- drivers/staging/vt6655/key.h                       |  202 +
- drivers/staging/vt6655/mac.c                       | 1752 +++
- drivers/staging/vt6655/mac.h                       | 1166 ++
- drivers/staging/vt6655/mib.c                       |  616 +
- drivers/staging/vt6655/mib.h                       |  399 +
- drivers/staging/vt6655/michael.c                   |  188 +
- drivers/staging/vt6655/michael.h                   |   62 +
- drivers/staging/vt6655/power.c                     |  441 +
- drivers/staging/vt6655/power.h                     |   85 +
- drivers/staging/vt6655/rc4.c                       |   86 +
- drivers/staging/vt6655/rc4.h                       |   51 +
- drivers/staging/vt6655/rf.c                        | 1283 ++
- drivers/staging/vt6655/rf.h                        |  118 +
- drivers/staging/vt6655/rxtx.c                      | 3269 +++++
- drivers/staging/vt6655/rxtx.h                      |  132 +
- drivers/staging/vt6655/srom.c                      |  437 +
- drivers/staging/vt6655/srom.h                      |  179 +
- drivers/staging/vt6655/tbit.h                      |   78 +
- drivers/staging/vt6655/tcrc.c                      |  207 +
- drivers/staging/vt6655/tcrc.h                      |   71 +
- drivers/staging/vt6655/test                        |    9 +
- drivers/staging/vt6655/tether.c                    |  123 +
- drivers/staging/vt6655/tether.h                    |  256 +
- drivers/staging/vt6655/tkip.c                      |  284 +
- drivers/staging/vt6655/tkip.h                      |   76 +
- drivers/staging/vt6655/tmacro.h                    |  152 +
- drivers/staging/vt6655/tpci.h                      |  117 +
- drivers/staging/vt6655/ttype.h                     |  386 +
- drivers/staging/vt6655/umem.h                      |   75 +
- drivers/staging/vt6655/upc.h                       |  171 +
- drivers/staging/vt6655/vntconfiguration.dat        |    1 +
- drivers/staging/vt6655/vntwifi.c                   |  832 ++
- drivers/staging/vt6655/vntwifi.h                   |  330 +
- drivers/staging/vt6655/wcmd.c                      | 1178 ++
- drivers/staging/vt6655/wcmd.h                      |  151 +
- drivers/staging/vt6655/wctl.c                      |  261 +
- drivers/staging/vt6655/wctl.h                      |  127 +
- drivers/staging/vt6655/wmgr.c                      | 5088 ++++++++
- drivers/staging/vt6655/wmgr.h                      |  521 +
- drivers/staging/vt6655/wpa.c                       |  339 +
- drivers/staging/vt6655/wpa.h                       |   98 +
- drivers/staging/vt6655/wpa2.c                      |  373 +
- drivers/staging/vt6655/wpa2.h                      |  100 +
- drivers/staging/vt6655/wpactl.c                    | 1017 ++
- drivers/staging/vt6655/wpactl.h                    |   89 +
- drivers/staging/vt6655/wroute.c                    |  211 +
- drivers/staging/vt6655/wroute.h                    |   65 +
- drivers/staging/winbond/Makefile                   |    1 -
- drivers/staging/winbond/mds.c                      |    2 +-
- drivers/staging/winbond/mto.c                      |    2 +-
- drivers/staging/winbond/phy_calibration.c          |   19 +
- drivers/staging/winbond/wbhal.c                    |  568 -
- drivers/staging/winbond/wbhal_f.h                  |   21 -
- drivers/staging/winbond/wbhal_s.h                  |    1 -
- drivers/staging/winbond/wbusb.c                    |  785 +-
- drivers/staging/wlan-ng/README                     |    1 -
- drivers/staging/wlan-ng/hfa384x.h                  |  286 +-
- drivers/staging/wlan-ng/hfa384x_usb.c              |  323 +-
- drivers/staging/wlan-ng/p80211conv.c               |   21 +-
- drivers/staging/wlan-ng/p80211conv.h               |    4 +-
- drivers/staging/wlan-ng/p80211hdr.h                |    3 -
- drivers/staging/wlan-ng/p80211meta.h               |    1 -
- drivers/staging/wlan-ng/p80211metadef.h            |   48 +
- drivers/staging/wlan-ng/p80211mgmt.h               |   42 +-
- drivers/staging/wlan-ng/p80211msg.h                |    1 -
- drivers/staging/wlan-ng/p80211netdev.c             |   99 +-
- drivers/staging/wlan-ng/p80211netdev.h             |   47 +-
- drivers/staging/wlan-ng/p80211req.c                |   20 +-
- drivers/staging/wlan-ng/p80211req.h                |    2 +-
- drivers/staging/wlan-ng/p80211types.h              |    7 +-
- drivers/staging/wlan-ng/p80211wep.c                |  198 +-
- drivers/staging/wlan-ng/p80211wext.c               |  147 +-
- drivers/staging/wlan-ng/prism2fw.c                 | 1406 +++
- drivers/staging/wlan-ng/prism2mgmt.c               |  117 +-
- drivers/staging/wlan-ng/prism2mgmt.h               |   48 +-
- drivers/staging/wlan-ng/prism2mib.c                |  159 +-
- drivers/staging/wlan-ng/prism2sta.c                |  268 +-
- drivers/staging/wlan-ng/prism2usb.c                |   14 +-
- 658 files changed, 165585 insertions(+), 240493 deletions(-)
- create mode 100644 drivers/staging/android/timed_output.c
- create mode 100644 drivers/staging/android/timed_output.h
- delete mode 100644 drivers/staging/comedi/comedi_rt.h
- delete mode 100644 drivers/staging/comedi/drivers/comedi_rt_timer.c
- create mode 100644 drivers/staging/comedi/drivers/pcm_common.c
- create mode 100644 drivers/staging/comedi/drivers/pcm_common.h
- create mode 100644 drivers/staging/comedi/drivers/vmk80xx.c
- delete mode 100644 drivers/staging/comedi/interrupt.h
- delete mode 100644 drivers/staging/comedi/rt.c
- delete mode 100644 drivers/staging/comedi/rt_pend_tq.c
- delete mode 100644 drivers/staging/comedi/rt_pend_tq.h
- create mode 100644 drivers/staging/cpc-usb/Kconfig
- create mode 100644 drivers/staging/cpc-usb/Makefile
- rename drivers/staging/{serqt_usb => cpc-usb}/TODO (63%)
- create mode 100644 drivers/staging/cpc-usb/cpc-usb_drv.c
- create mode 100644 drivers/staging/cpc-usb/cpc.h
- create mode 100644 drivers/staging/cpc-usb/cpc_int.h
- create mode 100644 drivers/staging/cpc-usb/cpcusb.h
- create mode 100644 drivers/staging/cpc-usb/sja2m16c.h
- create mode 100644 drivers/staging/cpc-usb/sja2m16c_2.c
- create mode 100644 drivers/staging/pata_rdc/Kconfig
- create mode 100644 drivers/staging/pata_rdc/Makefile
- create mode 100644 drivers/staging/pata_rdc/pata_rdc.c
- create mode 100644 drivers/staging/pata_rdc/pata_rdc.h
- delete mode 100644 drivers/staging/rt2860/common/netif_block.c
- delete mode 100644 drivers/staging/rt2860/common/netif_block.h
- delete mode 100644 drivers/staging/rt2860/leap.h
- delete mode 100644 drivers/staging/rt2860/rt_ate.c
- delete mode 100644 drivers/staging/rt2860/rt_ate.h
- delete mode 100644 drivers/staging/rt2860/sta/dls.c
- delete mode 100644 drivers/staging/rt2870/common/netif_block.c
- delete mode 100644 drivers/staging/rt2870/leap.h
- delete mode 100644 drivers/staging/rt2870/netif_block.h
- delete mode 100644 drivers/staging/rt2870/rt_ate.c
- delete mode 100644 drivers/staging/rt2870/rt_ate.h
- delete mode 100644 drivers/staging/rt2870/sta/dls.c
- delete mode 100644 drivers/staging/rt2870/sta_ioctl.c.patch
- delete mode 100644 drivers/staging/rt2870/tmp60
- delete mode 100644 drivers/staging/rt2870/tmp61
- delete mode 100644 drivers/staging/rt3070/common/netif_block.c
- delete mode 100644 drivers/staging/rt3070/leap.h
- delete mode 100644 drivers/staging/rt3070/netif_block.h
- delete mode 100644 drivers/staging/rt3070/rt_ate.c
- delete mode 100644 drivers/staging/rt3070/rt_ate.h
- delete mode 100644 drivers/staging/rt3070/sta/dls.c
- create mode 100644 drivers/staging/rtl8192su/Kconfig
- create mode 100644 drivers/staging/rtl8192su/Makefile
- create mode 100644 drivers/staging/rtl8192su/authors
- create mode 100644 drivers/staging/rtl8192su/dot11d.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/EndianFree.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/Makefile
- create mode 100644 drivers/staging/rtl8192su/ieee80211/aes.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/api.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/arc4.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/autoload.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/cipher.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/compress.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/crypto_compat.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/digest.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/dot11d.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/dot11d.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_crypt.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_crypt.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_wep.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/internal.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/kmap_types.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/michael_mic.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/proc.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/readme
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl819x_BA.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl819x_BAProc.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl819x_Qos.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl819x_TS.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/rtl_crypto.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211/scatterwalk.c
- create mode 100644 drivers/staging/rtl8192su/ieee80211/scatterwalk.h
- create mode 100644 drivers/staging/rtl8192su/ieee80211_crypt.h
- create mode 100644 drivers/staging/rtl8192su/r8180_93cx6.c
- create mode 100644 drivers/staging/rtl8192su/r8180_93cx6.h
- create mode 100644 drivers/staging/rtl8192su/r8190_rtl8256.c
- create mode 100644 drivers/staging/rtl8192su/r8190_rtl8256.h
- create mode 100644 drivers/staging/rtl8192su/r8192SU_HWImg.c
- create mode 100644 drivers/staging/rtl8192su/r8192SU_HWImg.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_Efuse.c
- create mode 100644 drivers/staging/rtl8192su/r8192S_Efuse.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_FwImgDTM.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_firmware.c
- create mode 100644 drivers/staging/rtl8192su/r8192S_firmware.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_hw.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_phy.c
- create mode 100644 drivers/staging/rtl8192su/r8192S_phy.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_phyreg.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_rtl6052.c
- create mode 100644 drivers/staging/rtl8192su/r8192S_rtl6052.h
- create mode 100644 drivers/staging/rtl8192su/r8192S_rtl8225.c
- create mode 100644 drivers/staging/rtl8192su/r8192S_rtl8225.h
- create mode 100644 drivers/staging/rtl8192su/r8192U.h
- create mode 100644 drivers/staging/rtl8192su/r8192U_core.c
- create mode 100644 drivers/staging/rtl8192su/r8192U_dm.c
- create mode 100644 drivers/staging/rtl8192su/r8192U_dm.h
- create mode 100644 drivers/staging/rtl8192su/r8192U_hw.h
- create mode 100644 drivers/staging/rtl8192su/r8192U_pm.c
- create mode 100644 drivers/staging/rtl8192su/r8192U_pm.h
- create mode 100644 drivers/staging/rtl8192su/r8192U_wx.c
- create mode 100644 drivers/staging/rtl8192su/r8192U_wx.h
- create mode 100644 drivers/staging/rtl8192su/r819xU_HTGen.h
- create mode 100644 drivers/staging/rtl8192su/r819xU_HTType.h
- create mode 100644 drivers/staging/rtl8192su/r819xU_cmdpkt.c
- create mode 100644 drivers/staging/rtl8192su/r819xU_cmdpkt.h
- create mode 100644 drivers/staging/rtl8192su/r819xU_firmware.c
- create mode 100644 drivers/staging/rtl8192su/r819xU_firmware.h
- create mode 100644 drivers/staging/rtl8192su/r819xU_firmware_img.c
- create mode 100644 drivers/staging/rtl8192su/r819xU_firmware_img.h
- create mode 100644 drivers/staging/rtl8192su/r819xU_phy.c
- create mode 100644 drivers/staging/rtl8192su/r819xU_phy.h
- create mode 100644 drivers/staging/rtl8192su/r819xU_phyreg.h
- delete mode 100644 drivers/staging/serqt_usb/Makefile
- delete mode 100644 drivers/staging/serqt_usb/serqt_usb.c
- rename drivers/staging/{serqt_usb => serqt_usb2}/Kconfig (76%)
- create mode 100644 drivers/staging/serqt_usb2/Makefile
- create mode 100644 drivers/staging/serqt_usb2/serqt_usb2.c
- create mode 100644 drivers/staging/udlfb/Kconfig
- create mode 100644 drivers/staging/udlfb/Makefile
- create mode 100644 drivers/staging/udlfb/udlfb.c
- create mode 100644 drivers/staging/udlfb/udlfb.h
- create mode 100644 drivers/staging/vt6655/80211hdr.h
- create mode 100644 drivers/staging/vt6655/80211mgr.c
- create mode 100644 drivers/staging/vt6655/80211mgr.h
- create mode 100644 drivers/staging/vt6655/IEEE11h.c
- create mode 100644 drivers/staging/vt6655/IEEE11h.h
- create mode 100644 drivers/staging/vt6655/Kconfig
- create mode 100644 drivers/staging/vt6655/Makefile
- create mode 100644 drivers/staging/vt6655/Makefile.arm
- create mode 100644 drivers/staging/vt6655/Makefile.x86
- create mode 100644 drivers/staging/vt6655/aes_ccmp.c
- create mode 100644 drivers/staging/vt6655/aes_ccmp.h
- create mode 100644 drivers/staging/vt6655/baseband.c
- create mode 100644 drivers/staging/vt6655/baseband.h
- create mode 100644 drivers/staging/vt6655/bssdb.c
- create mode 100644 drivers/staging/vt6655/bssdb.h
- create mode 100644 drivers/staging/vt6655/card.c
- create mode 100644 drivers/staging/vt6655/card.h
- create mode 100644 drivers/staging/vt6655/country.h
- create mode 100644 drivers/staging/vt6655/datarate.c
- create mode 100644 drivers/staging/vt6655/datarate.h
- create mode 100644 drivers/staging/vt6655/desc.h
- create mode 100644 drivers/staging/vt6655/device.h
- create mode 100644 drivers/staging/vt6655/device_cfg.h
- create mode 100644 drivers/staging/vt6655/device_main.c
- create mode 100644 drivers/staging/vt6655/dpc.c
- create mode 100644 drivers/staging/vt6655/dpc.h
- create mode 100644 drivers/staging/vt6655/hostap.c
- create mode 100644 drivers/staging/vt6655/hostap.h
- create mode 100644 drivers/staging/vt6655/iocmd.h
- create mode 100644 drivers/staging/vt6655/ioctl.c
- create mode 100644 drivers/staging/vt6655/ioctl.h
- create mode 100644 drivers/staging/vt6655/iowpa.h
- create mode 100644 drivers/staging/vt6655/iwctl.c
- create mode 100644 drivers/staging/vt6655/iwctl.h
- create mode 100644 drivers/staging/vt6655/kcompat.h
- create mode 100644 drivers/staging/vt6655/key.c
- create mode 100644 drivers/staging/vt6655/key.h
- create mode 100644 drivers/staging/vt6655/mac.c
- create mode 100644 drivers/staging/vt6655/mac.h
- create mode 100644 drivers/staging/vt6655/mib.c
- create mode 100644 drivers/staging/vt6655/mib.h
- create mode 100644 drivers/staging/vt6655/michael.c
- create mode 100644 drivers/staging/vt6655/michael.h
- create mode 100644 drivers/staging/vt6655/power.c
- create mode 100644 drivers/staging/vt6655/power.h
- create mode 100644 drivers/staging/vt6655/rc4.c
- create mode 100644 drivers/staging/vt6655/rc4.h
- create mode 100644 drivers/staging/vt6655/rf.c
- create mode 100644 drivers/staging/vt6655/rf.h
- create mode 100644 drivers/staging/vt6655/rxtx.c
- create mode 100644 drivers/staging/vt6655/rxtx.h
- create mode 100644 drivers/staging/vt6655/srom.c
- create mode 100644 drivers/staging/vt6655/srom.h
- create mode 100644 drivers/staging/vt6655/tbit.h
- create mode 100644 drivers/staging/vt6655/tcrc.c
- create mode 100644 drivers/staging/vt6655/tcrc.h
- create mode 100644 drivers/staging/vt6655/test
- create mode 100644 drivers/staging/vt6655/tether.c
- create mode 100644 drivers/staging/vt6655/tether.h
- create mode 100644 drivers/staging/vt6655/tkip.c
- create mode 100644 drivers/staging/vt6655/tkip.h
- create mode 100644 drivers/staging/vt6655/tmacro.h
- create mode 100644 drivers/staging/vt6655/tpci.h
- create mode 100644 drivers/staging/vt6655/ttype.h
- create mode 100644 drivers/staging/vt6655/umem.h
- create mode 100644 drivers/staging/vt6655/upc.h
- create mode 100644 drivers/staging/vt6655/vntconfiguration.dat
- create mode 100644 drivers/staging/vt6655/vntwifi.c
- create mode 100644 drivers/staging/vt6655/vntwifi.h
- create mode 100644 drivers/staging/vt6655/wcmd.c
- create mode 100644 drivers/staging/vt6655/wcmd.h
- create mode 100644 drivers/staging/vt6655/wctl.c
- create mode 100644 drivers/staging/vt6655/wctl.h
- create mode 100644 drivers/staging/vt6655/wmgr.c
- create mode 100644 drivers/staging/vt6655/wmgr.h
- create mode 100644 drivers/staging/vt6655/wpa.c
- create mode 100644 drivers/staging/vt6655/wpa.h
- create mode 100644 drivers/staging/vt6655/wpa2.c
- create mode 100644 drivers/staging/vt6655/wpa2.h
- create mode 100644 drivers/staging/vt6655/wpactl.c
- create mode 100644 drivers/staging/vt6655/wpactl.h
- create mode 100644 drivers/staging/vt6655/wroute.c
- create mode 100644 drivers/staging/vt6655/wroute.h
- delete mode 100644 drivers/staging/winbond/wbhal.c
- create mode 100644 drivers/staging/wlan-ng/prism2fw.c
+Thanks,
+	Sergey
 
----------------
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=syslog_bug_3
 
-Alessio Igor Bogani (3):
-      Staging: comedi: replace __FUNCTION__ usages
-      Staging: sxg: replace __FUNCTION__ usages
-      Staging: rt3070: replace __FUNCTION__ usages
-
-Alexander Beregalov (7):
-      Staging: comedi: comedi_test.c should include timer.h
-      Staging: comedi: data.c should include delay.h
-      Staging: agnx: replace print_mac with %pM
-      Staging: rtl8187se: convert to net_device_ops
-      Staging: stlc45xx: replace print_mac with %pM
-      Staging: cpc-usb: depends on PROC_FS
-      Staging: cpc-usb: fix printk format warnings
-
-Anders Kaseorg (2):
-      Staging: rt2860: Don't call sprintf() with overlapping input and output.
-      Staging: rt2870: Don't call sprintf() with overlapping input and output.
-
-Andre Lopes (1):
-      staging: b3dfg: clean up MODULE_PARM_DESC newline
-
-Arve Hjønnevåg (2):
-      Staging: android: lowmemorykiller: Only iterate over process list when needed.
-      Staging: android: lowmemorykiller: Don't count free space unless it meets the specified limit by itself
-
-Bartlomiej Zolnierkiewicz (102):
-      Staging: rt2870: remove unused files
-      Staging: rt2870: remove kernel version compatibility wrappers
-      Staging: rt3070: remove kernel version compatibility wrappers
-      Staging: rt2860: remove IWE_STREAM_ADD_*() macros
-      Staging: rt2870: remove IWE_STREAM_ADD_*() macros
-      Staging: rt2860: remove dead WIN_NDIS code
-      Staging: rt2860: remove dead UNDER_CE code
-      Staging: rt2870: remove dead UNDER_CE code
-      Staging: rt3070: remove dead UNDER_CE code
-      Staging: rt2860: remove dead WSC_AP_SUPPORT code
-      Staging: rt2870: remove dead WSC_AP_SUPPORT code
-      Staging: rt3070: remove dead *WSC_INCLUDED code
-      Staging: rt2860: remove dead WDS_SUPPORT code
-      Staging: rt2870: remove dead WDS_SUPPORT code
-      Staging: rt3070: remove dead WDS_SUPPORT code
-      Staging: rt3070: remove dead MLME_EX code
-      Staging: rt2860: remove dead APCLI_SUPPORT code
-      Staging: rt2870: remove dead APCLI_SUPPORT code
-      Staging: rt2860: remove dead CONFIG_APSTA_MIXED_SUPPORT code
-      Staging: rt2870: remove dead CONFIG_APSTA_MIXED_SUPPORT code
-      Staging: rt3070: remove dead CONFIG_APSTA_MIXED_SUPPORT code
-      Staging: rt2860: remove dead UCOS code
-      Staging: rt2870: remove dead UCOS code
-      Staging: rt3070: remove dead UCOS code
-      Staging: rt2860: remove dead NINTENDO_AP code
-      Staging: rt2870: remove dead NINTENDO_AP code
-      Staging: rt3070: remove dead NINTENDO_AP code
-      Staging: rt2860: remove dead BIN_IN_FILE code
-      Staging: rt2870: remove dead BIN_IN_FILE code
-      Staging: rt3070: remove dead BIN_IN_FILE code
-      Staging: rt2860: remove dead RALINK_ATE code
-      Staging: rt2870: remove dead RALINK_ATE code
-      Staging: rt3070: remove dead RALINK_ATE code
-      Staging: rt2860: remove dead BLOCK_NET_IF code
-      Staging: rt2870: remove dead BLOCK_NET_IF code
-      Staging: rt3070: remove dead BLOCK_NET_IF code
-      Staging: rt2860: remove dead DFS_SUPPORT code
-      Staging: rt2870: remove dead DFS_SUPPORT code
-      Staging: rt3070: remove dead DFS_SUPPORT code
-      Staging: rt2860: remove dead CARRIER_DETECTION_SUPPORT code
-      Staging: rt2870: remove dead CARRIER_DETECTION_SUPPORT code
-      Staging: rt3070: remove dead CARRIER_DETECTION_SUPPORT code
-      Staging: rt2860: remove dead MULTIPLE_CARD_SUPPORT code
-      Staging: rt2870: remove dead MULTIPLE_CARD_SUPPORT code
-      Staging: rt3070: remove dead MULTIPLE_CARD_SUPPORT code
-      Staging: rt2860: remove dead QOS_DLS_SUPPORT code
-      Staging: rt2870: remove dead QOS_DLS_SUPPORT code
-      Staging: rt3070: remove dead QOS_DLS_SUPPORT code
-      Staging: rt2860: remove dead EXT_BUILD_CHANNEL_LIST code
-      Staging: rt2870: remove dead EXT_BUILD_CHANNEL_LIST code
-      Staging: rt3070: remove dead EXT_BUILD_CHANNEL_LIST code
-      Staging: rt2860: remove dead SNMP_SUPPORT code
-      Staging: rt2870: remove dead SNMP_SUPPORT code
-      Staging: rt3070: remove dead SNMP_SUPPORT code
-      Staging: rt2860: remove dead SINGLE_SKU code
-      Staging: rt2870: remove dead SINGLE_SKU code
-      Staging: rt3070: remove dead SINGLE_SKU code
-      Staging: rt2860: remove dead LEAP_SUPPORT code
-      Staging: rt2870: remove dead LEAP_SUPPORT code
-      Staging: rt3070: remove dead LEAP_SUPPORT code
-      Staging: rt2860: remove dead DOT11N_DRAFT3 code
-      Staging: rt2870: remove dead DOT11N_DRAFT3 code
-      Staging: rt3070: remove dead DOT11N_DRAFT3 code
-      Staging: rt2860: remove dead INF_AMAZON_SE code
-      Staging: rt2870: remove dead INF_AMAZON_SE code
-      Staging: rt3070: remove dead INF_AMAZON_SE code
-      Staging: rt2860: remove dead RT_BIG_ENDIAN code
-      Staging: rt2870: remove dead RT_BIG_ENDIAN code
-      Staging: rt3070: remove dead RT_BIG_ENDIAN code
-      Staging: rt2860: remove CONFIG_STA_SUPPORT ifdefs
-      Staging: rt2870: remove CONFIG_STA_SUPPORT ifdefs
-      Staging: rt3070: remove CONFIG_STA_SUPPORT ifdefs
-      Staging: rt2860: remove NATIVE_WPA_SUPPLICANT_SUPPORT ifdefs
-      Staging: rt2870: remove NATIVE_WPA_SUPPLICANT_SUPPORT ifdefs
-      Staging: rt3070: remove NATIVE_WPA_SUPPLICANT_SUPPORT ifdefs
-      Staging: rt2860: remove WPA_SUPPLICANT_SUPPORT ifdefs
-      Staging: rt2870: remove WPA_SUPPLICANT_SUPPORT ifdefs
-      Staging: rt3070: remove WPA_SUPPLICANT_SUPPORT ifdefs
-      Staging: rt2860: remove DOT11_N_SUPPORT ifdefs
-      Staging: rt2870: remove DOT11_N_SUPPORT ifdefs
-      Staging: rt3070: remove DOT11_N_SUPPORT ifdefs
-      Staging: rt2860: remove dead CONFIG_AP_SUPPORT code
-      Staging: rt2870: remove dead CONFIG_AP_SUPPORT code
-      Staging: rt3070: remove dead CONFIG_AP_SUPPORT code
-      Staging: rt2860: use empty ASSERT() macro
-      Staging: rt2870: use empty ASSERT() macro
-      Staging: rt3070: use empty ASSERT() macro
-      Staging: rt2860: remove dead code
-      Staging: rt2870: remove dead code
-      Staging: rt3070: remove dead code
-      Staging: rt2870: prepare for rt{28,30}70/*.[ch] merge
-      Staging: rt{28,30}70: merge rt{28,30}70/*.[ch]
-      Staging: rt2870: prepare for rt{28,30}70/common/*.[ch] merge
-      Staging: rt{28,30}70: merge rt{28,30}70/common/*.[ch]
-      Staging: rt2870: prepare for rt{28,30}70/sta/*.[ch] merge
-      Staging: rt{28,30}70: merge rt{28,30}70/sta/*.[ch]
-      Staging: rt2860: prepare for rt28[67]0/*.[ch] merge
-      Staging: rt28[67]0: merge rt28[67]0/*.[ch]
-      Staging: rt2860: prepare for rt28[67]0/common/*.[ch] merge
-      Staging: rt28[67]0: merge rt28[67]0/common/*.[ch]
-      Staging: rt2860: prepare for rt28[67]0/sta/*.[ch] merge
-      Staging: rt28[67]0: merge rt28[67]0/sta/*.[ch]
-
-Bernd Porr (2):
-      Staging: comedi: convert usbdux* to use firmware_request
-      Staging: comedi: usbdux: buffer overflow error handling
-
-Bill Pemberton (79):
-      Staging: comedi: Remove ni_board typedef
-      Staging: comedi: Remove ni_private typedef
-      Staging: comedi: Remove local_info_t typedef in ni_labpc_cs
-      Staging: comedi: Remove dio24_board_struct typedef
-      Staging: comedi: Remove local_info_t typedef in ni_daq_dio24
-      Staging: comedi: Remove BYTE and *PBYTE typedefs in addi-data
-      Staging: comedi: Remove SHORT and *PSHORT typedefs in addi-data
-      Staging: comedi: Remove USHORT and *PUSHORT typedefs in addi-data
-      Staging: comedi: Remove WORD and *PWORD typedefs in addi-data
-      Staging: comedi: Remove INT and *PINT typedefs in addi-data
-      Staging: comedi: Remove UINT and *PUINT typedefs in addi-data
-      Staging: comedi: Remove LONG and *PLONG typedefs in addi-data
-      Staging: comedi: Remove ULONG and *PULONG typedefs in addi-data
-      Staging: comedi: Remove DWORD and *PDWORD typedefs in addi-data
-      Staging: comedi: Remove ULONG_PTR typedef in addi-data
-      Staging: comedi: Remove PCRANGE typedef in addi-data
-      Staging: comedi: Remove boardtype typedef in addi-data
-      Staging: comedi: Remove str_ModuleInfo typedef in addi-data
-      Staging: comedi: Remove addi_private typedef in addi-data
-      Staging: comedi: Remove str_MainHeader typedef in addi-data/addi_eeprom.c
-      Staging: comedi: Remove str_DigitalInputHeader typedef in addi-data/addi_eeprom.c
-      Staging: comedi: Remove str_DigitalOutputHeader typedef in addi-data/addi_eeprom.c
-      Staging: comedi: Remove str_TimerDetails typedef in addi-data/addi_eeprom.c
-      Staging: comedi: Remove str_TimerMainHeader typedef in addi-data/addi_eeprom.c
-      Staging: comedi: Remove str_AnalogReadInformation typedef in addi-data/hwdrv_apci3120.h
-      Staging: comedi: Remove str_Module typedef in addi-data/hwdrv_apci3200.h
-      Staging: comedi: Remove str_BoardInfos typedef in addi-data/hwdrv_apci3200
-      Staging: comedi: Remove str_ADDIDATA_RTDStruct typedef in addi-data/hwdrv_apci3200
-      Staging: comedi: Remove labpc_board_struct typedef
-      Staging: comedi: Remove labpc_private typedef
-      Staging: comedi: Remove str_AnalogInputHeader typedef in addi-data/addi_eeprom.c
-      Staging: comedi: remove C99 comments in 8253.h
-      Staging: comedi: remove C99 comments in acl7225b.c
-      Staging: comedi: remove C99 comments in APCI1710_82x54.c
-      Staging: comedi: remove C99 comments in das1800.c
-      Staging: comedi: remove C99 comments in pcl818.c
-      Staging: comedi: remove C99 comments in hwdrv_apci1500.c
-      Staging: comedi: remove C99 comments in APCI1710_Pwm.c
-      Staging: comedi: remove C99 comments in hwdrv_apci1564.c
-      Staging: comedi: remove C99 comments in hwdrv_apci3200.c
-      Staging: comedi: remove C99 comments in hwdrv_apci3120.c
-      Staging: comedi: remove C99 comments in adl_pci6208.c
-      Staging: comedi: remove C99 comments in adl_pci9118.c
-      Staging: comedi: remove C99 comments in adv_pci1723.c
-      Staging: comedi: remove C99 comments in c6xdigio.c
-      Staging: comedi: remove C99 comments in cb_pcidas64.c
-      Staging: comedi: remove C99 comments in cb_pcidas.c
-      Staging: comedi: remove C99 comments in cb_pcimdas.c
-      Staging: comedi: remove C99 comments in gsc_hpdi.c
-      Staging: comedi: remove C99 comments in mpc624.c
-      Staging: comedi: remove C99 comments in ni_at_a2150.c
-      Staging: comedi: remove C99 comments in ni_labpc.c
-      Staging: comedi: remove C99 comments in pcl724.c
-      Staging: comedi: remove C99 comments in pcl816.c
-      Staging: comedi: remove C99 comments in s526.c
-      Staging: comedi: Remove C99 comments
-      Staging: comedi: fix "foo * bar" should be "foo *bar"
-      Staging: comedi: Add spaces after commas
-      Staging Comedi: fix spacing around parens
-      Staging: Comedi: change space indentation to tabs
-      Staging: comedi: remove assignment in conditionals
-      Staging: comedi: Remove parens around return values
-      Staging: comedi: fix the way structs are initialized.
-      Staging: comedi: more remove C99 comments
-      Staging: comedi: remove space after ampersand
-      Staging: comedi: more fix "foo * bar" should be "foo *bar"
-      Staging: comedi: more fix the way structs are initialized.
-      Staging: comedi: make use of ARRAY_SIZE macro
-      Staging: comedi: comment out useless if
-      Staging: comedi: move while to same line as } in do loops
-      Staging: comedi: replace for loop with msleep()
-      Staging: comedi: simply read and write functions in adl_pci8164
-      staging: comedi: Remove MIN macro
-      staging: comedi: Move pcm do_cmdtest function into a single source file
-      Staging: pohmelfs: move open brace to same line on structs
-      Staging: pohmelfs: Remove C99 comments
-      Staging: pohmelfs: Remove braces around single statements
-      Staging: Add serqt_usb2, a rewrite of serqt_usb for the usb-serial layer
-      Staging: serqt_usb2 add the driver to the build
-
-Bryan Stephenson (1):
-      Staging: rt2860: fix for driver RT2860 to be able to connect to WPA2 networks
-
-David Rientjes (2):
-      Staging: android: lowmemorykiller: cleanup android low memory killer
-      Staging: android: lowmemorykiller: fix possible android low memory killer NULL pointer
-
-David Rowe (1):
-      Staging: oslec bug fix
-
-Diego Liziero (1):
-      Staging winbond: boolean negation and bitwise operation in wrong order
-
-Dongxiao Xu (8):
-      Staging: heci: fix userspace pointer mess
-      Staging: heci: fix wrong order of device_lock and file_lock
-      Staging: heci: fix spinlock order mess of device_lock and read_io_lock
-      Staging: heci: fix softirq safe to unsafe spinlock issue
-      Staging: heci: fix typos and add wait after disconnect
-      Staging: heci: fix setting h_is bit in h_csr register
-      Staging: heci: do not print error when heci_bh_handler is already on workqueue
-      Staging: heci: fix the problem that file_ext->state should be protected by device_lock
-
-Dragoslav Zaric (1):
-      Staging: otus: 80211core/ccmd.c: Fix Coding Style
-
-Forest Bond (8):
-      Staging: Add pristine upstream vt6655 driver sources
-      Staging: vt6655 Add includes to drivers/staging/vt6655.
-      Staging: vt6655: Drop obsolete fsuid/fsgid accesses.
-      Staging: vt6655: Build vt6655.ko, not viawget.ko.
-      Staging: vt6655: Replace net_device->priv accesses with netdev_priv calls.
-      Staging: vt6655: Remove LINUX_VERSION_CODE preprocessor conditionals.
-      Staging: vt6655: use net_device_ops for management functions
-      Staging: vt6655: Integrate drivers/staging/vt6655 into build system.
-
-Frank Mori Hess (5):
-      Staging: comedi: Finish removing ni_private typedef
-      Staging: comedi: Fixed Kconfig option for COMEDI_PCMCIA_DRIVERS
-      Staging: Comedi: ni_600x: Added support for comedi_poll.
-      Staging: comedi: Added sysfs attribute files for setting and querying subdevice buffer sizes.
-      Staging: comedi: jr3_pci: Use struct device from pci_dev for firmware loading.
-
-Gerard Lledo (1):
-      Staging: comedi: cb_pcidas.c: Fix build warning (type mismatch)
-
-Greg Kroah-Hartman (43):
-      Staging: add mailing list address for staging tree
-      Staging: comedi: fix build errors in pcmcia comedi drivers
-      Staging: comedi: set PCI and PCMCIA defines
-      Staging: comedi: vmk80xx.c: get the driver to build properly
-      Staging: comedi: remove comedi-specific wrappers
-      Staging: comedi: remove RT code
-      Staging: comedi: remove some RT code that lingered
-      staging: comedi: fix pcmcia build breakage
-      Staging: agnx: fix build warnings
-      Staging: meilhaus: fix build warnings
-      Staging: remove driver_data direct access of struct device
-      Staging: rt2870: fix build warnings
-      Staging: android: lowmemorykiller: fix up remaining checkpatch warnings
-      Staging: android: logger: fix up remaining checkpatch warnings
-      Staging: android: ram_console: fix up remaining checkpatch warnings
-      Staging: android: binder: fix up some checkpatch warnings
-      Staging: android: fix Kconfig issues
-      Staging: cpc-usb: fix some build problems in the driver
-      Staging: cpc-usb: add driver to the build
-      Staging: cpc-usb: fix up checkpatch errors in cpc-usb_drv.c
-      Staging: cpc-usb: fix checkpatch warnings in sja2m16c.h
-      Staging: cpc-usb: add TODO file
-      Staging: cpc-usb: fix build warnings
-      Staging: rtl8192su: fix build warnings
-      Staging: altpciechdma: fix build warnings
-      Staging: slicoss: fix build warnings
-      Staging: asus_oled: fix build warnings
-      Staging: remove obsolete serqt_usb driver
-      Staging: pata_rdc: add driver to the build system
-      Staging: pata_rdc: convert code to work in 2.6.29
-      Staging: pata_rdc: coding style fixes
-      Staging: pata_rdc: remove function prototypes
-      Staging: pata_rdc: use PCI_DEVICE
-      Staging: pata_rdc: fix build warnings
-      Staging: pata_rdc: remove broken flag
-      Staging: pata_rdc: remove dbgprintf macro
-      Staging: pata_rdc: remove DRIVER macros
-      Staging: pata_rdc: remove pointless comments
-      Staging: udlfb: add udlfb driver to build
-      Staging: udlfb: clean up checkpatch warnings in udlfb.h
-      Staging: udlfb: clean up checkpatch warnings in udlfb.c
-      Staging: udlfb: fix some sparse warnings.
-      Staging: comedi: fix build errors
-
-Huang Weiyi (3):
-      Staging: comedi: remove dupilcated #include
-      Staging: rt3070: remove dupilcated #include
-      Staging: remove unused #include <linux/version.h>'s
-
-Ian Abbott (6):
-      Staging: comedi: 'pcmcia_parse_tuple()' now has two arguments, not three.
-      Staging: comedi: pcl818: Fix option handling for FIFO mode (hopefully!).
-      Staging: comedi: pcl818: Tidy up AI command after channel dropout or similar error.
-      Staging: comedi: Work around malformed RTAI_VERSION_CODE.
-      Staging: comedi: Undo stupid commit made 3 months ago
-      Staging: comedi: amplc_pc236: Corrected documentation.
-
-J.R. Mauro (1):
-      Staging: rspiusb: make driver compile
-
-Jean Delvare (4):
-      Staging: sxg: Add missing __devexit_p()
-      Staging: rtl8187se: Use to_delayed_work
-      Staging: altpciechdma: Add missing __devexit_p()
-      Staging: slicoss: Add missing __devexit_p()
-
-Jerry Chuang (1):
-      Staging: add rtl8192SU wireless usb driver
-
-Jiri Slaby (8):
-      staging: comedi, remove interrupt.h
-      staging: agnx, probe cleanup
-      staging: agnx, remove memlens from probe
-      staging: agnx, fix fail paths in probe
-      staging: agnx, fix bssid compiler warnings
-      staging: meilhaus, switch to misc device
-      staging: meilhaus, annotate cpi functions
-      staging: meilhaus, move tables to .c
-
-Julia Lawall (3):
-      Staging: wlan-ng: p80211wext.c: problem with IW_ENCODE_ALG_WEP
-      Staging: cpc-usb: Adjust NULL test
-      Staging: rtl8192su: Correct use of ! and &
-
-Karl Relton (2):
-      Staging: wlan-ng: Move firmware loading into driver
-      Staging: wlan-ng: Change KERN_DEBUG or pr_debug to match orig driver
-
-Kevin Huang (1):
-      Staging: add pata_rdc driver
-
-Manuel Gebele (3):
-      Staging: comedi: add vmk80xx USB driver
-      Staging: comedi: Makefile changes
-      Staging: Comedi: vmk80xx: Add k8061 support
-
-Mike Lockwood (1):
-      Staging: android: timed_gpio: Separate timed_output class into a separate driver.
-
-Mithlesh Thukral (2):
-      Staging: wlan-ng: Lindent cleanups
-      Staging: wlan-ng: Update README file. Remove Lindent task
-
-Oleg Nesterov (1):
-      Staging: epl: do not use CLONE_SIGHAND with allow_signal()
-
-Pekka Enberg (16):
-      Staging: w35und: remove unused code from wbsoft_configure_filter()
-      Staging: w35und: replace switch error handling with gotos in wb35_hw_init()
-      Staging: w35und: move hal_init_hardware() and hal_halt() int wbusb.c
-      Staging: w35und: simplify error handling in wb35_hw_init()
-      Staging: w35und: simplify hal_init_hardware() error handling
-      Staging: w35und: more simplify hal_init_hardware() error handling
-      Staging: w35und: simplify hal_init_hardware() and hal_halt()
-      Staging: w35und: clean up comments in wbusb.c
-      Staging: w35und: inline hal_set_phy_type() to wb35_hw_init()
-      Staging: w35und: reformat wbusb.c
-      Staging: w35und: remove MODULE_AUTHOR
-      Staging: w35und: make led lookup tables static
-      Staging: w35und: reformat wbhal.c
-      Staging: w35und: merge wbhal.c to wbusb.c
-      Staging: w35und: inline hal_set_rf_power() to mto.c
-      Staging: w35und: merge rest of wbhal.c to phy_calibration.c
-
-Randy Dunlap (2):
-      Staging: comedi: uses udelay, needs delay.h
-      Staging: vt6655: uses pci functions, should depend on PCI
-
-Richard Genoud (3):
-      Staging: rspiusb: clean rspiusb code
-      Staging: rspiusb.c: break the huge piusb_ioctl function into several ones
-      Staging: rspiusb: duplicate code in pixis_io
-
-Robert P. J. Day (1):
-      Staging: meilhaus: Remove long-deprecated SA_* interrupt macros.
-
-Roberto De Ioris (2):
-      Staging: add udlfb driver
-      Staging: udlfb: update to version 0.2.3
-
-Roel Kluin (7):
-      Staging: comedi: non working tests on unsigned cmd->convert_arg
-      staging: comedi: fix missing parentheses
-      Staging: rtl8187se: wmm_param[1].ac_aci_acm_aifsn tested twice
-      Staging: fix operator precedence errors
-      Staging: otus: beyond ARRAY_SIZE of wd->ap.wds.encryMode
-      staging: rtlxxxx: off by one in AsicSendCommandToMcu() and NDIS_STATUS NICLoadFirmware()
-      staging: wis-sony-tuner.c: fix &&/|| error
-
-Sebastian Haas (1):
-      Staging: add cpc-usb driver to the staging tree
-
-Serge E. Hallyn (1):
-      staging: p9auth: prevent some oopses and memory leaks
-
-Tim Gardner (1):
-      Staging: winbond: mac80211 - unify config_interface and bss_info_changed
-
-Tobias Klauser (1):
-      Staging: pohmelfs: Storage class should be before const qualifier
-
-vibi sreenivasan (2):
-      Staging: rspiusb: Fix a bunch of warnings.
-      Staging: rspiusb: copy_to/from_user related fixes
-
+kernel: 4.187392]    [<c1195001>] ext3_truncate+0x8a1/0x990
+kernel: [26234.187392]    [<c10dd250>] vmtruncate+0xe0/0x1a0
+kernel: [26234.187392]    [<c1111e3f>] inode_setattr+0x6f/0x1b0
+kernel: [26234.187392]    [<c1191991>] ext3_setattr+0x151/0x210
+kernel: [26234.187392]    [<c11120ef>] notify_change+0x16f/0x370
+kernel: [26234.187392]    [<c10f8de4>] do_truncate+0x74/0xb0
+kernel: [26234.187392]    [<c1105bdd>] may_open+0x23d/0x2c0
+kernel: [26234.187392]    [<c11082ab>] do_filp_open+0x1cb/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10fe532>] inode_sub_bytes+0x32/0xc0
+kernel: [26234.187392]    [<c118d38d>] ext3_free_blocks+0x7d/0xf0
+kernel: [26234.187392]    [<c11942ec>] ext3_clear_blocks+0x14c/0x180
+kernel: [26234.187392]    [<c1194468>] ext3_free_data+0x148/0x1a0
+kernel: [26234.187392]    [<c1195001>] ext3_truncate+0x8a1/0x990
+kernel: [26234.187392]    [<c10dd250>] vmtruncate+0xe0/0x1a0
+kernel: [26234.187392]    [<c1111e3f>] inode_setattr+0x6f/0x1b0
+kernel: [26234.187392]    [<c1191991>] ext3_setattr+0x151/0x210
+kernel: [26234.187392]    [<c11120ef>] notify_change+0x16f/0x370
+kernel: [26234.187392]    [<c10f8de4>] do_truncate+0x74/0xb0
+kernel: [26234.187392]    [<c1105bdd>] may_open+0x23d/0x2c0
+kernel: [26234.187392]    [<c11082ab>] do_filp_open+0x1cb/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c10cd76a>] activate_page+0x3a/0x130
+kernel: [26234.187392]    [<c10cd8b1>] mark_page_accessed+0x51/0x60
+kernel: [26234.187392]    [<c1121b7c>] __find_get_block+0xbc/0x1d0
+kernel: [26234.187392]    [<c1121cc3>] __getblk+0x33/0x390
+kernel: [26234.187392]    [<c118cd07>] read_block_bitmap+0x47/0x1a0
+kernel: [26234.187392]    [<c118de2c>] ext3_new_blocks+0x2cc/0x770
+kernel: [26234.187392]    [<c1193546>] ext3_get_blocks_handle+0x2e6/0xa60
+kernel: [26234.187392]    [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]    [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]    [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]    [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]    [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]    [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]    [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]    [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]    [<c10f9e2a>] do_sync_write+0xea/0x140
+kernel: [26234.187392]    [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26234.187392]    [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     -> (&sbi->s_rsv_window_lock){+.+...} ops: 0 {
+kernel: [26234.187392]        HARDIRQ-ON-W at:
+kernel: [26234.187392]                                                [<c1077409>] __lock_acquire+0xaa9/0x1840
+kernel: [26234.187392]                                                [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                                [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                                [<c118d872>] ext3_try_to_allocate_with_rsv+0x1e2/0x4d0
+kernel: [26234.187392]                                                [<c118de76>] ext3_new_blocks+0x316/0x770
+kernel: [26234.187392]                                                [<c1193546>] ext3_get_blocks_handle+0x2e6/0xa60
+kernel: [26234.187392]                                                [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]                                                [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]                                                [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]                                                [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]                                                [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]                                                [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]                                                [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]                                                [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]                                                [<c10f9e2a>] do_sync_write+0xea/0x140
+kernel: [26234.187392]                                                [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26234.187392]                                                [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26234.187392]                                                [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                                [<ffffffff>] 0xffffffff
+kernel: [26234.187392]        SOFTIRQ-ON-W at:
+kernel: [26234.187392]                                                [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                                [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                                [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                                [<c118d872>] ext3_try_to_allocate_with_rsv+0x1e2/0x4d0
+kernel: [26234.187392]                                                [<c118de76>] ext3_new_blocks+0x316/0x770
+kernel: [26234.187392]                                                [<c1193546>] ext3_get_blocks_handle+0x2e6/0xa60
+kernel: [26234.187392]                                                [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]                                                [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]                                                [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]                                                [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]                                                [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]                                                [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]                                                [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]                                                [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]                                                [<c10f9e2a>] do_sync_write+0xea/0x140
+kernel: [26234.187392]                                                [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26234.187392]                                                [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26234.187392]                                                [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                                [<ffffffff>] 0xffffffff
+kernel: [26234.187392]        INITIAL USE at:
+kernel: [26234.187392]                                               [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                               [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                               [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                               [<c118d872>] ext3_try_to_allocate_with_rsv+0x1e2/0x4d0
+kernel: [26234.187392]                                               [<c118de76>] ext3_new_blocks+0x316/0x770
+kernel: [26234.187392]                                               [<c1193546>] ext3_get_blocks_handle+0x2e6/0xa60
+kernel: [26234.187392]                                               [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]                                               [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]                                               [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]                                               [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]                                               [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]                                               [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]                                               [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]                                               [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]                                               [<c10f9e2a>] do_sync_write+0xea/0x140
+kernel: [26234.187392]                                               [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26234.187392]                                               [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26234.187392]                                               [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                               [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      }
+kernel: [26234.187392]      ... key      at: [<c1cf8894>] __key.32358+0x0/0x8
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c118d872>] ext3_try_to_allocate_with_rsv+0x1e2/0x4d0
+kernel: [26234.187392]    [<c118de76>] ext3_new_blocks+0x316/0x770
+kernel: [26234.187392]    [<c1193546>] ext3_get_blocks_handle+0x2e6/0xa60
+kernel: [26234.187392]    [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]    [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]    [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]    [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]    [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]    [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]    [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]    [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]    [<c10f9e2a>] do_sync_write+0xea/0x140
+kernel: [26234.187392]    [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26234.187392]    [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c124c9f2>] cfq_set_request+0x222/0x2e0
+kernel: [26234.187392]    [<c1232731>] elv_set_request+0x21/0x50
+kernel: [26234.187392]    [<c123ac3d>] get_request+0x32d/0x390
+kernel: [26234.187392]    [<c123b5fa>] get_request_wait+0x2a/0x170
+kernel: [26234.187392]    [<c123ba40>] __make_request+0x80/0x3c0
+kernel: [26234.187392]    [<c1238b20>] generic_make_request+0x390/0x580
+kernel: [26234.187392]    [<c1238d7e>] submit_bio+0x6e/0x110
+kernel: [26234.187392]    [<c1121225>] submit_bh+0x105/0x150
+kernel: [26234.187392]    [<c1122c82>] bh_submit_read+0x32/0x90
+kernel: [26234.187392]    [<c118cd40>] read_block_bitmap+0x80/0x1a0
+kernel: [26234.187392]    [<c118cf98>] ext3_free_blocks_sb+0xc8/0x440
+kernel: [26234.187392]    [<c118d34f>] ext3_free_blocks+0x3f/0xf0
+kernel: [26234.187392]    [<c11942ec>] ext3_clear_blocks+0x14c/0x180
+kernel: [26234.187392]    [<c1194468>] ext3_free_data+0x148/0x1a0
+kernel: [26234.187392]    [<c1195001>] ext3_truncate+0x8a1/0x990
+kernel: [26234.187392]    [<c10dd250>] vmtruncate+0xe0/0x1a0
+kernel: [26234.187392]    [<c1111e3f>] inode_setattr+0x6f/0x1b0
+kernel: [26234.187392]    [<c1191991>] ext3_setattr+0x151/0x210
+kernel: [26234.187392]    [<c11120ef>] notify_change+0x16f/0x370
+kernel: [26234.187392]    [<c10f8de4>] do_truncate+0x74/0xb0
+kernel: [26234.187392]    [<c1105bdd>] may_open+0x23d/0x2c0
+kernel: [26234.187392]    [<c11082ab>] do_filp_open+0x1cb/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c111bfe0>] __mark_inode_dirty+0x60/0x110
+kernel: [26234.187392]    [<c118d399>] ext3_free_blocks+0x89/0xf0
+kernel: [26234.187392]    [<c11942ec>] ext3_clear_blocks+0x14c/0x180
+kernel: [26234.187392]    [<c1194468>] ext3_free_data+0x148/0x1a0
+kernel: [26234.187392]    [<c1195001>] ext3_truncate+0x8a1/0x990
+kernel: [26234.187392]    [<c10dd250>] vmtruncate+0xe0/0x1a0
+kernel: [26234.187392]    [<c1111e3f>] inode_setattr+0x6f/0x1b0
+kernel: [26234.187392]    [<c1191991>] ext3_setattr+0x151/0x210
+kernel: [26234.187392]    [<c11120ef>] notify_change+0x16f/0x370
+kernel: [26234.187392]    [<c10f8de4>] do_truncate+0x74/0xb0
+kernel: [26234.187392]    [<c1105bdd>] may_open+0x23d/0x2c0
+kernel: [26234.187392]    [<c11082ab>] do_filp_open+0x1cb/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10f32ff>] cache_alloc_refill+0x9f/0x6a0
+kernel: [26234.187392]    [<c10f30a5>] kmem_cache_alloc+0x185/0x200
+kernel: [26234.187392]    [<c1253965>] radix_tree_preload+0x35/0x90
+kernel: [26234.187392]    [<c10c378d>] add_to_page_cache_locked+0x2d/0xc0
+kernel: [26234.187392]    [<c10c3858>] add_to_page_cache_lru+0x38/0x90
+kernel: [26234.187392]    [<c10c40fa>] find_or_create_page+0x6a/0xb0
+kernel: [26234.187392]    [<c1121df1>] __getblk+0x161/0x390
+kernel: [26234.187392]    [<c118cd07>] read_block_bitmap+0x47/0x1a0
+kernel: [26234.187392]    [<c118cf98>] ext3_free_blocks_sb+0xc8/0x440
+kernel: [26234.187392]    [<c118d34f>] ext3_free_blocks+0x3f/0xf0
+kernel: [26234.187392]    [<c11942ec>] ext3_clear_blocks+0x14c/0x180
+kernel: [26234.187392]    [<c1194468>] ext3_free_data+0x148/0x1a0
+kernel: [26234.187392]    [<c1195001>] ext3_truncate+0x8a1/0x990
+kernel: [26234.187392]    [<c11951ef>] ext3_delete_inode+0xff/0x110
+kernel: [26234.187392]    [<c11112e4>] generic_delete_inode+0xb4/0x190
+kernel: [26234.187392]    [<c1111537>] generic_drop_inode+0x177/0x200
+kernel: [26234.187392]    [<c11101e5>] iput+0x55/0x70
+kernel: [26234.187392]    [<c1107702>] do_unlinkat+0xf2/0x190
+kernel: [26234.187392]    [<c1107904>] sys_unlinkat+0x34/0x60
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10c9784>] T.1313+0x34/0xa0
+kernel: [26234.187392]    [<c10c9a28>] get_page_from_freelist+0x238/0x450
+kernel: [26234.187392]    [<c10c9d2f>] __alloc_pages_nodemask+0xef/0x550
+kernel: [26234.187392]    [<c10c40e2>] find_or_create_page+0x52/0xb0
+kernel: [26234.187392]    [<c1121df1>] __getblk+0x161/0x390
+kernel: [26234.187392]    [<c118cd07>] read_block_bitmap+0x47/0x1a0
+kernel: [26234.187392]    [<c118cf98>] ext3_free_blocks_sb+0xc8/0x440
+kernel: [26234.187392]    [<c118d34f>] ext3_free_blocks+0x3f/0xf0
+kernel: [26234.187392]    [<c11942ec>] ext3_clear_blocks+0x14c/0x180
+kernel: [26234.187392]    [<c1194468>] ext3_free_data+0x148/0x1a0
+kernel: [26234.187392]    [<c1195001>] ext3_truncate+0x8a1/0x990
+kernel: [26234.187392]    [<c11951ef>] ext3_delete_inode+0xff/0x110
+kernel: [26234.187392]    [<c11112e4>] generic_delete_inode+0xb4/0x190
+kernel: [26234.187392]    [<c1111537>] generic_drop_inode+0x177/0x200
+kernel: [26234.187392]    [<c11101e5>] iput+0x55/0x70
+kernel: [26234.187392]    [<c1107702>] do_unlinkat+0xf2/0x190
+kernel: [26234.187392]    [<c1107904>] sys_unlinkat+0x34/0x60
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10f32ff>] cache_alloc_refill+0x9f/0x6a0
+kernel: [26234.187392]    [<c10f30a5>] kmem_cache_alloc+0x185/0x200
+kernel: [26234.187392]    [<c118d431>] ext3_init_block_alloc_info+0x31/0xf0
+kernel: [26234.187392]    [<c1193892>] ext3_get_blocks_handle+0x632/0xa60
+kernel: [26234.187392]    [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]    [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]    [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]    [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]    [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]    [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]    [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]    [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]    [<c10f9cf0>] do_sync_readv_writev+0xe0/0x130
+kernel: [26234.187392]    [<c10fa5d3>] do_readv_writev+0xb3/0x1e0
+kernel: [26234.187392]    [<c10fa762>] vfs_writev+0x62/0x80
+kernel: [26234.187392]    [<c10fa8b8>] sys_writev+0x58/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     -> (key#4){+.+...} ops: 0 {
+kernel: [26234.187392]        HARDIRQ-ON-W at:
+kernel: [26234.187392]                                                [<c1077409>] __lock_acquire+0xaa9/0x1840
+kernel: [26234.187392]                                                [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                                [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                                [<c1260fdd>] __percpu_counter_sum+0x1d/0x90
+kernel: [26234.187392]                                                [<c119a5c8>] ext3_statfs+0x68/0x230
+kernel: [26234.187392]                                                [<c10f937d>] vfs_statfs+0x7d/0xa0
+kernel: [26234.187392]                                                [<c10f94d1>] sys_statfs64+0x81/0xd0
+kernel: [26234.187392]                                                [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                                [<ffffffff>] 0xffffffff
+kernel: [26234.187392]        SOFTIRQ-ON-W at:
+kernel: [26234.187392]                                                [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                                [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                                [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                                [<c1260fdd>] __percpu_counter_sum+0x1d/0x90
+kernel: [26234.187392]                                                [<c119a5c8>] ext3_statfs+0x68/0x230
+kernel: [26234.187392]                                                [<c10f937d>] vfs_statfs+0x7d/0xa0
+kernel: [26234.187392]                                                [<c10f94d1>] sys_statfs64+0x81/0xd0
+kernel: [26234.187392]                                                [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                                [<ffffffff>] 0xffffffff
+kernel: [26234.187392]        INITIAL USE at:
+kernel: [26234.187392]                                               [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                               [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                               [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                               [<c1260fdd>] __percpu_counter_sum+0x1d/0x90
+kernel: [26234.187392]                                               [<c119a5c8>] ext3_statfs+0x68/0x230
+kernel: [26234.187392]                                               [<c10f937d>] vfs_statfs+0x7d/0xa0
+kernel: [26234.187392]                                               [<c10f94d1>] sys_statfs64+0x81/0xd0
+kernel: [26234.187392]                                               [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                               [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      }
+kernel: [26234.187392]      ... key      at: [<c1cf88ac>] __key.32351+0x0/0x8
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1260f67>] __percpu_counter_add+0x97/0xf0
+kernel: [26234.187392]    [<c118e1da>] ext3_new_blocks+0x67a/0x770
+kernel: [26234.187392]    [<c1193546>] ext3_get_blocks_handle+0x2e6/0xa60
+kernel: [26234.187392]    [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]    [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]    [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]    [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]    [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]    [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]    [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]    [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]    [<c10f9cf0>] do_sync_readv_writev+0xe0/0x130
+kernel: [26234.187392]    [<c10fa5d3>] do_readv_writev+0xb3/0x1e0
+kernel: [26234.187392]    [<c10fa762>] vfs_writev+0x62/0x80
+kernel: [26234.187392]    [<c10fa8b8>] sys_writev+0x58/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]     ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c11eb9d1>] journal_extend+0x41/0xd0
+kernel: [26234.187392]    [<c1191c1f>] try_to_extend_transaction+0x6f/0xa0
+kernel: [26234.187392]    [<c11941e0>] ext3_clear_blocks+0x40/0x180
+kernel: [26234.187392]    [<c1194468>] ext3_free_data+0x148/0x1a0
+kernel: [26234.187392]    [<c1195001>] ext3_truncate+0x8a1/0x990
+kernel: [26234.187392]    [<c10dd250>] vmtruncate+0xe0/0x1a0
+kernel: [26234.187392]    [<c1111e3f>] inode_setattr+0x6f/0x1b0
+kernel: [26234.187392]    [<c1191991>] ext3_setattr+0x151/0x210
+kernel: [26234.187392]    [<c11120ef>] notify_change+0x16f/0x370
+kernel: [26234.187392]    [<c10f8de4>] do_truncate+0x74/0xb0
+kernel: [26234.187392]    [<c10f8f38>] do_sys_ftruncate+0x118/0x190
+kernel: [26234.187392]    [<c10f9040>] sys_ftruncate+0x30/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141981c>] mutex_lock_nested+0x5c/0x2e0
+kernel: [26234.187392]    [<c1194b9c>] ext3_truncate+0x43c/0x990
+kernel: [26234.187392]    [<c10dd250>] vmtruncate+0xe0/0x1a0
+kernel: [26234.187392]    [<c1111e3f>] inode_setattr+0x6f/0x1b0
+kernel: [26234.187392]    [<c1191991>] ext3_setattr+0x151/0x210
+kernel: [26234.187392]    [<c11120ef>] notify_change+0x16f/0x370
+kernel: [26234.187392]    [<c10f8de4>] do_truncate+0x74/0xb0
+kernel: [26234.187392]    [<c1105bdd>] may_open+0x23d/0x2c0
+kernel: [26234.187392]    [<c11082ab>] do_filp_open+0x1cb/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1111b95>] new_inode+0x35/0xb0
+kernel: [26234.187392]    [<c118f742>] ext3_new_inode+0x62/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c10c37b5>] add_to_page_cache_locked+0x55/0xc0
+kernel: [26234.187392]    [<c10c3858>] add_to_page_cache_lru+0x38/0x90
+kernel: [26234.187392]    [<c10c40fa>] find_or_create_page+0x6a/0xb0
+kernel: [26234.187392]    [<c1121df1>] __getblk+0x161/0x390
+kernel: [26234.187392]    [<c11257cf>] __bread+0x1f/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1121ee5>] __getblk+0x255/0x390
+kernel: [26234.187392]    [<c11257cf>] __bread+0x1f/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c123ba05>] __make_request+0x45/0x3c0
+kernel: [26234.187392]    [<c1238b20>] generic_make_request+0x390/0x580
+kernel: [26234.187392]    [<c1238d7e>] submit_bio+0x6e/0x110
+kernel: [26234.187392]    [<c1121225>] submit_bh+0x105/0x150
+kernel: [26234.187392]    [<c1125819>] __bread+0x69/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c124c9f2>] cfq_set_request+0x222/0x2e0
+kernel: [26234.187392]    [<c1232731>] elv_set_request+0x21/0x50
+kernel: [26234.187392]    [<c123ac3d>] get_request+0x32d/0x390
+kernel: [26234.187392]    [<c123b5fa>] get_request_wait+0x2a/0x170
+kernel: [26234.187392]    [<c123ba40>] __make_request+0x80/0x3c0
+kernel: [26234.187392]    [<c1238b20>] generic_make_request+0x390/0x580
+kernel: [26234.187392]    [<c1238d7e>] submit_bio+0x6e/0x110
+kernel: [26234.187392]    [<c1121225>] submit_bh+0x105/0x150
+kernel: [26234.187392]    [<c1125819>] __bread+0x69/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c105f87a>] prepare_to_wait+0x2a/0x80
+kernel: [26234.187392]    [<c141908a>] __wait_on_bit+0x4a/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1324670>] scsi_request_fn+0x150/0x500
+kernel: [26234.187392]    [<c123b5a9>] __generic_unplug_device+0x39/0x60
+kernel: [26234.187392]    [<c123b89f>] generic_unplug_device+0x2f/0x60
+kernel: [26234.187392]    [<c1237d71>] blk_unplug+0x31/0x70
+kernel: [26234.187392]    [<c1237dca>] blk_backing_dev_unplug+0x1a/0x40
+kernel: [26234.187392]    [<c1122bee>] sync_buffer+0x3e/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1338506>] ata_scsi_queuecmd+0x36/0x250
+kernel: [26234.187392]    [<c131d8b9>] scsi_dispatch_cmd+0x169/0x280
+kernel: [26234.187392]    [<c13248b5>] scsi_request_fn+0x395/0x500
+kernel: [26234.187392]    [<c123b5a9>] __generic_unplug_device+0x39/0x60
+kernel: [26234.187392]    [<c123b89f>] generic_unplug_device+0x2f/0x60
+kernel: [26234.187392]    [<c1237d71>] blk_unplug+0x31/0x70
+kernel: [26234.187392]    [<c1237dca>] blk_backing_dev_unplug+0x1a/0x40
+kernel: [26234.187392]    [<c1122bee>] sync_buffer+0x3e/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c1417c81>] schedule+0xe1/0xc10
+kernel: [26234.187392]    [<c141880b>] io_schedule+0x5b/0xb0
+kernel: [26234.187392]    [<c1122bf5>] sync_buffer+0x45/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10a982e>] delayacct_end+0x7e/0xd0
+kernel: [26234.187392]    [<c10a9908>] __delayacct_blkio_end+0x38/0x70
+kernel: [26234.187392]    [<c1418827>] io_schedule+0x77/0xb0
+kernel: [26234.187392]    [<c1122bf5>] sync_buffer+0x45/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c118f8b5>] ext3_new_inode+0x1d5/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c118fdbe>] ext3_new_inode+0x6de/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    -> (&sbi->s_next_gen_lock){+.+...} ops: 0 {
+kernel: [26234.187392]       HARDIRQ-ON-W at:
+kernel: [26234.187392]                                              [<c1077409>] __lock_acquire+0xaa9/0x1840
+kernel: [26234.187392]                                              [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                              [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                              [<c118ff9c>] ext3_new_inode+0x8bc/0xb00
+kernel: [26234.187392]                                              [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]                                              [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]                                              [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]                                              [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]                                              [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]                                              [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                              [<ffffffff>] 0xffffffff
+kernel: [26234.187392]       SOFTIRQ-ON-W at:
+kernel: [26234.187392]                                              [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                              [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                              [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                              [<c118ff9c>] ext3_new_inode+0x8bc/0xb00
+kernel: [26234.187392]                                              [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]                                              [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]                                              [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]                                              [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]                                              [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]                                              [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                              [<ffffffff>] 0xffffffff
+kernel: [26234.187392]       INITIAL USE at:
+kernel: [26234.187392]                                             [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                             [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                             [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                             [<c118ff9c>] ext3_new_inode+0x8bc/0xb00
+kernel: [26234.187392]                                             [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]                                             [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]                                             [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]                                             [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]                                             [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]                                             [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                             [<ffffffff>] 0xffffffff
+kernel: [26234.187392]     }
+kernel: [26234.187392]     ... key      at: [<c1cf88b4>] __key.32350+0x0/0x8
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c118ff9c>] ext3_new_inode+0x8bc/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c11a322c>] ext3_get_acl+0x8c/0x3b0
+kernel: [26234.187392]    [<c11a399c>] ext3_init_acl+0x14c/0x1b0
+kernel: [26234.187392]    [<c119005b>] ext3_new_inode+0x97b/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    -> (&ei->xattr_sem){.+.+..} ops: 0 {
+kernel: [26234.187392]       HARDIRQ-ON-R at:
+kernel: [26234.187392]                                              [<c1076b1b>] __lock_acquire+0x1bb/0x1840
+kernel: [26234.187392]                                              [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                              [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]                                              [<c11a2357>] ext3_xattr_get+0x47/0x2d0
+kernel: [26234.187392]                                              [<c11a3ba1>] ext3_xattr_security_get+0x51/0x70
+kernel: [26234.187392]                                              [<c1118476>] generic_getxattr+0x96/0xc0
+kernel: [26234.187392]                                              [<c121cbe0>] get_vfs_caps_from_disk+0x70/0x100
+kernel: [26234.187392]                                              [<c121d578>] cap_bprm_set_creds+0x88/0x480
+kernel: [26234.187392]                                              [<c121dd7b>] security_bprm_set_creds+0x1b/0x40
+kernel: [26234.187392]                                              [<c1100fb9>] prepare_binprm+0x79/0x110
+kernel: [26234.187392]                                              [<c11019ea>] do_execve+0x1da/0x340
+kernel: [26234.187392]                                              [<c1001853>] sys_execve+0x33/0x70
+kernel: [26234.187392]                                              [<c1003344>] syscall_call+0x7/0xb
+kernel: [26234.187392]                                              [<ffffffff>] 0xffffffff
+kernel: [26234.187392]       SOFTIRQ-ON-R at:
+kernel: [26234.187392]                                              [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                              [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                              [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]                                              [<c11a2357>] ext3_xattr_get+0x47/0x2d0
+kernel: [26234.187392]                                              [<c11a3ba1>] ext3_xattr_security_get+0x51/0x70
+kernel: [26234.187392]                                              [<c1118476>] generic_getxattr+0x96/0xc0
+kernel: [26234.187392]                                              [<c121cbe0>] get_vfs_caps_from_disk+0x70/0x100
+kernel: [26234.187392]                                              [<c121d578>] cap_bprm_set_creds+0x88/0x480
+kernel: [26234.187392]                                              [<c121dd7b>] security_bprm_set_creds+0x1b/0x40
+kernel: [26234.187392]                                              [<c1100fb9>] prepare_binprm+0x79/0x110
+kernel: [26234.187392]                                              [<c11019ea>] do_execve+0x1da/0x340
+kernel: [26234.187392]                                              [<c1001853>] sys_execve+0x33/0x70
+kernel: [26234.187392]                                              [<c1003344>] syscall_call+0x7/0xb
+kernel: [26234.187392]                                              [<ffffffff>] 0xffffffff
+kernel: [26234.187392]       INITIAL USE at:
+kernel: [26234.187392]                                             [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                             [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                             [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]                                             [<c11a2357>] ext3_xattr_get+0x47/0x2d0
+kernel: [26234.187392]                                             [<c11a3ba1>] ext3_xattr_security_get+0x51/0x70
+kernel: [26234.187392]                                             [<c1118476>] generic_getxattr+0x96/0xc0
+kernel: [26234.187392]                                             [<c121cbe0>] get_vfs_caps_from_disk+0x70/0x100
+kernel: [26234.187392]                                             [<c121d578>] cap_bprm_set_creds+0x88/0x480
+kernel: [26234.187392]                                             [<c121dd7b>] security_bprm_set_creds+0x1b/0x40
+kernel: [26234.187392]                                             [<c1100fb9>] prepare_binprm+0x79/0x110
+kernel: [26234.187392]                                             [<c11019ea>] do_execve+0x1da/0x340
+kernel: [26234.187392]                                             [<c1001853>] sys_execve+0x33/0x70
+kernel: [26234.187392]                                             [<c1003344>] syscall_call+0x7/0xb
+kernel: [26234.187392]                                             [<ffffffff>] 0xffffffff
+kernel: [26234.187392]     }
+kernel: [26234.187392]     ... key      at: [<c1cf88cc>] __key.31426+0x0/0x8
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]    [<c11a2357>] ext3_xattr_get+0x47/0x2d0
+kernel: [26234.187392]    [<c11a326b>] ext3_get_acl+0xcb/0x3b0
+kernel: [26234.187392]    [<c11a399c>] ext3_init_acl+0x14c/0x1b0
+kernel: [26234.187392]    [<c119005b>] ext3_new_inode+0x97b/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c110e2c9>] d_instantiate+0x29/0x70
+kernel: [26234.187392]    [<c1197c83>] ext3_add_nondir+0x73/0x90
+kernel: [26234.187392]    [<c119827d>] ext3_create+0xad/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c10cd76a>] activate_page+0x3a/0x130
+kernel: [26234.187392]    [<c10cd8b1>] mark_page_accessed+0x51/0x60
+kernel: [26234.187392]    [<c1121b7c>] __find_get_block+0xbc/0x1d0
+kernel: [26234.187392]    [<c1121cc3>] __getblk+0x33/0x390
+kernel: [26234.187392]    [<c11257cf>] __bread+0x1f/0xc0
+kernel: [26234.187392]    [<c118f426>] read_inode_bitmap+0x46/0xa0
+kernel: [26234.187392]    [<c1190340>] ext3_free_inode+0x160/0x360
+kernel: [26234.187392]    [<c11951e1>] ext3_delete_inode+0xf1/0x110
+kernel: [26234.187392]    [<c11112e4>] generic_delete_inode+0xb4/0x190
+kernel: [26234.187392]    [<c1111537>] generic_drop_inode+0x177/0x200
+kernel: [26234.187392]    [<c11101e5>] iput+0x55/0x70
+kernel: [26234.187392]    [<c1107702>] do_unlinkat+0xf2/0x190
+kernel: [26234.187392]    [<c11077be>] sys_unlink+0x1e/0x40
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10293c6>] pgd_free+0x26/0x90
+kernel: [26234.187392]    [<c1041456>] __mmdrop+0x26/0x60
+kernel: [26234.187392]    [<c103a9f3>] finish_task_switch+0xf3/0x100
+kernel: [26234.187392]    [<c1417fd3>] schedule+0x433/0xc10
+kernel: [26234.187392]    [<c141880b>] io_schedule+0x5b/0xb0
+kernel: [26234.187392]    [<c1122bf5>] sync_buffer+0x45/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c1191cec>] ext3_get_branch+0x9c/0x130
+kernel: [26234.187392]    [<c1193337>] ext3_get_blocks_handle+0xd7/0xa60
+kernel: [26234.187392]    [<c1193d4b>] ext3_get_block+0x8b/0x140
+kernel: [26234.187392]    [<c1123a94>] __block_prepare_write+0x1a4/0x440
+kernel: [26234.187392]    [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]    [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]    [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]    [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]    [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]    [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]    [<c10f9e2a>] do_sync_write+0xea/0x140
+kernel: [26234.187392]    [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26234.187392]    [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10da7cf>] page_address+0x9f/0x100
+kernel: [26234.187392]    [<c1237a92>] blk_rq_bio_prep+0x82/0xa0
+kernel: [26234.187392]    [<c1237cdf>] init_request_from_bio+0xaf/0x110
+kernel: [26234.187392]    [<c123ba4d>] __make_request+0x8d/0x3c0
+kernel: [26234.187392]    [<c1238b20>] generic_make_request+0x390/0x580
+kernel: [26234.187392]    [<c1238d7e>] submit_bio+0x6e/0x110
+kernel: [26234.187392]    [<c1121225>] submit_bh+0x105/0x150
+kernel: [26234.187392]    [<c11233f2>] ll_rw_block+0x122/0x130
+kernel: [26234.187392]    [<c1123aef>] __block_prepare_write+0x1ff/0x440
+kernel: [26234.187392]    [<c1123f44>] block_write_begin+0x84/0x140
+kernel: [26234.187392]    [<c1192f53>] ext3_write_begin+0x133/0x2b0
+kernel: [26234.187392]    [<c10c457b>] generic_file_buffered_write+0x13b/0x360
+kernel: [26234.187392]    [<c10c4cc4>] __generic_file_aio_write_nolock+0x244/0x5c0
+kernel: [26234.187392]    [<c10c5507>] generic_file_aio_write+0x77/0x100
+kernel: [26234.187392]    [<c118f16b>] ext3_file_write+0x3b/0xe0
+kernel: [26234.187392]    [<c10f9e2a>] do_sync_write+0xea/0x140
+kernel: [26234.187392]    [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26234.187392]    [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10c9784>] T.1313+0x34/0xa0
+kernel: [26234.187392]    [<c10c9a28>] get_page_from_freelist+0x238/0x450
+kernel: [26234.187392]    [<c10c9d2f>] __alloc_pages_nodemask+0xef/0x550
+kernel: [26234.187392]    [<c10f35e3>] cache_alloc_refill+0x383/0x6a0
+kernel: [26234.187392]    [<c10f30a5>] kmem_cache_alloc+0x185/0x200
+kernel: [26234.187392]    [<c119a8c0>] ext3_alloc_inode+0x20/0x70
+kernel: [26234.187392]    [<c1111821>] alloc_inode+0x21/0x60
+kernel: [26234.187392]    [<c1111b85>] new_inode+0x25/0xb0
+kernel: [26234.187392]    [<c118f742>] ext3_new_inode+0x62/0xb00
+kernel: [26234.187392]    [<c1198016>] ext3_mkdir+0x116/0x2d0
+kernel: [26234.187392]    [<c1104c16>] vfs_mkdir+0xe6/0x190
+kernel: [26234.187392]    [<c1107a66>] sys_mkdirat+0xf6/0x120
+kernel: [26234.187392]    [<c1107abb>] sys_mkdir+0x2b/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10638fc>] lock_hrtimer_base+0x2c/0x60
+kernel: [26234.187392]    [<c1063abf>] __hrtimer_start_range_ns+0x3f/0x440
+kernel: [26234.187392]    [<c1063f3e>] hrtimer_start_range_ns+0x2e/0x50
+kernel: [26234.187392]    [<c1419eb6>] schedule_hrtimeout_range+0xd6/0x170
+kernel: [26234.187392]    [<c1419f6b>] schedule_hrtimeout+0x1b/0x40
+kernel: [26234.187392]    [<c11eabce>] journal_stop+0x24e/0x2f0
+kernel: [26234.187392]    [<c11ec0c9>] journal_force_commit+0x29/0x50
+kernel: [26234.187392]    [<c119b63a>] ext3_force_commit+0x2a/0x50
+kernel: [26234.187392]    [<c1190e13>] ext3_write_inode+0x53/0x70
+kernel: [26234.187392]    [<c111b451>] __writeback_single_inode+0x2d1/0x3f0
+kernel: [26234.187392]    [<c111b59e>] sync_inode+0x2e/0x60
+kernel: [26234.187392]    [<c118f2cd>] ext3_sync_file+0xbd/0xe0
+kernel: [26234.187392]    [<c111f7b0>] vfs_fsync+0x90/0x110
+kernel: [26234.187392]    [<c111f867>] do_fsync+0x37/0x60
+kernel: [26234.187392]    [<c111f8eb>] sys_fsync+0x1b/0x40
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    -> (key#5){+.+...} ops: 0 {
+kernel: [26234.187392]       HARDIRQ-ON-W at:
+kernel: [26234.187392]                                              [<c1077409>] __lock_acquire+0xaa9/0x1840
+kernel: [26234.187392]                                              [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                              [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                              [<c1260fdd>] __percpu_counter_sum+0x1d/0x90
+kernel: [26234.187392]                                              [<c119a67f>] ext3_statfs+0x11f/0x230
+kernel: [26234.187392]                                              [<c10f937d>] vfs_statfs+0x7d/0xa0
+kernel: [26234.187392]                                              [<c10f94d1>] sys_statfs64+0x81/0xd0
+kernel: [26234.187392]                                              [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                              [<ffffffff>] 0xffffffff
+kernel: [26234.187392]       SOFTIRQ-ON-W at:
+kernel: [26234.187392]                                              [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                              [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                              [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                              [<c1260fdd>] __percpu_counter_sum+0x1d/0x90
+kernel: [26234.187392]                                              [<c119a67f>] ext3_statfs+0x11f/0x230
+kernel: [26234.187392]                                              [<c10f937d>] vfs_statfs+0x7d/0xa0
+kernel: [26234.187392]                                              [<c10f94d1>] sys_statfs64+0x81/0xd0
+kernel: [26234.187392]                                              [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                              [<ffffffff>] 0xffffffff
+kernel: [26234.187392]       INITIAL USE at:
+kernel: [26234.187392]                                             [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                             [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                             [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                             [<c1260fdd>] __percpu_counter_sum+0x1d/0x90
+kernel: [26234.187392]                                             [<c119a67f>] ext3_statfs+0x11f/0x230
+kernel: [26234.187392]                                             [<c10f937d>] vfs_statfs+0x7d/0xa0
+kernel: [26234.187392]                                             [<c10f94d1>] sys_statfs64+0x81/0xd0
+kernel: [26234.187392]                                             [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                             [<ffffffff>] 0xffffffff
+kernel: [26234.187392]     }
+kernel: [26234.187392]     ... key      at: [<c1cf88a4>] __key.32353+0x0/0x8
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1260f67>] __percpu_counter_add+0x97/0xf0
+kernel: [26234.187392]    [<c118fe20>] ext3_new_inode+0x740/0xb00
+kernel: [26234.187392]    [<c119824f>] ext3_create+0x7f/0x100
+kernel: [26234.187392]    [<c1104fa1>] vfs_create+0xf1/0x190
+kernel: [26234.187392]    [<c110897d>] do_filp_open+0x89d/0x980
+kernel: [26234.187392]    [<c10f7bed>] do_sys_open+0x5d/0x130
+kernel: [26234.187392]    [<c10f7d54>] sys_open+0x34/0x50
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10f21f1>] cache_flusharray+0x51/0x150
+kernel: [26234.187392]    [<c10f23f9>] kfree+0x109/0x160
+kernel: [26234.187392]    [<c119a375>] ext3_clear_inode+0xb5/0xc0
+kernel: [26234.187392]    [<c1110a9d>] clear_inode+0x6d/0x110
+kernel: [26234.187392]    [<c119029b>] ext3_free_inode+0xbb/0x360
+kernel: [26234.187392]    [<c11951e1>] ext3_delete_inode+0xf1/0x110
+kernel: [26234.187392]    [<c11112e4>] generic_delete_inode+0xb4/0x190
+kernel: [26234.187392]    [<c1111537>] generic_drop_inode+0x177/0x200
+kernel: [26234.187392]    [<c11101e5>] iput+0x55/0x70
+kernel: [26234.187392]    [<c110d0b7>] dentry_iput+0x87/0x110
+kernel: [26234.187392]    [<c110d23b>] d_kill+0x3b/0x70
+kernel: [26234.187392]    [<c110f22e>] dput+0x7e/0x150
+kernel: [26234.187392]    [<c10fbb02>] __fput+0x172/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c1046055>] put_files_struct+0xb5/0xe0
+kernel: [26234.187392]    [<c10460cb>] exit_files+0x4b/0x70
+kernel: [26234.187392]    [<c1047be3>] do_exit+0x133/0x6d0
+kernel: [26234.187392]    [<c10481c5>] do_group_exit+0x45/0xb0
+kernel: [26234.187392]    [<c1048252>] sys_exit_group+0x22/0x40
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c11ec05e>] journal_start+0xfe/0x140
+kernel: [26234.187392]    [<c119b864>] ext3_journal_start_sb+0x34/0x70
+kernel: [26234.187392]    [<c11917d8>] ext3_dirty_inode+0x38/0xa0
+kernel: [26234.187392]    [<c111bfb7>] __mark_inode_dirty+0x37/0x110
+kernel: [26234.187392]    [<c111000d>] file_update_time+0xcd/0x100
+kernel: [26234.187392]    [<c10dbe1a>] do_wp_page+0xfa/0x630
+kernel: [26234.187392]    [<c10dd839>] handle_mm_fault+0x379/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   -> (mb_cache_spinlock){+.+.-.} ops: 0 {
+kernel: [26234.187392]      HARDIRQ-ON-W at:
+kernel: [26234.187392]                                            [<c1077409>] __lock_acquire+0xaa9/0x1840
+kernel: [26234.187392]                                            [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                            [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                            [<c113e6c8>] mb_cache_create+0x138/0x1a0
+kernel: [26234.187392]                                            [<c15fd841>] init_ext3_xattr+0x31/0x51
+kernel: [26234.187392]                                            [<c15fd79e>] init_ext3_fs+0x17/0x89
+kernel: [26234.187392]                                            [<c100115f>] do_one_initcall+0x3f/0x1a0
+kernel: [26234.187392]                                            [<c15de4af>] kernel_init+0x13e/0x1a6
+kernel: [26234.187392]                                            [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]                                            [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      SOFTIRQ-ON-W at:
+kernel: [26234.187392]                                            [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                            [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                            [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                            [<c113e6c8>] mb_cache_create+0x138/0x1a0
+kernel: [26234.187392]                                            [<c15fd841>] init_ext3_xattr+0x31/0x51
+kernel: [26234.187392]                                            [<c15fd79e>] init_ext3_fs+0x17/0x89
+kernel: [26234.187392]                                            [<c100115f>] do_one_initcall+0x3f/0x1a0
+kernel: [26234.187392]                                            [<c15de4af>] kernel_init+0x13e/0x1a6
+kernel: [26234.187392]                                            [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]                                            [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      IN-RECLAIM_FS-W at:
+kernel: [26234.187392]                                               [<c1076b78>] __lock_acquire+0x218/0x1840
+kernel: [26234.187392]                                               [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                               [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                               [<c113dc4c>] mb_cache_shrink_fn+0x2c/0x150
+kernel: [26234.187392]                                               [<c10d0b40>] shrink_slab+0x80/0x1b0
+kernel: [26234.187392]                                               [<c10d110a>] kswapd+0x49a/0x650
+kernel: [26234.187392]                                               [<c105f244>] kthread+0x84/0x90
+kernel: [26234.187392]                                               [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]                                               [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      INITIAL USE at:
+kernel: [26234.187392]                                           [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                           [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                           [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                           [<c113e6c8>] mb_cache_create+0x138/0x1a0
+kernel: [26234.187392]                                           [<c15fd841>] init_ext3_xattr+0x31/0x51
+kernel: [26234.187392]                                           [<c15fd79e>] init_ext3_fs+0x17/0x89
+kernel: [26234.187392]                                           [<c100115f>] do_one_initcall+0x3f/0x1a0
+kernel: [26234.187392]                                           [<c15de4af>] kernel_init+0x13e/0x1a6
+kernel: [26234.187392]                                           [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]                                           [<ffffffff>] 0xffffffff
+kernel: [26234.187392]    }
+kernel: [26234.187392]    ... key      at: [<c1599430>] mb_cache_spinlock+0x10/0x24
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c113dc4c>] mb_cache_shrink_fn+0x2c/0x150
+kernel: [26234.187392]    [<c10d0b40>] shrink_slab+0x80/0x1b0
+kernel: [26234.187392]    [<c10d182f>] try_to_free_pages+0x21f/0x3a0
+kernel: [26234.187392]    [<c10c9f53>] __alloc_pages_nodemask+0x313/0x550
+kernel: [26234.187392]    [<c10dd8eb>] handle_mm_fault+0x42b/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   -> (pdflush_lock){..-.-.} ops: 0 {
+kernel: [26234.187392]      IN-SOFTIRQ-W at:
+kernel: [26234.187392]                                            [<c10773ec>] __lock_acquire+0xa8c/0x1840
+kernel: [26234.187392]                                            [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                            [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]                                            [<c10cc6b5>] pdflush_operation+0x35/0xc0
+kernel: [26234.187392]                                            [<c10cb1ed>] wb_timer_fn+0x1d/0x60
+kernel: [26234.187392]                                            [<c1050745>] run_timer_softirq+0x185/0x270
+kernel: [26234.187392]                                            [<c104acca>] __do_softirq+0xaa/0x1f0
+kernel: [26234.187392]                                            [<c104ae85>] do_softirq+0x75/0x90
+kernel: [26234.187392]                                            [<c104b035>] irq_exit+0x85/0xa0
+kernel: [26234.187392]                                            [<c100574c>] do_IRQ+0x5c/0xd0
+kernel: [26234.187392]                                            [<c1003975>] common_interrupt+0x35/0x3c
+kernel: [26234.187392]                                            [<c136898e>] cpuidle_idle_call+0x8e/0xf0
+kernel: [26234.187392]                                            [<c10020a6>] cpu_idle+0xa6/0xf0
+kernel: [26234.187392]                                            [<c1405a75>] rest_init+0x65/0x80
+kernel: [26234.187392]                                            [<c15dea85>] start_kernel+0x353/0x36b
+kernel: [26234.187392]                                            [<c15de088>] __init_begin+0x88/0xa1
+kernel: [26234.187392]                                            [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      IN-RECLAIM_FS-W at:
+kernel: [26234.187392]                                               [<c1076b78>] __lock_acquire+0x218/0x1840
+kernel: [26234.187392]                                               [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                               [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]                                               [<c10cc6b5>] pdflush_operation+0x35/0xc0
+kernel: [26234.187392]                                               [<c10cb2ab>] wakeup_pdflush+0x3b/0x60
+kernel: [26234.187392]                                               [<c10d187c>] try_to_free_pages+0x26c/0x3a0
+kernel: [26234.187392]                                               [<c10c9f53>] __alloc_pages_nodemask+0x313/0x550
+kernel: [26234.187392]                                               [<c10dd8eb>] handle_mm_fault+0x42b/0x5d0
+kernel: [26234.187392]                                               [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]                                               [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]                                               [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      INITIAL USE at:
+kernel: [26234.187392]                                           [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                           [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                           [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]                                           [<c10cc4cf>] pdflush+0x7f/0x230
+kernel: [26234.187392]                                           [<c105f244>] kthread+0x84/0x90
+kernel: [26234.187392]                                           [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]                                           [<ffffffff>] 0xffffffff
+kernel: [26234.187392]    }
+kernel: [26234.187392]    ... key      at: [<c15971b0>] pdflush_lock+0x10/0x24
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1030f97>] task_rq_lock+0x47/0x90
+kernel: [26234.187392]    [<c103de4d>] try_to_wake_up+0x8d/0x390
+kernel: [26234.187392]    [<c103e1db>] wake_up_process+0x1b/0x40
+kernel: [26234.187392]    [<c10cc6f6>] pdflush_operation+0x76/0xc0
+kernel: [26234.187392]    [<c10cb1ed>] wb_timer_fn+0x1d/0x60
+kernel: [26234.187392]    [<c1050745>] run_timer_softirq+0x185/0x270
+kernel: [26234.187392]    [<c104acca>] __do_softirq+0xaa/0x1f0
+kernel: [26234.187392]    [<c104ae85>] do_softirq+0x75/0x90
+kernel: [26234.187392]    [<c104b035>] irq_exit+0x85/0xa0
+kernel: [26234.187392]    [<c100574c>] do_IRQ+0x5c/0xd0
+kernel: [26234.187392]    [<c1003975>] common_interrupt+0x35/0x3c
+kernel: [26234.187392]    [<c136898e>] cpuidle_idle_call+0x8e/0xf0
+kernel: [26234.187392]    [<c10020a6>] cpu_idle+0xa6/0xf0
+kernel: [26234.187392]    [<c1405a75>] rest_init+0x65/0x80
+kernel: [26234.187392]    [<c15dea85>] start_kernel+0x353/0x36b
+kernel: [26234.187392]    [<c15de088>] __init_begin+0x88/0xa1
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10cc6b5>] pdflush_operation+0x35/0xc0
+kernel: [26234.187392]    [<c10cb2ab>] wakeup_pdflush+0x3b/0x60
+kernel: [26234.187392]    [<c10d187c>] try_to_free_pages+0x26c/0x3a0
+kernel: [26234.187392]    [<c10c9f53>] __alloc_pages_nodemask+0x313/0x550
+kernel: [26234.187392]    [<c10dd8eb>] handle_mm_fault+0x42b/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c105f87a>] prepare_to_wait+0x2a/0x80
+kernel: [26234.187392]    [<c10d9988>] congestion_wait+0x58/0x90
+kernel: [26234.187392]    [<c10ca00a>] __alloc_pages_nodemask+0x3ca/0x550
+kernel: [26234.187392]    [<c10dd8eb>] handle_mm_fault+0x42b/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10509f2>] lock_timer_base+0x32/0x70
+kernel: [26234.187392]    [<c1418cae>] schedule_timeout+0x7e/0x1e0
+kernel: [26234.187392]    [<c1417b41>] io_schedule_timeout+0x61/0xc0
+kernel: [26234.187392]    [<c10d998f>] congestion_wait+0x5f/0x90
+kernel: [26234.187392]    [<c10ca00a>] __alloc_pages_nodemask+0x3ca/0x550
+kernel: [26234.187392]    [<c10dd8eb>] handle_mm_fault+0x42b/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c105142b>] del_timer_sync+0x4b/0xb0
+kernel: [26234.187392]    [<c1418d3c>] schedule_timeout+0x10c/0x1e0
+kernel: [26234.187392]    [<c1417b41>] io_schedule_timeout+0x61/0xc0
+kernel: [26234.187392]    [<c10d998f>] congestion_wait+0x5f/0x90
+kernel: [26234.187392]    [<c10ca00a>] __alloc_pages_nodemask+0x3ca/0x550
+kernel: [26234.187392]    [<c10dd8eb>] handle_mm_fault+0x42b/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   -> (&(REISERFS_I(inode)->i_mmap)#2){+.+...} ops: 0 {
+kernel: [26234.187392]      HARDIRQ-ON-W at:
+kernel: [26234.187392]                                            [<c1077409>] __lock_acquire+0xaa9/0x1840
+kernel: [26234.187392]                                            [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                            [<c141981c>] mutex_lock_nested+0x5c/0x2e0
+kernel: [26234.187392]                                            [<c116b7cb>] reiserfs_file_release+0x6b/0x400
+kernel: [26234.187392]                                            [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]                                            [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]                                            [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]                                            [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]                                            [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                            [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      SOFTIRQ-ON-W at:
+kernel: [26234.187392]                                            [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                            [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                            [<c141981c>] mutex_lock_nested+0x5c/0x2e0
+kernel: [26234.187392]                                            [<c116b7cb>] reiserfs_file_release+0x6b/0x400
+kernel: [26234.187392]                                            [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]                                            [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]                                            [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]                                            [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]                                            [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                            [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      INITIAL USE at:
+kernel: [26234.187392]                                           [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                           [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                           [<c141981c>] mutex_lock_nested+0x5c/0x2e0
+kernel: [26234.187392]                                           [<c116b7cb>] reiserfs_file_release+0x6b/0x400
+kernel: [26234.187392]                                           [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]                                           [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]                                           [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]                                           [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]                                           [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                           [<ffffffff>] 0xffffffff
+kernel: [26234.187392]    }
+kernel: [26234.187392]    ... key      at: [<c1cf7620>] __key.29631+0x0/0x8
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141981c>] mutex_lock_nested+0x5c/0x2e0
+kernel: [26234.187392]    [<c118558f>] do_journal_begin_r+0x7f/0x330
+kernel: [26234.187392]    [<c11858ce>] journal_begin+0x8e/0x150
+kernel: [26234.187392]    [<c116b7f4>] reiserfs_file_release+0x94/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10fe5f2>] inode_add_bytes+0x32/0xc0
+kernel: [26234.187392]    [<c117bb19>] reiserfs_insert_item+0x139/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c117eb5e>] reiserfs_unmap_buffer+0x6e/0xe0
+kernel: [26234.187392]    [<c117d859>] reiserfs_cut_from_item+0x549/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c1417c81>] schedule+0xe1/0xc10
+kernel: [26234.187392]    [<c103ea66>] __cond_resched+0x26/0x60
+kernel: [26234.187392]    [<c1418902>] _cond_resched+0x42/0x50
+kernel: [26234.187392]    [<c1121cca>] __getblk+0x3a/0x390
+kernel: [26234.187392]    [<c11257cf>] __bread+0x1f/0xc0
+kernel: [26234.187392]    [<c115cc8b>] reiserfs_read_bitmap_block+0x5b/0x140
+kernel: [26234.187392]    [<c115db14>] T.464+0x74/0x340
+kernel: [26234.187392]    [<c115e778>] reiserfs_allocate_blocknrs+0x998/0x1120
+kernel: [26234.187392]    [<c116dee1>] get_empty_nodes+0x111/0x1a0
+kernel: [26234.187392]    [<c116f1c8>] fix_nodes+0x468/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c10c37b5>] add_to_page_cache_locked+0x55/0xc0
+kernel: [26234.187392]    [<c10c3858>] add_to_page_cache_lru+0x38/0x90
+kernel: [26234.187392]    [<c10c40fa>] find_or_create_page+0x6a/0xb0
+kernel: [26234.187392]    [<c1121df1>] __getblk+0x161/0x390
+kernel: [26234.187392]    [<c116df1b>] get_empty_nodes+0x14b/0x1a0
+kernel: [26234.187392]    [<c116f1c8>] fix_nodes+0x468/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c10cd5cb>] ____pagevec_lru_add+0xeb/0x160
+kernel: [26234.187392]    [<c10cd6b8>] __lru_cache_add+0x78/0x90
+kernel: [26234.187392]    [<c10c3873>] add_to_page_cache_lru+0x53/0x90
+kernel: [26234.187392]    [<c10c40fa>] find_or_create_page+0x6a/0xb0
+kernel: [26234.187392]    [<c1121df1>] __getblk+0x161/0x390
+kernel: [26234.187392]    [<c116df1b>] get_empty_nodes+0x14b/0x1a0
+kernel: [26234.187392]    [<c116f1c8>] fix_nodes+0x468/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1121ee5>] __getblk+0x255/0x390
+kernel: [26234.187392]    [<c116df1b>] get_empty_nodes+0x14b/0x1a0
+kernel: [26234.187392]    [<c116f1c8>] fix_nodes+0x468/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c123ba05>] __make_request+0x45/0x3c0
+kernel: [26234.187392]    [<c1238b20>] generic_make_request+0x390/0x580
+kernel: [26234.187392]    [<c1238d7e>] submit_bio+0x6e/0x110
+kernel: [26234.187392]    [<c1121225>] submit_bh+0x105/0x150
+kernel: [26234.187392]    [<c1125819>] __bread+0x69/0xc0
+kernel: [26234.187392]    [<c116dd33>] get_neighbors+0x163/0x200
+kernel: [26234.187392]    [<c116f1b7>] fix_nodes+0x457/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c105f87a>] prepare_to_wait+0x2a/0x80
+kernel: [26234.187392]    [<c141908a>] __wait_on_bit+0x4a/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c116dd33>] get_neighbors+0x163/0x200
+kernel: [26234.187392]    [<c116f1b7>] fix_nodes+0x457/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10a982e>] delayacct_end+0x7e/0xd0
+kernel: [26234.187392]    [<c10a9908>] __delayacct_blkio_end+0x38/0x70
+kernel: [26234.187392]    [<c1418827>] io_schedule+0x77/0xb0
+kernel: [26234.187392]    [<c1122bf5>] sync_buffer+0x45/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c116dd33>] get_neighbors+0x163/0x200
+kernel: [26234.187392]    [<c116f1b7>] fix_nodes+0x457/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10f32ff>] cache_alloc_refill+0x9f/0x6a0
+kernel: [26234.187392]    [<c10f3d2c>] __kmalloc+0x1ec/0x240
+kernel: [26234.187392]    [<c116ee89>] fix_nodes+0x129/0x1380
+kernel: [26234.187392]    [<c117d43a>] reiserfs_cut_from_item+0x12a/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10f32ff>] cache_alloc_refill+0x9f/0x6a0
+kernel: [26234.187392]    [<c10f30a5>] kmem_cache_alloc+0x185/0x200
+kernel: [26234.187392]    [<c1180c6b>] allocate_bitmap_node+0x2b/0xd0
+kernel: [26234.187392]    [<c118531c>] journal_mark_freed+0x23c/0x300
+kernel: [26234.187392]    [<c115da30>] reiserfs_free_block+0x60/0xd0
+kernel: [26234.187392]    [<c117cc2f>] prepare_for_delete_or_cut+0x3ff/0x700
+kernel: [26234.187392]    [<c117d406>] reiserfs_cut_from_item+0xf6/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10c9784>] T.1313+0x34/0xa0
+kernel: [26234.187392]    [<c10c9a28>] get_page_from_freelist+0x238/0x450
+kernel: [26234.187392]    [<c10c9d2f>] __alloc_pages_nodemask+0xef/0x550
+kernel: [26234.187392]    [<c10f35e3>] cache_alloc_refill+0x383/0x6a0
+kernel: [26234.187392]    [<c10f3d2c>] __kmalloc+0x1ec/0x240
+kernel: [26234.187392]    [<c116ee89>] fix_nodes+0x129/0x1380
+kernel: [26234.187392]    [<c117d43a>] reiserfs_cut_from_item+0x12a/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10da9bf>] kmap_high+0x1f/0x1d0
+kernel: [26234.187392]    [<c102a9d7>] kmap+0x77/0x80
+kernel: [26234.187392]    [<c117e8ef>] indirect2direct+0xef/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1324670>] scsi_request_fn+0x150/0x500
+kernel: [26234.187392]    [<c123b5a9>] __generic_unplug_device+0x39/0x60
+kernel: [26234.187392]    [<c123b89f>] generic_unplug_device+0x2f/0x60
+kernel: [26234.187392]    [<c1237d71>] blk_unplug+0x31/0x70
+kernel: [26234.187392]    [<c1237dca>] blk_backing_dev_unplug+0x1a/0x40
+kernel: [26234.187392]    [<c1122bee>] sync_buffer+0x3e/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c116dc95>] get_neighbors+0xc5/0x200
+kernel: [26234.187392]    [<c116f1b7>] fix_nodes+0x457/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1338506>] ata_scsi_queuecmd+0x36/0x250
+kernel: [26234.187392]    [<c131d8b9>] scsi_dispatch_cmd+0x169/0x280
+kernel: [26234.187392]    [<c13248b5>] scsi_request_fn+0x395/0x500
+kernel: [26234.187392]    [<c123b5a9>] __generic_unplug_device+0x39/0x60
+kernel: [26234.187392]    [<c123b89f>] generic_unplug_device+0x2f/0x60
+kernel: [26234.187392]    [<c1237d71>] blk_unplug+0x31/0x70
+kernel: [26234.187392]    [<c1237dca>] blk_backing_dev_unplug+0x1a/0x40
+kernel: [26234.187392]    [<c1122bee>] sync_buffer+0x3e/0x60
+kernel: [26234.187392]    [<c141909d>] __wait_on_bit+0x5d/0xa0
+kernel: [26234.187392]    [<c1419184>] out_of_line_wait_on_bit+0xa4/0xc0
+kernel: [26234.187392]    [<c1122b0a>] __wait_on_buffer+0x2a/0x50
+kernel: [26234.187392]    [<c1125832>] __bread+0x82/0xc0
+kernel: [26234.187392]    [<c116dc95>] get_neighbors+0xc5/0x200
+kernel: [26234.187392]    [<c116f1b7>] fix_nodes+0x457/0x1380
+kernel: [26234.187392]    [<c117bc18>] reiserfs_insert_item+0x238/0x3f0
+kernel: [26234.187392]    [<c117ea1b>] indirect2direct+0x21b/0x2f0
+kernel: [26234.187392]    [<c117d6f1>] reiserfs_cut_from_item+0x3e1/0x880
+kernel: [26234.187392]    [<c117df66>] reiserfs_do_truncate+0x3d6/0x6a0
+kernel: [26234.187392]    [<c1166b15>] reiserfs_truncate_file+0x1c5/0x3f0
+kernel: [26234.187392]    [<c116b977>] reiserfs_file_release+0x217/0x400
+kernel: [26234.187392]    [<c10fba83>] __fput+0xf3/0x200
+kernel: [26234.187392]    [<c10fbbb2>] fput+0x22/0x40
+kernel: [26234.187392]    [<c10f7a79>] filp_close+0x49/0x90
+kernel: [26234.187392]    [<c10f7b37>] sys_close+0x77/0xd0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141981c>] mutex_lock_nested+0x5c/0x2e0
+kernel: [26234.187392]    [<c116bb9a>] reiserfs_file_mmap+0x3a/0x70
+kernel: [26234.187392]    [<c10e2b90>] mmap_region+0x3b0/0x530
+kernel: [26234.187392]    [<c10e2fcb>] do_mmap_pgoff+0x2bb/0x380
+kernel: [26234.187392]    [<c10086ef>] sys_mmap2+0xef/0x110
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10e9442>] valid_swaphandles+0x62/0x170
+kernel: [26234.187392]    [<c10e8ea9>] swapin_readahead+0x29/0xa0
+kernel: [26234.187392]    [<c10dd9a6>] handle_mm_fault+0x4e6/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c10e8d0e>] add_to_swap_cache+0x4e/0xd0
+kernel: [26234.187392]    [<c10e8df8>] read_swap_cache_async+0x68/0xf0
+kernel: [26234.187392]    [<c10e8eed>] swapin_readahead+0x6d/0xa0
+kernel: [26234.187392]    [<c10dd9a6>] handle_mm_fault+0x4e6/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   -> (swap_unplug_sem){.+.+..} ops: 0 {
+kernel: [26234.187392]      HARDIRQ-ON-R at:
+kernel: [26234.187392]                                            [<c1076b1b>] __lock_acquire+0x1bb/0x1840
+kernel: [26234.187392]                                            [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                            [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]                                            [<c10eca3f>] swap_unplug_io_fn+0x1f/0xa0
+kernel: [26234.187392]                                            [<c1120ab5>] block_sync_page+0x45/0x70
+kernel: [26234.187392]                                            [<c10c341d>] sync_page+0x3d/0x70
+kernel: [26234.187392]                                            [<c1418f27>] __wait_on_bit_lock+0x57/0xb0
+kernel: [26234.187392]                                            [<c10c338b>] __lock_page+0x7b/0xa0
+kernel: [26234.187392]                                            [<c10dda88>] handle_mm_fault+0x5c8/0x5d0
+kernel: [26234.187392]                                            [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]                                            [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]                                            [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      SOFTIRQ-ON-R at:
+kernel: [26234.187392]                                            [<c107742f>] __lock_acquire+0xacf/0x1840
+kernel: [26234.187392]                                            [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                            [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]                                            [<c10eca3f>] swap_unplug_io_fn+0x1f/0xa0
+kernel: [26234.187392]                                            [<c1120ab5>] block_sync_page+0x45/0x70
+kernel: [26234.187392]                                            [<c10c341d>] sync_page+0x3d/0x70
+kernel: [26234.187392]                                            [<c1418f27>] __wait_on_bit_lock+0x57/0xb0
+kernel: [26234.187392]                                            [<c10c338b>] __lock_page+0x7b/0xa0
+kernel: [26234.187392]                                            [<c10dda88>] handle_mm_fault+0x5c8/0x5d0
+kernel: [26234.187392]                                            [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]                                            [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]                                            [<ffffffff>] 0xffffffff
+kernel: [26234.187392]      INITIAL USE at:
+kernel: [26234.187392]                                           [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                           [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                           [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]                                           [<c10eca3f>] swap_unplug_io_fn+0x1f/0xa0
+kernel: [26234.187392]                                           [<c1120ab5>] block_sync_page+0x45/0x70
+kernel: [26234.187392]                                           [<c10c341d>] sync_page+0x3d/0x70
+kernel: [26234.187392]                                           [<c1418f27>] __wait_on_bit_lock+0x57/0xb0
+kernel: [26234.187392]                                           [<c10c338b>] __lock_page+0x7b/0xa0
+kernel: [26234.187392]                                           [<c10dda88>] handle_mm_fault+0x5c8/0x5d0
+kernel: [26234.187392]                                           [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]                                           [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]                                           [<ffffffff>] 0xffffffff
+kernel: [26234.187392]    }
+kernel: [26234.187392]    ... key      at: [<c1597e50>] swap_unplug_sem+0x30/0x60
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]    [<c123b898>] generic_unplug_device+0x28/0x60
+kernel: [26234.187392]    [<c1237d71>] blk_unplug+0x31/0x70
+kernel: [26234.187392]    [<c1237dca>] blk_backing_dev_unplug+0x1a/0x40
+kernel: [26234.187392]    [<c10eca85>] swap_unplug_io_fn+0x65/0xa0
+kernel: [26234.187392]    [<c1120ab5>] block_sync_page+0x45/0x70
+kernel: [26234.187392]    [<c10c341d>] sync_page+0x3d/0x70
+kernel: [26234.187392]    [<c1418f27>] __wait_on_bit_lock+0x57/0xb0
+kernel: [26234.187392]    [<c10c338b>] __lock_page+0x7b/0xa0
+kernel: [26234.187392]    [<c10dda88>] handle_mm_fault+0x5c8/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1324670>] scsi_request_fn+0x150/0x500
+kernel: [26234.187392]    [<c123b5a9>] __generic_unplug_device+0x39/0x60
+kernel: [26234.187392]    [<c123b89f>] generic_unplug_device+0x2f/0x60
+kernel: [26234.187392]    [<c1237d71>] blk_unplug+0x31/0x70
+kernel: [26234.187392]    [<c1237dca>] blk_backing_dev_unplug+0x1a/0x40
+kernel: [26234.187392]    [<c10eca85>] swap_unplug_io_fn+0x65/0xa0
+kernel: [26234.187392]    [<c1120ab5>] block_sync_page+0x45/0x70
+kernel: [26234.187392]    [<c10c341d>] sync_page+0x3d/0x70
+kernel: [26234.187392]    [<c1418f27>] __wait_on_bit_lock+0x57/0xb0
+kernel: [26234.187392]    [<c10c338b>] __lock_page+0x7b/0xa0
+kernel: [26234.187392]    [<c10dda88>] handle_mm_fault+0x5c8/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]    ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1338506>] ata_scsi_queuecmd+0x36/0x250
+kernel: [26234.187392]    [<c131d8b9>] scsi_dispatch_cmd+0x169/0x280
+kernel: [26234.187392]    [<c13248b5>] scsi_request_fn+0x395/0x500
+kernel: [26234.187392]    [<c123b5a9>] __generic_unplug_device+0x39/0x60
+kernel: [26234.187392]    [<c123b89f>] generic_unplug_device+0x2f/0x60
+kernel: [26234.187392]    [<c1237d71>] blk_unplug+0x31/0x70
+kernel: [26234.187392]    [<c1237dca>] blk_backing_dev_unplug+0x1a/0x40
+kernel: [26234.187392]    [<c10eca85>] swap_unplug_io_fn+0x65/0xa0
+kernel: [26234.187392]    [<c1120ab5>] block_sync_page+0x45/0x70
+kernel: [26234.187392]    [<c10c341d>] sync_page+0x3d/0x70
+kernel: [26234.187392]    [<c1418f27>] __wait_on_bit_lock+0x57/0xb0
+kernel: [26234.187392]    [<c10c338b>] __lock_page+0x7b/0xa0
+kernel: [26234.187392]    [<c10dda88>] handle_mm_fault+0x5c8/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141a226>] down_read+0x46/0xa0
+kernel: [26234.187392]    [<c10eca3f>] swap_unplug_io_fn+0x1f/0xa0
+kernel: [26234.187392]    [<c1120ab5>] block_sync_page+0x45/0x70
+kernel: [26234.187392]    [<c10c341d>] sync_page+0x3d/0x70
+kernel: [26234.187392]    [<c1418f27>] __wait_on_bit_lock+0x57/0xb0
+kernel: [26234.187392]    [<c10c338b>] __lock_page+0x7b/0xa0
+kernel: [26234.187392]    [<c10dda88>] handle_mm_fault+0x5c8/0x5d0
+kernel: [26234.187392]    [<c10258c6>] do_page_fault+0xe6/0x260
+kernel: [26234.187392]    [<c141c06f>] error_code+0x7f/0x84
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]  ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c10db1a4>] might_fault+0x74/0xb0
+kernel: [26234.187392]    [<c1258a31>] copy_to_user+0x41/0x130
+kernel: [26234.187392]    [<c12dee80>] tty_ioctl+0x370/0x8e0
+kernel: [26234.187392]    [<c1109d24>] vfs_ioctl+0x24/0xa0
+kernel: [26234.187392]    [<c1109e23>] do_vfs_ioctl+0x83/0x5e0
+kernel: [26234.187392]    [<c110a3ff>] sys_ioctl+0x7f/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]  -> (&tty->ctrl_lock){......} ops: 0 {
+kernel: [26234.187392]     INITIAL USE at:
+kernel: [26234.187392]                                         [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                         [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                         [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]                                         [<c12dce53>] __proc_set_tty+0x33/0x130
+kernel: [26234.187392]                                         [<c12df271>] tty_ioctl+0x761/0x8e0
+kernel: [26234.187392]                                         [<c1109d24>] vfs_ioctl+0x24/0xa0
+kernel: [26234.187392]                                         [<c1109e23>] do_vfs_ioctl+0x83/0x5e0
+kernel: [26234.187392]                                         [<c110a3ff>] sys_ioctl+0x7f/0xa0
+kernel: [26234.187392]                                         [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]                                         [<ffffffff>] 0xffffffff
+kernel: [26234.187392]   }
+kernel: [26234.187392]   ... key      at: [<c1cfce34>] __key.27619+0x0/0x8
+kernel: [26234.187392]  ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c12ddebd>] tty_do_resize+0x7d/0xe0
+kernel: [26234.187392]    [<c12df204>] tty_ioctl+0x6f4/0x8e0
+kernel: [26234.187392]    [<c1109d24>] vfs_ioctl+0x24/0xa0
+kernel: [26234.187392]    [<c1109e23>] do_vfs_ioctl+0x83/0x5e0
+kernel: [26234.187392]    [<c110a3ff>] sys_ioctl+0x7f/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]  ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1030f97>] task_rq_lock+0x47/0x90
+kernel: [26234.187392]    [<c103de4d>] try_to_wake_up+0x8d/0x390
+kernel: [26234.187392]    [<c103e1db>] wake_up_process+0x1b/0x40
+kernel: [26234.187392]    [<c104a15f>] wakeup_softirqd+0x2f/0x50
+kernel: [26234.187392]    [<c104a405>] __tasklet_schedule+0x95/0xb0
+kernel: [26234.187392]    [<f90be38b>] ppp_asynctty_wakeup+0x6b/0x80 [ppp_async]
+kernel: [26234.187392]    [<c12de902>] tty_wakeup+0x72/0x90
+kernel: [26234.187392]    [<c12e70d3>] pty_unthrottle+0x23/0x50
+kernel: [26234.187392]    [<c12e3b22>] tty_unthrottle+0x42/0x70
+kernel: [26234.187392]    [<c12e1c2f>] n_tty_read+0x48f/0x730
+kernel: [26234.187392]    [<c12dcc20>] tty_read+0xa0/0xe0
+kernel: [26234.187392]    [<c10faf2b>] vfs_read+0xbb/0x1c0
+kernel: [26234.187392]    [<c10fb138>] sys_read+0x58/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]  -> (&sighand->siglock){-.-.-.} ops: 0 {
+kernel: [26234.187392]     IN-HARDIRQ-W at:
+kernel: [26234.187392]                                          [<c10774fd>] __lock_acquire+0xb9d/0x1840
+kernel: [26234.187392]                                          [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                          [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]                                          [<c10533ac>] lock_task_sighand+0x6c/0xc0
+kernel: [26234.187392]                                          [<c10546d1>] group_send_sig_info+0x41/0x90
+kernel: [26234.187392]                                          [<c1054787>] kill_pid_info+0x67/0xb0
+kernel: [26234.187392]                                          [<c10487f1>] it_real_fn+0x21/0x40
+kernel: [26234.187392]                                          [<c106337f>] __run_hrtimer+0x6f/0xd0
+kernel: [26234.187392]                                          [<c1064485>] hrtimer_interrupt+0x145/0x270
+kernel: [26234.187392]                                          [<c106f590>] tick_do_broadcast+0x40/0x80
+kernel: [26234.187392]                                          [<c106f6de>] tick_handle_oneshot_broadcast+0x10e/0x170
+kernel: [26234.187392]                                          [<c10067ba>] timer_interrupt+0x4a/0x70
+kernel: [26234.187392]                                          [<c10a3acc>] handle_IRQ_event+0x4c/0x160
+kernel: [26234.187392]                                          [<c10a581b>] handle_edge_irq+0xbb/0x150
+kernel: [26234.187392]                                          [<c10062b8>] handle_irq+0x28/0x50
+kernel: [26234.187392]                                          [<c1005743>] do_IRQ+0x53/0xd0
+kernel: [26234.187392]                                          [<c1003975>] common_interrupt+0x35/0x3c
+kernel: [26234.187392]                                          [<c136898e>] cpuidle_idle_call+0x8e/0xf0
+kernel: [26234.187392]                                          [<c10020a6>] cpu_idle+0xa6/0xf0
+kernel: [26234.187392]                                          [<c1405a75>] rest_init+0x65/0x80
+kernel: [26234.187392]                                          [<c15dea85>] start_kernel+0x353/0x36b
+kernel: [26234.187392]                                          [<c15de088>] __init_begin+0x88/0xa1
+kernel: [26234.187392]                                          [<ffffffff>] 0xffffffff
+kernel: [26234.187392]     IN-SOFTIRQ-W at:
+kernel: [26234.187392]                                          [<c10773ec>] __lock_acquire+0xa8c/0x1840
+kernel: [26234.187392]                                          [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                          [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]                                          [<c10533ac>] lock_task_sighand+0x6c/0xc0
+kernel: [26234.187392]                                          [<c10546d1>] group_send_sig_info+0x41/0x90
+kernel: [26234.187392]                                          [<c1108f51>] send_sigio+0x181/0x280
+kernel: [26234.187392]                                          [<c1109097>] __kill_fasync+0x47/0x80
+kernel: [26234.187392]                                          [<c110910b>] kill_fasync+0x3b/0x70
+kernel: [26234.187392]                                          [<c134d931>] mousedev_notify_readers+0x1f1/0x270
+kernel: [26234.187392]                                          [<c134da6a>] mousedev_event+0xba/0x4c0
+kernel: [26234.187392]                                          [<c134a2dc>] input_pass_event+0xdc/0xf0
+kernel: [26234.187392]                                          [<c134ba31>] input_handle_event+0x91/0x450
+kernel: [26234.187392]                                          [<c134bf4e>] input_event+0x7e/0x90
+kernel: [26234.187392]                                          [<fd337e53>] hidinput_report_event+0x43/0x70 [hid]
+kernel: [26234.187392]                                          [<fd335484>] hid_report_raw_event+0x324/0x4f0 [hid]
+kernel: [26234.187392]                                          [<fd335744>] hid_input_report+0xf4/0x130 [hid]
+kernel: [26234.187392]                                          [<fd3547b5>] hid_irq_in+0x1e5/0x230 [usbhid]
+kernel: [26234.187392]                                          [<f90d5ce7>] usb_hcd_giveback_urb+0x57/0xe0 [usbcore]
+kernel: [26234.187392]                                          [<fd22bb78>] uhci_giveback_urb+0x98/0x240 [uhci_hcd]
+kernel: [26234.187392]                                          [<fd22c25d>] uhci_scan_schedule+0x3dd/0xa30 [uhci_hcd]
+kernel: [26234.187392]                                          [<fd22d31f>] uhci_hub_status_data+0x3f/0x1b0 [uhci_hcd]
+kernel: [26234.187392]                                          [<f90d6107>] usb_hcd_poll_rh_status+0x47/0x150 [usbcore]
+kernel: [26234.187392]                                          [<f90d6837>] rh_timer_func+0x17/0x30 [usbcore]
+kernel: [26234.187392]                                          [<c1050745>] run_timer_softirq+0x185/0x270
+kernel: [26234.187392]                                          [<c104acca>] __do_softirq+0xaa/0x1f0
+kernel: [26234.187392]                                          [<c104ae85>] do_softirq+0x75/0x90
+kernel: [26234.187392]                                          [<c104b035>] irq_exit+0x85/0xa0
+kernel: [26234.187392]                                          [<c101c161>] smp_apic_timer_interrupt+0x61/0xb0
+kernel: [26234.187392]                                          [<c1003cf6>] apic_timer_interrupt+0x36/0x3c
+kernel: [26234.187392]                                          [<c136898e>] cpuidle_idle_call+0x8e/0xf0
+kernel: [26234.187392]                                          [<c10020a6>] cpu_idle+0xa6/0xf0
+kernel: [26234.187392]                                          [<c14142f8>] start_secondary+0x1c5/0x1dc
+kernel: [26234.187392]                                          [<ffffffff>] 0xffffffff
+kernel: [26234.187392]     IN-RECLAIM_FS-W at:
+kernel: [26234.187392]                                             [<c1076b78>] __lock_acquire+0x218/0x1840
+kernel: [26234.187392]                                             [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                             [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]                                             [<c10533ac>] lock_task_sighand+0x6c/0xc0
+kernel: [26234.187392]                                             [<c10546d1>] group_send_sig_info+0x41/0x90
+kernel: [26234.187392]                                             [<c1054787>] kill_pid_info+0x67/0xb0
+kernel: [26234.187392]                                             [<c10487f1>] it_real_fn+0x21/0x40
+kernel: [26234.187392]                                             [<c106337f>] __run_hrtimer+0x6f/0xd0
+kernel: [26234.187392]                                             [<c1064485>] hrtimer_interrupt+0x145/0x270
+kernel: [26234.187392]                                             [<c101c15c>] smp_apic_timer_interrupt+0x5c/0xb0
+kernel: [26234.187392]                                             [<c1003cf6>] apic_timer_interrupt+0x36/0x3c
+kernel: [26234.187392]                                             [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]                                             [<c10e468b>] page_check_address+0x8b/0xe0
+kernel: [26234.187392]                                             [<c10e4948>] page_referenced_one+0x58/0x100
+kernel: [26234.187392]                                             [<c10e4a72>] page_referenced_file+0x82/0xc0
+kernel: [26234.187392]                                             [<c10e5653>] page_referenced+0x133/0x150
+kernel: [26234.187392]                                             [<c10cfb96>] shrink_page_list+0x176/0x7a0
+kernel: [26234.187392]                                             [<c10d045f>] shrink_list+0x29f/0x5d0
+kernel: [26234.187392]                                             [<c10d09b2>] shrink_zone+0x222/0x330
+kernel: [26234.187392]                                             [<c10d1241>] kswapd+0x5d1/0x650
+kernel: [26234.187392]                                             [<c105f244>] kthread+0x84/0x90
+kernel: [26234.187392]                                             [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]                                             [<ffffffff>] 0xffffffff
+kernel: [26234.187392]     INITIAL USE at:
+kernel: [26234.187392]                                         [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                         [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                         [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]                                         [<c10535a9>] flush_signals+0x29/0x60
+kernel: [26234.187392]                                         [<c1053616>] ignore_signals+0x36/0x50
+kernel: [26234.187392]                                         [<c105f0d3>] kthreadd+0x33/0x120
+kernel: [26234.187392]                                         [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]                                         [<ffffffff>] 0xffffffff
+kernel: [26234.187392]   }
+kernel: [26234.187392]   ... key      at: [<c1790674>] __key.42940+0x0/0x8
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c1030ae1>] __wake_up_sync_key+0x31/0x80
+kernel: [26234.187392]    [<c1030b4f>] __wake_up_sync+0x1f/0x40
+kernel: [26234.187392]    [<c10545cb>] do_notify_parent+0x18b/0x250
+kernel: [26234.187392]    [<c1047ee2>] do_exit+0x432/0x6d0
+kernel: [26234.187392]    [<c10586de>] ____call_usermodehelper+0x12e/0x140
+kernel: [26234.187392]    [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c1060be5>] thread_group_cputimer+0x35/0x110
+kernel: [26234.187392]    [<c10626d0>] posix_cpu_timers_exit_group+0x20/0x70
+kernel: [26234.187392]    [<c10468cf>] release_task+0x34f/0x450
+kernel: [26234.187392]    [<c1047fa9>] do_exit+0x4f9/0x6d0
+kernel: [26234.187392]    [<c10586de>] ____call_usermodehelper+0x12e/0x140
+kernel: [26234.187392]    [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   -> (pidmap_lock){......} ops: 0 {
+kernel: [26234.187392]      INITIAL USE at:
+kernel: [26234.187392]                                           [<c1076cec>] __lock_acquire+0x38c/0x1840
+kernel: [26234.187392]                                           [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]                                           [<c141b867>] _spin_lock_irq+0x47/0x90
+kernel: [26234.187392]                                           [<c105beb3>] alloc_pid+0x283/0x3d0
+kernel: [26234.187392]                                           [<c104243e>] copy_process+0x84e/0x11e0
+kernel: [26234.187392]                                           [<c1042e54>] do_fork+0x84/0x3a0
+kernel: [26234.187392]                                           [<c1001986>] kernel_thread+0x96/0xc0
+kernel: [26234.187392]                                           [<c1405a32>] rest_init+0x22/0x80
+kernel: [26234.187392]                                           [<c15dea85>] start_kernel+0x353/0x36b
+kernel: [26234.187392]                                           [<c15de088>] __init_begin+0x88/0xa1
+kernel: [26234.187392]                                           [<ffffffff>] 0xffffffff
+kernel: [26234.187392]    }
+kernel: [26234.187392]    ... key      at: [<c15c5a90>] pidmap_lock+0x10/0x40
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c105c022>] free_pid+0x22/0xc0
+kernel: [26234.187392]    [<c105c1fb>] detach_pid+0x6b/0x90
+kernel: [26234.187392]    [<c10467c1>] release_task+0x241/0x450
+kernel: [26234.187392]    [<c1047fa9>] do_exit+0x4f9/0x6d0
+kernel: [26234.187392]    [<c10586de>] ____call_usermodehelper+0x12e/0x140
+kernel: [26234.187392]    [<c1003edb>] kernel_thread_helper+0x7/0x1c
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10f32ff>] cache_alloc_refill+0x9f/0x6a0
+kernel: [26234.187392]    [<c10f30a5>] kmem_cache_alloc+0x185/0x200
+kernel: [26234.187392]    [<c1053011>] __sigqueue_alloc+0x31/0x90
+kernel: [26234.187392]    [<c105395f>] __send_signal+0xcf/0x2a0
+kernel: [26234.187392]    [<c1053b7a>] send_signal+0x4a/0xa0
+kernel: [26234.187392]    [<c1053fef>] __group_send_sig_info+0x1f/0x40
+kernel: [26234.187392]    [<c10545ad>] do_notify_parent+0x16d/0x250
+kernel: [26234.187392]    [<c1047ee2>] do_exit+0x432/0x6d0
+kernel: [26234.187392]    [<c10481c5>] do_group_exit+0x45/0xb0
+kernel: [26234.187392]    [<c1048252>] sys_exit_group+0x22/0x40
+kernel: [26234.187392]    [<c1003344>] syscall_call+0x7/0xb
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10638fc>] lock_hrtimer_base+0x2c/0x60
+kernel: [26234.187392]    [<c1063956>] hrtimer_get_remaining+0x26/0x70
+kernel: [26234.187392]    [<c10482f3>] itimer_get_remtime+0x23/0x80
+kernel: [26234.187392]    [<c10483f0>] do_setitimer+0xa0/0x320
+kernel: [26234.187392]    [<c1048781>] alarm_setitimer+0x41/0x90
+kernel: [26234.187392]    [<c1051039>] sys_alarm+0x19/0x40
+kernel: [26234.187392]    [<c1003344>] syscall_call+0x7/0xb
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c1030f97>] task_rq_lock+0x47/0x90
+kernel: [26234.187392]    [<c103de4d>] try_to_wake_up+0x8d/0x390
+kernel: [26234.187392]    [<c103e1a7>] wake_up_state+0x17/0x30
+kernel: [26234.187392]    [<c1053661>] signal_wake_up+0x31/0x60
+kernel: [26234.187392]    [<c10537a0>] complete_signal+0x110/0x200
+kernel: [26234.187392]    [<c10539e8>] __send_signal+0x158/0x2a0
+kernel: [26234.187392]    [<c1053b7a>] send_signal+0x4a/0xa0
+kernel: [26234.187392]    [<c1053fef>] __group_send_sig_info+0x1f/0x40
+kernel: [26234.187392]    [<c10545ad>] do_notify_parent+0x16d/0x250
+kernel: [26234.187392]    [<c1047ee2>] do_exit+0x432/0x6d0
+kernel: [26234.187392]    [<c10481c5>] do_group_exit+0x45/0xb0
+kernel: [26234.187392]    [<c1048252>] sys_exit_group+0x22/0x40
+kernel: [26234.187392]    [<c1003344>] syscall_call+0x7/0xb
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c12dce53>] __proc_set_tty+0x33/0x130
+kernel: [26234.187392]    [<c12df271>] tty_ioctl+0x761/0x8e0
+kernel: [26234.187392]    [<c1109d24>] vfs_ioctl+0x24/0xa0
+kernel: [26234.187392]    [<c1109e23>] do_vfs_ioctl+0x83/0x5e0
+kernel: [26234.187392]    [<c110a3ff>] sys_ioctl+0x7f/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10a9ba5>] __delayacct_add_tsk+0x1e5/0x3c0
+kernel: [26234.187392]    [<c10aa7dd>] taskstats_exit+0x1dd/0x370
+kernel: [26234.187392]    [<c1047bb7>] do_exit+0x107/0x6d0
+kernel: [26234.187392]    [<c1048292>] sys_exit+0x22/0x30
+kernel: [26234.187392]    [<c1003344>] syscall_call+0x7/0xb
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]   ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b751>] _spin_lock+0x41/0x80
+kernel: [26234.187392]    [<c10c9784>] T.1313+0x34/0xa0
+kernel: [26234.187392]    [<c10c9a28>] get_page_from_freelist+0x238/0x450
+kernel: [26234.187392]    [<c10c9d2f>] __alloc_pages_nodemask+0xef/0x550
+kernel: [26234.187392]    [<c10f35e3>] cache_alloc_refill+0x383/0x6a0
+kernel: [26234.187392]    [<c10f30a5>] kmem_cache_alloc+0x185/0x200
+kernel: [26234.187392]    [<c1053011>] __sigqueue_alloc+0x31/0x90
+kernel: [26234.187392]    [<c105395f>] __send_signal+0xcf/0x2a0
+kernel: [26234.187392]    [<c1053b7a>] send_signal+0x4a/0xa0
+kernel: [26234.187392]    [<c1053fef>] __group_send_sig_info+0x1f/0x40
+kernel: [26234.187392]    [<c10546e1>] group_send_sig_info+0x51/0x90
+kernel: [26234.187392]    [<c1054787>] kill_pid_info+0x67/0xb0
+kernel: [26234.187392]    [<c10487f1>] it_real_fn+0x21/0x40
+kernel: [26234.187392]    [<c106337f>] __run_hrtimer+0x6f/0xd0
+kernel: [26234.187392]    [<c1064485>] hrtimer_interrupt+0x145/0x270
+kernel: [26234.187392]    [<c101c15c>] smp_apic_timer_interrupt+0x5c/0xb0
+kernel: [26234.187392]    [<c1003cf6>] apic_timer_interrupt+0x36/0x3c
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392]  ... acquired at:
+kernel: [26234.187392]    [<c1077a14>] __lock_acquire+0x10b4/0x1840
+kernel: [26234.187392]    [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]    [<c141b900>] _spin_lock_irqsave+0x50/0xa0
+kernel: [26234.187392]    [<c10533ac>] lock_task_sighand+0x6c/0xc0
+kernel: [26234.187392]    [<c10546d1>] group_send_sig_info+0x41/0x90
+kernel: [26234.187392]    [<c1054986>] __kill_pgrp_info+0x46/0x80
+kernel: [26234.187392]    [<c10549fa>] kill_pgrp+0x3a/0x70
+kernel: [26234.187392]    [<c12ddee4>] tty_do_resize+0xa4/0xe0
+kernel: [26234.187392]    [<c12df204>] tty_ioctl+0x6f4/0x8e0
+kernel: [26234.187392]    [<c1109d24>] vfs_ioctl+0x24/0xa0
+kernel: [26234.187392]    [<c1109e23>] do_vfs_ioctl+0x83/0x5e0
+kernel: [26234.187392]    [<c110a3ff>] sys_ioctl+0x7f/0xa0
+kernel: [26234.187392]    [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [26234.187392]    [<ffffffff>] 0xffffffff
+kernel: [26234.187392] 
+kernel: [26234.187392] 
+kernel: [26234.187392] stack backtrace:
+kernel: [26234.187392] Pid: 9804, comm: rtorrent Not tainted 2.6.30-dbgnv-git14 #4
+kernel: [26234.187392] Call Trace:
+kernel: [26234.187392]  [<c141786b>] ? printk+0x23/0x36
+kernel: [26234.187392]  [<c10767d0>] check_usage+0x380/0x420
+kernel: [26234.187392]  [<c10768c9>] check_irq_usage+0x59/0xf0
+kernel: [26234.187392]  [<c10777b4>] __lock_acquire+0xe54/0x1840
+kernel: [26234.187392]  [<c1078241>] lock_acquire+0xa1/0x120
+kernel: [26234.187392]  [<c12e3b75>] ? tty_throttle+0x25/0x70
+kernel: [26234.187392]  [<c12e3b75>] ? tty_throttle+0x25/0x70
+kernel: [26234.187392]  [<c141981c>] mutex_lock_nested+0x5c/0x2e0
+kernel: [26234.187392]  [<c12e3b75>] ? tty_throttle+0x25/0x70
+kernel: [26234.187392]  [<c12e3b75>] ? tty_throttle+0x25/0x70
+kernel: [26234.187392]  [<c10759c8>] ? trace_hardirqs_on_caller+0x68/0x1a0
+kernel: [26234.187392]  [<c12e3b75>] tty_throttle+0x25/0x70
+kernel: [26234.187392]  [<c12e2477>] n_tty_receive_buf+0x407/0x1220
+kernel: [26234.187392]  [<c1032be7>] ? __enqueue_entity+0xb7/0xf0
+kernel: [26234.187392]  [<c1075778>] ? mark_held_locks+0x68/0xa0
+kernel: [26234.187392]  [<c141b4ef>] ? _spin_unlock_irqrestore+0x3f/0x70
+kernel: [26234.187392]  [<c10759c8>] ? trace_hardirqs_on_caller+0x68/0x1a0
+kernel: [26234.187392]  [<c1075b19>] ? trace_hardirqs_on+0x19/0x40
+kernel: [26234.187392]  [<c12e4af2>] ? tty_ldisc_try+0x42/0x60
+kernel: [26234.187392]  [<c12e6fdd>] pty_write+0x7d/0x90
+kernel: [26234.187392]  [<f90bec9a>] ppp_async_push+0x3da/0x4d0 [ppp_async]
+kernel: [26234.187392]  [<f90bedd8>] ppp_async_send+0x48/0x70 [ppp_async]
+kernel: [26234.187392]  [<f90a8996>] ppp_push+0x176/0x5f0 [ppp_generic]
+kernel: [26234.187392]  [<c141b4ef>] ? _spin_unlock_irqrestore+0x3f/0x70
+kernel: [26234.187392]  [<c10759c8>] ? trace_hardirqs_on_caller+0x68/0x1a0
+kernel: [26234.187392]  [<c1075b19>] ? trace_hardirqs_on+0x19/0x40
+kernel: [26234.187392]  [<c1379d63>] ? skb_dequeue+0x53/0x80
+kernel: [26234.187392]  [<f90a97bd>] ppp_xmit_process+0x3dd/0x570 [ppp_generic]
+kernel: [26234.187392]  [<c1075b19>] ? trace_hardirqs_on+0x19/0x40
+kernel: [26234.187392]  [<c1379c11>] ? skb_queue_tail+0x41/0x60
+kernel: [26234.187392]  [<f90a9ab7>] ppp_start_xmit+0x167/0x1b0 [ppp_generic]
+kernel: [26234.187392]  [<c13998ca>] ? __qdisc_run+0x18a/0x250
+kernel: [26234.187392]  [<c13846ac>] dev_hard_start_xmit+0x1ec/0x3b0
+kernel: [26234.187392]  [<c141b777>] ? _spin_lock+0x67/0x80
+kernel: [26234.187392]  [<c13998e4>] __qdisc_run+0x1a4/0x250
+kernel: [26234.187392]  [<c1384d17>] dev_queue_xmit+0x377/0x4d0
+kernel: [26234.187392]  [<c13849e0>] ? dev_queue_xmit+0x40/0x4d0
+kernel: [26234.187392]  [<c13b261d>] ip_finish_output+0x1dd/0x2b0
+kernel: [26234.187392]  [<c13b2752>] ip_output+0x62/0xd0
+kernel: [26234.187392]  [<c13b1688>] ip_local_out+0x28/0x50
+kernel: [26234.187392]  [<c13b1df4>] ip_queue_xmit+0x144/0x390
+kernel: [26234.187392]  [<c141b54b>] ? _spin_unlock+0x2b/0x50
+kernel: [26234.187392]  [<c10f34d5>] ? cache_alloc_refill+0x275/0x6a0
+kernel: [26234.187392]  [<c13ca598>] ? tcp_v4_send_check+0x58/0x100
+kernel: [26234.187392]  [<c13c6062>] tcp_transmit_skb+0x3b2/0x750
+kernel: [26234.187392]  [<c13c6ac5>] ? tcp_connect+0x225/0x400
+kernel: [26234.187392]  [<c13c6bd5>] tcp_connect+0x335/0x400
+kernel: [26234.187392]  [<c13cdd1e>] tcp_v4_connect+0x3de/0x4b0
+kernel: [26234.187392]  [<c13dbbb2>] inet_stream_connect+0x232/0x290
+kernel: [26234.187392]  [<c10db173>] ? might_fault+0x43/0xb0
+kernel: [26234.187392]  [<c1373659>] sys_connect+0xc9/0xf0
+kernel: [26234.187392]  [<c10db173>] ? might_fault+0x43/0xb0
+kernel: [26234.187392]  [<c10db173>] ? might_fault+0x43/0xb0
+kernel: [26234.187392]  [<c10db1bf>] ? might_fault+0x8f/0xb0
+kernel: [26234.187392]  [<c10db173>] ? might_fault+0x43/0xb0
+kernel: [26234.187392]  [<c12588e1>] ? copy_from_user+0x41/0x150
+kernel: [26234.187392]  [<c137426d>] sys_socketcall+0x24d/0x290
+kernel: [26234.187392]  [<c100328a>] ? sysenter_exit+0xf/0x1a
+kernel: [26234.187392]  [<c100325b>] sysenter_do_call+0x12/0x32
+...
+/USR/SBIN/CRON[9810]: CMD (fetchmail -sk -m '/usr/bin/procmail' > /dev/null 2>&1)
+...
+kernel: [26764.304211] BUG: scheduling while atomic: pptpgw/4637/0x10000500
+kernel: [26764.304221] INFO: lockdep is turned off.
+kernel: [26764.304227] Modules linked in: ppp_deflate zlib_deflate ppp_async crc_ccitt ppp_generic slhc ipv6 fuse sbp2 loop snd_hda_codec_si3054 snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device pcspkr snd i2c_i801 psmouse serio_raw rng_core soundcore snd_page_alloc asus_laptop evdev usbhid hid sg sr_mod cdrom sd_mod sdhci_pci sdhci mmc_core ohci1394 ata_generic pata_acpi ricoh_mmc uhci_hcd led_class ata_piix ieee1394 ide_pci_generic ehci_hcd usbcore r8169 mii
+kernel: [26764.304387] 
+kernel: [26764.304398] Pid: 4637, comm: pptpgw Not tainted (2.6.30-dbgnv-git14 #4) F3JC                
+kernel: [26764.304407] EIP: 0060:[<c104a3d5>] EFLAGS: 00200246 CPU: 0
+kernel: [26764.304423] EIP is at __tasklet_schedule+0x65/0xb0
+kernel: [26764.304430] EAX: 00000000 EBX: f6077c6c ECX: 00000000 EDX: 00000000
+kernel: [26764.304438] ESI: 00200246 EDI: f6077b90 EBP: e2807e6c ESP: e2807e60
+kernel: [26764.304446]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+kernel: [26764.304454] CR0: 8005003b CR2: 0806f740 CR3: 35993000 CR4: 000006d0
+kernel: [26764.304461] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+kernel: [26764.304468] DR6: ffff0ff0 DR7: 00000400
+kernel: [26764.304475] Call Trace:
+kernel: [26764.304492]  [<f90be78e>] ppp_asynctty_receive+0x3ee/0x520 [ppp_async]
+kernel: [26764.304507]  [<c12e6fdd>] pty_write+0x7d/0x90
+kernel: [26764.304518]  [<c12e158b>] n_tty_write+0x30b/0x420
+kernel: [26764.304532]  [<c103e150>] ? default_wake_function+0x0/0x40
+kernel: [26764.304543]  [<c12de643>] tty_write+0x173/0x250
+kernel: [26764.304554]  [<c10fa02f>] ? rw_verify_area+0x6f/0xf0
+kernel: [26764.304564]  [<c12e1280>] ? n_tty_write+0x0/0x420
+kernel: [26764.304575]  [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [26764.304585]  [<c12de4d0>] ? tty_write+0x0/0x250
+kernel: [26764.304596]  [<c10fae28>] sys_write+0x58/0xa0
+kernel: [26764.304608]  [<c100325b>] sysenter_do_call+0x12/0x32
+...
+/USR/SBIN/CRON[10020]: CMD (fetchmail -sk -m '/usr/bin/procmail' > /dev/null 2>&1)
+...
+kernel: [27404.944948] BUG: scheduling while atomic: pptpgw/4637/0x10000400
+kernel: [27404.944958] INFO: lockdep is turned off.
+kernel: [27404.944964] Modules linked in: ppp_deflate zlib_deflate ppp_async crc_ccitt ppp_generic slhc ipv6 fuse sbp2 loop snd_hda_codec_si3054 snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device pcspkr snd i2c_i801 psmouse serio_raw rng_core soundcore snd_page_alloc asus_laptop evdev usbhid hid sg sr_mod cdrom sd_mod sdhci_pci sdhci mmc_core ohci1394 ata_generic pata_acpi ricoh_mmc uhci_hcd led_class ata_piix ieee1394 ide_pci_generic ehci_hcd usbcore r8169 mii
+kernel: [27404.945123] 
+kernel: [27404.945134] Pid: 4637, comm: pptpgw Not tainted (2.6.30-dbgnv-git14 #4) F3JC                
+kernel: [27404.945143] EIP: 0060:[<c104a3d5>] EFLAGS: 00200246 CPU: 0
+kernel: [27404.945158] EIP is at __tasklet_schedule+0x65/0xb0
+kernel: [27404.945166] EAX: 00000000 EBX: f6077c6c ECX: 00000000 EDX: 00000000
+kernel: [27404.945174] ESI: 00200246 EDI: 00000001 EBP: e2807e60 ESP: e2807e54
+kernel: [27404.945182]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+kernel: [27404.945189] CR0: 8005003b CR2: b5f027ac CR3: 35993000 CR4: 000006d0
+kernel: [27404.945197] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+kernel: [27404.945204] DR6: ffff0ff0 DR7: 00000400
+kernel: [27404.945210] Call Trace:
+kernel: [27404.945227]  [<f90be38b>] ppp_asynctty_wakeup+0x6b/0x80 [ppp_async]
+kernel: [27404.945240]  [<c12de902>] tty_wakeup+0x72/0x90
+kernel: [27404.945251]  [<c12e70d3>] pty_unthrottle+0x23/0x50
+kernel: [27404.945261]  [<c12e3b22>] tty_unthrottle+0x42/0x70
+kernel: [27404.945272]  [<c12e1c2f>] n_tty_read+0x48f/0x730
+kernel: [27404.945286]  [<c103e150>] ? default_wake_function+0x0/0x40
+kernel: [27404.945299]  [<c12dcc20>] tty_read+0xa0/0xe0
+kernel: [27404.945309]  [<c12e17a0>] ? n_tty_read+0x0/0x730
+kernel: [27404.945321]  [<c10faf2b>] vfs_read+0xbb/0x1c0
+kernel: [27404.945332]  [<c12dcb80>] ? tty_read+0x0/0xe0
+kernel: [27404.945342]  [<c10fb138>] sys_read+0x58/0xa0
+kernel: [27404.945354]  [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [27404.945372] BUG: scheduling while atomic: pptpgw/4637/0x00000400
+kernel: [27404.945378] INFO: lockdep is turned off.
+kernel: [27404.945383] Modules linked in: ppp_deflate zlib_deflate ppp_async crc_ccitt ppp_generic slhc ipv6 fuse sbp2 loop snd_hda_codec_si3054 snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device pcspkr snd i2c_i801 psmouse serio_raw rng_core soundcore snd_page_alloc asus_laptop evdev usbhid hid sg sr_mod cdrom sd_mod sdhci_pci sdhci mmc_core ohci1394 ata_generic pata_acpi ricoh_mmc uhci_hcd led_class ata_piix ieee1394 ide_pci_generic ehci_hcd usbcore r8169 mii
+kernel: [27404.945532] 
+kernel: [27404.945540] Pid: 4637, comm: pptpgw Not tainted (2.6.30-dbgnv-git14 #4) F3JC                
+kernel: [27404.945549] EIP: 0060:[<c104a3d5>] EFLAGS: 00200246 CPU: 0
+kernel: [27404.945559] EIP is at __tasklet_schedule+0x65/0xb0
+kernel: [27404.945566] EAX: 00000000 EBX: f6077c6c ECX: 00000000 EDX: 00000000
+kernel: [27404.945573] ESI: 00200246 EDI: 00000001 EBP: e2807e60 ESP: e2807e54
+kernel: [27404.945581]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+kernel: [27404.945589] CR0: 8005003b CR2: b5f027ac CR3: 35993000 CR4: 000006d0
+kernel: [27404.945596] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+kernel: [27404.945603] DR6: ffff0ff0 DR7: 00000400
+kernel: [27404.945609] Call Trace:
+kernel: [27404.945621]  [<f90be38b>] ppp_asynctty_wakeup+0x6b/0x80 [ppp_async]
+kernel: [27404.945632]  [<c12de902>] tty_wakeup+0x72/0x90
+kernel: [27404.945643]  [<c12e70d3>] pty_unthrottle+0x23/0x50
+kernel: [27404.945653]  [<c12e3b22>] tty_unthrottle+0x42/0x70
+kernel: [27404.945663]  [<c12e1c2f>] n_tty_read+0x48f/0x730
+kernel: [27404.945676]  [<c103e150>] ? default_wake_function+0x0/0x40
+kernel: [27404.945688]  [<c12dcc20>] tty_read+0xa0/0xe0
+kernel: [27404.945698]  [<c12e17a0>] ? n_tty_read+0x0/0x730
+kernel: [27404.945709]  [<c10faf2b>] vfs_read+0xbb/0x1c0
+kernel: [27404.945720]  [<c12dcb80>] ? tty_read+0x0/0xe0
+kernel: [27404.945730]  [<c10fb138>] sys_read+0x58/0xa0
+kernel: [27404.945741]  [<c100325b>] sysenter_do_call+0x12/0x32
+/USR/SBIN/CRON[10140]: CMD (fetchmail -sk -m '/usr/bin/procmail' > /dev/null 2>&1)
+kernel: [27729.047046] BUG: spinlock lockup on CPU#1, pppd/4636, f5928dc0
+kernel: [27729.047060] Pid: 4636, comm: pppd Not tainted 2.6.30-dbgnv-git14 #4
+kernel: [27729.047067] Call Trace:
+kernel: [27729.047084]  [<c141786b>] ? printk+0x23/0x36
+kernel: [27729.047099]  [<c125da29>] _raw_spin_lock+0x159/0x170
+kernel: [27729.047111]  [<c141b7f2>] _spin_lock_bh+0x62/0x90
+kernel: [27729.047130]  [<f90aabe7>] ? ppp_channel_push+0x27/0xd0 [ppp_generic]
+kernel: [27729.047145]  [<f90aabe7>] ppp_channel_push+0x27/0xd0 [ppp_generic]
+kernel: [27729.047159]  [<f90aad67>] ppp_write+0xd7/0xe0 [ppp_generic]
+kernel: [27729.047172]  [<c10fac1e>] vfs_write+0xbe/0x1c0
+kernel: [27729.047186]  [<f90aac90>] ? ppp_write+0x0/0xe0 [ppp_generic]
+kernel: [27729.047197]  [<c10fae28>] sys_write+0x58/0xa0
+kernel: [27729.047209]  [<c100325b>] sysenter_do_call+0x12/0x32
+kernel: [27787.880283] SysRq : Keyboard mode set to system default
+exiting on signal 15
+syslogd 1.5.0#5: restart.
+--fUYQa+Pmc3FrFX/N--
