@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbZFSTHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbZFSTM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752556AbZFSTHw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 15:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZFSTHn
+	id S1753054AbZFSTM6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 15:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZFSTMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 15:07:43 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:53659 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbZFSTHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 15:07:43 -0400
-Date: Fri, 19 Jun 2009 21:07:37 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, poorarm@shoreis.com,
-       nicolas.ferre@atmel.com
-Subject: Re: [PATCH] MAINTAINERS: add myself as atmel-mci maintainer (sd/mmc
- interface)
-Message-ID: <20090619210737.1aab33d5@mjolnir.ossman.eu>
-In-Reply-To: <1245150350-4798-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1245150350-4798-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
+	Fri, 19 Jun 2009 15:12:50 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:38971 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbZFSTMt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 15:12:49 -0400
+Date: Fri, 19 Jun 2009 20:11:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Valdis.Kletnieks@vt.edu
+Cc: Pavel Machek <pavel@ucw.cz>, James Morris <jmorris@namei.org>,
+       Joseph Cihula <joseph.cihula@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, hpa@zytor.com,
+       andi@firstfloor.org, Chris Wright <chrisw@sous-sol.org>,
+       jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
+       shane.wang@intel.com
+Subject: Re: [RFC v4][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+ support
+Message-ID: <20090619201159.35d259bb@lxorguk.ukuu.org.uk>
+In-Reply-To: <33858.1245433922@turing-police.cc.vt.edu>
+References: <4A299051.40405@intel.com>
+	<alpine.LRH.2.00.0906121509001.14633@tundra.namei.org>
+	<20090619150514.GE1389@ucw.cz>
+	<33858.1245433922@turing-police.cc.vt.edu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-10856-1245438463-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+> "Somebody has screwed with this kernel image, and you're not booting what you
+> thought you were booting."
 
---=_freyr.ossman.eu-10856-1245438463-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+So I screw with your user space - you can't measure enough to make it
+save you in a general setup. Too much I can hit changes each boot.
 
-On Tue, 16 Jun 2009 13:05:50 +0200
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+For a tiny number of very special cases that are highly controlled it has
+potential uses. Some of those are evil some are ones with meaningful uses
+(eg ATM machines) - although attacks there have included hardware attacks
+outside the PC components too.
 
-> Add MAINTAINERS entry for atmel-mci driver.
-> This driver was maintained by its author: Haavard Skinnemoen. I take the
-> maintainance of it.
->=20
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
+Personally (and I'm sure Intel disagrees with me) my bigger work is that
+I can't verify that the magic block of code for tboot is correct.
 
-Queued.
 
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-10856-1245438463-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAko74f0ACgkQ7b8eESbyJLhZGgCeIupOeIFMu/Z2st5mFx5JnIHE
-JN8AoOufumuPxcEXnP/wEZHczrEei/P3
-=0j6z
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-10856-1245438463-0001-2--
