@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZFSHHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbZFSHIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZFSHHo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 03:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZFSHHg
+	id S1754797AbZFSHIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 03:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZFSHIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 03:07:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44597 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752605AbZFSHHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 03:07:36 -0400
-Date: Fri, 19 Jun 2009 03:06:54 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: randy.dunlap@oracle.com, akpm@linux-foundation.org, sam@ravnborg.org,
-       Amerigo Wang <amwang@redhat.com>, jirislaby@gmail.com
-Message-Id: <20090619070909.6422.28484.sendpatchset@localhost.localdomain>
-Subject: [Patch] kbuild: fix a build error during make htmldocs
+	Fri, 19 Jun 2009 03:08:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34788
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753304AbZFSHIL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 03:08:11 -0400
+Date: Fri, 19 Jun 2009 00:08:15 -0700 (PDT)
+Message-Id: <20090619.000815.40596802.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fix the following build error when do 'make htmldocs':
+Please pull to get this UP bootup failure fix.
 
- DOCPROC Documentation/DocBook/debugobjects.xml
-exec /scripts/kernel-doc: No such file or directory
-exec /scripts/kernel-doc: No such file or directory
+Thanks!
 
-Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Sam <sam@ravnborg.org>
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+The following changes since commit 0732f87761dbe417cb6e084b712d07e879e876ef:
+  Linus Torvalds (1):
+        Merge branch 'for_linus' of git://git.kernel.org/.../tytso/ext4
 
----
-diff --git a/scripts/basic/docproc.c b/scripts/basic/docproc.c
-index 4c9523e..99ca7a6 100644
---- a/scripts/basic/docproc.c
-+++ b/scripts/basic/docproc.c
-@@ -385,7 +385,7 @@ int main(int argc, char *argv[])
- 	if (!srctree)
- 		srctree = getcwd(NULL, 0);
- 	kernsrctree = getenv("KBUILD_SRC");
--	if (!kernsrctree)
-+	if (!kernsrctree || !*kernsrctree)
- 		kernsrctree = srctree;
- 	if (argc != 3) {
- 		usage();
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git master
+
+David S. Miller (1):
+      sparc64: Fix UP bootup regression.
+
+ arch/sparc/mm/init_64.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
