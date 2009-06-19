@@ -1,120 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZFSMfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbZFSMfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbZFSMfM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 08:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbZFSMfA
+	id S1758722AbZFSMfb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 08:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZFSMfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 08:35:00 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:64420 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbZFSMe7 (ORCPT
+	Fri, 19 Jun 2009 08:35:17 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:55415 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758201AbZFSMfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 08:34:59 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH 05/17] Blackfin: convert to generic checksum code
-Date: Fri, 19 Jun 2009 14:33:33 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michal Simek <monstr@monstr.eu>, Paul Mundt <lethal@linux-sh.org>
-References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> <200906191105.37732.arnd@arndb.de> <8bd0f97a0906190342s4261e85di9aa746058cbef9be@mail.gmail.com>
-In-Reply-To: <8bd0f97a0906190342s4261e85di9aa746058cbef9be@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Fri, 19 Jun 2009 08:35:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjIFAGshO0pMQWja/2dsb2JhbACBUc1FhAkF
+Date: Fri, 19 Jun 2009 08:35:04 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, jiayingz@google.com, bligh@google.com,
+       roland@redhat.com, fche@redhat.com
+Subject: Re: [PATCH 4/7] add syscall tracepoints
+Message-ID: <20090619123504.GB18428@Krystal>
+References: <cover.1244837725.git.jbaron@redhat.com> <46da2de326aa9ea1a9764cd421dd2ded70218c47.1244837725.git.jbaron@redhat.com> <20090619021237.GB7903@nowhere>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906191433.34608.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+++dskiKoZqH0Ll3cCTzs9uUPYhYxBmdS8uiH
- eOTZnZP0pbgCp1WSTLXVLgnf3AKXgjtPqrMaPnsHURHjgOQXIL
- g3vX3EBjKBhNrdjqo0DdeChQ9VIV3og
+Content-Disposition: inline
+In-Reply-To: <20090619021237.GB7903@nowhere>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:32:31 up 111 days,  8:58,  4 users,  load average: 0.57, 1.36,
+	1.38
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 June 2009, Mike Frysinger wrote:
-> On Fri, Jun 19, 2009 at 05:05, Arnd Bergmann wrote:
-> > x86 and blackfin are both little-endian, so your variant is correct
-> > there. They add the 0x01 to the low byte of the 16-bit word, while
-> > on big-endian machines, you have to add it to the high byte.
+* Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> On Fri, Jun 12, 2009 at 05:24:54PM -0400, Jason Baron wrote:
+> > 
+> > add two tracepoints in syscall exit and entry path, conditioned on
+> > TIF_SYSCALL_FTRACE. Supports the syscall trace event code.
+> > 
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > 
+> > ---
+> >  arch/x86/kernel/ptrace.c |    6 ++++--
+> >  include/trace/syscall.h  |   18 ++++++++++++++++++
+> >  kernel/tracepoint.c      |   38 ++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 60 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+> > index 09ecbde..1c7301a 100644
+> > --- a/arch/x86/kernel/ptrace.c
+> > +++ b/arch/x86/kernel/ptrace.c
+> > @@ -36,6 +36,8 @@
+> >  #include <asm/ds.h>
+> >  
+> >  #include <trace/syscall.h>
+> > +DEFINE_TRACE(syscall_enter);
+> > +DEFINE_TRACE(syscall_exit);
+> >  
+> >  #include "tls.h"
+> >  
+> > @@ -1498,7 +1500,7 @@ asmregparm long syscall_trace_enter(struct pt_regs *regs)
+> >  		ret = -1L;
+> >  
+> >  	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> > -		ftrace_syscall_enter(regs);
+> > +		trace_syscall_enter(regs, regs->orig_ax);
+> >  
+> >  	if (unlikely(current->audit_context)) {
+> >  		if (IS_IA32)
+> > @@ -1524,7 +1526,7 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
+> >  		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
+> >  
+> >  	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> > -		ftrace_syscall_exit(regs);
+> > +		trace_syscall_exit(regs, regs->ax);
+> >  
+> >  	if (test_thread_flag(TIF_SYSCALL_TRACE))
+> >  		tracehook_report_syscall_exit(regs, 0);
+> > diff --git a/include/trace/syscall.h b/include/trace/syscall.h
+> > index 8cfe515..d5d8310 100644
+> > --- a/include/trace/syscall.h
+> > +++ b/include/trace/syscall.h
+> > @@ -2,6 +2,24 @@
+> >  #define _TRACE_SYSCALL_H
+> >  
+> >  #include <asm/ptrace.h>
+> > +#include <linux/tracepoint.h>
+> > +
+> > +extern void syscall_regfunc(void);
+> > +extern void syscall_unregfunc(void);
+> > +
+> > +DECLARE_TRACE_REG(syscall_enter,
+> > +	TP_PROTO(struct pt_regs *regs, long id),
+> > +	TP_ARGS(regs, id),
+> > +	syscall_regfunc,
+> > +	syscall_unregfunc
+> > +);
+> > +
+> > +DECLARE_TRACE_REG(syscall_exit,
+> > +	TP_PROTO(struct pt_regs *regs, long ret),
+> > +	TP_ARGS(regs, ret),
+> > +	syscall_regfunc,
+> > +	syscall_unregfunc
+> > +);
+> >  
+> >  /*
+> >   * A syscall entry in the ftrace syscalls array.
+> > diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+> > index 1ef5d3a..5b34ff9 100644
+> > --- a/kernel/tracepoint.c
+> > +++ b/kernel/tracepoint.c
 > 
-> can we think of enough simple examples to through together an optional
-> boot-time self test ?
-
-sounds like a good idea.
-
-> > I've committed the patch below now.
 > 
-> closer, but not quite just yet ...
-> do_csum: mismatch 0x1700 != 0xa0d len:2
-> do_csum: {  0xd, 0xa }
-
-I've compared the code again with Paul's sh version and found another
-difference in the handling of unaligned data.
-
-> when do_csum does return correct values, csum_partial sometimes does not:
-> csum_partial: mismatch 0x1101eefe != 0xffff len:32
-> csum_partial: {  0x92, 0x3b, 0x0, 0x17, 0xcf, 0xc1, 0x90, 0xec, 0x1c,
-> 0x3f, 0xff, 0x99, 0x80, 0x10, 0x0, 0x5c, 0x22, 0xfa, 0x0, 0x0, 0x1,
-> 0x1, 0x8, 0xa, 0x6, 0x83, 0xdd, 0x50, 0xff, 0xfe, 0xdf, 0x58 }
-
-That looks like it's both valid output. csum_partial returns a 32 bit
-value that always needs to get passed to csum_fold in order to get
-checked. 0x1101eefe and 0xffff both evaluate to 0xffff in csum_fold,
-so this would just be an implementation detail, not a bug.
-
-> btw, would it make sense to change do_csum like so:
-> -static unsigned int do_csum(const unsigned char *buff, int len)
-> +__weak unsigned int do_csum(const unsigned char *buff, int len)
 > 
-> after all, it looks like that's really the function most arches would
-> want to hand optimize.  all the rest are simple standard wrappers are
-> do_csum().  forcing an arch to copy & paste all the other functions
-> just so they can implement an optimized do_csum() seems pretty
-> unfriendly.  plus, it isnt like being static here makes any optimized
-> difference -- it isnt going to get inlined anywhere in this file.
+> At a first glance I wasn't sure tracepoint.c is the right
+> place for these.
+> But indeed putting those two callbacks here avoids any
+> dependency to the syscall tracer when someone else needs
+> the syscall tracepoints.
+> 
+> Well, I guess we can keep them there.
+> 
+> 
+> 
+> > @@ -24,6 +24,7 @@
+> >  #include <linux/tracepoint.h>
+> >  #include <linux/err.h>
+> >  #include <linux/slab.h>
+> > +#include <linux/sched.h>
+> >  
+> >  extern struct tracepoint __start___tracepoints[];
+> >  extern struct tracepoint __stop___tracepoints[];
+> > @@ -577,3 +578,40 @@ static int init_tracepoints(void)
+> >  __initcall(init_tracepoints);
+> >  
+> >  #endif /* CONFIG_MODULES */
+> > +
+> > +DEFINE_MUTEX(regfunc_mutex);
+> > +int sys_tracepoint_refcount;
+> 
+> 
+> Looks like regfunc_mutex is only there to protect
+> sys_tracepoint_refcount. May be you can just make it atomic_t?
+> 
 
-Agreed, this should be overridable by the architecture, I'll submit a patch
-once we found out what caused the bugs.
+Nope, regfunc_mutex makes sure there is no disable/enable occuring
+concurrently. They only take a tasklist read lock, so they can happen
+concurrently if it wasn't for the regfunc_mutex.
 
-> or rather than weaks (in case some toolchains force indirect pointer
-> loading all the time), use the same interface as the rest of the
-> generic checksum code:
-> #ifndef do_csum
-> static inline unsigned short from32to16(unsigned long x)
-> {
->     ...
-> }
-> static unsigned int do_csum(const unsigned char *buff, int len)
-> {
->     ...
-> }
-> #endif
+Unless I'm missing something totally obvious about the refcount, the
+mutex is needed, and there is no need to go for an atomic type in this
+case.
 
-I'd prefer the second version, I've done it that way all over
-include/asm-generic, and weak functions tend to cause more trouble.
+Thanks,
 
----
-lib/checksum.c: Fix another endianess bug
+Mathieu
 
-will fold this patch into the previous one.
+> Thanks,
+> Frederic.
+> 
+> 
+> > +
+> > +void syscall_regfunc(void)
+> > +{
+> > +	unsigned long flags;
+> > +	struct task_struct *g, *t;
+> > +
+> > +	mutex_lock(&regfunc_mutex);
+> > +	if (!sys_tracepoint_refcount) {
+> > +		read_lock_irqsave(&tasklist_lock, flags);
+> > +		do_each_thread(g, t) {
+> > +			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
+> > +		} while_each_thread(g, t);
+> > +		read_unlock_irqrestore(&tasklist_lock, flags);
+> > +	}
+> > +	sys_tracepoint_refcount++;
+> > +	mutex_unlock(&regfunc_mutex);
+> > +}
+> > +
+> > +void syscall_unregfunc(void)
+> > +{
+> > +	unsigned long flags;
+> > +	struct task_struct *g, *t;
+> > +
+> > +	mutex_lock(&regfunc_mutex);
+> > +	sys_tracepoint_refcount--;
+> > +	if (!sys_tracepoint_refcount) {
+> > +		read_lock_irqsave(&tasklist_lock, flags);
+> > +		do_each_thread(g, t) {
+> > +			clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
+> > +		} while_each_thread(g, t);
+> > +		read_unlock_irqrestore(&tasklist_lock, flags);
+> > +	}
+> > +	mutex_unlock(&regfunc_mutex);
+> > +}
+> > -- 
+> > 1.6.0.6
+> > 
+> 
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
---- a/lib/checksum.c
-+++ b/lib/checksum.c
-@@ -55,7 +55,11 @@ static unsigned int do_csum(const unsigned char *buff, int len)
- 		goto out;
- 	odd = 1 & (unsigned long) buff;
- 	if (odd) {
-+#ifdef __LITTLE_ENDIAN
- 		result = *buff;
-+#else
-+		result += (*buff << 8);
-+#endif
- 		len--;
- 		buff++;
- 	}
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
