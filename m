@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbZFSAz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZFSA4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbZFSAz2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 20:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZFSAzU
+	id S1754752AbZFSA4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 20:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFSA4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 20:55:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:25121 "EHLO mga11.intel.com"
+	Thu, 18 Jun 2009 20:56:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60285 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbZFSAzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 20:55:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,248,1243839600"; 
-   d="scan'208";a="467726955"
-Subject: Re: [BUGFIX 2/3] crypto: Remove CRYPTO_TFM_REQ_MAY_SLEEP flag in
- AES-NI accelerated ecb/cbc mode
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090618114032.GB6596@gondor.apana.org.au>
-References: <1245056697.5320.350.camel@yhuang-dev.sh.intel.com>
-	 <20090618114032.GB6596@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Fri, 19 Jun 2009 08:55:20 +0800
-Message-Id: <1245372920.22246.15.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1751181AbZFSA4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 20:56:01 -0400
+Date: Fri, 19 Jun 2009 02:51:13 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH] trivial, update the comment in kthread_stop()
+Message-ID: <20090619005113.GA12208@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-18 at 19:40 +0800, Herbert Xu wrote:
-> On Mon, Jun 15, 2009 at 05:04:57PM +0800, Huang Ying wrote:
-> > Because AES-NI instructions will touch XMM state, corresponding code
-> > must be enclosed within kernel_fpu_begin/end, which used
-> > preempt_disable/enable. So sleep should be prevented between
-> > kernel_fpu_begin/end.
-> > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-> I'll apply this for now.  But it would be much better to allow
-> sleeping in this case.
-> 
-> Couldn't we simply move the kernel_fpu_begin/end inside the loop?
-> It shouldn't be too expensive when it runs the 2nd time since it
-> doesn't have to save anything, right?
+"kthreads: rework kthread_stop()"
+commit 63706172f332fd3f6e7458ebfb35fa6de9c21dc5 removed the limitation,
+but forgot to update the comment.
 
-I will test the performance difference.
+Since that commit it is OK to use kthread_stop() even if kthread can exit
+itself.
 
-Best Regards,
-Huang Ying
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -180,10 +180,12 @@ EXPORT_SYMBOL(kthread_bind);
+  * @k: thread created by kthread_create().
+  *
+  * Sets kthread_should_stop() for @k to return true, wakes it, and
+- * waits for it to exit.  Your threadfn() must not call do_exit()
+- * itself if you use this function!  This can also be called after
+- * kthread_create() instead of calling wake_up_process(): the thread
+- * will exit without calling threadfn().
++ * waits for it to exit. This can also be called after kthread_create()
++ * instead of calling wake_up_process(): the thread will exit without
++ * calling threadfn().
++ *
++ * If threadfn() may call do_exit() itself, the caller must ensure
++ * task_struct can't go away.
+  *
+  * Returns the result of threadfn(), or %-EINTR if wake_up_process()
+  * was never called.
 
