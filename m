@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZFSPv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZFSPxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbZFSPv5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 11:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZFSPvs
+	id S1756158AbZFSPxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 11:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZFSPxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 11:51:48 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:42355 "EHLO
+	Fri, 19 Jun 2009 11:53:44 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:42363 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbZFSPvs (ORCPT
+	with ESMTP id S1751904AbZFSPxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 11:51:48 -0400
+	Fri, 19 Jun 2009 11:53:44 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] floppy: fix lock imbalance
-Date: Fri, 19 Jun 2009 17:51:39 +0200
-Message-Id: <1245426699-4386-1-git-send-email-jirislaby@gmail.com>
+To: a.zummo@towertech.it
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] RTC: ds1374, fix lock imbalance
+Date: Fri, 19 Jun 2009 17:53:38 +0200
+Message-Id: <1245426818-6617-1-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.3.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A crappy macro prevents us unlocking on a fail path.
-
-Expand the macro and unlock appropriatelly.
+When i2c_smbus_read_byte_data fails in ds1374_work, we forgot to
+unlock the held lock. Fix that.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/block/floppy.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/rtc/rtc-ds1374.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 862b40c..91b7530 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -3327,7 +3327,10 @@ static inline int set_geometry(unsigned int cmd, struct floppy_struct *g,
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EPERM;
- 		mutex_lock(&open_lock);
--		LOCK_FDC(drive, 1);
-+		if (lock_fdc(drive, 1)) {
-+			mutex_unlock(&open_lock);
-+			return -EINTR;
-+		}
- 		floppy_type[type] = *g;
- 		floppy_type[type].name = "user format";
- 		for (cnt = type << 2; cnt < (type << 2) + 4; cnt++)
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 32b2773..713f7bf 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -283,7 +283,7 @@ static void ds1374_work(struct work_struct *work)
+ 
+ 	stat = i2c_smbus_read_byte_data(client, DS1374_REG_SR);
+ 	if (stat < 0)
+-		return;
++		goto unlock;
+ 
+ 	if (stat & DS1374_REG_SR_AF) {
+ 		stat &= ~DS1374_REG_SR_AF;
+@@ -302,7 +302,7 @@ static void ds1374_work(struct work_struct *work)
+ out:
+ 	if (!ds1374->exiting)
+ 		enable_irq(client->irq);
+-
++unlock:
+ 	mutex_unlock(&ds1374->mutex);
+ }
+ 
 -- 
 1.6.3.2
 
