@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZFSVvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZFSV4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbZFSVvX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 17:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZFSVvQ
+	id S1754504AbZFSV4e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 17:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZFSV41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 17:51:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53823 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752123AbZFSVvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 17:51:15 -0400
-Date: Fri, 19 Jun 2009 17:49:07 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 6/7] add syscall tracepoints
-Message-ID: <20090619214907.GC3260@redhat.com>
-References: <cover.1244837725.git.jbaron@redhat.com> <a092c3d0e03e64ef8b2b6d5ed9f5b6e3c07cf2d8.1244837725.git.jbaron@redhat.com> <20090619022825.GD7903@nowhere>
+	Fri, 19 Jun 2009 17:56:27 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:62586 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750884AbZFSV40 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 17:56:26 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Andreas Sundstrom <sunkan@zappa.cx>
+Subject: Re: 2.6.30 kernel panic when closing lid
+Date: Fri, 19 Jun 2009 23:56:27 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <4A3BF368.9090103@zappa.cx>
+In-reply-To: <4A3BF368.9090103@zappa.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090619022825.GD7903@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906192356.28453.elendil@planet.nl>
+X-OriginalArrivalTime: 19 Jun 2009 21:56:28.0968 (UTC) FILETIME=[CC8F0280:01C9F128]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 04:28:26AM +0200, Frederic Weisbecker wrote:
-> On Fri, Jun 12, 2009 at 05:25:04PM -0400, Jason Baron wrote:
-> > Allow the return value of raw_init() to bail us out of creating a trace event
-> > file.
-> > 
-> > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > 
-> > ---
-> >  kernel/trace/trace_events.c |   29 +++++++++++++++++++----------
-> >  1 files changed, 19 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> > index 9e91c4a..c0da5e2 100644
-> > --- a/kernel/trace/trace_events.c
-> > +++ b/kernel/trace/trace_events.c
-> > @@ -907,15 +907,6 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
-> >  	if (strcmp(call->system, TRACE_SYSTEM) != 0)
-> >  		d_events = event_subsystem_dir(call->system, d_events);
-> >  
-> > -	if (call->raw_init) {
-> > -		ret = call->raw_init();
-> > -		if (ret < 0) {
-> > -			pr_warning("Could not initialize trace point"
-> > -				   " events/%s\n", call->name);
-> > -			return ret;
-> > -		}
-> > -	}
-> > -
-> >  	call->dir = debugfs_create_dir(call->name, d_events);
-> >  	if (!call->dir) {
-> >  		pr_warning("Could not create debugfs "
-> > @@ -1014,6 +1005,7 @@ static void trace_module_add_events(struct module *mod)
-> >  	struct ftrace_module_file_ops *file_ops = NULL;
-> >  	struct ftrace_event_call *call, *start, *end;
-> >  	struct dentry *d_events;
-> > +	int ret;
-> >  
-> >  	start = mod->trace_events;
-> >  	end = mod->trace_events + mod->num_trace_events;
-> > @@ -1029,7 +1021,15 @@ static void trace_module_add_events(struct module *mod)
-> >  		/* The linker may leave blanks */
-> >  		if (!call->name)
-> >  			continue;
-> > -
-> > +		if (call->raw_init) {
-> > +			ret = call->raw_init();
-> > +			if (ret < 0) {
-> > +				if (ret != -ENOSYS)
-> 
-> 
-> 
-> I see you've set it up in case syscall_to_nr doesn't find the
-> matching metadata.
-> 
-> How is it possible? The traced syscalls, ie those which are defined through
-> DEFINE_SYSCALLx(), should be all in the arch syscall table. Or may be I'm
-> missing something?
-> 
+Andreas Sundstrom wrote:
+> My laptop has started crashing when I close the lid. This does not
+> happen with 2.6.29.4 which I was using before 2.6.30, I configured my
+> 2.6.30 kernel with the 2.6.29.4 as the base and then did "make
+> oldconfig" and then most of the questions I got I used the default
+> setting.
 
-yes, I've been wondering about the same thing...I think the answer is
-that DEFINE_SYSCALLx() is used to define some of the 'compat' layer ia32
-syscalls. Thus, they show up as events to register but they are not in
-the syscall table. I'm not sure if its easy to handle these at compile
-time, but in any case that is where this case is coming from...
+That sounds like it may be a known issue, although it's somewhat strange 
+that you did not see it with earlier kernels.
+Can you test if the following workaround fixes the crash?
 
-I've also notice that I forgot to define the meta data for
-SYSCALL_DEFINE0 case...
+echo -n 7 >/proc/acpi/video/C09A/DOS
 
-thanks,
+See e.g.: http://lkml.indiana.edu/hypermail/linux/kernel/0901.1/01971.html
+You can find more information by googling for "hp 2510p lid close crash"
+(but it affects other models as well).
 
--Jason
+Cheers,
+FJP
