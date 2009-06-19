@@ -1,75 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZFSKkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbZFSKn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbZFSKkl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 06:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZFSKkc
+	id S1755883AbZFSKn0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 06:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZFSKnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 06:40:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36299 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752334AbZFSKkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 06:40:32 -0400
-Subject: Re: linux-next: slab tree build failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090619141626.a60bba01.sfr@canb.auug.org.au>
-References: <20090619141626.a60bba01.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Fri, 19 Jun 2009 20:40:08 +1000
-Message-Id: <1245408008.16880.9.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 19 Jun 2009 06:43:17 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:52436 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923AbZFSKnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 06:43:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Lv3XLSEKuKWHRxeFiCI2MjXz1IgkyBQzv2o+LYTe5TeWeRKvRtYc6/RG9LJfjjq/Y0
+         +qtrhyfqzG+s9oWcD/9PdXWkGLlXWcHiYN49w2f2ZvC/Ahvj5+s6fD7CDzuRvuO8RG7Y
+         rBS2B/tMqEnbVQjDp5a2l4a0T/11R+goReL40=
+MIME-Version: 1.0
+In-Reply-To: <200906191105.37732.arnd@arndb.de>
+References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> 
+	<200906151304.16416.arnd@arndb.de> <8bd0f97a0906181819u25df402fxfd535030fd180e87@mail.gmail.com> 
+	<200906191105.37732.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 19 Jun 2009 06:42:59 -0400
+Message-ID: <8bd0f97a0906190342s4261e85di9aa746058cbef9be@mail.gmail.com>
+Subject: Re: [PATCH 05/17] Blackfin: convert to generic checksum code
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michal Simek <monstr@monstr.eu>, Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-19 at 14:16 +1000, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> 
-> mm/slqb.c:75: error: 'SLAB_GFP_BOOT_MASK' undeclared here (not in a function)
-> 
-> Caused by commit df548b0bbaf2d4d16ce52d2f5ccdc1cfded70e06 ("SLQB: Fix
-> early boot allocations") from the slab tree interacting with commit
-> dcce284a259373f9e5570f2e33f79eca84fcf565 ("mm: Extend gfp masking to the
-> page allocator") that entered Linus' tree today.
-> 
-> I have applied this patch for today:
+On Fri, Jun 19, 2009 at 05:05, Arnd Bergmann wrote:
+> x86 and blackfin are both little-endian, so your variant is correct
+> there. They add the 0x01 to the low byte of the 16-bit word, while
+> on big-endian machines, you have to add it to the high byte.
 
-The right fix is to remove slab_gfp_mask from slqb.c and use
-the global gfp_allowed_mask instead.
+can we think of enough simple examples to through together an optional
+boot-time self test ?
 
-Cheers,
-Ben.
+> I've committed the patch below now.
 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 19 Jun 2009 14:13:21 +1000
-> Subject: [PATCH] slqb: fix for macro name change
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  mm/slqb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/slqb.c b/mm/slqb.c
-> index b61ad01..4c9051d 100644
-> --- a/mm/slqb.c
-> +++ b/mm/slqb.c
-> @@ -72,7 +72,7 @@ static int slqb_min_objects = 1;
->   * The slab allocator is initialized with interrupts disabled. Therefore, make
->   * sure early boot allocations don't accidentally enable interrupts.
->   */
-> -static gfp_t slab_gfp_mask __read_mostly = SLAB_GFP_BOOT_MASK;
-> +static gfp_t slab_gfp_mask __read_mostly = GFP_BOOT_MASK;
->  
->  #ifdef CONFIG_NUMA
->  static inline int slab_numa(struct kmem_cache *s)
-> -- 
-> 1.6.3.1
-> 
+closer, but not quite just yet ...
+do_csum: mismatch 0x1700 != 0xa0d len:2
+do_csum: {  0xd, 0xa }
+do_csum: mismatch 0x6f76 != 0x4f96 len:255
+do_csum: {  0x20, 0x34, 0x34, 0x34, 0x20, 0x53, 0x20, 0x20, 0x20,
+0x20, 0x2d, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x73, 0x68, 0x20, 0xd, 0xa,
+0x20, 0x20, 0x31, 0x30, 0x35, 0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20,
+0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x34, 0x34, 0x20, 0x53,
+0x20, 0x20, 0x20, 0x20, 0x2f, 0x73, 0x62, 0x69, 0x6e, 0x2f, 0x69,
+0x6e, 0x65, 0x74, 0x64, 0x20, 0xd, 0xa, 0x20, 0x20, 0x31, 0x30, 0x36,
+0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+0x20, 0x34, 0x33, 0x36, 0x20, 0x53, 0x20, 0x20, 0x20, 0x20, 0x2f,
+0x73, 0x62, 0x69, 0x6e, 0x2f, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
+0x64, 0x20, 0x2d, 0x6e, 0x20, 0xd, 0xa, 0x20, 0x20, 0x31, 0x30, 0x37,
+0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+0x20, 0x34, 0x33, 0x32, 0x20, 0x52, 0x20, 0x20, 0x20, 0x20, 0x2f,
+0x73, 0x62, 0x69, 0x6e, 0x2f, 0x6b, 0x6c, 0x6f, 0x67, 0x64, 0x20,
+0x2d, 0x6e, 0x20, 0xd, 0xa, 0x20, 0x20, 0x31, 0x30, 0x38, 0x20, 0x72,
+0x6f, 0x6f, 0x74, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+0x33, 0x32, 0x20, 0x53, 0x20, 0x20, 0x20, 0x20, 0x2f, 0x62, 0x69,
+0x6e, 0x2f, 0x77, 0x61, 0x7
+4, 0x63, 0x68, 0x64, 0x6f, 0x67, 0x64, 0x20, 0x2d, 0x66, 0x20, 0x2d,
+0x73, 0x20, 0xd, 0xa, 0x20, 0x20, 0x31, 0x30, 0x39, 0x20, 0x72, 0x6f,
+0x6f, 0x74, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x35,
+0x36, 0x20, 0x52, 0x20, 0x20, 0x20, 0x20, 0x2f, 0x62, 0x69, 0x6e,
+0x2f, 0x74, 0x65, 0x6c, 0x6e, 0x65, 0x74, 0x64, 0x20, 0xd, 0xa, 0x20,
+0x20, 0x31, 0x31, 0x30, 0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20,
+0x20, 0x20, 0x20, 0x20 }
 
+when do_csum does return correct values, csum_partial sometimes does not:
+csum_partial: mismatch 0x1101eefe != 0xffff len:32
+csum_partial: {  0x92, 0x3b, 0x0, 0x17, 0xcf, 0xc1, 0x90, 0xec, 0x1c,
+0x3f, 0xff, 0x99, 0x80, 0x10, 0x0, 0x5c, 0x22, 0xfa, 0x0, 0x0, 0x1,
+0x1, 0x8, 0xa, 0x6, 0x83, 0xdd, 0x50, 0xff, 0xfe, 0xdf, 0x58 }
+
+btw, would it make sense to change do_csum like so:
+-static unsigned int do_csum(const unsigned char *buff, int len)
++__weak unsigned int do_csum(const unsigned char *buff, int len)
+
+after all, it looks like that's really the function most arches would
+want to hand optimize.  all the rest are simple standard wrappers are
+do_csum().  forcing an arch to copy & paste all the other functions
+just so they can implement an optimized do_csum() seems pretty
+unfriendly.  plus, it isnt like being static here makes any optimized
+difference -- it isnt going to get inlined anywhere in this file.
+
+or rather than weaks (in case some toolchains force indirect pointer
+loading all the time), use the same interface as the rest of the
+generic checksum code:
+#ifndef do_csum
+static inline unsigned short from32to16(unsigned long x)
+{
+    ...
+}
+static unsigned int do_csum(const unsigned char *buff, int len)
+{
+    ...
+}
+#endif
+-mike
