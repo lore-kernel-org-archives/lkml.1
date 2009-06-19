@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbZFSScl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbZFSSej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbZFSScl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 14:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbZFSSce
+	id S1758731AbZFSSej (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 14:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZFSSec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 14:32:34 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:58591 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbZFSScd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 14:32:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=QSXUJxw25fgyG3wlsw/cOLDhY72qr77ukNxN7w70kIeSX4DfoN2Vs4ebe0NN6PU3Cg
-         MyrXJrnLM+x4ZZfvlWWzOhKDciFb3V4YRw+s16YAfY5/K/0Ai2cAOqeMVSRMRWXVtYNJ
-         RlGyyqpB45eJ6PyDY5chd3mCOtMwxu+o7Wf0c=
-MIME-Version: 1.0
-In-Reply-To: <200906191307.45135.rgetz@blackfin.uclinux.org>
-References: <8bd0f97a0906180824y17a00110i57565aee16207e5@mail.gmail.com> 
-	<200906190854.13052.rgetz@blackfin.uclinux.org> <8bd0f97a0906190614x2ed27fcdrb59ea339eb45ba82@mail.gmail.com> 
-	<200906191307.45135.rgetz@blackfin.uclinux.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 19 Jun 2009 14:32:15 -0400
-Message-ID: <8bd0f97a0906191132n42eda4e3n680503c56f22640a@mail.gmail.com>
-Subject: Re: module version magic and arches with symbol prefixes
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 19 Jun 2009 14:34:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53342 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750821AbZFSSeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 14:34:31 -0400
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-Id: <76DA7CFF-D6C7-44C3-BEC6-B7FDC6577B74@redhat.com>
+From: Jonathan Brassow <jbrassow@redhat.com>
+To: device-mapper development <dm-devel@redhat.com>
+In-Reply-To: <4A3BCD0D.3010801@oracle.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [dm-devel] [PATCH -next] dm: dm-log-userspace depends on NET
+Date: Fri, 19 Jun 2009 13:31:39 -0500
+References: <20090619172622.05adb236.sfr@canb.auug.org.au> <4A3BCD0D.3010801@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 13:07, Robin Getz wrote:
-> On Fri 19 Jun 2009 09:14, Mike Frysinger pondered:
->> On Fri, Jun 19, 2009 at 08:54, Robin Getz wrote:
->> > On Fri 19 Jun 2009 01:38, Rusty Russell pondered:
->> >> No, it means the kernel didn't build properly.
->> >
->> > Or a module didn't build properly.
->>
->> nah, when i talked to you earlier i was wrong -- this find_symbol() is
->> looking up the symbol in the kernel, not in the module.  the lookup of
->> the symbol in the requested module actually works.
->
-> Wouldn't it make sense to move this somewhere else then? and add a
-> __initcall() for it? We should only need to check for it once - it would make
-> things insignificantly faster, and smaller :)
+Thanks, I've pulled this into my patch.
 
-it would also have the advantage of the BUG() being noticed sooner ...
-but up to Rusty i guess.
--mike
+  brassow
+
+On Jun 19, 2009, at 12:38 PM, Randy Dunlap wrote:
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> DM_LOG_USERSPACE selects CONNECTOR, but when NET is not enabled,  
+> this is
+> useless and the build fails, so make DM_LOG_USERSPACE depend on NET.
+>
+> ERROR: "netlink_has_listeners" [drivers/connector/cn.ko] undefined!
+> ERROR: "proc_net_fops_create" [drivers/connector/cn.ko] undefined!
+> ERROR: "netlink_kernel_create" [drivers/connector/cn.ko] undefined!
+> ERROR: "proc_net_remove" [drivers/connector/cn.ko] undefined!
+> ERROR: "netlink_kernel_release" [drivers/connector/cn.ko] undefined!
+> ERROR: "init_net" [drivers/connector/cn.ko] undefined!
+> ERROR: "__alloc_skb" [drivers/connector/cn.ko] undefined!
+> ERROR: "netlink_broadcast" [drivers/connector/cn.ko] undefined!
+> ERROR: "kfree_skb" [drivers/connector/cn.ko] undefined!
+> ERROR: "skb_put" [drivers/connector/cn.ko] undefined!
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Jonathan Brassow <dm-devel@redhat.com>
+> Cc: dm-devel@redhat.com
+> ---
+> drivers/md/Kconfig |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> --- linux-next-20090619.orig/drivers/md/Kconfig
+> +++ linux-next-20090619/drivers/md/Kconfig
+> @@ -233,7 +233,7 @@ config DM_MIRROR
+>
+> config DM_LOG_USERSPACE
+> 	tristate "Mirror userspace logging (EXPERIMENTAL)"
+> -	depends on DM_MIRROR && EXPERIMENTAL
+> +	depends on DM_MIRROR && EXPERIMENTAL && NET
+> 	select CONNECTOR
+> 	---help---
+> 	  The userspace logging module provides a mechanism for
+>
+>
+>
+> -- 
+> ~Randy
+> LPC 2009, Sept. 23-25, Portland, Oregon
+> http://linuxplumbersconf.org/2009/
+>
+> --
+> dm-devel mailing list
+> dm-devel@redhat.com
+> https://www.redhat.com/mailman/listinfo/dm-devel
+
