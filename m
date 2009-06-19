@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZFSJbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755574AbZFSJcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbZFSJbu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 05:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZFSJbn
+	id S1755574AbZFSJcd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 05:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZFSJc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 05:31:43 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44461 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752747AbZFSJbm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 05:31:42 -0400
-Date: Fri, 19 Jun 2009 10:31:14 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/17] arm: asm/syscall.h (unfinished)
-Message-ID: <20090619093114.GB18246@flint.arm.linux.org.uk>
-References: <20090425000634.313E4FC3C8@magilla.sf.frob.com> <20090425001503.85473FC3C8@magilla.sf.frob.com>
+	Fri, 19 Jun 2009 05:32:26 -0400
+Received: from mga03.intel.com ([143.182.124.21]:17255 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbZFSJcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 05:32:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,251,1243839600"; 
+   d="scan'208";a="156369825"
+Date: Fri, 19 Jun 2009 17:32:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "Wang, Roger" <roger.wang@intel.com>
+Subject: Re: [PATCH 0/3] make mapped executable pages the first class
+	citizen
+Message-ID: <20090619093224.GA30898@localhost>
+References: <20090516090005.916779788@intel.com> <1242485776.32543.834.camel@laptop> <20090617141135.0d622bfe@jbarnes-g45> <20090618012532.GB19732@localhost> <20090619090011.GA30561@localhost> <1245402289.13761.24606.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090425001503.85473FC3C8@magilla.sf.frob.com>
+In-Reply-To: <1245402289.13761.24606.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 24, 2009 at 05:15:03PM -0700, Roland McGrath wrote:
-> The syscall_get_nr() function here is not really right.  I don't
-> know enough about ARM to finish it correctly.  It needs to figure
-> out if the blocked user task is really in the kernel for a system
-> call and return -1 if not.
+On Fri, Jun 19, 2009 at 05:04:49PM +0800, Peter Zijlstra wrote:
+> On Fri, 2009-06-19 at 17:00 +0800, Wu, Fengguang wrote:
+> > [add CC]
+> > 
+> > This OOM case looks like the same bug encountered by David Howells.
+> > 
+> > > Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426766] Active_anon:290797 active_file:28 inactive_anon:97034
+> > > Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426767]  inactive_file:61 unevictable:11322 dirty:0 writeback:0 unstable:0
+> > > Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426768]  free:3341 slab:13776 mapped:5880 pagetables:6851 bounce:0
+> > 
+> > active/inactive_anon pages take up 4/5 memory.  Are you using TMPFS a lot?
+> 
+> I suspect its his GEM thingy ;-)
 
-That bit is rather hard - we maintain no global state as to whether a
-task is in a syscall or not.  We also do not maintain a global view
-of which syscall number is being executed.  The kernel just hasn't
-required either of these things before.
+Very likely - GEM allocates drm objects from the internal tmpfs,
+and libdrm_intel seems to never free drm objects from its cache.
 
-> I also did not try to handle all the different ABI variants, which I
-> don't really understand.
+Thanks,
+Fengguang
 
-There are two places that the syscall number comes from: EABI and thumb
-both use R7.  OABI puts the value in the instruction itself.
-
-In short, I don't know what to do about this either.  I don't think
-there's a quick and simple answer.
-
-Your implementation of syscall_get_arguments() looks wrong - for OABI
-it makes sense because there is no padding in the allocation of registers.
-However, for EABI, there is padding, so 64-bit values always come in
-using an even+odd register number.  Short of maintaining some sort of
-table describing the argument placements for every kernel syscall (eww)
-I'm not sure how this could be fixed.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
