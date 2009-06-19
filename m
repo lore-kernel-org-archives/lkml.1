@@ -1,167 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbZFSRZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbZFSRZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758591AbZFSRZi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 13:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbZFSRZ0
+	id S1758704AbZFSRZx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 13:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbZFSRZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 13:25:26 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:47038 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757990AbZFSRZZ (ORCPT
+	Fri, 19 Jun 2009 13:25:44 -0400
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:46246 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758509AbZFSRZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 13:25:25 -0400
-Date: Fri, 19 Jun 2009 22:55:12 +0530
+	Fri, 19 Jun 2009 13:25:44 -0400
+Date: Fri, 19 Jun 2009 22:55:31 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 2/3] ksym_tracer: Allow bulk removal using empty or
-	wildcard string input
-Message-ID: <20090619172512.GC26071@in.ibm.com>
+Subject: [Patch 3/3] ksym_tracer: Documentation containing usage guide for
+	ksym tracer
+Message-ID: <20090619172531.GD26071@in.ibm.com>
 References: <20090619172035.443923337@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=enable_new_features_02
+Content-Disposition: inline; filename=documentation_patch_03
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Accept an empty string or wildcard input (of the form *:---) as input for
-ksym_trace_filter to perform bulk removal of all monitored entries.
+This patch adds documentation for the ksym tracer plugin in ftrace. It
+contains a minimal usage guide for the same.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
- kernel/trace/trace_ksym.c |   75 +++++++++++++++++++++++++---------------------
- 1 file changed, 42 insertions(+), 33 deletions(-)
+ Documentation/trace/ksym_tracer.txt |   90 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
 
-Index: linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+Index: linux-2.6-tip.hbkpt/Documentation/trace/ksym_tracer.txt
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
-+++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
-@@ -138,6 +138,34 @@ static int ksym_trace_get_access_type(ch
- 	return access;
- }
- 
-+static void ksym_trace_reset(struct trace_array *tr)
-+{
-+	struct trace_ksym *entry;
-+	struct hlist_node *node, *node1;
+--- /dev/null
++++ linux-2.6-tip.hbkpt/Documentation/trace/ksym_tracer.txt
+@@ -0,0 +1,90 @@
++			ksym_tracer - Kernel Symbol Tracer
++			----------------------------------
++			K.Prasad <prasad@linux.vnet.ibm.com>
++I. Introduction
++===============
 +
-+	ksym_tracing_enabled = 0;
++ksym_tracer uses the Hardware Breakpoint interface in the kernel to monitor
++kernel variables for memory access operations such as read and write.
 +
-+	mutex_lock(&ksym_tracer_mutex);
-+	hlist_for_each_entry_safe(entry, node, node1, &ksym_filter_head,
-+								ksym_hlist) {
-+		unregister_kernel_hw_breakpoint(entry->ksym_hbp);
-+		ksym_filter_entry_count--;
-+		hlist_del_rcu(&(entry->ksym_hlist));
-+		synchronize_rcu();
-+		/* Free the 'input_string' only if reset
-+		 * after startup self-test
-+		 */
-+#ifdef CONFIG_FTRACE_SELFTEST
-+		if (strncmp(entry->ksym_hbp->info.name, KSYM_SELFTEST_ENTRY,
-+					strlen(KSYM_SELFTEST_ENTRY)) != 0)
-+#endif /* CONFIG_FTRACE_SELFTEST*/
-+			kfree(entry->ksym_hbp->info.name);
-+		kfree(entry->ksym_hbp);
-+		kfree(entry);
-+	}
-+	mutex_unlock(&ksym_tracer_mutex);
-+}
++The number of kernel variables that can be monitored simultaneously is directly
++dependant upon the available free debug registers on the processor at the time
++of request.
 +
- /*
-  * There can be several possible malformed requests and we attempt to capture
-  * all of them. We enumerate some of the rules
-@@ -163,7 +191,7 @@ static int parse_ksym_trace_str(char *in
- 	/* Check for malformed request: (2), (1) and (5) */
- 	if ((!input_string) ||
- 		(strlen(input_string) != (KSYM_TRACER_OP_LEN + 1)) ||
--			(*addr == 0))
-+			((*addr == 0) && strncmp(*ksymname, "*", strlen("*"))))
- 		goto return_code;
- 	ret = ksym_trace_get_access_type(input_string);
- 
-@@ -211,6 +239,7 @@ int process_new_ksym_entry(char *ksymnam
- 	}
- 	hlist_add_head_rcu(&(entry->ksym_hlist), &ksym_filter_head);
- 	ksym_filter_entry_count++;
-+	ksym_tracing_enabled = 1;
- 
- 	return 0;
- }
-@@ -220,7 +249,7 @@ static ssize_t ksym_trace_filter_read(st
- {
- 	struct trace_ksym *entry;
- 	struct hlist_node *node;
--	char buf[KSYM_FILTER_ENTRY_LEN * KSYM_TRACER_MAX];
-+	char buf[KSYM_FILTER_ENTRY_LEN * KSYM_TRACER_MAX] = "\0";
- 	ssize_t ret, cnt = 0;
- 
- 	mutex_lock(&ksym_tracer_mutex);
-@@ -251,9 +280,11 @@ static ssize_t ksym_trace_filter_write(s
- 	unsigned long ksym_addr = 0;
- 	int ret, op, changed = 0;
- 
--	/* Ignore echo "" > ksym_trace_filter */
--	if (count == 0)
--		return 0;
-+	/* Clear all breakpoint requests if echo "" > ksym_trace_filter */
-+	if (count == 1) {
-+		ksym_trace_reset(NULL);
-+		return count;
-+	}
- 
- 	input_string = kzalloc(count, GFP_KERNEL);
- 	if (!input_string)
-@@ -269,6 +300,12 @@ static ssize_t ksym_trace_filter_write(s
- 		kfree(input_string);
- 		return ret;
- 	}
-+	/* Clear all breakpoints if echo "*:---" > ksym_trace_filter */
-+	if ((strncmp(ksymname, "*", strlen("*")) == 0) && (op == 0)) {
-+		ksym_trace_reset(NULL);
-+		kfree(input_string);
-+		return count;
-+	}
- 
- 	mutex_lock(&ksym_tracer_mutex);
- 
-@@ -325,34 +362,6 @@ static const struct file_operations ksym
- 	.write		= ksym_trace_filter_write,
- };
- 
--static void ksym_trace_reset(struct trace_array *tr)
--{
--	struct trace_ksym *entry;
--	struct hlist_node *node, *node1;
--
--	ksym_tracing_enabled = 0;
--
--	mutex_lock(&ksym_tracer_mutex);
--	hlist_for_each_entry_safe(entry, node, node1, &ksym_filter_head,
--								ksym_hlist) {
--		unregister_kernel_hw_breakpoint(entry->ksym_hbp);
--		ksym_filter_entry_count--;
--		hlist_del_rcu(&(entry->ksym_hlist));
--		synchronize_rcu();
--		/* Free the 'input_string' only if reset
--		 * after startup self-test
--		 */
--#ifdef CONFIG_FTRACE_SELFTEST
--		if (strncmp(entry->ksym_hbp->info.name, KSYM_SELFTEST_ENTRY,
--					strlen(KSYM_SELFTEST_ENTRY)) != 0)
--#endif /* CONFIG_FTRACE_SELFTEST*/
--			kfree(entry->ksym_hbp->info.name);
--		kfree(entry->ksym_hbp);
--		kfree(entry);
--	}
--	mutex_unlock(&ksym_tracer_mutex);
--}
--
- static int ksym_trace_init(struct trace_array *tr)
- {
- 	int cpu, ret = 0;
++If the memory access operation on the variable added to the ksym tracer occurs,
++a trace containing details such as symbol name, function that accessed the
++variable, PID and cpu are logged onto the ring buffer.
++
++ksym tracer's use-cases can include the following:
++- Debug memory corruption issues: Trace write operations on a variable that is
++known to get corrupted on a system under debug
++- Profile variables: Understand how often a variable is being used by the
++system (such as read-mostly or write-mostly).
++
++II. Usage Guide
++===============
++
++The following is a list of steps to monitor a kernel variable using ksym
++tracer. It is illustrated by taking 'pid_max' as the kernel variable to be
++monitored.
++
++1) Mount debugfs to a directory on your system, say /sys/kernel/debug
++2) The memory access operations for which you want to monitor the variable can
++be specified as follows:
++ <ksym_name>:rwx
++The type of operation can be specified in three characters, and the valid
++combinations are dependant on the host processor. On x86 processors, the valid
++requests are '-w-' (write operations only) and 'rw-' (read or write
++operations). So to monitor 'pid_max' for write the corresponding string would be
++"pid_max:-w-".
++3) Do 'cat available_tracers' in <debugfs_mount>/tracing/ to check if
++'ksym_tracer' is listed as one of the available tracer. A 'ksym_trace_filter'
++file should be available to accept the kernel symbol inputs.
++4) echo  the kernel symbol along with the type operation string to
++ksym_trace_filter.
++e.g. echo pid_max:-w- > ksym_trace_filter
++Lookout for any error messages in the shell after the echo and in dmesg that
++indicates a failure of the request.
++5) Make sure that tracing is enabled by checking for 1 in 'tracing_enabled'
++file, if not 'echo 1 > tracing_enabled' to start tracing.
++
++Now a breakpoint over the kernel symbol (pid_max in this example) is active and
++is monitoring for any operations of the requested type. Upon such an operation,
++a trace containing the following information is logged and is available in the
++'trace' file.
++
++For instance, in case of the above example, the 'trace' file looks as shown
++below:
++# echo 32621 > /proc/sys/kernel/pid_max
++# cat trace
++# tracer: ksym_tracer
++#
++#       TASK-PID      CPU#      Symbol         Type    Function
++#          |           |          |              |         |
++bash            3027  2   pid_max               W  do_proc_dointvec_minmax_conv
++#
++
++In order to remove the trace, the kernel symbol should be echoed with all
++operators set to '-' like this '<ksym_name>:---'. For example,
++echo pid_max:--- > ksym_trace_filter.
++
++Alternatively if you choose to unregister all requests simultaneously you may
++do either of the following;
++echo > ksym_trace_filter
++echo *:--- > ksym_trace_filter
++
++The ksym tracer also provides a consolidated hit-counter that indicates the
++number of times a variable was subjected to the specified memory access
++operation. This is available in the file
++<debugfs_mount>/tracing/trace_stat/ksym_tracer.
++
++Limitations
++------------
++The known limitations of the ksym tracer are listed below. Efforts are
++through to support many of feature limitations.
++
++- ksym tracer can monitor only primary data types (such as int, char) and not
++arrays or instances or members of any structure.
++- Symbols that are defined in modules are not resolved by ksym tracer's symbol
++resolution mechanism.
++- Monitoring either read or write only is not supported on all processors.
 
