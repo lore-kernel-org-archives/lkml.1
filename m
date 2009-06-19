@@ -1,35 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbZFSWWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZFSWWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbZFSWWa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZFSWWX
+	id S1755169AbZFSWWx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZFSWWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:22:23 -0400
-Received: from khc.piap.pl ([195.187.100.11]:42905 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbZFSWWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:22:23 -0400
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>, Dave Airlie <airlied@linux.ie>,
-       Keith Packard <keithp@keithp.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net
-Subject: Re: Trivial fixes for drivers/gpu/drm/i915/
-References: <m34ouc55ka.fsf@intrepid.localdomain>
-	<1245443718.15367.46.camel@violet> <4A3C00E7.9020808@oracle.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 20 Jun 2009 00:22:22 +0200
-In-Reply-To: <4A3C00E7.9020808@oracle.com> (Randy Dunlap's message of "Fri\, 19 Jun 2009 14\:19\:35 -0700")
-Message-ID: <m3tz2b50f5.fsf@intrepid.localdomain>
+	Fri, 19 Jun 2009 18:22:45 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54660 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324AbZFSWWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 18:22:45 -0400
+Date: Sat, 20 Jun 2009 00:22:41 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: penberg@cs.helsinki.fi, Greg KH <greg@kroah.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: staging: w35und: fix compilation
+Message-ID: <20090619222241.GA2304@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap <randy.dunlap@oracle.com> writes:
 
-> I.e., using %zd or %zu is the preferred fix.
+config_interface was removed in 2.6.30, remove it from w35und, too, to
+fix compilation.
 
-Good to know, thanks.
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+---
+commit dd28ea7e716406f9c2e8c57866eff92b0cff04a1
+tree a45925fc0294d7928833d1a8969741431892597f
+parent 22f05b72219e0b6e9f7cf56c3580ad6c9fe66515
+author Pavel <pavel@ucw.cz> Sat, 20 Jun 2009 00:21:29 +0200
+committer Pavel <pavel@ucw.cz> Sat, 20 Jun 2009 00:21:29 +0200
+
+ drivers/staging/winbond/wbusb.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+index 3b2d528..87d6c62 100644
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -167,14 +167,6 @@ static int wbsoft_config(struct ieee80211_hw *dev, u32 changed)
+ 	return 0;
+ }
+ 
+-static int wbsoft_config_interface(struct ieee80211_hw *dev,
+-				    struct ieee80211_vif *vif,
+-				    struct ieee80211_if_conf *conf)
+-{
+-	printk("wbsoft_config_interface called\n");
+-	return 0;
+-}
+-
+ static u64 wbsoft_get_tsf(struct ieee80211_hw *dev)
+ {
+ 	printk("wbsoft_get_tsf called\n");
+@@ -188,7 +180,6 @@ static const struct ieee80211_ops wbsoft_ops = {
+ 	.add_interface		= wbsoft_add_interface,
+ 	.remove_interface	= wbsoft_remove_interface,
+ 	.config			= wbsoft_config,
+-	.config_interface	= wbsoft_config_interface,
+ 	.configure_filter	= wbsoft_configure_filter,
+ 	.get_stats		= wbsoft_get_stats,
+ 	.get_tx_stats		= wbsoft_get_tx_stats,
+
 -- 
-Krzysztof Halasa
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
