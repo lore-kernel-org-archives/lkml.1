@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbZFSGab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZFSGbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755726AbZFSGab (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 02:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZFSGaX
+	id S1756337AbZFSGbA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 02:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZFSGax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 02:30:23 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44757 "EHLO smtps.tip.net.au"
+	Fri, 19 Jun 2009 02:30:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52555 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752115AbZFSGaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 02:30:23 -0400
-Date: Fri, 19 Jun 2009 16:30:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: origin tree build failure
-Message-Id: <20090619163021.8ae4c588.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	id S1752049AbZFSGaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 02:30:52 -0400
+Subject: Re: [PATCH 0/5, resend] x86: use asm-generic headers where possible
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <cover.1245354003.git.arnd@arndb.de>
+References: <cover.1245354003.git.arnd@arndb.de>
+Content-Type: text/plain
+Date: Fri, 19 Jun 2009 12:00:58 +0530
+Message-Id: <1245393058.2463.13.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__19_Jun_2009_16_30_21_+1000_7ObvBuuUABKfXRC3"
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__19_Jun_2009_16_30_21_+1000_7ObvBuuUABKfXRC3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello Arnd,
 
-Hi all,
+On Thu, 2009-06-18 at 21:48 +0200, Arnd Bergmann wrote:
+> I did not get any feedback on this the last time I sent it,
+> but now these patches actually apply to the mainline kernel
+> so it's possible to apply them.
+> 
+> I've split the series up into five patches for easier review.
+> Each step should show clearly that no semantic changes are
+> introduced, with the exception of termios.h, which was
+> discussed earlier.
+> 
 
-Today's linux-next build (powerpc64, gcc 4.1.3) failed like this:
+Nice work.
 
-drivers/video/logo/logo_linux_mono.c:11: error: logo_linux_mono_data causes=
- a section type conflict
+IMHO, if you provide above steps for each file for all architecture then
+it shows clearly how generic that file is and no one should have any
+objection as long as nothing breaks and because of generic percentage
+(percentage above 70 % will be better one). And collect acks from
+maintainers and send pull request to Linus.
 
-Caused by commit ae52bb2384f721562f15f719de1acb8e934733cb ("fbdev: move
-logo externs to header file") but probably really a compiler bug as gcc
-4.3 and 4.4 do not get this error.  I have reverted that commit for
-today, but we really need some workaround as gcc 4.1.3 is not uncommon.
+If you also provide complete diff, then it looks much better.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+And if you need my help just ping me :-)
 
---Signature=_Fri__19_Jun_2009_16_30_21_+1000_7ObvBuuUABKfXRC3
-Content-Type: application/pgp-signature
+Thanks,
+--
+JSR
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko7MH0ACgkQjjKRsyhoI8x+8wCfQ4lW8oNK9v1Uun0tG3nOmVVe
-iFUAn2r5XwH1dhJ2b7MaFSQaDFV8TLiW
-=B0ex
------END PGP SIGNATURE-----
-
---Signature=_Fri__19_Jun_2009_16_30_21_+1000_7ObvBuuUABKfXRC3--
