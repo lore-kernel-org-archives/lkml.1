@@ -1,129 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZFSUbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbZFSUb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbZFSUbQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 16:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZFSUaf
+	id S1757934AbZFSUb3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 16:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757476AbZFSUbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 16:30:35 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:40505 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753171AbZFSUad (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 16:30:33 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: mchehab@infradead.org
-Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 3/4] V4L: hdpvr, fix lock imbalances
-Date: Fri, 19 Jun 2009 22:30:06 +0200
-Message-Id: <1245443407-17410-3-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.2
-In-Reply-To: <1245443407-17410-1-git-send-email-jirislaby@gmail.com>
-References: <1245443407-17410-1-git-send-email-jirislaby@gmail.com>
+	Fri, 19 Jun 2009 16:31:14 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:54436 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757470AbZFSUbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 16:31:13 -0400
+Message-ID: <4A3BF591.3060500@msgid.tls.msk.ru>
+Date: Sat, 20 Jun 2009 00:31:13 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: ronis@ronispc.chem.mcgill.ca
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Panic booting 2.6.30
+References: <1245439404.25076.7.camel@ronispc.chem.mcgill.ca>	 <4A3BE7EA.4050800@msgid.tls.msk.ru> <1245442742.25076.9.camel@ronispc.chem.mcgill.ca>
+In-Reply-To: <1245442742.25076.9.camel@ronispc.chem.mcgill.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are many lock imbalances in this driver. Fix all found.
+David Ronis wrote:
+> Thanks for the reply.  I added large-memory to lilo.conf, reran lilo,
+> and rebooted.  I get the same problem, except now the unknown-block was
+> 3,2. when I boot without specifying root=hda2, with root=hda2 I get the
+> same behavior.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/media/video/hdpvr/hdpvr-core.c  |   12 ++++++------
- drivers/media/video/hdpvr/hdpvr-video.c |    6 ++++--
- 2 files changed, 10 insertions(+), 8 deletions(-)
+In that case you'll have to provide much more details.  Boot log probably
+using netconsole.  Check config differences.
 
-diff --git a/drivers/media/video/hdpvr/hdpvr-core.c b/drivers/media/video/hdpvr/hdpvr-core.c
-index 188bd5a..1c9bc94 100644
---- a/drivers/media/video/hdpvr/hdpvr-core.c
-+++ b/drivers/media/video/hdpvr/hdpvr-core.c
-@@ -126,7 +126,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 	char *print_buf = kzalloc(5*buf_size+1, GFP_KERNEL);
- 	if (!print_buf) {
- 		v4l2_err(&dev->v4l2_dev, "Out of memory\n");
--		goto error;
-+		return retval;
- 	}
- #endif
- 
-@@ -140,7 +140,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 	if (ret != 46) {
- 		v4l2_err(&dev->v4l2_dev,
- 			 "unexpected answer of status request, len %d\n", ret);
--		goto error;
-+		goto unlock;
- 	}
- #ifdef HDPVR_DEBUG
- 	else {
-@@ -163,7 +163,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 		v4l2_err(&dev->v4l2_dev, "unknown firmware version 0x%x\n",
- 			dev->usbc_buf[1]);
- 		ret = -EINVAL;
--		goto error;
-+		goto unlock;
- 	}
- 
- 	response = dev->usbc_buf+38;
-@@ -188,10 +188,10 @@ static int device_authorization(struct hdpvr_device *dev)
- 			      10000);
- 	v4l2_dbg(MSG_INFO, hdpvr_debug, &dev->v4l2_dev,
- 		 "magic request returned %d\n", ret);
--	mutex_unlock(&dev->usbc_mutex);
- 
- 	retval = ret != 8;
--error:
-+unlock:
-+	mutex_unlock(&dev->usbc_mutex);
- 	return retval;
- }
- 
-@@ -350,6 +350,7 @@ static int hdpvr_probe(struct usb_interface *interface,
- 
- 	mutex_lock(&dev->io_mutex);
- 	if (hdpvr_alloc_buffers(dev, NUM_BUFFERS)) {
-+		mutex_unlock(&dev->io_mutex);
- 		v4l2_err(&dev->v4l2_dev,
- 			 "allocating transfer buffers failed\n");
- 		goto error;
-@@ -381,7 +382,6 @@ static int hdpvr_probe(struct usb_interface *interface,
- 
- error:
- 	if (dev) {
--		mutex_unlock(&dev->io_mutex);
- 		/* this frees allocated memory */
- 		hdpvr_delete(dev);
- 	}
-diff --git a/drivers/media/video/hdpvr/hdpvr-video.c b/drivers/media/video/hdpvr/hdpvr-video.c
-index ccd47f5..5937de2 100644
---- a/drivers/media/video/hdpvr/hdpvr-video.c
-+++ b/drivers/media/video/hdpvr/hdpvr-video.c
-@@ -375,6 +375,7 @@ static int hdpvr_open(struct file *file)
- 	 * in resumption */
- 	mutex_lock(&dev->io_mutex);
- 	dev->open_count++;
-+	mutex_unlock(&dev->io_mutex);
- 
- 	fh->dev = dev;
- 
-@@ -383,7 +384,6 @@ static int hdpvr_open(struct file *file)
- 
- 	retval = 0;
- err:
--	mutex_unlock(&dev->io_mutex);
- 	return retval;
- }
- 
-@@ -519,8 +519,10 @@ static unsigned int hdpvr_poll(struct file *filp, poll_table *wait)
- 
- 	mutex_lock(&dev->io_mutex);
- 
--	if (video_is_unregistered(dev->video_dev))
-+	if (video_is_unregistered(dev->video_dev)) {
-+		mutex_unlock(&dev->io_mutex);
- 		return -EIO;
-+	}
- 
- 	if (dev->status == STATUS_IDLE) {
- 		if (hdpvr_start_streaming(dev)) {
--- 
-1.6.3.2
+I suggested large-memory lilo option because your lilo.conf didn't have
+it and 2.6.30 is known to outgrow default lilo assumptions.  So it wasn't
+your case, it has to be in config change or in something failing during
+boot.
 
+Examine boot log (you can try adding vga=ask and choosing the largest
+resolution offered, and also try loglevel=4 or loglevel=5 this will
+reduce printk noise printed on the console) and config changes.
+
+And please don't top-post.
+
+/mjt
