@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZFSTda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZFSTkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbZFSTda (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 15:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbZFSTdV
+	id S1753351AbZFSTkw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 15:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZFSTko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 15:33:21 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:34806 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbZFSTdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 15:33:21 -0400
-Date: Fri, 19 Jun 2009 21:33:14 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Harald Welte <HaraldWelte@viatech.com>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sdhci: Specific quirk vor VIA SDHCI controller in
- VX855ES
-Message-ID: <20090619213314.150f0d98@mjolnir.ossman.eu>
-In-Reply-To: <20090618145338.GX7692@prithivi.gnumonks.org>
-References: <20090618145338.GX7692@prithivi.gnumonks.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-11050-1245440002-0001-2"
+	Fri, 19 Jun 2009 15:40:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45694 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751654AbZFSTko (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 15:40:44 -0400
+Date: Fri, 19 Jun 2009 12:39:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Tejun Heo <tj@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, kyle@mcmartin.ca
+Subject: Re: [GIT PULL] percpu for 2.6.31
+In-Reply-To: <20090619053944.GB8162@elte.hu>
+Message-ID: <alpine.LFD.2.01.0906191235490.16802@localhost.localdomain>
+References: <4A39F5B4.1070305@kernel.org> <alpine.LFD.2.01.0906181421460.16802@localhost.localdomain> <4A3AC0BA.4000407@kernel.org> <4A3AEE42.4010300@kernel.org> <20090619053944.GB8162@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.ossman.eu-11050-1245440002-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 18 Jun 2009 16:53:38 +0200
-Harald Welte <HaraldWelte@viatech.com> wrote:
+On Fri, 19 Jun 2009, Ingo Molnar wrote:
+> 
+> ( Many wont btw: we still dont have lockdep support in all
+>   architectures - 3 years and counting. It's a highly useful purely
+>   sw feature with zero hardware dependencies. Fortunately it's
+>   well-modularized and the functionality is non-essential. Percpu
+>   allocation is not so lucky as it's essential functionality. )
 
-> The SDHCI controller found in the VX855ES requires 10ms
-> delay between applying power and applying clock.
->=20
-> This issue has been discovered and documented by the OLPC XO1.5 team.
->=20
-> Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-> ---
+When it coems to code coverage, x86 matters _so_ much more than any other 
+architecture, that verification features like lockdep etc are way more 
+important on x86 than on anything else.
 
-Does this block have a name? Something nicer than 0x95d0 in the id list
-would be nice.
+Sure, there may be locking issues in some arch-specific code, and other 
+architectures could be better off caring. But the advantage of lockdep for 
+some pissant architecture that has a very limited user base (maybe lots of 
+chips, but much more limited _use_ - fewer drivers, fewer workloads etc) 
+is much lower, since those architectures know that x86 will give them 99% 
+of the coverage.
 
-(Same thing goes for the via-sdmmc driver btw).
+So it's quite reasonable to think that other architectures simply care 
+less.
 
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-11050-1245440002-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAko76AAACgkQ7b8eESbyJLh0zgCg5LpoLLkgxH3Mv/9l8vUOz0pF
-TFwAoK6uEtsWFH3n/5O3XvP4sNkM2Iws
-=ZyA0
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-11050-1245440002-0001-2--
+			Linus
