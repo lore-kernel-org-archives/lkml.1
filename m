@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZFSFcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZFSFdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZFSFcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 01:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZFSFcG
+	id S1754796AbZFSFdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 01:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbZFSFc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 01:32:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47408 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbZFSFcF convert rfc822-to-8bit (ORCPT
+	Fri, 19 Jun 2009 01:32:57 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:38734 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbZFSFc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 01:32:05 -0400
-Date: Thu, 18 Jun 2009 22:32:38 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, tglx@tglx.de, alan@lxorguk.ukuu.org.uk,
-       rjw@sisk.pl, netdev@vger.kernel.org, mingo@elte.hu, dwmw2@infradead.org,
-       alsa-devel@alsa-project.org, dri-devel@lists.sourceforge.net
-Subject: Re: kerneloops.org report for the week of June 14 2009
-Message-ID: <20090618223238.4d6b6707@infradead.org>
-In-Reply-To: <b6c5339f0906181008v1cd4b06aof866ea9a91d2eb84@mail.gmail.com>
-References: <20090614173331.18f01123@infradead.org>
-	<b6c5339f0906181008v1cd4b06aof866ea9a91d2eb84@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 19 Jun 2009 01:32:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fYDs345o1c3sHsnzvw9ZPttGgTXVEG0lPM0AGGO4g8nSS5UcMuw4t6GIR5l+ya/Ssj
+         TPM+CkC7Pg/3l+ei4ZEpj2o0lEBVPASDEuZlOmTJsaGGG/N3xKNhRHZxV+D4h1VY/3/H
+         93zAcJLPW4rHZbd8Uo+1uI55StIb6KaQBIxN0=
+MIME-Version: 1.0
+In-Reply-To: <4A3AC0C4.6060508@goop.org>
+References: <4A329CF8.4050502@goop.org>
+	 <alpine.LFD.2.00.0906181206190.4213@localhost.localdomain>
+	 <4A3A9220.4070807@goop.org> <m1zlc5jqac.fsf@fess.ebiederm.org>
+	 <4A3A99FB.7070807@goop.org> <m1vdmtgtt2.fsf@fess.ebiederm.org>
+	 <4A3AC0C4.6060508@goop.org>
+Date: Thu, 18 Jun 2009 22:32:59 -0700
+Message-ID: <86802c440906182232r31088e4fh3613a8da6f8903f7@mail.gmail.com>
+Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's 
+	no local APIC
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Jun 2009 13:08:39 -0400
-Bob Copeland <me@bobcopeland.com> wrote:
+doesn't XEN support per cpu irq vector?
 
-> On Sun, Jun 14, 2009 at 8:33 PM, Arjan van de
-> Ven<arjan@infradead.org> wrote:
-> > Rank 9: minstrel_get_rate (warning)
-> >        Reported 64 times (384 total reports)
-> >        Issue with the ath5k driver
-> >        This warning was last seen in version 2.6.30-rc3, and first
-> > seen in 2.6.27.12. More info:
-> > http://www.kerneloops.org/searchweek.php?search=minstrel_get_rate
-> 
-> I believe this is fixed by http://lkml.org/lkml/2009/6/5/269, now
-> in pre-2.6.31.  Hmm, odd though, we should be seeing reports from
-> other wireless drivers since it's a general memory corruption
-> unrelated to ath5k (but not all use the mac80211 rate controllers).
-> 
+got sth from XEN 3.3 / SLES 11
 
-well.. out of the 534 reports or so that I have by now... 525 have
-ath5k loaded.....
+igb 0000:81:00.0: PCI INT A -> GSI 95 (level, low) -> IRQ 95
+igb 0000:81:00.0: setting latency timer to 64
+igb 0000:81:00.0: Intel(R) Gigabit Ethernet Network Connection
+igb 0000:81:00.0: eth9: (PCIe:2.5Gb/s:Width x4) 00:21:28:3a:d8:0e
+igb 0000:81:00.0: eth9: PBA No: ffffff-0ff
+igb 0000:81:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+vendor=8086 device=3420
+(XEN) irq.c:847: dom0: invalid pirq 94 or vector -28
+igb 0000:81:00.1: PCI INT B -> GSI 94 (level, low) -> IRQ 94
+igb 0000:81:00.1: setting latency timer to 64
+(XEN) physdev.c:87: dom0: map irq with wrong vector -28
+map irq failed
+(XEN) physdev.c:87: dom0: map irq with wrong vector -28
+map irq failed
 
-it's not 100% but it'd pretty close.
+the system need a lot of MSI-X normally.. with current mainline tree
+kernel, it will need about 360 irq...
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+YH
