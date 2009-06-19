@@ -1,61 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbZFSWi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760938AbZFSWhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761386AbZFSWi7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760994AbZFSWhX
+	id S1760938AbZFSWhO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759492AbZFSWci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:37:23 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:8619 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760972AbZFSWhV (ORCPT
+	Fri, 19 Jun 2009 18:32:38 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:44733 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbZFSWbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:37:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=hrNPi2XM8+C2m4Mx38brxoybl1BaJYAMFZDryjb9Nrs9Wi0eaWrOA7cnJMU9+To0i
-	X1x3JxIaqZRQEw1c944Tw==
-Date: Fri, 19 Jun 2009 15:37:17 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: David Miller <davem@davemloft.net>, eric.dumazet@gmail.com,
-       jpiszcz@lucidpixels.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
-In-Reply-To: <m1ljnoyn0e.fsf@fess.ebiederm.org>
-Message-ID: <alpine.DEB.2.00.0906191524470.30455@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com> <20090618.120034.246557840.davem@davemloft.net> <alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com> <20090618.123708.78849607.davem@davemloft.net>
- <m1ljnoyn0e.fsf@fess.ebiederm.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 19 Jun 2009 18:31:08 -0400
+From: Sage Weil <sage@newdream.net>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       greg@kroah.com
+Cc: Sage Weil <sage@newdream.net>
+Subject: [PATCH 19/21] ceph: debugging
+Date: Fri, 19 Jun 2009 15:31:40 -0700
+Message-Id: <1245450702-31343-20-git-send-email-sage@newdream.net>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1245450702-31343-19-git-send-email-sage@newdream.net>
+References: <1245450702-31343-1-git-send-email-sage@newdream.net>
+ <1245450702-31343-2-git-send-email-sage@newdream.net>
+ <1245450702-31343-3-git-send-email-sage@newdream.net>
+ <1245450702-31343-4-git-send-email-sage@newdream.net>
+ <1245450702-31343-5-git-send-email-sage@newdream.net>
+ <1245450702-31343-6-git-send-email-sage@newdream.net>
+ <1245450702-31343-7-git-send-email-sage@newdream.net>
+ <1245450702-31343-8-git-send-email-sage@newdream.net>
+ <1245450702-31343-9-git-send-email-sage@newdream.net>
+ <1245450702-31343-10-git-send-email-sage@newdream.net>
+ <1245450702-31343-11-git-send-email-sage@newdream.net>
+ <1245450702-31343-12-git-send-email-sage@newdream.net>
+ <1245450702-31343-13-git-send-email-sage@newdream.net>
+ <1245450702-31343-14-git-send-email-sage@newdream.net>
+ <1245450702-31343-15-git-send-email-sage@newdream.net>
+ <1245450702-31343-16-git-send-email-sage@newdream.net>
+ <1245450702-31343-17-git-send-email-sage@newdream.net>
+ <1245450702-31343-18-git-send-email-sage@newdream.net>
+ <1245450702-31343-19-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Jun 2009, Eric W. Biederman wrote:
+Some debugging infrastructure, including the ability to adjust the
+level of debug output on a per-file basis.
 
-> But Mr. Reintjes if you really want the traces I can set up 
-> an script to email them to you every time it happens.  Say about
-> 1 a minute from my paltry little farm of machines.
-> 
+Signed-off-by: Sage Weil <sage@newdream.net>
+---
+ fs/staging/ceph/ceph_debug.h |   86 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 86 insertions(+), 0 deletions(-)
+ create mode 100644 fs/staging/ceph/ceph_debug.h
 
-Perhaps you missed my email where I suggested emitting the page allocation 
-warnings only when CONFIG_DEBUG_VM is enabled.  It's at 
-http://lkml.org/lkml/2009/6/18/355.
+diff --git a/fs/staging/ceph/ceph_debug.h b/fs/staging/ceph/ceph_debug.h
+new file mode 100644
+index 0000000..70a2521
+--- /dev/null
++++ b/fs/staging/ceph/ceph_debug.h
+@@ -0,0 +1,86 @@
++#ifndef _FS_CEPH_DEBUG_H
++#define _FS_CEPH_DEBUG_H
++
++#include <linux/string.h>
++
++extern int ceph_debug __read_mostly;         /* debug level. */
++extern int ceph_debug_console __read_mostly; /* send debug output to console? */
++extern int ceph_debug_mask __read_mostly;
++
++/*
++ * different debug levels for different modules.  These default to -1.
++ * If they are >= 0, then they override the global ceph_debug value.
++ */
++extern int ceph_debug_addr __read_mostly;
++extern int ceph_debug_caps __read_mostly;
++extern int ceph_debug_dir __read_mostly;
++extern int ceph_debug_export __read_mostly;
++extern int ceph_debug_file __read_mostly;
++extern int ceph_debug_inode __read_mostly;
++extern int ceph_debug_ioctl __read_mostly;
++extern int ceph_debug_mdsc __read_mostly;
++extern int ceph_debug_mdsmap __read_mostly;
++extern int ceph_debug_msgr __read_mostly;
++extern int ceph_debug_mon __read_mostly;
++extern int ceph_debug_osdc __read_mostly;
++extern int ceph_debug_osdmap __read_mostly;
++extern int ceph_debug_snap __read_mostly;
++extern int ceph_debug_super __read_mostly;
++extern int ceph_debug_protocol __read_mostly;
++extern int ceph_debug_proc __read_mostly;
++extern int ceph_debug_tools __read_mostly;
++
++#define DOUT_MASK_ADDR		0x00000001
++#define DOUT_MASK_CAPS		0x00000002
++#define DOUT_MASK_DIR		0x00000004
++#define DOUT_MASK_EXPORT	0x00000008
++#define DOUT_MASK_FILE		0x00000010
++#define DOUT_MASK_INODE		0x00000020
++#define DOUT_MASK_IOCTL		0x00000040
++#define DOUT_MASK_MDSC		0x00000080
++#define DOUT_MASK_MDSMAP	0x00000100
++#define DOUT_MASK_MSGR		0x00000200
++#define DOUT_MASK_MON		0x00000400
++#define DOUT_MASK_OSDC		0x00000800
++#define DOUT_MASK_OSDMAP	0x00001000
++#define DOUT_MASK_SNAP		0x00002000
++#define DOUT_MASK_SUPER		0x00004000
++#define DOUT_MASK_PROTOCOL	0x00008000
++#define DOUT_MASK_PROC		0x00010000
++#define DOUT_MASK_TOOLS		0x00020000
++
++#define DOUT_UNMASKABLE	0x80000000
++
++#define _STRINGIFY(x) #x
++#define STRINGIFY(x) _STRINGIFY(x)
++
++#define FMT_PREFIX "%-30.30s: "
++#define FMT_SUFFIX "%s"
++#define LOG_ARGS __FILE__ ":" STRINGIFY(__LINE__)
++#define TRAIL_PARAM ""
++
++#define LOG_LINE FMT_PREFIX fmt, LOG_ARGS, args
++
++#define dout_flag(x, mask, fmt, args...) do {				\
++		if (((ceph_debug_mask | DOUT_UNMASKABLE) & mask) &&	\
++		    ((DOUT_VAR >= 0 && (x) <= DOUT_VAR) ||		\
++		     (DOUT_VAR < 0 && (x) <= ceph_debug))) {		\
++			if (ceph_debug_console)				\
++				printk(KERN_ERR FMT_PREFIX fmt, LOG_ARGS, \
++				       args);				\
++			else						\
++				printk(KERN_DEBUG FMT_PREFIX fmt, LOG_ARGS, \
++				       args);				\
++		}							\
++	} while (0)
++
++#define _dout(x, fmt, args...) dout_flag((x), DOUT_MASK, fmt FMT_SUFFIX, args)
++
++#define _derr(x, fmt, args...) do {					\
++		printk(KERN_ERR FMT_PREFIX fmt FMT_SUFFIX, LOG_ARGS, args); \
++	} while (0)
++
++#define dout(x, args...) _dout((x), args, TRAIL_PARAM)
++#define derr(x, args...) _derr((x), args, TRAIL_PARAM)
++
++#endif
+-- 
+1.5.6.5
 
-We can then keep the __GFP_NOFAIL flag to indicate that the warnings 
-should never be emitted for that allocation, regardless of the .config.
-
-It's funny, though, that the problem that originally started this thread 
-was quickly diagnosed because of these messages.  As far as I know, my 
-suggestion to increase /proc/sys/vm/dirty_background_ratio to kick pdflush 
-earlier has prevented the slab allocation failures and not required 
-delayed acks for nfsd.
-
-That was possible because of the page allocation failure messages that 
-were noticed by the user; without this evidence, the only symptom would 
-have been extremely slow I/O over nfs.  This could involve any number of 
-subsystems and I doubt the first reaction would have been to enable 
-CONFIG_DEBUG_VM.
