@@ -1,127 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZFSC2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbZFSCfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbZFSC2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 22:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbZFSC22
+	id S1759487AbZFSCfX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 22:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZFSCfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 22:28:28 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:61023 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753798AbZFSC21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 22:28:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NXdmn5snx+CuC2qZaSdO3LPNz6ODN08kdc79sIGn8EcJI53GDUknfHhhf+JmlCpYdW
-         CY1ciIq4MFkBpzHUVA1JDZmsUqnDy3UKVwtiWoRYMaf4aOWpOuSlmwj3UBHypUYM10gg
-         WAhvaaaGrQ3Rxo2wMX+ju+2Ej7agv1KdoLGHk=
-Date: Fri, 19 Jun 2009 04:28:26 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, bligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 6/7] add syscall tracepoints
-Message-ID: <20090619022825.GD7903@nowhere>
-References: <cover.1244837725.git.jbaron@redhat.com> <a092c3d0e03e64ef8b2b6d5ed9f5b6e3c07cf2d8.1244837725.git.jbaron@redhat.com>
+	Thu, 18 Jun 2009 22:35:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32915 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752264AbZFSCfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 22:35:10 -0400
+Message-ID: <4A3AF950.7090201@kernel.org>
+Date: Fri, 19 Jun 2009 11:34:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a092c3d0e03e64ef8b2b6d5ed9f5b6e3c07cf2d8.1244837725.git.jbaron@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Frysinger <vapier@gentoo.org>, Tony Luck <tony.luck@intel.com>,
+       Andy Grover <andy.grover@oracle.com>
+Subject: [PATCH] percpu: use DEFINE_PER_CPU_SHARED_ALIGNED()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 19 Jun 2009 02:35:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 05:25:04PM -0400, Jason Baron wrote:
-> Allow the return value of raw_init() to bail us out of creating a trace event
-> file.
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> ---
->  kernel/trace/trace_events.c |   29 +++++++++++++++++++----------
->  1 files changed, 19 insertions(+), 10 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 9e91c4a..c0da5e2 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -907,15 +907,6 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
->  	if (strcmp(call->system, TRACE_SYSTEM) != 0)
->  		d_events = event_subsystem_dir(call->system, d_events);
->  
-> -	if (call->raw_init) {
-> -		ret = call->raw_init();
-> -		if (ret < 0) {
-> -			pr_warning("Could not initialize trace point"
-> -				   " events/%s\n", call->name);
-> -			return ret;
-> -		}
-> -	}
-> -
->  	call->dir = debugfs_create_dir(call->name, d_events);
->  	if (!call->dir) {
->  		pr_warning("Could not create debugfs "
-> @@ -1014,6 +1005,7 @@ static void trace_module_add_events(struct module *mod)
->  	struct ftrace_module_file_ops *file_ops = NULL;
->  	struct ftrace_event_call *call, *start, *end;
->  	struct dentry *d_events;
-> +	int ret;
->  
->  	start = mod->trace_events;
->  	end = mod->trace_events + mod->num_trace_events;
-> @@ -1029,7 +1021,15 @@ static void trace_module_add_events(struct module *mod)
->  		/* The linker may leave blanks */
->  		if (!call->name)
->  			continue;
-> -
-> +		if (call->raw_init) {
-> +			ret = call->raw_init();
-> +			if (ret < 0) {
-> +				if (ret != -ENOSYS)
+There are a few places where ___cacheline_aligned* is used with
+DEFINE_PER_CPU().  Use DEFINE_PER_CPU_SHARED_ALIGNED() instead.
 
+DEFINE_PER_CPU_SHARED_ALIGNED() applies alignment only on SMPs.  While
+all other converted places used _in_smp variant or only get compiled
+for SMP, net/rds used unconditional ____cacheline_aligned.  I don't
+see any reason these data structures should be aligned on UP and thus
+converted together.
 
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Mike Frysinger <vapier@gentoo.org>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Andy Grover <andy.grover@oracle.com>
+---
+I committed the following patch to percpu#for-next git tree.  Please
+let me know if something doesn't look right.
 
-I see you've set it up in case syscall_to_nr doesn't find the
-matching metadata.
+ git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-next
+ http://git.kernel.org/?p=linux/kernel/git/tj/percpu.git;a=shortlog;h=for-next
 
-How is it possible? The traced syscalls, ie those which are defined through
-DEFINE_SYSCALLx(), should be all in the arch syscall table. Or may be I'm
-missing something?
+Thanks.
 
-In this case we should warn because it would reveal a bug.
+ arch/blackfin/mm/sram-alloc.c |    6 +++---
+ arch/ia64/kernel/smp.c        |    3 ++-
+ kernel/sched.c                |    4 ++--
+ net/rds/ib_stats.c            |    2 +-
+ net/rds/iw_stats.c            |    2 +-
+ net/rds/page.c                |    2 +-
+ 6 files changed, 10 insertions(+), 9 deletions(-)
 
-
-
-> +					pr_warning("Could not initialize trace"
-> +					"point events/%s\n", call->name);
-> +				continue;
-> +			}
-> +		}
->  		/*
->  		 * This module has events, create file ops for this module
->  		 * if not already done.
-> @@ -1167,6 +1167,15 @@ static __init int event_trace_init(void)
->  		/* The linker may leave blanks */
->  		if (!call->name)
->  			continue;
-> +		if (call->raw_init) {
-> +			ret = call->raw_init();
-> +			if (ret < 0) {
-> +				if (ret != -ENOSYS)
-> +					pr_warning("Could not initialize trace"
-> +					"point events/%s\n", call->name);
-> +				continue;
-> +			}
-> +		}
->  		list_add(&call->list, &ftrace_events);
->  		event_create_dir(call, d_events, &ftrace_event_id_fops,
->  				 &ftrace_enable_fops, &ftrace_event_filter_fops,
-> -- 
-> 1.6.0.6
-> 
-
+Index: work/arch/blackfin/mm/sram-alloc.c
+===================================================================
+--- work.orig/arch/blackfin/mm/sram-alloc.c
++++ work/arch/blackfin/mm/sram-alloc.c
+@@ -42,9 +42,9 @@
+ #include <asm/mem_map.h>
+ #include "blackfin_sram.h"
+ 
+-static DEFINE_PER_CPU(spinlock_t, l1sram_lock) ____cacheline_aligned_in_smp;
+-static DEFINE_PER_CPU(spinlock_t, l1_data_sram_lock) ____cacheline_aligned_in_smp;
+-static DEFINE_PER_CPU(spinlock_t, l1_inst_sram_lock) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU_SHARED_ALIGNED(spinlock_t, l1sram_lock);
++static DEFINE_PER_CPU_SHARED_ALIGNED(spinlock_t, l1_data_sram_lock);
++static DEFINE_PER_CPU_SHARED_ALIGNED(spinlock_t, l1_inst_sram_lock);
+ static spinlock_t l2_sram_lock ____cacheline_aligned_in_smp;
+ 
+ /* the data structure for L1 scratchpad and DATA SRAM */
+Index: work/arch/ia64/kernel/smp.c
+===================================================================
+--- work.orig/arch/ia64/kernel/smp.c
++++ work/arch/ia64/kernel/smp.c
+@@ -58,7 +58,8 @@ static struct local_tlb_flush_counts {
+ 	unsigned int count;
+ } __attribute__((__aligned__(32))) local_tlb_flush_counts[NR_CPUS];
+ 
+-static DEFINE_PER_CPU(unsigned short [NR_CPUS], shadow_flush_counts) ____cacheline_aligned;
++static DEFINE_PER_CPU_SHARED_ALIGNED(unsigned short [NR_CPUS],
++				     shadow_flush_counts);
+ 
+ #define IPI_CALL_FUNC		0
+ #define IPI_CPU_STOP		1
+Index: work/kernel/sched.c
+===================================================================
+--- work.orig/kernel/sched.c
++++ work/kernel/sched.c
+@@ -318,12 +318,12 @@ struct task_group root_task_group;
+ /* Default task group's sched entity on each cpu */
+ static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
+ /* Default task group's cfs_rq on each cpu */
+-static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct cfs_rq, init_cfs_rq);
+ #endif /* CONFIG_FAIR_GROUP_SCHED */
+ 
+ #ifdef CONFIG_RT_GROUP_SCHED
+ static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+-static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct rt_rq, init_rt_rq);
+ #endif /* CONFIG_RT_GROUP_SCHED */
+ #else /* !CONFIG_USER_SCHED */
+ #define root_task_group init_task_group
+Index: work/net/rds/ib_stats.c
+===================================================================
+--- work.orig/net/rds/ib_stats.c
++++ work/net/rds/ib_stats.c
+@@ -37,7 +37,7 @@
+ #include "rds.h"
+ #include "ib.h"
+ 
+-DEFINE_PER_CPU(struct rds_ib_statistics, rds_ib_stats) ____cacheline_aligned;
++DEFINE_PER_CPU_SHARED_ALIGNED(struct rds_ib_statistics, rds_ib_stats);
+ 
+ static char *rds_ib_stat_names[] = {
+ 	"ib_connect_raced",
+Index: work/net/rds/iw_stats.c
+===================================================================
+--- work.orig/net/rds/iw_stats.c
++++ work/net/rds/iw_stats.c
+@@ -37,7 +37,7 @@
+ #include "rds.h"
+ #include "iw.h"
+ 
+-DEFINE_PER_CPU(struct rds_iw_statistics, rds_iw_stats) ____cacheline_aligned;
++DEFINE_PER_CPU_SHARED_ALIGNED(struct rds_iw_statistics, rds_iw_stats);
+ 
+ static char *rds_iw_stat_names[] = {
+ 	"iw_connect_raced",
+Index: work/net/rds/page.c
+===================================================================
+--- work.orig/net/rds/page.c
++++ work/net/rds/page.c
+@@ -39,7 +39,7 @@ struct rds_page_remainder {
+ 	unsigned long	r_offset;
+ };
+ 
+-DEFINE_PER_CPU(struct rds_page_remainder, rds_page_remainders) ____cacheline_aligned;
++DEFINE_PER_CPU_SHARED_ALIGNED(struct rds_page_remainder, rds_page_remainders);
+ 
+ /*
+  * returns 0 on success or -errno on failure.
