@@ -1,83 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZFSIA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZFSIBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbZFSIA7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 04:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZFSIAt
+	id S1754730AbZFSIBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 04:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZFSIBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 04:00:49 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:39967 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbZFSIAs (ORCPT
+	Fri, 19 Jun 2009 04:01:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47981
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751591AbZFSIBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 04:00:48 -0400
-Date: Fri, 19 Jun 2009 10:00:50 +0200
-From: Andreas Mohr <andim2@users.sourceforge.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: andi@lisas.de, akpm@linux-foundation.org,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM
-	capability
-Message-ID: <20090619080050.GA20131@rhlx01.hs-esslingen.de>
-Reply-To: andi@lisas.de
-References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <200906141606.29754.rjw@sisk.pl> <20090614164604.GA19746@rhlx01.hs-esslingen.de> <200906141909.46354.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906141909.46354.rjw@sisk.pl>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 19 Jun 2009 04:01:08 -0400
+Date: Fri, 19 Jun 2009 01:01:11 -0700 (PDT)
+Message-Id: <20090619.010111.07039165.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: backtrace symbols are bolixed...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090619173052.8460f1a9.sfr@canb.auug.org.au>
+References: <20090619.002101.45610359.davem@davemloft.net>
+	<20090619173052.8460f1a9.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 19 Jun 2009 17:30:52 +1000
 
-On Sun, Jun 14, 2009 at 07:09:45PM +0200, Rafael J. Wysocki wrote:
-> On Sunday 14 June 2009, Andreas Mohr wrote:
-> > - why do we call netif_device_detach() _after_ doing hardware shutdown
-> >   of the network controller? I'd guess this can cause huge issues?
-> >   Someone told me he had rtnl lock issues upon S2D with e100
-> >   (very similar to my rtnl issues during aborted .suspend),
-> >   and that might possibly be the reason?
+> Try the following patch:
 > 
-> I think you're right, but I'm not a network driver expert.
+> From: Mike Frysinger <vapier@gentoo.org>
+> Date: Mon, 15 Jun 2009 07:52:48 -0400
+> Subject: [PATCH] kallsyms: fix inverted valid symbol checking
 > 
-> Perhaps you can change the ordering and see if that fixes the rtnl issue
-> (since you're able to reproduce it without my patch, that should be easy to
-> verify).
+> The previous commit (17b1f0de) introduced a slightly broken consolidation
+> of the memory text range checking.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-Well, I just moved netif_device_detach() above netif_running() check,
-but this didn't fix my network issues in case of a rejecting .suspend
-handler: after resume when unloading e100, that hangs, and I get tons of
-rtnl timeouts and locked rtnl mutex.
-This is most likely because upon e100 unload, a backtrace showed that I
-was hanging in e100_down -> msleep (somewhere at the very beginning of e100_down),
-which is most definitely the inlined napi_disable() call there:
-
-static inline void napi_disable(struct napi_struct *n)
-{
-        set_bit(NAPI_STATE_DISABLE, &n->state);
-        while (test_and_set_bit(NAPI_STATE_SCHED, &n->state))
-                msleep(1);
-        clear_bit(NAPI_STATE_DISABLE, &n->state);
-}
-
-IOW the .suspend seems to keep NAPI layer active, yet due to .suspend failure
-there's no .resume called, thus card is in an _inoperable_ state and
-NAPI cannot be processed any further, thus napi_disable() on driver unload
-locks up.
-
-
-BTW, in include/linux/napi.h, shouldn't napi_disable() make use of
-napi_synchronize() instead of C&P?
-(simply move napi_synchronize() above napi_disable() and use it there)
-Oh wait, there's the CONFIG_SMP complication:
-napi_synchronize() is implemented for SMP only, whereas napi_disable()
-checks the same thing _always_.
-(or is it a BUG that napi_disable() does the same check for non-SMP,
-too??)
-
-Thanks,
-
-Andreas Mohr
+That fixed it, thanks!
