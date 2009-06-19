@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbZFSWgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761018AbZFSWhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760811AbZFSWgi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759488AbZFSWcf
+	id S1761018AbZFSWhl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759478AbZFSWcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:32:35 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:44730 "EHLO
+	Fri, 19 Jun 2009 18:32:43 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:44736 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757995AbZFSWbE (ORCPT
+	with ESMTP id S1758547AbZFSWbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:31:04 -0400
+	Fri, 19 Jun 2009 18:31:08 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        greg@kroah.com
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 18/21] ceph: ioctls
-Date: Fri, 19 Jun 2009 15:31:39 -0700
-Message-Id: <1245450702-31343-19-git-send-email-sage@newdream.net>
+Subject: [PATCH 21/21] ceph: Kconfig, Makefile
+Date: Fri, 19 Jun 2009 15:31:42 -0700
+Message-Id: <1245450702-31343-22-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1245450702-31343-18-git-send-email-sage@newdream.net>
+In-Reply-To: <1245450702-31343-21-git-send-email-sage@newdream.net>
 References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-2-git-send-email-sage@newdream.net>
  <1245450702-31343-3-git-send-email-sage@newdream.net>
@@ -37,110 +37,108 @@ References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-16-git-send-email-sage@newdream.net>
  <1245450702-31343-17-git-send-email-sage@newdream.net>
  <1245450702-31343-18-git-send-email-sage@newdream.net>
+ <1245450702-31343-19-git-send-email-sage@newdream.net>
+ <1245450702-31343-20-git-send-email-sage@newdream.net>
+ <1245450702-31343-21-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few Ceph ioctls for getting and setting file layout (striping)
-parameters.
+Kconfig options and Makefile.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/staging/ceph/ioctl.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++
- fs/staging/ceph/ioctl.h |   12 ++++++++
- 2 files changed, 77 insertions(+), 0 deletions(-)
- create mode 100644 fs/staging/ceph/ioctl.c
- create mode 100644 fs/staging/ceph/ioctl.h
+ fs/staging/Kconfig       |    2 ++
+ fs/staging/Makefile      |    1 +
+ fs/staging/ceph/Kconfig  |   14 ++++++++++++++
+ fs/staging/ceph/Makefile |   35 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 52 insertions(+), 0 deletions(-)
+ create mode 100644 fs/staging/ceph/Kconfig
+ create mode 100644 fs/staging/ceph/Makefile
 
-diff --git a/fs/staging/ceph/ioctl.c b/fs/staging/ceph/ioctl.c
+diff --git a/fs/staging/Kconfig b/fs/staging/Kconfig
+index 605d8ae..bed45e4 100644
+--- a/fs/staging/Kconfig
++++ b/fs/staging/Kconfig
+@@ -42,5 +42,7 @@ config FSSTAGING_EXCLUDE_BUILD
+ 
+ if !FSSTAGING_EXCLUDE_BUILD
+ 
++source "fs/staging/ceph/Kconfig"
++
+ endif # !FSSTAGING_EXCLUDE_BUILD
+ endif # FSSTAGING
+diff --git a/fs/staging/Makefile b/fs/staging/Makefile
+index 7ddeb16..38c9d39 100644
+--- a/fs/staging/Makefile
++++ b/fs/staging/Makefile
+@@ -3,3 +3,4 @@
+ # fix for build system bug...
+ obj-$(CONFIG_FSSTAGING)		+= fsstaging.o
+ 
++obj-$(CONFIG_CEPH_FS)		+= ceph/
+\ No newline at end of file
+diff --git a/fs/staging/ceph/Kconfig b/fs/staging/ceph/Kconfig
 new file mode 100644
-index 0000000..69c65c1
+index 0000000..32090d3
 --- /dev/null
-+++ b/fs/staging/ceph/ioctl.c
-@@ -0,0 +1,65 @@
-+#include "ioctl.h"
-+#include "super.h"
-+#include "ceph_debug.h"
++++ b/fs/staging/ceph/Kconfig
+@@ -0,0 +1,14 @@
++config CEPH_FS
++        tristate "Ceph distributed file system (EXPERIMENTAL)"
++	depends on INET && EXPERIMENTAL
++	select LIBCRC32C
++	help
++	  Choose Y or M here to include support for mounting the
++	  experimental Ceph distributed file system.  Ceph is an extremely
++	  scalable file system designed to provide high performance,
++	  reliable access to petabytes of storage.
 +
-+int ceph_debug_ioctl __read_mostly = -1;
-+#define DOUT_MASK DOUT_MASK_IOCTL
-+#define DOUT_VAR ceph_debug_ioctl
++	  More information at http://ceph.newdream.net/.
 +
++	  If unsure, say N.
 +
-+/*
-+ * ioctls
-+ */
-+
-+static long ceph_ioctl_get_layout(struct file *file, void __user *arg)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(file->f_dentry->d_inode);
-+	int err;
-+
-+	err = ceph_do_getattr(file->f_dentry->d_inode, CEPH_STAT_CAP_LAYOUT);
-+	if (!err) {
-+		if (copy_to_user(arg, &ci->i_layout, sizeof(ci->i_layout)))
-+			return -EFAULT;
-+	}
-+
-+	return err;
-+}
-+
-+static long ceph_ioctl_set_layout(struct file *file, void __user *arg)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct inode *parent_inode = file->f_dentry->d_parent->d_inode;
-+	struct ceph_mds_client *mdsc = &ceph_sb_to_client(inode->i_sb)->mdsc;
-+	struct ceph_mds_request *req;
-+	struct ceph_file_layout layout;
-+	int err;
-+
-+	/* copy and validate */
-+	if (copy_from_user(&layout, arg, sizeof(layout)))
-+		return -EFAULT;
-+
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_SETLAYOUT,
-+				       USE_AUTH_MDS);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+	req->r_inode = igrab(inode);
-+	req->r_inode_drop = CEPH_CAP_FILE_SHARED | CEPH_CAP_FILE_EXCL;
-+	req->r_args.setlayout.layout = layout;
-+
-+	err = ceph_mdsc_do_request(mdsc, parent_inode, req);
-+	ceph_mdsc_put_request(req);
-+	return err;
-+}
-+
-+long ceph_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	dout(10, "ioctl file %p cmd %u arg %lu\n", file, cmd, arg);
-+	switch (cmd) {
-+	case CEPH_IOC_GET_LAYOUT:
-+		return ceph_ioctl_get_layout(file, (void __user *)arg);
-+
-+	case CEPH_IOC_SET_LAYOUT:
-+		return ceph_ioctl_set_layout(file, (void __user *)arg);
-+	}
-+	return -ENOTTY;
-+}
-diff --git a/fs/staging/ceph/ioctl.h b/fs/staging/ceph/ioctl.h
+diff --git a/fs/staging/ceph/Makefile b/fs/staging/ceph/Makefile
 new file mode 100644
-index 0000000..537c27b
+index 0000000..ba1e6a5
 --- /dev/null
-+++ b/fs/staging/ceph/ioctl.h
-@@ -0,0 +1,12 @@
-+#ifndef FS_CEPH_IOCTL_H
-+#define FS_CEPH_IOCTL_H
++++ b/fs/staging/ceph/Makefile
+@@ -0,0 +1,35 @@
++#
++# Makefile for CEPH filesystem.
++#
 +
-+#include <linux/ioctl.h>
-+#include "types.h"
++ifneq ($(KERNELRELEASE),)
 +
-+#define CEPH_IOCTL_MAGIC 0x97
++obj-$(CONFIG_CEPH_FS) += ceph.o
 +
-+#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1, struct ceph_file_layout)
-+#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2, struct ceph_file_layout)
++ceph-objs := super.o inode.o dir.o file.o addr.o ioctl.o \
++	export.o caps.o snap.o \
++	messenger.o \
++	mds_client.o mdsmap.o \
++	mon_client.o \
++	osd_client.o osdmap.o crush/crush.o crush/mapper.o \
++	debugfs.o
 +
-+#endif
++else
++#Otherwise we were called directly from the command
++# line; invoke the kernel build system.
++
++KERNELDIR ?= /lib/modules/$(shell uname -r)/build
++PWD := $(shell pwd)
++
++default: all
++
++all:
++	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_CEPH_FS=m modules
++
++modules_install:
++	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_CEPH_FS=m modules_install
++
++clean:
++	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
++
++endif
 -- 
 1.5.6.5
 
