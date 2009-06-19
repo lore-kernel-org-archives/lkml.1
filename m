@@ -1,80 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbZFSPgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbZFSPhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752821AbZFSPgd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 11:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZFSPg0
+	id S1754824AbZFSPhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 11:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZFSPhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 11:36:26 -0400
-Received: from sprinkles.athenacr.com ([64.95.46.210]:1050 "EHLO
-	sprinkles.inp.in.athenacr.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751659AbZFSPgZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 11:36:25 -0400
-X-Greylist: delayed 1427 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Jun 2009 11:36:25 EDT
-Message-ID: <4A3BAAE8.3030606@athenacr.com>
-Date: Fri, 19 Jun 2009 11:12:40 -0400
-From: Brian Bloniarz <bmb@athenacr.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Fri, 19 Jun 2009 11:37:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37175 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752123AbZFSPhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 11:37:32 -0400
+Date: Fri, 19 Jun 2009 18:37:03 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org,
+       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org
+Subject: Re: [KVM PATCH v2 2/2] kvm: use POLLHUP to close an irqfd instead
+	of an explicit ioctl
+Message-ID: <20090619153703.GA3022@redhat.com>
+References: <20090604124047.10544.38861.stgit@dev.haskins.net> <4A3639B2.7080006@novell.com> <20090615125439.GI6351@redhat.com> <200906181446.31373.rusty@rustcorp.com.au> <20090618064908.GB11155@redhat.com> <4A3A2C67.4030406@novell.com> <20090618122219.GE16838@redhat.com> <4A3A4938.60604@novell.com> <20090618143547.GA19408@redhat.com> <4A3A6B6B.3020705@novell.com>
 MIME-Version: 1.0
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: gettimeofday() time warps on Nehalem
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A3A6B6B.3020705@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been using time-warp-test from 
-http://people.redhat.com/mingo/time-warp-test/ and have some confusing results.
-My machine is a IBM 3550M2 Nehalem box, kernel 2.6.30. time-warp-test.c finds
-time warps in gettimeofday() and clock_gettime(CLOCK_MONOTONIC). TEST_TSC does
-not find any timewarps from rdtsc.
+On Thu, Jun 18, 2009 at 12:29:31PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Thu, Jun 18, 2009 at 10:03:36AM -0400, Gregory Haskins wrote:
+> >   
+> >> Michael S. Tsirkin wrote:
+> >>     
+> >>> On Thu, Jun 18, 2009 at 08:00:39AM -0400, Gregory Haskins wrote:
+> >>>   
+> >>>       
+> >>>> Michael S. Tsirkin wrote:
+> >>>>     
+> >>>>
+> >>>>         
+> >>>>> BTW, Gregory, this can be used to fix the race in the design: create a
+> >>>>> thread and let it drop the module reference with module_put_and_exit.
+> >>>>>   
+> >>>>>       
+> >>>>>           
+> >>>> I had thought of doing something like this initially too, but I think
+> >>>> its racy as well.  Ultimately, you need to make sure the eventfd
+> >>>> callback is completely out before its safe to run, and deferring to a
+> >>>> thread would not change this race.  The only sane way I can see to do
+> >>>> that is to have the caller infrastructure annotate the event somehow
+> >>>> (either directly with a module_put(), or indirectly with some kind of
+> >>>> state transition that can be tracked with something like
+> >>>> synchronize_sched().
+> >>>>     
+> >>>>         
+> >>> Here's what one could do: create a thread for each irqfd, and increment
+> >>> module ref count, put that thread to sleep.  When done with
+> >>> irqfd, don't delete it and don't decrement module refcount, wake thread
+> >>> instead.  thread kills irqfd and calls module_put_and_exit.
+> >>>
+> >>> I don't think it's racy
+> >>>       
+> >> I believe it is. How would you prevent the thread from doing the
+> >> module_put_and_exit() before the eventfd callback thread is known to
+> >> have exited the relevant .text section?
+> >>     
+> >
+> > Right.
+> >
+> >   
+> >> All this talk does give me an idea, tho.  Ill make a patch.
+> >>     
+> >
+> > OK, but ask yourself whether this bag of tricks is worth it, and whether
+> > we'll find another hole later. Let's reserve the trickiness for
+> > fast-path, where it's needed, and keep at least the assign/deassign simple.
+> >   
+> 
+> Understood.  OTOH, going back to the model where two steps are needed
+> for close() is ugly too, so I don't want to just give up and revert that
+> fix too easily.  At some point we will call it one way or the other, but
+> I am not there quite yet.
+> >   
+> >>>   
+> >>>       
+> >>>>> Which will work, but I guess at this point we should ask ourselves
+> >>>>> whether all the hearburn with srcu, threads and module references is
+> >>>>> better than just asking the user to call and ioctl.
+> >>>>>   
+> >>>>>       
+> >>>>>           
+> >>>> I am starting to agree with you, here. :)
+> >>>>
+> >>>> Note one thing: the SRCU stuff is mostly orthogonal from the rest of the
+> >>>> conversation re: the module_put() races.  I only tied it into the
+> >>>> current thread because the eventfd_notifier_register() thread gave me a
+> >>>> convenient way to hook some other context to do the module_put().  In
+> >>>> the long term, the srcu changes are for the can_sleep() stuff.  So on
+> >>>> that note, lets see if I can convince Davide that the srcu stuff is not
+> >>>> so evil before we revert the POLLHUP patches, since the module_put() fix
+> >>>> is trivial once that is in place.
+> >>>>     
+> >>>>         
+> >>> Can this help with DEASSIGN as well? We need it for migration.
+> >>>   
+> >>>       
+> >> No, but afaict you do not need this for migration anyway.  Migrate the
+> >> GSI and re-call kvm_irqfd() on the other side.  Would the fd even be
+> >> relevant across a migration anyway?  I would think not, but admittedly I
+> >> know little about how qemu/kvm migration actually works.
+> >>     
+> >
+> > Yes but that's not live migration. For live migration, the trick is that
+> > you are running locally but send changes to remote guest.  For that, we
+> > need to put qemu in the middle between the device and the guest, so it
+> > can detect activity and update the remote side.
+> >
+> > And the best way to do that is to take poll eventfd that device assigns
+> > and push eventfd that kvm polls. To switch between this setup
+> > and the one where kvm polls the ventfd from device directly,
+> > you need deassign.
+> >   
+> 
+> So its still not clear why the distinction between
+> deassign-the-gsi-but-leave-the-fd-valid is needed over a simple
+> close().  Can you elaborate?
 
-Thought I'd ask Ingo & LKML before I dive deeper. Is this a kernel issue,
-time-warp-test issue, or a problem with my machine? Do you expect
-time-warp-test's TEST_TOD to pass on new kernels? I was under the impression
-that the TSC clocksource protected against time warps in gettimeofday().
 
-Thanks,
-Brian Bloniarz
+The fd needs to be left assigned to the device, so that we can poll
+the fd and get events, then forward them to kvm.
 
-$ uname -a
-Linux lab5 2.6.30-nehalem #1 SMP Fri Jun 12 11:18:50 EDT 2009 x86_64 GNU/Linux
-
-$ head -24 /proc/cpuinfo 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 26
-model name      : Intel(R) Xeon(R) CPU           L5520  @ 2.27GHz
-stepping        : 5
-cpu MHz         : 2266.822
-cache size      : 8192 KB
-physical id     : 0
-siblings        : 8
-core id         : 0
-cpu cores       : 4
-apicid          : 0
-initial apicid  : 0
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 11
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
-bogomips        : 4533.64
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 40 bits physical, 48 bits virtual
-power management:
-
-$ cat /sys/devices/system/clocksource/clocksource0/current_clocksource 
-tsc
-
-$ ./time-warp-test
-16 CPUs, running 16 parallel test-tasks.
-checking for time-warps via:
-- gettimeofday (TOD) syscall (usec resolution)
-
-new TOD-warp maximum:        -1 usecs,  00046cb465acb046 -> 00046cb465acb045
-new TOD-warp maximum:        -2 usecs,  00046cb465ad7515 -> 00046cb465ad7513
-TOD: 0.26us, fail:21534 \
+-- 
+MST
