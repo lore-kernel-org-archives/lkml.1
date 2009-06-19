@@ -1,137 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbZFSD3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbZFSDa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756926AbZFSD3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 23:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZFSD32
+	id S1759597AbZFSDa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 23:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZFSDaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 23:29:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41231 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbZFSD32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 23:29:28 -0400
-Date: Thu, 18 Jun 2009 23:29:29 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, bligh@google.com,
-       roland@redhat.com, fche@redhat.com
-Subject: Re: [PATCH 3/7] add syscall tracepoints
-In-Reply-To: <20090619015954.GA7903@nowhere>
-Message-ID: <alpine.DEB.2.00.0906182327010.6890@gandalf.stny.rr.com>
-References: <cover.1244837725.git.jbaron@redhat.com> <0ee4090012cf46f25d8cd8b022746a43b99d5767.1244837725.git.jbaron@redhat.com> <20090619015954.GA7903@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 18 Jun 2009 23:30:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:59435 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751533AbZFSDaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 23:30:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,248,1243839600"; 
+   d="scan'208";a="156292230"
+Date: Fri, 19 Jun 2009 11:30:04 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: "Barnes, Jesse" <jesse.barnes@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch v3] swap: virtual swap readahead
+Message-ID: <20090619033004.GB5603@localhost>
+References: <20090610095950.GA514@localhost> <1244628314.13761.11617.camel@twins> <20090610113214.GA5657@localhost> <20090610102516.08f7300f@jbarnes-x200> <20090611052228.GA20100@localhost> <20090611101741.GA1974@cmpxchg.org> <20090612015927.GA6804@localhost> <20090615182216.GA1661@cmpxchg.org> <20090618091949.GA711@localhost> <20090618130121.GA1817@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090618130121.GA1817@cmpxchg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 19 Jun 2009, Frederic Weisbecker wrote:
-
-> On Fri, Jun 12, 2009 at 05:24:49PM -0400, Jason Baron wrote:
+On Thu, Jun 18, 2009 at 09:01:21PM +0800, Johannes Weiner wrote:
+> On Thu, Jun 18, 2009 at 05:19:49PM +0800, Wu Fengguang wrote:
+> > On Tue, Jun 16, 2009 at 02:22:17AM +0800, Johannes Weiner wrote:
+> > > On Fri, Jun 12, 2009 at 09:59:27AM +0800, Wu Fengguang wrote:
+> > > > On Thu, Jun 11, 2009 at 06:17:42PM +0800, Johannes Weiner wrote:
+> > > > > On Thu, Jun 11, 2009 at 01:22:28PM +0800, Wu Fengguang wrote:
+> > > > > > Unfortunately, after fixing it up the swap readahead patch still performs slow
+> > > > > > (even worse this time):
+> > > > > 
+> > > > > Thanks for doing the tests.  Do you know if the time difference comes
+> > > > > from IO or CPU time?
+> > > > > 
+> > > > > Because one reason I could think of is that the original code walks
+> > > > > the readaround window in two directions, starting from the target each
+> > > > > time but immediately stops when it encounters a hole where the new
+> > > > > code just skips holes but doesn't abort readaround and thus might
+> > > > > indeed read more slots.
+> > > > > 
+> > > > > I have an old patch flying around that changed the physical ra code to
+> > > > > use a bitmap that is able to represent holes.  If the increased time
+> > > > > is waiting for IO, I would be interested if that patch has the same
+> > > > > negative impact.
+> > > > 
+> > > > You can send me the patch :)
+> > > 
+> > > Okay, attached is a rebase against latest -mmotm.
+> > > 
+> > > > But for this patch it is IO bound. The CPU iowait field actually is
+> > > > going up as the test goes on:
+> > > 
+> > > It's probably the larger ra window then which takes away the bandwidth
+> > > needed to load the new executables.  This sucks.  Would be nice to
+> > > have 'optional IO' for readahead that is dropped when normal-priority
+> > > IO requests are coming in...  Oh, we have READA for bios.  But it
+> > > doesn't seem to implement dropping requests on load (or I am blind).
 > > 
-> > Introduce a new 'DECLARE_TRACE_REG()' macro, so that tracepoints can associate
-> > an external register/unregister function.
+> > Hi Hannes,
 > > 
-> > 
-> > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > 
-> > ---
-> >  include/linux/tracepoint.h |   27 +++++++++++++++++++++++----
-> >  1 files changed, 23 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> > index 14df7e6..9a3660b 100644
-> > --- a/include/linux/tracepoint.h
-> > +++ b/include/linux/tracepoint.h
-> > @@ -61,7 +61,7 @@ struct tracepoint {
-> >   * not add unwanted padding between the beginning of the section and the
-> >   * structure. Force alignment to the same alignment as the section start.
-> >   */
-> > -#define DECLARE_TRACE(name, proto, args)				\
-> > +#define DECLARE_TRACE_REG(name, proto, args, reg, unreg)		\
+> > Sorry for the long delay! A bad news is that I get many oom with this patch:
 > 
-> 
-> 
-> May be it deserves a comment? DECLARE_TRACE_REG() as a name is not enough
-> obvious on its own :)
+> Okay, evaluating this test-patch any further probably isn't worth it.
+> It's too aggressive, I think readahead is stealing pages reclaimed by
+> other allocations which in turn oom.
 
-I agree. I was talking with Christoph Hellwig about doing something 
-similar with TRACE_EVENT, since he needs to do special things when enabled 
-and disabled (like enable other trace points).
+OK.
 
-But anyway, I totally NAK the name. What about something like 
-DECLARE_TRACE_WITH_CALLBACK()
+> Back to the original problem: you detected increased latency for
+> launching new applications, so they get less share of the IO bandwidth
 
-Yes, it is a bit more verbose, but it at least tells what it does. The 
-first thing that came to my mind when I saw DECLARE_TRACE_REG, was that 
-this trace point will pass in "regs" to do things like backtraces.
+There are no "launch new app" phase. The test flow works like:
 
--- Steve
+  for all apps {
+        for all started apps {
+                activate its GUI window
+        }
+        start one new app
+  }
+        
+But yes, as time goes by, the test becomes more and more about
+switching between existing windows under high memory pressure.
 
+> than without the patch.
 > 
+> I can see two reasons for this:
 > 
+>   a) the new heuristics don't work out and we read more unrelated
+>   pages than before
 > 
-> >  	extern struct tracepoint __tracepoint_##name;			\
-> >  	static inline void trace_##name(proto)				\
-> >  	{								\
-> > @@ -71,13 +71,29 @@ struct tracepoint {
-> >  	}								\
-> >  	static inline int register_trace_##name(void (*probe)(proto))	\
-> >  	{								\
-> > -		return tracepoint_probe_register(#name, (void *)probe);	\
-> > +		int ret;						\
-> > +		void (*func)(void) = (void (*)(void))reg;		\
-> > +									\
-> > +		ret = tracepoint_probe_register(#name, (void *)probe);	\
-> > +		if (func && !ret)					\
-> > +			func();						\
-> > +		return ret;						\
-> >  	}								\
-> >  	static inline int unregister_trace_##name(void (*probe)(proto))	\
-> >  	{								\
-> > -		return tracepoint_probe_unregister(#name, (void *)probe);\
-> > +		int ret;						\
-> > +		void (*func)(void) = (void (*)(void))unreg;		\
-> > +									\
-> > +		ret = tracepoint_probe_unregister(#name, (void *)probe);\
-> > +		if (func && !ret)					\
-> > +			func();						\
-> > +		return ret;						\
-> >  	}
-> >  
-> > +
-> > +#define DECLARE_TRACE(name, proto, args)		\
-> > +	DECLARE_TRACE_REG(name, TP_PROTO(proto), TP_ARGS(args), 0, 0);
-> > +
-> >  #define DEFINE_TRACE(name)						\
-> >  	static const char __tpstrtab_##name[]				\
-> >  	__attribute__((section("__tracepoints_strings"))) = #name;	\
-> > @@ -94,7 +110,7 @@ extern void tracepoint_update_probe_range(struct tracepoint *begin,
-> >  	struct tracepoint *end);
-> >  
-> >  #else /* !CONFIG_TRACEPOINTS */
-> > -#define DECLARE_TRACE(name, proto, args)				\
-> > +#define DECLARE_TRACE_REG(name, proto, args, reg, unreg)		\
-> >  	static inline void _do_trace_##name(struct tracepoint *tp, proto) \
-> >  	{ }								\
-> >  	static inline void trace_##name(proto)				\
-> > @@ -108,6 +124,9 @@ extern void tracepoint_update_probe_range(struct tracepoint *begin,
-> >  		return -ENOSYS;						\
-> >  	}
-> >  
-> > +#define DECLARE_TRACE(name, proto, args)                \
-> > +	DECLARE_TRACE_REG(name, TP_PROTO(proto), TP_ARGS(args), 0, 0);
-> > +
-> >  #define DEFINE_TRACE(name)
-> >  #define EXPORT_TRACEPOINT_SYMBOL_GPL(name)
-> >  #define EXPORT_TRACEPOINT_SYMBOL(name)
-> > -- 
-> > 1.6.0.6
-> > 
+>   b) we readahead more pages in total as the old code would stop at
+>   holes, as described above
 > 
+> We can verify a) by comparing major fault numbers between the two
+
+Plus pswpin numbers :) I found it significantly decreased when we do
+pte swap readahead..  See another email.
+
+> kernels with your testload.  If they increase with my patch, we
+> anticipate the wrong slots and every fault has do the reading itself.
 > 
+> b) seems to be a trade-off.  After all, the IO resources you have less
+> for new applications in your test is the bandwidth that is used by
+> swapping applications.  My qsbench numbers are a sign for this as the
+> only IO going on is swap.
+> 
+> Of course, the theory is not to improve swap performance by increasing
+> the readahead window but to choose better readahead candidates.  So I
+> will run your tests and qsbench with a smaller page cluster and see if
+> this improves both loads.
+
+The general principle is, any non sector number based readahead should
+be really accurate in order to be a net gain. Because each readahead
+page miss will lead to one disk seek, which is much more costly than
+wasting a memory page.
+
+Thanks,
+Fengguang
+
