@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZFSWYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbZFSW2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbZFSWYn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZFSWYf
+	id S1756559AbZFSW2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZFSW2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:24:35 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54731 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbZFSWYe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:24:34 -0400
-Date: Sat, 20 Jun 2009 00:24:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: iwl3945 in 2.6.31-rc0: ad-hoc mode broken?
-Message-ID: <20090619222431.GA2398@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 19 Jun 2009 18:28:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35162 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751324AbZFSW2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 18:28:33 -0400
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
+ suspending
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, npiggin@suse.de,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20090619145913.GA1389@ucw.cz>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+	 <20090619145913.GA1389@ucw.cz>
+Content-Type: text/plain
+Date: Sat, 20 Jun 2009 08:27:29 +1000
+Message-Id: <1245450449.16880.10.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 2009-06-19 at 16:59 +0200, Pavel Machek wrote:
+> 
+> Ok... GFP_KERNEL allocations normally don't fail; now they
+> will. Should we at least force access to atomic reserves in such case?
 
-I tried using ad-hoc mode (against t-mobile G1) on -rc0, and was
-unsuccessful -- never got dhcp. I had to reboot back to
-2.6.30... Should I try it few more times or is something broken?
+No. First, code that assumes GFP_KERNEL don't fail is stupid. Any
+allocation should always be assumed to potentially fail.
 
-(Also wifi LED stopped working on x60, but that's older issue).
+Then, if you start failing allocations at boot time, then you aren't
+going anywhere are you ?
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+Ben.
+
+
