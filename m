@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZFSIBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbZFSIB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbZFSIBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 04:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZFSIBJ
+	id S1756681AbZFSIB4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 04:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbZFSIBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 04:01:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47981
+	Fri, 19 Jun 2009 04:01:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47985
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751591AbZFSIBI (ORCPT
+	by vger.kernel.org with ESMTP id S1752256AbZFSIBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 04:01:08 -0400
-Date: Fri, 19 Jun 2009 01:01:11 -0700 (PDT)
-Message-Id: <20090619.010111.07039165.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-kernel@vger.kernel.org
+	Fri, 19 Jun 2009 04:01:48 -0400
+Date: Fri, 19 Jun 2009 01:01:51 -0700 (PDT)
+Message-Id: <20090619.010151.83084255.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: sam@ravnborg.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Subject: Re: backtrace symbols are bolixed...
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090619173052.8460f1a9.sfr@canb.auug.org.au>
+In-Reply-To: <20090619073053.GA5445@elte.hu>
 References: <20090619.002101.45610359.davem@davemloft.net>
-	<20090619173052.8460f1a9.sfr@canb.auug.org.au>
+	<20090619073053.GA5445@elte.hu>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,18 +27,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 19 Jun 2009 17:30:52 +1000
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 19 Jun 2009 09:30:53 +0200
 
-> Try the following patch:
+> * David Miller <davem@davemloft.net> wrote:
 > 
-> From: Mike Frysinger <vapier@gentoo.org>
-> Date: Mon, 15 Jun 2009 07:52:48 -0400
-> Subject: [PATCH] kallsyms: fix inverted valid symbol checking
+>> Sometime in the last day or so backtrace symbol printouts
+>> have become useless:
+>> 
+>> [    0.000000] WARNING: at mm/bootmem.c:535 __stop_notes+0xbb10/0x1d660()
+>> [    0.000000] Modules linked in:
+>> [    0.000000] Call Trace:
+>> [    0.000000]  [00000000008611b4] __stop_notes+0xbb10/0x1d660
+>> [    0.000000]  [000000000086195c] __stop_notes+0xc2b8/0x1d660
+>> [    0.000000]  [0000000000861a28] __stop_notes+0xc384/0x1d660
+>> [    0.000000]  [0000000000858678] __stop_notes+0x2fd4/0x1d660
+>> [    0.000000]  [000000000085684c] __stop_notes+0x11a8/0x1d660
+>> [    0.000000]  [00000000006e8bdc] _etext+0xfffffffffffe59f4/0xe18
+>> [    0.000000]  [0000000000000000] (null)
+>> 
+>> I'll try to bisect but maybe someone can figure it out quickly
+>> meanwhile.
 > 
-> The previous commit (17b1f0de) introduced a slightly broken consolidation
-> of the memory text range checking.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> I saw this too. One change that went upstream when i started seeing 
+> these weird backtraces is:
 
-That fixed it, thanks!
+The patch from Mike Frysinger posted by Stephen Rothwell fixes
+it for me.
+
+
