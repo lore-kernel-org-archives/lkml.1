@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757116AbZFSXM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZFSXPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757116AbZFSXM7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 19:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZFSXMt
+	id S1756999AbZFSXPk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 19:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZFSXPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 19:12:49 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:45624 "EHLO
+	Fri, 19 Jun 2009 19:15:31 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:36026 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbZFSXMt (ORCPT
+	with ESMTP id S1751797AbZFSXPb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 19:12:49 -0400
-Date: Fri, 19 Jun 2009 16:12:51 -0700 (PDT)
+	Fri, 19 Jun 2009 19:15:31 -0400
+Date: Fri, 19 Jun 2009 16:15:34 -0700 (PDT)
 From: Sage Weil <sage@newdream.net>
 To: Greg KH <greg@kroah.com>
 cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Subject: Re: [PATCH 00/21] ceph: Ceph distributed file system client v0.9
-In-Reply-To: <20090619224524.GB27322@kroah.com>
-Message-ID: <Pine.LNX.4.64.0906191558440.7980@cobra.newdream.net>
+In-Reply-To: <20090619224403.GA27322@kroah.com>
+Message-ID: <Pine.LNX.4.64.0906191556480.7980@cobra.newdream.net>
 References: <1245450702-31343-1-git-send-email-sage@newdream.net>
- <20090619224524.GB27322@kroah.com>
+ <20090619224403.GA27322@kroah.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,23 +29,39 @@ On Fri, 19 Jun 2009, Greg KH wrote:
 > On Fri, Jun 19, 2009 at 03:31:21PM -0700, Sage Weil wrote:
 > > This is a patch series for v0.9 of the Ceph distributed file system
 > > client (against v2.6.30).
+> > 
+> > Greg, the first patch in the series creates an fs/staging/ directory.
+> > This is analogous to drivers/staging/ (not built by allyesconfig,
+> > modpost will mark the module with 'staging', etc.), except you can
+> > find it under the File Systems section (and it doesn't get hidden
+> > along with drivers/ on UML).
+> > 
+> > If that looks reasonable, I would love to see this go into the staging
+> > tree.  The remaining patches add Ceph at fs/staging/ceph.
 > 
-> Oh, one other question, why put this in staging?  What is keeping it
-> being accepted into fs/ like normal?
+> No, please put "staging" filesystems at drivers/staging/ where the other
+> filesystems that are in "staging" shape are.
+> 
+> This is due to some core changes needed to mark such modules as
+> "TAINT_CRAP", and to make it obvious who is to blame for such crap :)
 
-I would obviously prefer that route, but my assumption has been that the 
-code needs some review and a core developer to sign off on it before that 
-can happen.  I've posted the patchset a few times now, and haven't gotten 
-much response.  If there is something else I can or should be doing to 
-push this upstream, I'm all ears...
+Ah, okay.  I thought this modpost.c change would be enough to accomplish 
+that, but I didn't look too closely:
 
-The code certainly isn't ready for production, but the client code at 
-least has seen relatively few changes recently.  Our internal testing is 
-ramping up in scale and so far we're primarily working out problems with 
-the server side daemons.  
+@@ -1721,8 +1721,10 @@ static void add_header(struct buffer *b, struct 
+module *mod)
+ void add_staging_flag(struct buffer *b, const char *name)
+ {
+ 	static const char *staging_dir = "drivers/staging";
++	static const char *fsstaging_dir = "fs/staging";
+ 
+-	if (strncmp(staging_dir, name, strlen(staging_dir)) == 0)
++	if (strncmp(staging_dir, name, strlen(staging_dir)) == 0 ||
++	    strncmp(fsstaging_dir, name, strlen(fsstaging_dir)) == 0)
+ 		buf_printf(b, "\nMODULE_INFO(staging, \"Y\");\n");
+ }
 
-I'm not quite sure what the criteria for mainline inclusion is, as it 
-seems to vary from file system to file system, but from my perspective 
-any move upstream can only help.
+Are the core changes onerous?  If you don't object in principle, it would 
+be nice if staging file systems were easier to find.
 
 sage
