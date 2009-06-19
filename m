@@ -1,94 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbZFSDHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZFSDLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbZFSDHq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 23:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZFSDHi
+	id S1754432AbZFSDLi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 23:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbZFSDLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 23:07:38 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:40568 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753355AbZFSDHh (ORCPT
+	Thu, 18 Jun 2009 23:11:31 -0400
+Received: from mga02.intel.com ([134.134.136.20]:29215 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751371AbZFSDLa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 23:07:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XRLPrjOSfKkSbAqNqoJMEhtP3vE4KO1zhzBFaR4eqHVgN4ZPFvzZvA2o/uiioyEuh1
-         fJ6LBjzRGpk5809rYTGx6IvOdZjudl1AJVKmtJ4Hui31AD4I4gKSO5UVT9F0Ti7wvbDy
-         n2E0deIshl6GrkKmujSoZCbYa2CpekF2Xo6Yk=
-Date: Fri, 19 Jun 2009 05:07:36 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, bligh@google.com,
-       roland@redhat.com, fche@redhat.com
-Subject: Re: [PATCH 0/7] add syscall tracepoints
-Message-ID: <20090619030735.GE7903@nowhere>
-References: <cover.1244837725.git.jbaron@redhat.com> <20090616193220.GB12699@elte.hu>
+	Thu, 18 Jun 2009 23:11:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,248,1243839600"; 
+   d="scan'208";a="423603372"
+From: "Jiang, Yunhong" <yunhong.jiang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Keir Fraser <keir.fraser@eu.citrix.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Date: Fri, 19 Jun 2009 11:10:24 +0800
+Subject: RE: [Xen-devel] Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs
+ just	because there's no local APIC
+Thread-Topic: [Xen-devel] Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs
+ just	because there's no local APIC
+Thread-Index: AcnwfsNknbEEMrsMTaKVB8BpYdWoMgACtUtw
+Message-ID: <E2263E4A5B2284449EEBD0AAB751098402CBA3427E@PDSMSX501.ccr.corp.intel.com>
+References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>
+	<4A35ACB3.9040501@goop.org> <m1k53dbwo2.fsf@fess.ebiederm.org>
+	<4A36B3EC.7010004@goop.org> <m1fxe117n5.fsf@fess.ebiederm.org>
+	<4A37F4AE.5050902@goop.org> <m1vdmvxe3u.fsf@fess.ebiederm.org>
+	<4A392896.9090408@goop.org> <m1zlc6memu.fsf@fess.ebiederm.org>
+	<4A3A96BC.1000302@goop.org> <m1ab45i8vs.fsf@fess.ebiederm.org>
+	<4A3AACFD.5020805@goop.org> <m1zlc5f1em.fsf@fess.ebiederm.org>
+In-Reply-To: <m1zlc5f1em.fsf@fess.ebiederm.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090616193220.GB12699@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 09:32:20PM +0200, Ingo Molnar wrote:
-> 
-> * Jason Baron <jbaron@redhat.com> wrote:
-> 
-> > hi,
-> > 
-> > The following is an implementation of Frederic's syscall tracer on 
-> > top of tracepoints. It adds the ability to toggle the entry/exit 
-> > of each syscall via the standard 
-> > events/syscalls/syscall_blah/enable interface. The implementation 
-> > is done by adding 2 tracepoints. One on entry and one for exit.
-> > 
-> > This implementation required a few 'core' api changes. I've added 
-> > 'DECLARE_TRACE_REG()' macro which takes a register and and an 
-> > unregister function as arguments. This allowed me to toggle the 
-> > ftrace tif flag when the first tracepoint callback is added and 
-> > the last is removed. Current callers of 'DECLARE_TRACE()' are not 
-> > impacted.
-> > 
-> > Another change was to call arch_init_ftrace_syscalls via an 
-> > 'arch_initall'. In this implmentation I needed to access the 
-> > syscalls_metadata structure at runtime in order to determine which 
-> > syscalls were 'traceable'. Although the implementation uses 
-> > SYSCALL_DEFINE() to set up the the trace events, for some reason 
-> > at runtime there is no syscalls_metadata, associated with some of 
-> > the SYSCALL_DEFINE() calls. I'm not quite sure why that is. 
-> > However, by calling arch_init_ftrace_syscalls() at boot I can make 
-> > sure the lists are in sync.
-> > 
-> > thanks,
-> > 
-> > -Jason 
-> > 
-> > 
-> >  arch/x86/include/asm/ftrace.h |    4 +-
-> >  arch/x86/kernel/ftrace.c      |   24 +++++-
-> >  arch/x86/kernel/ptrace.c      |    6 +-
-> >  include/linux/syscalls.h      |   63 +++++++++++++++
-> >  include/linux/tracepoint.h    |   27 ++++++-
-> >  include/trace/syscall.h       |   37 +++++++---
-> >  kernel/trace/trace_events.c   |   29 +++++---
-> >  kernel/trace/trace_syscalls.c |  172 +++++++++++++++++++----------------------
-> >  kernel/tracepoint.c           |   38 +++++++++
-> >  9 files changed, 278 insertions(+), 122 deletions(-)
-> 
-> This looks far nicer structurally. Steve, Frederic, what's your take 
-> on this series?
-> 
-> 	Ingo
 
 
-I've reviewed all of them and only found small neats to comment.
-Yeah the direction looks better now.
+xen-devel-bounces@lists.xensource.com wrote:
+> I/O APICs just because there's no local APIC
+> 
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+> 
+>> Ah, OK.  The pirq is set up for a specific domain rather than being
+>> global (otherwise it would need some kind of "which domain can access
+>> which pirq" table).  dom0 can either create a pirq for itself or
+>> someone else, and the final user of the pirq binds it to a
+>> domain-local evtchn. 
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+I think currently the GSI pirq is global, while MSI irq is per-domain. In fact, the irq for gsi is allocated by dom0 itself, and is shared by xen/dom0. I suspect this is partly because In 2.6.18 kernel, the irq/gsi is really messed up (I remember there is cleanup happen in 2.6.19).  
 
+The domU get the pirq value through pci-backend and pci frontend driver. The user space tools will grant one pirq to a guest through hypercall and the permission information is saved in domain's structure.
+
+When we switch to Jeremy's new method, maybe we can make the irq to be alocated by Xen HV, but I suspect it is ok to be kept still as global.
+
+The MSI is using per-domain pirq.
+
+--jyh
+
+>> 
+>> I think.  I really haven't looked into the pci-passthrough parts very
+>> closely yet.
+> 
+> I certainly could not find the code that would let you setup a pirq
+> for another domain.  In fact the pirq code aka alloc_vectors appears
+> to hard code dom0 in Xen 3.4.
+> 
+> pci-passthrough since it is domU, and since you describe it as well
+> isolated and comparatively simple should be a shoe in.
+> 
+> Further as you describe it pci-passthrough is a subset of what we
+> have to do for dom0. So if we can I would like to see the pci
+> passthrough code get merged first. 
+> 
+> Eric
+> 
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel
