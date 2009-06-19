@@ -1,37 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZFSAqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZFSAsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZFSAqj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 20:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFSAqc
+	id S1757337AbZFSAsA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 20:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFSArx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 20:46:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:34079 "EHLO gate.crashing.org"
+	Thu, 18 Jun 2009 20:47:53 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:37491 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbZFSAqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 20:46:32 -0400
-Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	id S1751481AbZFSArw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 20:47:52 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <19002.57382.880505.913539@cargo.ozlabs.ibm.com>
+Date: Fri, 19 Jun 2009 10:47:34 +1000
+From: Paul Mackerras <paulus@samba.org>
 To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org,
+Cc: benh@kernel.crashing.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
 In-Reply-To: <8bd0f97a0906181655jd68835fg10fe0783b6a6068d@mail.gmail.com>
 References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>
-	 <8bd0f97a0906181655jd68835fg10fe0783b6a6068d@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 19 Jun 2009 10:46:14 +1000
-Message-Id: <1245372374.16880.0.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	<8bd0f97a0906181655jd68835fg10fe0783b6a6068d@mail.gmail.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-18 at 19:55 -0400, Mike Frysinger wrote:
+Mike Frysinger writes:
+
 > On Sat, Jun 13, 2009 at 03:10, Paul Mackerras wrote:
 > > +typedef struct {
-> > +       long long counter;
+> > +       long long counter;
 > > +} atomic64_t;
 > 
 > lack of volatile seems odd compared to:
@@ -39,11 +41,11 @@ On Thu, 2009-06-18 at 19:55 -0400, Mike Frysinger wrote:
 > typedef struct {
 >     volatile int counter;
 > } atomic_t;
+> -mike
 
-Since the counter is only accessed within a spinlock, the volatile
-wouldn't be very useful here.
+It's only accessed under a spinlock, so I don't think it needs to be
+volatile.  On UP it's accessed within local_irq_save/restore which
+should also be compiler barriers and prevent memory access reordering,
+so again volatile isn't needed.
 
-Cheers,
-Ben.
-
-
+Paul.
