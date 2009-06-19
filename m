@@ -1,166 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbZFSCoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbZFSDHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759442AbZFSCoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 22:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbZFSCoJ
+	id S1758771AbZFSDHq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 23:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZFSDHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 22:44:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:30047 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752264AbZFSCoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 22:44:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,248,1243839600"; 
-   d="scan'208";a="156283287"
-Date: Fri, 19 Jun 2009 09:58:38 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 09/22] HWPOISON: Handle hardware poisoned pages in
-	try_to_unmap
-Message-ID: <20090619015838.GA6192@localhost>
-References: <20090615152612.GA11700@localhost> <20090616090308.bac3b1f7.minchan.kim@barrios-desktop> <20090616134944.GB7524@localhost> <20090617092826.56730a10.minchan.kim@barrios-desktop> <20090617072319.GA5841@localhost> <28c262360906170644w65c08a8y2d2805fb08045804@mail.gmail.com> <20090617135543.GA8079@localhost> <28c262360906170703h3363b68dp74471358f647921e@mail.gmail.com> <20090618121430.GA6746@localhost> <28c262360906180631i25ea6a18mbdc5be31c2346c04@mail.gmail.com>
+	Thu, 18 Jun 2009 23:07:38 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:40568 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753355AbZFSDHh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 23:07:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XRLPrjOSfKkSbAqNqoJMEhtP3vE4KO1zhzBFaR4eqHVgN4ZPFvzZvA2o/uiioyEuh1
+         fJ6LBjzRGpk5809rYTGx6IvOdZjudl1AJVKmtJ4Hui31AD4I4gKSO5UVT9F0Ti7wvbDy
+         n2E0deIshl6GrkKmujSoZCbYa2CpekF2Xo6Yk=
+Date: Fri, 19 Jun 2009 05:07:36 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, bligh@google.com,
+       roland@redhat.com, fche@redhat.com
+Subject: Re: [PATCH 0/7] add syscall tracepoints
+Message-ID: <20090619030735.GE7903@nowhere>
+References: <cover.1244837725.git.jbaron@redhat.com> <20090616193220.GB12699@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360906180631i25ea6a18mbdc5be31c2346c04@mail.gmail.com>
+In-Reply-To: <20090616193220.GB12699@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 09:31:52PM +0800, Minchan Kim wrote:
-> On Thu, Jun 18, 2009 at 9:14 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > On Wed, Jun 17, 2009 at 10:03:37PM +0800, Minchan Kim wrote:
-> >> On Wed, Jun 17, 2009 at 10:55 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> >> > On Wed, Jun 17, 2009 at 09:44:39PM +0800, Minchan Kim wrote:
-> >> >> It is private mail for my question.
-> >> >> I don't want to make noise in LKML.
-> >> >> And I don't want to disturb your progress to merge HWPoison.
-> >> >>
-> >> >> > Because this race window is small enough:
-> >> >> >
-> >> >> >        TestSetPageHWPoison(p);
-> >> >> >                                   lock_page(page);
-> >> >> >                                   try_to_unmap(page, TTU_MIGRATION|...);
-> >> >> >        lock_page_nosync(p);
-> >> >> >
-> >> >> > such small race windows can be found all over the kernel, it's just
-> >> >> > insane to try to fix any of them.
-> >> >>
-> >> >> I don't know there are intentional small race windows in kernel until you said.
-> >> >> I thought kernel code is perfect so it wouldn't allow race window
-> >> >> although it is very small. But you pointed out. Until now, My thought
-> >> >> is wrong.
-> >> >>
-> >> >> Do you know else small race windows by intention ?
-> >> >> If you know it, tell me, please. It can expand my sight. :)
-> >> >
-> >> > The memory failure code does not aim to rescue 100% page corruptions.
-> >> > That's unreasonable goal - the kernel pages, slab pages (including the
-> >> > big dcache/icache) are almost impossible to isolate.
-> >> >
-> >> > Comparing to the big slab pools, the migration and other race windows are
-> >> > really too small to care about :)
-> >>
-> >> Also, If you will mention this contents as annotation, I will add my
-> >> review sign.
-> >
-> > Good suggestion. Here is a patch for comment updates.
-> >
-> >> Thanks for kind reply for my boring discussion.
-> >
-> > Boring? Not at all :)
-> >
-> > Thanks,
-> > Fengguang
-> >
-> > ---
-> >  mm/memory-failure.c |   76 +++++++++++++++++++++++++-----------------
-> >  1 file changed, 47 insertions(+), 29 deletions(-)
-> >
-> > --- sound-2.6.orig/mm/memory-failure.c
-> > +++ sound-2.6/mm/memory-failure.c
-> > @@ -1,4 +1,8 @@
-> >  /*
-> > + * linux/mm/memory-failure.c
-> > + *
-> > + * High level machine check handler.
-> > + *
-> >  * Copyright (C) 2008, 2009 Intel Corporation
-> >  * Authors: Andi Kleen, Fengguang Wu
-> >  *
-> > @@ -6,29 +10,36 @@
-> >  * the GNU General Public License ("GPL") version 2 only as published by the
-> >  * Free Software Foundation.
-> >  *
-> > - * High level machine check handler. Handles pages reported by the
-> > - * hardware as being corrupted usually due to a 2bit ECC memory or cache
-> > - * failure.
-> > - *
-> > - * This focuses on pages detected as corrupted in the background.
-> > - * When the current CPU tries to consume corruption the currently
-> > - * running process can just be killed directly instead. This implies
-> > - * that if the error cannot be handled for some reason it's safe to
-> > - * just ignore it because no corruption has been consumed yet. Instead
-> > - * when that happens another machine check will happen.
-> > - *
-> > - * Handles page cache pages in various states. The tricky part
-> > - * here is that we can access any page asynchronous to other VM
-> > - * users, because memory failures could happen anytime and anywhere,
-> > - * possibly violating some of their assumptions. This is why this code
-> > - * has to be extremely careful. Generally it tries to use normal locking
-> > - * rules, as in get the standard locks, even if that means the
-> > - * error handling takes potentially a long time.
-> > - *
-> > - * The operation to map back from RMAP chains to processes has to walk
-> > - * the complete process list and has non linear complexity with the number
-> > - * mappings. In short it can be quite slow. But since memory corruptions
-> > - * are rare we hope to get away with this.
-> > + * Pages are reported by the hardware as being corrupted usually due to a
-> > + * 2bit ECC memory or cache failure. Machine check can either be raised when
-> > + * corruption is found in background memory scrubbing, or when someone tries to
-> > + * consume the corruption. This code focuses on the former case.  If it cannot
-> > + * handle the error for some reason it's safe to just ignore it because no
-> > + * corruption has been consumed yet. Instead when that happens another (deadly)
-> > + * machine check will happen.
-> > + *
-> > + * The tricky part here is that we can access any page asynchronous to other VM
-> > + * users, because memory failures could happen anytime and anywhere, possibly
-> > + * violating some of their assumptions. This is why this code has to be
-> > + * extremely careful. Generally it tries to use normal locking rules, as in get
-> > + * the standard locks, even if that means the error handling takes potentially
-> > + * a long time.
-> > + *
-> > + * We don't aim to rescue 100% corruptions. That's unreasonable goal - the
-> > + * kernel text and slab pages (including the big dcache/icache) are almost
-> > + * impossible to isolate. We also try to keep the code clean by ignoring the
-> > + * other thousands of small corruption windows.
+On Tue, Jun 16, 2009 at 09:32:20PM +0200, Ingo Molnar wrote:
 > 
-> other thousands of small corruption windows(ex, migration, ...)
-> As far as you know , please write down them.
+> * Jason Baron <jbaron@redhat.com> wrote:
+> 
+> > hi,
+> > 
+> > The following is an implementation of Frederic's syscall tracer on 
+> > top of tracepoints. It adds the ability to toggle the entry/exit 
+> > of each syscall via the standard 
+> > events/syscalls/syscall_blah/enable interface. The implementation 
+> > is done by adding 2 tracepoints. One on entry and one for exit.
+> > 
+> > This implementation required a few 'core' api changes. I've added 
+> > 'DECLARE_TRACE_REG()' macro which takes a register and and an 
+> > unregister function as arguments. This allowed me to toggle the 
+> > ftrace tif flag when the first tracepoint callback is added and 
+> > the last is removed. Current callers of 'DECLARE_TRACE()' are not 
+> > impacted.
+> > 
+> > Another change was to call arch_init_ftrace_syscalls via an 
+> > 'arch_initall'. In this implmentation I needed to access the 
+> > syscalls_metadata structure at runtime in order to determine which 
+> > syscalls were 'traceable'. Although the implementation uses 
+> > SYSCALL_DEFINE() to set up the the trace events, for some reason 
+> > at runtime there is no syscalls_metadata, associated with some of 
+> > the SYSCALL_DEFINE() calls. I'm not quite sure why that is. 
+> > However, by calling arch_init_ftrace_syscalls() at boot I can make 
+> > sure the lists are in sync.
+> > 
+> > thanks,
+> > 
+> > -Jason 
+> > 
+> > 
+> >  arch/x86/include/asm/ftrace.h |    4 +-
+> >  arch/x86/kernel/ftrace.c      |   24 +++++-
+> >  arch/x86/kernel/ptrace.c      |    6 +-
+> >  include/linux/syscalls.h      |   63 +++++++++++++++
+> >  include/linux/tracepoint.h    |   27 ++++++-
+> >  include/trace/syscall.h       |   37 +++++++---
+> >  kernel/trace/trace_events.c   |   29 +++++---
+> >  kernel/trace/trace_syscalls.c |  172 +++++++++++++++++++----------------------
+> >  kernel/tracepoint.c           |   38 +++++++++
+> >  9 files changed, 278 insertions(+), 122 deletions(-)
+> 
+> This looks far nicer structurally. Steve, Frederic, what's your take 
+> on this series?
+> 
+> 	Ingo
 
-Like this:
 
-        new_page = alloc_page();
-        <small corruption window>
-        write to new_page
-        <small corruption window>
-        read from new_page
+I've reviewed all of them and only found small neats to comment.
+Yeah the direction looks better now.
 
-> Anyway, I already added my sign.
-> Thanks for your effort never get exhausted. :)
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-You are welcome :)
-
-Thanks,
-Fengguang
