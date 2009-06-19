@@ -1,138 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759124AbZFSVRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbZFSVR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759124AbZFSVRT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 17:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbZFSVRI
+	id S1757164AbZFSVR4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 17:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZFSVRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 17:17:08 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:51547 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbZFSVRH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 17:17:07 -0400
-Message-ID: <4A3C004B.8010706@novell.com>
-Date: Fri, 19 Jun 2009 17:16:59 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Fri, 19 Jun 2009 17:17:49 -0400
+Received: from alva.zappa.cx ([213.88.132.89]:45337 "EHLO alva.zappa.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750884AbZFSVRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 17:17:48 -0400
+X-Greylist: delayed 3346 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Jun 2009 17:17:48 EDT
+Message-ID: <4A3BF368.9090103@zappa.cx>
+Date: Fri, 19 Jun 2009 22:22:00 +0200
+From: Andreas Sundstrom <sunkan@zappa.cx>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
- race conditions
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBC7551858083A6F179260048"
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.30 kernel panic when closing lid
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBC7551858083A6F179260048
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi..
 
-Davide Libenzi wrote:
-> On Fri, 19 Jun 2009, Gregory Haskins wrote:
->
->  =20
->> eventfd currently emits a POLLHUP wakeup on f_ops->release() to genera=
-te a
->> notifier->release() callback.  This lets notification clients know if
->> the eventfd is about to go away and is very useful particularly for
->> in-kernel clients.  However, as it stands today it is not possible to
->> use the notification API in a race-free way.  This patch adds some
->> additional logic to the notification subsystem to rectify this problem=
-=2E
->>
->> Background:
->> -----------------------
->> Eventfd currently only has one reference count mechanism: fget/fput.  =
-This
->> in of itself is normally fine.  However, if a client expects to be
->> notified if the eventfd is closed, it cannot hold a fget() reference
->> itself or the underlying f_ops->release() callback will never be invok=
-ed
->> by VFS.  Therefore we have this somewhat unusual situation where we ma=
-y
->> hold a pointer to an eventfd object (by virtue of having a waiter regi=
-stered
->> in its wait-queue), but no reference.  This makes it nearly impossible=
- to
->> design a mutual decoupling algorithm: you cannot unhook one side from =
-the
->> other (or vice versa) without racing.
->>    =20
->
-> And why is that?
->
-> struct xxx {
-> 	struct mutex mtx;
-> 	struct file *file;
-> 	...
-> };
->
-> struct file *xxx_get_file(struct xxx *x) {
-> 	struct file *file;
->
-> 	mutex_lock(&x->mtx);
-> 	file =3D x->file;
-> 	if (!file)
-> 		mutex_unlock(&x->mtx);
-> 	return file;
-> }
->
-> void xxx_release_file(struct xxx *x) {
-> 	mutex_unlock(&x->mtx);
-> }
->
-> void handle_POLLHUP(struct xxx *x) {
-> 	struct file *file;
->
-> 	file =3D xxx_get_file(x);
-> 	if (file) {
-> 		unhook_waitqueue(file, ...);
-> 		x->file =3D NULL;
-> 		xxx_release_file(x);
-> 	}
-> }
->
->
-> Every time you need to "use" file, you call xxx_get_file(), and if you =
-get=20
-> NULL, it means it's gone and you handle it accordigly to your IRQ fd=20
-> policies. As soon as you done with the file, you call xxx_release_file(=
-).
-> Replace "mtx" with the lock that fits your needs.
->  =20
+My laptop has started crashing when I close the lid. This does not
+happen with 2.6.29.4 which I was using before 2.6.30, I configured my
+2.6.30 kernel with the 2.6.29.4 as the base and then did "make
+oldconfig" and then most of the questions I got I used the default setting.
 
-Consider what would happen if the f_ops->release() was preempted inside
-the wake_up_locked_polled() after it dereferenced the xxx from the list,
-but before it calls the callback(POLLHUP).  The xxx object, and/or the
-=2Etext for the xxx object may be long gone by the time it comes back
-around.  Afaict, there is no way to guard against that scenario unless
-you do something like 2/3+3/3.  Or am I missing something?
+I have tried to catch the full output with a USB serial console, but
+it's not able to send the full output before it dies it seems. Sometimes
+it gets further than other times.
 
--Greg
+Here is one oops/panic:
+[   31.295898] kernel tried to execute NX-protected page - exploit
+attempt? (uid: 0)
+[   31.296575] BUG: unable to handle kernel paging request at
+ffff88013a891630
+[   31.297233] IP: [<ffffffff814f6940>] fair_sched_class+0x0/0xc0
+[   31.297594] PGD 202063 PUD b067 PMD 800000013a8001e3
+[   31.298567] Oops: 0011 [#1] SMP
+[   31.298569] last sysfs file:
+/sys/devices/pci0000:00/0000:00:1c.1/0000:10:00.0/firmware/0000:10:00.0/loading
+[   31.298572] CPU 1
+[   31.298574] Modules linked in: iscsi_tcp libiscsi_tcp libiscsi
+scsi_transport_iscsi sbp2 btusb sdhci_pci sdhci bluetooth psmouse
+ricoh_mmc ohci1394 mmc_core ieee1394 pl2303
+[   31.298585] Pid: 0, comm: swapper Not tainted 2.6.30 #9 HP Compaq
+6910p (GB949ET#AK8)
+[   31.298587] RIP: c2c0:[<ffffffff814f6940>]  [<ffffffff814f6940>]
+fair_sched_class+0x0/0xc0
+[   31.298592] RSP: ffffffff8102e891:ffff88013b9a1b20  EFLAGS:
+ffff88013b8c4a80
+[   31.298594] RAX: ffffffff81030f1a RBX: ffffffff810b047b RCX:
+ffffffff8123d135
+[   31.298597] RDX: ffff88013b976580 RSI: 0000000000000001 RDI:
+ffff88013b8c4a80
+[   31.298599] RBP: ffffffff810303a2 R08: ffff88013b9a1ae0 R09:
+ffff88002804c2c0
+[   31.298601] R10: ffff88013b9765b8 R11: ffff88002804c328 R12:
+ffff88013b9a1ab0
+[   31.298603] R13: 0000000000000001 R14: 0000000000000001 R15:
+ffff88002804c328
+[   31.298606] FS:  000000[   31.319076] bad: scheduling from the idle
+thread!
+[   31.319[   31.320577] Call Trace:
+[   31.321325] bad: scheduling from the idle thread!
+[   31.322044] Pid: 0, comm: swapper Tainted: [   31.322805] Call Trace:
+[   31.323568] bad: scheduling from the idle thread!
+[   31.324318] Pid: 0, comm: swapper Tainted: G      D    2.6.30 #9
+[   31.325028] Call Trace:
 
+I did a few runs and the full output from that is here:
+http://pastebin.com/fe18c31c
 
+fair_sched_class seems to be mentioned every time from what I've seen.
 
---------------enigBC7551858083A6F179260048
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+I also tried removing "button" support from ACPI and that seems to
+eliminate the problem, so I have a workaround.
+Compiling "button" as a module does not seem to eliminate the problem
+though even with the module blacklisted (and not loaded then of course).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+This is on a HP Compaq 6910p as you might have seen in the oops/panic
+output.
+I don't know how to proceed on troubleshooting/debugging this.
 
-iEYEARECAAYFAko8AEsACgkQlOSOBdgZUxmnoQCfa9HnTcvOMi+nW5MA6FE4NMuD
-Gl4AoIjH4f7m8z06hM0QRSDaORmL+OV3
-=q3Fh
------END PGP SIGNATURE-----
+Let me know if there is anything I can do to help find the issue.
 
---------------enigBC7551858083A6F179260048--
+P.S. I'm currently not subscribed so please feel free to CC me on any
+posts regarding
+this.
+
+/Andreas Sundstrom
