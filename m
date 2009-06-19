@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbZFSWdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbZFSWf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757582AbZFSWdw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758841AbZFSWba
+	id S1760610AbZFSWf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759317AbZFSWcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:31:30 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:44733 "EHLO
+	Fri, 19 Jun 2009 18:32:13 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:44727 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757888AbZFSWa5 (ORCPT
+	with ESMTP id S1757994AbZFSWbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:30:57 -0400
+	Fri, 19 Jun 2009 18:31:03 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        greg@kroah.com
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 07/21] ceph: directory operations
-Date: Fri, 19 Jun 2009 15:31:28 -0700
-Message-Id: <1245450702-31343-8-git-send-email-sage@newdream.net>
+Subject: [PATCH 15/21] ceph: snapshot management
+Date: Fri, 19 Jun 2009 15:31:36 -0700
+Message-Id: <1245450702-31343-16-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1245450702-31343-7-git-send-email-sage@newdream.net>
+In-Reply-To: <1245450702-31343-15-git-send-email-sage@newdream.net>
 References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-2-git-send-email-sage@newdream.net>
  <1245450702-31343-3-git-send-email-sage@newdream.net>
@@ -26,1162 +26,936 @@ References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-5-git-send-email-sage@newdream.net>
  <1245450702-31343-6-git-send-email-sage@newdream.net>
  <1245450702-31343-7-git-send-email-sage@newdream.net>
+ <1245450702-31343-8-git-send-email-sage@newdream.net>
+ <1245450702-31343-9-git-send-email-sage@newdream.net>
+ <1245450702-31343-10-git-send-email-sage@newdream.net>
+ <1245450702-31343-11-git-send-email-sage@newdream.net>
+ <1245450702-31343-12-git-send-email-sage@newdream.net>
+ <1245450702-31343-13-git-send-email-sage@newdream.net>
+ <1245450702-31343-14-git-send-email-sage@newdream.net>
+ <1245450702-31343-15-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Directory operations, including lookup, are defined here.  We take
-advantage of lookup intents when possible.  For the most part, we just
-need to build the proper requests for the metadata server(s) and
-pass things off to the mds_client.
+Ceph snapshots rely on client cooperation in determining which
+operations apply to which snapshots, and appropriately flushing
+snapshotted data and metadata back to the OSD and MDS clusters.
+Because snapshots apply to subtrees of the file hierarchy and can be
+created at any time, there is a fair bit of bookkeeping required to
+make this work.
 
-The results of most operations are normally incorporated into the
-client's cache when the reply is parsed by ceph_fill_trace().
-However, if the MDS replies without a trace (e.g., when retrying an
-update after an MDS failure recovery), some operation-specific cleanup
-may be needed.
+Portions of the hierarchy that belong to the same set of snapshots
+are described by a single 'snap realm.'  A 'snap context' describes
+the set of snapshots that exist for a given piece of metadata.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/staging/ceph/dir.c | 1129 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 1129 insertions(+), 0 deletions(-)
- create mode 100644 fs/staging/ceph/dir.c
+ fs/staging/ceph/snap.c |  895 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 895 insertions(+), 0 deletions(-)
+ create mode 100644 fs/staging/ceph/snap.c
 
-diff --git a/fs/staging/ceph/dir.c b/fs/staging/ceph/dir.c
+diff --git a/fs/staging/ceph/snap.c b/fs/staging/ceph/snap.c
 new file mode 100644
-index 0000000..aa22286
+index 0000000..8944fe5
 --- /dev/null
-+++ b/fs/staging/ceph/dir.c
-@@ -0,0 +1,1129 @@
-+#include <linux/spinlock.h>
-+#include <linux/fs_struct.h>
-+#include <linux/namei.h>
-+#include <linux/sched.h>
++++ b/fs/staging/ceph/snap.c
+@@ -0,0 +1,895 @@
++
++#include <linux/radix-tree.h>
++#include <linux/sort.h>
 +
 +#include "ceph_debug.h"
 +
-+int ceph_debug_dir __read_mostly = -1;
-+#define DOUT_MASK DOUT_MASK_DIR
-+#define DOUT_VAR ceph_debug_dir
++int ceph_debug_snap __read_mostly = -1;
++#define DOUT_MASK DOUT_MASK_SNAP
++#define DOUT_VAR ceph_debug_snap
++
 +#include "super.h"
++#include "decode.h"
 +
 +/*
-+ * Ceph MDS operations are specified in terms of a base ino and
-+ * relative path.  Thus, the client can specify an operation on a
-+ * specific inode (e.g., a getattr due to fstat(2)), or as a path
-+ * relative to, say, the root directory.
++ * Snapshots in ceph are driven in large part by cooperation from the
++ * client.  In contrast to local file systems or file servers that
++ * implement snapshots at a single point in the system, ceph's
++ * distributed access to storage requires clients to help decide
++ * whether a write logically occurs before or after a recently created
++ * snapshot.
 + *
-+ * Because the MDS does not statefully track which inodes the client
-+ * has in its cache, the client has to take care to only specify
-+ * operations relative to inodes it knows the MDS has cached.  (The
-+ * MDS cannot do a lookup by ino.)
++ * This provides a perfect instantanous client-wide snapshot.  Between
++ * clients, however, snapshots may appear to be applied at slightly
++ * different points in time, depending on delays in delivering the
++ * snapshot notification.
 + *
-+ * So, in general, we try to specify operations in terms of generate
-+ * path names relative to the root.
++ * Snapshots are _not_ file system-wide.  Instead, each snapshot
++ * applies to the subdirectory nested beneath some directory.  This
++ * effectively divides the hierarchy into multiple "realms," where all
++ * of the files contained by each realm share the same set of
++ * snapshots.  An individual realm's snap set contains snapshots
++ * explicitly created on that realm, as well as any snaps in its
++ * parent's snap set _after_ the point at which the parent became it's
++ * parent (due to, say, a rename).  Similarly, snaps from prior parents
++ * during the time intervals during which they were the parent are included.
++ *
++ * The client is spared most of this detail, fortunately... it must only
++ * maintains a hierarchy of realms reflecting the current parent/child
++ * realm relationship, and for each realm has an explicit list of snaps
++ * inherited from prior parents.
++ *
++ * A snap_realm struct is maintained for realms containing every inode
++ * with an open cap in the system.  (The needed snap realm information is
++ * provided by the MDS whenever a cap is issued, i.e., on open.)  A 'seq'
++ * version number is used to ensure that as realm parameters change (new
++ * snapshot, new parent, etc.) the client's realm hierarchy is updated.
++ *
++ * The realm hierarchy drives the generation of a 'snap context' for each
++ * realm, which simply lists the resulting set of snaps for the realm.  This
++ * is attached to any writes sent to OSDs.
++ */
++/*
++ * Unfortunately error handling is a bit mixed here.  If we get a snap
++ * update, but don't have enough memory to update our realm hierarchy,
++ * it's not clear what we can do about it (besides complaining to the
++ * console).
 + */
 +
-+const struct inode_operations ceph_dir_iops;
-+const struct file_operations ceph_dir_fops;
-+struct dentry_operations ceph_dentry_ops;
-+
-+static int ceph_dentry_revalidate(struct dentry *dentry, struct nameidata *nd);
 +
 +/*
-+ * for readdir, encoding the directory frag and offset within that frag
-+ * into f_pos.
++ * increase ref count for the realm
++ *
++ * caller must hold snap_rwsem for write.
 + */
-+static unsigned fpos_frag(loff_t p)
++void ceph_get_snap_realm(struct ceph_mds_client *mdsc,
++			 struct ceph_snap_realm *realm)
 +{
-+	return p >> 32;
-+}
-+static unsigned fpos_off(loff_t p)
-+{
-+	return p & 0xffffffff;
++	dout(20, "get_realm %p %d -> %d\n", realm,
++	     atomic_read(&realm->nref), atomic_read(&realm->nref)+1);
++	/*
++	 * since we _only_ increment realm refs or empty the empty
++	 * list with snap_rwsem held, adjusting the empty list here is
++	 * safe.  we do need to protect against concurrent empty list
++	 * additions, however.
++	 */
++	if (atomic_read(&realm->nref) == 0) {
++		spin_lock(&mdsc->snap_empty_lock);
++		list_del_init(&realm->empty_item);
++		spin_unlock(&mdsc->snap_empty_lock);
++	}
++
++	atomic_inc(&realm->nref);
 +}
 +
-+static int __dcache_readdir(struct file *filp,
-+			    void *dirent, filldir_t filldir)
++/*
++ * create and get the realm rooted at @ino and bump its ref count.
++ *
++ * caller must hold snap_rwsem for write.
++ */
++static struct ceph_snap_realm *ceph_create_snap_realm(struct ceph_mds_client *mdsc,
++					       u64 ino)
 +{
-+	struct inode *inode = filp->f_dentry->d_inode;
-+	struct ceph_file_info *fi = filp->private_data;
-+	struct dentry *parent = filp->f_dentry;
-+	struct inode *dir = parent->d_inode;
-+	struct list_head *p;
-+	struct dentry *dentry, *last;
-+	struct ceph_dentry_info *di;
++	struct ceph_snap_realm *realm;
++
++	realm = kzalloc(sizeof(*realm), GFP_NOFS);
++	if (!realm)
++		return ERR_PTR(-ENOMEM);
++
++	radix_tree_insert(&mdsc->snap_realms, ino, realm);
++
++	atomic_set(&realm->nref, 0);    /* tree does not take a ref */
++	realm->ino = ino;
++	INIT_LIST_HEAD(&realm->children);
++	INIT_LIST_HEAD(&realm->child_item);
++	INIT_LIST_HEAD(&realm->empty_item);
++	INIT_LIST_HEAD(&realm->inodes_with_caps);
++	spin_lock_init(&realm->inodes_with_caps_lock);
++	dout(20, "create_snap_realm %llx %p\n", realm->ino, realm);
++	return realm;
++}
++
++/*
++ * find and get (if found) the realm rooted at @ino and bump its ref count.
++ *
++ * caller must hold snap_rwsem for write.
++ */
++struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
++					       u64 ino)
++{
++	struct ceph_snap_realm *realm;
++
++	realm = radix_tree_lookup(&mdsc->snap_realms, ino);
++	if (realm)
++		dout(20, "lookup_snap_realm %llx %p\n", realm->ino, realm);
++	return realm;
++}
++
++static void __put_snap_realm(struct ceph_mds_client *mdsc,
++			     struct ceph_snap_realm *realm);
++
++/*
++ * called with snap_rwsem (write)
++ */
++static void __destroy_snap_realm(struct ceph_mds_client *mdsc,
++				 struct ceph_snap_realm *realm)
++{
++	dout(10, "__destroy_snap_realm %p %llx\n", realm, realm->ino);
++
++	radix_tree_delete(&mdsc->snap_realms, realm->ino);
++
++	if (realm->parent) {
++		list_del_init(&realm->child_item);
++		__put_snap_realm(mdsc, realm->parent);
++	}
++
++	kfree(realm->prior_parent_snaps);
++	kfree(realm->snaps);
++	ceph_put_snap_context(realm->cached_context);
++	kfree(realm);
++}
++
++/*
++ * caller holds snap_rwsem (write)
++ */
++static void __put_snap_realm(struct ceph_mds_client *mdsc,
++			     struct ceph_snap_realm *realm)
++{
++	dout(20, "__put_snap_realm %llx %p %d -> %d\n", realm->ino, realm,
++	     atomic_read(&realm->nref), atomic_read(&realm->nref)-1);
++	if (atomic_dec_and_test(&realm->nref))
++		__destroy_snap_realm(mdsc, realm);
++}
++
++/*
++ * caller needn't hold any locks
++ */
++void ceph_put_snap_realm(struct ceph_mds_client *mdsc,
++			 struct ceph_snap_realm *realm)
++{
++	dout(20, "put_snap_realm %llx %p %d -> %d\n", realm->ino, realm,
++	     atomic_read(&realm->nref), atomic_read(&realm->nref)-1);
++	if (!atomic_dec_and_test(&realm->nref))
++		return;
++
++	if (down_write_trylock(&mdsc->snap_rwsem)) {
++		__destroy_snap_realm(mdsc, realm);
++		up_write(&mdsc->snap_rwsem);
++	} else {
++		spin_lock(&mdsc->snap_empty_lock);
++		list_add(&mdsc->snap_empty, &realm->empty_item);
++		spin_unlock(&mdsc->snap_empty_lock);
++	}
++}
++
++/*
++ * Clean up any realms whose ref counts have dropped to zero.  Note
++ * that this does not include realms who were created but not yet
++ * used.
++ *
++ * Called under snap_rwsem (write)
++ */
++static void __cleanup_empty_realms(struct ceph_mds_client *mdsc)
++{
++	struct ceph_snap_realm *realm;
++
++	spin_lock(&mdsc->snap_empty_lock);
++	while (!list_empty(&mdsc->snap_empty)) {
++		realm = list_first_entry(&mdsc->snap_empty,
++				   struct ceph_snap_realm, empty_item);
++		list_del(&realm->empty_item);
++		spin_unlock(&mdsc->snap_empty_lock);
++		__destroy_snap_realm(mdsc, realm);
++		spin_lock(&mdsc->snap_empty_lock);
++	}
++	spin_unlock(&mdsc->snap_empty_lock);
++}
++
++void ceph_cleanup_empty_realms(struct ceph_mds_client *mdsc)
++{
++	down_write(&mdsc->snap_rwsem);
++	__cleanup_empty_realms(mdsc);
++	up_write(&mdsc->snap_rwsem);
++}
++
++/*
++ * adjust the parent realm of a given @realm.  adjust child list, and parent
++ * pointers, and ref counts appropriately.
++ *
++ * return true if parent was changed, 0 if unchanged, <0 on error.
++ *
++ * caller must hold snap_rwsem for write.
++ */
++static int adjust_snap_realm_parent(struct ceph_mds_client *mdsc,
++				    struct ceph_snap_realm *realm,
++				    u64 parentino)
++{
++	struct ceph_snap_realm *parent;
++
++	if (realm->parent_ino == parentino)
++		return 0;
++
++	parent = ceph_lookup_snap_realm(mdsc, parentino);
++	if (IS_ERR(parent))
++		return PTR_ERR(parent);
++	if (!parent) {
++		parent = ceph_create_snap_realm(mdsc, parentino);
++		if (IS_ERR(parent))
++			return PTR_ERR(parent);
++	}
++	dout(20, "adjust_snap_realm_parent %llx %p: %llx %p -> %llx %p\n",
++	     realm->ino, realm, realm->parent_ino, realm->parent,
++	     parentino, parent);
++	if (realm->parent) {
++		list_del_init(&realm->child_item);
++		ceph_put_snap_realm(mdsc, realm->parent);
++	}
++	realm->parent_ino = parentino;
++	realm->parent = parent;
++	ceph_get_snap_realm(mdsc, parent);
++	list_add(&realm->child_item, &parent->children);
++	return 1;
++}
++
++
++static int cmpu64_rev(const void *a, const void *b)
++{
++	if (*(u64 *)a < *(u64 *)b)
++		return 1;
++	if (*(u64 *)a > *(u64 *)b)
++		return -1;
++	return 0;
++}
++
++/*
++ * build the snap context for a given realm.
++ */
++static int build_snap_context(struct ceph_snap_realm *realm)
++{
++	struct ceph_snap_realm *parent = realm->parent;
++	struct ceph_snap_context *snapc;
 +	int err = 0;
-+
-+	last = fi->dentry;
-+	fi->dentry = NULL;
-+	dout(10, "__dcache_readdir %p at %llu (last %p)\n", dir, filp->f_pos,
-+	     last);
-+
-+	spin_lock(&dcache_lock);
-+
-+	if (filp->f_pos == 2 || (last &&
-+				 filp->f_pos < ceph_dentry(last)->offset)) {
-+		if (list_empty(&parent->d_subdirs))
-+			goto out_unlock;
-+		p = parent->d_subdirs.prev;
-+		dout(10, " initial p %p/%p\n", p->prev, p->next);
-+	} else {
-+		p = &last->d_u.d_child;
-+	}
-+
-+more:
-+	dentry = list_entry(p, struct dentry, d_u.d_child);
-+	di = ceph_dentry(dentry);
-+	while (1) {
-+		dout(10, " p %p/%p d_subdirs %p/%p\n", p->prev, p->next,
-+		     parent->d_subdirs.prev, parent->d_subdirs.next);
-+		if (p == &parent->d_subdirs) {
-+			fi->at_end = 1;
-+			goto out_unlock;
-+		}
-+		if (!d_unhashed(dentry) && dentry->d_inode &&
-+		    filp->f_pos <= di->offset)
-+			break;
-+		dout(10, " skipping %p %.*s at %llu (%llu)%s%s\n", dentry,
-+		     dentry->d_name.len, dentry->d_name.name, di->offset,
-+		     filp->f_pos, d_unhashed(dentry) ? " unhashed" : "",
-+		     !dentry->d_inode ? " null" : "");
-+		p = p->prev;
-+		dentry = list_entry(p, struct dentry, d_u.d_child);
-+		di = ceph_dentry(dentry);
-+	}
-+
-+	atomic_inc(&dentry->d_count);
-+	spin_unlock(&dcache_lock);
-+	spin_unlock(&inode->i_lock);
-+
-+	if (last) {
-+		dput(last);
-+		last = NULL;
-+	}
-+
-+	dout(10, " %llu (%llu) dentry %p %.*s %p\n", di->offset, filp->f_pos,
-+	     dentry, dentry->d_name.len, dentry->d_name.name, dentry->d_inode);
-+	filp->f_pos = di->offset;
-+	err = filldir(dirent, dentry->d_name.name,
-+		    dentry->d_name.len, di->offset,
-+		    dentry->d_inode->i_ino,
-+		    dentry->d_inode->i_mode >> 12);
-+
-+	spin_lock(&inode->i_lock);
-+	spin_lock(&dcache_lock);
-+
-+	if (err < 0) {
-+		fi->dentry = dentry;
-+		goto out_unlock;
-+	}
-+
-+	last = dentry;
-+
-+	p = p->prev;
-+	filp->f_pos++;
-+
-+	/* make sure a dentry wasn't dropped while we didn't have dcache_lock */
-+	if ((ceph_inode(dir)->i_ceph_flags & CEPH_I_COMPLETE))
-+		goto more;
-+	dout(20, " lost I_COMPLETE on %p; falling back to mds\n", dir);
-+	err = -EAGAIN;
-+
-+out_unlock:
-+	spin_unlock(&dcache_lock);
-+
-+	if (last) {
-+		spin_unlock(&inode->i_lock);
-+		dput(last);
-+		spin_lock(&inode->i_lock);
-+	}
-+
-+	return err;
-+}
-+
-+static void reset_readdir(struct ceph_file_info *fi)
-+{
-+	if (fi->last_readdir) {
-+		ceph_mdsc_put_request(fi->last_readdir);
-+		fi->last_readdir = NULL;
-+	}
-+	kfree(fi->last_name);
-+	fi->next_offset = 2;  /* compensate for . and .. */
-+	if (fi->dentry) {
-+		dput(fi->dentry);
-+		fi->dentry = NULL;
-+	}
-+	fi->at_end = 0;
-+}
-+
-+static int ceph_readdir(struct file *filp, void *dirent, filldir_t filldir)
-+{
-+	struct ceph_file_info *fi = filp->private_data;
-+	struct inode *inode = filp->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_client *client = ceph_inode_to_client(inode);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	unsigned frag = fpos_frag(filp->f_pos);
-+	int off = fpos_off(filp->f_pos);
-+	int err;
-+	u32 ftype;
-+	struct ceph_mds_reply_info_parsed *rinfo;
-+	int len;
-+	const int max_entries = client->mount_args.max_readdir;
-+
-+	dout(5, "readdir %p filp %p frag %u off %u\n", inode, filp, frag, off);
-+	if (fi->at_end)
-+		return 0;
-+
-+	if (filp->f_pos == 0) {
-+		/* note dir version at start of readdir */
-+		fi->dir_release_count = ci->i_release_count;
-+
-+		dout(10, "readdir off 0 -> '.'\n");
-+		if (filldir(dirent, ".", 1, ceph_make_fpos(0, 0),
-+			    inode->i_ino, inode->i_mode >> 12) < 0)
-+			return 0;
-+		filp->f_pos = 1;
-+		off = 1;
-+	}
-+	if (filp->f_pos == 1) {
-+		dout(10, "readdir off 1 -> '..'\n");
-+		if (filldir(dirent, "..", 2, ceph_make_fpos(0, 1),
-+			    filp->f_dentry->d_parent->d_inode->i_ino,
-+			    inode->i_mode >> 12) < 0)
-+			return 0;
-+		filp->f_pos = 2;
-+		off = 2;
-+	}
-+
-+	/* can we use the dcache? */
-+	spin_lock(&inode->i_lock);
-+	if ((filp->f_pos == 2 || fi->dentry) &&
-+	    !ceph_test_opt(client, NOASYNCREADDIR) &&
-+	    (ci->i_ceph_flags & CEPH_I_COMPLETE) &&
-+	    __ceph_caps_issued_mask(ci, CEPH_CAP_FILE_SHARED, 1)) {
-+		err = __dcache_readdir(filp, dirent, filldir);
-+		if (err != -EAGAIN) {
-+			spin_unlock(&inode->i_lock);
-+			return err;
-+		}
-+	}
-+	spin_unlock(&inode->i_lock);
-+	if (fi->dentry) {
-+		dput(fi->dentry);
-+		fi->dentry = NULL;
-+	}
-+
-+more:
-+	/* do we have the correct frag content buffered? */
-+	if (fi->frag != frag || fi->last_readdir == NULL) {
-+		struct ceph_mds_request *req;
-+		int op = ceph_snap(inode) == CEPH_SNAPDIR ?
-+			CEPH_MDS_OP_LSSNAP : CEPH_MDS_OP_READDIR;
-+
-+		/* discard old result, if any */
-+		if (fi->last_readdir)
-+			ceph_mdsc_put_request(fi->last_readdir);
-+
-+		/* requery frag tree, as the frag topology may have changed */
-+		frag = ceph_choose_frag(ceph_inode(inode), frag, NULL, NULL);
-+
-+		dout(10, "readdir fetching %llx.%llx frag %x offset '%s'\n",
-+		     ceph_vinop(inode), frag, fi->last_name);
-+		req = ceph_mdsc_create_request(mdsc, op, USE_AUTH_MDS);
-+		if (IS_ERR(req))
-+			return PTR_ERR(req);
-+		req->r_inode = igrab(inode);
-+		req->r_dentry = dget(filp->f_dentry);
-+		/* hints to request -> mds selection code */
-+		req->r_direct_mode = USE_AUTH_MDS;
-+		req->r_direct_hash = frag_value(frag);
-+		req->r_direct_is_hash = true;
-+		req->r_path2 = fi->last_name;
-+		req->r_readdir_offset = fi->next_offset;
-+		req->r_args.readdir.frag = cpu_to_le32(frag);
-+		req->r_args.readdir.max_entries = cpu_to_le32(max_entries);
-+		req->r_num_caps = max_entries;
-+		err = ceph_mdsc_do_request(mdsc, NULL, req);
-+		if (err < 0) {
-+			ceph_mdsc_put_request(req);
-+			return err;
-+		}
-+		dout(10, "readdir got and parsed readdir result=%d"
-+		     " on frag %x, end=%d, complete=%d\n", err, frag,
-+		     (int)req->r_reply_info.dir_end,
-+		     (int)req->r_reply_info.dir_complete);
-+
-+		if (!req->r_did_prepopulate) {
-+			dout(10, "readdir !did_prepopulate");
-+			fi->dir_release_count--;
-+		}
-+
-+		fi->offset = fi->next_offset;
-+		kfree(fi->last_name);
-+		fi->last_name = NULL;
-+
-+		if (req->r_reply_info.dir_end) {
-+			fi->next_offset = 0;
-+		} else {
-+			rinfo = &req->r_reply_info;
-+			len = rinfo->dir_dname_len[rinfo->dir_nr-1];
-+			fi->last_name = kmalloc(len+1, GFP_NOFS);
-+			if (!fi->last_name) {
-+				ceph_mdsc_put_request(req);
-+				return -ENOMEM;
-+			}
-+			memcpy(fi->last_name, rinfo->dir_dname[rinfo->dir_nr-1],
-+			       len);
-+			fi->last_name[len] = 0;
-+			fi->next_offset += rinfo->dir_nr;
-+			dout(10, "readdir  last item is '%s'\n", fi->last_name);
-+		}
-+		fi->last_readdir = req;
-+	}
-+
-+	rinfo = &fi->last_readdir->r_reply_info;
-+	dout(10, "readdir frag %x num %d off %d chunkoff %d\n", frag,
-+	     rinfo->dir_nr, off, fi->offset);
-+	while (off - fi->offset >= 0 && off - fi->offset < rinfo->dir_nr) {
-+		u64 pos = ceph_make_fpos(frag, off);
-+		struct ceph_mds_reply_inode *in =
-+			rinfo->dir_in[off - fi->offset].in;
-+		dout(10, "readdir off %d (%d/%d) -> %lld '%.*s' %p\n",
-+		     off, off - fi->offset, rinfo->dir_nr, pos,
-+		     rinfo->dir_dname_len[off - fi->offset],
-+		     rinfo->dir_dname[off - fi->offset], in);
-+		BUG_ON(!in);
-+		ftype = le32_to_cpu(in->mode) >> 12;
-+		if (filldir(dirent,
-+			    rinfo->dir_dname[off - fi->offset],
-+			    rinfo->dir_dname_len[off - fi->offset],
-+			    pos,
-+			    le64_to_cpu(in->ino),
-+			    ftype) < 0) {
-+			dout(20, "filldir stopping us...\n");
-+			return 0;
-+		}
-+		off++;
-+		filp->f_pos = pos + 1;
-+	}
-+
-+	if (fi->last_name) {
-+		ceph_mdsc_put_request(fi->last_readdir);
-+		fi->last_readdir = NULL;
-+		goto more;
-+	}
-+
-+	/* more frags? */
-+	if (!frag_is_rightmost(frag)) {
-+		frag = frag_next(frag);
-+		off = 0;
-+		filp->f_pos = ceph_make_fpos(frag, off);
-+		dout(10, "readdir next frag is %x\n", frag);
-+		goto more;
-+	}
-+	fi->at_end = 1;
++	int i;
++	int num = realm->num_prior_parent_snaps + realm->num_snaps;
 +
 +	/*
-+	 * if dir_release_count still matches the dir, no dentries
-+	 * were released during the whole readdir, and we should have
-+	 * the complete dir contents in our cache.
++	 * build parent context, if it hasn't been built.
++	 * conservatively estimate that all parent snaps might be
++	 * included by us.
 +	 */
-+	spin_lock(&inode->i_lock);
-+	if (ci->i_release_count == fi->dir_release_count) {
-+		dout(10, " marking %p complete\n", inode);
-+		ci->i_ceph_flags |= CEPH_I_COMPLETE;
-+		ci->i_max_offset = filp->f_pos;
-+	}
-+	spin_unlock(&inode->i_lock);
-+
-+	dout(20, "readdir %p filp %p done.\n", inode, filp);
-+	return 0;
-+}
-+
-+static loff_t ceph_dir_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	struct ceph_file_info *fi = file->private_data;
-+	struct inode *inode = file->f_mapping->host;
-+	loff_t old_offset = offset;
-+	loff_t retval;
-+
-+	mutex_lock(&inode->i_mutex);
-+	switch (origin) {
-+	case SEEK_END:
-+		offset += inode->i_size;
-+		break;
-+	case SEEK_CUR:
-+		offset += file->f_pos;
-+	}
-+	retval = -EINVAL;
-+	if (offset >= 0 && offset <= inode->i_sb->s_maxbytes) {
-+		if (offset != file->f_pos) {
-+			file->f_pos = offset;
-+			file->f_version = 0;
-+			fi->at_end = 0;
++	if (parent) {
++		if (!parent->cached_context) {
++			err = build_snap_context(parent);
++			if (err)
++				goto fail;
 +		}
-+		retval = offset;
-+
-+		/*
-+		 * discard buffered readdir content on seekdir(0), or
-+		 * seek to new frag, or seek prior to current chunk.
-+		 */
-+		if (offset == 0 ||
-+		    fpos_frag(offset) != fpos_frag(old_offset) ||
-+		    fpos_off(offset) < fi->offset) {
-+			dout(10, "dir_llseek dropping %p content\n", file);
-+			reset_readdir(fi);
-+		}
-+
-+		/* bump dir_release_count if we did a forward seek */
-+		if (offset > old_offset)
-+			fi->dir_release_count--;
-+	}
-+	mutex_unlock(&inode->i_mutex);
-+	return retval;
-+}
-+
-+/*
-+ * Process result of a lookup/open request.
-+ *
-+ * Mainly, make sure that return r_last_dentry (the dentry
-+ * the MDS trace ended on) in place of the original VFS-provided
-+ * dentry, if they differ.
-+ *
-+ * Gracefully handle the case where the MDS replies with -ENOENT and
-+ * no trace (which it may do, at its discretion, e.g., if it doesn't
-+ * care to issue a lease on the negative dentry).
-+ */
-+struct dentry *ceph_finish_lookup(struct ceph_mds_request *req,
-+				  struct dentry *dentry, int err)
-+{
-+	struct ceph_client *client = ceph_client(dentry->d_sb);
-+	struct inode *parent = dentry->d_parent->d_inode;
-+
-+	/* .snap dir? */
-+	if (err == -ENOENT &&
-+	    ceph_vino(parent).ino != CEPH_INO_ROOT && /* no .snap in root dir */
-+	    strcmp(dentry->d_name.name, client->mount_args.snapdir_name) == 0) {
-+		struct inode *inode = ceph_get_snapdir(parent);
-+		dout(10, "ENOENT on snapdir %p '%.*s', linking to snapdir %p\n",
-+		     dentry, dentry->d_name.len, dentry->d_name.name, inode);
-+		d_add(dentry, inode);
-+		err = 0;
++		num += parent->cached_context->num_snaps;
 +	}
 +
-+	if (err == -ENOENT) {
-+		/* no trace? */
-+		err = 0;
-+		if (!req->r_reply_info.head->is_dentry) {
-+			dout(20, "ENOENT and no trace, dentry %p inode %p\n",
-+			     dentry, dentry->d_inode);
-+			if (dentry->d_inode) {
-+				d_drop(dentry);
-+				err = -ENOENT;
-+			} else {
-+				d_add(dentry, NULL);
-+			}
-+		}
-+	}
-+	if (err)
-+		dentry = ERR_PTR(err);
-+	else if (dentry != req->r_dentry)
-+		dentry = dget(req->r_dentry);   /* we got spliced */
-+	else
-+		dentry = NULL;
-+	return dentry;
-+}
-+
-+/*
-+ * Try to do a lookup+open, if possible.
-+ */
-+static struct dentry *ceph_lookup(struct inode *dir, struct dentry *dentry,
-+				  struct nameidata *nd)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	int op;
-+	int err;
-+
-+	dout(5, "lookup %p dentry %p '%.*s'\n",
-+	     dir, dentry, dentry->d_name.len, dentry->d_name.name);
-+
-+	if (dentry->d_name.len > NAME_MAX)
-+		return ERR_PTR(-ENAMETOOLONG);
-+
-+	err = ceph_init_dentry(dentry);
-+	if (err < 0)
-+		return ERR_PTR(err);
-+
-+	/* open (but not create!) intent? */
-+	if (nd &&
-+	    (nd->flags & LOOKUP_OPEN) &&
-+	    (nd->flags & LOOKUP_CONTINUE) == 0 && /* only open last component */
-+	    !(nd->intent.open.flags & O_CREAT)) {
-+		int mode = nd->intent.open.create_mode & ~current->fs->umask;
-+		return ceph_lookup_open(dir, dentry, nd, mode, 1);
-+	}
-+
-+	/* can we conclude ENOENT locally? */
-+	if (dentry->d_inode == NULL) {
-+		struct ceph_inode_info *ci = ceph_inode(dir);
-+		struct ceph_dentry_info *di = ceph_dentry(dentry);
-+
-+		spin_lock(&dir->i_lock);
-+		dout(40, " dir %p flags are %d\n", dir, ci->i_ceph_flags);
-+		if (strncmp(dentry->d_name.name,
-+			    client->mount_args.snapdir_name,
-+			    dentry->d_name.len) &&
-+		    (ci->i_ceph_flags & CEPH_I_COMPLETE) &&
-+		    (__ceph_caps_issued_mask(ci, CEPH_CAP_FILE_SHARED, 1))) {
-+			di->offset = ci->i_max_offset++;
-+			spin_unlock(&dir->i_lock);
-+			dout(10, " dir %p complete, -ENOENT\n", dir);
-+			d_add(dentry, NULL);
-+			di->lease_rdcache_gen = ci->i_rdcache_gen;
-+			return NULL;
-+		}
-+		spin_unlock(&dir->i_lock);
-+	}
-+
-+	op = ceph_snap(dir) == CEPH_SNAPDIR ?
-+		CEPH_MDS_OP_LOOKUPSNAP : CEPH_MDS_OP_LOOKUP;
-+	req = ceph_mdsc_create_request(mdsc, op, USE_ANY_MDS);
-+	if (IS_ERR(req))
-+		return ERR_PTR(PTR_ERR(req));
-+	req->r_dentry = dget(dentry);
-+	req->r_num_caps = 2;
-+	/* we only need inode linkage */
-+	req->r_args.getattr.mask = cpu_to_le32(CEPH_STAT_CAP_INODE);
-+	req->r_locked_dir = dir;
-+	err = ceph_mdsc_do_request(mdsc, NULL, req);
-+	dentry = ceph_finish_lookup(req, dentry, err);
-+	ceph_mdsc_put_request(req);  /* will dput(dentry) */
-+	dout(20, "lookup result=%p\n", dentry);
-+	return dentry;
-+}
-+
-+/*
-+ * If we do a create but get no trace back from the MDS, follow up with
-+ * a lookup (the VFS expects us to link up the provided dentry).
-+ */
-+int ceph_handle_notrace_create(struct inode *dir, struct dentry *dentry)
-+{
-+	struct dentry *result = ceph_lookup(dir, dentry, NULL);
-+
-+	if (result && !IS_ERR(result)) {
-+		/*
-+		 * We created the item, then did a lookup, and found
-+		 * it was already linked to another inode we already
-+		 * had in our cache (and thus got spliced).  Link our
-+		 * dentry to that inode, but don't hash it, just in
-+		 * case the VFS wants to dereference it.
-+		 */
-+		BUG_ON(!result->d_inode);
-+		d_instantiate(dentry, result->d_inode);
-+		return 0;
-+	}
-+	return PTR_ERR(result);
-+}
-+
-+static int ceph_mknod(struct inode *dir, struct dentry *dentry,
-+		      int mode, dev_t rdev)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	int err;
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(5, "mknod in dir %p dentry %p mode 0%o rdev %d\n",
-+	     dir, dentry, mode, rdev);
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_MKNOD, USE_AUTH_MDS);
-+	if (IS_ERR(req)) {
-+		d_drop(dentry);
-+		return PTR_ERR(req);
-+	}
-+	req->r_dentry = dget(dentry);
-+	req->r_num_caps = 2;
-+	req->r_locked_dir = dir;
-+	req->r_args.mknod.mode = cpu_to_le32(mode);
-+	req->r_args.mknod.rdev = cpu_to_le32(rdev);
-+	req->r_dentry_drop = CEPH_CAP_FILE_SHARED;
-+	req->r_dentry_unless = CEPH_CAP_FILE_EXCL;
-+	err = ceph_mdsc_do_request(mdsc, dir, req);
-+	if (!err && !req->r_reply_info.head->is_dentry)
-+		err = ceph_handle_notrace_create(dir, dentry);
-+	ceph_mdsc_put_request(req);
-+	if (err)
-+		d_drop(dentry);
-+	return err;
-+}
-+
-+static int ceph_create(struct inode *dir, struct dentry *dentry, int mode,
-+			   struct nameidata *nd)
-+{
-+	dout(5, "create in dir %p dentry %p name '%.*s'\n",
-+	     dir, dentry, dentry->d_name.len, dentry->d_name.name);
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	if (nd) {
-+		BUG_ON((nd->flags & LOOKUP_OPEN) == 0);
-+		dentry = ceph_lookup_open(dir, dentry, nd, mode, 0);
-+		/* hrm, what should i do here if we get aliased? */
-+		if (IS_ERR(dentry))
-+			return PTR_ERR(dentry);
++	/* do i actually need to update?  not if my context seq
++	   matches realm seq, and my parents' does to.  (this works
++	   because we rebuild_snap_realms() works _downward_ in
++	   hierarchy after each update.) */
++	if (realm->cached_context &&
++	    realm->cached_context->seq <= realm->seq &&
++	    (!parent ||
++	     realm->cached_context->seq <= parent->cached_context->seq)) {
++		dout(10, "build_snap_context %llx %p: %p seq %lld (%d snaps)"
++		     " (unchanged)\n",
++		     realm->ino, realm, realm->cached_context,
++		     realm->cached_context->seq,
++		     realm->cached_context->num_snaps);
 +		return 0;
 +	}
 +
-+	/* fall back to mknod */
-+	return ceph_mknod(dir, dentry, (mode & ~S_IFMT) | S_IFREG, 0);
-+}
++	/* alloc new snap context */
++	err = -ENOMEM;
++	snapc = kzalloc(sizeof(*snapc) + num*sizeof(u64), GFP_NOFS);
++	if (!snapc)
++		goto fail;
++	atomic_set(&snapc->nref, 1);
 +
-+static int ceph_symlink(struct inode *dir, struct dentry *dentry,
-+			    const char *dest)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	int err;
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(5, "symlink in dir %p dentry %p to '%s'\n", dir, dentry, dest);
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_SYMLINK, USE_AUTH_MDS);
-+	if (IS_ERR(req)) {
-+		d_drop(dentry);
-+		return PTR_ERR(req);
++	/* build (reverse sorted) snap vector */
++	num = 0;
++	snapc->seq = realm->seq;
++	if (parent) {
++		/* include any of parent's snaps occuring _after_ my
++		   parent became my parent */
++		for (i = 0; i < parent->cached_context->num_snaps; i++)
++			if (parent->cached_context->snaps[i] >=
++			    realm->parent_since)
++				snapc->snaps[num++] =
++					parent->cached_context->snaps[i];
++		if (parent->cached_context->seq > snapc->seq)
++			snapc->seq = parent->cached_context->seq;
 +	}
-+	req->r_dentry = dget(dentry);
-+	req->r_num_caps = 2;
-+	req->r_path2 = dest;
-+	req->r_locked_dir = dir;
-+	req->r_dentry_drop = CEPH_CAP_FILE_SHARED;
-+	req->r_dentry_unless = CEPH_CAP_FILE_EXCL;
-+	err = ceph_mdsc_do_request(mdsc, dir, req);
-+	if (!err && !req->r_reply_info.head->is_dentry)
-+		err = ceph_handle_notrace_create(dir, dentry);
-+	ceph_mdsc_put_request(req);
-+	if (err)
-+		d_drop(dentry);
-+	return err;
-+}
++	memcpy(snapc->snaps + num, realm->snaps,
++	       sizeof(u64)*realm->num_snaps);
++	num += realm->num_snaps;
++	memcpy(snapc->snaps + num, realm->prior_parent_snaps,
++	       sizeof(u64)*realm->num_prior_parent_snaps);
++	num += realm->num_prior_parent_snaps;
 +
-+static int ceph_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	int err = -EROFS;
-+	int op;
++	sort(snapc->snaps, num, sizeof(u64), cmpu64_rev, NULL);
++	snapc->num_snaps = num;
++	dout(10, "build_snap_context %llx %p: %p seq %lld (%d snaps)\n",
++	     realm->ino, realm, snapc, snapc->seq, snapc->num_snaps);
 +
-+	if (ceph_snap(dir) == CEPH_SNAPDIR) {
-+		/* mkdir .snap/foo is a MKSNAP */
-+		op = CEPH_MDS_OP_MKSNAP;
-+		dout(5, "mksnap dir %p snap '%.*s' dn %p\n", dir,
-+		     dentry->d_name.len, dentry->d_name.name, dentry);
-+	} else if (ceph_snap(dir) == CEPH_NOSNAP) {
-+		dout(5, "mkdir dir %p dn %p mode 0%o\n", dir, dentry, mode);
-+		op = CEPH_MDS_OP_MKDIR;
-+	} else {
-+		goto out;
-+	}
-+	req = ceph_mdsc_create_request(mdsc, op, USE_AUTH_MDS);
-+	if (IS_ERR(req)) {
-+		err = PTR_ERR(req);
-+		goto out;
-+	}
-+
-+	req->r_dentry = dget(dentry);
-+	req->r_num_caps = 2;
-+	req->r_locked_dir = dir;
-+	req->r_args.mkdir.mode = cpu_to_le32(mode);
-+	req->r_dentry_drop = CEPH_CAP_FILE_SHARED;
-+	req->r_dentry_unless = CEPH_CAP_FILE_EXCL;
-+	err = ceph_mdsc_do_request(mdsc, dir, req);
-+	if (!err && !req->r_reply_info.head->is_dentry)
-+		err = ceph_handle_notrace_create(dir, dentry);
-+	ceph_mdsc_put_request(req);
-+out:
-+	if (err < 0)
-+		d_drop(dentry);
-+	return err;
-+}
-+
-+static int ceph_link(struct dentry *old_dentry, struct inode *dir,
-+		     struct dentry *dentry)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	int err;
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(5, "link in dir %p old_dentry %p dentry %p\n", dir,
-+	     old_dentry, dentry);
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LINK, USE_AUTH_MDS);
-+	if (IS_ERR(req)) {
-+		d_drop(dentry);
-+		return PTR_ERR(req);
-+	}
-+	req->r_dentry = dget(dentry);
-+	req->r_num_caps = 2;
-+	req->r_old_dentry = dget(old_dentry); /* or inode? hrm. */
-+	req->r_locked_dir = dir;
-+	req->r_dentry_drop = CEPH_CAP_FILE_SHARED;
-+	req->r_dentry_unless = CEPH_CAP_FILE_EXCL;
-+	err = ceph_mdsc_do_request(mdsc, dir, req);
-+	if (err)
-+		d_drop(dentry);
-+	else if (!req->r_reply_info.head->is_dentry)
-+		d_instantiate(dentry, igrab(old_dentry->d_inode));
-+	ceph_mdsc_put_request(req);
-+	return err;
-+}
-+
-+/*
-+ * For a soon-to-be unlinked file, drop the AUTH_RDCACHE caps.  If it
-+ * looks like the link count will hit 0, drop any other caps (other
-+ * than PIN) we don't specifically want (due to the file still being
-+ * open).
-+ */
-+static int drop_caps_for_unlink(struct inode *inode)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	int drop = CEPH_CAP_LINK_SHARED | CEPH_CAP_LINK_EXCL;
-+
-+	spin_lock(&inode->i_lock);
-+	if (inode->i_nlink == 1) {
-+		drop |= ~(__ceph_caps_wanted(ci) | CEPH_CAP_PIN);
-+		ci->i_ceph_flags |= CEPH_I_NODELAY;
-+	}
-+	spin_unlock(&inode->i_lock);
-+	return drop;
-+}
-+
-+/*
-+ * rmdir and unlink are differ only by the metadata op code
-+ */
-+static int ceph_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct inode *inode = dentry->d_inode;
-+	struct ceph_mds_request *req;
-+	int err = -EROFS;
-+	int op;
-+
-+	if (ceph_snap(dir) == CEPH_SNAPDIR) {
-+		/* rmdir .snap/foo is RMSNAP */
-+		dout(5, "rmsnap dir %p '%.*s' dn %p\n", dir, dentry->d_name.len,
-+		     dentry->d_name.name, dentry);
-+		op = CEPH_MDS_OP_RMSNAP;
-+	} else if (ceph_snap(dir) == CEPH_NOSNAP) {
-+		dout(5, "unlink/rmdir dir %p dn %p inode %p\n",
-+		     dir, dentry, inode);
-+		op = ((dentry->d_inode->i_mode & S_IFMT) == S_IFDIR) ?
-+			CEPH_MDS_OP_RMDIR : CEPH_MDS_OP_UNLINK;
-+	} else
-+		goto out;
-+	req = ceph_mdsc_create_request(mdsc, op, USE_AUTH_MDS);
-+	if (IS_ERR(req)) {
-+		err = PTR_ERR(req);
-+		goto out;
-+	}
-+	req->r_dentry = dget(dentry);
-+	req->r_num_caps = 2;
-+	req->r_locked_dir = dir;
-+	req->r_dentry_drop = CEPH_CAP_FILE_SHARED;
-+	req->r_dentry_unless = CEPH_CAP_FILE_EXCL;
-+	req->r_inode_drop = drop_caps_for_unlink(inode);
-+	err = ceph_mdsc_do_request(mdsc, dir, req);
-+	if (!err && !req->r_reply_info.head->is_dentry)
-+		d_delete(dentry);
-+	ceph_mdsc_put_request(req);
-+out:
-+	return err;
-+}
-+
-+static int ceph_rename(struct inode *old_dir, struct dentry *old_dentry,
-+		       struct inode *new_dir, struct dentry *new_dentry)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(old_dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	int err;
-+
-+	if (ceph_snap(old_dir) != ceph_snap(new_dir))
-+		return -EXDEV;
-+	if (ceph_snap(old_dir) != CEPH_NOSNAP ||
-+	    ceph_snap(new_dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+	dout(5, "rename dir %p dentry %p to dir %p dentry %p\n",
-+	     old_dir, old_dentry, new_dir, new_dentry);
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_RENAME, USE_AUTH_MDS);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+	req->r_dentry = dget(new_dentry);
-+	req->r_num_caps = 2;
-+	req->r_old_dentry = dget(old_dentry);
-+	req->r_locked_dir = new_dir;
-+	req->r_old_dentry_drop = CEPH_CAP_FILE_SHARED;
-+	req->r_old_dentry_unless = CEPH_CAP_FILE_EXCL;
-+	req->r_dentry_drop = CEPH_CAP_FILE_SHARED;
-+	req->r_dentry_unless = CEPH_CAP_FILE_EXCL;
-+	/* release LINK_RDCACHE on source inode (mds will lock it) */
-+	req->r_old_inode_drop = CEPH_CAP_LINK_SHARED;
-+	if (new_dentry->d_inode)
-+		req->r_inode_drop = drop_caps_for_unlink(new_dentry->d_inode);
-+	err = ceph_mdsc_do_request(mdsc, old_dir, req);
-+	if (!err && !req->r_reply_info.head->is_dentry) {
-+		/*
-+		 * Normally d_move() is done by fill_trace (called by
-+		 * do_request, above).  If there is no trace, we need
-+		 * to do it here.
-+		 */
-+		d_move(old_dentry, new_dentry);
-+	}
-+	ceph_mdsc_put_request(req);
-+	return err;
-+}
-+
-+
-+/*
-+ * Check if dentry lease is valid.  If not, delete the lease.  Try to
-+ * renew if appropriate.
-+ */
-+static int dentry_lease_is_valid(struct dentry *dentry)
-+{
-+	struct ceph_dentry_info *di;
-+	struct ceph_mds_session *s;
-+	int valid = 0;
-+	u32 gen;
-+	unsigned long ttl;
-+	int mds = -1;
-+	struct inode *dir = NULL;
-+	u32 seq = 0;
-+
-+	spin_lock(&dentry->d_lock);
-+	di = ceph_dentry(dentry);
-+	if (di && di->lease_session) {
-+		s = di->lease_session;
-+		spin_lock(&s->s_cap_lock);
-+		gen = s->s_cap_gen;
-+		ttl = s->s_cap_ttl;
-+		spin_unlock(&s->s_cap_lock);
-+
-+		if (di->lease_gen == gen &&
-+		    time_before(jiffies, dentry->d_time) &&
-+		    time_before(jiffies, ttl)) {
-+			valid = 1;
-+			if (di->lease_renew_after &&
-+			    time_after(jiffies, di->lease_renew_after)) {
-+				/* we should renew */
-+				dir = dentry->d_parent->d_inode;
-+				mds = s->s_mds;
-+				seq = di->lease_seq;
-+				di->lease_renew_after = 0;
-+				di->lease_renew_from = jiffies;
-+			}
-+		} else {
-+			__ceph_mdsc_drop_dentry_lease(dentry);
-+		}
-+	}
-+	spin_unlock(&dentry->d_lock);
-+
-+	if (mds >= 0)
-+		ceph_mdsc_lease_send_msg(&ceph_client(dentry->d_sb)->mdsc,
-+			 mds, dir, dentry, CEPH_MDS_LEASE_RENEW, seq);
-+	dout(20, "dentry_lease_is_valid - dentry %p = %d\n", dentry, valid);
-+	return valid;
-+}
-+
-+/*
-+ * Check if directory-wide content lease/cap is valid.
-+ */
-+static int dir_lease_is_valid(struct inode *dir, struct dentry *dentry)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(dir);
-+	struct ceph_dentry_info *di = ceph_dentry(dentry);
-+	int valid = 0;
-+
-+	spin_lock(&dir->i_lock);
-+	if (ci->i_rdcache_gen == di->lease_rdcache_gen)
-+		valid = __ceph_caps_issued_mask(ci, CEPH_CAP_FILE_SHARED, 1);
-+	spin_unlock(&dir->i_lock);
-+	dout(20, "dir_lease_is_valid dir %p v%u dentry %p v%u = %d\n",
-+	     dir, (unsigned)ci->i_rdcache_gen, dentry,
-+	     (unsigned)di->lease_rdcache_gen, valid);
-+	return valid;
-+}
-+
-+/*
-+ * Check if cached dentry can be trusted.
-+ */
-+static int ceph_dentry_revalidate(struct dentry *dentry, struct nameidata *nd)
-+{
-+	struct inode *dir = dentry->d_parent->d_inode;
-+
-+	dout(10, "d_revalidate %p '%.*s' inode %p\n", dentry,
-+	     dentry->d_name.len, dentry->d_name.name, dentry->d_inode);
-+
-+	/* always trust cached snapped dentries, snapdir dentry */
-+	if (ceph_snap(dir) != CEPH_NOSNAP) {
-+		dout(10, "d_revalidate %p '%.*s' inode %p is SNAPPED\n", dentry,
-+		     dentry->d_name.len, dentry->d_name.name, dentry->d_inode);
-+		goto out_touch;
-+	}
-+	if (dentry->d_inode && ceph_snap(dentry->d_inode) == CEPH_SNAPDIR)
-+		goto out_touch;
-+
-+	if (dentry_lease_is_valid(dentry))
-+		goto out_touch;
-+
-+	if (dir_lease_is_valid(dir, dentry))
-+		goto out_touch;
-+
-+	dout(20, "dentry_revalidate %p invalid\n", dentry);
-+	d_drop(dentry);
++	if (realm->cached_context)
++		ceph_put_snap_context(realm->cached_context);
++	realm->cached_context = snapc;
 +	return 0;
-+out_touch:
-+	ceph_dentry_lru_touch(dentry);
-+	return 1;
-+}
 +
-+/*
-+ * When a dentry is released, only clear the dir I_COMPLETE if it was
-+ * part of the current dir version.
-+ */
-+static void ceph_dentry_release(struct dentry *dentry)
-+{
-+	struct ceph_dentry_info *di = ceph_dentry(dentry);
-+	struct inode *parent_inode = dentry->d_parent->d_inode;
-+
-+	if (parent_inode) {
-+		struct ceph_inode_info *ci = ceph_inode(parent_inode);
-+
-+		spin_lock(&parent_inode->i_lock);
-+		if (ci->i_rdcache_gen == di->lease_rdcache_gen) {
-+			dout(10, " clearing %p complete (d_release)\n",
-+			     parent_inode);
-+			ci->i_ceph_flags &= ~CEPH_I_COMPLETE;
-+			ci->i_release_count++;
-+		}
-+		spin_unlock(&parent_inode->i_lock);
-+	}
-+	if (di) {
-+		ceph_dentry_lru_del(dentry);
-+		if (di->lease_session)
-+			ceph_put_mds_session(di->lease_session);
-+		kfree(di);
-+		dentry->d_fsdata = NULL;
-+	}
-+}
-+
-+static int ceph_snapdir_dentry_revalidate(struct dentry *dentry,
-+					  struct nameidata *nd)
-+{
++fail:
 +	/*
-+	 * Eventually, we'll want to revalidate snapped metadata
-+	 * too... probably.
++	 * if we fail, clear old (incorrect) cached_context... hopefully
++	 * we'll have better luck building it later
 +	 */
-+	return 1;
++	if (realm->cached_context) {
++		ceph_put_snap_context(realm->cached_context);
++		realm->cached_context = NULL;
++	}
++	derr(0, "build_snap_context %llx %p fail %d\n", realm->ino,
++	     realm, err);
++	return err;
++}
++
++/*
++ * rebuild snap context for the given realm and all of its children.
++ */
++static void rebuild_snap_realms(struct ceph_snap_realm *realm)
++{
++	struct list_head *p;
++	struct ceph_snap_realm *child;
++
++	dout(10, "rebuild_snap_realms %llx %p\n", realm->ino, realm);
++	build_snap_context(realm);
++
++	list_for_each(p, &realm->children) {
++		child = list_entry(p, struct ceph_snap_realm, child_item);
++		rebuild_snap_realms(child);
++	}
 +}
 +
 +
-+
 +/*
-+ * read() on a dir.  This weird interface hack only works if mounted
-+ * with '-o dirstat'.
++ * helper to allocate and decode an array of snapids.  free prior
++ * instance, if any.
 + */
-+static ssize_t ceph_read_dir(struct file *file, char __user *buf, size_t size,
-+			     loff_t *ppos)
++static int dup_array(u64 **dst, __le64 *src, int num)
 +{
-+	struct ceph_file_info *cf = file->private_data;
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	int left;
++	int i;
 +
-+	if (!ceph_test_opt(ceph_client(inode->i_sb), DIRSTAT))
-+		return -EISDIR;
-+
-+	if (!cf->dir_info) {
-+		cf->dir_info = kmalloc(1024, GFP_NOFS);
-+		if (!cf->dir_info)
++	kfree(*dst);
++	if (num) {
++		*dst = kmalloc(sizeof(u64) * num, GFP_NOFS);
++		if (!*dst)
 +			return -ENOMEM;
-+		cf->dir_info_len =
-+			sprintf(cf->dir_info,
-+				"entries:   %20lld\n"
-+				" files:    %20lld\n"
-+				" subdirs:  %20lld\n"
-+				"rentries:  %20lld\n"
-+				" rfiles:   %20lld\n"
-+				" rsubdirs: %20lld\n"
-+				"rbytes:    %20lld\n"
-+				"rctime:    %10ld.%09ld\n",
-+				ci->i_files + ci->i_subdirs,
-+				ci->i_files,
-+				ci->i_subdirs,
-+				ci->i_rfiles + ci->i_rsubdirs,
-+				ci->i_rfiles,
-+				ci->i_rsubdirs,
-+				ci->i_rbytes,
-+				(long)ci->i_rctime.tv_sec,
-+				(long)ci->i_rctime.tv_nsec);
++		for (i = 0; i < num; i++)
++			(*dst)[i] = le64_to_cpu(src[i]);
++	} else {
++		*dst = NULL;
 +	}
-+
-+	if (*ppos >= cf->dir_info_len)
-+		return 0;
-+	size = min_t(unsigned, size, cf->dir_info_len-*ppos);
-+	left = copy_to_user(buf, cf->dir_info + *ppos, size);
-+	if (left == size)
-+		return -EFAULT;
-+	*ppos += (size - left);
-+	return size - left;
++	return 0;
 +}
 +
-+static int ceph_dir_fsync(struct file *file, struct dentry *dentry,
-+			  int datasync)
++
++/*
++ * When a snapshot is applied, the size/mtime inode metadata is queued
++ * in a ceph_cap_snap (one for each snapshot) until writeback
++ * completes and the metadata can be flushed back to the MDS.
++ *
++ * However, if a (sync) write is currently in-progress when we apply
++ * the snapshot, we have to wait until the write succeeds or fails
++ * (and a final size/mtime is known).  In this case the
++ * cap_snap->writing = 1, and is said to be "pending."  When the write
++ * finishes, we __ceph_finish_cap_snap().
++ *
++ * Caller must hold snap_rwsem for read (i.e., the realm topology won't
++ * change).
++ */
++void ceph_queue_cap_snap(struct ceph_inode_info *ci,
++			 struct ceph_snap_context *snapc)
 +{
-+	struct inode *inode = dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct list_head *head = &ci->i_unsafe_dirops;
-+	struct ceph_mds_request *req;
-+	u64 last_tid;
-+	int ret = 0;
++	struct inode *inode = &ci->vfs_inode;
++	struct ceph_cap_snap *capsnap;
++	int used;
 +
-+	dout(10, "dir_fsync %p\n", inode);
-+	spin_lock(&ci->i_unsafe_lock);
-+	if (list_empty(head))
-+		goto out;
++	capsnap = kzalloc(sizeof(*capsnap), GFP_NOFS);
++	if (!capsnap) {
++		derr(10, "ENOMEM allocating ceph_cap_snap on %p\n", inode);
++		return;
++	}
++	atomic_set(&capsnap->nref, 1);
 +
-+	req = list_entry(head->prev,
-+			 struct ceph_mds_request, r_unsafe_dir_item);
-+	last_tid = req->r_tid;
++	spin_lock(&inode->i_lock);
++	used = __ceph_caps_used(ci);
++	if (__ceph_have_pending_cap_snap(ci)) {
++		/* there is no point in queuing multiple "pending" cap_snaps,
++		   as no new writes are allowed to start when pending, so any
++		   writes in progress now were started before the previous
++		   cap_snap.  lucky us. */
++		dout(10, "queue_cap_snap %p snapc %p seq %llu used %d"
++		     " already pending\n", inode, snapc, snapc->seq, used);
++		kfree(capsnap);
++	} else if (ci->i_wrbuffer_ref_head || (used & CEPH_CAP_FILE_WR)) {
++		igrab(inode);
++		capsnap->follows = snapc->seq - 1;
++		capsnap->context = ceph_get_snap_context(snapc);
++		capsnap->issued = __ceph_caps_issued(ci, NULL);
++		capsnap->dirty = __ceph_caps_dirty(ci);
 +
-+	do {
-+		ceph_mdsc_get_request(req);
-+		spin_unlock(&ci->i_unsafe_lock);
-+		dout(10, "dir_fsync %p wait on tid %llu (until %llu)\n",
-+		     inode, req->r_tid, last_tid);
-+		if (req->r_timeout) {
-+			ret = wait_for_completion_timeout(&req->r_safe_completion,
-+							  req->r_timeout);
-+			if (ret > 0)
-+				ret = 0;
-+			else if (ret == 0)
-+				ret = -EIO;  /* timed out */
++		capsnap->mode = inode->i_mode;
++		capsnap->uid = inode->i_uid;
++		capsnap->gid = inode->i_gid;
++
++		/* fixme? */
++		capsnap->xattr_blob = NULL;
++		capsnap->xattr_len = 0;
++
++		/* dirty page count moved from _head to this cap_snap;
++		   all subsequent writes page dirties occur _after_ this
++		   snapshot. */
++		capsnap->dirty_pages = ci->i_wrbuffer_ref_head;
++		ci->i_wrbuffer_ref_head = 0;
++		ceph_put_snap_context(ci->i_head_snapc);
++		ci->i_head_snapc = NULL;
++		list_add_tail(&capsnap->ci_item, &ci->i_cap_snaps);
++
++		if (used & CEPH_CAP_FILE_WR) {
++			dout(10, "queue_cap_snap %p cap_snap %p snapc %p"
++			     " seq %llu used WR, now pending\n", inode,
++			     capsnap, snapc, snapc->seq);
++			capsnap->writing = 1;
 +		} else {
-+			wait_for_completion(&req->r_safe_completion);
++			/* note mtime, size NOW. */
++			__ceph_finish_cap_snap(ci, capsnap);
 +		}
-+		spin_lock(&ci->i_unsafe_lock);
-+		ceph_mdsc_put_request(req);
++	} else {
++		dout(10, "queue_cap_snap %p nothing dirty|writing\n", inode);
++		kfree(capsnap);
++	}
 +
-+		if (ret || list_empty(head))
-+			break;
-+		req = list_entry(head->next,
-+				 struct ceph_mds_request, r_unsafe_dir_item);
-+	} while (req->r_tid < last_tid);
++	spin_unlock(&inode->i_lock);
++}
++
++/*
++ * Finalize the size, mtime for a cap_snap.. that is, settle on final values
++ * to be used for the snapshot, to be flushed back to the mds.
++ *
++ * If capsnap can now be flushed, add to snap_flush list, and return 1.
++ *
++ * Caller must hold i_lock.
++ */
++int __ceph_finish_cap_snap(struct ceph_inode_info *ci,
++			    struct ceph_cap_snap *capsnap)
++{
++	struct inode *inode = &ci->vfs_inode;
++	struct ceph_mds_client *mdsc = &ceph_client(inode->i_sb)->mdsc;
++
++	BUG_ON(capsnap->writing);
++	capsnap->size = inode->i_size;
++	capsnap->mtime = inode->i_mtime;
++	capsnap->atime = inode->i_atime;
++	capsnap->ctime = inode->i_ctime;
++	capsnap->time_warp_seq = ci->i_time_warp_seq;
++	if (capsnap->dirty_pages) {
++		dout(10, "finish_cap_snap %p cap_snap %p snapc %p %llu s=%llu "
++		     "still has %d dirty pages\n", inode, capsnap,
++		     capsnap->context, capsnap->context->seq,
++		     capsnap->size, capsnap->dirty_pages);
++		return 0;
++	}
++	dout(10, "finish_cap_snap %p cap_snap %p snapc %p %llu s=%llu clean\n",
++	     inode, capsnap, capsnap->context,
++	     capsnap->context->seq, capsnap->size);
++
++	spin_lock(&mdsc->snap_flush_lock);
++	list_add_tail(&ci->i_snap_flush_item, &mdsc->snap_flush_list);
++	spin_unlock(&mdsc->snap_flush_lock);
++	return 1;  /* caller may want to ceph_flush_snaps */
++}
++
++
++/*
++ * Parse and apply a snapblob "snap trace" from the MDS.  This specifies
++ * the snap realm parameters from a given realm and all of its ancestors,
++ * up to the root.
++ *
++ * Caller must hold snap_rwsem for write.
++ */
++int ceph_update_snap_trace(struct ceph_mds_client *mdsc,
++			   void *p, void *e, bool deletion)
++{
++	struct ceph_mds_snap_realm *ri;    /* encoded */
++	__le64 *snaps;                     /* encoded */
++	__le64 *prior_parent_snaps;        /* encoded */
++	struct ceph_snap_realm *realm;
++	int invalidate = 0;
++	int err = -ENOMEM;
++
++	dout(10, "update_snap_trace deletion=%d\n", deletion);
++more:
++	ceph_decode_need(&p, e, sizeof(*ri), bad);
++	ri = p;
++	p += sizeof(*ri);
++	ceph_decode_need(&p, e, sizeof(u64)*(le32_to_cpu(ri->num_snaps) +
++			    le32_to_cpu(ri->num_prior_parent_snaps)), bad);
++	snaps = p;
++	p += sizeof(u64) * le32_to_cpu(ri->num_snaps);
++	prior_parent_snaps = p;
++	p += sizeof(u64) * le32_to_cpu(ri->num_prior_parent_snaps);
++
++	realm = ceph_lookup_snap_realm(mdsc, le64_to_cpu(ri->ino));
++	if (IS_ERR(realm)) {
++		err = PTR_ERR(realm);
++		goto fail;
++	}
++	if (!realm) {
++		realm = ceph_create_snap_realm(mdsc, le64_to_cpu(ri->ino));
++		if (IS_ERR(realm)) {
++			err = PTR_ERR(realm);
++			goto fail;
++		}
++	}
++
++	if (le64_to_cpu(ri->seq) > realm->seq) {
++		dout(10, "update_snap_trace updating %llx %p %lld -> %lld\n",
++		     realm->ino, realm, realm->seq, le64_to_cpu(ri->seq));
++		/*
++		 * if the realm seq has changed, queue a cap_snap for every
++		 * inode with open caps.  we do this _before_ we update
++		 * the realm info so that we prepare for writeback under the
++		 * _previous_ snap context.
++		 *
++		 * ...unless it's a snap deletion!
++		 */
++		if (!deletion) {
++			struct list_head *pi;
++			struct inode *inode;
++			spin_lock(&realm->inodes_with_caps_lock);
++			list_for_each(pi, &realm->inodes_with_caps) {
++				struct ceph_inode_info *ci =
++					list_entry(pi, struct ceph_inode_info,
++						   i_snap_realm_item);
++				inode = igrab(&ci->vfs_inode);
++				spin_unlock(&realm->inodes_with_caps_lock);
++				if (inode) {
++					ceph_queue_cap_snap(ci,
++						    realm->cached_context);
++					iput(inode);
++				}
++				spin_lock(&realm->inodes_with_caps_lock);
++			}
++			spin_unlock(&realm->inodes_with_caps_lock);
++			dout(20, "update_snap_trace cap_snaps queued\n");
++		}
++
++	} else {
++		dout(10, "update_snap_trace %llx %p seq %lld unchanged\n",
++		     realm->ino, realm, realm->seq);
++	}
++
++	/* ensure the parent is correct */
++	err = adjust_snap_realm_parent(mdsc, realm, le64_to_cpu(ri->parent));
++	if (err < 0)
++		goto fail;
++	invalidate += err;
++
++	if (le64_to_cpu(ri->seq) > realm->seq) {
++		/* update realm parameters, snap lists */
++		realm->seq = le64_to_cpu(ri->seq);
++		realm->created = le64_to_cpu(ri->created);
++		realm->parent_since = le64_to_cpu(ri->parent_since);
++
++		realm->num_snaps = le32_to_cpu(ri->num_snaps);
++		err = dup_array(&realm->snaps, snaps, realm->num_snaps);
++		if (err < 0)
++			goto fail;
++
++		realm->num_prior_parent_snaps =
++			le32_to_cpu(ri->num_prior_parent_snaps);
++		err = dup_array(&realm->prior_parent_snaps, prior_parent_snaps,
++				realm->num_prior_parent_snaps);
++		if (err < 0)
++			goto fail;
++
++		invalidate = 1;
++	} else if (!realm->cached_context) {
++		invalidate = 1;
++	}
++
++	dout(10, "done with %llx %p, invalidated=%d, %p %p\n", realm->ino,
++	     realm, invalidate, p, e);
++
++	if (p < e)
++		goto more;
++
++	/* invalidate when we reach the _end_ (root) of the trace */
++	if (invalidate)
++		rebuild_snap_realms(realm);
++
++	__cleanup_empty_realms(mdsc);
++	return 0;
++
++bad:
++	err = -EINVAL;
++fail:
++	derr(10, "update_snap_trace error %d\n", err);
++	return err;
++}
++
++
++/*
++ * Send any cap_snaps that are queued for flush.  Try to carry
++ * s_mutex across multiple snap flushes to avoid locking overhead.
++ *
++ * Caller holds no locks.
++ */
++static void flush_snaps(struct ceph_mds_client *mdsc)
++{
++	struct ceph_inode_info *ci;
++	struct inode *inode;
++	struct ceph_mds_session *session = NULL;
++
++	dout(10, "flush_snaps\n");
++	spin_lock(&mdsc->snap_flush_lock);
++	while (!list_empty(&mdsc->snap_flush_list)) {
++		ci = list_first_entry(&mdsc->snap_flush_list,
++				struct ceph_inode_info, i_snap_flush_item);
++		inode = &ci->vfs_inode;
++		igrab(inode);
++		spin_unlock(&mdsc->snap_flush_lock);
++		spin_lock(&inode->i_lock);
++		__ceph_flush_snaps(ci, &session);
++		spin_unlock(&inode->i_lock);
++		iput(inode);
++		spin_lock(&mdsc->snap_flush_lock);
++	}
++	spin_unlock(&mdsc->snap_flush_lock);
++
++	if (session) {
++		mutex_unlock(&session->s_mutex);
++		ceph_put_mds_session(session);
++	}
++	dout(10, "flush_snaps done\n");
++}
++
++
++/*
++ * Handle a snap notification from the MDS.
++ *
++ * This can take two basic forms: the simplest is just a snap creation
++ * or deletion notification on an existing realm.  This should update the
++ * realm and its children.
++ *
++ * The more difficult case is realm creation, due to snap creation at a
++ * new point in the file hierarchy, or due to a rename that moves a file or
++ * directory into another realm.
++ */
++void ceph_handle_snap(struct ceph_mds_client *mdsc,
++		      struct ceph_msg *msg)
++{
++	struct super_block *sb = mdsc->client->sb;
++	struct ceph_mds_session *session;
++	int mds;
++	u64 split;
++	int op;
++	int trace_len;
++	struct ceph_snap_realm *realm = NULL;
++	void *p = msg->front.iov_base;
++	void *e = p + msg->front.iov_len;
++	struct ceph_mds_snap_head *h;
++	int num_split_inos, num_split_realms;
++	__le64 *split_inos = NULL, *split_realms = NULL;
++	int i;
++	int locked_rwsem = 0;
++
++	if (le32_to_cpu(msg->hdr.src.name.type) != CEPH_ENTITY_TYPE_MDS)
++		return;
++	mds = le32_to_cpu(msg->hdr.src.name.num);
++
++	/* decode */
++	if (msg->front.iov_len < sizeof(*h))
++		goto bad;
++	h = p;
++	op = le32_to_cpu(h->op);
++	split = le64_to_cpu(h->split);   /* non-zero if we are splitting an
++					  * existing realm */
++	num_split_inos = le32_to_cpu(h->num_split_inos);
++	num_split_realms = le32_to_cpu(h->num_split_realms);
++	trace_len = le32_to_cpu(h->trace_len);
++	p += sizeof(*h);
++
++	dout(10, "handle_snap from mds%d op %s split %llx tracelen %d\n", mds,
++	     ceph_snap_op_name(op), split, trace_len);
++
++	/* find session */
++	mutex_lock(&mdsc->mutex);
++	session = __ceph_lookup_mds_session(mdsc, mds);
++	mutex_unlock(&mdsc->mutex);
++	if (!session) {
++		dout(10, "WTF, got snap but no session for mds%d\n", mds);
++		return;
++	}
++
++	mutex_lock(&session->s_mutex);
++	session->s_seq++;
++	mutex_unlock(&session->s_mutex);
++
++	down_write(&mdsc->snap_rwsem);
++	locked_rwsem = 1;
++
++	if (op == CEPH_SNAP_OP_SPLIT) {
++		struct ceph_mds_snap_realm *ri;
++
++		/*
++		 * A "split" breaks part of an existing realm off into
++		 * a new realm.  The MDS provides a list of inodes
++		 * (with caps) and child realms that belong to the new
++		 * child.
++		 */
++		split_inos = p;
++		p += sizeof(u64) * num_split_inos;
++		split_realms = p;
++		p += sizeof(u64) * num_split_realms;
++		ceph_decode_need(&p, e, sizeof(*ri), bad);
++		/* we will peek at realm info here, but will _not_
++		 * advance p, as the realm update will occur below in
++		 * ceph_update_snap_trace. */
++		ri = p;
++
++		realm = ceph_lookup_snap_realm(mdsc, split);
++		if (IS_ERR(realm))
++			goto out;
++		if (!realm) {
++			realm = ceph_create_snap_realm(mdsc, split);
++			if (IS_ERR(realm))
++				goto out;
++		}
++		ceph_get_snap_realm(mdsc, realm);
++
++		dout(10, "splitting snap_realm %llx %p\n", realm->ino, realm);
++		for (i = 0; i < num_split_inos; i++) {
++			struct ceph_vino vino = {
++				.ino = le64_to_cpu(split_inos[i]),
++				.snap = CEPH_NOSNAP,
++			};
++			struct inode *inode = ceph_find_inode(sb, vino);
++			struct ceph_inode_info *ci;
++
++			if (!inode)
++				continue;
++			ci = ceph_inode(inode);
++
++			spin_lock(&inode->i_lock);
++			if (!ci->i_snap_realm)
++				goto skip_inode;
++			/*
++			 * If this inode belongs to a realm that was
++			 * created after our new realm, we experienced
++			 * a race (due to another split notifications
++			 * arriving from a different MDS).  So skip
++			 * this inode.
++			 */
++			if (ci->i_snap_realm->created >
++			    le64_to_cpu(ri->created)) {
++				dout(15, " leaving %p in newer realm %llx %p\n",
++				     inode, ci->i_snap_realm->ino,
++				     ci->i_snap_realm);
++				goto skip_inode;
++			}
++			dout(15, " will move %p to split realm %llx %p\n",
++			     inode, realm->ino, realm);
++			/*
++			 * Remove the inode from the realm's inode
++			 * list, but don't add it to the new realm
++			 * yet.  We don't want the cap_snap to be
++			 * queued (again) by ceph_update_snap_trace()
++			 * below.  Queue it _now_, under the old context.
++			 */
++			list_del_init(&ci->i_snap_realm_item);
++			spin_unlock(&inode->i_lock);
++
++			ceph_queue_cap_snap(ci,
++					    ci->i_snap_realm->cached_context);
++
++			iput(inode);
++			continue;
++
++		skip_inode:
++			spin_unlock(&inode->i_lock);
++			iput(inode);
++		}
++
++		/* we may have taken some of the old realm's children. */
++		for (i = 0; i < num_split_realms; i++) {
++			struct ceph_snap_realm *child =
++				ceph_lookup_snap_realm(mdsc,
++					   le64_to_cpu(split_realms[i]));
++			if (IS_ERR(child))
++				continue;
++			if (!child)
++				continue;
++			adjust_snap_realm_parent(mdsc, child, realm->ino);
++		}
++	}
++
++	/*
++	 * update using the provided snap trace. if we are deleting a
++	 * snap, we can avoid queueing cap_snaps.
++	 */
++	ceph_update_snap_trace(mdsc, p, e,
++			       op == CEPH_SNAP_OP_DESTROY);
++
++	if (op == CEPH_SNAP_OP_SPLIT) {
++		/*
++		 * ok, _now_ add the inodes into the new realm.
++		 */
++		for (i = 0; i < num_split_inos; i++) {
++			struct ceph_vino vino = {
++				.ino = le64_to_cpu(split_inos[i]),
++				.snap = CEPH_NOSNAP,
++			};
++			struct inode *inode = ceph_find_inode(sb, vino);
++			struct ceph_inode_info *ci;
++
++			if (!inode)
++				continue;
++			ci = ceph_inode(inode);
++			spin_lock(&inode->i_lock);
++			if (!ci->i_snap_realm)
++				goto split_skip_inode;
++			ceph_put_snap_realm(mdsc, ci->i_snap_realm);
++			spin_lock(&realm->inodes_with_caps_lock);
++			list_add(&ci->i_snap_realm_item,
++				 &realm->inodes_with_caps);
++			ci->i_snap_realm = realm;
++			spin_unlock(&realm->inodes_with_caps_lock);
++			ceph_get_snap_realm(mdsc, realm);
++		split_skip_inode:
++			spin_unlock(&inode->i_lock);
++			iput(inode);
++		}
++
++		/* we took a reference when we created the realm, above */
++		ceph_put_snap_realm(mdsc, realm);
++	}
++
++	__cleanup_empty_realms(mdsc);
++
++	up_write(&mdsc->snap_rwsem);
++
++	flush_snaps(mdsc);
++	return;
++
++bad:
++	derr(10, "corrupt snap message from mds%d\n", mds);
 +out:
-+	spin_unlock(&ci->i_unsafe_lock);
-+	return ret;
++	if (locked_rwsem)
++		up_write(&mdsc->snap_rwsem);
++	return;
 +}
 +
-+void ceph_dentry_lru_add(struct dentry *dn)
-+{
-+	struct ceph_dentry_info *di = ceph_dentry(dn);
-+	struct ceph_mds_client *mdsc;
-+	dout(30, "dentry_lru_add %p %p\t%.*s\n",
-+			di, dn, dn->d_name.len, dn->d_name.name);
 +
-+	if (di) {
-+		mdsc = &ceph_client(dn->d_sb)->mdsc;
-+		spin_lock(&mdsc->dentry_lru_lock);
-+		list_add_tail(&di->lru, &mdsc->dentry_lru);
-+		mdsc->num_dentry++;
-+		spin_unlock(&mdsc->dentry_lru_lock);
-+	}
-+}
 +
-+void ceph_dentry_lru_touch(struct dentry *dn)
-+{
-+	struct ceph_dentry_info *di = ceph_dentry(dn);
-+	struct ceph_mds_client *mdsc;
-+	dout(30, "dentry_lru_touch %p %p\t%.*s\n",
-+			di, dn, dn->d_name.len, dn->d_name.name);
-+
-+	if (di) {
-+		mdsc = &ceph_client(dn->d_sb)->mdsc;
-+		spin_lock(&mdsc->dentry_lru_lock);
-+		list_move_tail(&di->lru, &mdsc->dentry_lru);
-+		spin_unlock(&mdsc->dentry_lru_lock);
-+	}
-+}
-+
-+void ceph_dentry_lru_del(struct dentry *dn)
-+{
-+	struct ceph_dentry_info *di = ceph_dentry(dn);
-+	struct ceph_mds_client *mdsc;
-+
-+	dout(30, "dentry_lru_del %p %p\t%.*s\n",
-+			di, dn, dn->d_name.len, dn->d_name.name);
-+	if (di) {
-+		mdsc = &ceph_client(dn->d_sb)->mdsc;
-+		spin_lock(&mdsc->dentry_lru_lock);
-+		list_del_init(&di->lru);
-+		mdsc->num_dentry--;
-+		spin_unlock(&mdsc->dentry_lru_lock);
-+	}
-+}
-+
-+const struct file_operations ceph_dir_fops = {
-+	.read = ceph_read_dir,
-+	.readdir = ceph_readdir,
-+	.llseek = ceph_dir_llseek,
-+	.open = ceph_open,
-+	.release = ceph_release,
-+	.unlocked_ioctl = ceph_ioctl,
-+	.fsync = ceph_dir_fsync,
-+};
-+
-+const struct inode_operations ceph_dir_iops = {
-+	.lookup = ceph_lookup,
-+	.permission = ceph_permission,
-+	.getattr = ceph_getattr,
-+	.setattr = ceph_setattr,
-+	.setxattr = ceph_setxattr,
-+	.getxattr = ceph_getxattr,
-+	.listxattr = ceph_listxattr,
-+	.removexattr = ceph_removexattr,
-+	.mknod = ceph_mknod,
-+	.symlink = ceph_symlink,
-+	.mkdir = ceph_mkdir,
-+	.link = ceph_link,
-+	.unlink = ceph_unlink,
-+	.rmdir = ceph_unlink,
-+	.rename = ceph_rename,
-+	.create = ceph_create,
-+};
-+
-+struct dentry_operations ceph_dentry_ops = {
-+	.d_revalidate = ceph_dentry_revalidate,
-+	.d_release = ceph_dentry_release,
-+};
-+
-+struct dentry_operations ceph_snapdir_dentry_ops = {
-+	.d_revalidate = ceph_snapdir_dentry_revalidate,
-+};
-+
-+struct dentry_operations ceph_snap_dentry_ops = {
-+};
 -- 
 1.5.6.5
 
