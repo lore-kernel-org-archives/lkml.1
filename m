@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbZFSXoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZFSXut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754474AbZFSXoe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 19:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZFSXoZ
+	id S1754261AbZFSXut (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 19:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZFSXul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 19:44:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:25646 "EHLO mga01.intel.com"
+	Fri, 19 Jun 2009 19:50:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38802 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576AbZFSXoY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 19:44:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,256,1243839600"; 
-   d="scan'208";a="468013077"
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Keir Fraser <keir.fraser@eu.citrix.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>
-Date: Fri, 19 Jun 2009 16:44:24 -0700
-Subject: RE: [Xen-devel] Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs
- just because there's no local APIC
-Thread-Topic: [Xen-devel] Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs
- just because there's no local APIC
-Thread-Index: AcnxGFURHFiqpoaUQU+zperNWcAO4AAFye+w
-Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A188656507@orsmsx505.amr.corp.intel.com>
-References: <4A329CF8.4050502@goop.org>
-	<alpine.LFD.2.00.0906181206190.4213@localhost.localdomain>
-	<4A3A9220.4070807@goop.org>	<m1zlc5jqac.fsf@fess.ebiederm.org>
-	<4A3A99FB.7070807@goop.org>	<m1vdmtgtt2.fsf@fess.ebiederm.org>
-	<4A3AC0C4.6060508@goop.org>	<m17hz9djwn.fsf@fess.ebiederm.org>
- <4A3BEDD6.6070303@goop.org>
-In-Reply-To: <4A3BEDD6.6070303@goop.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1751960AbZFSXul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 19:50:41 -0400
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
+ suspending
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, npiggin@suse.de,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20090619232336.GA2442@elf.ucw.cz>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+	 <20090619145913.GA1389@ucw.cz> <1245450449.16880.10.camel@pasglop>
+	 <20090619232336.GA2442@elf.ucw.cz>
+Content-Type: text/plain
+Date: Sat, 20 Jun 2009 09:50:09 +1000
+Message-Id: <1245455409.16880.15.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote on Fri, 19 Jun 2009 at 12:58:14:
-
->> 
->> Which if dom0 is to be redundant/restartable seems to make the
->> argument for AML living in Xen.
->> 
->> Xen has everything except the AML interpreter.
->> 
+On Sat, 2009-06-20 at 01:23 +0200, Pavel Machek wrote:
+> > No. First, code that assumes GFP_KERNEL don't fail is stupid. Any
+> > allocation should always be assumed to potentially fail.
 > 
-> I assume that putting AML into Xen has been considered, but I don't
-> anything about those deliberations.  Keir? Jun?
+> Stupid, yes. Uncommon? Not sure.
+
+A lot less than it used to be, we've been fixing those by the truckload
+over the past few years. But again, if allocations start failing that
+early at boot, you are likely to be doomed anyway. Still, better to do
+proper error handling, and I think we -mostly- do (ok, not -always-).
+
+> > Then, if you start failing allocations at boot time, then you aren't
+> > going anywhere are you ?
 > 
+> Exactly. So boot code should have access to all the memory, right?
+> Setting some aside for GFP_ATOMIC does not make sense in that context.
 
-Yes, it was one of the options years ago. We did not do that because Linux and Solaris (as dom0) already had the AML interpreter and it's overkill and redundant to have such a large component in the Xen hypervisor. Since the hypervisor does most of the power management (i.e. P, C, S-state, etc.) getting the info from dom0 today, we might want to reconsider the option. 
+I'm not certain what you mean here. If you're going to hit the atomic
+reserve that early, you aren't going anywhere neither :-)
 
-Jun
-___
-Intel Open Source Technology Center
+Is there any real problem you are trying to solve here or is it all
+just academic ?
+
+Cheers,
+Ben.
 
 
