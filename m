@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbZFSWj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbZFSWic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbZFSWj0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761043AbZFSWhy
+	id S1761272AbZFSWic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759509AbZFSWct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:37:54 -0400
-Received: from alva.zappa.cx ([213.88.132.89]:49142 "EHLO alva.zappa.cx"
+	Fri, 19 Jun 2009 18:32:49 -0400
+Received: from khc.piap.pl ([195.187.100.11]:46508 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761142AbZFSWhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:37:53 -0400
-Message-ID: <4A3C1343.10501@zappa.cx>
-Date: Sat, 20 Jun 2009 00:37:55 +0200
-From: Andreas Sundstrom <sunkan@zappa.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1758792AbZFSWb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 18:31:28 -0400
+To: Dave Airlie <airlied@linux.ie>
+Cc: Keith Packard <keithp@keithp.com>, <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: Trivial fixes for drivers/gpu/drm/i915/ (#1 V2)
+References: <m34ouc55ka.fsf@intrepid.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 20 Jun 2009 00:31:28 +0200
+In-Reply-To: <m34ouc55ka.fsf@intrepid.localdomain> (Krzysztof Halasa's message of "Fri\, 19 Jun 2009 22\:31\:17 +0200")
+Message-ID: <m3prcz4zzz.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.30 kernel panic when closing lid
-References: <4A3BF368.9090103@zappa.cx> <200906192356.28453.elendil@planet.nl>
-In-Reply-To: <200906192356.28453.elendil@planet.nl>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> Andreas Sundstrom wrote:
->> My laptop has started crashing when I close the lid. This does not
->> happen with 2.6.29.4 which I was using before 2.6.30, I configured my
->> 2.6.30 kernel with the 2.6.29.4 as the base and then did "make
->> oldconfig" and then most of the questions I got I used the default
->> setting.
-> 
-> That sounds like it may be a known issue, although it's somewhat strange 
-> that you did not see it with earlier kernels.
-> Can you test if the following workaround fixes the crash?
-> 
-> echo -n 7 >/proc/acpi/video/C09A/DOS
-> 
-> See e.g.: http://lkml.indiana.edu/hypermail/linux/kernel/0901.1/01971.html
-> You can find more information by googling for "hp 2510p lid close crash"
-> (but it affects other models as well).
-> 
-> Cheers,
-> FJP
+size_t is (some sort of) int on x86-32 and long on x86-64, correct
+format specifiers.
 
-I think you hit the nail on the head there.. It seems to work now with
-DOS set to 7 instead of 0 as it defaults to.
+Signed-off-by:  Krzysztof Halasa <khc@pm.waw.pl>
 
-Funny thing is that I know remember going through this issue some time
-ago.. I have since then changed from ubuntu to debian lenny. It used to
-be taken cared of by a hotkeys script in init.d and I have now installed
- the corresponding debian package for that and all is well.
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 39f5c65..cdaa8b6 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -1007,7 +1007,7 @@ i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
+ 
+ 	mutex_lock(&dev->struct_mutex);
+ #if WATCH_BUF
+-	DRM_INFO("set_domain_ioctl %p(%d), %08x %08x\n",
++	DRM_INFO("set_domain_ioctl %p(%zd), %08x %08x\n",
+ 		 obj, obj->size, read_domains, write_domain);
+ #endif
+ 	if (read_domains & I915_GEM_DOMAIN_GTT) {
+@@ -1051,7 +1051,7 @@ i915_gem_sw_finish_ioctl(struct drm_device *dev, void *data,
+ 	}
+ 
+ #if WATCH_BUF
+-	DRM_INFO("%s: sw_finish %d (%p %d)\n",
++	DRM_INFO("%s: sw_finish %d (%p %zd)\n",
+ 		 __func__, args->handle, obj, obj->size);
+ #endif
+ 	obj_priv = obj->driver_private;
+@@ -2377,7 +2377,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+ 	}
+ 
+ #if WATCH_BUF
+-	DRM_INFO("Binding object of size %d at 0x%08x\n",
++	DRM_INFO("Binding object of size %zd at 0x%08x\n",
+ 		 obj->size, obj_priv->gtt_offset);
+ #endif
+ 	ret = i915_gem_object_get_pages(obj);
+diff --git a/drivers/gpu/drm/i915/i915_gem_debug.c b/drivers/gpu/drm/i915/i915_gem_debug.c
+index 8d0b943..e602614 100644
+--- a/drivers/gpu/drm/i915/i915_gem_debug.c
++++ b/drivers/gpu/drm/i915/i915_gem_debug.c
+@@ -143,7 +143,7 @@ i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle)
+ 	uint32_t *backing_map = NULL;
+ 	int bad_count = 0;
+ 
+-	DRM_INFO("%s: checking coherency of object %p@0x%08x (%d, %dkb):\n",
++	DRM_INFO("%s: checking coherency of object %p@0x%08x (%d, %zdkb):\n",
+ 		 __func__, obj, obj_priv->gtt_offset, handle,
+ 		 obj->size / 1024);
+ 
 
-Many thanks for your help, funny how fast one can forget sometimes..
-Strange though that I did not have any issues with 2.6.28, 2.6.29 (not
-that I can remember at least).
-
-/Andreas
+-- 
+Krzysztof Halasa
