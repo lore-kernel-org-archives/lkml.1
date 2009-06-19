@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760347AbZFSWex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbZFSWe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760347AbZFSWex (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759282AbZFSWcB
+	id S1760116AbZFSWe0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758801AbZFSWbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:32:01 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:44724 "EHLO
+	Fri, 19 Jun 2009 18:31:40 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:44739 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758153AbZFSWbA (ORCPT
+	with ESMTP id S1758027AbZFSWa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:31:00 -0400
+	Fri, 19 Jun 2009 18:30:58 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        greg@kroah.com
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 11/21] ceph: OSD client
-Date: Fri, 19 Jun 2009 15:31:32 -0700
-Message-Id: <1245450702-31343-12-git-send-email-sage@newdream.net>
+Subject: [PATCH 09/21] ceph: address space operations
+Date: Fri, 19 Jun 2009 15:31:30 -0700
+Message-Id: <1245450702-31343-10-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1245450702-31343-11-git-send-email-sage@newdream.net>
+In-Reply-To: <1245450702-31343-9-git-send-email-sage@newdream.net>
 References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-2-git-send-email-sage@newdream.net>
  <1245450702-31343-3-git-send-email-sage@newdream.net>
@@ -28,1983 +28,1133 @@ References: <1245450702-31343-1-git-send-email-sage@newdream.net>
  <1245450702-31343-7-git-send-email-sage@newdream.net>
  <1245450702-31343-8-git-send-email-sage@newdream.net>
  <1245450702-31343-9-git-send-email-sage@newdream.net>
- <1245450702-31343-10-git-send-email-sage@newdream.net>
- <1245450702-31343-11-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The OSD client is responsible for reading and writing data from/to the
-object storage pool.  This includes determining where objects are
-stored in the cluster, and ensuring that requests are retried or
-redirected in the event of a node failure or data migration.
+The ceph address space methods are concerned primarily with managing
+the dirty page accounting in the inode, which (among other things)
+must keep track of which snapshot context each page was dirtied in,
+and ensure that dirty data is written out to the OSDs in snapshort
+order.
 
-If an OSD does not respond before a timeout expires, 'ping' messages
-are sent across the lossless, ordered communications channel to
-ensure that any break in the TCP is discovered.  If the session does
-reset, a reconnection is attempted and affected requests are resent
-(by the message transport layer).
+A writepage() on a page that is not currently writeable due to
+snapshot writeback ordering constraints is ignored (it was presumably
+called from kswapd).
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/staging/ceph/osd_client.c |  987 ++++++++++++++++++++++++++++++++++++++++++
- fs/staging/ceph/osd_client.h |  151 +++++++
- fs/staging/ceph/osdmap.c     |  703 ++++++++++++++++++++++++++++++
- fs/staging/ceph/osdmap.h     |   83 ++++
- 4 files changed, 1924 insertions(+), 0 deletions(-)
- create mode 100644 fs/staging/ceph/osd_client.c
- create mode 100644 fs/staging/ceph/osd_client.h
- create mode 100644 fs/staging/ceph/osdmap.c
- create mode 100644 fs/staging/ceph/osdmap.h
+ fs/staging/ceph/addr.c | 1101 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1101 insertions(+), 0 deletions(-)
+ create mode 100644 fs/staging/ceph/addr.c
 
-diff --git a/fs/staging/ceph/osd_client.c b/fs/staging/ceph/osd_client.c
+diff --git a/fs/staging/ceph/addr.c b/fs/staging/ceph/addr.c
 new file mode 100644
-index 0000000..ddad5c1
+index 0000000..e5842fa
 --- /dev/null
-+++ b/fs/staging/ceph/osd_client.c
-@@ -0,0 +1,987 @@
-+#include <linux/err.h>
-+#include <linux/highmem.h>
++++ b/fs/staging/ceph/addr.c
+@@ -0,0 +1,1101 @@
++
++#include <linux/backing-dev.h>
++#include <linux/fs.h>
 +#include <linux/mm.h>
 +#include <linux/pagemap.h>
-+#include <linux/slab.h>
-+#include <linux/uaccess.h>
++#include <linux/writeback.h>	/* generic_writepages */
++#include <linux/pagevec.h>
++#include <linux/task_io_accounting_ops.h>
 +
 +#include "ceph_debug.h"
-+
-+int ceph_debug_osdc __read_mostly = -1;
-+#define DOUT_MASK DOUT_MASK_OSDC
-+#define DOUT_VAR ceph_debug_osdc
++int ceph_debug_addr __read_mostly = -1;
++#define DOUT_MASK DOUT_MASK_ADDR
++#define DOUT_VAR ceph_debug_addr
 +#include "super.h"
 +
 +#include "osd_client.h"
-+#include "messenger.h"
-+#include "crush/mapper.h"
-+#include "decode.h"
-+
 +
 +/*
-+ * calculate the mapping of a file extent onto an object, and fill out the
-+ * request accordingly.  shorten extent as necessary if it crosses an
-+ * object boundary.
-+ */
-+static void calc_layout(struct ceph_osd_client *osdc,
-+			struct ceph_vino vino, struct ceph_file_layout *layout,
-+			u64 off, u64 *plen,
-+			struct ceph_osd_request *req)
-+{
-+	struct ceph_osd_request_head *reqhead = req->r_request->front.iov_base;
-+	struct ceph_osd_op *op = (void *)(reqhead + 1);
-+	u64 orig_len = *plen;
-+	u64 objoff, objlen;    /* extent in object */
-+	u64 bno;
-+
-+	reqhead->snapid = cpu_to_le64(vino.snap);
-+
-+	/* object extent? */
-+	ceph_calc_file_object_mapping(layout, off, plen, &bno,
-+				      &objoff, &objlen);
-+	if (*plen < orig_len)
-+		dout(10, " skipping last %llu, final file extent %llu~%llu\n",
-+		     orig_len - *plen, off, *plen);
-+
-+	sprintf(req->r_oid, "%llx.%08llx", vino.ino, bno);
-+	req->r_oid_len = strlen(req->r_oid);
-+
-+
-+	op->offset = cpu_to_le64(objoff);
-+	op->length = cpu_to_le64(objlen);
-+	req->r_num_pages = calc_pages_for(off, *plen);
-+
-+	dout(10, "calc_layout %s (%d) %llu~%llu (%d pages)\n",
-+	     req->r_oid, req->r_oid_len, objoff, objlen, req->r_num_pages);
-+}
-+
-+
-+/*
-+ * requests
-+ */
-+void ceph_osdc_put_request(struct ceph_osd_request *req)
-+{
-+	dout(10, "put_request %p %d -> %d\n", req, atomic_read(&req->r_ref),
-+	     atomic_read(&req->r_ref)-1);
-+	BUG_ON(atomic_read(&req->r_ref) <= 0);
-+	if (atomic_dec_and_test(&req->r_ref)) {
-+		if (req->r_request)
-+			ceph_msg_put(req->r_request);
-+		if (req->r_reply)
-+			ceph_msg_put(req->r_reply);
-+		if (req->r_own_pages)
-+			ceph_release_page_vector(req->r_pages,
-+						 req->r_num_pages);
-+		ceph_put_snap_context(req->r_snapc);
-+		kfree(req);
-+	}
-+}
-+
-+/*
-+ * build new request AND message, calculate layout, and adjust file
-+ * extent as needed.  include addition truncate or sync osd ops.
-+ */
-+struct ceph_osd_request *ceph_osdc_new_request(struct ceph_osd_client *osdc,
-+					       struct ceph_file_layout *layout,
-+					       struct ceph_vino vino,
-+					       u64 off, u64 *plen,
-+					       int opcode, int flags,
-+					       struct ceph_snap_context *snapc,
-+					       int do_sync,
-+					       u32 truncate_seq,
-+					       u64 truncate_size,
-+					       struct timespec *mtime)
-+{
-+	struct ceph_osd_request *req;
-+	struct ceph_msg *msg;
-+	struct ceph_osd_request_head *head;
-+	struct ceph_osd_op *op;
-+	void *p;
-+	int do_trunc = truncate_seq && (off + *plen > truncate_size);
-+	int num_op = 1 + do_sync + do_trunc;
-+	size_t msg_size = sizeof(*head) + num_op*sizeof(*op);
-+	int i;
-+	u64 prevofs;
-+
-+	/* we may overallocate here, if our write extent is shortened below */
-+	req = kzalloc(sizeof(*req), GFP_NOFS);
-+	if (req == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	atomic_set(&req->r_ref, 1);
-+	init_completion(&req->r_completion);
-+	init_completion(&req->r_safe_completion);
-+	INIT_LIST_HEAD(&req->r_unsafe_item);
-+	req->r_flags = flags;
-+	req->r_last_osd = -1;
-+
-+	WARN_ON((flags & (CEPH_OSD_FLAG_READ|CEPH_OSD_FLAG_WRITE)) == 0);
-+
-+	/* create message; allow space for oid */
-+	msg_size += 40 + osdc->client->signed_ticket_len;
-+	if (snapc)
-+		msg_size += sizeof(u64) * snapc->num_snaps;
-+	msg = ceph_msg_new(CEPH_MSG_OSD_OP, msg_size, 0, 0, NULL);
-+	if (IS_ERR(msg)) {
-+		kfree(req);
-+		return ERR_PTR(PTR_ERR(msg));
-+	}
-+	memset(msg->front.iov_base, 0, msg->front.iov_len);
-+	head = msg->front.iov_base;
-+	op = (void *)(head + 1);
-+	p = (void *)(op + num_op);
-+
-+	req->r_request = msg;
-+	req->r_snapc = ceph_get_snap_context(snapc);
-+
-+	head->client_inc = cpu_to_le32(1); /* always, for now. */
-+	head->flags = cpu_to_le32(flags);
-+	if (flags & CEPH_OSD_FLAG_WRITE)
-+		ceph_encode_timespec(&head->mtime, mtime);
-+	head->num_ops = cpu_to_le16(num_op);
-+	op->op = cpu_to_le16(opcode);
-+
-+	/* calculate max write size */
-+	calc_layout(osdc, vino, layout, off, plen, req);
-+	req->r_file_layout = *layout;  /* keep a copy */
-+
-+	if (flags & CEPH_OSD_FLAG_WRITE) {
-+		req->r_request->hdr.data_off = cpu_to_le16(off);
-+		req->r_request->hdr.data_len = cpu_to_le32(*plen);
-+	        op->payload_len = cpu_to_le32(*plen);
-+	}
-+
-+
-+	/* fill in oid, ticket */
-+	head->object_len = cpu_to_le32(req->r_oid_len);
-+	memcpy(p, req->r_oid, req->r_oid_len);
-+	p += req->r_oid_len;
-+
-+	head->ticket_len = cpu_to_le32(osdc->client->signed_ticket_len);
-+	memcpy(p, osdc->client->signed_ticket,
-+	       osdc->client->signed_ticket_len);
-+	p += osdc->client->signed_ticket_len;
-+
-+
-+	/* additional ops */
-+	if (do_trunc) {
-+		op++;
-+		op->op = cpu_to_le16(opcode == CEPH_OSD_OP_READ ?
-+			     CEPH_OSD_OP_MASKTRUNC : CEPH_OSD_OP_SETTRUNC);
-+		op->truncate_seq = cpu_to_le32(truncate_seq);
-+		prevofs =  le64_to_cpu((op-1)->offset);
-+		op->truncate_size = cpu_to_le64(truncate_size - (off-prevofs));
-+	}
-+	if (do_sync) {
-+		op++;
-+		op->op = cpu_to_le16(CEPH_OSD_OP_STARTSYNC);
-+	}
-+	if (snapc) {
-+		head->snap_seq = cpu_to_le64(snapc->seq);
-+		head->num_snaps = cpu_to_le32(snapc->num_snaps);
-+		for (i = 0; i < snapc->num_snaps; i++) {
-+			*(__le64 *)p = cpu_to_le64(snapc->snaps[i]);
-+			p += sizeof(u64);
-+		}
-+	}
-+
-+	BUG_ON(p > msg->front.iov_base + msg->front.iov_len);
-+	return req;
-+}
-+
-+/*
-+ * Register request, assign tid.  If this is the first request, set up
-+ * the timeout event.
-+ */
-+static int register_request(struct ceph_osd_client *osdc,
-+			    struct ceph_osd_request *req)
-+{
-+	struct ceph_osd_request_head *head = req->r_request->front.iov_base;
-+	int rc;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	req->r_tid = ++osdc->last_tid;
-+	head->tid = cpu_to_le64(req->r_tid);
-+
-+	dout(30, "register_request %p tid %lld\n", req, req->r_tid);
-+	rc = radix_tree_insert(&osdc->request_tree, req->r_tid, (void *)req);
-+	if (rc < 0)
-+		goto out;
-+
-+	ceph_osdc_get_request(req);
-+	osdc->num_requests++;
-+
-+	req->r_timeout_stamp =
-+		jiffies + osdc->client->mount_args.osd_timeout*HZ;
-+
-+	if (osdc->num_requests == 1) {
-+		osdc->timeout_tid = req->r_tid;
-+		dout(30, "  timeout on tid %llu at %lu\n", req->r_tid,
-+		     req->r_timeout_stamp);
-+		schedule_delayed_work(&osdc->timeout_work,
-+		      round_jiffies_relative(req->r_timeout_stamp - jiffies));
-+	}
-+out:
-+	mutex_unlock(&osdc->request_mutex);
-+	return rc;
-+}
-+
-+/*
-+ * Timeout callback, called every N seconds when 1 or more osd
-+ * requests has been active for more than N seconds.  When this
-+ * happens, we ping all OSDs with requests who have timed out to
-+ * ensure any communications channel reset is detected.  Reset the
-+ * request timeouts another N seconds in the future as we go.
-+ * Reschedule the timeout event another N seconds in future (unless
-+ * there are no open requests).
-+ */
-+static void handle_timeout(struct work_struct *work)
-+{
-+	struct ceph_osd_client *osdc =
-+		container_of(work, struct ceph_osd_client, timeout_work.work);
-+	struct ceph_osd_request *req;
-+	unsigned long timeout = osdc->client->mount_args.osd_timeout * HZ;
-+	unsigned long next_timeout = timeout + jiffies;
-+	RADIX_TREE(pings, GFP_NOFS);  /* only send 1 ping per osd */
-+	u64 next_tid = 0;
-+	int got;
-+
-+	dout(10, "timeout\n");
-+	down_read(&osdc->map_sem);
-+
-+	ceph_monc_request_osdmap(&osdc->client->monc, osdc->osdmap->epoch+1);
-+
-+	mutex_lock(&osdc->request_mutex);
-+	while (1) {
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+		if (got == 0)
-+			break;
-+		next_tid = req->r_tid + 1;
-+		if (time_before(jiffies, req->r_timeout_stamp))
-+			goto next;
-+
-+		req->r_timeout_stamp = next_timeout;
-+		if (req->r_last_osd >= 0 &&
-+		    radix_tree_lookup(&pings, req->r_last_osd) == NULL) {
-+			struct ceph_entity_name n = {
-+				.type = cpu_to_le32(CEPH_ENTITY_TYPE_OSD),
-+				.num = cpu_to_le32(req->r_last_osd)
-+			};
-+			dout(20, " tid %llu (at least) timed out on osd%d\n",
-+			     req->r_tid, req->r_last_osd);
-+			radix_tree_insert(&pings, req->r_last_osd, req);
-+			ceph_ping(osdc->client->msgr, n, &req->r_last_osd_addr);
-+		}
-+
-+	next:
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+	}
-+
-+	while (radix_tree_gang_lookup(&pings, (void **)&req, 0, 1))
-+		radix_tree_delete(&pings, req->r_last_osd);
-+
-+	if (osdc->timeout_tid)
-+		schedule_delayed_work(&osdc->timeout_work,
-+				      round_jiffies_relative(timeout));
-+
-+	mutex_unlock(&osdc->request_mutex);
-+
-+	up_read(&osdc->map_sem);
-+}
-+
-+/*
-+ * called under osdc->request_mutex
-+ */
-+static void __unregister_request(struct ceph_osd_client *osdc,
-+				 struct ceph_osd_request *req)
-+{
-+	dout(30, "__unregister_request %p tid %lld\n", req, req->r_tid);
-+	radix_tree_delete(&osdc->request_tree, req->r_tid);
-+
-+	osdc->num_requests--;
-+	ceph_osdc_put_request(req);
-+
-+	if (req->r_tid == osdc->timeout_tid) {
-+		if (osdc->num_requests == 0) {
-+			dout(30, "no requests, canceling timeout\n");
-+			osdc->timeout_tid = 0;
-+			cancel_delayed_work(&osdc->timeout_work);
-+		} else {
-+			int ret;
-+
-+			ret = radix_tree_gang_lookup(&osdc->request_tree,
-+						     (void **)&req, 0, 1);
-+			BUG_ON(ret != 1);
-+			osdc->timeout_tid = req->r_tid;
-+			dout(30, "rescheduled timeout on tid %llu at %lu\n",
-+			     req->r_tid, req->r_timeout_stamp);
-+			schedule_delayed_work(&osdc->timeout_work,
-+			      round_jiffies_relative(req->r_timeout_stamp -
-+						     jiffies));
-+		}
-+	}
-+}
-+
-+/*
-+ * Pick an osd, and put result in req->r_last_osd[_addr].  The first
-+ * up osd in the pg.  or -1.
++ * There are a few funny things going on here.
 + *
-+ * Caller should hold map_sem for read.
++ * The page->private field is used to reference a struct
++ * ceph_snap_context for _every_ dirty page.  This indicates which
++ * snapshot the page was logically dirtied in, and thus which snap
++ * context needs to be associated with the osd write during writeback.
 + *
-+ * return 0 if unchanged, 1 if changed.
++ * Similarly, struct ceph_inode_info maintains a set of counters to
++ * count dirty pages on the inode.  In the absense of snapshots,
++ * i_wrbuffer_ref == i_wrbuffer_ref_head == the dirty page count.
++ *
++ * A snapshot is taken (that is, when the client receives notification
++ * that a snapshot was taken), each inode with caps and with dirty
++ * pages (dirty pages implies there is a cap) gets a new ceph_cap_snap
++ * in the i_cap_snaps (which is sorted in ascending order, new snaps
++ * go to the tail).  The i_wrbuffer_ref_head count is moved to
++ * capsnap->dirty. (Unless a sync write is currently in progress.  In
++ * that case, the capsnap is said to be "pending", new writes cannot
++ * start, and the capsnap isn't "finalized" until the write completes
++ * (or fails) and a final size/mtime for the inode for that snap can
++ * be settled upon.)  i_wrbuffer_ref_head is reset to 0.
++ *
++ * On writeback, we must submit writes to the osd IN SNAP ORDER.  So,
++ * we look for the first capsnap in i_cap_snaps and write out pages in
++ * that snap context _only_.  Then we move on to the next capsnap,
++ * eventually reachings the "live" or "head" context (i.e., pages that
++ * are not yet snapped) and are writing the most recently dirtied
++ * pages.
++ *
++ * Invalidate and so forth must take care to ensure the dirty page
++ * accounting is preserved.
 + */
-+static int map_osds(struct ceph_osd_client *osdc,
-+		    struct ceph_osd_request *req)
++
++
++/*
++ * Dirty a page.  If @snapc is NULL, use the current snap context for
++ * i_snap_realm.  Otherwise, redirty a page within the context of
++ * the given *snapc.
++ *
++ * Caller may or may not have locked *page.  That means we can race
++ * with truncate_complete_page and end up with a non-dirty page with
++ * private data.
++ */
++static int ceph_set_page_dirty(struct page *page)
 +{
-+	struct ceph_osd_request_head *reqhead = req->r_request->front.iov_base;
-+	union ceph_pg pgid;
-+	struct ceph_pg_pool_info *pool;
-+	int ruleno;
-+	unsigned pps; /* placement ps */
-+	int osds[10], osd = -1;
-+	int i, num;
-+	int err;
++	struct address_space *mapping = page->mapping;
++	struct inode *inode;
++	struct ceph_inode_info *ci;
++	int undo = 0;
++	struct ceph_snap_context *snapc;
 +
-+	err = ceph_calc_object_layout(&reqhead->layout, req->r_oid,
-+				      &req->r_file_layout, osdc->osdmap);
-+	if (err)
-+		return err;
-+	pgid.pg64 = le64_to_cpu(reqhead->layout.ol_pgid);
-+	if (pgid.pg.pool >= osdc->osdmap->num_pools)
-+		return -1;
-+	pool = &osdc->osdmap->pg_pool[pgid.pg.pool];
-+	ruleno = crush_find_rule(osdc->osdmap->crush, pool->v.crush_ruleset,
-+				 pool->v.type, pool->v.size);
-+	if (ruleno < 0) {
-+		derr(0, "map_osds no crush rule for pool %d type %d size %d\n",
-+		     pgid.pg.pool, pool->v.type, pool->v.size);
-+		return -1;
-+	}
++	if (unlikely(!mapping))
++		return !TestSetPageDirty(page);
 +
-+	if (pgid.pg.preferred >= 0)
-+		pps = ceph_stable_mod(pgid.pg.ps,
-+				      le32_to_cpu(pool->v.lpgp_num),
-+				      pool->lpgp_num_mask);
-+	else
-+		pps = ceph_stable_mod(pgid.pg.ps,
-+				      le32_to_cpu(pool->v.pgp_num),
-+				      pool->pgp_num_mask);
-+	pps += pgid.pg.pool;
-+	num = crush_do_rule(osdc->osdmap->crush, ruleno, pps, osds,
-+			    min_t(int, pool->v.size, ARRAY_SIZE(osds)),
-+			    pgid.pg.preferred, osdc->osdmap->osd_weight);
-+
-+	/* primary is first up osd */
-+	for (i = 0; i < num; i++)
-+		if (ceph_osd_is_up(osdc->osdmap, osds[i])) {
-+			osd = osds[i];
-+			break;
-+		}
-+	dout(20, "map_osds tid %llu pgid %llx pool %d osd%d (was osd%d)\n",
-+	     req->r_tid, pgid.pg64, pgid.pg.pool, osd, req->r_last_osd);
-+	if (req->r_last_osd == osd &&
-+	    (osd < 0 || ceph_entity_addr_equal(&osdc->osdmap->osd_addr[osd],
-+					       &req->r_last_osd_addr)))
++	if (TestSetPageDirty(page)) {
++		dout(20, "%p set_page_dirty %p idx %lu -- already dirty\n",
++		     mapping->host, page, page->index);
 +		return 0;
-+	req->r_last_osd = osd;
-+	if (osd >= 0)
-+		req->r_last_osd_addr = osdc->osdmap->osd_addr[osd];
++	}
++
++	/*
++	 * optimistically adjust accounting, on the assumption that
++	 * we won't race with invalidate.
++	 */
++	inode = mapping->host;
++	ci = ceph_inode(inode);
++
++	/*
++	 * Note that we're grabbing a snapc ref here without holding
++	 * any locks!
++	 */
++	snapc = ceph_get_snap_context(ci->i_snap_realm->cached_context);
++
++	/* dirty the head */
++	spin_lock(&inode->i_lock);
++	if (ci->i_wrbuffer_ref_head == 0)
++		ci->i_head_snapc = ceph_get_snap_context(snapc);
++	++ci->i_wrbuffer_ref_head;
++	++ci->i_wrbuffer_ref;
++	dout(20, "%p set_page_dirty %p idx %lu head %d/%d -> %d/%d "
++	     "snapc %p seq %lld (%d snaps)\n",
++	     mapping->host, page, page->index,
++	     ci->i_wrbuffer_ref-1, ci->i_wrbuffer_ref_head-1,
++	     ci->i_wrbuffer_ref, ci->i_wrbuffer_ref_head,
++	     snapc, snapc->seq, snapc->num_snaps);
++	spin_unlock(&inode->i_lock);
++
++	/* now adjust page */
++	spin_lock_irq(&mapping->tree_lock);
++	if (page->mapping) {	/* Race with truncate? */
++		WARN_ON_ONCE(!PageUptodate(page));
++
++		if (mapping_cap_account_dirty(mapping)) {
++			__inc_zone_page_state(page, NR_FILE_DIRTY);
++			__inc_bdi_stat(mapping->backing_dev_info,
++					BDI_RECLAIMABLE);
++			task_io_account_write(PAGE_CACHE_SIZE);
++		}
++		radix_tree_tag_set(&mapping->page_tree,
++				page_index(page), PAGECACHE_TAG_DIRTY);
++
++		/*
++		 * Reference snap context in page->private.  Also set
++		 * PagePrivate so that we get invalidatepage callback.
++		 */
++		page->private = (unsigned long)snapc;
++		SetPagePrivate(page);
++	} else {
++		dout(20, "ANON set_page_dirty %p (raced truncate?)\n", page);
++		undo = 1;
++	}
++
++	spin_unlock_irq(&mapping->tree_lock);
++
++	if (undo)
++		ceph_put_wrbuffer_cap_refs(ci, 1, snapc);
++
++	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
++
++	BUG_ON(!PageDirty(page));
 +	return 1;
 +}
 +
 +/*
-+ * caller should hold map_sem (for read)
++ * If we are truncating the full page (i.e. offset == 0), adjust the
++ * dirty page counters appropriately.  Only called if there is private
++ * data on the page.
 + */
-+static int send_request(struct ceph_osd_client *osdc,
-+			struct ceph_osd_request *req)
++static void ceph_invalidatepage(struct page *page, unsigned long offset)
 +{
-+	struct ceph_osd_request_head *reqhead;
-+	int osd;
++	struct inode *inode = page->mapping->host;
++	struct ceph_inode_info *ci;
++	struct ceph_snap_context *snapc = (void *)page->private;
 +
-+	map_osds(osdc, req);
-+	if (req->r_last_osd < 0) {
-+		dout(10, "send_request %p no up osds in pg\n", req);
-+		ceph_monc_request_osdmap(&osdc->client->monc,
-+					 osdc->osdmap->epoch+1);
-+		return 0;
-+	}
-+	osd = req->r_last_osd;
++	BUG_ON(!PageLocked(page));
++	BUG_ON(!page->private);
++	BUG_ON(!PagePrivate(page));
++	BUG_ON(!page->mapping);
 +
-+	dout(10, "send_request %p tid %llu to osd%d flags %d\n",
-+	     req, req->r_tid, osd, req->r_flags);
++	/*
++	 * We can get non-dirty pages here due to races between
++	 * set_page_dirty and truncate_complete_page; just spit out a
++	 * warning, in case we end up with accounting problems later.
++	 */
++	if (!PageDirty(page))
++		dout(0, "%p invalidatepage %p page not dirty\n", inode, page);
 +
-+	reqhead = req->r_request->front.iov_base;
-+	reqhead->osdmap_epoch = cpu_to_le32(osdc->osdmap->epoch);
-+	reqhead->flags |= cpu_to_le32(req->r_flags);  /* e.g., RETRY */
-+	reqhead->reassert_version = req->r_reassert_version;
++	if (offset == 0)
++		ClearPageChecked(page);
 +
-+	req->r_request->hdr.dst.name.type =
-+		cpu_to_le32(CEPH_ENTITY_TYPE_OSD);
-+	req->r_request->hdr.dst.name.num = cpu_to_le32(osd);
-+	req->r_request->hdr.dst.addr = req->r_last_osd_addr;
-+
-+	req->r_timeout_stamp = jiffies+osdc->client->mount_args.osd_timeout*HZ;
-+
-+	ceph_msg_get(req->r_request); /* send consumes a ref */
-+	return ceph_msg_send(osdc->client->msgr, req->r_request,
-+			     BASE_DELAY_INTERVAL);
-+}
-+
-+/*
-+ * handle osd op reply.  either call the callback if it is specified,
-+ * or do the completion to wake up the waiting thread.
-+ */
-+void ceph_osdc_handle_reply(struct ceph_osd_client *osdc, struct ceph_msg *msg)
-+{
-+	struct ceph_osd_reply_head *rhead = msg->front.iov_base;
-+	struct ceph_osd_request *req;
-+	u64 tid;
-+	int numops, object_len, flags;
-+
-+	if (msg->front.iov_len < sizeof(*rhead))
-+		goto bad;
-+	tid = le64_to_cpu(rhead->tid);
-+	numops = le32_to_cpu(rhead->num_ops);
-+	object_len = le32_to_cpu(rhead->object_len);
-+	if (msg->front.iov_len != sizeof(*rhead) + object_len +
-+	    numops * sizeof(struct ceph_osd_op))
-+		goto bad;
-+	dout(10, "handle_reply %p tid %llu\n", msg, tid);
-+
-+	/* lookup */
-+	mutex_lock(&osdc->request_mutex);
-+	req = radix_tree_lookup(&osdc->request_tree, tid);
-+	if (req == NULL) {
-+		dout(10, "handle_reply tid %llu dne\n", tid);
-+		mutex_unlock(&osdc->request_mutex);
-+		return;
-+	}
-+	ceph_osdc_get_request(req);
-+	flags = le32_to_cpu(rhead->flags);
-+
-+	if (req->r_aborted) {
-+		dout(10, "handle_reply tid %llu aborted\n", tid);
-+		goto done;
-+	}
-+
-+	if (req->r_reassert_version.epoch == 0) {
-+		/* first ack */
-+		if (req->r_reply == NULL) {
-+			/* no data payload, or r_reply would have been set by
-+			   prepare_pages. */
-+			ceph_msg_get(msg);
-+			req->r_reply = msg;
-+		} else {
-+			/* r_reply was set by prepare_pages */
-+			BUG_ON(req->r_reply != msg);
-+		}
-+
-+		/* in case we need to replay this op, */
-+		req->r_reassert_version = rhead->reassert_version;
-+	} else if ((flags & CEPH_OSD_FLAG_ONDISK) == 0) {
-+		dout(10, "handle_reply tid %llu dup ack\n", tid);
-+		goto done;
-+	}
-+
-+	dout(10, "handle_reply tid %llu flags %d\n", tid, flags);
-+
-+	/* either this is a read, or we got the safe response */
-+	if ((flags & CEPH_OSD_FLAG_ONDISK) ||
-+	    ((flags & CEPH_OSD_FLAG_WRITE) == 0))
-+		__unregister_request(osdc, req);
-+
-+	mutex_unlock(&osdc->request_mutex);
-+
-+	if (req->r_callback)
-+		req->r_callback(req);
-+	else
-+		complete(&req->r_completion);
-+
-+	if (flags & CEPH_OSD_FLAG_ONDISK) {
-+		if (req->r_safe_callback)
-+			req->r_safe_callback(req);
-+		complete(&req->r_safe_completion);  /* fsync waiter */
-+	}
-+
-+done:
-+	ceph_osdc_put_request(req);
-+	return;
-+
-+bad:
-+	derr(0, "got corrupt osd_op_reply got %d %d expected %d\n",
-+	     (int)msg->front.iov_len, le32_to_cpu(msg->hdr.front_len),
-+	     (int)sizeof(*rhead));
-+}
-+
-+
-+/*
-+ * Resubmit osd requests whose osd or osd address has changed.  Request
-+ * a new osd map if osds are down, or we are otherwise unable to determine
-+ * how to direct a request.
-+ *
-+ * If @who is specified, resubmit requests for that specific osd.
-+ *
-+ * Caller should hold map_sem for read.
-+ */
-+static void kick_requests(struct ceph_osd_client *osdc,
-+			  struct ceph_entity_addr *who)
-+{
-+	struct ceph_osd_request *req;
-+	u64 next_tid = 0;
-+	int got;
-+	int needmap = 0;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	while (1) {
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+		if (got == 0)
-+			break;
-+		next_tid = req->r_tid + 1;
-+
-+		if (who && ceph_entity_addr_equal(who, &req->r_last_osd_addr))
-+			goto kick;
-+
-+		if (map_osds(osdc, req) == 0)
-+			continue;  /* no change */
-+
-+		if (req->r_last_osd < 0) {
-+			dout(20, "tid %llu maps to no valid osd\n", req->r_tid);
-+			needmap++;  /* request a newer map */
-+			memset(&req->r_last_osd_addr, 0,
-+			       sizeof(req->r_last_osd_addr));
-+			continue;
-+		}
-+
-+	kick:
-+		dout(20, "kicking tid %llu osd%d\n", req->r_tid,
-+		     req->r_last_osd);
-+		ceph_osdc_get_request(req);
-+		mutex_unlock(&osdc->request_mutex);
-+		req->r_request = ceph_msg_maybe_dup(req->r_request);
-+		if (!req->r_aborted) {
-+			req->r_flags |= CEPH_OSD_FLAG_RETRY;
-+			send_request(osdc, req);
-+		}
-+		ceph_osdc_put_request(req);
-+		mutex_lock(&osdc->request_mutex);
-+	}
-+	mutex_unlock(&osdc->request_mutex);
-+
-+	if (needmap) {
-+		dout(10, "%d requests for down osds, need new map\n", needmap);
-+		ceph_monc_request_osdmap(&osdc->client->monc,
-+					 osdc->osdmap->epoch+1);
++	ci = ceph_inode(inode);
++	if (offset == 0) {
++		dout(20, "%p invalidatepage %p idx %lu full dirty page %lu\n",
++		     inode, page, page->index, offset);
++		ceph_put_wrbuffer_cap_refs(ci, 1, snapc);
++		ceph_put_snap_context(snapc);
++		page->private = 0;
++		ClearPagePrivate(page);
++	} else {
++		dout(20, "%p invalidatepage %p idx %lu partial dirty page\n",
++		     inode, page, page->index);
 +	}
 +}
 +
-+/*
-+ * Process updated osd map.
-+ *
-+ * The message contains any number of incremental and full maps.
-+ */
-+void ceph_osdc_handle_map(struct ceph_osd_client *osdc, struct ceph_msg *msg)
++/* just a sanity check */
++static int ceph_releasepage(struct page *page, gfp_t g)
 +{
-+	void *p, *end, *next;
-+	u32 nr_maps, maplen;
-+	u32 epoch;
-+	struct ceph_osdmap *newmap = NULL, *oldmap;
-+	int err;
-+	ceph_fsid_t fsid;
-+	__le64 major, minor;
-+
-+	dout(2, "handle_map have %u\n", osdc->osdmap ? osdc->osdmap->epoch : 0);
-+	p = msg->front.iov_base;
-+	end = p + msg->front.iov_len;
-+
-+	/* verify fsid */
-+	ceph_decode_need(&p, end, sizeof(fsid), bad);
-+	ceph_decode_64_le(&p, major);
-+	__ceph_fsid_set_major(&fsid, major);
-+	ceph_decode_64_le(&p, minor);
-+	__ceph_fsid_set_minor(&fsid, minor);
-+	if (ceph_fsid_compare(&fsid, &osdc->client->monc.monmap->fsid)) {
-+		derr(0, "got map with wrong fsid, ignoring\n");
-+		return;
-+	}
-+
-+	down_write(&osdc->map_sem);
-+
-+	/* incremental maps */
-+	ceph_decode_32_safe(&p, end, nr_maps, bad);
-+	dout(10, " %d inc maps\n", nr_maps);
-+	while (nr_maps > 0) {
-+		ceph_decode_need(&p, end, 2*sizeof(u32), bad);
-+		ceph_decode_32(&p, epoch);
-+		ceph_decode_32(&p, maplen);
-+		ceph_decode_need(&p, end, maplen, bad);
-+		next = p + maplen;
-+		if (osdc->osdmap && osdc->osdmap->epoch+1 == epoch) {
-+			dout(10, "applying incremental map %u len %d\n",
-+			     epoch, maplen);
-+			newmap = apply_incremental(&p, next, osdc->osdmap,
-+						   osdc->client->msgr);
-+			if (IS_ERR(newmap)) {
-+				err = PTR_ERR(newmap);
-+				goto bad;
-+			}
-+			if (newmap != osdc->osdmap) {
-+				ceph_osdmap_destroy(osdc->osdmap);
-+				osdc->osdmap = newmap;
-+			}
-+		} else {
-+			dout(10, "ignoring incremental map %u len %d\n",
-+			     epoch, maplen);
-+		}
-+		p = next;
-+		nr_maps--;
-+	}
-+	if (newmap)
-+		goto done;
-+
-+	/* full maps */
-+	ceph_decode_32_safe(&p, end, nr_maps, bad);
-+	dout(30, " %d full maps\n", nr_maps);
-+	while (nr_maps) {
-+		ceph_decode_need(&p, end, 2*sizeof(u32), bad);
-+		ceph_decode_32(&p, epoch);
-+		ceph_decode_32(&p, maplen);
-+		ceph_decode_need(&p, end, maplen, bad);
-+		if (nr_maps > 1) {
-+			dout(5, "skipping non-latest full map %u len %d\n",
-+			     epoch, maplen);
-+		} else if (osdc->osdmap && osdc->osdmap->epoch >= epoch) {
-+			dout(10, "skipping full map %u len %d, "
-+			     "older than our %u\n", epoch, maplen,
-+			     osdc->osdmap->epoch);
-+		} else {
-+			dout(10, "taking full map %u len %d\n", epoch, maplen);
-+			newmap = osdmap_decode(&p, p+maplen);
-+			if (IS_ERR(newmap)) {
-+				err = PTR_ERR(newmap);
-+				goto bad;
-+			}
-+			oldmap = osdc->osdmap;
-+			osdc->osdmap = newmap;
-+			if (oldmap)
-+				ceph_osdmap_destroy(oldmap);
-+		}
-+		p += maplen;
-+		nr_maps--;
-+	}
-+
-+done:
-+	downgrade_write(&osdc->map_sem);
-+	ceph_monc_got_osdmap(&osdc->client->monc, osdc->osdmap->epoch);
-+	if (newmap)
-+		kick_requests(osdc, NULL);
-+	up_read(&osdc->map_sem);
-+	return;
-+
-+bad:
-+	derr(1, "handle_map corrupt msg\n");
-+	up_write(&osdc->map_sem);
-+	return;
++	struct inode *inode = page->mapping ? page->mapping->host : NULL;
++	dout(20, "%p releasepage %p idx %lu\n", inode, page, page->index);
++	WARN_ON(PageDirty(page));
++	WARN_ON(page->private);
++	WARN_ON(PagePrivate(page));
++	return 0;
 +}
 +
 +/*
-+ * If we detect that a tcp connection to an osd resets, we need to
-+ * resubmit all requests for that osd.  That's because although we reliably
-+ * deliver our requests, the osd doesn't not try as hard to deliver the
-+ * reply (because it does not get notification when clients, mds' leave
-+ * the cluster).
++ * read a single page, without unlocking it.
 + */
-+void ceph_osdc_handle_reset(struct ceph_osd_client *osdc,
-+			    struct ceph_entity_addr *addr)
++static int readpage_nounlock(struct file *filp, struct page *page)
 +{
-+	down_read(&osdc->map_sem);
-+	kick_requests(osdc, addr);
-+	up_read(&osdc->map_sem);
-+}
++	struct inode *inode = filp->f_dentry->d_inode;
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	struct ceph_osd_client *osdc = &ceph_inode_to_client(inode)->osdc;
++	int err = 0;
 +
-+
-+/*
-+ * A read request prepares specific pages that data is to be read into.
-+ * When a message is being read off the wire, we call prepare_pages to
-+ * find those pages.
-+ *  0 = success, -1 failure.
-+ */
-+int ceph_osdc_prepare_pages(void *p, struct ceph_msg *m, int want)
-+{
-+	struct ceph_client *client = p;
-+	struct ceph_osd_client *osdc = &client->osdc;
-+	struct ceph_osd_reply_head *rhead = m->front.iov_base;
-+	struct ceph_osd_request *req;
-+	u64 tid;
-+	int ret = -1;
-+	int type = le16_to_cpu(m->hdr.type);
-+
-+	dout(10, "prepare_pages on msg %p want %d\n", m, want);
-+	if (unlikely(type != CEPH_MSG_OSD_OPREPLY))
-+		return -1;  /* hmm! */
-+
-+	tid = le64_to_cpu(rhead->tid);
-+	mutex_lock(&osdc->request_mutex);
-+	req = radix_tree_lookup(&osdc->request_tree, tid);
-+	if (!req) {
-+		dout(10, "prepare_pages unknown tid %llu\n", tid);
++	dout(10, "readpage inode %p file %p page %p index %lu\n",
++	     inode, filp, page, page->index);
++	err = ceph_osdc_readpages(osdc, ceph_vino(inode), &ci->i_layout,
++				  page->index << PAGE_SHIFT, PAGE_SIZE,
++				  ci->i_truncate_seq, ci->i_truncate_size,
++				  &page, 1);
++	if (unlikely(err < 0)) {
++		SetPageError(page);
 +		goto out;
 +	}
-+	dout(10, "prepare_pages tid %llu has %d pages, want %d\n",
-+	     tid, req->r_num_pages, want);
-+	if (likely(req->r_num_pages >= want && req->r_reply == NULL &&
-+		    !req->r_aborted)) {
-+		m->pages = req->r_pages;
-+		m->nr_pages = req->r_num_pages;
-+		ceph_msg_get(m);
-+		req->r_reply = m;
-+		ret = 0; /* success */
-+	}
++	SetPageUptodate(page);
++
 +out:
-+	mutex_unlock(&osdc->request_mutex);
++	return err < 0 ? err : 0;
++}
++
++static int ceph_readpage(struct file *filp, struct page *page)
++{
++	int r = readpage_nounlock(filp, page);
++	unlock_page(page);
++	return r;
++}
++
++/*
++ * Build a vector of contiguous pages from the provided page list.
++ */
++static struct page **page_vector_from_list(struct list_head *page_list,
++					   unsigned *nr_pages)
++{
++	struct page **pages;
++	struct page *page;
++	int next_index, contig_pages = 0;
++
++	/* build page vector */
++	pages = kmalloc(sizeof(*pages) * *nr_pages, GFP_NOFS);
++	if (!pages)
++		return ERR_PTR(-ENOMEM);
++
++	BUG_ON(list_empty(page_list));
++	next_index = list_entry(page_list->prev, struct page, lru)->index;
++	list_for_each_entry_reverse(page, page_list, lru) {
++		if (page->index == next_index) {
++			dout(20, "readpages page %d %p\n", contig_pages, page);
++			pages[contig_pages] = page;
++			contig_pages++;
++			next_index++;
++		} else {
++			break;
++		}
++	}
++	*nr_pages = contig_pages;
++	return pages;
++}
++
++/*
++ * Read multiple pages.  Leave pages we don't read + unlock in page_list;
++ * the caller (VM) cleans them up.
++ */
++static int ceph_readpages(struct file *file, struct address_space *mapping,
++			  struct list_head *page_list, unsigned nr_pages)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	struct ceph_osd_client *osdc = &ceph_inode_to_client(inode)->osdc;
++	int rc = 0;
++	struct page **pages;
++	struct pagevec pvec;
++	loff_t offset;
++
++	dout(10, "readpages %p file %p nr_pages %d\n",
++	     inode, file, nr_pages);
++
++	pages = page_vector_from_list(page_list, &nr_pages);
++	if (IS_ERR(pages))
++		return PTR_ERR(pages);
++
++	/* guess read extent */
++	offset = pages[0]->index << PAGE_CACHE_SHIFT;
++	rc = ceph_osdc_readpages(osdc, ceph_vino(inode), &ci->i_layout,
++				 offset, nr_pages << PAGE_CACHE_SHIFT,
++				 ci->i_truncate_seq, ci->i_truncate_size,
++				 pages, nr_pages);
++	if (rc < 0)
++		goto out;
++
++	/* set uptodate and add to lru in pagevec-sized chunks */
++	pagevec_init(&pvec, 0);
++	for (; rc > 0; rc -= PAGE_CACHE_SIZE) {
++		struct page *page;
++
++		BUG_ON(list_empty(page_list));
++		page = list_entry(page_list->prev, struct page, lru);
++		list_del(&page->lru);
++
++		if (add_to_page_cache(page, mapping, page->index, GFP_NOFS)) {
++			page_cache_release(page);
++			dout(20, "readpages %p add_to_page_cache failed %p\n",
++			     inode, page);
++			continue;
++		}
++		dout(10, "readpages %p adding %p idx %lu\n", inode, page,
++		     page->index);
++		flush_dcache_page(page);
++		SetPageUptodate(page);
++		unlock_page(page);
++		if (pagevec_add(&pvec, page) == 0)
++			pagevec_lru_add_file(&pvec);   /* add to lru */
++	}
++	pagevec_lru_add_file(&pvec);
++	rc = 0;
++
++out:
++	kfree(pages);
++	return rc;
++}
++
++/*
++ * Get ref for the oldest snapc for an inode with dirty data... that is, the
++ * only snap context we are allowed to write back.
++ *
++ * Caller holds i_lock.
++ */
++static struct ceph_snap_context *__get_oldest_context(struct inode *inode,
++						      u64 *snap_size)
++{
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	struct ceph_snap_context *snapc = NULL;
++	struct list_head *p;
++	struct ceph_cap_snap *capsnap = NULL;
++
++	list_for_each(p, &ci->i_cap_snaps) {
++		capsnap = list_entry(p, struct ceph_cap_snap, ci_item);
++		dout(20, " cap_snap %p snapc %p has %d dirty pages\n", capsnap,
++		     capsnap->context, capsnap->dirty_pages);
++		if (capsnap->dirty_pages) {
++			snapc = ceph_get_snap_context(capsnap->context);
++			if (snap_size)
++				*snap_size = capsnap->size;
++			break;
++		}
++	}
++	if (!snapc && ci->i_snap_realm) {
++		snapc = ceph_get_snap_context(ci->i_snap_realm->cached_context);
++		dout(20, " head snapc %p has %d dirty pages\n",
++		     snapc, ci->i_wrbuffer_ref_head);
++	}
++	return snapc;
++}
++
++static struct ceph_snap_context *get_oldest_context(struct inode *inode,
++						    u64 *snap_size)
++{
++	struct ceph_snap_context *snapc = NULL;
++
++	spin_lock(&inode->i_lock);
++	snapc = __get_oldest_context(inode, snap_size);
++	spin_unlock(&inode->i_lock);
++	return snapc;
++}
++
++/*
++ * Write a single page, but leave the page locked.
++ *
++ * If we get a write error, set the page error bit, but still adjust the
++ * dirty page accounting (i.e., page is no longer dirty).
++ *
++ * FIXME: Is that the right thing to do?
++ */
++static int writepage_nounlock(struct page *page, struct writeback_control *wbc)
++{
++	struct inode *inode;
++	struct ceph_inode_info *ci;
++	struct ceph_osd_client *osdc;
++	loff_t page_off = page->index << PAGE_CACHE_SHIFT;
++	int len = PAGE_CACHE_SIZE;
++	loff_t i_size;
++	int err = 0;
++	struct ceph_snap_context *snapc;
++	u64 snap_size = 0;
++
++	dout(10, "writepage %p idx %lu\n", page, page->index);
++
++	if (!page->mapping || !page->mapping->host) {
++		dout(10, "writepage %p - no mapping\n", page);
++		return -EFAULT;
++	}
++	inode = page->mapping->host;
++	ci = ceph_inode(inode);
++	osdc = &ceph_inode_to_client(inode)->osdc;
++
++	/* verify this is a writeable snap context */
++	snapc = (void *)page->private;
++	if (snapc == NULL) {
++		dout(20, "writepage %p page %p not dirty?\n", inode, page);
++		goto out;
++	}
++	if (snapc != get_oldest_context(inode, &snap_size)) {
++		dout(10, "writepage %p page %p snapc %p not writeable - noop\n",
++		     inode, page, (void *)page->private);
++		/* we should only noop if called by kswapd */
++		WARN_ON((current->flags & PF_MEMALLOC) == 0);
++		goto out;
++	}
++
++	/* is this a partial page at end of file? */
++	if (snap_size)
++		i_size = snap_size;
++	else
++		i_size = i_size_read(inode);
++	if (i_size < page_off + len)
++		len = i_size - page_off;
++
++	dout(10, "writepage %p page %p index %lu on %llu~%u\n",
++	     inode, page, page->index, page_off, len);
++
++	set_page_writeback(page);
++	err = ceph_osdc_writepages(osdc, ceph_vino(inode),
++				   &ci->i_layout, snapc,
++				   page_off, len,
++				   ci->i_truncate_seq, ci->i_truncate_size,
++				   &inode->i_mtime,
++				   &page, 1, 0, 0);
++	if (err < 0) {
++		dout(20, "writepage setting page error %p\n", page);
++		SetPageError(page);
++		if (wbc)
++			wbc->pages_skipped++;
++	} else {
++		dout(20, "writepage cleaned page %p\n", page);
++		err = 0;  /* vfs expects us to return 0 */
++	}
++	page->private = 0;
++	ClearPagePrivate(page);
++	end_page_writeback(page);
++	ceph_put_wrbuffer_cap_refs(ci, 1, snapc);
++	ceph_put_snap_context(snapc);
++out:
++	return err;
++}
++
++static int ceph_writepage(struct page *page, struct writeback_control *wbc)
++{
++	int err = writepage_nounlock(page, wbc);
++	unlock_page(page);
++	return err;
++}
++
++
++/*
++ * lame release_pages helper.  release_pages() isn't exported to
++ * modules.
++ */
++static void ceph_release_pages(struct page **pages, int num)
++{
++	struct pagevec pvec;
++	int i;
++	pagevec_init(&pvec, 0);
++	for (i = 0; i < num; i++) {
++		if (pagevec_add(&pvec, pages[i]) == 0)
++			pagevec_release(&pvec);
++	}
++	pagevec_release(&pvec);
++}
++
++
++/*
++ * async writeback completion handler.
++ *
++ * If we get an error, set the mapping error bit, but not the individual
++ * page error bits.
++ *
++ * FIXME: What should we be doing here?
++ */
++static void writepages_finish(struct ceph_osd_request *req)
++{
++	struct inode *inode = req->r_inode;
++	struct ceph_osd_reply_head *replyhead;
++	struct ceph_osd_op *op;
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	unsigned wrote;
++	loff_t offset = req->r_pages[0]->index << PAGE_CACHE_SHIFT;
++	struct page *page;
++	int i;
++	struct ceph_snap_context *snapc = req->r_snapc;
++	struct address_space *mapping = inode->i_mapping;
++	struct writeback_control *wbc = req->r_wbc;
++	__s32 rc = -EIO;
++	u64 bytes = 0;
++
++	/* parse reply */
++	if (req->r_reply) {
++		replyhead = req->r_reply->front.iov_base;
++		WARN_ON(le32_to_cpu(replyhead->num_ops) == 0);
++		op = (void *)(replyhead + 1);
++		rc = le32_to_cpu(replyhead->result);
++		bytes = le64_to_cpu(op->length);
++	}
++
++	if (rc >= 0) {
++		wrote = (bytes + (offset & ~PAGE_CACHE_MASK) + ~PAGE_CACHE_MASK)
++			>> PAGE_CACHE_SHIFT;
++		WARN_ON(wrote != req->r_num_pages);
++	} else {
++		wrote = 0;
++		mapping_set_error(mapping, rc);
++	}
++	dout(10, "writepages_finish %p rc %d bytes %llu wrote %d (pages)\n",
++	     inode, rc, bytes, wrote);
++
++	/* clean all pages */
++	for (i = 0; i < req->r_num_pages; i++) {
++		page = req->r_pages[i];
++		BUG_ON(!page);
++		WARN_ON(!PageUptodate(page));
++
++		if (i >= wrote) {
++			dout(20, "inode %p skipping page %p\n", inode, page);
++			wbc->pages_skipped++;
++		}
++		page->private = 0;
++		ClearPagePrivate(page);
++		ceph_put_snap_context(snapc);
++		dout(50, "unlocking %d %p\n", i, page);
++		end_page_writeback(page);
++		unlock_page(page);
++	}
++	dout(20, "%p wrote+cleaned %d pages\n", inode, wrote);
++	ceph_put_wrbuffer_cap_refs(ci, req->r_num_pages, snapc);
++
++	ceph_release_pages(req->r_pages, req->r_num_pages);
++	kfree(req->r_pages);
++	ceph_osdc_put_request(req);
++}
++
++/*
++ * initiate async writeback
++ */
++static int ceph_writepages_start(struct address_space *mapping,
++				 struct writeback_control *wbc)
++{
++	struct inode *inode = mapping->host;
++	struct backing_dev_info *bdi = mapping->backing_dev_info;
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	struct ceph_client *client = ceph_inode_to_client(inode);
++	pgoff_t index, start, end;
++	int range_whole = 0;
++	int should_loop = 1;
++	pgoff_t max_pages = 0, max_pages_ever = 0;
++	struct ceph_snap_context *snapc = NULL, *last_snapc = NULL;
++	struct pagevec *pvec;
++	int done = 0;
++	int rc = 0;
++	unsigned wsize = 1 << inode->i_blkbits;
++	struct ceph_osd_request *req = NULL;
++	int do_sync;
++	u64 snap_size = 0;
++
++	/*
++	 * Include a 'sync' in the OSD request if this is a data
++	 * integrity write (e.g., O_SYNC write or fsync()), or if our
++	 * cap is being revoked.
++	 */
++	do_sync = wbc->sync_mode == WB_SYNC_ALL;
++	if (ceph_caps_revoking(ci, CEPH_CAP_FILE_BUFFER))
++		do_sync = 1;
++	dout(10, "writepages_start %p dosync=%d (pdflush=%d mode=%s)\n",
++	     inode, do_sync, current_is_pdflush(),
++	     wbc->sync_mode == WB_SYNC_NONE ? "NONE" :
++	     (wbc->sync_mode == WB_SYNC_ALL ? "ALL" : "HOLD"));
++
++	client = ceph_inode_to_client(inode);
++	if (client->mount_state == CEPH_MOUNT_SHUTDOWN) {
++		dout(1, "writepage_start %p on forced umount\n", inode);
++		return -EIO; /* we're in a forced umount, don't write! */
++	}
++	if (client->mount_args.wsize && client->mount_args.wsize < wsize)
++		wsize = client->mount_args.wsize;
++	if (wsize < PAGE_CACHE_SIZE)
++		wsize = PAGE_CACHE_SIZE;
++	max_pages_ever = wsize >> PAGE_CACHE_SHIFT;
++
++	pvec = kmalloc(sizeof(*pvec), GFP_KERNEL);
++	pagevec_init(pvec, 0);
++
++	/* ?? */
++	if (wbc->nonblocking && bdi_write_congested(bdi)) {
++		dout(20, " writepages congested\n");
++		wbc->encountered_congestion = 1;
++		goto out_free;
++	}
++
++	/* where to start/end? */
++	if (wbc->range_cyclic) {
++		start = mapping->writeback_index; /* Start from prev offset */
++		end = -1;
++		dout(20, " cyclic, start at %lu\n", start);
++	} else {
++		start = wbc->range_start >> PAGE_CACHE_SHIFT;
++		end = wbc->range_end >> PAGE_CACHE_SHIFT;
++		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
++			range_whole = 1;
++		should_loop = 0;
++		dout(20, " not cyclic, %lu to %lu\n", start, end);
++	}
++	index = start;
++
++retry:
++	/* find oldest snap context with dirty data */
++	ceph_put_snap_context(snapc);
++	snapc = get_oldest_context(inode, &snap_size);
++	if (!snapc) {
++		/* hmm, why does writepages get called when there
++		   is no dirty data? */
++		dout(20, " no snap context with dirty data?\n");
++		goto out;
++	}
++	dout(20, " oldest snapc is %p seq %lld (%d snaps)\n",
++	     snapc, snapc->seq, snapc->num_snaps);
++	if (last_snapc && snapc != last_snapc) {
++		/* if we switched to a newer snapc, restart our scan at the
++		 * start of the original file range. */
++		dout(20, "  snapc differs from last pass, restarting at %lu\n",
++		     index);
++		index = start;
++	}
++	last_snapc = snapc;
++
++	while (!done && index <= end) {
++		unsigned i;
++		int first;
++		pgoff_t next;
++		int pvec_pages, locked_pages;
++		struct page *page;
++		int want;
++		u64 offset, len;
++		struct ceph_osd_request_head *reqhead;
++		struct ceph_osd_op *op;
++
++		next = 0;
++		locked_pages = 0;
++		max_pages = max_pages_ever;
++
++get_more_pages:
++		first = -1;
++		want = min(end - index,
++			   min((pgoff_t)PAGEVEC_SIZE,
++			       max_pages - (pgoff_t)locked_pages) - 1)
++			+ 1;
++		pvec_pages = pagevec_lookup_tag(pvec, mapping, &index,
++						PAGECACHE_TAG_DIRTY,
++						want);
++		dout(20, "pagevec_lookup_tag got %d\n", pvec_pages);
++		if (!pvec_pages && !locked_pages)
++			break;
++		for (i = 0; i < pvec_pages && locked_pages < max_pages; i++) {
++			page = pvec->pages[i];
++			dout(20, "? %p idx %lu\n", page, page->index);
++			if (locked_pages == 0)
++				lock_page(page);  /* first page */
++			else if (!trylock_page(page))
++				break;
++
++			/* only dirty pages, or our accounting breaks */
++			if (unlikely(!PageDirty(page)) ||
++			    unlikely(page->mapping != mapping)) {
++				dout(20, "!dirty or !mapping %p\n", page);
++				unlock_page(page);
++				break;
++			}
++			if (!wbc->range_cyclic && page->index > end) {
++				dout(20, "end of range %p\n", page);
++				done = 1;
++				unlock_page(page);
++				break;
++			}
++			if (next && (page->index != next)) {
++				dout(20, "not consecutive %p\n", page);
++				unlock_page(page);
++				break;
++			}
++			if (wbc->sync_mode != WB_SYNC_NONE) {
++				dout(20, "waiting on writeback %p\n", page);
++				wait_on_page_writeback(page);
++			}
++			if ((snap_size && page_offset(page) > snap_size) ||
++			    (!snap_size &&
++			     page_offset(page) > i_size_read(inode))) {
++				dout(20, "%p page eof %llu\n", page, snap_size ?
++				     snap_size : i_size_read(inode));
++				done = 1;
++				unlock_page(page);
++				break;
++			}
++			if (PageWriteback(page)) {
++				dout(20, "%p under writeback\n", page);
++				unlock_page(page);
++				break;
++			}
++
++			/* only if matching snap context */
++			if (snapc != (void *)page->private) {
++				dout(20, "page snapc %p != oldest %p\n",
++				     (void *)page->private, snapc);
++				unlock_page(page);
++				if (!locked_pages)
++					continue; /* keep looking for snap */
++				break;
++			}
++
++			if (!clear_page_dirty_for_io(page)) {
++				dout(20, "%p !clear_page_dirty_for_io\n", page);
++				unlock_page(page);
++				break;
++			}
++
++			/* ok */
++			if (locked_pages == 0) {
++				/* prepare async write request */
++				offset = page->index << PAGE_CACHE_SHIFT;
++				len = wsize;
++				req = ceph_osdc_new_request(&client->osdc,
++					    &ci->i_layout,
++					    ceph_vino(inode),
++					    offset, &len,
++					    CEPH_OSD_OP_WRITE,
++					    CEPH_OSD_FLAG_WRITE |
++						    CEPH_OSD_FLAG_ONDISK,
++					    snapc, do_sync,
++					    ci->i_truncate_seq,
++					    ci->i_truncate_size,
++					    &inode->i_mtime);
++				max_pages = req->r_num_pages;
++
++				rc = -ENOMEM;
++				req->r_pages = kmalloc(sizeof(*req->r_pages) *
++						       max_pages, GFP_NOFS);
++				if (req->r_pages == NULL)
++					goto out;
++				req->r_callback = writepages_finish;
++				req->r_inode = inode;
++				req->r_wbc = wbc;
++			}
++
++			/* note position of first page in pvec */
++			if (first < 0)
++				first = i;
++			dout(20, "%p will write page %p idx %lu\n",
++			     inode, page, page->index);
++			set_page_writeback(page);
++			req->r_pages[locked_pages] = page;
++			locked_pages++;
++			next = page->index + 1;
++		}
++
++		/* did we get anything? */
++		if (!locked_pages)
++			goto release_pvec_pages;
++		if (i) {
++			int j;
++			BUG_ON(!locked_pages || first < 0);
++
++			if (pvec_pages && i == pvec_pages &&
++			    locked_pages < max_pages) {
++				dout(50, "reached end pvec, trying for more\n");
++				pagevec_reinit(pvec);
++				goto get_more_pages;
++			}
++
++			/* shift unused pages over in the pvec...  we
++			 * will need to release them below. */
++			for (j = i; j < pvec_pages; j++) {
++				dout(50, " pvec leftover page %p\n",
++				     pvec->pages[j]);
++				pvec->pages[j-i+first] = pvec->pages[j];
++			}
++			pvec->nr -= i-first;
++		}
++
++		/* submit the write */
++		offset = req->r_pages[0]->index << PAGE_CACHE_SHIFT;
++		len = min((snap_size ? snap_size : i_size_read(inode)) - offset,
++			  (u64)locked_pages << PAGE_CACHE_SHIFT);
++		dout(10, "writepages got %d pages at %llu~%llu\n",
++		     locked_pages, offset, len);
++
++		/* revise final length, page count */
++		req->r_num_pages = locked_pages;
++		reqhead = req->r_request->front.iov_base;
++		op = (void *)(reqhead + 1);
++		op->length = cpu_to_le64(len);
++	        op->payload_len = op->length;
++		req->r_request->hdr.data_len = cpu_to_le32(len);
++
++		rc = ceph_osdc_start_request(&client->osdc, req);
++		req = NULL;
++		/*
++		 * FIXME: if writepages_start fails (ENOMEM?) we should
++		 * really redirty all those pages and release req..
++		 */
++
++		/* continue? */
++		index = next;
++		wbc->nr_to_write -= locked_pages;
++		if (wbc->nr_to_write <= 0)
++			done = 1;
++
++	release_pvec_pages:
++		dout(50, "pagevec_release on %d pages (%p)\n", (int)pvec->nr,
++		     pvec->nr ? pvec->pages[0] : NULL);
++		pagevec_release(pvec);
++
++		if (locked_pages && !done)
++			goto retry;
++	}
++
++	if (should_loop && !done) {
++		/* more to do; loop back to beginning of file */
++		dout(40, "writepages looping back to beginning of file\n");
++		should_loop = 0;
++		index = 0;
++		goto retry;
++	}
++
++	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
++		mapping->writeback_index = index;
++
++out:
++	if (req)
++		ceph_osdc_put_request(req);
++	if (rc > 0)
++		rc = 0;  /* vfs expects us to return 0 */
++	ceph_put_snap_context(snapc);
++	dout(10, "writepages done, rc = %d\n", rc);
++out_free:
++	kfree(pvec);
++	return rc;
++}
++
++
++
++/*
++ * See if a given @snapc is either writeable, or already written.
++ */
++static int context_is_writeable_or_written(struct inode *inode,
++					   struct ceph_snap_context *snapc)
++{
++	struct ceph_snap_context *oldest = get_oldest_context(inode, NULL);
++	return !oldest || snapc->seq <= oldest->seq;
++}
++
++/*
++ * We are only allowed to write into/dirty the page if the page is
++ * clean, or already dirty within the same snap context.
++ */
++static int ceph_write_begin(struct file *file, struct address_space *mapping,
++			    loff_t pos, unsigned len, unsigned flags,
++			    struct page **pagep, void **fsdata)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	struct ceph_mds_client *mdsc = &ceph_inode_to_client(inode)->mdsc;
++	struct page *page;
++	pgoff_t index = pos >> PAGE_CACHE_SHIFT;
++	loff_t page_off = pos & PAGE_CACHE_MASK;
++	int pos_in_page = pos & ~PAGE_CACHE_MASK;
++	int end_in_page = pos_in_page + len;
++	loff_t i_size;
++	struct ceph_snap_context *snapc;
++	int r;
++
++	/* get a page*/
++retry:
++	page = grab_cache_page_write_begin(mapping, index, 0);
++	if (!page)
++		return -ENOMEM;
++	*pagep = page;
++
++	dout(10, "write_begin file %p inode %p page %p %d~%d\n", file,
++	     inode, page, (int)pos, (int)len);
++
++retry_locked:
++	/* writepages currently holds page lock, but if we change that later, */
++	wait_on_page_writeback(page);
++
++	/* check snap context */
++	BUG_ON(!ci->i_snap_realm);
++	down_read(&mdsc->snap_rwsem);
++	BUG_ON(!ci->i_snap_realm->cached_context);
++	if (page->private &&
++	    (void *)page->private != ci->i_snap_realm->cached_context) {
++		/*
++		 * this page is already dirty in another (older) snap
++		 * context!  is it writeable now?
++		 */
++		snapc = get_oldest_context(inode, NULL);
++		up_read(&mdsc->snap_rwsem);
++
++		if (snapc != (void *)page->private) {
++			dout(10, " page %p snapc %p not current or oldest\n",
++			     page, (void *)page->private);
++			/*
++			 * queue for writeback, and wait for snapc to
++			 * be writeable or written
++			 */
++			snapc = ceph_get_snap_context((void *)page->private);
++			unlock_page(page);
++			if (ceph_queue_writeback(inode))
++				igrab(inode);
++			wait_event_interruptible(ci->i_cap_wq,
++			       context_is_writeable_or_written(inode, snapc));
++			ceph_put_snap_context(snapc);
++			goto retry;
++		}
++
++		/* yay, writeable, do it now (without dropping page lock) */
++		dout(10, " page %p snapc %p not current, but oldest\n",
++		     page, snapc);
++		if (!clear_page_dirty_for_io(page))
++			goto retry_locked;
++		r = writepage_nounlock(page, NULL);
++		if (r < 0)
++			goto fail_nosnap;
++		goto retry_locked;
++	}
++
++	if (PageUptodate(page)) {
++		dout(20, " page %p already uptodate\n", page);
++		return 0;
++	}
++
++	/* full page? */
++	if (pos_in_page == 0 && len == PAGE_CACHE_SIZE)
++		return 0;
++
++	/* past end of file? */
++	i_size = inode->i_size;   /* caller holds i_mutex */
++
++	if (i_size + len > CEPH_FILE_MAX_SIZE) {
++		/* file is too big */
++		r = -EINVAL;
++		goto fail;
++	}
++
++	if (page_off >= i_size ||
++	    (pos_in_page == 0 && (pos+len) >= i_size &&
++	     end_in_page - pos_in_page != PAGE_CACHE_SIZE)) {
++		dout(20, " zeroing %p 0 - %d and %d - %d\n",
++		     page, pos_in_page, end_in_page, (int)PAGE_CACHE_SIZE);
++		zero_user_segments(page,
++				   0, pos_in_page,
++				   end_in_page, PAGE_CACHE_SIZE);
++		return 0;
++	}
++
++	/* we need to read it. */
++	up_read(&mdsc->snap_rwsem);
++	r = readpage_nounlock(file, page);
++	if (r < 0)
++		goto fail;
++	goto retry_locked;
++
++fail:
++	up_read(&mdsc->snap_rwsem);
++fail_nosnap:
++	unlock_page(page);
++	return r;
++}
++
++/*
++ * we don't do anything in here that simple_write_end doesn't do
++ * except adjust dirty page accounting and drop read lock on
++ * mdsc->snap_rwsem.
++ */
++static int ceph_write_end(struct file *file, struct address_space *mapping,
++			  loff_t pos, unsigned len, unsigned copied,
++			  struct page *page, void *fsdata)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	struct ceph_mds_client *mdsc = &ceph_inode_to_client(inode)->mdsc;
++	unsigned from = pos & (PAGE_CACHE_SIZE - 1);
++	int check_cap = 0;
++
++	dout(10, "write_end file %p inode %p page %p %d~%d (%d)\n", file,
++	     inode, page, (int)pos, (int)copied, (int)len);
++
++	/* zero the stale part of the page if we did a short copy */
++	if (copied < len)
++		zero_user_segment(page, from+copied, len);
++
++	/* did file size increase? */
++	/* (no need for i_size_read(); we caller holds i_mutex */
++	if (pos+copied > inode->i_size)
++		check_cap = ceph_inode_set_size(inode, pos+copied);
++
++	if (!PageUptodate(page))
++		SetPageUptodate(page);
++
++	set_page_dirty(page);
++
++	unlock_page(page);
++	up_read(&mdsc->snap_rwsem);
++	page_cache_release(page);
++
++	if (check_cap)
++		ceph_check_caps(ceph_inode(inode), CHECK_CAPS_AUTHONLY, NULL);
++
++	return copied;
++}
++
++/*
++ * we set .direct_IO to indicate direct io is supported, but since we
++ * intercept O_DIRECT reads and writes early, this function should
++ * never get called.
++ */
++static ssize_t ceph_direct_io(int rw, struct kiocb *iocb,
++			      const struct iovec *iov,
++			      loff_t pos, unsigned long nr_segs)
++{
++	WARN_ON(1);
++	return -EINVAL;
++}
++
++const struct address_space_operations ceph_aops = {
++	.readpage = ceph_readpage,
++	.readpages = ceph_readpages,
++	.writepage = ceph_writepage,
++	.writepages = ceph_writepages_start,
++	.write_begin = ceph_write_begin,
++	.write_end = ceph_write_end,
++	.set_page_dirty = ceph_set_page_dirty,
++	.invalidatepage = ceph_invalidatepage,
++	.releasepage = ceph_releasepage,
++	.direct_IO = ceph_direct_io,
++};
++
++
++/*
++ * vm ops
++ */
++
++/*
++ * Reuse write_{begin,end} here for simplicity.
++ */
++static int ceph_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	struct inode *inode = vma->vm_file->f_dentry->d_inode;
++	struct page *page = vmf->page;
++	struct ceph_mds_client *mdsc = &ceph_inode_to_client(inode)->mdsc;
++	loff_t off = page->index << PAGE_CACHE_SHIFT;
++	loff_t size, len;
++	struct page *locked_page = NULL;
++	void *fsdata = NULL;
++	int ret;
++
++	size = i_size_read(inode);
++	if (off + PAGE_CACHE_SIZE <= size)
++		len = PAGE_CACHE_SIZE;
++	else
++		len = size & ~PAGE_CACHE_MASK;
++
++	dout(10, "page_mkwrite %p %llu~%llu page %p idx %lu\n", inode,
++	     off, len, page, page->index);
++	ret = ceph_write_begin(vma->vm_file, inode->i_mapping, off, len, 0,
++			       &locked_page, &fsdata);
++	WARN_ON(page != locked_page);
++	if (!ret) {
++		/*
++		 * doing the following, instead of calling
++		 * ceph_write_end. Note that we keep the
++		 * page locked
++		 */
++		set_page_dirty(page);
++		up_read(&mdsc->snap_rwsem);
++		page_cache_release(page);
++		ret = VM_FAULT_LOCKED;
++	} else {
++		ret = VM_FAULT_SIGBUS;
++	}
++	dout(10, "page_mkwrite %p %llu~%llu = %d\n", inode, off, len, ret);
 +	return ret;
 +}
 +
-+/*
-+ * Register request, send initial attempt.
-+ */
-+int ceph_osdc_start_request(struct ceph_osd_client *osdc,
-+			    struct ceph_osd_request *req)
-+{
-+	int rc;
-+
-+	req->r_request->pages = req->r_pages;
-+	req->r_request->nr_pages = req->r_num_pages;
-+
-+	rc = register_request(osdc, req);
-+	if (rc < 0)
-+		return rc;
-+
-+	down_read(&osdc->map_sem);
-+	rc = send_request(osdc, req);
-+	up_read(&osdc->map_sem);
-+	return rc;
-+}
-+
-+int ceph_osdc_wait_request(struct ceph_osd_client *osdc,
-+			   struct ceph_osd_request *req)
-+{
-+	struct ceph_osd_reply_head *replyhead;
-+	__s32 rc;
-+	int bytes;
-+
-+	rc = wait_for_completion_interruptible(&req->r_completion);
-+	if (rc < 0) {
-+		ceph_osdc_abort_request(osdc, req);
-+		return rc;
-+	}
-+
-+	/* parse reply */
-+	replyhead = req->r_reply->front.iov_base;
-+	rc = le32_to_cpu(replyhead->result);
-+	bytes = le32_to_cpu(req->r_reply->hdr.data_len);
-+	dout(10, "wait_request tid %llu result %d, %d bytes\n",
-+	     req->r_tid, rc, bytes);
-+	if (rc < 0)
-+		return rc;
-+	return bytes;
-+}
-+
-+/*
-+ * To abort an in-progress request, take pages away from outgoing or
-+ * incoming message.
-+ */
-+void ceph_osdc_abort_request(struct ceph_osd_client *osdc,
-+			     struct ceph_osd_request *req)
-+{
-+	struct ceph_msg *msg;
-+
-+	dout(0, "abort_request tid %llu, revoking %p pages\n", req->r_tid,
-+	     req->r_request);
-+	/*
-+	 * mark req aborted _before_ revoking pages, so that
-+	 * if a racing kick_request _does_ dup the page vec
-+	 * pointer, it will definitely then see the aborted
-+	 * flag and not send the request.
-+	 */
-+	req->r_aborted = 1;
-+	msg = req->r_request;
-+	mutex_lock(&msg->page_mutex);
-+	msg->pages = NULL;
-+	mutex_unlock(&msg->page_mutex);
-+	if (req->r_reply) {
-+		mutex_lock(&req->r_reply->page_mutex);
-+		req->r_reply->pages = NULL;
-+		mutex_unlock(&req->r_reply->page_mutex);
-+	}
-+}
-+
-+void ceph_osdc_sync(struct ceph_osd_client *osdc)
-+{
-+	struct ceph_osd_request *req;
-+	u64 last_tid, next_tid = 0;
-+	int got;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	last_tid = osdc->last_tid;
-+	while (1) {
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+		if (!got)
-+			break;
-+		if (req->r_tid > last_tid)
-+			break;
-+
-+		next_tid = req->r_tid + 1;
-+		if ((req->r_flags & CEPH_OSD_FLAG_WRITE) == 0)
-+			continue;
-+
-+		ceph_osdc_get_request(req);
-+		mutex_unlock(&osdc->request_mutex);
-+		dout(10, "sync waiting on tid %llu (last is %llu)\n",
-+		     req->r_tid, last_tid);
-+		wait_for_completion(&req->r_safe_completion);
-+		mutex_lock(&osdc->request_mutex);
-+		ceph_osdc_put_request(req);
-+	}
-+	mutex_unlock(&osdc->request_mutex);
-+	dout(10, "sync done (thru tid %llu)\n", last_tid);
-+}
-+
-+/*
-+ * init, shutdown
-+ */
-+void ceph_osdc_init(struct ceph_osd_client *osdc, struct ceph_client *client)
-+{
-+	dout(5, "init\n");
-+	osdc->client = client;
-+	osdc->osdmap = NULL;
-+	init_rwsem(&osdc->map_sem);
-+	init_completion(&osdc->map_waiters);
-+	osdc->last_requested_map = 0;
-+	mutex_init(&osdc->request_mutex);
-+	osdc->timeout_tid = 0;
-+	osdc->last_tid = 0;
-+	INIT_RADIX_TREE(&osdc->request_tree, GFP_NOFS);
-+	osdc->num_requests = 0;
-+	INIT_DELAYED_WORK(&osdc->timeout_work, handle_timeout);
-+}
-+
-+void ceph_osdc_stop(struct ceph_osd_client *osdc)
-+{
-+	cancel_delayed_work_sync(&osdc->timeout_work);
-+	if (osdc->osdmap) {
-+		ceph_osdmap_destroy(osdc->osdmap);
-+		osdc->osdmap = NULL;
-+	}
-+}
-+
-+/*
-+ * Read some contiguous pages.  Return number of bytes read (or
-+ * zeroed).
-+ */
-+int ceph_osdc_readpages(struct ceph_osd_client *osdc,
-+			struct ceph_vino vino, struct ceph_file_layout *layout,
-+			u64 off, u64 len,
-+			u32 truncate_seq, u64 truncate_size,
-+			struct page **pages, int num_pages)
-+{
-+	struct ceph_osd_request *req;
-+	int i;
-+	struct page *page;
-+	int rc = 0, read = 0;
-+
-+	dout(10, "readpages on ino %llx.%llx on %llu~%llu\n", vino.ino,
-+	     vino.snap, off, len);
-+	req = ceph_osdc_new_request(osdc, layout, vino, off, &len,
-+				    CEPH_OSD_OP_READ, CEPH_OSD_FLAG_READ,
-+				    NULL, 0, truncate_seq, truncate_size, NULL);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+
-+	/* it may be a short read due to an object boundary */
-+	req->r_pages = pages;
-+	num_pages = calc_pages_for(off, len);
-+	req->r_num_pages = num_pages;
-+
-+	dout(10, "readpages final extent is %llu~%llu (%d pages)\n",
-+	     off, len, req->r_num_pages);
-+
-+	rc = ceph_osdc_start_request(osdc, req);
-+	if (!rc)
-+		rc = ceph_osdc_wait_request(osdc, req);
-+
-+	if (rc >= 0) {
-+		read = rc;
-+		rc = len;
-+	} else if (rc == -ENOENT) {
-+		rc = len;
-+	}
-+
-+	/* zero trailing pages on success */
-+	if (read < (num_pages << PAGE_CACHE_SHIFT)) {
-+		if (read & ~PAGE_CACHE_MASK) {
-+			i = read >> PAGE_CACHE_SHIFT;
-+			page = pages[i];
-+			dout(20, "readpages zeroing %d %p from %d\n", i, page,
-+			     (int)(read & ~PAGE_CACHE_MASK));
-+			zero_user_segment(page, read & ~PAGE_CACHE_MASK,
-+					  PAGE_CACHE_SIZE);
-+			read += PAGE_CACHE_SIZE;
-+		}
-+		for (i = read >> PAGE_CACHE_SHIFT; i < num_pages; i++) {
-+			page = req->r_pages[i];
-+			dout(20, "readpages zeroing %d %p\n", i, page);
-+			zero_user_segment(page, 0, PAGE_CACHE_SIZE);
-+		}
-+	}
-+
-+	ceph_osdc_put_request(req);
-+	dout(10, "readpages result %d\n", rc);
-+	return rc;
-+}
-+
-+/*
-+ * do a sync write on N pages
-+ */
-+int ceph_osdc_writepages(struct ceph_osd_client *osdc, struct ceph_vino vino,
-+			 struct ceph_file_layout *layout,
-+			 struct ceph_snap_context *snapc,
-+			 u64 off, u64 len,
-+			 u32 truncate_seq, u64 truncate_size,
-+			 struct timespec *mtime,
-+			 struct page **pages, int num_pages,
-+			 int flags, int do_sync)
-+{
-+	struct ceph_osd_request *req;
-+	int rc = 0;
-+
-+	BUG_ON(vino.snap != CEPH_NOSNAP);
-+	req = ceph_osdc_new_request(osdc, layout, vino, off, &len,
-+				    CEPH_OSD_OP_WRITE,
-+				    flags | CEPH_OSD_FLAG_ONDISK |
-+					    CEPH_OSD_FLAG_WRITE,
-+				    snapc, do_sync,
-+				    truncate_seq, truncate_size, mtime);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+
-+	/* it may be a short write due to an object boundary */
-+	req->r_pages = pages;
-+	req->r_num_pages = calc_pages_for(off, len);
-+	dout(10, "writepages %llu~%llu (%d pages)\n", off, len,
-+	     req->r_num_pages);
-+
-+	rc = ceph_osdc_start_request(osdc, req);
-+	if (!rc)
-+		rc = ceph_osdc_wait_request(osdc, req);
-+
-+	ceph_osdc_put_request(req);
-+	if (rc == 0)
-+		rc = len;
-+	dout(10, "writepages result %d\n", rc);
-+	return rc;
-+}
-+
-diff --git a/fs/staging/ceph/osd_client.h b/fs/staging/ceph/osd_client.h
-new file mode 100644
-index 0000000..9ad2559
---- /dev/null
-+++ b/fs/staging/ceph/osd_client.h
-@@ -0,0 +1,151 @@
-+#ifndef _FS_CEPH_OSD_CLIENT_H
-+#define _FS_CEPH_OSD_CLIENT_H
-+
-+#include <linux/radix-tree.h>
-+#include <linux/completion.h>
-+
-+#include "types.h"
-+#include "osdmap.h"
-+
-+/*
-+ * All data objects are stored within a cluster/cloud of OSDs, or
-+ * "object storage devices."  (Note that Ceph OSDs have _nothing_ to
-+ * do with the T10 OSD extensions to SCSI.)  Ceph OSDs are simply
-+ * remote daemons serving up and coordinating consistent and safe
-+ * access to storage.
-+ *
-+ * Cluster membership and the mapping of data objects onto storage devices
-+ * are described by the osd map.
-+ *
-+ * We keep track of pending OSD requests (read, write), resubmit
-+ * requests to different OSDs when the cluster topology/data layout
-+ * change, or retry the affected requests when the communications
-+ * channel with an OSD is reset.
-+ */
-+
-+struct ceph_msg;
-+struct ceph_snap_context;
-+struct ceph_osd_request;
-+
-+/*
-+ * completion callback for async writepages
-+ */
-+typedef void (*ceph_osdc_callback_t)(struct ceph_osd_request *);
-+
-+struct ceph_osd_request_attr {
-+	struct attribute attr;
-+	ssize_t (*show)(struct ceph_osd_request *,
-+			struct ceph_osd_request_attr *,
-+			char *);
-+	ssize_t (*store)(struct ceph_osd_request *,
-+			 struct ceph_osd_request_attr *,
-+			 const char *, size_t);
++static struct vm_operations_struct ceph_vmops = {
++	.fault		= filemap_fault,
++	.page_mkwrite	= ceph_page_mkwrite,
 +};
 +
-+/* an in-flight request */
-+struct ceph_osd_request {
-+	u64             r_tid;              /* unique for this client */
-+
-+	struct ceph_msg  *r_request;
-+	struct ceph_msg  *r_reply;
-+	int               r_result;
-+	int               r_flags;     /* any additional flags for the osd */
-+	int               r_aborted;   /* set if we cancel this request */
-+
-+	atomic_t          r_ref;
-+	struct completion r_completion, r_safe_completion;
-+	ceph_osdc_callback_t r_callback, r_safe_callback;
-+	struct ceph_eversion r_reassert_version;
-+	struct list_head  r_unsafe_item;
-+
-+	struct inode *r_inode;         	      /* for use by callbacks */
-+	struct writeback_control *r_wbc;      /* ditto */
-+
-+	char              r_oid[40];          /* object name */
-+	int               r_oid_len;
-+	int               r_last_osd;         /* pg osds */
-+	struct ceph_entity_addr r_last_osd_addr;
-+	unsigned long     r_timeout_stamp;
-+
-+	struct ceph_file_layout r_file_layout;
-+	struct ceph_snap_context *r_snapc;    /* snap context for writes */
-+	unsigned          r_num_pages;        /* size of page array (follows) */
-+	struct page     **r_pages;            /* pages for data payload */
-+	int               r_own_pages;        /* if true, i own page list */
-+};
-+
-+struct ceph_osd_client {
-+	struct ceph_client     *client;
-+
-+	struct ceph_osdmap     *osdmap;       /* current map */
-+	struct rw_semaphore    map_sem;
-+	struct completion      map_waiters;
-+	u64                    last_requested_map;
-+
-+	struct mutex           request_mutex;
-+	u64                    timeout_tid;   /* tid of timeout triggering rq */
-+	u64                    last_tid;      /* tid of last request */
-+	struct radix_tree_root request_tree;  /* pending requests, by tid */
-+	int                    num_requests;
-+	struct delayed_work    timeout_work;
-+	struct dentry 	       *debugfs_file;
-+};
-+
-+extern void ceph_osdc_init(struct ceph_osd_client *osdc,
-+			   struct ceph_client *client);
-+extern void ceph_osdc_stop(struct ceph_osd_client *osdc);
-+
-+extern void ceph_osdc_handle_reset(struct ceph_osd_client *osdc,
-+				   struct ceph_entity_addr *addr);
-+
-+extern void ceph_osdc_handle_reply(struct ceph_osd_client *osdc,
-+				   struct ceph_msg *msg);
-+extern void ceph_osdc_handle_map(struct ceph_osd_client *osdc,
-+				 struct ceph_msg *msg);
-+
-+/* incoming read messages use this to discover which pages to read
-+ * the data payload into. */
-+extern int ceph_osdc_prepare_pages(void *p, struct ceph_msg *m, int want);
-+
-+extern struct ceph_osd_request *ceph_osdc_new_request(struct ceph_osd_client *,
-+				      struct ceph_file_layout *layout,
-+				      struct ceph_vino vino,
-+				      u64 offset, u64 *len, int op, int flags,
-+				      struct ceph_snap_context *snapc,
-+				      int do_sync, u32 truncate_seq,
-+				      u64 truncate_size,
-+				      struct timespec *mtime);
-+
-+static inline void ceph_osdc_get_request(struct ceph_osd_request *req)
++int ceph_mmap(struct file *file, struct vm_area_struct *vma)
 +{
-+	atomic_inc(&req->r_ref);
-+}
-+extern void ceph_osdc_put_request(struct ceph_osd_request *req);
++	struct address_space *mapping = file->f_mapping;
 +
-+extern int ceph_osdc_start_request(struct ceph_osd_client *osdc,
-+				   struct ceph_osd_request *req);
-+extern int ceph_osdc_wait_request(struct ceph_osd_client *osdc,
-+				  struct ceph_osd_request *req);
-+extern void ceph_osdc_abort_request(struct ceph_osd_client *osdc,
-+				    struct ceph_osd_request *req);
-+extern void ceph_osdc_sync(struct ceph_osd_client *osdc);
-+
-+extern int ceph_osdc_readpages(struct ceph_osd_client *osdc,
-+			       struct ceph_vino vino,
-+			       struct ceph_file_layout *layout,
-+			       u64 off, u64 len,
-+			       u32 truncate_seq, u64 truncate_size,
-+			       struct page **pages, int nr_pages);
-+
-+extern int ceph_osdc_writepages(struct ceph_osd_client *osdc,
-+				struct ceph_vino vino,
-+				struct ceph_file_layout *layout,
-+				struct ceph_snap_context *sc,
-+				u64 off, u64 len,
-+				u32 truncate_seq, u64 truncate_size,
-+				struct timespec *mtime,
-+				struct page **pages, int nr_pages,
-+				int flags, int do_sync);
-+
-+#endif
-+
-diff --git a/fs/staging/ceph/osdmap.c b/fs/staging/ceph/osdmap.c
-new file mode 100644
-index 0000000..1e4f832
---- /dev/null
-+++ b/fs/staging/ceph/osdmap.c
-@@ -0,0 +1,703 @@
-+
-+#include <asm/div64.h>
-+
-+#include "super.h"
-+#include "osdmap.h"
-+#include "crush/hash.h"
-+#include "decode.h"
-+
-+#include "ceph_debug.h"
-+
-+int ceph_debug_osdmap __read_mostly = -1;
-+#define DOUT_MASK DOUT_MASK_OSDMAP
-+#define DOUT_VAR ceph_debug_osdmap
-+
-+
-+char *ceph_osdmap_state_str(char *str, int len, int state)
-+{
-+	int flag = 0;
-+
-+	if (!len)
-+		goto done;
-+
-+	*str = '\0';
-+	if (state) {
-+		if (state & CEPH_OSD_EXISTS) {
-+			snprintf(str, len, "exists");
-+			flag = 1;
-+		}
-+		if (state & CEPH_OSD_UP) {
-+			snprintf(str, len, "%s%s%s", str, (flag ? ", " : ""),
-+				 "up");
-+			flag = 1;
-+		}
-+	} else {
-+		snprintf(str, len, "doesn't exist");
-+	}
-+done:
-+	return str;
-+}
-+
-+/* maps */
-+
-+static int calc_bits_of(unsigned t)
-+{
-+	int b = 0;
-+	while (t) {
-+		t = t >> 1;
-+		b++;
-+	}
-+	return b;
-+}
-+
-+/*
-+ * the foo_mask is the smallest value 2^n-1 that is >= foo.
-+ */
-+static void calc_pg_masks(struct ceph_pg_pool_info *pi)
-+{
-+	pi->pg_num_mask = (1 << calc_bits_of(le32_to_cpu(pi->v.pg_num)-1)) - 1;
-+	pi->pgp_num_mask =
-+		(1 << calc_bits_of(le32_to_cpu(pi->v.pgp_num)-1)) - 1;
-+	pi->lpg_num_mask =
-+		(1 << calc_bits_of(le32_to_cpu(pi->v.lpg_num)-1)) - 1;
-+	pi->lpgp_num_mask =
-+		(1 << calc_bits_of(le32_to_cpu(pi->v.lpgp_num)-1)) - 1;
-+}
-+
-+/*
-+ * decode crush map
-+ */
-+static int crush_decode_uniform_bucket(void **p, void *end,
-+				       struct crush_bucket_uniform *b)
-+{
-+	dout(30, "crush_decode_uniform_bucket %p to %p\n", *p, end);
-+	ceph_decode_need(p, end, (1+b->h.size) * sizeof(u32), bad);
-+	ceph_decode_32(p, b->item_weight);
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static int crush_decode_list_bucket(void **p, void *end,
-+				    struct crush_bucket_list *b)
-+{
-+	int j;
-+	dout(30, "crush_decode_list_bucket %p to %p\n", *p, end);
-+	b->item_weights = kmalloc(b->h.size * sizeof(u32), GFP_NOFS);
-+	if (b->item_weights == NULL)
-+		return -ENOMEM;
-+	b->sum_weights = kmalloc(b->h.size * sizeof(u32), GFP_NOFS);
-+	if (b->sum_weights == NULL)
-+		return -ENOMEM;
-+	ceph_decode_need(p, end, 2 * b->h.size * sizeof(u32), bad);
-+	for (j = 0; j < b->h.size; j++) {
-+		ceph_decode_32(p, b->item_weights[j]);
-+		ceph_decode_32(p, b->sum_weights[j]);
-+	}
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static int crush_decode_tree_bucket(void **p, void *end,
-+				    struct crush_bucket_tree *b)
-+{
-+	int j;
-+	dout(30, "crush_decode_tree_bucket %p to %p\n", *p, end);
-+	ceph_decode_32_safe(p, end, b->num_nodes, bad);
-+	b->node_weights = kmalloc(b->num_nodes * sizeof(u32), GFP_NOFS);
-+	if (b->node_weights == NULL)
-+		return -ENOMEM;
-+	ceph_decode_need(p, end, b->num_nodes * sizeof(u32), bad);
-+	for (j = 0; j < b->num_nodes; j++)
-+		ceph_decode_32(p, b->node_weights[j]);
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static int crush_decode_straw_bucket(void **p, void *end,
-+				     struct crush_bucket_straw *b)
-+{
-+	int j;
-+	dout(30, "crush_decode_straw_bucket %p to %p\n", *p, end);
-+	b->item_weights = kmalloc(b->h.size * sizeof(u32), GFP_NOFS);
-+	if (b->item_weights == NULL)
-+		return -ENOMEM;
-+	b->straws = kmalloc(b->h.size * sizeof(u32), GFP_NOFS);
-+	if (b->straws == NULL)
-+		return -ENOMEM;
-+	ceph_decode_need(p, end, 2 * b->h.size * sizeof(u32), bad);
-+	for (j = 0; j < b->h.size; j++) {
-+		ceph_decode_32(p, b->item_weights[j]);
-+		ceph_decode_32(p, b->straws[j]);
-+	}
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static struct crush_map *crush_decode(void *pbyval, void *end)
-+{
-+	struct crush_map *c;
-+	int err = -EINVAL;
-+	int i, j;
-+	void **p = &pbyval;
-+	void *start = pbyval;
-+	u32 magic;
-+
-+	dout(30, "crush_decode %p to %p len %d\n", *p, end, (int)(end - *p));
-+
-+	c = kzalloc(sizeof(*c), GFP_NOFS);
-+	if (c == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ceph_decode_need(p, end, 4*sizeof(u32), bad);
-+	ceph_decode_32(p, magic);
-+	if (magic != CRUSH_MAGIC) {
-+		derr(0, "crush_decode magic %x != current %x\n",
-+		     (unsigned)magic, (unsigned)CRUSH_MAGIC);
-+		goto bad;
-+	}
-+	ceph_decode_32(p, c->max_buckets);
-+	ceph_decode_32(p, c->max_rules);
-+	ceph_decode_32(p, c->max_devices);
-+
-+	c->device_parents = kmalloc(c->max_devices * sizeof(u32), GFP_NOFS);
-+	if (c->device_parents == NULL)
-+		goto badmem;
-+	c->bucket_parents = kmalloc(c->max_buckets * sizeof(u32), GFP_NOFS);
-+	if (c->bucket_parents == NULL)
-+		goto badmem;
-+
-+	c->buckets = kmalloc(c->max_buckets * sizeof(*c->buckets), GFP_NOFS);
-+	if (c->buckets == NULL)
-+		goto badmem;
-+	c->rules = kmalloc(c->max_rules * sizeof(*c->rules), GFP_NOFS);
-+	if (c->rules == NULL)
-+		goto badmem;
-+
-+	/* buckets */
-+	for (i = 0; i < c->max_buckets; i++) {
-+		int size = 0;
-+		u32 alg;
-+		struct crush_bucket *b;
-+
-+		ceph_decode_32_safe(p, end, alg, bad);
-+		if (alg == 0) {
-+			c->buckets[i] = NULL;
-+			continue;
-+		}
-+		dout(30, "crush_decode bucket %d off %x %p to %p\n",
-+		     i, (int)(*p-start), *p, end);
-+
-+		switch (alg) {
-+		case CRUSH_BUCKET_UNIFORM:
-+			size = sizeof(struct crush_bucket_uniform);
-+			break;
-+		case CRUSH_BUCKET_LIST:
-+			size = sizeof(struct crush_bucket_list);
-+			break;
-+		case CRUSH_BUCKET_TREE:
-+			size = sizeof(struct crush_bucket_tree);
-+			break;
-+		case CRUSH_BUCKET_STRAW:
-+			size = sizeof(struct crush_bucket_straw);
-+			break;
-+		default:
-+			goto bad;
-+		}
-+		BUG_ON(size == 0);
-+		b = c->buckets[i] = kzalloc(size, GFP_NOFS);
-+		if (b == NULL)
-+			goto badmem;
-+
-+		ceph_decode_need(p, end, 4*sizeof(u32), bad);
-+		ceph_decode_32(p, b->id);
-+		ceph_decode_16(p, b->type);
-+		ceph_decode_16(p, b->alg);
-+		ceph_decode_32(p, b->weight);
-+		ceph_decode_32(p, b->size);
-+
-+		dout(30, "crush_decode bucket size %d off %x %p to %p\n",
-+		     b->size, (int)(*p-start), *p, end);
-+
-+		b->items = kmalloc(b->size * sizeof(__s32), GFP_NOFS);
-+		if (b->items == NULL)
-+			goto badmem;
-+		b->perm = kmalloc(b->size * sizeof(u32), GFP_NOFS);
-+		if (b->perm == NULL)
-+			goto badmem;
-+		b->perm_n = 0;
-+
-+		ceph_decode_need(p, end, b->size*sizeof(u32), bad);
-+		for (j = 0; j < b->size; j++)
-+			ceph_decode_32(p, b->items[j]);
-+
-+		switch (b->alg) {
-+		case CRUSH_BUCKET_UNIFORM:
-+			err = crush_decode_uniform_bucket(p, end,
-+				  (struct crush_bucket_uniform *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		case CRUSH_BUCKET_LIST:
-+			err = crush_decode_list_bucket(p, end,
-+			       (struct crush_bucket_list *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		case CRUSH_BUCKET_TREE:
-+			err = crush_decode_tree_bucket(p, end,
-+				(struct crush_bucket_tree *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		case CRUSH_BUCKET_STRAW:
-+			err = crush_decode_straw_bucket(p, end,
-+				(struct crush_bucket_straw *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		}
-+	}
-+
-+	/* rules */
-+	dout(30, "rule vec is %p\n", c->rules);
-+	for (i = 0; i < c->max_rules; i++) {
-+		u32 yes;
-+		struct crush_rule *r;
-+
-+		ceph_decode_32_safe(p, end, yes, bad);
-+		if (!yes) {
-+			dout(30, "crush_decode NO rule %d off %x %p to %p\n",
-+			     i, (int)(*p-start), *p, end);
-+			c->rules[i] = NULL;
-+			continue;
-+		}
-+
-+		dout(30, "crush_decode rule %d off %x %p to %p\n",
-+		     i, (int)(*p-start), *p, end);
-+
-+		/* len */
-+		ceph_decode_32_safe(p, end, yes, bad);
-+
-+		r = c->rules[i] = kmalloc(sizeof(*r) +
-+					  yes*sizeof(struct crush_rule_step),
-+					  GFP_NOFS);
-+		if (r == NULL)
-+			goto badmem;
-+		dout(30, " rule %d is at %p\n", i, r);
-+		r->len = yes;
-+		ceph_decode_copy_safe(p, end, &r->mask, 4, bad); /* 4 u8's */
-+		ceph_decode_need(p, end, r->len*3*sizeof(u32), bad);
-+		for (j = 0; j < r->len; j++) {
-+			ceph_decode_32(p, r->steps[j].op);
-+			ceph_decode_32(p, r->steps[j].arg1);
-+			ceph_decode_32(p, r->steps[j].arg2);
-+		}
-+	}
-+
-+	/* ignore trailing name maps. */
-+
-+	dout(30, "crush_decode success\n");
-+	return c;
-+
-+badmem:
-+	err = -ENOMEM;
-+bad:
-+	dout(30, "crush_decode fail %d\n", err);
-+	crush_destroy(c);
-+	return ERR_PTR(err);
-+}
-+
-+
-+/*
-+ * osd map
-+ */
-+void ceph_osdmap_destroy(struct ceph_osdmap *map)
-+{
-+	dout(10, "osdmap_destroy %p\n", map);
-+	if (map->crush)
-+		crush_destroy(map->crush);
-+	kfree(map->osd_state);
-+	kfree(map->osd_weight);
-+	kfree(map->pg_pool);
-+	kfree(map->osd_addr);
-+	kfree(map);
-+}
-+
-+/*
-+ * adjust max osd value.  reallocate arrays.
-+ */
-+static int osdmap_set_max_osd(struct ceph_osdmap *map, int max)
-+{
-+	u8 *state;
-+	struct ceph_entity_addr *addr;
-+	u32 *weight;
-+
-+	state = kzalloc(max * sizeof(*state), GFP_NOFS);
-+	addr = kzalloc(max * sizeof(*addr), GFP_NOFS);
-+	weight = kzalloc(max * sizeof(*weight), GFP_NOFS);
-+	if (state == NULL || addr == NULL || weight == NULL) {
-+		kfree(state);
-+		kfree(addr);
-+		kfree(weight);
-+		return -ENOMEM;
-+	}
-+
-+	/* copy old? */
-+	if (map->osd_state) {
-+		memcpy(state, map->osd_state, map->max_osd*sizeof(*state));
-+		memcpy(addr, map->osd_addr, map->max_osd*sizeof(*addr));
-+		memcpy(weight, map->osd_weight, map->max_osd*sizeof(*weight));
-+		kfree(map->osd_state);
-+		kfree(map->osd_addr);
-+		kfree(map->osd_weight);
-+	}
-+
-+	map->osd_state = state;
-+	map->osd_weight = weight;
-+	map->osd_addr = addr;
-+	map->max_osd = max;
++	if (!mapping->a_ops->readpage)
++		return -ENOEXEC;
++	file_accessed(file);
++	vma->vm_ops = &ceph_vmops;
++	vma->vm_flags |= VM_CAN_NONLINEAR;
 +	return 0;
 +}
-+
-+/*
-+ * decode a full map.
-+ */
-+struct ceph_osdmap *osdmap_decode(void **p, void *end)
-+{
-+	struct ceph_osdmap *map;
-+	u32 len, max, i;
-+	int err = -EINVAL;
-+	void *start = *p;
-+	__le64 major, minor;
-+
-+	dout(30, "osdmap_decode %p to %p len %d\n", *p, end, (int)(end - *p));
-+
-+	map = kzalloc(sizeof(*map), GFP_NOFS);
-+	if (map == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ceph_decode_need(p, end, 2*sizeof(u64)+6*sizeof(u32), bad);
-+	ceph_decode_64_le(p, major);
-+	__ceph_fsid_set_major(&map->fsid, major);
-+	ceph_decode_64_le(p, minor);
-+	__ceph_fsid_set_minor(&map->fsid, minor);
-+	ceph_decode_32(p, map->epoch);
-+	ceph_decode_32_le(p, map->created.tv_sec);
-+	ceph_decode_32_le(p, map->created.tv_nsec);
-+	ceph_decode_32_le(p, map->modified.tv_sec);
-+	ceph_decode_32_le(p, map->modified.tv_nsec);
-+
-+	ceph_decode_32(p, map->num_pools);
-+	map->pg_pool = kmalloc(map->num_pools * sizeof(*map->pg_pool),
-+			       GFP_NOFS);
-+	if (!map->pg_pool) {
-+		err = -ENOMEM;
-+		goto bad;
-+	}
-+	ceph_decode_32_safe(p, end, max, bad);
-+	while (max--) {
-+		ceph_decode_need(p, end, 4+sizeof(map->pg_pool->v), bad);
-+		ceph_decode_32(p, i);
-+		if (i >= map->num_pools)
-+			goto bad;
-+		ceph_decode_copy(p, &map->pg_pool[i].v,
-+				 sizeof(map->pg_pool->v));
-+		calc_pg_masks(&map->pg_pool[i]);
-+		p += le32_to_cpu(map->pg_pool[i].v.num_snaps) * sizeof(u64);
-+		p += le32_to_cpu(map->pg_pool[i].v.num_removed_snap_intervals)
-+			* sizeof(u64) * 2;
-+	}
-+
-+	ceph_decode_32_safe(p, end, map->flags, bad);
-+
-+	ceph_decode_32(p, max);
-+
-+	/* (re)alloc osd arrays */
-+	err = osdmap_set_max_osd(map, max);
-+	if (err < 0)
-+		goto bad;
-+	dout(30, "osdmap_decode max_osd = %d\n", map->max_osd);
-+
-+	/* osds */
-+	err = -EINVAL;
-+	ceph_decode_need(p, end, 3*sizeof(u32) +
-+			 map->max_osd*(1 + sizeof(*map->osd_weight) +
-+				       sizeof(*map->osd_addr)), bad);
-+	*p += 4; /* skip length field (should match max) */
-+	ceph_decode_copy(p, map->osd_state, map->max_osd);
-+
-+	*p += 4; /* skip length field (should match max) */
-+	for (i = 0; i < map->max_osd; i++)
-+		ceph_decode_32(p, map->osd_weight[i]);
-+
-+	*p += 4; /* skip length field (should match max) */
-+	ceph_decode_copy(p, map->osd_addr, map->max_osd*sizeof(*map->osd_addr));
-+
-+	/* crush */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	dout(30, "osdmap_decode crush len %d from off 0x%x\n", len,
-+	     (int)(*p - start));
-+	ceph_decode_need(p, end, len, bad);
-+	map->crush = crush_decode(*p, end);
-+	*p += len;
-+	if (IS_ERR(map->crush)) {
-+		err = PTR_ERR(map->crush);
-+		map->crush = NULL;
-+		goto bad;
-+	}
-+
-+	/* ignore the rest of the map */
-+	*p = end;
-+
-+	dout(30, "osdmap_decode done %p %p\n", *p, end);
-+	return map;
-+
-+bad:
-+	dout(30, "osdmap_decode fail\n");
-+	ceph_osdmap_destroy(map);
-+	return ERR_PTR(err);
-+}
-+
-+/*
-+ * decode and apply an incremental map update.
-+ */
-+struct ceph_osdmap *apply_incremental(void **p, void *end,
-+				      struct ceph_osdmap *map,
-+				      struct ceph_messenger *msgr)
-+{
-+	struct ceph_osdmap *newmap = map;
-+	struct crush_map *newcrush = NULL;
-+	ceph_fsid_t fsid;
-+	u32 epoch = 0;
-+	struct ceph_timespec modified;
-+	u32 len, pool;
-+	__s32 new_flags, max;
-+	void *start = *p;
-+	int err = -EINVAL;
-+	__le64 major, minor;
-+
-+	ceph_decode_need(p, end, sizeof(fsid)+sizeof(modified)+2*sizeof(u32),
-+			 bad);
-+	ceph_decode_64_le(p, major);
-+	__ceph_fsid_set_major(&fsid, major);
-+	ceph_decode_64_le(p, minor);
-+	__ceph_fsid_set_minor(&fsid, minor);
-+	ceph_decode_32(p, epoch);
-+	BUG_ON(epoch != map->epoch+1);
-+	ceph_decode_32_le(p, modified.tv_sec);
-+	ceph_decode_32_le(p, modified.tv_nsec);
-+	ceph_decode_32(p, new_flags);
-+
-+	/* full map? */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	if (len > 0) {
-+		dout(20, "apply_incremental full map len %d, %p to %p\n",
-+		     len, *p, end);
-+		newmap = osdmap_decode(p, min(*p+len, end));
-+		return newmap;  /* error or not */
-+	}
-+
-+	/* new crush? */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	if (len > 0) {
-+		dout(20, "apply_incremental new crush map len %d, %p to %p\n",
-+		     len, *p, end);
-+		newcrush = crush_decode(*p, min(*p+len, end));
-+		if (IS_ERR(newcrush))
-+			return ERR_PTR(PTR_ERR(newcrush));
-+	}
-+
-+	/* new flags? */
-+	if (new_flags >= 0)
-+		map->flags = new_flags;
-+
-+	ceph_decode_need(p, end, 5*sizeof(u32), bad);
-+
-+	/* new max? */
-+	ceph_decode_32(p, max);
-+	if (max >= 0) {
-+		err = osdmap_set_max_osd(map, max);
-+		if (err < 0)
-+			goto bad;
-+	}
-+
-+	map->epoch++;
-+	map->modified = map->modified;
-+	if (newcrush) {
-+		if (map->crush)
-+			crush_destroy(map->crush);
-+		map->crush = newcrush;
-+		newcrush = NULL;
-+	}
-+
-+	/* new_pool */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		ceph_decode_32_safe(p, end, pool, bad);
-+		if (pool >= map->num_pools) {
-+			void *pg_pool = kzalloc((pool+1)*sizeof(*map->pg_pool),
-+					  GFP_NOFS);
-+			if (!pg_pool) {
-+				err = -ENOMEM;
-+				goto bad;
-+			}
-+			memcpy(pg_pool, map->pg_pool,
-+			       map->num_pools * sizeof(*map->pg_pool));
-+			kfree(map->pg_pool);
-+			map->pg_pool = pg_pool;
-+			map->num_pools = pool+1;
-+		}
-+		ceph_decode_copy(p, &map->pg_pool[pool].v,
-+				 sizeof(map->pg_pool->v));
-+		calc_pg_masks(&map->pg_pool[pool]);
-+	}
-+
-+	/* old_pool (ignore) */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	*p += len * sizeof(u32);
-+
-+	/* new_up */
-+	err = -EINVAL;
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		u32 osd;
-+		struct ceph_entity_addr addr;
-+		ceph_decode_32_safe(p, end, osd, bad);
-+		ceph_decode_copy_safe(p, end, &addr, sizeof(addr), bad);
-+		dout(1, "osd%d up\n", osd);
-+		BUG_ON(osd >= map->max_osd);
-+		map->osd_state[osd] |= CEPH_OSD_UP;
-+		map->osd_addr[osd] = addr;
-+	}
-+
-+	/* new_down */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		u32 osd;
-+		ceph_decode_32_safe(p, end, osd, bad);
-+		(*p)++;  /* clean flag */
-+		dout(1, "osd%d down\n", osd);
-+		if (osd < map->max_osd) {
-+			map->osd_state[osd] &= ~CEPH_OSD_UP;
-+			ceph_messenger_mark_down(msgr, &map->osd_addr[osd]);
-+		}
-+	}
-+
-+	/* new_weight */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		u32 osd, off;
-+		ceph_decode_need(p, end, sizeof(u32)*2, bad);
-+		ceph_decode_32(p, osd);
-+		ceph_decode_32(p, off);
-+		dout(1, "osd%d weight 0x%x %s\n", osd, off,
-+		     off == CEPH_OSD_IN ? "(in)" :
-+		     (off == CEPH_OSD_OUT ? "(out)" : ""));
-+		if (osd < map->max_osd)
-+			map->osd_weight[osd] = off;
-+	}
-+
-+	/* ignore the rest */
-+	*p = end;
-+	return map;
-+
-+bad:
-+	derr(10, "corrupt incremental osdmap epoch %d off %d (%p of %p-%p)\n",
-+	     epoch, (int)(*p - start), *p, start, end);
-+	if (newcrush)
-+		crush_destroy(newcrush);
-+	return ERR_PTR(err);
-+}
-+
-+
-+
-+
-+/*
-+ * calculate file layout from given offset, length.
-+ * fill in correct oid, logical length, and object extent
-+ * offset, length.
-+ *
-+ * for now, we write only a single su, until we can
-+ * pass a stride back to the caller.
-+ */
-+void ceph_calc_file_object_mapping(struct ceph_file_layout *layout,
-+				   u64 off, u64 *plen,
-+				   u64 *bno,
-+				   u64 *oxoff, u64 *oxlen)
-+{
-+	u32 osize = le32_to_cpu(layout->fl_object_size);
-+	u32 su = le32_to_cpu(layout->fl_stripe_unit);
-+	u32 sc = le32_to_cpu(layout->fl_stripe_count);
-+	u32 bl, stripeno, stripepos, objsetno;
-+	u32 su_per_object;
-+	u64 t;
-+
-+	dout(80, "mapping %llu~%llu  osize %u fl_su %u\n", off, *plen,
-+	     osize, su);
-+	su_per_object = osize / le32_to_cpu(layout->fl_stripe_unit);
-+	dout(80, "osize %u / su %u = su_per_object %u\n", osize, su,
-+	     su_per_object);
-+
-+	BUG_ON((su & ~PAGE_MASK) != 0);
-+	/* bl = *off / su; */
-+	t = off;
-+	do_div(t, su);
-+	bl = t;
-+	dout(80, "off %llu / su %u = bl %u\n", off, su, bl);
-+
-+	stripeno = bl / sc;
-+	stripepos = bl % sc;
-+	objsetno = stripeno / su_per_object;
-+
-+	*bno = cpu_to_le32(objsetno * sc + stripepos);
-+	dout(80, "objset %u * sc %u = bno %u\n", objsetno, sc, (unsigned)*bno);
-+	/* *oxoff = *off / layout->fl_stripe_unit; */
-+	t = off;
-+	*oxoff = do_div(t, su);
-+	*oxlen = min_t(u64, *plen, su - *oxoff);
-+	*plen = *oxlen;
-+
-+	dout(80, " obj extent %llu~%llu\n", *oxoff, *oxlen);
-+}
-+
-+/*
-+ * calculate an object layout (i.e. pgid) from an oid,
-+ * file_layout, and osdmap
-+ */
-+int ceph_calc_object_layout(struct ceph_object_layout *ol,
-+			    const char *oid,
-+			    struct ceph_file_layout *fl,
-+			    struct ceph_osdmap *osdmap)
-+{
-+	unsigned num, num_mask;
-+	union ceph_pg pgid;
-+	s32 preferred = (s32)le32_to_cpu(fl->fl_pg_preferred);
-+	int poolid = le32_to_cpu(fl->fl_pg_pool);
-+	struct ceph_pg_pool_info *pool;
-+
-+	if (poolid >= osdmap->num_pools)
-+		return -EIO;
-+	pool = &osdmap->pg_pool[poolid];
-+
-+	if (preferred >= 0) {
-+		num = le32_to_cpu(pool->v.lpg_num);
-+		num_mask = pool->lpg_num_mask;
-+	} else {
-+		num = le32_to_cpu(pool->v.pg_num);
-+		num_mask = pool->pg_num_mask;
-+	}
-+
-+	pgid.pg64 = 0;   /* start with it zeroed out */
-+	pgid.pg.ps = ceph_full_name_hash(oid, strlen(oid));
-+	pgid.pg.preferred = preferred;
-+	pgid.pg.pool = le32_to_cpu(fl->fl_pg_pool);
-+
-+	ol->ol_pgid = cpu_to_le64(pgid.pg64);
-+	ol->ol_stripe_unit = fl->fl_object_stripe_unit;
-+
-+	return 0;
-+}
-diff --git a/fs/staging/ceph/osdmap.h b/fs/staging/ceph/osdmap.h
-new file mode 100644
-index 0000000..757aaf5
---- /dev/null
-+++ b/fs/staging/ceph/osdmap.h
-@@ -0,0 +1,83 @@
-+#ifndef _FS_CEPH_OSDMAP_H
-+#define _FS_CEPH_OSDMAP_H
-+
-+#include "types.h"
-+#include "ceph_fs.h"
-+#include "crush/crush.h"
-+
-+/*
-+ * The osd map describes the current membership of the osd cluster and
-+ * specifies the mapping of objects to placement groups and placement
-+ * groups to (sets of) osds.  That is, it completely specifies the
-+ * (desired) distribution of all data objects in the system at some
-+ * point in time.
-+ *
-+ * Each map version is identified by an epoch, which increases monotonically.
-+ *
-+ * The map can be updated either via an incremental map (diff) describing
-+ * the change between two successive epochs, or as a fully encoded map.
-+ */
-+struct ceph_pg_pool_info {
-+	struct ceph_pg_pool v;
-+	int pg_num_mask, pgp_num_mask, lpg_num_mask, lpgp_num_mask;
-+};
-+
-+struct ceph_osdmap {
-+	ceph_fsid_t fsid;
-+	u32 epoch;
-+	u32 mkfs_epoch;
-+	struct ceph_timespec created, modified;
-+
-+	u32 flags;         /* CEPH_OSDMAP_* */
-+
-+	u32 max_osd;       /* size of osd_state, _offload, _addr arrays */
-+	u8 *osd_state;     /* CEPH_OSD_* */
-+	u32 *osd_weight;   /* 0 = failed, 0x10000 = 100% normal */
-+	struct ceph_entity_addr *osd_addr;
-+
-+	u32 num_pools;
-+	struct ceph_pg_pool_info *pg_pool;
-+
-+	/* the CRUSH map specifies the mapping of placement groups to
-+	 * the list of osds that store+replicate them. */
-+	struct crush_map *crush;
-+};
-+
-+static inline int ceph_osd_is_up(struct ceph_osdmap *map, int osd)
-+{
-+	return (osd < map->max_osd) && (map->osd_state[osd] & CEPH_OSD_UP);
-+}
-+
-+static inline bool ceph_osdmap_flag(struct ceph_osdmap *map, int flag)
-+{
-+	return map && (map->flags & flag);
-+}
-+
-+extern char *ceph_osdmap_state_str(char *str, int len, int state);
-+
-+static inline struct ceph_entity_addr *ceph_osd_addr(struct ceph_osdmap *map,
-+						     int osd)
-+{
-+	if (osd >= map->max_osd)
-+		return 0;
-+	return &map->osd_addr[osd];
-+}
-+
-+extern struct ceph_osdmap *osdmap_decode(void **p, void *end);
-+extern struct ceph_osdmap *apply_incremental(void **p, void *end,
-+					     struct ceph_osdmap *map,
-+					     struct ceph_messenger *msgr);
-+extern void ceph_osdmap_destroy(struct ceph_osdmap *map);
-+
-+/* calculate mapping of a file extent to an object */
-+extern void ceph_calc_file_object_mapping(struct ceph_file_layout *layout,
-+					  u64 off, u64 *plen,
-+					  u64 *bno, u64 *oxoff, u64 *oxlen);
-+
-+/* calculate mapping of object to a placement group */
-+extern int ceph_calc_object_layout(struct ceph_object_layout *ol,
-+				   const char *oid,
-+				   struct ceph_file_layout *fl,
-+				   struct ceph_osdmap *osdmap);
-+
-+#endif
 -- 
 1.5.6.5
 
