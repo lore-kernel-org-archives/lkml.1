@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZFSA4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZFSBOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZFSA4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 20:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFSA4B
+	id S1752934AbZFSBOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 21:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZFSBOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 20:56:01 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60285 "EHLO mx2.redhat.com"
+	Thu, 18 Jun 2009 21:14:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57796 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbZFSA4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 20:56:01 -0400
-Date: Fri, 19 Jun 2009 02:51:13 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH] trivial, update the comment in kthread_stop()
-Message-ID: <20090619005113.GA12208@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751625AbZFSBOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 21:14:09 -0400
+Date: Fri, 19 Jun 2009 11:13:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: origin tree build warning
+Message-Id: <20090619111359.b317a533.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__19_Jun_2009_11_13_59_+1000_lPXwYaWHH+Ex2mA/"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"kthreads: rework kthread_stop()"
-commit 63706172f332fd3f6e7458ebfb35fa6de9c21dc5 removed the limitation,
-but forgot to update the comment.
+--Signature=_Fri__19_Jun_2009_11_13_59_+1000_lPXwYaWHH+Ex2mA/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Since that commit it is OK to use kthread_stop() even if kthread can exit
-itself.
+Hi Linus,
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -180,10 +180,12 @@ EXPORT_SYMBOL(kthread_bind);
-  * @k: thread created by kthread_create().
-  *
-  * Sets kthread_should_stop() for @k to return true, wakes it, and
-- * waits for it to exit.  Your threadfn() must not call do_exit()
-- * itself if you use this function!  This can also be called after
-- * kthread_create() instead of calling wake_up_process(): the thread
-- * will exit without calling threadfn().
-+ * waits for it to exit. This can also be called after kthread_create()
-+ * instead of calling wake_up_process(): the thread will exit without
-+ * calling threadfn().
-+ *
-+ * If threadfn() may call do_exit() itself, the caller must ensure
-+ * task_struct can't go away.
-  *
-  * Returns the result of threadfn(), or %-EINTR if wake_up_process()
-  * was never called.
+drivers/video/s1d13xxxfb.c:420: warning: 'bltbit_wait_bitset' defined but n=
+ot used
+drivers/video/s1d13xxxfb.c:463: warning: 'bltbit_fifo_status' defined but n=
+ot used
 
+Introduced by commit 3ed167af96ed098187ea41353fe02d1af20d38a1 ("fbdev:
+s1d13xxxfb: add accelerated bitblt functions").
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__19_Jun_2009_11_13_59_+1000_lPXwYaWHH+Ex2mA/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko65lcACgkQjjKRsyhoI8xKWQCfSn9Ir/OQ9FxIPQaZlPaUmTO2
+MZUAn0zZOkqsoS28I9gc7AigrYzJ9uLS
+=fOLv
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__19_Jun_2009_11_13_59_+1000_lPXwYaWHH+Ex2mA/--
