@@ -1,42 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZFSNpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZFSNpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbZFSNpP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 09:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZFSNo6
+	id S1755133AbZFSNpz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 09:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZFSNpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 09:44:58 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47250 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757773AbZFSNo5 (ORCPT
+	Fri, 19 Jun 2009 09:45:47 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:36309 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbZFSNpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 09:44:57 -0400
-Date: Fri, 19 Jun 2009 14:44:46 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Sudeep K N <sudeepholla.maillist@gmail.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, drzeus-mmc@drzeus.cx,
-       linux-kernel@vger.kernel.org
-Subject: Re: Rootfs in eMMC: Kernel panic ...Attempted to kill init!
-Message-ID: <20090619134446.GI24573@n2100.arm.linux.org.uk>
-References: <366f00c80906180218p539f9df9md30f629787fabeb2@mail.gmail.com>
+	Fri, 19 Jun 2009 09:45:46 -0400
+Date: Fri, 19 Jun 2009 15:44:37 +0200
+From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 19
+Message-ID: <20090619134437.GA10571@ikn.schottelius.org>
+Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20090619172622.05adb236.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
 Content-Disposition: inline
-In-Reply-To: <366f00c80906180218p539f9df9md30f629787fabeb2@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090619172622.05adb236.sfr@canb.auug.org.au>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.30-07040-g0732f87 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 02:48:10PM +0530, Sudeep K N wrote:
-> After mounting the rootfs in eMMC, it panics.
-> Panic log as below.  When I traced, I observed it fails while its
-> execution "run_init_process"
-> I have tried with different init process,i.e. init=/linuxrc,
-> init=/bin/busybox, init=/sbin/init
-> Even I tried initramfs and the switch_root/pivot_root to rootfs on
-> eMMC partition.
-> In all the cases, I got the same panic.
-> Can anybody help me in understanding the exact reason for this panic?
 
-Enable CONFIG_DEBUG_USER and pass user_debug=31 - that should get
-more detail on the problem that's killing init.
+--bg08WKrSYDhXBjb5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Stephen Rothwell [Fri, Jun 19, 2009 at 05:26:22PM +1000]:
+> Hi all,
+>=20
+> Changes since 20090618:
+
+This one stops my boot process, when trying to startup
+uml-utilities. 2.6.30-07040-g0732f87 (linus) works.
+
+amd64, config attached.
+
+Nico
+
+--=20
+Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--bg08WKrSYDhXBjb5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko7lkUACgkQuL75KpiFGIyO0ACfQYyAOuq5jQoLHUcp2Ok0JvDF
+1IUAn0jgvcO2PrNoRL6FnTITh2ffQEYt
+=pQT1
+-----END PGP SIGNATURE-----
+
+--bg08WKrSYDhXBjb5--
