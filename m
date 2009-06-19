@@ -1,338 +1,719 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZFSBjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbZFSBmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbZFSBjo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 21:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZFSBjh
+	id S1755125AbZFSBmt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 21:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZFSBmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 21:39:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:9561 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbZFSBjg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 21:39:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=TSB85ACfwcY4CcSH76wkUlBGzr3xlTH98KSgEKzE+twyJ5/n/a3gX0um+Z6zMWBJvn
-         E+gnBb4tLmrV16Fe3Gdecycxx7SyYxpNYMMoZ4pgraPPOSV54wMccyoERRehcVgHbzq6
-         KqrMUT3k7U+w1wK0JtWN3OuuXZ3Ox3Vh8cLaA=
+	Thu, 18 Jun 2009 21:42:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49170 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752264AbZFSBmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 21:42:39 -0400
+Message-ID: <4A3AEC96.7050500@cn.fujitsu.com>
+Date: Fri, 19 Jun 2009 09:40:38 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Date: Thu, 18 Jun 2009 21:33:32 -0400
-Message-ID: <817ecb6f0906181833m77dcbeder76f0e8c6e85555ef@mail.gmail.com>
-Subject: [PATCH] RO/NX protection for loadable kernel modules
-From: Siarhei Liakh <sliakh.lkml@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 18/19] io-controller: Debug hierarchical IO scheduling
+References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-19-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1244513342-11758-19-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is a logical extension of the protection provided by
-CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
-module_core and module_init into three logical parts each and setting
-appropriate page access permissions for each individual section:
+Vivek Goyal wrote:
+> o Littile debugging aid for hierarchical IO scheduling.
+> 
+> o Enabled under CONFIG_DEBUG_GROUP_IOSCHED
+> 
+> o Currently it outputs more debug messages in blktrace output which helps
+>   a great deal in debugging in hierarchical setup. It also creates additional
+>   cgroup interfaces io.disk_queue and io.disk_dequeue to output some more
+>   debugging data.
+> 
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/Kconfig.iosched |   10 ++-
+>  block/as-iosched.c    |   50 ++++++---
+>  block/elevator-fq.c   |  285 ++++++++++++++++++++++++++++++++++++++++++++++++-
+>  block/elevator-fq.h   |   26 +++++
+>  4 files changed, 347 insertions(+), 24 deletions(-)
+> 
+> diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+> index 0677099..79f188c 100644
+> --- a/block/Kconfig.iosched
+> +++ b/block/Kconfig.iosched
+> @@ -140,6 +140,14 @@ config TRACK_ASYNC_CONTEXT
+>  	  request, original owner of the bio is decided by using io tracking
+>  	  patches otherwise we continue to attribute the request to the
+>  	  submitting thread.
+> -endmenu
+>  
+> +config DEBUG_GROUP_IOSCHED
+> +	bool "Debug Hierarchical Scheduling support"
+> +	depends on CGROUPS && GROUP_IOSCHED
+> +	default n
+> +	---help---
+> +	  Enable some debugging hooks for hierarchical scheduling support.
+> +	  Currently it just outputs more information in blktrace output.
+> +
+> +endmenu
+>  endif
+> diff --git a/block/as-iosched.c b/block/as-iosched.c
+> index b0c66e4..735d055 100644
+> --- a/block/as-iosched.c
+> +++ b/block/as-iosched.c
+> @@ -78,6 +78,7 @@ enum anticipation_status {
+>  };
+>  
+>  struct as_queue {
+> +	struct io_queue *ioq;
+>  	/*
+>  	 * requests (as_rq s) are present on both sort_list and fifo_list
+>  	 */
+> @@ -162,6 +163,17 @@ enum arq_state {
+>  #define RQ_STATE(rq)	((enum arq_state)(rq)->elevator_private2)
+>  #define RQ_SET_STATE(rq, state)	((rq)->elevator_private2 = (void *) state)
+>  
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +#define as_log_asq(ad, asq, fmt, args...)				\
+> +{									\
+> +	blk_add_trace_msg((ad)->q, "as %s " fmt,			\
+> +			ioq_to_io_group((asq)->ioq)->path, ##args);	\
+> +}
+> +#else
+> +#define as_log_asq(ad, asq, fmt, args...) \
+> +	blk_add_trace_msg((ad)->q, "as " fmt, ##args)
+> +#endif
+> +
+>  #define as_log(ad, fmt, args...)        \
+>  	blk_add_trace_msg((ad)->q, "as " fmt, ##args)
+>  
+> @@ -225,7 +237,7 @@ static void as_save_batch_context(struct as_data *ad, struct as_queue *asq)
+>  	}
+>  
+>  out:
+> -	as_log(ad, "save batch: dir=%c time_left=%d changed_batch=%d"
+> +	as_log_asq(ad, asq, "save batch: dir=%c time_left=%d changed_batch=%d"
+>  			" new_batch=%d, antic_status=%d",
+>  			ad->batch_data_dir ? 'R' : 'W',
+>  			asq->current_batch_time_left,
+> @@ -247,8 +259,8 @@ static void as_restore_batch_context(struct as_data *ad, struct as_queue *asq)
+>  						asq->current_batch_time_left;
+>  	/* restore asq batch_data_dir info */
+>  	ad->batch_data_dir = asq->saved_batch_data_dir;
+> -	as_log(ad, "restore batch: dir=%c time=%d reads_q=%d writes_q=%d"
+> -			" ad->antic_status=%d",
+> +	as_log_asq(ad, asq, "restore batch: dir=%c time=%d reads_q=%d"
+> +			" writes_q=%d ad->antic_status=%d",
+>  			ad->batch_data_dir ? 'R' : 'W',
+>  			asq->current_batch_time_left,
+>  			asq->nr_queued[1], asq->nr_queued[0],
+> @@ -277,8 +289,8 @@ static int as_expire_ioq(struct request_queue *q, void *sched_queue,
+>  	int status = ad->antic_status;
+>  	struct as_queue *asq = sched_queue;
+>  
+> -	as_log(ad, "as_expire_ioq slice_expired=%d, force=%d", slice_expired,
+> -		force);
+> +	as_log_asq(ad, asq, "as_expire_ioq slice_expired=%d, force=%d",
+> +			slice_expired, force);
+>  
+>  	/* Forced expiry. We don't have a choice */
+>  	if (force) {
+> @@ -1019,9 +1031,10 @@ static void update_write_batch(struct as_data *ad, struct request *rq)
+>  	if (write_time < 0)
+>  		write_time = 0;
+>  
+> -	as_log(ad, "upd write: write_time=%d batch=%d write_batch_idled=%d"
+> -			" current_write_count=%d", write_time, batch,
+> -			asq->write_batch_idled, asq->current_write_count);
+> +	as_log_asq(ad, asq, "upd write: write_time=%d batch=%d"
+> +			" write_batch_idled=%d current_write_count=%d",
+> +			write_time, batch, asq->write_batch_idled,
+> +			asq->current_write_count);
+>  
+>  	if (write_time > batch && !asq->write_batch_idled) {
+>  		if (write_time > batch * 3)
+> @@ -1038,7 +1051,7 @@ static void update_write_batch(struct as_data *ad, struct request *rq)
+>  	if (asq->write_batch_count < 1)
+>  		asq->write_batch_count = 1;
+>  
+> -	as_log(ad, "upd write count=%d", asq->write_batch_count);
+> +	as_log_asq(ad, asq, "upd write count=%d", asq->write_batch_count);
+>  }
+>  
+>  /*
+> @@ -1057,7 +1070,7 @@ static void as_completed_request(struct request_queue *q, struct request *rq)
+>  		goto out;
+>  	}
+>  
+> -	as_log(ad, "complete: reads_q=%d writes_q=%d changed_batch=%d"
+> +	as_log_asq(ad, asq, "complete: reads_q=%d writes_q=%d changed_batch=%d"
+>  		" new_batch=%d switch_queue=%d, dir=%c",
+>  		asq->nr_queued[1], asq->nr_queued[0], ad->changed_batch,
+>  		ad->new_batch, ad->switch_queue,
+> @@ -1251,7 +1264,7 @@ static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
+>  	if (RQ_IOC(rq) && RQ_IOC(rq)->aic)
+>  		atomic_inc(&RQ_IOC(rq)->aic->nr_dispatched);
+>  	ad->nr_dispatched++;
+> -	as_log(ad, "dispatch req dir=%c nr_dispatched = %d",
+> +	as_log_asq(ad, asq, "dispatch req dir=%c nr_dispatched = %d",
+>  			data_dir ? 'R' : 'W', ad->nr_dispatched);
+>  }
+>  
+> @@ -1300,7 +1313,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
+>  		}
+>  		asq->last_check_fifo[BLK_RW_ASYNC] = jiffies;
+>  
+> -		as_log(ad, "forced dispatch");
+> +		as_log_asq(ad, asq, "forced dispatch");
+>  		return dispatched;
+>  	}
+>  
+> @@ -1314,7 +1327,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
+>  		|| ad->antic_status == ANTIC_WAIT_REQ
+>  		|| ad->antic_status == ANTIC_WAIT_NEXT
+>  		|| ad->changed_batch) {
+> -		as_log(ad, "no dispatch. read_q=%d, writes_q=%d"
+> +		as_log_asq(ad, asq, "no dispatch. read_q=%d, writes_q=%d"
+>  			" ad->antic_status=%d, changed_batch=%d,"
+>  			" switch_queue=%d new_batch=%d", asq->nr_queued[1],
+>  			asq->nr_queued[0], ad->antic_status, ad->changed_batch,
+> @@ -1333,7 +1346,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
+>  				goto fifo_expired;
+>  
+>  			if (as_can_anticipate(ad, rq)) {
+> -				as_log(ad, "can_anticipate = 1");
+> +				as_log_asq(ad, asq, "can_anticipate = 1");
+>  				as_antic_waitreq(ad);
+>  				return 0;
+>  			}
+> @@ -1353,7 +1366,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
+>  	 * data direction (read / write)
+>  	 */
+>  
+> -	as_log(ad, "select a fresh batch and request");
+> +	as_log_asq(ad, asq, "select a fresh batch and request");
+>  
+>  	if (reads) {
+>  		BUG_ON(RB_EMPTY_ROOT(&asq->sort_list[BLK_RW_SYNC]));
+> @@ -1369,7 +1382,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
+>  			ad->changed_batch = 1;
+>  		}
+>  		ad->batch_data_dir = BLK_RW_SYNC;
+> -		as_log(ad, "new batch dir is sync");
+> +		as_log_asq(ad, asq, "new batch dir is sync");
+>  		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_SYNC].next);
+>  		asq->last_check_fifo[ad->batch_data_dir] = jiffies;
+>  		goto dispatch_request;
+> @@ -1394,7 +1407,7 @@ dispatch_writes:
+>  			ad->new_batch = 0;
+>  		}
+>  		ad->batch_data_dir = BLK_RW_ASYNC;
+> -		as_log(ad, "new batch dir is async");
+> +		as_log_asq(ad, asq, "new batch dir is async");
+>  		asq->current_write_count = asq->write_batch_count;
+>  		asq->write_batch_idled = 0;
+>  		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_ASYNC].next);
+> @@ -1457,7 +1470,7 @@ static void as_add_request(struct request_queue *q, struct request *rq)
+>  	rq->elevator_private = as_get_io_context(q->node);
+>  
+>  	asq->nr_queued[data_dir]++;
+> -	as_log(ad, "add a %c request read_q=%d write_q=%d",
+> +	as_log_asq(ad, asq, "add a %c request read_q=%d write_q=%d",
+>  			data_dir ? 'R' : 'W', asq->nr_queued[1],
+>  			asq->nr_queued[0]);
+>  
+> @@ -1616,6 +1629,7 @@ static void *as_alloc_as_queue(struct request_queue *q,
+>  
+>  	if (asq->write_batch_count < 2)
+>  		asq->write_batch_count = 2;
+> +	asq->ioq = ioq;
+>  out:
+>  	return asq;
+>  }
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index 207664d..207bdf1 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -117,6 +117,126 @@ static inline int iog_deleting(struct io_group *iog)
+>  	return iog->deleting;
+>  }
+>  
+> +static inline struct io_group *io_entity_to_iog(struct io_entity *entity)
+> +{
+> +	struct io_group *iog = NULL;
+> +
+> +	BUG_ON(entity == NULL);
+> +	if (entity->my_sched_data != NULL)
+> +		iog = container_of(entity, struct io_group, entity);
+> +	return iog;
+> +}
+> +
+> +/* Returns parent group of io group */
+> +static inline struct io_group *iog_parent(struct io_group *iog)
+> +{
+> +	struct io_group *piog;
+> +
+> +	if (!iog->entity.sched_data)
+> +		return NULL;
+> +
+> +	/*
+> +	 * Not following entity->parent pointer as for top level groups
+> +	 * this pointer is NULL.
+> +	 */
+> +	piog = container_of(iog->entity.sched_data, struct io_group,
+> +					sched_data);
+> +	return piog;
+> +}
+> +
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +static void io_group_path(struct io_group *iog, char *buf, int buflen)
+> +{
+> +	unsigned short id = iog->iocg_id;
+> +	struct cgroup_subsys_state *css;
+> +
+> +	rcu_read_lock();
+> +
+> +	if (!id)
+> +		goto out;
+> +
+> +	css = css_lookup(&io_subsys, id);
+> +	if (!css)
+> +		goto out;
+> +
+> +	if (!css_tryget(css))
+> +		goto out;
+> +
+> +	cgroup_path(css->cgroup, buf, buflen);
+> +
+> +	css_put(css);
+> +
+> +	rcu_read_unlock();
+> +	return;
+> +out:
+> +	rcu_read_unlock();
+> +	buf[0] = '\0';
+> +	return;
+> +}
+> +
+> +/*
+> + * An entity has been freshly added to active tree. Either it came from
+> + * idle tree or it was not on any of the trees. Do the accounting.
+> + */
+> +static inline void bfq_account_for_entity_addition(struct io_entity *entity)
+> +{
+> +	struct io_group *iog = io_entity_to_iog(entity);
+> +
+> +	if (iog) {
+> +		struct elv_fq_data *efqd;
+> +		char path[128];
+> +
+> +		/*
+> +		 * Keep track of how many times a group has been removed
+> +		 * from active tree because it did not have any active
+> +		 * backlogged ioq under it
+> +		 */
 
-   1. Code: RO+X
-   2. RO data: RO+NX
-   3. RW data: RW+NX
+Hi Vivek,
 
-In order to achieve proper protection, layout_sections() have been
-modified to align each of the three parts mentioned above onto page
-boundary. Next, the corresponding page access permissions are set
-right before successful exit from load_module(). Further,
-module_free() have been modified to set module_core or module_init as
-RW+NX right before calling vfree(). Functionality of this patch is
-enabled only when CONFIG_DEBUG_RODATA defined at compile time.
+Should the comment here be "added to" rather than "removed from"?
 
-The patch have been developed for Linux 2.6.30 i386.
+> +		iog->queue++;
+> +		iog->queue_start = jiffies;
+> +
+> +		/* Log group addition event */
+> +		rcu_read_lock();
+> +		efqd = rcu_dereference(iog->key);
+> +		if (efqd) {
+> +			io_group_path(iog, path, sizeof(path));
+> +			elv_log(efqd, "add group=%s weight=%ld", path,
+> +					iog->entity.weight);
+> +		}
+> +		rcu_read_unlock();
+> +	}
+> +}
+> +
+> +/*
+> + * An entity got removed from active tree and either went to idle tree or
+> + * not is on any of the tree. Do the accouting
+> + */
+> +static inline void bfq_account_for_entity_deletion(struct io_entity *entity)
+> +{
+> +	struct io_group *iog = io_entity_to_iog(entity);
+> +
+> +	if (iog) {
+> +		struct elv_fq_data *efqd;
+> +		char path[128];
+> +
+> +		iog->dequeue++;
+> +		/* Keep a track of how long group was on active tree */
+> +		iog->queue_duration += jiffies_to_msecs(jiffies -
+> +						iog->queue_start);
+> +		iog->queue_start = 0;
+> +
+> +		/* Log group deletion event */
+> +		rcu_read_lock();
+> +		efqd = rcu_dereference(iog->key);
+> +		if (efqd) {
+> +			io_group_path(iog, path, sizeof(path));
+> +			elv_log(efqd, "del group=%s weight=%ld", path,
+> +					iog->entity.weight);
+> +		}
+> +		rcu_read_unlock();
+> +	}
+> +}
+> +#endif
+> +
+>  #else /* GROUP_IOSCHED */
+>  #define for_each_entity(entity)	\
+>  	for (; entity != NULL; entity = NULL)
+> @@ -139,6 +259,12 @@ static inline int iog_deleting(struct io_group *iog)
+>  	/* In flat mode, root cgroup can't be deleted. */
+>  	return 0;
+>  }
+> +
+> +static inline struct io_group *io_entity_to_iog(struct io_entity *entity)
+> +{
+> +	return NULL;
+> +}
+> +
+>  #endif
+>  
+>  /*
+> @@ -572,6 +698,7 @@ static void __bfq_activate_entity(struct io_entity *entity, int add_front)
+>  {
+>  	struct io_sched_data *sd = entity->sched_data;
+>  	struct io_service_tree *st = io_entity_service_tree(entity);
+> +	int newly_added = 0;
+>  
+>  	if (entity == sd->active_entity) {
+>  		BUG_ON(entity->tree != NULL);
+> @@ -598,6 +725,7 @@ static void __bfq_activate_entity(struct io_entity *entity, int add_front)
+>  		bfq_idle_extract(st, entity);
+>  		entity->start = bfq_gt(st->vtime, entity->finish) ?
+>  				       st->vtime : entity->finish;
+> +		newly_added = 1;
+>  	} else {
+>  		/*
+>  		 * The finish time of the entity may be invalid, and
+> @@ -610,6 +738,7 @@ static void __bfq_activate_entity(struct io_entity *entity, int add_front)
+>  
+>  		BUG_ON(entity->on_st);
+>  		entity->on_st = 1;
+> +		newly_added = 1;
+>  	}
+>  
+>  	st = __bfq_entity_update_prio(st, entity);
+> @@ -647,6 +776,10 @@ static void __bfq_activate_entity(struct io_entity *entity, int add_front)
+>  		bfq_calc_finish(entity, entity->budget);
+>  	}
+>  	bfq_active_insert(st, entity);
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +	if (newly_added)
+> +		bfq_account_for_entity_addition(entity);
+> +#endif
+>  }
+>  
+>  /**
+> @@ -717,6 +850,9 @@ int __bfq_deactivate_entity(struct io_entity *entity, int requeue)
+>  	BUG_ON(sd->active_entity == entity);
+>  	BUG_ON(sd->next_active == entity);
+>  
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +	bfq_account_for_entity_deletion(entity);
+> +#endif
+>  	return ret;
+>  }
+>  
+> @@ -1209,6 +1345,67 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
+>  	return 0;
+>  }
+>  
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
+> +			struct cftype *cftype, struct seq_file *m)
+> +{
+> +	struct io_cgroup *iocg = NULL;
+> +	struct io_group *iog = NULL;
+> +	struct hlist_node *n;
+> +
+> +	if (!cgroup_lock_live_group(cgroup))
+> +		return -ENODEV;
+> +
+> +	iocg = cgroup_to_io_cgroup(cgroup);
+> +	spin_lock_irq(&iocg->lock);
+> +	/* Loop through all the io groups and print statistics */
+> +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
+> +		/*
+> +		 * There might be groups which are not functional and
+> +		 * waiting to be reclaimed upon cgoup deletion.
+> +		 */
+> +		if (iog->key) {
+> +			seq_printf(m, "%u %u %lu %lu\n", MAJOR(iog->dev),
+> +					MINOR(iog->dev), iog->queue,
+> +					iog->queue_duration);
+> +		}
+> +	}
+> +	spin_unlock_irq(&iocg->lock);
+> +	cgroup_unlock();
+> +
+> +	return 0;
+> +}
+> +
+> +static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
+> +			struct cftype *cftype, struct seq_file *m)
+> +{
+> +	struct io_cgroup *iocg = NULL;
+> +	struct io_group *iog = NULL;
+> +	struct hlist_node *n;
+> +
+> +	if (!cgroup_lock_live_group(cgroup))
+> +		return -ENODEV;
+> +
+> +	iocg = cgroup_to_io_cgroup(cgroup);
+> +	spin_lock_irq(&iocg->lock);
+> +	/* Loop through all the io groups and print statistics */
+> +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
+> +		/*
+> +		 * There might be groups which are not functional and
+> +		 * waiting to be reclaimed upon cgoup deletion.
+> +		 */
+> +		if (iog->key) {
+> +			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
+> +					MINOR(iog->dev), iog->dequeue);
+> +		}
+> +	}
+> +	spin_unlock_irq(&iocg->lock);
+> +	cgroup_unlock();
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+>  /**
+>   * bfq_group_chain_alloc - allocate a chain of groups.
+>   * @bfqd: queue descriptor.
+> @@ -1263,7 +1460,9 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
+>  		}
+>  
+>  		blk_init_request_list(&iog->rl);
+> -
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +		io_group_path(iog, iog->path, sizeof(iog->path));
+> +#endif
+>  		if (leaf == NULL) {
+>  			leaf = iog;
+>  			prev = leaf;
+> @@ -1766,6 +1965,16 @@ struct cftype bfqio_files[] = {
+>  		.name = "disk_sectors",
+>  		.read_seq_string = io_cgroup_disk_sectors_read,
+>  	},
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +	{
+> +		.name = "disk_queue",
+> +		.read_seq_string = io_cgroup_disk_queue_read,
+> +	},
+> +	{
+> +		.name = "disk_dequeue",
+> +		.read_seq_string = io_cgroup_disk_dequeue_read,
+> +	},
+> +#endif
+>  };
+>  
+>  int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+> @@ -2090,6 +2299,7 @@ struct cgroup_subsys io_subsys = {
+>  	.destroy = iocg_destroy,
+>  	.populate = iocg_populate,
+>  	.subsys_id = io_subsys_id,
+> +	.use_id = 1,
+>  };
+>  
+>  /*
+> @@ -2380,6 +2590,22 @@ EXPORT_SYMBOL(elv_get_slice_idle);
+>  void elv_ioq_served(struct io_queue *ioq, bfq_service_t served)
+>  {
+>  	entity_served(&ioq->entity, served, ioq->nr_sectors);
+> +
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +		{
+> +			struct elv_fq_data *efqd = ioq->efqd;
+> +			struct io_group *iog = ioq_to_io_group(ioq);
+> +			elv_log_ioq(efqd, ioq, "ioq served: QSt=0x%lx QSs=0x%lx"
+> +				" QTt=0x%lx QTs=0x%lx GTt=0x%lx "
+> +				" GTs=0x%lx rq_queued=%d",
+> +				served, ioq->nr_sectors,
+> +				ioq->entity.total_service,
+> +				ioq->entity.total_sector_service,
+> +				iog->entity.total_service,
+> +				iog->entity.total_sector_service,
+> +				ioq->nr_queued);
+> +		}
+> +#endif
+>  }
+>  
+>  /* Tells whether ioq is queued in root group or not */
+> @@ -2847,10 +3073,30 @@ static void __elv_set_active_ioq(struct elv_fq_data *efqd, struct io_queue *ioq,
+>  	if (ioq) {
+>  		struct io_group *iog = ioq_to_io_group(ioq);
+>  		elv_log_ioq(efqd, ioq, "set_active, busy=%d ioprio=%d"
+> -				" weight=%ld group_weight=%ld",
+> +				" weight=%ld rq_queued=%d group_weight=%ld",
+>  				efqd->busy_queues,
+>  				ioq->entity.ioprio, ioq->entity.weight,
+> -				iog_weight(iog));
+> +				ioq->nr_queued, iog_weight(iog));
+> +
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +			{
+> +				int nr_active = 0;
+> +				struct io_group *parent = NULL;
+> +
+> +				parent = iog_parent(iog);
+> +				if (parent)
+> +					nr_active = elv_iog_nr_active(parent);
+> +
+> +				elv_log_ioq(efqd, ioq, "set_active, ioq"
+> +				" nrgrps=%d QTt=0x%lx QTs=0x%lx GTt=0x%lx "
+> +				" GTs=0x%lx rq_queued=%d", nr_active,
+> +				ioq->entity.total_service,
+> +				ioq->entity.total_sector_service,
+> +				iog->entity.total_service,
+> +				iog->entity.total_sector_service,
+> +				ioq->nr_queued);
+> +			}
+> +#endif
+>  		ioq->slice_end = 0;
+>  
+>  		elv_clear_ioq_wait_request(ioq);
+> @@ -2927,12 +3173,26 @@ void elv_add_ioq_busy(struct elv_fq_data *efqd, struct io_queue *ioq)
+>  {
+>  	BUG_ON(elv_ioq_busy(ioq));
+>  	BUG_ON(ioq == efqd->active_queue);
+> -	elv_log_ioq(efqd, ioq, "add to busy");
+>  	elv_activate_ioq(ioq, 0);
+>  	elv_mark_ioq_busy(ioq);
+>  	efqd->busy_queues++;
+>  	if (elv_ioq_class_rt(ioq))
+>  		efqd->busy_rt_queues++;
+> +
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +	{
+> +		struct io_group *iog = ioq_to_io_group(ioq);
+> +		elv_log_ioq(efqd, ioq, "add to busy: QTt=0x%lx QTs=0x%lx"
+> +			" ioq grp=%s GTt=0x%lx GTs=0x%lx rq_queued=%d",
+> +			ioq->entity.total_service,
+> +			ioq->entity.total_sector_service,
+> +			iog->entity.total_service,
+> +			iog->entity.total_sector_service,
+> +			ioq->nr_queued);
+> +	}
+> +#else
+> +	elv_log_ioq(efqd, ioq, "add to busy");
+> +#endif
+>  }
+>  
+>  void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq,
+> @@ -2942,7 +3202,21 @@ void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq,
+>  
+>  	BUG_ON(!elv_ioq_busy(ioq));
+>  	BUG_ON(ioq->nr_queued);
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +	{
+> +		struct io_group *iog = ioq_to_io_group(ioq);
+> +		elv_log_ioq(efqd, ioq, "del from busy: QTt=0x%lx "
+> +			"QTs=0x%lx ioq GTt=0x%lx GTs=0x%lx "
+> +			"rq_queued=%d",
+> +			ioq->entity.total_service,
+> +			ioq->entity.total_sector_service,
+> +			iog->entity.total_service,
+> +			iog->entity.total_sector_service,
+> +			ioq->nr_queued);
+> +	}
+> +#else
+>  	elv_log_ioq(efqd, ioq, "del from busy");
+> +#endif
+>  	elv_clear_ioq_busy(ioq);
+>  	BUG_ON(efqd->busy_queues == 0);
+>  	efqd->busy_queues--;
+> @@ -3179,6 +3453,7 @@ void elv_ioq_request_add(struct request_queue *q, struct request *rq)
+>  
+>  	elv_ioq_update_io_thinktime(ioq);
+>  	elv_ioq_update_idle_window(q->elevator, ioq, rq);
+> +	elv_log_ioq(efqd, ioq, "add rq: rq_queued=%d", ioq->nr_queued);
+>  
+>  	if (ioq == elv_active_ioq(q->elevator)) {
+>  		/*
+> @@ -3412,7 +3687,7 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
+>  	}
+>  
+>  	/* We are waiting for this queue to become busy before it expires.*/
+> -	if (efqd->fairness && elv_ioq_wait_busy(ioq)) {
+> +	if (elv_ioq_wait_busy(ioq)) {
+>  		ioq = NULL;
+>  		goto keep_queue;
+>  	}
+> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+> index ff409ec..b5cff90 100644
+> --- a/block/elevator-fq.h
+> +++ b/block/elevator-fq.h
+> @@ -251,6 +251,23 @@ struct io_group {
+>  
+>  	/* request list associated with the group */
+>  	struct request_list rl;
+> +
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +	/* How many times this group has been added to active tree */
+> +	unsigned long queue;
+> +
+> +	/* How long this group remained on active tree, in ms */
+> +	unsigned long queue_duration;
+> +
+> +	/* When was this group added to active tree */
+> +	unsigned long queue_start;
+> +
+> +	/* How many times this group has been removed from active tree */
+> +	unsigned long dequeue;
+> +
+> +	/* Store cgroup path */
+> +	char path[128];
+> +#endif
+>  };
+>  
+>  struct io_policy_node {
+> @@ -353,9 +370,18 @@ extern int elv_slice_idle;
+>  extern int elv_slice_async;
+>  
+>  /* Logging facilities. */
+> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
+> +#define elv_log_ioq(efqd, ioq, fmt, args...) \
+> +{								\
+> +	blk_add_trace_msg((efqd)->queue, "elv%d%c %s " fmt, (ioq)->pid,	\
+> +			elv_ioq_sync(ioq) ? 'S' : 'A', \
+> +			ioq_to_io_group(ioq)->path, ##args); \
+> +}
+> +#else
+>  #define elv_log_ioq(efqd, ioq, fmt, args...) \
+>  	blk_add_trace_msg((efqd)->queue, "elv%d%c " fmt, (ioq)->pid,	\
+>  				elv_ioq_sync(ioq) ? 'S' : 'A', ##args)
+> +#endif
+>  
+>  #define elv_log(efqd, fmt, args...) \
+>  	blk_add_trace_msg((efqd)->queue, "elv " fmt, ##args)
 
-If there are any issues with the patch formatting and/or kernel
-version, please let me know and I will gladly correct the issues.
-Thank you.
+-- 
+Regards
+Gui Jianfeng
 
-Signed-off-by: Siarhei Liakh <sliakh.lkml@gmail.com>
----
-
-diff --git a/arch/x86/kernel/module_32.c b/arch/x86/kernel/module_32.c
-index 0edd819..8a72ef8 100644
---- a/arch/x86/kernel/module_32.c
-+++ b/arch/x86/kernel/module_32.c
-@@ -22,6 +22,7 @@
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/bug.h>
-+#include <asm/cacheflush.h>
-
- #if 0
- #define DEBUGP printk
-@@ -29,6 +30,14 @@
- #define DEBUGP(fmt...)
- #endif
-
-+#ifdef CONFIG_DEBUG_RODATA
-+/* Given BASE and SIZE this macro calculates the number of pages this
-+ * memory regions occupies */
-+#define NUMBER_OF_PAGES(BASE, SIZE) ( \
-+	( ( (unsigned long) BASE + (unsigned long) SIZE ) >> PAGE_SHIFT ) - \
-+	( ( (unsigned long) BASE ) >> PAGE_SHIFT) + ( (SIZE>0) ? 1:0 ) )
-+#endif
-+
- void *module_alloc(unsigned long size)
- {
- 	if (size == 0)
-@@ -40,6 +49,26 @@ void *module_alloc(unsigned long size)
- /* Free memory returned from module_alloc */
- void module_free(struct module *mod, void *module_region)
- {
-+#ifdef CONFIG_DEBUG_RODATA
-+	unsigned long total_pages;
-+
-+	if(mod->module_core == module_region){
-+		/* Set core as NX+RW */
-+		total_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_size );
-+		DEBUGP(KERN_WARNING "RELEASING MODULE CORE: 0x%lx %lu\n",
-+				(unsigned long)mod->module_core, total_pages);
-+		set_memory_nx( (unsigned long)mod->module_core, total_pages);
-+		set_memory_rw( (unsigned long)mod->module_core, total_pages);
-+
-+	}else if(mod->module_init == module_region){
-+		/* Set init as NX+RW */
-+		total_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_size );
-+		DEBUGP(KERN_WARNING "RELEASING MODULE INIT: 0x%lx %lu\n",
-+				(unsigned long)mod->module_init, total_pages);
-+		set_memory_nx( (unsigned long)mod->module_init, total_pages);
-+		set_memory_rw( (unsigned long)mod->module_init, total_pages);
-+	}
-+#endif
- 	vfree(module_region);
- 	/* FIXME: If module_region == mod->init_region, trim exception
- 	   table entries. */
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 627ac08..75e7428 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -293,6 +293,11 @@ struct module
- 	/* The size of the executable code in each section.  */
- 	unsigned int init_text_size, core_text_size;
-
-+#ifdef CONFIG_DEBUG_RODATA
-+	/* Size of RO sections of the module (text+rodata) */
-+	unsigned int init_ro_size, core_ro_size;
-+#endif
-+
- 	/* Arch-specific module values */
- 	struct mod_arch_specific arch;
-
-diff --git a/kernel/module.c b/kernel/module.c
-index e797812..4afcb06 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -63,6 +63,14 @@
- #define ARCH_SHF_SMALL 0
- #endif
-
-+#ifdef CONFIG_DEBUG_RODATA
-+/* Given BASE and SIZE this macro calculates the number of pages this
-+ * memory regions occupies */
-+#define NUMBER_OF_PAGES(BASE, SIZE) ( \
-+	( ( (unsigned long) BASE + (unsigned long) SIZE ) >> PAGE_SHIFT ) - \
-+	( ( (unsigned long) BASE ) >> PAGE_SHIFT) + ( (SIZE>0) ? 1:0 ) )
-+#endif
-+
- /* If this is set, the section belongs in the init part of the module */
- #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
-
-@@ -1661,6 +1669,10 @@ static void layout_sections(struct module *mod,
- 		{ ARCH_SHF_SMALL | SHF_ALLOC, 0 }
- 	};
- 	unsigned int m, i;
-+#ifdef CONFIG_DEBUG_RODATA
-+	/* always align first section on page boundary */
-+	int need_alignment = 1;
-+#endif
-
- 	for (i = 0; i < hdr->e_shnum; i++)
- 		sechdrs[i].sh_entsize = ~0UL;
-@@ -1675,13 +1687,39 @@ static void layout_sections(struct module *mod,
- 			    || s->sh_entsize != ~0UL
- 			    || strstarts(secstrings + s->sh_name, ".init"))
- 				continue;
-+#ifdef CONFIG_DEBUG_RODATA
-+			if(need_alignment){
-+				mod->core_size = ALIGN(mod->core_size, PAGE_SIZE);
-+				need_alignment = 0;
-+			}
-+#endif
- 			s->sh_entsize = get_offset(mod, &mod->core_size, s, i);
- 			DEBUGP("\t%s\n", secstrings + s->sh_name);
- 		}
--		if (m == 0)
-+
-+		if (m == 0) {
-+			/* module code size */
- 			mod->core_text_size = mod->core_size;
-+#ifdef CONFIG_DEBUG_RODATA
-+			/* next section should start on new page */
-+			need_alignment = 1;
-+#endif
-+		}
-+
-+#ifdef CONFIG_DEBUG_RODATA
-+		if (m == 1) {
-+			/* module RO size (text+rodata) */
-+			mod->core_ro_size = mod->core_size;
-+			/* next section should start on new page */
-+			need_alignment = 1;
-+		}
-+#endif
- 	}
-
-+#ifdef CONFIG_DEBUG_RODATA
-+	/* always align first section on page boundary */
-+	need_alignment = 1;
-+#endif
- 	DEBUGP("Init section allocation order:\n");
- 	for (m = 0; m < ARRAY_SIZE(masks); ++m) {
- 		for (i = 0; i < hdr->e_shnum; ++i) {
-@@ -1692,13 +1730,50 @@ static void layout_sections(struct module *mod,
- 			    || s->sh_entsize != ~0UL
- 			    || !strstarts(secstrings + s->sh_name, ".init"))
- 				continue;
-+#ifdef CONFIG_DEBUG_RODATA
-+			if(need_alignment){
-+				mod->init_size = ALIGN(mod->init_size, PAGE_SIZE);
-+				need_alignment = 0;
-+			}
-+#endif			
-+
- 			s->sh_entsize = (get_offset(mod, &mod->init_size, s, i)
- 					 | INIT_OFFSET_MASK);
- 			DEBUGP("\t%s\n", secstrings + s->sh_name);
- 		}
--		if (m == 0)
-+
-+		if (m == 0) {
-+			/* module code size */
- 			mod->init_text_size = mod->init_size;
-+#ifdef CONFIG_DEBUG_RODATA
-+			/* next section should start on new page */
-+			need_alignment = 1;
-+#endif
-+		}
-+
-+#ifdef CONFIG_DEBUG_RODATA
-+		if (m == 1) {
-+			// module RO size (text+rodata)
-+			mod->init_ro_size = mod->init_size;
-+			// next section should start on new page
-+			need_alignment = 1;
-+		}
-+#endif
- 	}
-+#ifdef CONFIG_DEBUG_RODATA
-+	DEBUGP( "core_text_size: %i\n"
-+		"core_ro_size: %i\n"
-+		"core_size: %i\n"
-+		"init_text_size: %i\n"
-+		"init_ro_size: %i\n"
-+		"init_size: %i\n",
-+		mod->core_text_size,
-+		mod->core_ro_size,
-+		mod->core_size,
-+		mod->init_text_size,
-+		mod->init_ro_size,
-+		mod->init_size);
-+#endif
- }
-
- static void set_license(struct module *mod, const char *license)
-@@ -1898,6 +1973,12 @@ static noinline struct module *load_module(void
-__user *umod,
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
- 	unsigned long *mseg;
- 	mm_segment_t old_fs;
-+#ifdef CONFIG_DEBUG_RODATA
-+	/* these variables are used to set RO and NX regions */
-+	unsigned long total_pages;
-+	unsigned long text_pages;
-+	unsigned long ro_pages;
-+#endif
-
- 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
- 	       umod, len, uargs);
-@@ -2291,6 +2372,73 @@ static noinline struct module *load_module(void
-__user *umod,
- 	/* Get rid of temporary copy */
- 	vfree(hdr);
-
-+#ifdef CONFIG_DEBUG_RODATA
-+	/* In this section we calculate the number of pages for
-+	 * each part of core and init: code, ro data, rw data.
-+	 * Then we set code as RO+X, ro data as RO+NX, and rw data as RW+NX
-+	 * Siarhei Liakh
-+	 * Xuxian Jiang  */
-+	DEBUGP(	"module_core: 0x%lx %lu\n"
-+		"module_init: 0x%lx %lu\n",
-+		(unsigned long)mod->module_core,
-+		(unsigned long)mod->core_size,
-+		(unsigned long)mod->module_init,
-+		(unsigned long)mod->init_size);
-+
-+	/* calculate RO and NX regions for core */
-+	total_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_size);
-+	text_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_text_size);
-+	ro_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_ro_size);
-+
-+	DEBUGP(	"CORE:\n  text_pages: %lu\n"
-+		"  ro_pages: %lu\n  total_pages: %lu\n",
-+		text_pages, ro_pages,total_pages);
-+
-+	/* Set text and RO data as RO */
-+	DEBUGP(	"  RO: 0x%lx %lu\n",
-+		(unsigned long)mod->module_core, ro_pages);
-+
-+	if(ro_pages>0)
-+		set_memory_ro( (unsigned long)mod->module_core, ro_pages);
-+
-+	/* Set all data as NX */
-+	DEBUGP(	"  NX: 0x%lx %lu\n",
-+		(unsigned long)mod->module_core +
-+		(text_pages << PAGE_SHIFT) ,
-+		total_pages - text_pages );
-+
-+	if(total_pages > text_pages)
-+		set_memory_nx( (unsigned long)mod->module_core +
-+			  	(text_pages << PAGE_SHIFT) ,
-+				 total_pages - text_pages );
-+
-+	/* calculate RO and NX regions for init */
-+	total_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_size);
-+	text_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_text_size);
-+	ro_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_ro_size);
-+	
-+	DEBUGP(	"INIT:\n  text_pages: %lu\n"
-+		"  ro_pages: %lu\n  total_pages: %lu\n",
-+		text_pages, ro_pages, total_pages);
-+
-+	/* Set text and RO data as RO */
-+	DEBUGP(	"  RO: 0x%lx %lu\n",
-+		(unsigned long)mod->module_init, ro_pages);
-+
-+	if(ro_pages>0)
-+		set_memory_ro( (unsigned long)mod->module_init, ro_pages);
-+
-+	/* Set all data as NX */
-+	DEBUGP(	"  NX: 0x%lx %lu\n",
-+		(unsigned long)mod->module_init + (text_pages << PAGE_SHIFT),
-+		total_pages - text_pages );
-+
-+	if(total_pages > text_pages)
-+		set_memory_nx( (unsigned long)mod->module_init +
-+			  	(text_pages << PAGE_SHIFT) ,
-+				 total_pages - text_pages );
-+#endif
-+
- 	/* Done! */
- 	return mod;
