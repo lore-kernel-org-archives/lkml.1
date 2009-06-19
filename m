@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbZFSSej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbZFSSfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbZFSSej (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 14:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZFSSec
+	id S1758916AbZFSSfd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 14:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZFSSf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 14:34:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53342 "EHLO mx2.redhat.com"
+	Fri, 19 Jun 2009 14:35:26 -0400
+Received: from sous-sol.org ([216.99.217.87]:51915 "EHLO sequoia.sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbZFSSeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 14:34:31 -0400
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-Id: <76DA7CFF-D6C7-44C3-BEC6-B7FDC6577B74@redhat.com>
-From: Jonathan Brassow <jbrassow@redhat.com>
-To: device-mapper development <dm-devel@redhat.com>
-In-Reply-To: <4A3BCD0D.3010801@oracle.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [dm-devel] [PATCH -next] dm: dm-log-userspace depends on NET
-Date: Fri, 19 Jun 2009 13:31:39 -0500
-References: <20090619172622.05adb236.sfr@canb.auug.org.au> <4A3BCD0D.3010801@oracle.com>
+	id S1750821AbZFSSf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 14:35:26 -0400
+Date: Fri, 19 Jun 2009 11:34:14 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: James Morris <jmorris@namei.org>, Joseph Cihula <joseph.cihula@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, hpa@zytor.com, andi@firstfloor.org,
+       Chris Wright <chrisw@sous-sol.org>, jbeulich@novell.com,
+       peterm@redhat.com, gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v4][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+	support
+Message-ID: <20090619183414.GG19771@sequoia.sous-sol.org>
+References: <4A299051.40405@intel.com> <alpine.LRH.2.00.0906121509001.14633@tundra.namei.org> <20090619150514.GE1389@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090619150514.GE1389@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, I've pulled this into my patch.
+* Pavel Machek (pavel@ucw.cz) wrote:
+> What are non-evil uses of this code?
 
-  brassow
+The most common use case I've heard requested from real live
+customers[1] is...you guessed it...trusted boot.
 
-On Jun 19, 2009, at 12:38 PM, Randy Dunlap wrote:
+This is typically in the context of virtualization and data centers or
+clouds.  The concerns being addressed are:
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> DM_LOG_USERSPACE selects CONNECTOR, but when NET is not enabled,  
-> this is
-> useless and the build fails, so make DM_LOG_USERSPACE depend on NET.
->
-> ERROR: "netlink_has_listeners" [drivers/connector/cn.ko] undefined!
-> ERROR: "proc_net_fops_create" [drivers/connector/cn.ko] undefined!
-> ERROR: "netlink_kernel_create" [drivers/connector/cn.ko] undefined!
-> ERROR: "proc_net_remove" [drivers/connector/cn.ko] undefined!
-> ERROR: "netlink_kernel_release" [drivers/connector/cn.ko] undefined!
-> ERROR: "init_net" [drivers/connector/cn.ko] undefined!
-> ERROR: "__alloc_skb" [drivers/connector/cn.ko] undefined!
-> ERROR: "netlink_broadcast" [drivers/connector/cn.ko] undefined!
-> ERROR: "kfree_skb" [drivers/connector/cn.ko] undefined!
-> ERROR: "skb_put" [drivers/connector/cn.ko] undefined!
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Jonathan Brassow <dm-devel@redhat.com>
-> Cc: dm-devel@redhat.com
-> ---
-> drivers/md/Kconfig |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-next-20090619.orig/drivers/md/Kconfig
-> +++ linux-next-20090619/drivers/md/Kconfig
-> @@ -233,7 +233,7 @@ config DM_MIRROR
->
-> config DM_LOG_USERSPACE
-> 	tristate "Mirror userspace logging (EXPERIMENTAL)"
-> -	depends on DM_MIRROR && EXPERIMENTAL
-> +	depends on DM_MIRROR && EXPERIMENTAL && NET
-> 	select CONNECTOR
-> 	---help---
-> 	  The userspace logging module provides a mechanism for
->
->
->
-> -- 
-> ~Randy
-> LPC 2009, Sept. 23-25, Portland, Oregon
-> http://linuxplumbersconf.org/2009/
->
-> --
-> dm-devel mailing list
-> dm-devel@redhat.com
-> https://www.redhat.com/mailman/listinfo/dm-devel
+* confidence that the hardware is running the VMM that the hardware
+  owner configured it w/, since they are on the hook for providing a
+  safe service for each VM running on that hardware
 
+* flip side of that is an additional layer protecting against malicious
+  VM that is using some VMM hole to try and subvert the host w/ a VMM
+  of their own
+
+thanks,
+-chris
+--
+
+[1] as opposed to hardware vendors pushing a feature
