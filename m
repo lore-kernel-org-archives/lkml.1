@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755574AbZFSJcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbZFSJgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755574AbZFSJcd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 05:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZFSJc0
+	id S1756755AbZFSJgB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 05:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbZFSJfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 05:32:26 -0400
-Received: from mga03.intel.com ([143.182.124.21]:17255 "EHLO mga03.intel.com"
+	Fri, 19 Jun 2009 05:35:54 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:38371 "EHLO slimlogic.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbZFSJcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 05:32:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,251,1243839600"; 
-   d="scan'208";a="156369825"
-Date: Fri, 19 Jun 2009 17:32:24 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "Wang, Roger" <roger.wang@intel.com>
-Subject: Re: [PATCH 0/3] make mapped executable pages the first class
-	citizen
-Message-ID: <20090619093224.GA30898@localhost>
-References: <20090516090005.916779788@intel.com> <1242485776.32543.834.camel@laptop> <20090617141135.0d622bfe@jbarnes-g45> <20090618012532.GB19732@localhost> <20090619090011.GA30561@localhost> <1245402289.13761.24606.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245402289.13761.24606.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751969AbZFSJfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 05:35:53 -0400
+Subject: Re: [PATCH] New ASoC Drivers for ADI AD1938 codec
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Barry Song <21cnbao@gmail.com>
+Cc: broonie@opensource.wolfsonmicro.com, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1245403695-20537-1-git-send-email-21cnbao@gmail.com>
+References: <1245403695-20537-1-git-send-email-21cnbao@gmail.com>
+Content-Type: text/plain
+Date: Fri, 19 Jun 2009 10:35:50 +0100
+Message-Id: <1245404150.21421.272.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 05:04:49PM +0800, Peter Zijlstra wrote:
-> On Fri, 2009-06-19 at 17:00 +0800, Wu, Fengguang wrote:
-> > [add CC]
-> > 
-> > This OOM case looks like the same bug encountered by David Howells.
-> > 
-> > > Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426766] Active_anon:290797 active_file:28 inactive_anon:97034
-> > > Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426767]  inactive_file:61 unevictable:11322 dirty:0 writeback:0 unstable:0
-> > > Jun 18 07:44:53 jbarnes-g45 kernel: [64377.426768]  free:3341 slab:13776 mapped:5880 pagetables:6851 bounce:0
-> > 
-> > active/inactive_anon pages take up 4/5 memory.  Are you using TMPFS a lot?
+On Fri, 2009-06-19 at 17:28 +0800, Barry Song wrote:
+> 1. add AD1938 codec driver                   (codec)
+> 2. add blackfin SPORT-TDM DAI and PCM driver (platform)
+> 3. add bf5xx board with AD1938 driver        (machine)
+> Signed-off-by: Barry Song <21cnbao@gmail.com>
+> ---
+>  include/sound/soc-dai.h            |    1 +
+>  sound/soc/blackfin/Kconfig         |   46 +++-
+>  sound/soc/blackfin/Makefile        |    6 +
+>  sound/soc/blackfin/bf5xx-ad1938.c  |  178 ++++++++++++
+>  sound/soc/blackfin/bf5xx-tdm-pcm.c |  330 ++++++++++++++++++++++
+>  sound/soc/blackfin/bf5xx-tdm-pcm.h |   21 ++
+>  sound/soc/blackfin/bf5xx-tdm.c     |  295 +++++++++++++++++++
+>  sound/soc/blackfin/bf5xx-tdm.h     |   14 +
+>  sound/soc/codecs/Kconfig           |    4 +
+>  sound/soc/codecs/Makefile          |    2 +
+>  sound/soc/codecs/ad1938.c          |  548 ++++++++++++++++++++++++++++++++++++
+>  sound/soc/codecs/ad1938.h          |   68 +++++
+>  12 files changed, 1512 insertions(+), 1 deletions(-)
+>  create mode 100644 sound/soc/blackfin/bf5xx-ad1938.c
+>  create mode 100644 sound/soc/blackfin/bf5xx-tdm-pcm.c
+>  create mode 100644 sound/soc/blackfin/bf5xx-tdm-pcm.h
+>  create mode 100644 sound/soc/blackfin/bf5xx-tdm.c
+>  create mode 100644 sound/soc/blackfin/bf5xx-tdm.h
+>  create mode 100644 sound/soc/codecs/ad1938.c
+>  create mode 100644 sound/soc/codecs/ad1938.h
 > 
-> I suspect its his GEM thingy ;-)
 
-Very likely - GEM allocates drm objects from the internal tmpfs,
-and libdrm_intel seems to never free drm objects from its cache.
+Could you break this patch into smaller chunks. This should make it
+easier to review and apply.
 
-Thanks,
-Fengguang
+Thanks
+
+Liam 
+
 
