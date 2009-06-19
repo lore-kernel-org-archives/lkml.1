@@ -1,51 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbZFSLPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbZFSLWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbZFSLPj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 07:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbZFSLPP
+	id S1752049AbZFSLWR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 07:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZFSLWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 07:15:15 -0400
-Received: from stinky.trash.net ([213.144.137.162]:63323 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756452AbZFSLPO (ORCPT
+	Fri, 19 Jun 2009 07:22:03 -0400
+Received: from mail-yx0-f177.google.com ([209.85.210.177]:35295 "EHLO
+	mail-yx0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbZFSLWC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 07:15:14 -0400
-Message-ID: <4A3B7340.50602@trash.net>
-Date: Fri, 19 Jun 2009 13:15:12 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 19 Jun 2009 07:22:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=xOEom01Oh9DFTDZAr3UKsm1JSiYYfKVZ1Lv0PDWZEu3GxCBbWEqCu0YmbgKzuf4hxg
+         IjkWJa0RA+m4u+RWtZ1qFUPF5zBE6562tqqxCMnKrvVK6PUbEhouoV54fI96ufvpcgI+
+         uiIcD1HioV3va+BHwspPAtv9tAmug1kAH+9dI=
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
-Subject: Re: [PATCH] netfilter: conntrack: death_by_timeout() fix
-References: <20090615.050449.144947903.davem@davemloft.net> <20090616091538.GA4184@elte.hu> <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com> <4A3A0D45.8090806@trash.net> <4A3A5599.4080906@trash.net> <4A3A6143.3040607@gmail.com> <4A3A66CC.4090205@trash.net> <4A3AC3B3.2030002@gmail.com>
-In-Reply-To: <4A3AC3B3.2030002@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <A40FAF28-889C-4322-A114-098EEA56FCE6@opensource.wolfsonmicro.com>
+References: <1245403695-20537-1-git-send-email-21cnbao@gmail.com> 
+	<20090619104738.GF5270@sirena.org.uk> <8bd0f97a0906190405k33503d8ekd74ec9ddbb2fde12@mail.gmail.com> 
+	<A40FAF28-889C-4322-A114-098EEA56FCE6@opensource.wolfsonmicro.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 19 Jun 2009 07:21:44 -0400
+Message-ID: <8bd0f97a0906190421q332f337cr1799c6b65bd06f0e@mail.gmail.com>
+Subject: Re: [PATCH] New ASoC Drivers for ADI AD1938 codec
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Barry Song <21cnbao@gmail.com>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> [PATCH] netfilter: conntrack: death_by_timeout() fix
-> 
-> death_by_timeout() might delete a conntrack from hash list
-> and insert it in dying list.
-> 
->  nf_ct_delete_from_lists(ct);
->  nf_ct_insert_dying_list(ct);
-> 
-> I believe a (lockless) reader could *catch* ct while doing a lookup 
-> and miss the end of its chain.
-> (nulls lookup algo must check the null value at the end of lookup and
-> should restart if the null value is not the expected one.
-> cf Documentation/RCU/rculist_nulls.txt for details)
-> 
-> We need to change nf_conntrack_init_net() and use a different "null" value,
-> guaranteed not being used in regular lists. Choose very large values, since
-> hash table uses [0..size-1] null values.
+On Fri, Jun 19, 2009 at 07:13, Mark Brown wrote:
+> On 19 Jun 2009, at 12:05, Mike Frysinger wrote:
+>> On Fri, Jun 19, 2009 at 06:47, Mark Brown wrote:
+>>> On Fri, Jun 19, 2009 at 05:28:15PM +0800, Barry Song wrote:
+>>>> 1. add AD1938 codec driver                   (codec)
+>>>> 2. add blackfin SPORT-TDM DAI and PCM driver (platform)
+>>>> 3. add bf5xx board with AD1938 driver        (machine)
+>>>
+>>> As Liam said you really need to submit this as a patch series rather
+>>> than as a single big patch - as your commit log here indicates you've
+>>> got several different things going on here.
+>>
+>> blah, i had this queued locally with a "todo:split".  wanted to wait
+>> for Barry to finish developing the driver first though.
+>>
+>> at any rate, i hate to sound like a broken record wrt my alsa
+>> ignorance, but i'm thinking the logical split would be like Barry
+>> numbered it -- one patch for sound/codec/, one patch for the TDM
+>> transport, and one patch for hooking up the AD1938 to TDM.
+>
+> Yes, though if the new DAI format had been required it would be worth
+> considering a separate patch for it.
 
-Applied, thanks Eric.
+OK, Barry can handle this, otherwise i'll split it up in my git and
+send him the repo info
+
+>>>> +static int __devinit ad1938_spi_probe(struct spi_device *spi)
+>>>> +{
+>>>> +     spi->dev.power.power_state = PMSG_ON;
+>>>> +     ad1938_socdev->card->codec->control_data = spi;
+>>>> +
+>>>> +     return 0;
+>>>> +}
+>>>> +
+>>>> +static int __devexit ad1938_spi_remove(struct spi_device *spi)
+>>>> +{
+>>>> +     return 0;
+>>>> +}
+>>>
+>>> Your device probing should all be restructured so that the SPI device
+>>> for the CODEC is registered as any other SPI device rather than being
+>>> set up as part of probing the ASoC device.  See the wm8731 driver for
+>>> an example of doing this for a SPI device.
+>>>
+>>> This will require that the arch code for any systems with the ad1938
+>>> do the setup of the device.
+>>
+>> so should sound/soc/blackfin/bf5xx-ad1938.c even exist in the first place
+>> ?
+>
+> Yes. It is needed in order to specify how things are hooked up on a given
+> board.
+
+to look at the wm8731 then, these are good examples of how it's done ?
+sound/soc/atmel/sam9g20_wm8731.c
+sound/soc/pxa/corgi.c
+-mike
