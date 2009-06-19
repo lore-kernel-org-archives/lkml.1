@@ -1,64 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbZFSBi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZFSBjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbZFSBi6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 21:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZFSBiu
+	id S1755500AbZFSBjo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 21:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZFSBjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 21:38:50 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:40141 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbZFSBiu (ORCPT
+	Thu, 18 Jun 2009 21:39:37 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:9561 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbZFSBjg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 21:38:50 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>
-Subject: Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just because there's no local APIC
-References: <4A329CF8.4050502@goop.org> <m1d499yyug.fsf@fess.ebiederm.org>
-	<4A35ACB3.9040501@goop.org> <m1k53dbwo2.fsf@fess.ebiederm.org>
-	<4A36B3EC.7010004@goop.org> <m1fxe117n5.fsf@fess.ebiederm.org>
-	<4A37F4AE.5050902@goop.org> <m1vdmvxe3u.fsf@fess.ebiederm.org>
-	<4A392896.9090408@goop.org> <m1zlc6memu.fsf@fess.ebiederm.org>
-	<4A3A96BC.1000302@goop.org> <m1ab45i8vs.fsf@fess.ebiederm.org>
-	<4A3AACFD.5020805@goop.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 18 Jun 2009 18:38:41 -0700
-In-Reply-To: <4A3AACFD.5020805@goop.org> (Jeremy Fitzhardinge's message of "Thu\, 18 Jun 2009 14\:09\:17 -0700")
-Message-ID: <m1zlc5f1em.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 18 Jun 2009 21:39:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=TSB85ACfwcY4CcSH76wkUlBGzr3xlTH98KSgEKzE+twyJ5/n/a3gX0um+Z6zMWBJvn
+         E+gnBb4tLmrV16Fe3Gdecycxx7SyYxpNYMMoZ4pgraPPOSV54wMccyoERRehcVgHbzq6
+         KqrMUT3k7U+w1wK0JtWN3OuuXZ3Ox3Vh8cLaA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: jeremy@goop.org, keir.fraser@eu.citrix.com, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+Date: Thu, 18 Jun 2009 21:33:32 -0400
+Message-ID: <817ecb6f0906181833m77dcbeder76f0e8c6e85555ef@mail.gmail.com>
+Subject: [PATCH] RO/NX protection for loadable kernel modules
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+This patch is a logical extension of the protection provided by
+CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
+module_core and module_init into three logical parts each and setting
+appropriate page access permissions for each individual section:
 
-> Ah, OK.  The pirq is set up for a specific domain rather than being
-> global (otherwise it would need some kind of "which domain can access
-> which pirq" table).  dom0 can either create a pirq for itself or someone
-> else, and the final user of the pirq binds it to a domain-local evtchn.
->
-> I think.  I really haven't looked into the pci-passthrough parts very
-> closely yet.
+   1. Code: RO+X
+   2. RO data: RO+NX
+   3. RW data: RW+NX
 
-I certainly could not find the code that would let you setup a pirq for another
-domain.  In fact the pirq code aka alloc_vectors appears to hard code dom0
-in Xen 3.4.
+In order to achieve proper protection, layout_sections() have been
+modified to align each of the three parts mentioned above onto page
+boundary. Next, the corresponding page access permissions are set
+right before successful exit from load_module(). Further,
+module_free() have been modified to set module_core or module_init as
+RW+NX right before calling vfree(). Functionality of this patch is
+enabled only when CONFIG_DEBUG_RODATA defined at compile time.
 
-pci-passthrough since it is domU, and since you describe it as well isolated and
-comparatively simple should be a shoe in.
+The patch have been developed for Linux 2.6.30 i386.
 
-Further as you describe it pci-passthrough is a subset of what we have to do for dom0.
-So if we can I would like to see the pci passthrough code get merged first.
+If there are any issues with the patch formatting and/or kernel
+version, please let me know and I will gladly correct the issues.
+Thank you.
 
-Eric
+Signed-off-by: Siarhei Liakh <sliakh.lkml@gmail.com>
+---
+
+diff --git a/arch/x86/kernel/module_32.c b/arch/x86/kernel/module_32.c
+index 0edd819..8a72ef8 100644
+--- a/arch/x86/kernel/module_32.c
++++ b/arch/x86/kernel/module_32.c
+@@ -22,6 +22,7 @@
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+ #include <linux/bug.h>
++#include <asm/cacheflush.h>
+
+ #if 0
+ #define DEBUGP printk
+@@ -29,6 +30,14 @@
+ #define DEBUGP(fmt...)
+ #endif
+
++#ifdef CONFIG_DEBUG_RODATA
++/* Given BASE and SIZE this macro calculates the number of pages this
++ * memory regions occupies */
++#define NUMBER_OF_PAGES(BASE, SIZE) ( \
++	( ( (unsigned long) BASE + (unsigned long) SIZE ) >> PAGE_SHIFT ) - \
++	( ( (unsigned long) BASE ) >> PAGE_SHIFT) + ( (SIZE>0) ? 1:0 ) )
++#endif
++
+ void *module_alloc(unsigned long size)
+ {
+ 	if (size == 0)
+@@ -40,6 +49,26 @@ void *module_alloc(unsigned long size)
+ /* Free memory returned from module_alloc */
+ void module_free(struct module *mod, void *module_region)
+ {
++#ifdef CONFIG_DEBUG_RODATA
++	unsigned long total_pages;
++
++	if(mod->module_core == module_region){
++		/* Set core as NX+RW */
++		total_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_size );
++		DEBUGP(KERN_WARNING "RELEASING MODULE CORE: 0x%lx %lu\n",
++				(unsigned long)mod->module_core, total_pages);
++		set_memory_nx( (unsigned long)mod->module_core, total_pages);
++		set_memory_rw( (unsigned long)mod->module_core, total_pages);
++
++	}else if(mod->module_init == module_region){
++		/* Set init as NX+RW */
++		total_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_size );
++		DEBUGP(KERN_WARNING "RELEASING MODULE INIT: 0x%lx %lu\n",
++				(unsigned long)mod->module_init, total_pages);
++		set_memory_nx( (unsigned long)mod->module_init, total_pages);
++		set_memory_rw( (unsigned long)mod->module_init, total_pages);
++	}
++#endif
+ 	vfree(module_region);
+ 	/* FIXME: If module_region == mod->init_region, trim exception
+ 	   table entries. */
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 627ac08..75e7428 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -293,6 +293,11 @@ struct module
+ 	/* The size of the executable code in each section.  */
+ 	unsigned int init_text_size, core_text_size;
+
++#ifdef CONFIG_DEBUG_RODATA
++	/* Size of RO sections of the module (text+rodata) */
++	unsigned int init_ro_size, core_ro_size;
++#endif
++
+ 	/* Arch-specific module values */
+ 	struct mod_arch_specific arch;
+
+diff --git a/kernel/module.c b/kernel/module.c
+index e797812..4afcb06 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -63,6 +63,14 @@
+ #define ARCH_SHF_SMALL 0
+ #endif
+
++#ifdef CONFIG_DEBUG_RODATA
++/* Given BASE and SIZE this macro calculates the number of pages this
++ * memory regions occupies */
++#define NUMBER_OF_PAGES(BASE, SIZE) ( \
++	( ( (unsigned long) BASE + (unsigned long) SIZE ) >> PAGE_SHIFT ) - \
++	( ( (unsigned long) BASE ) >> PAGE_SHIFT) + ( (SIZE>0) ? 1:0 ) )
++#endif
++
+ /* If this is set, the section belongs in the init part of the module */
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+
+@@ -1661,6 +1669,10 @@ static void layout_sections(struct module *mod,
+ 		{ ARCH_SHF_SMALL | SHF_ALLOC, 0 }
+ 	};
+ 	unsigned int m, i;
++#ifdef CONFIG_DEBUG_RODATA
++	/* always align first section on page boundary */
++	int need_alignment = 1;
++#endif
+
+ 	for (i = 0; i < hdr->e_shnum; i++)
+ 		sechdrs[i].sh_entsize = ~0UL;
+@@ -1675,13 +1687,39 @@ static void layout_sections(struct module *mod,
+ 			    || s->sh_entsize != ~0UL
+ 			    || strstarts(secstrings + s->sh_name, ".init"))
+ 				continue;
++#ifdef CONFIG_DEBUG_RODATA
++			if(need_alignment){
++				mod->core_size = ALIGN(mod->core_size, PAGE_SIZE);
++				need_alignment = 0;
++			}
++#endif
+ 			s->sh_entsize = get_offset(mod, &mod->core_size, s, i);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++
++		if (m == 0) {
++			/* module code size */
+ 			mod->core_text_size = mod->core_size;
++#ifdef CONFIG_DEBUG_RODATA
++			/* next section should start on new page */
++			need_alignment = 1;
++#endif
++		}
++
++#ifdef CONFIG_DEBUG_RODATA
++		if (m == 1) {
++			/* module RO size (text+rodata) */
++			mod->core_ro_size = mod->core_size;
++			/* next section should start on new page */
++			need_alignment = 1;
++		}
++#endif
+ 	}
+
++#ifdef CONFIG_DEBUG_RODATA
++	/* always align first section on page boundary */
++	need_alignment = 1;
++#endif
+ 	DEBUGP("Init section allocation order:\n");
+ 	for (m = 0; m < ARRAY_SIZE(masks); ++m) {
+ 		for (i = 0; i < hdr->e_shnum; ++i) {
+@@ -1692,13 +1730,50 @@ static void layout_sections(struct module *mod,
+ 			    || s->sh_entsize != ~0UL
+ 			    || !strstarts(secstrings + s->sh_name, ".init"))
+ 				continue;
++#ifdef CONFIG_DEBUG_RODATA
++			if(need_alignment){
++				mod->init_size = ALIGN(mod->init_size, PAGE_SIZE);
++				need_alignment = 0;
++			}
++#endif			
++
+ 			s->sh_entsize = (get_offset(mod, &mod->init_size, s, i)
+ 					 | INIT_OFFSET_MASK);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++
++		if (m == 0) {
++			/* module code size */
+ 			mod->init_text_size = mod->init_size;
++#ifdef CONFIG_DEBUG_RODATA
++			/* next section should start on new page */
++			need_alignment = 1;
++#endif
++		}
++
++#ifdef CONFIG_DEBUG_RODATA
++		if (m == 1) {
++			// module RO size (text+rodata)
++			mod->init_ro_size = mod->init_size;
++			// next section should start on new page
++			need_alignment = 1;
++		}
++#endif
+ 	}
++#ifdef CONFIG_DEBUG_RODATA
++	DEBUGP( "core_text_size: %i\n"
++		"core_ro_size: %i\n"
++		"core_size: %i\n"
++		"init_text_size: %i\n"
++		"init_ro_size: %i\n"
++		"init_size: %i\n",
++		mod->core_text_size,
++		mod->core_ro_size,
++		mod->core_size,
++		mod->init_text_size,
++		mod->init_ro_size,
++		mod->init_size);
++#endif
+ }
+
+ static void set_license(struct module *mod, const char *license)
+@@ -1898,6 +1973,12 @@ static noinline struct module *load_module(void
+__user *umod,
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+ 	unsigned long *mseg;
+ 	mm_segment_t old_fs;
++#ifdef CONFIG_DEBUG_RODATA
++	/* these variables are used to set RO and NX regions */
++	unsigned long total_pages;
++	unsigned long text_pages;
++	unsigned long ro_pages;
++#endif
+
+ 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
+ 	       umod, len, uargs);
+@@ -2291,6 +2372,73 @@ static noinline struct module *load_module(void
+__user *umod,
+ 	/* Get rid of temporary copy */
+ 	vfree(hdr);
+
++#ifdef CONFIG_DEBUG_RODATA
++	/* In this section we calculate the number of pages for
++	 * each part of core and init: code, ro data, rw data.
++	 * Then we set code as RO+X, ro data as RO+NX, and rw data as RW+NX
++	 * Siarhei Liakh
++	 * Xuxian Jiang  */
++	DEBUGP(	"module_core: 0x%lx %lu\n"
++		"module_init: 0x%lx %lu\n",
++		(unsigned long)mod->module_core,
++		(unsigned long)mod->core_size,
++		(unsigned long)mod->module_init,
++		(unsigned long)mod->init_size);
++
++	/* calculate RO and NX regions for core */
++	total_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_size);
++	text_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_text_size);
++	ro_pages = NUMBER_OF_PAGES( mod->module_core, mod->core_ro_size);
++
++	DEBUGP(	"CORE:\n  text_pages: %lu\n"
++		"  ro_pages: %lu\n  total_pages: %lu\n",
++		text_pages, ro_pages,total_pages);
++
++	/* Set text and RO data as RO */
++	DEBUGP(	"  RO: 0x%lx %lu\n",
++		(unsigned long)mod->module_core, ro_pages);
++
++	if(ro_pages>0)
++		set_memory_ro( (unsigned long)mod->module_core, ro_pages);
++
++	/* Set all data as NX */
++	DEBUGP(	"  NX: 0x%lx %lu\n",
++		(unsigned long)mod->module_core +
++		(text_pages << PAGE_SHIFT) ,
++		total_pages - text_pages );
++
++	if(total_pages > text_pages)
++		set_memory_nx( (unsigned long)mod->module_core +
++			  	(text_pages << PAGE_SHIFT) ,
++				 total_pages - text_pages );
++
++	/* calculate RO and NX regions for init */
++	total_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_size);
++	text_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_text_size);
++	ro_pages = NUMBER_OF_PAGES( mod->module_init, mod->init_ro_size);
++	
++	DEBUGP(	"INIT:\n  text_pages: %lu\n"
++		"  ro_pages: %lu\n  total_pages: %lu\n",
++		text_pages, ro_pages, total_pages);
++
++	/* Set text and RO data as RO */
++	DEBUGP(	"  RO: 0x%lx %lu\n",
++		(unsigned long)mod->module_init, ro_pages);
++
++	if(ro_pages>0)
++		set_memory_ro( (unsigned long)mod->module_init, ro_pages);
++
++	/* Set all data as NX */
++	DEBUGP(	"  NX: 0x%lx %lu\n",
++		(unsigned long)mod->module_init + (text_pages << PAGE_SHIFT),
++		total_pages - text_pages );
++
++	if(total_pages > text_pages)
++		set_memory_nx( (unsigned long)mod->module_init +
++			  	(text_pages << PAGE_SHIFT) ,
++				 total_pages - text_pages );
++#endif
++
+ 	/* Done! */
+ 	return mod;
