@@ -1,66 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZFSP5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZFSQAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbZFSP5R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 11:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZFSP5E
+	id S1755816AbZFSQAE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 12:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZFSP7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 11:57:04 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:25494 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbZFSP5D (ORCPT
+	Fri, 19 Jun 2009 11:59:55 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:24192 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbZFSP7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 11:57:03 -0400
-Date: Fri, 19 Jun 2009 17:56:55 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <linux-i2c@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] i2c updates for 2.6.31, part 2
-Message-ID: <20090619175655.4723aef2@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	Fri, 19 Jun 2009 11:59:54 -0400
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
+       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       "'Brice Goglin'" <Brice.Goglin@inria.fr>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <20090619154114.GE8648@balbir.in.ibm.com>
+References: <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	 <20090612103251.GJ25568@one.firstfloor.org>
+	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+	 <1245119977.6724.40.camel@lts-notebook>
+	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+	 <1245164395.15138.40.camel@lts-notebook>
+	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
+	 <1245299856.6431.30.camel@lts-notebook>
+	 <1245351882.1025.84.camel@lts-notebook>
+	 <1245425214.30101.32.camel@lts-notebook>
+	 <20090619154114.GE8648@balbir.in.ibm.com>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Fri, 19 Jun 2009 11:59:51 -0400
+Message-Id: <1245427191.30101.37.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, 2009-06-19 at 21:11 +0530, Balbir Singh wrote:
+> * Lee Schermerhorn <Lee.Schermerhorn@hp.com> [2009-06-19 11:26:53]:
+> 
+> > On Thu, 2009-06-18 at 15:04 -0400, Lee Schermerhorn wrote:
+> > > On Thu, 2009-06-18 at 00:37 -0400, Lee Schermerhorn wrote:
+> > > > On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
+> > > > > > I've placed the last rebased version in :
+> > > > > > 
+> > > > > > http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.28-rc4-mmotm-
+> > > > > > 081110/
+> > > > > > 
+> > > > > 
+> > > > > OK! I will try to reconstruct the problem.
+> > > > 
+> > > > Stefan:
+> > > > 
+> > > > Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
+> > > > [along with my shared policy series atop which they sit in my tree].
+> > > > Patches reside in:
+> > > > 
+> > > > http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
+> > > > 
+> > > 
+> > > I have updated the migrate-on-fault tarball in the above location to fix
+> > > part of the problems I was seeing.  See below.
+> > > 
+> > > > 
+> > > > I did a quick test.  I'm afraid the patches have suffered some "bit rot"
+> > > > vis a vis mainline/mmotm over the past several months.  Two possibly
+> > > > related issues:
+> > > > 
+> > > > 1) lazy migration doesn't seem to work. Looks like
+> > > > mbind(<some-policy>+MPOL_MF_MOVE+MPOL_MF_LAZY) is not unmapping the
+> > > > pages so, of course, migrate on fault won't work.  I suspect the
+> > > > reference count handling has changed since I last tried this.  [Note one
+> > > > of the patch conflicts was in the MPOL_MF_LAZY addition to the mbind
+> > > > flag definitions in mempolicy.h and I may have botched the resolution
+> > > > thereof.]
+> > > > 
+> > > > 2) When the pages get freed on exit/unmap, they are still PageLocked()
+> > > > and free_pages_check()/bad_page() bugs out with bad page state.
+> > > > 
+> > > > Note:  This is independent of memcg--i.e., happens whether or not memcg
+> > > > configured.
+> > > > 
+> > > <snip>
+> > > 
+> > > OK.  Found time to look at this.  Turns out I hadn't tested since
+> > > trylock_page() was introduced.  I did a one-for-one replacement of the
+> > > old API [TestSetPageLocked()], not noticing that the sense of the return
+> > > was inverted.  Thus, I was bailing out of the migrate_pages_unmap_only()
+> > > loop with the page locked, thinking someone else had locked it and would
+> > > take care of it.  Since the page wasn't unmapped from the page table[s],
+> > > of course it wouldn't migrate on fault--wouldn't even fault!
+> > > 
+> > > Fixed this.
+> > > 
+> > > Now:  lazy migration works w/ or w/o memcg configured, but NOT with the
+> > > swap resource controller configured.  I'll look at that as time permits.
+> > 
+> > Update:  I now can't reproduce the lazy migration failure with the swap
+> > resource controller configured.  Perhaps I had booted the wrong kernel
+> > for the test reported above.  Now the updated patch series mentioned
+> > above seems to be working with both memory and swap resource controllers
+> > configured for simple memtoy driven lazy migration.
+> 
+> Excellent, I presume that you are using the latest mmotm or mainline.
+> We've had some swap cache leakage fix go in, but those are not as
+> serious (they can potentially cause OOM in a cgroup when the leak
+> occurs).
 
-Please pull a second set of i2c subsystem updates for Linux 2.6.31 from:
+Yes, I'm using the 12jun mmotm atop 2.6.30.   I use the mmotm timestamp
+in my kernel versions to show the base I using.  E.g., see the url
+above.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git i2c-for-linus
+Lee
 
-The most important part is the removal of the legacy i2c binding model
-support, together with all the cleanups it allowed.
-
- Documentation/feature-removal-schedule.txt |   10 -
- Documentation/i2c/instantiating-devices    |   44 +++
- Documentation/i2c/writing-clients          |   16 +-
- drivers/i2c/i2c-boardinfo.c                |    7 +-
- drivers/i2c/i2c-core.c                     |  557 ++++++++++------------------
- drivers/i2c/i2c-core.h                     |    4 +-
- include/linux/i2c.h                        |   72 ++---
- 7 files changed, 275 insertions(+), 435 deletions(-)
-
----------------
-
-Hans Verkuil (1):
-      i2c: New macro to initialize i2c address lists on the fly
-
-Jean Delvare (9):
-      i2c: Kill client_register and client_unregister methods
-      i2c: Get rid of the legacy binding model
-      i2c: Drop i2c_probe function
-      i2c: Merge i2c_attach_client into i2c_new_device
-      i2c: Kill is_newstyle_driver
-      i2c: Kill the redundant client list
-      i2c: Limit core locking to the necessary sections
-      i2c: Add a sysfs interface to instantiate devices
-      i2c: Don't advertise i2c functions when not available
-
-Rodolfo Giometti (1):
-      i2c: Use rwsem instead of mutex for board info
-
-Thanks,
--- 
-Jean Delvare
