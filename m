@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZFSAnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZFSAqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbZFSAnA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 20:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZFSAmx
+	id S1753934AbZFSAqj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 20:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFSAqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 20:42:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39701 "EHLO mx2.redhat.com"
+	Thu, 18 Jun 2009 20:46:32 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34079 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751646AbZFSAmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 20:42:52 -0400
-Date: Fri, 19 Jun 2009 02:38:19 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Roland McGrath <roland@redhat.com>,
+	id S1751481AbZFSAqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 20:46:32 -0400
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] cred_guard_mutex: do not return -EINTR to user-space
-Message-ID: <20090619003819.GA11170@redhat.com>
-References: <20090608161204.GA3986@redhat.com> <20090608173944.B57EBFC3C6@magilla.sf.frob.com> <20090608183627.GA14734@redhat.com> <20090609014449.8BE46FC3C6@magilla.sf.frob.com> <20090610131116.GA10406@redhat.com> <20090610174058.6F48CFC3D3@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610174058.6F48CFC3D3@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <8bd0f97a0906181655jd68835fg10fe0783b6a6068d@mail.gmail.com>
+References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>
+	 <8bd0f97a0906181655jd68835fg10fe0783b6a6068d@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 19 Jun 2009 10:46:14 +1000
+Message-Id: <1245372374.16880.0.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_execve() and ptrace_attach() return -EINTR if
-mutex_lock_interruptible(->cred_guard_mutex) fails.
+On Thu, 2009-06-18 at 19:55 -0400, Mike Frysinger wrote:
+> On Sat, Jun 13, 2009 at 03:10, Paul Mackerras wrote:
+> > +typedef struct {
+> > +       long long counter;
+> > +} atomic64_t;
+> 
+> lack of volatile seems odd compared to:
+> include/linux/types.h:
+> typedef struct {
+>     volatile int counter;
+> } atomic_t;
 
-This is not right, change the code to return ERESTARTNOINTR.
+Since the counter is only accessed within a spinlock, the volatile
+wouldn't be very useful here.
 
-Perhaps we should also change proc_pid_attr_write().
+Cheers,
+Ben.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
-
- fs/exec.c       |    4 ++--
- fs/compat.c     |    4 ++--
- kernel/ptrace.c |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
-
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1277,8 +1277,8 @@ int do_execve(char * filename,
- 	if (!bprm)
- 		goto out_files;
- 
--	retval = mutex_lock_interruptible(&current->cred_guard_mutex);
--	if (retval < 0)
-+	retval = -ERESTARTNOINTR;
-+	if (mutex_lock_interruptible(&current->cred_guard_mutex))
- 		goto out_free;
- 	current->in_execve = 1;
- 
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1486,8 +1486,8 @@ int compat_do_execve(char * filename,
- 	if (!bprm)
- 		goto out_files;
- 
--	retval = mutex_lock_interruptible(&current->cred_guard_mutex);
--	if (retval < 0)
-+	retval = -ERESTARTNOINTR;
-+	if (mutex_lock_interruptible(&current->cred_guard_mutex))
- 		goto out_free;
- 	current->in_execve = 1;
- 
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -181,8 +181,8 @@ int ptrace_attach(struct task_struct *ta
- 	 * interference; SUID, SGID and LSM creds get determined differently
- 	 * under ptrace.
- 	 */
--	retval = mutex_lock_interruptible(&task->cred_guard_mutex);
--	if (retval < 0)
-+	retval = -ERESTARTNOINTR;
-+	if (mutex_lock_interruptible(&task->cred_guard_mutex))
- 		goto out;
- 
- 	task_lock(task);
 
