@@ -1,181 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbZFSWbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbZFSWcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758917AbZFSWbt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZFSWa6
+	id S1753914AbZFSWcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbZFSWbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:30:58 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:44715 "EHLO
+	Fri, 19 Jun 2009 18:31:00 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:44718 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754729AbZFSWay (ORCPT
+	with ESMTP id S1754773AbZFSWay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Jun 2009 18:30:54 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        greg@kroah.com
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 01/21] fs: add fs/staging directory
-Date: Fri, 19 Jun 2009 15:31:22 -0700
-Message-Id: <1245450702-31343-2-git-send-email-sage@newdream.net>
+Subject: [PATCH 02/21] ceph: documentation
+Date: Fri, 19 Jun 2009 15:31:23 -0700
+Message-Id: <1245450702-31343-3-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1245450702-31343-1-git-send-email-sage@newdream.net>
+In-Reply-To: <1245450702-31343-2-git-send-email-sage@newdream.net>
 References: <1245450702-31343-1-git-send-email-sage@newdream.net>
+ <1245450702-31343-2-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an fs/staging directory, analogous to drivers/staging, for file
-systems that are not yet ready to be merged into the kernel proper.
-This makes them easier to find by keeping them under the appropriate
-menu/section.  It also makes them accessible when ARCH=um, which hides
-the entire drivers tree.
-
-As with drivers/staging, modules from fs/staging are marked with 'staging'
-by modpost.
-
-Evgeniy's pohmelfs (drivers/staging/pohmelfs) should presumably be moved
-to fs/staging/pohmelfs.
+Mount options, syntax.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/Kconfig             |    2 ++
- fs/Makefile            |    1 +
- fs/staging/Kconfig     |   46 ++++++++++++++++++++++++++++++++++++++++++++++
- fs/staging/Makefile    |    5 +++++
- fs/staging/fsstaging.c |   19 +++++++++++++++++++
- scripts/mod/modpost.c  |    4 +++-
- 6 files changed, 76 insertions(+), 1 deletions(-)
- create mode 100644 fs/staging/Kconfig
- create mode 100644 fs/staging/Makefile
- create mode 100644 fs/staging/fsstaging.c
+ Documentation/filesystems/ceph.txt |  175 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 175 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/filesystems/ceph.txt
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 9f7270f..3374de2 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -265,4 +265,6 @@ endif
- source "fs/nls/Kconfig"
- source "fs/dlm/Kconfig"
- 
-+source "fs/staging/Kconfig"
-+
- endmenu
-diff --git a/fs/Makefile b/fs/Makefile
-index af6d047..a6e3c51 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -64,6 +64,7 @@ obj-$(CONFIG_DLM)		+= dlm/
-  
- # Do not add any filesystems before this line
- obj-$(CONFIG_FSCACHE)		+= fscache/
-+obj-$(CONFIG_FSSTAGING)		+= staging/
- obj-$(CONFIG_REISERFS_FS)	+= reiserfs/
- obj-$(CONFIG_EXT3_FS)		+= ext3/ # Before ext2 so root fs can be ext3
- obj-$(CONFIG_EXT2_FS)		+= ext2/
-diff --git a/fs/staging/Kconfig b/fs/staging/Kconfig
+diff --git a/Documentation/filesystems/ceph.txt b/Documentation/filesystems/ceph.txt
 new file mode 100644
-index 0000000..605d8ae
+index 0000000..09b325c
 --- /dev/null
-+++ b/fs/staging/Kconfig
-@@ -0,0 +1,46 @@
-+menuconfig FSSTAGING
-+	bool "Staging file systems"
-+	default n
-+	---help---
-+	  This option allows you to select a number of file systems
-+	  that are not of the "normal" Linux kernel quality level.
-+	  These are placed here in order to get a wider audience to
-+	  make use of them.  Please note that these are under heavy
-+	  development, may or may not work, and may contain userspace
-+	  interfaces that most likely will be changed in the near
-+	  future.
++++ b/Documentation/filesystems/ceph.txt
+@@ -0,0 +1,175 @@
++Ceph Distributed File System
++============================
 +
-+	  Using any of these file systems will taint your kernel which
-+	  might affect support options from both the community, and
-+	  various commercial support organizations.
++Ceph is a distributed network file system designed to provide good
++performance, reliability, and scalability.
 +
-+	  If you wish to work on these file systems, to help improve
-+	  them, or to report problems you have with them, please see
-+	  the fs_name.README file in the fs/staging/ directory to see
-+	  what needs to be worked on, and who to contact.
++Basic features include:
 +
-+	  If in doubt, say N here.
++ * POSIX semantics
++ * Seamless scaling from 1 to many thousands of nodes
++ * High availability and reliability.  No single points of failure.
++ * N-way replication of data across storage nodes
++ * Fast recovery from node failures
++ * Automatic rebalancing of data on node addition/removal
++ * Easy deployment: most FS components are userspace daemons
++
++Also,
++ * Flexible snapshots (on any directory)
++ * Recursive accounting (nested files, directories, bytes)
++
++In contrast to cluster filesystems like GFS, OCFS2, and GPFS that rely
++on symmetric access by all clients to shared block devices, Ceph
++separates data and metadata management into independent server
++clusters, similar to Lustre.  Unlike Lustre, however, metadata and
++storage nodes run entirely as user space daemons.  Storage nodes
++utilize btrfs to store data objects, leveraging its advanced features
++(checksumming, metadata replication, etc.).  File data is striped
++across storage nodes in large chunks to distribute workload and
++facilitate high throughputs.  When storage nodes fail, data is
++re-replicated in a distributed fashion by the storage nodes themselves
++(with some minimal coordination from a cluster monitor), making the
++system extremely efficient and scalable.
++
++Metadata servers effectively form a large, consistent, distributed
++in-memory cache above the file namespace that is extremely scalable,
++dynamically redistributes metadata in response to workload changes,
++and can tolerate arbitrary (well, non-Byzantine) node failures.  The
++metadata server takes a somewhat unconventional approach to metadata
++storage to significantly improve performance for common workloads.  In
++particular, inodes with only a single link are embedded in
++directories, allowing entire directories of dentries and inodes to be
++loaded into its cache with a single I/O operation.  The contents of
++extremely large directories can be fragmented and managed by
++independent metadata servers, allowing scalable concurrent access.
++
++The system offers automatic data rebalancing/migration when scaling
++from a small cluster of just a few nodes to many hundreds, without
++requiring an administrator carve the data set into static volumes or
++go through the tedious process of migrating data between servers.
++When the file system approaches full, new nodes can be easily added
++and things will "just work."
++
++Ceph includes flexible snapshot mechanism that allows a user to create
++a snapshot on any subdirectory (and its nested contents) in the
++system.  Snapshot creation and deletion are as simple as 'mkdir
++.snap/foo' and 'rmdir .snap/foo'.
++
++Ceph also provides some recursive accounting on directories for nested
++files and bytes.  That is, a 'getfattr -d foo' on any directory in the
++system will reveal the total number of nested regular files and
++subdirectories, and a summation of all nested file sizes.  This makes
++the identification of large disk space consumers relatively quick, as
++no 'du' or similar recursive scan of the file system is required.
 +
 +
-+if FSSTAGING
++Mount Syntax
++============
 +
-+config FSSTAGING_EXCLUDE_BUILD
-+	bool "Exclude Staging file systems from being built" if FSSTAGING
-+	default y
-+	---help---
-+	  Are you sure you really want to build the staging file
-+	  systems?  They taint your kernel, don't live up to the
-+	  normal Linux kernel quality standards, are a bit crufty
-+	  around the edges, and might go off and kick your dog when
-+	  you aren't paying attention.
++The basic mount syntax is:
 +
-+	  Say N here to be able to select and build the Staging file
-+	  systems.  This option is primarily here to prevent them from
-+	  being built when selecting 'make allyesconfg' and 'make
-+	  allmodconfig' so don't be all that put off, your dog will be
-+	  just fine.
++ # mount -t ceph monip[:port][,monip2[:port]...]:/[subdir] mnt
 +
-+if !FSSTAGING_EXCLUDE_BUILD
++You only need to specify a single monitor, as the client will get the
++full list when it connects.  (However, if the monitor you specify
++happens to be down, the mount won't succeed.)  The port can be left
++off if the monitor is using the default.  So if the monitor is at
++1.2.3.4,
 +
-+endif # !FSSTAGING_EXCLUDE_BUILD
-+endif # FSSTAGING
-diff --git a/fs/staging/Makefile b/fs/staging/Makefile
-new file mode 100644
-index 0000000..7ddeb16
---- /dev/null
-+++ b/fs/staging/Makefile
-@@ -0,0 +1,5 @@
-+# Makefile for fs/staging directory
++ # mount -t ceph 1.2.3.4:/ /mnt/ceph
 +
-+# fix for build system bug...
-+obj-$(CONFIG_FSSTAGING)		+= fsstaging.o
++is sufficient.  If mount.ceph is installed, a hostname can be used
++instead of an IP address.
 +
-diff --git a/fs/staging/fsstaging.c b/fs/staging/fsstaging.c
-new file mode 100644
-index 0000000..c9a0a8c
---- /dev/null
-+++ b/fs/staging/fsstaging.c
-@@ -0,0 +1,19 @@
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
 +
-+static int __init fsstaging_init(void)
-+{
-+	return 0;
-+}
 +
-+static void __exit fsstaging_exit(void)
-+{
-+}
++Mount Options
++=============
 +
-+module_init(fsstaging_init);
-+module_exit(fsstaging_exit);
++  ip=A.B.C.D[:N]
++  port=N
++	Specify the IP and/or port the client should bind to locally.
++	There is normally not much reason to do this.  If the IP is not
++	specified, the client's IP address is determined by looking at the
++	address it's connection to the monitor originates from.
 +
-+MODULE_AUTHOR("Sage Weil <sage@newdream.net>");
-+MODULE_DESCRIPTION("FS Staging Core");
-+MODULE_LICENSE("GPL");
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 161b784..3e92bbe 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1721,8 +1721,10 @@ static void add_header(struct buffer *b, struct module *mod)
- void add_staging_flag(struct buffer *b, const char *name)
- {
- 	static const char *staging_dir = "drivers/staging";
-+	static const char *fsstaging_dir = "fs/staging";
- 
--	if (strncmp(staging_dir, name, strlen(staging_dir)) == 0)
-+	if (strncmp(staging_dir, name, strlen(staging_dir)) == 0 ||
-+	    strncmp(fsstaging_dir, name, strlen(fsstaging_dir)) == 0)
- 		buf_printf(b, "\nMODULE_INFO(staging, \"Y\");\n");
- }
- 
++  wsize=X
++	Specify the maximum write size in bytes.  By default there is no
++	maximu.  Ceph will normally size writes based on the file stripe
++	size.
++
++  rsize=X
++	Specify the maximum readahead.
++
++  mount_timeout=X
++	Specify the timeout value for mount (in seconds), in the case
++	of a non-responsive Ceph file system.  The default is 30
++	seconds.
++
++  rbytes
++	When stat() is called on a directory, set st_size to 'rbytes',
++	the summation of file sizes over all files nested beneath that
++	directory.  This is the default.
++
++  norbytes
++	When stat() is called on a directory, set st_size to the
++	number of entries in that directory.
++
++  nocrc
++	Disable CRC32C calculation for data writes.  If set, the OSD
++	must rely on TCP's error correction to detect data corruption
++	in the data payload.
++
++
++Debugging options:
++
++  debug=N
++	Specify the level of debug output for the Ceph client.  Larger
++	values mean more output, and range from 0 to 50.  The default
++	is 1 (high-level informational messages only).
++
++  debug_console=N
++	If non-zero, debug messages will be printk'ed with KERN_ERR,
++	causing them to appear on the system console.  Otherwise,
++	messages will be printed with KERN_DEBUG and will appear in
++	the system log.
++
++  debug_msgr=N
++	Debug level for the messaging/communications layer, if >= 0.
++	Default is -1.
++
++  debug_mdsc=N
++	Debug level for the MDS client, if >= 0.
++
++  debug_osdc=N
++	Debug level for the OSD client, if >= 0.
++
++  debug_addr=N
++	Debug level for address space operations, if >= 0.
++
++  debug_file=N
++	Debug level for file operations, if >= 0.
++
++  debug_inode=N
++	Debug level for inode operations, if >= 0.
++
++  debug_caps=N
++	Debug level for file capability operations, if >= 0.
++
++  debug_snap=N
++	Debug level for snapshot operations, if >= 0.
++
++
++
++
++More Information
++================
++
++For more information on Ceph, see the home page at
++	http://ceph.newdream.net/
++
++The Linux kernel client source tree is available at
++	git://ceph.newdream.net/linux-ceph-client.git
++
++and the source for the full system is at
++	git://ceph.newdream.net/ceph.git
 -- 
 1.5.6.5
 
