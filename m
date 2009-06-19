@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZFSGuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZFSGyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbZFSGuM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 02:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZFSGuB
+	id S1754493AbZFSGyy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 02:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbZFSGyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 02:50:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56735 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751653AbZFSGuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 02:50:00 -0400
-Date: Fri, 19 Jun 2009 08:49:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, tj@kernel.org,
-       linux-kernel@vger.kernel.org, kyle@mcmartin.ca
-Subject: Re: [GIT PULL] percpu for 2.6.31
-Message-ID: <20090619064911.GC8162@elte.hu>
-References: <4A39F5B4.1070305@kernel.org> <alpine.LFD.2.01.0906181421460.16802@localhost.localdomain> <20090618143959.62858ef6.akpm@linux-foundation.org>
+	Fri, 19 Jun 2009 02:54:44 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:44149 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751330AbZFSGyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 02:54:43 -0400
+Message-ID: <4A3B3633.3000507@snapgear.com>
+Date: Fri, 19 Jun 2009 16:54:43 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090618143959.62858ef6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Christoph Hellwig <hch@infradead.org>
+CC: linux-kernel@vger.kernel.org, gerg@uclinux.org, linux-m68k@vger.kernel.org
+Subject: Re: [PATCH] m68k: merge the mmu and non-mmu versions of checksum.h
+References: <200906170711.n5H7BFw9009030@localhost.localdomain> <20090618194521.GA7464@infradead.org>
+In-Reply-To: <20090618194521.GA7464@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Christoph,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Thu, 18 Jun 2009 14:22:20 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Christoph Hellwig wrote:
+> On Wed, Jun 17, 2009 at 05:11:15PM +1000, Greg Ungerer wrote:
+>> +#ifdef CONFIG_MMU
+>>  /*
+>>   *	This is a version of ip_compute_csum() optimized for IP headers,
+>>   *	which always checksum on 4 octet boundaries.
+>> @@ -59,6 +61,9 @@ static inline __sum16 ip_fast_csum(const void *iph, unsigned int ihl)
+>>  		 : "memory");
+>>  	return (__force __sum16)~sum;
+>>  }
+>> +#else
+>> +__sum16 ip_fast_csum(const void *iph, unsigned int ihl);
+>> +#endif
 > 
-> > On Thu, 18 Jun 2009, Tejun Heo wrote:
-> > > 
-> > > Please pull from percpu-for-linus git tree from:
-> > > 
-> > >     git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
-> > 
-> > I'm very unhappy with this kind of crap.
+> Any good reason this is inline for all mmu processors and out of line
+> for nommu, independent of the actual cpu variant?
+
+I don't recall of the simple (and thus non-mmu) m68k variants
+support all the instructions used in this optimized version.
+I will check that. It might be that this is mis-placed and
+is actually conditional on the CPU type.
+
+The C code version is significantly bigger, I think that is why
+it was not inlined here (see arch/m68knommu/lib/checksum.c)
+
+
+>>  static inline __sum16 csum_fold(__wsum sum)
+>>  {
+>>  	unsigned int tmp = (__force u32)sum;
+>> +#ifdef CONFIG_COLDFIRE
+>> +	tmp = (tmp & 0xffff) + (tmp >> 16);
+>> +	tmp = (tmp & 0xffff) + (tmp >> 16);
+>> +	return (__force __sum16)~tmp;
+>> +#else
+>>  	__asm__("swap %1\n\t"
+>>  		"addw %1, %0\n\t"
+>>  		"clrw %1\n\t"
+>> @@ -74,6 +84,7 @@ static inline __sum16 csum_fold(__wsum sum)
+>>  		: "=&d" (sum), "=&d" (tmp)
+>>  		: "0" (sum), "1" (tmp));
+>>  	return (__force __sum16)~sum;
+>> +#endif
+>>  }
 > 
-> AFACIT none of these patches have ever been in linux-next.  Half 
-> or more of them turned up on the mailing list for the first time 
-> two days ago and there's little evidence that anyone has even 
-> looked at them.
+> I think this would be cleaner by having totally separate functions
+> for both cases, e.g.
+> 
+> #ifdef CONFIG_COLDFIRE
+> static inline __sum16 csum_fold(__wsum sum)
+> {
+> 	unsigned int tmp = (__force u32)sum;
+> 
+> 	tmp = (tmp & 0xffff) + (tmp >> 16);
+> 	tmp = (tmp & 0xffff) + (tmp >> 16);
+> 
+> 	return (__force __sum16)~tmp;
+> }
+> #else
+> ...
+> #endif
 
-Hm, i've seen many of them (for months literally) and you were 
-definitely Cc:-ed to all of them. The new bits (which i think you 
-are referring to) are not included in this series - only the old 
-bits.
+Ok, I will change that.
 
-I even asked you about them a month ago, whether you'd want to pick 
-Tejun's bits up into -mm because they are clearly generic VM patches 
-and they seemed to be falling between the cracks for v2.6.31. I had 
-two small bits of x86 relevant percpu patches which i'd gladly have 
-bounced over to you.
+Thanks
+Greg
 
-Btw., it will be a lot of work for Tejun to go through another 3 
-months with a patch-set of this magnitude:
 
-  170 files changed, 653 insertions(+), 553 deletions(-)
-
-and i suspect it will cause a fair amount of linux-next conflict 
-resolution overhead as well. So Tejun, if you can get it tested 
-please consider targeting it for this merge window still. I can
-help out with some -tip testig if you want.
-
-	Ingo
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
