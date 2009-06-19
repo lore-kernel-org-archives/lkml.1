@@ -1,135 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbZFSDa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbZFSDal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbZFSDa0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Jun 2009 23:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZFSDaP
+	id S1759456AbZFSDal (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Jun 2009 23:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbZFSDac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Jun 2009 23:30:15 -0400
-Received: from mga03.intel.com ([143.182.124.21]:59435 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751533AbZFSDaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Jun 2009 23:30:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,248,1243839600"; 
-   d="scan'208";a="156292230"
-Date: Fri, 19 Jun 2009 11:30:04 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch v3] swap: virtual swap readahead
-Message-ID: <20090619033004.GB5603@localhost>
-References: <20090610095950.GA514@localhost> <1244628314.13761.11617.camel@twins> <20090610113214.GA5657@localhost> <20090610102516.08f7300f@jbarnes-x200> <20090611052228.GA20100@localhost> <20090611101741.GA1974@cmpxchg.org> <20090612015927.GA6804@localhost> <20090615182216.GA1661@cmpxchg.org> <20090618091949.GA711@localhost> <20090618130121.GA1817@cmpxchg.org>
+	Thu, 18 Jun 2009 23:30:32 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:62135 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756819AbZFSDab (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Jun 2009 23:30:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nt3TvE0eHfMY/o9H+RhZBw6w5mllTRYKEB7A2xNnp9Wy1tlxv8G3X139fmwGfbC1Lj
+         YVYoGKQLLamLff7sbTHxe4qUJNIOMP6mrJDC7iVrsZQldQA8F995/2GJ5KGgmA1sgKeY
+         tdvFWueylDudmJRURrwKqWKSKIMbKl1mzCDx0=
+Date: Fri, 19 Jun 2009 05:30:31 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch 2/2] ksym_tracer:Handle machine stall when cat
+	trace_pipe for ksym tracer
+Message-ID: <20090619033031.GH7903@nowhere>
+References: <20090616225257.041883212@prasadkr_t60p.in.ibm.com> <20090616230527.GC14753@in.ibm.com> <20090617051235.GD7411@nowhere> <20090618172522.GA4590@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090618130121.GA1817@cmpxchg.org>
+In-Reply-To: <20090618172522.GA4590@in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 09:01:21PM +0800, Johannes Weiner wrote:
-> On Thu, Jun 18, 2009 at 05:19:49PM +0800, Wu Fengguang wrote:
-> > On Tue, Jun 16, 2009 at 02:22:17AM +0800, Johannes Weiner wrote:
-> > > On Fri, Jun 12, 2009 at 09:59:27AM +0800, Wu Fengguang wrote:
-> > > > On Thu, Jun 11, 2009 at 06:17:42PM +0800, Johannes Weiner wrote:
-> > > > > On Thu, Jun 11, 2009 at 01:22:28PM +0800, Wu Fengguang wrote:
-> > > > > > Unfortunately, after fixing it up the swap readahead patch still performs slow
-> > > > > > (even worse this time):
-> > > > > 
-> > > > > Thanks for doing the tests.  Do you know if the time difference comes
-> > > > > from IO or CPU time?
-> > > > > 
-> > > > > Because one reason I could think of is that the original code walks
-> > > > > the readaround window in two directions, starting from the target each
-> > > > > time but immediately stops when it encounters a hole where the new
-> > > > > code just skips holes but doesn't abort readaround and thus might
-> > > > > indeed read more slots.
-> > > > > 
-> > > > > I have an old patch flying around that changed the physical ra code to
-> > > > > use a bitmap that is able to represent holes.  If the increased time
-> > > > > is waiting for IO, I would be interested if that patch has the same
-> > > > > negative impact.
-> > > > 
-> > > > You can send me the patch :)
-> > > 
-> > > Okay, attached is a rebase against latest -mmotm.
-> > > 
-> > > > But for this patch it is IO bound. The CPU iowait field actually is
-> > > > going up as the test goes on:
-> > > 
-> > > It's probably the larger ra window then which takes away the bandwidth
-> > > needed to load the new executables.  This sucks.  Would be nice to
-> > > have 'optional IO' for readahead that is dropped when normal-priority
-> > > IO requests are coming in...  Oh, we have READA for bios.  But it
-> > > doesn't seem to implement dropping requests on load (or I am blind).
+On Thu, Jun 18, 2009 at 10:55:22PM +0530, K.Prasad wrote:
+> On Wed, Jun 17, 2009 at 07:12:36AM +0200, Frederic Weisbecker wrote:
+> > On Wed, Jun 17, 2009 at 04:35:27AM +0530, K.Prasad wrote:
+> > > 'trace_pipe' does not handle a TRACE_TYPE_PARTIAL_LINE well and causes the
+> > > machine to stall.
 > > 
-> > Hi Hannes,
 > > 
-> > Sorry for the long delay! A bad news is that I get many oom with this patch:
+> > 
+> > No, if it stalls here, it means it handles it well :)
+> >
 > 
-> Okay, evaluating this test-patch any further probably isn't worth it.
-> It's too aggressive, I think readahead is stealing pages reclaimed by
-> other allocations which in turn oom.
-
-OK.
-
-> Back to the original problem: you detected increased latency for
-> launching new applications, so they get less share of the IO bandwidth
-
-There are no "launch new app" phase. The test flow works like:
-
-  for all apps {
-        for all started apps {
-                activate its GUI window
-        }
-        start one new app
-  }
-        
-But yes, as time goes by, the test becomes more and more about
-switching between existing windows under high memory pressure.
-
-> than without the patch.
+> Okay. As stated earlier, the cause is an incorrect
+> TRACE_TYPE_PARTIAL_LINE return.
+>  
+> > > While a TRACE_TYPE_UNHANDLED return causes the tracer to
+> > > output unrelated data, a TRACE_TYPE_HANDLED return presents a clean output
+> > > (minus all partial traces).
+> > > 
+> > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > > ---
+> > >  kernel/trace/trace_ksym.c |    6 ++++++
+> > >  1 file changed, 6 insertions(+)
+> > > 
+> > > Index: linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+> > > ===================================================================
+> > > --- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
+> > > +++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+> > > @@ -389,6 +389,12 @@ static enum print_line_t ksym_trace_outp
+> > >  
+> > >  	trace_assign_type(field, entry);
+> > >  
+> > > +	/*
+> > > +	 * Return early without any output if we don't have sufficient
+> > > +	 * information
+> > > +	 */
+> > > +	if ((!field->ksym_hbp->info.type) || (!field->ip))
+> > > +		return TRACE_TYPE_HANDLED;
+> > 
+> > 
+> > 
+> > Yeah that seems a good fix. But such silent ignored traces may
+> > hide bugs (current or futures).
+> > Is it a common situation to have a zero ip or an undefined
+> > breakpoint type? How can that happen?
+> > 
+> > Thanks.
+> >
 > 
-> I can see two reasons for this:
+> When a symbol is removed from ksym's trace list, it causes
+> unregistration of the breakpoints and the breakpoint structure is
+> kfree()-ed.
 > 
->   a) the new heuristics don't work out and we read more unrelated
->   pages than before
+> Now, looking at the relevant code in ksym_hbp_handler() in trace_ksym.c
 > 
->   b) we readahead more pages in total as the old code would stop at
->   holes, as described above
+>  88         entry = ring_buffer_event_data(event);
+>  89         strlcpy(entry->ksym_name, hbp->info.name, KSYM_SYMBOL_LEN);
+>  90         entry->ksym_hbp = hbp;
+>  91         entry->ip = instruction_pointer(regs);
+>  92         strlcpy(entry->p_name, current->comm, TASK_COMM_LEN);
 > 
-> We can verify a) by comparing major fault numbers between the two
+> While the ksym_name and p_name fields are copied into the ring buffer,
+> only a pointer to the structure is provided (in line 90). So, when
+> ksym_hbp is unregistered the fields contained in it, namely 'type' and
+> 'ip' are lost (I'm not sure how the fields beyond 'field->ksym_hbp' is
+> accessible in ksym_trace_output() when it is supposed to be already
+> free).
 
-Plus pswpin numbers :) I found it significantly decreased when we do
-pte swap readahead..  See another email.
 
-> kernels with your testload.  If they increase with my patch, we
-> anticipate the wrong slots and every fault has do the reading itself.
+
+If they are freed, they could still be available if the memory place
+hasn't been touched by someone else since you kfree'ed it.
+
+But that's buggy and dangerous :)
+
+
+
+> This patch would cause an early return when such is the case. I also
+> plan to remove the 'default case' in ksym_trace_output() as it was meant
+> to handle a zero value for type (other values are eliminated at the time
+> of breakpoint registration itself).
 > 
-> b) seems to be a trade-off.  After all, the IO resources you have less
-> for new applications in your test is the bandwidth that is used by
-> swapping applications.  My qsbench numbers are a sign for this as the
-> only IO going on is swap.
+> Please find a patch below that eliminates the two issues of output
+> concatenation and machine stall, excepting for one issue which I'm
+> unable to reason out.
 > 
-> Of course, the theory is not to improve swap performance by increasing
-> the readahead window but to choose better readahead candidates.  So I
-> will run your tests and qsbench with a smaller page cluster and see if
-> this improves both loads.
+> A 'cat trace_pipe' done immediately after removal of an entry (without a
+> preceding 'cat trace') terminates only with a SIGTERM (kill <pid>) and
+> not a SIGINT (Ctrl+C). However, if the trace buffer receives any new
+> data subsequently, it responds to the Ctrl+C signal. I would be glad to
+> receive your suggestions in this regard.
 
-The general principle is, any non sector number based readahead should
-be really accurate in order to be a net gain. Because each readahead
-page miss will lead to one disk seek, which is much more costly than
-wasting a memory page.
 
-Thanks,
-Fengguang
+Hmm, weird...
+
+
+> 
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
+> +++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
+> @@ -388,6 +388,12 @@ static enum print_line_t ksym_trace_outp
+>  		return TRACE_TYPE_UNHANDLED;
+>  
+>  	trace_assign_type(field, entry);
+> +	/*
+> +	 * Return early without any output if we don't have sufficient
+> +	 * information
+> +	 */
+> +	if ((!field->ksym_hbp->info.type) || (!field->ip))
+> +		return TRACE_TYPE_HANDLED;
+>  
+
+
+
+No I still think it's dangerous, it may dereference a freed pointer.
+
+
+
+>  	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ",
+> field->p_name,
+>  				entry->pid, iter->cpu,
+> field->ksym_name);
+> @@ -401,10 +407,7 @@ static enum print_line_t ksym_trace_outp
+>  	case HW_BREAKPOINT_RW:
+>  		ret = trace_seq_printf(s, " RW ");
+>  		break;
+> -	default:
+> -		return TRACE_TYPE_PARTIAL_LINE;
+>  	}
+> -
+>  	if (!ret)
+>  		return TRACE_TYPE_PARTIAL_LINE;
+>  
+> Thanks,
+> K.Prasad
+> 
+
+
+What do you think about the full copy I suggested before?
+That would solve these issues in a simple way and would be
+_much_ more safe.
+
+If you try this, tell me if you still have such signal issue.
+
+Thanks.
 
