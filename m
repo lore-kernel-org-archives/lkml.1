@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZFSK7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZFSLGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbZFSK7d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 06:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZFSK7Y
+	id S1755798AbZFSLGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 07:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbZFSLGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 06:59:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33672 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbZFSK7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 06:59:23 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1245371813-30954-1-git-send-email-vapier@gentoo.org>
-References: <1245371813-30954-1-git-send-email-vapier@gentoo.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] rmap: fixup page_referenced() for nommu systems
-Date: Fri, 19 Jun 2009 11:58:32 +0100
-Message-ID: <22599.1245409112@redhat.com>
+	Fri, 19 Jun 2009 07:06:07 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:56868 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755134AbZFSLGG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 07:06:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZaZtbE7pVTMWEvqmQcCANEm/3gTzUwCyGodYYHJ/frrSdXJmP5HpJxZMKeSH83TBuB
+         ABIRONHur/7OrqKuRTKLH6vuoVuUFRTBHny47PvUtkwBHdfBqWOufh4+fGw8OCXCMkw3
+         vf6IQ9YlXIkGxmpAoa6wRVV5rT1+2J57cbyVw=
+MIME-Version: 1.0
+In-Reply-To: <20090619104738.GF5270@sirena.org.uk>
+References: <1245403695-20537-1-git-send-email-21cnbao@gmail.com> 
+	<20090619104738.GF5270@sirena.org.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 19 Jun 2009 07:05:48 -0400
+Message-ID: <8bd0f97a0906190405k33503d8ekd74ec9ddbb2fde12@mail.gmail.com>
+Subject: Re: [PATCH] New ASoC Drivers for ADI AD1938 codec
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Barry Song <21cnbao@gmail.com>, lrg@slimlogic.co.uk,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier@gentoo.org> wrote:
+On Fri, Jun 19, 2009 at 06:47, Mark Brown wrote:
+> On Fri, Jun 19, 2009 at 05:28:15PM +0800, Barry Song wrote:
+>> 1. add AD1938 codec driver                   (codec)
+>> 2. add blackfin SPORT-TDM DAI and PCM driver (platform)
+>> 3. add bf5xx board with AD1938 driver        (machine)
+>
+> As Liam said you really need to submit this as a patch series rather
+> than as a single big patch - as your commit log here indicates you've
+> got several different things going on here.
 
-> After the recent changes that went into mm/vmscan.c to overhaul stuff, we
-> ended up with these warnings on no-mmu systems:
-> mm/vmscan.c: In function 'shrink_page_list':
-> mm/vmscan.c:580: warning: unused variable 'vm_flags'
-> mm/vmscan.c: In function 'shrink_active_list':
-> mm/vmscan.c:1294: warning: 'vm_flags' may be used uninitialized in this function
-> mm/vmscan.c:1242: note: 'vm_flags' was declared here
-> 
-> This is because the no-mmu function defines page_referenced() to work on
-> the first argument only (the page).  It does not clear the vm_flags given
-> to it because for no-mmu systems, they never actually get utilized.  Since
-> that is no longer strictly true, we need to set vm_flags to 0 like everyone
-> else so gcc can do proper dead code elimination without annoying us with
-> unused warnings.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+blah, i had this queued locally with a "todo:split".  wanted to wait
+for Barry to finish developing the driver first though.
 
-Acked-by: David Howells <dhowells@redhat.com>
+at any rate, i hate to sound like a broken record wrt my alsa
+ignorance, but i'm thinking the logical split would be like Barry
+numbered it -- one patch for sound/codec/, one patch for the TDM
+transport, and one patch for hooking up the AD1938 to TDM.
+
+>> +static int __devinit ad1938_spi_probe(struct spi_device *spi)
+>> +{
+>> +     spi->dev.power.power_state = PMSG_ON;
+>> +     ad1938_socdev->card->codec->control_data = spi;
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static int __devexit ad1938_spi_remove(struct spi_device *spi)
+>> +{
+>> +     return 0;
+>> +}
+>
+> Your device probing should all be restructured so that the SPI device
+> for the CODEC is registered as any other SPI device rather than being
+> set up as part of probing the ASoC device.  See the wm8731 driver for
+> an example of doing this for a SPI device.
+>
+> This will require that the arch code for any systems with the ad1938
+> do the setup of the device.
+
+so should sound/soc/blackfin/bf5xx-ad1938.c even exist in the first place ?
+-mike
