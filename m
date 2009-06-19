@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZFSGbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbZFSGeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbZFSGbA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 02:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZFSGax
+	id S1754105AbZFSGeo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 02:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZFSGeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 02:30:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52555 "EHLO hera.kernel.org"
+	Fri, 19 Jun 2009 02:34:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:52053 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbZFSGaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 02:30:52 -0400
-Subject: Re: [PATCH 0/5, resend] x86: use asm-generic headers where possible
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <cover.1245354003.git.arnd@arndb.de>
-References: <cover.1245354003.git.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 19 Jun 2009 12:00:58 +0530
-Message-Id: <1245393058.2463.13.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	id S1751895AbZFSGeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 02:34:36 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: module version magic and arches with symbol prefixes
+Date: Fri, 19 Jun 2009 15:08:05 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Robin Getz <rgetz@blackfin.uclinux.org>
+References: <8bd0f97a0906180824y17a00110i57565aee16207e5@mail.gmail.com>
+In-Reply-To: <8bd0f97a0906180824y17a00110i57565aee16207e5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906191508.06537.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Arnd,
+On Fri, 19 Jun 2009 12:54:44 am Mike Frysinger wrote:
+> the current check_modstruct_version() does this:
+> {
+>     const unsigned long *crc;
+>
+>     if (!find_symbol("module_layout", NULL, &crc, true, false))
+>         BUG();
+>     return check_version(sechdrs, versindex, "module_layout", mod, crc);
+> }
+> the trouble here is that it looks for a literal "module_layout" symbol
+> and for ports that have symbol prefixes (a quick check shows Blackfin
+> & h8300), this aint going to work.
 
-On Thu, 2009-06-18 at 21:48 +0200, Arnd Bergmann wrote:
-> I did not get any feedback on this the last time I sent it,
-> but now these patches actually apply to the mainline kernel
-> so it's possible to apply them.
-> 
-> I've split the series up into five patches for easier review.
-> Each step should show clearly that no semantic changes are
-> introduced, with the exception of termios.h, which was
-> discussed earlier.
-> 
+MODULE_SYMBOL_PREFIX is the fix for this, ie:
 
-Nice work.
+	if (!find_symbol(MODULE_SYMBOL_PREFIX "module_layout), ...
 
-IMHO, if you provide above steps for each file for all architecture then
-it shows clearly how generic that file is and no one should have any
-objection as long as nothing breaks and because of generic percentage
-(percentage above 70 % will be better one). And collect acks from
-maintainers and send pull request to Linus.
+> also, using BUG() here seems pretty damn harsh.  wouldnt it make more
+> sense to do something like:
+>     if (WARN_ON(!find_symbol("module_layout", NULL, &crc, true, false)))
+>         return 0;
+> this way the module is simply not loaded rather than killing the kernel
 
-If you also provide complete diff, then it looks much better.
-
-And if you need my help just ping me :-)
+No, it means the kernel didn't build properly.  Better to fail spectacularly: 
+ideally we'd do this find in an init routine and guarantee a boot crash.
 
 Thanks,
---
-JSR
-
+Rusty.
