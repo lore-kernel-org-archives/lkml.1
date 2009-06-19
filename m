@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZFSNpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbZFSNsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755133AbZFSNpz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 09:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZFSNpr
+	id S1758527AbZFSNsj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 09:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZFSNsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 09:45:47 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:36309 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbZFSNpq (ORCPT
+	Fri, 19 Jun 2009 09:48:32 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:65116 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751865AbZFSNsb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 09:45:46 -0400
-Date: Fri, 19 Jun 2009 15:44:37 +0200
-From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for June 19
-Message-ID: <20090619134437.GA10571@ikn.schottelius.org>
-Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20090619172622.05adb236.sfr@canb.auug.org.au>
+	Fri, 19 Jun 2009 09:48:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:date:subject:mime-version:x-uid:x-length:to:cc
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id;
+        b=xXlbbPzS8Vux9YY5k+ul9HCS4XuIyonbKMuTP6TA/Y7DdrvdiDXtdQXn1GNDtakHFA
+         NMZtQhZoARKLJupMZbgCoeS8IVCpSlTlx89ooZTYJ3XvwG3+ftvNFMYeJu2ieXu4WXUt
+         j41tLmZ5mwzGZvC6VwLL5HWbKLObjhTQhFVng=
+From: Florian Fainelli <florian@openwrt.org>
+Date: Fri, 19 Jun 2009 15:48:24 +0200
+Subject: [PATCH] [x86] rdc321x: select EMBEDDED
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
+X-Length: 1262
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090619172622.05adb236.sfr@canb.auug.org.au>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.30-07040-g0732f87 x86_64)
+Message-Id: <200906191548.27101.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The RDC321X SoC is used in embedded systems, select
+the EMBEDDED configuration symbol to set options
+accordingly.
 
---bg08WKrSYDhXBjb5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Stephen Rothwell [Fri, Jun 19, 2009 at 05:26:22PM +1000]:
-> Hi all,
->=20
-> Changes since 20090618:
-
-This one stops my boot process, when trying to startup
-uml-utilities. 2.6.30-07040-g0732f87 (linus) works.
-
-amd64, config attached.
-
-Nico
-
---=20
-Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---bg08WKrSYDhXBjb5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko7lkUACgkQuL75KpiFGIyO0ACfQYyAOuq5jQoLHUcp2Ok0JvDF
-1IUAn0jgvcO2PrNoRL6FnTITh2ffQEYt
-=pQT1
------END PGP SIGNATURE-----
-
---bg08WKrSYDhXBjb5--
+Signed-off-by: Florian Fainelli <florian@openwrt.org>
+---
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 09f94e4..f9d1a48 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -382,6 +382,7 @@ config X86_RDC321X
+ 	depends on X86_EXTENDED_PLATFORM
+ 	select M486
+ 	select X86_REBOOTFIXUPS
++	select EMBEDDED
+ 	---help---
+ 	  This option is needed for RDC R-321x system-on-chip, also known
+ 	  as R-8610-(G).
