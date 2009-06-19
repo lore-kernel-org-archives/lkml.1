@@ -1,148 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760938AbZFSWhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759256AbZFSWmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760938AbZFSWhO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 18:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759492AbZFSWci
+	id S1759256AbZFSWmK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 18:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZFSWlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 18:32:38 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:44733 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbZFSWbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 18:31:08 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       greg@kroah.com
-Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 19/21] ceph: debugging
-Date: Fri, 19 Jun 2009 15:31:40 -0700
-Message-Id: <1245450702-31343-20-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1245450702-31343-19-git-send-email-sage@newdream.net>
-References: <1245450702-31343-1-git-send-email-sage@newdream.net>
- <1245450702-31343-2-git-send-email-sage@newdream.net>
- <1245450702-31343-3-git-send-email-sage@newdream.net>
- <1245450702-31343-4-git-send-email-sage@newdream.net>
- <1245450702-31343-5-git-send-email-sage@newdream.net>
- <1245450702-31343-6-git-send-email-sage@newdream.net>
- <1245450702-31343-7-git-send-email-sage@newdream.net>
- <1245450702-31343-8-git-send-email-sage@newdream.net>
- <1245450702-31343-9-git-send-email-sage@newdream.net>
- <1245450702-31343-10-git-send-email-sage@newdream.net>
- <1245450702-31343-11-git-send-email-sage@newdream.net>
- <1245450702-31343-12-git-send-email-sage@newdream.net>
- <1245450702-31343-13-git-send-email-sage@newdream.net>
- <1245450702-31343-14-git-send-email-sage@newdream.net>
- <1245450702-31343-15-git-send-email-sage@newdream.net>
- <1245450702-31343-16-git-send-email-sage@newdream.net>
- <1245450702-31343-17-git-send-email-sage@newdream.net>
- <1245450702-31343-18-git-send-email-sage@newdream.net>
- <1245450702-31343-19-git-send-email-sage@newdream.net>
+	Fri, 19 Jun 2009 18:41:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47477 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751960AbZFSWlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 18:41:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update 2 fix] PM: Introduce core framework for run-time PM of I/O devices
+Date: Sat, 20 Jun 2009 00:42:09 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
+       linux-pm@lists.linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+References: <Pine.LNX.4.44L0.0906191103510.3024-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906191103510.3024-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906200042.10696.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some debugging infrastructure, including the ability to adjust the
-level of debug output on a per-file basis.
+On Friday 19 June 2009, Alan Stern wrote:
+> On Fri, 19 Jun 2009, Rafael J. Wysocki wrote:
+> 
+> > > In fact, maybe it would be best if pm_request_resume always increments
+> > > depth (unless it fails for some other reason) and __pm_runtime_resume
+> > > increments depth whenever called synchronously.  And likewise for the
+> > > suspend paths.
+> > 
+> > And how exactly are we going to check if pm_request_resume() was successful?
+> > 
+> > We'd have to be able to do that in a code path different from the one that has
+> > called pm_request_resume().
+> 
+> No, no.  What I meant was: Increment depth if pm_request_resume calls 
+> queue_work.  If it exits early, don't increment depth.
+> 
+> But now I'm not sure this is the right thing to do.  It's not clear 
+> what the right model should be for asynchronous operation.
 
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- fs/staging/ceph/ceph_debug.h |   86 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 86 insertions(+), 0 deletions(-)
- create mode 100644 fs/staging/ceph/ceph_debug.h
+I think we can grab a reference when queuing up a resume request and drop
+it on the completion of it.  This way, suspend will be locked while we're
+waiting for the resume to run, which I think is what we want.
 
-diff --git a/fs/staging/ceph/ceph_debug.h b/fs/staging/ceph/ceph_debug.h
-new file mode 100644
-index 0000000..70a2521
---- /dev/null
-+++ b/fs/staging/ceph/ceph_debug.h
-@@ -0,0 +1,86 @@
-+#ifndef _FS_CEPH_DEBUG_H
-+#define _FS_CEPH_DEBUG_H
-+
-+#include <linux/string.h>
-+
-+extern int ceph_debug __read_mostly;         /* debug level. */
-+extern int ceph_debug_console __read_mostly; /* send debug output to console? */
-+extern int ceph_debug_mask __read_mostly;
-+
-+/*
-+ * different debug levels for different modules.  These default to -1.
-+ * If they are >= 0, then they override the global ceph_debug value.
-+ */
-+extern int ceph_debug_addr __read_mostly;
-+extern int ceph_debug_caps __read_mostly;
-+extern int ceph_debug_dir __read_mostly;
-+extern int ceph_debug_export __read_mostly;
-+extern int ceph_debug_file __read_mostly;
-+extern int ceph_debug_inode __read_mostly;
-+extern int ceph_debug_ioctl __read_mostly;
-+extern int ceph_debug_mdsc __read_mostly;
-+extern int ceph_debug_mdsmap __read_mostly;
-+extern int ceph_debug_msgr __read_mostly;
-+extern int ceph_debug_mon __read_mostly;
-+extern int ceph_debug_osdc __read_mostly;
-+extern int ceph_debug_osdmap __read_mostly;
-+extern int ceph_debug_snap __read_mostly;
-+extern int ceph_debug_super __read_mostly;
-+extern int ceph_debug_protocol __read_mostly;
-+extern int ceph_debug_proc __read_mostly;
-+extern int ceph_debug_tools __read_mostly;
-+
-+#define DOUT_MASK_ADDR		0x00000001
-+#define DOUT_MASK_CAPS		0x00000002
-+#define DOUT_MASK_DIR		0x00000004
-+#define DOUT_MASK_EXPORT	0x00000008
-+#define DOUT_MASK_FILE		0x00000010
-+#define DOUT_MASK_INODE		0x00000020
-+#define DOUT_MASK_IOCTL		0x00000040
-+#define DOUT_MASK_MDSC		0x00000080
-+#define DOUT_MASK_MDSMAP	0x00000100
-+#define DOUT_MASK_MSGR		0x00000200
-+#define DOUT_MASK_MON		0x00000400
-+#define DOUT_MASK_OSDC		0x00000800
-+#define DOUT_MASK_OSDMAP	0x00001000
-+#define DOUT_MASK_SNAP		0x00002000
-+#define DOUT_MASK_SUPER		0x00004000
-+#define DOUT_MASK_PROTOCOL	0x00008000
-+#define DOUT_MASK_PROC		0x00010000
-+#define DOUT_MASK_TOOLS		0x00020000
-+
-+#define DOUT_UNMASKABLE	0x80000000
-+
-+#define _STRINGIFY(x) #x
-+#define STRINGIFY(x) _STRINGIFY(x)
-+
-+#define FMT_PREFIX "%-30.30s: "
-+#define FMT_SUFFIX "%s"
-+#define LOG_ARGS __FILE__ ":" STRINGIFY(__LINE__)
-+#define TRAIL_PARAM ""
-+
-+#define LOG_LINE FMT_PREFIX fmt, LOG_ARGS, args
-+
-+#define dout_flag(x, mask, fmt, args...) do {				\
-+		if (((ceph_debug_mask | DOUT_UNMASKABLE) & mask) &&	\
-+		    ((DOUT_VAR >= 0 && (x) <= DOUT_VAR) ||		\
-+		     (DOUT_VAR < 0 && (x) <= ceph_debug))) {		\
-+			if (ceph_debug_console)				\
-+				printk(KERN_ERR FMT_PREFIX fmt, LOG_ARGS, \
-+				       args);				\
-+			else						\
-+				printk(KERN_DEBUG FMT_PREFIX fmt, LOG_ARGS, \
-+				       args);				\
-+		}							\
-+	} while (0)
-+
-+#define _dout(x, fmt, args...) dout_flag((x), DOUT_MASK, fmt FMT_SUFFIX, args)
-+
-+#define _derr(x, fmt, args...) do {					\
-+		printk(KERN_ERR FMT_PREFIX fmt FMT_SUFFIX, LOG_ARGS, args); \
-+	} while (0)
-+
-+#define dout(x, args...) _dout((x), args, TRAIL_PARAM)
-+#define derr(x, args...) _derr((x), args, TRAIL_PARAM)
-+
-+#endif
--- 
-1.5.6.5
+> > > > > Instead of a costly device_for_each_child(), would it be better to
+> > > > > maintain a counter with the number of unsuspended children?
+> > > > 
+> > > > Hmm.  How exactly are we going to count them?  The only way I see at the moment
+> > > > would be to increase this number by one when running pm_runtime_init() for a
+> > > > new child.  Seems doable.
+> > > 
+> > > That's right.  You also have to decrement the number when an
+> > > unsuspended child device is removed, obviously.
+> > 
+> > I forgot about that, so it is not done in the patch below.
+> > 
+> > BTW, is it just me, or are we overcomplicating that thing beyond any
+> > reasonable limit?
+> > 
+> > I think I'll just do the device_for_each_child() for now, because IMO this
+> > optimization isn't just worth complications resulting from it, because,
+> > realistically, how many children is a parent going to have in a notmal system?
+> 
+> Okay for now.  For the future...  What I'm concerned about is this: If
+> a driver uses asynchronous operation, it might need to tell the core
+> each time an I/O operation finished.  Whatever this involves will
+> therefore be on a hot path, so it should minimize the amount of locking
+> and other activity -- but device_for_each_child takes a bunch of locks.
 
+OK, I think I'll try to do the counting, although it may be difficult to handle
+all of the corner cases.
+ 
+> > > The one thing to watch out for is what happens if a device is removed while
+> > > its runtime_resume callback is running.  :-)
+> > 
+> > I don't think it's possible.
+> 
+> I guess this is more of a problem in the USB stack, because we use the
+> same field to keep track of whether a device is suspended and whether
+> it has been unplugged.  Okay, forget it.
+
+Well, it seems to be easy to handle: inrease resume_counter, wait for all
+operations in progress to complete and change the status to 'active'
+(that blocks resume).
+
+> > > I guess this a question of how you view things.  My view has been that
+> > > whever depth (or pm_usage_cnt in the USB code) is 0, it means neither
+> > > the driver nor anyone else has any reason to keep the device at full
+> > > power.  By definition, since that's what depth is -- a count of the
+> > > reasons for not suspending.
+> > > 
+> > > There might be some obscure other reason, but in general depth going
+> > > to 0 means a delayed autosuspend request should be queued.
+> > 
+> > OK there, but pm_runtime_disable() is called by the core in some places where
+> > we'd rather not want the device to be suspended (like during a system-wide
+> > power transitions).
+> 
+> I'm not sure what you mean.  I was talking about pm_runtime_enable
+> (which decrements depth), not pm_runtime_disable (which increments it).  
+> When pm_runtime_enable finds that depth has gone to 0, it should queue
+> a delayed autosuspend request.
+
+OK, but I don't think that queuing a request without notifying the bus type is
+the right thing to do.  IMO it's better to use ->runtime_idle() in that case
+(in analogy with the situation in which the last child of a device has been
+suspended).
+
+> > > Which reminds me... Something to think about: In an async call to
+> > > __pm_runtime_suspend, if the runtime_suspend callback returns -EBUSY
+> > > then perhaps your code should automatically requeue a new delayed
+> > > autosuspend request.  Which implies, of course, that the autosuspend
+> > > delay has to be stored in the dev_pm_info structure.  This isn't a bad
+> > > thing, since exposing the value in sysfs gives userspace a consistent
+> > > way to set the delay.
+> > 
+> > I think that functionality can be added later.  Let's keep things as simple
+> > as possible initially, or we won't be able to make any progress.
+> > 
+> > Below is a new version of the patch.  Unfortunately, it is a major rework.
+> > In short, I tried to address some of your recent comments and my observations.
+> > It doesn't use depth any more, there's another counter (called resume_count)
+> > instead, also playing the role of the RPM_GRACE bit from the previous version.
+> 
+> Ah.  Okay.
+> 
+> > I've just finished it, so it may be still missing something apart from the
+> > updating child_count on removal of an unsuspended child.
+> 
+> I'll review it later.
+
+In fact I have updated it once again, so it's probably better to wait. :-)
+
+> For now, perhaps it would help to give some of
+> the considerations used by the USB stack.  For each device we store a
+> usage counter (equivalent to resume_count or depth), an autosuspend
+> delay value, and a time of last use.  Whenever a synchronous suspend or
+> any resume occurs, the time of last use is set to the current time.  
+> The same thing happens with delayed autosuspend requests that aren't 
+> requeues of an earlier request (see below).
+> 
+> Autosuspend is disallowed if:
+> 
+> 	the driver doesn't support autosuspend;
+> 
+> 	the usage counter is > 0;
+> 
+> 	autosuspend has been disabled for this device;
+> 
+> 	the driver requires remote wakeup during autosuspend
+> 	but the user has disallowed wakeup.
+
+That's probably universal for all bus types and devices.
+
+> If everything else is okay but not enough time has elapsed since the
+> device was last used, another delayed autosuspend request is queued and
+> the current one fails with -EAGAIN.
+
+I wouldn't like to do the automatic queuing at the core level, simply because
+the core may not have enough information to make a correct decision.
+
+> I believe the only circumstance where we would want to do an
+> autosuspend without decrementing the usage counter is if the usage
+> counter is already 0 (but the device hasn't been autosuspended yet) and
+> the autosuspend delay is changed.  For example, if the delay was
+> originally set to 30 seconds and the device has been idle for only 10
+> seconds, but then the user changes the delay to 5 seconds, we would do
+> an immediate autosuspend while leaving the counter at 0.
+> 
+> The model for asynchronous operation is that the usage counter remains
+> always at 0, and the driver updates the time-of-last-use field whenever
+> an I/O operation starts or completes.  The core keeps a delayed
+> autosuspend request queued; each time the request runs it checks
+> whether the device has been idle sufficiently long.  If not it
+> requeues itself; otherwise it carries out an autosuspend.
+
+Again, I think it's a bus type's decision whether or not to use such a
+"permanent" suspend request.
+
+> If an I/O operation takes too long (so that an autosuspend starts up in
+> the middle), the driver's suspend callback will return -EBUSY, thereby
+> causing another delayed autosuspend to be queued.
+
+OK, thanks for the description.
+
+I think it probably is a good idea to store the time of last use in 'struct
+device', so that bus types don't need to duplicate that field (all of them will
+likely use it).  I'm not sure about the delay, though.  Well, I need some time
+to think about it. :-)
+
+Best,
+Rafael
