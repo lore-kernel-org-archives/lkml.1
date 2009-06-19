@@ -1,49 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZFSIHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZFSINA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605AbZFSIHf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 04:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZFSIHN
+	id S1753374AbZFSINA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 04:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZFSIMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 04:07:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59522 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbZFSIHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 04:07:06 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090619055848.GA27802@localhost>
-References: <20090619055848.GA27802@localhost> <20090517022327.280096109@intel.com> <32411.1245336412@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Wang, Roger" <roger.wang@intel.com>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/3] make mapped executable pages the first class citizen
-Date: Fri, 19 Jun 2009 09:06:16 +0100
-Message-ID: <4278.1245398776@redhat.com>
+	Fri, 19 Jun 2009 04:12:45 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52333 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751865AbZFSIMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 04:12:44 -0400
+Message-ID: <4A3B48DF.8080300@cn.fujitsu.com>
+Date: Fri, 19 Jun 2009 16:14:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: [BUG] bugs in jbd2_dev_to_name() (was Re: [PATCH 00/11] [GIT PULL]
+ more updates for the tag format)
+References: <20090610054206.510574695@goodmis.org> <20090610092644.GA20889@elte.hu> <c62985530906100411o5a178352n53f7d247f6e9dba9@mail.gmail.com> <20090610130127.GA6647@mit.edu> <alpine.DEB.2.00.0906100911190.30552@gandalf.stny.rr.com> <20090610160303.GA10240@mit.edu> <20090611130318.GB14220@infradead.org> <20090611154751.GD9275@mit.edu> <20090611171434.GA6011@nowhere> <20090611192037.GA5116@mit.edu>
+In-Reply-To: <20090611192037.GA5116@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+Theodore Tso wrote:
+> On Thu, Jun 11, 2009 at 07:14:36PM +0200, Frederic Weisbecker wrote:
+>> For the filters, we could enter the text name which would be
+>> internally converted into a dev_t, there should be no problem.
+>>
+>> Also the raw dev_t can be stored and then human-friendly printed on
+>> print time.
+>>
+>> Both seem about trivial to add.
+> 
+> If someone wants to take this code and drop it into the core tracing
+> code, please feel free.
+> 
 
-> There are plenty of free pages. Is it a page allocator bug? Is it
-> stable v2.6.30 or pre 2.6.31-rc1?
+Just notice this code has been merge, but there are 2 bugs in it.
 
-Cutting edge Linus after I pulled his new patches yesterday morning:
+> 						- Ted
+> 
+> /* 
+>  * jbd2_dev_to_name is a utility function used by the jbd2 and ext4 
+>  * tracing infrastructure to map a dev_t to a device name.
+>  *
+>  * The caller should use rcu_read_lock() in order to make sure the
+>  * device name stays valid until its done with it.  We use
+>  * rcu_read_lock() as well to make sure we're safe in case the caller
+>  * gets sloppy, and because rcu_read_lock() is cheap and can be safely
+>  * nested.
+>  */
+> struct devname_cache {
+> 	struct rcu_head	rcu;
+> 	dev_t		device;
+> 	char		devname[BDEVNAME_SIZE];
+> };
+> #define CACHE_SIZE_BITS 6
+> static struct devname_cache *devcache[1 << CACHE_SIZE_BITS];
+> static DEFINE_SPINLOCK(devname_cache_lock);
+> 
+> static void free_devcache(struct rcu_head *rcu)
+> {
+> 	kfree(rcu);
+> }
+> 
+> const char *jbd2_dev_to_name(dev_t device)
+> {
+> 	int	i = hash_32(device, CACHE_SIZE_BITS);
+> 	char	*ret;
+> 	struct block_device *bd;
+> 
+> 	rcu_read_lock();
+> 	if (devcache[i] && devcache[i]->device == device) {
+> 		ret = devcache[i]->devname;
+> 		rcu_read_unlock();
+> 		return ret;
 
-	commit 65795efbd380a832ae508b04dba8f8e53f0b84d9
+It doesn't seem safe to dereference @ret outside rcu read section.
 
-David
+> 	}
+> 	rcu_read_unlock();
+> 
+> 	spin_lock(&devname_cache_lock);
+> 	if (devcache[i]) {
+> 		if (devcache[i]->device == device) {
+> 			ret = devcache[i]->devname;
+> 			spin_unlock(&devname_cache_lock);
+> 			return ret;
+> 		}
+> 		call_rcu(&devcache[i]->rcu, free_devcache);
+> 	}
+> 	devcache[i] = kmalloc(sizeof(struct devname_cache), GFP_KERNEL);
+
+kmalloc(GFP_KERNEL) called with spin_lock held..
+
+> 	if (!devcache[i]) {
+> 		spin_unlock(&devname_cache_lock);
+> 		return "NODEV-ALLOCFAILURE"; /* Something non-NULL */
+> 	}
+> 	devcache[i]->device = device;
+> 	bd = bdget(device);
+> 	if (bd) {
+> 		bdevname(bd, devcache[i]->devname);
+> 		bdput(bd);
+> 	} else
+> 		__bdevname(device, devcache[i]->devname);
+> 	ret = devcache[i]->devname;
+> 	spin_unlock(&devname_cache_lock);
+> 	return ret;
+> }
+> EXPORT_SYMBOL(jbd2_dev_to_name);
