@@ -1,207 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbZFSQoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZFSQr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbZFSQoT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 12:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZFSQoM
+	id S1755454AbZFSQr2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 12:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZFSQrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 12:44:12 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:34244 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752225AbZFSQoM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 12:44:12 -0400
-Message-ID: <4A3BBEC8.2040000@ribosome.natur.cuni.cz>
-Date: Fri, 19 Jun 2009 18:37:28 +0200
-From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090513 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.28-gentoo-r5-default: apic_timer_interrupt crash?
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------040801000400000503080307"
+	Fri, 19 Jun 2009 12:47:21 -0400
+Received: from cmpxchg.org ([85.214.51.133]:54845 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752672AbZFSQrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 12:47:20 -0400
+Date: Fri, 19 Jun 2009 18:43:59 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] bootmem.c: Avoid c90 declaration warning
+Message-ID: <20090619164359.GA2265@cmpxchg.org>
+References: <1245355633.29927.16.camel@Joe-Laptop.home> <20090618132410.0b55cd90.akpm@linux-foundation.org> <20090618215744.GA10816@cmpxchg.org> <4A3ADB33.8060102@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A3ADB33.8060102@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040801000400000503080307
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Thu, Jun 18, 2009 at 05:26:27PM -0700, Yinghai Lu wrote:
+> Johannes Weiner wrote:
+> > On Thu, Jun 18, 2009 at 01:24:10PM -0700, Andrew Morton wrote:
+> >> Unrelatedly, I'm struggling a bit with bootmem_arch_preferred_node(). 
+> >> It's only defined if CONFIG_X86_32=y && CONFIG_NEED_MULTIPLE_NODES=y,
+> >> but it gets called if CONFIG_HAVE_ARCH_BOOTMEM=y.
+> >>
+> >> Is this correct, logical and as simple as we can make it??
+> > 
+> > x86_32 numa is the only setter of HAVE_ARCH_BOOTMEM.  I don't know why
+> > this arch has a strict preference/requirement(?) for bootmem on node
+> > 0.
+> > 
+> > I found this mail from Yinghai
+> > 
+> >   http://marc.info/?l=linux-kernel&m=123614990906256&w=2
+> > 
+> > where he says that it expects all bootmem on node zero but with the
+> > current code and alloc_arch_preferred_bootmem() failing, we could fall
+> > back to another node.  Won't this break?  Yinghai?
+> 
+> not sure it is the same problem. the fix was in mainline already.
 
-Hi,
-  I am not sure if my report is of any value but I had a kernel crash on
-one of our cluster nodes. I only have a remote console snapshot of the last
-screen and unfortunately the stack trace did not fit. Even worse it has a
-Gentoo linux patched kernel and not vanilla. The machine does not react to
-alt+sysrq+b commands so I will have to touch the power button. Nevertheless
-I am interested to know whether anybody can make any sense out the partial
-stack trace. Myself do not even know whether I am supposed to read it from top
-or from bottom. ;-) The node has no graphics card. I could provide .config
-if somebody wants it. Thank you for any answer,
-Martin
-Please Cc: me directly.
+I just wanted to know if the requirement for bootmem on node 0 is
+strict or just a preference.  Do you perhaps happen to know? :)
 
---------------040801000400000503080307
-Content-Type: image/png;
- name="node012-crash.png"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="node012-crash.png"
+> > Otherwise, could we perhaps use something as simple as this?
+> > 
+> > diff --git a/arch/x86/include/asm/mmzone_32.h b/arch/x86/include/asm/mmzone_32.h
+> > index ede6998..b68a672 100644
+> > --- a/arch/x86/include/asm/mmzone_32.h
+> > +++ b/arch/x86/include/asm/mmzone_32.h
+> > @@ -92,8 +92,7 @@ static inline int pfn_valid(int pfn)
+> >  
+> >  #ifdef CONFIG_NEED_MULTIPLE_NODES
+> >  /* always use node 0 for bootmem on this numa platform */
+> > -#define bootmem_arch_preferred_node(__bdata, size, align, goal, limit)	\
+> > -	(NODE_DATA(0)->bdata)
+> > +#define bootmem_arch_preferred_node (NODE(0)->bdata)
+> >  #endif /* CONFIG_NEED_MULTIPLE_NODES */
+> >  
+> >  #endif /* _ASM_X86_MMZONE_32_H */
+> > diff --git a/mm/bootmem.c b/mm/bootmem.c
+> > index 282df0a..0097fa2 100644
+> > --- a/mm/bootmem.c
+> > +++ b/mm/bootmem.c
+> > @@ -528,23 +528,6 @@ find_block:
+> >  	return NULL;
+> >  }
+> >  
+> > -static void * __init alloc_arch_preferred_bootmem(bootmem_data_t *bdata,
+> > -					unsigned long size, unsigned long align,
+> > -					unsigned long goal, unsigned long limit)
+> > -{
+> > -	if (WARN_ON_ONCE(slab_is_available()))
+> > -		return kzalloc(size, GFP_NOWAIT);
+> > -
+> > -#ifdef CONFIG_HAVE_ARCH_BOOTMEM
+> > -	bootmem_data_t *p_bdata;
+> > -
+> > -	p_bdata = bootmem_arch_preferred_node(bdata, size, align, goal, limit);
+> > -	if (p_bdata)
+> > -		return alloc_bootmem_core(p_bdata, size, align, goal, limit);
+> > -#endif
+> > -	return NULL;
+> > -}
+> > -
+> >  static void * __init ___alloc_bootmem_nopanic(unsigned long size,
+> >  					unsigned long align,
+> >  					unsigned long goal,
+> > @@ -553,11 +536,15 @@ static void * __init ___alloc_bootmem_nopanic(unsigned long size,
+> >  	bootmem_data_t *bdata;
+> >  	void *region;
+> >  
+> > +	if (WARN_ON_ONCE(slab_is_available()))
+> > +		return kzalloc(size, GFP_NOWAIT);
+> >  restart:
+> > -	region = alloc_arch_preferred_bootmem(NULL, size, align, goal, limit);
+> > +#ifdef bootmem_arch_preferred_node
+> > +	region = alloc_bootmem_core(bootmem_arch_preferred_node,
+> > +				size, align, goal, limit);
+> >  	if (region)
+> >  		return region;
+> > -
+> > +#endif
+> >  	list_for_each_entry(bdata, &bdata_list, list) {
+> >  		if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
+> >  			continue;
+> > @@ -636,13 +623,11 @@ static void * __init ___alloc_bootmem_node(bootmem_data_t *bdata,
+> >  {
+> >  	void *ptr;
+> >  
+> > -	ptr = alloc_arch_preferred_bootmem(bdata, size, align, goal, limit);
+> > -	if (ptr)
+> > -		return ptr;
+> > -
+> > +#ifndef bootmem_arch_preferred_node
+> >  	ptr = alloc_bootmem_core(bdata, size, align, goal, limit);
+> >  	if (ptr)
+> >  		return ptr;
+> > +#endif
+> >  
+> >  	return ___alloc_bootmem(size, align, goal, limit);
+> >  }
+> 
+> 
+> any reason to kill alloc_arch_preferred_bootmem?
 
-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
-Dc1k15MJON8rSnYm7lvV6f5VSdnPfy5Ozh5jzD/lykDol0/8B4+9lGv9Zj9l/qD0E3HsQNny
-arl28DnRixpes2clcfTvcSTDOyoaSXi6NpZ9MTtaNNSyhgQfaakURGqxeZp+T9MHGqdTmjhF
-93p18mP6UQy/oeqQmIXxEbaXst9CUU1PjwI75Jj9H4exqquIjAsWO3naq3nrM+ZsGHF8zWyo
-yRiwuVp8yiMVa87YcYlNrVAyvMVOB65rXO4eqaYQ54l+XDTTp3P51dzNv0l4yJcO2QqNmyB1
-jluqbJqTaC6wDOxSQ58ANh/V1LlX8yjNlRanPPIatMne1d7vp8WxFbdgx60ydq6kR2y2eqZg
-s4nPaXvTzxLaWxCexY4esJ1+lq/QR7FBPxFwq72B/XGuxNo7Fi2q6WgBW2y/4ZAd/Wi1vAn9
-WyLW2EkGbuioDml2GHkrm/caZlIW6PMb3kpAYu5w7Jy46oR9wj5hn7BP2Cfsf+caR3NQhzkg
-9i78qqGVgbD/uEnZA4o7PDc49tzKwNh/bG4MkL01IPYfgL0zIHYd2nsX2PGL8C1ax1Zz6/E+
-NFVXTz167MvN5ubmfrOZq+zeu9rcm2s2JWnNfGK9WrHZp5sd7I2t/YN/AOxG88HT2fTXPvz+
-5M7u7bvN3ZWd5s7OrZ33DtgrTyj7ceK0/LvEu++s/tta+JcT939V3fo/6aXtamn7d9urjRv/
-afjp7D8mLgL7dyu7d3av3KnvrP/D3M7OlZ0rq+xVvrm7QdlnH61/umWs37p4+9vxx19u3H58
-d+PrW+9u3X33wpe7t3cefP3N09nfrzf3n+x/2dxZb+ze2dhZv9Xc2QK2NcoXmrtblJ14DOwH
-lL1z+fFjyl5Zp+ydCw+AvbH+DHZwvfnk2/0HzZ3KHxvvMfbWR1fM3ZZBdr+l7T3xq/VPJWBf
-ygP7kQzsCWB/e9dUgf39N8FnsHfvN3efAHuLtskfKHuDxr3GXl1t7u7t2OwmsN9boXE3aZsA
-+8ndnS1g7z94Vty7G3M7+xb79u1dyl6B9n53x+7fu3uSxR4H9qeM/SVlb/XC/n5jbouyN+7s
-rt/e3b19ujkH/cRm123HKo/v35Ie3P9v6crOu+FfytBPdtZvL9WrjZkHT1a3//XPHz+jn8S3
-apv7D1Y2Krv/cmV1b/b2nBf6985SG1un47Jd4RvdlCfPln/raB8f7Ng8YDfm2t639TxIr+wy
-fflXkwPxCWXvocGwucHFvc8NLm7Gbr43QLbVBweSn5goMgg2+gGO/w80LTPXRZPq5QAAAABJ
-RU5ErkJggg==
---------------040801000400000503080307--
+Yeah, I think the diffstat is convincing hehe.  And I think it looks
+more straight forward, but no strong feelings.
