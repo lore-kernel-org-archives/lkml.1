@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbZFSSf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbZFSSvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbZFSSf4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 14:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZFSSfs
+	id S1754380AbZFSSvq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 14:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZFSSve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 14:35:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53374 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbZFSSfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 14:35:47 -0400
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       device-mapper development <dm-devel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Message-Id: <63B19258-D345-472C-8923-1A7F91F466A1@redhat.com>
-From: Jonathan Brassow <jbrassow@redhat.com>
-To: randy.dunlap@oracle.com
-In-Reply-To: <4A3BD7D2.6020803@oracle.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Fri, 19 Jun 2009 14:51:34 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:50918 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751989AbZFSSvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 14:51:33 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [KVM-RFC PATCH 1/2] eventfd: add an explicit srcu based notifier
+	interface
+To: davidel@xmailserver.org
+Cc: mst@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, mingo@elte.hu
+Date: Fri, 19 Jun 2009 14:51:21 -0400
+Message-ID: <20090619183534.31118.30934.stgit@dev.haskins.net>
+In-Reply-To: <alpine.DEB.1.10.0906181500350.32646@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906181500350.32646@makko.or.mcafeemobile.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [dm-devel] [PATCH -next] dm: fix dm-log-userspace printk format
-Date: Fri, 19 Jun 2009 13:32:56 -0500
-References: <20090619172622.05adb236.sfr@canb.auug.org.au> <4A3BD7D2.6020803@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, I've pulled this into my patch as well.
+Davide Libenzi wrote:
+> On Thu, 18 Jun 2009, Gregory Haskins wrote:
+>
+>>
+>> But the fact is: I do not see any way to actually use your referenceless
+>> POLLHUP release code in a race free way without doing something like I
+>> propose in 3/4, 4/4.   Lets keep the discussion focused on that for now,
+>> if we could.
+>
+> OK, since I got literally swamped by the amount of talks and patches over 
+> this theoretically simple topic, would you mind  1) posting the global 
+> patch over eventfd
 
-  brassow
+Done.  Should show up as replies to this email.  These apply to v2.6.30 and
+are devoid of any KVM-isms. :)
 
-On Jun 19, 2009, at 1:24 PM, Randy Dunlap wrote:
+(Note-1: I've built and run these patches against additional kvm/irqfd
+patches and verified they all work properly)
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+(Note-2: I included your POLLHUP patch as 1/3 since it currently only exists
+in kvm.git, and is a pre-req for the other two)
+
+> 2) describe exactly what races are you talking about
+
+
+Covered in the patch headers (3/3 probably has the most detail)
+
+ 
+> 3) explain why this should be any concern of eventfd at all?
 >
-> Fix printk format warning:
->
-> drivers/md/dm-log-userspace-transfer.c:110: warning: format '%lu'  
-> expects type 'long unsigned int', but argument 4 has type 'size_t'
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Jonathan Brassow <dm-devel@redhat.com>
-> Cc: dm-devel@redhat.com
-> ---
-> drivers/md/dm-log-userspace-transfer.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-next-20090619.orig/drivers/md/dm-log-userspace-transfer.c
-> +++ linux-next-20090619/drivers/md/dm-log-userspace-transfer.c
-> @@ -108,7 +108,7 @@ static int fill_pkg(struct cn_msg *msg,
-> 				*(pkg->data_size) = 0;
-> 		} else if (tfr->data_size > *(pkg->data_size)) {
-> 			DMERR("Insufficient space to receive package [%u] "
-> -			      "(%u vs %lu)", tfr->request_type,
-> +			      "(%u vs %zu)", tfr->request_type,
-> 			      tfr->data_size, *(pkg->data_size));
->
-> 			*(pkg->data_size) = 0;
->
->
-> -- 
-> ~Randy
-> LPC 2009, Sept. 23-25, Portland, Oregon
-> http://linuxplumbersconf.org/2009/
->
-> --
-> dm-devel mailing list
-> dm-devel@redhat.com
-> https://www.redhat.com/mailman/listinfo/dm-devel
+
+To support any  in-kernel eventfd client that wants to get both "signal"
+and "release" notifications (based on using your POLLHUP patch) in a
+race-free way.  Without 2/3, 3/3, I cannot see how this can be done.  Yet
+your 1/3 patch is an important enhancement (to at least one client).  I
+suspect any other in-kernel users will find this a good feature as well.
+
+Thanks Davide,
+-Greg
+
 
