@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZFSH76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZFSIA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbZFSH76 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 03:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZFSH7u
+	id S1754713AbZFSIA7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 04:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZFSIAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 03:59:50 -0400
-Received: from n19.bullet.mail.mud.yahoo.com ([68.142.206.146]:26317 "HELO
-	n19.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750884AbZFSH7u (ORCPT
+	Fri, 19 Jun 2009 04:00:49 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:39967 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbZFSIAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 03:59:50 -0400
-X-Yahoo-Newman-Id: 414143.8739.bm@omp403.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=wfQChZG6jiKpsJ7F6elrLFQszHVGX8LlzSsBupSKFMFN6MSRgk5/Q9W94sQZAHFXZxwk9Riiky0MNXFh7FSZT3Aa+Hf7H/qcyZZnXecQCmSKJFEYdpl5rohfSwF9/hJDWXNfghKj6NLvjiK+1aLpZ4IQ2DEN2gSqY6+6T6kdwCE=  ;
-X-YMail-OSG: P2mw72wVM1nzsrKsrqKC.m6AzL.9HSlMXSGnnEHSEG0kLrjMBC_Gx47JcbU49g5orIliEjm6FWR.EB7hZGl6dkF6gX5oUyvE_HWR.Ah1K5oY7cHtVuKx.WICBZ2xLMdcMsw0UlhSUlVQOWyC1hM3G9I5TsnF8nPy0uHYE2D8JcROrOcD20xfPmmmGwSeugA8hu8xUpgIxpHydGtqvL44mzhr2u.ckC9v1Vzled7aUMEnRIlOa7CVKK6u8CSpe6FqgbAKfI1otSX98c6FNMwCSAWR8o8xkuAIY8GebwH7uk1AN7AJLJV3HbZQcZH3B57nypDF6Lckrrf2I_bK.Zdk3A--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [PATCH 1/2 v2] at91/USB: Add USB drivers for at91sam9g45 series
-Date: Fri, 19 Jun 2009 00:59:51 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com
-References: <1244720355-10740-1-git-send-email-nicolas.ferre@atmel.com>
-In-Reply-To: <1244720355-10740-1-git-send-email-nicolas.ferre@atmel.com>
+	Fri, 19 Jun 2009 04:00:48 -0400
+Date: Fri, 19 Jun 2009 10:00:50 +0200
+From: Andreas Mohr <andim2@users.sourceforge.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: andi@lisas.de, akpm@linux-foundation.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make e100 suspend handler support PCI cards lacking PM
+	capability
+Message-ID: <20090619080050.GA20131@rhlx01.hs-esslingen.de>
+Reply-To: andi@lisas.de
+References: <20081229102515.GA17171@rhlx01.hs-esslingen.de> <200906141606.29754.rjw@sisk.pl> <20090614164604.GA19746@rhlx01.hs-esslingen.de> <200906141909.46354.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906190059.51576.david-b@pacbell.net>
+In-Reply-To: <200906141909.46354.rjw@sisk.pl>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 June 2009, Nicolas Ferre wrote:
-> Add both host and gadget USB drivers for at91sam9g45 series. Those SOC embed
-> high speed USB interfaces.
-> The gadget driver is the already available atmel_usba_udc.
-> The host driver is an EHCI with its companion OHCI. EHCI is handled by the new
-> ehci-atmel.c whereas the OHCI is always handled by ohci-at91.c. This last
-> wrapper is modified to allow IRQ sharing between two controllers.
+Hi,
+
+On Sun, Jun 14, 2009 at 07:09:45PM +0200, Rafael J. Wysocki wrote:
+> On Sunday 14 June 2009, Andreas Mohr wrote:
+> > - why do we call netif_device_detach() _after_ doing hardware shutdown
+> >   of the network controller? I'd guess this can cause huge issues?
+> >   Someone told me he had rtnl lock issues upon S2D with e100
+> >   (very similar to my rtnl issues during aborted .suspend),
+> >   and that might possibly be the reason?
 > 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> I think you're right, but I'm not a network driver expert.
+> 
+> Perhaps you can change the ordering and see if that fixes the rtnl issue
+> (since you're able to reproduce it without my patch, that should be easy to
+> verify).
 
-Talking only about the EHCI bits here ... it looks pretty generic
-except for the clock management, which can't be.
+Well, I just moved netif_device_detach() above netif_running() check,
+but this didn't fix my network issues in case of a rejecting .suspend
+handler: after resume when unloading e100, that hangs, and I get tons of
+rtnl timeouts and locked rtnl mutex.
+This is most likely because upon e100 unload, a backtrace showed that I
+was hanging in e100_down -> msleep (somewhere at the very beginning of e100_down),
+which is most definitely the inlined napi_disable() call there:
 
-The tricky bits here will be system suspend/resume support, with
-the host controller able to trigger remote wakeup.  Clearly you
-don't support system suspend/resume yet.
+static inline void napi_disable(struct napi_struct *n)
+{
+        set_bit(NAPI_STATE_DISABLE, &n->state);
+        while (test_and_set_bit(NAPI_STATE_SCHED, &n->state))
+                msleep(1);
+        clear_bit(NAPI_STATE_DISABLE, &n->state);
+}
 
-A slightly less tricky bit would be suspending the root hub.
-Sometimes the hardware needs help there; other times it can
-automatically gate the various clocks and save power.
+IOW the .suspend seems to keep NAPI layer active, yet due to .suspend failure
+there's no .resume called, thus card is in an _inoperable_ state and
+NAPI cannot be processed any further, thus napi_disable() on driver unload
+locks up.
 
-If you split out patches for each of the drivers, I can ack
-each of those seaprately.  And then hope to see patches which
-add power management support before too long.
 
-- Dave
+BTW, in include/linux/napi.h, shouldn't napi_disable() make use of
+napi_synchronize() instead of C&P?
+(simply move napi_synchronize() above napi_disable() and use it there)
+Oh wait, there's the CONFIG_SMP complication:
+napi_synchronize() is implemented for SMP only, whereas napi_disable()
+checks the same thing _always_.
+(or is it a BUG that napi_disable() does the same check for non-SMP,
+too??)
 
+Thanks,
+
+Andreas Mohr
