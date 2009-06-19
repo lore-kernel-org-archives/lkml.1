@@ -1,162 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbZFSPv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZFSPv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbZFSPv1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 11:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZFSPvS
+	id S1753960AbZFSPv5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 11:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZFSPvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 11:51:18 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:42836 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751632AbZFSPvR (ORCPT
+	Fri, 19 Jun 2009 11:51:48 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:42355 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbZFSPvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 11:51:17 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjIFAFtPO0pMQWja/2dsb2JhbACBUb4jCJAGgjEfCIExBQ
-Date: Fri, 19 Jun 2009 11:51:15 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
-       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
-	support to use NMI-safe methods
-Message-ID: <20090619155115.GA24111@Krystal>
-References: <alpine.LFD.2.01.0906151125320.6276@localhost.localdomain> <20090615183649.GA16999@elte.hu> <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain> <20090615194344.GA12554@elte.hu> <20090615200619.GA10632@Krystal> <20090615204715.GA24554@elte.hu> <20090615210225.GA12919@Krystal> <20090615211209.GA27100@elte.hu> <alpine.LFD.2.01.0906151617030.6276@localhost.localdomain> <20090619152029.GA7204@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090619152029.GA7204@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:43:57 up 111 days, 12:10,  4 users,  load average: 0.29, 0.39,
-	0.72
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 19 Jun 2009 11:51:48 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] floppy: fix lock imbalance
+Date: Fri, 19 Jun 2009 17:51:39 +0200
+Message-Id: <1245426699-4386-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Mon, 15 Jun 2009, Ingo Molnar wrote:
-> > > 
-> > > See the numbers in the other mail: about 33 million pagefaults 
-> > > happen in a typical kernel build - that's ~400K/sec - and that 
-> > > is not a particularly really pagefault-heavy workload.
-> > 
-> > Did you do any function-level profiles?
-> > 
-> > Last I looked at it, the real cost of page faults were all in the 
-> > memory copies and page clearing, and while it would be nice to 
-> > speed up the kernel entry and exit, the few tens of cycles we 
-> > might be able to get from there really aren't all that important.
-> 
-> Yeah.
-> 
-> Here's the function level profiles of a typical kernel build on a 
-> Nehalem box:
-> 
->  $ perf report --sort symbol
-> 
->  #
->  # (14317328 samples)
->  #
->  # Overhead  Symbol
->  # ........  ......
->  #
->     44.05%  0x000000001a0b80
+A crappy macro prevents us unlocking on a fail path.
 
-It makes me wonder how the following scenario is accounted :
+Expand the macro and unlock appropriatelly.
 
-- Execution of a newly forked/exec'd process instruction causes a fault.
-  (traps, faults and interrupts can take roughly 2000 cycles to execute)
-- PC sampling interrupt fires.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/block/floppy.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Will it account the execution time as part of user-space or
-kernel-space execution ?
-
-Depending on how the sampling mechanism finds out if it is running in
-kernel mode or userspace mode, this might make the userspace PC appear
-as currently running even though the current execution context is the
-very beginning of the page fault handler (1st instruction servicing the
-fault).
-
-Mathieu
-
->      5.09%  0x0000000001d298
->      3.56%  0x0000000005742c
->      2.48%  0x0000000014026d
->      2.31%  0x00000000007b1a
->      2.06%  0x00000000115ac9
->      1.83%  [.] _int_malloc
->      1.71%  0x00000000064680
->      1.50%  [.] memset
->      1.37%  0x00000000125d88
->      1.28%  0x000000000b7642
->      1.17%  [k] clear_page_c
->      0.87%  [k] page_fault
->      0.78%  [.] is_defined_config
->      0.71%  [.] _int_free
->      0.68%  [.] __GI_strlen
->      0.66%  0x000000000699e8
->      0.54%  [.] __GI_memcpy
-> 
-> Most is dominated by user-space symbols. (no proper ELF+debuginfo on 
-> this box so they are unnamed.) It also sows that page clearing and 
-> pagefault handling dominates the kernel overhead - but is dwarved by 
-> other overhead. Any page-fault-entry costs are a drop in the bucket.
-> 
-> In fact with call-chain graphs we can get a precise picture, as we 
-> can do a non-linear 'slice' set operation over the samples and 
-> filter out the ones that have the 'page_fault' pattern in one of 
-> their parent functions:
-> 
->  $ perf report --sort symbol --parent page_fault
-> 
->  #
->  # (14317328 samples)
->  #
->  # Overhead  Symbol
->  # ........  ......
->  #
->      1.12%  [k] clear_page_c
->      0.87%  [k] page_fault
->      0.43%  [k] get_page_from_freelist
->      0.25%  [k] _spin_lock
->      0.24%  [k] do_page_fault
->      0.23%  [k] perf_swcounter_ctx_event
->      0.16%  [k] perf_swcounter_event
->      0.15%  [k] handle_mm_fault
->      0.15%  [k] __alloc_pages_nodemask
->      0.14%  [k] __rmqueue
->      0.12%  [k] find_get_page
->      0.11%  [k] copy_page_c
->      0.11%  [k] find_vma
->      0.10%  [k] _spin_lock_irqsave
->      0.10%  [k] __wake_up_bit
->      0.09%  [k] _spin_unlock_irqrestore
->      0.09%  [k] do_anonymous_page
->      0.09%  [k] __inc_zone_state
-> 
-> This "sub-profile" shows the true summary overhead that 'page_fault' 
-> and all its child functions have. Note that for example clear_page_c 
-> decreased from 1.17% to 1.12%:
-> 
->      1.12%  [k] clear_page_c
->      1.17%  [k] clear_page_c
-> 
-> because there's 0.05% of other callers to clear_page_c() that do not 
-> involve page_fault. Those are filtered out via --parent 
-> filtering/matching.
-> 
-> 	Ingo
-
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index 862b40c..91b7530 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -3327,7 +3327,10 @@ static inline int set_geometry(unsigned int cmd, struct floppy_struct *g,
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
+ 		mutex_lock(&open_lock);
+-		LOCK_FDC(drive, 1);
++		if (lock_fdc(drive, 1)) {
++			mutex_unlock(&open_lock);
++			return -EINTR;
++		}
+ 		floppy_type[type] = *g;
+ 		floppy_type[type].name = "user format";
+ 		for (cnt = type << 2; cnt < (type << 2) + 4; cnt++)
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.6.3.2
+
