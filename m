@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbZFSIB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZFSIHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbZFSIB4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 04:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbZFSIBs
+	id S1753605AbZFSIHf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 04:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZFSIHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 04:01:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47985
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752256AbZFSIBs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 04:01:48 -0400
-Date: Fri, 19 Jun 2009 01:01:51 -0700 (PDT)
-Message-Id: <20090619.010151.83084255.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: sam@ravnborg.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: backtrace symbols are bolixed...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090619073053.GA5445@elte.hu>
-References: <20090619.002101.45610359.davem@davemloft.net>
-	<20090619073053.GA5445@elte.hu>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Jun 2009 04:07:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59522 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750884AbZFSIHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 04:07:06 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090619055848.GA27802@localhost>
+References: <20090619055848.GA27802@localhost> <20090517022327.280096109@intel.com> <32411.1245336412@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Wang, Roger" <roger.wang@intel.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/3] make mapped executable pages the first class citizen
+Date: Fri, 19 Jun 2009 09:06:16 +0100
+Message-ID: <4278.1245398776@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 19 Jun 2009 09:30:53 +0200
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> * David Miller <davem@davemloft.net> wrote:
-> 
->> Sometime in the last day or so backtrace symbol printouts
->> have become useless:
->> 
->> [    0.000000] WARNING: at mm/bootmem.c:535 __stop_notes+0xbb10/0x1d660()
->> [    0.000000] Modules linked in:
->> [    0.000000] Call Trace:
->> [    0.000000]  [00000000008611b4] __stop_notes+0xbb10/0x1d660
->> [    0.000000]  [000000000086195c] __stop_notes+0xc2b8/0x1d660
->> [    0.000000]  [0000000000861a28] __stop_notes+0xc384/0x1d660
->> [    0.000000]  [0000000000858678] __stop_notes+0x2fd4/0x1d660
->> [    0.000000]  [000000000085684c] __stop_notes+0x11a8/0x1d660
->> [    0.000000]  [00000000006e8bdc] _etext+0xfffffffffffe59f4/0xe18
->> [    0.000000]  [0000000000000000] (null)
->> 
->> I'll try to bisect but maybe someone can figure it out quickly
->> meanwhile.
-> 
-> I saw this too. One change that went upstream when i started seeing 
-> these weird backtraces is:
+> There are plenty of free pages. Is it a page allocator bug? Is it
+> stable v2.6.30 or pre 2.6.31-rc1?
 
-The patch from Mike Frysinger posted by Stephen Rothwell fixes
-it for me.
+Cutting edge Linus after I pulled his new patches yesterday morning:
 
+	commit 65795efbd380a832ae508b04dba8f8e53f0b84d9
 
+David
