@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZFSRmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZFSRrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbZFSRmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 13:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZFSRmG
+	id S1755193AbZFSRrT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 13:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZFSRrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 13:42:06 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:41297 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751084AbZFSRmE (ORCPT
+	Fri, 19 Jun 2009 13:47:10 -0400
+Received: from mail-qy0-f175.google.com ([209.85.221.175]:58905 "EHLO
+	mail-qy0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751948AbZFSRrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 13:42:04 -0400
-Message-ID: <4A3BCD0D.3010801@oracle.com>
-Date: Fri, 19 Jun 2009 10:38:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 19 Jun 2009 13:47:08 -0400
+X-Greylist: delayed 493 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Jun 2009 13:47:08 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TUDoWrlncN2Hz4oXWBA3Upd2t7va9FCmmzOtqeKoQ7XA7YaJiFIB839AGw9RgrZS2E
+         qQeru25TxRA8WtYTCVPWoQ0H525xZwiROl3CVGETJoSA4TaBdDu5H2JvQ/Vql6wETZEK
+         7s5kdmj9qiUYHH4277kXtz1I9UnJtHNPyL6dM=
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jonathan Brassow <dm-devel@redhat.com>, dm-devel@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -next] dm: dm-log-userspace depends on NET
-References: <20090619172622.05adb236.sfr@canb.auug.org.au>
-In-Reply-To: <20090619172622.05adb236.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20090511031208.GA15208@dtor-d630.eng.vmware.com>
+References: <4A04E5EA.7000103@samsung.com>
+	 <5d5443650905091027w2b60f2ael520373790e6414c7@mail.gmail.com>
+	 <4d34a0a70905101934j320c03abl7e39af4fbfdf1f62@mail.gmail.com>
+	 <20090511031208.GA15208@dtor-d630.eng.vmware.com>
+Date: Fri, 19 Jun 2009 23:08:57 +0530
+Message-ID: <5d5443650906191038o797e0c3eu8234a56ee247ea68@mail.gmail.com>
+Subject: Re: [PATCH] Input: add MAX7359 key switch controller driver, v2
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Kim Kyuwon <chammoru@gmail.com>, Kim Kyuwon <q1.kim@samsung.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       Kyungmin Park <kyungmin.park@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.4A3BCDCB.02B1:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi,
 
-DM_LOG_USERSPACE selects CONNECTOR, but when NET is not enabled, this is
-useless and the build fails, so make DM_LOG_USERSPACE depend on NET.
+On Mon, May 11, 2009 at 8:42 AM, Dmitry
+Torokhov<dmitry.torokhov@gmail.com> wrote:
+> On Mon, May 11, 2009 at 11:34:54AM +0900, Kim Kyuwon wrote:
+>> Hi Trilok,
+>>
+>> On Sun, May 10, 2009 at 2:27 AM, Trilok Soni <soni.trilok@gmail.com> wrote:
+>> > Hi Kim,
+>> >
+>> > On Sat, May 9, 2009 at 7:39 AM, Kim Kyuwon <q1.kim@samsung.com> wrote:
+>> >> The Maxim MAX7359 is a I2C interfaced key switch controller which provides
+>> >> microprocessors with management of up to 64 key switches.
+>> >> This patch adds support for the MAX7359 key switch controller.
+>> >>
+>> >> Signed-off-by: Kim Kyuwon <q1.kim@samsung.com>
+>> >
+>> >
+>> > Thanks for implementing review comments. Please add
+>> >
+>> > Reviewed-by: Trilok Soni <soni.trilok@gmail.com>
+>>
+>> Sorry, I didn't know I should put the "Reviewed-by" in the reviewed
+>> patch.(I'm still kernelnewbie :) )
+>
+> You are not supposed to add it until somebody explicitely asks you to
+> do that, same with Acked-by... The reason is that these tags constitute
+> certain endorsement of the patch and while one person may review the
+> patch he/she may not yet feel that review process is complete. Hope this
+> makes some sense...
+>
+>> If possible, I want Dmitry to add
+>> "Reviewed-by" when he sends this driver to mainline, or I will send
+>> new patch again.
+>>
+>
+> I have it added to my copy.
 
-ERROR: "netlink_has_listeners" [drivers/connector/cn.ko] undefined!
-ERROR: "proc_net_fops_create" [drivers/connector/cn.ko] undefined!
-ERROR: "netlink_kernel_create" [drivers/connector/cn.ko] undefined!
-ERROR: "proc_net_remove" [drivers/connector/cn.ko] undefined!
-ERROR: "netlink_kernel_release" [drivers/connector/cn.ko] undefined!
-ERROR: "init_net" [drivers/connector/cn.ko] undefined!
-ERROR: "__alloc_skb" [drivers/connector/cn.ko] undefined!
-ERROR: "netlink_broadcast" [drivers/connector/cn.ko] undefined!
-ERROR: "kfree_skb" [drivers/connector/cn.ko] undefined!
-ERROR: "skb_put" [drivers/connector/cn.ko] undefined!
+I was looking at Palm Pre released linux-2.6.24 patch today at their
+site http://palm.cdnetworks.net/opensource/1.0.1/linux-2.6.24-patch.gz
+and I found that Palm Pre also uses the same switch controller but
+they seems to have written another version of this driver.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jonathan Brassow <dm-devel@redhat.com>
-Cc: dm-devel@redhat.com
----
- drivers/md/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20090619.orig/drivers/md/Kconfig
-+++ linux-next-20090619/drivers/md/Kconfig
-@@ -233,7 +233,7 @@ config DM_MIRROR
- 
- config DM_LOG_USERSPACE
- 	tristate "Mirror userspace logging (EXPERIMENTAL)"
--	depends on DM_MIRROR && EXPERIMENTAL
-+	depends on DM_MIRROR && EXPERIMENTAL && NET
- 	select CONNECTOR
- 	---help---
- 	  The userspace logging module provides a mechanism for
-
-
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+---Trilok Soni
