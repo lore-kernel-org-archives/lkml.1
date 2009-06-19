@@ -1,1208 +1,640 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbZFSUn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbZFSUrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760521AbZFSUn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 16:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbZFSUj1
+	id S1759197AbZFSUrg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 16:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZFSUr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 16:39:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56702 "EHLO mx2.redhat.com"
+	Fri, 19 Jun 2009 16:47:29 -0400
+Received: from mga02.intel.com ([134.134.136.20]:53587 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758440AbZFSUjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 16:39:06 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
-Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 09/20] io-controller: Separate out queue and data
-Date: Fri, 19 Jun 2009 16:37:27 -0400
-Message-Id: <1245443858-8487-10-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1245443858-8487-1-git-send-email-vgoyal@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com>
+	id S1752067AbZFSUr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 16:47:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,255,1243839600"; 
+   d="scan'208";a="423812940"
+Date: Fri, 19 Jun 2009 13:47:29 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: "'Chris Wright'" <chrisw@sous-sol.org>,
+       "'Christopher Wright'" <chrisw@redhat.com>,
+       "Stephen Rothwell'" <sfr@canb.auug.org.au>,
+       "'David Woodhouse'" <dwmw2@infradead.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Muli Ben-Yehuda'" <muli@il.ibm.com>
+Cc: "'lkml'" <linux-kernel@vger.kernel.org>,
+       "'iommu'" <iommu@lists.linux-foundation.org>
+Subject: [PATCH v2] IOMMU Identity Mapping Support (drivers/pci/intel_iommu.c)
+Message-ID: <20090619204729.GA3377@linux-os.sc.intel.com>
+References: <20090327212321.070229000@intel.com> <20090416001957.GA1527@linux-os.sc.intel.com> <1240135508.3589.75.camel@macbook.infradead.org> <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com> <20090520174259.GA10646@linux-os.sc.intel.com> <20090526225146.2faeeb05.akpm@linux-foundation.org> <A6AD88C3F2289247BE726C37303E1EB8AF9331CE@orsmsx505.amr.corp.intel.com> <20090618180527.GA24078@linux-os.sc.intel.com> <20090618191536.GD19771@sequoia.sous-sol.org> <A6AD88C3F2289247BE726C37303E1EB8B0045012@orsmsx505.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B0045012@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o So far noop, deadline and AS had one common structure called *_data which
-  contained both the queue information where requests are queued and also
-  common data used for scheduling. This patch breaks down this common
-  structure in two parts, *_queue and *_data. This is along the lines of
-  cfq where all the reuquests are queued in queue and common data and tunables
-  are part of data.
+Intel IOMMU Identity Mapping Support
 
-o It does not change the functionality but this re-organization helps once
-  noop, deadline and AS are changed to use hierarchical fair queuing.
+Identity mapping for IOMMU defines a single domain to 1:1 map all pci devices
+to all usable memory.
 
-o looks like queue_empty function is not required and we can check for
-  q->nr_sorted in elevator layer to see if ioscheduler queues are empty or
-  not.
+This reduces map/unmap overhead in DMA API's and improve IOMMU performance.
+On 10Gb network cards, Netperf shows no performance degradation compared to
+non-IOMMU performance.
 
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+This method may lose some of DMA remapping benefits like isolation.
+
+The patch sets up identity mapping for all pci devices to all usable
+memory. In the DMA API's, there is no overhead to maintain page tables,
+invalidate iotlb, flush cache etc.
+
+32 bit DMA devices don't use identity mapping domain in order to access memory
+beyond 4GB.
+
+When kernel option iommu=pt, pass through is first tried. If pass through
+succeeds, IOMMU goes to pass through. If pass through is not supported in hw or
+fail for whatever reason, IOMMU goes to identity mapping.  
+
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+
 ---
- block/as-iosched.c       |  208 ++++++++++++++++++++++++++--------------------
- block/deadline-iosched.c |  117 ++++++++++++++++----------
- block/elevator.c         |  111 +++++++++++++++++++++----
- block/noop-iosched.c     |   59 ++++++-------
- include/linux/elevator.h |    8 ++-
- 5 files changed, 319 insertions(+), 184 deletions(-)
 
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index c48fa67..7158e13 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -76,13 +76,7 @@ enum anticipation_status {
- 				 * or timed out */
- };
+The patch needs pass through patch. It can be applied cleanly on iommu-2.6 tree
+or linux-next tree.
+
+ intel-iommu.c |  319 +++++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 260 insertions(+), 59 deletions(-)
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 178853a..2c41aef 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -39,6 +39,7 @@
+ #include <linux/sysdev.h>
+ #include <asm/cacheflush.h>
+ #include <asm/iommu.h>
++#include <asm/e820.h>
+ #include "pci.h"
  
--struct as_data {
--	/*
--	 * run time data
--	 */
--
--	struct request_queue *q;	/* the "owner" queue */
--
-+struct as_queue {
- 	/*
- 	 * requests (as_rq s) are present on both sort_list and fifo_list
- 	 */
-@@ -90,6 +84,14 @@ struct as_data {
- 	struct list_head fifo_list[2];
- 
- 	struct request *next_rq[2];	/* next in sort order */
-+	unsigned long last_check_fifo[2];
-+	int write_batch_count;		/* max # of reqs in a write batch */
-+	int current_write_count;	/* how many requests left this batch */
-+	int write_batch_idled;		/* has the write batch gone idle? */
-+};
-+
-+struct as_data {
-+	struct request_queue *q;	/* the "owner" queue */
- 	sector_t last_sector[2];	/* last SYNC & ASYNC sectors */
- 
- 	unsigned long exit_prob;	/* probability a task will exit while
-@@ -103,21 +105,17 @@ struct as_data {
- 	sector_t new_seek_mean;
- 
- 	unsigned long current_batch_expires;
--	unsigned long last_check_fifo[2];
- 	int changed_batch;		/* 1: waiting for old batch to end */
- 	int new_batch;			/* 1: waiting on first read complete */
--	int batch_data_dir;		/* current batch SYNC / ASYNC */
--	int write_batch_count;		/* max # of reqs in a write batch */
--	int current_write_count;	/* how many requests left this batch */
--	int write_batch_idled;		/* has the write batch gone idle? */
- 
- 	enum anticipation_status antic_status;
- 	unsigned long antic_start;	/* jiffies: when it started */
- 	struct timer_list antic_timer;	/* anticipatory scheduling timer */
--	struct work_struct antic_work;	/* Deferred unplugging */
-+	struct work_struct antic_work;  /* Deferred unplugging */
- 	struct io_context *io_context;	/* Identify the expected process */
- 	int ioc_finished; /* IO associated with io_context is finished */
- 	int nr_dispatched;
-+	int batch_data_dir;		/* current batch SYNC / ASYNC */
- 
- 	/*
- 	 * settings that change how the i/o scheduler behaves
-@@ -258,13 +256,14 @@ static void as_put_io_context(struct request *rq)
- /*
-  * rb tree support functions
-  */
--#define RQ_RB_ROOT(ad, rq)	(&(ad)->sort_list[rq_is_sync((rq))])
-+#define RQ_RB_ROOT(asq, rq)	(&(asq)->sort_list[rq_is_sync((rq))])
- 
- static void as_add_rq_rb(struct as_data *ad, struct request *rq)
- {
- 	struct request *alias;
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
- 
--	while ((unlikely(alias = elv_rb_add(RQ_RB_ROOT(ad, rq), rq)))) {
-+	while ((unlikely(alias = elv_rb_add(RQ_RB_ROOT(asq, rq), rq)))) {
- 		as_move_to_dispatch(ad, alias);
- 		as_antic_stop(ad);
- 	}
-@@ -272,7 +271,9 @@ static void as_add_rq_rb(struct as_data *ad, struct request *rq)
- 
- static inline void as_del_rq_rb(struct as_data *ad, struct request *rq)
- {
--	elv_rb_del(RQ_RB_ROOT(ad, rq), rq);
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
-+
-+	elv_rb_del(RQ_RB_ROOT(asq, rq), rq);
+ #define ROOT_SIZE		VTD_PAGE_SIZE
+@@ -217,6 +218,14 @@ static inline bool dma_pte_present(struct dma_pte *pte)
+ 	return (pte->val & 3) != 0;
  }
  
- /*
-@@ -366,7 +367,7 @@ as_choose_req(struct as_data *ad, struct request *rq1, struct request *rq2)
-  * what request to process next. Anticipation works on top of this.
-  */
- static struct request *
--as_find_next_rq(struct as_data *ad, struct request *last)
-+as_find_next_rq(struct as_data *ad, struct as_queue *asq, struct request *last)
- {
- 	struct rb_node *rbnext = rb_next(&last->rb_node);
- 	struct rb_node *rbprev = rb_prev(&last->rb_node);
-@@ -382,7 +383,7 @@ as_find_next_rq(struct as_data *ad, struct request *last)
- 	else {
- 		const int data_dir = rq_is_sync(last);
- 
--		rbnext = rb_first(&ad->sort_list[data_dir]);
-+		rbnext = rb_first(&asq->sort_list[data_dir]);
- 		if (rbnext && rbnext != &last->rb_node)
- 			next = rb_entry_rq(rbnext);
- 	}
-@@ -787,9 +788,10 @@ static int as_can_anticipate(struct as_data *ad, struct request *rq)
- static void as_update_rq(struct as_data *ad, struct request *rq)
- {
- 	const int data_dir = rq_is_sync(rq);
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
- 
- 	/* keep the next_rq cache up to date */
--	ad->next_rq[data_dir] = as_choose_req(ad, rq, ad->next_rq[data_dir]);
-+	asq->next_rq[data_dir] = as_choose_req(ad, rq, asq->next_rq[data_dir]);
- 
- 	/*
- 	 * have we been anticipating this request?
-@@ -810,25 +812,26 @@ static void update_write_batch(struct as_data *ad)
- {
- 	unsigned long batch = ad->batch_expire[BLK_RW_ASYNC];
- 	long write_time;
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, NULL);
- 
- 	write_time = (jiffies - ad->current_batch_expires) + batch;
- 	if (write_time < 0)
- 		write_time = 0;
- 
--	if (write_time > batch && !ad->write_batch_idled) {
-+	if (write_time > batch && !asq->write_batch_idled) {
- 		if (write_time > batch * 3)
--			ad->write_batch_count /= 2;
-+			asq->write_batch_count /= 2;
- 		else
--			ad->write_batch_count--;
--	} else if (write_time < batch && ad->current_write_count == 0) {
-+			asq->write_batch_count--;
-+	} else if (write_time < batch && asq->current_write_count == 0) {
- 		if (batch > write_time * 3)
--			ad->write_batch_count *= 2;
-+			asq->write_batch_count *= 2;
- 		else
--			ad->write_batch_count++;
-+			asq->write_batch_count++;
- 	}
- 
--	if (ad->write_batch_count < 1)
--		ad->write_batch_count = 1;
-+	if (asq->write_batch_count < 1)
-+		asq->write_batch_count = 1;
- }
- 
- /*
-@@ -899,6 +902,7 @@ static void as_remove_queued_request(struct request_queue *q,
- 	const int data_dir = rq_is_sync(rq);
- 	struct as_data *ad = q->elevator->elevator_data;
- 	struct io_context *ioc;
-+	struct as_queue *asq = elv_get_sched_queue(q, rq);
- 
- 	WARN_ON(RQ_STATE(rq) != AS_RQ_QUEUED);
- 
-@@ -912,8 +916,8 @@ static void as_remove_queued_request(struct request_queue *q,
- 	 * Update the "next_rq" cache if we are about to remove its
- 	 * entry
- 	 */
--	if (ad->next_rq[data_dir] == rq)
--		ad->next_rq[data_dir] = as_find_next_rq(ad, rq);
-+	if (asq->next_rq[data_dir] == rq)
-+		asq->next_rq[data_dir] = as_find_next_rq(ad, asq, rq);
- 
- 	rq_fifo_clear(rq);
- 	as_del_rq_rb(ad, rq);
-@@ -927,23 +931,23 @@ static void as_remove_queued_request(struct request_queue *q,
-  *
-  * See as_antic_expired comment.
-  */
--static int as_fifo_expired(struct as_data *ad, int adir)
-+static int as_fifo_expired(struct as_data *ad, struct as_queue *asq, int adir)
- {
- 	struct request *rq;
- 	long delta_jif;
- 
--	delta_jif = jiffies - ad->last_check_fifo[adir];
-+	delta_jif = jiffies - asq->last_check_fifo[adir];
- 	if (unlikely(delta_jif < 0))
- 		delta_jif = -delta_jif;
- 	if (delta_jif < ad->fifo_expire[adir])
- 		return 0;
- 
--	ad->last_check_fifo[adir] = jiffies;
-+	asq->last_check_fifo[adir] = jiffies;
- 
--	if (list_empty(&ad->fifo_list[adir]))
-+	if (list_empty(&asq->fifo_list[adir]))
- 		return 0;
- 
--	rq = rq_entry_fifo(ad->fifo_list[adir].next);
-+	rq = rq_entry_fifo(asq->fifo_list[adir].next);
- 
- 	return time_after(jiffies, rq_fifo_time(rq));
- }
-@@ -952,7 +956,7 @@ static int as_fifo_expired(struct as_data *ad, int adir)
-  * as_batch_expired returns true if the current batch has expired. A batch
-  * is a set of reads or a set of writes.
-  */
--static inline int as_batch_expired(struct as_data *ad)
-+static inline int as_batch_expired(struct as_data *ad, struct as_queue *asq)
- {
- 	if (ad->changed_batch || ad->new_batch)
- 		return 0;
-@@ -962,7 +966,7 @@ static inline int as_batch_expired(struct as_data *ad)
- 		return time_after(jiffies, ad->current_batch_expires);
- 
- 	return time_after(jiffies, ad->current_batch_expires)
--		|| ad->current_write_count == 0;
-+		|| asq->current_write_count == 0;
- }
- 
- /*
-@@ -971,6 +975,7 @@ static inline int as_batch_expired(struct as_data *ad)
- static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
- {
- 	const int data_dir = rq_is_sync(rq);
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
- 
- 	BUG_ON(RB_EMPTY_NODE(&rq->rb_node));
- 
-@@ -993,12 +998,12 @@ static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
- 			ad->io_context = NULL;
- 		}
- 
--		if (ad->current_write_count != 0)
--			ad->current_write_count--;
-+		if (asq->current_write_count != 0)
-+			asq->current_write_count--;
- 	}
- 	ad->ioc_finished = 0;
- 
--	ad->next_rq[data_dir] = as_find_next_rq(ad, rq);
-+	asq->next_rq[data_dir] = as_find_next_rq(ad, asq, rq);
- 
- 	/*
- 	 * take it off the sort and fifo list, add to dispatch queue
-@@ -1022,9 +1027,16 @@ static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
- static int as_dispatch_request(struct request_queue *q, int force)
- {
- 	struct as_data *ad = q->elevator->elevator_data;
--	const int reads = !list_empty(&ad->fifo_list[BLK_RW_SYNC]);
--	const int writes = !list_empty(&ad->fifo_list[BLK_RW_ASYNC]);
- 	struct request *rq;
-+	struct as_queue *asq = elv_select_sched_queue(q, force);
-+	int reads, writes;
-+
-+	if (!asq)
-+		return 0;
-+
-+	reads = !list_empty(&asq->fifo_list[BLK_RW_SYNC]);
-+	writes = !list_empty(&asq->fifo_list[BLK_RW_ASYNC]);
-+
- 
- 	if (unlikely(force)) {
- 		/*
-@@ -1040,25 +1052,25 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 		ad->changed_batch = 0;
- 		ad->new_batch = 0;
- 
--		while (ad->next_rq[BLK_RW_SYNC]) {
--			as_move_to_dispatch(ad, ad->next_rq[BLK_RW_SYNC]);
-+		while (asq->next_rq[BLK_RW_SYNC]) {
-+			as_move_to_dispatch(ad, asq->next_rq[BLK_RW_SYNC]);
- 			dispatched++;
- 		}
--		ad->last_check_fifo[BLK_RW_SYNC] = jiffies;
-+		asq->last_check_fifo[BLK_RW_SYNC] = jiffies;
- 
--		while (ad->next_rq[BLK_RW_ASYNC]) {
--			as_move_to_dispatch(ad, ad->next_rq[BLK_RW_ASYNC]);
-+		while (asq->next_rq[BLK_RW_ASYNC]) {
-+			as_move_to_dispatch(ad, asq->next_rq[BLK_RW_ASYNC]);
- 			dispatched++;
- 		}
--		ad->last_check_fifo[BLK_RW_ASYNC] = jiffies;
-+		asq->last_check_fifo[BLK_RW_ASYNC] = jiffies;
- 
- 		return dispatched;
- 	}
- 
- 	/* Signal that the write batch was uncontended, so we can't time it */
- 	if (ad->batch_data_dir == BLK_RW_ASYNC && !reads) {
--		if (ad->current_write_count == 0 || !writes)
--			ad->write_batch_idled = 1;
-+		if (asq->current_write_count == 0 || !writes)
-+			asq->write_batch_idled = 1;
- 	}
- 
- 	if (!(reads || writes)
-@@ -1067,14 +1079,14 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 		|| ad->changed_batch)
- 		return 0;
- 
--	if (!(reads && writes && as_batch_expired(ad))) {
-+	if (!(reads && writes && as_batch_expired(ad, asq))) {
- 		/*
- 		 * batch is still running or no reads or no writes
- 		 */
--		rq = ad->next_rq[ad->batch_data_dir];
-+		rq = asq->next_rq[ad->batch_data_dir];
- 
- 		if (ad->batch_data_dir == BLK_RW_SYNC && ad->antic_expire) {
--			if (as_fifo_expired(ad, BLK_RW_SYNC))
-+			if (as_fifo_expired(ad, asq, BLK_RW_SYNC))
- 				goto fifo_expired;
- 
- 			if (as_can_anticipate(ad, rq)) {
-@@ -1098,7 +1110,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 	 */
- 
- 	if (reads) {
--		BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[BLK_RW_SYNC]));
-+		BUG_ON(RB_EMPTY_ROOT(&asq->sort_list[BLK_RW_SYNC]));
- 
- 		if (writes && ad->batch_data_dir == BLK_RW_SYNC)
- 			/*
-@@ -1111,8 +1123,8 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 			ad->changed_batch = 1;
- 		}
- 		ad->batch_data_dir = BLK_RW_SYNC;
--		rq = rq_entry_fifo(ad->fifo_list[BLK_RW_SYNC].next);
--		ad->last_check_fifo[ad->batch_data_dir] = jiffies;
-+		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_SYNC].next);
-+		asq->last_check_fifo[ad->batch_data_dir] = jiffies;
- 		goto dispatch_request;
- 	}
- 
-@@ -1122,7 +1134,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 
- 	if (writes) {
- dispatch_writes:
--		BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[BLK_RW_ASYNC]));
-+		BUG_ON(RB_EMPTY_ROOT(&asq->sort_list[BLK_RW_ASYNC]));
- 
- 		if (ad->batch_data_dir == BLK_RW_SYNC) {
- 			ad->changed_batch = 1;
-@@ -1135,10 +1147,10 @@ dispatch_writes:
- 			ad->new_batch = 0;
- 		}
- 		ad->batch_data_dir = BLK_RW_ASYNC;
--		ad->current_write_count = ad->write_batch_count;
--		ad->write_batch_idled = 0;
--		rq = rq_entry_fifo(ad->fifo_list[BLK_RW_ASYNC].next);
--		ad->last_check_fifo[BLK_RW_ASYNC] = jiffies;
-+		asq->current_write_count = asq->write_batch_count;
-+		asq->write_batch_idled = 0;
-+		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_ASYNC].next);
-+		asq->last_check_fifo[BLK_RW_ASYNC] = jiffies;
- 		goto dispatch_request;
- 	}
- 
-@@ -1150,9 +1162,9 @@ dispatch_request:
- 	 * If a request has expired, service it.
- 	 */
- 
--	if (as_fifo_expired(ad, ad->batch_data_dir)) {
-+	if (as_fifo_expired(ad, asq, ad->batch_data_dir)) {
- fifo_expired:
--		rq = rq_entry_fifo(ad->fifo_list[ad->batch_data_dir].next);
-+		rq = rq_entry_fifo(asq->fifo_list[ad->batch_data_dir].next);
- 	}
- 
- 	if (ad->changed_batch) {
-@@ -1185,6 +1197,7 @@ static void as_add_request(struct request_queue *q, struct request *rq)
- {
- 	struct as_data *ad = q->elevator->elevator_data;
- 	int data_dir;
-+	struct as_queue *asq = elv_get_sched_queue(q, rq);
- 
- 	RQ_SET_STATE(rq, AS_RQ_NEW);
- 
-@@ -1203,7 +1216,7 @@ static void as_add_request(struct request_queue *q, struct request *rq)
- 	 * set expire time and add to fifo list
- 	 */
- 	rq_set_fifo_time(rq, jiffies + ad->fifo_expire[data_dir]);
--	list_add_tail(&rq->queuelist, &ad->fifo_list[data_dir]);
-+	list_add_tail(&rq->queuelist, &asq->fifo_list[data_dir]);
- 
- 	as_update_rq(ad, rq); /* keep state machine up to date */
- 	RQ_SET_STATE(rq, AS_RQ_QUEUED);
-@@ -1225,31 +1238,20 @@ static void as_deactivate_request(struct request_queue *q, struct request *rq)
- 		atomic_inc(&RQ_IOC(rq)->aic->nr_dispatched);
- }
- 
--/*
-- * as_queue_empty tells us if there are requests left in the device. It may
-- * not be the case that a driver can get the next request even if the queue
-- * is not empty - it is used in the block layer to check for plugging and
-- * merging opportunities
-- */
--static int as_queue_empty(struct request_queue *q)
--{
--	struct as_data *ad = q->elevator->elevator_data;
--
--	return list_empty(&ad->fifo_list[BLK_RW_ASYNC])
--		&& list_empty(&ad->fifo_list[BLK_RW_SYNC]);
--}
--
- static int
- as_merge(struct request_queue *q, struct request **req, struct bio *bio)
- {
--	struct as_data *ad = q->elevator->elevator_data;
- 	sector_t rb_key = bio->bi_sector + bio_sectors(bio);
- 	struct request *__rq;
-+	struct as_queue *asq = elv_get_sched_queue_current(q);
-+
-+	if (!asq)
-+		return ELEVATOR_NO_MERGE;
- 
- 	/*
- 	 * check for front merge
- 	 */
--	__rq = elv_rb_find(&ad->sort_list[bio_data_dir(bio)], rb_key);
-+	__rq = elv_rb_find(&asq->sort_list[bio_data_dir(bio)], rb_key);
- 	if (__rq && elv_rq_merge_ok(__rq, bio)) {
- 		*req = __rq;
- 		return ELEVATOR_FRONT_MERGE;
-@@ -1336,6 +1338,41 @@ static int as_may_queue(struct request_queue *q, int rw)
- 	return ret;
- }
- 
-+/* Called with queue lock held */
-+static void *as_alloc_as_queue(struct request_queue *q,
-+				struct elevator_queue *eq, gfp_t gfp_mask)
-+{
-+	struct as_queue *asq;
-+	struct as_data *ad = eq->elevator_data;
-+
-+	asq = kmalloc_node(sizeof(*asq), gfp_mask | __GFP_ZERO, q->node);
-+	if (asq == NULL)
-+		goto out;
-+
-+	INIT_LIST_HEAD(&asq->fifo_list[BLK_RW_SYNC]);
-+	INIT_LIST_HEAD(&asq->fifo_list[BLK_RW_ASYNC]);
-+	asq->sort_list[BLK_RW_SYNC] = RB_ROOT;
-+	asq->sort_list[BLK_RW_ASYNC] = RB_ROOT;
-+	if (ad)
-+		asq->write_batch_count = ad->batch_expire[BLK_RW_ASYNC] / 10;
-+	else
-+		asq->write_batch_count = default_write_batch_expire / 10;
-+
-+	if (asq->write_batch_count < 2)
-+		asq->write_batch_count = 2;
-+out:
-+	return asq;
-+}
-+
-+static void as_free_as_queue(struct elevator_queue *e, void *sched_queue)
-+{
-+	struct as_queue *asq = sched_queue;
-+
-+	BUG_ON(!list_empty(&asq->fifo_list[BLK_RW_SYNC]));
-+	BUG_ON(!list_empty(&asq->fifo_list[BLK_RW_ASYNC]));
-+	kfree(asq);
-+}
-+
- static void as_exit_queue(struct elevator_queue *e)
- {
- 	struct as_data *ad = e->elevator_data;
-@@ -1343,9 +1380,6 @@ static void as_exit_queue(struct elevator_queue *e)
- 	del_timer_sync(&ad->antic_timer);
- 	cancel_work_sync(&ad->antic_work);
- 
--	BUG_ON(!list_empty(&ad->fifo_list[BLK_RW_SYNC]));
--	BUG_ON(!list_empty(&ad->fifo_list[BLK_RW_ASYNC]));
--
- 	put_io_context(ad->io_context);
- 	kfree(ad);
- }
-@@ -1369,10 +1403,6 @@ static void *as_init_queue(struct request_queue *q)
- 	init_timer(&ad->antic_timer);
- 	INIT_WORK(&ad->antic_work, as_work_handler);
- 
--	INIT_LIST_HEAD(&ad->fifo_list[BLK_RW_SYNC]);
--	INIT_LIST_HEAD(&ad->fifo_list[BLK_RW_ASYNC]);
--	ad->sort_list[BLK_RW_SYNC] = RB_ROOT;
--	ad->sort_list[BLK_RW_ASYNC] = RB_ROOT;
- 	ad->fifo_expire[BLK_RW_SYNC] = default_read_expire;
- 	ad->fifo_expire[BLK_RW_ASYNC] = default_write_expire;
- 	ad->antic_expire = default_antic_expire;
-@@ -1380,9 +1410,6 @@ static void *as_init_queue(struct request_queue *q)
- 	ad->batch_expire[BLK_RW_ASYNC] = default_write_batch_expire;
- 
- 	ad->current_batch_expires = jiffies + ad->batch_expire[BLK_RW_SYNC];
--	ad->write_batch_count = ad->batch_expire[BLK_RW_ASYNC] / 10;
--	if (ad->write_batch_count < 2)
--		ad->write_batch_count = 2;
- 
- 	return ad;
- }
-@@ -1480,7 +1507,6 @@ static struct elevator_type iosched_as = {
- 		.elevator_add_req_fn =		as_add_request,
- 		.elevator_activate_req_fn =	as_activate_request,
- 		.elevator_deactivate_req_fn = 	as_deactivate_request,
--		.elevator_queue_empty_fn =	as_queue_empty,
- 		.elevator_completed_req_fn =	as_completed_request,
- 		.elevator_former_req_fn =	elv_rb_former_request,
- 		.elevator_latter_req_fn =	elv_rb_latter_request,
-@@ -1488,6 +1514,8 @@ static struct elevator_type iosched_as = {
- 		.elevator_init_fn =		as_init_queue,
- 		.elevator_exit_fn =		as_exit_queue,
- 		.trim =				as_trim,
-+		.elevator_alloc_sched_queue_fn = as_alloc_as_queue,
-+		.elevator_free_sched_queue_fn = as_free_as_queue,
- 	},
- 
- 	.elevator_attrs = as_attrs,
-diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
-index c4d991d..5e65041 100644
---- a/block/deadline-iosched.c
-+++ b/block/deadline-iosched.c
-@@ -23,25 +23,23 @@ static const int writes_starved = 2;    /* max times reads can starve a write */
- static const int fifo_batch = 16;       /* # of sequential requests treated as one
- 				     by the above parameters. For throughput. */
- 
--struct deadline_data {
--	/*
--	 * run time data
--	 */
--
-+struct deadline_queue {
- 	/*
- 	 * requests (deadline_rq s) are present on both sort_list and fifo_list
- 	 */
--	struct rb_root sort_list[2];	
-+	struct rb_root sort_list[2];
- 	struct list_head fifo_list[2];
--
- 	/*
- 	 * next in sort order. read, write or both are NULL
- 	 */
- 	struct request *next_rq[2];
- 	unsigned int batching;		/* number of sequential requests made */
--	sector_t last_sector;		/* head position */
- 	unsigned int starved;		/* times reads have starved writes */
-+};
- 
-+struct deadline_data {
-+	struct request_queue *q;
-+	sector_t last_sector;		/* head position */
- 	/*
- 	 * settings that change how the i/o scheduler behaves
- 	 */
-@@ -56,7 +54,9 @@ static void deadline_move_request(struct deadline_data *, struct request *);
- static inline struct rb_root *
- deadline_rb_root(struct deadline_data *dd, struct request *rq)
- {
--	return &dd->sort_list[rq_data_dir(rq)];
-+	struct deadline_queue *dq = elv_get_sched_queue(dd->q, rq);
-+
-+	return &dq->sort_list[rq_data_dir(rq)];
- }
- 
- /*
-@@ -87,9 +87,10 @@ static inline void
- deadline_del_rq_rb(struct deadline_data *dd, struct request *rq)
- {
- 	const int data_dir = rq_data_dir(rq);
-+	struct deadline_queue *dq = elv_get_sched_queue(dd->q, rq);
- 
--	if (dd->next_rq[data_dir] == rq)
--		dd->next_rq[data_dir] = deadline_latter_request(rq);
-+	if (dq->next_rq[data_dir] == rq)
-+		dq->next_rq[data_dir] = deadline_latter_request(rq);
- 
- 	elv_rb_del(deadline_rb_root(dd, rq), rq);
- }
-@@ -102,6 +103,7 @@ deadline_add_request(struct request_queue *q, struct request *rq)
- {
- 	struct deadline_data *dd = q->elevator->elevator_data;
- 	const int data_dir = rq_data_dir(rq);
-+	struct deadline_queue *dq = elv_get_sched_queue(q, rq);
- 
- 	deadline_add_rq_rb(dd, rq);
- 
-@@ -109,7 +111,7 @@ deadline_add_request(struct request_queue *q, struct request *rq)
- 	 * set expire time and add to fifo list
- 	 */
- 	rq_set_fifo_time(rq, jiffies + dd->fifo_expire[data_dir]);
--	list_add_tail(&rq->queuelist, &dd->fifo_list[data_dir]);
-+	list_add_tail(&rq->queuelist, &dq->fifo_list[data_dir]);
- }
- 
- /*
-@@ -129,6 +131,11 @@ deadline_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 	struct deadline_data *dd = q->elevator->elevator_data;
- 	struct request *__rq;
- 	int ret;
-+	struct deadline_queue *dq;
-+
-+	dq = elv_get_sched_queue_current(q);
-+	if (!dq)
-+		return ELEVATOR_NO_MERGE;
- 
- 	/*
- 	 * check for front merge
-@@ -136,7 +143,7 @@ deadline_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 	if (dd->front_merges) {
- 		sector_t sector = bio->bi_sector + bio_sectors(bio);
- 
--		__rq = elv_rb_find(&dd->sort_list[bio_data_dir(bio)], sector);
-+		__rq = elv_rb_find(&dq->sort_list[bio_data_dir(bio)], sector);
- 		if (__rq) {
- 			BUG_ON(sector != __rq->sector);
- 
-@@ -207,10 +214,11 @@ static void
- deadline_move_request(struct deadline_data *dd, struct request *rq)
- {
- 	const int data_dir = rq_data_dir(rq);
-+	struct deadline_queue *dq = elv_get_sched_queue(dd->q, rq);
- 
--	dd->next_rq[READ] = NULL;
--	dd->next_rq[WRITE] = NULL;
--	dd->next_rq[data_dir] = deadline_latter_request(rq);
-+	dq->next_rq[READ] = NULL;
-+	dq->next_rq[WRITE] = NULL;
-+	dq->next_rq[data_dir] = deadline_latter_request(rq);
- 
- 	dd->last_sector = rq_end_sector(rq);
- 
-@@ -225,9 +233,9 @@ deadline_move_request(struct deadline_data *dd, struct request *rq)
-  * deadline_check_fifo returns 0 if there are no expired requests on the fifo,
-  * 1 otherwise. Requires !list_empty(&dd->fifo_list[data_dir])
-  */
--static inline int deadline_check_fifo(struct deadline_data *dd, int ddir)
-+static inline int deadline_check_fifo(struct deadline_queue *dq, int ddir)
- {
--	struct request *rq = rq_entry_fifo(dd->fifo_list[ddir].next);
-+	struct request *rq = rq_entry_fifo(dq->fifo_list[ddir].next);
- 
- 	/*
- 	 * rq is expired!
-@@ -245,20 +253,26 @@ static inline int deadline_check_fifo(struct deadline_data *dd, int ddir)
- static int deadline_dispatch_requests(struct request_queue *q, int force)
- {
- 	struct deadline_data *dd = q->elevator->elevator_data;
--	const int reads = !list_empty(&dd->fifo_list[READ]);
--	const int writes = !list_empty(&dd->fifo_list[WRITE]);
-+	struct deadline_queue *dq = elv_select_sched_queue(q, force);
-+	int reads, writes;
- 	struct request *rq;
- 	int data_dir;
- 
-+	if (!dq)
-+		return 0;
-+
-+	reads = !list_empty(&dq->fifo_list[READ]);
-+	writes = !list_empty(&dq->fifo_list[WRITE]);
-+
- 	/*
- 	 * batches are currently reads XOR writes
- 	 */
--	if (dd->next_rq[WRITE])
--		rq = dd->next_rq[WRITE];
-+	if (dq->next_rq[WRITE])
-+		rq = dq->next_rq[WRITE];
- 	else
--		rq = dd->next_rq[READ];
-+		rq = dq->next_rq[READ];
- 
--	if (rq && dd->batching < dd->fifo_batch)
-+	if (rq && dq->batching < dd->fifo_batch)
- 		/* we have a next request are still entitled to batch */
- 		goto dispatch_request;
- 
-@@ -268,9 +282,9 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
- 	 */
- 
- 	if (reads) {
--		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[READ]));
-+		BUG_ON(RB_EMPTY_ROOT(&dq->sort_list[READ]));
- 
--		if (writes && (dd->starved++ >= dd->writes_starved))
-+		if (writes && (dq->starved++ >= dd->writes_starved))
- 			goto dispatch_writes;
- 
- 		data_dir = READ;
-@@ -284,9 +298,9 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
- 
- 	if (writes) {
- dispatch_writes:
--		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[WRITE]));
-+		BUG_ON(RB_EMPTY_ROOT(&dq->sort_list[WRITE]));
- 
--		dd->starved = 0;
-+		dq->starved = 0;
- 
- 		data_dir = WRITE;
- 
-@@ -299,48 +313,62 @@ dispatch_find_request:
- 	/*
- 	 * we are not running a batch, find best request for selected data_dir
- 	 */
--	if (deadline_check_fifo(dd, data_dir) || !dd->next_rq[data_dir]) {
-+	if (deadline_check_fifo(dq, data_dir) || !dq->next_rq[data_dir]) {
- 		/*
- 		 * A deadline has expired, the last request was in the other
- 		 * direction, or we have run out of higher-sectored requests.
- 		 * Start again from the request with the earliest expiry time.
- 		 */
--		rq = rq_entry_fifo(dd->fifo_list[data_dir].next);
-+		rq = rq_entry_fifo(dq->fifo_list[data_dir].next);
- 	} else {
- 		/*
- 		 * The last req was the same dir and we have a next request in
- 		 * sort order. No expired requests so continue on from here.
- 		 */
--		rq = dd->next_rq[data_dir];
-+		rq = dq->next_rq[data_dir];
- 	}
- 
--	dd->batching = 0;
-+	dq->batching = 0;
- 
- dispatch_request:
- 	/*
- 	 * rq is the selected appropriate request.
- 	 */
--	dd->batching++;
-+	dq->batching++;
- 	deadline_move_request(dd, rq);
- 
- 	return 1;
- }
- 
--static int deadline_queue_empty(struct request_queue *q)
-+static void *deadline_alloc_deadline_queue(struct request_queue *q,
-+				struct elevator_queue *eq, gfp_t gfp_mask)
- {
--	struct deadline_data *dd = q->elevator->elevator_data;
-+	struct deadline_queue *dq;
- 
--	return list_empty(&dd->fifo_list[WRITE])
--		&& list_empty(&dd->fifo_list[READ]);
-+	dq = kmalloc_node(sizeof(*dq), gfp_mask | __GFP_ZERO, q->node);
-+	if (dq == NULL)
-+		goto out;
-+
-+	INIT_LIST_HEAD(&dq->fifo_list[READ]);
-+	INIT_LIST_HEAD(&dq->fifo_list[WRITE]);
-+	dq->sort_list[READ] = RB_ROOT;
-+	dq->sort_list[WRITE] = RB_ROOT;
-+out:
-+	return dq;
-+}
-+
-+static void deadline_free_deadline_queue(struct elevator_queue *e,
-+						void *sched_queue)
-+{
-+	struct deadline_queue *dq = sched_queue;
-+
-+	kfree(dq);
- }
- 
- static void deadline_exit_queue(struct elevator_queue *e)
- {
- 	struct deadline_data *dd = e->elevator_data;
- 
--	BUG_ON(!list_empty(&dd->fifo_list[READ]));
--	BUG_ON(!list_empty(&dd->fifo_list[WRITE]));
--
- 	kfree(dd);
- }
- 
-@@ -355,10 +383,7 @@ static void *deadline_init_queue(struct request_queue *q)
- 	if (!dd)
- 		return NULL;
- 
--	INIT_LIST_HEAD(&dd->fifo_list[READ]);
--	INIT_LIST_HEAD(&dd->fifo_list[WRITE]);
--	dd->sort_list[READ] = RB_ROOT;
--	dd->sort_list[WRITE] = RB_ROOT;
-+	dd->q = q;
- 	dd->fifo_expire[READ] = read_expire;
- 	dd->fifo_expire[WRITE] = write_expire;
- 	dd->writes_starved = writes_starved;
-@@ -445,13 +470,13 @@ static struct elevator_type iosched_deadline = {
- 		.elevator_merge_req_fn =	deadline_merged_requests,
- 		.elevator_dispatch_fn =		deadline_dispatch_requests,
- 		.elevator_add_req_fn =		deadline_add_request,
--		.elevator_queue_empty_fn =	deadline_queue_empty,
- 		.elevator_former_req_fn =	elv_rb_former_request,
- 		.elevator_latter_req_fn =	elv_rb_latter_request,
- 		.elevator_init_fn =		deadline_init_queue,
- 		.elevator_exit_fn =		deadline_exit_queue,
-+		.elevator_alloc_sched_queue_fn = deadline_alloc_deadline_queue,
-+		.elevator_free_sched_queue_fn = deadline_free_deadline_queue,
- 	},
--
- 	.elevator_attrs = deadline_attrs,
- 	.elevator_name = "deadline",
- 	.elevator_owner = THIS_MODULE,
-diff --git a/block/elevator.c b/block/elevator.c
-index 3944385..67a0601 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -180,17 +180,54 @@ static struct elevator_type *elevator_get(const char *name)
- 	return e;
- }
- 
--static void *elevator_init_queue(struct request_queue *q,
--				 struct elevator_queue *eq)
-+static void *elevator_init_data(struct request_queue *q,
-+					struct elevator_queue *eq)
- {
--	return eq->ops->elevator_init_fn(q);
-+	void *data = NULL;
-+
-+	if (eq->ops->elevator_init_fn) {
-+		data = eq->ops->elevator_init_fn(q);
-+		if (data)
-+			return data;
-+		else
-+			return ERR_PTR(-ENOMEM);
-+	}
-+
-+	/* IO scheduler does not instanciate data (noop), it is not an error */
-+	return NULL;
-+}
-+
-+static void elevator_free_sched_queue(struct elevator_queue *eq,
-+						void *sched_queue)
-+{
-+	/* Not all io schedulers (cfq) strore sched_queue */
-+	if (!sched_queue)
-+		return;
-+	eq->ops->elevator_free_sched_queue_fn(eq, sched_queue);
-+}
-+
-+static void *elevator_alloc_sched_queue(struct request_queue *q,
-+					struct elevator_queue *eq)
-+{
-+	void *sched_queue = NULL;
-+
-+	if (eq->ops->elevator_alloc_sched_queue_fn) {
-+		sched_queue = eq->ops->elevator_alloc_sched_queue_fn(q, eq,
-+								GFP_KERNEL);
-+		if (!sched_queue)
-+			return ERR_PTR(-ENOMEM);
-+
-+	}
-+
-+	return sched_queue;
- }
- 
- static void elevator_attach(struct request_queue *q, struct elevator_queue *eq,
--			   void *data)
-+			   void *data, void *sched_queue)
- {
- 	q->elevator = eq;
- 	eq->elevator_data = data;
-+	eq->sched_queue = sched_queue;
- }
- 
- static char chosen_elevator[16];
-@@ -260,7 +297,7 @@ int elevator_init(struct request_queue *q, char *name)
- 	struct elevator_type *e = NULL;
- 	struct elevator_queue *eq;
- 	int ret = 0;
--	void *data;
-+	void *data = NULL, *sched_queue = NULL;
- 
- 	INIT_LIST_HEAD(&q->queue_head);
- 	q->last_merge = NULL;
-@@ -294,13 +331,21 @@ int elevator_init(struct request_queue *q, char *name)
- 	if (!eq)
- 		return -ENOMEM;
- 
--	data = elevator_init_queue(q, eq);
--	if (!data) {
-+	data = elevator_init_data(q, eq);
-+
-+	if (IS_ERR(data)) {
-+		kobject_put(&eq->kobj);
-+		return -ENOMEM;
-+	}
-+
-+	sched_queue = elevator_alloc_sched_queue(q, eq);
-+
-+	if (IS_ERR(sched_queue)) {
- 		kobject_put(&eq->kobj);
- 		return -ENOMEM;
- 	}
- 
--	elevator_attach(q, eq, data);
-+	elevator_attach(q, eq, data, sched_queue);
- 	return ret;
- }
- EXPORT_SYMBOL(elevator_init);
-@@ -308,6 +353,7 @@ EXPORT_SYMBOL(elevator_init);
- void elevator_exit(struct elevator_queue *e)
- {
- 	mutex_lock(&e->sysfs_lock);
-+	elevator_free_sched_queue(e, e->sched_queue);
- 	elv_exit_fq_data(e);
- 	if (e->ops->elevator_exit_fn)
- 		e->ops->elevator_exit_fn(e);
-@@ -1121,7 +1167,7 @@ EXPORT_SYMBOL_GPL(elv_unregister);
- static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
- {
- 	struct elevator_queue *old_elevator, *e;
--	void *data;
-+	void *data = NULL, *sched_queue = NULL;
- 
- 	/*
- 	 * Allocate new elevator
-@@ -1130,10 +1176,18 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
- 	if (!e)
- 		return 0;
- 
--	data = elevator_init_queue(q, e);
--	if (!data) {
-+	data = elevator_init_data(q, e);
-+
-+	if (IS_ERR(data)) {
- 		kobject_put(&e->kobj);
--		return 0;
-+		return -ENOMEM;
-+	}
-+
-+	sched_queue = elevator_alloc_sched_queue(q, e);
-+
-+	if (IS_ERR(sched_queue)) {
-+		kobject_put(&e->kobj);
-+		return -ENOMEM;
- 	}
- 
- 	/*
-@@ -1150,7 +1204,7 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
- 	/*
- 	 * attach and start new elevator
- 	 */
--	elevator_attach(q, e, data);
-+	elevator_attach(q, e, data, sched_queue);
- 
- 	spin_unlock_irq(q->queue_lock);
- 
-@@ -1257,16 +1311,43 @@ struct request *elv_rb_latter_request(struct request_queue *q,
- }
- EXPORT_SYMBOL(elv_rb_latter_request);
- 
--/* Get the io scheduler queue pointer. For cfq, it is stored in rq->ioq*/
-+/* Get the io scheduler queue pointer. */
- void *elv_get_sched_queue(struct request_queue *q, struct request *rq)
- {
--	return ioq_sched_queue(rq_ioq(rq));
-+	/*
-+	 * io scheduler is not using fair queuing. Return sched_queue
-+	 * pointer stored in elevator_queue. It will be null if io
-+	 * scheduler never stored anything there to begin with (cfq)
-+	 */
-+	if (!elv_iosched_fair_queuing_enabled(q->elevator))
-+		return q->elevator->sched_queue;
-+
-+	/*
-+	 * IO schedueler is using fair queuing infrasture. If io scheduler
-+	 * has passed a non null rq, retrieve sched_queue pointer from
-+	 * there. */
-+	if (rq)
-+		return ioq_sched_queue(rq_ioq(rq));
-+
-+	return NULL;
- }
- EXPORT_SYMBOL(elv_get_sched_queue);
- 
- /* Select an ioscheduler queue to dispatch request from. */
- void *elv_select_sched_queue(struct request_queue *q, int force)
- {
-+	if (!elv_iosched_fair_queuing_enabled(q->elevator))
-+		return q->elevator->sched_queue;
-+
- 	return ioq_sched_queue(elv_fq_select_ioq(q, force));
- }
- EXPORT_SYMBOL(elv_select_sched_queue);
-+
 +/*
-+ * Get the io scheduler queue pointer for current task.
++ * This domain is a statically identity mapping domain.
++ *	1. This domain creats a static 1:1 mapping to all usable memory.
++ * 	2. It maps to each iommu if successful.
++ *	3. Each iommu mapps to this domain if successful.
 + */
-+void *elv_get_sched_queue_current(struct request_queue *q)
-+{
-+	return q->elevator->sched_queue;
-+}
-+EXPORT_SYMBOL(elv_get_sched_queue_current);
-diff --git a/block/noop-iosched.c b/block/noop-iosched.c
-index 3a0d369..d587832 100644
---- a/block/noop-iosched.c
-+++ b/block/noop-iosched.c
-@@ -7,7 +7,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
++struct dmar_domain *si_domain;
++
+ /* devices under the same p2p bridge are owned in one domain */
+ #define DOMAIN_FLAG_P2P_MULTIPLE_DEVICES (1 << 0)
  
--struct noop_data {
-+struct noop_queue {
- 	struct list_head queue;
- };
+@@ -225,6 +234,9 @@ static inline bool dma_pte_present(struct dma_pte *pte)
+  */
+ #define DOMAIN_FLAG_VIRTUAL_MACHINE	(1 << 1)
  
-@@ -19,11 +19,14 @@ static void noop_merged_requests(struct request_queue *q, struct request *rq,
++/* si_domain contains mulitple devices */
++#define DOMAIN_FLAG_STATIC_IDENTITY	(1 << 2)
++
+ struct dmar_domain {
+ 	int	id;			/* domain id */
+ 	unsigned long iommu_bmp;	/* bitmap of iommus this domain uses*/
+@@ -435,12 +447,14 @@ int iommu_calculate_agaw(struct intel_iommu *iommu)
+ 	return __iommu_calculate_agaw(iommu, DEFAULT_DOMAIN_ADDRESS_WIDTH);
+ }
  
- static int noop_dispatch(struct request_queue *q, int force)
+-/* in native case, each domain is related to only one iommu */
++/* This functionin only returns single iommu in a domain */
+ static struct intel_iommu *domain_get_iommu(struct dmar_domain *domain)
  {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_select_sched_queue(q, force);
+ 	int iommu_id;
  
--	if (!list_empty(&nd->queue)) {
-+	if (!nq)
++	/* si_domain and vm domain should not get here. */
+ 	BUG_ON(domain->flags & DOMAIN_FLAG_VIRTUAL_MACHINE);
++	BUG_ON(domain->flags & DOMAIN_FLAG_STATIC_IDENTITY);
+ 
+ 	iommu_id = find_first_bit(&domain->iommu_bmp, g_num_of_iommus);
+ 	if (iommu_id < 0 || iommu_id >= g_num_of_iommus)
+@@ -1189,10 +1203,11 @@ void free_dmar_iommu(struct intel_iommu *iommu)
+ 	free_context_table(iommu);
+ }
+ 
+-static struct dmar_domain * iommu_alloc_domain(struct intel_iommu *iommu)
++/* Sequential domain id starting from 0. */
++static unsigned long domain_id;
++
++static struct dmar_domain *alloc_domain(void)
+ {
+-	unsigned long num;
+-	unsigned long ndomains;
+ 	struct dmar_domain *domain;
+ 	unsigned long flags;
+ 
+@@ -1200,37 +1215,66 @@ static struct dmar_domain * iommu_alloc_domain(struct intel_iommu *iommu)
+ 	if (!domain)
+ 		return NULL;
+ 
++	spin_lock_irqsave(&device_domain_lock, flags);
++	domain->id = domain_id++;
++	spin_unlock_irqrestore(&device_domain_lock, flags);
++
++	memset(&domain->iommu_bmp, 0, sizeof(unsigned long));
++	domain->flags = 0;
++
++	return domain;
++}
++
++static int iommu_attach_domain(struct dmar_domain *domain,
++			       struct intel_iommu *iommu)
++{
++	int num;
++	unsigned long ndomains;
++	unsigned long flags;
++
+ 	ndomains = cap_ndoms(iommu->cap);
+ 
+ 	spin_lock_irqsave(&iommu->lock, flags);
++
+ 	num = find_first_zero_bit(iommu->domain_ids, ndomains);
+ 	if (num >= ndomains) {
+ 		spin_unlock_irqrestore(&iommu->lock, flags);
+-		free_domain_mem(domain);
+ 		printk(KERN_ERR "IOMMU: no free domain ids\n");
+-		return NULL;
++		return -ENOMEM;
+ 	}
+ 
+ 	set_bit(num, iommu->domain_ids);
+-	domain->id = num;
+-	memset(&domain->iommu_bmp, 0, sizeof(unsigned long));
+ 	set_bit(iommu->seq_id, &domain->iommu_bmp);
+-	domain->flags = 0;
+ 	iommu->domains[num] = domain;
+ 	spin_unlock_irqrestore(&iommu->lock, flags);
+ 
+-	return domain;
++	return 0;
+ }
+ 
+-static void iommu_free_domain(struct dmar_domain *domain)
++static void iommu_detach_domain(struct dmar_domain *domain,
++				struct intel_iommu *iommu)
+ {
+ 	unsigned long flags;
+-	struct intel_iommu *iommu;
+-
+-	iommu = domain_get_iommu(domain);
++	int num, ndomains;
++	int found = 0;
+ 
+ 	spin_lock_irqsave(&iommu->lock, flags);
+-	clear_bit(domain->id, iommu->domain_ids);
++	ndomains = cap_ndoms(iommu->cap);
++	num = find_first_bit(iommu->domain_ids, ndomains);
++	for (; num < ndomains; ) {
++		if (iommu->domains[num] == domain) {
++			found = 1;
++			break;
++		}
++		num = find_next_bit(iommu->domain_ids,
++				    cap_ndoms(iommu->cap), num+1);
++	}
++
++	if (found) {
++		clear_bit(num, iommu->domain_ids);
++		clear_bit(iommu->seq_id, &domain->iommu_bmp);
++		iommu->domains[num] = NULL;
++	}
+ 	spin_unlock_irqrestore(&iommu->lock, flags);
+ }
+ 
+@@ -1350,6 +1394,8 @@ static int domain_init(struct dmar_domain *domain, int guest_width)
+ 
+ static void domain_exit(struct dmar_domain *domain)
+ {
++	struct dmar_drhd_unit *drhd;
++	struct intel_iommu *iommu;
+ 	u64 end;
+ 
+ 	/* Domain 0 is reserved, so dont process it */
+@@ -1368,7 +1414,10 @@ static void domain_exit(struct dmar_domain *domain)
+ 	/* free page tables */
+ 	dma_pte_free_pagetable(domain, 0, end);
+ 
+-	iommu_free_domain(domain);
++	for_each_active_iommu(iommu, drhd)
++		if (test_bit(iommu->seq_id, &domain->iommu_bmp))
++			iommu_detach_domain(domain, iommu);
++
+ 	free_domain_mem(domain);
+ }
+ 
+@@ -1408,7 +1457,8 @@ static int domain_context_mapping_one(struct dmar_domain *domain, int segment,
+ 	id = domain->id;
+ 	pgd = domain->pgd;
+ 
+-	if (domain->flags & DOMAIN_FLAG_VIRTUAL_MACHINE) {
++	if (domain->flags & DOMAIN_FLAG_VIRTUAL_MACHINE ||
++	    domain->flags & DOMAIN_FLAG_STATIC_IDENTITY) {
+ 		int found = 0;
+ 
+ 		/* find an available domain id for this device in iommu */
+@@ -1433,6 +1483,7 @@ static int domain_context_mapping_one(struct dmar_domain *domain, int segment,
+ 			}
+ 
+ 			set_bit(num, iommu->domain_ids);
++			set_bit(iommu->seq_id, &domain->iommu_bmp);
+ 			iommu->domains[num] = domain;
+ 			id = num;
+ 		}
+@@ -1675,6 +1726,7 @@ static struct dmar_domain *get_domain_for_dev(struct pci_dev *pdev, int gaw)
+ 	unsigned long flags;
+ 	int bus = 0, devfn = 0;
+ 	int segment;
++	int ret;
+ 
+ 	domain = find_domain(pdev);
+ 	if (domain)
+@@ -1707,6 +1759,10 @@ static struct dmar_domain *get_domain_for_dev(struct pci_dev *pdev, int gaw)
+ 		}
+ 	}
+ 
++	domain = alloc_domain();
++	if (!domain)
++		goto error;
++
+ 	/* Allocate new domain for the device */
+ 	drhd = dmar_find_matched_drhd_unit(pdev);
+ 	if (!drhd) {
+@@ -1716,9 +1772,11 @@ static struct dmar_domain *get_domain_for_dev(struct pci_dev *pdev, int gaw)
+ 	}
+ 	iommu = drhd->iommu;
+ 
+-	domain = iommu_alloc_domain(iommu);
+-	if (!domain)
++	ret = iommu_attach_domain(domain, iommu);
++	if (ret) {
++		domain_exit(domain);
+ 		goto error;
++	}
+ 
+ 	if (domain_init(domain, gaw)) {
+ 		domain_exit(domain);
+@@ -1792,6 +1850,8 @@ error:
+ 	return find_domain(pdev);
+ }
+ 
++static int iommu_identity_mapping;
++
+ static int iommu_prepare_identity_map(struct pci_dev *pdev,
+ 				      unsigned long long start,
+ 				      unsigned long long end)
+@@ -1804,8 +1864,11 @@ static int iommu_prepare_identity_map(struct pci_dev *pdev,
+ 	printk(KERN_INFO
+ 		"IOMMU: Setting identity map for device %s [0x%Lx - 0x%Lx]\n",
+ 		pci_name(pdev), start, end);
+-	/* page table init */
+-	domain = get_domain_for_dev(pdev, DEFAULT_DOMAIN_ADDRESS_WIDTH);
++	if (iommu_identity_mapping)
++		domain = si_domain;
++	else
++		/* page table init */
++		domain = get_domain_for_dev(pdev, DEFAULT_DOMAIN_ADDRESS_WIDTH);
+ 	if (!domain)
+ 		return -ENOMEM;
+ 
+@@ -1952,7 +2015,110 @@ static int __init init_context_pass_through(void)
+ 	return 0;
+ }
+ 
+-static int __init init_dmars(void)
++static int md_domain_init(struct dmar_domain *domain, int guest_width);
++static int si_domain_init(void)
++{
++	struct dmar_drhd_unit *drhd;
++	struct intel_iommu *iommu;
++	int ret = 0;
++
++	si_domain = alloc_domain();
++	if (!si_domain)
++		return -EFAULT;
++
++
++	for_each_active_iommu(iommu, drhd) {
++		ret = iommu_attach_domain(si_domain, iommu);
++		if (ret) {
++			domain_exit(si_domain);
++			return -EFAULT;
++		}
++	}
++
++	if (md_domain_init(si_domain, DEFAULT_DOMAIN_ADDRESS_WIDTH)) {
++		domain_exit(si_domain);
++		return -EFAULT;
++	}
++
++	si_domain->flags = DOMAIN_FLAG_STATIC_IDENTITY;
++
++	return 0;
++}
++
++static void domain_remove_one_dev_info(struct dmar_domain *domain,
++					  struct pci_dev *pdev);
++static int identity_mapping(struct pci_dev *pdev)
++{
++	struct device_domain_info *info;
++
++	if (likely(!iommu_identity_mapping))
 +		return 0;
 +
-+	if (!list_empty(&nq->queue)) {
- 		struct request *rq;
--		rq = list_entry(nd->queue.next, struct request, queuelist);
-+		rq = list_entry(nq->queue.next, struct request, queuelist);
- 		list_del_init(&rq->queuelist);
- 		elv_dispatch_sort(q, rq);
- 		return 1;
-@@ -33,24 +36,17 @@ static int noop_dispatch(struct request_queue *q, int force)
- 
- static void noop_add_request(struct request_queue *q, struct request *rq)
++
++	list_for_each_entry(info, &si_domain->devices, link)
++		if (info->dev == pdev)
++			return 1;
++	return 0;
++}
++
++static int domain_add_dev_info(struct dmar_domain *domain,
++				  struct pci_dev *pdev)
++{
++	struct device_domain_info *info;
++	unsigned long flags;
++
++	info = alloc_devinfo_mem();
++	if (!info)
++		return -ENOMEM;
++
++	info->segment = pci_domain_nr(pdev->bus);
++	info->bus = pdev->bus->number;
++	info->devfn = pdev->devfn;
++	info->dev = pdev;
++	info->domain = domain;
++
++	spin_lock_irqsave(&device_domain_lock, flags);
++	list_add(&info->link, &domain->devices);
++	list_add(&info->global, &device_domain_list);
++	pdev->dev.archdata.iommu = info;
++	spin_unlock_irqrestore(&device_domain_lock, flags);
++
++	return 0;
++}
++
++static int iommu_prepare_static_identity_mapping(void)
++{
++	int i;
++	struct pci_dev *pdev = NULL;
++	int ret;
++
++	ret = si_domain_init();
++	if (ret)
++		return -EFAULT;
++
++	printk(KERN_INFO "IOMMU: Setting identity map:\n");
++	for_each_pci_dev(pdev) {
++		for (i = 0; i < e820.nr_map; i++) {
++			struct e820entry *ei = &e820.map[i];
++
++			if (ei->type == E820_RAM) {
++				ret = iommu_prepare_identity_map(pdev,
++					ei->addr, ei->addr + ei->size);
++				if (ret)  {
++					printk(KERN_INFO "1:1 mapping to one domain failed.\n");
++					return -EFAULT;
++				}
++			}
++		}
++		ret = domain_add_dev_info(si_domain, pdev);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++int __init init_dmars(void)
  {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_get_sched_queue(q, rq);
+ 	struct dmar_drhd_unit *drhd;
+ 	struct dmar_rmrr_unit *rmrr;
+@@ -1962,6 +2128,13 @@ static int __init init_dmars(void)
+ 	int pass_through = 1;
  
--	list_add_tail(&rq->queuelist, &nd->queue);
+ 	/*
++	 * In case pass through can not be enabled, iommu tries to use identity
++	 * mapping.
++	 */
++	if (iommu_pass_through)
++		iommu_identity_mapping = 1;
++
++	/*
+ 	 * for each drhd
+ 	 *    allocate root
+ 	 *    initialize and program root entry to not present
+@@ -2090,9 +2263,12 @@ static int __init init_dmars(void)
+ 
+ 	/*
+ 	 * If pass through is not set or not enabled, setup context entries for
+-	 * identity mappings for rmrr, gfx, and isa.
++	 * identity mappings for rmrr, gfx, and isa and may fall back to static
++	 * identity mapping if iommu_identity_mapping is set.
+ 	 */
+ 	if (!iommu_pass_through) {
++		if (iommu_identity_mapping)
++			iommu_prepare_static_identity_mapping();
+ 		/*
+ 		 * For each rmrr
+ 		 *   for each dev attached to rmrr
+@@ -2107,6 +2283,7 @@ static int __init init_dmars(void)
+ 		 *    endfor
+ 		 * endfor
+ 		 */
++		printk(KERN_INFO "IOMMU: Setting RMRR:\n");
+ 		for_each_rmrr_units(rmrr) {
+ 			for (i = 0; i < rmrr->devices_cnt; i++) {
+ 				pdev = rmrr->devices[i];
+@@ -2248,6 +2425,52 @@ get_valid_domain_for_dev(struct pci_dev *pdev)
+ 	return domain;
+ }
+ 
++static int iommu_dummy(struct pci_dev *pdev)
++{
++	return pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO;
++}
++
++/* Check if the pdev needs to go through non-identity map and unmap process.*/
++static int iommu_no_mapping(struct pci_dev *pdev)
++{
++	int found;
++
++	if (!iommu_identity_mapping)
++		return iommu_dummy(pdev);
++
++	found = identity_mapping(pdev);
++	if (found) {
++		if (pdev->dma_mask > DMA_BIT_MASK(32))
++			return 1;
++		else {
++			/*
++			 * 32 bit DMA is removed from si_domain and fall back
++			 * to non-identity mapping.
++			 */
++			domain_remove_one_dev_info(si_domain, pdev);
++			printk(KERN_INFO "32bit %s uses non-identity mapping\n",
++			       pci_name(pdev));
++			return 0;
++		}
++	} else {
++		/*
++		 * In case of a detached 64 bit DMA device from vm, the device
++		 * is put into si_domain for identity mapping.
++		 */
++		if (pdev->dma_mask > DMA_BIT_MASK(32)) {
++			int ret;
++			ret = domain_add_dev_info(si_domain, pdev);
++			if (!ret) {
++				printk(KERN_INFO "64bit %s uses identity mapping\n",
++				       pci_name(pdev));
++				return 1;
++			}
++		}
++	}
++
++	return iommu_dummy(pdev);
++}
++
+ static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
+ 				     size_t size, int dir, u64 dma_mask)
+ {
+@@ -2260,7 +2483,8 @@ static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
+ 	struct intel_iommu *iommu;
+ 
+ 	BUG_ON(dir == DMA_NONE);
+-	if (pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO)
++
++	if (iommu_no_mapping(pdev))
+ 		return paddr;
+ 
+ 	domain = get_valid_domain_for_dev(pdev);
+@@ -2401,8 +2625,9 @@ static void intel_unmap_page(struct device *dev, dma_addr_t dev_addr,
+ 	struct iova *iova;
+ 	struct intel_iommu *iommu;
+ 
+-	if (pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO)
++	if (iommu_no_mapping(pdev))
+ 		return;
++
+ 	domain = find_domain(pdev);
+ 	BUG_ON(!domain);
+ 
+@@ -2492,7 +2717,7 @@ static void intel_unmap_sg(struct device *hwdev, struct scatterlist *sglist,
+ 	struct scatterlist *sg;
+ 	struct intel_iommu *iommu;
+ 
+-	if (pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO)
++	if (iommu_no_mapping(pdev))
+ 		return;
+ 
+ 	domain = find_domain(pdev);
+@@ -2553,7 +2778,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int ne
+ 	struct intel_iommu *iommu;
+ 
+ 	BUG_ON(dir == DMA_NONE);
+-	if (pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO)
++	if (iommu_no_mapping(pdev))
+ 		return intel_nontranslate_map_sg(hwdev, sglist, nelems, dir);
+ 
+ 	domain = get_valid_domain_for_dev(pdev);
+@@ -2951,31 +3176,6 @@ int __init intel_iommu_init(void)
+ 	return 0;
+ }
+ 
+-static int vm_domain_add_dev_info(struct dmar_domain *domain,
+-				  struct pci_dev *pdev)
+-{
+-	struct device_domain_info *info;
+-	unsigned long flags;
+-
+-	info = alloc_devinfo_mem();
+-	if (!info)
+-		return -ENOMEM;
+-
+-	info->segment = pci_domain_nr(pdev->bus);
+-	info->bus = pdev->bus->number;
+-	info->devfn = pdev->devfn;
+-	info->dev = pdev;
+-	info->domain = domain;
+-
+-	spin_lock_irqsave(&device_domain_lock, flags);
+-	list_add(&info->link, &domain->devices);
+-	list_add(&info->global, &device_domain_list);
+-	pdev->dev.archdata.iommu = info;
+-	spin_unlock_irqrestore(&device_domain_lock, flags);
+-
+-	return 0;
 -}
 -
--static int noop_queue_empty(struct request_queue *q)
--{
--	struct noop_data *nd = q->elevator->elevator_data;
--
--	return list_empty(&nd->queue);
-+	list_add_tail(&rq->queuelist, &nq->queue);
+ static void iommu_detach_dependent_devices(struct intel_iommu *iommu,
+ 					   struct pci_dev *pdev)
+ {
+@@ -3003,7 +3203,7 @@ static void iommu_detach_dependent_devices(struct intel_iommu *iommu,
+ 	}
  }
  
- static struct request *
- noop_former_request(struct request_queue *q, struct request *rq)
+-static void vm_domain_remove_one_dev_info(struct dmar_domain *domain,
++static void domain_remove_one_dev_info(struct dmar_domain *domain,
+ 					  struct pci_dev *pdev)
  {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_get_sched_queue(q, rq);
- 
--	if (rq->queuelist.prev == &nd->queue)
-+	if (rq->queuelist.prev == &nq->queue)
- 		return NULL;
- 	return list_entry(rq->queuelist.prev, struct request, queuelist);
- }
-@@ -58,30 +54,32 @@ noop_former_request(struct request_queue *q, struct request *rq)
- static struct request *
- noop_latter_request(struct request_queue *q, struct request *rq)
- {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_get_sched_queue(q, rq);
- 
--	if (rq->queuelist.next == &nd->queue)
-+	if (rq->queuelist.next == &nq->queue)
- 		return NULL;
- 	return list_entry(rq->queuelist.next, struct request, queuelist);
+ 	struct device_domain_info *info;
+@@ -3136,7 +3336,7 @@ static struct dmar_domain *iommu_alloc_vm_domain(void)
+ 	return domain;
  }
  
--static void *noop_init_queue(struct request_queue *q)
-+static void *noop_alloc_noop_queue(struct request_queue *q,
-+				struct elevator_queue *eq, gfp_t gfp_mask)
+-static int vm_domain_init(struct dmar_domain *domain, int guest_width)
++static int md_domain_init(struct dmar_domain *domain, int guest_width)
  {
--	struct noop_data *nd;
-+	struct noop_queue *nq;
+ 	int adjust_width;
  
--	nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
--	if (!nd)
--		return NULL;
--	INIT_LIST_HEAD(&nd->queue);
--	return nd;
-+	nq = kmalloc_node(sizeof(*nq), gfp_mask | __GFP_ZERO, q->node);
-+	if (nq == NULL)
-+		goto out;
-+
-+	INIT_LIST_HEAD(&nq->queue);
-+out:
-+	return nq;
+@@ -3227,7 +3427,7 @@ static int intel_iommu_domain_init(struct iommu_domain *domain)
+ 			"intel_iommu_domain_init: dmar_domain == NULL\n");
+ 		return -ENOMEM;
+ 	}
+-	if (vm_domain_init(dmar_domain, DEFAULT_DOMAIN_ADDRESS_WIDTH)) {
++	if (md_domain_init(dmar_domain, DEFAULT_DOMAIN_ADDRESS_WIDTH)) {
+ 		printk(KERN_ERR
+ 			"intel_iommu_domain_init() failed\n");
+ 		vm_domain_exit(dmar_domain);
+@@ -3262,8 +3462,9 @@ static int intel_iommu_attach_device(struct iommu_domain *domain,
+ 
+ 		old_domain = find_domain(pdev);
+ 		if (old_domain) {
+-			if (dmar_domain->flags & DOMAIN_FLAG_VIRTUAL_MACHINE)
+-				vm_domain_remove_one_dev_info(old_domain, pdev);
++			if (dmar_domain->flags & DOMAIN_FLAG_VIRTUAL_MACHINE ||
++			    dmar_domain->flags & DOMAIN_FLAG_STATIC_IDENTITY)
++				domain_remove_one_dev_info(old_domain, pdev);
+ 			else
+ 				domain_remove_dev_info(old_domain);
+ 		}
+@@ -3285,7 +3486,7 @@ static int intel_iommu_attach_device(struct iommu_domain *domain,
+ 		return -EFAULT;
+ 	}
+ 
+-	ret = vm_domain_add_dev_info(dmar_domain, pdev);
++	ret = domain_add_dev_info(dmar_domain, pdev);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -3299,7 +3500,7 @@ static void intel_iommu_detach_device(struct iommu_domain *domain,
+ 	struct dmar_domain *dmar_domain = domain->priv;
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 
+-	vm_domain_remove_one_dev_info(dmar_domain, pdev);
++	domain_remove_one_dev_info(dmar_domain, pdev);
  }
  
--static void noop_exit_queue(struct elevator_queue *e)
-+static void noop_free_noop_queue(struct elevator_queue *e, void *sched_queue)
- {
--	struct noop_data *nd = e->elevator_data;
-+	struct noop_queue *nq = sched_queue;
- 
--	BUG_ON(!list_empty(&nd->queue));
--	kfree(nd);
-+	kfree(nq);
- }
- 
- static struct elevator_type elevator_noop = {
-@@ -89,11 +87,10 @@ static struct elevator_type elevator_noop = {
- 		.elevator_merge_req_fn		= noop_merged_requests,
- 		.elevator_dispatch_fn		= noop_dispatch,
- 		.elevator_add_req_fn		= noop_add_request,
--		.elevator_queue_empty_fn	= noop_queue_empty,
- 		.elevator_former_req_fn		= noop_former_request,
- 		.elevator_latter_req_fn		= noop_latter_request,
--		.elevator_init_fn		= noop_init_queue,
--		.elevator_exit_fn		= noop_exit_queue,
-+		.elevator_alloc_sched_queue_fn	= noop_alloc_noop_queue,
-+		.elevator_free_sched_queue_fn	= noop_free_noop_queue,
- 	},
- 	.elevator_name = "noop",
- 	.elevator_owner = THIS_MODULE,
-diff --git a/include/linux/elevator.h b/include/linux/elevator.h
-index 679c149..3729a2f 100644
---- a/include/linux/elevator.h
-+++ b/include/linux/elevator.h
-@@ -30,8 +30,9 @@ typedef void (elevator_deactivate_req_fn) (struct request_queue *, struct reques
- 
- typedef void *(elevator_init_fn) (struct request_queue *);
- typedef void (elevator_exit_fn) (struct elevator_queue *);
--#ifdef CONFIG_ELV_FAIR_QUEUING
-+typedef void* (elevator_alloc_sched_queue_fn) (struct request_queue *q, struct elevator_queue *eq, gfp_t);
- typedef void (elevator_free_sched_queue_fn) (struct elevator_queue*, void *);
-+#ifdef CONFIG_ELV_FAIR_QUEUING
- typedef void (elevator_active_ioq_set_fn) (struct request_queue*, void *, int);
- typedef void (elevator_active_ioq_reset_fn) (struct request_queue *, void*);
- typedef void (elevator_arm_slice_timer_fn) (struct request_queue*, void*);
-@@ -70,8 +71,9 @@ struct elevator_ops
- 	elevator_exit_fn *elevator_exit_fn;
- 	void (*trim)(struct io_context *);
- 
--#ifdef CONFIG_ELV_FAIR_QUEUING
-+	elevator_alloc_sched_queue_fn *elevator_alloc_sched_queue_fn;
- 	elevator_free_sched_queue_fn *elevator_free_sched_queue_fn;
-+#ifdef CONFIG_ELV_FAIR_QUEUING
- 	elevator_active_ioq_set_fn *elevator_active_ioq_set_fn;
- 	elevator_active_ioq_reset_fn *elevator_active_ioq_reset_fn;
- 
-@@ -112,6 +114,7 @@ struct elevator_queue
- {
- 	struct elevator_ops *ops;
- 	void *elevator_data;
-+	void *sched_queue;
- 	struct kobject kobj;
- 	struct elevator_type *elevator_type;
- 	struct mutex sysfs_lock;
-@@ -260,5 +263,6 @@ static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
- #endif /* ELV_IOSCHED_FAIR_QUEUING */
- extern void *elv_get_sched_queue(struct request_queue *q, struct request *rq);
- extern void *elv_select_sched_queue(struct request_queue *q, int force);
-+extern void *elv_get_sched_queue_current(struct request_queue *q);
- #endif /* CONFIG_BLOCK */
- #endif
--- 
-1.6.0.6
-
+ static int intel_iommu_map_range(struct iommu_domain *domain,
