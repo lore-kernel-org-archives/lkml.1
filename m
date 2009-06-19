@@ -1,1709 +1,765 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZFSF5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbZFSF7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653AbZFSF5T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 01:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZFSF5H
+	id S1756200AbZFSF7S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 01:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZFSF7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 01:57:07 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:49656 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752162AbZFSF5D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 01:57:03 -0400
-X-IronPort-AV: E=Sophos;i="4.42,249,1243828800"; 
-   d="scan'208";a="357095"
-From: Barry Song <21cnbao@gmail.com>
-To: broonie@opensource.wolfsonmicro.com
-CC: linux-kernel@vger.kernel.org, Barry Song <21cnbao@gmail.com>
-Subject: [PATCH] New ASoC Drivers for ADI AD1938 codec
-Date: Fri, 19 Jun 2009 13:58:42 +0800
-Message-ID: <1245391122-5566-1-git-send-email-21cnbao@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	Fri, 19 Jun 2009 01:59:07 -0400
+Received: from mga14.intel.com ([143.182.124.37]:12403 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751653AbZFSF7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 01:59:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,249,1243839600"; 
+   d="scan'208";a="156321199"
+Date: Fri, 19 Jun 2009 13:58:48 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Wang, Roger" <roger.wang@intel.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/3] make mapped executable pages the first class
+	citizen
+Message-ID: <20090619055848.GA27802@localhost>
+References: <20090517022327.280096109@intel.com> <32411.1245336412@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32411.1245336412@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. add AD1938 codec driver                   (codec)
-2. add blackfin SPORT-TDM DAI and PCM driver (platform)
-3. add bf5xx board with AD1938 driver        (machine)
-Signed-off-by: Barry Song <21cnbao@gmail.com>
----
- include/sound/soc-dai.h            |    1 +
- sound/soc/blackfin/Kconfig         |   46 +++-
- sound/soc/blackfin/Makefile        |    6 +
- sound/soc/blackfin/bf5xx-ad1938.c  |  178 ++++++++++++
- sound/soc/blackfin/bf5xx-tdm-pcm.c |  330 ++++++++++++++++++++++
- sound/soc/blackfin/bf5xx-tdm-pcm.h |   21 ++
- sound/soc/blackfin/bf5xx-tdm.c     |  295 +++++++++++++++++++
- sound/soc/blackfin/bf5xx-tdm.h     |   14 +
- sound/soc/codecs/Kconfig           |    4 +
- sound/soc/codecs/Makefile          |    2 +
- sound/soc/codecs/ad1938.c          |  548 ++++++++++++++++++++++++++++++++++++
- sound/soc/codecs/ad1938.h          |   68 +++++
- 12 files changed, 1512 insertions(+), 1 deletions(-)
- create mode 100644 sound/soc/blackfin/bf5xx-ad1938.c
- create mode 100644 sound/soc/blackfin/bf5xx-tdm-pcm.c
- create mode 100644 sound/soc/blackfin/bf5xx-tdm-pcm.h
- create mode 100644 sound/soc/blackfin/bf5xx-tdm.c
- create mode 100644 sound/soc/blackfin/bf5xx-tdm.h
- create mode 100644 sound/soc/codecs/ad1938.c
- create mode 100644 sound/soc/codecs/ad1938.h
+On Thu, Jun 18, 2009 at 10:46:52PM +0800, David Howells wrote:
+> 
+> Hmmm....  It's possible that this makes my test box implode horribly when
+> running LTP.
+> 
+> I'm going to bisect it to see if this is actually due to your patches.
+> 
+> Note that I don't have any swap space.  This after a fresh reboot:
+> 
+>         [root@andromeda ~]# cat /proc/meminfo
+>         MemTotal:        1000624 kB
+>         MemFree:          797328 kB
+>         Buffers:           13272 kB
+>         Cached:           121744 kB
+>         SwapCached:            0 kB
+>         Active:            36240 kB
+>         Inactive:         115856 kB
+>         Active(anon):      17448 kB
+>         Inactive(anon):        0 kB
+>         Active(file):      18792 kB
+>         Inactive(file):   115856 kB
+>         Unevictable:           0 kB
+>         Mlocked:               0 kB
+>         SwapTotal:             0 kB
+>         SwapFree:              0 kB
+>         Dirty:                28 kB
+>         Writeback:             0 kB
+>         AnonPages:         17280 kB
+>         Mapped:             5376 kB
+>         Slab:              42984 kB
+>         SReclaimable:       6956 kB
+>         SUnreclaim:        36028 kB
+>         PageTables:         1304 kB
+>         NFS_Unstable:          0 kB
+>         Bounce:                0 kB
+>         WritebackTmp:          0 kB
+>         CommitLimit:      500312 kB
+>         Committed_AS:      52596 kB
+>         VmallocTotal:   34359738367 kB
+>         VmallocUsed:      190044 kB
+>         VmallocChunk:   34359546363 kB
+>         DirectMap4k:       13312 kB
+>         DirectMap2M:     1009664 kB
+> 
+> David
+> ---
+> Initializing cgroup subsys cpuset
+> Linux version 2.6.30-cachefs (dhowells@warthog.procyon.org.uk) (gcc version 4.4.0 20090506 (Red Hat 4.4.0-4) (GCC) ) #106 SMP Wed Jun 17 22:10:31 BST 2009
+> Command line: initrd=andromeda-initrd console=tty0 console=ttyS0,115200 ro root=/dev/sda2 enforcing=1 debug BOOT_IMAGE=andromeda-vmlinuz
+> KERNEL supported cpus:
+>   Intel GenuineIntel
+>   AMD AuthenticAMD
+>   Centaur CentaurHauls
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
+>  BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 000000003e59a000 (usable)
+>  BIOS-e820: 000000003e59a000 - 000000003e5a6000 (reserved)
+>  BIOS-e820: 000000003e5a6000 - 000000003e644000 (usable)
+>  BIOS-e820: 000000003e644000 - 000000003e6a9000 (ACPI NVS)
+>  BIOS-e820: 000000003e6a9000 - 000000003e6ac000 (ACPI data)
+>  BIOS-e820: 000000003e6ac000 - 000000003e6f2000 (ACPI NVS)
+>  BIOS-e820: 000000003e6f2000 - 000000003e6ff000 (ACPI data)
+>  BIOS-e820: 000000003e6ff000 - 000000003e700000 (usable)
+>  BIOS-e820: 000000003e700000 - 000000003f000000 (reserved)
+>  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+> DMI 2.4 present.
+> last_pfn = 0x3e700 max_arch_pfn = 0x400000000
+> MTRR default type: uncachable
+> MTRR fixed ranges enabled:
+>   00000-9FFFF write-back
+>   A0000-FFFFF uncachable
+> MTRR variable ranges enabled:
+>   0 base 000000000 mask FC0000000 write-back
+>   1 base 03F000000 mask FFF000000 uncachable
+>   2 base 03E800000 mask FFF800000 uncachable
+>   3 base 03E700000 mask FFFF00000 uncachable
+>   4 disabled
+>   5 disabled
+>   6 disabled
+>   7 disabled
+> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> initial memory mapped : 0 - 20000000
+> init_memory_mapping: 0000000000000000-000000003e700000
+>  0000000000 - 003e600000 page 2M
+>  003e600000 - 003e700000 page 4k
+> kernel direct mapping tables up to 3e700000 @ 8000-b000
+> RAMDISK: 3e2ee000 - 3e57991c
+> ACPI: RSDP 00000000000fe020 00014 (v00 INTEL )
+> ACPI: RSDT 000000003e6fd038 0004C (v01 INTEL  DG965RY  00000330      01000013)
+> ACPI: FACP 000000003e6fc000 00074 (v01 INTEL  DG965RY  00000330 MSFT 01000013)
+> ACPI: DSDT 000000003e6f8000 03EDA (v01 INTEL  DG965RY  00000330 MSFT 01000013)
+> ACPI: FACS 000000003e6ac000 00040
+> ACPI: APIC 000000003e6f7000 00078 (v01 INTEL  DG965RY  00000330 MSFT 01000013)
+> ACPI: WDDT 000000003e6f6000 00040 (v01 INTEL  DG965RY  00000330 MSFT 01000013)
+> ACPI: MCFG 000000003e6f5000 0003C (v01 INTEL  DG965RY  00000330 MSFT 01000013)
+> ACPI: ASF! 000000003e6f4000 000A6 (v32 INTEL  DG965RY  00000330 MSFT 01000013)
+> ACPI: SSDT 000000003e6f3000 001BC (v01 INTEL     CpuPm 00000330 MSFT 01000013)
+> ACPI: SSDT 000000003e6f2000 00175 (v01 INTEL   Cpu0Ist 00000330 MSFT 01000013)
+> ACPI: SSDT 000000003e6ab000 00175 (v01 INTEL   Cpu1Ist 00000330 MSFT 01000013)
+> ACPI: SSDT 000000003e6aa000 00175 (v01 INTEL   Cpu2Ist 00000330 MSFT 01000013)
+> ACPI: SSDT 000000003e6a9000 00175 (v01 INTEL   Cpu3Ist 00000330 MSFT 01000013)
+> ACPI: Local APIC address 0xfee00000
+> (7 early reservations) ==> bootmem [0000000000 - 003e700000]
+>   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+>   #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
+>   #2 [0001000000 - 0001535d90]    TEXT DATA BSS ==> [0001000000 - 0001535d90]
+>   #3 [003e2ee000 - 003e57991c]          RAMDISK ==> [003e2ee000 - 003e57991c]
+>   #4 [000009e800 - 0000100000]    BIOS reserved ==> [000009e800 - 0000100000]
+>   #5 [0001536000 - 0001536199]              BRK ==> [0001536000 - 0001536199]
+>   #6 [0000008000 - 0000009000]          PGTABLE ==> [0000008000 - 0000009000]
+> found SMP MP-table at [ffff8800000fe200] fe200
+>  [ffffea0000000000-ffffea0000dfffff] PMD -> [ffff880001a00000-ffff8800027fffff] on node 0
+> Zone PFN ranges:
+>   DMA      0x00000000 -> 0x00001000
+>   DMA32    0x00001000 -> 0x00100000
+>   Normal   0x00100000 -> 0x00100000
+> Movable zone start PFN for each node
+> early_node_map[4] active PFN ranges
+>     0: 0x00000000 -> 0x0000009e
+>     0: 0x00000100 -> 0x0003e59a
+>     0: 0x0003e5a6 -> 0x0003e644
+>     0: 0x0003e6ff -> 0x0003e700
+> On node 0 totalpages: 255447
+>   DMA zone: 56 pages used for memmap
+>   DMA zone: 101 pages reserved
+>   DMA zone: 3841 pages, LIFO batch:0
+>   DMA32 zone: 3441 pages used for memmap
+>   DMA32 zone: 248008 pages, LIFO batch:31
+> ACPI: PM-Timer IO Port: 0x408
+> ACPI: Local APIC address 0xfee00000
+> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+> ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+> ACPI: LAPIC (acpi_id[0x03] lapic_id[0x82] disabled)
+> ACPI: LAPIC (acpi_id[0x04] lapic_id[0x83] disabled)
+> ACPI: LAPIC_NMI (acpi_id[0x01] dfl dfl lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x02] dfl dfl lint[0x1])
+> ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+> IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+> ACPI: IRQ0 used by override.
+> ACPI: IRQ2 used by override.
+> ACPI: IRQ9 used by override.
+> Using ACPI (MADT) for SMP configuration information
+> 4 Processors exceeds NR_CPUS limit of 2
+> SMP: Allowing 2 CPUs, 0 hotplug CPUs
+> nr_irqs_gsi: 24
+> PM: Registered nosave memory: 000000000009e000 - 000000000009f000
+> PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
+> PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
+> PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
+> PM: Registered nosave memory: 000000003e59a000 - 000000003e5a6000
+> PM: Registered nosave memory: 000000003e644000 - 000000003e6a9000
+> PM: Registered nosave memory: 000000003e6a9000 - 000000003e6ac000
+> PM: Registered nosave memory: 000000003e6ac000 - 000000003e6f2000
+> PM: Registered nosave memory: 000000003e6f2000 - 000000003e6ff000
+> Allocating PCI resources starting at 3f000000 (gap: 3f000000:c0f00000)
+> NR_CPUS:2 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+> PERCPU: Embedded 24 pages at ffff880001541000, static data 67296 bytes
+> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 251849
+> Kernel command line: initrd=andromeda-initrd console=tty0 console=ttyS0,115200 ro root=/dev/sda2 enforcing=1 debug BOOT_IMAGE=andromeda-vmlinuz
+> PID hash table entries: 4096 (order: 12, 32768 bytes)
+> Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+> Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+> Initializing CPU#0
+> Checking aperture...
+> No AGP bridge found
+> Memory: 996952k/1022976k available (2953k kernel code, 1188k absent, 24132k reserved, 1678k data, 360k init)
+> NR_IRQS:320
+> Fast TSC calibration using PIT
+> Detected 1864.978 MHz processor.
+> Console: colour VGA+ 80x25
+> console [tty0] enabled
+> console [ttyS0] enabled
+> Calibrating delay loop (skipped), value calculated using timer frequency.. 3729.95 BogoMIPS (lpj=7459912)
+> Security Framework initialized
+> SELinux:  Initializing.
+> SELinux:  Starting in enforcing mode
+> Mount-cache hash table entries: 256
+> Initializing cgroup subsys debug
+> Initializing cgroup subsys ns
+> Initializing cgroup subsys devices
+> CPU: L1 I cache: 32K, L1 D cache: 32K
+> CPU: L2 cache: 2048K
+> CPU: Physical Processor ID: 0
+> CPU: Processor Core ID: 0
+> mce: CPU supports 6 MCE banks
+> CPU0: Thermal monitoring enabled (TM2)
+> using mwait in idle threads.
+> ACPI: Core revision 20090521
+> Setting APIC routing to flat
+> ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+> CPU0: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz stepping 06
+> Booting processor 1 APIC 0x1 ip 0x6000
+> Initializing CPU#1
+> Calibrating delay using timer specific routine.. 3525.06 BogoMIPS (lpj=7050122)
+> CPU: L1 I cache: 32K, L1 D cache: 32K
+> CPU: L2 cache: 2048K
+> CPU: Physical Processor ID: 0
+> CPU: Processor Core ID: 1
+> mce: CPU supports 6 MCE banks
+> CPU1: Thermal monitoring enabled (TM2)
+> x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+> CPU1: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz stepping 06
+> checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+> Brought up 2 CPUs
+> Total of 2 processors activated (7255.01 BogoMIPS).
+> NET: Registered protocol family 16
+> ACPI: bus type pci registered
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 127
+> PCI: Not using MMCONFIG.
+> PCI: Using configuration type 1 for base access
+> bio: create slab <bio-0> at 0
+> ACPI: EC: Look up EC in DSDT
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S4 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 127
+> PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
+> PCI: Using MMCONFIG at f0000000 - f7ffffff
+> ACPI: No dock devices found.
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> pci 0000:00:02.0: reg 10 32bit mmio: [0x50200000-0x502fffff]
+> pci 0000:00:02.0: reg 18 64bit mmio: [0x40000000-0x4fffffff]
+> pci 0000:00:02.0: reg 20 io port: [0x2110-0x2117]
+> pci 0000:00:03.0: reg 10 64bit mmio: [0x50326100-0x5032610f]
+> pci 0000:00:03.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:03.0: PME# disabled
+> pci 0000:00:19.0: reg 10 32bit mmio: [0x50300000-0x5031ffff]
+> pci 0000:00:19.0: reg 14 32bit mmio: [0x50324000-0x50324fff]
+> pci 0000:00:19.0: reg 18 io port: [0x20e0-0x20ff]
+> pci 0000:00:19.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:19.0: PME# disabled
+> pci 0000:00:1a.0: reg 20 io port: [0x20c0-0x20df]
+> pci 0000:00:1a.1: reg 20 io port: [0x20a0-0x20bf]
+> pci 0000:00:1a.7: reg 10 32bit mmio: [0x50325c00-0x50325fff]
+> pci 0000:00:1a.7: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1a.7: PME# disabled
+> pci 0000:00:1b.0: reg 10 64bit mmio: [0x50320000-0x50323fff]
+> pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1b.0: PME# disabled
+> pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.0: PME# disabled
+> pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.1: PME# disabled
+> pci 0000:00:1c.2: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.2: PME# disabled
+> pci 0000:00:1c.3: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.3: PME# disabled
+> pci 0000:00:1c.4: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.4: PME# disabled
+> pci 0000:00:1d.0: reg 20 io port: [0x2080-0x209f]
+> pci 0000:00:1d.1: reg 20 io port: [0x2060-0x207f]
+> pci 0000:00:1d.2: reg 20 io port: [0x2040-0x205f]
+> pci 0000:00:1d.7: reg 10 32bit mmio: [0x50325800-0x50325bff]
+> pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1d.7: PME# disabled
+> pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+> pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+> pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0680 (mask 007f)
+> pci 0000:00:1f.2: reg 10 io port: [0x2108-0x210f]
+> pci 0000:00:1f.2: reg 14 io port: [0x211c-0x211f]
+> pci 0000:00:1f.2: reg 18 io port: [0x2100-0x2107]
+> pci 0000:00:1f.2: reg 1c io port: [0x2118-0x211b]
+> pci 0000:00:1f.2: reg 20 io port: [0x2020-0x203f]
+> pci 0000:00:1f.2: reg 24 32bit mmio: [0x50325000-0x503257ff]
+> pci 0000:00:1f.2: PME# supported from D3hot
+> pci 0000:00:1f.2: PME# disabled
+> pci 0000:00:1f.3: reg 10 32bit mmio: [0x50326000-0x503260ff]
+> pci 0000:00:1f.3: reg 20 io port: [0x2000-0x201f]
+> pci 0000:00:1c.0: bridge 32bit mmio: [0x50400000-0x504fffff]
+> pci 0000:02:00.0: reg 10 io port: [0x1018-0x101f]
+> pci 0000:02:00.0: reg 14 io port: [0x1024-0x1027]
+> pci 0000:02:00.0: reg 18 io port: [0x1010-0x1017]
+> pci 0000:02:00.0: reg 1c io port: [0x1020-0x1023]
+> pci 0000:02:00.0: reg 20 io port: [0x1000-0x100f]
+> pci 0000:02:00.0: reg 24 32bit mmio: [0x50100000-0x501001ff]
+> pci 0000:02:00.0: supports D1
+> pci 0000:02:00.0: PME# supported from D0 D1 D3hot
+> pci 0000:02:00.0: PME# disabled
+> pci 0000:00:1c.1: bridge io port: [0x1000-0x1fff]
+> pci 0000:00:1c.1: bridge 32bit mmio: [0x50100000-0x501fffff]
+> pci 0000:00:1c.2: bridge 32bit mmio: [0x50500000-0x505fffff]
+> pci 0000:00:1c.3: bridge 32bit mmio: [0x50600000-0x506fffff]
+> pci 0000:00:1c.4: bridge 32bit mmio: [0x50700000-0x507fffff]
+> pci 0000:06:03.0: reg 10 32bit mmio: [0x50004000-0x500047ff]
+> pci 0000:06:03.0: reg 14 32bit mmio: [0x50000000-0x50003fff]
+> pci 0000:06:03.0: supports D1 D2
+> pci 0000:06:03.0: PME# supported from D0 D1 D2 D3hot
+> pci 0000:06:03.0: PME# disabled
+> pci 0000:00:1e.0: transparent bridge
+> pci 0000:00:1e.0: bridge 32bit mmio: [0x50000000-0x500fffff]
+> pci_bus 0000:00: on NUMA node 0
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P32_._PRT]
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX0._PRT]
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX1._PRT]
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX2._PRT]
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX3._PRT]
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX4._PRT]
+> ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 7 9 10 *11 12)
+> ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 7 9 *10 11 12)
+> ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 7 9 10 *11 12)
+> ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 7 9 10 *11 12)
+> ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 7 *9 10 11 12)
+> ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 7 9 *10 11 12)
+> ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 7 *9 10 11 12)
+> ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 7 9 10 *11 12)
+> SCSI subsystem initialized
+> libata version 3.00 loaded.
+> PCI: Using ACPI for IRQ routing
+> NetLabel: Initializing
+> NetLabel:  domain hash size = 128
+> NetLabel:  protocols = UNLABELED CIPSOv4
+> NetLabel:  unlabeled traffic allowed by default
+> pnp: PnP ACPI init
+> ACPI: bus type pnp registered
+> pnp: PnP ACPI: found 12 devices
+> ACPI: ACPI bus type pnp unregistered
+> system 00:01: iomem range 0xf0000000-0xf7ffffff has been reserved
+> system 00:01: iomem range 0xfed13000-0xfed13fff has been reserved
+> system 00:01: iomem range 0xfed14000-0xfed17fff has been reserved
+> system 00:01: iomem range 0xfed18000-0xfed18fff has been reserved
+> system 00:01: iomem range 0xfed19000-0xfed19fff has been reserved
+> system 00:01: iomem range 0xfed1c000-0xfed1ffff has been reserved
+> system 00:01: iomem range 0xfed20000-0xfed3ffff has been reserved
+> system 00:01: iomem range 0xfed45000-0xfed99fff has been reserved
+> system 00:01: iomem range 0xc0000-0xdffff has been reserved
+> system 00:01: iomem range 0xe0000-0xfffff could not be reserved
+> system 00:06: ioport range 0x500-0x53f has been reserved
+> system 00:06: ioport range 0x400-0x47f has been reserved
+> system 00:06: ioport range 0x680-0x6ff has been reserved
+> pci 0000:00:1c.0: PCI bridge, secondary bus 0000:01
+> pci 0000:00:1c.0:   IO window: disabled
+> pci 0000:00:1c.0:   MEM window: 0x50400000-0x504fffff
+> pci 0000:00:1c.0:   PREFETCH window: disabled
+> pci 0000:00:1c.1: PCI bridge, secondary bus 0000:02
+> pci 0000:00:1c.1:   IO window: 0x1000-0x1fff
+> pci 0000:00:1c.1:   MEM window: 0x50100000-0x501fffff
+> pci 0000:00:1c.1:   PREFETCH window: disabled
+> pci 0000:00:1c.2: PCI bridge, secondary bus 0000:03
+> pci 0000:00:1c.2:   IO window: disabled
+> pci 0000:00:1c.2:   MEM window: 0x50500000-0x505fffff
+> pci 0000:00:1c.2:   PREFETCH window: disabled
+> pci 0000:00:1c.3: PCI bridge, secondary bus 0000:04
+> pci 0000:00:1c.3:   IO window: disabled
+> pci 0000:00:1c.3:   MEM window: 0x50600000-0x506fffff
+> pci 0000:00:1c.3:   PREFETCH window: disabled
+> pci 0000:00:1c.4: PCI bridge, secondary bus 0000:05
+> pci 0000:00:1c.4:   IO window: disabled
+> pci 0000:00:1c.4:   MEM window: 0x50700000-0x507fffff
+> pci 0000:00:1c.4:   PREFETCH window: disabled
+> pci 0000:00:1e.0: PCI bridge, secondary bus 0000:06
+> pci 0000:00:1e.0:   IO window: disabled
+> pci 0000:00:1e.0:   MEM window: 0x50000000-0x500fffff
+> pci 0000:00:1e.0:   PREFETCH window: disabled
+> pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> pci 0000:00:1c.0: setting latency timer to 64
+> pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) -> IRQ 16
+> pci 0000:00:1c.1: setting latency timer to 64
+> pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+> pci 0000:00:1c.2: setting latency timer to 64
+> pci 0000:00:1c.3: PCI INT D -> GSI 19 (level, low) -> IRQ 19
+> pci 0000:00:1c.3: setting latency timer to 64
+> pci 0000:00:1c.4: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> pci 0000:00:1c.4: setting latency timer to 64
+> pci 0000:00:1e.0: setting latency timer to 64
+> pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
+> pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffffffffffff]
+> pci_bus 0000:01: resource 1 mem: [0x50400000-0x504fffff]
+> pci_bus 0000:02: resource 0 io:  [0x1000-0x1fff]
+> pci_bus 0000:02: resource 1 mem: [0x50100000-0x501fffff]
+> pci_bus 0000:03: resource 1 mem: [0x50500000-0x505fffff]
+> pci_bus 0000:04: resource 1 mem: [0x50600000-0x506fffff]
+> pci_bus 0000:05: resource 1 mem: [0x50700000-0x507fffff]
+> pci_bus 0000:06: resource 1 mem: [0x50000000-0x500fffff]
+> pci_bus 0000:06: resource 3 io:  [0x00-0xffff]
+> pci_bus 0000:06: resource 4 mem: [0x000000-0xffffffffffffffff]
+> NET: Registered protocol family 2
+> IP route cache hash table entries: 32768 (order: 6, 262144 bytes)
+> TCP established hash table entries: 131072 (order: 9, 2097152 bytes)
+> TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
+> TCP: Hash tables configured (established 131072 bind 65536)
+> TCP reno registered
+> NET: Registered protocol family 1
+> Unpacking initramfs...
+> Freeing initrd memory: 2606k freed
+> audit: initializing netlink socket (disabled)
+> type=2000 audit(1245320564.157:1): initialized
+> VFS: Disk quotas dquot_6.5.2
+> Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+> SGI XFS with ACLs, security attributes, large block/inode numbers, no debug enabled
+> msgmni has been set to 1953
+> SELinux:  Registering netfilter hooks
+> alg: No test for fcrypt (fcrypt-generic)
+> alg: No test for stdrng (krng)
+> Block layer SCSI generic (bsg) driver version 0.4 loaded (major 253)
+> io scheduler noop registered
+> io scheduler anticipatory registered (default)
+> io scheduler deadline registered
+> io scheduler cfq registered
+> pci 0000:00:02.0: Boot video device
+> pcieport-driver 0000:00:1c.0: irq 24 for MSI/MSI-X
+> pcieport-driver 0000:00:1c.0: setting latency timer to 64
+> pcieport-driver 0000:00:1c.1: irq 25 for MSI/MSI-X
+> pcieport-driver 0000:00:1c.1: setting latency timer to 64
+> pcieport-driver 0000:00:1c.2: irq 26 for MSI/MSI-X
+> pcieport-driver 0000:00:1c.2: setting latency timer to 64
+> pcieport-driver 0000:00:1c.3: irq 27 for MSI/MSI-X
+> pcieport-driver 0000:00:1c.3: setting latency timer to 64
+> pcieport-driver 0000:00:1c.4: irq 28 for MSI/MSI-X
+> pcieport-driver 0000:00:1c.4: setting latency timer to 64
+> input: Power Button as /class/input/input0
+> ACPI: Power Button [PWRF]
+> input: Sleep Button as /class/input/input1
+> ACPI: Sleep Button [SLPB]
+> processor ACPI_CPU:00: registered as cooling_device0
+> ACPI: Processor [CPU0] (supports 8 throttling states)
+> processor ACPI_CPU:01: registered as cooling_device1
+> ACPI: Processor [CPU1] (supports 8 throttling states)
+> Linux agpgart interface v0.103
+> agpgart-intel 0000:00:00.0: Intel 965G Chipset
+> agpgart-intel 0000:00:00.0: detected 7676K stolen memory
+> agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0x40000000
+> intelfb: Framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM chipsets
+> intelfb: Version 0.9.6
+> intelfb 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> intelfb: 00:02.0: Intel(R) 965G, aperture size 256MB, stolen memory 7932kB
+> intelfb: Initial video mode is 1024x768-32@70.
+> Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+> serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> Platform driver 'serial8250' needs updating - please use dev_pm_ops
+> 00:0a: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> loop: module loaded
+> Driver 'sd' needs updating - please use bus_type methods
+> ahci 0000:00:1f.2: version 3.0
+> ahci 0000:00:1f.2: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+> ahci 0000:00:1f.2: irq 29 for MSI/MSI-X
+> ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0x33 impl SATA mode
+> ahci 0000:00:1f.2: flags: 64bit ncq sntf led clo pio slum part ems
+> ahci 0000:00:1f.2: setting latency timer to 64
+> scsi0 : ahci
+> scsi1 : ahci
+> scsi2 : ahci
+> scsi3 : ahci
+> scsi4 : ahci
+> scsi5 : ahci
+> ata1: SATA max UDMA/133 abar m2048@0x50325000 port 0x50325100 irq 29
+> ata2: SATA max UDMA/133 abar m2048@0x50325000 port 0x50325180 irq 29
+> ata3: DUMMY
+> ata4: DUMMY
+> ata5: SATA max UDMA/133 abar m2048@0x50325000 port 0x50325300 irq 29
+> ata6: SATA max UDMA/133 abar m2048@0x50325000 port 0x50325380 irq 29
+> e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
+> e1000e: Copyright (c) 1999-2008 Intel Corporation.
+> e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+> e1000e 0000:00:19.0: setting latency timer to 64
+> e1000e 0000:00:19.0: irq 30 for MSI/MSI-X
+> 0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:16:76:ce:3a:3c
+> 0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
+> 0000:00:19.0: eth0: MAC: 6, PHY: 6, PBA No: ffffff-0ff
+> PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M] at 0x60,0x64 irq 1,12
+> Platform driver 'i8042' needs updating - please use dev_pm_ops
+> serio: i8042 KBD port at 0x60,0x64 irq 1
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> mice: PS/2 mouse device common for all mice
+> rtc_cmos 00:03: RTC can wake from S4
+> rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
+> rtc0: alarms up to one month, 114 bytes nvram
+> i2c /dev entries driver
+> i801_smbus 0000:00:1f.3: PCI INT B -> GSI 21 (level, low) -> IRQ 21
+> coretemp coretemp.0: Using relative temperature scale!
+> coretemp coretemp.1: Using relative temperature scale!
+> cpuidle: using governor ladder
+> ip_tables: (C) 2000-2006 Netfilter Core Team
+> TCP cubic registered
+> input: AT Translated Set 2 keyboard as /class/input/input2
+> NET: Registered protocol family 17
+> ata2: SATA link down (SStatus 0 SControl 300)
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> registered taskstats version 1
+> ata6: SATA link down (SStatus 0 SControl 300)
+> ata5: SATA link down (SStatus 0 SControl 300)
+> rtc_cmos 00:03: setting system clock to 2009-06-18 10:22:46 UTC (1245320566)
+> ata1.00: ATA-7: ST380211AS, 3.AAE, max UDMA/133
+> ata1.00: 156301488 sectors, multi 0: LBA48 NCQ (depth 31/32)
+> ata1.00: configured for UDMA/133
+> scsi 0:0:0:0: Direct-Access     ATA      ST380211AS       3.AA PQ: 0 ANSI: 5
+> sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 >
+> sd 0:0:0:0: [sda] Attached SCSI disk
+> Freeing unused kernel memory: 360k freed
+> Write protecting the kernel read-only data: 4324k
+> Red Hat nash version 6.0.52 starting
+> Mounting proc filesystem
+> Mounting sysfs filesystem
+> Creating /dev
+> Creating initial device nodes
+> Setting up hotplug.
+> input: ImPS/2 Generic Wheel Mouse as /class/input/input3
+> Creating block device nodes.
+> mount: could not find filesystem '/proc/bus/usb'
+> Waiting for driver initialization.
+> Waiting for driver initialization.
+> Creating root device.
+> Mounting root filesystem.
+> EXT3-fs: INFO: recovery required on readonly filesystem.
+> EXT3-fs: write access will be enabled during recovery.
+> kjournald starting.  Commit interval 5 seconds
+> Setting up otherEXT3-fs: recovery complete.
+>  filesystems.
+> EXT3-fs: mounted filesystem with writeback data mode.
+> Setting up new root fs
+> no fstab.sys, mounting internal defaults
+> SELinux: 8192 avtab hash slots, 177803 rules.
+> SELinux: 8192 avtab hash slots, 177803 rules.
+> SELinux:  6 users, 12 roles, 2431 types, 118 bools, 1 sens, 1024 cats
+> SELinux:  73 classes, 177803 rules
+> SELinux:  class kernel_service not defined in policy
+> SELinux:  permission open in class sock_file not defined in policy
+> SELinux:  permission nlmsg_tty_audit in class netlink_audit_socket not defined in policy
+> SELinux: the above unknown classes and permissions will be allowed
+> SELinux:  Completing initialization.
+> SELinux:  Setting up existing superblocks.
+> SELinux: initialized (dev sda2, type ext3), uses xattr
+> SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+> SELinux: initialized (dev selinuxfs, type selinuxfs), uses genfs_contexts
+> SELinux: initialized (dev mqueue, type mqueue), uses transition SIDs
+> SELinux: initialized (dev devpts, type devpts), uses transition SIDs
+> SELinux: initialized (dev inotifyfs, type inotifyfs), uses genfs_contexts
+> SELinux: initialized (dev tmpfs, type tmpfs), uses transition SIDs
+> SELinux: initialized (dev anon_inodefs, type anon_inodefs), uses genfs_contexts
+> SELinux: initialized (dev pipefs, type pipefs), uses task SIDs
+> SELinux: initialized (dev debugfs, type debugfs), uses genfs_contexts
+> SELinux: initialized (dev sockfs, type sockfs), uses task SIDs
+> SELinux: initialized (dev proc, type proc), uses genfs_contexts
+> SELinux: initialized (dev bdev, type bdev), uses genfs_contexts
+> SELinux: initialized (dev rootfs, type rootfs), uses genfs_contexts
+> SELinux: initialized (dev sysfs, type sysfs), uses genfs_contexts
+> type=1403 audit(1245320574.561:2): policy loaded auid=4294967295 ses=4294967295
+> Switching to new root and running init.
+> unmounting old /dev
+> unmounting old /proc
+> unmounting old /sys
+>                 Welcome to Fedora
+>                 Press 'I' to enter interactive startup.
+> Starting udev: [  OK  ]
+> Setting hostname andromeda.procyon.org.uk:  [  OK  ]
+> Checking filesystems
+> Checking all file systems.
+> [/sbin/fsck.ext3 (1) -- /] fsck.ext3 -a /dev/sda2
+> /1: clean, 330515/2621440 files, 1528849/2620603 blocks
+> [/sbin/fsck.ext3 (1) -- /boot] fsck.ext3 -a /dev/sda1
+> /boot1: recovering journal
+> /boot1: clean, 79/50200 files, 72187/200780 blocks
+> [  OK  ]
+> Remounting root filesystem in read-write mode:  [  OK  ]
+> Mounting local filesystems:  [  OK  ]
+> Enabling local filesystem quotas:  [  OK  ]
+> Enabling /etc/fstab swaps:  [  OK  ]
+> Entering non-interactive startup
+> Starting background readahead (early, fast mode): [  OK  ]
+> FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> Bringing up loopback interface:  [  OK  ]
+> Bringing up interface eth0:
+> Determining IP information for eth0... done.
+> [  OK  ]
+> FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> Starting restorecond: [  OK  ]
+> Starting auditd: [  OK  ]
+> Starting irqbalance: [  OK  ]
+> Starting mcstransd: [  OK  ]
+> Starting rpcbind: modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> rpcbind: cannot create socket for udp6
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> rpcbind: cannot create socket for tcp6
+> [  OK  ]
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> Starting NFS statd: [  OK  ]
+> Starting system message bus: [  OK  ]
+> Starting lm_sensors: not configured, run sensors-detect[WARNING]
+> Starting sshd: modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> [  OK  ]
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> Starting ntpd: [  OK  ]
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> SysRq : Changing Loglevel
+> Loglevel set to 8
+> Now booted
+> Starting smartd: modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> [  OK  ]
+> 
+> Fedora release 9 (Sulphur)
+> Kernel 2.6.30-cachefs on an x86_64 (/dev/ttyS0)
+> 
+> andromeda.procyon.org.uk login: modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> warning: `capget01' uses 32-bit capabilities (legacy support in use)
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load /lib/modules/2.6.30-cachefs/modules.dep: No such file or directory
+> 
+> msgctl11 invoked oom-killer: gfp_mask=0xd0, order=1, oom_adj=0
+> msgctl11 cpuset=/ mems_allowed=0
+> Pid: 30549, comm: msgctl11 Not tainted 2.6.30-cachefs #106
+> Call Trace:
+>  [<ffffffff81071dae>] ? oom_kill_process.clone.0+0xa9/0x245
+>  [<ffffffff81072075>] ? __out_of_memory+0x12b/0x142
+>  [<ffffffff810720f6>] ? out_of_memory+0x6a/0x94
+>  [<ffffffff8107479e>] ? __alloc_pages_nodemask+0x422/0x50b
+>  [<ffffffff81031110>] ? copy_process+0x93/0x113f
+>  [<ffffffff810748f1>] ? __get_free_pages+0x12/0x50
+>  [<ffffffff81031130>] ? copy_process+0xb3/0x113f
+>  [<ffffffff81081ae2>] ? handle_mm_fault+0x2d5/0x645
+>  [<ffffffff810322fb>] ? do_fork+0x13f/0x2ba
+>  [<ffffffff81022a0b>] ? do_page_fault+0x1f1/0x206
+>  [<ffffffff8100b0d3>] ? stub_clone+0x13/0x20
+>  [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
+> Mem-Info:
+> DMA per-cpu:
+> CPU    0: hi:    0, btch:   1 usd:   0
+> CPU    1: hi:    0, btch:   1 usd:   0
+> DMA32 per-cpu:
+> CPU    0: hi:  186, btch:  31 usd:   0
+> CPU    1: hi:  186, btch:  31 usd:  47
+> Active_anon:80388 active_file:0 inactive_anon:822
+>  inactive_file:2 unevictable:0 dirty:0 writeback:0 unstable:0
+>  free:2053 slab:38793 mapped:357 pagetables:60476 bounce:0
+> DMA free:3916kB min:60kB low:72kB high:88kB active_anon:3608kB inactive_anon:128kB active_file:0kB inactive_file:0kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
+> lowmem_reserve[]: 0 968 968 968
+> DMA32 free:4296kB min:3948kB low:4932kB high:5920kB active_anon:317944kB inactive_anon:3160kB active_file:0kB inactive_file:8kB unevictable:0kB present:992032kB pages_scanned:0 all_unreclaimable? no
 
-diff --git a/include/sound/soc-dai.h b/include/sound/soc-dai.h
-index 352d7ee..069e1a9 100644
---- a/include/sound/soc-dai.h
-+++ b/include/sound/soc-dai.h
-@@ -30,6 +30,7 @@ struct snd_pcm_substream;
- #define SND_SOC_DAIFMT_DSP_A		3 /* L data msb after FRM LRC */
- #define SND_SOC_DAIFMT_DSP_B		4 /* L data msb during FRM LRC */
- #define SND_SOC_DAIFMT_AC97		5 /* AC97 */
-+#define SND_SOC_DAIFMT_SPORT_TDM	6 /* SPORT TDM for ADI parts */
- 
- /* left and right justified also known as MSB and LSB respectively */
- #define SND_SOC_DAIFMT_MSB		SND_SOC_DAIFMT_LEFT_J
-diff --git a/sound/soc/blackfin/Kconfig b/sound/soc/blackfin/Kconfig
-index 811596f..c35cc72 100644
---- a/sound/soc/blackfin/Kconfig
-+++ b/sound/soc/blackfin/Kconfig
-@@ -7,6 +7,15 @@ config SND_BF5XX_I2S
- 	  mode (supports single stereo In/Out).
- 	  You will also need to select the audio interfaces to support below.
- 
-+config SND_BF5XX_TDM
-+	tristate "SoC TDM Audio for the ADI BF5xx chip"
-+	depends on BLACKFIN && SND_SOC
-+	help
-+	  Say Y or M if you want to add support for codecs attached to
-+	  the Blackfin SPORT (synchronous serial ports) interface in TDM
-+	  mode.
-+	  You will also need to select the audio interfaces to support below.
-+
- config SND_BF5XX_SOC_SSM2602
- 	tristate "SoC SSM2602 Audio support for BF52x ezkit"
- 	depends on SND_BF5XX_I2S
-@@ -69,6 +78,10 @@ config SND_BF5XX_SOC_I2S
- 	tristate
- 	select SND_BF5XX_SOC_SPORT
- 
-+config SND_BF5XX_SOC_TDM
-+	tristate
-+	select SND_BF5XX_SOC_SPORT
-+
- config SND_BF5XX_SOC_AC97
- 	tristate
- 	select AC97_BUS
-@@ -83,9 +96,40 @@ config SND_BF5XX_SOC_AD1980
- 	help
- 	  Say Y if you want to add support for SoC audio on BF5xx STAMP/EZKIT.
- 
-+config SND_BF5XX_SOC_AD1938
-+	tristate "SoC AD1938 Audio support for Blackfin"
-+	depends on (SND_BF5XX_TDM || SND_BF5XX_I2S)
-+	select SND_BF5XX_SOC_TDM
-+	select SND_BF5XX_SOC_I2S
-+	select SND_SOC_AD1938
-+	help
-+	  Say Y if you want to add support for AD1938 codec on Blackfin.
-+choice
-+	prompt "Interface between Blackfin and AD1938"
-+	depends on SND_BF5XX_SOC_AD1938
-+	default SND_BF5XX_AD1938_TDM
-+	help
-+	  There are two types of interface can be supportted on Blackfin
-+	  Stamp: TDM and I2S. TDM support 8 channels. I2S only support 2 channels.
-+
-+config SND_BF5XX_AD1938_TDM
-+	boolean "TDM interface"
-+	depends on SND_BF5XX_TDM
-+	help
-+	  TDM supports 8 channels ouput
-+	  If unsure, say Y.
-+
-+config SND_BF5XX_AD1938_I2S
-+	boolean "I2S interface"
-+	depends on SND_BF5XX_I2S
-+	help
-+	  I2S support 2 channels ouput
-+	  If unsure, say N.
-+endchoice
-+
- config SND_BF5XX_SPORT_NUM
- 	int "Set a SPORT for Sound chip"
--	depends on (SND_BF5XX_I2S || SND_BF5XX_AC97)
-+	depends on (SND_BF5XX_I2S || SND_BF5XX_AC97 || SND_BF5XX_TDM)
- 	range 0 3 if BF54x
- 	range 0 1 if !BF54x
- 	default 0
-diff --git a/sound/soc/blackfin/Makefile b/sound/soc/blackfin/Makefile
-index 97bb37a..f4d7607 100644
---- a/sound/soc/blackfin/Makefile
-+++ b/sound/soc/blackfin/Makefile
-@@ -1,21 +1,27 @@
- # Blackfin Platform Support
- snd-bf5xx-ac97-objs := bf5xx-ac97-pcm.o
- snd-bf5xx-i2s-objs := bf5xx-i2s-pcm.o
-+snd-bf5xx-tdm-objs := bf5xx-tdm-pcm.o
- snd-soc-bf5xx-sport-objs := bf5xx-sport.o
- snd-soc-bf5xx-ac97-objs := bf5xx-ac97.o
- snd-soc-bf5xx-i2s-objs := bf5xx-i2s.o
-+snd-soc-bf5xx-tdm-objs := bf5xx-tdm.o
- 
- obj-$(CONFIG_SND_BF5XX_AC97) += snd-bf5xx-ac97.o
- obj-$(CONFIG_SND_BF5XX_I2S) += snd-bf5xx-i2s.o
-+obj-$(CONFIG_SND_BF5XX_TDM) += snd-bf5xx-tdm.o
- obj-$(CONFIG_SND_BF5XX_SOC_SPORT) += snd-soc-bf5xx-sport.o
- obj-$(CONFIG_SND_BF5XX_SOC_AC97) += snd-soc-bf5xx-ac97.o
- obj-$(CONFIG_SND_BF5XX_SOC_I2S) += snd-soc-bf5xx-i2s.o
-+obj-$(CONFIG_SND_BF5XX_SOC_TDM) += snd-soc-bf5xx-tdm.o
- 
- # Blackfin Machine Support
- snd-ad1980-objs := bf5xx-ad1980.o
- snd-ssm2602-objs := bf5xx-ssm2602.o
- snd-ad73311-objs := bf5xx-ad73311.o
-+snd-ad1938-objs := bf5xx-ad1938.o
- 
- obj-$(CONFIG_SND_BF5XX_SOC_AD1980) += snd-ad1980.o
- obj-$(CONFIG_SND_BF5XX_SOC_SSM2602) += snd-ssm2602.o
- obj-$(CONFIG_SND_BF5XX_SOC_AD73311) += snd-ad73311.o
-+obj-$(CONFIG_SND_BF5XX_SOC_AD1938) += snd-ad1938.o
-diff --git a/sound/soc/blackfin/bf5xx-ad1938.c b/sound/soc/blackfin/bf5xx-ad1938.c
-new file mode 100644
-index 0000000..3eccb2f
---- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-ad1938.c
-@@ -0,0 +1,178 @@
-+/*
-+ * File:         sound/soc/blackfin/bf5xx-ad1938.c
-+ * Author:       Barry Song <Barry.Song@analog.com>
-+ *
-+ * Created:      Thur June 4 2009
-+ * Description:  Board driver for ad1938 sound chip
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/device.h>
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/soc.h>
-+#include <sound/soc-dapm.h>
-+#include <sound/pcm_params.h>
-+
-+#include <asm/blackfin.h>
-+#include <asm/cacheflush.h>
-+#include <asm/irq.h>
-+#include <asm/dma.h>
-+#include <asm/portmux.h>
-+
-+#include "../codecs/ad1938.h"
-+#include "bf5xx-sport.h"
-+
-+#ifdef CONFIG_SND_BF5XX_AD1938_TDM
-+#include "bf5xx-tdm-pcm.h"
-+#include "bf5xx-tdm.h"
-+#else
-+#include "bf5xx-i2s-pcm.h"
-+#include "bf5xx-i2s.h"
-+#endif
-+
-+static struct snd_soc_card bf5xx_ad1938;
-+
-+static int bf5xx_ad1938_startup(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_dai *cpu_dai = rtd->dai->cpu_dai;
-+
-+	cpu_dai->private_data = sport_handle;
-+	return 0;
-+}
-+
-+static int bf5xx_ad1938_hw_free(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_dai *codec_dai = rtd->dai->codec_dai;
-+
-+	/* disable the PLL */
-+	return snd_soc_dai_set_pll(codec_dai, 0, 0, 0);
-+}
-+
-+static int bf5xx_ad1938_hw_params(struct snd_pcm_substream *substream,
-+		struct snd_pcm_hw_params *params)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_dai *cpu_dai = rtd->dai->cpu_dai;
-+	struct snd_soc_dai *codec_dai = rtd->dai->codec_dai;
-+	int ret = 0;
-+#ifdef CONFIG_SND_BF5XX_AD1938_TDM
-+	/* set cpu DAI configuration */
-+	ret = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_SPORT_TDM |
-+			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set codec DAI configuration */
-+	ret = snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_SPORT_TDM |
-+			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
-+	if (ret < 0)
-+		return ret;
-+#else
-+	/* set cpu DAI configuration */
-+	ret = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_I2S |
-+			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set codec DAI configuration */
-+	ret = snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_I2S |
-+			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
-+	if (ret < 0)
-+		return ret;
-+#endif
-+	/* set codec DAI pll */
-+	ret = snd_soc_dai_set_pll(codec_dai, 0, 12288000, 48000*512);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static struct snd_soc_ops bf5xx_ad1938_ops = {
-+	.startup = bf5xx_ad1938_startup,
-+	.hw_params = bf5xx_ad1938_hw_params,
-+	.hw_free = bf5xx_ad1938_hw_free,
-+};
-+
-+static struct snd_soc_dai_link bf5xx_ad1938_dai = {
-+	.name = "ad1938",
-+	.stream_name = "AD1938",
-+#ifdef CONFIG_SND_BF5XX_AD1938_TDM
-+	.cpu_dai = &bf5xx_tdm_dai,
-+#else
-+	.cpu_dai = &bf5xx_i2s_dai,
-+#endif
-+	.codec_dai = &ad1938_dai,
-+	.ops = &bf5xx_ad1938_ops,
-+};
-+
-+static struct snd_soc_card bf5xx_ad1938 = {
-+	.name = "bf5xx_ad1938",
-+#ifdef CONFIG_SND_BF5XX_AD1938_TDM
-+	.platform = &bf5xx_tdm_soc_platform,
-+#else
-+	.platform = &bf5xx_i2s_soc_platform,
-+#endif
-+	.dai_link = &bf5xx_ad1938_dai,
-+	.num_links = 1,
-+};
-+
-+static struct snd_soc_device bf5xx_ad1938_snd_devdata = {
-+	.card = &bf5xx_ad1938,
-+	.codec_dev = &soc_codec_dev_ad1938,
-+};
-+
-+static struct platform_device *bfxx_ad1938_snd_device;
-+
-+static int __init bf5xx_ad1938_init(void)
-+{
-+	int ret;
-+
-+	bfxx_ad1938_snd_device = platform_device_alloc("soc-audio", -1);
-+	if (!bfxx_ad1938_snd_device)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(bfxx_ad1938_snd_device, &bf5xx_ad1938_snd_devdata);
-+	bf5xx_ad1938_snd_devdata.dev = &bfxx_ad1938_snd_device->dev;
-+	ret = platform_device_add(bfxx_ad1938_snd_device);
-+
-+	if (ret)
-+		platform_device_put(bfxx_ad1938_snd_device);
-+
-+	return ret;
-+}
-+
-+static void __exit bf5xx_ad1938_exit(void)
-+{
-+	platform_device_unregister(bfxx_ad1938_snd_device);
-+}
-+
-+module_init(bf5xx_ad1938_init);
-+module_exit(bf5xx_ad1938_exit);
-+
-+/* Module information */
-+MODULE_AUTHOR("Barry Song");
-+MODULE_DESCRIPTION("ALSA SoC AD1938 board driver");
-+MODULE_LICENSE("GPL");
-+
-diff --git a/sound/soc/blackfin/bf5xx-tdm-pcm.c b/sound/soc/blackfin/bf5xx-tdm-pcm.c
-new file mode 100644
-index 0000000..b65d975
---- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-tdm-pcm.c
-@@ -0,0 +1,330 @@
-+/*
-+ * File:         sound/soc/blackfin/bf5xx-tdm-pcm.c
-+ * Author:       Barry Song <Barry.Song@analog.com>
-+ *
-+ * Created:      Tue June 06 2008
-+ * Description:  DMA driver for tdm codec
-+ *
-+ * Modified:
-+ *               Copyright 2008 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/dma-mapping.h>
-+
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/pcm_params.h>
-+#include <sound/soc.h>
-+
-+#include <asm/dma.h>
-+
-+#include "bf5xx-tdm-pcm.h"
-+#include "bf5xx-tdm.h"
-+#include "bf5xx-sport.h"
-+
-+#define PCM_BUFFER_MAX  0x10000
-+#define FRAGMENT_SIZE_MIN  (4*1024)
-+#define FRAGMENTS_MIN  2
-+#define FRAGMENTS_MAX  32
-+
-+static void bf5xx_dma_irq(void *data)
-+{
-+	struct snd_pcm_substream *pcm = data;
-+	snd_pcm_period_elapsed(pcm);
-+}
-+
-+static const struct snd_pcm_hardware bf5xx_pcm_hardware = {
-+	.info = (SNDRV_PCM_INFO_INTERLEAVED | SNDRV_PCM_INFO_BLOCK_TRANSFER | SNDRV_PCM_INFO_RESUME),
-+	.formats =          SNDRV_PCM_FMTBIT_S32_LE,
-+	.rates =            SNDRV_PCM_RATE_48000,
-+	.channels_min =     2,
-+	.channels_max =     8,
-+	.buffer_bytes_max = PCM_BUFFER_MAX,
-+	.period_bytes_min = FRAGMENT_SIZE_MIN,
-+	.period_bytes_max = PCM_BUFFER_MAX/2,
-+	.periods_min =      FRAGMENTS_MIN,
-+	.periods_max =      FRAGMENTS_MAX,
-+};
-+
-+static int bf5xx_pcm_hw_params(struct snd_pcm_substream *substream,
-+		struct snd_pcm_hw_params *params)
-+{
-+	size_t size = bf5xx_pcm_hardware.buffer_bytes_max;
-+	snd_pcm_lib_malloc_pages(substream, size * 4);
-+
-+	return 0;
-+}
-+
-+static int bf5xx_pcm_hw_free(struct snd_pcm_substream *substream)
-+{
-+	snd_pcm_lib_free_pages(substream);
-+
-+	return 0;
-+}
-+
-+static int bf5xx_pcm_prepare(struct snd_pcm_substream *substream)
-+{
-+	struct snd_pcm_runtime *runtime = substream->runtime;
-+	struct sport_device *sport = runtime->private_data;
-+	int fragsize_bytes = frames_to_bytes(runtime, runtime->period_size);
-+
-+	fragsize_bytes /= runtime->channels;
-+	fragsize_bytes *= 8;/* inflate the fragsize to match */
-+
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		sport_set_tx_callback(sport, bf5xx_dma_irq, substream);
-+		sport_config_tx_dma(sport, runtime->dma_area,
-+				runtime->periods, fragsize_bytes);
-+	} else {
-+		sport_set_rx_callback(sport, bf5xx_dma_irq, substream);
-+		sport_config_rx_dma(sport, runtime->dma_area,
-+				runtime->periods, fragsize_bytes);
-+	}
-+
-+	return 0;
-+}
-+
-+static int bf5xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
-+{
-+	struct snd_pcm_runtime *runtime = substream->runtime;
-+	struct sport_device *sport = runtime->private_data;
-+	int ret = 0;
-+
-+	switch (cmd) {
-+	case SNDRV_PCM_TRIGGER_START:
-+		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-+			sport_tx_start(sport);
-+		else
-+			sport_rx_start(sport);
-+		break;
-+	case SNDRV_PCM_TRIGGER_STOP:
-+	case SNDRV_PCM_TRIGGER_SUSPEND:
-+	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-+		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-+			sport_tx_stop(sport);
-+		else
-+			sport_rx_stop(sport);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static snd_pcm_uframes_t bf5xx_pcm_pointer(struct snd_pcm_substream *substream)
-+{
-+	struct snd_pcm_runtime *runtime = substream->runtime;
-+	struct sport_device *sport = runtime->private_data;
-+	unsigned int diff;
-+	snd_pcm_uframes_t frames;
-+
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		diff = sport_curr_offset_tx(sport);
-+		frames = diff / (8*4); /* 32 bytes per frame */
-+	} else {
-+		diff = sport_curr_offset_rx(sport);
-+		frames = diff / (8*4);
-+	}
-+	return frames;
-+}
-+
-+static int bf5xx_pcm_open(struct snd_pcm_substream *substream)
-+{
-+	struct snd_pcm_runtime *runtime = substream->runtime;
-+	int ret;
-+
-+	snd_soc_set_runtime_hwparams(substream, &bf5xx_pcm_hardware);
-+
-+	ret = snd_pcm_hw_constraint_integer(runtime, \
-+			SNDRV_PCM_HW_PARAM_PERIODS);
-+	if (ret < 0)
-+		goto out;
-+
-+	if (sport_handle != NULL)
-+		runtime->private_data = sport_handle;
-+	else {
-+		pr_err("sport_handle is NULL\n");
-+		return -1;
-+	}
-+	return 0;
-+
-+ out:
-+	return ret;
-+}
-+
-+static int bf5xx_pcm_copy(struct snd_pcm_substream *substream, int channel,
-+		snd_pcm_uframes_t pos, void *buf, snd_pcm_uframes_t count)
-+{
-+	unsigned int *src;
-+	unsigned int *dst;
-+	int i;
-+
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		src = (unsigned int *)buf;
-+		dst = (unsigned int *)substream->runtime->dma_area;
-+
-+		dst += pos * 8;
-+		while (count--) {
-+			for (i = 0; i < substream->runtime->channels; i++)
-+				*(dst + i) = *src++;
-+			dst += 8;
-+		}
-+	} else {
-+		src = (unsigned int *)substream->runtime->dma_area;
-+		dst = (unsigned int *)buf;
-+
-+		src += pos * 8;
-+		while (count--) {
-+			for (i = 0; i < substream->runtime->channels; i++)
-+				*dst++ = *(src+i);
-+			src += 8;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int bf5xx_pcm_silence(struct snd_pcm_substream *substream,
-+		int channel, snd_pcm_uframes_t pos, snd_pcm_uframes_t count)
-+{
-+	unsigned char *buf = substream->runtime->dma_area;
-+	buf += pos * 8 * 4;
-+	memset(buf, '\0', count * 8 * 4);
-+
-+	return 0;
-+}
-+
-+
-+struct snd_pcm_ops bf5xx_pcm_tdm_ops = {
-+	.open		= bf5xx_pcm_open,
-+	.ioctl		= snd_pcm_lib_ioctl,
-+	.hw_params	= bf5xx_pcm_hw_params,
-+	.hw_free	= bf5xx_pcm_hw_free,
-+	.prepare	= bf5xx_pcm_prepare,
-+	.trigger	= bf5xx_pcm_trigger,
-+	.pointer	= bf5xx_pcm_pointer,
-+	.copy           = bf5xx_pcm_copy,
-+	.silence        = bf5xx_pcm_silence,
-+};
-+
-+static int bf5xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
-+{
-+	struct snd_pcm_substream *substream = pcm->streams[stream].substream;
-+	struct snd_dma_buffer *buf = &substream->dma_buffer;
-+	size_t size = bf5xx_pcm_hardware.buffer_bytes_max;
-+
-+	buf->dev.type = SNDRV_DMA_TYPE_DEV;
-+	buf->dev.dev = pcm->card->dev;
-+	buf->private_data = NULL;
-+	buf->area = dma_alloc_coherent(pcm->card->dev, size * 4,
-+			&buf->addr, GFP_KERNEL);
-+	if (!buf->area) {
-+		pr_err("Failed to allocate dma memory \
-+				Please increase uncached DMA memory region\n");
-+		return -ENOMEM;
-+	}
-+	buf->bytes = size;
-+
-+	if (stream == SNDRV_PCM_STREAM_PLAYBACK)
-+		sport_handle->tx_buf = buf->area;
-+	else
-+		sport_handle->rx_buf = buf->area;
-+
-+	return 0;
-+}
-+
-+static void bf5xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
-+{
-+	struct snd_pcm_substream *substream;
-+	struct snd_dma_buffer *buf;
-+	int stream;
-+
-+	for (stream = 0; stream < 2; stream++) {
-+		substream = pcm->streams[stream].substream;
-+		if (!substream)
-+			continue;
-+
-+		buf = &substream->dma_buffer;
-+		if (!buf->area)
-+			continue;
-+		dma_free_coherent(NULL, buf->bytes, buf->area, 0);
-+		buf->area = NULL;
-+	}
-+	if (sport_handle)
-+		sport_done(sport_handle);
-+}
-+
-+static u64 bf5xx_pcm_dmamask = DMA_32BIT_MASK;
-+
-+int bf5xx_pcm_tdm_new(struct snd_card *card, struct snd_soc_dai *dai,
-+	struct snd_pcm *pcm)
-+{
-+	int ret = 0;
-+
-+	if (!card->dev->dma_mask)
-+		card->dev->dma_mask = &bf5xx_pcm_dmamask;
-+	if (!card->dev->coherent_dma_mask)
-+		card->dev->coherent_dma_mask = DMA_32BIT_MASK;
-+
-+	if (dai->playback.channels_min) {
-+		ret = bf5xx_pcm_preallocate_dma_buffer(pcm,
-+			SNDRV_PCM_STREAM_PLAYBACK);
-+		if (ret)
-+			goto out;
-+	}
-+
-+	if (dai->capture.channels_min) {
-+		ret = bf5xx_pcm_preallocate_dma_buffer(pcm,
-+			SNDRV_PCM_STREAM_CAPTURE);
-+		if (ret)
-+			goto out;
-+	}
-+ out:
-+	return ret;
-+}
-+
-+struct snd_soc_platform bf5xx_tdm_soc_platform = {
-+	.name		= "bf5xx-audio",
-+	.pcm_ops 	= &bf5xx_pcm_tdm_ops,
-+	.pcm_new	= bf5xx_pcm_tdm_new,
-+	.pcm_free	= bf5xx_pcm_free_dma_buffers,
-+};
-+EXPORT_SYMBOL_GPL(bf5xx_tdm_soc_platform);
-+
-+static int __init bfin_tdm_init(void)
-+{
-+	return snd_soc_register_platform(&bf5xx_tdm_soc_platform);
-+}
-+module_init(bfin_tdm_init);
-+
-+static void __exit bfin_tdm_exit(void)
-+{
-+	snd_soc_unregister_platform(&bf5xx_tdm_soc_platform);
-+}
-+module_exit(bfin_tdm_exit);
-+
-+MODULE_AUTHOR("Barry Song");
-+MODULE_DESCRIPTION("ADI Blackfin TDM PCM DMA module");
-+MODULE_LICENSE("GPL");
-diff --git a/sound/soc/blackfin/bf5xx-tdm-pcm.h b/sound/soc/blackfin/bf5xx-tdm-pcm.h
-new file mode 100644
-index 0000000..493e6df
---- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-tdm-pcm.h
-@@ -0,0 +1,21 @@
-+/*
-+ * linux/sound/arm/bf5xx-tdm-pcm.h -- ALSA PCM interface for the Blackfin
-+ *
-+ * Copyright 2009 Analog Device Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef _BF5XX_TDM_PCM_H
-+#define _BF5XX_TDM_PCM_H
-+
-+struct bf5xx_pcm_dma_params {
-+	char *name;			/* stream identifier */
-+};
-+
-+/* platform data */
-+extern struct snd_soc_platform bf5xx_tdm_soc_platform;
-+
-+#endif
-diff --git a/sound/soc/blackfin/bf5xx-tdm.c b/sound/soc/blackfin/bf5xx-tdm.c
-new file mode 100644
-index 0000000..08cbd22
---- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-tdm.c
-@@ -0,0 +1,295 @@
-+/*
-+ * File:         sound/soc/blackfin/bf5xx-tdm.c
-+ * Author:       Barry Song <Barry.Song@analog.com>
-+ *
-+ * Created:      Thurs June 04 2009
-+ * Description:  Blackfin TDM CPU DAI driver
-+ *
-+ * Modified:
-+ *               Copyright 2009 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/pcm_params.h>
-+#include <sound/initval.h>
-+#include <sound/soc.h>
-+
-+#include <asm/irq.h>
-+#include <asm/portmux.h>
-+#include <linux/mutex.h>
-+#include <linux/gpio.h>
-+
-+#include "bf5xx-sport.h"
-+#include "bf5xx-tdm.h"
-+
-+struct bf5xx_tdm_port {
-+	u16 tcr1;
-+	u16 rcr1;
-+	u16 tcr2;
-+	u16 rcr2;
-+	int configured;
-+};
-+
-+static struct bf5xx_tdm_port bf5xx_tdm;
-+static int sport_num = CONFIG_SND_BF5XX_SPORT_NUM;
-+
-+static struct sport_param sport_params[2] = {
-+	{
-+		.dma_rx_chan	= CH_SPORT0_RX,
-+		.dma_tx_chan	= CH_SPORT0_TX,
-+		.err_irq	= IRQ_SPORT0_ERROR,
-+		.regs		= (struct sport_register *)SPORT0_TCR1,
-+	},
-+	{
-+		.dma_rx_chan	= CH_SPORT1_RX,
-+		.dma_tx_chan	= CH_SPORT1_TX,
-+		.err_irq	= IRQ_SPORT1_ERROR,
-+		.regs		= (struct sport_register *)SPORT1_TCR1,
-+	}
-+};
-+
-+/*
-+ * Setting the TFS pin selector for SPORT 0 based on whether the selected
-+ * port id F or G. If the port is F then no conflict should exist for the
-+ * TFS. When Port G is selected and EMAC then there is a conflict between
-+ * the PHY interrupt line and TFS.  Current settings prevent the conflict
-+ * by ignoring the TFS pin when Port G is selected. This allows both
-+ * ssm2602 using Port G and EMAC concurrently.
-+ */
-+#ifdef CONFIG_BF527_SPORT0_PORTF
-+#define LOCAL_SPORT0_TFS (P_SPORT0_TFS)
-+#else
-+#define LOCAL_SPORT0_TFS (0)
-+#endif
-+
-+static u16 sport_req[][7] = { {P_SPORT0_DTPRI, P_SPORT0_TSCLK, P_SPORT0_RFS,
-+	P_SPORT0_DRPRI, P_SPORT0_RSCLK, LOCAL_SPORT0_TFS, 0},
-+	   {P_SPORT1_DTPRI, P_SPORT1_TSCLK, P_SPORT1_RFS, P_SPORT1_DRPRI,
-+		   P_SPORT1_RSCLK, P_SPORT1_TFS, 0} };
-+
-+static int bf5xx_tdm_set_dai_fmt(struct snd_soc_dai *cpu_dai,
-+		unsigned int fmt)
-+{
-+	int ret = 0;
-+
-+	/* interface format:support TDM,slave mode */
-+	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
-+	case SND_SOC_DAIFMT_SPORT_TDM:
-+		break;
-+	default:
-+		printk(KERN_ERR "%s: Unknown DAI format type\n", __func__);
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-+	case SND_SOC_DAIFMT_CBM_CFM:
-+		break;
-+	case SND_SOC_DAIFMT_CBS_CFS:
-+	case SND_SOC_DAIFMT_CBM_CFS:
-+	case SND_SOC_DAIFMT_CBS_CFM:
-+		ret = -EINVAL;
-+		break;
-+	default:
-+		printk(KERN_ERR "%s: Unknown DAI master type\n", __func__);
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static int bf5xx_tdm_hw_params(struct snd_pcm_substream *substream,
-+		struct snd_pcm_hw_params *params,
-+		struct snd_soc_dai *dai)
-+{
-+	int ret = 0;
-+
-+	bf5xx_tdm.tcr2 &= ~0x1f;
-+	bf5xx_tdm.rcr2 &= ~0x1f;
-+	switch (params_format(params)) {
-+	case SNDRV_PCM_FORMAT_S32_LE:
-+		bf5xx_tdm.tcr2 |= 31;
-+		bf5xx_tdm.rcr2 |= 31;
-+		sport_handle->wdsize = 4;
-+		break;
-+	}
-+
-+	if (!bf5xx_tdm.configured) {
-+		/*
-+		 * TX and RX are not independent,they are enabled at the
-+		 * same time, even if only one side is running. So, we
-+		 * need to configure both of them at the time when the first
-+		 * stream is opened.
-+		 *
-+		 * CPU DAI:slave mode.
-+		 */
-+		ret = sport_config_rx(sport_handle, bf5xx_tdm.rcr1,
-+				bf5xx_tdm.rcr2, 0, 0);
-+		if (ret) {
-+			pr_err("SPORT is busy!\n");
-+			return -EBUSY;
-+		}
-+
-+		ret = sport_config_tx(sport_handle, bf5xx_tdm.tcr1,
-+				bf5xx_tdm.tcr2, 0, 0);
-+		if (ret) {
-+			pr_err("SPORT is busy!\n");
-+			return -EBUSY;
-+		}
-+		bf5xx_tdm.configured = 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static int bf5xx_tdm_probe(struct platform_device *pdev,
-+		struct snd_soc_dai *dai)
-+{
-+	int ret = 0;
-+
-+	if (peripheral_request_list(&sport_req[sport_num][0], "soc-audio")) {
-+		pr_err("Requesting Peripherals failed\n");
-+		return -EFAULT;
-+	}
-+
-+	/* request DMA for SPORT */
-+	sport_handle = sport_init(&sport_params[sport_num], 4, \
-+			8 * sizeof(u32), NULL);
-+	if (!sport_handle) {
-+		peripheral_free_list(&sport_req[sport_num][0]);
-+		return -ENODEV;
-+	}
-+
-+	/*SPORT works in TDM mode to simulate AC97 transfers*/
-+	ret = sport_set_multichannel(sport_handle, 8, 0xFF, 1);
-+	if (ret) {
-+		pr_err("SPORT is busy!\n");
-+		ret = -EBUSY;
-+		goto sport_config_err;
-+	}
-+
-+	ret = sport_config_rx(sport_handle, IRFS, 0x1F, 0, 0);
-+	if (ret) {
-+		pr_err("SPORT is busy!\n");
-+		ret = -EBUSY;
-+		goto sport_config_err;
-+	}
-+
-+	ret = sport_config_tx(sport_handle, ITFS, 0x1F, 0, 0);
-+	if (ret) {
-+		pr_err("SPORT is busy!\n");
-+		ret = -EBUSY;
-+		goto sport_config_err;
-+	}
-+
-+sport_config_err:
-+	peripheral_free_list(&sport_req[sport_num][0]);
-+	return ret;
-+}
-+
-+static void bf5xx_tdm_remove(struct platform_device *pdev,
-+		struct snd_soc_dai *dai)
-+{
-+	peripheral_free_list(&sport_req[sport_num][0]);
-+}
-+
-+#ifdef CONFIG_PM
-+static int bf5xx_tdm_suspend(struct snd_soc_dai *dai)
-+{
-+	struct sport_device *sport =
-+		(struct sport_device *)dai->private_data;
-+
-+	if (!dai->active)
-+		return 0;
-+	if (dai->capture.active)
-+		sport_rx_stop(sport);
-+	if (dai->playback.active)
-+		sport_tx_stop(sport);
-+	return 0;
-+}
-+
-+static int bf5xx_tdm_resume(struct snd_soc_dai *dai)
-+{
-+	struct sport_device *sport =
-+		(struct sport_device *)dai->private_data;
-+
-+	if (!dai->active)
-+		return 0;
-+
-+	if (dai->capture.active)
-+		sport_rx_start(sport);
-+	if (dai->playback.active)
-+		sport_tx_start(sport);
-+	return 0;
-+}
-+
-+#else
-+#define bf5xx_tdm_suspend	NULL
-+#define bf5xx_tdm_resume	NULL
-+#endif
-+
-+static struct snd_soc_dai_ops bf5xx_tdm_dai_ops = {
-+	.hw_params	= bf5xx_tdm_hw_params,
-+	.set_fmt	= bf5xx_tdm_set_dai_fmt,
-+};
-+
-+struct snd_soc_dai bf5xx_tdm_dai = {
-+	.name = "bf5xx-tdm",
-+	.id = 0,
-+	.probe = bf5xx_tdm_probe,
-+	.remove = bf5xx_tdm_remove,
-+	.suspend = bf5xx_tdm_suspend,
-+	.resume = bf5xx_tdm_resume,
-+	.playback = {
-+		.channels_min = 2,
-+		.channels_max = 8,
-+		.rates = SNDRV_PCM_RATE_48000,
-+		.formats = SNDRV_PCM_FMTBIT_S32_LE,},
-+	.capture = {
-+		.channels_min = 2,
-+		.channels_max = 8,
-+		.rates = SNDRV_PCM_RATE_48000,
-+		.formats = SNDRV_PCM_FMTBIT_S32_LE,},
-+	.ops = &bf5xx_tdm_dai_ops,
-+};
-+EXPORT_SYMBOL_GPL(bf5xx_tdm_dai);
-+
-+static int __init bfin_tdm_init(void)
-+{
-+	return snd_soc_register_dai(&bf5xx_tdm_dai);
-+}
-+module_init(bfin_tdm_init);
-+
-+static void __exit bfin_tdm_exit(void)
-+{
-+	snd_soc_unregister_dai(&bf5xx_tdm_dai);
-+}
-+MODULE_EXIT(bfin_tdm_exit);
-+
-+/* Module information */
-+MODULE_AUTHOR("Barry Song");
-+MODULE_DESCRIPTION("TDM driver for ADI Blackfin");
-+MODULE_LICENSE("GPL");
-+
-diff --git a/sound/soc/blackfin/bf5xx-tdm.h b/sound/soc/blackfin/bf5xx-tdm.h
-new file mode 100644
-index 0000000..e5157cd
---- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-tdm.h
-@@ -0,0 +1,14 @@
-+/*
-+ * linux/sound/arm/bf5xx-i2s.h
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef _BF5XX_TDM_H
-+#define _BF5XX_TDM_H
-+
-+extern struct snd_soc_dai bf5xx_tdm_dai;
-+
-+#endif
-diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index f049a98..ce7bcf5 100644
---- a/sound/soc/codecs/Kconfig
-+++ b/sound/soc/codecs/Kconfig
-@@ -12,6 +12,7 @@ config SND_SOC_ALL_CODECS
- 	tristate "Build all ASoC CODEC drivers"
- 	select SND_SOC_L3
- 	select SND_SOC_AC97_CODEC if SND_SOC_AC97_BUS
-+	select SND_SOC_AD1938 if SPI_MASTER
- 	select SND_SOC_AD1939 if I2C
- 	select SND_SOC_AD1980 if SND_SOC_AC97_BUS
- 	select SND_SOC_AD73311 if I2C
-@@ -70,6 +71,9 @@ config SND_SOC_ALL_CODECS
- config SND_SOC_AC97_CODEC
- 	tristate
- 
-+config SND_SOC_AD1938
-+	tristate
-+
- config SND_SOC_AD1939
- 	tristate
- 
-diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
-index 913f2fa..2dd9490 100644
---- a/sound/soc/codecs/Makefile
-+++ b/sound/soc/codecs/Makefile
-@@ -1,4 +1,5 @@
- snd-soc-ac97-objs := ac97.o
-+snd-soc-ad1938-objs := ad1938.o
- snd-soc-ad1939-objs := ad1939.o
- snd-soc-ad1980-objs := ad1980.o
- snd-soc-ak4535-objs := ak4535.o
-@@ -49,6 +50,7 @@ snd-soc-wm9712-objs := wm9712.o
- snd-soc-wm9713-objs := wm9713.o
- 
- obj-$(CONFIG_SND_SOC_AC97_CODEC)	+= snd-soc-ac97.o
-+obj-$(CONFIG_SND_SOC_AD1938)	+= snd-soc-ad1938.o
- obj-$(CONFIG_SND_SOC_AD1939)	+= snd-soc-ad1939.o
- obj-$(CONFIG_SND_SOC_AD1980)	+= snd-soc-ad1980.o
- obj-$(CONFIG_SND_SOC_AD73311) += snd-soc-ad73311.o
-diff --git a/sound/soc/codecs/ad1938.c b/sound/soc/codecs/ad1938.c
-new file mode 100644
-index 0000000..9aa78e1
---- /dev/null
-+++ b/sound/soc/codecs/ad1938.c
-@@ -0,0 +1,548 @@
-+/*
-+ * ad1938.c  --  ALSA Soc AD1938 codec support
-+ *
-+ * Copyright:	Analog Device Inc.
-+ * Author:	Barry Song <Barry.Song@analog.com>
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ *  Revision history
-+ *    4 June 2009   Initial version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/version.h>
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/pcm_params.h>
-+#include <sound/initval.h>
-+#include <sound/soc.h>
-+#include <linux/spi/spi.h>
-+#include "ad1938.h"
-+
-+struct snd_soc_device *ad1938_socdev;
-+
-+/* dac de-emphasis enum control */
-+static const char *ad1938_deemp[] = {"flat", "48kHz", "44.1kHz", "32kHz"};
-+
-+static const struct soc_enum ad1938_enum[] = {
-+	SOC_ENUM_SINGLE(AD1938_DAC_CTRL2, 1, 4, ad1938_deemp),
-+};
-+
-+/* AD1938 volume/mute/de-emphasis etc. controls */
-+static const struct snd_kcontrol_new ad1938_snd_controls[] = {
-+	/* DAC volume control */
-+	SOC_SINGLE("DAC L1 Volume", AD1938_DAC_L1_VOL, 0, 0xFF, 1),
-+	SOC_SINGLE("DAC R1 Volume", AD1938_DAC_R1_VOL, 0, 0xFF, 1),
-+	SOC_SINGLE("DAC L2 Volume", AD1938_DAC_L2_VOL, 0, 0xFF, 1),
-+	SOC_SINGLE("DAC R2 Volume", AD1938_DAC_R2_VOL, 0, 0xFF, 1),
-+	SOC_SINGLE("DAC L3 Volume", AD1938_DAC_L3_VOL, 0, 0xFF, 1),
-+	SOC_SINGLE("DAC R3 Volume", AD1938_DAC_R3_VOL, 0, 0xFF, 1),
-+	SOC_SINGLE("DAC L4 Volume", AD1938_DAC_L4_VOL, 0, 0xFF, 1),
-+	SOC_SINGLE("DAC R4 Volume", AD1938_DAC_R4_VOL, 0, 0xFF, 1),
-+
-+	/* DAC mute control */
-+	SOC_SINGLE("DAC L1 Switch", AD1938_DAC_CHNL_MUTE, 0, 1, 1),
-+	SOC_SINGLE("DAC R1 Switch", AD1938_DAC_CHNL_MUTE, 1, 1, 1),
-+	SOC_SINGLE("DAC L2 Switch", AD1938_DAC_CHNL_MUTE, 2, 1, 1),
-+	SOC_SINGLE("DAC R2 Switch", AD1938_DAC_CHNL_MUTE, 3, 1, 1),
-+	SOC_SINGLE("DAC L3 Switch", AD1938_DAC_CHNL_MUTE, 4, 1, 1),
-+	SOC_SINGLE("DAC R3 Switch", AD1938_DAC_CHNL_MUTE, 5, 1, 1),
-+	SOC_SINGLE("DAC L4 Switch", AD1938_DAC_CHNL_MUTE, 6, 1, 1),
-+	SOC_SINGLE("DAC R4 Switch", AD1938_DAC_CHNL_MUTE, 7, 1, 1),
-+
-+	/* ADC mute control */
-+	SOC_SINGLE("ADC L1 Switch", AD1938_ADC_CTRL0, ADC0_MUTE, 1, 1),
-+	SOC_SINGLE("ADC R1 Switch", AD1938_ADC_CTRL0, ADC1_MUTE, 1, 1),
-+	SOC_SINGLE("ADC L2 Switch", AD1938_ADC_CTRL0, ADC2_MUTE, 1, 1),
-+	SOC_SINGLE("ADC R2 Switch", AD1938_ADC_CTRL0, ADC3_MUTE, 1, 1),
-+
-+	/* ADC high-pass filter */
-+	SOC_SINGLE("ADC High Pass Filter Switch", AD1938_ADC_CTRL0, ADC_HIGHPASS_FILTER, 1, 0),
-+
-+	/* DAC de-emphasis */
-+	SOC_ENUM("Playback Deemphasis", ad1938_enum[0]),
-+};
-+
-+/* add non dapm controls */
-+static int ad1938_add_controls(struct snd_soc_codec *codec)
-+{
-+	int err, i;
-+
-+	for (i = 0; i < ARRAY_SIZE(ad1938_snd_controls); i++) {
-+		err = snd_ctl_add(codec->card,
-+				snd_soc_cnew(&ad1938_snd_controls[i], codec, NULL));
-+		if (err < 0)
-+			return err;
-+	}
-+
-+	return 0;
-+}
-+
-+
-+/* dac/adc/pll poweron/off functions */
-+static int ad1938_dac_powerctrl(struct snd_soc_codec *codec, int cmd)
-+{
-+	int reg;
-+
-+	reg = codec->read(codec, AD1938_DAC_CTRL0);
-+	if (cmd)
-+		reg &= ~DAC_POWERDOWN;
-+	else
-+		reg |= DAC_POWERDOWN;
-+	codec->write(codec, AD1938_DAC_CTRL0, reg);
-+
-+	return 0;
-+
-+}
-+
-+static int ad1938_adc_powerctrl(struct snd_soc_codec *codec, int cmd)
-+{
-+	int reg;
-+
-+	reg = codec->read(codec, AD1938_ADC_CTRL0);
-+	if (cmd)
-+		reg &= ~ADC_POWERDOWN;
-+	else
-+		reg |= ADC_POWERDOWN;
-+	codec->write(codec, AD1938_ADC_CTRL0, reg);
-+
-+	return 0;
-+}
-+
-+static int ad1938_pll_powerctrl(struct snd_soc_codec *codec, int cmd)
-+{
-+	int reg;
-+
-+	reg = codec->read(codec, AD1938_PLL_CLK_CTRL0);
-+	if (cmd)
-+		reg &= ~PLL_POWERDOWN;
-+	else
-+		reg |= PLL_POWERDOWN;
-+	codec->write(codec, AD1938_PLL_CLK_CTRL0, reg);
-+
-+	return 0;
-+}
-+
-+/*
-+ * DAI ops entries
-+ */
-+
-+static int ad1938_set_pll(struct snd_soc_dai *codec_dai,
-+		int pll_id, unsigned int freq_in, unsigned int freq_out)
-+{
-+	struct snd_soc_codec *codec = codec_dai->codec;
-+
-+	if (freq_out)
-+		ad1938_pll_powerctrl(codec, 1);
-+	else {
-+		/* playing while recording, framework will poweroff-poweron pll redundantly */
-+		if ((!codec_dai->capture.active) && (!codec_dai->playback.active))
-+			ad1938_pll_powerctrl(codec, 0);
-+	}
-+
-+	return 0;
-+}
-+
-+static int ad1938_mute(struct snd_soc_dai *dai, int mute)
-+{
-+	struct snd_soc_codec *codec = dai->codec;
-+
-+	if (!mute)
-+		codec->write(codec, AD1938_DAC_CHNL_MUTE, 0);
-+	else
-+		codec->write(codec, AD1938_DAC_CHNL_MUTE, 0xff);
-+
-+	return 0;
-+}
-+
-+static int ad1938_tdm_set(struct snd_soc_codec *codec)
-+{
-+	codec->write(codec, AD1938_DAC_CTRL0, (codec->read(codec, AD1938_DAC_CTRL0) &
-+				(~DAC_SERFMT_MASK)) | DAC_SERFMT_TDM);
-+	codec->write(codec, AD1938_DAC_CTRL1, 0x84); /* invert bclk, 256bclk/frame, latch in mid */
-+	codec->write(codec, AD1938_ADC_CTRL1, 0x43); /* sata delay=1, adc aux mode */
-+	codec->write(codec, AD1938_ADC_CTRL2, 0x6F); /* left high, driver on rising edge */
-+
-+	return 0;
-+}
-+
-+static int ad1938_i2s_set(struct snd_soc_codec *codec)
-+{
-+	codec->write(codec, AD1938_DAC_CTRL0, (codec->read(codec, AD1938_DAC_CTRL0) &
-+				(~DAC_SERFMT_MASK)) | DAC_SERFMT_STEREO);
-+	codec->write(codec, AD1938_DAC_CTRL1, 0x30); /* 64bclk/frame, latch in mid, left low */
-+	codec->write(codec, AD1938_ADC_CTRL1, 0x3); /* sata delay=1, stereo mode */
-+	codec->write(codec, AD1938_ADC_CTRL2, 0x48); /* left low, driver on falling edge */
-+
-+	return 0;
-+}
-+
-+static int ad1938_set_dai_fmt(struct snd_soc_dai *codec_dai,
-+		unsigned int fmt)
-+{
-+	struct snd_soc_codec *codec = codec_dai->codec;
-+
-+	/* interface format */
-+	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
-+	case SND_SOC_DAIFMT_SPORT_TDM:
-+		ad1938_tdm_set(codec);
-+		break;
-+	case SND_SOC_DAIFMT_I2S:
-+		ad1938_i2s_set(codec);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int ad1938_pcm_prepare(struct snd_pcm_substream *substream,
-+		struct snd_soc_dai *dai)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_device *socdev = rtd->socdev;
-+	struct snd_soc_codec *codec = socdev->card->codec;
-+	struct snd_soc_dai *codec_dai = codec->dai;
-+
-+	/* set active */
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		/* If not poweron adc, dac can't work */
-+		if (!codec_dai->capture.active)
-+			ad1938_adc_powerctrl(codec, 1);
-+		ad1938_dac_powerctrl(codec, 1);
-+	} else {
-+		/* poweron adc */
-+		ad1938_adc_powerctrl(codec, 1);
-+	}
-+
-+	return 0;
-+}
-+
-+static int ad1938_hw_params(struct snd_pcm_substream *substream,
-+		struct snd_pcm_hw_params *params,
-+		struct snd_soc_dai *dai)
-+{
-+	int word_len = 0, reg = 0;
-+
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_device *socdev = rtd->socdev;
-+	struct snd_soc_codec *codec = socdev->card->codec;
-+
-+	/* bit size */
-+	switch (params_format(params)) {
-+	case SNDRV_PCM_FORMAT_S16_LE:
-+		word_len = 3;
-+		break;
-+	case SNDRV_PCM_FORMAT_S20_3LE:
-+		word_len = 1;
-+		break;
-+	case SNDRV_PCM_FORMAT_S24_LE:
-+	case SNDRV_PCM_FORMAT_S32_LE:
-+		word_len = 0;
-+		break;
-+	}
-+
-+	reg = codec->read(codec, AD1938_DAC_CTRL2);
-+	reg = (reg & (~DAC_WORD_LEN_MASK)) | word_len;
-+	codec->write(codec, AD1938_DAC_CTRL2, reg);
-+
-+	reg = codec->read(codec, AD1938_ADC_CTRL1);
-+	reg = (reg & (~ADC_WORD_LEN_MASK)) | word_len;
-+	codec->write(codec, AD1938_DAC_CTRL1, reg);
-+
-+	return 0;
-+}
-+
-+static void ad1938_pcm_shutdown(struct snd_pcm_substream *substream,
-+		struct snd_soc_dai *dai)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_device *socdev = rtd->socdev;
-+	struct snd_soc_codec *codec = socdev->card->codec;
-+	struct snd_soc_dai *codec_dai = codec->dai;
-+
-+	/* deactivate */
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		/* poweroff dac */
-+		ad1938_dac_powerctrl(codec, 0);
-+
-+		/* after poweroff dac, if adc is not opened, poweroff it too */
-+		if (!codec_dai->capture.active)
-+			ad1938_adc_powerctrl(codec, 0);
-+	} else {
-+		/* if dac is still working, can't shutdown adc */
-+		if (!codec_dai->playback.active)
-+			ad1938_adc_powerctrl(codec, 0);
-+	}
-+}
-+
-+/*
-+ * interface to read/write ad1938 register
-+ */
-+
-+#define AD1938_SPI_ADDR    0x4
-+#define AD1938_SPI_READ    0x1
-+#define AD1938_SPI_BUFLEN  3
-+
-+/*
-+ * write to the ad1938 register space
-+ */
-+
-+static int ad1938_reg_write(struct snd_soc_codec *codec, unsigned int reg,
-+		unsigned int value)
-+{
-+	uint8_t buf[AD1938_SPI_BUFLEN];
-+	struct spi_transfer t = {
-+		.tx_buf = buf,
-+		.len = AD1938_SPI_BUFLEN,
-+	};
-+	struct spi_message m;
-+
-+	buf[0] = AD1938_SPI_ADDR << 1;
-+	buf[1] = reg;
-+	buf[2] = value;
-+	spi_message_init(&m);
-+	spi_message_add_tail(&t, &m);
-+
-+	return spi_sync(codec->control_data, &m);
-+}
-+
-+/*
-+ * read from the ad1938 register space
-+ */
-+
-+static unsigned int ad1938_reg_read(struct snd_soc_codec *codec, unsigned int reg)
-+{
-+	char w_buf[AD1938_SPI_BUFLEN];
-+	char r_buf[AD1938_SPI_BUFLEN];
-+	int ret;
-+
-+	struct spi_transfer t = {
-+		.tx_buf = w_buf,
-+		.rx_buf = r_buf,
-+		.len = AD1938_SPI_BUFLEN,
-+	};
-+	struct spi_message m;
-+
-+	w_buf[0] = (AD1938_SPI_ADDR << 1) | AD1938_SPI_READ;
-+	w_buf[1] = reg;
-+	w_buf[2] = 0;
-+
-+	spi_message_init(&m);
-+	spi_message_add_tail(&t, &m);
-+	ret = spi_sync(codec->control_data, &m);
-+	if (ret == 0)
-+		return	r_buf[2];
-+	else
-+		return -EIO;
-+}
-+
-+static int __devinit ad1938_spi_probe(struct spi_device *spi)
-+{
-+	spi->dev.power.power_state = PMSG_ON;
-+	ad1938_socdev->card->codec->control_data = spi;
-+
-+	return 0;
-+}
-+
-+static int __devexit ad1938_spi_remove(struct spi_device *spi)
-+{
-+	return 0;
-+}
-+
-+static struct spi_driver ad1938_spi_driver = {
-+	.driver = {
-+		.name	= "ad1938-spi",
-+		.bus	= &spi_bus_type,
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= ad1938_spi_probe,
-+	.remove		= __devexit_p(ad1938_spi_remove),
-+};
-+
-+static int ad1938_spi_init(void)
-+{
-+	return spi_register_driver(&ad1938_spi_driver);
-+}
-+
-+static void ad1938_spi_done(void)
-+{
-+	spi_unregister_driver(&ad1938_spi_driver);
-+}
-+
-+static struct snd_soc_dai_ops ad1938_dai_ops = {
-+	.prepare = ad1938_pcm_prepare,
-+	.hw_params = ad1938_hw_params,
-+	.shutdown = ad1938_pcm_shutdown,
-+	.digital_mute = ad1938_mute,
-+	.set_pll = ad1938_set_pll,
-+	.set_fmt = ad1938_set_dai_fmt,
-+};
-+
-+/* codec DAI instance */
-+struct snd_soc_dai ad1938_dai = {
-+	.name = "AD1938",
-+	.playback = {
-+		.stream_name = "Playback",
-+		.channels_min = 2,
-+		.channels_max = 8,
-+		.rates = SNDRV_PCM_RATE_48000,
-+		.formats = SNDRV_PCM_FMTBIT_S32_LE | SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE | SNDRV_PCM_FMTBIT_S24_LE, },
-+	.capture = {
-+		.stream_name = "Capture",
-+		.channels_min = 2,
-+		.channels_max = 4,
-+		.rates = SNDRV_PCM_RATE_48000,
-+		.formats = SNDRV_PCM_FMTBIT_S32_LE | SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE | SNDRV_PCM_FMTBIT_S24_LE, },
-+	.ops = &ad1938_dai_ops,
-+};
-+EXPORT_SYMBOL_GPL(ad1938_dai);
-+
-+static int ad1938_soc_probe(struct platform_device *pdev)
-+{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	struct snd_soc_codec *codec;
-+	int ret = 0;
-+
-+	/* codec alloc and init */
-+	codec = kzalloc(sizeof(struct snd_soc_codec), GFP_KERNEL);
-+	if (codec == NULL)
-+		return -ENOMEM;
-+	mutex_init(&codec->mutex);
-+	codec->name = "AD1938";
-+	codec->owner = THIS_MODULE;
-+	codec->dai = &ad1938_dai;
-+	codec->num_dai = 1;
-+	codec->write = ad1938_reg_write;
-+	codec->read = ad1938_reg_read;
-+	socdev->card->codec = codec;
-+	INIT_LIST_HEAD(&codec->dapm_widgets);
-+	INIT_LIST_HEAD(&codec->dapm_paths);
-+
-+	ad1938_socdev = socdev;
-+
-+	/* codec spi interface init */
-+	ret = ad1938_spi_init();
-+	if (ret < 0) {
-+		printk(KERN_ERR "ad1938: failed to init spi interface\n");
-+		goto spi_err;
-+	}
-+
-+	/* register pcms */
-+	ret = snd_soc_new_pcms(socdev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1);
-+	if (ret < 0) {
-+		printk(KERN_ERR "ad1938: failed to create pcms\n");
-+		goto pcm_err;
-+	}
-+
-+	ret = snd_soc_init_card(socdev);
-+	if (ret < 0) {
-+		printk(KERN_ERR "ad1938: failed to register card\n");
-+		goto register_err;
-+	}
-+
-+	/* register controls for ad1938 */
-+	ad1938_add_controls(codec);
-+
-+	/* default setting for ad1938 */
-+	codec->write(codec, AD1938_DAC_CHNL_MUTE, 0xFF); /* mute all dac channels */
-+	codec->write(codec, AD1938_DAC_CTRL2, 0x1A); /* de-emphasis: 48kHz, powedown dac */
-+	codec->write(codec, AD1938_DAC_CTRL0, 0x1); /* powerdown dac */
-+	codec->write(codec, AD1938_ADC_CTRL0, 0x3); /* high-pass filter enable */
-+	codec->write(codec, AD1938_PLL_CLK_CTRL0, 0x9D); /* pll input:mclki/xi */
-+	codec->write(codec, AD1938_PLL_CLK_CTRL1, 0x04);
-+
-+	printk(KERN_INFO "Analog Devices AD1938 codec registered\n");
-+	return ret;
-+
-+register_err:
-+	snd_soc_free_pcms(socdev);
-+pcm_err:
-+	ad1938_spi_done();
-+spi_err:
-+	kfree(socdev->card->codec);
-+	socdev->card->codec = NULL;
-+	return ret;
-+}
-+
-+static int ad1938_soc_remove(struct platform_device *pdev)
-+{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	struct snd_soc_codec *codec = socdev->card->codec;
-+
-+	if (codec == NULL)
-+		return 0;
-+	snd_soc_free_pcms(socdev);
-+	kfree(codec);
-+	ad1938_spi_done();
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int ad1938_soc_suspend(struct platform_device *pdev,
-+		pm_message_t state)
-+{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	struct snd_soc_codec *codec = socdev->card->codec;
-+
-+	/* poweroff dac/adc/pll */
-+	ad1938_dac_powerctrl(codec, 0);
-+	ad1938_adc_powerctrl(codec, 0);
-+	ad1938_pll_powerctrl(codec, 0);
-+
-+	return 0;
-+}
-+
-+static int ad1938_soc_resume(struct platform_device *pdev)
-+{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	struct snd_soc_codec *codec = socdev->card->codec;
-+	struct snd_soc_dai *codec_dai = codec->dai;
-+
-+	/* playing while recording, framework will poweroff-poweron pll redundantly */
-+	if (codec_dai->capture.active || codec_dai->playback.active) {
-+		ad1938_pll_powerctrl(codec, 1);
-+		ad1938_adc_powerctrl(codec, 1);
-+	}
-+	if (codec_dai->playback.active)
-+		ad1938_adc_powerctrl(codec, 1);
-+
-+	return 0;
-+}
-+#else
-+#define ad1938_soc_suspend NULL
-+#define ad1938_soc_resume NULL
-+#endif
-+
-+struct snd_soc_codec_device soc_codec_dev_ad1938 = {
-+	.probe = 	ad1938_soc_probe,
-+	.remove = 	ad1938_soc_remove,
-+	.suspend =      ad1938_soc_suspend,
-+	.resume =       ad1938_soc_resume,
-+};
-+EXPORT_SYMBOL_GPL(soc_codec_dev_ad1938);
-+
-+static int __init ad1938_init(void)
-+{
-+	return snd_soc_register_dai(&ad1938_dai);
-+}
-+module_init(ad1938_init);
-+
-+static void __exit ad1938_exit(void)
-+{
-+	snd_soc_unregister_dai(&ad1938_dai);
-+}
-+module_exit(ad1938_exit);
-+
-+MODULE_DESCRIPTION("ASoC ad1938 driver");
-+MODULE_AUTHOR("Barry Song ");
-+MODULE_LICENSE("GPL");
-diff --git a/sound/soc/codecs/ad1938.h b/sound/soc/codecs/ad1938.h
-new file mode 100644
-index 0000000..c845916
---- /dev/null
-+++ b/sound/soc/codecs/ad1938.h
-@@ -0,0 +1,68 @@
-+/*
-+ * File:         sound/soc/codecs/ad1836.h
-+ * Based on:
-+ * Author:       Barry Song <Barry.Song@analog.com>
-+ *
-+ * Created:      May 25, 2009
-+ * Description:  definitions for AD1938 registers
-+ *
-+ * Modified:
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#ifndef __AD1938_H__
-+#define __AD1938_H__
-+
-+#define AD1938_PLL_CLK_CTRL0    0
-+#define PLL_POWERDOWN           0x01
-+#define AD1938_PLL_CLK_CTRL1    1
-+#define AD1938_DAC_CTRL0        2
-+#define DAC_POWERDOWN           0x01
-+#define DAC_SERFMT_MASK		0xC0
-+#define DAC_SERFMT_STEREO	(0 << 6)
-+#define DAC_SERFMT_TDM		(1 << 6)
-+#define AD1938_DAC_CTRL1        3
-+#define AD1938_DAC_CTRL2        4
-+#define DAC_WORD_LEN_MASK	0xC
-+#define AD1938_DAC_CHNL_MUTE    5
-+#define AD1938_DAC_L1_VOL       6
-+#define AD1938_DAC_R1_VOL       7
-+#define AD1938_DAC_L2_VOL       8
-+#define AD1938_DAC_R2_VOL       9
-+#define AD1938_DAC_L3_VOL       10
-+#define AD1938_DAC_R3_VOL       11
-+#define AD1938_DAC_L4_VOL       12
-+#define AD1938_DAC_R4_VOL       13
-+#define AD1938_ADC_CTRL0        14
-+#define ADC_POWERDOWN           0x01
-+#define ADC_HIGHPASS_FILTER	1
-+#define ADC0_MUTE 		2
-+#define ADC1_MUTE 		3
-+#define ADC2_MUTE 		4
-+#define ADC3_MUTE 		5
-+#define AD1938_ADC_CTRL1        15
-+#define ADC_SERFMT_MASK		0x60
-+#define ADC_SERFMT_STEREO	(0 << 5)
-+#define ADC_SERFMT_AUX		(2 << 5)
-+#define ADC_WORD_LEN_MASK	0x3
-+#define AD1938_ADC_CTRL2        16
-+
-+extern struct snd_soc_dai ad1938_dai;
-+extern struct snd_soc_codec_device soc_codec_dev_ad1938;
-+#endif
--- 
-1.5.6.3
+There are hardly any active/inactive_file pages. So it's not likely
+Rik or mine patches.
 
+> lowmem_reserve[]: 0 0 0 0
+> DMA: 1*4kB 1*8kB 0*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 3916kB
+> DMA32: 576*4kB 15*8kB 1*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 4296kB
+
+There are plenty of free pages. Is it a page allocator bug? Is it
+stable v2.6.30 or pre 2.6.31-rc1?
+
+Thanks,
+Fengguang
+
+> 1854 total pagecache pages
+> 0 pages in swap cache
+> Swap cache stats: add 0, delete 0, find 0/0
+> Free swap  = 0kB
+> Total swap = 0kB
+> 255744 pages RAM
+> 5588 pages reserved
+> 230698 pages shared
+> 217103 pages non-shared
+> Out of memory: kill process 25166 (msgctl11) score 133496 or a child
+> Killed process 28855 (msgctl11)
+> msgctl11 invoked oom-killer: gfp_mask=0xd0, order=1, oom_adj=0
+> msgctl11 cpuset=/ mems_allowed=0
+> Pid: 30312, comm: msgctl11 Not tainted 2.6.30-cachefs #106
+> Call Trace:
+>  [<ffffffff81071dae>] ? oom_kill_process.clone.0+0xa9/0x245
+>  [<ffffffff81072075>] ? __out_of_memory+0x12b/0x142
+>  [<ffffffff810720f6>] ? out_of_memory+0x6a/0x94
+>  [<ffffffff8107479e>] ? __alloc_pages_nodemask+0x422/0x50b
+>  [<ffffffff81031110>] ? copy_process+0x93/0x113f
+>  [<ffffffff810748f1>] ? __get_free_pages+0x12/0x50
+>  [<ffffffff81031130>] ? copy_process+0xb3/0x113f
+>  [<ffffffff81029a83>] ? update_curr+0x53/0xdf
+>  [<ffffffff81081e00>] ? handle_mm_fault+0x5f3/0x645
+>  [<ffffffff810322fb>] ? do_fork+0x13f/0x2ba
+>  [<ffffffff81022a0b>] ? do_page_fault+0x1f1/0x206
+>  [<ffffffff8100b0d3>] ? stub_clone+0x13/0x20
+>  [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
+> Mem-Info:
+> DMA per-cpu:
+> CPU    0: hi:    0, btch:   1 usd:   0
+> CPU    1: hi:    0, btch:   1 usd:   0
+> DMA32 per-cpu:
+> CPU    0: hi:  186, btch:  31 usd:   0
+> CPU    1: hi:  186, btch:  31 usd:   0
+> Active_anon:79646 active_file:2 inactive_anon:4113
+>  inactive_file:0 unevictable:0 dirty:0 writeback:0 unstable:0
+>  free:1966 slab:38417 mapped:2 pagetables:61720 bounce:0
+> DMA free:3916kB min:60kB low:72kB high:88kB active_anon:3608kB inactive_anon:256kB active_file:0kB inactive_file:0kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
+> lowmem_reserve[]: 0 968 968 968
+> DMA32 free:3948kB min:3948kB low:4932kB high:5920kB active_anon:314976kB inactive_anon:16196kB active_file:8kB inactive_file:0kB unevictable:0kB present:992032kB pages_scanned:0 all_unreclaimable? no
+> lowmem_reserve[]: 0 0 0 0
+> DMA: 1*4kB 1*8kB 0*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 3916kB
+> DMA32: 443*4kB 20*8kB 10*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 3948kB
+> 36 total pagecache pages
+> 0 pages in swap cache
+> Swap cache stats: add 0, delete 0, find 0/0
+> Free swap  = 0kB
+> Total swap = 0kB
+> 255744 pages RAM
+> 5588 pages reserved
+> 151665 pages shared
+> 220702 pages non-shared
+> Out of memory: kill process 25166 (msgctl11) score 133404 or a child
+> Killed process 28860 (msgctl11)
