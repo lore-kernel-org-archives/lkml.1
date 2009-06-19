@@ -1,106 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZFSPlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbZFSPv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbZFSPlY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 11:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZFSPlR
+	id S1754237AbZFSPv1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 11:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZFSPvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 11:41:17 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:48153 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbZFSPlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 11:41:16 -0400
-Date: Fri, 19 Jun 2009 21:11:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
-       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
-       "'Brice Goglin'" <Brice.Goglin@inria.fr>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-Message-ID: <20090619154114.GE8648@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de> <20090612103251.GJ25568@one.firstfloor.org> <004001c9eb53$71991300$54cb3900$@rwth-aachen.de> <1245119977.6724.40.camel@lts-notebook> <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de> <1245164395.15138.40.camel@lts-notebook> <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de> <1245299856.6431.30.camel@lts-notebook> <1245351882.1025.84.camel@lts-notebook> <1245425214.30101.32.camel@lts-notebook>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 19 Jun 2009 11:51:18 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:42836 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751632AbZFSPvR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 11:51:17 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjIFAFtPO0pMQWja/2dsb2JhbACBUb4jCJAGgjEfCIExBQ
+Date: Fri, 19 Jun 2009 11:51:15 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, efault@gmx.de,
+       jeremy@goop.org, npiggin@suse.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf_counter: x86: Fix call-chain
+	support to use NMI-safe methods
+Message-ID: <20090619155115.GA24111@Krystal>
+References: <alpine.LFD.2.01.0906151125320.6276@localhost.localdomain> <20090615183649.GA16999@elte.hu> <alpine.LFD.2.01.0906151152170.6276@localhost.localdomain> <20090615194344.GA12554@elte.hu> <20090615200619.GA10632@Krystal> <20090615204715.GA24554@elte.hu> <20090615210225.GA12919@Krystal> <20090615211209.GA27100@elte.hu> <alpine.LFD.2.01.0906151617030.6276@localhost.localdomain> <20090619152029.GA7204@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1245425214.30101.32.camel@lts-notebook>
+In-Reply-To: <20090619152029.GA7204@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:43:57 up 111 days, 12:10,  4 users,  load average: 0.29, 0.39,
+	0.72
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lee Schermerhorn <Lee.Schermerhorn@hp.com> [2009-06-19 11:26:53]:
-
-> On Thu, 2009-06-18 at 15:04 -0400, Lee Schermerhorn wrote:
-> > On Thu, 2009-06-18 at 00:37 -0400, Lee Schermerhorn wrote:
-> > > On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
-> > > > > I've placed the last rebased version in :
-> > > > > 
-> > > > > http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.28-rc4-mmotm-
-> > > > > 081110/
-> > > > > 
-> > > > 
-> > > > OK! I will try to reconstruct the problem.
-> > > 
-> > > Stefan:
-> > > 
-> > > Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
-> > > [along with my shared policy series atop which they sit in my tree].
-> > > Patches reside in:
-> > > 
-> > > http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
-> > > 
-> > 
-> > I have updated the migrate-on-fault tarball in the above location to fix
-> > part of the problems I was seeing.  See below.
-> > 
-> > > 
-> > > I did a quick test.  I'm afraid the patches have suffered some "bit rot"
-> > > vis a vis mainline/mmotm over the past several months.  Two possibly
-> > > related issues:
-> > > 
-> > > 1) lazy migration doesn't seem to work. Looks like
-> > > mbind(<some-policy>+MPOL_MF_MOVE+MPOL_MF_LAZY) is not unmapping the
-> > > pages so, of course, migrate on fault won't work.  I suspect the
-> > > reference count handling has changed since I last tried this.  [Note one
-> > > of the patch conflicts was in the MPOL_MF_LAZY addition to the mbind
-> > > flag definitions in mempolicy.h and I may have botched the resolution
-> > > thereof.]
-> > > 
-> > > 2) When the pages get freed on exit/unmap, they are still PageLocked()
-> > > and free_pages_check()/bad_page() bugs out with bad page state.
-> > > 
-> > > Note:  This is independent of memcg--i.e., happens whether or not memcg
-> > > configured.
-> > > 
-> > <snip>
-> > 
-> > OK.  Found time to look at this.  Turns out I hadn't tested since
-> > trylock_page() was introduced.  I did a one-for-one replacement of the
-> > old API [TestSetPageLocked()], not noticing that the sense of the return
-> > was inverted.  Thus, I was bailing out of the migrate_pages_unmap_only()
-> > loop with the page locked, thinking someone else had locked it and would
-> > take care of it.  Since the page wasn't unmapped from the page table[s],
-> > of course it wouldn't migrate on fault--wouldn't even fault!
-> > 
-> > Fixed this.
-> > 
-> > Now:  lazy migration works w/ or w/o memcg configured, but NOT with the
-> > swap resource controller configured.  I'll look at that as time permits.
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> Update:  I now can't reproduce the lazy migration failure with the swap
-> resource controller configured.  Perhaps I had booted the wrong kernel
-> for the test reported above.  Now the updated patch series mentioned
-> above seems to be working with both memory and swap resource controllers
-> configured for simple memtoy driven lazy migration.
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > On Mon, 15 Jun 2009, Ingo Molnar wrote:
+> > > 
+> > > See the numbers in the other mail: about 33 million pagefaults 
+> > > happen in a typical kernel build - that's ~400K/sec - and that 
+> > > is not a particularly really pagefault-heavy workload.
+> > 
+> > Did you do any function-level profiles?
+> > 
+> > Last I looked at it, the real cost of page faults were all in the 
+> > memory copies and page clearing, and while it would be nice to 
+> > speed up the kernel entry and exit, the few tens of cycles we 
+> > might be able to get from there really aren't all that important.
+> 
+> Yeah.
+> 
+> Here's the function level profiles of a typical kernel build on a 
+> Nehalem box:
+> 
+>  $ perf report --sort symbol
+> 
+>  #
+>  # (14317328 samples)
+>  #
+>  # Overhead  Symbol
+>  # ........  ......
+>  #
+>     44.05%  0x000000001a0b80
 
-Excellent, I presume that you are using the latest mmotm or mainline.
-We've had some swap cache leakage fix go in, but those are not as
-serious (they can potentially cause OOM in a cgroup when the leak
-occurs).
+It makes me wonder how the following scenario is accounted :
 
+- Execution of a newly forked/exec'd process instruction causes a fault.
+  (traps, faults and interrupts can take roughly 2000 cycles to execute)
+- PC sampling interrupt fires.
+
+Will it account the execution time as part of user-space or
+kernel-space execution ?
+
+Depending on how the sampling mechanism finds out if it is running in
+kernel mode or userspace mode, this might make the userspace PC appear
+as currently running even though the current execution context is the
+very beginning of the page fault handler (1st instruction servicing the
+fault).
+
+Mathieu
+
+>      5.09%  0x0000000001d298
+>      3.56%  0x0000000005742c
+>      2.48%  0x0000000014026d
+>      2.31%  0x00000000007b1a
+>      2.06%  0x00000000115ac9
+>      1.83%  [.] _int_malloc
+>      1.71%  0x00000000064680
+>      1.50%  [.] memset
+>      1.37%  0x00000000125d88
+>      1.28%  0x000000000b7642
+>      1.17%  [k] clear_page_c
+>      0.87%  [k] page_fault
+>      0.78%  [.] is_defined_config
+>      0.71%  [.] _int_free
+>      0.68%  [.] __GI_strlen
+>      0.66%  0x000000000699e8
+>      0.54%  [.] __GI_memcpy
+> 
+> Most is dominated by user-space symbols. (no proper ELF+debuginfo on 
+> this box so they are unnamed.) It also sows that page clearing and 
+> pagefault handling dominates the kernel overhead - but is dwarved by 
+> other overhead. Any page-fault-entry costs are a drop in the bucket.
+> 
+> In fact with call-chain graphs we can get a precise picture, as we 
+> can do a non-linear 'slice' set operation over the samples and 
+> filter out the ones that have the 'page_fault' pattern in one of 
+> their parent functions:
+> 
+>  $ perf report --sort symbol --parent page_fault
+> 
+>  #
+>  # (14317328 samples)
+>  #
+>  # Overhead  Symbol
+>  # ........  ......
+>  #
+>      1.12%  [k] clear_page_c
+>      0.87%  [k] page_fault
+>      0.43%  [k] get_page_from_freelist
+>      0.25%  [k] _spin_lock
+>      0.24%  [k] do_page_fault
+>      0.23%  [k] perf_swcounter_ctx_event
+>      0.16%  [k] perf_swcounter_event
+>      0.15%  [k] handle_mm_fault
+>      0.15%  [k] __alloc_pages_nodemask
+>      0.14%  [k] __rmqueue
+>      0.12%  [k] find_get_page
+>      0.11%  [k] copy_page_c
+>      0.11%  [k] find_vma
+>      0.10%  [k] _spin_lock_irqsave
+>      0.10%  [k] __wake_up_bit
+>      0.09%  [k] _spin_unlock_irqrestore
+>      0.09%  [k] do_anonymous_page
+>      0.09%  [k] __inc_zone_state
+> 
+> This "sub-profile" shows the true summary overhead that 'page_fault' 
+> and all its child functions have. Note that for example clear_page_c 
+> decreased from 1.17% to 1.12%:
+> 
+>      1.12%  [k] clear_page_c
+>      1.17%  [k] clear_page_c
+> 
+> because there's 0.05% of other callers to clear_page_c() that do not 
+> involve page_fault. Those are filtered out via --parent 
+> filtering/matching.
+> 
+> 	Ingo
 
 -- 
-	Balbir
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
