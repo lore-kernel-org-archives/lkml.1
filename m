@@ -1,81 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbZFSVCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZFSVIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757681AbZFSVCW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 17:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZFSVCO
+	id S1755925AbZFSVIx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 17:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZFSVIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 17:02:14 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:63632 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbZFSVCO convert rfc822-to-8bit (ORCPT
+	Fri, 19 Jun 2009 17:08:44 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:44766 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751948AbZFSVIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 17:02:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aqeG+6zk6E76Yg8qIVVVeamE8D5nEyovZaatwNN/S+6LV/nOpHnAKYfD++zRDyeadH
-         uUQmL9BYoOOsKWbvy6Q4Iatr0/Ak46WcbhjETCZfG+B9v/P+IgXVzfr7R1jSsHpJISJr
-         pwPki6P7hGcwER7+xns+ueIesiEL3LZ6QgLV8=
-MIME-Version: 1.0
-In-Reply-To: <4A3BF2FA.2010708@msgid.tls.msk.ru>
-References: <1245439404.25076.7.camel@ronispc.chem.mcgill.ca>
-	 <4A3BE7EA.4050800@msgid.tls.msk.ru>
-	 <dd18b0c30906191255h7d0c6bcfx58f32d4b34e13c34@mail.gmail.com>
-	 <4A3BF2FA.2010708@msgid.tls.msk.ru>
-Date: Fri, 19 Jun 2009 13:55:02 -0700
-Message-ID: <dd18b0c30906191355v616b924ct98874bf015c5ac66@mail.gmail.com>
-Subject: Re: Panic booting 2.6.30
-From: Justin Mattock <justinmattock@gmail.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: ronis@ronispc.chem.mcgill.ca, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 19 Jun 2009 17:08:44 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: alan@lxorguk.ukuu.org.uk
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/3] Char: n_r3964, fix lock imbalance
+Date: Fri, 19 Jun 2009 23:08:26 +0200
+Message-Id: <1245445708-27256-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 1:20 PM, Michael Tokarev<mjt@tls.msk.ru> wrote:
-> Justin Mattock wrote:
->>
->> On Fri, Jun 19, 2009 at 12:32 PM, Michael Tokarev<mjt@tls.msk.ru> wrote:
->>>
->>> David Ronis wrote:
->>>>
->>>> I've just upgraded an older machine (a P3 running slackware 11.0) from
->>>> 2.6.26.5 to 2.6.30; the build was uneventful.  However, on reboot (using
->>>> lilo) I get:
->>>>
->>>> VSF:  Cannot open root device "hda2" or unknown-block(0,0)
->>>> Please append a correct root= boot option; here are the available
->>>> partions:     <====== nothing shows here...
->>>> Kernel-Panic - not syncing.
->>>>
->>>> I had rebooted with and without root=hda2.   The old kernel is still
->>>> usable.
->>>>
->>>> Lilo.conf looks like:
->>>
->>> Add large-memory option to lilo.conf
->>
->> check  /dev/hda*  to see
->> if it renamed itself to /dev/sda*
->
-> It cant "rename itself".
->
-> The difference between sd* and hd* is different driver for the
-> controller - either old good ide code (like piix) - that's hd*,
-> or libata-based code (ata_piix).  Which one is compiled into
-> your kernel or gets loaded by initrd is controlled by you, not
-> by kernel or drivers.
->
-> /mjt
->
+There is omitted BKunL in r3964_read.
 
-ahh.. that's what I did then
-had old, then changed to new,
-but didn't realize.
-Thanks for clearing that up.
+Centralize the paths to one point with one unlock.
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/char/n_r3964.c |   26 ++++++++++++++------------
+ 1 files changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/char/n_r3964.c b/drivers/char/n_r3964.c
+index d2e93e3..2e99158 100644
+--- a/drivers/char/n_r3964.c
++++ b/drivers/char/n_r3964.c
+@@ -1062,7 +1062,7 @@ static ssize_t r3964_read(struct tty_struct *tty, struct file *file,
+ 	struct r3964_client_info *pClient;
+ 	struct r3964_message *pMsg;
+ 	struct r3964_client_message theMsg;
+-	int count;
++	int ret;
+ 
+ 	TRACE_L("read()");
+ 
+@@ -1074,8 +1074,8 @@ static ssize_t r3964_read(struct tty_struct *tty, struct file *file,
+ 		if (pMsg == NULL) {
+ 			/* no messages available. */
+ 			if (file->f_flags & O_NONBLOCK) {
+-				unlock_kernel();
+-				return -EAGAIN;
++				ret = -EAGAIN;
++				goto unlock;
+ 			}
+ 			/* block until there is a message: */
+ 			wait_event_interruptible(pInfo->read_wait,
+@@ -1085,29 +1085,31 @@ static ssize_t r3964_read(struct tty_struct *tty, struct file *file,
+ 		/* If we still haven't got a message, we must have been signalled */
+ 
+ 		if (!pMsg) {
+-			unlock_kernel();
+-			return -EINTR;
++			ret = -EINTR;
++			goto unlock;
+ 		}
+ 
+ 		/* deliver msg to client process: */
+ 		theMsg.msg_id = pMsg->msg_id;
+ 		theMsg.arg = pMsg->arg;
+ 		theMsg.error_code = pMsg->error_code;
+-		count = sizeof(struct r3964_client_message);
++		ret = sizeof(struct r3964_client_message);
+ 
+ 		kfree(pMsg);
+ 		TRACE_M("r3964_read - msg kfree %p", pMsg);
+ 
+-		if (copy_to_user(buf, &theMsg, count)) {
+-			unlock_kernel();
+-			return -EFAULT;
++		if (copy_to_user(buf, &theMsg, ret)) {
++			ret = -EFAULT;
++			goto unlock;
+ 		}
+ 
+-		TRACE_PS("read - return %d", count);
+-		return count;
++		TRACE_PS("read - return %d", ret);
++		goto unlock;
+ 	}
++	ret = -EPERM;
++unlock:
+ 	unlock_kernel();
+-	return -EPERM;
++	return ret;
+ }
+ 
+ static ssize_t r3964_write(struct tty_struct *tty, struct file *file,
 -- 
-Justin P. Mattock
+1.6.3.2
+
