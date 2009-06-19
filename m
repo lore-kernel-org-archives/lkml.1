@@ -1,90 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbZFSQT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZFSQXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755061AbZFSQT3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 12:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbZFSQTV
+	id S1755555AbZFSQXo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 12:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZFSQXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 12:19:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56493 "EHLO hera.kernel.org"
+	Fri, 19 Jun 2009 12:23:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51731 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbZFSQTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 12:19:21 -0400
-Message-ID: <4A3BB9F9.6090203@kernel.org>
-Date: Fri, 19 Jun 2009 09:16:57 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752367AbZFSQXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 12:23:36 -0400
+Date: Fri, 19 Jun 2009 18:23:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: benh@kernel.crashing.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: tools: Define and use our own u64, s64
+	etc. definitions
+Message-ID: <20090619162330.GA15197@elte.hu>
+References: <19003.33494.495844.956580@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Christoph Lameter <cl@linux-foundation.org>, mingo@elte.hu, mel@csn.ul.ie,
-       tglx@linutronix.de, hpa@zytor.com, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       rusty@rustcorp.com.au, steiner@sgi.com, rientjes@google.com,
-       containers@lists.linux-foundation.org, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH] mm: clear N_HIGH_MEMORY map before se set it again -v4
-References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie> <4A0A64FB.4080504@kernel.org> <20090513145950.GB28097@csn.ul.ie> <4A0C4910.7090508@kernel.org> <4A0C4A2A.6080009@kernel.org> <20090514095414.ba8356e5.akpm@linux-foundation.org> <4A0C4F67.5080802@kernel.org> <20090514102554.b3a36f19.akpm@linux-foundation.org> <4A0C563A.3020100@kernel.org> <4A2758CB.9090404@kernel.org> <alpine.DEB.1.10.0906041236520.5377@gentwo.org> <4A27FAD4.2010104@kernel.org> <alpine.DEB.1.10.0906041309230.8080@gentwo.org> <4A2803D1.4070001@kernel.org> <m3bpokiv0u.fsf@pobox.com> <4A3B49BA.40100@kernel.org> <m3prd0havh.fsf@pobox.com>
-In-Reply-To: <m3prd0havh.fsf@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19003.33494.495844.956580@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nathan Lynch wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
->>> I bisected to the commit containing this change.  Reverting fixes the
->>> problem.
->>>
->> can you use following patch to see what happens to that nodemask?
+
+* Paul Mackerras <paulus@samba.org> wrote:
+
+> On 64-bit powerpc, __u64 is defined to be unsigned long rather 
+> than unsigned long long.  This causes compiler warnings every time 
+> we print a __u64 value with %Lx.
 > 
-> # dmesg | grep node_states
-> before clear: node_states [3]: 1
-> after online check: node_states [3]: 0
+> Rather than changing __u64, we define our own u64 to be unsigned 
+> long long on all architectures, and similarly s64 as signed long 
+> long. For consistency we also define u32, s32, u16, s16, u8 and 
+> s8.  These definitions are put in a new header, types.h, because 
+> these definitions are needed in util/string.h and util/symbol.h.
 > 
+> The main change here is the mechanical change of 
+> __[us]{64,32,16,8} to remove the "__".  The other changes are:
+> 
+> * Create types.h
+> * Include types.h in perf.h, util/string.h and util/symbol.h
+> * Add types.h to the LIB_H definition in Makefile
+> * Added (u64) casts in process_overflow_event() and print_sym_table()
+>   to kill two remaining warnings.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+>  tools/perf/Makefile            |    1 +
+>  tools/perf/builtin-annotate.c  |   66 ++++++++++++++++----------------
+>  tools/perf/builtin-record.c    |   20 +++++-----
+>  tools/perf/builtin-report.c    |   80 ++++++++++++++++++++--------------------
+>  tools/perf/builtin-stat.c      |   62 +++++++++++++++---------------
+>  tools/perf/builtin-top.c       |   24 ++++++------
+>  tools/perf/perf.h              |    1 +
+>  tools/perf/types.h             |   17 ++++++++
+>  tools/perf/util/parse-events.c |   10 ++--
+>  tools/perf/util/string.c       |    2 +-
+>  tools/perf/util/string.h       |    4 +-
+>  tools/perf/util/symbol.c       |   20 +++++-----
+>  tools/perf/util/symbol.h       |   15 ++++---
+>  13 files changed, 171 insertions(+), 151 deletions(-)
+>  create mode 100644 tools/perf/types.h
 
-/*
- * Array of node states.
- */
-nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
-        [N_POSSIBLE] = NODE_MASK_ALL,
-        [N_ONLINE] = { { [0] = 1UL } },
-#ifndef CONFIG_NUMA
-        [N_NORMAL_MEMORY] = { { [0] = 1UL } },
-#ifdef CONFIG_HIGHMEM
-        [N_HIGH_MEMORY] = { { [0] = 1UL } },
-#endif
-        [N_CPU] = { { [0] = 1UL } },
-#endif  /* NUMA */
-};
-EXPORT_SYMBOL(node_states);
+Very nice, thanks a lot Paul for going through this!
 
-preset that
-
-
-and
-
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  Normal   0x00001000 -> 0x0001fff0
-  HighMem  0x0001fff0 -> 0x0001fff0
-Movable zone start PFN for each node
-early_node_map[2] active PFN ranges
-    0: 0x00000000 -> 0x0000009f
-    0: 0x00000100 -> 0x0001fff0
-before clear: node_states [3]: 1
-On node 0 totalpages: 130959
-free_area_init_node: node 0, pgdat c0976960, node_mem_map c1151000
-  DMA zone: 60 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 3939 pages, LIFO batch:0
-  Normal zone: 1860 pages used for memmap
-  Normal zone: 125100 pages, LIFO batch:31
-after online check: node_states [3]: 0
-
-
-you don't have high mem, so we should it.
-
-really hate those preset value assume node 0 has RAM...
-
-
-YH
+	Ingo
