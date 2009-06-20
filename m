@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbZFTPrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZFTPtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbZFTPrp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 11:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZFTPre
+	id S1756421AbZFTPtV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 11:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZFTPtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 11:47:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41586 "EHLO mx3.mail.elte.hu"
+	Sat, 20 Jun 2009 11:49:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52063 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753567AbZFTPrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 11:47:33 -0400
-Date: Sat, 20 Jun 2009 17:47:16 +0200
+	id S1753301AbZFTPtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 11:49:12 -0400
+Date: Sat, 20 Jun 2009 17:48:57 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
-Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
-	__list_add+0x7d/0xad()
-Message-ID: <20090620154716.GA12901@elte.hu>
-References: <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com> <4A3A0D45.8090806@trash.net> <4A3A5599.4080906@trash.net>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH RFC] softirq: fix ksoftirq starved
+Message-ID: <20090620154857.GB12901@elte.hu>
+References: <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu> <4A31BF1D.1050400@cn.fujitsu.com> <4A32251C.8060001@cn.fujitsu.com> <20090617145333.GD6846@elte.hu> <4A39B25C.2040801@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A3A5599.4080906@trash.net>
+In-Reply-To: <4A39B25C.2040801@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,29 +39,49 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Patrick McHardy <kaber@trash.net> wrote:
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-> Ingo, could you please try whether this patch (combined with the 
-> last one) makes any difference? Enabling CONFIG_NETFILTER_DEBUG 
-> could also help.
+> Ingo Molnar wrote:
+> > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> > 
+> >> --- a/kernel/sched.c
+> >> +++ b/kernel/sched.c
+> >> @@ -5307,6 +5307,7 @@ need_resched:
+> >>  	release_kernel_lock(prev);
+> >>  need_resched_nonpreemptible:
+> >>  
+> >> +	schedule_softirq_check();
+> >>  	schedule_debug(prev);
+> > 
+> > hm, this slows down the scheduler fast-path ...
+> > 
+> > 	Ingo
+> > 
+> > 
+> 
+> It's true. But:
+> 
+> The overheads are:
+> 
+> Overhead-A: the function call statement "schedule_softirq_check();"
+> It can be gotten rid off by a macro or inline function.
+> 
+> Overhead-B: __get_cpu_var() and the test statement.
+> 
+> Overhead-C: do_softirq()
+> In my patch, we test a variable and then call do_softirq() when
+> the variable is true. do_softirq() can be called from process
+> context or from schedule() or by any other ways, but it must be
+> called and avoids starvation in this condition.
+> So we need pay this overhead. It is no worse than before.
+> 
+> Is it a critical thing when it slows down the scheduler fast-path
+> because of the "Overhead-B"?
+> 
+> Or I misunderstand something?
 
-Mind pushing it upstream, and i'll keep things monitored over the 
-week following when it hits upstream?
-
-The reason is, the crash ratio is worse than 1:1000, it took a day 
-and a 1000 tests to trigger that one. I havent seen it after that.
-
-So it's going to be a very slow observation and you shouldnt 
-serialize on me - giving you a 'it works' positive result will take 
-10,000 random bootp tests or so - that's a week or longer. (it can 
-take a long time to hit that especially in the merge window when 
-there's a lot of various test failures that cause hickups in the 
-test stream.)
-
-( Mailing me an upstream sha1 when all fixes in this area have hit 
-  upstream would certainly be welcome - i can use that as a 'no 
-  crashes expected in that area from that point on' flag day. )
-
-Thanks,
+The thing is that _any_ extra instruction in the scheduler fast-path 
+should be avoided. I dont think it can be claimed that this problem 
+can only be solved that way.
 
 	Ingo
