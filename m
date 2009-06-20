@@ -1,87 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbZFTB3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbZFTBgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760074AbZFTB3A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 21:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbZFTB2w
+	id S1756502AbZFTBgX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 21:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZFTBgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 21:28:52 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:40541 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758401AbZFTB2v (ORCPT
+	Fri, 19 Jun 2009 21:36:14 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:30056 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbZFTBgO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 21:28:51 -0400
-To: David Rientjes <rientjes@google.com>
-Cc: David Miller <davem@davemloft.net>, eric.dumazet@gmail.com,
-       jpiszcz@lucidpixels.com, linux-kernel@vger.kernel.org
-References: <alpine.DEB.2.00.0906180935130.2894@chino.kir.corp.google.com>
-	<20090618.120034.246557840.davem@davemloft.net>
-	<alpine.DEB.2.00.0906181212380.10979@chino.kir.corp.google.com>
-	<20090618.123708.78849607.davem@davemloft.net>
-	<m1ljnoyn0e.fsf@fess.ebiederm.org>
-	<alpine.DEB.2.00.0906191524470.30455@chino.kir.corp.google.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 19 Jun 2009 18:28:49 -0700
-In-Reply-To: <alpine.DEB.2.00.0906191524470.30455@chino.kir.corp.google.com> (David Rientjes's message of "Fri\, 19 Jun 2009 15\:37\:17 -0700 \(PDT\)")
-Message-ID: <m1hbybwv5a.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 19 Jun 2009 21:36:14 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: rientjes@google.com, linux-kernel@vger.kernel.org, jpiszcz@lucidpixels.com, eric.dumazet@gmail.com, davem@davemloft.net
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ***;David Rientjes <rientjes@google.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: lkml.org]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [patch] ipv4: don't warn about skb ack allocation failures
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Message-ID: <ae2dd9a2-4e30-4f00-8ecc-9b0b75298971@default>
+Date: Fri, 19 Jun 2009 18:35:20 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: dan.magenheimer@oracle.com, linux-kernel@vger.kernel.org
+Cc: xen-devel@lists.xensource.com, npiggin@suse.de, chris.mason@oracle.com,
+       kurt.hackel@oracle.com, dave.mccracken@oracle.com,
+       Avi Kivity <avi@redhat.com>, jeremy@goop.org,
+       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org
+Subject: [RFC PATCH 0/4] transcendent memory ("tmem") for Linux
+In-Reply-To: <cd40cd91-66e9-469d-b079-3a899a3ccadb@default>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1 (304090) [OL 9.0.0.6627]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A3C3CDB.0184:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes <rientjes@google.com> writes:
+Apologies for the breach of netiquette with attachments.
+Following up with inline patches in separate emails...
 
-> On Fri, 19 Jun 2009, Eric W. Biederman wrote:
->
->> But Mr. Reintjes if you really want the traces I can set up 
->> an script to email them to you every time it happens.  Say about
->> 1 a minute from my paltry little farm of machines.
->> 
->
-> Perhaps you missed my email where I suggested emitting the page allocation 
-> warnings only when CONFIG_DEBUG_VM is enabled.  It's at 
-> http://lkml.org/lkml/2009/6/18/355.
->
-> We can then keep the __GFP_NOFAIL flag to indicate that the warnings 
-> should never be emitted for that allocation, regardless of the .config.
->
-> It's funny, though, that the problem that originally started this thread 
-> was quickly diagnosed because of these messages.  As far as I know, my 
-> suggestion to increase /proc/sys/vm/dirty_background_ratio to kick pdflush 
-> earlier has prevented the slab allocation failures and not required 
-> delayed acks for nfsd.
+=====================
 
-increase?
+Normal memory is directly addressable by the kernel,
+of a known normally-fixed size, synchronously accessible,
+and persistent (though not across a reboot).
 
-Perhaps then the problem is simply dirty_background_ratio.  Is the vm
-not properly autotuning?
+What if there was a class of memory that is of unknown
+and dynamically variable size, is addressable only indirectly
+by the kernel, can be configured either as persistent or
+as "ephemeral" (meaning it will be around for awhile, but
+might disappear without warning), and is still fast enough
+to be synchronously accessible?
 
-With a 50MB/s disk I wonder what the proper window size is.  Several
-gigabytes as implied by a 5% or a 10% dirty_background_ratio seems
-absurd.  TCP sockets seem to get along fine with even large latencies
-and windows measured in megabytes not gigabytes.
+We call this latter class "transcendent memory" and it
+provides an interesting opportunity to more efficiently
+utilize RAM in a virtualized environment.  However this
+"memory but not really memory" may also have applications
+in NON-virtualized environments, such as hotplug-memory
+deletion, SSDs, and page cache compression.  Others have
+suggested ideas such as allowing use of highmem memory
+without a highmem kernel, or use of spare video memory.
 
-This does explain a few things.
+Transcendent memory, or "tmem" for short, provides a
+well-defined API to access this unusual class of memory.
+The basic operations are page-copy-based and use a flexible
+object-oriented addressing mechanism.  Tmem assumes
+that some "privileged entity" is capable of executing
+tmem requests and storing pages of data; this entity
+is currently a hypervisor and operations are performed
+via hypercalls, but the entity could be a kernel policy,
+or perhaps a "memory node" in a cluster of blades connected
+by a high-speed interconnect such as hypertransport or QPI.
 
-Eric
+Since tmem is not directly accessible and because page
+copying is done to/from physical pageframes, it more suitable
+for in-kernel memory needs than for userland applications.
+However, there may be yet undiscovered userland possibilities.
+
+With the tmem concept outlined vaguely and its broader
+potential hinted, we will overview two existing examples
+of how tmem can be used by the kernel.  These examples are
+implemented in the attached (2.6.30-based) patches.
+
+"Precache" can be thought of as a page-granularity victim
+cache for clean pages that the kernel's pageframe replacement
+algorithm (PFRA) would like to keep around, but can't since
+there isn't enough memory.   So when the PFRA "evicts" a page,
+it first puts it into the precache via a call to tmem.  And
+any time a filesystem reads a page from disk, it first attempts
+to get the page from precache.  If it's there, a disk access
+is eliminated.  If not, the filesystem just goes to the disk
+like normal.  Precache is "ephemeral" so whether a page is kept
+in precache (between the "put" and the "get") is dependent on
+a number of factors that are invisible to the kernel.
+
+"Preswap" IS persistent, but for various reasons may not always
+be available for use, again due to factors that may not be
+visible to the kernel (but, briefly, if the kernel is being
+"good" and has shared its resources nicely, then it will be
+able to use preswap, else it will not).  Once a page is put,
+a get on the page will always succeed.  So when the kernel
+finds itself in a situation where it needs to swap out a page,
+it first attempts to use preswap.  If the put works, a disk
+write and (usually) a disk read are avoided.  If it doesn't,
+the page is written to swap as usual.  Unlike precache, whether
+a page is stored in preswap vs swap is recorded in kernel data
+structures, so when a page needs to be fetched, the kernel does
+a get if it is in preswap and reads from swap if it is not in
+preswap.
+
+Both precache and preswap may be optionally compressed,
+trading off 2x space reduction vs 10x performance for access.
+Precache also has a sharing feature, which allows different nodes
+in a "virtual cluster" to share a local page cache.
+(In the attached patch, precache is only implemented for
+ext3 and shared precache is only implemented for ocfs2.)
+
+Tmem has some similarity to IBM's Collaborative Memory Management,
+but creates more of a partnership between the kernel and the
+"privileged entity" and is not very invasive.  Tmem may be
+applicable for KVM and containers; there is some disagreement on
+the extent of its value. Tmem is highly complementary to ballooning
+(aka page granularity hot plug) and memory deduplication (aka
+transparent content-based page sharing) but still has value
+when neither are present.
+
+Performance is difficult to quantify because some benchmarks
+respond very favorably to increases in memory and tmem may
+do quite well on those, depending on how much tmem is available
+which may vary widely and dynamically, depending on conditions
+completely outside of the system being measured.  I'd appreciate
+ideas on how best to provide useful metrics.
+
+Tmem is now supported in Xen's unstable tree and in
+Xen's 2.6.18-xen source tree.  Again, Xen is not necessarily
+a requirement, but currently provides the only existing
+implementation of tmem.
+
+Lots more information about tmem can be found at:
+http://oss.oracle.com/projects/tmem and there will be
+a talk about it on the first day of Linux Symposium
+next month.  Tmem is the result of a group effort,
+including Chris Mason, Dave McCracken, Kurt Hackel
+and Zhigang Wang, with helpful input from Jeremy
+Fitzhardinge, Keir Fraser, Ian Pratt, Sunil Mushran,
+and Joel Becker
+
+Patches are as follows (organized for review, not for
+sequential application):
+tmeminf.patch	infrastructure for tmem layer and API
+precache.patch	precache implementation (layered on tmem)
+preswap.patch	preswap implementation (layered on tmem)
+tmemxen.patch	interface code for tmem on top of Xen
+
+Diffstat below, reorganized to show changed vs new files,
+and core kernel vs xen.  (Also attached in case the
+formatting gets messed up.)
+
+Any feedback appreciated!
+
+Thanks,
+Dan Magenheimer
+
+
+Changed core kernel files:
+ fs/buffer.c                              |    5 +
+ fs/ext3/super.c                          |    2 
+ fs/mpage.c                               |    8 ++
+ fs/ocfs2/super.c                         |    2 
+ fs/super.c                               |    5 +
+ include/linux/fs.h                       |    7 ++
+ include/linux/swap.h                     |   57 +++++++++++++++++++++
+ include/linux/sysctl.h                   |    1 
+ kernel/sysctl.c                          |   12 ++++
+ mm/Kconfig                               |   27 +++++++++
+ mm/Makefile                              |    2 
+ mm/filemap.c                             |   11 ++++
+ mm/page_io.c                             |   12 ++++
+ mm/swapfile.c                            |   41 ++++++++++++---
+ mm/truncate.c                            |   10 +++
+ 15 files changed, 196 insertions(+), 6 deletions(-)
+
+Newly added core kernel files:
+ include/linux/tmem.h                     |   22 +
+ mm/precache.c                            |  146 +++++++++++
+ mm/preswap.c                             |  274 +++++++++++++++++++++
+ 3 files changed, 442 insertions(+)
+
+Changed xen-specific files:
+ arch/x86/include/asm/xen/hypercall.h     |    8 +++
+ drivers/xen/Makefile                     |    1 
+ include/xen/interface/tmem.h             |   43 +++++++++++++++++++++
+ include/xen/interface/xen.h              |   22 ++++++++++
+ 4 files changed, 74 insertions(+)
+
+Newly added xen-specific files:
+ drivers/xen/tmem.c                       |  106 +++++++++++++++++++++
+ include/xen/interface/tmem.h             |   43 ++++++++
+ 2 files changed, 149 insertions(+)
