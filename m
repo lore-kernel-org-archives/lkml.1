@@ -1,113 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbZFTFGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbZFTFMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753581AbZFTFGo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 01:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZFTFGS
+	id S1753282AbZFTFMS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 01:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbZFTFMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 01:06:18 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:63055 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751577AbZFTFGQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 01:06:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=mLEiVTrM5RGTgNf++jQqwYQpKAuKCzpctV8VO2ycl0NnHXFXormsRw7ExYTFThwuR2
-         Ih62IUBVTeKwGzt0aaVEv6DWT+trCIoIXrQ8Su2OM7Y+8xU52Q50ko32Ln2hk6MKGZQc
-         TvZtON3/yXHyTKDXFawuq5UvoWvi038ofSpQc=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, stable@kernel.org
-Subject: [PATCH 1/2] tracing/urgent: fix unbalanced ftrace_start_up
-Date: Sat, 20 Jun 2009 07:06:11 +0200
-Message-Id: <1245474372-5249-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1245474372-5249-1-git-send-email-fweisbec@gmail.com>
-References: <1245474372-5249-1-git-send-email-fweisbec@gmail.com>
+	Sat, 20 Jun 2009 01:12:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58620 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750980AbZFTFMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 01:12:07 -0400
+Date: Sat, 20 Jun 2009 15:12:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: x86@kernel.org
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sfi-devel@simplefirmware.org, Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 19
+Message-Id: <20090620151206.e1a4f22f.sfr@canb.auug.org.au>
+In-Reply-To: <20090620150433.4e038676.sfr@canb.auug.org.au>
+References: <20090619172622.05adb236.sfr@canb.auug.org.au>
+	<alpine.LFD.2.00.0906200012200.4325@localhost.localdomain>
+	<20090620150433.4e038676.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__20_Jun_2009_15_12_06_+1000_8Y6qJdRHE0sSb5D="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perfcounter reports the following stats for a wide system
-profiling:
+--Signature=_Sat__20_Jun_2009_15_12_06_+1000_8Y6qJdRHE0sSb5D=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- #
- # (2364 samples)
- #
- # Overhead  Symbol
- # ........  ......
- #
-    15.40%  [k] mwait_idle_with_hints
-     8.29%  [k] read_hpet
-     5.75%  [k] ftrace_caller
-     3.60%  [k] ftrace_call
-     [...]
+Hi guys,
 
-This snapshot has been taken while neither the function tracer nor
-the function graph tracer was running.
-With dynamic ftrace, such results show a wrong ftrace behaviour
-because all calls to ftrace_caller or ftrace_graph_caller (the patched
-calls to mcount) are supposed to be patched into nop if none of those
-tracers are running.
+On Sat, 20 Jun 2009 15:04:33 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> On Sat, 20 Jun 2009 00:16:49 -0400 (EDT) Len Brown <lenb@kernel.org> wrot=
+e:
+> >
+> > Please add the Simple Firmware Interface "sfi-test" branch to linux-nex=
+t:
+> >=20
+> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-sfi-2.6.git sf=
+i-test
+>=20
+> Is this 2.6.31 or 32 material?
+>=20
+> > A description of the project is on the SFI home page: http://simplefirm=
+ware.org/
 
-The problem occurs after the first run of the function tracer. Once we
-launch it a second time, the callsites will never be nopped back,
-unless you set custom filters.
-For example it happens during the self tests at boot time.
-The function tracer selftest runs, and then the dynamic tracing is
-tested too. After that, the callsites are left un-nopped.
+Just so you know (since it seems to mostly affect x86) that this will be
+entering linux-next either Monday or after -rc1 depending on whether it
+is 2.6.31 or 2.6.32 material.
 
-This is because the reset callback of the function tracer tries to
-unregister two ftrace callbacks in once: the common function tracer
-and the function tracer with stack backtrace, regardless of which
-one is currently in use.
-It then creates an unbalance on ftrace_start_up value which is expected
-to be zero when the last ftrace callback is unregistered. When it
-reaches zero, the FTRACE_DISABLE_CALLS is set on the next ftrace
-command, triggering the patching into nop. But since it becomes
-unbalanced, ie becomes lower than zero, if the kernel functions
-are patched again (as in every further function tracer runs), they
-won't ever be nopped back.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Note that ftrace_call and ftrace_graph_call are still patched back
-to ftrace_stub in the off case, but not the callers of ftrace_call
-and ftrace_graph_caller. It means that the tracing is well deactivated
-but we waste a useless call into every kernel function.
+--Signature=_Sat__20_Jun_2009_15_12_06_+1000_8Y6qJdRHE0sSb5D=
+Content-Type: application/pgp-signature
 
-This patch just unregisters the right ftrace_ops for the function
-tracer on its reset callback and ignores the other one which is
-not registered, fixing the unbalance. The problem also happens
-is .30
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: stable@kernel.org
----
- kernel/trace/trace_functions.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+iEYEARECAAYFAko8b6YACgkQjjKRsyhoI8xpMACdGAz0OwWogC4owpKNrr9glHp+
+gQQAn2yhoMKAbKGTGU4MC+NOpA+VjQJK
+=dRG1
+-----END PGP SIGNATURE-----
 
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index c9a0b7d..90f1347 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -193,9 +193,11 @@ static void tracing_start_function_trace(void)
- static void tracing_stop_function_trace(void)
- {
- 	ftrace_function_enabled = 0;
--	/* OK if they are not registered */
--	unregister_ftrace_function(&trace_stack_ops);
--	unregister_ftrace_function(&trace_ops);
-+
-+	if (func_flags.val & TRACE_FUNC_OPT_STACK)
-+		unregister_ftrace_function(&trace_stack_ops);
-+	else
-+		unregister_ftrace_function(&trace_ops);
- }
- 
- static int func_set_flag(u32 old_flags, u32 bit, int set)
--- 
-1.6.2.3
-
+--Signature=_Sat__20_Jun_2009_15_12_06_+1000_8Y6qJdRHE0sSb5D=--
