@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbZFTDV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbZFTDWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758508AbZFTDV4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 23:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZFTDUe
+	id S1759817AbZFTDWP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 23:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZFTDUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 23:20:34 -0400
-Received: from mga14.intel.com ([143.182.124.37]:7542 "EHLO mga14.intel.com"
+	Fri, 19 Jun 2009 23:20:35 -0400
+Received: from mga14.intel.com ([143.182.124.37]:21837 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753074AbZFTDUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752919AbZFTDUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Jun 2009 23:20:04 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,257,1243839600"; 
-   d="scan'208";a="156644170"
-Message-Id: <20090620031624.692166383@intel.com>
+   d="scan'208";a="156644168"
+Message-Id: <20090620031626.631590814@intel.com>
 References: <20090620031608.624240019@intel.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 20 Jun 2009 11:16:09 +0800
+Date: Sat, 20 Jun 2009 11:16:22 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Lameter <cl@linux.com>,
-       Andi Kleen <ak@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
 cc: Ingo Molnar <mingo@elte.hu>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 cc: Mel Gorman <mel@csn.ul.ie>
@@ -30,89 +29,97 @@ cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 01/15] HWPOISON: Add page flag for poisoned pages
-Content-Disposition: inline; filename=page-flag-poison
+Subject: [PATCH 14/15] HWPOISON: Add simple debugfs interface to inject hwpoison on arbitary PFNs
+Content-Disposition: inline; filename=pfn-inject
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andi Kleen <ak@linux.intel.com>
 
-Hardware poisoned pages need special handling in the VM and shouldn't be
-touched again. This requires a new page flag. Define it here.
+Useful for some testing scenarios, although specific testing is often
+done better through MADV_POISON
 
-The page flags wars seem to be over, so it shouldn't be a problem
-to get a new one.
+This can be done with the x86 level MCE injector too, but this interface
+allows it to do independently from low level x86 changes.
 
-v2: Add TestSetHWPoison (suggested by Johannes Weiner)
-v3: Define TestSetHWPoison on !CONFIG_MEMORY_FAILURE (Fengguang)
+Open issues: 
+Should be disabled for cgroups.
 
-Acked-by: Christoph Lameter <cl@linux.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/page-flags.h |   21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ mm/Kconfig           |    4 ++++
+ mm/Makefile          |    1 +
+ mm/hwpoison-inject.c |   41 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 46 insertions(+)
 
---- sound-2.6.orig/include/linux/page-flags.h
-+++ sound-2.6/include/linux/page-flags.h
-@@ -51,6 +51,9 @@
-  * PG_buddy is set to indicate that the page is free and in the buddy system
-  * (see mm/page_alloc.c).
-  *
-+ * PG_hwpoison indicates that a page got corrupted in hardware and contains
-+ * data with incorrect ECC bits that triggered a machine check. Accessing is
-+ * not safe since it may cause another machine check. Don't touch!
-  */
- 
- /*
-@@ -102,6 +105,9 @@ enum pageflags {
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
- 	PG_uncached,		/* Page has been mapped as uncached */
- #endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	PG_hwpoison,		/* hardware poisoned page. Don't touch */
-+#endif
- 	__NR_PAGEFLAGS,
- 
- 	/* Filesystems */
-@@ -182,6 +188,9 @@ static inline void ClearPage##uname(stru
- #define __CLEARPAGEFLAG_NOOP(uname)					\
- static inline void __ClearPage##uname(struct page *page) {  }
- 
-+#define TESTSETFLAG_FALSE(uname)					\
-+static inline int TestSetPage##uname(struct page *page) { return 0; }
+--- /dev/null
++++ sound-2.6/mm/hwpoison-inject.c
+@@ -0,0 +1,41 @@
++/* Inject a hwpoison memory failure on a arbitary pfn */
++#include <linux/module.h>
++#include <linux/debugfs.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
 +
- #define TESTCLEARFLAG_FALSE(uname)					\
- static inline int TestClearPage##uname(struct page *page) { return 0; }
- 
-@@ -265,6 +274,16 @@ PAGEFLAG(Uncached, uncached)
- PAGEFLAG_FALSE(Uncached)
- #endif
- 
-+#ifdef CONFIG_MEMORY_FAILURE
-+PAGEFLAG(HWPoison, hwpoison)
-+TESTSETFLAG(HWPoison, hwpoison)
-+#define __PG_HWPOISON (1UL << PG_hwpoison)
-+#else
-+PAGEFLAG_FALSE(HWPoison)
-+TESTSETFLAG_FALSE(HWPoison)
-+#define __PG_HWPOISON 0
-+#endif
++static struct dentry *hwpoison_dir, *corrupt_pfn;
 +
- static inline int PageUptodate(struct page *page)
- {
- 	int ret = test_bit(PG_uptodate, &(page)->flags);
-@@ -389,7 +408,7 @@ static inline void __ClearPageTail(struc
- 	 1 << PG_private | 1 << PG_private_2 | \
- 	 1 << PG_buddy	 | 1 << PG_writeback | 1 << PG_reserved | \
- 	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
--	 1 << PG_unevictable | __PG_MLOCKED)
-+	 1 << PG_unevictable | __PG_MLOCKED | __PG_HWPOISON)
++static int hwpoison_inject(void *data, u64 val)
++{
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
++	memory_failure(val, 18);
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
++
++static void pfn_inject_exit(void)
++{
++	if (hwpoison_dir)
++		debugfs_remove_recursive(hwpoison_dir);
++}
++
++static int pfn_inject_init(void)
++{
++	hwpoison_dir = debugfs_create_dir("hwpoison", NULL);
++	if (hwpoison_dir == NULL)
++		return -ENOMEM;
++	corrupt_pfn = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
++					  NULL, &hwpoison_fops);
++	if (corrupt_pfn == NULL) {
++		pfn_inject_exit();
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++module_init(pfn_inject_init);
++module_exit(pfn_inject_exit);
+--- sound-2.6.orig/mm/Kconfig
++++ sound-2.6/mm/Kconfig
+@@ -242,6 +242,10 @@ config KSM
+ config MEMORY_FAILURE
+ 	bool
  
- /*
-  * Flags checked when a page is prepped for return by the page allocator.
++config HWPOISON_INJECT
++	tristate "Hardware poison pages injector"
++	depends on MEMORY_FAILURE && DEBUG_KERNEL
++
+ config NOMMU_INITIAL_TRIM_EXCESS
+ 	int "Turn on mmap() excess space trimming before booting"
+ 	depends on !MMU
+--- sound-2.6.orig/mm/Makefile
++++ sound-2.6/mm/Makefile
+@@ -43,5 +43,6 @@ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
+ obj-$(CONFIG_MEMORY_FAILURE) += memory-failure.o
++obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
 
 -- 
 
