@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbZFTUFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZFTUGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbZFTUFe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 16:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZFTUFZ
+	id S1754784AbZFTUGT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 16:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZFTUGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 16:05:25 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:41306 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751769AbZFTUFY (ORCPT
+	Sat, 20 Jun 2009 16:06:12 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35975 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbZFTUGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 16:05:24 -0400
-X-Greylist: delayed 1201 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Jun 2009 16:05:23 EDT
-Subject: 
-From: Kay Sievers <kay.sievers@suse.de>
-To: Greg KH <greg@kroah.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Takashi Iwai <tiwai@suse.de>, "David S. Miller" <davem@davemloft.net>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 20 Jun 2009 21:45:24 +0200
-Message-Id: <1245527124.30962.14.camel@yio.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Jun 2009 16:06:12 -0400
+Date: Sat, 20 Jun 2009 22:06:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Double-switching SMP alternatives
+Message-ID: <alpine.LSU.2.00.0906202205150.29073@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The final piece of the driver core name limit. We are about to remove
-BUS_ID_SIZE.
-
-Some patches may still be in your queue. Just to make sure, we will
-finish our task this time: David, David, James, Takashi, can you please
-give an update, or take care of removing the last instances, or let me
-know if you want a patch, or let us know, if we should just change it to
-"20".
-
-  $ find . -name "*.[ch]" | xargs grep '[^_]BUS_ID_SIZE'
-  ./drivers/mtd/nand/txx9ndfmc.c:	char mtdname[BUS_ID_SIZE + 2];
-  ./drivers/scsi/scsi_transport_fc.c:	char bsg_name[BUS_ID_SIZE]; /*20*/
-  ./arch/sparc/kernel/vio.c:	if (strlen(bus_id_name) >= BUS_ID_SIZE - 4) {
-  ./sound/soc/txx9/txx9aclc.c:	char devname[BUS_ID_SIZE + 2];
-
-Thanks a lot,
-Kay
+Hi,
 
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Driver Core: remove BUS_ID_SIZE
+in dmesg of a 2.6.25, I am finding:
 
-The name size limit is gone from the driver-core, this is
-the removal of the last left-over.
+Checking 'hlt' instruction... OK.
+SMP alternatives: switching to UP code
+[...]
+SMP alternatives: switching to SMP code
+Booting processor 1/1 ip 4000
+Initializing CPU#1
+Calibrating delay using timer specific routine.. 5581.16 BogoMIPS 
+(lpj=2790583)
+CPU: Trace cache: 12K uops, L1 D cache: 8K
+CPU: L2 cache: 512K
+CPU: Physical Processor ID: 0
+Intel machine check architecture supported.
+Intel machine check reporting enabled on CPU#1.
+CPU1: Intel P4/Xeon Extended MCE MSRs (12) available
+CPU1: Thermal monitoring enabled
+CPU1: Intel(R) Xeon(TM) CPU 2.80GHz stepping 07
+Booting processor 2/6 ip 4000
+Initializing CPU#2
+[...]
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
- include/linux/device.h |    2 --
- 1 file changed, 2 deletions(-)
 
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -25,8 +25,6 @@
- #include <asm/atomic.h>
- #include <asm/device.h>
- 
--#define BUS_ID_SIZE		20
--
- struct device;
- struct device_private;
- struct device_driver;
+Would not it make sense to skip the first switch to UP?
+
 
