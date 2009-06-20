@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbZFTO4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZFTPIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbZFTO4W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 10:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZFTO4J
+	id S1755356AbZFTPIm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 11:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbZFTPId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 10:56:09 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:47776 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753142AbZFTO4G (ORCPT
+	Sat, 20 Jun 2009 11:08:33 -0400
+Received: from mail-fx0-f214.google.com ([209.85.220.214]:57266 "EHLO
+	mail-fx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbZFTPId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 10:56:06 -0400
-Date: Sat, 20 Jun 2009 10:56:09 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Ravish Tayal <ravish.tayal@gmail.com>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       <linux-fsdevel@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: generic_make_request fucntion for scsi_disk
-In-Reply-To: <e42309110906200746u441b82acvec4e3e513253af0@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0906201052090.13441-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 20 Jun 2009 11:08:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=qTje7bdydoDuBULAGMlMxqtN6xnCPQ0FSkTpMHxaLt75LBf4MowO+jdt+zYH6XgVGZ
+         UjVi/z7d/DxF22WkYuZGvCc9qG/8Z/cNzm/HSa0OOW28+aMam8IvZJu7soE9KkpWmtUb
+         CSZAYMw/HIfEzofjAWzQncyULMZmZuMTAug7E=
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Forest Bond <forest@alittletooquiet.net>
+Subject: [PATCH] Staging: vt6655: fix build when !CONFIG_WIRELESS_EXT
+Date: Sat, 20 Jun 2009 19:07:40 +0400
+Message-Id: <1245510460-32102-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You should use Reply-To-All so that other people reading the mailing 
-list will be able to follow and contribute to the thread.
+Fix this build error when CONFIG_WIRELESS_EXT is not set:
+drivers/staging/vt6655/device_main.c:1153: error: 'struct net_device'
+	has no member named 'wireless_handlers'
 
-On Sat, 20 Jun 2009, Ravish Tayal wrote:
+Cc: Forest Bond <forest@alittletooquiet.net>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+ drivers/staging/vt6655/device_main.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
 
-> Thanks Alan,
-> 
-> I am actually trying to profile the time taken by each layer to complete the
-> disk write opertaion as sys_write to queue_command invokation veries alot.
-
-Of course it varies.  The kernel buffers disk writes, shuffles them 
-around, and then carries them out when it wants to.  As James has 
-pointed out, your write(2) system calls don't directly cause any I/O to 
-take place.
-
-Alan Stern
-
+diff --git a/drivers/staging/vt6655/device_main.c b/drivers/staging/vt6655/device_main.c
+index a10ed27..878c0f0 100644
+--- a/drivers/staging/vt6655/device_main.c
++++ b/drivers/staging/vt6655/device_main.c
+@@ -1146,14 +1146,9 @@ device_found1(struct pci_dev *pcid, const struct pci_device_id *ent)
+     dev->irq                = pcid->irq;
+     dev->netdev_ops         = &device_netdev_ops;
+ 
+-#ifdef WIRELESS_EXT
+-//Einsn Modify for ubuntu-7.04
+-//	dev->wireless_handlers->get_wireless_stats = iwctl_get_wireless_stats;
+-#if WIRELESS_EXT > 12
++#ifdef CONFIG_WIRELESS_EXT
+ 	dev->wireless_handlers = (struct iw_handler_def *)&iwctl_handler_def;
+-//	netdev->wireless_handlers = NULL;
+-#endif /* WIRELESS_EXT > 12 */
+-#endif /* WIRELESS_EXT */
++#endif
+ 
+     rc = register_netdev(dev);
+     if (rc)
+-- 
+1.6.3.1
 
