@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbZFTXMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZFTX0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbZFTXMf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 19:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbZFTXM2
+	id S1755445AbZFTX0T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 19:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZFTX0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 19:12:28 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:48645 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbZFTXM1 (ORCPT
+	Sat, 20 Jun 2009 19:26:08 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:61141 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751604AbZFTX0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 19:12:27 -0400
-X-IronPort-AV: E=Sophos;i="4.42,260,1243828800"; 
-   d="scan'208";a="2847191"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: alsa-devel@alsa-project.org,
-       "Mark Brown" <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [alsa-devel] [PATCH] New ASoC Drivers for ADI AD1938 codec
-Date: Sat, 20 Jun 2009 19:15:39 -0400
-User-Agent: KMail/1.9.5
-CC: "Mike Frysinger" <vapier.adi@gmail.com>, "Barry Song" <21cnbao@gmail.com>,
-       linux-kernel@vger.kernel.org, lrg@slimlogic.co.uk
-References: <1245403695-20537-1-git-send-email-21cnbao@gmail.com> <8bd0f97a0906190405k33503d8ekd74ec9ddbb2fde12@mail.gmail.com> <A40FAF28-889C-4322-A114-098EEA56FCE6@opensource.wolfsonmicro.com>
-In-Reply-To: <A40FAF28-889C-4322-A114-098EEA56FCE6@opensource.wolfsonmicro.com>
+	Sat, 20 Jun 2009 19:26:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: Badness on the Warp
+Date: Sun, 21 Jun 2009 01:26:08 +0200
+User-Agent: KMail/1.9.9
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <20090620154824.72b5cd50@lappy.seanm.ca> <200906202256.46073.elendil@planet.nl> <20090620191034.48fa085a@lappy.seanm.ca>
+In-Reply-To: <20090620191034.48fa085a@lappy.seanm.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-ID: <200906201915.39935.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 20 Jun 2009 23:12:29.0461 (UTC) FILETIME=[953CC450:01C9F1FC]
+Message-Id: <200906210126.09049.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Jun 2009 23:26:09.0728 (UTC) FILETIME=[7E279400:01C9F1FE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 19 Jun 2009 07:13, Mark Brown pondered:
-> On 19 Jun 2009, at 12:05, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > On Fri, Jun 19, 2009 at 06:47, Mark Brown wrote:
-> >> This will require that the arch code for any systems with the ad1938
-> >> do the setup of the device.
-> >
-> > so should sound/soc/blackfin/bf5xx-ad1938.c even exist in the first  
-> > place ?
-> 
-> Yes. It is needed in order to specify how things are hooked up on a  
-> given board.
+On Sunday 21 June 2009, Sean MacLennan wrote:
+> On Sat, 20 Jun 2009 22:56:45 +0200 Frans Pop <elendil@planet.nl> wrote:
+> > The fact that your bisect ended at a merge essentially means that it
+> > is invalid. As a merge does not introduce any actual change (unless
+> > it includes changes to resolve conflicts), it normally cannot be the
+> > cause of a regression.
+>
+> Makes sense I messed up somewhere. This is the commit that causes
+> problems:
+>
+> Merge branch 'topic/slab/earlyboot' of
+> git://git./linux/kernel/git/penberg/slab-2.6
+>
+> * 'topic/slab/earlyboot' of
+> git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6:
 
-This has always kind of bugged me about ASOC - (or maybe it is just my 
-ignorance about the architecture decisions that were made).
-
-Any reason why platform/board specific things are in sound/soc/arch rather 
-than arch/xxxx/boards - like the majority of drivers?
-
-?
-
+Hmmm. That's b640f042faa2, which is another merge...
+So you're still not there.
