@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbZFTNjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZFTNzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbZFTNjR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 09:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbZFTNjI
+	id S1754656AbZFTNzf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 09:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZFTNz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 09:39:08 -0400
-Received: from p3plsmtpa01-04.prod.phx3.secureserver.net ([72.167.82.84]:47430
-	"HELO p3plsmtpa01-04.prod.phx3.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752241AbZFTNjH (ORCPT
+	Sat, 20 Jun 2009 09:55:27 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:33794 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751383AbZFTNz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 09:39:07 -0400
-X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Jun 2009 09:39:07 EDT
-Date: Sat, 20 Jun 2009 16:32:22 +0300
-From: Dan Aloni <dan@aloni.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] Staging: prevent rtl8187se from crashing dev_ioctl() in
-	SIOCGIWNAME
-Message-ID: <20090620133222.GA18731@localhost>
+	Sat, 20 Jun 2009 09:55:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:reply-to:date:message-id:subject:from:content-type
+         :content-transfer-encoding;
+        b=BCRwLEb4xVZhZKHO04lbOvH8ibSlFOFiIUBUyMkN5e4HEthj8WnMKB8fcJsb2Ah4Gg
+         5nRuHri0nnRYAk+BuhBZWwwCsyKtjlbsa9bIsUTvDggBcp4cenwy/9QGOWVlG991mroJ
+         9Fuy8PVNj/H//OWqqmzZE/9iw0Za8X1wBJ/jg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Reply-To: technicalsupportteam@discuz.org
+Date: Sat, 20 Jun 2009 05:01:58 -0700
+Message-ID: <7d3263450906200501k76a51577id7407ac0de124daa@mail.gmail.com>
+Subject: =?windows-1256?Q?Webmaster_E=2Dmail_Account_Upgrading=FE?=
+From: Technical Support Team <tchnclspprttm48@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I repeatedly get __stack_chk_fail panic()s with this driver before
-applying the attached fix.
+Dear mail.ucalgary.ca Email Account User,
 
-ieee80211_wx_get_name() ignores sizeof(wrqu->name) which is IFNAMSIZ (16), and
-on certain conditions, the concatenated string will be larger than IFNAMSIZ
-including the terminating zero.
 
-    length ("802.11" ++ "b" ++ "/g" ++ " linked" ++ "\x00") == 17
+   We wrote to you on 20th June 2009 advising that you change the
+password onyour account in order to prevent any unauthorised account
+access followingthe network instruction we previously communicated.
 
-This fix uses strl{cpy,cat} in addition to the reduction of the total
-possible length of the output string by a char.
+all Mailhub systems will undergo regularly scheduled maintenance.
+Accessto your e-mail via the Webmail client will be unavailable for
+some timeduring this maintenance period. We are currently upgrading
+our data baseand e-mail account center i.e homepage view. We shall be
+deleting old[https://mail.ucalgary.ca/l accounts which are no longer
+active to createmore space for new accounts users. we have also
+investigated a system wide security audit to improve and enhanceour
+current security.
 
-It can be applied to 2.6.30-stable as well.
 
-Signed-off-by: Dan Aloni <dan@aloni.org>
----
- .../rtl8187se/ieee80211/ieee80211_softmac_wx.c     |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+   In order to continue using our services you are require to update
+andre-comfirmed your email account details as requested below. To
+completeyour account re-comfirmation,you must reply to this email
+immediately andenter your accountdetails as requested below.
 
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
-index 93af37e..54b4b71 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
-@@ -461,19 +461,19 @@ int ieee80211_wx_get_name(struct ieee80211_device *ieee,
- 			     struct iw_request_info *info,
- 			     union iwreq_data *wrqu, char *extra)
- {
--	strcpy(wrqu->name, "802.11");
-+	strlcpy(wrqu->name, "802.11", IFNAMSIZ);
- 	if(ieee->modulation & IEEE80211_CCK_MODULATION){
--		strcat(wrqu->name, "b");
-+		strlcat(wrqu->name, "b", IFNAMSIZ);
- 		if(ieee->modulation & IEEE80211_OFDM_MODULATION)
--			strcat(wrqu->name, "/g");
-+			strlcat(wrqu->name, "/g", IFNAMSIZ);
- 	}else if(ieee->modulation & IEEE80211_OFDM_MODULATION)
--		strcat(wrqu->name, "g");
-+		strlcat(wrqu->name, "g", IFNAMSIZ);
- 
- 	if((ieee->state == IEEE80211_LINKED) ||
- 		(ieee->state == IEEE80211_LINKED_SCANNING))
--		strcat(wrqu->name," linked");
-+		strlcat(wrqu->name,"  link", IFNAMSIZ);
- 	else if(ieee->state != IEEE80211_NOLINK)
--		strcat(wrqu->name," link..");
-+		strlcat(wrqu->name," .....", IFNAMSIZ);
- 
- 
- 	return 0;
--- 
-1.6.0.4
+Username :
+Password :
+Date of Birth:
+Future Password :
 
+
+    Failure to do this will immediately render your account
+deactivated fromour database and service will not be interrupted as
+important messages mayas well be lost due to your declining to
+re-comfirmed to us your account details.
+
+
+    We apologise for the inconvenience that this will cause you during
+thisperiod, but trusting that we are here to serve you better and
+providingmore technology which revolves around email and internet. It
+is alsopertinent,you understandthat our primary concern is for our
+customers,and for the security of their files and data.
+
+
+COMFIRMATION CODE: mail.ucalgary.ca -/93-1A388-480Technical Support Team
