@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZFTHkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbZFTHog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZFTHkM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 03:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbZFTHkB
+	id S1752656AbZFTHog (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 03:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZFTHo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 03:40:01 -0400
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:2289 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbZFTHkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 03:40:00 -0400
-X-IronPort-AV: E=Sophos;i="4.42,258,1243814400"; 
-   d="scan'208";a="5823484"
-User-Agent: Microsoft-Entourage/12.19.0.090515
-Date: Sat, 20 Jun 2009 08:39:55 +0100
-Subject: Re: [Xen-devel] Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs just
- because there's no local APIC
-From: Keir Fraser <keir.fraser@eu.citrix.com>
-To: "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>
-Message-ID: <C66250DB.DC85%keir.fraser@eu.citrix.com>
-Thread-Topic: [Xen-devel] Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs
- just because there's no local APIC
-Thread-Index: AcnxGFURHFiqpoaUQU+zperNWcAO4AAFye+wABK0Pns=
-In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A188656507@orsmsx505.amr.corp.intel.com>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
-X-OriginalArrivalTime: 20 Jun 2009 07:40:02.0719 (UTC) FILETIME=[52616AF0:01C9F17A]
+	Sat, 20 Jun 2009 03:44:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39714 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751374AbZFTHo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 03:44:29 -0400
+Subject: [PATCH -tip RESEND] x86: ptrace ptrace_get_debugreg() should be
+ static
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1245322502.7189.2.camel@localhost.localdomain>
+References: <1245322502.7189.2.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 20 Jun 2009 13:13:20 +0530
+Message-Id: <1245483801.3102.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20/06/2009 00:44, "Nakajima, Jun" <jun.nakajima@intel.com> wrote:
 
->> I assume that putting AML into Xen has been considered, but I don't
->> anything about those deliberations.  Keir? Jun?
->> 
-> 
-> Yes, it was one of the options years ago. We did not do that because Linux and
-> Solaris (as dom0) already had the AML interpreter and it's overkill and
-> redundant to have such a large component in the Xen hypervisor. Since the
-> hypervisor does most of the power management (i.e. P, C, S-state, etc.)
-> getting the info from dom0 today, we might want to reconsider the option.
+ptrace_get_debugreg() is used only by the same file, so it should be static.
 
-Yes, we could reconsider. However is there any stuff that dom0 remains
-responsible for (e.g., PCI management, and therefore PCI hotplug) where it
-would continue to need to be OSPM, interpreting certain AML objects? In
-general how safe would it be to have two layered entities both playing at
-being OSPM?
+Also fixed sparse warning :
 
- -- Keir
+  CHECK   arch/x86/kernel/ptrace.c
+  arch/x86/kernel/ptrace.c:560:15: warning: symbol 'ptrace_get_debugreg' was not declared. Should it be static?
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/ptrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index b457f78..cabdabc 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -557,7 +557,7 @@ restore:
+ /*
+  * Handle PTRACE_PEEKUSR calls for the debug register area.
+  */
+-unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
++static unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
+ {
+ 	struct thread_struct *thread = &(tsk->thread);
+ 	unsigned long val = 0;
+-- 
+1.6.0.6
+
 
 
