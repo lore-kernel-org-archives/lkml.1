@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbZFTTuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbZFTTzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753572AbZFTTuN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 15:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZFTTuB
+	id S1752906AbZFTTzS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 15:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZFTTzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 15:50:01 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:35409 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbZFTTuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 15:50:01 -0400
-Date: Sat, 20 Jun 2009 20:50:00 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       torvalds@linux-foundation.org, fengguang.wu@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] profile: Suppress warning about large allocations when
-	profile=1 is specified
-Message-ID: <20090620195000.GC10878@csn.ul.ie>
-References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org> <20090616223649.719ea378.akpm@linux-foundation.org> <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu> <20090617113534.GA21276@elte.hu> <20090617121913.GC28529@csn.ul.ie> <20090620100932.GA5863@fancy-poultry.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090620100932.GA5863@fancy-poultry.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 20 Jun 2009 15:55:07 -0400
+Received: from toronto-hs-216-138-233-67.s-ip.magma.ca ([216.138.233.67]:40003
+	"HELO yow.seanm.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752012AbZFTTzG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 15:55:06 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Jun 2009 15:55:05 EDT
+Date: Sat, 20 Jun 2009 15:48:24 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Badness on the Warp
+Message-ID: <20090620154824.72b5cd50@lappy.seanm.ca>
+Organization: PIKA
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.12.12; i686-pc-linux-gnu)
+X-Message-Flag: Warning: This message may contain actual content.
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAHlBMVEXOy8P+/f8hHBFoOhetjm76/P5qPzJLJxltXUSaX0wbgtjEAAACY0lEQVQ4jWWUQWvcMBCF91BCjiuIIWcX6nsE9uZWgknjWwW7sD2rjL1XGzzpNS2ufI5xVv+2byTHSehcbO8nzWjeG+1GqcPhZfTlEl8/hUdVbgDUvfNT+SEqH8Ho/UdQCjDJg0dMceVUhVcBKhn8Go7qTjd4CYCcBL7OQ9GmGXfNuICauaNmIKrbNGWivAngQPhMOScibODGOZ2PYUfdMlCnyTJWpFlu9SkW14Ps6cdZHoJ4F4ENPzxOD3i2cZMA9VCHdV/KCmdC3i7WMAKyNuNfZVUwzoA2pmqjDkZd1ikjfpblTDj32PhSwEH9GHTBrQDvpaXT9Aqc1cz9HwHedg20qkLxK2cLNIh1q8p+Ae53TsMJ36shAewdDPHz+B/YDqOffEhTvXMQYIbp0SppIdQKIIG31XwK4Pk2OrYAuGQX0JHUowDUPY1O77xkeob6CLsxYQfZvMhxNJhYsNY56bjjktA6Pgl6WIiLiOC6g1hQltMMIJBY/FrEhcRisIWcrG3csa8DEOt6pGs5HwIw2zrkCW6TCN0sQP2tuwjSmouWb10EiXrJcUwhqAzfx2aWaYe5F48k9qbBYplKFybRmGPvbuJIyUTKTAagkquabrJWcnV0OqONqFWSfH/qi52cDOvHs10bVOobgEb73NPoh1WSJDky72whkmDcVmCkCMuJU9Yn/y6VMWaGriTTiesmUxZTIS4yOIR5qPzZSbMr2LefcaB4P/V7kNxlvcY9xJnEQ70Cc2w7aCFXtBCnVqC2uCEiU2hz6TxuuUsz0TDy/C1Vcgwayh8AwFvxg9k/LTcWUfA/se5dIXIv87sAAAAASUVORK5CYII=
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 20, 2009 at 12:09:32PM +0200, Heinz Diehl wrote:
-> On 17.06.2009, Mel Gorman wrote: 
-> 
-> > Patch as follows
-> [....]
-> 
-> With 2.6.30-git14, I get this early in the boot process. 
-> Don't know if it's related to this thread. In any case, your patch does not fix it:
-> 
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] Badness at c033ebc4 [verbose debug info unavailable]
+[    0.000000] NIP: c033ebc4 LR: c033eb94 CTR: 00000000
+[    0.000000] REGS: c037fe70 TRAP: 0700   Not tainted  (2.6.30-pika)
+[    0.000000] MSR: 00021000 <ME,CE>  CR: 22022024  XER: 00000000
+[    0.000000] TASK = c035b440[0] 'swapper' THREAD: c037e000
+[    0.000000] <6>GPR00: 00000001 c037ff20 c035b440 00000000 0000000c 00000020 3fffffff 00000000 
+[    0.000000] <6>GPR08: c036faa4 c0380000 c07b7586 00000000 22002022 00000000 0ffa7f00 007fff99 
+[    0.000000] <6>GPR16: 00400450 00800000 007fff00 0ffa7a90 00000000 ffffffff 00000000 c0351d40 
+[    0.000000] <6>GPR24: 00000000 00001229 c0386b1c 0000000c 00000020 00000000 3fffffff 0000000c 
+[    0.000000] NIP [c033ebc4] alloc_arch_preferred_bootmem+0x48/0x74
+[    0.000000] LR [c033eb94] alloc_arch_preferred_bootmem+0x18/0x74
+[    0.000000] Call Trace:
+[    0.000000] [c037ff20] [c0350fa8] 0xc0350fa8 (unreliable)
+[    0.000000] [c037ff30] [c033ec40] ___alloc_bootmem_nopanic+0x50/0x108
+[    0.000000] [c037ff60] [c033ed10] ___alloc_bootmem+0x18/0x50
+[    0.000000] [c037ff70] [c033b3bc] uic_init_one+0x40/0x22c
+[    0.000000] [c037ff90] [c033b630] uic_init_tree+0x88/0x168
+[    0.000000] [c037ffb0] [c0337378] init_IRQ+0x28/0x40
+[    0.000000] [c037ffc0] [c0334664] start_kernel+0x15c/0x2a0
+[    0.000000] [c037fff0] [c0000200] skpinv+0x190/0x1cc
+[    0.000000] Instruction dump:
+[    0.000000] 2f830000 38600000 409e0018 80010014 83e1000c 7c0803a6 38210010 4e800020 
+[    0.000000] 3d20c038 80095408 21600000 7c0b0114 <0f000000> 2f800000 409e0018 38800000 
 
-It's sortof related in that it's another source of NOFAIL high-order
-allocations.
 
-> [....]
-> WARNING: at mm/page_alloc.c:1744 level2_spare_pgt+0x8f70a/0x36c800()
-> Hardware name:  
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.30-git14 #1
+I wouldn't trust the backtrace too much since it seems to keep
+changing. It used to show __start_notes as the backtrace. This one is
+with the head of Linus' tree as of a few minutes ago.
 
-I can't figure out from this trace where the problem is coming from. Can
-you post your .config and the full dmesg please?
+So I did a git bisect, and the problem goes back to June 11. The Warp
+boots and seems to run fine. So I didn't notice until looking at the
+logs for a different problem. I have since added a test to my
+regression tests to look for badness or oops in the logs.
 
-> Call Trace:
->  [<ffffffff8109770a>] ? level2_spare_pgt+0x8f70a/0x36c800
->  [<ffffffff8109770a>] ? level2_spare_pgt+0x8f70a/0x36c800
->  [<ffffffff81044a19>] ? level2_spare_pgt+0x3ca19/0x36c800
->  [<ffffffff8109770a>] ? level2_spare_pgt+0x8f70a/0x36c800
->  [<ffffffff810463f2>] ? level2_spare_pgt+0x3e3f2/0x36c800
->  [<ffffffff810bf8bb>] ? level2_spare_pgt+0xb78bb/0x36c800
->  [<ffffffff81096829>] ? level2_spare_pgt+0x8e829/0x36c800
->  [<ffffffff815281a2>] ? __smp_locks_end+0x33a4a/0x35773
->  [<ffffffff815280b0>] ? __smp_locks_end+0x33958/0x35773
->  [<ffffffff8100904b>] ? level2_spare_pgt+0x104b/0x36c800
->  [<ffffffff81119808>] ? level2_spare_pgt+0x111808/0x36c800
->  [<ffffffff81084df1>] ? level2_spare_pgt+0x7cdf1/0x36c800
->  [<ffffffff814f5665>] ? __smp_locks_end+0xf0d/0x35773
->  [<ffffffff8100ce0a>] ? level2_spare_pgt+0x4e0a/0x36c800
->  [<ffffffff814f54e9>] ? __smp_locks_end+0xd91/0x35773
->  [<ffffffff8100ce00>] ? level2_spare_pgt+0x4e00/0x36c800
-> ---[ end trace 692ffa03e0502250 ]---
-> CCID: Activated CCID 2 (TCP-like)
-> registered taskstats version 1
-> Freeing unused kernel memory: 572k freed
-> [....]
-> 
-> Regards,
-> Heinz.
-> 
+The git bisect returned:
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+  871fa90791a6f83dd8e2e489feb9534a8c02088d is first bad commit
+
+That is it, no more info.... strange. git show 8714...088d gives:
+
+Merge: 7702667... 79f52b7...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Thu Jun 11 11:27:09 2009 -0700
+
+    Merge branch 'for-linus' of
+    git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6 
+    * 'for-linus' of
+    git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6: jfs:
+    Add missing mutex_unlock call to error path missing unlock in
+    jfs_quota_write()
+
+The Warp has jfs disabled, so I don't know why it would affect us,
+especially this realy in the boot! Anyway, I tried to revert the patch:
+
+$ git revert 871fa90791a6f83dd8e2e489feb9534a8c02088d
+fatal: Commit 871fa90791a6f83dd8e2e489feb9534a8c02088d is a merge but no -m option was given.
+
+So, anybody got an idea what is going on here? Or how I can revert the
+patch. I am not a git expert, so if I am doing this wrong, let me know.
+
+Cheers,
+   Sean
