@@ -1,93 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZFTD5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZFTEFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790AbZFTD5q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 23:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbZFTD5h
+	id S1752552AbZFTEFU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 00:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbZFTEFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 23:57:37 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:51776 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbZFTD5h (ORCPT
+	Sat, 20 Jun 2009 00:05:08 -0400
+Received: from mail-pz0-f195.google.com ([209.85.222.195]:60529 "EHLO
+	mail-pz0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbZFTEFH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 23:57:37 -0400
-Date: Sat, 20 Jun 2009 09:27:25 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch 1/3] ksym_tracer: Eliminate trace concatenation and
-	machine stall issues post removal
-Message-ID: <20090620035725.GA5540@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090619172035.443923337@prasadkr_t60p.in.ibm.com> <20090619172453.GB26071@in.ibm.com> <20090619230348.GA4700@nowhere>
+	Sat, 20 Jun 2009 00:05:07 -0400
+X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Jun 2009 00:05:07 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RcGtE3L8BQG8+rU/t/wlF122vuYTBBlA+5g4KVoodmQp4/ibv5yU+h576Si6Cz6UDe
+         ZdIBi5JqhjQtJL+1PXLv2WynzH6SvP9Ir7kNWd0CvNSKOWcGO8K7T37Wz/u874horn7X
+         nIBctGUrFVQN5ajdgfun8O+xH+zPYGG5Rfc6M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090619230348.GA4700@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <m1my84bpuq.fsf@fess.ebiederm.org>
+References: <4A329CF8.4050502@goop.org>
+	 <alpine.LFD.2.00.0906181206190.4213@localhost.localdomain>
+	 <4A3A9220.4070807@goop.org> <m1zlc5jqac.fsf@fess.ebiederm.org>
+	 <4A3A99FB.7070807@goop.org> <m1vdmtgtt2.fsf@fess.ebiederm.org>
+	 <4A3AC0C4.6060508@goop.org>
+	 <86802c440906182232r31088e4fh3613a8da6f8903f7@mail.gmail.com>
+	 <4A3B5FCD0200007800006AC0@vpn.id2.novell.com>
+	 <m1my84bpuq.fsf@fess.ebiederm.org>
+Date: Fri, 19 Jun 2009 20:58:24 -0700
+Message-ID: <86802c440906192058v78746acft161d74720c01a6a7@mail.gmail.com>
+Subject: Re: [Xen-devel] Re: [PATCH RFC] x86/acpi: don't ignore I/O APICs 
+	justbecause there's no local APIC
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Jan Beulich <JBeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Len Brown <lenb@kernel.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 20, 2009 at 01:03:49AM +0200, Frederic Weisbecker wrote:
-> On Fri, Jun 19, 2009 at 10:54:53PM +0530, K.Prasad wrote:
-> > This patch fixes two issues reported with ksym tracer, seen after
-> > removal of a symbol from the tracer i) Concatenation of trace logs
-> > into a single line ii) Machine stall seen when logs are viewed
-> > using 'trace_pipe'.
-> > 
-> > Known issue: Upon removal, 'cat trace_pipe' (without any preceding
-> > command and any further output in the trace buffer) responds to
-> > SIGTERM quickly but only after an indeterminate amount of delay
-> > for SIGINT.
-> > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > ---
-> >  kernel/trace/trace.h      |   12 +++++++++---
-> >  kernel/trace/trace_ksym.c |   11 ++++-------
-> >  2 files changed, 13 insertions(+), 10 deletions(-)
-> > 
-> > Index: linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
-> > ===================================================================
-> > --- linux-2.6-tip.hbkpt.orig/kernel/trace/trace_ksym.c
-> > +++ linux-2.6-tip.hbkpt/kernel/trace/trace_ksym.c
-> > @@ -71,7 +71,7 @@ void ksym_hbp_handler(struct hw_breakpoi
-> >  {
-> >  	struct ring_buffer_event *event;
-> >  	struct trace_array *tr;
-> > -	struct trace_ksym *entry;
-> > +	struct trace_ksym_rb *entry;
-> >  	int pc;
-> >  
-> >  	if (!ksym_tracing_enabled)
-> > @@ -87,7 +87,7 @@ void ksym_hbp_handler(struct hw_breakpoi
-> >  
-> >  	entry = ring_buffer_event_data(event);
-> >  	strlcpy(entry->ksym_name, hbp->info.name, KSYM_SYMBOL_LEN);
-> > -	entry->ksym_hbp = hbp;
-> > +	memcpy(&(entry->ksym_hbp), hbp, sizeof(struct hw_breakpoint));
-> 
-> 
-> That looks wasteful. You only need the type from the arch_hw_breakpoint
-> and there you copy the whole generic breakpoint.
-> 
-> Frederic.
+On Fri, Jun 19, 2009 at 1:16 AM, Eric W. Biederman<ebiederm@xmission.com> wrote:
+> "Jan Beulich" <JBeulich@novell.com> writes:
 >
+>>>>> Yinghai Lu <yhlu.kernel@gmail.com> 19.06.09 07:32 >>>
+>>>doesn't XEN support per cpu irq vector?
+>>
+>> No.
+>>
+>>>got sth from XEN 3.3 / SLES 11
+>>>
+>>>igb 0000:81:00.0: PCI INT A -> GSI 95 (level, low) -> IRQ 95
+>>>igb 0000:81:00.0: setting latency timer to 64
+>>>igb 0000:81:00.0: Intel(R) Gigabit Ethernet Network Connection
+>>>igb 0000:81:00.0: eth9: (PCIe:2.5Gb/s:Width x4) 00:21:28:3a:d8:0e
+>>>igb 0000:81:00.0: eth9: PBA No: ffffff-0ff
+>>>igb 0000:81:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+>>>vendor=8086 device=3420
+>>>(XEN) irq.c:847: dom0: invalid pirq 94 or vector -28
+>>>igb 0000:81:00.1: PCI INT B -> GSI 94 (level, low) -> IRQ 94
+>>>igb 0000:81:00.1: setting latency timer to 64
+>>>(XEN) physdev.c:87: dom0: map irq with wrong vector -28
+>>>map irq failed
+>>>(XEN) physdev.c:87: dom0: map irq with wrong vector -28
+>>>map irq failed
+>>>
+>>>the system need a lot of MSI-X normally.. with current mainline tree
+>>>kernel, it will need about 360 irq...
+>>
+>> Do you mean 360 connected devices, or just 360 IO-APIC pins (most of
+>> which are usually unused)? In the latter case, devices using MSI (i.e. not
+>> using high numbered IO-APIC pins) should work, while devices connected
+>> to IO-APIC pins numbered 256 and higher won't work in SLE11 as-is.
+>> This limitation got fixed recently in the 3.5-unstable tree, though. The
+>> 256 active vectors limit, however, continues to exist, so the former case
+>> would still not be supported by Xen.
 
-Well, the entire copy operation for ksym_name and p_name is indeed a
-much bigger waste (KSYM_SYMBOL_LEN and TASK_COMM_LEN bytes respetively)
-and the breakpoint structure size is tiny in comparison. 
+5 io-apic controllers, so total pins like 5x24
 
-The type information is an arch-specific field and it encapsulated
-within 'struct hw_breakpoint'. In any case this solution needs
-improvement more in terms of getting the tracer infrastructure to
-identify stale entries (belonging to removed symbols) and prevent their
-display. The existing trace logs contain huge redundant information due
-to multiple copies of the same data and it would yield much better results
-than such trivial optimisations.  The ksym_tracer, I believe, has just
-unearthed the opportunity for the same as it is (is it?) the first such
-ftrace plugin to partially remove entries.
+>
+> Good question.  I know YH had a system a few years ago that exceeded 256 vectors.
+that was in SimNow.
 
-Thanks,
-K.Prasad
+This time is real.
+think about system: 24 pcie cards and every one has two functions. and
+one function will use 16 or 20 MSIX
+like 24 * 2 * 16
 
+YH
