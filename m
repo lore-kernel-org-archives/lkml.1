@@ -1,132 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZFTDU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbZFTDVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbZFTDU7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 23:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756325AbZFTDU1
+	id S1756763AbZFTDVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 23:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZFTDU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 23:20:27 -0400
+	Fri, 19 Jun 2009 23:20:29 -0400
 Received: from mga14.intel.com ([143.182.124.37]:7542 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZFTDUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752182AbZFTDUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Jun 2009 23:20:03 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,257,1243839600"; 
-   d="scan'208";a="156644164"
-Message-Id: <20090620031626.426913888@intel.com>
+   d="scan'208";a="156644161"
+Message-Id: <20090620031625.977050921@intel.com>
 References: <20090620031608.624240019@intel.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 20 Jun 2009 11:16:21 +0800
+Date: Sat, 20 Jun 2009 11:16:18 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       Andi Kleen <ak@linux.intel.com>
 cc: Ingo Molnar <mingo@elte.hu>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 cc: Mel Gorman <mel@csn.ul.ie>
-cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 13/15] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
-Content-Disposition: inline; filename=mf-inject-madvise
+Subject: [PATCH 10/15] HWPOISON: check and isolate corrupted free pages v3
+Content-Disposition: inline; filename=free-pages-poison
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-Impact: optional, useful for debugging
+If memory corruption hits the free buddy pages, we can safely ignore them.
+No one will access them until page allocation time, then prep_new_page()
+will automatically check and isolate PG_hwpoison page for us (for 0-order
+allocation).
 
-Add a new madvice sub command to inject poison for some
-pages in a process' address space.  This is useful for
-testing the poison page handling.
+This patch expands prep_new_page() to check every component page in a high
+order page allocation, in order to completely stop PG_hwpoison pages from
+being recirculated.
 
-Open issues:
+Note that the common case -- only allocating a single page, doesn't
+do any more work than before. Allocating > order 0 does a bit more work,
+but that's relatively uncommon.
 
-- This patch allows root to tie up arbitary amounts of memory.
-Should this be disabled inside containers?
-- There's a small race window between getting the page and injecting.
-The patch drops the ref count because otherwise memory_failure
-complains about dangling references. In theory with a multi threaded
-injector one could inject poison for a process foreign page this way.
-Not a serious issue right now.
+This simple implementation may drop some innocent neighbor pages, hopefully
+it is not a big problem because the event should be rare enough.
 
-v2: Use write flag for get_user_pages to make sure to always get
-a fresh page
-v3: Don't request write mapping (Fengguang Wu)
+This patch adds some runtime costs to high order page users.
 
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+[AK: Improved description]
+
+v2: Andi Kleen:
+Port to -mm code
+Move check into separate function.
+Don't dump stack in bad_pages for hwpoisoned pages.
+v3: Fengguang:
+But still taint the kernel: PG_hwpoison might be set by a software bug.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/asm-generic/mman-common.h |    1 
- mm/madvise.c                      |   36 ++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+)
+ mm/page_alloc.c |   18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
---- sound-2.6.orig/mm/madvise.c
-+++ sound-2.6/mm/madvise.c
-@@ -207,6 +207,38 @@ static long madvise_remove(struct vm_are
- 	return error;
- }
+--- sound-2.6.orig/mm/page_alloc.c
++++ sound-2.6/mm/page_alloc.c
+@@ -233,6 +233,10 @@ static void bad_page(struct page *page)
+ 	static unsigned long nr_shown;
+ 	static unsigned long nr_unshown;
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+/*
-+ * Error injection support for memory error handling.
-+ */
-+static int madvise_hwpoison(unsigned long start, unsigned long end)
-+{
-+	/*
-+	 * RED-PEN
-+	 * This allows to tie up arbitary amounts of memory.
-+	 * Might be a good idea to disable it inside containers even for root.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+	for (; start < end; start += PAGE_SIZE) {
-+		struct page *p;
-+		int ret = get_user_pages(current, current->mm, start, 1,
-+						0, 0, &p, NULL);
-+		if (ret != 1)
-+			return ret;
-+		put_page(p);
-+		/*
-+		 * RED-PEN page can be reused in a short window, but otherwise
-+		 * we'll have to fight with the reference count.
-+		 */
-+		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
-+		       page_to_pfn(p), start);
-+		memory_failure(page_to_pfn(p), 0);
-+	}
++	/* Don't complain about poisoned pages */
++	if (PageHWPoison(page))
++		goto out;
++
+ 	/*
+ 	 * Allow a burst of 60 reports, then keep quiet for that minute;
+ 	 * or allow a steady drip of one report per second.
+@@ -646,7 +650,7 @@ static inline void expand(struct zone *z
+ /*
+  * This page is about to be returned from the page allocator
+  */
+-static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
++static inline int check_new_page(struct page *page)
+ {
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+@@ -655,6 +659,18 @@ static int prep_new_page(struct page *pa
+ 		bad_page(page);
+ 		return 1;
+ 	}
 +	return 0;
 +}
-+#endif
 +
- static long
- madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
- 		unsigned long start, unsigned long end, int behavior)
-@@ -307,6 +339,10 @@ SYSCALL_DEFINE3(madvise, unsigned long, 
- 	int write;
- 	size_t len;
++static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
++{
++	int i;
++
++	for (i = 0; i < (1 << order); i++) {
++		struct page *p = page + i;
++		if (unlikely(check_new_page(p)))
++			return 1;
++	}
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+	if (behavior == MADV_HWPOISON)
-+		return madvise_hwpoison(start, start+len_in);
-+#endif
- 	if (!madvise_behavior_valid(behavior))
- 		return error;
- 
---- sound-2.6.orig/include/asm-generic/mman-common.h
-+++ sound-2.6/include/asm-generic/mman-common.h
-@@ -34,6 +34,7 @@
- #define MADV_REMOVE	9		/* remove these pages & resources */
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
-+#define MADV_HWPOISON	12		/* poison a page for testing */
- 
- /* compatibility flags */
- #define MAP_FILE	0
+ 	set_page_private(page, 0);
+ 	set_page_refcounted(page);
 
 -- 
 
