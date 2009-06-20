@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbZFTFEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZFTFGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529AbZFTFEn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 01:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbZFTFEf
+	id S1751893AbZFTFGW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 01:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbZFTFGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 01:04:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33495 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZFTFEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 01:04:34 -0400
-Date: Sat, 20 Jun 2009 15:04:33 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       sfi-devel@simplefirmware.org
-Subject: Re: linux-next: Tree for June 19
-Message-Id: <20090620150433.4e038676.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.00.0906200012200.4325@localhost.localdomain>
-References: <20090619172622.05adb236.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0906200012200.4325@localhost.localdomain>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE"
+	Sat, 20 Jun 2009 01:06:14 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:60222 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbZFTFGN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 01:06:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ZytsQK/Gf8x44sChYdrRZrrpKrkjQ0L7nTX4kYB6c0Bp2mpq/47160j46jC2Bv0XBS
+         udM2y7rfl0k5dy5X/miOQ7+i3Uq7urOYCIfajboJZHut0+xtz4uOc9w1vSFzOHryHwEf
+         JH3N7OOmdPGNV7a+jwq1kOyT2y2rA0ScAjS9s=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 0/2] tracing/urgent: fixes for nop patching omissions
+Date: Sat, 20 Jun 2009 07:06:10 +0200
+Message-Id: <1245474372-5249-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Ingo, Steven,
 
-Hi Len,
+The first patch in the set fixes a bug on which ftrace silently
+ommitted to recover nop patching after function tracing.
 
-On Sat, 20 Jun 2009 00:16:49 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
->
-> Please add the Simple Firmware Interface "sfi-test" branch to linux-next:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-sfi-2.6.git sfi-=
-test
+The issue is present in .31 and .30 as well
 
-Is this 2.6.31 or 32 material?
+The second patch just adds a warning to prevent further mistakes like
+that.
 
-> A description of the project is on the SFI home page: http://simplefirmwa=
-re.org/
->=20
-> Note: like ACPI's test branch, this branch will be occasionally re-based
-> as the patches in it evolve.
+Thanks.
 
-That's fine.
+Frederic Weisbecker (2):
+  tracing/urgent: fix unbalanced ftrace_start_up
+  tracing/urgent: warn in case of ftrace_start_up inbalance
 
-Should I put just you as the contact, or add the mailing list as well?
+ kernel/trace/ftrace.c          |    7 +++++++
+ kernel/trace/trace_functions.c |    8 +++++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-What I tell everyone: all patches/commits in the tree/series must
-have been:
+The following changes since commit 44ad18e0a65e296b2e68a1452509f6222cdce743:
+  Steven Rostedt (1):
+        tracing: update sample event documentation
 
-	posted to a relevant mailing list
-	reviewed
-	unit tested
-	destined for the next merge window (or the current release)
+are available in the git repository at:
 
-*before* they are included.  The linux-next tree is for integration
-testing and to lower the impact of conflicts between subsystems in the
-next merge window.
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/urgent
 
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Frederic Weisbecker (2):
+      tracing/urgent: fix unbalanced ftrace_start_up
+      tracing/urgent: warn in case of ftrace_start_up inbalance
 
---Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko8beEACgkQjjKRsyhoI8x38ACeMMrXLaGOjXnrgTijHtSBV2px
-XikAoLJqnTAN9Y2aJEZjetZGsfKVzweY
-=TzLv
------END PGP SIGNATURE-----
-
---Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE--
+ kernel/trace/ftrace.c          |    7 +++++++
+ kernel/trace/trace_functions.c |    8 +++++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
