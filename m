@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZFTA3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbZFTAtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbZFTA3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 20:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZFTA3H
+	id S1754221AbZFTAtO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 20:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZFTAtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 20:29:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50748 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753067AbZFTA3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 20:29:06 -0400
-Date: Fri, 19 Jun 2009 17:29:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: hooanon05@yahoo.co.jp,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] vfs patches, part 1 
-In-Reply-To: <8501.1245335415@jrobl>
-Message-ID: <alpine.LFD.2.01.0906191725060.10492@localhost.localdomain>
-References: <20090612014507.GA8633@ZenIV.linux.org.uk> <8501.1245335415@jrobl>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 19 Jun 2009 20:49:00 -0400
+Received: from fifo99.com ([67.223.236.141]:44789 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751179AbZFTAs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 20:48:59 -0400
+Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
+	usage
+From: Daniel Walker <dwalker@fifo99.com>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       hackbod@android.com
+In-Reply-To: <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
+References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+	 <4A380494.6030506@goop.org> <1245249469.5982.251.camel@desktop>
+	 <4A390B9A.40806@goop.org> <1245254936.5982.261.camel@desktop>
+	 <4A391A54.7000109@goop.org>
+	 <d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
+	 <1245274308.5982.268.camel@desktop>
+	 <a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
+	 <1245451983.32124.25.camel@desktop>
+	 <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 19 Jun 2009 17:49:00 -0700
+Message-Id: <1245458940.32124.45.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-06-19 at 17:13 -0700, Arve Hjønnevåg wrote:
+> 
+> > Also are there any userspace test cases
+> > that Google used to test the performance of this interface. Or test
+> > cases to compare the binder with something like sockets, or any other
+> > type of IPC?
+> >
+> > If Google believes the binder is the right solution for IPC, how was
+> > that conclusion formed?
+> >
+> > Daniel
+> 
+> These are mostly questions for the framework team. The binder driver
+> is there to support our user space code. At some point we used the
+> driver from www.open-binder.org, but we ran into, and fixed, a lot of
+> bugs (especially when processes died), so we determined it would be
+> faster to rewrite the driver from scratch.
 
-Al? There does seem to be a leak there. 
+Most of these questions related to the fact that I don't think an
+interface like this just slips into the kernel as a driver. Since it's
+IPC, it's totally generic, and it's not part of a standard (i.e. POSIX),
+we need to have some better and more specific information about it (or
+atleast I do). 
 
-		Linus
+If for instance the main reason for Google using this interface is cause
+a large number of android people once worked at Palm or BeOS, that's not
+reason enough for it to go into the kernel. Or if this binder interface
+really fits well with Java or C++ people and they just love it, that's
+not really acceptable either..
 
-On Thu, 18 Jun 2009, hooanon05@yahoo.co.jp wrote:
-> 
-> Didn't you forget path_put() for the new member before returning in the
-> middle of do_filp_open()?
-> 
-> 
-> J. R. Okajima
-> 
-> ----------------------------------------------------------------------
-> commit ccf163f67e7c4bf3890010a5a593eb62c3004a6a
-> Author: J. R. Okajima <hooanon05@yahoo.co.jp>
-> Date:   Thu Jun 18 23:26:34 2009 +0900
-> 
->     vfs: nd->root in do_filp_open()
->     
->     commit 2a737871108de9ba8930f7650d549f1383767f8b
->     "Cache root in nameidata"
->     introduced a new member nd->root, but forgot to put it in
->     do_filp_open().
->     
->     Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
-> 
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 527119a..5b961eb 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -1698,8 +1698,11 @@ struct file *do_filp_open(int dfd, const char *pathname,
->  	if (error)
->  		return ERR_PTR(error);
->  	error = path_walk(pathname, &nd);
-> -	if (error)
-> +	if (error) {
-> +		if (nd.root.mnt)
-> +			path_put(&nd.root);
->  		return ERR_PTR(error);
-> +	}
->  	if (unlikely(!audit_dummy_context()))
->  		audit_inode(pathname, nd.path.dentry);
->  
-> @@ -1759,6 +1762,8 @@ do_last:
->  		}
->  		filp = nameidata_to_filp(&nd, open_flag);
->  		mnt_drop_write(nd.path.mnt);
-> +		if (nd.root.mnt)
-> +			path_put(&nd.root);
->  		return filp;
->  	}
->  
-> @@ -1819,6 +1824,8 @@ ok:
->  	 */
->  	if (will_write)
->  		mnt_drop_write(nd.path.mnt);
-> +	if (nd.root.mnt)
-> +		path_put(&nd.root);
->  	return filp;
->  
->  exit_mutex_unlock:
-> @@ -1859,6 +1866,8 @@ do_link:
->  		 * with "intent.open".
->  		 */
->  		release_open_intent(&nd);
-> +		if (nd.root.mnt)
-> +			path_put(&nd.root);
->  		return ERR_PTR(error);
->  	}
->  	nd.flags &= ~LOOKUP_PARENT;
-> 
+Daniel
+
