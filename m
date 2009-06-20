@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZFTMas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZFTMjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbZFTMas (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 08:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbZFTMak
+	id S1753230AbZFTMjm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 08:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbZFTMje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 08:30:40 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:54200 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbZFTMaj (ORCPT
+	Sat, 20 Jun 2009 08:39:34 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:40047 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbZFTMjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 08:30:39 -0400
-Message-ID: <4A3CD62B.1020407@vlnb.net>
-Date: Sat, 20 Jun 2009 16:29:31 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
-       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       Beheer InterCommIT <intercommit@gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-References: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2> <4A2936A7.9070309@gmail.com> <20090606233056.7B9F.A69D9226@jp.fujitsu.com> <20090606224538.GA6173@localhost> <20090618120436.ad3196e3.akpm@linux-foundation.org> <20090620035504.GA19516@localhost>
-In-Reply-To: <20090620035504.GA19516@localhost>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18UcyNdt3ka8KOl1iart5kf0WQwTHTfqRWNwng
- EbrMH84le98iAuvs5KBnD+K5k9PHdyJGDWns1mndfE0ZswhQmo
- bo4FyBpsY76/eJc0pkCFQ==
+	Sat, 20 Jun 2009 08:39:33 -0400
+Date: Sat, 20 Jun 2009 14:41:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Kallsyms problems (was: Re: linux-next: arm build failures)
+Message-ID: <20090620124152.GI32531@uranus.ravnborg.org>
+References: <20090617162612.703adfd9.sfr@canb.auug.org.au> <tnx3a9ztg14.fsf@pc1117.cambridge.arm.com> <20090617230804.5e353ec9.sfr@canb.auug.org.au> <20090619151321.GA6223@flint.arm.linux.org.uk> <20090620155440.a7dfb2d4.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090620155440.a7dfb2d4.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Wu Fengguang, on 06/20/2009 07:55 AM wrote:
-> On Fri, Jun 19, 2009 at 03:04:36AM +0800, Andrew Morton wrote:
->> On Sun, 7 Jun 2009 06:45:38 +0800
->> Wu Fengguang <fengguang.wu@intel.com> wrote:
->>
->>>>> Do you have a place where the raw blktrace data can be retrieved for
->>>>> more in-depth analysis?
->>>> I think your comment is really adequate. In another thread, Wu Fengguang pointed
->>>> out the same issue.
->>>> I and Wu also wait his analysis.
->>> And do it with a large readahead size :)
->>>
->>> Alan, this was my analysis:
->>>
->>> : Hifumi, can you help retest with some large readahead size?
->>> :
->>> : Your readahead size (128K) is smaller than your max_sectors_kb (256K),
->>> : so two readahead IO requests get merged into one real IO, that means
->>> : half of the readahead requests are delayed.
->>>
->>> ie. two readahead requests get merged and complete together, thus the effective
->>> IO size is doubled but at the same time it becomes completely synchronous IO.
->>>
->>> :
->>> : The IO completion size goes down from 512 to 256 sectors:
->>> :
->>> : before patch:
->>> :   8,0    3   177955    50.050313976     0  C   R 8724991 + 512 [0]
->>> :   8,0    3   177966    50.053380250     0  C   R 8725503 + 512 [0]
->>> :   8,0    3   177977    50.056970395     0  C   R 8726015 + 512 [0]
->>> :   8,0    3   177988    50.060326743     0  C   R 8726527 + 512 [0]
->>> :   8,0    3   177999    50.063922341     0  C   R 8727039 + 512 [0]
->>> :
->>> : after patch:
->>> :   8,0    3   257297    50.000760847     0  C   R 9480703 + 256 [0]
->>> :   8,0    3   257306    50.003034240     0  C   R 9480959 + 256 [0]
->>> :   8,0    3   257307    50.003076338     0  C   R 9481215 + 256 [0]
->>> :   8,0    3   257323    50.004774693     0  C   R 9481471 + 256 [0]
->>> :   8,0    3   257332    50.006865854     0  C   R 9481727 + 256 [0]
->>>
->> I haven't sent readahead-add-blk_run_backing_dev.patch in to Linus yet
->> and it's looking like 2.6.32 material, if ever.
->>
->> If it turns out to be wonderful, we could always ask the -stable
->> maintainers to put it in 2.6.x.y I guess.
+On Sat, Jun 20, 2009 at 03:54:40PM +1000, Stephen Rothwell wrote:
+> Hi Russell,
 > 
-> Agreed. The expected (and interesting) test on a properly configured
-> HW RAID has not happened yet, hence the theory remains unsupported.
+> On Fri, 19 Jun 2009 16:13:21 +0100 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> >
+> > On Wed, Jun 17, 2009 at 11:08:04PM +1000, Stephen Rothwell wrote:
+> > > 
+> > > On Wed, 17 Jun 2009 09:34:31 +0100 Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > > >
+> > > > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > > > > Over the past few days, I have started getting some arm configs (at least
+> > > > > iop13xx_defconfig and integrator_defconfig, but some others) failing to
+> > > > > build getting this error:
+> > > > >
+> > > > >   SYSMAP  System.map
+> > > > >   SYSMAP  .tmp_System.map
+> > > > > Inconsistent kallsyms data
+> > > > > Try setting CONFIG_KALLSYMS_EXTRA_PASS
+> > > > >
+> > > > > Is this something you have seen?  Could it be my toolchain (I am
+> > > > > currently using gcc 4.4.0 and have not changed it recently)?
+> > > > 
+> > > > I reported an error with kallsysms on ARM this Monday leading to
+> > > > inconsistent data:
+> > > > 
+> > > > http://lkml.org/lkml/2009/6/15/233
+> > > > 
+> > > > Could it be related?
+> > > 
+> > > Could be.  I have added the proposed fix patch to my fixes tree until
+> > > Linus or Sam gets around to including it.
+> > 
+> > No, I don't think it's got anything to do with it.  It's the kallsyms
+> > generator that's getting confused.
+> > 
+> > What's happening is that we're ending up with differences between the
+> > symbolic information generated for .tmp_vmlinux2 and vmlinux:
+> 
+> I do wonder if the above could be the root cause, though.  Since I added
+> the added the fix mentioned above to linux-next, my arm builds have not
+> failed do to this problem.  Or maybe this "fix" just works around another
+> problem?
+> 
+> In any case, it would be nice if the fix (repeated below) could be sent
+> to Linus by someone (it also fixes a problem that Dave Miller is seeing).
 
-Hmm, do you see anything improper in the Ronald's setup (see 
-http://sourceforge.net/mailarchive/forum.php?thread_name=a0272b440906030714g67eabc5k8f847fb1e538cc62%40mail.gmail.com&forum_name=scst-devel)? 
-It is HW RAID based.
+Just sent it. Overloaded with day-time stuff (again).
 
-As I already wrote, we can ask Ronald to perform any needed tests.
-
-> Thanks,
-> Fengguang
-
+	Sam
