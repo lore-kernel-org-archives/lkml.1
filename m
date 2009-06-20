@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZFTOYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZFTOa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbZFTOYS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 10:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZFTOYJ
+	id S1755284AbZFTOa4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 10:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZFTOaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 10:24:09 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:49908 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbZFTOYH (ORCPT
+	Sat, 20 Jun 2009 10:30:46 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:56701 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752765AbZFTOap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 10:24:07 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] fatfs-2.6 patches
-Date: Sat, 20 Jun 2009 23:24:04 +0900
-Message-ID: <87ocsjnfuj.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
+	Sat, 20 Jun 2009 10:30:45 -0400
+Date: Sat, 20 Jun 2009 10:30:48 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Magnus Damm <magnus.damm@gmail.com>
+cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [linux-pm] [patch update 2 fix] PM: Introduce core framework
+ for run-time PM of I/O devices
+In-Reply-To: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Some more thoughts...
 
-This patch fixes the mistake of probably copy-and-paste.
-[since the patch is small, it is attached for review]
+Magnus, you might have some insights here.  It occurred to me that some 
+devices can switch power levels very quickly, and the drivers might 
+therefore want the runtime suspend and resume methods to be called as 
+soon as possible, even in interrupt context.
 
-Please pull from
+In terms of the current framework, this probably means holding the
+runtime PM lock (i.e., not releasing it) across the calls to
+->runtime_suspend and ->runtime_resume.  It also means that
+pm_request_suspend and pm_request_resume should carry out their jobs
+immediately instead of queuing a work item.  (Unless the current status 
+is RPM_SUSPENDING or RPM_RESUMING, which should never happen.)
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/hirofumi/fatfs-2.6.git master
-
-to get these changes:
-
-OGAWA Hirofumi (1):
-      fat: Fix the removal of opts->fs_dmask
-
- fs/fat/inode.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Should there be a flag in dev_pm_info to select this behavior?
 
 
-diff -puN fs/fat/inode.c~fat-fix-dmask-removal fs/fat/inode.c
---- linux-2.6/fs/fat/inode.c~fat-fix-dmask-removal	2009-06-20 21:20:43.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/inode.c	2009-06-20 21:49:36.000000000 +0900
-@@ -966,7 +966,7 @@ static int parse_options(char *options, 
- 
- 	opts->fs_uid = current_uid();
- 	opts->fs_gid = current_gid();
--	opts->fs_fmask = current_umask();
-+	opts->fs_fmask = opts->fs_dmask = current_umask();
- 	opts->allow_utime = -1;
- 	opts->codepage = fat_default_codepage;
- 	opts->iocharset = fat_default_iocharset;
-_
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+When a device structure is unregistered and deallocated, we have to
+insure that there aren't any pending runtime PM workqueue items.  
+Hence device_del should call a routine that changes the status to an
+exceptional state (not RPM_ERROR but something else) to prevent new
+requests from being queued, and then calls cancel_work_sync or
+cancel_delayed_work_sync as required.
+
+Similarly, we should insure that runtime PM calls made before the
+device is registered don't do anything.  So when the device structure
+is first created and the contents are all 0, this should also be
+interpreted as an exceptional state.  We could call it RPM_UNREGISTERED
+and use it for both purposes.
+
+Alan Stern
+
