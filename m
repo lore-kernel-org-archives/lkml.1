@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbZFTUtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZFTU4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753707AbZFTUtl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 16:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZFTUte
+	id S1755198AbZFTU4w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 16:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZFTU4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 16:49:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:54501 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895AbZFTUtd (ORCPT
+	Sat, 20 Jun 2009 16:56:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59606 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895AbZFTU4n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 16:49:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH -tip RESEND] x86: asm/termios.h remove irrelevant comment for userspace
-Date: Sat, 20 Jun 2009 22:49:12 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-References: <1245314365.31204.7.camel@ht.satnam> <1245347157.2481.14.camel@ht.satnam> <1245530761.2459.3.camel@ht.satnam>
-In-Reply-To: <1245530761.2459.3.camel@ht.satnam>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906202249.13928.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18XtWwO92fyYj1yNrYM6DyxlPQCT3GJsSNOWSL
- 42XyEIjX6ATjBhdnWoCqoRtXkz7cuUOg64bgZdjk4+txjF4pfr
- TVAa/2MZkfZnBhdNE5v+g==
+	Sat, 20 Jun 2009 16:56:43 -0400
+Message-Id: <200906202056.n5KKuc9o013960@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 20 Jun 2009 13:52:35 -0700
+Subject: [PATCH] gitignore: add *.bz2 and *.cpio to top-level; clean up usr/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 June 2009, Jaswinder Singh Rajput wrote:
-> 
-> following comment is irrelevant at usr/include/asm/termios.h :
-> 
-> "ioctl (fd, TIOCSERGETLSR, &result) where result may be as below"
-> 
-> Also fixed some alignment and space issues.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
+with *.gz and *.lzma which are already there.  Remove specific rules
+in usr/gitignore, since they are now covered by the global rules.
 
-that file just got removed in tip.
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ .gitignore     |    2 ++
+ usr/.gitignore |    2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-	Arnd <><
+diff --git a/.gitignore b/.gitignore
+index cecb3b0..a909275 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -24,6 +24,8 @@
+ *.order
+ *.elf
+ *.bin
++*.cpio
++*.bz2
+ *.gz
+ *.lzma
+ *.patch
+diff --git a/usr/.gitignore b/usr/.gitignore
+index 69b2e89..4d7d9f4 100644
+--- a/usr/.gitignore
++++ b/usr/.gitignore
+@@ -2,7 +2,5 @@
+ # Generated files
+ #
+ gen_init_cpio
+-initramfs_data.cpio
+-initramfs_data.cpio.gz
+ initramfs_list
+ include
+-- 
+1.6.0.6
+
