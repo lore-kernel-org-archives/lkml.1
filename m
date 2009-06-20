@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZFTP4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbZFTP5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbZFTP4z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 11:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZFTP4o
+	id S1756373AbZFTP5d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 11:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZFTP5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 11:56:44 -0400
-Received: from stinky.trash.net ([213.144.137.162]:40728 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbZFTP4m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 11:56:42 -0400
-Message-ID: <4A3D06B8.6070107@trash.net>
-Date: Sat, 20 Jun 2009 17:56:40 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sat, 20 Jun 2009 11:57:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37154 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754916AbZFTP5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 11:57:24 -0400
+Date: Sat, 20 Jun 2009 15:55:59 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1245494740.8613.12.camel@localhost.localdomain>
+References: <1245494740.8613.12.camel@localhost.localdomain>
+Subject: [tip:x86/cleanups] x86: ds.c fix invalid assignment
+Message-ID: <tip-feaa0457ec8351cae855edc9a3052ac49322538e@git.kernel.org>
+Git-Commit-ID: feaa0457ec8351cae855edc9a3052ac49322538e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
-Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
- __list_add+0x7d/0xad()
-References: <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com> <4A3A0D45.8090806@trash.net> <4A3A5599.4080906@trash.net> <20090620154716.GA12901@elte.hu>
-In-Reply-To: <20090620154716.GA12901@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 20 Jun 2009 15:56:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Patrick McHardy <kaber@trash.net> wrote:
-> 
->> Ingo, could you please try whether this patch (combined with the 
->> last one) makes any difference? Enabling CONFIG_NETFILTER_DEBUG 
->> could also help.
-> 
-> Mind pushing it upstream, and i'll keep things monitored over the 
-> week following when it hits upstream?
-> 
-> The reason is, the crash ratio is worse than 1:1000, it took a day 
-> and a 1000 tests to trigger that one. I havent seen it after that.
-> 
-> So it's going to be a very slow observation and you shouldnt 
-> serialize on me - giving you a 'it works' positive result will take 
-> 10,000 random bootp tests or so - that's a week or longer. (it can 
-> take a long time to hit that especially in the merge window when 
-> there's a lot of various test failures that cause hickups in the 
-> test stream.)
+Commit-ID:  feaa0457ec8351cae855edc9a3052ac49322538e
+Gitweb:     http://git.kernel.org/tip/feaa0457ec8351cae855edc9a3052ac49322538e
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Sat, 20 Jun 2009 16:15:40 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 20 Jun 2009 17:53:13 +0200
 
-OK thanks, I'll push it upstream soon.
+x86: ds.c fix invalid assignment
 
-> ( Mailing me an upstream sha1 when all fixes in this area have hit 
->   upstream would certainly be welcome - i can use that as a 'no 
->   crashes expected in that area from that point on' flag day. )
+Fixes the type mixups that cause the following sparse warnings:
 
-Sure, will do.
+  CHECK   arch/x86/kernel/ds.c
+arch/x86/kernel/ds.c:549:19: warning: incorrect type in argument 2 (invalid types)
+arch/x86/kernel/ds.c:549:19:    expected bad type enum bts_field field
+arch/x86/kernel/ds.c:549:19:    got int
+arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
+arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
+arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
+arch/x86/kernel/ds.c:514:7: error: invalid assignment
+arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
+arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
+arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
+arch/x86/kernel/ds.c:514:7: error: invalid assignment
+arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
+arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
+arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
+arch/x86/kernel/ds.c:514:7: error: invalid assignment
+arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
+arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
+arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
+arch/x86/kernel/ds.c:514:7: error: invalid assignment
+arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
+arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
+arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
+arch/x86/kernel/ds.c:514:7: error: invalid assignment
+arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
+arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
+arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
+arch/x86/kernel/ds.c:514:7: error: invalid assignment
+arch/x86/kernel/ds.c:520:35: error: incompatible types for operation (*)
+arch/x86/kernel/ds.c:520:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
+arch/x86/kernel/ds.c:520:35:    right side has type bad type enum bts_field field
+arch/x86/kernel/ds.c:520:7: error: invalid assignment
+arch/x86/kernel/ds.c:520:35: error: incompatible types for operation (*)
 
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Markus Metzger <markus.t.metzger@intel.com>
+LKML-Reference: <1245494740.8613.12.camel@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/ds.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index 48bfe13..ef42a03 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -509,15 +509,15 @@ enum bts_field {
+ 	bts_escape		= ((unsigned long)-1 & ~bts_qual_mask)
+ };
+ 
+-static inline unsigned long bts_get(const char *base, enum bts_field field)
++static inline unsigned long bts_get(const char *base, unsigned long field)
+ {
+ 	base += (ds_cfg.sizeof_ptr_field * field);
+ 	return *(unsigned long *)base;
+ }
+ 
+-static inline void bts_set(char *base, enum bts_field field, unsigned long val)
++static inline void bts_set(char *base, unsigned long field, unsigned long val)
+ {
+-	base += (ds_cfg.sizeof_ptr_field * field);;
++	base += (ds_cfg.sizeof_ptr_field * field);
+ 	(*(unsigned long *)base) = val;
+ }
+ 
