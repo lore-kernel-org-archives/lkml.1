@@ -1,95 +1,2778 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbZFTRq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZFTSCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757077AbZFTRq0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 13:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZFTRqS
+	id S1757370AbZFTSCx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 14:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbZFTSCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 13:46:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41861 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751320AbZFTRqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 13:46:18 -0400
-Date: Sat, 20 Jun 2009 17:45:48 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jaswinder@kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       jaswinderrajput@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, tglx@linutronix.de, jaswinderrajput@gmail.com,
-       mingo@elte.hu
-In-Reply-To: <1245484165.3102.6.camel@localhost.localdomain>
-References: <1245484165.3102.6.camel@localhost.localdomain>
-Subject: [tip:perfcounters/urgent] perf_counter, x8: Fix L1-data-Cache-Store-Referencees for AMD
-Message-ID: <tip-baed11e65b6e4e191199846c78fd33aae5ce30f5@git.kernel.org>
-Git-Commit-ID: baed11e65b6e4e191199846c78fd33aae5ce30f5
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 20 Jun 2009 17:45:49 +0000 (UTC)
+	Sat, 20 Jun 2009 14:02:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:23318 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755749AbZFTSCm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 14:02:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=kXWqWKFIE0X16jDS2/5KTM5p4/1sN4T6zjK/AMrED5BsW1zOpZDQ5fE/u+/1aE9swe
+         hKP1JVv91NbADTiULCmpa7HAqf0UDsrtxZS6ZlNIFUZ6ZSmoQ4j10V4M7ngU1Ba56yBB
+         FIjuvEC51Iye3rCYCRP9u0JDOM0dM0COaror4=
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Forest Bond <forest@alittletooquiet.net>
+Subject: [PATCH] Staging: vt6655: s/VOID/void/
+Date: Sat, 20 Jun 2009 22:02:37 +0400
+Message-Id: <1245520957-22234-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  baed11e65b6e4e191199846c78fd33aae5ce30f5
-Gitweb:     http://git.kernel.org/tip/baed11e65b6e4e191199846c78fd33aae5ce30f5
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Sat, 20 Jun 2009 13:19:25 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 20 Jun 2009 19:42:48 +0200
-
-perf_counter, x8: Fix L1-data-Cache-Store-Referencees for AMD
-
-Fix AMD's Data Cache Refills from System event.
-
-After this patch :
-
- ./tools/perf/perf stat -e l1d -e l1d-misses -e l1d-write -e l1d-prefetch -e l1d-prefetch-miss -e l1i -e l1i-misses -e l1i-prefetch -e l2 -e l2-misses -e l2-write -e dtlb -e dtlb-misses -e itlb -e itlb-misses -e bpu -e bpu-misses ls /dev/ > /dev/null
-
- Performance counter stats for 'ls /dev/':
-
-        2499484  L1-data-Cache-Load-Referencees             (scaled from 3.97%)
-          70347  L1-data-Cache-Load-Misses                  (scaled from 7.30%)
-           9360  L1-data-Cache-Store-Referencees            (scaled from 8.64%)
-          32804  L1-data-Cache-Prefetch-Referencees         (scaled from 17.72%)
-           7693  L1-data-Cache-Prefetch-Misses              (scaled from 22.97%)
-        2180945  L1-instruction-Cache-Load-Referencees      (scaled from 28.48%)
-          14518  L1-instruction-Cache-Load-Misses           (scaled from 35.00%)
-           2405  L1-instruction-Cache-Prefetch-Referencees  (scaled from 34.89%)
-          71387  L2-Cache-Load-Referencees                  (scaled from 34.94%)
-          18732  L2-Cache-Load-Misses                       (scaled from 34.92%)
-          79918  L2-Cache-Store-Referencees                 (scaled from 36.02%)
-        1295294  Data-TLB-Cache-Load-Referencees            (scaled from 35.99%)
-          30896  Data-TLB-Cache-Load-Misses                 (scaled from 33.36%)
-        1222030  Instruction-TLB-Cache-Load-Referencees     (scaled from 29.46%)
-            357  Instruction-TLB-Cache-Load-Misses          (scaled from 20.46%)
-         530888  Branch-Cache-Load-Referencees              (scaled from 11.48%)
-           8638  Branch-Cache-Load-Misses                   (scaled from 5.09%)
-
-    0.011295149  seconds time elapsed.
-
-Earlier it always shows value 0.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-LKML-Reference: <1245484165.3102.6.camel@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Cc: Forest Bond <forest@alittletooquiet.net>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 ---
- arch/x86/kernel/cpu/perf_counter.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/staging/vt6655/80211mgr.c    |   44 ++++++++--------
+ drivers/staging/vt6655/80211mgr.h    |   44 ++++++++--------
+ drivers/staging/vt6655/baseband.c    |   34 ++++++------
+ drivers/staging/vt6655/baseband.h    |   26 +++++-----
+ drivers/staging/vt6655/bssdb.c       |   30 +++++-----
+ drivers/staging/vt6655/bssdb.h       |   18 +++---
+ drivers/staging/vt6655/card.c        |   24 ++++----
+ drivers/staging/vt6655/card.h        |   18 +++---
+ drivers/staging/vt6655/datarate.c    |    8 ++--
+ drivers/staging/vt6655/datarate.h    |    4 +-
+ drivers/staging/vt6655/device.h      |    4 +-
+ drivers/staging/vt6655/device_cfg.h  |   12 ----
+ drivers/staging/vt6655/device_main.c |    6 +-
+ drivers/staging/vt6655/dpc.c         |   10 ++--
+ drivers/staging/vt6655/dpc.h         |    2 +-
+ drivers/staging/vt6655/ioctl.c       |    2 +-
+ drivers/staging/vt6655/ioctl.h       |    2 +-
+ drivers/staging/vt6655/key.c         |    8 ++--
+ drivers/staging/vt6655/key.h         |    6 +-
+ drivers/staging/vt6655/mac.c         |    8 ++--
+ drivers/staging/vt6655/mac.h         |   52 +++++++++---------
+ drivers/staging/vt6655/michael.c     |   24 ++++----
+ drivers/staging/vt6655/michael.h     |    8 ++--
+ drivers/staging/vt6655/power.c       |    6 +-
+ drivers/staging/vt6655/power.h       |    6 +-
+ drivers/staging/vt6655/rc4.c         |    4 +-
+ drivers/staging/vt6655/rc4.h         |    2 +-
+ drivers/staging/vt6655/rf.c          |    2 +-
+ drivers/staging/vt6655/rf.h          |    2 +-
+ drivers/staging/vt6655/rxtx.c        |   24 ++++----
+ drivers/staging/vt6655/rxtx.h        |   10 ++--
+ drivers/staging/vt6655/srom.h        |    2 +-
+ drivers/staging/vt6655/tkip.c        |    2 +-
+ drivers/staging/vt6655/tkip.h        |    2 +-
+ drivers/staging/vt6655/ttype.h       |   12 ----
+ drivers/staging/vt6655/vntwifi.c     |   20 ++++----
+ drivers/staging/vt6655/vntwifi.h     |   20 ++++----
+ drivers/staging/vt6655/wcmd.c        |   12 ++--
+ drivers/staging/vt6655/wcmd.h        |    8 ++--
+ drivers/staging/vt6655/wmgr.c        |   94 +++++++++++++++++-----------------
+ drivers/staging/vt6655/wmgr.h        |   20 ++++----
+ drivers/staging/vt6655/wpa.c         |    4 +-
+ drivers/staging/vt6655/wpa.h         |    4 +-
+ drivers/staging/vt6655/wpa2.c        |    4 +-
+ drivers/staging/vt6655/wpa2.h        |    4 +-
+ 45 files changed, 317 insertions(+), 341 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 76dfef2..22eb3a1 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -401,7 +401,7 @@ static const u64 amd_hw_cache_event_ids
- 		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
- 	},
- 	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0042, /* Data Cache Refills from L2 */
-+		[ C(RESULT_ACCESS) ] = 0x0142, /* Data Cache Refills :system */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
- 	[ C(OP_PREFETCH) ] = {
+diff --git a/drivers/staging/vt6655/80211mgr.c b/drivers/staging/vt6655/80211mgr.c
+index 84745fb..67b5236 100644
+--- a/drivers/staging/vt6655/80211mgr.c
++++ b/drivers/staging/vt6655/80211mgr.c
+@@ -106,7 +106,7 @@ static int          msglevel                =MSG_LEVEL_INFO;
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrEncodeBeacon(
+     IN  PWLAN_FR_BEACON  pFrame
+      )
+@@ -138,7 +138,7 @@ vMgrEncodeBeacon(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrDecodeBeacon(
+     IN  PWLAN_FR_BEACON  pFrame
+     )
+@@ -259,7 +259,7 @@ vMgrDecodeBeacon(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrEncodeIBSSATIM(
+     IN  PWLAN_FR_IBSSATIM   pFrame
+     )
+@@ -282,7 +282,7 @@ vMgrEncodeIBSSATIM(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeIBSSATIM(
+     IN  PWLAN_FR_IBSSATIM   pFrame
+     )
+@@ -304,7 +304,7 @@ vMgrDecodeIBSSATIM(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrEncodeDisassociation(
+     IN  PWLAN_FR_DISASSOC  pFrame
+     )
+@@ -332,7 +332,7 @@ vMgrEncodeDisassociation(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeDisassociation(
+     IN  PWLAN_FR_DISASSOC  pFrame
+     )
+@@ -358,7 +358,7 @@ vMgrDecodeDisassociation(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrEncodeAssocRequest(
+     IN  PWLAN_FR_ASSOCREQ  pFrame
+     )
+@@ -385,7 +385,7 @@ vMgrEncodeAssocRequest(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeAssocRequest(
+     IN  PWLAN_FR_ASSOCREQ  pFrame
+     )
+@@ -451,7 +451,7 @@ vMgrDecodeAssocRequest(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrEncodeAssocResponse(
+     IN  PWLAN_FR_ASSOCRESP  pFrame
+      )
+@@ -483,7 +483,7 @@ vMgrEncodeAssocResponse(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeAssocResponse(
+     IN PWLAN_FR_ASSOCRESP  pFrame
+      )
+@@ -529,7 +529,7 @@ vMgrDecodeAssocResponse(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrEncodeReassocRequest(
+     IN  PWLAN_FR_REASSOCREQ  pFrame
+      )
+@@ -561,7 +561,7 @@ vMgrEncodeReassocRequest(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrDecodeReassocRequest(
+     IN  PWLAN_FR_REASSOCREQ  pFrame
+      )
+@@ -633,7 +633,7 @@ vMgrDecodeReassocRequest(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrEncodeProbeRequest(
+     IN PWLAN_FR_PROBEREQ  pFrame
+      )
+@@ -654,7 +654,7 @@ vMgrEncodeProbeRequest(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeProbeRequest(
+     IN PWLAN_FR_PROBEREQ  pFrame
+      )
+@@ -707,7 +707,7 @@ vMgrDecodeProbeRequest(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrEncodeProbeResponse(
+     IN PWLAN_FR_PROBERESP  pFrame
+     )
+@@ -741,7 +741,7 @@ vMgrEncodeProbeResponse(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeProbeResponse(
+     IN PWLAN_FR_PROBERESP  pFrame
+     )
+@@ -862,7 +862,7 @@ vMgrDecodeProbeResponse(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrEncodeAuthen(
+     IN  PWLAN_FR_AUTHEN  pFrame
+     )
+@@ -893,7 +893,7 @@ vMgrEncodeAuthen(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeAuthen(
+     IN  PWLAN_FR_AUTHEN  pFrame
+     )
+@@ -933,7 +933,7 @@ vMgrDecodeAuthen(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrEncodeDeauthen(
+     IN  PWLAN_FR_DEAUTHEN  pFrame
+     )
+@@ -960,7 +960,7 @@ vMgrEncodeDeauthen(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDecodeDeauthen(
+     IN  PWLAN_FR_DEAUTHEN  pFrame
+     )
+@@ -986,7 +986,7 @@ vMgrDecodeDeauthen(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrEncodeReassocResponse(
+     IN  PWLAN_FR_REASSOCRESP  pFrame
+      )
+@@ -1019,7 +1019,7 @@ vMgrEncodeReassocResponse(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrDecodeReassocResponse(
+     IN  PWLAN_FR_REASSOCRESP  pFrame
+      )
+diff --git a/drivers/staging/vt6655/80211mgr.h b/drivers/staging/vt6655/80211mgr.h
+index dc54a65..c9bc93c 100644
+--- a/drivers/staging/vt6655/80211mgr.h
++++ b/drivers/staging/vt6655/80211mgr.h
+@@ -719,112 +719,112 @@ typedef struct tagWLAN_FR_DEAUTHEN {
+ } WLAN_FR_DEAUTHEN, *PWLAN_FR_DEAUTHEN;
+ 
+ /*---------------------  Export Functions  --------------------------*/
+-VOID
++void
+ vMgrEncodeBeacon(
+     IN  PWLAN_FR_BEACON  pFrame
+      );
+ 
+-VOID
++void
+ vMgrDecodeBeacon(
+     IN  PWLAN_FR_BEACON  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeIBSSATIM(
+     IN  PWLAN_FR_IBSSATIM   pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeIBSSATIM(
+     IN  PWLAN_FR_IBSSATIM   pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeDisassociation(
+     IN  PWLAN_FR_DISASSOC  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeDisassociation(
+     IN  PWLAN_FR_DISASSOC  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeAssocRequest(
+     IN  PWLAN_FR_ASSOCREQ  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeAssocRequest(
+     IN  PWLAN_FR_ASSOCREQ  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeAssocResponse(
+     IN  PWLAN_FR_ASSOCRESP  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeAssocResponse(
+     IN PWLAN_FR_ASSOCRESP  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeReassocRequest(
+     IN  PWLAN_FR_REASSOCREQ  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeReassocRequest(
+     IN  PWLAN_FR_REASSOCREQ  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeProbeRequest(
+     IN PWLAN_FR_PROBEREQ  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeProbeRequest(
+     IN PWLAN_FR_PROBEREQ  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeProbeResponse(
+     IN PWLAN_FR_PROBERESP  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeProbeResponse(
+     IN PWLAN_FR_PROBERESP  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeAuthen(
+     IN  PWLAN_FR_AUTHEN  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeAuthen(
+     IN  PWLAN_FR_AUTHEN  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeDeauthen(
+     IN  PWLAN_FR_DEAUTHEN  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeDeauthen(
+     IN  PWLAN_FR_DEAUTHEN  pFrame
+     );
+ 
+-VOID
++void
+ vMgrEncodeReassocResponse(
+     IN  PWLAN_FR_REASSOCRESP  pFrame
+     );
+ 
+-VOID
++void
+ vMgrDecodeReassocResponse(
+     IN  PWLAN_FR_REASSOCRESP  pFrame
+     );
+diff --git a/drivers/staging/vt6655/baseband.c b/drivers/staging/vt6655/baseband.c
+index bc6db86..754b793 100644
+--- a/drivers/staging/vt6655/baseband.c
++++ b/drivers/staging/vt6655/baseband.c
+@@ -1737,13 +1737,13 @@ ULONG
+ s_ulGetRatio(PSDevice pDevice);
+ 
+ static
+-VOID
++void
+ s_vChangeAntenna(
+     IN PSDevice pDevice
+     );
+ 
+ static
+-VOID
++void
+ s_vChangeAntenna (
+     IN PSDevice pDevice
+     )
+@@ -1856,7 +1856,7 @@ BBuGetFrameTime (
+  * Return Value: none
+  *
+  */
+-VOID
++void
+ BBvCaculateParameter (
+     IN  PSDevice pDevice,
+     IN  UINT cbFrameLength,
+@@ -2334,7 +2334,7 @@ BOOL BBbVT3253Init (PSDevice pDevice)
+  * Return Value: none
+  *
+  */
+-VOID BBvReadAllRegs (DWORD_PTR dwIoBase, PBYTE pbyBBRegs)
++void BBvReadAllRegs (DWORD_PTR dwIoBase, PBYTE pbyBBRegs)
+ {
+     int  ii;
+     BYTE byBase = 1;
+@@ -2451,7 +2451,7 @@ void BBvLoopbackOff (PSDevice pDevice)
+  * Return Value: none
+  *
+  */
+-VOID
++void
+ BBvSetShortSlotTime (PSDevice pDevice)
+ {
+     BYTE byBBRxConf=0;
+@@ -2475,7 +2475,7 @@ BBvSetShortSlotTime (PSDevice pDevice)
+ 
+ }
+ 
+-VOID BBvSetVGAGainOffset(PSDevice pDevice, BYTE byData)
++void BBvSetVGAGainOffset(PSDevice pDevice, BYTE byData)
+ {
+     BYTE byBBRxConf=0;
+ 
+@@ -2507,7 +2507,7 @@ VOID BBvSetVGAGainOffset(PSDevice pDevice, BYTE byData)
+  * Return Value: none
+  *
+  */
+-VOID
++void
+ BBvSoftwareReset (DWORD_PTR dwIoBase)
+ {
+     BBbWriteEmbeded(dwIoBase, 0x50, 0x40);
+@@ -2528,7 +2528,7 @@ BBvSoftwareReset (DWORD_PTR dwIoBase)
+  * Return Value: none
+  *
+  */
+-VOID
++void
+ BBvPowerSaveModeON (DWORD_PTR dwIoBase)
+ {
+     BYTE byOrgData;
+@@ -2550,7 +2550,7 @@ BBvPowerSaveModeON (DWORD_PTR dwIoBase)
+  * Return Value: none
+  *
+  */
+-VOID
++void
+ BBvPowerSaveModeOFF (DWORD_PTR dwIoBase)
+ {
+     BYTE byOrgData;
+@@ -2574,7 +2574,7 @@ BBvPowerSaveModeOFF (DWORD_PTR dwIoBase)
+  *
+  */
+ 
+-VOID
++void
+ BBvSetTxAntennaMode (DWORD_PTR dwIoBase, BYTE byAntennaMode)
+ {
+     BYTE byBBTxConf;
+@@ -2616,7 +2616,7 @@ BBvSetTxAntennaMode (DWORD_PTR dwIoBase, BYTE byAntennaMode)
+  *
+  */
+ 
+-VOID
++void
+ BBvSetRxAntennaMode (DWORD_PTR dwIoBase, BYTE byAntennaMode)
+ {
+     BYTE byBBRxConf;
+@@ -2647,14 +2647,14 @@ BBvSetRxAntennaMode (DWORD_PTR dwIoBase, BYTE byAntennaMode)
+  * Return Value: none
+  *
+  */
+-VOID
++void
+ BBvSetDeepSleep (DWORD_PTR dwIoBase, BYTE byLocalID)
+ {
+     BBbWriteEmbeded(dwIoBase, 0x0C, 0x17);//CR12
+     BBbWriteEmbeded(dwIoBase, 0x0D, 0xB9);//CR13
+ }
+ 
+-VOID
++void
+ BBvExitDeepSleep (DWORD_PTR dwIoBase, BYTE byLocalID)
+ {
+     BBbWriteEmbeded(dwIoBase, 0x0C, 0x00);//CR12
+@@ -2772,7 +2772,7 @@ ULONG   ulPacketNum;
+ }
+ 
+ 
+-VOID
++void
+ BBvClearAntDivSQ3Value (PSDevice pDevice)
+ {
+     UINT    ii;
+@@ -2799,7 +2799,7 @@ BBvClearAntDivSQ3Value (PSDevice pDevice)
+  *
+  */
+ 
+-VOID
++void
+ BBvAntennaDiversity (PSDevice pDevice, BYTE byRxRate, BYTE bySQ3)
+ {
+ 
+@@ -2889,7 +2889,7 @@ BBvAntennaDiversity (PSDevice pDevice, BYTE byRxRate, BYTE bySQ3)
+  *
+ -*/
+ 
+-VOID
++void
+ TimerSQ3CallBack (
+     IN  HANDLE      hDeviceContext
+     )
+@@ -2939,7 +2939,7 @@ TimerSQ3CallBack (
+  *
+ -*/
+ 
+-VOID
++void
+ TimerState1CallBack (
+     IN  HANDLE      hDeviceContext
+     )
+diff --git a/drivers/staging/vt6655/baseband.h b/drivers/staging/vt6655/baseband.h
+index 09cf4f9..7b96f0d 100644
+--- a/drivers/staging/vt6655/baseband.h
++++ b/drivers/staging/vt6655/baseband.h
+@@ -140,7 +140,7 @@ BBuGetFrameTime(
+     IN WORD wRate
+     );
+ 
+-VOID
++void
+ BBvCaculateParameter (
+     IN  PSDevice pDevice,
+     IN  UINT cbFrameLength,
+@@ -154,36 +154,36 @@ BBvCaculateParameter (
+ BOOL BBbReadEmbeded(DWORD_PTR dwIoBase, BYTE byBBAddr, PBYTE pbyData);
+ BOOL BBbWriteEmbeded(DWORD_PTR dwIoBase, BYTE byBBAddr, BYTE byData);
+ 
+-VOID BBvReadAllRegs(DWORD_PTR dwIoBase, PBYTE pbyBBRegs);
++void BBvReadAllRegs(DWORD_PTR dwIoBase, PBYTE pbyBBRegs);
+ void BBvLoopbackOn(PSDevice pDevice);
+ void BBvLoopbackOff(PSDevice pDevice);
+ void BBvSetShortSlotTime(PSDevice pDevice);
+ BOOL BBbIsRegBitsOn(DWORD_PTR dwIoBase, BYTE byBBAddr, BYTE byTestBits);
+ BOOL BBbIsRegBitsOff(DWORD_PTR dwIoBase, BYTE byBBAddr, BYTE byTestBits);
+-VOID BBvSetVGAGainOffset(PSDevice pDevice, BYTE byData);
++void BBvSetVGAGainOffset(PSDevice pDevice, BYTE byData);
+ 
+ // VT3253 Baseband
+ BOOL BBbVT3253Init(PSDevice pDevice);
+-VOID BBvSoftwareReset(DWORD_PTR dwIoBase);
+-VOID BBvPowerSaveModeON(DWORD_PTR dwIoBase);
+-VOID BBvPowerSaveModeOFF(DWORD_PTR dwIoBase);
+-VOID BBvSetTxAntennaMode(DWORD_PTR dwIoBase, BYTE byAntennaMode);
+-VOID BBvSetRxAntennaMode(DWORD_PTR dwIoBase, BYTE byAntennaMode);
+-VOID BBvSetDeepSleep(DWORD_PTR dwIoBase, BYTE byLocalID);
+-VOID BBvExitDeepSleep(DWORD_PTR dwIoBase, BYTE byLocalID);
++void BBvSoftwareReset(DWORD_PTR dwIoBase);
++void BBvPowerSaveModeON(DWORD_PTR dwIoBase);
++void BBvPowerSaveModeOFF(DWORD_PTR dwIoBase);
++void BBvSetTxAntennaMode(DWORD_PTR dwIoBase, BYTE byAntennaMode);
++void BBvSetRxAntennaMode(DWORD_PTR dwIoBase, BYTE byAntennaMode);
++void BBvSetDeepSleep(DWORD_PTR dwIoBase, BYTE byLocalID);
++void BBvExitDeepSleep(DWORD_PTR dwIoBase, BYTE byLocalID);
+ 
+ // timer for antenna diversity
+-VOID
++void
+ TimerSQ3CallBack(
+     IN  HANDLE hDeviceContext
+     );
+-VOID
++void
+ TimerState1CallBack(
+     IN  HANDLE hDeviceContext
+     );
+ 
+ void BBvAntennaDiversity(PSDevice pDevice, BYTE byRxRate, BYTE bySQ3);
+-VOID
++void
+ BBvClearAntDivSQ3Value (PSDevice pDevice);
+ 
+ 
+diff --git a/drivers/staging/vt6655/bssdb.c b/drivers/staging/vt6655/bssdb.c
+index 746fadc..0014b60 100644
+--- a/drivers/staging/vt6655/bssdb.c
++++ b/drivers/staging/vt6655/bssdb.c
+@@ -132,18 +132,18 @@ const WORD             awHWRetry1[5][5] = {
+ 
+ /*---------------------  Static Functions  --------------------------*/
+ 
+-VOID s_vCheckSensitivity(
++void s_vCheckSensitivity(
+     IN HANDLE hDeviceContext
+     );
+ 
+ #ifdef Calcu_LinkQual
+-VOID s_uCalculateLinkQual(
++void s_uCalculateLinkQual(
+     IN HANDLE hDeviceContext
+     );
+ #endif
+ 
+ 
+-VOID s_vCheckPreEDThreshold(
++void s_vCheckPreEDThreshold(
+     IN HANDLE hDeviceContext
+     );
+ /*---------------------  Export Variables  --------------------------*/
+@@ -322,7 +322,7 @@ if(pDevice->bLinkPass==FALSE) pCurrBSS->bSelected = FALSE;
+ -*/
+ 
+ 
+-VOID
++void
+ BSSvClearBSSList(
+     IN HANDLE hDeviceContext,
+     IN BOOL bKeepCurrBSSID
+@@ -841,7 +841,7 @@ BSSDBbIsSTAInNodeDB(
+  *    None
+  *
+ -*/
+-VOID
++void
+ BSSvCreateOneNode(
+     IN HANDLE hDeviceContext,
+     OUT PUINT puNodeIndex
+@@ -906,7 +906,7 @@ BSSvCreateOneNode(
+  *    None
+  *
+ -*/
+-VOID
++void
+ BSSvRemoveOneNode(
+     IN HANDLE hDeviceContext,
+     IN UINT uNodeIndex
+@@ -939,7 +939,7 @@ BSSvRemoveOneNode(
+  *
+ -*/
+ 
+-VOID
++void
+ BSSvUpdateAPNode(
+     IN HANDLE hDeviceContext,
+     IN PWORD pwCapInfo,
+@@ -1002,7 +1002,7 @@ BSSvUpdateAPNode(
+ -*/
+ 
+ 
+-VOID
++void
+ BSSvAddMulticastNode(
+     IN HANDLE hDeviceContext
+     )
+@@ -1055,7 +1055,7 @@ BSSvAddMulticastNode(
+ BOOL cc=FALSE;
+ UINT status;
+ #endif
+-VOID
++void
+ BSSvSecondCallBack(
+     IN  HANDLE hDeviceContext
+     )
+@@ -1432,7 +1432,7 @@ start:
+ 
+ 
+ 
+-VOID
++void
+ BSSvUpdateNodeTxCounter(
+     IN HANDLE      hDeviceContext,
+     IN BYTE        byTsr0,
+@@ -1624,7 +1624,7 @@ BSSvUpdateNodeTxCounter(
+ -*/
+ 
+ 
+-VOID
++void
+ BSSvClearNodeDBTable(
+     IN HANDLE hDeviceContext,
+     IN UINT uStartIndex
+@@ -1653,7 +1653,7 @@ BSSvClearNodeDBTable(
+ };
+ 
+ 
+-VOID s_vCheckSensitivity(
++void s_vCheckSensitivity(
+     IN HANDLE hDeviceContext
+     )
+ {
+@@ -1702,7 +1702,7 @@ VOID s_vCheckSensitivity(
+ }
+ 
+ 
+-VOID
++void
+ BSSvClearAnyBSSJoinRecord (
+     IN HANDLE hDeviceContext
+     )
+@@ -1718,7 +1718,7 @@ BSSvClearAnyBSSJoinRecord (
+ }
+ 
+ #ifdef Calcu_LinkQual
+-VOID s_uCalculateLinkQual(
++void s_uCalculateLinkQual(
+     IN HANDLE hDeviceContext
+     )
+ {
+@@ -1766,7 +1766,7 @@ else
+ }
+ #endif
+ 
+-VOID s_vCheckPreEDThreshold(
++void s_vCheckPreEDThreshold(
+     IN HANDLE hDeviceContext
+     )
+ {
+diff --git a/drivers/staging/vt6655/bssdb.h b/drivers/staging/vt6655/bssdb.h
+index d35616d..990825c 100644
+--- a/drivers/staging/vt6655/bssdb.h
++++ b/drivers/staging/vt6655/bssdb.h
+@@ -267,7 +267,7 @@ BSSpAddrIsInBSSList(
+     IN PWLAN_IE_SSID pSSID
+     );
+ 
+-VOID
++void
+ BSSvClearBSSList(
+     IN HANDLE hDeviceContext,
+     IN BOOL bKeepCurrBSSID
+@@ -325,13 +325,13 @@ BSSDBbIsSTAInNodeDB(
+     OUT PUINT puNodeIndex
+     );
+ 
+-VOID
++void
+ BSSvCreateOneNode(
+     IN HANDLE hDeviceContext,
+     OUT PUINT puNodeIndex
+     );
+ 
+-VOID
++void
+ BSSvUpdateAPNode(
+     IN HANDLE hDeviceContext,
+     IN PWORD pwCapInfo,
+@@ -340,12 +340,12 @@ BSSvUpdateAPNode(
+     );
+ 
+ 
+-VOID
++void
+ BSSvSecondCallBack(
+     IN HANDLE hDeviceContext
+     );
+ 
+-VOID
++void
+ BSSvUpdateNodeTxCounter(
+     IN HANDLE hDeviceContext,
+     IN BYTE        byTsr0,
+@@ -354,25 +354,25 @@ BSSvUpdateNodeTxCounter(
+     IN UINT        uFIFOHeaderSize
+     );
+ 
+-VOID
++void
+ BSSvRemoveOneNode(
+     IN HANDLE hDeviceContext,
+     IN UINT uNodeIndex
+     );
+ 
+-VOID
++void
+ BSSvAddMulticastNode(
+     IN HANDLE hDeviceContext
+     );
+ 
+ 
+-VOID
++void
+ BSSvClearNodeDBTable(
+     IN HANDLE hDeviceContext,
+     IN UINT uStartIndex
+     );
+ 
+-VOID
++void
+ BSSvClearAnyBSSJoinRecord(
+     IN HANDLE hDeviceContext
+     );
+diff --git a/drivers/staging/vt6655/card.c b/drivers/staging/vt6655/card.c
+index 723f44e..2e160a7 100644
+--- a/drivers/staging/vt6655/card.c
++++ b/drivers/staging/vt6655/card.c
+@@ -453,7 +453,7 @@ SCountryTable ChannelRuleTab[CCODE_MAX+1] =
+ /*---------------------  Static Functions  --------------------------*/
+ 
+ static
+-VOID
++void
+ s_vCaculateOFDMRParameter(
+     IN  BYTE byRate,
+     IN  CARD_PHY_TYPE ePHYType,
+@@ -526,7 +526,7 @@ exit:
+  *
+  */
+ static
+-VOID
++void
+ s_vCaculateOFDMRParameter (
+     IN  BYTE byRate,
+     IN  CARD_PHY_TYPE ePHYType,
+@@ -641,7 +641,7 @@ s_vCaculateOFDMRParameter (
+  *
+  */
+ static
+-VOID
++void
+ s_vSetRSPINF (PSDevice pDevice, CARD_PHY_TYPE ePHYType, PVOID pvSupportRateIEs, PVOID pvExtSupportRateIEs)
+ {
+     BYTE  byServ = 0, bySignal = 0; // For CCK
+@@ -1641,7 +1641,7 @@ CARDpGetCurrentAddress (
+ 
+ 
+ 
+-VOID CARDvInitChannelTable (PVOID pDeviceHandler)
++void CARDvInitChannelTable (PVOID pDeviceHandler)
+ {
+     PSDevice    pDevice = (PSDevice) pDeviceHandler;
+     BOOL        bMultiBand = FALSE;
+@@ -2063,7 +2063,7 @@ CARDbStartQuiet (
+  * Return Value: none.
+  *
+ -*/
+-VOID
++void
+ CARDvSetCountryInfo (
+     IN PVOID            pDeviceHandler,
+     IN CARD_PHY_TYPE    ePHYType,
+@@ -2122,7 +2122,7 @@ CARDvSetCountryInfo (
+  * Return Value: none.
+  *
+ -*/
+-VOID
++void
+ CARDvSetPowerConstraint (
+     IN PVOID            pDeviceHandler,
+     IN BYTE             byChannel,
+@@ -2157,7 +2157,7 @@ CARDvSetPowerConstraint (
+  * Return Value: none.
+  *
+ -*/
+-VOID
++void
+ CARDvGetPowerCapability (
+     IN PVOID            pDeviceHandler,
+     OUT PBYTE           pbyMinPower,
+@@ -2309,7 +2309,7 @@ CARDbChannelGetList (
+ }
+ 
+ 
+-VOID
++void
+ CARDvSetCountryIE(
+     IN PVOID        pDeviceHandler,
+     IN PVOID        pIE
+@@ -2354,7 +2354,7 @@ CARDbGetChannelMapInfo(
+ }
+ 
+ 
+-VOID
++void
+ CARDvSetChannelMapInfo(
+     IN PVOID        pDeviceHandler,
+     IN UINT         uChannelIndex,
+@@ -2370,7 +2370,7 @@ CARDvSetChannelMapInfo(
+ }
+ 
+ 
+-VOID
++void
+ CARDvClearChannelMapInfo(
+     IN PVOID        pDeviceHandler
+     )
+@@ -2450,7 +2450,7 @@ CARDbyAutoChannelSelect(
+ 
+ 
+ //xxx
+-VOID
++void
+ CARDvSafeResetTx (
+     IN PVOID    pDeviceHandler
+     )
+@@ -2506,7 +2506,7 @@ CARDvSafeResetTx (
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ CARDvSafeResetRx (
+     IN PVOID    pDeviceHandler
+     )
+diff --git a/drivers/staging/vt6655/card.h b/drivers/staging/vt6655/card.h
+index bb292e1..d8c96ef 100644
+--- a/drivers/staging/vt6655/card.h
++++ b/drivers/staging/vt6655/card.h
+@@ -113,8 +113,8 @@ QWORD CARDqGetNextTBTT(QWORD qwTSF, WORD wBeaconInterval);
+ QWORD CARDqGetTSFOffset(BYTE byRxRate, QWORD qwTSF1, QWORD qwTSF2);
+ BOOL CARDbSetTxPower(PVOID pDeviceHandler, ULONG ulTxPower);
+ BYTE CARDbyGetPktType(PVOID pDeviceHandler);
+-VOID CARDvSafeResetTx(PVOID pDeviceHandler);
+-VOID CARDvSafeResetRx(PVOID pDeviceHandler);
++void CARDvSafeResetTx(PVOID pDeviceHandler);
++void CARDvSafeResetRx(PVOID pDeviceHandler);
+ 
+ //xxx
+ BOOL CARDbRadioPowerOff(PVOID pDeviceHandler);
+@@ -157,7 +157,7 @@ CARDpGetCurrentAddress (
+     );
+ 
+ 
+-VOID CARDvInitChannelTable(PVOID pDeviceHandler);
++void CARDvInitChannelTable(PVOID pDeviceHandler);
+ BYTE CARDbyGetChannelMapping(PVOID pDeviceHandler, BYTE byChannelNumber, CARD_PHY_TYPE ePhyType);
+ 
+ BOOL
+@@ -190,21 +190,21 @@ CARDbStartQuiet (
+     IN PVOID            pDeviceHandler
+     );
+ 
+-VOID
++void
+ CARDvSetCountryInfo (
+     IN PVOID            pDeviceHandler,
+     IN CARD_PHY_TYPE    ePHYType,
+     IN PVOID            pIE
+     );
+ 
+-VOID
++void
+ CARDvSetPowerConstraint (
+     IN PVOID            pDeviceHandler,
+     IN BYTE             byChannel,
+     IN I8               byPower
+     );
+ 
+-VOID
++void
+ CARDvGetPowerCapability (
+     IN PVOID            pDeviceHandler,
+     OUT PBYTE           pbyMinPower,
+@@ -228,7 +228,7 @@ CARDbChannelGetList (
+     OUT PBYTE      pbyChannelTable
+     );
+ 
+-VOID
++void
+ CARDvSetCountryIE(
+     IN PVOID        pDeviceHandler,
+     IN PVOID        pIE
+@@ -242,14 +242,14 @@ CARDbGetChannelMapInfo(
+     OUT PBYTE       pbyMap
+     );
+ 
+-VOID
++void
+ CARDvSetChannelMapInfo(
+     IN PVOID        pDeviceHandler,
+     IN UINT         uChannelIndex,
+     IN BYTE         byMap
+     );
+ 
+-VOID
++void
+ CARDvClearChannelMapInfo(
+     IN PVOID        pDeviceHandler
+     );
+diff --git a/drivers/staging/vt6655/datarate.c b/drivers/staging/vt6655/datarate.c
+index f58f963..08c1c69 100644
+--- a/drivers/staging/vt6655/datarate.c
++++ b/drivers/staging/vt6655/datarate.c
+@@ -82,13 +82,13 @@ const BYTE acbyIERate[MAX_RATE] =
+ 
+ /*---------------------  Static Functions  --------------------------*/
+ 
+-VOID s_vResetCounter (
++void s_vResetCounter (
+     IN PKnownNodeDB psNodeDBTable
+     );
+ 
+ 
+ 
+-VOID
++void
+ s_vResetCounter (
+     IN PKnownNodeDB psNodeDBTable
+     )
+@@ -212,7 +212,7 @@ wGetRateIdx(
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ RATEvParseMaxRate (
+     IN PVOID pDeviceHandler,
+     IN PWLAN_IE_SUPP_RATES pItemRates,
+@@ -325,7 +325,7 @@ UINT  uRateLen;
+ #define AUTORATE_TXCNT_THRESHOLD        20
+ #define AUTORATE_INC_THRESHOLD          30
+ 
+-VOID
++void
+ RATEvTxRateFallBack (
+     IN PVOID pDeviceHandler,
+     IN PKnownNodeDB psNodeDBTable
+diff --git a/drivers/staging/vt6655/datarate.h b/drivers/staging/vt6655/datarate.h
+index 5096f3d..1135fe3 100644
+--- a/drivers/staging/vt6655/datarate.h
++++ b/drivers/staging/vt6655/datarate.h
+@@ -54,7 +54,7 @@
+ 
+ 
+ 
+-VOID
++void
+ RATEvParseMaxRate(
+     IN PVOID pDeviceHandler,
+     IN PWLAN_IE_SUPP_RATES pItemRates,
+@@ -67,7 +67,7 @@ RATEvParseMaxRate(
+     OUT PBYTE pbyTopOFDMRate
+     );
+ 
+-VOID
++void
+ RATEvTxRateFallBack(
+     IN PVOID pDeviceHandler,
+     IN PKnownNodeDB psNodeDBTable
+diff --git a/drivers/staging/vt6655/device.h b/drivers/staging/vt6655/device.h
+index 6726b2c..85d06ad 100644
+--- a/drivers/staging/vt6655/device.h
++++ b/drivers/staging/vt6655/device.h
+@@ -961,7 +961,7 @@ typedef struct __device_info {
+ //PLICE_DEBUG->
+ 
+ 
+- inline  static	VOID   EnQueue (PSDevice pDevice,PSRxMgmtPacket  pRxMgmtPacket)
++ inline  static	void   EnQueue (PSDevice pDevice,PSRxMgmtPacket  pRxMgmtPacket)
+ {
+ 	//printk("Enter EnQueue:tail is %d\n",pDevice->rxManeQueue.tail);
+ 	if ((pDevice->rxManeQueue.tail+1) % NUM == pDevice->rxManeQueue.head)
+@@ -1002,7 +1002,7 @@ typedef struct __device_info {
+ 	}
+ }
+ 
+-VOID	InitRxManagementQueue(PSDevice   pDevice);
++void	InitRxManagementQueue(PSDevice   pDevice);
+ 
+ 
+ 
+diff --git a/drivers/staging/vt6655/device_cfg.h b/drivers/staging/vt6655/device_cfg.h
+index 1cbb444..f0042b4 100644
+--- a/drivers/staging/vt6655/device_cfg.h
++++ b/drivers/staging/vt6655/device_cfg.h
+@@ -41,18 +41,6 @@ typedef __u16   UINT16,  *PUINT16;
+ typedef __u32   UINT32,  *PUINT32;
+ 
+ 
+-#ifndef VOID
+-#define VOID            void
+-#endif
+-
+-#ifndef CONST
+-#define CONST           const
+-#endif
+-
+-#ifndef STATIC
+-#define STATIC          static
+-#endif
+-
+ #ifndef DEF
+ #define DEF
+ #endif
+diff --git a/drivers/staging/vt6655/device_main.c b/drivers/staging/vt6655/device_main.c
+index bba319a..d13d8de 100644
+--- a/drivers/staging/vt6655/device_main.c
++++ b/drivers/staging/vt6655/device_main.c
+@@ -544,7 +544,7 @@ pDevice->bUpdateBBVGA = TRUE;
+     DEVICE_PRT(MSG_LEVEL_DEBUG, KERN_INFO" pDevice->bDiversityRegCtlON= %d\n",(INT)pDevice->bDiversityRegCtlON);
+ }
+ 
+-static VOID s_vCompleteCurrentMeasure (IN PSDevice pDevice, IN BYTE byResult)
++static void s_vCompleteCurrentMeasure (IN PSDevice pDevice, IN BYTE byResult)
+ {
+     UINT    ii;
+     DWORD   dwDuration = 0;
+@@ -912,7 +912,7 @@ else  CARDbRadioPowerOn(pDevice);
+ 
+ 
+ 
+-static VOID device_init_diversity_timer(PSDevice pDevice) {
++static void device_init_diversity_timer(PSDevice pDevice) {
+ 
+     init_timer(&pDevice->TimerSQ3Tmax1);
+     pDevice->TimerSQ3Tmax1.data = (ULONG)pDevice;
+@@ -1940,7 +1940,7 @@ static void device_free_tx_buf(PSDevice pDevice, PSTxDesc pDesc) {
+ 
+ 
+ //PLICE_DEBUG ->
+-VOID	InitRxManagementQueue(PSDevice  pDevice)
++void	InitRxManagementQueue(PSDevice  pDevice)
+ {
+ 	pDevice->rxManeQueue.packet_num = 0;
+ 	pDevice->rxManeQueue.head = pDevice->rxManeQueue.tail = 0;
+diff --git a/drivers/staging/vt6655/dpc.c b/drivers/staging/vt6655/dpc.c
+index acc6d82..755c861 100644
+--- a/drivers/staging/vt6655/dpc.c
++++ b/drivers/staging/vt6655/dpc.c
+@@ -119,7 +119,7 @@ static BYTE s_byGetRateIdx(IN BYTE byRate);
+ 
+ 
+ static
+-VOID
++void
+ s_vGetDASA(
+     IN  PBYTE pbyRxBufferAddr,
+     OUT PUINT pcbHeaderSize,
+@@ -127,7 +127,7 @@ s_vGetDASA(
+     );
+ 
+ static
+-VOID
++void
+ s_vProcessRxMACHeader (
+     IN  PSDevice pDevice,
+     IN  PBYTE pbyRxBufferAddr,
+@@ -213,7 +213,7 @@ static BOOL s_bHostWepRxEncryption(
+  *
+ -*/
+ static
+-VOID
++void
+ s_vProcessRxMACHeader (
+     IN  PSDevice pDevice,
+     IN  PBYTE pbyRxBufferAddr,
+@@ -312,7 +312,7 @@ static BYTE s_byGetRateIdx (IN BYTE byRate)
+ 
+ 
+ static
+-VOID
++void
+ s_vGetDASA (
+     IN  PBYTE pbyRxBufferAddr,
+     OUT PUINT pcbHeaderSize,
+@@ -364,7 +364,7 @@ s_vGetDASA (
+ 
+ //PLICE_DEBUG ->
+ 
+-VOID	MngWorkItem(PVOID Context)
++void	MngWorkItem(PVOID Context)
+ {
+ 	PSRxMgmtPacket			pRxMgmtPacket;
+ 	PSDevice	pDevice =  (PSDevice) Context;
+diff --git a/drivers/staging/vt6655/dpc.h b/drivers/staging/vt6655/dpc.h
+index 68447c4..c64b582 100644
+--- a/drivers/staging/vt6655/dpc.h
++++ b/drivers/staging/vt6655/dpc.h
+@@ -68,7 +68,7 @@ device_receive_frame (
+ 
+ 
+ 
+-VOID	MngWorkItem(PVOID Context);
++void	MngWorkItem(PVOID Context);
+ #endif // __RXTX_H__
+ 
+ 
+diff --git a/drivers/staging/vt6655/ioctl.c b/drivers/staging/vt6655/ioctl.c
+index 4869107..8e1d6eb 100644
+--- a/drivers/staging/vt6655/ioctl.c
++++ b/drivers/staging/vt6655/ioctl.c
+@@ -737,7 +737,7 @@ int private_ioctl(PSDevice pDevice, struct ifreq *rq) {
+ }
+ 
+ /*
+-VOID
++void
+ vConfigWEPKey (
+     IN PSDevice pDevice,
+     IN DWORD    dwKeyIndex,
+diff --git a/drivers/staging/vt6655/ioctl.h b/drivers/staging/vt6655/ioctl.h
+index 9c6816e..3f6825d 100644
+--- a/drivers/staging/vt6655/ioctl.h
++++ b/drivers/staging/vt6655/ioctl.h
+@@ -53,7 +53,7 @@ extern "C" {                            /* Assume C declarations for C++ */
+ int private_ioctl(PSDevice pDevice, struct ifreq *rq);
+ 
+ /*
+-VOID vConfigWEPKey (
++void vConfigWEPKey (
+     IN PSDevice pDevice,
+     IN DWORD    dwKeyIndex,
+     IN PBYTE    pbyKey,
+diff --git a/drivers/staging/vt6655/key.c b/drivers/staging/vt6655/key.c
+index 168ebd3..4815424 100644
+--- a/drivers/staging/vt6655/key.c
++++ b/drivers/staging/vt6655/key.c
+@@ -72,7 +72,7 @@ static int          msglevel                =MSG_LEVEL_INFO;
+ /*---------------------  Static Variables  --------------------------*/
+ 
+ /*---------------------  Static Functions  --------------------------*/
+-static VOID
++static void
+ s_vCheckKeyTableValid (PSKeyManagement pTable, DWORD_PTR dwIoBase)
+ {
+     int i;
+@@ -109,7 +109,7 @@ s_vCheckKeyTableValid (PSKeyManagement pTable, DWORD_PTR dwIoBase)
+  * Return Value: none
+  *
+  */
+-VOID KeyvInitTable (PSKeyManagement pTable, DWORD_PTR dwIoBase)
++void KeyvInitTable (PSKeyManagement pTable, DWORD_PTR dwIoBase)
+ {
+     int i;
+     int jj;
+@@ -483,7 +483,7 @@ BOOL KeybRemoveAllKey (
+  * Return Value: TRUE if success otherwise FALSE
+  *
+  */
+-VOID KeyvRemoveWEPKey (
++void KeyvRemoveWEPKey (
+     PSKeyManagement pTable,
+     DWORD           dwKeyIndex,
+     DWORD_PTR       dwIoBase
+@@ -505,7 +505,7 @@ VOID KeyvRemoveWEPKey (
+     return;
+ }
+ 
+-VOID KeyvRemoveAllWEPKey (
++void KeyvRemoveAllWEPKey (
+     PSKeyManagement pTable,
+     DWORD_PTR       dwIoBase
+     )
+diff --git a/drivers/staging/vt6655/key.h b/drivers/staging/vt6655/key.h
+index 9c7d335..883c650 100644
+--- a/drivers/staging/vt6655/key.h
++++ b/drivers/staging/vt6655/key.h
+@@ -113,7 +113,7 @@ typedef struct tagSKeyManagement
+ extern "C" {                            /* Assume C declarations for C++ */
+ #endif /* __cplusplus */
+ 
+-VOID KeyvInitTable(PSKeyManagement pTable, DWORD_PTR dwIoBase);
++void KeyvInitTable(PSKeyManagement pTable, DWORD_PTR dwIoBase);
+ 
+ BOOL KeybGetKey(
+     IN  PSKeyManagement pTable,
+@@ -170,13 +170,13 @@ BOOL KeybRemoveAllKey(
+     DWORD_PTR       dwIoBase
+     );
+ 
+-VOID KeyvRemoveWEPKey(
++void KeyvRemoveWEPKey(
+     PSKeyManagement pTable,
+     DWORD           dwKeyIndex,
+     DWORD_PTR       dwIoBase
+     );
+ 
+-VOID KeyvRemoveAllWEPKey(
++void KeyvRemoveAllWEPKey(
+     PSKeyManagement pTable,
+     DWORD_PTR       dwIoBase
+     );
+diff --git a/drivers/staging/vt6655/mac.c b/drivers/staging/vt6655/mac.c
+index 0283ed3..fe8eb1f 100644
+--- a/drivers/staging/vt6655/mac.c
++++ b/drivers/staging/vt6655/mac.c
+@@ -108,7 +108,7 @@ static int          msglevel                =MSG_LEVEL_INFO;
+  * Return Value: none
+  *
+  */
+-VOID MACvReadAllRegs (DWORD_PTR dwIoBase, PBYTE pbyMacRegs)
++void MACvReadAllRegs (DWORD_PTR dwIoBase, PBYTE pbyMacRegs)
+ {
+     int ii;
+ 
+@@ -239,7 +239,7 @@ BYTE MACbyReadMultiAddr (DWORD_PTR dwIoBase, UINT uByteIdx)
+  * Return Value: none
+  *
+  */
+-VOID MACvWriteMultiAddr (DWORD_PTR dwIoBase, UINT uByteIdx, BYTE byData)
++void MACvWriteMultiAddr (DWORD_PTR dwIoBase, UINT uByteIdx, BYTE byData)
+ {
+     MACvSelectPage1(dwIoBase);
+     VNSvOutPortB(dwIoBase + MAC_REG_MAR0 + uByteIdx, byData);
+@@ -681,7 +681,7 @@ void MACvSaveContext (DWORD_PTR dwIoBase, PBYTE pbyCxtBuf)
+  * Return Value: none
+  *
+  */
+-VOID MACvRestoreContext (DWORD_PTR dwIoBase, PBYTE pbyCxtBuf)
++void MACvRestoreContext (DWORD_PTR dwIoBase, PBYTE pbyCxtBuf)
+ {
+     int         ii;
+ 
+@@ -1249,7 +1249,7 @@ void MACvSetCurrTXDescAddr (int iTxType, DWORD_PTR dwIoBase, DWORD dwCurrDescAdd
+  * Return Value: none
+  *
+  */
+-VOID MACvTimer0MicroSDelay (DWORD_PTR dwIoBase, UINT uDelay)
++void MACvTimer0MicroSDelay (DWORD_PTR dwIoBase, UINT uDelay)
+ {
+ BYTE byValue;
+ UINT uu,ii;
+diff --git a/drivers/staging/vt6655/mac.h b/drivers/staging/vt6655/mac.h
+index edb7096..e7c59de 100644
+--- a/drivers/staging/vt6655/mac.h
++++ b/drivers/staging/vt6655/mac.h
+@@ -1086,7 +1086,7 @@ extern "C" {                            /* Assume C declarations for C++ */
+ #endif /* __cplusplus */
+ 
+ extern WORD TxRate_iwconfig;//2008-5-8 <add> by chester
+-VOID MACvReadAllRegs(DWORD_PTR dwIoBase, PBYTE pbyMacRegs);
++void MACvReadAllRegs(DWORD_PTR dwIoBase, PBYTE pbyMacRegs);
+ 
+ BOOL MACbIsRegBitsOn(DWORD_PTR dwIoBase, BYTE byRegOfs, BYTE byTestBits);
+ BOOL MACbIsRegBitsOff(DWORD_PTR dwIoBase, BYTE byRegOfs, BYTE byTestBits);
+@@ -1094,32 +1094,32 @@ BOOL MACbIsRegBitsOff(DWORD_PTR dwIoBase, BYTE byRegOfs, BYTE byTestBits);
+ BOOL MACbIsIntDisable(DWORD_PTR dwIoBase);
+ 
+ BYTE MACbyReadMultiAddr(DWORD_PTR dwIoBase, UINT uByteIdx);
+-VOID MACvWriteMultiAddr(DWORD_PTR dwIoBase, UINT uByteIdx, BYTE byData);
+-VOID MACvSetMultiAddrByHash(DWORD_PTR dwIoBase, BYTE byHashIdx);
+-VOID MACvResetMultiAddrByHash(DWORD_PTR dwIoBase, BYTE byHashIdx);
++void MACvWriteMultiAddr(DWORD_PTR dwIoBase, UINT uByteIdx, BYTE byData);
++void MACvSetMultiAddrByHash(DWORD_PTR dwIoBase, BYTE byHashIdx);
++void MACvResetMultiAddrByHash(DWORD_PTR dwIoBase, BYTE byHashIdx);
+ 
+-VOID MACvSetRxThreshold(DWORD_PTR dwIoBase, BYTE byThreshold);
+-VOID MACvGetRxThreshold(DWORD_PTR dwIoBase, PBYTE pbyThreshold);
++void MACvSetRxThreshold(DWORD_PTR dwIoBase, BYTE byThreshold);
++void MACvGetRxThreshold(DWORD_PTR dwIoBase, PBYTE pbyThreshold);
+ 
+-VOID MACvSetTxThreshold(DWORD_PTR dwIoBase, BYTE byThreshold);
+-VOID MACvGetTxThreshold(DWORD_PTR dwIoBase, PBYTE pbyThreshold);
++void MACvSetTxThreshold(DWORD_PTR dwIoBase, BYTE byThreshold);
++void MACvGetTxThreshold(DWORD_PTR dwIoBase, PBYTE pbyThreshold);
+ 
+-VOID MACvSetDmaLength(DWORD_PTR dwIoBase, BYTE byDmaLength);
+-VOID MACvGetDmaLength(DWORD_PTR dwIoBase, PBYTE pbyDmaLength);
++void MACvSetDmaLength(DWORD_PTR dwIoBase, BYTE byDmaLength);
++void MACvGetDmaLength(DWORD_PTR dwIoBase, PBYTE pbyDmaLength);
+ 
+-VOID MACvSetShortRetryLimit(DWORD_PTR dwIoBase, BYTE byRetryLimit);
+-VOID MACvGetShortRetryLimit(DWORD_PTR dwIoBase, PBYTE pbyRetryLimit);
++void MACvSetShortRetryLimit(DWORD_PTR dwIoBase, BYTE byRetryLimit);
++void MACvGetShortRetryLimit(DWORD_PTR dwIoBase, PBYTE pbyRetryLimit);
+ 
+-VOID MACvSetLongRetryLimit(DWORD_PTR dwIoBase, BYTE byRetryLimit);
+-VOID MACvGetLongRetryLimit(DWORD_PTR dwIoBase, PBYTE pbyRetryLimit);
++void MACvSetLongRetryLimit(DWORD_PTR dwIoBase, BYTE byRetryLimit);
++void MACvGetLongRetryLimit(DWORD_PTR dwIoBase, PBYTE pbyRetryLimit);
+ 
+-VOID MACvSetLoopbackMode(DWORD_PTR dwIoBase, BYTE byLoopbackMode);
++void MACvSetLoopbackMode(DWORD_PTR dwIoBase, BYTE byLoopbackMode);
+ BOOL MACbIsInLoopbackMode(DWORD_PTR dwIoBase);
+ 
+-VOID MACvSetPacketFilter(DWORD_PTR dwIoBase, WORD wFilterType);
++void MACvSetPacketFilter(DWORD_PTR dwIoBase, WORD wFilterType);
+ 
+-VOID MACvSaveContext(DWORD_PTR dwIoBase, PBYTE pbyCxtBuf);
+-VOID MACvRestoreContext(DWORD_PTR dwIoBase, PBYTE pbyCxtBuf);
++void MACvSaveContext(DWORD_PTR dwIoBase, PBYTE pbyCxtBuf);
++void MACvRestoreContext(DWORD_PTR dwIoBase, PBYTE pbyCxtBuf);
+ BOOL MACbCompareContext(DWORD_PTR dwIoBase, PBYTE pbyCxtBuf);
+ 
+ BOOL MACbSoftwareReset(DWORD_PTR dwIoBase);
+@@ -1128,14 +1128,14 @@ BOOL MACbSafeRxOff(DWORD_PTR dwIoBase);
+ BOOL MACbSafeTxOff(DWORD_PTR dwIoBase);
+ BOOL MACbSafeStop(DWORD_PTR dwIoBase);
+ BOOL MACbShutdown(DWORD_PTR dwIoBase);
+-VOID MACvInitialize(DWORD_PTR dwIoBase);
+-VOID MACvSetCurrRx0DescAddr(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
+-VOID MACvSetCurrRx1DescAddr(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
+-VOID MACvSetCurrTXDescAddr(int iTxType, DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
+-VOID MACvSetCurrTx0DescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
+-VOID MACvSetCurrAC0DescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
+-VOID MACvSetCurrSyncDescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
+-VOID MACvSetCurrATIMDescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
++void MACvInitialize(DWORD_PTR dwIoBase);
++void MACvSetCurrRx0DescAddr(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
++void MACvSetCurrRx1DescAddr(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
++void MACvSetCurrTXDescAddr(int iTxType, DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
++void MACvSetCurrTx0DescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
++void MACvSetCurrAC0DescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
++void MACvSetCurrSyncDescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
++void MACvSetCurrATIMDescAddrEx(DWORD_PTR dwIoBase, DWORD dwCurrDescAddr);
+ void MACvTimer0MicroSDelay(DWORD_PTR dwIoBase, UINT uDelay);
+ void MACvOneShotTimer0MicroSec(DWORD_PTR dwIoBase, UINT uDelayTime);
+ void MACvOneShotTimer1MicroSec(DWORD_PTR dwIoBase, UINT uDelayTime);
+diff --git a/drivers/staging/vt6655/michael.c b/drivers/staging/vt6655/michael.c
+index 7bda4c1..6f234c2 100644
+--- a/drivers/staging/vt6655/michael.c
++++ b/drivers/staging/vt6655/michael.c
+@@ -56,12 +56,12 @@
+ /*---------------------  Static Functions  --------------------------*/
+ /*
+ static DWORD s_dwGetUINT32(BYTE * p);         // Get DWORD from 4 bytes LSByte first
+-static VOID s_vPutUINT32(BYTE* p, DWORD val); // Put DWORD into 4 bytes LSByte first
++static void s_vPutUINT32(BYTE* p, DWORD val); // Put DWORD into 4 bytes LSByte first
+ */
+-static VOID s_vClear(void);                       // Clear the internal message,
++static void s_vClear(void);                       // Clear the internal message,
+                                               // resets the object to the state just after construction.
+-static VOID s_vSetKey(DWORD dwK0, DWORD dwK1);
+-static VOID s_vAppendByte(BYTE b);            // Add a single byte to the internal message
++static void s_vSetKey(DWORD dwK0, DWORD dwK1);
++static void s_vAppendByte(BYTE b);            // Add a single byte to the internal message
+ 
+ /*---------------------  Export Variables  --------------------------*/
+ static DWORD  L, R;           // Current state
+@@ -85,7 +85,7 @@ static DWORD s_dwGetUINT32 (BYTE * p)
+     return res;
+ }
+ 
+-static VOID s_vPutUINT32 (BYTE* p, DWORD val)
++static void s_vPutUINT32 (BYTE* p, DWORD val)
+ // Convert from DWORD to BYTE[] in a portable way
+ {
+     UINT i;
+@@ -97,7 +97,7 @@ static VOID s_vPutUINT32 (BYTE* p, DWORD val)
+ }
+ */
+ 
+-static VOID s_vClear (void)
++static void s_vClear (void)
+ {
+     // Reset the state to the empty message.
+     L = K0;
+@@ -106,7 +106,7 @@ static VOID s_vClear (void)
+     M = 0;
+ }
+ 
+-static VOID s_vSetKey (DWORD dwK0, DWORD dwK1)
++static void s_vSetKey (DWORD dwK0, DWORD dwK1)
+ {
+     // Set the key
+     K0 = dwK0;
+@@ -115,7 +115,7 @@ static VOID s_vSetKey (DWORD dwK0, DWORD dwK1)
+     s_vClear();
+ }
+ 
+-static VOID s_vAppendByte (BYTE b)
++static void s_vAppendByte (BYTE b)
+ {
+     // Append the byte to our word-sized buffer
+     M |= b << (8*nBytesInM);
+@@ -138,14 +138,14 @@ static VOID s_vAppendByte (BYTE b)
+     }
+ }
+ 
+-VOID MIC_vInit (DWORD dwK0, DWORD dwK1)
++void MIC_vInit (DWORD dwK0, DWORD dwK1)
+ {
+     // Set the key
+     s_vSetKey(dwK0, dwK1);
+ }
+ 
+ 
+-VOID MIC_vUnInit (void)
++void MIC_vUnInit (void)
+ {
+     // Wipe the key material
+     K0 = 0;
+@@ -156,7 +156,7 @@ VOID MIC_vUnInit (void)
+     s_vClear();
+ }
+ 
+-VOID MIC_vAppend (PBYTE src, UINT nBytes)
++void MIC_vAppend (PBYTE src, UINT nBytes)
+ {
+     // This is simple
+     while (nBytes > 0)
+@@ -166,7 +166,7 @@ VOID MIC_vAppend (PBYTE src, UINT nBytes)
+     }
+ }
+ 
+-VOID MIC_vGetMIC (PDWORD pdwL, PDWORD pdwR)
++void MIC_vGetMIC (PDWORD pdwL, PDWORD pdwR)
+ {
+     // Append the minimum padding
+     s_vAppendByte(0x5a);
+diff --git a/drivers/staging/vt6655/michael.h b/drivers/staging/vt6655/michael.h
+index 62a24a6..ac42df1 100644
+--- a/drivers/staging/vt6655/michael.h
++++ b/drivers/staging/vt6655/michael.h
+@@ -39,16 +39,16 @@
+ 
+ /*---------------------  Export Types  ------------------------------*/
+ 
+-VOID MIC_vInit(DWORD dwK0, DWORD dwK1);
++void MIC_vInit(DWORD dwK0, DWORD dwK1);
+ 
+-VOID MIC_vUnInit(void);
++void MIC_vUnInit(void);
+ 
+ // Append bytes to the message to be MICed
+-VOID MIC_vAppend(PBYTE src, UINT nBytes);
++void MIC_vAppend(PBYTE src, UINT nBytes);
+ 
+ // Get the MIC result. Destination should accept 8 bytes of result.
+ // This also resets the message to empty.
+-VOID MIC_vGetMIC(PDWORD pdwL, PDWORD pdwR);
++void MIC_vGetMIC(PDWORD pdwL, PDWORD pdwR);
+ 
+ /*---------------------  Export Macros ------------------------------*/
+ 
+diff --git a/drivers/staging/vt6655/power.c b/drivers/staging/vt6655/power.c
+index edd8336..cd23ad6 100644
+--- a/drivers/staging/vt6655/power.c
++++ b/drivers/staging/vt6655/power.c
+@@ -103,7 +103,7 @@ static int          msglevel                =MSG_LEVEL_INFO;
+ -*/
+ 
+ 
+-VOID
++void
+ PSvEnablePowerSaving(
+     IN HANDLE hDeviceContext,
+     IN WORD wListenInterval
+@@ -173,7 +173,7 @@ PSvEnablePowerSaving(
+  *
+ -*/
+ 
+-VOID
++void
+ PSvDisablePowerSaving(
+     IN HANDLE hDeviceContext
+     )
+@@ -279,7 +279,7 @@ PSbConsiderPowerDown(
+ 
+ 
+ 
+-VOID
++void
+ PSvSendPSPOLL(
+     IN HANDLE hDeviceContext
+     )
+diff --git a/drivers/staging/vt6655/power.h b/drivers/staging/vt6655/power.h
+index a01e7e9..8f0e8b3 100644
+--- a/drivers/staging/vt6655/power.h
++++ b/drivers/staging/vt6655/power.h
+@@ -56,18 +56,18 @@ PSbConsiderPowerDown(
+     IN BOOL bCheckCountToWakeUp
+     );
+ 
+-VOID
++void
+ PSvDisablePowerSaving(
+     IN HANDLE hDeviceContext
+     );
+ 
+-VOID
++void
+ PSvEnablePowerSaving(
+     IN HANDLE hDeviceContext,
+     IN WORD wListenInterval
+     );
+ 
+-VOID
++void
+ PSvSendPSPOLL(
+     IN HANDLE hDeviceContext
+     );
+diff --git a/drivers/staging/vt6655/rc4.c b/drivers/staging/vt6655/rc4.c
+index 0345e32..d7ceb53 100644
+--- a/drivers/staging/vt6655/rc4.c
++++ b/drivers/staging/vt6655/rc4.c
+@@ -31,7 +31,7 @@
+ #include "rc4.h"
+ #endif
+ 
+-VOID rc4_init(PRC4Ext pRC4, PBYTE pbyKey, UINT cbKey_len)
++void rc4_init(PRC4Ext pRC4, PBYTE pbyKey, UINT cbKey_len)
+ {
+     UINT  ust1, ust2;
+     UINT  keyindex;
+@@ -77,7 +77,7 @@ UINT rc4_byte(PRC4Ext pRC4)
+     return pbyst[(ustx + usty) & 0xff];
+ }
+ 
+-VOID rc4_encrypt(PRC4Ext pRC4, PBYTE pbyDest,
++void rc4_encrypt(PRC4Ext pRC4, PBYTE pbyDest,
+                      PBYTE pbySrc, UINT cbData_len)
+ {
+     UINT ii;
+diff --git a/drivers/staging/vt6655/rc4.h b/drivers/staging/vt6655/rc4.h
+index 4e3ccc5..3d5bc38 100644
+--- a/drivers/staging/vt6655/rc4.h
++++ b/drivers/staging/vt6655/rc4.h
+@@ -44,7 +44,7 @@ typedef struct {
+     BYTE abystate[256];
+ } RC4Ext, DEF* PRC4Ext;
+ 
+-VOID rc4_init(PRC4Ext pRC4, PBYTE pbyKey, UINT cbKey_len);
++void rc4_init(PRC4Ext pRC4, PBYTE pbyKey, UINT cbKey_len);
+ UINT rc4_byte(PRC4Ext pRC4);
+ void rc4_encrypt(PRC4Ext pRC4, PBYTE pbyDest, PBYTE pbySrc, UINT cbData_len);
+ 
+diff --git a/drivers/staging/vt6655/rf.c b/drivers/staging/vt6655/rf.c
+index 9d4e3eb..2e8cf53 100644
+--- a/drivers/staging/vt6655/rf.c
++++ b/drivers/staging/vt6655/rf.c
+@@ -1211,7 +1211,7 @@ DWORD   dwMax7230Pwr = 0;
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ RFvRSSITodBm (
+     IN  PSDevice pDevice,
+     IN  BYTE     byCurrRSSI,
+diff --git a/drivers/staging/vt6655/rf.h b/drivers/staging/vt6655/rf.h
+index 05fe17b..db6b1f0 100644
+--- a/drivers/staging/vt6655/rf.h
++++ b/drivers/staging/vt6655/rf.h
+@@ -96,7 +96,7 @@ BOOL RFbRawSetPower(
+     IN  UINT      uRATE
+     );
+ 
+-VOID
++void
+ RFvRSSITodBm(
+     IN  PSDevice pDevice,
+     IN  BYTE     byCurrRSSI,
+diff --git a/drivers/staging/vt6655/rxtx.c b/drivers/staging/vt6655/rxtx.c
+index c8a4a55..4afb8d4 100644
+--- a/drivers/staging/vt6655/rxtx.c
++++ b/drivers/staging/vt6655/rxtx.c
+@@ -150,7 +150,7 @@ const WORD wFB_Opt1[2][5] = {
+ 
+ 
+ static
+-VOID
++void
+ s_vFillTxKey(
+     IN  PSDevice   pDevice,
+     IN  PBYTE      pbyBuf,
+@@ -164,7 +164,7 @@ s_vFillTxKey(
+ 
+ 
+ static
+-VOID
++void
+ s_vFillRTSHead(
+     IN PSDevice         pDevice,
+     IN BYTE             byPktTyp,
+@@ -178,7 +178,7 @@ s_vFillRTSHead(
+     );
+ 
+ static
+-VOID
++void
+ s_vGenerateTxParameter(
+     IN PSDevice         pDevice,
+     IN  BYTE            byPktTyp,
+@@ -245,7 +245,7 @@ s_uFillDataHead (
+ 
+ 
+ static
+-VOID
++void
+ s_vFillTxKey (
+     IN  PSDevice   pDevice,
+     IN  PBYTE      pbyBuf,
+@@ -363,7 +363,7 @@ s_vFillTxKey (
+ 
+ 
+ static
+-VOID
++void
+ s_vSWencryption (
+     IN  PSDevice            pDevice,
+     IN  PSKeyItem           pTransmitKey,
+@@ -886,7 +886,7 @@ s_uFillDataHead (
+ 
+ 
+ static
+-VOID
++void
+ s_vFillRTSHead (
+     IN PSDevice         pDevice,
+     IN BYTE             byPktTyp,
+@@ -1083,7 +1083,7 @@ s_vFillRTSHead (
+ }
+ 
+ static
+-VOID
++void
+ s_vFillCTSHead (
+     IN PSDevice pDevice,
+     IN UINT     uDMAIdx,
+@@ -1188,7 +1188,7 @@ s_vFillCTSHead (
+ -*/
+ // UINT            cbFrameSize,//Hdr+Payload+FCS
+ static
+-VOID
++void
+ s_vGenerateTxParameter (
+     IN PSDevice         pDevice,
+     IN BYTE             byPktTyp,
+@@ -1306,7 +1306,7 @@ s_vGenerateTxParameter (
+     UINT  cbFragmentSize,//Hdr+payoad+FCS
+ */
+ static
+-VOID
++void
+ s_vFillFragParameter(
+     IN PSDevice pDevice,
+     IN PBYTE    pbyBuffer,
+@@ -2131,7 +2131,7 @@ s_cbFillTxBufHead (
+ }
+ 
+ 
+-VOID
++void
+ vGenerateFIFOHeader (
+     IN  PSDevice         pDevice,
+     IN  BYTE             byPktTyp,
+@@ -2302,7 +2302,7 @@ vGenerateFIFOHeader (
+  *
+ -*/
+ 
+-VOID
++void
+ vGenerateMACHeader (
+     IN PSDevice         pDevice,
+     IN PBYTE            pbyBufferAddr,
+@@ -2863,7 +2863,7 @@ cbGetFragCount (
+ }
+ 
+ 
+-VOID
++void
+ vDMA0_tx_80211(PSDevice  pDevice, struct sk_buff *skb, PBYTE pbMPDU, UINT cbMPDULen) {
+ 
+     PSTxDesc        pFrstTD;
+diff --git a/drivers/staging/vt6655/rxtx.h b/drivers/staging/vt6655/rxtx.h
+index 3e85264..d77bef0 100644
+--- a/drivers/staging/vt6655/rxtx.h
++++ b/drivers/staging/vt6655/rxtx.h
+@@ -55,7 +55,7 @@ extern "C" {                            /* Assume C declarations for C++ */
+ #endif /* __cplusplus */
+ 
+ /*
+-VOID vGenerateMACHeader(
++void vGenerateMACHeader(
+     IN PSDevice pDevice,
+     IN DWORD dwTxBufferAddr,
+     IN PBYTE pbySkbData,
+@@ -65,7 +65,7 @@ VOID vGenerateMACHeader(
+     OUT PUINT pcbAppendPayload
+      );
+ 
+-VOID vProcessRxMACHeader (
++void vProcessRxMACHeader (
+     IN  PSDevice pDevice,
+     IN  DWORD dwRxBufferAddr,
+     IN  UINT cbPacketSize,
+@@ -75,7 +75,7 @@ VOID vProcessRxMACHeader (
+ */
+ 
+ 
+-VOID
++void
+ vGenerateMACHeader (
+     IN PSDevice         pDevice,
+     IN PBYTE            pbyBufferAddr,
+@@ -97,7 +97,7 @@ cbGetFragCount(
+     );
+ 
+ 
+-VOID
++void
+ vGenerateFIFOHeader (
+     IN  PSDevice         pDevice,
+     IN  BYTE             byPktTyp,
+@@ -115,7 +115,7 @@ vGenerateFIFOHeader (
+     );
+ 
+ 
+-VOID vDMA0_tx_80211(PSDevice  pDevice, struct sk_buff *skb, PBYTE pbMPDU, UINT cbMPDULen);
++void vDMA0_tx_80211(PSDevice  pDevice, struct sk_buff *skb, PBYTE pbMPDU, UINT cbMPDULen);
+ CMD_STATUS csMgmt_xmit(PSDevice pDevice, PSTxMgmtPacket pPacket);
+ CMD_STATUS csBeacon_xmit(PSDevice pDevice, PSTxMgmtPacket pPacket);
+ 
+diff --git a/drivers/staging/vt6655/srom.h b/drivers/staging/vt6655/srom.h
+index a4ca5f0..b7c44b2 100644
+--- a/drivers/staging/vt6655/srom.h
++++ b/drivers/staging/vt6655/srom.h
+@@ -162,7 +162,7 @@ void SROMvWriteAllContents(DWORD_PTR dwIoBase, PBYTE pbyEepromRegs);
+ void SROMvReadEtherAddress(DWORD_PTR dwIoBase, PBYTE pbyEtherAddress);
+ void SROMvWriteEtherAddress(DWORD_PTR dwIoBase, PBYTE pbyEtherAddress);
+ 
+-VOID SROMvReadSubSysVenId(DWORD_PTR dwIoBase, PDWORD pdwSubSysVenId);
++void SROMvReadSubSysVenId(DWORD_PTR dwIoBase, PDWORD pdwSubSysVenId);
+ 
+ BOOL SROMbAutoLoad (DWORD_PTR dwIoBase);
+ 
+diff --git a/drivers/staging/vt6655/tkip.c b/drivers/staging/vt6655/tkip.c
+index 2ded842..b338f2d 100644
+--- a/drivers/staging/vt6655/tkip.c
++++ b/drivers/staging/vt6655/tkip.c
+@@ -195,7 +195,7 @@ unsigned int rotr1(unsigned int a)
+  * Return Value: none
+  *
+  */
+-VOID TKIPvMixKey(
++void TKIPvMixKey(
+     PBYTE   pbyTKey,
+     PBYTE   pbyTA,
+     WORD    wTSC15_0,
+diff --git a/drivers/staging/vt6655/tkip.h b/drivers/staging/vt6655/tkip.h
+index dc8382b..35d6f20 100644
+--- a/drivers/staging/vt6655/tkip.h
++++ b/drivers/staging/vt6655/tkip.h
+@@ -57,7 +57,7 @@
+ extern "C" {                            /* Assume C declarations for C++ */
+ #endif /* __cplusplus */
+ 
+-VOID TKIPvMixKey(
++void TKIPvMixKey(
+     PBYTE   pbyTKey,
+     PBYTE   pbyTA,
+     WORD    wTSC15_0,
+diff --git a/drivers/staging/vt6655/ttype.h b/drivers/staging/vt6655/ttype.h
+index 1f26702..e14b663 100644
+--- a/drivers/staging/vt6655/ttype.h
++++ b/drivers/staging/vt6655/ttype.h
+@@ -30,18 +30,6 @@
+ 
+ /******* Common definitions and typedefs ***********************************/
+ 
+-#ifndef VOID
+-#define VOID            void
+-#endif
+-
+-#ifndef CONST
+-#define CONST           const
+-#endif
+-
+-#ifndef STATIC
+-#define STATIC          static
+-#endif
+-
+ #ifndef IN
+ #define IN
+ #endif
+diff --git a/drivers/staging/vt6655/vntwifi.c b/drivers/staging/vt6655/vntwifi.c
+index 58a1ba0..4bc247b 100644
+--- a/drivers/staging/vt6655/vntwifi.c
++++ b/drivers/staging/vt6655/vntwifi.c
+@@ -88,7 +88,7 @@
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ VNTWIFIvSetOPMode (
+     IN PVOID pMgmtHandle,
+     IN WMAC_CONFIG_MODE eOPMode
+@@ -117,7 +117,7 @@ VNTWIFIvSetOPMode (
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ VNTWIFIvSetIBSSParameter (
+     IN PVOID pMgmtHandle,
+     IN WORD  wBeaconPeriod,
+@@ -325,7 +325,7 @@ VNTWIFIbyGetACKTxRate (
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ VNTWIFIvSetAuthenticationMode (
+     IN PVOID pMgmtHandle,
+     IN WMAC_AUTHENTICATION_MODE eAuthMode
+@@ -357,7 +357,7 @@ VNTWIFIvSetAuthenticationMode (
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ VNTWIFIvSetEncryptionMode (
+     IN PVOID pMgmtHandle,
+     IN WMAC_ENCRYPTION_MODE eEncryptionMode
+@@ -398,7 +398,7 @@ VNTWIFIbConfigPhyMode (
+ }
+ 
+ 
+-VOID
++void
+ VNTWIFIbGetConfigPhyMode (
+     IN  PVOID pMgmtHandle,
+     OUT PVOID pePhyType
+@@ -443,7 +443,7 @@ VNTWIFIbGetConfigPhyMode (
+  *
+ -*/
+ 
+-VOID
++void
+ VNTWIFIvQueryBSSList (
+     IN PVOID    pMgmtHandle,
+     OUT PUINT   puBSSCount,
+@@ -473,7 +473,7 @@ VNTWIFIvQueryBSSList (
+ 
+ 
+ 
+-VOID
++void
+ VNTWIFIvGetNextBSS (
+     IN PVOID            pMgmtHandle,
+     IN PVOID            pvCurrentBSS,
+@@ -513,7 +513,7 @@ VNTWIFIvGetNextBSS (
+  * Return Value: none
+  *
+ -*/
+-VOID
++void
+ VNTWIFIvUpdateNodeTxCounter(
+     IN PVOID    pMgmtHandle,
+     IN PBYTE    pbyDestAddress,
+@@ -548,7 +548,7 @@ VNTWIFIvUpdateNodeTxCounter(
+ }
+ 
+ 
+-VOID
++void
+ VNTWIFIvGetTxRate(
+     IN PVOID    pMgmtHandle,
+     IN PBYTE    pbyDestAddress,
+@@ -721,7 +721,7 @@ VNTWIFIwGetMaxSupportRate(
+ }
+ 
+ 
+-VOID
++void
+ VNTWIFIvSet11h (
+     IN PVOID pMgmtObject,
+     IN BOOL  b11hEnable
+diff --git a/drivers/staging/vt6655/vntwifi.h b/drivers/staging/vt6655/vntwifi.h
+index 3e620a7..fabb437 100644
+--- a/drivers/staging/vt6655/vntwifi.h
++++ b/drivers/staging/vt6655/vntwifi.h
+@@ -152,7 +152,7 @@ extern "C" {                            /* Assume C declarations for C++ */
+ #endif /* __cplusplus */
+ 
+ 
+-VOID
++void
+ VNTWIFIvSetIBSSParameter (
+     IN PVOID pMgmtHandle,
+     IN WORD  wBeaconPeriod,
+@@ -160,7 +160,7 @@ VNTWIFIvSetIBSSParameter (
+     IN UINT  uChannel
+     );
+ 
+-VOID
++void
+ VNTWIFIvSetOPMode (
+     IN PVOID pMgmtHandle,
+     IN WMAC_CONFIG_MODE eOPMode
+@@ -194,13 +194,13 @@ VNTWIFIbyGetACKTxRate (
+     IN PWLAN_IE_SUPP_RATES pExtSupportRateIEs
+     );
+ 
+-VOID
++void
+ VNTWIFIvSetAuthenticationMode (
+     IN PVOID pMgmtHandle,
+     IN WMAC_AUTHENTICATION_MODE eAuthMode
+     );
+ 
+-VOID
++void
+ VNTWIFIvSetEncryptionMode (
+     IN PVOID pMgmtHandle,
+     IN WMAC_ENCRYPTION_MODE eEncryptionMode
+@@ -213,13 +213,13 @@ VNTWIFIbConfigPhyMode(
+     IN CARD_PHY_TYPE ePhyType
+     );
+ 
+-VOID
++void
+ VNTWIFIbGetConfigPhyMode(
+     IN  PVOID pMgmtHandle,
+     OUT PVOID pePhyType
+     );
+ 
+-VOID
++void
+ VNTWIFIvQueryBSSList(
+     IN PVOID    pMgmtHandle,
+     OUT PUINT   puBSSCount,
+@@ -229,7 +229,7 @@ VNTWIFIvQueryBSSList(
+ 
+ 
+ 
+-VOID
++void
+ VNTWIFIvGetNextBSS (
+     IN PVOID            pMgmtHandle,
+     IN PVOID            pvCurrentBSS,
+@@ -238,7 +238,7 @@ VNTWIFIvGetNextBSS (
+ 
+ 
+ 
+-VOID
++void
+ VNTWIFIvUpdateNodeTxCounter(
+     IN PVOID    pMgmtHandle,
+     IN PBYTE    pbyDestAddress,
+@@ -248,7 +248,7 @@ VNTWIFIvUpdateNodeTxCounter(
+     );
+ 
+ 
+-VOID
++void
+ VNTWIFIvGetTxRate(
+     IN PVOID    pMgmtHandle,
+     IN PBYTE    pbyDestAddress,
+@@ -292,7 +292,7 @@ VNTWIFIwGetMaxSupportRate(
+     );
+ 
+ // for 802.11h
+-VOID
++void
+ VNTWIFIvSet11h (
+     IN PVOID pMgmtObject,
+     IN BOOL  b11hEnable
+diff --git a/drivers/staging/vt6655/wcmd.c b/drivers/staging/vt6655/wcmd.c
+index 92563bd..1c97e03 100644
+--- a/drivers/staging/vt6655/wcmd.c
++++ b/drivers/staging/vt6655/wcmd.c
+@@ -105,7 +105,7 @@ static int          msglevel                =MSG_LEVEL_INFO;
+ /*---------------------  Static Functions  --------------------------*/
+ 
+ static
+-VOID
++void
+ s_vProbeChannel(
+     IN PSDevice pDevice
+     );
+@@ -236,7 +236,7 @@ vAdHocBeaconRestart(PSDevice pDevice)
+ -*/
+ 
+ static
+-VOID
++void
+ s_vProbeChannel(
+     IN PSDevice pDevice
+     )
+@@ -350,7 +350,7 @@ s_MgrMakeProbeRequest(
+ 
+ 
+ 
+-VOID
++void
+ vCommandTimerWait(
+     IN HANDLE    hDeviceContext,
+     IN UINT MSecond
+@@ -369,7 +369,7 @@ vCommandTimerWait(
+ 
+ 
+ 
+-VOID
++void
+ vCommandTimer (
+     IN  HANDLE      hDeviceContext
+     )
+@@ -1113,7 +1113,7 @@ BOOL bClearBSSID_SCAN (
+ }
+ 
+ //mike add:reset command timer
+-VOID
++void
+ vResetCommandTimer(
+     IN HANDLE      hDeviceContext
+     )
+@@ -1137,7 +1137,7 @@ vResetCommandTimer(
+ 
+ 
+ #ifdef TxInSleep
+-VOID
++void
+ BSSvSecondTxData(
+     IN  HANDLE      hDeviceContext
+     )
+diff --git a/drivers/staging/vt6655/wcmd.h b/drivers/staging/vt6655/wcmd.h
+index 8c6bbc4..93958ad 100644
+--- a/drivers/staging/vt6655/wcmd.h
++++ b/drivers/staging/vt6655/wcmd.h
+@@ -116,12 +116,12 @@ typedef enum tagCMD_STATE {
+ 
+ /*---------------------  Export Functions  --------------------------*/
+ 
+-VOID
++void
+ vResetCommandTimer(
+     IN HANDLE      hDeviceContext
+     );
+ 
+-VOID
++void
+ vCommandTimer (
+     IN  HANDLE hDeviceContext
+     );
+@@ -137,13 +137,13 @@ bScheduleCommand(
+     IN PBYTE       pbyItem0
+     );
+ 
+-VOID
++void
+ vCommandTimerWait(
+     IN HANDLE      hDeviceContext,
+     IN UINT MSecond
+     );
+ #ifdef TxInSleep
+-VOID
++void
+ BSSvSecondTxData(
+     IN  HANDLE      hDeviceContext
+     );
+diff --git a/drivers/staging/vt6655/wmgr.c b/drivers/staging/vt6655/wmgr.c
+index c0886ed..aaa40ec 100644
+--- a/drivers/staging/vt6655/wmgr.c
++++ b/drivers/staging/vt6655/wmgr.c
+@@ -152,7 +152,7 @@ s_MgrMakeAssocRequest(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxAssocRequest(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -174,7 +174,7 @@ s_MgrMakeReAssocRequest(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxAssocResponse(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -183,7 +183,7 @@ s_vMgrRxAssocResponse(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxDisassociation(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -192,7 +192,7 @@ s_vMgrRxDisassociation(
+ 
+ // Authentication/deauthen functions
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_1(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -200,7 +200,7 @@ s_vMgrRxAuthenSequence_1(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_2(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -208,7 +208,7 @@ s_vMgrRxAuthenSequence_2(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_3(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -216,7 +216,7 @@ s_vMgrRxAuthenSequence_3(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_4(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -224,7 +224,7 @@ s_vMgrRxAuthenSequence_4(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthentication(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -232,7 +232,7 @@ s_vMgrRxAuthentication(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxDeauthentication(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -242,7 +242,7 @@ s_vMgrRxDeauthentication(
+ // Scan functions
+ // probe request/response functions
+ static
+-VOID
++void
+ s_vMgrRxProbeRequest(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -250,7 +250,7 @@ s_vMgrRxProbeRequest(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrRxProbeResponse(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -259,7 +259,7 @@ s_vMgrRxProbeResponse(
+ 
+ // beacon functions
+ static
+-VOID
++void
+ s_vMgrRxBeacon(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -268,7 +268,7 @@ s_vMgrRxBeacon(
+     );
+ 
+ static
+-VOID
++void
+ s_vMgrFormatTIM(
+     IN PSMgmtObject pMgmt,
+     IN PWLAN_IE_TIM pTIM
+@@ -338,7 +338,7 @@ s_MgrMakeProbeResponse(
+ 
+ // received status
+ static
+-VOID
++void
+ s_vMgrLogStatus(
+     IN PSMgmtObject pMgmt,
+     IN WORD wStatus
+@@ -346,7 +346,7 @@ s_vMgrLogStatus(
+ 
+ 
+ static
+-VOID
++void
+ s_vMgrSynchBSS (
+     IN PSDevice      pDevice,
+     IN UINT          uBSSMode,
+@@ -364,19 +364,19 @@ s_bCipherMatch (
+     );
+ 
+ 
+- static VOID  Encyption_Rebuild(
++ static void  Encyption_Rebuild(
+     IN PSDevice pDevice,
+     IN PKnownBSS pCurr
+  );
+ /*
+ static
+-VOID
++void
+ s_vProbeChannel(
+     IN PSDevice pDevice
+     );
+ 
+ static
+-VOID
++void
+ s_vListenChannel(
+     IN PSDevice pDevice
+     );
+@@ -409,7 +409,7 @@ s_MgrMakeProbeRequest(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrObjectInit(
+     IN  HANDLE hDeviceContext
+     )
+@@ -493,7 +493,7 @@ vMgrTimerInit(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrObjectReset(
+     IN  HANDLE hDeviceContext
+     )
+@@ -522,7 +522,7 @@ vMgrObjectReset(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrAssocBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject pMgmt,
+@@ -598,7 +598,7 @@ vMgrAssocBeginSta(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrReAssocBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject pMgmt,
+@@ -677,7 +677,7 @@ vMgrReAssocBeginSta(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDisassocBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject pMgmt,
+@@ -740,7 +740,7 @@ vMgrDisassocBeginSta(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxAssocRequest(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -902,7 +902,7 @@ s_vMgrRxAssocRequest(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxReAssocRequest(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1052,7 +1052,7 @@ s_vMgrRxReAssocRequest(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxAssocResponse(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1212,7 +1212,7 @@ if(pMgmt->eCurrState == WMAC_STATE_ASSOC)
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrAuthenBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject  pMgmt,
+@@ -1270,7 +1270,7 @@ vMgrAuthenBeginSta(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrDeAuthenBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject  pMgmt,
+@@ -1327,7 +1327,7 @@ vMgrDeAuthenBeginSta(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthentication(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1385,7 +1385,7 @@ s_vMgrRxAuthentication(
+ 
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_1(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1491,7 +1491,7 @@ s_vMgrRxAuthenSequence_1(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_2(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1593,7 +1593,7 @@ s_vMgrRxAuthenSequence_2(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_3(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1681,7 +1681,7 @@ reply:
+  *
+ -*/
+ static
+-VOID
++void
+ s_vMgrRxAuthenSequence_4(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1720,7 +1720,7 @@ s_vMgrRxAuthenSequence_4(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxDisassociation(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1800,7 +1800,7 @@ s_vMgrRxDisassociation(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxDeauthentication(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -1926,7 +1926,7 @@ ChannelExceedZoneType(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxBeacon(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -2447,7 +2447,7 @@ if(ChannelExceedZoneType(pDevice,byCurrChannel)==TRUE)
+  *    CMD_STATUS
+  *
+ -*/
+-VOID
++void
+ vMgrCreateOwnIBSS(
+     IN  HANDLE hDeviceContext,
+     OUT PCMD_STATUS pStatus
+@@ -2714,7 +2714,7 @@ vMgrCreateOwnIBSS(
+  *
+ -*/
+ 
+-VOID
++void
+ vMgrJoinBSSBegin(
+     IN  HANDLE hDeviceContext,
+     OUT PCMD_STATUS pStatus
+@@ -2983,7 +2983,7 @@ vMgrJoinBSSBegin(
+  *
+ -*/
+ static
+-VOID
++void
+ s_vMgrSynchBSS (
+     IN PSDevice      pDevice,
+     IN UINT          uBSSMode,
+@@ -3151,7 +3151,7 @@ s_vMgrSynchBSS (
+ 
+ //mike add: fix NetworkManager 0.7.0 hidden ssid mode in WPA encryption
+ //                   ,need reset eAuthenMode and eEncryptionStatus
+- static VOID  Encyption_Rebuild(
++ static void  Encyption_Rebuild(
+     IN PSDevice pDevice,
+     IN PKnownBSS pCurr
+  )
+@@ -3203,12 +3203,12 @@ s_vMgrSynchBSS (
+  *
+  *
+  * Return Value:
+- *    VOID
++ *    void
+  *
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrFormatTIM(
+     IN PSMgmtObject pMgmt,
+     IN PWLAN_IE_TIM pTIM
+@@ -4369,7 +4369,7 @@ s_MgrMakeReAssocResponse(
+ -*/
+ 
+ static
+-VOID
++void
+ s_vMgrRxProbeResponse(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -4494,7 +4494,7 @@ if(ChannelExceedZoneType(pDevice,byCurrChannel)==TRUE)
+ 
+ 
+ static
+-VOID
++void
+ s_vMgrRxProbeRequest(
+     IN PSDevice pDevice,
+     IN PSMgmtObject pMgmt,
+@@ -4590,7 +4590,7 @@ s_vMgrRxProbeRequest(
+ -*/
+ 
+ 
+-VOID
++void
+ vMgrRxManagePacket(
+     IN  HANDLE hDeviceContext,
+     IN PSMgmtObject pMgmt,
+@@ -4794,7 +4794,7 @@ bMgrPrepareBeaconToSend(
+  *
+ -*/
+ static
+-VOID
++void
+ s_vMgrLogStatus(
+     IN PSMgmtObject pMgmt,
+     IN WORD  wStatus
+@@ -4924,7 +4924,7 @@ bAdd_PMKID_Candidate (
+  * Return Value: none.
+  *
+ -*/
+-VOID
++void
+ vFlush_PMKID_Candidate (
+     IN HANDLE hDeviceContext
+     )
+diff --git a/drivers/staging/vt6655/wmgr.h b/drivers/staging/vt6655/wmgr.h
+index 5b526ab..cc48a6e 100644
+--- a/drivers/staging/vt6655/wmgr.h
++++ b/drivers/staging/vt6655/wmgr.h
+@@ -428,7 +428,7 @@ vMgrTimerInit(
+     IN  HANDLE hDeviceContext
+     );
+ 
+-VOID
++void
+ vMgrObjectReset(
+     IN  HANDLE hDeviceContext
+     );
+@@ -440,14 +440,14 @@ vMgrAssocBeginSta(
+     OUT PCMD_STATUS pStatus
+     );
+ 
+-VOID
++void
+ vMgrReAssocBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject pMgmt,
+     OUT PCMD_STATUS pStatus
+     );
+ 
+-VOID
++void
+ vMgrDisassocBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject pMgmt,
+@@ -456,26 +456,26 @@ vMgrDisassocBeginSta(
+     OUT PCMD_STATUS pStatus
+     );
+ 
+-VOID
++void
+ vMgrAuthenBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject pMgmt,
+     OUT PCMD_STATUS pStatus
+     );
+ 
+-VOID
++void
+ vMgrCreateOwnIBSS(
+     IN  HANDLE hDeviceContext,
+     OUT PCMD_STATUS pStatus
+     );
+ 
+-VOID
++void
+ vMgrJoinBSSBegin(
+     IN  HANDLE hDeviceContext,
+     OUT PCMD_STATUS pStatus
+     );
+ 
+-VOID
++void
+ vMgrRxManagePacket(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject pMgmt,
+@@ -483,14 +483,14 @@ vMgrRxManagePacket(
+     );
+ 
+ /*
+-VOID
++void
+ vMgrScanBegin(
+     IN  HANDLE hDeviceContext,
+     OUT PCMD_STATUS pStatus
+     );
+ */
+ 
+-VOID
++void
+ vMgrDeAuthenBeginSta(
+     IN  HANDLE hDeviceContext,
+     IN  PSMgmtObject  pMgmt,
+@@ -513,7 +513,7 @@ bAdd_PMKID_Candidate (
+     IN PSRSNCapObject psRSNCapObj
+     );
+ 
+-VOID
++void
+ vFlush_PMKID_Candidate (
+     IN HANDLE hDeviceContext
+     );
+diff --git a/drivers/staging/vt6655/wpa.c b/drivers/staging/vt6655/wpa.c
+index 8b4e7fc..44137cf 100644
+--- a/drivers/staging/vt6655/wpa.c
++++ b/drivers/staging/vt6655/wpa.c
+@@ -91,7 +91,7 @@ const BYTE abyOUI05[4] = { 0x00, 0x50, 0xf2, 0x05 };
+  *
+ -*/
+ 
+-VOID
++void
+ WPA_ClearRSN (
+     IN PKnownBSS        pBSSList
+     )
+@@ -127,7 +127,7 @@ WPA_ClearRSN (
+  * Return Value: none.
+  *
+ -*/
+-VOID
++void
+ WPA_ParseRSN (
+     IN PKnownBSS        pBSSList,
+     IN PWLAN_IE_RSN_EXT pRSN
+diff --git a/drivers/staging/vt6655/wpa.h b/drivers/staging/vt6655/wpa.h
+index 8000a37..79c62f1 100644
+--- a/drivers/staging/vt6655/wpa.h
++++ b/drivers/staging/vt6655/wpa.h
+@@ -67,12 +67,12 @@
+ extern "C" {                            /* Assume C declarations for C++ */
+ #endif /* __cplusplus */
+ 
+-VOID
++void
+ WPA_ClearRSN(
+     IN PKnownBSS        pBSSList
+     );
+ 
+-VOID
++void
+ WPA_ParseRSN(
+     IN PKnownBSS        pBSSList,
+     IN PWLAN_IE_RSN_EXT pRSN
+diff --git a/drivers/staging/vt6655/wpa2.c b/drivers/staging/vt6655/wpa2.c
+index e2fdb33..c1bce2a 100644
+--- a/drivers/staging/vt6655/wpa2.c
++++ b/drivers/staging/vt6655/wpa2.c
+@@ -81,7 +81,7 @@ const BYTE abyOUIPSK[4]     = { 0x00, 0x0F, 0xAC, 0x02 };
+  * Return Value: none.
+  *
+ -*/
+-VOID
++void
+ WPA2_ClearRSN (
+     IN PKnownBSS        pBSSNode
+     )
+@@ -116,7 +116,7 @@ WPA2_ClearRSN (
+  * Return Value: none.
+  *
+ -*/
+-VOID
++void
+ WPA2vParseRSN (
+     IN PKnownBSS        pBSSNode,
+     IN PWLAN_IE_RSN     pRSN
+diff --git a/drivers/staging/vt6655/wpa2.h b/drivers/staging/vt6655/wpa2.h
+index bda045b..dcce750 100644
+--- a/drivers/staging/vt6655/wpa2.h
++++ b/drivers/staging/vt6655/wpa2.h
+@@ -74,12 +74,12 @@ typedef struct tagSPMKIDCache {
+ extern "C" {                            /* Assume C declarations for C++ */
+ #endif /* __cplusplus */
+ 
+-VOID
++void
+ WPA2_ClearRSN (
+     IN PKnownBSS        pBSSNode
+     );
+ 
+-VOID
++void
+ WPA2vParseRSN (
+     IN PKnownBSS        pBSSNode,
+     IN PWLAN_IE_RSN     pRSN
+-- 
+1.6.3.1
+
