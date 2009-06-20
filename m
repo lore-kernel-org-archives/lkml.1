@@ -1,155 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbZFTPpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbZFTPrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbZFTPpK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 11:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZFTPo7
+	id S1756062AbZFTPrp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 11:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZFTPre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 11:44:59 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:63867 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbZFTPo6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 11:44:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tgWKKD5qny3piWtK9ZDPiYVo/xZ0td4qZsIvOmT6VFZ/zPazc742KjUmSQc7z1jnag
-         9mJIRRdkkOSRyIApDWEPeSsxKidr0QJrn3/idNVRl+0Hw5YnHDgUzJQsz6bxBa8DUgOz
-         ud0hPMyajhJHiQRDeNfGCVZfZAT+AFQ9J7JXk=
-Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <4A3CFFEC.1000805@gmail.com>
-References: <1245448091.5475.19.camel@localhost>
-	 <1245506908.6327.36.camel@localhost>  <4A3CFFEC.1000805@gmail.com>
-Content-Type: text/plain
-Date: Sat, 20 Jun 2009 18:44:56 +0300
-Message-Id: <1245512696.15474.11.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Jun 2009 11:47:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41586 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753567AbZFTPrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 11:47:33 -0400
+Date: Sat, 20 Jun 2009 17:47:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
+Subject: Re: [bug] __nf_ct_refresh_acct(): WARNING: at lib/list_debug.c:30
+	__list_add+0x7d/0xad()
+Message-ID: <20090620154716.GA12901@elte.hu>
+References: <20090616.034752.226811527.davem@davemloft.net> <20090616105304.GA3579@elte.hu> <20090616122415.GA16630@elte.hu> <20090617092152.GA17449@elte.hu> <4A38C2F3.3000009@gmail.com> <20090617110803.GA10175@elte.hu> <20090618052356.GA18722@elte.hu> <4A39D778.9020607@cosmosbay.com> <4A3A0D45.8090806@trash.net> <4A3A5599.4080906@trash.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A3A5599.4080906@trash.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-20 at 17:27 +0200, Jiri Slaby wrote:
-> On 06/20/2009 04:08 PM, Maxim Levitsky wrote:
-> > On Sat, 2009-06-20 at 00:48 +0300, Maxim Levitsky wrote:
-> >> I see lots of following oopses in 2.6.30 and latest -git 
-> >>
-> >> Many different applications shows up, not just reiserfsck
-> >> Something in MM I guess, it makes me worry. But system seems to work.
-> >>
-> >> Is this known?
-> >>
-> >> dmesg attached.
-> >>
-> >>
-> >> [   34.544040] BUG: Bad page state in process reiserfsck  pfn:37d86
-> >> [   34.544044] page:c2a34f38 flags:3650000c count:0 mapcount:0
-> >> mapping:(null) index:bffeb
-> >> [   34.544048] Pid: 2654, comm: reiserfsck Tainted: G    B
-> >> 2.6.30-git #4
-> >> [   34.544051] Call Trace:
-> >> [   34.544055]  [<c04cd26a>] ? printk+0x18/0x1e
-> >> [   34.544059]  [<c018f065>] bad_page+0xd5/0x140
-> >> [   34.544064]  [<c0190097>] free_hot_cold_page+0x1e7/0x280
-> >> [   34.544069]  [<c0193682>] ? release_pages+0x92/0x1b0
-> >> [   34.544074]  [<c0190155>] __pagevec_free+0x25/0x30
-> >> [   34.544078]  [<c0193758>] release_pages+0x168/0x1b0
-> >> [   34.544084]  [<c0193cf3>] ? lru_add_drain+0x53/0xd0
-> >> [   34.544088]  [<c01ab7d4>] free_pages_and_swap_cache+0x84/0xa0
-> >> [   34.544093]  [<c019ff5d>] unmap_vmas+0x73d/0x760
-> >> [   34.544099]  [<c016480e>] ? lock_release_non_nested+0x15e/0x270
-> >> [   34.544104]  [<c01a43b5>] exit_mmap+0xb5/0x1b0
-> >> [   34.544109]  [<c0138666>] mmput+0x36/0xc0
-> >> [   34.544113]  [<c013c874>] exit_mm+0xe4/0x120
-> >> [   34.544117]  [<c0175539>] ? acct_collect+0x139/0x180
-> >> [   34.544122]  [<c013e889>] do_exit+0x6b9/0x720
-> >> [   34.544142]  [<c01bcac2>] ? vfs_write+0x122/0x180
-> >> [   34.544146]  [<c01bbda0>] ? do_sync_write+0x0/0x110
-> >> [   34.544151]  [<c013e920>] do_group_exit+0x30/0x90
-> >> [   34.544156]  [<c013e993>] sys_exit_group+0x13/0x20
-> >> [   34.544161]  [<c01039e8>] sysenter_do_call+0x12/0x3c
-> >> [   34.544180] BUG: Bad page state in process reiserfsck  pfn:37d91
-> >> [   34.544184] page:c2a35174 flags:3650000c count:0 mapcount:0
-> >> mapping:(null) index:bfff6
-> >> [   34.544188] Pid: 2654, comm: reiserfsck Tainted: G    B
-> >> 2.6.30-git #4
-> 
-> I got similar on 64-bit mmotm 2009-06-12-12-20. You seem not to use
-> 2.6.30, but some git post 2.6.30.
-Yes, yesterday git 
-I tried 2.6.30 too, but it gives same warnings.
 
+* Patrick McHardy <kaber@trash.net> wrote:
 
+> Ingo, could you please try whether this patch (combined with the 
+> last one) makes any difference? Enabling CONFIG_NETFILTER_DEBUG 
+> could also help.
 
-> 
-> Flags are:
-> 0000000000400000 -- __PG_MLOCKED
-> 800000000050000c -- my page flags
->         3650000c -- Maxim's page flags
-> 0000000000693ce1 -- my PAGE_FLAGS_CHECK_AT_FREE
-> 
-> In my .config, there is
-> CONFIG_PAGEFLAGS_EXTENDED=y
-> CONFIG_HAVE_MLOCKED_PAGE_BIT=y
-> 
-> The traces:
-> BUG: Bad page state in process gpg-agent  pfn:1c83c9
-> page:ffffea00063cd3f8 flags:800000000050000c count:0 mapcount:0
-> mapping:(null) i
-> ndex:7feda9eae
-> Pid: 3859, comm: gpg-agent Not tainted 2.6.30-mm1_64 #641
-> Call Trace:
->  [<ffffffff8108fab2>] bad_page+0xd2/0x130
->  [<ffffffff81091a57>] free_hot_cold_page+0x47/0x200
->  [<ffffffff81091c48>] __pagevec_free+0x38/0x50
->  [<ffffffff81094eac>] release_pages+0x20c/0x240
->  [<ffffffff810afc6f>] free_pages_and_swap_cache+0xaf/0xd0
->  [<ffffffff8115d53a>] ? cpumask_any_but+0x2a/0x40
->  [<ffffffff810a8520>] unmap_region+0x150/0x170
->  [<ffffffff810a87b4>] do_munmap+0x274/0x370
->  [<ffffffff810a88fc>] sys_munmap+0x4c/0x70
->  [<ffffffff8100beab>] system_call_fastpath+0x16/0x1b
-> Disabling lock debugging due to kernel taint
-> BUG: Bad page state in process gpg-agent  pfn:1c83c8
-> page:ffffea00063cd3c0 flags:800000000050000c count:0 mapcount:0
-> mapping:(null) i
-> ndex:7feda9ead
-> Pid: 3859, comm: gpg-agent Tainted: G    B      2.6.30-mm1_64 #641
-> Call Trace:
->  [<ffffffff8108fab2>] bad_page+0xd2/0x130
->  [<ffffffff81091a57>] free_hot_cold_page+0x47/0x200
->  [<ffffffff81091c48>] __pagevec_free+0x38/0x50
->  [<ffffffff81094eac>] release_pages+0x20c/0x240
->  [<ffffffff810afc6f>] free_pages_and_swap_cache+0xaf/0xd0
->  [<ffffffff8115d53a>] ? cpumask_any_but+0x2a/0x40
->  [<ffffffff810a8520>] unmap_region+0x150/0x170
->  [<ffffffff810a87b4>] do_munmap+0x274/0x370
->  [<ffffffff810a88fc>] sys_munmap+0x4c/0x70
->  [<ffffffff8100beab>] system_call_fastpath+0x16/0x1b
-> BUG: Bad page state in process gpg-agent  pfn:1c800f
-> page:ffffea00063c0348 flags:800000000050000c count:0 mapcount:0
-> mapping:(null) i
-> ndex:7feda9eac
-> Pid: 3859, comm: gpg-agent Tainted: G    B      2.6.30-mm1_64 #641
-> Call Trace:
->  [<ffffffff8108fab2>] bad_page+0xd2/0x130
->  [<ffffffff81091a57>] free_hot_cold_page+0x47/0x200
->  [<ffffffff81091c48>] __pagevec_free+0x38/0x50
->  [<ffffffff81094eac>] release_pages+0x20c/0x240
->  [<ffffffff810afc6f>] free_pages_and_swap_cache+0xaf/0xd0
->  [<ffffffff8115d53a>] ? cpumask_any_but+0x2a/0x40
->  [<ffffffff810a8520>] unmap_region+0x150/0x170
->  [<ffffffff810a87b4>] do_munmap+0x274/0x370
->  [<ffffffff810a88fc>] sys_munmap+0x4c/0x70
->  [<ffffffff8100beab>] system_call_fastpath+0x16/0x1b
+Mind pushing it upstream, and i'll keep things monitored over the 
+week following when it hits upstream?
 
+The reason is, the crash ratio is worse than 1:1000, it took a day 
+and a 1000 tests to trigger that one. I havent seen it after that.
 
-Regards,
-	Maxim Levitsky
+So it's going to be a very slow observation and you shouldnt 
+serialize on me - giving you a 'it works' positive result will take 
+10,000 random bootp tests or so - that's a week or longer. (it can 
+take a long time to hit that especially in the merge window when 
+there's a lot of various test failures that cause hickups in the 
+test stream.)
 
+( Mailing me an upstream sha1 when all fixes in this area have hit 
+  upstream would certainly be welcome - i can use that as a 'no 
+  crashes expected in that area from that point on' flag day. )
+
+Thanks,
+
+	Ingo
