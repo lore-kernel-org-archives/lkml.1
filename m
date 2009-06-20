@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbZFTML7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZFTMas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbZFTML7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 08:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZFTMLs
+	id S1753152AbZFTMas (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 08:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbZFTMak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 08:11:48 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:44869 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbZFTMLr (ORCPT
+	Sat, 20 Jun 2009 08:30:40 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:54200 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbZFTMaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 08:11:47 -0400
-Message-ID: <4A3CD1F7.5000904@gmail.com>
-Date: Sat, 20 Jun 2009 14:11:35 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sat, 20 Jun 2009 08:30:39 -0400
+Message-ID: <4A3CD62B.1020407@vlnb.net>
+Date: Sat, 20 Jun 2009 16:29:31 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Deepak Vishwakarma <vishwakarma.deepak@gmail.com>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Packet Overrun for traffic over 1 Gbps
-References: <e31d15d70906200252g300fda01rf227f54259c33b7c@mail.gmail.com> <e31d15d70906200254m3ab04065y3f4b853d0de72471@mail.gmail.com>
-In-Reply-To: <e31d15d70906200254m3ab04065y3f4b853d0de72471@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 20 Jun 2009 14:11:48 +0200 (CEST)
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
+       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       Beheer InterCommIT <intercommit@gmail.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+References: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2> <4A2936A7.9070309@gmail.com> <20090606233056.7B9F.A69D9226@jp.fujitsu.com> <20090606224538.GA6173@localhost> <20090618120436.ad3196e3.akpm@linux-foundation.org> <20090620035504.GA19516@localhost>
+In-Reply-To: <20090620035504.GA19516@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18UcyNdt3ka8KOl1iart5kf0WQwTHTfqRWNwng
+ EbrMH84le98iAuvs5KBnD+K5k9PHdyJGDWns1mndfE0ZswhQmo
+ bo4FyBpsY76/eJc0pkCFQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Deepak Vishwakarma a écrit :
-> Hi,
+
+Wu Fengguang, on 06/20/2009 07:55 AM wrote:
+> On Fri, Jun 19, 2009 at 03:04:36AM +0800, Andrew Morton wrote:
+>> On Sun, 7 Jun 2009 06:45:38 +0800
+>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+>>
+>>>>> Do you have a place where the raw blktrace data can be retrieved for
+>>>>> more in-depth analysis?
+>>>> I think your comment is really adequate. In another thread, Wu Fengguang pointed
+>>>> out the same issue.
+>>>> I and Wu also wait his analysis.
+>>> And do it with a large readahead size :)
+>>>
+>>> Alan, this was my analysis:
+>>>
+>>> : Hifumi, can you help retest with some large readahead size?
+>>> :
+>>> : Your readahead size (128K) is smaller than your max_sectors_kb (256K),
+>>> : so two readahead IO requests get merged into one real IO, that means
+>>> : half of the readahead requests are delayed.
+>>>
+>>> ie. two readahead requests get merged and complete together, thus the effective
+>>> IO size is doubled but at the same time it becomes completely synchronous IO.
+>>>
+>>> :
+>>> : The IO completion size goes down from 512 to 256 sectors:
+>>> :
+>>> : before patch:
+>>> :   8,0    3   177955    50.050313976     0  C   R 8724991 + 512 [0]
+>>> :   8,0    3   177966    50.053380250     0  C   R 8725503 + 512 [0]
+>>> :   8,0    3   177977    50.056970395     0  C   R 8726015 + 512 [0]
+>>> :   8,0    3   177988    50.060326743     0  C   R 8726527 + 512 [0]
+>>> :   8,0    3   177999    50.063922341     0  C   R 8727039 + 512 [0]
+>>> :
+>>> : after patch:
+>>> :   8,0    3   257297    50.000760847     0  C   R 9480703 + 256 [0]
+>>> :   8,0    3   257306    50.003034240     0  C   R 9480959 + 256 [0]
+>>> :   8,0    3   257307    50.003076338     0  C   R 9481215 + 256 [0]
+>>> :   8,0    3   257323    50.004774693     0  C   R 9481471 + 256 [0]
+>>> :   8,0    3   257332    50.006865854     0  C   R 9481727 + 256 [0]
+>>>
+>> I haven't sent readahead-add-blk_run_backing_dev.patch in to Linus yet
+>> and it's looking like 2.6.32 material, if ever.
+>>
+>> If it turns out to be wonderful, we could always ask the -stable
+>> maintainers to put it in 2.6.x.y I guess.
 > 
-> I have a high end server machine(multi core and large memory space)
-> with 10 Gbps NIC. With linux kernel 2.6.18 it is giving packet overrun
-> as traffic goes beyond 1.5 Gbps. I need suggestions in tuning kernel
-> so that it can handle higher traffic rates.
-> 
-> I have a 10 Gbps test bed to test the capability of server, equipped
-> with 10Gig switch and traffic is generated from many 1Gig machines. I
-> have tested server machine by gradually increasing the incoming
-> traffic rate and it's starting to do packet overrun as it crosses 1
-> Gbps.
-> 
-> The 10 Gig NIC is from broadcom,  (netxtreme). I have tested NIC with
-> the driver shipped by vendor that is bnx2x v 1.44 and latest available
-> on net, both are giving more or less same result. Will it help to try
-> latest kernel 2.6.30 ? or what could be other possible tuning in
-> kernel to make it handle high traffic (3-4 Gbps).
-> 
+> Agreed. The expected (and interesting) test on a properly configured
+> HW RAID has not happened yet, hence the theory remains unsupported.
 
-This is quite difficult to generically answer to your question without
- more data from you about the workload, and your setup.
-(kind of traffic, is it UDP, (unicast or multicast), TCP, number
-of flows...)
+Hmm, do you see anything improper in the Ronald's setup (see 
+http://sourceforge.net/mailarchive/forum.php?thread_name=a0272b440906030714g67eabc5k8f847fb1e538cc62%40mail.gmail.com&forum_name=scst-devel)? 
+It is HW RAID based.
 
-One can easily stress a high end server with a moderate network
-traffic, depending on the work done by receiver. I have some
-workloads that saturate the cpu handling RX queue, even way before
-1 Gbps level, because this cpu has to wakeup tasks at high rate.
+As I already wrote, we can ask Ronald to perform any needed tests.
 
-With small application changes, it is also possible to reduce
-number of wakeups done by the receiver cpu, giving more cpu
-cycles to network stack.
+> Thanks,
+> Fengguang
 
-One possible way to get high traffic, even with fast cpus/cores,
-is to use a NIC that is able to split the load into multiple RX/TX queues,
-so that several cpus can work together and process data concurrently.
-
-One important thing is to make sure NIC interrupts for a given
-RX queue are serviced by only one CPU, to avoid cache line ping
-pongs between cpus. You can double the traffic with
-proper irq affinities.
-
-Many scalability improvements were done in network stack between
- 2.6.18 and 2.6.30, so you should try a recent kernel.
-
-Multi queue management definitly improved a lot during last releases.
