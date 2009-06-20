@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbZFTJi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZFTJyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753805AbZFTJi3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 05:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZFTJiV
+	id S1753907AbZFTJyn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 05:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZFTJye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 05:38:21 -0400
-Received: from mx4.mail.ru ([94.100.176.18]:24684 "EHLO mx4.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbZFTJiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 05:38:20 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: Number of open files scalability?
-Date: Sat, 20 Jun 2009 13:32:47 +0400
-User-Agent: KMail/1.11.90 (Linux/2.6.30-desktop-2mnb; KDE/4.2.90; x86_64; ; )
+	Sat, 20 Jun 2009 05:54:34 -0400
+Received: from mail-pz0-f195.google.com ([209.85.222.195]:64119 "EHLO
+	mail-pz0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbZFTJyd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 05:54:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=koOmtuXB8FPGa/asaNYxIVpTp9NVerJTmLIHmxDSKr+JrbEorpkESu0tLC9OLQ0bMW
+         NaqfF5De5+cFQx4UtE7xoFdHKawmKFo8dBI1uHqDOzf7ezYQ7lAFR1xFz3UGJ2iEy5YS
+         DswWNixt3u5fRTCv38aeFqiHgw5ImFUHq6wGw=
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1733811.ZDn1R8zzzZ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906201332.51953.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+In-Reply-To: <e31d15d70906200252g300fda01rf227f54259c33b7c@mail.gmail.com>
+References: <e31d15d70906200252g300fda01rf227f54259c33b7c@mail.gmail.com>
+Date: Sat, 20 Jun 2009 15:24:36 +0530
+Message-ID: <e31d15d70906200254m3ab04065y3f4b853d0de72471@mail.gmail.com>
+Subject: Re: Packet Overrun for traffic over 1 Gbps
+From: Deepak Vishwakarma <vishwakarma.deepak@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1733811.ZDn1R8zzzZ
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
 Hi,
 
-we have a customer that requires large number of open files. Basically,=20
-it is SAP with large Oracle database with relatively large number of=20
-concurrent connections from worker processes. Right now the amount=20
-permanently opened files is above 128000; with current trends of DB and=20
-load growth it could easily rocket up to and above of 1000000.
+I have a high end server machine(multi core and large memory space)
+with 10 Gbps NIC. With linux kernel 2.6.18 it is giving packet overrun
+as traffic goes beyond 1.5 Gbps. I need suggestions in tuning kernel
+so that it can handle higher traffic rates.
 
-So the questions are
+I have a 10 Gbps test bed to test the capability of server, equipped
+with 10Gig switch and traffic is generated from many 1Gig machines. I
+have tested server machine by gradually increasing the incoming
+traffic rate and it's starting to do packet overrun as it crosses 1
+Gbps.
 
-=2D is there any per-process or per-user limit for number of open files=20
-imposed by kernel (except of course set by rlimits)?
+The 10 Gig NIC is from broadcom,  (netxtreme). I have tested NIC with
+the driver shipped by vendor that is bnx2x v 1.44 and latest available
+on net, both are giving more or less same result. Will it help to try
+latest kernel 2.6.30 ? or what could be other possible tuning in
+kernel to make it handle high traffic (3-4 Gbps).
 
-=2D is there any fs/file-max limit except imposed by data type (int)?
-
-=2D finally, how scalable is the implementation? Will having one million=20
-of open files impose any noticeable slowdown? If yes, what operations=20
-are affected? I.e. opening new files/creating new process is not that=20
-important; but having to search 1000000 files for every operation would=20
-be fatal.
-
-The platform is x86_64, SLES 9 with likely update to SLES10.
-
-Thank you!
-
-=2Dandrey
-
---nextPart1733811.ZDn1R8zzzZ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAko8rMAACgkQR6LMutpd94wnqQCgg7qbZcJSnQmFNreKaLxskEjO
-l8MAniiqGfsuKr/xQ06+zL0xMU6Hm5or
-=lkky
------END PGP SIGNATURE-----
-
---nextPart1733811.ZDn1R8zzzZ--
+Thanks and regards,
+Deepak
