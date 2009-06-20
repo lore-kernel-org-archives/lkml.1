@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZFTOa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbZFTOjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbZFTOa4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 10:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZFTOaq
+	id S1754573AbZFTOjX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 10:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZFTOjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 10:30:46 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:56701 "HELO
+	Sat, 20 Jun 2009 10:39:04 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:38794 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752765AbZFTOap (ORCPT
+	with SMTP id S1752289AbZFTOjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 10:30:45 -0400
-Date: Sat, 20 Jun 2009 10:30:48 -0400 (EDT)
+	Sat, 20 Jun 2009 10:39:01 -0400
+Date: Sat, 20 Jun 2009 10:39:03 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Magnus Damm <magnus.damm@gmail.com>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [linux-pm] [patch update 2 fix] PM: Introduce core framework
- for run-time PM of I/O devices
-In-Reply-To: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
-Message-ID: <Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
+To: Ravish Tayal <ravish.tayal@gmail.com>
+cc: linux-kernel@vger.kernel.org, <linux-fsdevel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: generic_make_request fucntion for scsi_disk
+In-Reply-To: <e42309110906200705j6a731ecay204969f639af5330@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0906201032170.12994-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some more thoughts...
+On Sat, 20 Jun 2009, Ravish Tayal wrote:
 
-Magnus, you might have some insights here.  It occurred to me that some 
-devices can switch power levels very quickly, and the drivers might 
-therefore want the runtime suspend and resume methods to be called as 
-soon as possible, even in interrupt context.
+> Hello,
+> 
+> I am debugging Filesystem code for USB mass storage devices.
 
-In terms of the current framework, this probably means holding the
-runtime PM lock (i.e., not releasing it) across the calls to
-->runtime_suspend and ->runtime_resume.  It also means that
-pm_request_suspend and pm_request_resume should carry out their jobs
-immediately instead of queuing a work item.  (Unless the current status 
-is RPM_SUSPENDING or RPM_RESUMING, which should never happen.)
+What part of the filesystem code are you debugging?
 
-Should there be a flag in dev_pm_info to select this behavior?
+Your questions talk about four separate layers: the filesystem, the
+block layer, the SCSI layer, and the usb-storage driver.  Normally
+people work on only one layer at a time.
 
+Why are you concerned with more than one layer?
 
-When a device structure is unregistered and deallocated, we have to
-insure that there aren't any pending runtime PM workqueue items.  
-Hence device_del should call a routine that changes the status to an
-exceptional state (not RPM_ERROR but something else) to prevent new
-requests from being queued, and then calls cancel_work_sync or
-cancel_delayed_work_sync as required.
+>  I need
+> help to figure out after generic_make_request how the request is
+> placed to scsi disk (sd) requeset queue and than how sd qeueuecommand
+> to usb_storeage thread.  (in which context, is it system call context)
+> 
+> 
+> inside generic_make_request
+> 
+> 1.   q = bdev_get_queue(bio->bi_bdev);  [is sd.c register queue this
+> queue or any other scsi file?]
 
-Similarly, we should insure that runtime PM calls made before the
-device is registered don't do anything.  So when the device structure
-is first created and the contents are all 0, this should also be
-interpreted as an exceptional state.  We could call it RPM_UNREGISTERED
-and use it for both purposes.
+See scsi_alloc_sdev() in scsi_scan.c.  That's where the queue is 
+allocated.
+
+> 2.     ret = q->make_request_fn(q, bio);  [which file contain this
+> make_request_fn for scsi disk driver (generic)]
+
+scsi_request_fn() is in scsi_lib.c.  You could have found this out by 
+yourself very easily with grep.  sd_prep_fn() is in sd.c.
+
+> As per my unsderanding flow is like
+> Fat_writepage ->_block_write_full_page --> blkdev_writepage-->
+> block_write_full_page-->submit_bh-->generic_make_request ???  (sd ??)
+> ----> queuecommand
+> 
+> Please suggest any sorce file, link or document.
+
+The most relevant source files are scsi_lib.c and scsi.c.
 
 Alan Stern
 
