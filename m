@@ -1,196 +1,750 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZFTRA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbZFTRIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbZFTRA2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 13:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZFTRAT
+	id S1755919AbZFTRIt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 13:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZFTRIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 13:00:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39872 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754926AbZFTRAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 13:00:16 -0400
-Date: Sat, 20 Jun 2009 19:00:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20090620170011.GA1676@elte.hu>
+	Sat, 20 Jun 2009 13:08:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:15759 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbZFTRIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 13:08:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :user-agent;
+        b=VLpv18a8iOWaeXhquglvJesKobChPEtr7kbbNJNTxxN/YhGGYSeq+7KZItQtmSSZCo
+         yeIs0hbRGjz98FaI/bPSqtdBjCq7ZRxdASsyjV60o+Mi7l26FSxk7OufdbJxzVyDbo1k
+         CKca98DYAcDcW0QfQQE8oOGZtvQY7q9IQT9Bg=
+Date: Sat, 20 Jun 2009 19:08:35 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Peter Feuerer <peter@piie.net>, Andreas Mohr <andi@lisas.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Acer Aspire One fan control, simplified and scrubbed
+Message-ID: <20090620170835.GA3295@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Peter Feuerer <peter@piie.net>, Andreas Mohr <andi@lisas.de>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi guys,
 
-Please pull the latest sched-fixes-for-linus git tree from:
+I went and gave the driver a bunch of scrubbing today. Lots of
+cleanups, especially all those redundant kernelmode variables are gone,
+conversion of error handling paths to kernel coding style, proper
+reading of temperature and fanstate with error handling and lots of
+other simplifications. I've tested it here on my machine, suspend/resume
+works.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+Please give it a good testing and let me know if I missed something.
+Thanks.
 
- Thanks,
+--
+From: Peter Feuerer <peter@piie.net>
+Date: Wed, 3 Jun 2009 11:10:49 +0200
+Subject: [PATCH] Acer Aspire One fan control
 
-	Ingo
+Acerhdf is a driver for Acer Aspire One netbooks. It allows
+to access the temperature sensor and to control the fan.
 
------------------->
-Christian Engelmayer (1):
-      sched: Fix out of scope variable access in sched_slice()
+Borislav:
 
-Hitoshi Mitake (1):
-      sched: Hide runqueues from direct refer at source code level
+ - acerhdf_check_hardware: move error checking
+   at the top and bail out early if wrong hw
+ - acerhdf_get_temp: simplify and fix error handling
+ - acerhdf_set_cur_state: remove fanstate check
+ - cleanup error paths, as a result get rid of now unused ACERHDF_ERROR
+ - remove unused BIOS release date
+ - shorten variable names
+ - add my copyright
 
-Li Zefan (1):
-      sched: Remove unneeded __ref tag
+Signed-off-by: Peter Feuerer <peter@piie.net>
+Signed-off-by: Andreas Mohr <andi@lisas.de>
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ MAINTAINERS                    |    7 +
+ drivers/platform/x86/Kconfig   |   17 ++
+ drivers/platform/x86/Makefile  |    1 +
+ drivers/platform/x86/acerhdf.c |  599 ++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 624 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/platform/x86/acerhdf.c
 
-Peter Zijlstra (1):
-      sched, x86: Fix cpufreq + sched_clock() TSC scaling
-
-
- arch/x86/include/asm/timer.h |    6 +++++-
- arch/x86/kernel/tsc.c        |    8 ++++++--
- kernel/sched.c               |    2 +-
- kernel/sched_cpupri.c        |    2 +-
- kernel/sched_debug.c         |    6 +++---
- kernel/sched_fair.c          |    3 ++-
- 6 files changed, 18 insertions(+), 9 deletions(-)
-
-diff --git a/arch/x86/include/asm/timer.h b/arch/x86/include/asm/timer.h
-index bd37ed4..20ca9c4 100644
---- a/arch/x86/include/asm/timer.h
-+++ b/arch/x86/include/asm/timer.h
-@@ -45,12 +45,16 @@ extern int no_timer_check;
-  */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cf4abdd..e9457fe 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -222,6 +222,13 @@ L:	linux-acenic@sunsite.dk
+ S:	Maintained
+ F:	drivers/net/acenic*
  
- DECLARE_PER_CPU(unsigned long, cyc2ns);
-+DECLARE_PER_CPU(unsigned long long, cyc2ns_offset);
++ACER ASPIRE ONE TEMPERATURE AND FAN DRIVER
++P: Peter Feuerer
++M: peter@piie.net
++W: http://piie.net/?section=acerhdf
++S: Maintained
++F: drivers/platform/x86/acerhdf.c
++
+ ACER WMI LAPTOP EXTRAS
+ P:	Carlos Corbacho
+ M:	carlos@strangeworlds.co.uk
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index 284ebac..7f79737 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -34,6 +34,23 @@ config ACER_WMI
+ 	  If you have an ACPI-WMI compatible Acer/ Wistron laptop, say Y or M
+ 	  here.
  
- #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
- 
- static inline unsigned long long __cycles_2_ns(unsigned long long cyc)
- {
--	return cyc * per_cpu(cyc2ns, smp_processor_id()) >> CYC2NS_SCALE_FACTOR;
-+	int cpu = smp_processor_id();
-+	unsigned long long ns = per_cpu(cyc2ns_offset, cpu);
-+	ns += cyc * per_cpu(cyc2ns, cpu) >> CYC2NS_SCALE_FACTOR;
-+	return ns;
- }
- 
- static inline unsigned long long cycles_2_ns(unsigned long long cyc)
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 3e1c057..ef4dac5 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -589,22 +589,26 @@ EXPORT_SYMBOL(recalibrate_cpu_khz);
-  */
- 
- DEFINE_PER_CPU(unsigned long, cyc2ns);
-+DEFINE_PER_CPU(unsigned long long, cyc2ns_offset);
- 
- static void set_cyc2ns_scale(unsigned long cpu_khz, int cpu)
- {
--	unsigned long long tsc_now, ns_now;
-+	unsigned long long tsc_now, ns_now, *offset;
- 	unsigned long flags, *scale;
- 
- 	local_irq_save(flags);
- 	sched_clock_idle_sleep_event();
- 
- 	scale = &per_cpu(cyc2ns, cpu);
-+	offset = &per_cpu(cyc2ns_offset, cpu);
- 
- 	rdtscll(tsc_now);
- 	ns_now = __cycles_2_ns(tsc_now);
- 
--	if (cpu_khz)
-+	if (cpu_khz) {
- 		*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
-+		*offset = ns_now - (tsc_now * *scale >> CYC2NS_SCALE_FACTOR);
++config ACERHDF
++	tristate "Acer Aspire One temperature and fan driver"
++	depends on THERMAL && THERMAL_HWMON && ACPI
++	---help---
++	  This is a driver for Acer Aspire One netbooks. It allows to access
++	  the temperature sensor and to control the fan.
++
++	  After loading this driver the BIOS is still in control of the fan.
++	  To let the kernel handle the fan, do:
++	  echo -n enabled > /sys/class/thermal/thermal_zone0/mode
++
++	  For more information about this driver see
++	  <http://piie.net/files/acerhdf_README.txt>
++
++	  If you have an Acer Aspire One netbook, say Y or M
++	  here.
++
+ config ASUS_LAPTOP
+ 	tristate "Asus Laptop Extras (EXPERIMENTAL)"
+ 	depends on ACPI
+diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
+index e40c7bd..641b8bf 100644
+--- a/drivers/platform/x86/Makefile
++++ b/drivers/platform/x86/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_COMPAL_LAPTOP)	+= compal-laptop.o
+ obj-$(CONFIG_DELL_LAPTOP)	+= dell-laptop.o
+ obj-$(CONFIG_DELL_WMI)		+= dell-wmi.o
+ obj-$(CONFIG_ACER_WMI)		+= acer-wmi.o
++obj-$(CONFIG_ACERHDF)		+= acerhdf.o
+ obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
+ obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
+ obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+new file mode 100644
+index 0000000..5984fe7
+--- /dev/null
++++ b/drivers/platform/x86/acerhdf.c
+@@ -0,0 +1,599 @@
++/*
++ * acerhdf - A driver which monitors the temperature
++ *           of the aspire one netbook, turns on/off the fan
++ *           as soon as the upper/lower threshold is reached.
++ *
++ * (C) 2009 - Peter Feuerer     peter (a) piie.net
++ *                              http://piie.net
++ *     2009 Borislav Petkov <petkovbb@gmail.com>
++ *
++ * Inspired by and many thanks to:
++ *  o acerfand   - Rachel Greenham
++ *  o acer_ec.pl - Michael Kurz     michi.kurz (at) googlemail.com
++ *               - Petr Tomasek     tomasek (#) etf,cuni,cz
++ *               - Carlos Corbacho  cathectic (at) gmail.com
++ *  o lkml       - Matthew Garrett
++ *               - Borislav Petkov
++ *               - Andreas Mohr
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#define pr_fmt(fmt) "acerhdf: " fmt
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/dmi.h>
++#include <acpi/acpi_drivers.h>
++#include <linux/sched.h>
++#include <linux/thermal.h>
++#include <linux/platform_device.h>
++
++/*
++ * The driver is started with "kernel mode off" by default. That means, the BIOS
++ * is still in control of the fan. In this mode the driver allows to read the
++ * temperature of the cpu and a userspace tool may take over control of the fan.
++ * If the driver is switched to "kernel mode" (e.g. via module parameter) the
++ * driver is in full control of the fan. If you want the module to be started in
++ * kernel mode by default, define the following:
++ */
++#undef START_IN_KERNEL_MODE
++
++#define DRV_VER "0.5.8"
++
++/*
++ * According to the Atom N270 datasheet,
++ * (http://download.intel.com/design/processor/datashts/320032.pdf) the
++ * CPU's optimal operating limits denoted in junction temperature as
++ * measured by the on-die thermal monitor are within 0 <= Tj <= 90. So,
++ * assume 89°C is critical temperature.
++ */
++#define ACERHDF_TEMP_CRIT 89
++#define ACERHDF_FAN_OFF 0
++#define ACERHDF_FAN_AUTO 1
++
++/*
++ * No matter what value the user puts into the fanon variable, turn on the fan
++ * at 80 degree Celsius to prevent hardware damage
++ */
++#define ACERHDF_MAX_FANON 80
++
++/*
++ * Maximum interval between two temperature checks is 15 seconds, as the die
++ * can get hot really fast under heavy load (plus we shouldn't forget about
++ * possible impact of _external_ aggressive sources such as heaters, sun etc.)
++ */
++#define ACERHDF_MAX_INTERVAL 15
++
++#ifdef START_IN_KERNEL_MODE
++static int kernelmode = 1;
++#else
++static int kernelmode;
++#endif
++
++static unsigned int interval = 10;
++static unsigned int fanon = 63;
++static unsigned int fanoff = 58;
++static unsigned int verbose;
++static unsigned int fanstate = ACERHDF_FAN_AUTO;
++static char force_bios[16];
++static unsigned int prev_interval;
++struct thermal_zone_device *thz_dev;
++struct thermal_cooling_device *cl_dev;
++struct platform_device *acerhdf_dev;
++
++module_param(kernelmode, uint, 0);
++MODULE_PARM_DESC(kernelmode, "Kernel mode on / off");
++module_param(interval, uint, 0600);
++MODULE_PARM_DESC(interval, "Polling interval of temperature check");
++module_param(fanon, uint, 0600);
++MODULE_PARM_DESC(fanon, "Turn the fan on above this temperature");
++module_param(fanoff, uint, 0600);
++MODULE_PARM_DESC(fanoff, "Turn the fan off below this temperature");
++module_param(verbose, uint, 0600);
++MODULE_PARM_DESC(verbose, "Enable verbose dmesg output");
++module_param_string(force_bios, force_bios, 16, 0);
++MODULE_PARM_DESC(force_bios, "Force BIOS version and omit BIOS check");
++
++/* BIOS settings */
++struct bios_settings_t {
++	const char *vendor;
++	const char *version;
++	unsigned char fanreg;
++	unsigned char tempreg;
++	unsigned char fancmd[2]; /* fan off and auto commands */
++};
++
++/* Register addresses and values for different BIOS versions */
++static const struct bios_settings_t bios_tbl[] = {
++	{"Acer", "v0.3109", 0x55, 0x58, {0x1f, 0x00} },
++	{"Acer", "v0.3114", 0x55, 0x58, {0x1f, 0x00} },
++	{"Acer", "v0.3301", 0x55, 0x58, {0xaf, 0x00} },
++	{"Acer", "v0.3304", 0x55, 0x58, {0xaf, 0x00} },
++	{"Acer", "v0.3305", 0x55, 0x58, {0xaf, 0x00} },
++	{"Acer", "v0.3308", 0x55, 0x58, {0x21, 0x00} },
++	{"Acer", "v0.3309", 0x55, 0x58, {0x21, 0x00} },
++	{"Acer", "v0.3310", 0x55, 0x58, {0x21, 0x00} },
++	{"Gateway", "v0.3103", 0x55, 0x58, {0x21, 0x00} },
++	{"Packard Bell", "v0.3105", 0x55, 0x58, {0x21, 0x00} },
++	{"", 0, 0, 0, {0, 0} }
++};
++
++static const struct bios_settings_t *bios_cfg __read_mostly;
++
++
++static int acerhdf_get_temp(int *temp)
++{
++	u8 read_temp;
++
++	if (ec_read(bios_cfg->tempreg, &read_temp))
++		return -EINVAL;
++
++	if (verbose)
++		pr_notice("temp %d\n", read_temp);
++	*temp = read_temp;
++
++	return 0;
++}
++
++static int acerhdf_get_fanstate(int *state)
++{
++	u8 fan;
++	bool tmp;
++
++	if (ec_read(bios_cfg->fanreg, &fan))
++		return -EINVAL;
++
++	tmp = (fan == bios_cfg->fancmd[ACERHDF_FAN_OFF]);
++	*state = tmp ? ACERHDF_FAN_OFF : ACERHDF_FAN_AUTO;
++
++	return 0;
++}
++
++static void acerhdf_change_fanstate(int state)
++{
++	unsigned char cmd;
++
++	if (verbose)
++		pr_notice("fan %s\n", (state == ACERHDF_FAN_OFF) ?
++				"OFF" : "ON");
++
++	if ((state != ACERHDF_FAN_OFF) && (state != ACERHDF_FAN_AUTO)) {
++		pr_err("invalid fan state %d requested, setting to auto!\n",
++			state);
++		state = ACERHDF_FAN_AUTO;
 +	}
- 
- 	sched_clock_idle_wakeup_event(0);
- 	local_irq_restore(flags);
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8fb88a9..0056795 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7828,7 +7828,7 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
- 		free_rootdomain(old_rd);
- }
- 
--static int __init_refok init_rootdomain(struct root_domain *rd, bool bootmem)
-+static int init_rootdomain(struct root_domain *rd, bool bootmem)
- {
- 	gfp_t gfp = GFP_KERNEL;
- 
-diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
-index 7deffc9..e6c2517 100644
---- a/kernel/sched_cpupri.c
-+++ b/kernel/sched_cpupri.c
-@@ -152,7 +152,7 @@ void cpupri_set(struct cpupri *cp, int cpu, int newpri)
-  *
-  * Returns: -ENOMEM if memory fails.
-  */
--int __init_refok cpupri_init(struct cpupri *cp, bool bootmem)
-+int cpupri_init(struct cpupri *cp, bool bootmem)
- {
- 	gfp_t gfp = GFP_KERNEL;
- 	int i;
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 467ca72..70c7e0b 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -162,7 +162,7 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- {
- 	s64 MIN_vruntime = -1, min_vruntime, max_vruntime = -1,
- 		spread, rq0_min_vruntime, spread0;
--	struct rq *rq = &per_cpu(runqueues, cpu);
-+	struct rq *rq = cpu_rq(cpu);
- 	struct sched_entity *last;
- 	unsigned long flags;
- 
-@@ -191,7 +191,7 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- 	if (last)
- 		max_vruntime = last->vruntime;
- 	min_vruntime = cfs_rq->min_vruntime;
--	rq0_min_vruntime = per_cpu(runqueues, 0).cfs.min_vruntime;
-+	rq0_min_vruntime = cpu_rq(0)->cfs.min_vruntime;
- 	spin_unlock_irqrestore(&rq->lock, flags);
- 	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "MIN_vruntime",
- 			SPLIT_NS(MIN_vruntime));
-@@ -248,7 +248,7 @@ void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
- 
- static void print_cpu(struct seq_file *m, int cpu)
- {
--	struct rq *rq = &per_cpu(runqueues, cpu);
-+	struct rq *rq = cpu_rq(cpu);
- 
- #ifdef CONFIG_X86
- 	{
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 5f9650e..ba7fd6e 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -430,12 +430,13 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 
- 	for_each_sched_entity(se) {
- 		struct load_weight *load;
-+		struct load_weight lw;
- 
- 		cfs_rq = cfs_rq_of(se);
- 		load = &cfs_rq->load;
- 
- 		if (unlikely(!se->on_rq)) {
--			struct load_weight lw = cfs_rq->load;
-+			lw = cfs_rq->load;
- 
- 			update_load_add(&lw, se->load.weight);
- 			load = &lw;
++
++	cmd = bios_cfg->fancmd[state];
++	fanstate = state;
++
++	ec_write(bios_cfg->fanreg, cmd);
++}
++
++static void acerhdf_check_param(struct thermal_zone_device *thermal)
++{
++	if (fanon > ACERHDF_MAX_FANON) {
++		pr_err("fanon temperature too high, set to %d\n",
++				ACERHDF_MAX_FANON);
++		fanon = ACERHDF_MAX_FANON;
++	}
++
++	if (kernelmode && prev_interval != interval) {
++		if (interval > ACERHDF_MAX_INTERVAL) {
++			pr_err("interval too high, set to %d\n",
++				ACERHDF_MAX_INTERVAL);
++			interval = ACERHDF_MAX_INTERVAL;
++		}
++		if (verbose)
++			pr_notice("interval changed to: %d\n",
++					interval);
++		thermal->polling_delay = interval*1000;
++		prev_interval = interval;
++	}
++}
++
++/*
++ * This is the thermal zone callback which does the delayed polling of the fan
++ * state. We do check /sysfs-originating settings here in acerhdf_check_param()
++ * as late as the polling interval is since we can't do that in the respective
++ * accessors of the module parameters.
++ */
++static int acerhdf_get_ec_temp(struct thermal_zone_device *thermal,
++			       unsigned long *t)
++{
++	int temp, err = 0;
++
++	acerhdf_check_param(thermal);
++
++	err = acerhdf_get_temp(&temp);
++	if (err)
++		return err;
++
++	*t = temp;
++	return 0;
++}
++
++static int acerhdf_bind(struct thermal_zone_device *thermal,
++			struct thermal_cooling_device *cdev)
++{
++	/* if the cooling device is the one from acerhdf bind it */
++	if (cdev != cl_dev)
++		return 0;
++
++	if (thermal_zone_bind_cooling_device(thermal, 0, cdev)) {
++		pr_err("error binding cooling dev\n");
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static int acerhdf_unbind(struct thermal_zone_device *thermal,
++			  struct thermal_cooling_device *cdev)
++{
++	if (cdev != cl_dev)
++		return 0;
++
++	if (thermal_zone_unbind_cooling_device(thermal, 0, cdev)) {
++		pr_err("error unbinding cooling dev\n");
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static inline void acerhdf_revert_to_bios_mode(void)
++{
++	acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
++	kernelmode = 0;
++}
++
++static int acerhdf_get_mode(struct thermal_zone_device *thermal,
++			    enum thermal_device_mode *mode)
++{
++	if (verbose)
++		pr_notice("kernel mode %d\n", kernelmode);
++
++	*mode = (kernelmode) ? THERMAL_DEVICE_ENABLED
++			     : THERMAL_DEVICE_DISABLED;
++
++	return 0;
++}
++
++/*
++ * set operation mode;
++ * enabled: the thermal layer of the kernel takes care about
++ *          the temperature and the fan.
++ * disabled: the BIOS takes control of the fan.
++ */
++static int acerhdf_set_mode(struct thermal_zone_device *thermal,
++			    enum thermal_device_mode mode)
++{
++	if (mode == THERMAL_DEVICE_DISABLED) {
++		pr_notice("kernel mode OFF\n");
++		thermal->polling_delay = 0;
++		thermal_zone_device_update(thermal);
++		acerhdf_revert_to_bios_mode();
++		kernelmode = 0;
++	} else {
++		pr_notice("kernel mode ON\n");
++		thermal->polling_delay = interval*1000;
++		thermal_zone_device_update(thermal);
++		kernelmode = 1;
++	}
++
++	return 0;
++}
++
++static int acerhdf_get_trip_type(struct thermal_zone_device *thermal, int trip,
++				 enum thermal_trip_type *type)
++{
++	if (trip == 0)
++		*type = THERMAL_TRIP_ACTIVE;
++
++	return 0;
++}
++
++static int acerhdf_get_trip_temp(struct thermal_zone_device *thermal, int trip,
++				 unsigned long *temp)
++{
++	if (trip == 0)
++		*temp = fanon;
++
++	return 0;
++}
++
++static int acerhdf_get_crit_temp(struct thermal_zone_device *thermal,
++				 unsigned long *temperature)
++{
++	*temperature = ACERHDF_TEMP_CRIT;
++	return 0;
++}
++
++/* bind callback functions to thermalzone */
++struct thermal_zone_device_ops acerhdf_dev_ops = {
++	.bind = acerhdf_bind,
++	.unbind = acerhdf_unbind,
++	.get_temp = acerhdf_get_ec_temp,
++	.get_mode = acerhdf_get_mode,
++	.set_mode = acerhdf_set_mode,
++	.get_trip_type = acerhdf_get_trip_type,
++	.get_trip_temp = acerhdf_get_trip_temp,
++	.get_crit_temp = acerhdf_get_crit_temp,
++};
++
++
++/*
++ * cooling device callback functions
++ * get maximal fan cooling state
++ */
++static int acerhdf_get_max_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	*state = 1;
++
++	return 0;
++}
++
++static int acerhdf_get_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	int err = 0, tmp;
++
++	err = acerhdf_get_fanstate(&tmp);
++	if (err)
++		return err;
++
++	*state = (tmp == ACERHDF_FAN_AUTO) ? 1 : 0;
++	return 0;
++}
++
++/* change current fan state - is overwritten when running in kernel mode */
++static int acerhdf_set_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long state)
++{
++	int cur_temp, cur_state, err = 0;
++
++	if (!kernelmode)
++		return 0;
++
++	err = acerhdf_get_temp(&cur_temp);
++	if (err) {
++		pr_err("error reading temperature, hand off control to BIOS\n");
++		goto err_out;
++	}
++
++	err = acerhdf_get_fanstate(&cur_state);
++	if (err) {
++		pr_err("error reading fan state, hand off control to BIOS\n");
++		goto err_out;
++	}
++
++	if (state == 0) {
++		/* turn fan off only if below fanoff temperature */
++		if ((cur_state == ACERHDF_FAN_AUTO) &&
++		    (cur_temp < fanoff))
++			acerhdf_change_fanstate(ACERHDF_FAN_OFF);
++	} else {
++		if (cur_state == ACERHDF_FAN_OFF)
++			acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
++	}
++	return 0;
++
++err_out:
++	acerhdf_revert_to_bios_mode();
++	return -EINVAL;
++}
++
++/* bind fan callbacks to fan device */
++struct thermal_cooling_device_ops acerhdf_cooling_ops = {
++	.get_max_state = acerhdf_get_max_state,
++	.get_cur_state = acerhdf_get_cur_state,
++	.set_cur_state = acerhdf_set_cur_state,
++};
++
++/* suspend / resume functionality */
++static int acerhdf_suspend(struct platform_device *dev,	pm_message_t state)
++{
++	if (kernelmode)
++		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
++
++	if (verbose)
++		pr_notice("going suspend\n");
++
++	return 0;
++}
++
++static int acerhdf_resume(struct platform_device *device)
++{
++	if (verbose)
++		pr_notice("resuming\n");
++
++	return 0;
++}
++
++static int __devinit acerhdf_probe(struct platform_device *device)
++{
++	return 0;
++}
++
++static int acerhdf_remove(struct platform_device *device)
++{
++	return 0;
++}
++
++struct platform_driver acerhdf_drv = {
++	.driver = {
++		.name = "acerhdf",
++		.owner = THIS_MODULE,
++	},
++	.probe = acerhdf_probe,
++	.remove = acerhdf_remove,
++	.suspend = acerhdf_suspend,
++	.resume = acerhdf_resume,
++};
++
++
++/* check hardware */
++static int acerhdf_check_hardware(void)
++{
++	char const *vendor, *version, *product;
++	int i;
++
++	/* get BIOS data */
++	vendor  = dmi_get_system_info(DMI_SYS_VENDOR);
++	version	= dmi_get_system_info(DMI_BIOS_VERSION);
++	product = dmi_get_system_info(DMI_PRODUCT_NAME);
++
++	pr_info("Acer Aspire One Fan driver, v.%s\n", DRV_VER);
++
++	if (!force_bios[0]) {
++		if (strncmp(product, "AO", 2)) {
++			pr_err("no Aspire One hardware found\n");
++			return -EINVAL;
++		}
++	} else {
++		pr_info("forcing BIOS version: %s\n", version);
++		version = force_bios;
++		kernelmode = 0;
++	}
++
++	if (verbose)
++		pr_info("BIOS info: %s %s, product: %s\n",
++			vendor, version, product);
++
++	/* search BIOS version and vendor in BIOS settings table */
++	for (i = 0; bios_tbl[i].version[0]; i++) {
++		if (!strcmp(bios_tbl[i].vendor, vendor) &&
++		    !strcmp(bios_tbl[i].version, version)) {
++			bios_cfg = &bios_tbl[i];
++			break;
++		}
++	}
++
++	if (!bios_cfg) {
++		pr_err("unknown (unsupported) BIOS version %s/%s, "
++			"please report, aborting!\n", vendor, version);
++		return -EINVAL;
++	}
++
++	/*
++	 * if started with kernel mode off, prevent the kernel from switching
++	 * off the fan
++	 */
++	if (!kernelmode) {
++		pr_notice("Fan control off, to enable do:\n");
++		pr_notice("echo -n \"enabled\" > "
++			"/sys/class/thermal/thermal_zone0/mode\n");
++	}
++
++	return 0;
++}
++
++static int acerhdf_register_platform(void)
++{
++	int err = 0;
++
++	err = platform_driver_register(&acerhdf_drv);
++	if (err)
++		return err;
++
++	acerhdf_dev = platform_device_alloc("acerhdf", -1);
++	platform_device_add(acerhdf_dev);
++
++	return 0;
++}
++
++static void acerhdf_unregister_platform(void)
++{
++	if (!acerhdf_dev)
++		return;
++
++	platform_device_del(acerhdf_dev);
++	platform_driver_unregister(&acerhdf_drv);
++}
++
++static int acerhdf_register_thermal(void)
++{
++	cl_dev = thermal_cooling_device_register("acerhdf-fan", NULL,
++						 &acerhdf_cooling_ops);
++
++	if (IS_ERR(cl_dev))
++		return -EINVAL;
++
++	thz_dev = thermal_zone_device_register("acerhdf", 1, NULL,
++					      &acerhdf_dev_ops, 0, 0, 0,
++					      (kernelmode) ? interval*1000 : 0);
++	if (IS_ERR(thz_dev))
++		return -EINVAL;
++
++	return 0;
++}
++
++static void acerhdf_unregister_thermal(void)
++{
++	if (cl_dev) {
++		thermal_cooling_device_unregister(cl_dev);
++		cl_dev = NULL;
++	}
++
++	if (thz_dev) {
++		thermal_zone_device_unregister(thz_dev);
++		thz_dev = NULL;
++	}
++}
++
++/* kernel module init / exit functions */
++static int __init acerhdf_init(void)
++{
++	int err = 0;
++
++	err = acerhdf_check_hardware();
++	if (err)
++		goto out_err;
++
++	err = acerhdf_register_platform();
++	if (err)
++		goto err_unreg;
++
++	err = acerhdf_register_thermal();
++	if (err)
++		goto err_unreg;
++
++	return 0;
++
++err_unreg:
++	acerhdf_unregister_thermal();
++	acerhdf_unregister_platform();
++
++out_err:
++	return -ENODEV;
++}
++
++static void __exit acerhdf_exit(void)
++{
++	acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
++	acerhdf_unregister_thermal();
++	acerhdf_unregister_platform();
++}
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Peter Feuerer");
++MODULE_DESCRIPTION("Aspire One temperature and fan driver");
++MODULE_ALIAS("dmi:*:*Acer*:*:");
++MODULE_ALIAS("dmi:*:*Gateway*:*:");
++MODULE_ALIAS("dmi:*:*Packard Bell*:*:");
++
++module_init(acerhdf_init);
++module_exit(acerhdf_exit);
+-- 
+1.6.3.1
+
+
+-- 
+Regards/Gruss,
+    Boris.
