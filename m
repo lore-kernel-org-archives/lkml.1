@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZFTJyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbZFTKCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbZFTJyn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 05:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZFTJye
+	id S1753114AbZFTKCW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 06:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZFTKCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 05:54:34 -0400
-Received: from mail-pz0-f195.google.com ([209.85.222.195]:64119 "EHLO
-	mail-pz0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbZFTJyd convert rfc822-to-8bit (ORCPT
+	Sat, 20 Jun 2009 06:02:14 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:60747 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbZFTKCN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 05:54:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=koOmtuXB8FPGa/asaNYxIVpTp9NVerJTmLIHmxDSKr+JrbEorpkESu0tLC9OLQ0bMW
-         NaqfF5De5+cFQx4UtE7xoFdHKawmKFo8dBI1uHqDOzf7ezYQ7lAFR1xFz3UGJ2iEy5YS
-         DswWNixt3u5fRTCv38aeFqiHgw5ImFUHq6wGw=
+	Sat, 20 Jun 2009 06:02:13 -0400
+Date: Sat, 20 Jun 2009 12:09:32 +0200
+From: Heinz Diehl <htd@fancy-poultry.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       torvalds@linux-foundation.org, fengguang.wu@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] profile: Suppress warning about large allocations when
+ profile=1 is specified
+Message-ID: <20090620100932.GA5863@fancy-poultry.org>
+Reply-To: linux-kernel@vger.kernel.org
+References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org>
+ <20090616223649.719ea378.akpm@linux-foundation.org>
+ <20090617111800.GA15261@elte.hu>
+ <20090617113120.GA5061@elte.hu>
+ <20090617113534.GA21276@elte.hu>
+ <20090617121913.GC28529@csn.ul.ie>
 MIME-Version: 1.0
-In-Reply-To: <e31d15d70906200252g300fda01rf227f54259c33b7c@mail.gmail.com>
-References: <e31d15d70906200252g300fda01rf227f54259c33b7c@mail.gmail.com>
-Date: Sat, 20 Jun 2009 15:24:36 +0530
-Message-ID: <e31d15d70906200254m3ab04065y3f4b853d0de72471@mail.gmail.com>
-Subject: Re: Packet Overrun for traffic over 1 Gbps
-From: Deepak Vishwakarma <vishwakarma.deepak@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090617121913.GC28529@csn.ul.ie>
+Organization: private site
+X-PGP-Key-Id: 0x3FAF957D
+User-Agent: Mutt/1.5.20+20090615 (GNU/Linux)
+X-Provags-ID: V01U2FsdGVkX19jKFiBLNN+3aDSU5WGIqRRKwexAye+t46s1fU
+ PHwHDDomVmDQ6DUF7NR2FtIPe7Gd1Rv6CqFmfUKc+6kOr4VQGh
+ t2bfqfxqMf4zG4yrDVSH3YQ1Rshh2v2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 17.06.2009, Mel Gorman wrote: 
 
-I have a high end server machine(multi core and large memory space)
-with 10 Gbps NIC. With linux kernel 2.6.18 it is giving packet overrun
-as traffic goes beyond 1.5 Gbps. I need suggestions in tuning kernel
-so that it can handle higher traffic rates.
+> Patch as follows
+[....]
 
-I have a 10 Gbps test bed to test the capability of server, equipped
-with 10Gig switch and traffic is generated from many 1Gig machines. I
-have tested server machine by gradually increasing the incoming
-traffic rate and it's starting to do packet overrun as it crosses 1
-Gbps.
+With 2.6.30-git14, I get this early in the boot process. 
+Don't know if it's related to this thread. In any case, your patch does not fix it:
 
-The 10 Gig NIC is from broadcom,  (netxtreme). I have tested NIC with
-the driver shipped by vendor that is bnx2x v 1.44 and latest available
-on net, both are giving more or less same result. Will it help to try
-latest kernel 2.6.30 ? or what could be other possible tuning in
-kernel to make it handle high traffic (3-4 Gbps).
+[....]
+WARNING: at mm/page_alloc.c:1744 level2_spare_pgt+0x8f70a/0x36c800()
+Hardware name:  
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.30-git14 #1
+Call Trace:
+ [<ffffffff8109770a>] ? level2_spare_pgt+0x8f70a/0x36c800
+ [<ffffffff8109770a>] ? level2_spare_pgt+0x8f70a/0x36c800
+ [<ffffffff81044a19>] ? level2_spare_pgt+0x3ca19/0x36c800
+ [<ffffffff8109770a>] ? level2_spare_pgt+0x8f70a/0x36c800
+ [<ffffffff810463f2>] ? level2_spare_pgt+0x3e3f2/0x36c800
+ [<ffffffff810bf8bb>] ? level2_spare_pgt+0xb78bb/0x36c800
+ [<ffffffff81096829>] ? level2_spare_pgt+0x8e829/0x36c800
+ [<ffffffff815281a2>] ? __smp_locks_end+0x33a4a/0x35773
+ [<ffffffff815280b0>] ? __smp_locks_end+0x33958/0x35773
+ [<ffffffff8100904b>] ? level2_spare_pgt+0x104b/0x36c800
+ [<ffffffff81119808>] ? level2_spare_pgt+0x111808/0x36c800
+ [<ffffffff81084df1>] ? level2_spare_pgt+0x7cdf1/0x36c800
+ [<ffffffff814f5665>] ? __smp_locks_end+0xf0d/0x35773
+ [<ffffffff8100ce0a>] ? level2_spare_pgt+0x4e0a/0x36c800
+ [<ffffffff814f54e9>] ? __smp_locks_end+0xd91/0x35773
+ [<ffffffff8100ce00>] ? level2_spare_pgt+0x4e00/0x36c800
+---[ end trace 692ffa03e0502250 ]---
+CCID: Activated CCID 2 (TCP-like)
+registered taskstats version 1
+Freeing unused kernel memory: 572k freed
+[....]
 
-Thanks and regards,
-Deepak
+Regards,
+Heinz.
