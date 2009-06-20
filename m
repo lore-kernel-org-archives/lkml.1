@@ -1,126 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbZFTCJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZFTCK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759497AbZFTCJu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 22:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZFTCJj
+	id S1753590AbZFTCK7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 22:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZFTCKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 22:09:39 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:50252 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbZFTCJi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 22:09:38 -0400
-Message-ID: <4A3C44DA.7000503@novell.com>
-Date: Fri, 19 Jun 2009 22:09:30 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
- race conditions
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com> <4A3C004B.8010706@novell.com> <alpine.DEB.1.10.0906191421581.14884@makko.or.mcafeemobile.com> <4A3C07FF.3000406@novell.com> <alpine.DEB.1.10.0906191447330.14884@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigFBE4C346CCD9103FA9E324F9"
+	Fri, 19 Jun 2009 22:10:52 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45363 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751017AbZFTCKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Jun 2009 22:10:52 -0400
+Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
+ suspending
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, npiggin@suse.de,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20090620002817.GA2524@elf.ucw.cz>
+References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI>
+	 <20090619145913.GA1389@ucw.cz> <1245450449.16880.10.camel@pasglop>
+	 <20090619232336.GA2442@elf.ucw.cz> <1245455409.16880.15.camel@pasglop>
+	 <20090620002817.GA2524@elf.ucw.cz>
+Content-Type: text/plain
+Date: Sat, 20 Jun 2009 12:10:09 +1000
+Message-Id: <1245463809.16880.18.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigFBE4C346CCD9103FA9E324F9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2009-06-20 at 02:28 +0200, Pavel Machek wrote:
+> 
+> Academic for boot, probably real for suspend/resume. There the atomic
+> reserves could matter because the memory can be pretty full when you
+> start suspend.
 
-Davide Libenzi wrote:
-> On Fri, 19 Jun 2009, Davide Libenzi wrote:
->
->  =20
->> On Fri, 19 Jun 2009, Gregory Haskins wrote:
->>
->>    =20
->>> I am fairly confident it is not that simple after having thought abou=
-t
->>> this issue over the last few days.  But I've been wrong in the past. =
+Right, that might be something to look into, though we haven't yet
+applied the technique for suspend & resume. My main issue with it at the
+moment is how do I synchronize with allocations that are already
+sleeping when changing the gfp flag mask without bloating the normal
+path. I haven't had time to look into it, it's mostly a problem local to
+the page allocator and reclaim, not much to do with SL*Bs though, which
+is fortunate.
 
->>> Propose a patch and I will review it for races/correctness, if you
->>> like.  Perhaps a combination of that plus your asymmetrical locking
->>> scheme would work.  One of the challenges you will hit is avoiding AB=
-BA
->>> between your "get" lock and the wqh, but good luck!
->>>      =20
->> A patch for what? The eventfd patch is a one-liner.
->>    =20
+I also suspect that we might want to try to make -some- amount of free
+space before starting suspend, though of course not nearly as
+aggressively as with std.
 
-Yes, understood.  What I was trying to gently say is that the one-liner
-proposal alone is still broken afaict.  However, if there is another
-solution that works that you like better than 133-liner I posted, I am
-more than willing to help analyze it.  In the end, I only care that this
-is fixed.
+Cheers,
+Ben.
 
->> It seems hard to believe that the thing cannot be handled on your side=
-=2E=20
->> Once the wake_up_locked() is turned into a wake_up(), what other races=
- are=20
->> there?
->>    =20
->
-> AFAICS, the IRQfd code simply registers the callback to ->poll() and wa=
-its=20
-> for two events.
-> In the POLLIN event, you schedule_work(&irqfd->inject) and there are no=
-=20
-> races there AFAICS (you basically do not care of anything eventfd memor=
-y=20
-> related at all).
-> For POLLHUP, you do:
->
-> 	spin_lock(irqfd->slock);
-> 	if (irqfd->wqh)
-> 		schedule_work(&irqfd->inject);
-> 	irqfd->wqh =3D NULL;
-> 	spin_unlock(irqfd->slock);
->
-> In your work function you notice the POLLHUP condition and take proper =
-
-> action (dunno what it is in your case).
-> In your kvm_irqfd_release() function:
->
-> 	spin_lock(irqfd->slock);
-> 	if (irqfd->wqh)
-> 		remove_wait_queue(irqfd->wqh, &irqfd->wait);
-> 	irqfd->wqh =3D NULL;
-> 	spin_unlock(irqfd->slock);
->
-> Any races in there?
->  =20
-
-Yes, for one you have an ABBA deadlock on the irqfd->slock and wqh->lock
-(recall wqh has to be locked to fix that other race I mentioned).
-
-(As a hint, I think I fixed 4-5 races with these patches, so there are a
-few others still lurking as well)
-
--Greg
-
-
-
---------------enigFBE4C346CCD9103FA9E324F9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko8RNoACgkQlOSOBdgZUxltdgCeM5z0qnEl7bU1mnkPXDaJiJGC
-dlAAoIDHZ7R9N+IuEMgsviKo4P5K2FXg
-=JFqY
------END PGP SIGNATURE-----
-
---------------enigFBE4C346CCD9103FA9E324F9--
