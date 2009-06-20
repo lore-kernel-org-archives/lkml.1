@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbZFTSse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbZFTSsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbZFTSse (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 14:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757860AbZFTSq0
+	id S1759059AbZFTSsp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 14:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbZFTSqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 14:46:26 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:48104 "EHLO smtp.gentoo.org"
+	Sat, 20 Jun 2009 14:46:31 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:48111 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757459AbZFTSqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 14:46:25 -0400
+	id S1757916AbZFTSqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 14:46:30 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org, Philippe Gerum <rpm@xenomai.org>
-Subject: [PATCH 13/25] Blackfin: allow CONFIG_TICKSOURCE_GPTMR0 with interrupt pipeline
-Date: Sat, 20 Jun 2009 14:44:36 -0400
-Message-Id: <1245523488-26536-14-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 14/25] Blackfin: remove obsolete mcount support from I-pipe code
+Date: Sat, 20 Jun 2009 14:44:37 -0400
+Message-Id: <1245523488-26536-15-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1245523488-26536-1-git-send-email-vapier@gentoo.org>
 References: <1245523488-26536-1-git-send-email-vapier@gentoo.org>
@@ -27,141 +27,113 @@ From: Philippe Gerum <rpm@xenomai.org>
 Signed-off-by: Philippe Gerum <rpm@xenomai.org>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/Kconfig                     |    1 -
- arch/blackfin/include/asm/ipipe.h         |    7 ++++-
- arch/blackfin/mach-common/ints-priority.c |   47 +++++++++++++---------------
- 3 files changed, 28 insertions(+), 27 deletions(-)
+ arch/blackfin/kernel/Makefile |    1 -
+ arch/blackfin/kernel/ipipe.c  |    5 ---
+ arch/blackfin/kernel/mcount.S |   70 -----------------------------------------
+ 3 files changed, 0 insertions(+), 76 deletions(-)
+ delete mode 100644 arch/blackfin/kernel/mcount.S
 
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index c2c4a62..8140a2f 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -623,7 +623,6 @@ choice
- config TICKSOURCE_GPTMR0
- 	bool "Gptimer0 (SCLK domain)"
- 	select BFIN_GPTIMERS
--	depends on !IPIPE
+diff --git a/arch/blackfin/kernel/Makefile b/arch/blackfin/kernel/Makefile
+index 3731088..141d928 100644
+--- a/arch/blackfin/kernel/Makefile
++++ b/arch/blackfin/kernel/Makefile
+@@ -20,7 +20,6 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)  += ftrace.o
+ CFLAGS_REMOVE_ftrace.o = -pg
  
- config TICKSOURCE_CORETMR
- 	bool "Core timer (CCLK domain)"
-diff --git a/arch/blackfin/include/asm/ipipe.h b/arch/blackfin/include/asm/ipipe.h
-index bbe1c37..ffa5e60 100644
---- a/arch/blackfin/include/asm/ipipe.h
-+++ b/arch/blackfin/include/asm/ipipe.h
-@@ -207,7 +207,7 @@ void ipipe_init_irq_threads(void);
+ obj-$(CONFIG_IPIPE)                  += ipipe.o
+-obj-$(CONFIG_IPIPE_TRACE_MCOUNT)     += mcount.o
+ obj-$(CONFIG_BFIN_GPTIMERS)          += gptimers.o
+ obj-$(CONFIG_CPLB_INFO)              += cplbinfo.o
+ obj-$(CONFIG_MODULES)                += module.o
+diff --git a/arch/blackfin/kernel/ipipe.c b/arch/blackfin/kernel/ipipe.c
+index 2b979ed..b8d2203 100644
+--- a/arch/blackfin/kernel/ipipe.c
++++ b/arch/blackfin/kernel/ipipe.c
+@@ -342,8 +342,3 @@ void ___ipipe_sync_pipeline(unsigned long syncmask)
+ }
  
- int ipipe_start_irq_thread(unsigned irq, struct irq_desc *desc);
- 
--#ifdef CONFIG_GENERIC_CLOCKEVENTS
-+#ifdef CONFIG_TICKSOURCE_CORETMR
- #define IRQ_SYSTMR		IRQ_CORETMR
- #define IRQ_PRIOTMR		IRQ_CORETMR
- #else
-@@ -240,8 +240,13 @@ int ipipe_start_irq_thread(unsigned irq, struct irq_desc *desc);
- #define ipipe_init_irq_threads()		do { } while (0)
- #define ipipe_start_irq_thread(irq, desc)	0
- 
-+#ifndef CONFIG_TICKSOURCE_GPTMR0
- #define IRQ_SYSTMR		IRQ_CORETMR
- #define IRQ_PRIOTMR		IRQ_CORETMR
-+#else
-+#define IRQ_SYSTMR		IRQ_TIMER0
-+#define IRQ_PRIOTMR		CONFIG_IRQ_TIMER0
-+#endif
- 
- #define __ipipe_root_tick_p(regs)	1
- 
-diff --git a/arch/blackfin/mach-common/ints-priority.c b/arch/blackfin/mach-common/ints-priority.c
-index af70f09..b421501 100644
---- a/arch/blackfin/mach-common/ints-priority.c
-+++ b/arch/blackfin/mach-common/ints-priority.c
-@@ -1052,35 +1052,34 @@ int __init init_arch_irq(void)
- 			set_irq_chained_handler(irq, bfin_demux_error_irq);
- 			break;
- #endif
--#if defined(CONFIG_TICKSOURCE_GPTMR0)
--		case IRQ_TIMER0:
--			set_irq_handler(irq, handle_percpu_irq);
--			break;
--#endif
- #ifdef CONFIG_SMP
- 		case IRQ_SUPPLE_0:
- 		case IRQ_SUPPLE_1:
- 			set_irq_handler(irq, handle_percpu_irq);
- 			break;
- #endif
--		default:
- #ifdef CONFIG_IPIPE
--			/*
--			 * We want internal interrupt sources to be
--			 * masked, because ISRs may trigger interrupts
--			 * recursively (e.g. DMA), but interrupts are
--			 * _not_ masked at CPU level. So let's handle
--			 * most of them as level interrupts, except
--			 * the timer interrupt which is special.
--			 */
--			if (irq == IRQ_SYSTMR || irq == IRQ_CORETMR)
--				set_irq_handler(irq, handle_simple_irq);
--			else
--				set_irq_handler(irq, handle_level_irq);
-+#ifndef CONFIG_TICKSOURCE_CORETMR
-+		case IRQ_TIMER0:
-+			set_irq_handler(irq, handle_simple_irq);
-+			break;
-+#endif /* !CONFIG_TICKSOURCE_CORETMR */
-+		case IRQ_CORETMR:
-+			set_irq_handler(irq, handle_simple_irq);
-+			break;
-+		default:
-+			set_irq_handler(irq, handle_level_irq);
-+			break;
- #else /* !CONFIG_IPIPE */
-+#ifdef CONFIG_TICKSOURCE_GPTMR0
-+		case IRQ_TIMER0:
-+			set_irq_handler(irq, handle_percpu_irq);
-+			break;
-+#endif /* CONFIG_TICKSOURCE_GPTMR0 */
-+		default:
- 			set_irq_handler(irq, handle_simple_irq);
--#endif /* !CONFIG_IPIPE */
- 			break;
-+#endif	/* !CONFIG_IPIPE */
- 		}
- 	}
- 
-@@ -1224,15 +1223,14 @@ __attribute__((l1_text))
- asmlinkage int __ipipe_grab_irq(int vec, struct pt_regs *regs)
- {
- 	struct ipipe_percpu_domain_data *p = ipipe_root_cpudom_ptr();
--	struct ipipe_domain *this_domain = ipipe_current_domain;
-+	struct ipipe_domain *this_domain = __ipipe_current_domain;
- 	struct ivgx *ivg_stop = ivg7_13[vec-IVG7].istop;
- 	struct ivgx *ivg = ivg7_13[vec-IVG7].ifirst;
- 	int irq, s;
- 
--	if (likely(vec == EVT_IVTMR_P)) {
-+	if (likely(vec == EVT_IVTMR_P))
- 		irq = IRQ_CORETMR;
+ EXPORT_SYMBOL(show_stack);
 -
--	} else {
-+	else {
- #if defined(SIC_ISR0) || defined(SICA_ISR0)
- 		unsigned long sic_status[3];
- 
-@@ -1262,12 +1260,11 @@ asmlinkage int __ipipe_grab_irq(int vec, struct pt_regs *regs)
- 				break;
- 		}
- #endif
+-#ifdef CONFIG_IPIPE_TRACE_MCOUNT
+-void notrace _mcount(void);
+-EXPORT_SYMBOL(_mcount);
+-#endif /* CONFIG_IPIPE_TRACE_MCOUNT */
+diff --git a/arch/blackfin/kernel/mcount.S b/arch/blackfin/kernel/mcount.S
+deleted file mode 100644
+index edcfb38..0000000
+--- a/arch/blackfin/kernel/mcount.S
++++ /dev/null
+@@ -1,70 +0,0 @@
+-/*
+- * linux/arch/blackfin/mcount.S
+- *
+- * Copyright (C) 2006 Analog Devices Inc.
+- *
+- * 2007/04/12 Save index, length, modify and base registers. --rpm
+- */
 -
- 		irq = ivg->irqno;
- 	}
- 
- 	if (irq == IRQ_SYSTMR) {
--#ifndef CONFIG_GENERIC_CLOCKEVENTS
-+#if !defined(CONFIG_GENERIC_CLOCKEVENTS) || defined(CONFIG_TICKSOURCE_GPTMR0)
- 		bfin_write_TIMER_STATUS(1); /* Latch TIMIL0 */
- #endif
- 		/* This is basically what we need from the register frame. */
+-#include <linux/linkage.h>
+-#include <asm/blackfin.h>
+-
+-.text
+-
+-.align 4 	/* just in case */
+-
+-ENTRY(__mcount)
+-	[--sp] = i0;
+-	[--sp] = i1;
+-	[--sp] = i2;
+-	[--sp] = i3;
+-	[--sp] = l0;
+-	[--sp] = l1;
+-	[--sp] = l2;
+-	[--sp] = l3;
+-	[--sp] = m0;
+-	[--sp] = m1;
+-	[--sp] = m2;
+-	[--sp] = m3;
+-	[--sp] = b0;
+-	[--sp] = b1;
+-	[--sp] = b2;
+-	[--sp] = b3;
+-	[--sp] = ( r7:0, p5:0 );
+-	[--sp] = ASTAT;
+-
+-	p1.L = _ipipe_trace_enable;
+-	p1.H = _ipipe_trace_enable;
+-	r7 = [p1];
+-	CC = r7 == 0;
+-	if CC jump out;
+-	link 0x10;
+-	r0 = 0x0;
+-	[sp + 0xc] = r0; /* v */
+-	r0 = 0x0;	/* type: IPIPE_TRACE_FN */
+-	r1 = rets;
+-	p0 = [fp];	/* p0: Prior FP */
+-	r2 = [p0 + 4];	/* r2: Prior RETS */
+-	call ___ipipe_trace;
+-	unlink;
+-out:
+-	ASTAT = [sp++];
+-	( r7:0, p5:0 ) = [sp++];
+-	b3 = [sp++];
+-	b2 = [sp++];
+-	b1 = [sp++];
+-	b0 = [sp++];
+-	m3 = [sp++];
+-	m2 = [sp++];
+-	m1 = [sp++];
+-	m0 = [sp++];
+-	l3 = [sp++];
+-	l2 = [sp++];
+-	l1 = [sp++];
+-	l0 = [sp++];
+-	i3 = [sp++];
+-	i2 = [sp++];
+-	i1 = [sp++];
+-	i0 = [sp++];
+-	rts;
+-ENDPROC(__mcount)
 -- 
 1.6.3.1
 
