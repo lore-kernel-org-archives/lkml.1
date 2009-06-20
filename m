@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbZFTOxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZFTOxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982AbZFTOxY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 10:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZFTOxN
+	id S1754995AbZFTOxy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 10:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZFTOxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 10:53:13 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:39526 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752437AbZFTOxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 10:53:11 -0400
-Subject: Re: generic_make_request fucntion for scsi_disk
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ravish Tayal <ravish.tayal@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
-In-Reply-To: <e42309110906200741x28595685jf56cd505d01cc795@mail.gmail.com>
-References: <e42309110906200705j6a731ecay204969f639af5330@mail.gmail.com>
-	 <1245507640.4255.6.camel@mulgrave.site>
-	 <e42309110906200741x28595685jf56cd505d01cc795@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 20 Jun 2009 09:53:09 -0500
-Message-Id: <1245509589.4255.15.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Jun 2009 10:53:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42665 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753142AbZFTOxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 10:53:45 -0400
+Date: Sat, 20 Jun 2009 10:45:39 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [POWERNOW PATCH] x86: powernow-k8 move power management MSRs
+	declaration to msr-index.h
+Message-ID: <20090620144539.GA19293@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jaswinder Singh Rajput <jaswinder@kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+	x86 maintainers <x86@kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <1245493581.8613.4.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245493581.8613.4.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please don't drop the cc list ... part of the point of this is to create
-an archive record for people with similar questions to find.
+On Sat, Jun 20, 2009 at 03:56:21PM +0530, Jaswinder Singh Rajput wrote:
+ > 
+ > Keep all MSRs declaration in msr-index.h to easily access MSRs declaration.
+ > 
+ > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-On Sat, 2009-06-20 at 20:11 +0530, Ravish Tayal wrote:
-> Thanks James. 
->  
-> For simple case when I echo few lines to usb mounted disk (fat file
-> system).
->  
-> mkdir /var/disk1
-> mount /dev/sda /var/disk1
-> echo "TESTing " >/var/disk1/test.txt
->  
-> in this case will it be echo commands context it will be queue the
-> commands to scsiglue.c or in between scsi layer would hold the
-> commands.
+The objection I have to this, is that there's no other use for these MSRs
+outside of a powernow driver. They aren't "power management MSRs"
+they're "powernow MSRs".
 
-That echo will end up in the page cache as a dirty page.
- 
-> I have noticed on usb analyser the write scsi commands happens for max
-> sector size (64K) ... does in this case scsi command would be happen 
-> for few bytes ?
+IMO msr-index should be used for MSRs that may be used by multiple files,
+reducing duplication.  Here we're just moving something around for
+no obvious benefit.
 
-Block commands all have to happen at a granularity of the device block
-size (512b usually).  The elevators try to build up to larger sizes.
-
-> or in other words is pdflush invokation indirectly control the WRITE
-> scsi command length if file is of few MB or scsi layer itself does
-> ot ?
-
-The elevators control final request size depending on what inputs they
-have and what parameters they were given.  In all cases, the request
-will be a multiple of the filesystem block size (which will be the same
-or bigger than the device block size).
-
-> I still not able to find where sd register its request queue to file
-> system.
-
-It doesn't.  The Filesystem registers with block via sys_mount and SCSI
-with block in scsi_lib.c:scsi_alloc_queue().
-
-James
-
+	Dave
 
