@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbZFTDWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932076AbZFTDYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760262AbZFTDWx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 23:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZFTDUj
+	id S932076AbZFTDYJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 23:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZFTDUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 23:20:39 -0400
-Received: from mga03.intel.com ([143.182.124.21]:50791 "EHLO mga03.intel.com"
+	Fri, 19 Jun 2009 23:20:55 -0400
+Received: from mga03.intel.com ([143.182.124.21]:5938 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753473AbZFTDUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753468AbZFTDUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Jun 2009 23:20:05 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,257,1243839600"; 
-   d="scan'208";a="156644150"
-Message-Id: <20090620031625.120958248@intel.com>
+   d="scan'208";a="156644153"
+Message-Id: <20090620031625.292136698@intel.com>
 References: <20090620031608.624240019@intel.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 20 Jun 2009 11:16:12 +0800
+Date: Sat, 20 Jun 2009 11:16:13 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>
@@ -29,78 +29,89 @@ cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
        Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 04/15] HWPOISON: Add new SIGBUS error codes for hardware poison signals
-Content-Disposition: inline; filename=poison-signal
+Subject: [PATCH 05/15] HWPOISON: Add basic support for poisoned pages in fault handler v3
+Content-Disposition: inline; filename=vm-fault-poison
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andi Kleen <ak@linux.intel.com>
 
-Add new SIGBUS codes for reporting machine checks as signals. When 
-the hardware detects an uncorrected ECC error it can trigger these
-signals.
+- Add a new VM_FAULT_HWPOISON error code to handle_mm_fault. Right now
+architectures have to explicitely enable poison page support, so
+this is forward compatible to all architectures. They only need
+to add it when they enable poison page support.
+- Add poison page handling in swap in fault code
 
-This is needed for telling KVM's qemu about machine checks that happen to
-guests, so that it can inject them, but might be also useful for other programs.
-I find it useful in my test programs.
+v2: Add missing delayacct_clear_flag (Hidehiro Kawai)
+v3: Really use delayacct_clear_flag (Hidehiro Kawai)
 
-This patch merely defines the new types.
-
-- Define two new si_codes for SIGBUS.  BUS_MCEERR_AO and BUS_MCEERR_AR
-* BUS_MCEERR_AO is for "Action Optional" machine checks, which means that some
-corruption has been detected in the background, but nothing has been consumed
-so far. The program can ignore those if it wants (but most programs would
-already get killed)
-* BUS_MCEERR_AR is for "Action Required" machine checks. This happens
-when corrupted data is consumed or the application ran into an area
-which has been known to be corrupted earlier. These require immediate
-action and cannot just returned to. Most programs would kill themselves.
-- They report the address of the corruption in the user address space
-in si_addr.
-- Define a new si_addr_lsb field that reports the extent of the corruption
-to user space. That's currently always a (small) page. The user application
-cannot tell where in this page the corruption happened.
-
-AK: I plan to write a man page update before anyone asks.
-
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Reviewed-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/asm-generic/siginfo.h |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ include/linux/mm.h |    3 ++-
+ mm/memory.c        |   18 +++++++++++++++---
+ 2 files changed, 17 insertions(+), 4 deletions(-)
 
---- sound-2.6.orig/include/asm-generic/siginfo.h
-+++ sound-2.6/include/asm-generic/siginfo.h
-@@ -82,6 +82,7 @@ typedef struct siginfo {
- #ifdef __ARCH_SI_TRAPNO
- 			int _trapno;	/* TRAP # which caused the signal */
- #endif
-+			short _addr_lsb; /* LSB of the reported address */
- 		} _sigfault;
+--- sound-2.6.orig/mm/memory.c
++++ sound-2.6/mm/memory.c
+@@ -1315,7 +1315,8 @@ int __get_user_pages(struct task_struct 
+ 				if (ret & VM_FAULT_ERROR) {
+ 					if (ret & VM_FAULT_OOM)
+ 						return i ? i : -ENOMEM;
+-					else if (ret & VM_FAULT_SIGBUS)
++					if (ret &
++					    (VM_FAULT_HWPOISON|VM_FAULT_SIGBUS))
+ 						return i ? i : -EFAULT;
+ 					BUG();
+ 				}
+@@ -2595,8 +2596,15 @@ static int do_swap_page(struct mm_struct
+ 		goto out;
  
- 		/* SIGPOLL */
-@@ -112,6 +113,7 @@ typedef struct siginfo {
- #ifdef __ARCH_SI_TRAPNO
- #define si_trapno	_sifields._sigfault._trapno
- #endif
-+#define si_addr_lsb	_sifields._sigfault._addr_lsb
- #define si_band		_sifields._sigpoll._band
- #define si_fd		_sifields._sigpoll._fd
+ 	entry = pte_to_swp_entry(orig_pte);
+-	if (is_migration_entry(entry)) {
+-		migration_entry_wait(mm, pmd, address);
++	if (unlikely(non_swap_entry(entry))) {
++		if (is_migration_entry(entry)) {
++			migration_entry_wait(mm, pmd, address);
++		} else if (is_hwpoison_entry(entry)) {
++			ret = VM_FAULT_HWPOISON;
++		} else {
++			print_bad_pte(vma, address, pte, NULL);
++			ret = VM_FAULT_OOM;
++		}
+ 		goto out;
+ 	}
+ 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+@@ -2620,6 +2628,10 @@ static int do_swap_page(struct mm_struct
+ 		/* Had to read the page from swap area: Major fault */
+ 		ret = VM_FAULT_MAJOR;
+ 		count_vm_event(PGMAJFAULT);
++	} else if (PageHWPoison(page)) {
++		ret = VM_FAULT_HWPOISON;
++		delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
++		goto out;
+ 	}
  
-@@ -192,7 +194,11 @@ typedef struct siginfo {
- #define BUS_ADRALN	(__SI_FAULT|1)	/* invalid address alignment */
- #define BUS_ADRERR	(__SI_FAULT|2)	/* non-existant physical address */
- #define BUS_OBJERR	(__SI_FAULT|3)	/* object specific hardware error */
--#define NSIGBUS		3
-+/* hardware memory error consumed on a machine check: action required */
-+#define BUS_MCEERR_AR	(__SI_FAULT|4)
-+/* hardware memory error detected in process but not consumed: action optional*/
-+#define BUS_MCEERR_AO	(__SI_FAULT|5)
-+#define NSIGBUS		5
+ 	lock_page(page);
+--- sound-2.6.orig/include/linux/mm.h
++++ sound-2.6/include/linux/mm.h
+@@ -700,11 +700,12 @@ static inline int page_mapped(struct pag
+ #define VM_FAULT_SIGBUS	0x0002
+ #define VM_FAULT_MAJOR	0x0004
+ #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
++#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
+ 
+ #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page */
+ #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
+ 
+-#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS)
++#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_HWPOISON)
  
  /*
-  * SIGTRAP si_codes
+  * Can be called by the pagefault handler when it gets a VM_FAULT_OOM.
 
 -- 
 
