@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbZFTPdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZFTPfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166AbZFTPdM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 11:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbZFTPc7
+	id S1755842AbZFTPfb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 11:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZFTPfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 11:32:59 -0400
-Received: from mail-px0-f202.google.com ([209.85.216.202]:52565 "EHLO
-	mail-px0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbZFTPc6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 11:32:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y4gWjAvLY37d2jZpANdIOZBT35N1AycyE0uJ7DzzIUyx+e7xRztBjgZHz7Q++bcmmI
-         dK8OUNbjsaiLfyMt9LRcAwoJtFPGFYWj82XVbjSovNo5D+dk+saaYyIt6vU05EzT9RYo
-         whtzNu/nU0wgKE6Ex+O51zopEPpJSUMBAGcgQ=
+	Sat, 20 Jun 2009 11:35:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33299 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752416AbZFTPfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 11:35:23 -0400
+Date: Sat, 20 Jun 2009 17:35:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, svaidy@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
+       Nathan Lynch <ntl@pobox.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
+Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
+Message-ID: <20090620153503.GA11701@elte.hu>
+References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com> <20090615232318.74b099a6.akpm@linux-foundation.org> <20090616080715.GB7961@dirshya.in.ibm.com> <1245223977.13761.21576.camel@twins> <20090617143804.GA6767@linux.vnet.ibm.com> <20090617150700.GB20345@elte.hu> <1245270387.6670.19.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0906201052090.13441-100000@netrider.rowland.org>
-References: <e42309110906200746u441b82acvec4e3e513253af0@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0906201052090.13441-100000@netrider.rowland.org>
-Date: Sat, 20 Jun 2009 21:03:00 +0530
-Message-ID: <e42309110906200833q52b392d3n592712c0f81b6c9c@mail.gmail.com>
-Subject: Re: generic_make_request fucntion for scsi_disk
-From: Ravish Tayal <ravish.tayal@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245270387.6670.19.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry My mistake.
-I will take care of it now onwards
-regards
-Ravish
 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-On Sat, Jun 20, 2009 at 8:26 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
-> You should use Reply-To-All so that other people reading the mailing
-> list will be able to follow and contribute to the thread.
->
-> On Sat, 20 Jun 2009, Ravish Tayal wrote:
->
->> Thanks Alan,
->>
->> I am actually trying to profile the time taken by each layer to complete the
->> disk write opertaion as sys_write to queue_command invokation veries alot.
->
-> Of course it varies.  The kernel buffers disk writes, shuffles them
-> around, and then carries them out when it wants to.  As James has
-> pointed out, your write(2) system calls don't directly cause any I/O to
-> take place.
->
-> Alan Stern
->
->
->
+> On Wed, 2009-06-17 at 17:07 +0200, Ingo Molnar wrote:
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Wed, Jun 17, 2009 at 09:32:57AM +0200, Peter Zijlstra wrote:
+> > > > On Tue, 2009-06-16 at 13:37 +0530, Vaidyanathan Srinivasan wrote:
+> > > > > * Andrew Morton <akpm@linux-foundation.org> [2009-06-15 23:23:18]:
+> > > > > 
+> > > > > > On Tue, 16 Jun 2009 11:08:39 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+> > > > > > 
+> > > > > > > Currently on a ppc64 box with 16 CPUs, the time taken for
+> > > > > > > a individual cpu-hotplug operation is as follows.
+> > > > > > > 
+> > > > > > >     # time echo 0 > /sys/devices/system/cpu/cpu2/online
+> > > > > > >     real    0m0.025s
+> > > > > > >     user    0m0.000s
+> > > > > > >     sys     0m0.002s
+> > > > > > > 
+> > > > > > >     # time echo 1 > /sys/devices/system/cpu/cpu2/online
+> > > > > > >     real    0m0.021s
+> > > > > > >     user    0m0.000s
+> > > > > > >     sys     0m0.000s
+> > > > > > 
+> > > > > > Surprised.  Do people really online and offline CPUs frequently enough
+> > > > > > for this to be a problem?
+> > > > > 
+> > > > > Certainly not for hardware faults or hardware replacement, but
+> > > > > cpu-hotplug interface is useful for changing system configuration to
+> > > > > meet different objectives like
+> > > > > 
+> > > > > * Reduce system capacity to reduce average power and reduce heat
+> > > > > 
+> > > > > * Increasing number of cores and threads in a CPU package is leading
+> > > > >   to multiple cpu offline/online operations for any perceivable effect
+> > > > > 
+> > > > > * Dynamically change CPU configurations in virtualized environments
+> > > > 
+> > > > I tend to agree with Andrew, if any of those things are done 
+> > > > frequent enough that the hotplug performance matter you're doing 
+> > > > something mighty odd.
+> > > 
+> > > Boot speedup?
+> > 
+> > Also, if it brings more attention (and more stability and more 
+> > bugfixes) to CPU hotplug that's only good.
+> 
+> Sure, but do we need the extra complexity?
+> 
+> I mean, sure bootup speed might be nice, but any of the scenarios 
+> given should simply not require cpu hotplug actions of a frequent 
+> enough nature that any performance matters.
+
+Well, the fact that the patches exist show that there's people 
+caring about the speedup here. The speedup itself is non-trivial.
+
+If the patches are technically correct, and if any existing 
+uncleanlinesses in the affected code are fixed first (please list 
+any TODO items in the CPU hotplug code you might know about), then 
+there's no reason not to pursue these patches - unless the 
+complexity increase is so huge that it makes the patches technically 
+wrong.
+
+The diffstat doesnt look _that_ awful IMO - 50 lines of code and i 
+suspect the patches come with a promise to properly handle all prior 
+and later bugs in this area? :)
+
+	Ingo
