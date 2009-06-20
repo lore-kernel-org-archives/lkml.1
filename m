@@ -1,518 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbZFTQIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZFTQZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbZFTQIN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 12:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZFTQH7
+	id S1756324AbZFTQZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 12:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbZFTQZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 12:07:59 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:56564 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbZFTQH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 12:07:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=ihmmhma37hq7AYkxnNB8oTIuUZMMserRM+hidJjxVZvii2m0U6KlnKolXsqO5IIqc5
-         tyJmJcLqk3L9WyaBBO7RPxDTTHlb8LbTeWsGP89CFE2PCMZ4o2sh/ApxGvjTxA3SlOzM
-         iZpCWN2WPfTv9FopabMYJdpE7pco8PyklWWuI=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       Forest Bond <forest@alittletooquiet.net>
-Subject: [PATCH] Staging: vt6655: remove dependency on WIRELESS_EXT version
-Date: Sat, 20 Jun 2009 20:07:50 +0400
-Message-Id: <1245514070-30939-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.3.1
+	Sat, 20 Jun 2009 12:25:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50145 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229AbZFTQZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 12:25:15 -0400
+Date: Sat, 20 Jun 2009 18:25:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/2] function-graph: disable when both x86_32 and
+	optimize for size are configured
+Message-ID: <20090620162513.GD32377@elte.hu>
+References: <20090618224409.916725341@goodmis.org> <20090618225248.476090968@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090618225248.476090968@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As the driver is in mainline now we can remove such dependencies.
-WIRELESS_EXT is 22 now.
 
-Cc: Forest Bond <forest@alittletooquiet.net>
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/staging/vt6655/device.h      |    4 --
- drivers/staging/vt6655/device_main.c |   20 +-------
- drivers/staging/vt6655/hostap.h      |    8 ---
- drivers/staging/vt6655/iwctl.c       |   77 -------------------------------
- drivers/staging/vt6655/iwctl.h       |   83 ----------------------------------
- 5 files changed, 2 insertions(+), 190 deletions(-)
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-diff --git a/drivers/staging/vt6655/device.h b/drivers/staging/vt6655/device.h
-index 264d1bb..6726b2c 100644
---- a/drivers/staging/vt6655/device.h
-+++ b/drivers/staging/vt6655/device.h
-@@ -70,16 +70,12 @@
- #endif
- /* Include Wireless Extension definition and check version - Jean II */
- #include <linux/wireless.h>
--#if WIRELESS_EXT > 12
- #include <net/iw_handler.h>	// New driver API
--#endif	/* WIRELESS_EXT > 12 */
- 
- //2008-0409-07, <Add> by Einsn Liu
--#if WIRELESS_EXT > 17
- #ifndef WPA_SUPPLICANT_DRIVER_WEXT_SUPPORT
- #define WPA_SUPPLICANT_DRIVER_WEXT_SUPPORT
- #endif
--#endif
- //2008-4-14<add> by chester for led issue
- //#define FOR_LED_ON_NOTEBOOK
- //
-diff --git a/drivers/staging/vt6655/device_main.c b/drivers/staging/vt6655/device_main.c
-index 878c0f0..bba319a 100644
---- a/drivers/staging/vt6655/device_main.c
-+++ b/drivers/staging/vt6655/device_main.c
-@@ -3412,7 +3412,6 @@ static int  device_ioctl(struct net_device *dev, struct ifreq *rq, int cmd) {
-     switch(cmd) {
- 
- #ifdef WIRELESS_EXT
--//#if WIRELESS_EXT < 13
- 
- 	case SIOCGIWNAME:
- 		rc = iwctl_giwname(dev, NULL, (char *)&(wrq->u.name), NULL);
-@@ -3588,7 +3587,6 @@ static int  device_ioctl(struct net_device *dev, struct ifreq *rq, int cmd) {
- 		}
- 		break;
- 
--#if WIRELESS_EXT > 9
- 		// Get the current Tx-Power
- 	case SIOCGIWTXPOW:
-         DEVICE_PRT(MSG_LEVEL_DEBUG, KERN_INFO " SIOCGIWTXPOW \n");
-@@ -3600,9 +3598,6 @@ static int  device_ioctl(struct net_device *dev, struct ifreq *rq, int cmd) {
-         rc = -EOPNOTSUPP;
- 		break;
- 
--#endif // WIRELESS_EXT > 9
--
--#if WIRELESS_EXT > 10
- 	case SIOCSIWRETRY:
- 
- 		rc = iwctl_siwretry(dev, NULL, &(wrq->u.retry), NULL);
-@@ -3613,8 +3608,6 @@ static int  device_ioctl(struct net_device *dev, struct ifreq *rq, int cmd) {
- 		rc = iwctl_giwretry(dev, NULL, &(wrq->u.retry), NULL);
- 		break;
- 
--#endif // WIRELESS_EXT > 10
--
- 		// Get range of parameters
- 	case SIOCGIWRANGE:
- 
-@@ -3701,7 +3694,6 @@ static int  device_ioctl(struct net_device *dev, struct ifreq *rq, int cmd) {
- 		break;
- 
- 
--//#endif // WIRELESS_EXT < 13
- //2008-0409-07, <Add> by Einsn Liu
- #ifdef  WPA_SUPPLICANT_DRIVER_WEXT_SUPPORT
- 	case SIOCSIWAUTH:
-@@ -3799,20 +3791,12 @@ static int  device_ioctl(struct net_device *dev, struct ifreq *rq, int cmd) {
-     case IOCTL_CMD_HOSTAPD:
- 
- 
--#if WIRELESS_EXT > 8
--		rc = hostap_ioctl(pDevice, &wrq->u.data);
--#else // WIRELESS_EXT > 8
--		rc = hostap_ioctl(pDevice, (struct iw_point *) &wrq->u.data);
--#endif // WIRELESS_EXT > 8
-+	rc = hostap_ioctl(pDevice, &wrq->u.data);
-         break;
- 
-     case IOCTL_CMD_WPA:
- 
--#if WIRELESS_EXT > 8
--		rc = wpa_ioctl(pDevice, &wrq->u.data);
--#else // WIRELESS_EXT > 8
--		rc = wpa_ioctl(pDevice, (struct iw_point *) &wrq->u.data);
--#endif // WIRELESS_EXT > 8
-+	rc = wpa_ioctl(pDevice, &wrq->u.data);
-         break;
- 
- 	case SIOCETHTOOL:
-diff --git a/drivers/staging/vt6655/hostap.h b/drivers/staging/vt6655/hostap.h
-index 1fcb2f0..c5ad349 100644
---- a/drivers/staging/vt6655/hostap.h
-+++ b/drivers/staging/vt6655/hostap.h
-@@ -37,14 +37,6 @@
- 
- /*---------------------  Export Definitions -------------------------*/
- 
--#if WIRELESS_EXT < 9
--struct iw_point {
--	caddr_t pointer;
--	__u16 length;
--	__u16 flags;
--};
--#endif /* WIRELESS_EXT < 9 */
--
- #define WLAN_RATE_1M    BIT0
- #define WLAN_RATE_2M    BIT1
- #define WLAN_RATE_5M5   BIT2
-diff --git a/drivers/staging/vt6655/iwctl.c b/drivers/staging/vt6655/iwctl.c
-index 4d5a1da..b7c75a6 100644
---- a/drivers/staging/vt6655/iwctl.c
-+++ b/drivers/staging/vt6655/iwctl.c
-@@ -68,9 +68,7 @@
- #endif
- #endif
- 
--#if WIRELESS_EXT > 12
- #include <net/iw_handler.h>
--#endif
- extern WORD TxRate_iwconfig;//2008-5-8 <add> by chester
- 
- /*---------------------  Static Definitions -------------------------*/
-@@ -109,8 +107,6 @@ static int          msglevel                =MSG_LEVEL_INFO;
- 
- #ifdef WIRELESS_EXT
- 
--#if WIRELESS_EXT > 12
--
- struct iw_statistics *iwctl_get_wireless_stats(struct net_device *dev)
- {
- 	PSDevice pDevice = netdev_priv(dev);
-@@ -156,8 +152,6 @@ struct iw_statistics *iwctl_get_wireless_stats(struct net_device *dev)
- 	return &pDevice->wstats;
- }
- 
--#endif
--
- 
- 
- /*------------------------------------------------------------------*/
-@@ -198,7 +192,6 @@ int iwctl_giwnwid(struct net_device *dev,
- 	//return 0;
-   return -EOPNOTSUPP;
- }
--#if WIRELESS_EXT > 13
- 
- /*
-  * Wireless Handler : set scan
-@@ -286,9 +279,7 @@ int iwctl_giwscan(struct net_device *dev,
- 	char *current_val = NULL;
- 	struct iw_event iwe;
- 	long ldBm;
--#if WIRELESS_EXT > 14
- 	char buf[MAX_WPA_IE_LEN * 2 + 30];
--#endif /* WIRELESS_EXT > 14 */
- 
- 
-     DEVICE_PRT(MSG_LEVEL_DEBUG, KERN_INFO " SIOCGIWSCAN \n");
-@@ -397,14 +388,12 @@ int iwctl_giwscan(struct net_device *dev,
- 	        if((current_val - current_ev) > IW_EV_LCP_LEN)
- 		        current_ev = current_val;
- 
--#if WIRELESS_EXT > 14
-             memset(&iwe, 0, sizeof(iwe));
-             iwe.cmd = IWEVCUSTOM;
-             sprintf(buf, "bcn_int=%d", pBSS->wBeaconInterval);
-             iwe.u.data.length = strlen(buf);
-             current_ev = iwe_stream_add_point(info,current_ev, end_buf, &iwe, buf);
- 
--#if WIRELESS_EXT > 17
-             if ((pBSS->wWPALen > 0) && (pBSS->wWPALen <= MAX_WPA_IE_LEN)) {
-                 memset(&iwe, 0, sizeof(iwe));
-                 iwe.cmd = IWEVGENIE;
-@@ -419,33 +408,6 @@ int iwctl_giwscan(struct net_device *dev,
-                 current_ev = iwe_stream_add_point(info,current_ev, end_buf, &iwe, pBSS->byRSNIE);
-             }
- 
--#else // WIRELESS_EXT > 17
--            if ((pBSS->wWPALen > 0) && (pBSS->wWPALen <= MAX_WPA_IE_LEN)) {
--                u8 *p = buf;
--                memset(&iwe, 0, sizeof(iwe));
--                iwe.cmd = IWEVCUSTOM;
--		        p += sprintf(p, "wpa_ie=");
--		        for (ii = 0; ii < pBSS->wWPALen; ii++) {
--			        p += sprintf(p, "%02x", pBSS->byWPAIE[ii]);
--		        }
--		        iwe.u.data.length = strlen(buf);
--                current_ev = iwe_stream_add_point(info,current_ev, end_buf, &iwe, buf);
--		    }
--
--
--            if ((pBSS->wRSNLen > 0) && (pBSS->wRSNLen <= MAX_WPA_IE_LEN)) {
--                u8 *p = buf;
--                memset(&iwe, 0, sizeof(iwe));
--                iwe.cmd = IWEVCUSTOM;
--		        p += sprintf(p, "rsn_ie=");
--		        for (ii = 0; ii < pBSS->wRSNLen; ii++) {
--			        p += sprintf(p, "%02x", pBSS->byRSNIE[ii]);
--		        }
--		        iwe.u.data.length = strlen(buf);
--                current_ev = iwe_stream_add_point(info,current_ev, end_buf, &iwe, buf);
--		    }
--#endif
--#endif
-         }
-     }// for
- 
-@@ -454,8 +416,6 @@ int iwctl_giwscan(struct net_device *dev,
- 
- }
- 
--#endif	/* WIRELESS_EXT > 13 */
--
- 
- /*
-  * Wireless Handler : set frequence or channel
-@@ -708,12 +668,9 @@ int iwctl_giwrange(struct net_device *dev,
- 	    // 4 keys are allowed
- 	    range->max_encoding_tokens = 4;
- 
--#if WIRELESS_EXT > 17
- 	    range->enc_capa = IW_ENC_CAPA_WPA | IW_ENC_CAPA_WPA2 |
- 		    IW_ENC_CAPA_CIPHER_TKIP | IW_ENC_CAPA_CIPHER_CCMP;
--#endif
- 
--#if WIRELESS_EXT > 9
- 		range->min_pmp = 0;
- 		range->max_pmp = 1000000;// 1 secs
- 		range->min_pmt = 0;
-@@ -727,8 +684,6 @@ int iwctl_giwrange(struct net_device *dev,
-         range->txpower[0] = 100;
- 		range->num_txpower = 1;
- 		range->txpower_capa = IW_TXPOW_MWATT;
--#endif // WIRELESS_EXT > 9
--#if WIRELESS_EXT > 10
- 		range->we_version_source = SUPPORTED_WIRELESS_EXT;
- 		range->we_version_compiled = WIRELESS_EXT;
- 		range->retry_capa = IW_RETRY_LIMIT | IW_RETRY_LIFETIME;
-@@ -738,15 +693,12 @@ int iwctl_giwrange(struct net_device *dev,
- 		range->max_retry = 65535;
- 		range->min_r_time = 1024;
- 		range->max_r_time = 65535 * 1024;
--#endif // WIRELESS_EXT > 10
--#if WIRELESS_EXT > 11
- 		// Experimental measurements - boundary 11/5.5 Mb/s
- 		// Note : with or without the (local->rssi), results
- 		//  are somewhat different. - Jean II
- 		range->avg_qual.qual = 6;
- 		range->avg_qual.level = 176;	// -80 dBm
- 		range->avg_qual.noise = 0;
--#endif // WIRELESS_EXT > 11
- 	}
- 
- 
-@@ -1004,13 +956,8 @@ if (pMgmt->eScanState ==  WMAC_IS_SCANNING) {
- 
- 	    DEVICE_PRT(MSG_LEVEL_DEBUG, KERN_INFO "set essid = %s \n", pItemSSID->abySSID);
- /*
--	             #if WIRELESS_EXT < 21
-- DEVICE_PRT(MSG_LEVEL_INFO, KERN_INFO " SIOCSIWESSID1 \n");
--		pItemSSID->len = wrq->length - 1;
--	     #else
-  DEVICE_PRT(MSG_LEVEL_INFO, KERN_INFO " SIOCSIWESSID2 \n");
- 		pItemSSID->len = wrq->length;
--	     #endif
- 	     */
- 	}
- 
-@@ -1049,11 +996,7 @@ int iwctl_giwessid(struct net_device *dev,
- 	extra[pItemSSID->len] = '\0';
- 	wrq->length = pItemSSID->len + 1;
- 	        //2008-0409-03, <Add> by Einsn Liu
--        #if WIRELESS_EXT < 21
--	wrq->length = pItemSSID->len + 1;
--        #else
-         wrq->length = pItemSSID->len;
--        #endif
- 	wrq->flags = 1; // active
- 
- 
-@@ -2217,8 +2160,6 @@ int iwctl_siwmlme(struct net_device *dev,
-  */
- 
- 
--#if WIRELESS_EXT > 12
--
- /*
- static const iw_handler		iwctl_handler[] =
- {
-@@ -2246,13 +2187,8 @@ static const iw_handler		iwctl_handler[] =
- 	(iw_handler) iwctl_giwap,		    // SIOCGIWAP
- 	(iw_handler) NULL,				    // -- hole -- 0x16
- 	(iw_handler) iwctl_giwaplist,       // SIOCGIWAPLIST
--#if WIRELESS_EXT > 13
- 	(iw_handler) iwctl_siwscan,         // SIOCSIWSCAN
- 	(iw_handler) iwctl_giwscan,         // SIOCGIWSCAN
--#else
--	(iw_handler) NULL,
--	(iw_handler) NULL,
--#endif
- 	(iw_handler) iwctl_siwessid,		// SIOCSIWESSID
- 	(iw_handler) iwctl_giwessid,		// SIOCGIWESSID
- 	(iw_handler) NULL,		// SIOCSIWNICKN
-@@ -2273,7 +2209,6 @@ static const iw_handler		iwctl_handler[] =
- 	(iw_handler) iwctl_giwencode,		// SIOCGIWENCODE
- 	(iw_handler) iwctl_siwpower,		// SIOCSIWPOWER
- 	(iw_handler) iwctl_giwpower,		// SIOCGIWPOWER
--#if WIRELESS_EXT > 17
- 	(iw_handler) NULL,			// -- hole --
- 	(iw_handler) NULL,			// -- hole --
- 	(iw_handler) iwctl_siwgenie,    // SIOCSIWGENIE
-@@ -2284,7 +2219,6 @@ static const iw_handler		iwctl_handler[] =
- 	(iw_handler) iwctl_giwencodeext,		// SIOCGIWENCODEEXT
- 	(iw_handler) NULL,				// SIOCSIWPMKSA
- 	(iw_handler) NULL,				// -- hole --
--#endif // WIRELESS_EXT > 17
- 
- };
- */
-@@ -2315,13 +2249,8 @@ static const iw_handler		iwctl_handler[] =
- 	(iw_handler) NULL,		    // SIOCGIWAP
- 	(iw_handler) NULL,				    // -- hole -- 0x16
- 	(iw_handler) NULL,       // SIOCGIWAPLIST
--#if WIRELESS_EXT > 13
- 	(iw_handler) iwctl_siwscan,         // SIOCSIWSCAN
- 	(iw_handler) iwctl_giwscan,         // SIOCGIWSCAN
--#else
--	(iw_handler) NULL,
--	(iw_handler) NULL,
--#endif
- 	(iw_handler) NULL,		// SIOCSIWESSID
- 	(iw_handler) NULL,		// SIOCGIWESSID
- 	(iw_handler) NULL,		// SIOCSIWNICKN
-@@ -2344,7 +2273,6 @@ static const iw_handler		iwctl_handler[] =
- 	(iw_handler) NULL,		// SIOCGIWPOWER
- 
- //2008-0409-07, <Add> by Einsn Liu
--#if WIRELESS_EXT > 17
- 	(iw_handler) NULL,			// -- hole --
- 	(iw_handler) NULL,			// -- hole --
- 	(iw_handler) NULL,    // SIOCSIWGENIE
-@@ -2355,7 +2283,6 @@ static const iw_handler		iwctl_handler[] =
- 	(iw_handler) NULL,		// SIOCGIWENCODEEXT
- 	(iw_handler) NULL,				// SIOCSIWPMKSA
- 	(iw_handler) NULL,				// -- hole --
--#endif // WIRELESS_EXT > 17
- };
- 
- 
-@@ -2375,9 +2302,7 @@ struct iw_priv_args iwctl_private_args[] = {
- 
- const struct iw_handler_def	iwctl_handler_def =
- {
--#if WIRELESS_EXT > 16
- 	.get_wireless_stats = &iwctl_get_wireless_stats,
--#endif
- 	.num_standard	= sizeof(iwctl_handler)/sizeof(iw_handler),
- //	.num_private	= sizeof(iwctl_private_handler)/sizeof(iw_handler),
- //	.num_private_args = sizeof(iwctl_private_args)/sizeof(struct iw_priv_args),
-@@ -2391,7 +2316,5 @@ const struct iw_handler_def	iwctl_handler_def =
- };
- 
- 
--#endif // WIRELESS_EXT > 12
--
- 
- #endif // WIRELESS_EXT
-diff --git a/drivers/staging/vt6655/iwctl.h b/drivers/staging/vt6655/iwctl.h
-index 07554e1..147af9d 100644
---- a/drivers/staging/vt6655/iwctl.h
-+++ b/drivers/staging/vt6655/iwctl.h
-@@ -50,85 +50,6 @@ extern "C" {                            /* Assume C declarations for C++ */
- #endif /* __cplusplus */
- 
- 
--#if WIRELESS_EXT < 18
--
--
--#define SIOCSIWMLME	        0x8B16
--#define SIOCSIWGENIE	    0x8B30
--
--// WPA : Authentication mode parameters
--#define SIOCSIWAUTH	        0x8B32
--#define SIOCGIWAUTH	        0x8B33
--
--// WPA : Extended version of encoding configuration
--#define SIOCSIWENCODEEXT    0x8B34
--#define SIOCGIWENCODEEXT    0x8B35
--
--#define IW_AUTH_WPA_VERSION		0
--#define IW_AUTH_CIPHER_PAIRWISE		1
--#define IW_AUTH_CIPHER_GROUP		2
--#define IW_AUTH_KEY_MGMT		3
--#define IW_AUTH_TKIP_COUNTERMEASURES	4
--#define IW_AUTH_DROP_UNENCRYPTED	5
--#define IW_AUTH_80211_AUTH_ALG		6
--#define IW_AUTH_WPA_ENABLED		7
--#define IW_AUTH_RX_UNENCRYPTED_EAPOL	8
--#define IW_AUTH_ROAMING_CONTROL		9
--#define IW_AUTH_PRIVACY_INVOKED		10
--
--#define IW_AUTH_WPA_VERSION_DISABLED	0x00000001
--#define IW_AUTH_WPA_VERSION_WPA		0x00000002
--#define IW_AUTH_WPA_VERSION_WPA2	0x00000004
--
--#define IW_AUTH_CIPHER_NONE	    0x00000001
--#define IW_AUTH_CIPHER_WEP40	0x00000002
--#define IW_AUTH_CIPHER_TKIP	    0x00000004
--#define IW_AUTH_CIPHER_CCMP	    0x00000008
--#define IW_AUTH_CIPHER_WEP104	0x00000010
--
--#define IW_AUTH_KEY_MGMT_802_1X	1
--#define IW_AUTH_KEY_MGMT_PSK	2
--
--#define IW_AUTH_ALG_OPEN_SYSTEM	0x00000001
--#define IW_AUTH_ALG_SHARED_KEY	0x00000002
--#define IW_AUTH_ALG_LEAP	0x00000004
--
--#define IW_AUTH_ROAMING_ENABLE	0
--#define IW_AUTH_ROAMING_DISABLE	1
--
--#define IW_ENCODE_SEQ_MAX_SIZE	8
--
--#define IW_ENCODE_ALG_NONE	0
--#define IW_ENCODE_ALG_WEP	1
--#define IW_ENCODE_ALG_TKIP	2
--#define IW_ENCODE_ALG_CCMP	3
--
--
--struct	iw_encode_ext
--{
--	__u32		ext_flags; // IW_ENCODE_EXT_*
--	__u8		tx_seq[IW_ENCODE_SEQ_MAX_SIZE]; // LSB first
--	__u8		rx_seq[IW_ENCODE_SEQ_MAX_SIZE]; // LSB first
--	struct sockaddr	addr; // ff:ff:ff:ff:ff:ff for broadcast/multicast
--			              // (group) keys or unicast address for
--			              // individual keys
--	__u16		alg; // IW_ENCODE_ALG_*
--	__u16		key_len;
--	__u8		key[0];
--};
--
--
--struct	iw_mlme
--{
--	__u16		cmd; /* IW_MLME_* */
--	__u16		reason_code;
--	struct sockaddr	addr;
--};
--
--#endif // WIRELESS_EXT < 18
--
--
--
- #ifdef WIRELESS_EXT
- 
- struct iw_statistics *iwctl_get_wireless_stats (struct net_device *dev);
-@@ -312,12 +233,8 @@ int iwctl_siwmlme(struct net_device *dev,
- 
- #endif
- 
--#if WIRELESS_EXT > 12
- extern const struct iw_handler_def	iwctl_handler_def;
- extern const struct iw_priv_args	iwctl_private_args;
--#else
--struct iw_request_info {};
--#endif	//WIRELESS_EXT > 12
- 
- #ifdef __cplusplus
- }                                       /* End of extern "C" { */
--- 
-1.6.3.1
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index 4a13e5a..1eac852 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -121,6 +121,7 @@ config FUNCTION_GRAPH_TRACER
+>  	bool "Kernel Function Graph Tracer"
+>  	depends on HAVE_FUNCTION_GRAPH_TRACER
+>  	depends on FUNCTION_TRACER
+> +	depends on !X86_32 || !CC_OPTIMIZE_FOR_SIZE
+>  	default y
 
+Hm, nice fix, but this is a quite nasty constraint - distros like to 
+enable CC_OPTIMIZE_FOR_SIZE as it neatly trims the kernel's size by 
+about 30%.
+
+Just in case you have not checked yet: is there no way to turn off 
+the specific gcc optimization that causes this? Or is it -Os itself 
+that does this optimization?
+
+	Ingo
