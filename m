@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbZFTRki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbZFTRnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208AbZFTRki (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 13:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbZFTRk3
+	id S1756752AbZFTRnr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 13:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbZFTRnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 13:40:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44721 "EHLO mx3.mail.elte.hu"
+	Sat, 20 Jun 2009 13:43:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43768 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753602AbZFTRk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 13:40:28 -0400
-Date: Sat, 20 Jun 2009 19:40:22 +0200
+	id S1753924AbZFTRng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 13:43:36 -0400
+Date: Sat, 20 Jun 2009 19:43:28 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: Accessing user memory from NMI
-Message-ID: <20090620174022.GA29685@elte.hu>
-References: <19001.63708.989256.78908@cargo.ozlabs.ibm.com> <1245314169.13761.23121.camel@twins> <20090620163459.GB12127@elte.hu> <20090620165820.GA23582@Krystal>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip RESEND] x86: perf_counter fix
+	L1-data-Cache-Store-Referencees for AMD
+Message-ID: <20090620174328.GA2422@elte.hu>
+References: <1245331731.3215.3.camel@localhost.localdomain> <1245484165.3102.6.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090620165820.GA23582@Krystal>
+In-Reply-To: <1245484165.3102.6.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,47 +35,57 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> * Ingo Molnar (mingo@elte.hu) wrote:
-> > 
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > On Thu, 2009-06-18 at 18:20 +1000, Paul Mackerras wrote:
-> > >
-> > > > What was the conclusion you guys came to about doing a user 
-> > > > stack backtrace in an NMI handler?  Are you going to access user 
-> > > > memory directly or are you going to use the 
-> > > > __fast_get_user_pages approach?
-> > > > 
-> > > > Ben H and I were talking today about what we'd need in order to 
-> > > > be able to read user memory in a PMU interrupt handler.  It 
-> > > > looks like we could read user memory directly with a bit of 
-> > > > care, on 64-bit at least.  Because of the MMU hash table that 
-> > > > would almost always work provided the page has already been 
-> > > > touched (which stack pages would have been), but there is a 
-> > > > small chance that the access might fail even if the address has 
-> > > > a valid PTE.  At that point we could fall back to the 
-> > > > __fast_get_user_pages method, but I'm not sure it's worth it.
-> > > 
-> > > Currently we have the GUP based approach, but Ingo is thikning 
-> > > about making the pagefault handler NMI safe on x86 for .32.
-> > 
-> > Vegard raised the point that making NMIs pagefault-safe is also a 
-> > plus for making kmemcheck NMI-safe.
-> > 
-> > So besides it being faster (direct memory access versus 150 cycles 
-> > GUP walk ... per frame entry!), it's also more robust in general.
-> > 
-> > But too ambitious for v2.6.31 i think, unless patches become ready 
-> > really soon. What we have right now is the 64-bit only and 
-> > paravirt-unaware half-ported solution below.
+> Fix AMD's Data Cache Refills from System event.
 > 
-> Side note: saving/restoring the cr2 register would additionally be 
-> required around page faults in nmi handler in addition to the 
-> patch below, both for 32 and 64-bits x86.
+> By this patch :
+> 
+> ./tools/perf/perf stat -e l1d -e l1d-misses -e l1d-write -e l1d-prefetch -e l1d-prefetch-miss -e l1i -e l1i-misses -e l1i-prefetch -e l2 -e l2-misses -e l2-write -e dtlb -e dtlb-misses -e itlb -e itlb-misses -e bpu -e bpu-misses ls /dev/ > /dev/null
+> 
+>  Performance counter stats for 'ls /dev/':
+> 
+>         2499484  L1-data-Cache-Load-Referencees  (scaled from 3.97%)
+>           70347  L1-data-Cache-Load-Misses  (scaled from 7.30%)
+>            9360  L1-data-Cache-Store-Referencees  (scaled from 8.64%)
+>           32804  L1-data-Cache-Prefetch-Referencees  (scaled from 17.72%)
+>            7693  L1-data-Cache-Prefetch-Misses  (scaled from 22.97%)
+>         2180945  L1-instruction-Cache-Load-Referencees  (scaled from 28.48%)
+>           14518  L1-instruction-Cache-Load-Misses  (scaled from 35.00%)
+>            2405  L1-instruction-Cache-Prefetch-Referencees  (scaled from 34.89%)
+>           71387  L2-Cache-Load-Referencees  (scaled from 34.94%)
+>           18732  L2-Cache-Load-Misses  (scaled from 34.92%)
+>           79918  L2-Cache-Store-Referencees  (scaled from 36.02%)
+>         1295294  Data-TLB-Cache-Load-Referencees  (scaled from 35.99%)
+>           30896  Data-TLB-Cache-Load-Misses  (scaled from 33.36%)
+>         1222030  Instruction-TLB-Cache-Load-Referencees  (scaled from 29.46%)
+>             357  Instruction-TLB-Cache-Load-Misses  (scaled from 20.46%)
+>          530888  Branch-Cache-Load-Referencees  (scaled from 11.48%)
+>            8638  Branch-Cache-Load-Misses  (scaled from 5.09%)
+> 
+>     0.011295149  seconds time elapsed.
+> 
+> Earlier it always shows value 0.
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/kernel/cpu/perf_counter.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+> index ce1ae3f..37facc5 100644
+> --- a/arch/x86/kernel/cpu/perf_counter.c
+> +++ b/arch/x86/kernel/cpu/perf_counter.c
+> @@ -401,7 +401,7 @@ static const u64 amd_hw_cache_event_ids
+>  		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
+>  	},
+>  	[ C(OP_WRITE) ] = {
+> -		[ C(RESULT_ACCESS) ] = 0x0042, /* Data Cache Refills from L2 */
+> +		[ C(RESULT_ACCESS) ] = 0x0142, /* Data Cache Refills :system */
+>  		[ C(RESULT_MISS)   ] = 0,
+>  	},
+>  	[ C(OP_PREFETCH) ] = {
 
-Correct, i just mentioned that in another mail - it is required to 
-make sure we dont corrupt the main pagefault handler's cr2.
+Applied to tip:perfcounters/urgent, thanks Jaswinder!
 
 	Ingo
