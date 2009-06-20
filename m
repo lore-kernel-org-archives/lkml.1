@@ -1,109 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZFTPfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZFTPlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbZFTPfb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 11:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZFTPfY
+	id S1753309AbZFTPlU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 11:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZFTPlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 11:35:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33299 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752416AbZFTPfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 11:35:23 -0400
-Date: Sat, 20 Jun 2009 17:35:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, svaidy@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, Rusty Russel <rusty@rustcorp.com.au>,
-       Nathan Lynch <ntl@pobox.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Shoahua Li <shaohua.li@linux.com>
-Subject: Re: [RFD PATCH 0/4] cpu: Bulk CPU Hotplug support.
-Message-ID: <20090620153503.GA11701@elte.hu>
-References: <20090616053431.30891.18682.stgit@sofia.in.ibm.com> <20090615232318.74b099a6.akpm@linux-foundation.org> <20090616080715.GB7961@dirshya.in.ibm.com> <1245223977.13761.21576.camel@twins> <20090617143804.GA6767@linux.vnet.ibm.com> <20090617150700.GB20345@elte.hu> <1245270387.6670.19.camel@laptop>
+	Sat, 20 Jun 2009 11:41:11 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:58347 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751593AbZFTPlK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 11:41:10 -0400
+X-Trace: 218514785/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.70/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.111.70
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgkFACagPEpQKW9G/2dsb2JhbACBUcp4hAkF
+X-IronPort-AV: E=Sophos;i="4.42,259,1243810800"; 
+   d="scan'208";a="218514785"
+Date: Sat, 20 Jun 2009 16:40:12 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+cc: Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org
+Subject: Re: BUG] Strange oopses in 2.6.30
+In-Reply-To: <1245506908.6327.36.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0906201626270.5322@sister.anvils>
+References: <1245448091.5475.19.camel@localhost> <1245506908.6327.36.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245270387.6670.19.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Wed, 2009-06-17 at 17:07 +0200, Ingo Molnar wrote:
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+On Sat, 20 Jun 2009, Maxim Levitsky wrote:
+> On Sat, 2009-06-20 at 00:48 +0300, Maxim Levitsky wrote:
+> > I see lots of following oopses in 2.6.30 and latest -git 
 > > 
-> > > On Wed, Jun 17, 2009 at 09:32:57AM +0200, Peter Zijlstra wrote:
-> > > > On Tue, 2009-06-16 at 13:37 +0530, Vaidyanathan Srinivasan wrote:
-> > > > > * Andrew Morton <akpm@linux-foundation.org> [2009-06-15 23:23:18]:
-> > > > > 
-> > > > > > On Tue, 16 Jun 2009 11:08:39 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-> > > > > > 
-> > > > > > > Currently on a ppc64 box with 16 CPUs, the time taken for
-> > > > > > > a individual cpu-hotplug operation is as follows.
-> > > > > > > 
-> > > > > > >     # time echo 0 > /sys/devices/system/cpu/cpu2/online
-> > > > > > >     real    0m0.025s
-> > > > > > >     user    0m0.000s
-> > > > > > >     sys     0m0.002s
-> > > > > > > 
-> > > > > > >     # time echo 1 > /sys/devices/system/cpu/cpu2/online
-> > > > > > >     real    0m0.021s
-> > > > > > >     user    0m0.000s
-> > > > > > >     sys     0m0.000s
-> > > > > > 
-> > > > > > Surprised.  Do people really online and offline CPUs frequently enough
-> > > > > > for this to be a problem?
-> > > > > 
-> > > > > Certainly not for hardware faults or hardware replacement, but
-> > > > > cpu-hotplug interface is useful for changing system configuration to
-> > > > > meet different objectives like
-> > > > > 
-> > > > > * Reduce system capacity to reduce average power and reduce heat
-> > > > > 
-> > > > > * Increasing number of cores and threads in a CPU package is leading
-> > > > >   to multiple cpu offline/online operations for any perceivable effect
-> > > > > 
-> > > > > * Dynamically change CPU configurations in virtualized environments
-> > > > 
-> > > > I tend to agree with Andrew, if any of those things are done 
-> > > > frequent enough that the hotplug performance matter you're doing 
-> > > > something mighty odd.
-> > > 
-> > > Boot speedup?
+> > Many different applications shows up, not just reiserfsck
+> > Something in MM I guess, it makes me worry. But system seems to work.
 > > 
-> > Also, if it brings more attention (and more stability and more 
-> > bugfixes) to CPU hotplug that's only good.
+> > Is this known?
+
+I think so...
+
+> > 
+> > dmesg attached.
+> > 
+> > 
+> > [   34.544040] BUG: Bad page state in process reiserfsck  pfn:37d86
+> > [   34.544044] page:c2a34f38 flags:3650000c count:0 mapcount:0
+> > mapping:(null) index:bffeb
+> > [   34.544048] Pid: 2654, comm: reiserfsck Tainted: G    B
+> > 2.6.30-git #4
+> > [   34.544051] Call Trace:
+> > [   34.544055]  [<c04cd26a>] ? printk+0x18/0x1e
+> > [   34.544059]  [<c018f065>] bad_page+0xd5/0x140
+> > [   34.544064]  [<c0190097>] free_hot_cold_page+0x1e7/0x280
+> > [   34.544069]  [<c0193682>] ? release_pages+0x92/0x1b0
+> > [   34.544074]  [<c0190155>] __pagevec_free+0x25/0x30
+> > [   34.544078]  [<c0193758>] release_pages+0x168/0x1b0
+> > [   34.544084]  [<c0193cf3>] ? lru_add_drain+0x53/0xd0
+> > [   34.544088]  [<c01ab7d4>] free_pages_and_swap_cache+0x84/0xa0
+> > [   34.544093]  [<c019ff5d>] unmap_vmas+0x73d/0x760
+> > [   34.544099]  [<c016480e>] ? lock_release_non_nested+0x15e/0x270
+> > [   34.544104]  [<c01a43b5>] exit_mmap+0xb5/0x1b0
+> > [   34.544109]  [<c0138666>] mmput+0x36/0xc0
+> > [   34.544113]  [<c013c874>] exit_mm+0xe4/0x120
+> > [   34.544117]  [<c0175539>] ? acct_collect+0x139/0x180
+> > [   34.544122]  [<c013e889>] do_exit+0x6b9/0x720
+> > [   34.544142]  [<c01bcac2>] ? vfs_write+0x122/0x180
+> > [   34.544146]  [<c01bbda0>] ? do_sync_write+0x0/0x110
+> > [   34.544151]  [<c013e920>] do_group_exit+0x30/0x90
+> > [   34.544156]  [<c013e993>] sys_exit_group+0x13/0x20
+> > [   34.544161]  [<c01039e8>] sysenter_do_call+0x12/0x3c
+> > [   34.544180] BUG: Bad page state in process reiserfsck  pfn:37d91
+> > [   34.544184] page:c2a35174 flags:3650000c count:0 mapcount:0
+> > mapping:(null) index:bfff6
+> > [   34.544188] Pid: 2654, comm: reiserfsck Tainted: G    B
+> > 2.6.30-git #4
+> > 
 > 
-> Sure, but do we need the extra complexity?
+> This really worries me
+
+I hope it's fixed by this patch Hannes posted yesterday...
+
+>From hannes@cmpxchg.org Fri Jun 19 19:04:49 2009
+Date: Fri, 19 Jun 2009 19:45:02 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Peter Chubb <peter.chubb@nicta.com.au>
+Cc:  <linux-kernel@vger.kernel.org>,  <mel@csn.ul.ie>,  <akpm@linux-foundation.org>
+Subject: Re: [BUG] Bad page flags when process using mlock()ed memory exits
+
+On Fri, Jun 19, 2009 at 02:11:21PM +1000, Peter Chubb wrote:
 > 
-> I mean, sure bootup speed might be nice, but any of the scenarios 
-> given should simply not require cpu hotplug actions of a frequent 
-> enough nature that any performance matters.
+> In recent kernels I've been seeing many mesages of the form:
+> 
+> BUG: Bad page state in process reiserfsck  pfn:79c58
+> page:c3d03b00 flags:8050000c count:0 mapcount:0 mapping:(null) index:8095
+> Pid: 3927, comm: reiserfsck Not tainted 2.6.30-test-05456-gda456f1 #60
+> Call Trace:
+>  [<c134a67c>] ? printk+0xf/0x13
+>  [<c10774dc>] bad_page+0xc9/0xe2
+>  [<c1078041>] free_hot_cold_page+0x5c/0x204
+>  [<c1078206>] __pagevec_free+0x1d/0x25
+>  [<c107ac3e>] release_pages+0x14e/0x18e)
+>  [<c108ef8a>] free_pages_and_swap_cache+0x69/0x82
+>  [<c1089458>] exit_mmap+0xf6/0x11f
+>  [<c102afcd>] mmput+0x39/0xaf
+>  [<c102e534>] exit_mm+0xe5/0xed
+>  [<c102fa66>] do_exit+0x13f/0x578
+>  [<c102fefd>] do_group_exit+0x5e/0x85
+>  [<c102ff37>] sys_exit_group+0x13/0x17
+>  [<c10031ef>] sysenter_do_call+0x12/0x3c
+> Disabling lock debugging due to kernel taint
+> 
+> This appears to have been introduced by patch 
+>     da456f14d2f2d7350f2b9440af79c85a34c7eed5
+>     page allocator: do not disable interrupts in free_page_mlock()
+> 
+> That patch removed the free_page_mlock() from free_pages_check(), so
+> if free_hot_cold_page() is called on an Mlocked page (e.g., if a
+> process that used mlock() calls exit()) free_pages_check() will always
+> barf, whereas before it would just unlock the page.
 
-Well, the fact that the patches exist show that there's people 
-caring about the speedup here. The speedup itself is non-trivial.
+I prepared a fix, thanks for chasing it down.
 
-If the patches are technically correct, and if any existing 
-uncleanlinesses in the affected code are fixed first (please list 
-any TODO items in the CPU hotplug code you might know about), then 
-there's no reason not to pursue these patches - unless the 
-complexity increase is so huge that it makes the patches technically 
-wrong.
+Mel, to keep this simple I just used the atomic test-clear, but if I
+am not mistaken we should not need any atomicity here, so we could
+probably add a __TestClearPage version and use this instead...?
 
-The diffstat doesnt look _that_ awful IMO - 50 lines of code and i 
-suspect the patches come with a promise to properly handle all prior 
-and later bugs in this area? :)
+---
+>From 493b74e8615db4e3323b5b169b0b8265dfd7c3f4 Mon Sep 17 00:00:00 2001
+From: Johannes Weiner <hannes@cmpxchg.org>
+Date: Fri, 19 Jun 2009 19:30:56 +0200
+Subject: [patch] mm: page_alloc: clear PG_locked before checking flags on free
 
-	Ingo
+da456f1 "page allocator: do not disable interrupts in free_page_mlock()" moved
+the PG_mlocked clearing after the flag sanity checking which makes mlocked
+pages always trigger 'bad page'.  Fix this by clearing the bit up front.
+
+Reported-by: Peter Chubb <peter.chubb@nicta.com.au>
+Debugged-by: Peter Chubb <peter.chubb@nicta.com.au>
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 6f0753f..30d5093 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -488,7 +488,6 @@ static inline void __free_one_page(struct page *page,
+  */
+ static inline void free_page_mlock(struct page *page)
+ {
+-	__ClearPageMlocked(page);
+ 	__dec_zone_page_state(page, NR_MLOCK);
+ 	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+ }
+@@ -558,7 +557,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+ 	unsigned long flags;
+ 	int i;
+ 	int bad = 0;
+-	int clearMlocked = PageMlocked(page);
++	int wasMlocked = TestClearPageMlocked(page);
+ 
+ 	kmemcheck_free_shadow(page, order);
+ 
+@@ -576,7 +575,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+ 	kernel_map_pages(page, 1 << order, 0);
+ 
+ 	local_irq_save(flags);
+-	if (unlikely(clearMlocked))
++	if (unlikely(wasMlocked))
+ 		free_page_mlock(page);
+ 	__count_vm_events(PGFREE, 1 << order);
+ 	free_one_page(page_zone(page), page, order,
+@@ -1022,7 +1021,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 	struct zone *zone = page_zone(page);
+ 	struct per_cpu_pages *pcp;
+ 	unsigned long flags;
+-	int clearMlocked = PageMlocked(page);
++	int wasMlocked = TestClearPageMlocked(page);
+ 
+ 	kmemcheck_free_shadow(page, 0);
+ 
+@@ -1041,7 +1040,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 	pcp = &zone_pcp(zone, get_cpu())->pcp;
+ 	set_page_private(page, get_pageblock_migratetype(page));
+ 	local_irq_save(flags);
+-	if (unlikely(clearMlocked))
++	if (unlikely(wasMlocked))
+ 		free_page_mlock(page);
+ 	__count_vm_event(PGFREE);
+ 
+-- 
+1.6.3
