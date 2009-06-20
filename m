@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZFTTGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbZFTTUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZFTTGi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 15:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZFTTGa
+	id S1752402AbZFTTUf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 15:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZFTTU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 15:06:30 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:36329 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754926AbZFTTG3 (ORCPT
+	Sat, 20 Jun 2009 15:20:26 -0400
+Received: from mail-fx0-f214.google.com ([209.85.220.214]:49319 "EHLO
+	mail-fx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbZFTTUZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 15:06:29 -0400
-Date: Sat, 20 Jun 2009 13:06:30 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: jim owens <jowens@hp.com>, Martin Knoblauch <knobi@knobisoft.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, efault@gmx.de,
-       viro@zeniv.linux.org.uk, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, mike.miller@hp.com, linux-pci@vger.kernel.org
-Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
-Message-ID: <20090620190630.GN19977@parisc-linux.org>
-References: <20090527133125.c36381b5.akpm@linux-foundation.org> <ac3eb2510905271356n1b01f273jca1f7aa8fc65c78b@mail.gmail.com> <170150.72851.qm@web32604.mail.mud.yahoo.com> <20090616122547.1323d2d4@jbarnes-g45> <971371.70253.qm@web32604.mail.mud.yahoo.com> <4A3D104E.9060105@hp.com> <20090620165853.GL19977@parisc-linux.org> <ac3eb2510906201119r5c528a3s67cd04bdbfdd1d9c@mail.gmail.com> <20090620182617.GM19977@parisc-linux.org> <ac3eb2510906201136v4c6eac1bwffd2aed3e38c6ae1@mail.gmail.com>
+	Sat, 20 Jun 2009 15:20:25 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510906201136v4c6eac1bwffd2aed3e38c6ae1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A3AE162.7040407@gmail.com>
+References: <4A38F229.70504@ahsoftware.de> <4A3AE162.7040407@gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 20 Jun 2009 21:20:11 +0200
+Message-ID: <ac3eb2510906201220v7fc1d51ve4a9937a3d73d3d4@mail.gmail.com>
+Subject: Re: asynchronous calls an the lack of --wait-for-completion options 
+	(e.g. modprobe, losetup, cryptsetup)
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Alexander Holler <holler@ahsoftware.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 20, 2009 at 08:36:25PM +0200, Kay Sievers wrote:
-> Ah, I see. There is no tool around udev, I know of, which does this.
-> 
-> Maybe someone is still using the broken-by-design libsysfs, which
-> opens _every_ file it can find in /sys, even when not asked for
-> anything specific.
+On Fri, Jun 19, 2009 at 02:52, Robert Hancock<hancockrwd@gmail.com> wrote:
+> On 06/17/2009 07:39 AM, Alexander Holler wrote:
 
-I did consider that option, but dismissed it ... I didn't think anyone
-was using something that old.  Martin, could you take a look at what
-scripts you're running?
+>> The problem is that when I'm e.g. calling modprobe loop, loop might not
+>> has finished it's initialization, when modprobe returns.
+>
+> It will have. Just that udev won't have received the events and created the
+> device node yet. So the solution would likely be on the udev side..
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The brutal method to do this is to call:
+  udevadm settle
+after loading the module. It will block until all currently pending
+events for udev are fully handled.
+
+Recent udevadm versions also have a:
+  --exit-if-exists=<filename>
+option, which will make "settle" stop waiting if a given file exists.
+
+Kay
