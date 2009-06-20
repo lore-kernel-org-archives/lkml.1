@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZFTQZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZFTQ0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756324AbZFTQZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 12:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbZFTQZQ
+	id S1755625AbZFTQ0i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 12:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZFTQ0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 12:25:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50145 "EHLO mx3.mail.elte.hu"
+	Sat, 20 Jun 2009 12:26:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50438 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbZFTQZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 12:25:15 -0400
-Date: Sat, 20 Jun 2009 18:25:13 +0200
+	id S1751383AbZFTQ0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 12:26:30 -0400
+Date: Sat, 20 Jun 2009 18:26:27 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/2] function-graph: disable when both x86_32 and
-	optimize for size are configured
-Message-ID: <20090620162513.GD32377@elte.hu>
-References: <20090618224409.916725341@goodmis.org> <20090618225248.476090968@goodmis.org>
+Subject: Re: [PATCH 0/2] [GIT PULL][for 2.6.31] function graph gcc issue
+Message-ID: <20090620162627.GE32377@elte.hu>
+References: <20090618224409.916725341@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090618225248.476090968@goodmis.org>
+In-Reply-To: <20090618224409.916725341@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,23 +36,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index 4a13e5a..1eac852 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -121,6 +121,7 @@ config FUNCTION_GRAPH_TRACER
->  	bool "Kernel Function Graph Tracer"
->  	depends on HAVE_FUNCTION_GRAPH_TRACER
->  	depends on FUNCTION_TRACER
-> +	depends on !X86_32 || !CC_OPTIMIZE_FOR_SIZE
->  	default y
+> Ingo,
+> 
+> The bug I spent two days debugging that Jake found was due to gcc 
+> making a copy of the return address into the stack frame and not 
+> using it to actually return. The function graph tracer would 
+> modify the copy and not the actual location that was used to 
+> return to. Thus the accounting of the function graph tracer was 
+> corrupted and a nasty crash followed.
+> 
+> I found that 32bit x86 when compiled with optimize for size caused 
+> this issue in the latest gcc (4.4.0). The first patch makes the 
+> function graph tracer depend on !X86_32 || !CC_OPTIMIZE_FOR_SIZE. 
+> This way we keep from getting into trouble with a know 
+> configuration that breaks.
+> 
+> Then next patch adds to x86 (both 32bit and 64bit) a test of the 
+> frame pointer to make sure that the return actually goes to where 
+> we expect it to.
+> 
+> When debugging Jakes bug, The first instance was easy to find. It was
+> the timer_stats_update_stats that had a forced cacheline struct as a local.
+> I changed that and it seemed to fix the boot up test. When I enabled
+> function graph at run time, the system crashed again, but this time the
+> crash was hard to find where the issue was. I wrote up this test (patch 2)
+> and I found the problem immediately. In case gcc changes, we want to be
+> able to detect it right away before the tracer does anything dangerous.
+> 
+> 
+> Please pull the latest tip/tracing/urgent-1 tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/urgent-1
+> 
+> 
+> Steven Rostedt (2):
+>       function-graph: disable when both x86_32 and optimize for size are configured
+>       function-graph: add stack frame test
+> 
+> ----
+>  arch/powerpc/kernel/ftrace.c         |    2 +-
+>  arch/s390/kernel/ftrace.c            |    2 +-
+>  arch/x86/Kconfig                     |    1 +
+>  arch/x86/kernel/entry_32.S           |    2 +
+>  arch/x86/kernel/entry_64.S           |    2 +
+>  arch/x86/kernel/ftrace.c             |    6 +++-
+>  include/linux/ftrace.h               |    4 ++-
+>  kernel/trace/Kconfig                 |    8 +++++++
+>  kernel/trace/trace_functions_graph.c |   36 ++++++++++++++++++++++++++++++---
+>  9 files changed, 54 insertions(+), 9 deletions(-)
+> -- 
 
-Hm, nice fix, but this is a quite nasty constraint - distros like to 
-enable CC_OPTIMIZE_FOR_SIZE as it neatly trims the kernel's size by 
-about 30%.
+Pulled, thanks Steve!
 
-Just in case you have not checked yet: is there no way to turn off 
-the specific gcc optimization that causes this? Or is it -Os itself 
-that does this optimization?
+What a nasty bug ...
 
 	Ingo
