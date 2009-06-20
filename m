@@ -1,53 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZFTEm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbZFTFEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610AbZFTEm4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 00:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZFTEms
+	id S1752529AbZFTFEn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 01:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbZFTFEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 00:42:48 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:8387 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZFTEms (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 00:42:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=XplE+0+eXnSMax7kaFxvb5iam7oAp0hbc0SlQNQUU5Ufe6HtWs4RXa1H0y0Mm7nl7/
-         wcxqYvJX+DU+qKaI6PBEXg32r09Y49kGaze6uRfr233EpwYhPAE3LuyHcCmXZv+3Pr5I
-         wPMGX/1ojtlgHQn3tPyFfi3Kge4IjghqA9Gfs=
-Message-ID: <4A3C68E2.7000508@gmail.com>
-Date: Fri, 19 Jun 2009 22:43:14 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: ronis@ronispc.chem.mcgill.ca
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Panic booting 2.6.30
-References: <1245439404.25076.7.camel@ronispc.chem.mcgill.ca>
-In-Reply-To: <1245439404.25076.7.camel@ronispc.chem.mcgill.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Jun 2009 01:04:35 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33495 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbZFTFEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 01:04:34 -0400
+Date: Sat, 20 Jun 2009 15:04:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sfi-devel@simplefirmware.org
+Subject: Re: linux-next: Tree for June 19
+Message-Id: <20090620150433.4e038676.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0906200012200.4325@localhost.localdomain>
+References: <20090619172622.05adb236.sfr@canb.auug.org.au>
+	<alpine.LFD.2.00.0906200012200.4325@localhost.localdomain>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/19/2009 01:23 PM, David Ronis wrote:
-> I've just upgraded an older machine (a P3 running slackware 11.0) from
-> 2.6.26.5 to 2.6.30; the build was uneventful.  However, on reboot (using
-> lilo) I get:
->
-> VSF:  Cannot open root device "hda2" or unknown-block(0,0)
-> Please append a correct root= boot option; here are the available
-> partions:<====== nothing shows here...
-> Kernel-Panic - not syncing.
->
-> I had rebooted with and without root=hda2.   The old kernel is still
-> usable.
+--Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Make sure you configured in the proper IDE driver for your chipset. 
-Previously I believe the IDE driver would attach to unknown chipsets in 
-a crappy generic fashion, but I don't think it does anymore.
+Hi Len,
 
-If that doesn't help, please post your kernel config and lspci output.
+On Sat, 20 Jun 2009 00:16:49 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
+>
+> Please add the Simple Firmware Interface "sfi-test" branch to linux-next:
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-sfi-2.6.git sfi-=
+test
+
+Is this 2.6.31 or 32 material?
+
+> A description of the project is on the SFI home page: http://simplefirmwa=
+re.org/
+>=20
+> Note: like ACPI's test branch, this branch will be occasionally re-based
+> as the patches in it evolve.
+
+That's fine.
+
+Should I put just you as the contact, or add the mailing list as well?
+
+What I tell everyone: all patches/commits in the tree/series must
+have been:
+
+	posted to a relevant mailing list
+	reviewed
+	unit tested
+	destined for the next merge window (or the current release)
+
+*before* they are included.  The linux-next tree is for integration
+testing and to lower the impact of conflicts between subsystems in the
+next merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko8beEACgkQjjKRsyhoI8x38ACeMMrXLaGOjXnrgTijHtSBV2px
+XikAoLJqnTAN9Y2aJEZjetZGsfKVzweY
+=TzLv
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__20_Jun_2009_15_04_33_+1000_9vmqoH9r1cbeZ5dE--
