@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbZFTSuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759445AbZFTStp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759687AbZFTSuv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 14:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbZFTSr0
+	id S1759445AbZFTStp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 14:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758026AbZFTSq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 14:47:26 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:48196 "EHLO smtp.gentoo.org"
+	Sat, 20 Jun 2009 14:46:58 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:48161 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758249AbZFTSrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 14:47:25 -0400
+	id S1758080AbZFTSq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 14:46:57 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 22/25] Blackfin: drop unused ISP1760 port1_disable from board resources
-Date: Sat, 20 Jun 2009 14:44:45 -0400
-Message-Id: <1245523488-26536-23-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org,
+       Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: [PATCH 18/25] Blackfin: stick the CPU name into boot image name
+Date: Sat, 20 Jun 2009 14:44:41 -0400
+Message-Id: <1245523488-26536-19-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1245523488-26536-1-git-send-email-vapier@gentoo.org>
 References: <1245523488-26536-1-git-send-email-vapier@gentoo.org>
@@ -22,78 +23,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The port1 disable stuff was dropped from the USB ISP1760, so update the
-Blackfin boards accordingly.
+From: Robin Getz <rgetz@blackfin.uclinux.org>
 
+Rather than use "Linux" in the boot image name (as this is redundant --
+the image type is already set to "linux"), use the CPU name.  This makes
+it fairly obvious when a wrong image is accidentally booted.  Otherwise
+there is no kernel output and you waste time scratching your head
+wondering wtf just happened.
+
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/mach-bf527/boards/cm_bf527.c |    1 -
- arch/blackfin/mach-bf527/boards/ezkit.c    |    1 -
- arch/blackfin/mach-bf537/boards/stamp.c    |    1 -
- arch/blackfin/mach-bf548/boards/ezkit.c    |    1 -
- arch/blackfin/mach-bf561/boards/ezkit.c    |    1 -
- 5 files changed, 0 insertions(+), 5 deletions(-)
+ arch/blackfin/boot/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/blackfin/mach-bf527/boards/cm_bf527.c b/arch/blackfin/mach-bf527/boards/cm_bf527.c
-index 1eaf27f..f4867ce 100644
---- a/arch/blackfin/mach-bf527/boards/cm_bf527.c
-+++ b/arch/blackfin/mach-bf527/boards/cm_bf527.c
-@@ -78,7 +78,6 @@ static struct resource bfin_isp1760_resources[] = {
+diff --git a/arch/blackfin/boot/Makefile b/arch/blackfin/boot/Makefile
+index 3ab6f23..fd9ccc5 100644
+--- a/arch/blackfin/boot/Makefile
++++ b/arch/blackfin/boot/Makefile
+@@ -13,7 +13,7 @@ extra-y += vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma
  
- static struct isp1760_platform_data isp1760_priv = {
- 	.is_isp1761 = 0,
--	.port1_disable = 0,
- 	.bus_width_16 = 1,
- 	.port1_otg = 0,
- 	.analog_oc = 0,
-diff --git a/arch/blackfin/mach-bf527/boards/ezkit.c b/arch/blackfin/mach-bf527/boards/ezkit.c
-index 3e5b7db..799a1d1 100644
---- a/arch/blackfin/mach-bf527/boards/ezkit.c
-+++ b/arch/blackfin/mach-bf527/boards/ezkit.c
-@@ -77,7 +77,6 @@ static struct resource bfin_isp1760_resources[] = {
+ quiet_cmd_uimage = UIMAGE  $@
+       cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A $(ARCH) -O linux -T kernel \
+-                   -C $(2) -n 'Linux-$(KERNELRELEASE)' -a $(CONFIG_BOOT_LOAD) \
++                   -C $(2) -n '$(MACHINE)-$(KERNELRELEASE)' -a $(CONFIG_BOOT_LOAD) \
+                    -e $(shell $(NM) vmlinux | awk '$$NF == "__start" {print $$1}') \
+                    -d $< $@
  
- static struct isp1760_platform_data isp1760_priv = {
- 	.is_isp1761 = 0,
--	.port1_disable = 0,
- 	.bus_width_16 = 1,
- 	.port1_otg = 0,
- 	.analog_oc = 0,
-diff --git a/arch/blackfin/mach-bf537/boards/stamp.c b/arch/blackfin/mach-bf537/boards/stamp.c
-index ff7228c..c1f76dd 100644
---- a/arch/blackfin/mach-bf537/boards/stamp.c
-+++ b/arch/blackfin/mach-bf537/boards/stamp.c
-@@ -79,7 +79,6 @@ static struct resource bfin_isp1760_resources[] = {
- 
- static struct isp1760_platform_data isp1760_priv = {
- 	.is_isp1761 = 0,
--	.port1_disable = 0,
- 	.bus_width_16 = 1,
- 	.port1_otg = 0,
- 	.analog_oc = 0,
-diff --git a/arch/blackfin/mach-bf548/boards/ezkit.c b/arch/blackfin/mach-bf548/boards/ezkit.c
-index 805a57b..81f5b95 100644
---- a/arch/blackfin/mach-bf548/boards/ezkit.c
-+++ b/arch/blackfin/mach-bf548/boards/ezkit.c
-@@ -76,7 +76,6 @@ static struct resource bfin_isp1760_resources[] = {
- 
- static struct isp1760_platform_data isp1760_priv = {
- 	.is_isp1761 = 0,
--	.port1_disable = 0,
- 	.bus_width_16 = 1,
- 	.port1_otg = 0,
- 	.analog_oc = 0,
-diff --git a/arch/blackfin/mach-bf561/boards/ezkit.c b/arch/blackfin/mach-bf561/boards/ezkit.c
-index b5ef7ff..4df904f 100644
---- a/arch/blackfin/mach-bf561/boards/ezkit.c
-+++ b/arch/blackfin/mach-bf561/boards/ezkit.c
-@@ -62,7 +62,6 @@ static struct resource bfin_isp1760_resources[] = {
- 
- static struct isp1760_platform_data isp1760_priv = {
- 	.is_isp1761 = 0,
--	.port1_disable = 0,
- 	.bus_width_16 = 1,
- 	.port1_otg = 0,
- 	.analog_oc = 0,
 -- 
 1.6.3.1
 
