@@ -1,151 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZFTIA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZFTIHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbZFTIA6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 04:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZFTIAt
+	id S1755585AbZFTIHE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 04:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZFTIGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 04:00:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46112 "EHLO hera.kernel.org"
+	Sat, 20 Jun 2009 04:06:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47845 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752030AbZFTIAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 04:00:49 -0400
-Subject: [HWMON] x86: hwmon/k8temp.c Add support for AMD 11H
+	id S1751938AbZFTIGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 04:06:41 -0400
+Subject: [SCSI RESEND] scsi_transport_iscsi.c return -EOVERFLOW for Too
+ many iscsi targets
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Rudolf Marek <r.marek@assembler.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       Chuck Ebbert <cebbert@fedoraproject.org>,
-       fedora-kernel-owner <kernel-owner@fedoraproject.org>,
-       Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <1243352672.31783.10.camel@localhost.localdomain>
-References: <1242979484.8796.7.camel@localhost.localdomain>
-	 <4A165F67.3020005@assembler.cz>
-	 <1242981748.10642.3.camel@localhost.localdomain>
-	 <1242984648.16532.3.camel@localhost.localdomain>
-	 <4A182B61.5010503@assembler.cz>
-	 <1243339833.12303.2.camel@localhost.localdomain>
-	 <4A1C08C6.7060103@assembler.cz>
-	 <1243352672.31783.10.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 20 Jun 2009 13:26:40 +0530
-Message-Id: <1245484600.3102.9.camel@localhost.localdomain>
+       Mike Christie <michaelc@cs.wisc.edu>
+In-Reply-To: <1243401279.3118.2.camel@localhost.localdomain>
+References: <1243401279.3118.2.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 20 Jun 2009 13:29:21 +0530
+Message-Id: <1245484761.3102.11.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch will also work for AMD 10H. But we are skipping it as :
+setting err as -EOVERFLOW for Too many iscsi targets.
 
-AMD 10H cpus reports Inaccurate Temperature Measurement:
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
-Errata #319
+Also fixes compiler warning for gcc 4.3.3 and gcc 4.4 :
+
+  CC      drivers/scsi/scsi_transport_iscsi.o
+drivers/scsi/scsi_transport_iscsi.c: In function ‘iscsi_add_session’:
+drivers/scsi/scsi_transport_iscsi.c:678: warning: ‘err’ may be used uninitialized in this function
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- drivers/hwmon/k8temp.c |   31 +++++++++++++++++++++++++++++--
- 1 files changed, 29 insertions(+), 2 deletions(-)
+ drivers/scsi/scsi_transport_iscsi.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/hwmon/k8temp.c b/drivers/hwmon/k8temp.c
-index 1fe9951..4459dbf 100644
---- a/drivers/hwmon/k8temp.c
-+++ b/drivers/hwmon/k8temp.c
-@@ -1,5 +1,6 @@
- /*
-  * k8temp.c - Linux kernel module for hardware monitoring
-+ * 	      for AMD K8 and derivatives
-  *
-  * Copyright (C) 2006 Rudolf Marek <r.marek@assembler.cz>
-  *
-@@ -33,7 +34,7 @@
- #include <linux/mutex.h>
- #include <asm/processor.h>
- 
--#define TEMP_FROM_REG(val)	(((((val) >> 16) & 0xff) - 49) * 1000)
-+#define REG_TCTL	0xa4
- #define REG_TEMP	0xe4
- #define SEL_PLACE	0x40
- #define SEL_CORE	0x04
-@@ -52,6 +53,14 @@ struct k8temp_data {
- 	u32 temp_offset;
- };
- 
-+static unsigned long temp_from_reg(unsigned long val)
-+{
-+	if (boot_cpu_data.x86 > 0xf)
-+		return ((val) >> 21) * 125;
-+	else
-+		return ((((val) >> 16) & 0xff) - 49) * 1000;
-+}
-+
- static struct k8temp_data *k8temp_update_device(struct device *dev)
- {
- 	struct k8temp_data *data = dev_get_drvdata(dev);
-@@ -62,6 +71,11 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
- 
- 	if (!data->valid
- 	    || time_after(jiffies, data->last_updated + HZ)) {
-+		if (boot_cpu_data.x86 > 0xf) {
-+			pci_read_config_dword(pdev, REG_TCTL,
-+					      &data->temp[0][0]);
-+			goto update_done;
-+		}
- 		pci_read_config_byte(pdev, REG_TEMP, &tmp);
- 		tmp &= ~(SEL_PLACE | SEL_CORE);		/* Select sensor 0, core0 */
- 		pci_write_config_byte(pdev, REG_TEMP, tmp);
-@@ -89,6 +103,7 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
- 			}
+diff --git a/drivers/scsi/scsi_transport_iscsi.c b/drivers/scsi/scsi_transport_iscsi.c
+index 0947954..fdcda7f 100644
+--- a/drivers/scsi/scsi_transport_iscsi.c
++++ b/drivers/scsi/scsi_transport_iscsi.c
+@@ -693,6 +693,7 @@ int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
+ 						 "Too many iscsi targets. Max "
+ 						 "number of targets is %d.\n",
+ 						 ISCSI_MAX_TARGET - 1);
++			err = -EOVERFLOW;
+ 			goto release_host;
  		}
- 
-+update_done:
- 		data->last_updated = jiffies;
- 		data->valid = 1;
  	}
-@@ -123,7 +138,7 @@ static ssize_t show_temp(struct device *dev,
- 	if (data->swap_core_select)
- 		core = core ? 0 : 1;
- 
--	temp = TEMP_FROM_REG(data->temp[core][place]) + data->temp_offset;
-+	temp = temp_from_reg(data->temp[core][place]) + data->temp_offset;
- 
- 	return sprintf(buf, "%d\n", temp);
- }
-@@ -138,6 +153,14 @@ static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
- 
- static struct pci_device_id k8temp_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MISC) },
-+	/*
-+	 * AMD 10H cpus reports Inaccurate Temperature Measurement :
-+	 * http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
-+	 *     Errata #319
-+	 * So skipping 10H
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
-+	 */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
- 	{ 0 },
- };
- 
-@@ -157,6 +180,9 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
- 		goto exit;
- 	}
- 
-+	if (boot_cpu_data.x86 > 0xf)
-+		goto probe_done;
-+
- 	model = boot_cpu_data.x86_model;
- 	stepping = boot_cpu_data.x86_mask;
- 
-@@ -226,6 +252,7 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
- 			data->sensorsp &= ~SEL_CORE;
- 	}
- 
-+probe_done:
- 	data->name = "k8temp";
- 	mutex_init(&data->update_lock);
- 	dev_set_drvdata(&pdev->dev, data);
 -- 
 1.6.0.6
 
