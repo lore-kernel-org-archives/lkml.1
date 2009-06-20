@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZFTWUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbZFTWYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbZFTWUb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 18:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbZFTWUX
+	id S1754885AbZFTWYS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 18:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZFTWYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 18:20:23 -0400
-Received: from vena.lwn.net ([206.168.112.25]:55860 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754408AbZFTWUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 18:20:23 -0400
-Date: Sat, 20 Jun 2009 16:20:23 -0600
-From: Jake Edge <jake@lwn.net>
-To: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       jake@lwn.net, rostedt@goodmis.org, srostedt@redhat.com,
-       tglx@linutronix.de
-Subject: Re: [tip:tracing/urgent] function-graph: disable when both x86_32
- and optimize for size are configured
-Message-ID: <20090620162023.3fdd10ae@chukar>
-In-Reply-To: <tip-eb4a03780d4c4464ef2ad86d80cca3f3284fe81d@git.kernel.org>
-References: <tip-eb4a03780d4c4464ef2ad86d80cca3f3284fe81d@git.kernel.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Jun 2009 18:24:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60091 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbZFTWYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 18:24:06 -0400
+Date: Sat, 20 Jun 2009 18:24:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/2] function-graph: disable when both x86_32 and optimize
+ for size are configured
+In-Reply-To: <20090620162513.GD32377@elte.hu>
+Message-ID: <alpine.DEB.2.00.0906201822320.20813@gandalf.stny.rr.com>
+References: <20090618224409.916725341@goodmis.org> <20090618225248.476090968@goodmis.org> <20090620162513.GD32377@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Jun 2009 16:43:44 GMT tip-bot for Steven Rostedt wrote:
-> Commit-ID:  eb4a03780d4c4464ef2ad86d80cca3f3284fe81d
-> Gitweb:
-> http://git.kernel.org/tip/eb4a03780d4c4464ef2ad86d80cca3f3284fe81d
-> Author:     Steven Rostedt <srostedt@redhat.com> AuthorDate: Thu, 18
-> Jun 2009 12:53:21 -0400 Committer:  Steven Rostedt
-> <rostedt@goodmis.org> CommitDate: Thu, 18 Jun 2009 18:39:30 -0400
 
-I applied the patch, turned off 'Optimize for size', rebuilt, booted,
-and all was well (with the function_graph tracer selftest anyway) ..
-the sysprof tracer still consistently fails: .. no entries
-found ..FAILED!
+On Sat, 20 Jun 2009, Ingo Molnar wrote:
 
-Tested-by: Jake Edge <jake@lwn.net>
-> Reported-by: Jake Edge <jake@lwn.net>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> > index 4a13e5a..1eac852 100644
+> > --- a/kernel/trace/Kconfig
+> > +++ b/kernel/trace/Kconfig
+> > @@ -121,6 +121,7 @@ config FUNCTION_GRAPH_TRACER
+> >  	bool "Kernel Function Graph Tracer"
+> >  	depends on HAVE_FUNCTION_GRAPH_TRACER
+> >  	depends on FUNCTION_TRACER
+> > +	depends on !X86_32 || !CC_OPTIMIZE_FOR_SIZE
+> >  	default y
+> 
+> Hm, nice fix, but this is a quite nasty constraint - distros like to 
+> enable CC_OPTIMIZE_FOR_SIZE as it neatly trims the kernel's size by 
+> about 30%.
+> 
+> Just in case you have not checked yet: is there no way to turn off 
+> the specific gcc optimization that causes this? Or is it -Os itself 
+> that does this optimization?
 
-jake
+It seems to me that -Os causes it for i386. I did a make V=1 to capture 
+how the files in question were being compiled, and tried various disabling 
+of flags. -Os was the only one to make a difference. :-(
 
--- 
-Jake Edge - LWN - jake@lwn.net - http://lwn.net
+-- Steve
+
