@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZFTU4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbZFTU5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbZFTU4w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 16:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZFTU4n
+	id S1755258AbZFTU5J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 16:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZFTU4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 16:56:43 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59606 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895AbZFTU4n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 16:56:43 -0400
-Message-Id: <200906202056.n5KKuc9o013960@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 20 Jun 2009 13:52:35 -0700
-Subject: [PATCH] gitignore: add *.bz2 and *.cpio to top-level; clean up usr/
+	Sat, 20 Jun 2009 16:56:46 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:52737 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754741AbZFTU4p convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 16:56:45 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: Badness on the Warp
+Date: Sat, 20 Jun 2009 22:56:45 +0200
+User-Agent: KMail/1.9.9
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <20090620154824.72b5cd50@lappy.seanm.ca>
+In-reply-To: <20090620154824.72b5cd50@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906202256.46073.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Jun 2009 20:56:47.0073 (UTC) FILETIME=[9FFEF510:01C9F1E9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
-with *.gz and *.lzma which are already there.  Remove specific rules
-in usr/gitignore, since they are now covered by the global rules.
+> The git bisect returned:
+>
+>   871fa90791a6f83dd8e2e489feb9534a8c02088d is first bad commit
+>
+> That is it, no more info.... strange. git show 8714...088d gives:
+>
+> Merge: 7702667... 79f52b7...
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Thu Jun 11 11:27:09 2009 -0700
+>
+> The Warp has jfs disabled, so I don't know why it would affect us,
+> especially this realy in the boot!
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
----
- .gitignore     |    2 ++
- usr/.gitignore |    2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
+The fact that your bisect ended at a merge essentially means that it is 
+invalid. As a merge does not introduce any actual change (unless it 
+includes changes to resolve conflicts), it normally cannot be the cause 
+of a regression.
 
-diff --git a/.gitignore b/.gitignore
-index cecb3b0..a909275 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -24,6 +24,8 @@
- *.order
- *.elf
- *.bin
-+*.cpio
-+*.bz2
- *.gz
- *.lzma
- *.patch
-diff --git a/usr/.gitignore b/usr/.gitignore
-index 69b2e89..4d7d9f4 100644
---- a/usr/.gitignore
-+++ b/usr/.gitignore
-@@ -2,7 +2,5 @@
- # Generated files
- #
- gen_init_cpio
--initramfs_data.cpio
--initramfs_data.cpio.gz
- initramfs_list
- include
--- 
-1.6.0.6
+So either you made a mistake when marking a commit as good or bad during 
+the bisect, or the "badness" does not trigger reliably, resulting in you 
+incorrectly marking a bad commit as good.
 
+My suggestion would be to run the bisection again from the start.
+
+Cheers,
+FJP
