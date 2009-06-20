@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbZFTTCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZFTTGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757459AbZFTTCS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 15:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZFTTCJ
+	id S1756775AbZFTTGi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 15:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZFTTGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 15:02:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58961 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754996AbZFTTCI (ORCPT
+	Sat, 20 Jun 2009 15:06:30 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:36329 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754926AbZFTTG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 15:02:08 -0400
-Date: Sat, 20 Jun 2009 12:01:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] core kernel fixes
-In-Reply-To: <alpine.LFD.2.01.0906201132020.4160@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain>
-References: <20090620173022.GA14145@elte.hu> <alpine.LFD.2.01.0906201132020.4160@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sat, 20 Jun 2009 15:06:29 -0400
+Date: Sat, 20 Jun 2009 13:06:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: jim owens <jowens@hp.com>, Martin Knoblauch <knobi@knobisoft.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, efault@gmx.de,
+       viro@zeniv.linux.org.uk, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com, mike.miller@hp.com, linux-pci@vger.kernel.org
+Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+Message-ID: <20090620190630.GN19977@parisc-linux.org>
+References: <20090527133125.c36381b5.akpm@linux-foundation.org> <ac3eb2510905271356n1b01f273jca1f7aa8fc65c78b@mail.gmail.com> <170150.72851.qm@web32604.mail.mud.yahoo.com> <20090616122547.1323d2d4@jbarnes-g45> <971371.70253.qm@web32604.mail.mud.yahoo.com> <4A3D104E.9060105@hp.com> <20090620165853.GL19977@parisc-linux.org> <ac3eb2510906201119r5c528a3s67cd04bdbfdd1d9c@mail.gmail.com> <20090620182617.GM19977@parisc-linux.org> <ac3eb2510906201136v4c6eac1bwffd2aed3e38c6ae1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510906201136v4c6eac1bwffd2aed3e38c6ae1@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 20 Jun 2009, Linus Torvalds wrote:
+On Sat, Jun 20, 2009 at 08:36:25PM +0200, Kay Sievers wrote:
+> Ah, I see. There is no tool around udev, I know of, which does this.
 > 
-> On x86, the natural way to do what you want done is ONE SINGLE 
-> INSTRUCTION! As far as I can tell, the above crazy function is 100% 
-> equivalent to this:
-> 
-> 	asm __inline__("lock ; addl $0,%0":"+m" (*uaddr): :"memory", "cc");
-> 
-> which really makes me think that using "get_user_pages_fast()" for it is 
-> some truly crazy crap.
+> Maybe someone is still using the broken-by-design libsysfs, which
+> opens _every_ file it can find in /sys, even when not asked for
+> anything specific.
 
-We could also take the opposite approach - knowing that this is called 
-only when the page doesn't exist, and just doing
+I did consider that option, but dismissed it ... I didn't think anyone
+was using something that old.  Martin, could you take a look at what
+scripts you're running?
 
-	down_read(mmap_sem)
-	vma = find_vma(..)
-	ret = VM_FAULT_ERROR;
-	if (vma && vma->vm_start <= address)
-		ret = handle_mm_fault(mm, vma, address, 1);
-	up_read(mmap_sem);
-	return (ret & VM_FAULT_ERROR) ? -EFAULT : 0;
-
-or something like that. Again, that looks saner than using 
-get_user_pages() for this and then dropping the page.
-
-		Linus
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
