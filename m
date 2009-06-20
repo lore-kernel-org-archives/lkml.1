@@ -1,25 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZFTHuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZFTIA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZFTHuQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 03:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZFTHuG
+	id S1754502AbZFTIA6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 04:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZFTIAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 03:50:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49731 "EHLO hera.kernel.org"
+	Sat, 20 Jun 2009 04:00:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46112 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751646AbZFTHuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 03:50:05 -0400
-Subject: [PATCH -tip RESEND] x86: perf_counter fix
- L1-data-Cache-Store-Referencees for AMD
+	id S1752030AbZFTIAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 04:00:49 -0400
+Subject: [HWMON] x86: hwmon/k8temp.c Add support for AMD 11H
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1245331731.3215.3.camel@localhost.localdomain>
-References: <1245331731.3215.3.camel@localhost.localdomain>
+To: Rudolf Marek <r.marek@assembler.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       Chuck Ebbert <cebbert@fedoraproject.org>,
+       fedora-kernel-owner <kernel-owner@fedoraproject.org>,
+       Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <1243352672.31783.10.camel@localhost.localdomain>
+References: <1242979484.8796.7.camel@localhost.localdomain>
+	 <4A165F67.3020005@assembler.cz>
+	 <1242981748.10642.3.camel@localhost.localdomain>
+	 <1242984648.16532.3.camel@localhost.localdomain>
+	 <4A182B61.5010503@assembler.cz>
+	 <1243339833.12303.2.camel@localhost.localdomain>
+	 <4A1C08C6.7060103@assembler.cz>
+	 <1243352672.31783.10.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Sat, 20 Jun 2009 13:19:25 +0530
-Message-Id: <1245484165.3102.6.camel@localhost.localdomain>
+Date: Sat, 20 Jun 2009 13:26:40 +0530
+Message-Id: <1245484600.3102.9.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -28,54 +38,114 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fix AMD's Data Cache Refills from System event.
+This patch will also work for AMD 10H. But we are skipping it as :
 
-By this patch :
-
-./tools/perf/perf stat -e l1d -e l1d-misses -e l1d-write -e l1d-prefetch -e l1d-prefetch-miss -e l1i -e l1i-misses -e l1i-prefetch -e l2 -e l2-misses -e l2-write -e dtlb -e dtlb-misses -e itlb -e itlb-misses -e bpu -e bpu-misses ls /dev/ > /dev/null
-
- Performance counter stats for 'ls /dev/':
-
-        2499484  L1-data-Cache-Load-Referencees  (scaled from 3.97%)
-          70347  L1-data-Cache-Load-Misses  (scaled from 7.30%)
-           9360  L1-data-Cache-Store-Referencees  (scaled from 8.64%)
-          32804  L1-data-Cache-Prefetch-Referencees  (scaled from 17.72%)
-           7693  L1-data-Cache-Prefetch-Misses  (scaled from 22.97%)
-        2180945  L1-instruction-Cache-Load-Referencees  (scaled from 28.48%)
-          14518  L1-instruction-Cache-Load-Misses  (scaled from 35.00%)
-           2405  L1-instruction-Cache-Prefetch-Referencees  (scaled from 34.89%)
-          71387  L2-Cache-Load-Referencees  (scaled from 34.94%)
-          18732  L2-Cache-Load-Misses  (scaled from 34.92%)
-          79918  L2-Cache-Store-Referencees  (scaled from 36.02%)
-        1295294  Data-TLB-Cache-Load-Referencees  (scaled from 35.99%)
-          30896  Data-TLB-Cache-Load-Misses  (scaled from 33.36%)
-        1222030  Instruction-TLB-Cache-Load-Referencees  (scaled from 29.46%)
-            357  Instruction-TLB-Cache-Load-Misses  (scaled from 20.46%)
-         530888  Branch-Cache-Load-Referencees  (scaled from 11.48%)
-           8638  Branch-Cache-Load-Misses  (scaled from 5.09%)
-
-    0.011295149  seconds time elapsed.
-
-Earlier it always shows value 0.
+AMD 10H cpus reports Inaccurate Temperature Measurement:
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
+Errata #319
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/kernel/cpu/perf_counter.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/hwmon/k8temp.c |   31 +++++++++++++++++++++++++++++--
+ 1 files changed, 29 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index ce1ae3f..37facc5 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -401,7 +401,7 @@ static const u64 amd_hw_cache_event_ids
- 		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
- 	},
- 	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0042, /* Data Cache Refills from L2 */
-+		[ C(RESULT_ACCESS) ] = 0x0142, /* Data Cache Refills :system */
- 		[ C(RESULT_MISS)   ] = 0,
- 	},
- 	[ C(OP_PREFETCH) ] = {
+diff --git a/drivers/hwmon/k8temp.c b/drivers/hwmon/k8temp.c
+index 1fe9951..4459dbf 100644
+--- a/drivers/hwmon/k8temp.c
++++ b/drivers/hwmon/k8temp.c
+@@ -1,5 +1,6 @@
+ /*
+  * k8temp.c - Linux kernel module for hardware monitoring
++ * 	      for AMD K8 and derivatives
+  *
+  * Copyright (C) 2006 Rudolf Marek <r.marek@assembler.cz>
+  *
+@@ -33,7 +34,7 @@
+ #include <linux/mutex.h>
+ #include <asm/processor.h>
+ 
+-#define TEMP_FROM_REG(val)	(((((val) >> 16) & 0xff) - 49) * 1000)
++#define REG_TCTL	0xa4
+ #define REG_TEMP	0xe4
+ #define SEL_PLACE	0x40
+ #define SEL_CORE	0x04
+@@ -52,6 +53,14 @@ struct k8temp_data {
+ 	u32 temp_offset;
+ };
+ 
++static unsigned long temp_from_reg(unsigned long val)
++{
++	if (boot_cpu_data.x86 > 0xf)
++		return ((val) >> 21) * 125;
++	else
++		return ((((val) >> 16) & 0xff) - 49) * 1000;
++}
++
+ static struct k8temp_data *k8temp_update_device(struct device *dev)
+ {
+ 	struct k8temp_data *data = dev_get_drvdata(dev);
+@@ -62,6 +71,11 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
+ 
+ 	if (!data->valid
+ 	    || time_after(jiffies, data->last_updated + HZ)) {
++		if (boot_cpu_data.x86 > 0xf) {
++			pci_read_config_dword(pdev, REG_TCTL,
++					      &data->temp[0][0]);
++			goto update_done;
++		}
+ 		pci_read_config_byte(pdev, REG_TEMP, &tmp);
+ 		tmp &= ~(SEL_PLACE | SEL_CORE);		/* Select sensor 0, core0 */
+ 		pci_write_config_byte(pdev, REG_TEMP, tmp);
+@@ -89,6 +103,7 @@ static struct k8temp_data *k8temp_update_device(struct device *dev)
+ 			}
+ 		}
+ 
++update_done:
+ 		data->last_updated = jiffies;
+ 		data->valid = 1;
+ 	}
+@@ -123,7 +138,7 @@ static ssize_t show_temp(struct device *dev,
+ 	if (data->swap_core_select)
+ 		core = core ? 0 : 1;
+ 
+-	temp = TEMP_FROM_REG(data->temp[core][place]) + data->temp_offset;
++	temp = temp_from_reg(data->temp[core][place]) + data->temp_offset;
+ 
+ 	return sprintf(buf, "%d\n", temp);
+ }
+@@ -138,6 +153,14 @@ static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
+ 
+ static struct pci_device_id k8temp_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MISC) },
++	/*
++	 * AMD 10H cpus reports Inaccurate Temperature Measurement :
++	 * http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/41322.pdf
++	 *     Errata #319
++	 * So skipping 10H
++	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
++	 */
++	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
+ 	{ 0 },
+ };
+ 
+@@ -157,6 +180,9 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
+ 		goto exit;
+ 	}
+ 
++	if (boot_cpu_data.x86 > 0xf)
++		goto probe_done;
++
+ 	model = boot_cpu_data.x86_model;
+ 	stepping = boot_cpu_data.x86_mask;
+ 
+@@ -226,6 +252,7 @@ static int __devinit k8temp_probe(struct pci_dev *pdev,
+ 			data->sensorsp &= ~SEL_CORE;
+ 	}
+ 
++probe_done:
+ 	data->name = "k8temp";
+ 	mutex_init(&data->update_lock);
+ 	dev_set_drvdata(&pdev->dev, data);
 -- 
 1.6.0.6
 
