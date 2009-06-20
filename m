@@ -1,71 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZFTCBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbZFTCJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbZFTCBG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Jun 2009 22:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZFTCAy
+	id S1759497AbZFTCJu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Jun 2009 22:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZFTCJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Jun 2009 22:00:54 -0400
-Received: from mail-yx0-f186.google.com ([209.85.210.186]:38816 "EHLO
-	mail-yx0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbZFTCAx (ORCPT
+	Fri, 19 Jun 2009 22:09:39 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:50252 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbZFTCJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Jun 2009 22:00:53 -0400
-X-Greylist: delayed 18351 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Jun 2009 22:00:53 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=SC3qmAkD45AydvtXqKXg7Fb3M7ZnjwVkjYEbzTuQb8+nqGFaVf9TmyoQxLpoLMcSt3
-         ZF4TzrSdd5K0+iMbVuJspSJH+jsao7bXQOca2KRmsxMxVCSsuBf675Se/chf6Q55J4+q
-         cOxPUTQIoX8AykJh6BZuzbJa8D/TZm+VgO2v8=
+	Fri, 19 Jun 2009 22:09:38 -0400
+Message-ID: <4A3C44DA.7000503@novell.com>
+Date: Fri, 19 Jun 2009 22:09:30 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Date: Sat, 20 Jun 2009 02:00:55 +0000
-Message-ID: <dd18b0c30906191900r6cd8dcfbl2307ec3aa9e8c84@mail.gmail.com>
-Subject: Platform driver 'applesmc' needs updating - please use dev_pm_ops
-From: Justin Mattock <justinmattock@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: mst@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
+ race conditions
+References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com> <4A3C004B.8010706@novell.com> <alpine.DEB.1.10.0906191421581.14884@makko.or.mcafeemobile.com> <4A3C07FF.3000406@novell.com> <alpine.DEB.1.10.0906191447330.14884@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFBE4C346CCD9103FA9E324F9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with kernel
-2.6.30 (tar.ball)
-applesmc looks like this:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFBE4C346CCD9103FA9E324F9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-[    3.083478] applesmc: Apple MacBook Pro detected:
-[    3.092377] applesmc:  - Model with accelerometer
-[    3.101740] applesmc:  - Model with light sensors and backlight
-[    3.111123] applesmc:  - Model with 12 temperature sensors
-[    3.172619] applesmc: device successfully initialized (0xe0, 0x00).
-[    3.172621] applesmc: device successfully initialized.
-[    3.182376] applesmc: 2 fans found.
-[    3.192830] input: applesmc as /devices/platform/applesmc.768/input/input1
-[    3.202148] Registered led device: smc::kbd_backlight
-[    3.211396] applesmc: driver successfully loaded.
+Davide Libenzi wrote:
+> On Fri, 19 Jun 2009, Davide Libenzi wrote:
+>
+>  =20
+>> On Fri, 19 Jun 2009, Gregory Haskins wrote:
+>>
+>>    =20
+>>> I am fairly confident it is not that simple after having thought abou=
+t
+>>> this issue over the last few days.  But I've been wrong in the past. =
+
+>>> Propose a patch and I will review it for races/correctness, if you
+>>> like.  Perhaps a combination of that plus your asymmetrical locking
+>>> scheme would work.  One of the challenges you will hit is avoiding AB=
+BA
+>>> between your "get" lock and the wqh, but good luck!
+>>>      =20
+>> A patch for what? The eventfd patch is a one-liner.
+>>    =20
+
+Yes, understood.  What I was trying to gently say is that the one-liner
+proposal alone is still broken afaict.  However, if there is another
+solution that works that you like better than 133-liner I posted, I am
+more than willing to help analyze it.  In the end, I only care that this
+is fixed.
+
+>> It seems hard to believe that the thing cannot be handled on your side=
+=2E=20
+>> Once the wake_up_locked() is turned into a wake_up(), what other races=
+ are=20
+>> there?
+>>    =20
+>
+> AFAICS, the IRQfd code simply registers the callback to ->poll() and wa=
+its=20
+> for two events.
+> In the POLLIN event, you schedule_work(&irqfd->inject) and there are no=
+=20
+> races there AFAICS (you basically do not care of anything eventfd memor=
+y=20
+> related at all).
+> For POLLHUP, you do:
+>
+> 	spin_lock(irqfd->slock);
+> 	if (irqfd->wqh)
+> 		schedule_work(&irqfd->inject);
+> 	irqfd->wqh =3D NULL;
+> 	spin_unlock(irqfd->slock);
+>
+> In your work function you notice the POLLHUP condition and take proper =
+
+> action (dunno what it is in your case).
+> In your kvm_irqfd_release() function:
+>
+> 	spin_lock(irqfd->slock);
+> 	if (irqfd->wqh)
+> 		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+> 	irqfd->wqh =3D NULL;
+> 	spin_unlock(irqfd->slock);
+>
+> Any races in there?
+>  =20
+
+Yes, for one you have an ABBA deadlock on the irqfd->slock and wqh->lock
+(recall wqh has to be locked to fix that other race I mentioned).
+
+(As a hint, I think I fixed 4-5 races with these patches, so there are a
+few others still lurking as well)
+
+-Greg
 
 
-with the latest git
-2.6.30-06553-g65795ef
-applesmc looks like this:
 
-[    2.918010] applesmc: Apple MacBook Pro detected:
-[    2.926610] applesmc:  - Model with accelerometer
-[    2.935664] applesmc:  - Model with light sensors and backlight
-[    2.935666] applesmc:  - Model with 12 temperature sensors
-[    2.935670] Platform driver 'applesmc' needs updating - please use dev_pm_ops
-[    3.015615] applesmc: device successfully initialized (0xe0, 0x00).
-[    3.015618] applesmc: device successfully initialized.
-[    3.025389] applesmc: 2 fans found.
-[    3.035818] input: applesmc as /devices/platform/applesmc.768/input/input1
-[    3.045192] Registered led device: smc::kbd_backlight
-[    3.054586] applesmc: driver successfully loaded.
+--------------enigFBE4C346CCD9103FA9E324F9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-As for any anomolies, or the system
-crashing and burning(no seems O.K.)
-just needs applesmc to be using
-dev_pm_ops wherever that may be.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
--- 
-Justin P. Mattock
+iEYEARECAAYFAko8RNoACgkQlOSOBdgZUxltdgCeM5z0qnEl7bU1mnkPXDaJiJGC
+dlAAoIDHZ7R9N+IuEMgsviKo4P5K2FXg
+=JFqY
+-----END PGP SIGNATURE-----
+
+--------------enigFBE4C346CCD9103FA9E324F9--
