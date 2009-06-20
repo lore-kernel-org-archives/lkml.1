@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbZFTOjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbZFTOxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbZFTOjX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 10:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZFTOjE
+	id S1755982AbZFTOxY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 10:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZFTOxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 10:39:04 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:38794 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752289AbZFTOjB (ORCPT
+	Sat, 20 Jun 2009 10:53:13 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:39526 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752437AbZFTOxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 10:39:01 -0400
-Date: Sat, 20 Jun 2009 10:39:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Ravish Tayal <ravish.tayal@gmail.com>
-cc: linux-kernel@vger.kernel.org, <linux-fsdevel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>, <linux-usb@vger.kernel.org>
+	Sat, 20 Jun 2009 10:53:11 -0400
 Subject: Re: generic_make_request fucntion for scsi_disk
-In-Reply-To: <e42309110906200705j6a731ecay204969f639af5330@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0906201032170.12994-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ravish Tayal <ravish.tayal@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
+In-Reply-To: <e42309110906200741x28595685jf56cd505d01cc795@mail.gmail.com>
+References: <e42309110906200705j6a731ecay204969f639af5330@mail.gmail.com>
+	 <1245507640.4255.6.camel@mulgrave.site>
+	 <e42309110906200741x28595685jf56cd505d01cc795@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 20 Jun 2009 09:53:09 -0500
+Message-Id: <1245509589.4255.15.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Jun 2009, Ravish Tayal wrote:
+Please don't drop the cc list ... part of the point of this is to create
+an archive record for people with similar questions to find.
 
-> Hello,
-> 
-> I am debugging Filesystem code for USB mass storage devices.
+On Sat, 2009-06-20 at 20:11 +0530, Ravish Tayal wrote:
+> Thanks James. 
+>  
+> For simple case when I echo few lines to usb mounted disk (fat file
+> system).
+>  
+> mkdir /var/disk1
+> mount /dev/sda /var/disk1
+> echo "TESTing " >/var/disk1/test.txt
+>  
+> in this case will it be echo commands context it will be queue the
+> commands to scsiglue.c or in between scsi layer would hold the
+> commands.
 
-What part of the filesystem code are you debugging?
+That echo will end up in the page cache as a dirty page.
+ 
+> I have noticed on usb analyser the write scsi commands happens for max
+> sector size (64K) ... does in this case scsi command would be happen 
+> for few bytes ?
 
-Your questions talk about four separate layers: the filesystem, the
-block layer, the SCSI layer, and the usb-storage driver.  Normally
-people work on only one layer at a time.
+Block commands all have to happen at a granularity of the device block
+size (512b usually).  The elevators try to build up to larger sizes.
 
-Why are you concerned with more than one layer?
+> or in other words is pdflush invokation indirectly control the WRITE
+> scsi command length if file is of few MB or scsi layer itself does
+> ot ?
 
->  I need
-> help to figure out after generic_make_request how the request is
-> placed to scsi disk (sd) requeset queue and than how sd qeueuecommand
-> to usb_storeage thread.  (in which context, is it system call context)
-> 
-> 
-> inside generic_make_request
-> 
-> 1.   q = bdev_get_queue(bio->bi_bdev);  [is sd.c register queue this
-> queue or any other scsi file?]
+The elevators control final request size depending on what inputs they
+have and what parameters they were given.  In all cases, the request
+will be a multiple of the filesystem block size (which will be the same
+or bigger than the device block size).
 
-See scsi_alloc_sdev() in scsi_scan.c.  That's where the queue is 
-allocated.
+> I still not able to find where sd register its request queue to file
+> system.
 
-> 2.     ret = q->make_request_fn(q, bio);  [which file contain this
-> make_request_fn for scsi disk driver (generic)]
+It doesn't.  The Filesystem registers with block via sys_mount and SCSI
+with block in scsi_lib.c:scsi_alloc_queue().
 
-scsi_request_fn() is in scsi_lib.c.  You could have found this out by 
-yourself very easily with grep.  sd_prep_fn() is in sd.c.
+James
 
-> As per my unsderanding flow is like
-> Fat_writepage ->_block_write_full_page --> blkdev_writepage-->
-> block_write_full_page-->submit_bh-->generic_make_request ???  (sd ??)
-> ----> queuecommand
-> 
-> Please suggest any sorce file, link or document.
-
-The most relevant source files are scsi_lib.c and scsi.c.
-
-Alan Stern
 
