@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZFUL0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbZFUL2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZFUL0X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 07:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbZFUL0P
+	id S1755053AbZFUL2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 07:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZFUL2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 07:26:15 -0400
-Received: from mail-fx0-f224.google.com ([209.85.220.224]:50065 "EHLO
-	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbZFUL0O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 07:26:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=TIa5Iacdxes4AMufGSzONqMp+TKwq3bI6jqLAzKIlfhcUwpOChUzH8gfIDVv45/+a2
-         8XyeHqk5L1zmr+kxT1nmM6S9BVHfnUL58aCYTXA1RTWEihLJMpHFnnpE88W1hDcpZnBL
-         ol7pPEjPCFcoNrNsGeXVn6Q0CtwRFFSRtgW24=
+	Sun, 21 Jun 2009 07:28:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58821 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751261AbZFUL2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 07:28:04 -0400
+Date: Sun, 21 Jun 2009 11:27:34 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jaswinder@kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       jaswinderrajput@gmail.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, tglx@linutronix.de, jaswinderrajput@gmail.com,
+       mingo@elte.hu
+In-Reply-To: <1245484165.3102.6.camel@localhost.localdomain>
+References: <1245484165.3102.6.camel@localhost.localdomain>
+Subject: [tip:perfcounters/urgent] perf_counter, x8: Fix L1-data-Cache-Store-Referencees for AMD
+Message-ID: <tip-d9f2a5ecb2846d0fd368fb4c45182e43f38e4471@git.kernel.org>
+Git-Commit-ID: d9f2a5ecb2846d0fd368fb4c45182e43f38e4471
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <200906211152.25100.arvidjaar@mail.ru>
-References: <200906211152.25100.arvidjaar@mail.ru>
-Date: Sun, 21 Jun 2009 14:26:15 +0300
-X-Google-Sender-Auth: 37f5e1e30ae19975
-Message-ID: <84144f020906210426h6a41ad3csf6d9731663e30834@mail.gmail.com>
-Subject: Re: Why half of slabs are not shown in /proc/slabinfo?
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 21 Jun 2009 11:27:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 21, 2009 at 10:52 AM, Andrey Borzenkov<arvidjaar@mail.ru> wrote:
-> Mandriva kernel 2.6.30 using SLUB:
->
-> {pts/1}% grep SLUB /boot/config
-> CONFIG_SLUB_DEBUG=y
-> CONFIG_SLUB=y
-> # CONFIG_SLUB_DEBUG_ON is not set
-> # CONFIG_SLUB_STATS is not set
->
-> Some of slabs (e.g. filp) are not shown in /proc/slabinfo; comparing
-> number of entries under /sys and slabinfo results in
->
-> {pts/0}% =ls -1 /sys/kernel/slab | grep -v : | wc -l
-> 131
-> {pts/0}% wc -l /proc/slabinfo
-> 68 /proc/slabinfo
-> {pts/0}%
->
-> so almost half of the all entries are missing. Is it expected or there
-> is something wrong here?
+Commit-ID:  d9f2a5ecb2846d0fd368fb4c45182e43f38e4471
+Gitweb:     http://git.kernel.org/tip/d9f2a5ecb2846d0fd368fb4c45182e43f38e4471
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Sat, 20 Jun 2009 13:19:25 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 21 Jun 2009 13:25:55 +0200
 
-Can you post the actual file listing of /sys/kernel/slab and the
-contents of /proc/slabinfo?
+perf_counter, x8: Fix L1-data-Cache-Store-Referencees for AMD
 
-                               Pekka
+Fix AMD's Data Cache Refills from System event.
+
+After this patch :
+
+ ./tools/perf/perf stat -e l1d -e l1d-misses -e l1d-write -e l1d-prefetch -e l1d-prefetch-miss -e l1i -e l1i-misses -e l1i-prefetch -e l2 -e l2-misses -e l2-write -e dtlb -e dtlb-misses -e itlb -e itlb-misses -e bpu -e bpu-misses ls /dev/ > /dev/null
+
+ Performance counter stats for 'ls /dev/':
+
+        2499484  L1-data-Cache-Load-Referencees             (scaled from 3.97%)
+          70347  L1-data-Cache-Load-Misses                  (scaled from 7.30%)
+           9360  L1-data-Cache-Store-Referencees            (scaled from 8.64%)
+          32804  L1-data-Cache-Prefetch-Referencees         (scaled from 17.72%)
+           7693  L1-data-Cache-Prefetch-Misses              (scaled from 22.97%)
+        2180945  L1-instruction-Cache-Load-Referencees      (scaled from 28.48%)
+          14518  L1-instruction-Cache-Load-Misses           (scaled from 35.00%)
+           2405  L1-instruction-Cache-Prefetch-Referencees  (scaled from 34.89%)
+          71387  L2-Cache-Load-Referencees                  (scaled from 34.94%)
+          18732  L2-Cache-Load-Misses                       (scaled from 34.92%)
+          79918  L2-Cache-Store-Referencees                 (scaled from 36.02%)
+        1295294  Data-TLB-Cache-Load-Referencees            (scaled from 35.99%)
+          30896  Data-TLB-Cache-Load-Misses                 (scaled from 33.36%)
+        1222030  Instruction-TLB-Cache-Load-Referencees     (scaled from 29.46%)
+            357  Instruction-TLB-Cache-Load-Misses          (scaled from 20.46%)
+         530888  Branch-Cache-Load-Referencees              (scaled from 11.48%)
+           8638  Branch-Cache-Load-Misses                   (scaled from 5.09%)
+
+    0.011295149  seconds time elapsed.
+
+Earlier it always shows value 0.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+LKML-Reference: <1245484165.3102.6.camel@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/cpu/perf_counter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 76dfef2..22eb3a1 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -401,7 +401,7 @@ static const u64 amd_hw_cache_event_ids
+ 		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
+ 	},
+ 	[ C(OP_WRITE) ] = {
+-		[ C(RESULT_ACCESS) ] = 0x0042, /* Data Cache Refills from L2 */
++		[ C(RESULT_ACCESS) ] = 0x0142, /* Data Cache Refills :system */
+ 		[ C(RESULT_MISS)   ] = 0,
+ 	},
+ 	[ C(OP_PREFETCH) ] = {
