@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZFUNOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752077AbZFUNqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbZFUNOX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 09:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZFUNOQ
+	id S1752077AbZFUNqq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 09:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZFUNqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 09:14:16 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:45805 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZFUNOP (ORCPT
+	Sun, 21 Jun 2009 09:46:37 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:41723 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751259AbZFUNqh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 09:14:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xBx3Ew5LK/sibcgXAdbvls1Durr90nncZtpifly8zhV0qZOxnBGwfj771ofe5PKP45
-         LZ55ugHOV5hWPzm2YRinO1zMx6ZuRqNvWBTa24QZ7auFtE7ByPj/vQaIZGLpLBv4KcdQ
-         oIZuR8dfxpBUbN9meQTPJGy6OL7x79tA2gaWE=
+	Sun, 21 Jun 2009 09:46:37 -0400
+Date: Sun, 21 Jun 2009 21:46:35 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [RFC 2/7] crypto: Use GHASH digest algorithm in GCM
+Message-ID: <20090621134635.GA2980@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20090621065844.GC1810@ucw.cz>
-References: <412e6f7f0906131829y6e0abb00j85e221f92ab439d2@mail.gmail.com>
-	 <20090621065844.GC1810@ucw.cz>
-Date: Sun, 21 Jun 2009 21:14:17 +0800
-Message-ID: <412e6f7f0906210614gdd1c32di2762542df8bc7f20@mail.gmail.com>
-Subject: Re: memconsole: a virtual console to record the Oops message for 
-	debugging purpose.
-From: Changli Gao <xiaosuo@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244704228.5320.125.camel@yhuang-dev.sh.intel.com>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 21, 2009 at 2:58 PM, Pavel Machek<pavel@ucw.cz> wrote:
+Huang Ying <ying.huang@intel.com> wrote:
 >
-> ...and test it on real hw...?
->                                                                Pavel
->
+> +       ghash = crypto_alloc_ahash("ghash", 0, 0);
+> +       if (IS_ERR(ghash))
+> +               return PTR_ERR(ghash);
 
-Bad news, it doesn't work on real computer, so the patch isn't necessary now.
+We should add this as an extra parameter to gcm_base.  This is
+so that the user can select an alternative ghash implementation.
 
-I'm trying another way: building a initrd.gz, which doesn't nothing
-except of dumping the demsg into a non-volatile storage device: such
-as a file or a partiton of a hard disk, and it does work on real
-computer. When it is stable, I'll share the code with you all.
-
-
+Cheers,
 -- 
-Regards，
-Changli Gao(xiaosuo@gmail.com)
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
