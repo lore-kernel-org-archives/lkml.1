@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZFULkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZFULo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbZFULkh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 07:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZFULk3
+	id S1755502AbZFULo1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 07:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZFULoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 07:40:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55305 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZFULk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 07:40:29 -0400
-Subject: Re: [PATCH -tip] x86: mm/hugetlbpage.c fix style problems
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rohit Seth <rohitseth@google.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090621112201.GA13435@elte.hu>
-References: <1245582881.3052.3.camel@localhost.localdomain>
-	 <20090621112201.GA13435@elte.hu>
-Content-Type: text/plain
-Date: Sun, 21 Jun 2009 17:09:55 +0530
-Message-Id: <1245584395.3052.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Sun, 21 Jun 2009 07:44:19 -0400
+Received: from alto.filmlight.ltd.uk ([77.107.81.250]:42681 "HELO
+	a.mx.filmlight.ltd.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751112AbZFULoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 07:44:19 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Jun 2009 07:44:18 EDT
+Message-ID: <B99511B1D2F847FD83D874D3A60B4DEA@BODDINGTON>
+From: "Roger Willcocks" <roger@filmlight.ltd.uk>
+To: "Deepak Vishwakarma" <vishwakarma.deepak@gmail.com>,
+       <linux-kernel@vger.kernel.org>, <fuse-devel@lists.sourceforge.net>
+References: <e31d15d70906192339w5074164bsef95ec097b467fcc@mail.gmail.com>
+Subject: Re: [fuse-devel] Need Suggestions of packet overrun over 1 Gbps netwroktraffic in kernel 2.6.18
+Date: Sun, 21 Jun 2009 12:37:35 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-21 at 13:22 +0200, Ingo Molnar wrote:
+> Hi all,
+>
+> I have a high end server machine(multi core and large memory space) with 
+> 10
+> Gbps NIC. With linux kernel 2.6.18 it is giving packet overrun as traffic
+> goes beyond 1.5 Gbps. I need suggestions in tuning kernel so that it can
+> handle higher traffic rates.
+>
+> I have a 10 Gbps test bed to test the capability of server, equipped with
+> 10Gigwsitches and traffic generated through multi 1Gig machines. I have
+> tested server machine by gradually increasing the incoming traffic rate 
+> and
+> it's starting to do overrun as it crosses 1 Gbps.
 
-> this change is not an improvement either.
-> 
-> Plus at a first glance that file has a couple of other problems as 
-> well beyond trivial style issue:
-> 
->  - dead code which should be removed
-> 
->  - a 64-bit only boot option that should probably be extended to 
->    32-bit as well
-> 
->  - insanely long function names with local scope, causing ugly 
->    linebreaks
-> 
-> and more style issues as well:
-> 
->  - various inconsistent capitalizations in comment blocks
-> 
->  - some other small details as well
-> 
-> Lets try to do a genuinely big and comprehensive forward step that 
-> addresses all these issues (and any other issues that are in that 
-> file), ok?
-> 
+I've seen a similar problem here with Myricom 10ge cards in multi-core 
+machines running CentOS 5.2. A point-to-point connection configured as per 
+http://www.myri.com/serve/cache/511.html worked fine (netperf > 9Gb/s) but 
+introducing an HP 6400 switch gave 'dropped_link_overflow' errors on the 
+receiving NIC, and the netperf figure dropped by about 90%.
 
-ok, I will try.
+The answer was to enable flow control on the switch. Interestingly an OSX 
+XServe box could absorb the full bandwidth even with flow control disabled.
+
+Obviously you shouldn't need hardware flow control with TCP traffic (and 
+it's quite probably counter-productive) but the Myricom docs 
+(http://www.myri.com/scs/download-Myri10GE.html) say that "The 10GbE switch 
+to which the NICs are connected /must/ have flow control enabled", so that's 
+what I'd look at first.
 
 --
-JSR
+Roger
+
+----------------------------
+FilmLight's looking for an experienced kernel / systems developer (central 
+London). An interest in parallel filesystems, image processing and low level 
+scary magic would be an advantage; email me for more details.
+
 
