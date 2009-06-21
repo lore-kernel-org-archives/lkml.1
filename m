@@ -1,370 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZFUKz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZFUK6C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754366AbZFUKz4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 06:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZFUKzt
+	id S1754054AbZFUK6C (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 06:58:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZFUK5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 06:55:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37681 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751831AbZFUKzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 06:55:48 -0400
-Date: Sun, 21 Jun 2009 12:55:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL, v2] core kernel fixes
-Message-ID: <20090621105539.GA25722@elte.hu>
+	Sun, 21 Jun 2009 06:57:54 -0400
+Received: from web32605.mail.mud.yahoo.com ([68.142.207.232]:28412 "HELO
+	web32605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753265AbZFUK5w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 06:57:52 -0400
+Message-ID: <619506.56238.qm@web32605.mail.mud.yahoo.com>
+X-YMail-OSG: UR5H3CkVM1nQlv0Awm.dAAtXqStT75JRnHHAU4m5hOAGOsJAyyJl0X7A6pbXTVVa2z4LU8Cp4tDaSCE2JMP_r3_3psPRAeBz1v1Dvs4p8HuErpEYeiixvfBPhX7O0Q50HUw7kwTXEux4PRbQnM3xKD1.y66IwbrBzBqKIij.t.QRu82jtxOgA.q2ONZvM8BVOIvb5xgP0hUz64wUw1WMMiF6M.6j5f4zBhy3OwyiuzFzCf8D.qlcZFT6VR08M7YLzwk85H6ZMaxCqGQbTfbt7a1N5krTwQ2IsrTCZDPoi1IgUiZ1XFQyo.wLyTNKgX1TeYC2kP9d.APKNjM-
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.15
+References: <20090527133125.c36381b5.akpm@linux-foundation.org> <ac3eb2510905271356n1b01f273jca1f7aa8fc65c78b@mail.gmail.com> <170150.72851.qm@web32604.mail.mud.yahoo.com> <20090616122547.1323d2d4@jbarnes-g45> <971371.70253.qm@web32604.mail.mud.yahoo.com> <4A3D104E.9060105@hp.com> <20090620165853.GL19977@parisc-linux.org> <ac3eb2510906201119r5c528a3s67cd04bdbfdd1d9c@mail.gmail.com> <20090620182617.GM19977@parisc-linux.org> <ac3eb2510906201136v4c6eac1bwffd2aed3e38c6ae1@mail.gmail.com> <20090620190630.GN19977@parisc-linux.org> <4A3D51D2.4080707@hp.com>
+Date: Sun, 21 Jun 2009 03:57:55 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+To: jim owens <jowens@hp.com>, Matthew Wilcox <matthew@wil.cx>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, efault@gmx.de,
+       viro@zeniv.linux.org.uk, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com, mike.miller@hp.com, linux-pci@vger.kernel.org
+In-Reply-To: <4A3D51D2.4080707@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the latest core-fixes-for-linus git tree from:
+----- Original Message ----
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+> From: jim owens <jowens@hp.com>
+> To: Matthew Wilcox <matthew@wil.cx>
+> Cc: Kay Sievers <kay.sievers@vrfy.org>; Martin Knoblauch <knobi@knobisoft.de>; Jesse Barnes <jbarnes@virtuousgeek.org>; Andrew Morton <akpm@linux-foundation.org>; efault@gmx.de; viro@zeniv.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; shemminger@vyatta.com; mike.miller@hp.com; linux-pci@vger.kernel.org
+> Sent: Saturday, June 20, 2009 11:17:06 PM
+> Subject: Re: Analyzed/Solved/Bisected: Booting 2.6.30-rc2-git7 very slow
+> 
+> Matthew Wilcox wrote:
+> > On Sat, Jun 20, 2009 at 08:36:25PM +0200, Kay Sievers wrote:
+> >> Ah, I see. There is no tool around udev, I know of, which does this.
+> >> 
+> >> Maybe someone is still using the broken-by-design libsysfs, which
+> >> opens _every_ file it can find in /sys, even when not asked for
+> >> anything specific.
+> > 
+> > I did consider that option, but dismissed it ... I didn't think anyone
+> > was using something that old.
+> 
+> My test is a fresh RHEL 4.3 install with 2.6.30-rc8.  Whatever
+> scripts are running are stock redhat and I'm still in initrd
+> so what would I be looking for?
+> 
 
-Left out the futex commit, it's being worked on.
+ same here. Anything in initrd is stock RedHat stuff, except the kernel modules
 
- Thanks,
+> The initrd timeouts all seem to be triggered by the insmod and
+> only 1 more vpd read happens in init 3 at the end after HAL starts.
+> 
+> This is the BUG() I set to ID (maybe incorrectly)
+> that the vpd reads were comming from udev:
+> 
+> [    5.260664] ------------[ cut here ]------------
+> [    5.260667] kernel BUG at /root/linux-2.6.30-rc8/drivers/pci/access.c:207!
+> [    5.260671] invalid opcode: 0000 [#1] SMP
+> [    5.260675] last sysfs file: 
+> /sys/devices/pci0000:00/0000:00:02.0/0000:02:00.2/0000:04:03.0/msi_bus
+> [    5.260678] CPU 1
+> [    5.260681] Modules linked in: cciss(+) sd_mod scsi_mod
+> [    5.260689] Pid: 476, comm: udev Not tainted 2.6.30-rc8 #33 ProLiant DL380 G4
+> [    5.260692] RIP: 0010:[]  [] 
+> pci_vpd_pci22_wait+0xef/0x100
+> [    5.260703] RSP: 0018:ffff8801199e7dd8  EFLAGS: 00010246
+> [    5.260706] RAX: 0000000000000000 RBX: ffff88011ad60440 RCX: 0000000000001001
+> [    5.260709] RDX: 0000000000007c7b RSI: 0000000000000001 RDI: ffffffff8072c160
+> [    5.260712] RBP: ffff8801199e7e08 R08: 0000000000000001 R09: 0000000000000001
+> [    5.260715] R10: 0000000000000000 R11: 0000000000000006 R12: ffff88011ac8d800
+> [    5.260718] R13: 00000000fffee028 R14: ffff88011ac8d800 R15: ffff88011992e000
+> [    5.260722] FS:  0000000000000000(0000) GS:ffff88002edd9000(0000) 
+> knlGS:0000000000000000
+> [    5.260725] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [    5.260728] CR2: 00000000022562b8 CR3: 00000001198ef000 CR4: 00000000000006e0
+> [    5.260731] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [    5.260734] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [    5.260738] Process udev (pid: 476, threadinfo ffff8801199e6000, task 
+> ffff88011b78c3c0)
+> [    5.260740] Stack:
+> [    5.260742]  ffff8801199e7e08 0000ffff803b268d 0000000000001000 
+> 0000000000000000
+> [    5.260746]  0000000000000000 ffff88011ad60440 ffff8801199e7e68 
+> ffffffff803b292c
+> [    5.260752]  ffffffff803455f6 ffff88011ad60458 0000000000001000 
+> 0000000000001000
+> [    5.260757] Call Trace:
+> [    5.260760]  [] pci_vpd_pci22_read+0xec/0x170
+> [    5.260765]  [] ? read+0x96/0x1b0
+> [    5.260771]  [] pci_read_vpd+0x29/0x40
+> [    5.260775]  [] read_vpd_attr+0x46/0x50
+> [    5.260780]  [] read+0x19b/0x1b0
+> [    5.260784]  [] ? security_file_permission+0x16/0x20
+> [    5.260790]  [] vfs_read+0xbd/0x190
+> [    5.260797]  [] sys_read+0x55/0x90
+> [    5.260801]  [] system_call_fastpath+0x16/0x1b
+> [    5.260807] Code: c9 c3 8b 35 74 33 fe 00 31 c0 4c 89 e2 48 c7 c7 ed 89 6a 80 
+> e8 b3 3d e9 ff 8b 05 5d 33 fe 00 ff c0 89 05 55 33 fe 00 ff c8 75 04 <0f> 0b eb 
+> fe b8 92 ff ff ff e9 35 ff ff ff 66 66 90 55 48 89 e5
+> [    5.260845] RIP  [] pci_vpd_pci22_wait+0xef/0x100
+> [    5.260849]  RSP 
+> [    5.260854] ---[ end trace 37f1683404a28980 ]---
+> 
+> 
+> here is a single user boot with a timeout printk() and a hack
+> in mkinitrd to sleep before and after the insmod cciss:
+>
 
-	Ingo
+ How do you get to see the debug-output from initrd? I never managed that.
+ 
+> [    3.858278] NET: Registered protocol family 17
+> [    3.864293] Freeing unused kernel memory: 2416k freed
+> Red Hat nash version 4.2.1.6 starting
+> Mounted /proc filesystem
+> Mounting sysfs
+> Creating /dev
+> Starting udev
+> [    3.876470] udev used greatest stack depth: 5632 bytes left
+> Loading scsi_mod.ko module
+> [    3.977087] SCSI subsystem initialized
+> Loading sd_mod.ko module
+> [    3.987672] Driver 'sd' needs updating - please use bus_type methods
+> [    4.280095] input: AT Translated Set 2 keyboard as /class/input/input0
+> [    4.626432] input: PS/2 Generic Mouse as /class/input/input1
+> JIM sleep 1
+> Loading cciss.ko module
+> [    4.999782] HP CISS Driver (v 3.6.20)
+> [    5.003771] cciss 0000:04:03.0: PCI INT A -> GSI 51 (level, low) -> IRQ 51
+> [    5.052021] IRQ 51/cciss0: IRQF_DISABLED is not guaranteed on shared IRQs
+> [    5.059001] cciss0: <0x46> at PCI 0000:04:03.0 IRQ 51 using DAC
+> [    5.065800]       blocks= 71122560 block_size= 512
+> [    5.070602]       heads=255, sectors=32, cylinders=8716
+> [    5.070603]
+> [    5.077428]       blocks= 71122560 block_size= 512
+> [    5.082151]       heads=255, sectors=32, cylinders=8716
+> [    5.082153]
+> [    5.089413]  cciss/c0d0: p1
+> [    5.131820]       blocks= 71122560 block_size= 512
+> [    5.139627]       heads=255, sectors=32, cylinders=8716
+> [    5.139629]
+> [    5.146117]       blocks= 71122560 block_size= 512
+> [    5.150887]       heads=255, sectors=32, cylinders=8716
+> [    5.150889]
+> [    5.157577]  cciss/c0d1: p1
+> [    5.160261] TIMEOUT 1 ffff88011ad54800
+> [    5.164164]  p2 p3
+> [    5.208880]       blocks= 142253280 block_size= 512
+> [    5.215732]       heads=255, sectors=32, cylinders=17433
+> [    5.215734]
+> [    5.223191]       blocks= 142253280 block_size= 512
+> [    5.227965]
+> [    5.227966] TIMEOUT 2 ffff88011ad54800
+> [    5.232942]       heads=255, sectors=32, cylinders=17433
+> [    5.232944]
+> [    5.239516]  cciss/c0d2: p1 p2 p3
+> [    5.292263]
+> [    5.292265] TIMEOUT 3 ffff88011ad54800
+> [    5.356262]
+> [    5.356263] TIMEOUT 4 ffff88011ad54800
+> [    5.420266]
+> [    5.420267] TIMEOUT 5 ffff88011ad54800
+> [    5.484855]
+> [    5.484857] TIMEOUT 6 ffff88011ad54800
+> [    5.491980]       blocks= 71122560 block_size= 512
+> [    5.496991]       heads=255, sectors=32, cylinders=8716
+> [    5.496993]
+> [    5.503484]       blocks= 71122560 block_size= 512
+> [    5.508761]       heads=255, sectors=32, cylinders=8716
+> [    5.508763]
+> [    5.515729]  cciss/c0d3: p1
+> [    5.548263]
+> [    5.548264] TIMEOUT 7 ffff88011ad54800
+> [    5.610138] work_for_cpu used greatest stack depth: 4592 bytes left
+> [    5.612264]
+> [    5.612266] TIMEOUT 8 ffff88011ad54800
+> [    5.674223]
+> [    5.674224] TIMEOUT 9 ffff88011ad54800
+> [    5.736261]
+> [    5.736263] TIMEOUT 10 ffff88011ad54800
+> [    5.800261]
+> [    5.800263] TIMEOUT 11 ffff88011ad54800
+> [    5.864259]
+> [    5.864260] TIMEOUT 12 ffff88011ad54800
+> [    5.928259]
+> [    5.928260] TIMEOUT 13 ffff88011ad54800
+> [    5.992011]
+> [    5.992012] TIMEOUT 14 ffff88011ad54800
+> [    6.056011]
+> [    6.056012] TIMEOUT 15 ffff88011ad54800
+> [    6.120011]
+> [    6.120013] TIMEOUT 16 ffff88011ad54800
+> [    6.184011]
+> [    6.184012] TIMEOUT 17 ffff88011ad54800
+> [    6.248011]
+> [    6.248012] TIMEOUT 18 ffff88011ad54800
+> [    6.312011]
+> [    6.312012] TIMEOUT 19 ffff88011ad54800
+> [    6.376011]
+> [    6.376013] TIMEOUT 20 ffff88011ad54800
+> JIM sleep 1
+> Loading jbd.ko module
+> Loading ext3.ko module
+> Creating root device
+> Mounting root filesystem
+> [    6.760540] kjournald starting.  Commit interval 5 seconds
+> [    6.765559] EXT3-fs: mounted filesystem with writeback data mode.
+> Switching to new root
+> [    6.946395] SELinux:  Disabled at runtime.
+> [    6.950840] type=1404 audit(1245517131.950:2): selinux=0 auid=4294967295 
+> ses=4294967295
+> INIT: version 2.85 booting
+> [    7.235810] uname used greatest stack depth: 4296 bytes left
+> [    7.304350] awk used greatest stack depth: 3688 bytes left
+>         Welcome to Red Hat Enterprise Linux AS
+>         Press 'I' to enter interactive startup.
+> Starting udev:  [  OK  ]
+> Initializing hardware...  storage network audio done[  OK  ]
+> Configuring kernel parameters:  [  OK  ]
+> Setting clock  (utc): Sat Jun 20 12:59:02 EDT 2009 [  OK  ]
+> Setting hostname dl380.lnx.usa.hp.com:  [  OK  ]
+> Checking root filesystem
+> [/sbin/fsck.ext3 (1) -- /] fsck.ext3 -a /dev/cciss/c0d1p3
+> /1: clean, 348377/4177920 files, 2477319/8351791 blocks
+> [  OK  ]
+> Remounting root filesystem in read-write mode:  [  OK  ]
+> No devices found
+> no block devices found
+> Setting up Logical Volume Management: [  OK  ]
+> Checking filesystems
+> Checking all file systems.
+> [/sbin/fsck.ext3 (1) -- /boot] fsck.ext3 -a /dev/cciss/c0d1p1
+> /boot12: clean, 46/26104 files, 26042/104388 blocks
+> [  OK  ]
+> Mounting local filesystems:  [  OK  ]
+> Enabling local filesystem quotas:  [  OK  ]
+> Enabling swap space:  [  OK  ]
+> sh-3.00#
 
------------------->
-Joerg Roedel (2):
-      dma-debug: check for sg_call_ents in best-fit algorithm too
-      dma-debug: be more careful when building reference entries
-
-Peter Zijlstra (1):
-      lockdep: Select frame pointers on x86
-
-
- lib/Kconfig.debug |    2 +-
- lib/dma-debug.c   |  149 +++++++++++++++++++++++++++++++++++------------------
- 2 files changed, 99 insertions(+), 52 deletions(-)
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 6cdcf38..3be4b7c 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -440,7 +440,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS && !PPC && !ARM_UNWIND && !S390
-+	select FRAME_POINTER if !MIPS && !PPC && !ARM_UNWIND && !S390
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index ad65fc0..3b93129 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -262,11 +262,12 @@ static struct dma_debug_entry *hash_bucket_find(struct hash_bucket *bucket,
- 		 */
- 		matches += 1;
- 		match_lvl = 0;
--		entry->size      == ref->size      ? ++match_lvl : match_lvl;
--		entry->type      == ref->type      ? ++match_lvl : match_lvl;
--		entry->direction == ref->direction ? ++match_lvl : match_lvl;
-+		entry->size         == ref->size         ? ++match_lvl : 0;
-+		entry->type         == ref->type         ? ++match_lvl : 0;
-+		entry->direction    == ref->direction    ? ++match_lvl : 0;
-+		entry->sg_call_ents == ref->sg_call_ents ? ++match_lvl : 0;
- 
--		if (match_lvl == 3) {
-+		if (match_lvl == 4) {
- 			/* perfect-fit - return the result */
- 			return entry;
- 		} else if (match_lvl > last_lvl) {
-@@ -873,72 +874,68 @@ static void check_for_illegal_area(struct device *dev, void *addr, u64 size)
- 				"[addr=%p] [size=%llu]\n", addr, size);
- }
- 
--static void check_sync(struct device *dev, dma_addr_t addr,
--		       u64 size, u64 offset, int direction, bool to_cpu)
-+static void check_sync(struct device *dev,
-+		       struct dma_debug_entry *ref,
-+		       bool to_cpu)
- {
--	struct dma_debug_entry ref = {
--		.dev            = dev,
--		.dev_addr       = addr,
--		.size           = size,
--		.direction      = direction,
--	};
- 	struct dma_debug_entry *entry;
- 	struct hash_bucket *bucket;
- 	unsigned long flags;
- 
--	bucket = get_hash_bucket(&ref, &flags);
-+	bucket = get_hash_bucket(ref, &flags);
- 
--	entry = hash_bucket_find(bucket, &ref);
-+	entry = hash_bucket_find(bucket, ref);
- 
- 	if (!entry) {
- 		err_printk(dev, NULL, "DMA-API: device driver tries "
- 				"to sync DMA memory it has not allocated "
- 				"[device address=0x%016llx] [size=%llu bytes]\n",
--				(unsigned long long)addr, size);
-+				(unsigned long long)ref->dev_addr, ref->size);
- 		goto out;
- 	}
- 
--	if ((offset + size) > entry->size) {
-+	if (ref->size > entry->size) {
- 		err_printk(dev, entry, "DMA-API: device driver syncs"
- 				" DMA memory outside allocated range "
- 				"[device address=0x%016llx] "
--				"[allocation size=%llu bytes] [sync offset=%llu] "
--				"[sync size=%llu]\n", entry->dev_addr, entry->size,
--				offset, size);
-+				"[allocation size=%llu bytes] "
-+				"[sync offset+size=%llu]\n",
-+				entry->dev_addr, entry->size,
-+				ref->size);
- 	}
- 
--	if (direction != entry->direction) {
-+	if (ref->direction != entry->direction) {
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"DMA memory with different direction "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
--				(unsigned long long)addr, entry->size,
-+				(unsigned long long)ref->dev_addr, entry->size,
- 				dir2name[entry->direction],
--				dir2name[direction]);
-+				dir2name[ref->direction]);
- 	}
- 
- 	if (entry->direction == DMA_BIDIRECTIONAL)
- 		goto out;
- 
- 	if (to_cpu && !(entry->direction == DMA_FROM_DEVICE) &&
--		      !(direction == DMA_TO_DEVICE))
-+		      !(ref->direction == DMA_TO_DEVICE))
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"device read-only DMA memory for cpu "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
--				(unsigned long long)addr, entry->size,
-+				(unsigned long long)ref->dev_addr, entry->size,
- 				dir2name[entry->direction],
--				dir2name[direction]);
-+				dir2name[ref->direction]);
- 
- 	if (!to_cpu && !(entry->direction == DMA_TO_DEVICE) &&
--		       !(direction == DMA_FROM_DEVICE))
-+		       !(ref->direction == DMA_FROM_DEVICE))
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"device write-only DMA memory to device "
- 				"[device address=0x%016llx] [size=%llu bytes] "
- 				"[mapped with %s] [synced with %s]\n",
--				(unsigned long long)addr, entry->size,
-+				(unsigned long long)ref->dev_addr, entry->size,
- 				dir2name[entry->direction],
--				dir2name[direction]);
-+				dir2name[ref->direction]);
- 
- out:
- 	put_hash_bucket(bucket, &flags);
-@@ -1036,19 +1033,16 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
- }
- EXPORT_SYMBOL(debug_dma_map_sg);
- 
--static int get_nr_mapped_entries(struct device *dev, struct scatterlist *s)
-+static int get_nr_mapped_entries(struct device *dev,
-+				 struct dma_debug_entry *ref)
- {
--	struct dma_debug_entry *entry, ref;
-+	struct dma_debug_entry *entry;
- 	struct hash_bucket *bucket;
- 	unsigned long flags;
- 	int mapped_ents;
- 
--	ref.dev      = dev;
--	ref.dev_addr = sg_dma_address(s);
--	ref.size     = sg_dma_len(s),
--
--	bucket       = get_hash_bucket(&ref, &flags);
--	entry        = hash_bucket_find(bucket, &ref);
-+	bucket       = get_hash_bucket(ref, &flags);
-+	entry        = hash_bucket_find(bucket, ref);
- 	mapped_ents  = 0;
- 
- 	if (entry)
-@@ -1076,16 +1070,14 @@ void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 			.dev_addr       = sg_dma_address(s),
- 			.size           = sg_dma_len(s),
- 			.direction      = dir,
--			.sg_call_ents   = 0,
-+			.sg_call_ents   = nelems,
- 		};
- 
- 		if (mapped_ents && i >= mapped_ents)
- 			break;
- 
--		if (!i) {
--			ref.sg_call_ents = nelems;
--			mapped_ents = get_nr_mapped_entries(dev, s);
--		}
-+		if (!i)
-+			mapped_ents = get_nr_mapped_entries(dev, &ref);
- 
- 		check_unmap(&ref);
- 	}
-@@ -1140,10 +1132,19 @@ EXPORT_SYMBOL(debug_dma_free_coherent);
- void debug_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
- 				   size_t size, int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, 0, direction, true);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, true);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_for_cpu);
- 
-@@ -1151,10 +1152,19 @@ void debug_dma_sync_single_for_device(struct device *dev,
- 				      dma_addr_t dma_handle, size_t size,
- 				      int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, 0, direction, false);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, false);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_for_device);
- 
-@@ -1163,10 +1173,19 @@ void debug_dma_sync_single_range_for_cpu(struct device *dev,
- 					 unsigned long offset, size_t size,
- 					 int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, offset, direction, true);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = offset + size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, true);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_range_for_cpu);
- 
-@@ -1175,10 +1194,19 @@ void debug_dma_sync_single_range_for_device(struct device *dev,
- 					    unsigned long offset,
- 					    size_t size, int direction)
- {
-+	struct dma_debug_entry ref;
-+
- 	if (unlikely(global_disable))
- 		return;
- 
--	check_sync(dev, dma_handle, size, offset, direction, false);
-+	ref.type         = dma_debug_single;
-+	ref.dev          = dev;
-+	ref.dev_addr     = dma_handle;
-+	ref.size         = offset + size;
-+	ref.direction    = direction;
-+	ref.sg_call_ents = 0;
-+
-+	check_sync(dev, &ref, false);
- }
- EXPORT_SYMBOL(debug_dma_sync_single_range_for_device);
- 
-@@ -1192,14 +1220,24 @@ void debug_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
- 		return;
- 
- 	for_each_sg(sg, s, nelems, i) {
-+
-+		struct dma_debug_entry ref = {
-+			.type           = dma_debug_sg,
-+			.dev            = dev,
-+			.paddr          = sg_phys(s),
-+			.dev_addr       = sg_dma_address(s),
-+			.size           = sg_dma_len(s),
-+			.direction      = direction,
-+			.sg_call_ents   = nelems,
-+		};
-+
- 		if (!i)
--			mapped_ents = get_nr_mapped_entries(dev, s);
-+			mapped_ents = get_nr_mapped_entries(dev, &ref);
- 
- 		if (i >= mapped_ents)
- 			break;
- 
--		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
--			   direction, true);
-+		check_sync(dev, &ref, true);
- 	}
- }
- EXPORT_SYMBOL(debug_dma_sync_sg_for_cpu);
-@@ -1214,14 +1252,23 @@ void debug_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
- 		return;
- 
- 	for_each_sg(sg, s, nelems, i) {
-+
-+		struct dma_debug_entry ref = {
-+			.type           = dma_debug_sg,
-+			.dev            = dev,
-+			.paddr          = sg_phys(s),
-+			.dev_addr       = sg_dma_address(s),
-+			.size           = sg_dma_len(s),
-+			.direction      = direction,
-+			.sg_call_ents   = nelems,
-+		};
- 		if (!i)
--			mapped_ents = get_nr_mapped_entries(dev, s);
-+			mapped_ents = get_nr_mapped_entries(dev, &ref);
- 
- 		if (i >= mapped_ents)
- 			break;
- 
--		check_sync(dev, sg_dma_address(s), sg_dma_len(s), 0,
--			   direction, false);
-+		check_sync(dev, &ref, false);
- 	}
- }
- EXPORT_SYMBOL(debug_dma_sync_sg_for_device);
