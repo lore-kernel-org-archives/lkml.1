@@ -1,322 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752363AbZFUQYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZFUQ1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752363AbZFUQYD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 12:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZFUQXx
+	id S1753635AbZFUQ1V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 12:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZFUQ1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 12:23:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45793 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751459AbZFUQXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 12:23:53 -0400
-Subject: Re: [PATCH -tip] x86: mm/hugetlbpage.c fix style problems
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rohit Seth <rohitseth@google.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090621112201.GA13435@elte.hu>
-References: <1245582881.3052.3.camel@localhost.localdomain>
-	 <20090621112201.GA13435@elte.hu>
-Content-Type: text/plain
-Date: Sun, 21 Jun 2009 21:50:45 +0530
-Message-Id: <1245601245.15619.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Sun, 21 Jun 2009 12:27:14 -0400
+Received: from mail-fx0-f224.google.com ([209.85.220.224]:38099 "EHLO
+	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbZFUQ1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 12:27:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=PTeTEk7xSazMAHThAeQqo2Je3U/RIsUYegakY9P4n1PPvGc0XNEk9K+dO0P0eUw0Ce
+         I5tlSzc6lQHiW9kBbZiGRK165rDQLYVzo5t1dt+BkeYMX9+NmI/crbzm4HCplu+e3THU
+         W3gpeC9Oa/KcFVUOccb0nz2yy7+pXFe/OQiQ4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Subject: [git patches] Staging: rtl8192su build fix + cleanups
+Date: Sun, 21 Jun 2009 18:30:01 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090619-10934-gace1e80-dirty; KDE/4.2.3; i686; ; )
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200906211830.01727.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-21 at 13:22 +0200, Ingo Molnar wrote:
 
-> Plus at a first glance that file has a couple of other problems as 
-> well beyond trivial style issue:
-> 
->  - dead code which should be removed
-> 
->  - a 64-bit only boot option that should probably be extended to 
->    32-bit as well
-> 
->  - insanely long function names with local scope, causing ugly 
->    linebreaks
-> 
-> and more style issues as well:
-> 
->  - various inconsistent capitalizations in comment blocks
-> 
->  - some other small details as well
-> 
-> Lets try to do a genuinely big and comprehensive forward step that 
-> addresses all these issues (and any other issues that are in that 
-> file), ok?
+Hi,
 
-[PATCH] x86: mm/hugetlbpage.c cleanups with no code change
+The following patchset against Linus' tree contains all my previously
+posted rtl8192su patches (8 first commits) plus a bunch of new stuff
+(removal of incomplete/disabled features, unused files and dead code):
 
-Impact : cleanup
+git://git.kernel.org:/pub/scm/linux/kernel/git/bart/misc.git rtl8192su
 
-Fix followings with no code changed:
+[ Greg, this may be pushed to Linus "now" IMHO (due to COMPAT_NET_DEV_OPS
+  removal the rtl8192su driver has never been buildable in Linus' tree).
 
-A. trivial style issues
-  WARNING: Use #include <linux/mman.h> instead of <asm/mman.h>
-  WARNING: line over 80 characters
-  ERROR: code indent should use tabs where possible X 10
-  ERROR: do not use assignment in if condition
-  ERROR: return is not a function, parentheses are not required
+  If somebody prefers to get patches by mail, please just ping me. ]
 
-  total: 12 errors, 2 warnings
-
-B. removal of dead code
-
-C. setup_hugepagesz extends to 32 bit
-
-D. Inverse Xmas tree for header includes
-
-E. rename long local function names to avoid linebreaks
-
-F. use pr_err to avoid linebreaks
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/mm/hugetlbpage.c |  119 +++++++++++++--------------------------------
- 1 files changed, 34 insertions(+), 85 deletions(-)
-
-diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-index f46c340..d022f09 100644
---- a/arch/x86/mm/hugetlbpage.c
-+++ b/arch/x86/mm/hugetlbpage.c
-@@ -4,18 +4,19 @@
-  * Copyright (C) 2002, Rohit Seth <rohit.seth@intel.com>
-  */
- 
--#include <linux/init.h>
--#include <linux/fs.h>
--#include <linux/mm.h>
- #include <linux/hugetlb.h>
- #include <linux/pagemap.h>
-+#include <linux/sysctl.h>
-+#include <linux/init.h>
-+#include <linux/mman.h>
- #include <linux/slab.h>
- #include <linux/err.h>
--#include <linux/sysctl.h>
--#include <asm/mman.h>
--#include <asm/tlb.h>
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+
- #include <asm/tlbflush.h>
- #include <asm/pgalloc.h>
-+#include <asm/tlb.h>
- 
- static unsigned long page_table_shareable(struct vm_area_struct *svma,
- 				struct vm_area_struct *vma,
-@@ -93,7 +94,8 @@ static void huge_pmd_share(struct mm_struct *mm, unsigned long addr, pud_t *pud)
- 
- 	spin_lock(&mm->page_table_lock);
- 	if (pud_none(*pud))
--		pud_populate(mm, pud, (pmd_t *)((unsigned long)spte & PAGE_MASK));
-+		pud_populate(mm, pud,
-+			     (pmd_t *)((unsigned long)spte & PAGE_MASK));
- 	else
- 		put_page(virt_to_page(spte));
- 	spin_unlock(&mm->page_table_lock);
-@@ -170,51 +172,6 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
- 	return (pte_t *) pmd;
- }
- 
--#if 0	/* This is just for testing */
--struct page *
--follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
--{
--	unsigned long start = address;
--	int length = 1;
--	int nr;
--	struct page *page;
--	struct vm_area_struct *vma;
--
--	vma = find_vma(mm, addr);
--	if (!vma || !is_vm_hugetlb_page(vma))
--		return ERR_PTR(-EINVAL);
--
--	pte = huge_pte_offset(mm, address);
--
--	/* hugetlb should be locked, and hence, prefaulted */
--	WARN_ON(!pte || pte_none(*pte));
--
--	page = &pte_page(*pte)[vpfn % (HPAGE_SIZE/PAGE_SIZE)];
--
--	WARN_ON(!PageHead(page));
--
--	return page;
--}
--
--int pmd_huge(pmd_t pmd)
--{
--	return 0;
--}
--
--int pud_huge(pud_t pud)
--{
--	return 0;
--}
--
--struct page *
--follow_huge_pmd(struct mm_struct *mm, unsigned long address,
--		pmd_t *pmd, int write)
--{
--	return NULL;
--}
--
--#else
--
- struct page *
- follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
- {
-@@ -255,25 +212,21 @@ follow_huge_pud(struct mm_struct *mm, unsigned long address,
- 	return page;
- }
- 
--#endif
--
--/* x86_64 also uses this file */
--
- #ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
--static unsigned long hugetlb_get_unmapped_area_bottomup(struct file *file,
--		unsigned long addr, unsigned long len,
--		unsigned long pgoff, unsigned long flags)
-+static unsigned long
-+unmapped_bottomup(struct file *file, unsigned long addr, unsigned long len,
-+		  unsigned long pgoff, unsigned long flags)
- {
- 	struct hstate *h = hstate_file(file);
- 	struct mm_struct *mm = current->mm;
- 	struct vm_area_struct *vma;
- 	unsigned long start_addr;
- 
--	if (len > mm->cached_hole_size) {
--	        start_addr = mm->free_area_cache;
--	} else {
--	        start_addr = TASK_UNMAPPED_BASE;
--	        mm->cached_hole_size = 0;
-+	if (len > mm->cached_hole_size)
-+		start_addr = mm->free_area_cache;
-+	else {
-+		start_addr = TASK_UNMAPPED_BASE;
-+		mm->cached_hole_size = 0;
- 	}
- 
- full_search:
-@@ -298,14 +251,14 @@ full_search:
- 			return addr;
- 		}
- 		if (addr + mm->cached_hole_size < vma->vm_start)
--		        mm->cached_hole_size = vma->vm_start - addr;
-+			mm->cached_hole_size = vma->vm_start - addr;
- 		addr = ALIGN(vma->vm_end, huge_page_size(h));
- 	}
- }
- 
--static unsigned long hugetlb_get_unmapped_area_topdown(struct file *file,
--		unsigned long addr0, unsigned long len,
--		unsigned long pgoff, unsigned long flags)
-+static unsigned long
-+unmapped_topdown(struct file *file, unsigned long addr0, unsigned long len,
-+		 unsigned long pgoff, unsigned long flags)
- {
- 	struct hstate *h = hstate_file(file);
- 	struct mm_struct *mm = current->mm;
-@@ -319,7 +272,7 @@ static unsigned long hugetlb_get_unmapped_area_topdown(struct file *file,
- 		mm->free_area_cache = base;
- 
- 	if (len <= largest_hole) {
--	        largest_hole = 0;
-+		largest_hole = 0;
- 		mm->free_area_cache  = base;
- 	}
- try_again:
-@@ -334,7 +287,8 @@ try_again:
- 		 * Lookup failure means no vma is above this address,
- 		 * i.e. return with success:
- 		 */
--		if (!(vma = find_vma_prev(mm, addr, &prev_vma)))
-+		vma = find_vma_prev(mm, addr, &prev_vma);
-+		if (!vma)
- 			return addr;
- 
- 		/*
-@@ -342,13 +296,14 @@ try_again:
- 		 * vma->vm_start, use it:
- 		 */
- 		if (addr + len <= vma->vm_start &&
--		            (!prev_vma || (addr >= prev_vma->vm_end))) {
-+		    (!prev_vma || (addr >= prev_vma->vm_end))) {
- 			/* remember the address as a hint for next time */
--		        mm->cached_hole_size = largest_hole;
--		        return (mm->free_area_cache = addr);
-+			mm->cached_hole_size = largest_hole;
-+			mm->free_area_cache = addr;
-+			return addr;
- 		} else {
- 			/* pull free_area_cache down to the first hole */
--		        if (mm->free_area_cache == vma->vm_end) {
-+			if (mm->free_area_cache == vma->vm_end) {
- 				mm->free_area_cache = vma->vm_start;
- 				mm->cached_hole_size = largest_hole;
- 			}
-@@ -356,7 +311,7 @@ try_again:
- 
- 		/* remember the largest hole we saw so far */
- 		if (addr + largest_hole < vma->vm_start)
--		        largest_hole = vma->vm_start - addr;
-+			largest_hole = vma->vm_start - addr;
- 
- 		/* try just below the current vma->vm_start */
- 		addr = (vma->vm_start - len) & huge_page_mask(h);
-@@ -381,8 +336,7 @@ fail:
- 	 */
- 	mm->free_area_cache = TASK_UNMAPPED_BASE;
- 	mm->cached_hole_size = ~0UL;
--	addr = hugetlb_get_unmapped_area_bottomup(file, addr0,
--			len, pgoff, flags);
-+	addr = unmapped_bottomup(file, addr0, len, pgoff, flags);
- 
- 	/*
- 	 * Restore the topdown base:
-@@ -420,16 +374,13 @@ hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 			return addr;
- 	}
- 	if (mm->get_unmapped_area == arch_get_unmapped_area)
--		return hugetlb_get_unmapped_area_bottomup(file, addr, len,
--				pgoff, flags);
-+		return unmapped_bottomup(file, addr, len, pgoff, flags);
- 	else
--		return hugetlb_get_unmapped_area_topdown(file, addr, len,
--				pgoff, flags);
-+		return unmapped_topdown(file, addr, len, pgoff, flags);
- }
- 
- #endif /*HAVE_ARCH_HUGETLB_UNMAPPED_AREA*/
- 
--#ifdef CONFIG_X86_64
- static __init int setup_hugepagesz(char *opt)
- {
- 	unsigned long ps = memparse(opt, &opt);
-@@ -438,11 +389,9 @@ static __init int setup_hugepagesz(char *opt)
- 	} else if (ps == PUD_SIZE && cpu_has_gbpages) {
- 		hugetlb_add_hstate(PUD_SHIFT - PAGE_SHIFT);
- 	} else {
--		printk(KERN_ERR "hugepagesz: Unsupported page size %lu M\n",
--			ps >> 20);
-+		pr_err("hugepagesz: Unsupported page size %lu M\n", ps >> 20);
- 		return 0;
- 	}
- 	return 1;
- }
- __setup("hugepagesz=", setup_hugepagesz);
--#endif
--- 
-1.6.0.6
+ drivers/staging/rtl8192su/Kconfig                  |    2 +-
+ drivers/staging/rtl8192su/Makefile                 |   23 +-
+ drivers/staging/rtl8192su/dot11d.h                 |  102 -
+ drivers/staging/rtl8192su/ieee80211.h              | 2901 ------------
+ drivers/staging/rtl8192su/ieee80211/EndianFree.h   |  199 -
+ drivers/staging/rtl8192su/ieee80211/Makefile       |    3 +-
+ drivers/staging/rtl8192su/ieee80211/aes.c          |  469 --
+ drivers/staging/rtl8192su/ieee80211/api.c          |  246 -
+ drivers/staging/rtl8192su/ieee80211/arc4.c         |  103 -
+ drivers/staging/rtl8192su/ieee80211/autoload.c     |   40 -
+ drivers/staging/rtl8192su/ieee80211/cipher.c       |  299 --
+ drivers/staging/rtl8192su/ieee80211/compress.c     |   64 -
+ .../staging/rtl8192su/ieee80211/crypto_compat.h    |   90 -
+ drivers/staging/rtl8192su/ieee80211/digest.c       |  108 -
+ drivers/staging/rtl8192su/ieee80211/dot11d.c       |   18 +-
+ drivers/staging/rtl8192su/ieee80211/dot11d.h       |    4 -
+ drivers/staging/rtl8192su/ieee80211/ieee80211.h    |  354 +--
+ .../staging/rtl8192su/ieee80211/ieee80211_crypt.c  |   14 -
+ .../staging/rtl8192su/ieee80211/ieee80211_crypt.h  |    7 -
+ .../rtl8192su/ieee80211/ieee80211_crypt_ccmp.c     |   51 +-
+ .../rtl8192su/ieee80211/ieee80211_crypt_tkip.c     |  266 +-
+ .../rtl8192su/ieee80211/ieee80211_crypt_wep.c      |  113 +-
+ .../staging/rtl8192su/ieee80211/ieee80211_module.c |   65 +-
+ drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c |  126 +-
+ .../rtl8192su/ieee80211/ieee80211_softmac.c        |  338 +--
+ .../rtl8192su/ieee80211/ieee80211_softmac_wx.c     |   69 +-
+ drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c |   22 +-
+ drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c |  198 +-
+ drivers/staging/rtl8192su/ieee80211/internal.h     |  115 -
+ drivers/staging/rtl8192su/ieee80211/kmap_types.h   |   20 -
+ drivers/staging/rtl8192su/ieee80211/michael_mic.c  |  194 -
+ drivers/staging/rtl8192su/ieee80211/proc.c         |  116 -
+ .../staging/rtl8192su/ieee80211/rtl819x_BAProc.c   |   43 -
+ drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h   |    9 -
+ .../staging/rtl8192su/ieee80211/rtl819x_HTProc.c   |  277 +--
+ drivers/staging/rtl8192su/ieee80211/rtl819x_Qos.h  |  168 +-
+ .../staging/rtl8192su/ieee80211/rtl819x_TSProc.c   |   34 +-
+ drivers/staging/rtl8192su/ieee80211/rtl_crypto.h   |  399 --
+ drivers/staging/rtl8192su/ieee80211/scatterwalk.c  |  126 -
+ drivers/staging/rtl8192su/ieee80211/scatterwalk.h  |   51 -
+ drivers/staging/rtl8192su/ieee80211_crypt.h        |   86 -
+ drivers/staging/rtl8192su/r8180_93cx6.h            |    5 -
+ drivers/staging/rtl8192su/r8190_rtl8256.c          |  312 --
+ drivers/staging/rtl8192su/r8192S_Efuse.c           |  113 -
+ drivers/staging/rtl8192su/r8192S_firmware.c        |  477 --
+ drivers/staging/rtl8192su/r8192S_firmware.h        |    5 -
+ drivers/staging/rtl8192su/r8192S_hw.h              |  184 -
+ drivers/staging/rtl8192su/r8192S_phy.c             |  923 +----
+ drivers/staging/rtl8192su/r8192S_phy.h             |    5 +-
+ drivers/staging/rtl8192su/r8192S_rtl6052.c         |  104 -
+ drivers/staging/rtl8192su/r8192S_rtl6052.h         |   47 -
+ drivers/staging/rtl8192su/r8192U.h                 |  528 +---
+ drivers/staging/rtl8192su/r8192U_core.c            | 4835 +-------------------
+ drivers/staging/rtl8192su/r8192U_dm.c              |  549 +---
+ drivers/staging/rtl8192su/r8192U_dm.h              |   55 -
+ drivers/staging/rtl8192su/r8192U_hw.h              |  746 ---
+ drivers/staging/rtl8192su/r8192U_pm.c              |   19 +-
+ drivers/staging/rtl8192su/r8192U_pm.h              |    2 -
+ drivers/staging/rtl8192su/r8192U_wx.c              |  128 +-
+ drivers/staging/rtl8192su/r8192U_wx.h              |    1 -
+ drivers/staging/rtl8192su/r819xU_HTType.h          |    9 -
+ drivers/staging/rtl8192su/r819xU_cmdpkt.c          |  113 +-
+ drivers/staging/rtl8192su/r819xU_cmdpkt.h          |   20 -
+ drivers/staging/rtl8192su/r819xU_firmware.c        |  707 ---
+ drivers/staging/rtl8192su/r819xU_firmware.h        |  106 -
+ drivers/staging/rtl8192su/r819xU_phy.c             | 1826 --------
+ drivers/staging/rtl8192su/r819xU_phy.h             |   94 -
+ drivers/staging/rtl8192su/r819xU_phyreg.h          |  871 ----
+ 68 files changed, 134 insertions(+), 20582 deletions(-)
+ delete mode 100644 drivers/staging/rtl8192su/dot11d.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/EndianFree.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/aes.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/api.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/arc4.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/autoload.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/cipher.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/compress.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/crypto_compat.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/digest.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/internal.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/kmap_types.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/michael_mic.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/proc.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/rtl_crypto.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/scatterwalk.c
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211/scatterwalk.h
+ delete mode 100644 drivers/staging/rtl8192su/ieee80211_crypt.h
+ delete mode 100644 drivers/staging/rtl8192su/r8190_rtl8256.c
+ delete mode 100644 drivers/staging/rtl8192su/r8192U_hw.h
+ delete mode 100644 drivers/staging/rtl8192su/r819xU_firmware.c
+ delete mode 100644 drivers/staging/rtl8192su/r819xU_firmware.h
+ delete mode 100644 drivers/staging/rtl8192su/r819xU_phy.c
+ delete mode 100644 drivers/staging/rtl8192su/r819xU_phy.h
+ delete mode 100644 drivers/staging/rtl8192su/r819xU_phyreg.h
 
 
+Bartlomiej Zolnierkiewicz (30):
+      Staging: rtl8192su: convert to net_device_ops
+      Staging: rtl8192su/ieee80211: remove unused files
+      Staging: rtl8192su: remove duplicate dot11d.h and ieee80211.h includes
+      Staging: rtl8192su: remove unused ieee80211_crypt.h
+      Staging: rtl8192su: remove kernel version compatibility wrappers
+      Staging: rtl8192su: remove support for older wireless extensions
+      Staging: rtl8192su/ieee80211: remove unused _ReasonCode enums
+      Staging: rtl8192su/ieee80211: switch to use <linux/ieee80211.h>
+      Staging: rtl8192su: remove ENABLE_DOT11D ifdefs
+      Staging: rtl8192su: remove CONFIG_RTL8192_PM ifdefs
+      Staging: rtl8192su: remove THOMAS_TURBO ifdefs
+      Staging: rtl8192su: remove USE_ONE_PIPE ifdefs
+      Staging: rtl8192su: remove EEPROM_OLD_FORMAT_SUPPORT ifdefs
+      Staging: rtl8192su: remove USB_RX_AGGREGATION_SUPPORT ifdefs
+      Staging: rtl8192su: remove USB_TX_DRIVER_AGGREGATION_ENABLE ifdefs
+      Staging: rtl8192su: remove RTL8192SU_DISABLE_CCK_RATE ifdefs
+      Staging: rtl8192su: remove RTL8192S_DISABLE_FW_DM ifdefs
+      Staging: rtl8192su: remove DISABLE_BB_RF ifdefs
+      Staging: rtl8192su: remove RTL8192SU_USE_PARAM_TXPWR ifdefs
+      Staging: rtl8192su: remove RTL8192SU_FPGA_UNSPECIFIED_NETWORK ifdefs
+      Staging: rtl8192su: remove RTL8192SU_FPGA_2MAC_VERIFICATION ifdefs
+      Staging: rtl8192su: remove RTL8192SU_ASIC_VERIFICATION ifdefs
+      Staging: rtl8192su: remove RTL8192SU_USB_PHY_TEST ifdefs
+      Staging: rtl8192su: remove RTL8190_Download_Firmware_From_Header ifdefs
+      Staging: rtl8192su: remove RTL8192S_PREPARE_FOR_NORMAL_RELEASE ifdefs
+      Staging: rtl8192su: remove RTL8192SU_DISABLE_IQK ifdefs
+      Staging: rtl8192su: remove RTL8192SE ifdefs
+      Staging: rtl8192su: remove RTL8192SU ifdefs
+      Staging: rtl8192su: remove unused files
+      Staging: rtl8192su: remove dead code
 
