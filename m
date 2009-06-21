@@ -1,118 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZFUTsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZFUTzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZFUTsA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 15:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZFUTrv
+	id S1753112AbZFUTzw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 15:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZFUTzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 15:47:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51169 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751747AbZFUTru (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 15:47:50 -0400
-Date: Sun, 21 Jun 2009 12:47:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Lutomirski <luto@mit.edu>
-cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jerome Glisse <jglisse@redhat.com>,
-       Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [git pull] drm: previous pull req + 1.
-In-Reply-To: <cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
-Message-ID: <alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>  <4A3DABE1.50309@mit.edu>  <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>  <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>  <alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
- <cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 21 Jun 2009 15:55:43 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39488 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752073AbZFUTzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 15:55:42 -0400
+From: Thomas Renninger <trenn@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: S06cpuspeed/2637 is trying to acquire lock (&(&dbs_info->work)->work (was: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =)
+Date: Sun, 21 Jun 2009 21:55:48 +0200
+User-Agent: KMail/1.9.10
+Cc: Dave Jones <davej@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cpufreq@vger.kernel.org, mark.langsdorf@amd.com,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+References: <4A2835D8.6040903@kernel.org> <20090611105211.GA6760@elte.hu> <20090620124817.GA22831@elte.hu>
+In-Reply-To: <20090620124817.GA22831@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906212155.49849.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 21 Jun 2009, Andrew Lutomirski wrote:
+On Saturday 20 June 2009 02:48:17 pm Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> > * Dave Jones <davej@redhat.com> wrote:
+> > > On Wed, Jun 10, 2009 at 01:10:35PM +0200, Ingo Molnar wrote:
+> > >  > With a v2.6.30 based kernel i'm still getting a cpufreq lockdep
+> > >  > warning:
+> > >  >
+> > >  >  =======================================================
+> > >  >  [ INFO: possible circular locking dependency detected ]
+> > >  >  2.6.30-tip #10420
+> > >  >  -------------------------------------------------------
+> > >  >  S06cpuspeed/2637 is trying to acquire lock:
+> > >  >   (&(&dbs_info->work)->work){+.+...}, at: [<ffffffff8106553d>]
+> > >  > __cancel_work_timer+0xd6/0x22a
+> > >  >
+> > >  >  but task is already holding lock:
+> > >  >   (dbs_mutex){+.+.+.}, at: [<ffffffff8193d630>]
+> > >  > cpufreq_governor_dbs+0x28f/0x335
+> > >  >
+> > >  > This bug got introduced somewhere late in the .30-rc cycle, this box
+> > >  > was fine before.
+> > >
+> > > See the thread " [PATCH] remove rwsem lock from CPUFREQ_GOV_STOP
+> > > call (second call site)" Though there's a report that the last
+> > > patch posted still doesn't fix the problem, so we still don't have
+> > > a quick fix suitable for -stable.
 > >
-> > Anyway, here's a totally UNTESTED patch that hopefully gives a warning on
-> > where exactly we set the invalid bits. Andy, mind trying it out? You
-> > should get the warnign much earlier, and it should have a much more useful
-> > back-trace.
-> 
-> Your patch worked.  Photo attached.
+> > even with latest -git (which includes cpufreq fixes) i get:
+> >
+> > [   54.819413] CPUFREQ: ondemand sampling_rate_max sysfs file is
+> > deprecated - used by: cat [   55.216665]
+> > [   55.216668] =======================================================
+> > [   55.216963] [ INFO: possible circular locking dependency detected ]
+> > [   55.217134] 2.6.30-tip #5836
+> > [   55.217276] -------------------------------------------------------
+> > [   55.217428] S99local/4262 is trying to acquire lock:
+> > [   55.217577]  (&(&dbs_info->work)->work){+.+...}, at: [<4104261f>]
+> > __cancel_work_timer+0xb8/0x1e9 [   55.218065]
+> > [   55.218068] but task is already holding lock:
+> > [   55.218351]  (dbs_mutex){+.+.+.}, at: [<4157bd6b>]
+> > cpufreq_governor_dbs+0x25d/0x2e4 [   55.218358]
+> >
+> > full bootlog below. Can test fixes.
+>
+> Note, this bug warning still triggers rather frequently with latest
+> -git (fb20871) during bootup on two test-systems - relevant portion
+> of the bootlog attached below. As usual i can test any fix for this.
+Best rip out the dbs_mutex in drivers/cpufreq/cpufreq_ondemand.c totally.
+I can provide several locking cleanups for cpufreq for .31 the next days, 
+including dbs_mutex removal, which I think is not needed.
+The dbs_mutex removal which should fix this could then be marked:
+CC: stable@kernel.org
 
-Ok.
+     Thomas
 
-So it's fb_mmap() that uses an invalid page frame number when it does the 
-"io_remap_pfn_range()" thing. 
 
-And the way it gets that page frame number is basically
+>
+>         Ingo
+>
+> [  266.276061]
+> [  266.276064] =======================================================
+> [  266.276243] [ INFO: possible circular locking dependency detected ]
+> [  266.276337] 2.6.30-tip #6165
+> [  266.276423] -------------------------------------------------------
+> [  266.276516] S99local/4038 is trying to acquire lock:
+> [  266.276608]  (&(&dbs_info->work)->work){+.+...}, at: [<c104b718>]
+> __cancel_work_timer+0xa9/0x186 [  266.276883]
+> [  266.276884] but task is already holding lock:
+> [  266.277055]  (dbs_mutex){+.+.+.}, at: [<c14f6241>]
+> cpufreq_governor_dbs+0x24d/0x2d7 [  266.277322]
+> [  266.277323] which lock already depends on the new lock.
+> [  266.277325]
+> [  266.277577]
+> [  266.277578] the existing dependency chain (in reverse order) is:
+> [  266.277752]
+> [  266.277753] -> #2 (dbs_mutex){+.+.+.}:
+> [  266.278055]        [<c105fe5a>] validate_chain+0x810/0xa81
+> [  266.278193]        [<c106077f>] __lock_acquire+0x6b4/0x71f
+> [  266.278331]        [<c1061a58>] lock_acquire+0xb1/0xd5
+> [  266.278466]        [<c15ddbd2>] mutex_lock_nested+0x3e/0x363
+> [  266.278605]        [<c14f604d>] cpufreq_governor_dbs+0x59/0x2d7
+> [  266.278742]        [<c14f3d1b>] __cpufreq_governor+0x6a/0x74
+> [  266.278881]        [<c14f3e7f>] __cpufreq_set_policy+0x15a/0x1c8
+> [  266.279020]        [<c14f515f>] cpufreq_add_dev+0x36b/0x448
+> [  266.279158]        [<c12d6308>] sysdev_driver_register+0x9b/0xea
+> [  266.279299]        [<c14f3c25>] cpufreq_register_driver+0xa2/0x12e
+> [  266.279438]        [<c1b07f8e>] acpi_cpufreq_init+0x108/0x11d
+> [  266.279575]        [<c1001151>] _stext+0x69/0x176
+> [  266.279711]        [<c1b00741>] kernel_init+0x86/0xd7
+> [  266.279848]        [<c1004387>] kernel_thread_helper+0x7/0x10
+> [  266.279986]        [<ffffffff>] 0xffffffff
+> [  266.280023]
+> [  266.280023] -> #1 (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}:
+> [  266.280023]        [<c105fe5a>] validate_chain+0x810/0xa81
+> [  266.280023]        [<c106077f>] __lock_acquire+0x6b4/0x71f
+> [  266.280023]        [<c1061a58>] lock_acquire+0xb1/0xd5
+> [  266.280023]        [<c15dea5f>] down_write+0x24/0x63
+> [  266.280023]        [<c14f4933>] lock_policy_rwsem_write+0x38/0x64
+> [  266.280023]        [<c14f5d93>] do_dbs_timer+0x3b/0x29c
+> [  266.280023]        [<c104c124>] worker_thread+0x1ce/0x2c9
+> [  266.280023]        [<c104f4d8>] kthread+0x6b/0x73
+> [  266.280023]        [<c1004387>] kernel_thread_helper+0x7/0x10
+> [  266.280023]        [<ffffffff>] 0xffffffff
+> [  266.280023]
+> [  266.280023] -> #0 (&(&dbs_info->work)->work){+.+...}:
+> [  266.280023]        [<c105fbea>] validate_chain+0x5a0/0xa81
+> [  266.280023]        [<c106077f>] __lock_acquire+0x6b4/0x71f
+> [  266.280023]        [<c1061a58>] lock_acquire+0xb1/0xd5
+> [  266.280023]        [<c104b72f>] __cancel_work_timer+0xc0/0x186
+> [  266.280023]        [<c104b805>] cancel_delayed_work_sync+0x10/0x12
+> [  266.280023]        [<c14f6252>] cpufreq_governor_dbs+0x25e/0x2d7
+> [  266.280023]        [<c14f3d1b>] __cpufreq_governor+0x6a/0x74
+> [  266.280023]        [<c14f3e69>] __cpufreq_set_policy+0x144/0x1c8
+> [  266.280023]        [<c14f446f>] store_scaling_governor+0x15e/0x18d
+> [  266.280023]        [<c14f4cbc>] store+0x47/0x60
+> [  266.280023]        [<c11114f1>] sysfs_write_file+0xba/0xe5
+> [  266.280023]        [<c10c9898>] vfs_write+0xc5/0x162
+> [  266.280023]        [<c10c9e65>] sys_write+0x41/0x7c
+> [  266.280023]        [<c10039a7>] sysenter_do_call+0x12/0x3c
+> [  266.280023]        [<ffffffff>] 0xffffffff
+> [  266.280023]
+> [  266.280023] other info that might help us debug this:
+> [  266.280023]
+> [  266.280023] 3 locks held by S99local/4038:
+> [  266.280023]  #0:  (&buffer->mutex){+.+.+.}, at: [<c1111460>]
+> sysfs_write_file+0x29/0xe5 [  266.280023]  #1:  (&per_cpu(cpu_policy_rwsem,
+> cpu)){+++++.}, at: [<c14f4933>] lock_policy_rwsem_write+0x38/0x64 [ 
+> 266.280023]  #2:  (dbs_mutex){+.+.+.}, at: [<c14f6241>]
+> cpufreq_governor_dbs+0x24d/0x2d7 [  266.280023]
+> [  266.280023] stack backtrace:
+> [  266.280023] Pid: 4038, comm: S99local Tainted: G        W  2.6.30-tip
+> #6165 [  266.280023] Call Trace:
+> [  266.280023]  [<c105f562>] print_circular_bug_tail+0xa3/0xae
+> [  266.280023]  [<c105fbea>] validate_chain+0x5a0/0xa81
+> [  266.280023]  [<c106077f>] __lock_acquire+0x6b4/0x71f
+> [  266.280023]  [<c105dcd0>] ? mark_held_locks+0x42/0x5a
+> [  266.280023]  [<c1061a58>] lock_acquire+0xb1/0xd5
+> [  266.280023]  [<c104b718>] ? __cancel_work_timer+0xa9/0x186
+> [  266.280023]  [<c104b72f>] __cancel_work_timer+0xc0/0x186
+> [  266.280023]  [<c104b718>] ? __cancel_work_timer+0xa9/0x186
+> [  266.280023]  [<c15ddee6>] ? mutex_lock_nested+0x352/0x363
+> [  266.280023]  [<c14f6241>] ? cpufreq_governor_dbs+0x24d/0x2d7
+> [  266.280023]  [<c104b805>] cancel_delayed_work_sync+0x10/0x12
+> [  266.280023]  [<c14f6252>] cpufreq_governor_dbs+0x25e/0x2d7
+> [  266.280023]  [<c14f3d1b>] __cpufreq_governor+0x6a/0x74
+> [  266.280023]  [<c14f3e69>] __cpufreq_set_policy+0x144/0x1c8
+> [  266.280023]  [<c14f4311>] ? store_scaling_governor+0x0/0x18d
+> [  266.280023]  [<c14f446f>] store_scaling_governor+0x15e/0x18d
+> [  266.280023]  [<c14f4a9b>] ? handle_update+0x0/0x2d
+> [  266.280023]  [<c14f4311>] ? store_scaling_governor+0x0/0x18d
+> [  266.280023]  [<c14f4cbc>] store+0x47/0x60
+> [  266.280023]  [<c11114f1>] sysfs_write_file+0xba/0xe5
+> [  266.280023]  [<c1111437>] ? sysfs_write_file+0x0/0xe5
+> [  266.280023]  [<c10c9898>] vfs_write+0xc5/0x162
+> [  266.280023]  [<c10c9e65>] sys_write+0x41/0x7c
+> [  266.280023]  [<c10039a7>] sysenter_do_call+0x12/0x3c
+> [  272.000046] End ring buffer hammer
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
- - Offset (in bytes) from start of mapping:
 
-	off = vma->vm_pgoff << PAGE_SHIFT;
-	..
-
- - frame buffer start address:
-
-        /* frame buffer memory */
-        start = info->fix.smem_start;
-        len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.smem_len);
-	..
-	off += start;
-
- - do the remap:
-
-	io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT, ..
-
-and there has been no changes to this logic in drivers/video/fbmem.c 
-lately.
-
-What *has* changed is that we have a newradeon driver, and it looks like 
-that new radeon driver is crap, and does this:
-
-	info->fix.smem_start = (unsigned long)fbptr;
-
-which is totally screwed up. It assigns a _virtual_ address to that 
-"smem_start" thing, even though it should be a physical one. 
-
-I don't know the radeon driver, so I don't know where to find the physical 
-address.  It's also possible that there is no good single physical 
-address, and the radeon driver should implement a "fb_mmap" function.
-
-Does this patch make the warning and the oops at least go away? Obviously 
-it won't result in a working frame buffer, but that's a separate issue
-
-		Linus
-
----
- drivers/gpu/drm/radeon/radeon_fb.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/gpu/drm/radeon/radeon_fb.c b/drivers/gpu/drm/radeon/radeon_fb.c
-index fa86d39..4aa151e 100644
---- a/drivers/gpu/drm/radeon/radeon_fb.c
-+++ b/drivers/gpu/drm/radeon/radeon_fb.c
-@@ -380,6 +380,14 @@ int radeonfb_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
-+/*
-+ * Not yet implemented. The fix.smem_start is crap.
-+ */
-+static int radeonfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
-+{
-+	return -EINVAL;
-+}
-+
- static struct fb_ops radeonfb_ops = {
- 	.owner = THIS_MODULE,
- 	.fb_check_var = radeonfb_check_var,
-@@ -390,6 +398,7 @@ static struct fb_ops radeonfb_ops = {
- 	.fb_imageblit = cfb_imageblit,
- 	.fb_pan_display = radeonfb_pan_display,
- 	.fb_blank = radeonfb_blank,
-+	.fb_mmap = radeonfb_mmap,
- };
- 
- /**
