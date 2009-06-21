@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZFURLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZFURNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbZFURLm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 13:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZFURLe
+	id S1754463AbZFURNF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 13:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbZFURMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 13:11:34 -0400
-Received: from mail-fx0-f224.google.com ([209.85.220.224]:56873 "EHLO
-	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969AbZFURLd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 13:11:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HRZ/BxxQZkUyrxW7EbzNZDrFQAuyDipNPCSdOt/Ohos4dmji3B6TGiFH4LOHDf6rR7
-         xN0vXZxqbAhIeNYIv/ShawAMz9Ons5/BbFXljhb21w4SB/hSt1+IYxjWPrXmNz6hCKbi
-         dQogEBrtl20aC25riPYNuB/ahkL86wni1656o=
-Message-ID: <4A3E68CD.6080803@gmail.com>
-Date: Sun, 21 Jun 2009 19:07:25 +0200
-From: Marco <marco.stornelli@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 21 Jun 2009 13:12:55 -0400
+Received: from www.tglx.de ([62.245.132.106]:44645 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752253AbZFURMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 13:12:55 -0400
+Date: Sun, 21 Jun 2009 19:12:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] core kernel fixes
+In-Reply-To: <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0906211553150.2784@localhost.localdomain>
+References: <20090620173022.GA14145@elte.hu> <alpine.LFD.2.01.0906201132020.4160@localhost.localdomain> <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/14] Pramfs: Include files
-References: <4A33A7EC.6070008@gmail.com> <20090613140459.GC30053@uranus.ravnborg.org> <200906140059.57362.arnd@arndb.de>
-In-Reply-To: <200906140059.57362.arnd@arndb.de>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Saturday 13 June 2009, Sam Ravnborg wrote:
->>> +     union {
->>> +             struct {
->>> +                     /*
->>> +                      * ptr to row block of 2D block pointer array,
->>> +                      * file block #'s 0 to (blocksize/4)^2 - 1.
->>> +                      */
->>> +                     off_t row_block;
->> It is my understanding that we shall use: __kernel_off_t
->> in exported headers.
+On Sat, 20 Jun 2009, Linus Torvalds wrote:
+> On Sat, 20 Jun 2009, Linus Torvalds wrote:
+> > 
+> > On x86, the natural way to do what you want done is ONE SINGLE 
+> > INSTRUCTION! As far as I can tell, the above crazy function is 100% 
+> > equivalent to this:
+> > 
+> > 	asm __inline__("lock ; addl $0,%0":"+m" (*uaddr): :"memory", "cc");
+> > 
+> > which really makes me think that using "get_user_pages_fast()" for it is 
+> > some truly crazy crap.
 > 
-> That is a correct understanding in general, however this case is
-> different, because it describes an on-disk data structure,
-> not a kernel to user space interface. Here, __kernel_off_t is just
-> as wrong as off_t, because it will differ between 32 and 64 bit
-> architectures, making the fs layout incompatible. I'd suggest
-> simply defining this as __u64.
+> We could also take the opposite approach - knowing that this is called 
+> only when the page doesn't exist, and just doing
 > 
-> Moreover, file system layout should be described in terms of
-> big-endian or little-endian types (e.g. __be64 or __le64),
-> together with the right accessor functions.
+> 	down_read(mmap_sem)
+> 	vma = find_vma(..)
+> 	ret = VM_FAULT_ERROR;
+> 	if (vma && vma->vm_start <= address)
+> 		ret = handle_mm_fault(mm, vma, address, 1);
+> 	up_read(mmap_sem);
+> 	return (ret & VM_FAULT_ERROR) ? -EFAULT : 0;
 > 
-> 	Arnd <><
-> 
+> or something like that. Again, that looks saner than using 
+> get_user_pages() for this and then dropping the page.
 
-I was thinking about your comment and I think I'll use __kernel_off_t
-for the exported headers. I know that it will differ between 32 and 64
-bit architectures, but for this kind of fs there isn't any compatibility
-problem at layout level. You cannot remove a chip of RAM from a board
-32bit little endian and attach it to a board with a cpu 64bit big
-endian, the memory isn't a disk. Indeed, I see that tmpfs uses simply
-"unsigned long" in the exported header file without any problems to
-little or big endian.
+Hmm. The main reason why we switched to get_user_pages_fast() in the
+futex code is to avoid mmap_sem contention which was observed as a
+real big performance problem especially with those horrible JavaVM
+applications.
 
-Regards,
+As a fallout of this we got rid of the private find_vma /
+handle_mm_fault magic (as above) in the futex code which mm folks
+frowned upon for quite a while. Unfortunately we got it wrong :(
 
-Marco
+I agree that in the fault path we might go back to the mmap_sem
+version, but I want to avoid it when possible. At least we need to run
+some of those horrible JavaVM apps to see whether it matters or not.
+
+OTOH, I really wonder whether we can simplify the whole logic when we
+keep the page reference for the atomic access to the user space
+address, but I still have doubts about the life time rules of all
+this. Also I need to find out how this would affect the fast path
+optimization of private futexes where we avoid the lookup in the first
+place.
+
+Thanks,
+
+	tglx
