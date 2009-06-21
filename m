@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbZFUSvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbZFUSu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbZFUSvi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 14:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZFUSvS
+	id S1755672AbZFUSu7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 14:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZFUSut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 14:51:18 -0400
-Received: from proxima.lp0.eu ([81.2.80.65]:45066 "EHLO proxima.lp0.eu"
+	Sun, 21 Jun 2009 14:50:49 -0400
+Received: from proxima.lp0.eu ([81.2.80.65]:45051 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755568AbZFUSvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 14:51:17 -0400
+	id S1753510AbZFUSus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 14:50:48 -0400
+X-Greylist: delayed 324 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Jun 2009 14:50:48 EDT
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
-	b=KTJQLUJDXeqbkbTXI3Z2+61GTfGChTZs2gOoq3b4iRDpJG5QJCP1MDhAIABlj1oK9WUrkuNzBozOu0QRlwnNYgJra0FL76j5gpv/hWkKEZI1i6GdGlReVFpXzMkntS7s;
-Message-ID: <4A3E7FC5.6060400@simon.arlott.org.uk>
-Date: Sun, 21 Jun 2009 19:45:25 +0100
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
+	b=e9EuezHySjgLZl9d+el+yLs0tSx5iwgP8NTn0qaa1UkX0Z6TQ9W3MNo61sOQP+Cn/0p4tFyOHebtZmsMagqK+CsJIxOZqWyqRo86Lw3QdkBof7RxVhp3jemBARJNBARF;
+Message-ID: <4A3E8108.5010001@simon.arlott.org.uk>
+Date: Sun, 21 Jun 2009 19:50:48 +0100
 From: Simon Arlott <simon@fire.lp0.eu>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090328)
 MIME-Version: 1.0
-To: netdev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: [PATCH] r8169: add phy_reset parameter
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, perex@perex.cz,
+       tiwai@suse.de
+CC: alsa-devel@alsa-project.org
+Subject: [PATCH] via82xx: add option to disable 500ms delay in snd_via82xx_codec_wait
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When booting over the network the physical link will already be up
-and configured appropriately, so there is no need to reset it and
-cause auto-negotiation to occur again. Adding an option to disable
-this makes it possible to avoid a 2 second delay while booting.
+There's a large 500ms delay in snd_via82xx_codec_wait() that, at least
+on my hardware, appears to be unnecessary. The rest of the init of
+the card works without logging any warnings or errors and both audio
+and mixer settings work.
+
+This adds an "nodelay" parameter to disable this (undocumented in the
+code) large delay improving bootup time by 489-500ms.
+
+[    1.034217] initcall alsa_card_via82xx_init+0x0/0x16 returned 0 after 505757 usecs
+vs.
+[    0.533136] initcall alsa_card_via82xx_init+0x0/0x16 returned 0 after 15915 usecs
 
 Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- drivers/net/r8169.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ sound/pci/via82xx.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 4e22462..ca34a63 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -187,6 +187,7 @@ MODULE_DEVICE_TABLE(pci, rtl8169_pci_tbl);
+diff --git a/sound/pci/via82xx.c b/sound/pci/via82xx.c
+index 1ef58c5..949fcaf 100644
+--- a/sound/pci/via82xx.c
++++ b/sound/pci/via82xx.c
+@@ -85,6 +85,7 @@ static int joystick;
+ static int ac97_clock = 48000;
+ static char *ac97_quirk;
+ static int dxs_support;
++static int nodelay;
  
- static int rx_copybreak = 200;
- static int use_dac;
-+static int phy_reset;
- static struct {
- 	u32 msg_enable;
- } debug = { -1 };
-@@ -504,6 +505,8 @@ module_param(rx_copybreak, int, 0);
- MODULE_PARM_DESC(rx_copybreak, "Copy breakpoint for copy-only-tiny-frames");
- module_param(use_dac, int, 0);
- MODULE_PARM_DESC(use_dac, "Enable PCI DAC. Unsafe on 32 bit PCI slot.");
-+module_param(phy_reset, int, 1);
-+MODULE_PARM_DESC(phy_reset, "Reset PHY when initialising device");
- module_param_named(debug, debug.msg_enable, int, 0);
- MODULE_PARM_DESC(debug, "Debug verbosity level (0=none, ..., 16=all)");
- MODULE_LICENSE("GPL");
-@@ -1798,6 +1801,9 @@ static void rtl8169_init_phy(struct net_device *dev, struct rtl8169_private *tp)
- 		mdio_write(ioaddr, 0x0b, 0x0000); //w 0x0b 15 0 0
- 	}
+ module_param(index, int, 0444);
+ MODULE_PARM_DESC(index, "Index value for VIA 82xx bridge.");
+@@ -102,6 +103,8 @@ module_param(ac97_quirk, charp, 0444);
+ MODULE_PARM_DESC(ac97_quirk, "AC'97 workaround for strange hardware.");
+ module_param(dxs_support, int, 0444);
+ MODULE_PARM_DESC(dxs_support, "Support for DXS channels (0 = auto, 1 = enable, 2 = disable, 3 = 48k only, 4 = no VRA, 5 = enable any sample rate)");
++module_param(nodelay, int, 0444);
++MODULE_PARM_DESC(nodelay, "Disable 500ms init delay");
  
-+	if (!phy_reset)
-+		return;
-+
- 	rtl8169_phy_reset(dev, tp);
+ /* just for backward compatibility */
+ static int enable;
+@@ -549,7 +552,8 @@ static void snd_via82xx_codec_wait(struct snd_ac97 *ac97)
+ 	int err;
+ 	err = snd_via82xx_codec_ready(chip, ac97->num);
+ 	/* here we need to wait fairly for long time.. */
+-	msleep(500);
++	if (!nodelay)
++		msleep(500);
+ }
  
- 	/*
+ static void snd_via82xx_codec_write(struct snd_ac97 *ac97,
 -- 
 1.6.3.1
 
