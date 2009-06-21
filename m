@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZFUGYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZFUG0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbZFUGYB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 02:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZFUGXw
+	id S1752612AbZFUG0R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 02:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZFUG0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 02:23:52 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46012 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbZFUGXw (ORCPT
+	Sun, 21 Jun 2009 02:26:04 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:53544 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbZFUG0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 02:23:52 -0400
-Date: Sun, 21 Jun 2009 08:18:47 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, npiggin@suse.de,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or
-	suspending
-Message-ID: <20090621061847.GB1474@ucw.cz>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <20090619145913.GA1389@ucw.cz> <1245450449.16880.10.camel@pasglop> <20090619232336.GA2442@elf.ucw.cz> <1245455409.16880.15.camel@pasglop> <20090620002817.GA2524@elf.ucw.cz> <1245463809.16880.18.camel@pasglop>
+	Sun, 21 Jun 2009 02:26:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=drhsokVsblA6Dc81c6ObAmLHnWNuv3j87XvjtvhV4titIFJqZ31yJXTe3edMUVPt2O
+         SdmSyWX2zmhmXMtV9AJCJyCIcuk9PgBQuOtVFTjEcSqqot2/QqW8XRi4n/UeqGLQldE5
+         Ft2vO+v5m7rX50J9xjLU662IJ5G03U/9NtMtQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245463809.16880.18.camel@pasglop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <ac8f92700906202315w7d274a98oa3abe6dcc7f9ede1@mail.gmail.com>
+References: <ac8f92700906202315w7d274a98oa3abe6dcc7f9ede1@mail.gmail.com>
+Date: Sun, 21 Jun 2009 14:26:04 +0800
+Message-ID: <ac8f92700906202326u4de4311bjc77bb81ef93b81f9@mail.gmail.com>
+Subject: Fwd: patch for linux-2.6.30/arch/x86_64/mm/init.c
+From: jing zhang <zj.barak@gmail.com>
+To: linux-kernel@vger.kernel.org, mingo@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+hi,
 
-> > Academic for boot, probably real for suspend/resume. There the atomic
-> > reserves could matter because the memory can be pretty full when you
-> > start suspend.
-> 
-> Right, that might be something to look into, though we haven't yet
-> applied the technique for suspend & resume. My main issue with it at the
-> moment is how do I synchronize with allocations that are already
-> sleeping when changing the gfp flag mask without bloating the normal
+I have no way sending to Andi Kleen, then try Mr. linux-kernel and Mr.
+Ingo Molnar.
 
-Well, but the problem already exists, no? If someone is already
-sleeping due to __GFP_WAIT, he'll probably sleep till the resume.
+btw, AC's mailbox @ suse closed, and why?
 
-...well, if he's sleeping in the disk driver, I suspect driver will
-finish outstanding requests as part of .suspend().
+thank you
 
-> I also suspect that we might want to try to make -some- amount of free
-> space before starting suspend, though of course not nearly as
-> aggressively as with std.
+---------- Forwarded message ----------
+From: jing zhang <zj.barak@gmail.com>
+Date: Sun, 21 Jun 2009 14:15:09 +0800
+Subject: patch for linux-2.6.30/arch/x86_64/mm/init.c
+To: ak@suse.de
 
-We free 4MB in 2.6.30, but Rafael is removing that for 2.6.31 :-(.
+Good Sunday Mr. Andi Kleen,
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+It seems that in function
+    unsigned long __init_refok
+    init_memory_mapping(unsigned long start, unsigned long end)
+
+CONFIG_DEBUG_PAGEALLOC conflicts with use_pse and use_gbpages when
+CONFIG_X86_32 also defined.
+
+The following is my patch to you,
+
+best
+
+look forwar to your opion.
+zj
+
+//<<<<<<<<<<<<<<<<<<<<<
+
+#ifdef CONFIG_DEBUG_PAGEALLOC
+	/*
+	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
+	 * This will simplify cpa(), which otherwise needs to support splitting
+	 * large pages into small in interrupt context, etc.
+	 */
+	use_pse = use_gbpages = 0;
+#else
+	use_pse = cpu_has_pse;
+	use_gbpages = direct_gbpages;
+#endif
+
+#ifdef CONFIG_X86_32
+#ifdef CONFIG_X86_PAE
+	set_nx();
+	if (nx_enabled)
+		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
+#endif
+	/* Enable PSE if available */
+-	if (cpu_has_pse)
++	/* and #ifdef CONFIG_DEBUG_PAGEALLOC */
++	if (cpu_has_pse && use_pse)
+		set_in_cr4(X86_CR4_PSE);
+
+	/* Enable PGE if available */
+-	if (cpu_has_pge) {
++	/* and #ifdef CONFIG_DEBUG_PAGEALLOC */
++	if (cpu_has_pge && use_gbpages) {
+		set_in_cr4(X86_CR4_PGE);
+		__supported_pte_mask |= _PAGE_GLOBAL;
+	}
+#endif /* CONFIG_X86_32 */
+
+//<<<<<<<<<<<<<<<<<<<<<
