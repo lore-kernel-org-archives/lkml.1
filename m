@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZFUE2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZFUFQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZFUE2n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 00:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZFUE2e
+	id S1751981AbZFUFQz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 01:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZFUFQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 00:28:34 -0400
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:60469 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750811AbZFUE2e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 00:28:34 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Badness on the Warp
-Date: Sun, 21 Jun 2009 06:28:33 +0200
-User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Gibson <david@gibson.dropbear.id.au>,
-       Paul Mackerras <paulus@samba.org>
-References: <20090620154824.72b5cd50@lappy.seanm.ca> <200906202256.46073.elendil@planet.nl> <20090620194250.5a3e826f@lappy.seanm.ca>
-In-Reply-To: <20090620194250.5a3e826f@lappy.seanm.ca>
+	Sun, 21 Jun 2009 01:16:47 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40120 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751351AbZFUFQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 01:16:47 -0400
+Date: Sun, 21 Jun 2009 06:16:47 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Andy Lutomirski <luto@mit.edu>
+cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm: previous pull req + 1.
+In-Reply-To: <4A3DABE1.50309@mit.edu>
+Message-ID: <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie> <4A3DABE1.50309@mit.edu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906210628.35553.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Jun 2009 04:28:36.0474 (UTC) FILETIME=[BE7545A0:01C9F228]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 21 June 2009, Sean MacLennan wrote:
-> I found the source of the badness. The backtrace is correct:
->
-> uic_init_one
+> 
+> I tried this tree (specifically, a merge of Linus' fb20871 this tree) on
+> Fedora 11 with modesetting enabled on an integrated Radeon 2100, and plymouthd
+> crashes immediately with a corrupt page table.  Photo attached.  After the
+> crash, bootup stops, although ctrl-alt-del works.
 
-So that's in arch/powerpc/sysdev/uic.c.
+You need a different userspace, -ati from koji in F11 should do it.
 
-> ___alloc_bootmem
-> ___alloc_bootmem_nopanic
-> alloc_arch_preferred_bootmem
->
-> In alloc_arch_preferred_bootmem we have:
->
-> 	if (WARN_ON_ONCE(slab_is_available()))
-> 		return kzalloc(size, GFP_NOWAIT);
->
-> Since the slab is available (it had better be or the call will return
-> NULL), we get the badness message, then a successful return from
-> kzalloc.
->
-> I believe the author wants something like:
->
-> 	if (slab_is_available())
-> 		return kzalloc(size, GFP_NOWAIT);
-> 	else
-> 		WARN_ON_ONCE(1);
+However we have some outstanding rs690 issues that I'm trying to track 
+down as we speak,
 
-Well, I myself have no idea. It could also indicate a bug in the uic code.
+Dave.
 
-But let's CC some people responsible for this code. Pekka recently added 
-this WARN that triggers in your case; David and Paul look to be the 
-people most involved in the uic code.
-
-Start of the thread is at http://lkml.org/lkml/2009/6/20/165.
-
-Cheers,
-FJP
+> 
+> This is on a Gigabyte GA-MA74GM-S2 (RS690 chipset) with a somewhat old BIOS
+> which has never had reliable graphics on X with any kernel and userspace I've
+> tried, modesetting or otherwise, so this isn't a regression per se.  But on
+> F11's kernel, I can at least boot to a console with modesetting enabled and
+> nothing dies until I try to start X, and, with modesetting off on older
+> kernels I can boot just fine (again, until I try to use X, at which point
+> things break).
+> 
+> I'd be happy to test things to help debug.
+> 
+> Thanks,
+> Andy
+> 
