@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZFUUxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZFUUzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbZFUUxB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 16:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZFUUwt
+	id S1754547AbZFUUzn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 16:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbZFUUzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 16:52:49 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60266 "EHLO
+	Sun, 21 Jun 2009 16:55:35 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60508 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbZFUUws (ORCPT
+	with ESMTP id S1753773AbZFUUze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 16:52:48 -0400
-Date: Sun, 21 Jun 2009 22:52:45 +0200
+	Sun, 21 Jun 2009 16:55:34 -0400
+Date: Sun, 21 Jun 2009 22:55:34 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Marco <marco.stornelli@gmail.com>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-Message-ID: <20090621205245.GC3254@elf.ucw.cz>
-References: <4A33A7A2.1050608@gmail.com> <20090613155957.GA16220@shareable.org> <4A34A394.5040509@gmail.com> <20090621064040.GC1656@ucw.cz> <4A3E6F28.4090404@gmail.com>
+To: "H. Peter Anvin" <hpa@linux.intel.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Martin Mares <mj@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-arch@vger.kernel.org
+Subject: Re: RFC: x86: cap iomem_resource to addressable physical memory
+Message-ID: <20090621205534.GA4324@elf.ucw.cz>
+References: <4A2F0D45.2040602@linux.intel.com> <86802c440906111343g513a2ceau1e2bfdf14c295b2d@mail.gmail.com> <4A316D3C.7080403@linux.intel.com> <20090621064201.GD1656@ucw.cz> <4A3DE3F3.4000100@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A3E6F28.4090404@gmail.com>
+In-Reply-To: <4A3DE3F3.4000100@linux.intel.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun 2009-06-21 00:40:35, H. Peter Anvin wrote:
+> Pavel Machek wrote:
+>> On Thu 2009-06-11 13:46:52, H. Peter Anvin wrote:
+>>> Yinghai Lu wrote:
+>>>> do we need do that on every cpu?
+>>>>
+>>>> looks like we could do that in identify_boot_cpu.
+>>>>
+>>> What if the CPUs are heterogenous?  It's obviously a suboptimal
+>>> situation, but it doesn't seem like something we can rely on.
+>>
+>> Is it ok if that changes during runtime? What if someone hotplugs
+>> heterogenous cpu? I'd say basing it on boot cpu seems simplest.
+>
+> If someone hotplugs heterogenous CPUs it should do the right thing if  
+> the right thing is possible to do.  If you already have resource  
+> assignments that are unfulfillable you're screwed anyway.
 
-> >> 1. Disk-based filesystems such as ext2/ext3 were designed for optimum
-> >>    performance on spinning disk media, so they implement features such
-> >>    as block groups, which attempts to group inode data into a contiguous
-> >>    set of data blocks to minimize disk seeking when accessing files. For
-> >>    RAM there is no such concern; a file's data blocks can be scattered
-> >>    throughout the media with no access speed penalty at all. So block
-> >>    groups in a filesystem mounted over RAM just adds unnecessary
-> >>    complexity. A better approach is to use a filesystem specifically
-> >>    tailored to RAM media which does away with these disk-based features.
-> >>    This increases the efficient use of space on the media, i.e. more
-> >>    space is dedicated to actual file data storage and less to meta-data
-> >>    needed to maintain that file data.
-> > 
-> > So... what is the performance difference between ext2 and your new
-> > filesystem?
-> > 
-> 
-> About the "space" you can read a detailed documentation on the site:
-> 
-> http://pramfs.sourceforge.net/pramfs-spec.html
-
-I do not see any numbers there. Do you think you can save significant
-memory when storing for example kernel source trees?
-
-> In addition I can do an example of "compact" information: ext2 uses
-> directory entry objects ("dentries") to associate file names to
-> inodes,
-
-I'm not sure that on-disk directory entry == dentry.
-
-> and these dentries are located in data blocks owned by the parent
-> directory. In pramfs, directory inode's do not need to own any data
-> blocks, because all dentry information is contained within the inode's
-> themselves.
-
-How do you handle hard-links, then?
-
-> >From performance point of view:
-> 
-> Sometimes ago I uploaded here (http://elinux.org/Pram_Fs) some benchmark
-> results to compare the performance with and without XIP in a real
-> embedded environment with bonnie++. You could use it as reference point.
-
-Well, so XIP helps. ext2 can do XIP too, IIRC. Is your performance
-better than ext2?
-
-Wait... those numbers you pointed me... claim to be as slow as
-13MB/sec. That's very very bad. My harddrive is faster than that.
+Ok... and is there enough locking in there so that it is actually ok
+to change mask during hotplug? (Is it okay because it is single long
+and all the writers are somehow serialized by hotplug mechanism?)
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
