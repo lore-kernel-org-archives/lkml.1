@@ -1,98 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZFUMJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZFUMYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbZFUMJx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 08:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZFUMJq
+	id S1754590AbZFUMYp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 08:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZFUMYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 08:09:46 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:54261 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbZFUMJp (ORCPT
+	Sun, 21 Jun 2009 08:24:37 -0400
+Received: from smtprelay01.ispgateway.de ([80.67.31.35]:49878 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753335AbZFUMYh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 08:09:45 -0400
-Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
- usage
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Brian Swetland <swetland@google.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       hackbod@android.com
-In-Reply-To: <1245458940.32124.45.camel@desktop>
-References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
-	 <4A380494.6030506@goop.org> <1245249469.5982.251.camel@desktop>
-	 <4A390B9A.40806@goop.org> <1245254936.5982.261.camel@desktop>
-	 <4A391A54.7000109@goop.org>
-	 <d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
-	 <1245274308.5982.268.camel@desktop>
-	 <a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
-	 <1245451983.32124.25.camel@desktop>
-	 <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
-	 <1245458940.32124.45.camel@desktop>
-Content-Type: text/plain
-Date: Sun, 21 Jun 2009 14:09:36 +0200
-Message-Id: <1245586176.15367.62.camel@violet>
+	Sun, 21 Jun 2009 08:24:37 -0400
+References: <20090620170835.GA3295@liondog.tnic> <20090620203846.bbe19d0d.peter@piie.net> <20090621060216.GA25786@liondog.tnic>
+Message-ID: <cone.1245587130.876104.5395.1000@onepiie>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Acer Aspire One fan control, simplified and scrubbed
+Date: Sun, 21 Jun 2009 14:25:30 +0200
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
+Hi,
 
-> > > Also are there any userspace test cases
-> > > that Google used to test the performance of this interface. Or test
-> > > cases to compare the binder with something like sockets, or any other
-> > > type of IPC?
-> > >
-> > > If Google believes the binder is the right solution for IPC, how was
-> > > that conclusion formed?
-> > >
-> > > Daniel
-> > 
-> > These are mostly questions for the framework team. The binder driver
-> > is there to support our user space code. At some point we used the
-> > driver from www.open-binder.org, but we ran into, and fixed, a lot of
-> > bugs (especially when processes died), so we determined it would be
-> > faster to rewrite the driver from scratch.
+Borislav Petkov writes:
+
+> Hi,
 > 
-> Most of these questions related to the fact that I don't think an
-> interface like this just slips into the kernel as a driver. Since it's
-> IPC, it's totally generic, and it's not part of a standard (i.e. POSIX),
-> we need to have some better and more specific information about it (or
-> atleast I do). 
+> On Sat, Jun 20, 2009 at 08:38:46PM +0200, Peter Feuerer wrote:
+>> You removed the feature of controlling the fan from userspace, while the
+>> driver is running in kernelmode=off!
+>> ( echo 0 > /sys/class/thermal/thermal_zone0/cdev0/cur_state calls also the
+>> acerhdf_set_cur_state function )
+> 
+> I still don't really see the need for this since the module is doing
+> pretty good job already. Besides, its not like there is really a need
+> for userspace daemon doing heavy calculations and based on those
+> controlls the fan - simply turning it on and off based on the current
+> temp readings is what is needed and the thermal layer does that just
+> fine already :).
 
-at this point of time we are using D-Bus quite successfully for mostly
-every userspace application. And embedded devices like Nokia 810 or even
-the new Palm Pre seems to be very happy with it. Even the Android
-platform contains D-Bus support (even though limited for BlueZ).
+Ok, we'll leave this feature out, as the code is really much cleaner and I 
+also doubt that anybody will miss it.
 
-The only downside with D-Bus right now is that you can't really copy
-large amount of data over its IPC. And that is purely for performance
-reason and memory constraints. However it is actually an implementation
-detail since D-Bus as of now uses Unix sockets underneath. Switching to
-shared memory or implementing dbus-daemon as AF_DBUS inside the kernel
-would solve these.
+> 
+>> --
+>> 
+>> Acerhdf is a driver for Acer Aspire One netbooks. It allows
+>> to access the temperature sensor and to control the fan.
+>> 
+>> Peter:
+>> 
+>>  - fixed bios table terminator Version string ( 0 to "" )
+>>  - added acerhdf_enable_kernelmode
+>>  - modified acerhdf_revert_to_bios_mode to disable polling
+>>  - modified acerhdf_get_temp to omit the pr_notice (temperature
+>>    should not be printed out in verbose mode, when called from
+>>    acerhdf_set_cur_state)
+> 
+> see below for some minor nitpicking.
 
-For the problem of not being able to pass file descriptors over D-Bus we
-have patches that are currently under review and are most likely to get
-merged for the next release. This would also remove the limitation of
-the direct data communication since you could just give the file
-descriptor of the data plane to the other process.
+I'll fix the things you suggested and send then a (hopefully) last acerhdf 
+patch to lkml and linus, ok?
 
-> If for instance the main reason for Google using this interface is cause
-> a large number of android people once worked at Palm or BeOS, that's not
-> reason enough for it to go into the kernel. Or if this binder interface
-> really fits well with Java or C++ people and they just love it, that's
-> not really acceptable either..
+Again, thank you very much! I've really learned a lot from you!
 
-It is a Google only thing. Everybody else uses D-Bus and is actually
-happy with it.
-
-Regards
-
-Marcel
-
-
+regards,
+--peter
