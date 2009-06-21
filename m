@@ -1,145 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbZFULPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZFULQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbZFULPd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 07:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZFULP0
+	id S1755324AbZFULQa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 07:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZFULQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 07:15:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60521 "EHLO hera.kernel.org"
+	Sun, 21 Jun 2009 07:16:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60591 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753283AbZFULPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 07:15:25 -0400
-Subject: [PATCH -tip] x86: mm/hugetlbpage.c fix style problems
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Rohit Seth <rohitseth@google.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 21 Jun 2009 16:44:41 +0530
-Message-Id: <1245582881.3052.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1751000AbZFULQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 07:16:22 -0400
+Date: Sun, 21 Jun 2009 11:15:35 GMT
+From: tip-bot for Wolfram Sang <w.sang@pengutronix.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, w.sang@pengutronix.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, w.sang@pengutronix.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1245580359-4465-1-git-send-email-w.sang@pengutronix.de>
+References: <1245580359-4465-1-git-send-email-w.sang@pengutronix.de>
+Subject: [tip:sched/urgent] sched: Documentation/sched-rt-group: Fix style issues & bump version
+Message-ID: <tip-d4ec36bac3de39b7e10ec8f42fbdd20d9a9ed753@git.kernel.org>
+Git-Commit-ID: d4ec36bac3de39b7e10ec8f42fbdd20d9a9ed753
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 21 Jun 2009 11:15:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  d4ec36bac3de39b7e10ec8f42fbdd20d9a9ed753
+Gitweb:     http://git.kernel.org/tip/d4ec36bac3de39b7e10ec8f42fbdd20d9a9ed753
+Author:     Wolfram Sang <w.sang@pengutronix.de>
+AuthorDate: Sun, 21 Jun 2009 12:32:39 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 21 Jun 2009 13:12:46 +0200
 
-Impact : cleanup
+sched: Documentation/sched-rt-group: Fix style issues & bump version
 
-Fix :
+- add missing closing bracket
+- fix two 80-chars issues (as the rest of the document adheres to it)
+- bump a reference to kernel version, so the document does not feel aged
 
-WARNING: Use #include <linux/mman.h> instead of <asm/mman.h>
-WARNING: line over 80 characters
-ERROR: code indent should use tabs where possible X 10
-ERROR: do not use assignment in if condition
-ERROR: return is not a function, parentheses are not required
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1245580359-4465-1-git-send-email-w.sang@pengutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-total: 12 errors, 2 warnings
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/mm/hugetlbpage.c |   33 ++++++++++++++++++---------------
- 1 files changed, 18 insertions(+), 15 deletions(-)
+ Documentation/scheduler/sched-rt-group.txt |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-index f46c340..978fc5f 100644
---- a/arch/x86/mm/hugetlbpage.c
-+++ b/arch/x86/mm/hugetlbpage.c
-@@ -12,7 +12,7 @@
- #include <linux/slab.h>
- #include <linux/err.h>
- #include <linux/sysctl.h>
--#include <asm/mman.h>
-+#include <linux/mman.h>
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
- #include <asm/pgalloc.h>
-@@ -93,7 +93,8 @@ static void huge_pmd_share(struct mm_struct *mm, unsigned long addr, pud_t *pud)
+diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+index 1df7f9c..86eabe6 100644
+--- a/Documentation/scheduler/sched-rt-group.txt
++++ b/Documentation/scheduler/sched-rt-group.txt
+@@ -73,7 +73,7 @@ The remaining CPU time will be used for user input and other tasks. Because
+ realtime tasks have explicitly allocated the CPU time they need to perform
+ their tasks, buffer underruns in the graphics or audio can be eliminated.
  
- 	spin_lock(&mm->page_table_lock);
- 	if (pud_none(*pud))
--		pud_populate(mm, pud, (pmd_t *)((unsigned long)spte & PAGE_MASK));
-+		pud_populate(mm, pud,
-+			     (pmd_t *)((unsigned long)spte & PAGE_MASK));
- 	else
- 		put_page(virt_to_page(spte));
- 	spin_unlock(&mm->page_table_lock);
-@@ -269,11 +270,11 @@ static unsigned long hugetlb_get_unmapped_area_bottomup(struct file *file,
- 	struct vm_area_struct *vma;
- 	unsigned long start_addr;
+-NOTE: the above example is not fully implemented as of yet (2.6.25). We still
++NOTE: the above example is not fully implemented yet. We still
+ lack an EDF scheduler to make non-uniform periods usable.
  
--	if (len > mm->cached_hole_size) {
--	        start_addr = mm->free_area_cache;
--	} else {
--	        start_addr = TASK_UNMAPPED_BASE;
--	        mm->cached_hole_size = 0;
-+	if (len > mm->cached_hole_size)
-+		start_addr = mm->free_area_cache;
-+	else {
-+		start_addr = TASK_UNMAPPED_BASE;
-+		mm->cached_hole_size = 0;
- 	}
  
- full_search:
-@@ -298,7 +299,7 @@ full_search:
- 			return addr;
- 		}
- 		if (addr + mm->cached_hole_size < vma->vm_start)
--		        mm->cached_hole_size = vma->vm_start - addr;
-+			mm->cached_hole_size = vma->vm_start - addr;
- 		addr = ALIGN(vma->vm_end, huge_page_size(h));
- 	}
- }
-@@ -319,7 +320,7 @@ static unsigned long hugetlb_get_unmapped_area_topdown(struct file *file,
- 		mm->free_area_cache = base;
+@@ -140,14 +140,15 @@ The other option is:
  
- 	if (len <= largest_hole) {
--	        largest_hole = 0;
-+		largest_hole = 0;
- 		mm->free_area_cache  = base;
- 	}
- try_again:
-@@ -334,7 +335,8 @@ try_again:
- 		 * Lookup failure means no vma is above this address,
- 		 * i.e. return with success:
- 		 */
--		if (!(vma = find_vma_prev(mm, addr, &prev_vma)))
-+		vma = find_vma_prev(mm, addr, &prev_vma);
-+		if (!vma)
- 			return addr;
+ .o CONFIG_CGROUP_SCHED (aka "Basis for grouping tasks" = "Control groups")
  
- 		/*
-@@ -342,13 +344,14 @@ try_again:
- 		 * vma->vm_start, use it:
- 		 */
- 		if (addr + len <= vma->vm_start &&
--		            (!prev_vma || (addr >= prev_vma->vm_end))) {
-+		    (!prev_vma || (addr >= prev_vma->vm_end))) {
- 			/* remember the address as a hint for next time */
--		        mm->cached_hole_size = largest_hole;
--		        return (mm->free_area_cache = addr);
-+			mm->cached_hole_size = largest_hole;
-+			mm->free_area_cache = addr;
-+			return addr;
- 		} else {
- 			/* pull free_area_cache down to the first hole */
--		        if (mm->free_area_cache == vma->vm_end) {
-+			if (mm->free_area_cache == vma->vm_end) {
- 				mm->free_area_cache = vma->vm_start;
- 				mm->cached_hole_size = largest_hole;
- 			}
-@@ -356,7 +359,7 @@ try_again:
+-This uses the /cgroup virtual file system and "/cgroup/<cgroup>/cpu.rt_runtime_us"
+-to control the CPU time reserved for each control group instead.
++This uses the /cgroup virtual file system and
++"/cgroup/<cgroup>/cpu.rt_runtime_us" to control the CPU time reserved for each
++control group instead.
  
- 		/* remember the largest hole we saw so far */
- 		if (addr + largest_hole < vma->vm_start)
--		        largest_hole = vma->vm_start - addr;
-+			largest_hole = vma->vm_start - addr;
+ For more information on working with control groups, you should read
+ Documentation/cgroups/cgroups.txt as well.
  
- 		/* try just below the current vma->vm_start */
- 		addr = (vma->vm_start - len) & huge_page_mask(h);
--- 
-1.6.0.6
-
-
-
+-Group settings are checked against the following limits in order to keep the configuration
+-schedulable:
++Group settings are checked against the following limits in order to keep the
++configuration schedulable:
+ 
+    \Sum_{i} runtime_{i} / global_period <= global_runtime / global_period
+ 
+@@ -189,7 +190,7 @@ Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
+ the biggest challenge as the current linux PI infrastructure is geared towards
+ the limited static priority levels 0-99. With deadline scheduling you need to
+ do deadline inheritance (since priority is inversely proportional to the
+-deadline delta (deadline - now).
++deadline delta (deadline - now)).
+ 
+ This means the whole PI machinery will have to be reworked - and that is one of
+ the most complex pieces of code we have.
