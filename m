@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZFULpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZFUMGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666AbZFULpZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 07:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbZFULpP
+	id S1755170AbZFUMGM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 08:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZFUMGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 07:45:15 -0400
-Received: from mailhost5.gawab.com ([66.220.20.5]:48655 "HELO info14.gawab.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752166AbZFULpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 07:45:14 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: Peter Chacko <peterchacko35@gmail.com>, David Miller <davem@davemloft.net>
-Subject: [RFD] Pluggable code design (was: can we reuse an skb)
-Date: Sun, 21 Jun 2009 14:46:13 +0300
-User-Agent: KMail/1.5
-Cc: rick.jones2@hp.com, radhamohan_ch@yahoo.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <962874.62146.qm@web94813.mail.in2.yahoo.com> <20090619.162957.156347025.davem@davemloft.net> <1f808b4a0906202241l1d74364ft52d99ecb6b0274f5@mail.gmail.com>
-In-Reply-To: <1f808b4a0906202241l1d74364ft52d99ecb6b0274f5@mail.gmail.com>
+	Sun, 21 Jun 2009 08:06:02 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:62015 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752124AbZFUMGA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 08:06:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sBIqQ2Mio2HWU1mxMEDufmV2aQ0CpovT0jYh0ZrQQSHg6GucBgh7T+hNIXSQiKDMXJ
+         zg4uxgY2FFCLV0gIuo0AJ22G0hNfKUD49e1hl85ixADVb9wr19g118VuVANfoOGcdNiU
+         BtjGxiVaN3jtW18eZj3zqOq1vWFVHSh3h6lWY=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906211446.13665.a1426z@gawab.com>
+In-Reply-To: <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
+	 <4A3DABE1.50309@mit.edu>
+	 <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
+Date: Sun, 21 Jun 2009 08:06:01 -0400
+X-Google-Sender-Auth: c588d2efad44f9da
+Message-ID: <cb0375e10906210506k911737fp18667221596771b@mail.gmail.com>
+Subject: Re: [git pull] drm: previous pull req + 1.
+From: Andrew Lutomirski <luto@mit.edu>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Chacko wrote:
-> What i am considering here is the super optimization of memory buffers
-> for a multi-layer packet processor, without needing to move packets
-> into user space. In that case, i am optimizing my custom network stack
-> with a pre-allocated MTU sized and a few  jumbo-sized buffers. And no
-> interrupts as i do NAPI at all times, as this is a dedicated
-> appliance. I keep all these buffers in the L1 cache and hence i have
-> different sets of pools for different cores. I  am currently guiding
-> my engineers to implement the code changes now..
+On Sun, Jun 21, 2009 at 1:16 AM, Dave Airlie<airlied@linux.ie> wrote:
+>>
+>> I tried this tree (specifically, a merge of Linus' fb20871 this tree) on
+>> Fedora 11 with modesetting enabled on an integrated Radeon 2100, and plymouthd
+>> crashes immediately with a corrupt page table.  Photo attached.  After the
+>> crash, bootup stops, although ctrl-alt-del works.
+>
+> You need a different userspace, -ati from koji in F11 should do it.
 
-Yes, having a customizable/pluggable network stack sounds very useful.
+I'm already running that (xorg-x11-drv-ati-6.12.2-17.fc11.x86_64,
+which is the latest in koji).
 
-In general, OpenSource projects like Linux don't give much incentive to 
-pluggable designs, because the source, being open, represents a weired form 
-of pluggability.  Unfortunately, this "hack it up / code it hard" design 
-style usually inhibits healthy development.
+But the oops is in *plymouth*, which as far as I can tell uses the
+framebuffer interface, so it shouldn't matter what xorg driver I have
+installed.  Shouldn't it be impossible for a buggy framebuffer client
+to cause an oops?
 
-A rethink is probably in place...
+>
+> However we have some outstanding rs690 issues that I'm trying to track
+> down as we speak,
 
+Great!  I'll keep on testing.
 
-Thanks!
+--Andy
 
---
-Al
+>
+> Dave.
+>
+>>
+>> This is on a Gigabyte GA-MA74GM-S2 (RS690 chipset) with a somewhat old BIOS
+>> which has never had reliable graphics on X with any kernel and userspace I've
+>> tried, modesetting or otherwise, so this isn't a regression per se.  But on
+>> F11's kernel, I can at least boot to a console with modesetting enabled and
+>> nothing dies until I try to start X, and, with modesetting off on older
+>> kernels I can boot just fine (again, until I try to use X, at which point
+>> things break).
+>>
+>> I'd be happy to test things to help debug.
+>>
+>> Thanks,
+>> Andy
+>>
+>
