@@ -1,200 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZFUTzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZFUUNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbZFUTzw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 15:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZFUTzn
+	id S1754517AbZFUUNa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 16:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZFUUNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 15:55:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39488 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbZFUTzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 15:55:42 -0400
-From: Thomas Renninger <trenn@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: S06cpuspeed/2637 is trying to acquire lock (&(&dbs_info->work)->work (was: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =)
-Date: Sun, 21 Jun 2009 21:55:48 +0200
-User-Agent: KMail/1.9.10
-Cc: Dave Jones <davej@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cpufreq@vger.kernel.org, mark.langsdorf@amd.com,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-References: <4A2835D8.6040903@kernel.org> <20090611105211.GA6760@elte.hu> <20090620124817.GA22831@elte.hu>
-In-Reply-To: <20090620124817.GA22831@elte.hu>
+	Sun, 21 Jun 2009 16:13:21 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:35570 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbZFUUNU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 16:13:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=opPFIUtgn0NtIoSwSZVysCs6vDbRcMb74lOqzMcIjw5WQC+UdyQX36OznWjfMu4RWw
+         8GpVWlb4N/uR0l0PuD1o2RtSJBVwu2l50DfChq2wAzuwxe9JSeamrvt9KrrNXkQk0VWf
+         T1/rO1jIeZ9huao9yWn1F+UdhG8h/dW+MCi3Y=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906212155.49849.trenn@suse.de>
+In-Reply-To: <4A3E7F38.7030300@linux.intel.com>
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
+	 <4A3E7F38.7030300@linux.intel.com>
+Date: Sun, 21 Jun 2009 22:13:21 +0200
+Message-ID: <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend to 
+	disk, mce related?
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, seto.hidetoshi@jp.fujitsu.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 June 2009 02:48:17 pm Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> > * Dave Jones <davej@redhat.com> wrote:
-> > > On Wed, Jun 10, 2009 at 01:10:35PM +0200, Ingo Molnar wrote:
-> > >  > With a v2.6.30 based kernel i'm still getting a cpufreq lockdep
-> > >  > warning:
-> > >  >
-> > >  >  =======================================================
-> > >  >  [ INFO: possible circular locking dependency detected ]
-> > >  >  2.6.30-tip #10420
-> > >  >  -------------------------------------------------------
-> > >  >  S06cpuspeed/2637 is trying to acquire lock:
-> > >  >   (&(&dbs_info->work)->work){+.+...}, at: [<ffffffff8106553d>]
-> > >  > __cancel_work_timer+0xd6/0x22a
-> > >  >
-> > >  >  but task is already holding lock:
-> > >  >   (dbs_mutex){+.+.+.}, at: [<ffffffff8193d630>]
-> > >  > cpufreq_governor_dbs+0x28f/0x335
-> > >  >
-> > >  > This bug got introduced somewhere late in the .30-rc cycle, this box
-> > >  > was fine before.
-> > >
-> > > See the thread " [PATCH] remove rwsem lock from CPUFREQ_GOV_STOP
-> > > call (second call site)" Though there's a report that the last
-> > > patch posted still doesn't fix the problem, so we still don't have
-> > > a quick fix suitable for -stable.
-> >
-> > even with latest -git (which includes cpufreq fixes) i get:
-> >
-> > [   54.819413] CPUFREQ: ondemand sampling_rate_max sysfs file is
-> > deprecated - used by: cat [   55.216665]
-> > [   55.216668] =======================================================
-> > [   55.216963] [ INFO: possible circular locking dependency detected ]
-> > [   55.217134] 2.6.30-tip #5836
-> > [   55.217276] -------------------------------------------------------
-> > [   55.217428] S99local/4262 is trying to acquire lock:
-> > [   55.217577]  (&(&dbs_info->work)->work){+.+...}, at: [<4104261f>]
-> > __cancel_work_timer+0xb8/0x1e9 [   55.218065]
-> > [   55.218068] but task is already holding lock:
-> > [   55.218351]  (dbs_mutex){+.+.+.}, at: [<4157bd6b>]
-> > cpufreq_governor_dbs+0x25d/0x2e4 [   55.218358]
-> >
-> > full bootlog below. Can test fixes.
->
-> Note, this bug warning still triggers rather frequently with latest
-> -git (fb20871) during bootup on two test-systems - relevant portion
-> of the bootlog attached below. As usual i can test any fix for this.
-Best rip out the dbs_mutex in drivers/cpufreq/cpufreq_ondemand.c totally.
-I can provide several locking cleanups for cpufreq for .31 the next days, 
-including dbs_mutex removal, which I think is not needed.
-The dbs_mutex removal which should fix this could then be marked:
-CC: stable@kernel.org
+2009/6/21 Andi Kleen <ak@linux.intel.com>:
+> I assume it runs stable for hours without resume from disk?
 
-     Thomas
+I only test for 40 minutes. latest git hangs  4-5 minutes after resume
+from s2disk
 
+> And you made sure you don't use stale data from
+> a different kernel for resume from disk?
+
+I'm sure
 
 >
->         Ingo
->
-> [  266.276061]
-> [  266.276064] =======================================================
-> [  266.276243] [ INFO: possible circular locking dependency detected ]
-> [  266.276337] 2.6.30-tip #6165
-> [  266.276423] -------------------------------------------------------
-> [  266.276516] S99local/4038 is trying to acquire lock:
-> [  266.276608]  (&(&dbs_info->work)->work){+.+...}, at: [<c104b718>]
-> __cancel_work_timer+0xa9/0x186 [  266.276883]
-> [  266.276884] but task is already holding lock:
-> [  266.277055]  (dbs_mutex){+.+.+.}, at: [<c14f6241>]
-> cpufreq_governor_dbs+0x24d/0x2d7 [  266.277322]
-> [  266.277323] which lock already depends on the new lock.
-> [  266.277325]
-> [  266.277577]
-> [  266.277578] the existing dependency chain (in reverse order) is:
-> [  266.277752]
-> [  266.277753] -> #2 (dbs_mutex){+.+.+.}:
-> [  266.278055]        [<c105fe5a>] validate_chain+0x810/0xa81
-> [  266.278193]        [<c106077f>] __lock_acquire+0x6b4/0x71f
-> [  266.278331]        [<c1061a58>] lock_acquire+0xb1/0xd5
-> [  266.278466]        [<c15ddbd2>] mutex_lock_nested+0x3e/0x363
-> [  266.278605]        [<c14f604d>] cpufreq_governor_dbs+0x59/0x2d7
-> [  266.278742]        [<c14f3d1b>] __cpufreq_governor+0x6a/0x74
-> [  266.278881]        [<c14f3e7f>] __cpufreq_set_policy+0x15a/0x1c8
-> [  266.279020]        [<c14f515f>] cpufreq_add_dev+0x36b/0x448
-> [  266.279158]        [<c12d6308>] sysdev_driver_register+0x9b/0xea
-> [  266.279299]        [<c14f3c25>] cpufreq_register_driver+0xa2/0x12e
-> [  266.279438]        [<c1b07f8e>] acpi_cpufreq_init+0x108/0x11d
-> [  266.279575]        [<c1001151>] _stext+0x69/0x176
-> [  266.279711]        [<c1b00741>] kernel_init+0x86/0xd7
-> [  266.279848]        [<c1004387>] kernel_thread_helper+0x7/0x10
-> [  266.279986]        [<ffffffff>] 0xffffffff
-> [  266.280023]
-> [  266.280023] -> #1 (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}:
-> [  266.280023]        [<c105fe5a>] validate_chain+0x810/0xa81
-> [  266.280023]        [<c106077f>] __lock_acquire+0x6b4/0x71f
-> [  266.280023]        [<c1061a58>] lock_acquire+0xb1/0xd5
-> [  266.280023]        [<c15dea5f>] down_write+0x24/0x63
-> [  266.280023]        [<c14f4933>] lock_policy_rwsem_write+0x38/0x64
-> [  266.280023]        [<c14f5d93>] do_dbs_timer+0x3b/0x29c
-> [  266.280023]        [<c104c124>] worker_thread+0x1ce/0x2c9
-> [  266.280023]        [<c104f4d8>] kthread+0x6b/0x73
-> [  266.280023]        [<c1004387>] kernel_thread_helper+0x7/0x10
-> [  266.280023]        [<ffffffff>] 0xffffffff
-> [  266.280023]
-> [  266.280023] -> #0 (&(&dbs_info->work)->work){+.+...}:
-> [  266.280023]        [<c105fbea>] validate_chain+0x5a0/0xa81
-> [  266.280023]        [<c106077f>] __lock_acquire+0x6b4/0x71f
-> [  266.280023]        [<c1061a58>] lock_acquire+0xb1/0xd5
-> [  266.280023]        [<c104b72f>] __cancel_work_timer+0xc0/0x186
-> [  266.280023]        [<c104b805>] cancel_delayed_work_sync+0x10/0x12
-> [  266.280023]        [<c14f6252>] cpufreq_governor_dbs+0x25e/0x2d7
-> [  266.280023]        [<c14f3d1b>] __cpufreq_governor+0x6a/0x74
-> [  266.280023]        [<c14f3e69>] __cpufreq_set_policy+0x144/0x1c8
-> [  266.280023]        [<c14f446f>] store_scaling_governor+0x15e/0x18d
-> [  266.280023]        [<c14f4cbc>] store+0x47/0x60
-> [  266.280023]        [<c11114f1>] sysfs_write_file+0xba/0xe5
-> [  266.280023]        [<c10c9898>] vfs_write+0xc5/0x162
-> [  266.280023]        [<c10c9e65>] sys_write+0x41/0x7c
-> [  266.280023]        [<c10039a7>] sysenter_do_call+0x12/0x3c
-> [  266.280023]        [<ffffffff>] 0xffffffff
-> [  266.280023]
-> [  266.280023] other info that might help us debug this:
-> [  266.280023]
-> [  266.280023] 3 locks held by S99local/4038:
-> [  266.280023]  #0:  (&buffer->mutex){+.+.+.}, at: [<c1111460>]
-> sysfs_write_file+0x29/0xe5 [  266.280023]  #1:  (&per_cpu(cpu_policy_rwsem,
-> cpu)){+++++.}, at: [<c14f4933>] lock_policy_rwsem_write+0x38/0x64 [ 
-> 266.280023]  #2:  (dbs_mutex){+.+.+.}, at: [<c14f6241>]
-> cpufreq_governor_dbs+0x24d/0x2d7 [  266.280023]
-> [  266.280023] stack backtrace:
-> [  266.280023] Pid: 4038, comm: S99local Tainted: G        W  2.6.30-tip
-> #6165 [  266.280023] Call Trace:
-> [  266.280023]  [<c105f562>] print_circular_bug_tail+0xa3/0xae
-> [  266.280023]  [<c105fbea>] validate_chain+0x5a0/0xa81
-> [  266.280023]  [<c106077f>] __lock_acquire+0x6b4/0x71f
-> [  266.280023]  [<c105dcd0>] ? mark_held_locks+0x42/0x5a
-> [  266.280023]  [<c1061a58>] lock_acquire+0xb1/0xd5
-> [  266.280023]  [<c104b718>] ? __cancel_work_timer+0xa9/0x186
-> [  266.280023]  [<c104b72f>] __cancel_work_timer+0xc0/0x186
-> [  266.280023]  [<c104b718>] ? __cancel_work_timer+0xa9/0x186
-> [  266.280023]  [<c15ddee6>] ? mutex_lock_nested+0x352/0x363
-> [  266.280023]  [<c14f6241>] ? cpufreq_governor_dbs+0x24d/0x2d7
-> [  266.280023]  [<c104b805>] cancel_delayed_work_sync+0x10/0x12
-> [  266.280023]  [<c14f6252>] cpufreq_governor_dbs+0x25e/0x2d7
-> [  266.280023]  [<c14f3d1b>] __cpufreq_governor+0x6a/0x74
-> [  266.280023]  [<c14f3e69>] __cpufreq_set_policy+0x144/0x1c8
-> [  266.280023]  [<c14f4311>] ? store_scaling_governor+0x0/0x18d
-> [  266.280023]  [<c14f446f>] store_scaling_governor+0x15e/0x18d
-> [  266.280023]  [<c14f4a9b>] ? handle_update+0x0/0x2d
-> [  266.280023]  [<c14f4311>] ? store_scaling_governor+0x0/0x18d
-> [  266.280023]  [<c14f4cbc>] store+0x47/0x60
-> [  266.280023]  [<c11114f1>] sysfs_write_file+0xba/0xe5
-> [  266.280023]  [<c1111437>] ? sysfs_write_file+0x0/0xe5
-> [  266.280023]  [<c10c9898>] vfs_write+0xc5/0x162
-> [  266.280023]  [<c10c9e65>] sys_write+0x41/0x7c
-> [  266.280023]  [<c10039a7>] sysenter_do_call+0x12/0x3c
-> [  272.000046] End ring buffer hammer
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> It is strange that resume from disk affects machine check.
+> How is your resume setup?
+
+You ask about "resume" kernel option?
+
+maciek@zlom:~$ cat /proc/cmdline
+root=/dev/sda2 ro resume=/dev/sda3 selinux=0
+
+> Do you have any init scripts that change machine check state
+> before the resume from disk runs?
+
+No. I use default Debian instalation. I use this script, to do s2disk:
+
+#!/bin/sh
+umount /mnt/vista
+umount /mnt/drugi
+governor0=`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor`
+governor1=`cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor`
+f_min_0=`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq`
+f_min_1=`cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq`
+f_max_0=`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq`
+f_max_1=`cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq`
+#rmmod snd_hda_intel
+sync
+hdparm -F /dev/sda
+hdparm -F /dev/sdb
+sleep 1
+# hibernate
+echo -n platform > /sys/power/disk
+echo -n disk > /sys/power/state
+echo $governor0 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+echo $governor1 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
+echo $f_min_0 >  /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo $f_min_1 >  /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+echo $f_max_0 >  /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo $f_max_1 >  /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+#modprobe snd_hda_intel model=3stack-dig
+sleep 1
+/etc/init.d/hdparm restart
+mount /mnt/vista
+mount /mnt/drugi
 
 
+>
+> I assume you have CONFIG_X86_NEW_MCE enabled, correct?
+
+maciek@zlom:~$ cat /boot/config-2.6.30-git17 | grep MCE
+CONFIG_X86_MCE=y
+# CONFIG_X86_OLD_MCE is not set
+CONFIG_X86_NEW_MCE=y
+CONFIG_X86_MCE_INTEL=y
+# CONFIG_X86_MCE_AMD is not set
+# CONFIG_X86_ANCIENT_MCE is not set
+CONFIG_X86_MCE_THRESHOLD=y
+CONFIG_X86_MCE_INJECT=m
+
+> Does it still happen with CONFIG_X86_OLD_MCE instead?
+
+I will check tomorrow.
+
+>
+> Also a "a few minutes" suggest something might be going wrong
+> with the poll handler.  Does the problem still happen
+> with you use CONFIG_X86_NEW_MCE again, but before
+> resume do
+>
+> echo 0 > /sys/device/system/machinecheck/machinecheck0/check_interval
+>
+> On the other hand you should get a crash very fast with
+>
+> echo 1 > /sys/device/system/machinecheck/machinecheck0/check_interval
+
+I didn't instructions from above, but I found something else. After
+normal boot I try:
+
+echo 1 > /sys/devices/system/machinecheck/machinecheck0/check_interval
+
+I I found this in dmesg:
+
+[  141.704025] ------------[ cut here ]------------
+[  141.704039] WARNING: at arch/x86/kernel/cpu/mcheck/mce.c:1102
+mcheck_timer+0xf5/0x100()
+[  141.704044] Hardware name: G31M-S2L
+[  141.704047] Modules linked in: i915 drm i2c_algo_bit video
+backlight output ppdev lp rfcomm l2cap xt_tcpudp xt_limit xt_state
+iptable_filter nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 ip_tables
+x_tables fuse dm_crypt dm_mod coretemp it87 hwmon_vid loop usbhid hid
+btusb bluetooth snd_hda_codec_realtek snd_hda_intel snd_hda_codec
+snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss
+snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer
+snd_seq_device snd uhci_hcd ehci_hcd soundcore parport_pc parport
+psmouse r8169 usbcore 8139too 8139cp mii i2c_i801 button rtc_cmos
+rtc_core rtc_lib snd_page_alloc intel_agp agpgart evdev
+[  141.704139] Pid: 0, comm: swapper Not tainted 2.6.30-git17 #1
+[  141.704143] Call Trace:
+[  141.704152]  [<c039382c>] ? printk+0x18/0x1c
+[  141.704158]  [<c010f715>] ? mcheck_timer+0xf5/0x100
+[  141.704165]  [<c013212c>] warn_slowpath_common+0x6c/0xc0
+[  141.704170]  [<c010f715>] ? mcheck_timer+0xf5/0x100
+[  141.704176]  [<c0132195>] warn_slowpath_null+0x15/0x20
+[  141.704182]  [<c010f715>] mcheck_timer+0xf5/0x100
+[  141.704188]  [<c013b99d>] run_timer_softirq+0x12d/0x1f0
+[  141.704194]  [<c010f620>] ? mcheck_timer+0x0/0x100
+[  141.704199]  [<c010f620>] ? mcheck_timer+0x0/0x100
+[  141.704206]  [<c01372da>] __do_softirq+0x9a/0x130
+[  141.704212]  [<c014b0ce>] ? hrtimer_interrupt+0xde/0x230
+[  141.704217]  [<c039642f>] ? _spin_unlock+0xf/0x30
+[  141.704224]  [<c01373a5>] do_softirq+0x35/0x40
+[  141.704229]  [<c01375ad>] irq_exit+0x6d/0x90
+[  141.704235]  [<c01167e8>] smp_apic_timer_interrupt+0x58/0x90
+[  141.704241]  [<c0103856>] apic_timer_interrupt+0x2a/0x30
+[  141.704248]  [<c010a662>] ? mwait_idle+0x62/0x70
+[  141.704253]  [<c0101ee5>] cpu_idle+0x55/0x90
+[  141.704259]  [<c0390b0b>] start_secondary+0x184/0x1f9
+[  141.704264] ---[ end trace 54c5f0d77c70ea21 ]---
+[  142.701022] ------------[ cut here ]------------
+[  142.701036] WARNING: at arch/x86/kernel/cpu/mcheck/mce.c:1102
+mcheck_timer+0xf5/0x100()
+[  142.701041] Hardware name: G31M-S2L
+[  142.701044] Modules linked in: i915 drm i2c_algo_bit video
+backlight output ppdev lp rfcomm l2cap xt_tcpudp xt_limit xt_state
+iptable_filter nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 ip_tables
+x_tables fuse dm_crypt dm_mod coretemp it87 hwmon_vid loop usbhid hid
+btusb bluetooth snd_hda_codec_realtek snd_hda_intel snd_hda_codec
+snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss
+snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer
+snd_seq_device snd uhci_hcd ehci_hcd soundcore parport_pc parport
+psmouse r8169 usbcore 8139too 8139cp mii i2c_i801 button rtc_cmos
+rtc_core rtc_lib snd_page_alloc intel_agpagpgart evdev
+[  142.701138] Pid: 0, comm: swapper Tainted: G        W  2.6.30-git17 #1
+[  142.701142] Call Trace:
+[  142.701151]  [<c039382c>] ? printk+0x18/0x1c
+[  142.701156]  [<c010f715>] ? mcheck_timer+0xf5/0x100
+[  142.701163]  [<c013212c>] warn_slowpath_common+0x6c/0xc0
+[  142.701169]  [<c010f715>] ? mcheck_timer+0xf5/0x100
+[  142.701174]  [<c0132195>] warn_slowpath_null+0x15/0x20
+[  142.701180]  [<c010f715>] mcheck_timer+0xf5/0x100
+[  142.701186]  [<c013b99d>] run_timer_softirq+0x12d/0x1f0
+[  142.701192]  [<c010f620>] ? mcheck_timer+0x0/0x100
+[  142.701197]  [<c010f620>] ? mcheck_timer+0x0/0x100
+[  142.701204]  [<c01372da>] __do_softirq+0x9a/0x130
+[  142.701210]  [<c014b0ce>] ? hrtimer_interrupt+0xde/0x230
+[  142.701216]  [<c039642f>] ? _spin_unlock+0xf/0x30
+[  142.701222]  [<c01373a5>] do_softirq+0x35/0x40
+[  142.701228]  [<c01375ad>] irq_exit+0x6d/0x90
+[  142.701234]  [<c01167e8>] smp_apic_timer_interrupt+0x58/0x90
+[  142.701240]  [<c0103856>] apic_timer_interrupt+0x2a/0x30
+[  142.701247]  [<c010a662>] ? mwait_idle+0x62/0x70
+[  142.701252]  [<c0101ee5>] cpu_idle+0x55/0x90
+[  142.701258]  [<c0390b0b>] start_secondary+0x184/0x1f9
+[  142.701264] ---[ end trace 54c5f0d77c70ea22 ]---
+
+It's stop when I do echo 0...
+
+> Your dmesg also doesn't have anything related to resume from disk?
+
+Dmesg after resume, but before hangs:
+http://unixy.pl/maciek/download/kernel/2.6.30-git17/pc/dmesg-2.6.30-git17-after-resume.txt
+
+Nothing weird.
+
+>
+> Thanks,
+>
+> -Andi
+>
+
+Thanks for ansfer.
+
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
