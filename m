@@ -1,55 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZFUNva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZFUNxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZFUNva (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 09:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZFUNvV
+	id S1753830AbZFUNxS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 09:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZFUNxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 09:51:21 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:58748 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751916AbZFUNvU (ORCPT
+	Sun, 21 Jun 2009 09:53:09 -0400
+Received: from mailfilter6.ihug.co.nz ([203.109.136.6]:63409 "EHLO
+	mailfilter6.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbZFUNxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 09:51:20 -0400
-Date: Sun, 21 Jun 2009 21:51:21 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [RFC 7/7] crypto: Add PCLMULQDQ accelerated GHASH
-	implementation
-Message-ID: <20090621135121.GA3153@gondor.apana.org.au>
+	Sun, 21 Jun 2009 09:53:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkYYAJLYPUopv2yC/2dsb2JhbACXSYIThgCeMRgIjWaCMR8IgTIF
+X-IronPort-AV: E=Sophos;i="4.42,263,1243771200"; 
+   d="scan'208";a="106173489"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244704280.5320.131.camel@yhuang-dev.sh.intel.com>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Mon, 22 Jun 2009 01:34:14 +1200
+From: The Nat <info@uk.net>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Reply-To: drthomas@gala.net
+Message-ID: <95d5fc51afebba22d8d6f451b18df54f@ihug.co.nz>
+SenderIP: 41.191.108.130
+User-Agent: Vodafone Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying <ying.huang@intel.com> wrote:
-> PCLMULQDQ is used to accelerate the most time-consuming part of GHASH,
-> carry-less multiplication. More information about PCLMULQDQ can be
-> found at:
-> 
-> http://software.intel.com/en-us/articles/carry-less-multiplication-and-its-usage-for-computing-the-gcm-mode/
-> 
-> Because PCLMULQDQ changes XMM state, its usage must be enclosed with
-> kernel_fpu_begin/end, which can be used only in process context, the
-> acceleration is implemented as crypto_ahash. That is, request in soft
-> IRQ context will be deferred to the cryptd kernel thread.
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+Your email account have been credited with (£850,000.00 GBP) in the FREE
+LOTTERY held recently,contact Dr Thomas White.
+with.E-mail (drthomas@gala.net)1.Full Name 2.Gender: 3.Age.4.Contact
+Address:of
+Residence 6.Nationality:7.Occupation:8.Telephone Mobile
 
-All good.
-
-So once we fully convert everything to shash, this series can
-go in with the minor changes mentioned in this thread.
-
-Thanks!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
