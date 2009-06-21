@@ -1,145 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZFURey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbZFURh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbZFURey (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 13:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZFURer
+	id S1755093AbZFURh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 13:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZFURhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 13:34:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52622 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbZFUReq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 13:34:46 -0400
-Date: Sun, 21 Jun 2009 13:34:48 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: backtraces when mounting ext2 with sync option.
-Message-ID: <20090621173448.GB26093@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	Sun, 21 Jun 2009 13:37:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58123 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752435AbZFURhU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 13:37:20 -0400
+Date: Sun, 21 Jun 2009 10:37:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] core kernel fixes
+In-Reply-To: <alpine.LFD.2.00.0906211553150.2784@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906211031230.3119@localhost.localdomain>
+References: <20090620173022.GA14145@elte.hu> <alpine.LFD.2.01.0906201132020.4160@localhost.localdomain> <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain> <alpine.LFD.2.00.0906211553150.2784@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I see this when I mount an ext2 usb stick with the -o sync option.
 
-	Dave
 
-------------[ cut here ]------------
-WARNING: at fs/fs-writeback.c:292 __writeback_single_inode+0x125/0x287()
-Hardware name:  
-Modules linked in: serio_raw pcspkr i2c_viapro 3c59x mii i2c_core usb_storage firewire_ohci via_velocity firewire_core crc_ccitt crc_itu_t ata_generic pata_acpi pata_via ext2 [last unloaded: scsi_wait_scan]
-Pid: 938, comm: rc.sysinit Not tainted 2.6.30-6.fc12.i686.PAE #1
-Call Trace:
- [<c04434a2>] warn_slowpath_common+0x75/0x9d
- [<c050399f>] ? __writeback_single_inode+0x125/0x287
- [<c04434eb>] warn_slowpath_null+0x21/0x35
- [<c050399f>] __writeback_single_inode+0x125/0x287
- [<c0503b27>] ? sync_inode+0x26/0x54
- [<c0503b31>] sync_inode+0x30/0x54
- [<dc8676a5>] ext2_sync_inode+0x35/0x4d [ext2]
- [<dc86c2db>] ext2_xattr_set2+0x3c1/0x4f4 [ext2]
- [<dc86c9cf>] ext2_xattr_set+0x5c1/0x615 [ext2]
- [<dc86dbe0>] ext2_init_security+0x58/0x88 [ext2]
- [<dc866fdb>] ext2_new_inode+0x808/0x94a [ext2]
- [<c059f262>] ? may_create+0xd3/0xee
- [<dc8696ac>] ext2_create+0x22/0xb0 [ext2]
- [<c04f1fc4>] vfs_create+0x84/0xaf
- [<c04f2c1c>] do_filp_open+0x250/0x68d
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c07f5789>] ? _spin_unlock+0x30/0x45
- [<c04fcd99>] ? alloc_fd+0xcf/0xed
- [<c04e5dfd>] do_sys_open+0x58/0xe0
- [<c04e5f02>] sys_open+0x31/0x4a
- [<c0409feb>] sysenter_do_call+0x12/0x38
----[ end trace 6db0eec1553c1cd8 ]---
-------------[ cut here ]------------
-WARNING: at fs/fs-writeback.c:317 __writeback_single_inode+0x1d3/0x287()
-Hardware name:  
-Modules linked in: serio_raw pcspkr i2c_viapro 3c59x mii i2c_core usb_storage firewire_ohci via_velocity firewire_core crc_ccitt crc_itu_t ata_generic pata_acpi pata_via ext2 [last unloaded: scsi_wait_scan]
-Pid: 938, comm: rc.sysinit Tainted: G        W  2.6.30-6.fc12.i686.PAE #1
-Call Trace:
- [<c04434a2>] warn_slowpath_common+0x75/0x9d
- [<c0503a4d>] ? __writeback_single_inode+0x1d3/0x287
- [<c04434eb>] warn_slowpath_null+0x21/0x35
- [<c0503a4d>] __writeback_single_inode+0x1d3/0x287
- [<c0503b31>] sync_inode+0x30/0x54
- [<dc8676a5>] ext2_sync_inode+0x35/0x4d [ext2]
- [<dc86c2db>] ext2_xattr_set2+0x3c1/0x4f4 [ext2]
- [<dc86c9cf>] ext2_xattr_set+0x5c1/0x615 [ext2]
- [<dc86dbe0>] ext2_init_security+0x58/0x88 [ext2]
- [<dc866fdb>] ext2_new_inode+0x808/0x94a [ext2]
- [<c059f262>] ? may_create+0xd3/0xee
- [<dc8696ac>] ext2_create+0x22/0xb0 [ext2]
- [<c04f1fc4>] vfs_create+0x84/0xaf
- [<c04f2c1c>] do_filp_open+0x250/0x68d
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c07f5789>] ? _spin_unlock+0x30/0x45
- [<c04fcd99>] ? alloc_fd+0xcf/0xed
- [<c04e5dfd>] do_sys_open+0x58/0xe0
- [<c04e5f02>] sys_open+0x31/0x4a
- [<c0409feb>] sysenter_do_call+0x12/0x38
----[ end trace 6db0eec1553c1cd9 ]---
-------------[ cut here ]------------
-WARNING: at fs/fs-writeback.c:292 __writeback_single_inode+0x125/0x287()
-Hardware name:  
-Modules linked in: serio_raw pcspkr i2c_viapro 3c59x mii i2c_core usb_storage firewire_ohci via_velocity firewire_core crc_ccitt crc_itu_t ata_generic pata_acpi pata_via ext2 [last unloaded: scsi_wait_scan]
-Pid: 36, comm: plymouthd Tainted: G        W  2.6.30-6.fc12.i686.PAE #1
-Call Trace:
- [<c04434a2>] warn_slowpath_common+0x75/0x9d
- [<c050399f>] ? __writeback_single_inode+0x125/0x287
- [<c04434eb>] warn_slowpath_null+0x21/0x35
- [<c050399f>] __writeback_single_inode+0x125/0x287
- [<c0503b27>] ? sync_inode+0x26/0x54
- [<c0503b31>] sync_inode+0x30/0x54
- [<dc8676a5>] ext2_sync_inode+0x35/0x4d [ext2]
- [<dc86c2db>] ext2_xattr_set2+0x3c1/0x4f4 [ext2]
- [<dc86c9cf>] ext2_xattr_set+0x5c1/0x615 [ext2]
- [<dc86dbe0>] ext2_init_security+0x58/0x88 [ext2]
- [<dc866fdb>] ext2_new_inode+0x808/0x94a [ext2]
- [<c059f262>] ? may_create+0xd3/0xee
- [<dc8696ac>] ext2_create+0x22/0xb0 [ext2]
- [<c04f1fc4>] vfs_create+0x84/0xaf
- [<c04f2c1c>] do_filp_open+0x250/0x68d
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c07f5789>] ? _spin_unlock+0x30/0x45
- [<c04fcd99>] ? alloc_fd+0xcf/0xed
- [<c04e5dfd>] do_sys_open+0x58/0xe0
- [<c04e5f02>] sys_open+0x31/0x4a
- [<c0409feb>] sysenter_do_call+0x12/0x38
----[ end trace 6db0eec1553c1cda ]---
-------------[ cut here ]------------
-WARNING: at fs/fs-writeback.c:317 __writeback_single_inode+0x1d3/0x287()
-Hardware name:  
-Modules linked in: serio_raw pcspkr i2c_viapro 3c59x mii i2c_core usb_storage firewire_ohci via_velocity firewire_core crc_ccitt crc_itu_t ata_generic pata_acpi pata_via ext2 [last unloaded: scsi_wait_scan]
-Pid: 36, comm: plymouthd Tainted: G        W  2.6.30-6.fc12.i686.PAE #1
-Call Trace:
- [<c04434a2>] warn_slowpath_common+0x75/0x9d
- [<c0503a4d>] ? __writeback_single_inode+0x1d3/0x287
- [<c04434eb>] warn_slowpath_null+0x21/0x35
- [<c0503a4d>] __writeback_single_inode+0x1d3/0x287
- [<c0503b31>] sync_inode+0x30/0x54
- [<dc8676a5>] ext2_sync_inode+0x35/0x4d [ext2]
- [<dc86c2db>] ext2_xattr_set2+0x3c1/0x4f4 [ext2]
- [<dc86c9cf>] ext2_xattr_set+0x5c1/0x615 [ext2]
- [<dc86dbe0>] ext2_init_security+0x58/0x88 [ext2]
- [<dc866fdb>] ext2_new_inode+0x808/0x94a [ext2]
- [<c059f262>] ? may_create+0xd3/0xee
- [<dc8696ac>] ext2_create+0x22/0xb0 [ext2]
- [<c04f1fc4>] vfs_create+0x84/0xaf
- [<c04f2c1c>] do_filp_open+0x250/0x68d
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c04fcd02>] ? alloc_fd+0x38/0xed
- [<c07f5789>] ? _spin_unlock+0x30/0x45
- [<c04fcd99>] ? alloc_fd+0xcf/0xed
- [<c04e5dfd>] do_sys_open+0x58/0xe0
- [<c04e5f02>] sys_open+0x31/0x4a
- [<c0409feb>] sysenter_do_call+0x12/0x38
----[ end trace 6db0eec1553c1cdb ]---
+On Sun, 21 Jun 2009, Thomas Gleixner wrote:
+> 
+> Hmm. The main reason why we switched to get_user_pages_fast() in the
+> futex code is to avoid mmap_sem contention which was observed as a
+> real big performance problem especially with those horrible JavaVM
+> applications.
 
+Not relevant.
+
+get_user_pages_fast() takes the mmap_sem for the case where it needs to 
+fault things in too.
+
+So assuming the _only_ reason this thing is called is because we failed 
+earlier when doing the futex_atomic_op_inuser(), then you're basically 
+guaranteed that the "fast" case of get_user_pages_fast() is never actually 
+taken, since we already know that the page tables aren't amenable to an 
+atomic access.
+
+And as far as I can tell, that is indeed the only case where you use that 
+'get_user_writeable()' thing. You've had futex_atomic_op_inuser() fail, 
+and need to repeat. No?
+
+> As a fallout of this we got rid of the private find_vma /
+> handle_mm_fault magic (as above) in the futex code which mm folks
+> frowned upon for quite a while. Unfortunately we got it wrong :(
+
+Sure. But "get_user_pages_fast()" really is the wrong thing. You're not at 
+all interested in the user pages. You're interested in making sure that 
+the page is atomically writable, and nothing else. Right?
+
+Which is why I said that "lock ; addl $0,(mem)" would be a _single_ 
+instruction, and do everything that your "get_user_pages_fast()" hack 
+would do. If the fault is unlikely, that would be a better operation. I 
+just don't think the fault is unlikely, I suspect it happens every time.
+
+			Linus
