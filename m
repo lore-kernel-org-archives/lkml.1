@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZFURnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZFUR5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbZFURnk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 13:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZFURnd
+	id S1755160AbZFUR5x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 13:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZFUR5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 13:43:33 -0400
-Received: from fed1rmmtao102.cox.net ([68.230.241.44]:41153 "EHLO
-	fed1rmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536AbZFURnc convert rfc822-to-8bit (ORCPT
+	Sun, 21 Jun 2009 13:57:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45170 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751218AbZFUR5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 13:43:32 -0400
-X-VR-Score: 230.00
-X-Authority-Analysis: v=1.0 c=1 a=LQ0OwbNP_iQA:10 a=GtgfBv1tAAAA:8
- a=bREO_iPSfOFkENH84UEA:9 a=-XKPiEkUZMfgZGUZmWIDe1A_PAcA:4 a=YUox-GpGtKEA:10
- a=rrOPNWUnSIMA:10 a=OYjzaMAtzVwA:10 a=kPq7OMV0RPxqnoK4:21
- a=SV8V5spNJCW9bF53:21
-X-CM-Score: 0.00
-Message-ID: <20090621134336.IATQ1.473607.imail@fed1rmwml37>
-Date: Sun, 21 Jun 2009 10:43:35 -0700
-From: Mr Phil Herald <cmzaenger4@cox.net>
-Reply-To: cgnl2@gala.net
-Subject: Confirm Receipt !!!
+	Sun, 21 Jun 2009 13:57:45 -0400
+Date: Sun, 21 Jun 2009 10:57:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] core kernel fixes
+In-Reply-To: <alpine.LFD.2.01.0906211031230.3119@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906211049060.3119@localhost.localdomain>
+References: <20090620173022.GA14145@elte.hu> <alpine.LFD.2.01.0906201132020.4160@localhost.localdomain> <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain> <alpine.LFD.2.00.0906211553150.2784@localhost.localdomain>
+ <alpine.LFD.2.01.0906211031230.3119@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your Email-ID Won you a lump sum of(ÃÂ£891,934.00 GBP)with other prizes.Reply Back For Claims/redemption with this info(Names,
-country&Tel,Gender,Address,Occupation) for verification. call +447031907814 to confirm or Email:cgnl2@gala.net
 
-With Regards,
-Mr Phil Herald.
+
+On Sun, 21 Jun 2009, Linus Torvalds wrote:
+> 
+> And as far as I can tell, that is indeed the only case where you use that 
+> 'get_user_writeable()' thing. You've had futex_atomic_op_inuser() fail, 
+> and need to repeat. No?
+
+I just checked. Yes, this code is _only_ entered when an atomic op 
+returned EFAULT. IOW, we absolutely know that the page tables are not set 
+up for writability, and thus that the "fast" case will never ever trigger.
+
+(Ok, in theory you could have some other thread writing to that page at 
+the same time and handle the page fault and making it writable, but in 
+practice that's not really relevant).
+
+So just doing a "make_sure_its_writable()" and using handle_fault() is the 
+right thing to do. Because it's what get_user_fast() would have done too, 
+except it would have gone through first the fast case, and failed, then 
+the slow case, and failed the lookup there, and then the slow case would 
+have done that handle_mm_fault() in the end anyway.
+
+In fact, since you're not actually interested in the page, you _could_ 
+just do
+
+	get_user_pages(tsk, mm, uaddr, 4, 1, 0, NULL, NULL);
+
+where a NULL "pages" pointer already tells get_user_pages() that you're 
+not interested.
+
+That's at least cleaner than doing a "gup_fast()" (which isn't fast), and 
+then freeing the page that you weren't even interested in.
+
+		Linus
