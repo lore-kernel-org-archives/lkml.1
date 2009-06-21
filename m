@@ -1,77 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZFURNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZFURNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463AbZFURNF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 13:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbZFURMz
+	id S1755224AbZFURNo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 13:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbZFURNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 13:12:55 -0400
-Received: from www.tglx.de ([62.245.132.106]:44645 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbZFURMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 13:12:55 -0400
-Date: Sun, 21 Jun 2009 19:12:43 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] core kernel fixes
-In-Reply-To: <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0906211553150.2784@localhost.localdomain>
-References: <20090620173022.GA14145@elte.hu> <alpine.LFD.2.01.0906201132020.4160@localhost.localdomain> <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 21 Jun 2009 13:13:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60994 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752435AbZFURNg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 13:13:36 -0400
+Date: Sun, 21 Jun 2009 10:13:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Airlie <airlied@linux.ie>
+cc: Andy Lutomirski <luto@mit.edu>, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm: previous pull req + 1.
+In-Reply-To: <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
+References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie> <4A3DABE1.50309@mit.edu> <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie> <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Jun 2009, Linus Torvalds wrote:
-> On Sat, 20 Jun 2009, Linus Torvalds wrote:
-> > 
-> > On x86, the natural way to do what you want done is ONE SINGLE 
-> > INSTRUCTION! As far as I can tell, the above crazy function is 100% 
-> > equivalent to this:
-> > 
-> > 	asm __inline__("lock ; addl $0,%0":"+m" (*uaddr): :"memory", "cc");
-> > 
-> > which really makes me think that using "get_user_pages_fast()" for it is 
-> > some truly crazy crap.
+
+
+On Sun, 21 Jun 2009, Linus Torvalds wrote:
 > 
-> We could also take the opposite approach - knowing that this is called 
-> only when the page doesn't exist, and just doing
+> Dave - no amount of userspace differences make a corrupted page table 
+> acceptable. 
 > 
-> 	down_read(mmap_sem)
-> 	vma = find_vma(..)
-> 	ret = VM_FAULT_ERROR;
-> 	if (vma && vma->vm_start <= address)
-> 		ret = handle_mm_fault(mm, vma, address, 1);
-> 	up_read(mmap_sem);
-> 	return (ret & VM_FAULT_ERROR) ? -EFAULT : 0;
-> 
-> or something like that. Again, that looks saner than using 
-> get_user_pages() for this and then dropping the page.
+> This needs to be fixed. No excuses. Kernel crashes are never an issue of 
+> "you used the wrong user space".
 
-Hmm. The main reason why we switched to get_user_pages_fast() in the
-futex code is to avoid mmap_sem contention which was observed as a
-real big performance problem especially with those horrible JavaVM
-applications.
+So "corrupted page table" means that one of the reserved bits was set, and 
+we get a page fault with the PF_RSVD bit on in the error code.
 
-As a fallout of this we got rid of the private find_vma /
-handle_mm_fault magic (as above) in the futex code which mm folks
-frowned upon for quite a while. Unfortunately we got it wrong :(
+Looking at the debug output, it says
 
-I agree that in the fault path we might go back to the mmap_sem
-version, but I want to avoid it when possible. At least we need to run
-some of those horrible JavaVM apps to see whether it matters or not.
+	PGD        12148a067
+	PUD        12148b067
+	PMD        121496067
+	PTE ffffc90011780237
 
-OTOH, I really wonder whether we can simplify the whole logic when we
-keep the page reference for the atomic access to the user space
-address, but I still have doubts about the life time rules of all
-this. Also I need to find out how this would affect the fast path
-optimization of private futexes where we avoid the lookup in the first
-place.
+where the top-level entries look fine, but the PTE is total crap. It looks 
+like it has filled in the page frame number with a virtual address rather 
+than with an actual page
 
-Thanks,
+The PTE _should_ look like this:
 
-	tglx
+ - bit 63: NX
+ - bits 62-52: zero (available to sw, but I don't think we use them)
+ - bits 51-47: zero (reserved)
+ - bits 46-12: page frame
+ - bits 11-0: protection and PAT bits etc (bits 8-7 are also reserved)
+
+and that PTE clearly does not match.
+
+Strictly speaking, that "47-bit" physical address is purely theoretical. I 
+think existing CPU's are limited to 40 bits or so, so there are even more 
+reserved bits. 
+
+Anyway, here's a totally UNTESTED patch that hopefully gives a warning on 
+where exactly we set the invalid bits. Andy, mind trying it out? You 
+should get the warnign much earlier, and it should have a much more useful 
+back-trace.
+
+(But this is _untested_, so maybe I screwed up and it doesn't compile or 
+work. The BAD_PTE_BITS mask could also be improved upon, but that mask 
+should be "good enough" - it doesn't include _all_ the bits it could, 
+but it certainly has enough bits set to trigger that obviously bad case).
+
+			Linus
+
+---
+ arch/x86/include/asm/pgtable_64.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
+index c57a301..b95828e 100644
+--- a/arch/x86/include/asm/pgtable_64.h
++++ b/arch/x86/include/asm/pgtable_64.h
+@@ -49,8 +49,11 @@ static inline void native_pte_clear(struct mm_struct *mm, unsigned long addr,
+ 	*ptep = native_make_pte(0);
+ }
+ 
++#define BAD_PTE_BITS (_PAGE_NX - (1ul << __PHYSICAL_MASK_SHIFT))
++
+ static inline void native_set_pte(pte_t *ptep, pte_t pte)
+ {
++	WARN_ON_ONCE(pte.pte & BAD_PTE_BITS);
+ 	*ptep = pte;
+ }
+ 
