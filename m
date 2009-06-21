@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZFUHlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZFUHw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbZFUHlE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 03:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbZFUHk4
+	id S1755996AbZFUHw1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 03:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZFUHwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 03:40:56 -0400
-Received: from mga07.intel.com ([143.182.124.22]:26546 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751399AbZFUHkz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 03:40:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,262,1243839600"; 
-   d="scan'208";a="156830852"
-Message-ID: <4A3DE3F3.4000100@linux.intel.com>
-Date: Sun, 21 Jun 2009 00:40:35 -0700
-From: "H. Peter Anvin" <hpa@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sun, 21 Jun 2009 03:52:19 -0400
+Received: from mx38.mail.ru ([94.100.176.52]:56307 "EHLO mx38.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750835AbZFUHwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 03:52:18 -0400
+X-Greylist: delayed 80368 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Jun 2009 03:52:18 EDT
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: linux-kernel@vger.kernel.org
+Subject: Why half of slabs are not shown in /proc/slabinfo?
+Date: Sun, 21 Jun 2009 11:52:20 +0400
+User-Agent: KMail/1.11.90 (Linux/2.6.30-desktop-2mnb; KDE/4.2.90; x86_64; ; )
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Martin Mares <mj@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-arch@vger.kernel.org
-Subject: Re: RFC: x86: cap iomem_resource to addressable physical memory
-References: <4A2F0D45.2040602@linux.intel.com> <86802c440906111343g513a2ceau1e2bfdf14c295b2d@mail.gmail.com> <4A316D3C.7080403@linux.intel.com> <20090621064201.GD1656@ucw.cz>
-In-Reply-To: <20090621064201.GD1656@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart6392455.d0U59A7uQp";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200906211152.25100.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Thu 2009-06-11 13:46:52, H. Peter Anvin wrote:
->> Yinghai Lu wrote:
->>> do we need do that on every cpu?
->>>
->>> looks like we could do that in identify_boot_cpu.
->>>
->> What if the CPUs are heterogenous?  It's obviously a suboptimal
->> situation, but it doesn't seem like something we can rely on.
-> 
-> Is it ok if that changes during runtime? What if someone hotplugs
-> heterogenous cpu? I'd say basing it on boot cpu seems simplest.
-> 									Pavel
-> 
+--nextPart6392455.d0U59A7uQp
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-If someone hotplugs heterogenous CPUs it should do the right thing if 
-the right thing is possible to do.  If you already have resource 
-assignments that are unfulfillable you're screwed anyway.
+Mandriva kernel 2.6.30 using SLUB:
 
-	-hpa
+{pts/1}% grep SLUB /boot/config
+CONFIG_SLUB_DEBUG=3Dy
+CONFIG_SLUB=3Dy
+# CONFIG_SLUB_DEBUG_ON is not set
+# CONFIG_SLUB_STATS is not set
 
+Some of slabs (e.g. filp) are not shown in /proc/slabinfo; comparing=20
+number of entries under /sys and slabinfo results in
+
+{pts/0}% =3Dls -1 /sys/kernel/slab | grep -v : | wc -l
+131
+{pts/0}% wc -l /proc/slabinfo
+68 /proc/slabinfo
+{pts/0}%
+
+so almost half of the all entries are missing. Is it expected or there=20
+is something wrong here?
+
+--nextPart6392455.d0U59A7uQp
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAko95rUACgkQR6LMutpd94wbwwCdF0MZe8rRpK5gCCI/mcckQhRO
+y78AmweLvx0tT6sWAvXH56AYo2e1yjQj
+=vleh
+-----END PGP SIGNATURE-----
+
+--nextPart6392455.d0U59A7uQp--
