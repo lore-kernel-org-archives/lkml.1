@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZFUSlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZFUSnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbZFUSlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 14:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZFUSlM
+	id S1755364AbZFUSnR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 14:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbZFUSnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 14:41:12 -0400
-Received: from cmpxchg.org ([85.214.51.133]:45959 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbZFUSlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 14:41:12 -0400
-Date: Sun, 21 Jun 2009 20:37:30 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch v3] swap: virtual swap readahead
-Message-ID: <20090621183730.GA4796@cmpxchg.org>
-References: <1244628314.13761.11617.camel@twins> <20090610113214.GA5657@localhost> <20090610102516.08f7300f@jbarnes-x200> <20090611052228.GA20100@localhost> <20090611101741.GA1974@cmpxchg.org> <20090612015927.GA6804@localhost> <20090615182216.GA1661@cmpxchg.org> <20090618091949.GA711@localhost> <20090618130121.GA1817@cmpxchg.org> <Pine.LNX.4.64.0906211858560.3968@sister.anvils>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906211858560.3968@sister.anvils>
+	Sun, 21 Jun 2009 14:43:08 -0400
+Received: from mga05.intel.com ([192.55.52.89]:2569 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751676AbZFUSnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 14:43:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,263,1243839600"; 
+   d="scan'208";a="701250937"
+Message-ID: <4A3E7F38.7030300@linux.intel.com>
+Date: Sun, 21 Jun 2009 20:43:04 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, seto.hidetoshi@jp.fujitsu.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
+ to disk, 	mce related?
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
+In-Reply-To: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 21, 2009 at 07:07:03PM +0100, Hugh Dickins wrote:
-> Hi Hannes,
+Maciej Rutecki wrote:
+> Tested kernel version: 2.6.30-git16 and 2.6.30-git17
+> Last known good: 2.6.30
 > 
-> On Thu, 18 Jun 2009, Johannes Weiner wrote:
-> > On Thu, Jun 18, 2009 at 05:19:49PM +0800, Wu Fengguang wrote:
-> > 
-> > Okay, evaluating this test-patch any further probably isn't worth it.
-> > It's too aggressive, I think readahead is stealing pages reclaimed by
-> > other allocations which in turn oom.
-> > 
-> > Back to the original problem: you detected increased latency for
-> > launching new applications, so they get less share of the IO bandwidth
-> > than without the patch.
-> > 
-> > I can see two reasons for this:
-> > 
-> >   a) the new heuristics don't work out and we read more unrelated
-> >   pages than before
-> > 
-> >   b) we readahead more pages in total as the old code would stop at
-> >   holes, as described above
-> > 
-> > We can verify a) by comparing major fault numbers between the two
-> > kernels with your testload.  If they increase with my patch, we
-> > anticipate the wrong slots and every fault has do the reading itself.
-> > 
-> > b) seems to be a trade-off.  After all, the IO resources you have less
-> > for new applications in your test is the bandwidth that is used by
-> > swapping applications.  My qsbench numbers are a sign for this as the
-> > only IO going on is swap.
-> > 
-> > Of course, the theory is not to improve swap performance by increasing
-> > the readahead window but to choose better readahead candidates.  So I
-> > will run your tests and qsbench with a smaller page cluster and see if
-> > this improves both loads.
-> 
-> Hmm, sounds rather pessimistic; but I've not decided about it either.
+> System hangs few minutes after resume from suspend to disk. 
 
-It seems the problem was not that real after all:
+Thanks for the report.
 
-	http://lkml.org/lkml/2009/6/18/109
+I assume it runs stable for hours without resume from disk?
+And you made sure you don't use stale data from
+a different kernel for resume from disk?
 
-> May I please hand over to you this collection of adjustments to your
-> v3 virtual swap readahead patch, for you to merge in or split up or
-> mess around with, generally take ownership of, however you wish?
-> So you can keep adjusting shmem.c to match memory.c if necessary.
+It is strange that resume from disk affects machine check.
+How is your resume setup?
+Do you have any init scripts that change machine check state
+before the resume from disk runs?
 
-I will adopt them, thank you!
+Is there any chance you could configure netconsole or similar
+to get output during the hang?
 
-	Hannes
+> I have
+> tried bisection and here is result:
+
+I assume you have CONFIG_X86_NEW_MCE enabled, correct?
+Does it still happen with CONFIG_X86_OLD_MCE instead?
+
+Also a "a few minutes" suggest something might be going wrong
+with the poll handler.  Does the problem still happen
+with you use CONFIG_X86_NEW_MCE again, but before
+resume do
+
+echo 0 > /sys/device/system/machinecheck/machinecheck0/check_interval
+
+On the other hand you should get a crash very fast with
+
+echo 1 > /sys/device/system/machinecheck/machinecheck0/check_interval
+
+If we confirm it's the poll handler I can send you a debugging patch
+to narrow it down further if I can't reproduce it.
+But that would need console output during the crash.
+
+Your dmesg also doesn't have anything related to resume from disk?
+
+Thanks,
+
+-Andi
