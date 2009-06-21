@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZFUGrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZFUHDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbZFUGrT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 02:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbZFUGrH
+	id S1754511AbZFUHDW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 03:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZFUHDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 02:47:07 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44220 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbZFUGrF (ORCPT
+	Sun, 21 Jun 2009 03:03:13 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55210 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753020AbZFUHDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 02:47:05 -0400
-Date: Sun, 21 Jun 2009 08:42:01 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@linux.intel.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Martin Mares <mj@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-arch@vger.kernel.org
-Subject: Re: RFC: x86: cap iomem_resource to addressable physical memory
-Message-ID: <20090621064201.GD1656@ucw.cz>
-References: <4A2F0D45.2040602@linux.intel.com> <86802c440906111343g513a2ceau1e2bfdf14c295b2d@mail.gmail.com> <4A316D3C.7080403@linux.intel.com>
+	Sun, 21 Jun 2009 03:03:12 -0400
+Message-ID: <4A3DDB27.2000500@zytor.com>
+Date: Sun, 21 Jun 2009 00:03:03 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A316D3C.7080403@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Frans Pop <elendil@planet.nl>
+CC: Sean MacLennan <smaclennan@pikatech.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Badness on the Warp
+References: <20090620154824.72b5cd50@lappy.seanm.ca> <200906202256.46073.elendil@planet.nl>
+In-Reply-To: <200906202256.46073.elendil@planet.nl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-11 13:46:52, H. Peter Anvin wrote:
-> Yinghai Lu wrote:
-> > 
-> > do we need do that on every cpu?
-> > 
-> > looks like we could do that in identify_boot_cpu.
-> > 
+Frans Pop wrote:
 > 
-> What if the CPUs are heterogenous?  It's obviously a suboptimal
-> situation, but it doesn't seem like something we can rely on.
+> The fact that your bisect ended at a merge essentially means that it is 
+> invalid. As a merge does not introduce any actual change (unless it 
+> includes changes to resolve conflicts), it normally cannot be the cause 
+> of a regression.
+> 
 
-Is it ok if that changes during runtime? What if someone hotplugs
-heterogenous cpu? I'd say basing it on boot cpu seems simplest.
-									Pavel
+Sort of.  You can have a "bum merge" where code conflicts logically,
+even if it isn't visible as a conflict in git.  Furthermore, of course,
+you can have misresolved actual conflicts.
+
+	-hpa
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
