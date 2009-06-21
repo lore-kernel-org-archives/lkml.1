@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZFUW5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbZFUXNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbZFUW5m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 18:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZFUW5e
+	id S1755369AbZFUXNu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 19:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZFUXNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 18:57:34 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46915 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753261AbZFUW5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 18:57:33 -0400
-Subject: Re: Badness on the Warp
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Frans Pop <elendil@planet.nl>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       David Gibson <david@gibson.dropbear.id.au>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20090621183658.2b408e69@lappy.seanm.ca>
-References: <20090620154824.72b5cd50@lappy.seanm.ca>
-	 <200906202256.46073.elendil@planet.nl>
-	 <20090620194250.5a3e826f@lappy.seanm.ca>
-	 <200906210628.35553.elendil@planet.nl>
-	 <84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
-	 <1245623104.16880.26.camel@pasglop>
-	 <20090621183658.2b408e69@lappy.seanm.ca>
-Content-Type: text/plain
-Date: Mon, 22 Jun 2009 08:57:15 +1000
-Message-Id: <1245625035.16880.31.camel@pasglop>
+	Sun, 21 Jun 2009 19:13:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49560
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751373AbZFUXNj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 19:13:39 -0400
+Date: Sun, 21 Jun 2009 16:13:43 -0700 (PDT)
+Message-Id: <20090621.161343.181101055.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: elendil@planet.nl, sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New IDE maintainer (was Re: cmd64x: irq 14: nobody cared - system
+ is dreadfully slow)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090621.155756.100422570.davem@davemloft.net>
+References: <20090621.141950.160759111.davem@davemloft.net>
+	<200906220034.22430.bzolnier@gmail.com>
+	<20090621.155756.100422570.davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-21 at 18:36 -0400, Sean MacLennan wrote:
-> On Mon, 22 Jun 2009 08:25:04 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+From: David Miller <davem@davemloft.net>
+Date: Sun, 21 Jun 2009 15:57:56 -0700 (PDT)
+
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date: Mon, 22 Jun 2009 00:34:22 +0200
 > 
-> > Right, our interrupt controllers need those fixes, they are low
-> > on my priority list since it's a reasonably harmless warning and I'm
-> > still chasing some actual breakage (though maybe not directly related
-> > to your patches).
-> > 
-> > Kumar already submitted a couple, Frans, feel free to beat me
-> > at converting UIC (just use kmalloc directly in there instead
-> > of alloc_bootmem).
+>> Lets get over this quickly, since you seem to have such a great
+>> insight into running IDE layer here is a little proposition..
+>> 
+>> ACK?  [ If not than can we please get back with the program? ]
 > 
-> I can make the changes to UIC if you want. They badness is harmless (it
-> ends up calling kzalloc anyway), but hard to explain to our PV (Product
-> Verification) department that they can ignore what looks like a crash ;)
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-Heh, right, but hopefully we should have that fixed before .31 is
-out :-)
+I've created a new IDE development tree at:
 
-Cheers,
-Ben.
+	master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-2.6.git
 
+and the first patch is below.
+
+I'll ask the patchwork folks to add an IDE group so we can manage
+patches posted here.
+
+I'm going to treat IDE as pure legacy, rather than as competition
+with the PATA drivers which is what people whould be moving over to.
+
+And more importantly I refuse to apply any driver patch that isn't
+actually tested on said hardware.
+
+ide: Take over as maintainer.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ MAINTAINERS |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1d47043..487aaea 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2802,10 +2802,10 @@ S:	Supported
+ F:	drivers/scsi/ips.*
+ 
+ IDE SUBSYSTEM
+-P:	Bartlomiej Zolnierkiewicz
+-M:	bzolnier@gmail.com
++P:	David S. Miller
++M:	davem@davemloft.net
+ L:	linux-ide@vger.kernel.org
+-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bart/ide-2.6.git
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6.git
+ S:	Maintained
+ F:	Documentation/ide/
+ F:	drivers/ide/
+-- 
+1.6.3.2
 
