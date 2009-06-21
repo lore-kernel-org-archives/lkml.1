@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZFTX7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZFUAFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZFTX7P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Jun 2009 19:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbZFTX7A
+	id S1754467AbZFUAFA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Jun 2009 20:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZFUAEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Jun 2009 19:59:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35496 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751629AbZFTX67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Jun 2009 19:58:59 -0400
-Date: Sun, 21 Jun 2009 09:58:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Kallsyms problems (was: Re: linux-next: arm build
- failures)
-Message-Id: <20090621095855.3462fc23.sfr@canb.auug.org.au>
-In-Reply-To: <20090620124152.GI32531@uranus.ravnborg.org>
-References: <20090617162612.703adfd9.sfr@canb.auug.org.au>
-	<tnx3a9ztg14.fsf@pc1117.cambridge.arm.com>
-	<20090617230804.5e353ec9.sfr@canb.auug.org.au>
-	<20090619151321.GA6223@flint.arm.linux.org.uk>
-	<20090620155440.a7dfb2d4.sfr@canb.auug.org.au>
-	<20090620124152.GI32531@uranus.ravnborg.org>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Sat, 20 Jun 2009 20:04:53 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:42066 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbZFUAEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Jun 2009 20:04:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=WK2EEF517TF9JtCqf73rqpnzH3UHA224eUczAYKMnltPsAfTT/vg0Emz7NUuKju6Pj
+         bSSGqVVZp2Vz5wzk13Jr5ps+63ngtoa+JGVlq2xCPo6OuTjvyk3cvn0LZbnwZpsva5dg
+         g/ZPtBeM//eMSs49BxYLEK1GDyb/+36e1bMt8=
+Subject: Re: [git pull] drm: previous pull req + 1.
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
+Content-Type: text/plain
+Date: Sun, 21 Jun 2009 03:04:50 +0300
+Message-Id: <1245542690.6104.6.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__21_Jun_2009_09_58_55_+1000_1VcHkt2ftF.wKNgl"
+X-Mailer: Evolution 2.24.3
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__21_Jun_2009_09_58_55_+1000_1VcHkt2ftF.wKNgl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2009-06-20 at 06:23 +0100, Dave Airlie wrote:
+> Hi Linus,
+> 
+> Please pull the 'drm-linus' branch from
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+> 
+> This is the same tree from the previous pull request + the fix from Pierre 
+> that actually makes the PAE/GEM combination on i965 work. \o/
 
-Hi Sam,
+Something from this tree breaks my i965.
+Using -git just before this was pulled,
 
-On Sat, 20 Jun 2009 14:41:52 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
->
-> Just sent it. Overloaded with day-time stuff (again).
+ a552f0af753eb4b5bbbe9eff205fe874b04c4583 works, but using latest git
 
-Thanks.
+makes google earth stall, it doesn't update its main window. It appears
+that openining and closing its menu, allows it to progress frame after
+frame. No crashes hangs however.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Used latest -git of all graphic components (mesa, libdrm, xserver, intel
+driver)
 
---Signature=_Sun__21_Jun_2009_09_58_55_+1000_1VcHkt2ftF.wKNgl
-Content-Type: application/pgp-signature
+KMS is used, as well as UXA and DRI2 (this is enabled by default now)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAko9d78ACgkQjjKRsyhoI8xx0QCfV3uIBqoNZMNxDZZuH3NTtShp
-i7oAn2y4Dfrgwe/66FD4ST+Q3MDeYfow
-=xWRO
------END PGP SIGNATURE-----
+Compiz used as well, but this happens without it as well.
 
---Signature=_Sun__21_Jun_2009_09_58_55_+1000_1VcHkt2ftF.wKNgl--
+
+Best regards,
+	Maxim Levitsky
+
