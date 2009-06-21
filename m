@@ -1,108 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbZFUSjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZFUSlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754532AbZFUSjt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 14:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZFUSjk
+	id S1755342AbZFUSlT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 14:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZFUSlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 14:39:40 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:51781 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbZFUSjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 14:39:39 -0400
-Message-ID: <4A3E7E63.1070407@novell.com>
-Date: Sun, 21 Jun 2009 14:39:31 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
- race conditions
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com> <4A3C004B.8010706@novell.com> <alpine.DEB.1.10.0906191421581.14884@makko.or.mcafeemobile.com> <4A3C07FF.3000406@novell.com> <alpine.DEB.1.10.0906191447330.14884@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com> <4A3C44DA.7000503@novell.com> <alpine.DEB.1.10.0906201202170.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201508460.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201640380.25534@makko.or.mcafeemobile.com> <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBE5B8AE91813711906E45C28"
+	Sun, 21 Jun 2009 14:41:12 -0400
+Received: from cmpxchg.org ([85.214.51.133]:45959 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbZFUSlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 14:41:12 -0400
+Date: Sun, 21 Jun 2009 20:37:30 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch v3] swap: virtual swap readahead
+Message-ID: <20090621183730.GA4796@cmpxchg.org>
+References: <1244628314.13761.11617.camel@twins> <20090610113214.GA5657@localhost> <20090610102516.08f7300f@jbarnes-x200> <20090611052228.GA20100@localhost> <20090611101741.GA1974@cmpxchg.org> <20090612015927.GA6804@localhost> <20090615182216.GA1661@cmpxchg.org> <20090618091949.GA711@localhost> <20090618130121.GA1817@cmpxchg.org> <Pine.LNX.4.64.0906211858560.3968@sister.anvils>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906211858560.3968@sister.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBE5B8AE91813711906E45C28
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jun 21, 2009 at 07:07:03PM +0100, Hugh Dickins wrote:
+> Hi Hannes,
+> 
+> On Thu, 18 Jun 2009, Johannes Weiner wrote:
+> > On Thu, Jun 18, 2009 at 05:19:49PM +0800, Wu Fengguang wrote:
+> > 
+> > Okay, evaluating this test-patch any further probably isn't worth it.
+> > It's too aggressive, I think readahead is stealing pages reclaimed by
+> > other allocations which in turn oom.
+> > 
+> > Back to the original problem: you detected increased latency for
+> > launching new applications, so they get less share of the IO bandwidth
+> > than without the patch.
+> > 
+> > I can see two reasons for this:
+> > 
+> >   a) the new heuristics don't work out and we read more unrelated
+> >   pages than before
+> > 
+> >   b) we readahead more pages in total as the old code would stop at
+> >   holes, as described above
+> > 
+> > We can verify a) by comparing major fault numbers between the two
+> > kernels with your testload.  If they increase with my patch, we
+> > anticipate the wrong slots and every fault has do the reading itself.
+> > 
+> > b) seems to be a trade-off.  After all, the IO resources you have less
+> > for new applications in your test is the bandwidth that is used by
+> > swapping applications.  My qsbench numbers are a sign for this as the
+> > only IO going on is swap.
+> > 
+> > Of course, the theory is not to improve swap performance by increasing
+> > the readahead window but to choose better readahead candidates.  So I
+> > will run your tests and qsbench with a smaller page cluster and see if
+> > this improves both loads.
+> 
+> Hmm, sounds rather pessimistic; but I've not decided about it either.
 
-Davide Libenzi wrote:
-> On Sat, 20 Jun 2009, Gregory Haskins wrote:
->
->  =20
->> Davide Libenzi wrote:
->>    =20
->>> On Sat, 20 Jun 2009, Davide Libenzi wrote:
->>>
->>>  =20
->>>      =20
->>>> On Sat, 20 Jun 2009, Davide Libenzi wrote:
->>>>
->>>>    =20
->>>>        =20
->>>>> How about the one below?
->>>>>      =20
->>>>>          =20
->>>> Maybe with an interface that can be undone w/out a file* :)
->>>>    =20
->>>>        =20
->>> This is another alternative, based on a low-carb diet of your notifie=
-r=20
->>> patch.
->>>  =20
->>>      =20
->> Ah, I should always check if I have more mail before responding to a n=
-ow
->> stale patch ;)
->>    =20
->
-> Here. I changed the eventfd_pollcb_register() prototype to return the f=
-ull=20
-> registeration time event mask, instead of the POLLIN explicit check.
-> Let's give this one some more thought before I push it to Andrew.
->  =20
+It seems the problem was not that real after all:
 
-This looks great, Davide.  I am fairly certain I can now solve the races
-and even implement Michael's DEASSIGN feature with this patch in place.=20
-I will actually fire it up tomorrow when I am back in the office and
-give it a spin, but I do not spy any more races via visual inspection.
+	http://lkml.org/lkml/2009/6/18/109
 
-Kind Regards,
--Greg
+> May I please hand over to you this collection of adjustments to your
+> v3 virtual swap readahead patch, for you to merge in or split up or
+> mess around with, generally take ownership of, however you wish?
+> So you can keep adjusting shmem.c to match memory.c if necessary.
 
-PS: I was wrong with my previous statement about requiring an embeddable
-object (eventfd_notifier for me, eventfd_pollcb for you).  I think you
-can technically solve this issue minimally by merely locking the POLLHUP
-and exposing the kref.  However, I think that leads to an more awkward
-interface (e.g. we already have eventfd_fget() plus we add a new one
-like eventfd_refget(), which might confuse users), so I prefer what you
-did here.  Just thought I would throw that out there in case you would
-prefer to change even fewer lines.
+I will adopt them, thank you!
 
-
-
---------------enigBE5B8AE91813711906E45C28
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko+fmMACgkQlOSOBdgZUxmFaACgifLr2x7NM83KkLmQnrixEMJr
-Bl4An37+nFxZk8yXOcTX7n23YVsYV4ga
-=BxJX
------END PGP SIGNATURE-----
-
---------------enigBE5B8AE91813711906E45C28--
+	Hannes
