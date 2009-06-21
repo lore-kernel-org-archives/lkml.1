@@ -1,100 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZFUG0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZFUGaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbZFUG0R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 02:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZFUG0E
+	id S1753790AbZFUGaT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 02:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZFUGaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 02:26:04 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:53544 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbZFUG0D (ORCPT
+	Sun, 21 Jun 2009 02:30:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33111 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbZFUGaC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 02:26:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=drhsokVsblA6Dc81c6ObAmLHnWNuv3j87XvjtvhV4titIFJqZ31yJXTe3edMUVPt2O
-         SdmSyWX2zmhmXMtV9AJCJyCIcuk9PgBQuOtVFTjEcSqqot2/QqW8XRi4n/UeqGLQldE5
-         Ft2vO+v5m7rX50J9xjLU662IJ5G03U/9NtMtQ=
+	Sun, 21 Jun 2009 02:30:02 -0400
+Date: Sun, 21 Jun 2009 08:24:58 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: Jouni Malinen <j@w1.fi>, Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       Greg KH <greg@kroah.com>, "corbet@lwn.net" <corbet@lwn.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
+Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
+	window
+Message-ID: <20090621062458.GC1474@ucw.cz>
+References: <20090616004122.GC5492@tesla> <20090616021011.GF23972@bombadil.infradead.org> <20090616032034.GA17932@kroah.com> <20090616042113.GA5680@tesla> <20090616093401.GA11602@jm.kir.nu> <20090616181705.GB31506@tesla> <20090619150015.GC1389@ucw.cz> <43e72e890906191010v4b2e79a5x2c7b722b8209933c@mail.gmail.com> <20090619221909.GC2229@elf.ucw.cz> <43e72e890906191551j1a201a87u4fcccb15ec961762@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <ac8f92700906202315w7d274a98oa3abe6dcc7f9ede1@mail.gmail.com>
-References: <ac8f92700906202315w7d274a98oa3abe6dcc7f9ede1@mail.gmail.com>
-Date: Sun, 21 Jun 2009 14:26:04 +0800
-Message-ID: <ac8f92700906202326u4de4311bjc77bb81ef93b81f9@mail.gmail.com>
-Subject: Fwd: patch for linux-2.6.30/arch/x86_64/mm/init.c
-From: jing zhang <zj.barak@gmail.com>
-To: linux-kernel@vger.kernel.org, mingo@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890906191551j1a201a87u4fcccb15ec961762@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+> > Non-intrusive bugfixes _are_ welcome after -rc1.
+> 
+> That's great news to me.
+> 
+> I think it would really help to get a clarification on what is meant
+> by "non-intrusive bugfixes" though. Can you elaborate on that?
 
-I have no way sending to Andi Kleen, then try Mr. linux-kernel and Mr.
-Ingo Molnar.
+Typo fix in printk() is non-intrusive, 'apply this series' is
+borderline; if issue is bad enough it may be ok. I guess only Linus
+can clarify more.
 
-btw, AC's mailbox @ suse closed, and why?
+> >> > Non-intrusive bugfixes too, afaict.
+> >>
+> >> It really depends on what you mean but generally no, and this is why I
+> >> think this clarification is important.
+> >
+> > I believe you are wrong.
+> 
+> I was actually hoping I would be. But I'd like some confirmation that I am.
+> 
+> For example, based on your feedback we have a series of fixes we'd
+> like to try to get merged for 2.6.31-rc2 for ath9k. I have been under
+> the impression that since those fixes do not meet the criteria
+> clarified by my original patch on documentation for the rc-series that
+> they would not get merged and our only option to get users to get
+> these patches is to wait for 2.6.32 or use some sort of bleeding edge
+> backport package. We try hard to get out our patches in time prior
 
-thank you
+I believe 'no git merges after rc1' is one of rules.
+									Pavel
 
----------- Forwarded message ----------
-From: jing zhang <zj.barak@gmail.com>
-Date: Sun, 21 Jun 2009 14:15:09 +0800
-Subject: patch for linux-2.6.30/arch/x86_64/mm/init.c
-To: ak@suse.de
-
-Good Sunday Mr. Andi Kleen,
-
-It seems that in function
-    unsigned long __init_refok
-    init_memory_mapping(unsigned long start, unsigned long end)
-
-CONFIG_DEBUG_PAGEALLOC conflicts with use_pse and use_gbpages when
-CONFIG_X86_32 also defined.
-
-The following is my patch to you,
-
-best
-
-look forwar to your opion.
-zj
-
-//<<<<<<<<<<<<<<<<<<<<<
-
-#ifdef CONFIG_DEBUG_PAGEALLOC
-	/*
-	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
-	 * This will simplify cpa(), which otherwise needs to support splitting
-	 * large pages into small in interrupt context, etc.
-	 */
-	use_pse = use_gbpages = 0;
-#else
-	use_pse = cpu_has_pse;
-	use_gbpages = direct_gbpages;
-#endif
-
-#ifdef CONFIG_X86_32
-#ifdef CONFIG_X86_PAE
-	set_nx();
-	if (nx_enabled)
-		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
-#endif
-	/* Enable PSE if available */
--	if (cpu_has_pse)
-+	/* and #ifdef CONFIG_DEBUG_PAGEALLOC */
-+	if (cpu_has_pse && use_pse)
-		set_in_cr4(X86_CR4_PSE);
-
-	/* Enable PGE if available */
--	if (cpu_has_pge) {
-+	/* and #ifdef CONFIG_DEBUG_PAGEALLOC */
-+	if (cpu_has_pge && use_gbpages) {
-		set_in_cr4(X86_CR4_PGE);
-		__supported_pte_mask |= _PAGE_GLOBAL;
-	}
-#endif /* CONFIG_X86_32 */
-
-//<<<<<<<<<<<<<<<<<<<<<
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
