@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZFUGaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZFUGou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbZFUGaT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 02:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZFUGaD
+	id S1755319AbZFUGou (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 02:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZFUGom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 02:30:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33111 "EHLO
+	Sun, 21 Jun 2009 02:44:42 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41553 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbZFUGaC (ORCPT
+	with ESMTP id S1753006AbZFUGol (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 02:30:02 -0400
-Date: Sun, 21 Jun 2009 08:24:58 +0200
+	Sun, 21 Jun 2009 02:44:41 -0400
+Date: Sun, 21 Jun 2009 08:39:36 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: Jouni Malinen <j@w1.fi>, Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Greg KH <greg@kroah.com>, "corbet@lwn.net" <corbet@lwn.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
-Subject: Re: [RFC] Documentation: add documentation for rc-series and merge
-	window
-Message-ID: <20090621062458.GC1474@ucw.cz>
-References: <20090616004122.GC5492@tesla> <20090616021011.GF23972@bombadil.infradead.org> <20090616032034.GA17932@kroah.com> <20090616042113.GA5680@tesla> <20090616093401.GA11602@jm.kir.nu> <20090616181705.GB31506@tesla> <20090619150015.GC1389@ucw.cz> <43e72e890906191010v4b2e79a5x2c7b722b8209933c@mail.gmail.com> <20090619221909.GC2229@elf.ucw.cz> <43e72e890906191551j1a201a87u4fcccb15ec961762@mail.gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] leds: Further document parameters for blink_set()
+Message-ID: <20090621063936.GA1656@ucw.cz>
+References: <1244726268-1517-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <43e72e890906191551j1a201a87u4fcccb15ec961762@mail.gmail.com>
+In-Reply-To: <1244726268-1517-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Non-intrusive bugfixes _are_ welcome after -rc1.
+On Thu 2009-06-11 14:17:48, Mark Brown wrote:
+> The documentation for the parameters of blink_set() was a bit hard
+> to find so put some where I'd expected to find it.
 > 
-> That's great news to me.
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  include/linux/leds.h |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
 > 
-> I think it would really help to get a clarification on what is meant
-> by "non-intrusive bugfixes" though. Can you elaborate on that?
+> diff --git a/include/linux/leds.h b/include/linux/leds.h
+> index 376fe07..c7f0b14 100644
+> --- a/include/linux/leds.h
+> +++ b/include/linux/leds.h
+> @@ -45,7 +45,9 @@ struct led_classdev {
+>  	/* Get LED brightness level */
+>  	enum led_brightness (*brightness_get)(struct led_classdev *led_cdev);
+>  
+> -	/* Activate hardware accelerated blink */
+> +	/* Activate hardware accelerated blink, delays are in
+> +	 * miliseconds and if none is provided then a sensible default
+> +	 * should be chosen. */
+>  	int		(*blink_set)(struct led_classdev *led_cdev,
+>  				     unsigned long *delay_on,
+>  				     unsigned long *delay_off);
 
-Typo fix in printk() is non-intrusive, 'apply this series' is
-borderline; if issue is bad enough it may be ok. I guess only Linus
-can clarify more.
-
-> >> > Non-intrusive bugfixes too, afaict.
-> >>
-> >> It really depends on what you mean but generally no, and this is why I
-> >> think this clarification is important.
-> >
-> > I believe you are wrong.
-> 
-> I was actually hoping I would be. But I'd like some confirmation that I am.
-> 
-> For example, based on your feedback we have a series of fixes we'd
-> like to try to get merged for 2.6.31-rc2 for ath9k. I have been under
-> the impression that since those fixes do not meet the criteria
-> clarified by my original patch on documentation for the rc-series that
-> they would not get merged and our only option to get users to get
-> these patches is to wait for 2.6.32 or use some sort of bleeding edge
-> backport package. We try hard to get out our patches in time prior
-
-I believe 'no git merges after rc1' is one of rules.
+What a strange calling convention. Does it return data in
+*delay_on/off ? Should that also be documented?
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
