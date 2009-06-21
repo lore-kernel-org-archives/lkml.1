@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZFUWlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZFUW5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbZFUWlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 18:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZFUWlq
+	id S1755578AbZFUW5m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 18:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZFUW5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 18:41:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40611 "EHLO gir.skynet.ie"
+	Sun, 21 Jun 2009 18:57:34 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46915 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752525AbZFUWlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 18:41:46 -0400
-Date: Sun, 21 Jun 2009 23:41:47 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andy Lutomirski <luto@mit.edu>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [git pull] drm: previous pull req + 1.
-In-Reply-To: <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0906212340440.20307@skynet.skynet.ie>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie> <4A3DABE1.50309@mit.edu> <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie> <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753261AbZFUW5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 18:57:33 -0400
+Subject: Re: Badness on the Warp
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Frans Pop <elendil@planet.nl>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       David Gibson <david@gibson.dropbear.id.au>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20090621183658.2b408e69@lappy.seanm.ca>
+References: <20090620154824.72b5cd50@lappy.seanm.ca>
+	 <200906202256.46073.elendil@planet.nl>
+	 <20090620194250.5a3e826f@lappy.seanm.ca>
+	 <200906210628.35553.elendil@planet.nl>
+	 <84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
+	 <1245623104.16880.26.camel@pasglop>
+	 <20090621183658.2b408e69@lappy.seanm.ca>
+Content-Type: text/plain
+Date: Mon, 22 Jun 2009 08:57:15 +1000
+Message-Id: <1245625035.16880.31.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2009-06-21 at 18:36 -0400, Sean MacLennan wrote:
+> On Mon, 22 Jun 2009 08:25:04 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> 
-> On Sun, 21 Jun 2009, Dave Airlie wrote:
-> > > 
-> > > I tried this tree (specifically, a merge of Linus' fb20871 this tree) on
-> > > Fedora 11 with modesetting enabled on an integrated Radeon 2100, and plymouthd
-> > > crashes immediately with a corrupt page table.  Photo attached.  After the
-> > > crash, bootup stops, although ctrl-alt-del works.
+> > Right, our interrupt controllers need those fixes, they are low
+> > on my priority list since it's a reasonably harmless warning and I'm
+> > still chasing some actual breakage (though maybe not directly related
+> > to your patches).
 > > 
-> > You need a different userspace, -ati from koji in F11 should do it.
+> > Kumar already submitted a couple, Frans, feel free to beat me
+> > at converting UIC (just use kmalloc directly in there instead
+> > of alloc_bootmem).
 > 
-> Dave - no amount of userspace differences make a corrupted page table 
-> acceptable. 
+> I can make the changes to UIC if you want. They badness is harmless (it
+> ends up calling kzalloc anyway), but hard to explain to our PV (Product
+> Verification) department that they can ignore what looks like a crash ;)
 
-I was original responding to a line I saw in his dmesg (which was about an 
-ioctl not being available, I only got to parsing the crash later.
+Heh, right, but hopefully we should have that fixed before .31 is
+out :-)
 
- 
-> This needs to be fixed. No excuses. Kernel crashes are never an issue of 
-> "you used the wrong user space".
+Cheers,
+Ben.
 
-Agreed, and we block old userspaces running on KMS kernels (at least 
-trying to use DRI) and I thought that was what he was seeing.
 
-Dave.
-
-> 
-> 		Linus
-> 
-> ------------------------------------------------------------------------------
-> Are you an open source citizen? Join us for the Open Source Bridge conference!
-> Portland, OR, June 17-19. Two days of sessions, one day of unconference: $250.
-> Need another reason to go? 24-hour hacker lounge. Register today!
-> http://ad.doubleclick.net/clk;215844324;13503038;v?http://opensourcebridge.org
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
-> 
-> 
