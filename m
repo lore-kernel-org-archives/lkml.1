@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZFUR5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbZFUSGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbZFUR5x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 13:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZFUR5p
+	id S1753966AbZFUSGo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 14:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZFUSGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 13:57:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45170 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751218AbZFUR5p (ORCPT
+	Sun, 21 Jun 2009 14:06:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43442 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753488AbZFUSGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 13:57:45 -0400
-Date: Sun, 21 Jun 2009 10:57:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] core kernel fixes
-In-Reply-To: <alpine.LFD.2.01.0906211031230.3119@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0906211049060.3119@localhost.localdomain>
-References: <20090620173022.GA14145@elte.hu> <alpine.LFD.2.01.0906201132020.4160@localhost.localdomain> <alpine.LFD.2.01.0906201154230.4160@localhost.localdomain> <alpine.LFD.2.00.0906211553150.2784@localhost.localdomain>
- <alpine.LFD.2.01.0906211031230.3119@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 21 Jun 2009 14:06:36 -0400
+Date: Sun, 21 Jun 2009 11:07:27 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: wey-yi.w.guy@intel.com, gregkh@kroah.com
+Subject: Re: iwlwifi: show qos AC parameters
+Message-ID: <20090621110727.74d95b28@infradead.org>
+In-Reply-To: <200906152114.n5FLEDT3015406@hera.kernel.org>
+References: <200906152114.n5FLEDT3015406@hera.kernel.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 15 Jun 2009 21:14:13 GMT
+Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+
+> +static ssize_t show_qos(struct device *d,
+> +				struct device_attribute *attr, char
+> *buf) +{
+> +	struct iwl_priv *priv = (struct iwl_priv *)d->driver_data;
+> +	char *p = buf;
+> +	int   q;
+> +
+> +	for (q = 0; q < AC_NUM; q++) {
+> +		p += sprintf(p, "\tcw_min\tcw_max\taifsn\ttxop\n");
+> +		p += sprintf(p, "AC[%d]\t%u\t%u\t%u\t%u\n", q,
+> +
+
+wonder what happened to the "one value per file" sysfs rule...
 
 
-On Sun, 21 Jun 2009, Linus Torvalds wrote:
-> 
-> And as far as I can tell, that is indeed the only case where you use that 
-> 'get_user_writeable()' thing. You've had futex_atomic_op_inuser() fail, 
-> and need to repeat. No?
-
-I just checked. Yes, this code is _only_ entered when an atomic op 
-returned EFAULT. IOW, we absolutely know that the page tables are not set 
-up for writability, and thus that the "fast" case will never ever trigger.
-
-(Ok, in theory you could have some other thread writing to that page at 
-the same time and handle the page fault and making it writable, but in 
-practice that's not really relevant).
-
-So just doing a "make_sure_its_writable()" and using handle_fault() is the 
-right thing to do. Because it's what get_user_fast() would have done too, 
-except it would have gone through first the fast case, and failed, then 
-the slow case, and failed the lookup there, and then the slow case would 
-have done that handle_mm_fault() in the end anyway.
-
-In fact, since you're not actually interested in the page, you _could_ 
-just do
-
-	get_user_pages(tsk, mm, uaddr, 4, 1, 0, NULL, NULL);
-
-where a NULL "pages" pointer already tells get_user_pages() that you're 
-not interested.
-
-That's at least cleaner than doing a "gup_fast()" (which isn't fast), and 
-then freeing the page that you weren't even interested in.
-
-		Linus
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
