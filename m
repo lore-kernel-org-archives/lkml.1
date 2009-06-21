@@ -1,476 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZFUSHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbZFUSVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbZFUSHV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 14:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZFUSHK
+	id S1754561AbZFUSVl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 14:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZFUSVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 14:07:10 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:55380 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753556AbZFUSHH (ORCPT
+	Sun, 21 Jun 2009 14:21:33 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:47214 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751955AbZFUSVc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 14:07:07 -0400
-X-Trace: 218918140/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.53.175/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.53.175
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiUFAKMTPkpPRTWv/2dsb2JhbACBUb1HCI1YgjEaBQiBMgU
-X-IronPort-AV: E=Sophos;i="4.42,263,1243810800"; 
-   d="scan'208";a="218918140"
-Date: Sun, 21 Jun 2009 19:07:03 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Johannes Weiner <hannes@cmpxchg.org>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch v3] swap: virtual swap readahead
-In-Reply-To: <20090618130121.GA1817@cmpxchg.org>
-Message-ID: <Pine.LNX.4.64.0906211858560.3968@sister.anvils>
-References: <1244626976.13761.11593.camel@twins> <20090610095950.GA514@localhost>
- <1244628314.13761.11617.camel@twins> <20090610113214.GA5657@localhost>
- <20090610102516.08f7300f@jbarnes-x200> <20090611052228.GA20100@localhost>
- <20090611101741.GA1974@cmpxchg.org> <20090612015927.GA6804@localhost>
- <20090615182216.GA1661@cmpxchg.org> <20090618091949.GA711@localhost>
- <20090618130121.GA1817@cmpxchg.org>
+	Sun, 21 Jun 2009 14:21:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=cHdiowNJKvOmNxdQhOhgWsxe57V8eo/lcvVe1MkWDZ4gjt1xsbcZVQGWVoxUVNi3fK
+         9Vp9xKOsErbqr4wtmYY2Hzxrb40MDwxPG41XogLT3AK2YWDKtXazan62pCYB9mydPtrf
+         6k2SSf+ZfVUyRfqcVNaH5xTfd97YvqYenEvVw=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 21 Jun 2009 20:21:32 +0200
+Message-ID: <1158166a0906211121q51a8d320j1d9ab0e1570373da@mail.gmail.com>
+Subject: [PATCH] unifdef: teach it about defined(FOO) syntax
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Content-Type: multipart/mixed; boundary=001636c5b314c16511046cdfd3e4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hannes,
+--001636c5b314c16511046cdfd3e4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Thu, 18 Jun 2009, Johannes Weiner wrote:
-> On Thu, Jun 18, 2009 at 05:19:49PM +0800, Wu Fengguang wrote:
-> 
-> Okay, evaluating this test-patch any further probably isn't worth it.
-> It's too aggressive, I think readahead is stealing pages reclaimed by
-> other allocations which in turn oom.
-> 
-> Back to the original problem: you detected increased latency for
-> launching new applications, so they get less share of the IO bandwidth
-> than without the patch.
-> 
-> I can see two reasons for this:
-> 
->   a) the new heuristics don't work out and we read more unrelated
->   pages than before
-> 
->   b) we readahead more pages in total as the old code would stop at
->   holes, as described above
-> 
-> We can verify a) by comparing major fault numbers between the two
-> kernels with your testload.  If they increase with my patch, we
-> anticipate the wrong slots and every fault has do the reading itself.
-> 
-> b) seems to be a trade-off.  After all, the IO resources you have less
-> for new applications in your test is the bandwidth that is used by
-> swapping applications.  My qsbench numbers are a sign for this as the
-> only IO going on is swap.
-> 
-> Of course, the theory is not to improve swap performance by increasing
-> the readahead window but to choose better readahead candidates.  So I
-> will run your tests and qsbench with a smaller page cluster and see if
-> this improves both loads.
+Hi,
 
-Hmm, sounds rather pessimistic; but I've not decided about it either.
+uclibc project patched unifdef.c (which we stole from kernel)
+so that it understands defined(FOO) in addition to defined FOO,
+and also taught it to understand short-circuited evaluation
+of && and ||
 
-May I please hand over to you this collection of adjustments to your
-v3 virtual swap readahead patch, for you to merge in or split up or
-mess around with, generally take ownership of, however you wish?
-So you can keep adjusting shmem.c to match memory.c if necessary.
+The patch is attached. (Sorry, not inline, I fear Google
+web mail interface may mangle it).
 
-I still think your method looks a very good idea, though results have
-not yet convinced me that it necessarily works out better in practice;
-and I probably won't be looking at it again for a while.
+I ran these commands in unpatched and patched tree:
 
-The base for this patch was 2.6.30 + your v3.
+make ARCH=i386 CROSS_COMPILE=i486-linux-uclibc- defconfig
+ln -s asm-x86 include/asm
+make ARCH=i386 CROSS_COMPILE=i486-linux-uclibc- headers_install
 
-* shmem_getpage() call shmem_swap_cluster() to collect vector of swap
-  entries for shmem_swapin(), while we still have them kmap'ped.
+and then diffed usr/*. The difference clearly shows that
+new unifdef works better than old one:
 
-* Variable-sized arrays on stack are not popular: I forget whether the
-  kernel build still supports any gccs which can't manage them, but they
-  do obscure stack usage, and shmem_getpage is already a suspect for that
-  (because of the pseudo-vma usage which I hope to remove): should be fine
-  while you're experimenting, but in the end let's define PAGE_CLUSTER_MAX.
 
-* Fix "> pmax" in swapin_readahead() to ">= pmax": of course this is
-  only a heuristic, so it wasn't accusably wrong; but we are trying for
-  a particular range, so it's right to reject < pmin and >= pmax there.
+linux-2.6.30.test/usr/include/linux/acct.h:
+@@ -59,9 +59,7 @@ struct acct
+ 	comp_t		ac_majflt;		/* Major Pagefaults */
+ 	comp_t		ac_swaps;		/* Number of Swaps */
+ /* m68k had no padding here. */
+-#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
+ 	__u16		ac_ahz;			/* AHZ */
+-#endif
+ 	__u32		ac_exitcode;		/* Exitcode */
+ 	char		ac_comm[ACCT_COMM + 1];	/* Command Name */
+ 	__u8		ac_etime_hi;		/* Elapsed Time MSB */
 
-* Kamezawa-san's two one-liners to swap_readahead_ptes(), of course.
 
-* Delete valid_swaphandles() once it's unused (though I can imagine a
-  useful test patch in which we could switch between old and new methods).
-
-* swapin_readahead() was always poorly named: while you're changing its
-  behaviour, let's take the opportunity to rename it swapin_readaround();
-  yes, that triviality would be better as a separate patch.
-
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-
- include/linux/mm.h   |    6 ++++
- include/linux/swap.h |    5 +--
- kernel/sysctl.c      |    2 -
- mm/memory.c          |   16 ++++++------
- mm/shmem.c           |   47 +++++++++++++++++++++++++++++++++----
- mm/swap_state.c      |   46 +++---------------------------------
- mm/swapfile.c        |   52 -----------------------------------------
- 71 files changed, 64 insertions(+), 110 deletions(-)
-
---- 2.6.30-hv3/include/linux/mm.h	2009-06-10 04:05:27.000000000 +0100
-+++ 2.6.30-hv4/include/linux/mm.h	2009-06-21 14:59:27.000000000 +0100
-@@ -26,6 +26,12 @@ extern unsigned long max_mapnr;
- 
- extern unsigned long num_physpages;
- extern void * high_memory;
-+
-+/*
-+ * page_cluster limits swapin_readaround: tuned by /proc/sys/vm/page-cluster
-+ * 1 << page_cluster is the maximum number of pages which may be read
-+ */
-+#define PAGE_CLUSTER_MAX	5
- extern int page_cluster;
- 
- #ifdef CONFIG_SYSCTL
---- 2.6.30-hv3/include/linux/swap.h	2009-06-11 19:10:34.000000000 +0100
-+++ 2.6.30-hv4/include/linux/swap.h	2009-06-21 14:59:27.000000000 +0100
-@@ -291,7 +291,7 @@ extern void free_pages_and_swap_cache(st
- extern struct page *lookup_swap_cache(swp_entry_t);
- extern struct page *read_swap_cache_async(swp_entry_t, gfp_t,
- 			struct vm_area_struct *vma, unsigned long addr);
--extern struct page *swapin_readahead(swp_entry_t, gfp_t,
-+extern struct page *swapin_readaround(swp_entry_t, gfp_t,
- 			struct vm_area_struct *vma, unsigned long addr,
- 			swp_entry_t *entries, int nr_entries,
- 			unsigned long cluster);
-@@ -303,7 +303,6 @@ extern void si_swapinfo(struct sysinfo *
- extern swp_entry_t get_swap_page(void);
- extern swp_entry_t get_swap_page_of_type(int);
- extern int swap_duplicate(swp_entry_t);
--extern int valid_swaphandles(swp_entry_t, unsigned long *);
- extern void swap_free(swp_entry_t);
- extern int free_swap_and_cache(swp_entry_t);
- extern int swap_type_of(dev_t, sector_t, struct block_device **);
-@@ -378,7 +377,7 @@ static inline void swap_free(swp_entry_t
- {
- }
- 
--static inline struct page *swapin_readahead(swp_entry_t swp, gfp_t gfp_mask,
-+static inline struct page *swapin_readaround(swp_entry_t swp, gfp_t gfp_mask,
- 			struct vm_area_struct *vma, unsigned long addr)
- {
- 	return NULL;
---- 2.6.30-hv3/kernel/sysctl.c	2009-06-11 19:10:34.000000000 +0100
-+++ 2.6.30-hv4/kernel/sysctl.c	2009-06-21 14:59:27.000000000 +0100
-@@ -112,7 +112,7 @@ static int min_percpu_pagelist_fract = 8
- 
- static int ngroups_max = NGROUPS_MAX;
- 
--static int page_cluster_max = 5;
-+static int page_cluster_max = PAGE_CLUSTER_MAX;
- 
- #ifdef CONFIG_MODULES
- extern char modprobe_path[];
---- 2.6.30-hv3/mm/memory.c	2009-06-21 14:55:44.000000000 +0100
-+++ 2.6.30-hv4/mm/memory.c	2009-06-21 14:59:27.000000000 +0100
-@@ -2440,9 +2440,9 @@ int vmtruncate_range(struct inode *inode
- }
- 
- /*
-- * The readahead window is the virtual area around the faulting page,
-+ * The readaround window is the virtual area around the faulting page,
-  * where the physical proximity of the swap slots is taken into
-- * account as well in swapin_readahead().
-+ * account as well in swapin_readaround().
-  *
-  * While the swap allocation algorithm tries to keep LRU-related pages
-  * together on the swap backing, it is not reliable on heavy thrashing
-@@ -2455,7 +2455,7 @@ int vmtruncate_range(struct inode *inode
-  * By taking both aspects into account, we get a good approximation of
-  * which pages are sensible to read together with the faulting one.
+linux-2.6.30.test/usr/include/linux/soundcard.h:
+@@ -1033,7 +1033,6 @@ typedef struct mixer_vol_table {
   */
--static int swap_readahead_ptes(struct mm_struct *mm,
-+static int swap_readaround_ptes(struct mm_struct *mm,
- 			unsigned long addr, pmd_t *pmd,
- 			swp_entry_t *entries,
- 			unsigned long cluster)
-@@ -2467,7 +2467,7 @@ static int swap_readahead_ptes(struct mm
- 
- 	window = cluster << PAGE_SHIFT;
- 	min = addr & ~(window - 1);
--	max = min + cluster;
-+	max = min + window;
- 	/*
- 	 * To keep the locking/highpte mapping simple, stay
- 	 * within the PTE range of one PMD entry.
-@@ -2478,7 +2478,7 @@ static int swap_readahead_ptes(struct mm
- 	limit = pmd_addr_end(addr, max);
- 	if (limit < max)
- 		max = limit;
--	limit = max - min;
-+	limit = (max - min) >> PAGE_SHIFT;
- 	ptep = pte_offset_map_lock(mm, pmd, min, &ptl);
- 	for (i = nr = 0; i < limit; i++)
- 		if (is_swap_pte(ptep[i]))
-@@ -2515,11 +2515,11 @@ static int do_swap_page(struct mm_struct
- 	page = lookup_swap_cache(entry);
- 	if (!page) {
- 		int nr, cluster = 1 << page_cluster;
--		swp_entry_t entries[cluster];
-+		swp_entry_t entries[1 << PAGE_CLUSTER_MAX];
- 
- 		grab_swap_token(); /* Contend for token _before_ read-in */
--		nr = swap_readahead_ptes(mm, address, pmd, entries, cluster);
--		page = swapin_readahead(entry,
-+		nr = swap_readaround_ptes(mm, address, pmd, entries, cluster);
-+		page = swapin_readaround(entry,
- 					GFP_HIGHUSER_MOVABLE, vma, address,
- 					entries, nr, cluster);
- 		if (!page) {
---- 2.6.30-hv3/mm/shmem.c	2009-06-11 19:10:34.000000000 +0100
-+++ 2.6.30-hv4/mm/shmem.c	2009-06-21 14:59:27.000000000 +0100
-@@ -1134,7 +1134,8 @@ static struct mempolicy *shmem_get_sbmpo
- #endif /* CONFIG_TMPFS */
- 
- static struct page *shmem_swapin(swp_entry_t entry, gfp_t gfp,
--			struct shmem_inode_info *info, unsigned long idx)
-+		struct shmem_inode_info *info, unsigned long idx,
-+		swp_entry_t *entries, int nr_entries, unsigned long cluster)
- {
- 	struct mempolicy mpol, *spol;
- 	struct vm_area_struct pvma;
-@@ -1148,7 +1149,8 @@ static struct page *shmem_swapin(swp_ent
- 	pvma.vm_pgoff = idx;
- 	pvma.vm_ops = NULL;
- 	pvma.vm_policy = spol;
--	page = swapin_readahead(entry, gfp, &pvma, 0, NULL, 0, 0);
-+	page = swapin_readaround(entry, gfp, &pvma, 0,
-+				entries, nr_entries, cluster);
- 	return page;
- }
- 
-@@ -1176,9 +1178,11 @@ static inline void shmem_show_mpol(struc
- #endif /* CONFIG_TMPFS */
- 
- static inline struct page *shmem_swapin(swp_entry_t entry, gfp_t gfp,
--			struct shmem_inode_info *info, unsigned long idx)
-+		struct shmem_inode_info *info, unsigned long idx,
-+		swp_entry_t *entries, int nr_entries, unsigned long cluster)
- {
--	return swapin_readahead(entry, gfp, NULL, 0, NULL, 0, 0);
-+	return swapin_readaround(entry, gfp, NULL, 0,
-+				entries, nr_entries, cluster);
- }
- 
- static inline struct page *shmem_alloc_page(gfp_t gfp,
-@@ -1195,6 +1199,33 @@ static inline struct mempolicy *shmem_ge
- }
+ #define LOCL_STARTAUDIO		1
+
+-#if !defined(__KERNEL__) || defined(USE_SEQ_MACROS)
+ /*
+  *	Some convenience macros to simplify programming of the
+  *	/dev/sequencer interface
+@@ -1275,4 +1274,3 @@ void seqbuf_dump(void);	/* This function
+ 		(SEQ_DUMPBUF(), write(seqfd, (char*)(patchx), len))
+
  #endif
- 
-+static int shmem_swap_cluster(swp_entry_t *entry, unsigned long idx,
-+				swp_entry_t *entries, unsigned long cluster)
-+{
-+	unsigned long min, max, limit;
-+	int i, nr;
-+
-+	limit = SHMEM_NR_DIRECT;
-+	if (idx >= SHMEM_NR_DIRECT) {
-+		idx -= SHMEM_NR_DIRECT;
-+		idx %= ENTRIES_PER_PAGE;
-+		limit = ENTRIES_PER_PAGE;
-+	}
-+
-+	min = idx & ~(cluster - 1);
-+	max = min + cluster;
-+	if (max > limit)
-+		max = limit;
-+	entry -= (idx - min);
-+	limit = max - min;
-+
-+	for (i = nr = 0; i < limit; i++) {
-+		if (entry[i].val)
-+			entries[nr++] = entry[i];
-+	}
-+	return nr;
-+}
-+
- /*
-  * shmem_getpage - either get the page from swap or allocate a new one
-  *
-@@ -1261,6 +1292,11 @@ repeat:
- 		/* Look it up and read it in.. */
- 		swappage = lookup_swap_cache(swap);
- 		if (!swappage) {
-+			int nr_entries, cluster = 1 << page_cluster;
-+			swp_entry_t entries[1 << PAGE_CLUSTER_MAX];
-+
-+			nr_entries = shmem_swap_cluster(entry, idx,
-+							entries, cluster);
- 			shmem_swp_unmap(entry);
- 			/* here we actually do the io */
- 			if (type && !(*type & VM_FAULT_MAJOR)) {
-@@ -1268,7 +1304,8 @@ repeat:
- 				*type |= VM_FAULT_MAJOR;
- 			}
- 			spin_unlock(&info->lock);
--			swappage = shmem_swapin(swap, gfp, info, idx);
-+			swappage = shmem_swapin(swap, gfp, info, idx,
-+						entries, nr_entries, cluster);
- 			if (!swappage) {
- 				spin_lock(&info->lock);
- 				entry = shmem_swp_alloc(info, idx, sgp);
---- 2.6.30-hv3/mm/swap_state.c	2009-06-11 19:10:34.000000000 +0100
-+++ 2.6.30-hv4/mm/swap_state.c	2009-06-21 14:59:27.000000000 +0100
-@@ -325,58 +325,24 @@ struct page *read_swap_cache_async(swp_e
- 	return found_page;
- }
- 
--/*
-- * Primitive swap readahead code. We simply read an aligned block of
-- * (1 << page_cluster) entries in the swap area. This method is chosen
-- * because it doesn't cost us any seek time.  We also make sure to queue
-- * the 'original' request together with the readahead ones...
-- */
--static struct page *swapin_readahead_phys(swp_entry_t entry, gfp_t gfp_mask,
--				struct vm_area_struct *vma, unsigned long addr)
--{
--	int nr_pages;
--	struct page *page;
--	unsigned long offset;
--	unsigned long end_offset;
--
--	/*
--	 * Get starting offset for readaround, and number of pages to read.
--	 * Adjust starting address by readbehind (for NUMA interleave case)?
--	 * No, it's very unlikely that swap layout would follow vma layout,
--	 * more likely that neighbouring swap pages came from the same node:
--	 * so use the same "addr" to choose the same node for each swap read.
--	 */
--	nr_pages = valid_swaphandles(entry, &offset);
--	for (end_offset = offset + nr_pages; offset < end_offset; offset++) {
--		/* Ok, do the async read-ahead now */
--		page = read_swap_cache_async(swp_entry(swp_type(entry), offset),
--						gfp_mask, vma, addr);
--		if (!page)
--			break;
--		page_cache_release(page);
--	}
--	lru_add_drain();	/* Push any new pages onto the LRU now */
--	return read_swap_cache_async(entry, gfp_mask, vma, addr);
--}
--
- /**
-- * swapin_readahead - swap in pages in hope we need them soon
-+ * swapin_readaround - swap in pages in hope we need them soon
-  * @entry: swap entry of this memory
-  * @gfp_mask: memory allocation flags
-  * @vma: user vma this address belongs to
-  * @addr: target address for mempolicy
-  * @entries: swap slots to consider reading
-  * @nr_entries: number of @entries
-- * @cluster: readahead window size in swap slots
-+ * @cluster: readaround window size in swap slots
-  *
-  * Returns the struct page for entry and addr, after queueing swapin.
-  *
-  * This has been extended to use the NUMA policies from the mm
-- * triggering the readahead.
-+ * triggering the readaround.
-  *
-  * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
-  */
--struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
-+struct page *swapin_readaround(swp_entry_t entry, gfp_t gfp_mask,
- 			struct vm_area_struct *vma, unsigned long addr,
- 			swp_entry_t *entries, int nr_entries,
- 			unsigned long cluster)
-@@ -384,8 +350,6 @@ struct page *swapin_readahead(swp_entry_
- 	unsigned long pmin, pmax;
- 	int i;
- 
--	if (!entries)	/* XXX: shmem case */
--		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
- 	pmin = swp_offset(entry) & ~(cluster - 1);
- 	pmax = pmin + cluster;
- 	for (i = 0; i < nr_entries; i++) {
-@@ -394,7 +358,7 @@ struct page *swapin_readahead(swp_entry_
- 
- 		if (swp_type(swp) != swp_type(entry))
- 			continue;
--		if (swp_offset(swp) > pmax)
-+		if (swp_offset(swp) >= pmax)
- 			continue;
- 		if (swp_offset(swp) < pmin)
- 			continue;
---- 2.6.30-hv3/mm/swapfile.c	2009-03-23 23:12:14.000000000 +0000
-+++ 2.6.30-hv4/mm/swapfile.c	2009-06-21 14:59:27.000000000 +0100
-@@ -1984,55 +1984,3 @@ get_swap_info_struct(unsigned type)
- {
- 	return &swap_info[type];
- }
+-#endif
+
+
+linux-2.6.30.test/usr/include/linux/videodev.h:
+@@ -16,24 +16,6 @@
+ #include <linux/ioctl.h>
+ #include <linux/videodev2.h>
+
+-#if defined(__MIN_V4L1) && defined (__KERNEL__)
 -
 -/*
-- * swap_lock prevents swap_map being freed. Don't grab an extra
-- * reference on the swaphandle, it doesn't matter if it becomes unused.
+- * Used by those V4L2 core functions that need a minimum V4L1 support,
+- * in order to allow V4L1 Compatibilty code compilation.
 - */
--int valid_swaphandles(swp_entry_t entry, unsigned long *offset)
+-
+-struct video_mbuf
 -{
--	struct swap_info_struct *si;
--	int our_page_cluster = page_cluster;
--	pgoff_t target, toff;
--	pgoff_t base, end;
--	int nr_pages = 0;
+-	int	size;		/* Total memory to map */
+-	int	frames;		/* Frames */
+-	int	offsets[VIDEO_MAX_FRAME];
+-};
 -
--	if (!our_page_cluster)	/* no readahead */
--		return 0;
+-#define VIDIOCGMBUF		_IOR('v',20, struct video_mbuf)		/* Memory map
+buffer info */
 -
--	si = &swap_info[swp_type(entry)];
--	target = swp_offset(entry);
--	base = (target >> our_page_cluster) << our_page_cluster;
--	end = base + (1 << our_page_cluster);
--	if (!base)		/* first page is swap header */
--		base++;
--
--	spin_lock(&swap_lock);
--	if (end > si->max)	/* don't go beyond end of map */
--		end = si->max;
--
--	/* Count contiguous allocated slots above our target */
--	for (toff = target; ++toff < end; nr_pages++) {
--		/* Don't read in free or bad pages */
--		if (!si->swap_map[toff])
--			break;
--		if (si->swap_map[toff] == SWAP_MAP_BAD)
--			break;
--	}
--	/* Count contiguous allocated slots below our target */
--	for (toff = target; --toff >= base; nr_pages++) {
--		/* Don't read in free or bad pages */
--		if (!si->swap_map[toff])
--			break;
--		if (si->swap_map[toff] == SWAP_MAP_BAD)
--			break;
--	}
--	spin_unlock(&swap_lock);
--
--	/*
--	 * Indicate starting offset, and return number of pages to get:
--	 * if only 1, say 0, since there's then no readahead to be done.
--	 */
--	*offset = ++toff;
--	return nr_pages? ++nr_pages: 0;
--}
+-#else
+-#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+
+ #define VID_TYPE_CAPTURE	1	/* Can capture */
+ #define VID_TYPE_TUNER		2	/* Can tune */
+@@ -328,8 +310,6 @@ struct video_code
+ #define VID_PLAY_RESET			13
+ #define VID_PLAY_END_MARK		14
+
+-#endif /* CONFIG_VIDEO_V4L1_COMPAT */
+-#endif /* __MIN_V4L1 */
+
+ #endif /* __LINUX_VIDEODEV_H */
+
+
++++ linux-2.6.30.test/usr/include/video/edid.h:
+@@ -1,13 +1,11 @@
+ #ifndef __linux_video_edid_h__
+ #define __linux_video_edid_h__
+
+-#if !defined(__KERNEL__) || defined(CONFIG_X86)
+
+ struct edid_info {
+ 	unsigned char dummy[128];
+ };
+
+
+-#endif
+
+ #endif /* __linux_video_edid_h__ */
+
+
+
+Please apply.
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
+
+--001636c5b314c16511046cdfd3e4
+Content-Type: text/x-patch; charset=US-ASCII; name="linux-2.6.30_unifdef.patch"
+Content-Disposition: attachment; filename="linux-2.6.30_unifdef.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fw82un750
+
+ZGlmZiAtdXJwTiBsaW51eC0yLjYuMzAub3JnL3NjcmlwdHMvdW5pZmRlZi5jIGxpbnV4LTIuNi4z
+MC9zY3JpcHRzL3VuaWZkZWYuYwotLS0gbGludXgtMi42LjMwLm9yZy9zY3JpcHRzL3VuaWZkZWYu
+YwkyMDA5LTA2LTEwIDA1OjA1OjI3LjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjMwL3Nj
+cmlwdHMvdW5pZmRlZi5jCTIwMDktMDYtMjEgMjA6MDU6MDIuMDAwMDAwMDAwICswMjAwCkBAIC0y
+OTYsNiArMjk2LDcgQEAgbWFpbihpbnQgYXJnYywgY2hhciAqYXJndltdKQogCQlpbnB1dCA9IHN0
+ZGluOwogCX0KIAlwcm9jZXNzKCk7CisJZGVidWcoImJ1ZyBhdCBsaW5lICVkIiwgX19MSU5FX18p
+OwogCWFib3J0KCk7IC8qIGJ1ZyAqLwogfQogCkBAIC00MzgsOCArNDM5LDEwIEBAIGRvbmUodm9p
+ZCkKIHN0YXRpYyB2b2lkCiBpZ25vcmVvZmYodm9pZCkKIHsKLQlpZiAoZGVwdGggPT0gMCkKKwlp
+ZiAoZGVwdGggPT0gMCkgeworCQlkZWJ1ZygiYnVnIGF0IGxpbmUgJWQiLCBfX0xJTkVfXyk7CiAJ
+CWFib3J0KCk7IC8qIGJ1ZyAqLworCX0KIAlpZ25vcmluZ1tkZXB0aF0gPSBpZ25vcmluZ1tkZXB0
+aC0xXTsKIH0KIHN0YXRpYyB2b2lkCkBAIC00NzEsOCArNDc0LDEwIEBAIG5lc3Qodm9pZCkKIHN0
+YXRpYyB2b2lkCiB1bm5lc3Qodm9pZCkKIHsKLQlpZiAoZGVwdGggPT0gMCkKKwlpZiAoZGVwdGgg
+PT0gMCkgeworCQlkZWJ1ZygiYnVnIGF0IGxpbmUgJWQiLCBfX0xJTkVfXyk7CiAJCWFib3J0KCk7
+IC8qIGJ1ZyAqLworCX0KIAlkZXB0aCAtPSAxOwogfQogc3RhdGljIHZvaWQKQEAgLTU5Niw4ICs2
+MDEsMTEgQEAgZ2V0X2xpbmUodm9pZCkKIAkJCQlsaW5lc3RhdGUgPSBMU19ESVJUWTsKIAkJfQog
+CQkvKiBza2lwY29tbWVudCBzaG91bGQgaGF2ZSBjaGFuZ2VkIHRoZSBzdGF0ZSAqLwotCQlpZiAo
+bGluZXN0YXRlID09IExTX0hBU0gpCi0JCQlhYm9ydCgpOyAvKiBidWcgKi8KKy8vIEhtbSBoYXBw
+ZW5zIHNvbWV0aW1lcyBvbiB2YWxpZCBmaWxlcworLy8JCWlmIChsaW5lc3RhdGUgPT0gTFNfSEFT
+SCkgeworLy8JCQlkZWJ1ZygiYnVnIGF0IGxpbmUgJWQiLCBfX0xJTkVfXyk7CisvLwkJCWFib3J0
+KCk7IC8qIGJ1ZyAqLworLy8JCX0KIAl9CiAJaWYgKGxpbmVzdGF0ZSA9PSBMU19ESVJUWSkgewog
+CQl3aGlsZSAoKmNwICE9ICdcMCcpCkBAIC02NDksMjQgKzY1NywzMSBAQCBzdGF0aWMgY29uc3Qg
+c3RydWN0IG9wcyB7CiAJZXZhbF9mbiAqaW5uZXI7CiAJc3RydWN0IG9wIHsKIAkJY29uc3QgY2hh
+ciAqc3RyOworCQlpbnQgc2hvcnRfY2lyY3VpdF92YWw7CiAJCWludCAoKmZuKShpbnQsIGludCk7
+CiAJfSBvcFs1XTsKIH0gZXZhbF9vcHNbXSA9IHsKLQl7IGV2YWxfdGFibGUsIHsgeyAifHwiLCBv
+cF9vciB9IH0gfSwKLQl7IGV2YWxfdGFibGUsIHsgeyAiJiYiLCBvcF9hbmQgfSB9IH0sCi0JeyBl
+dmFsX3RhYmxlLCB7IHsgIj09Iiwgb3BfZXEgfSwKLQkJCXsgIiE9Iiwgb3BfbmUgfSB9IH0sCi0J
+eyBldmFsX3VuYXJ5LCB7IHsgIjw9Iiwgb3BfbGUgfSwKLQkJCXsgIj49Iiwgb3BfZ2UgfSwKLQkJ
+CXsgIjwiLCBvcF9sdCB9LAotCQkJeyAiPiIsIG9wX2d0IH0gfSB9CisJeyBldmFsX3RhYmxlLCB7
+IHsgInx8IiwgMSwgb3Bfb3IgfSB9IH0sCisJeyBldmFsX3RhYmxlLCB7IHsgIiYmIiwgMCwgb3Bf
+YW5kIH0gfSB9LAorCXsgZXZhbF90YWJsZSwgeyB7ICI9PSIsIC0xLCBvcF9lcSB9LAorCQkJeyAi
+IT0iLCAtMSwgb3BfbmUgfSB9IH0sCisJeyBldmFsX3VuYXJ5LCB7IHsgIjw9IiwgLTEsIG9wX2xl
+IH0sCisJCQl7ICI+PSIsIC0xLCBvcF9nZSB9LAorCQkJeyAiPCIsIC0xLCBvcF9sdCB9LAorCQkJ
+eyAiPiIsIC0xLCBvcF9ndCB9IH0gfQogfTsKIAogLyoKLSAqIEZ1bmN0aW9uIGZvciBldmFsdWF0
+aW5nIHRoZSBpbm5lcm1vc3QgcGFydHMgb2YgZXhwcmVzc2lvbnMsCi0gKiB2aXouICFleHByIChl
+eHByKSBkZWZpbmVkKHN5bWJvbCkgc3ltYm9sIG51bWJlcgorICogRnVuY3Rpb24gZm9yIGV2YWx1
+YXRpbmcgdGhlIGlubmVybW9zdCBwYXJ0cyBvZiBleHByZXNzaW9ucywgdml6LgorICogIiFleHBy
+IiwgIihleHByKSIsICJkZWZpbmVkKHN5bWJvbCkiLCAiZGVmaW5lZCBzeW1ib2wiLCAic3ltYm9s
+IiwgIm51bWJlciIuCiAgKiBXZSByZXNldCB0aGUga2VlcHRoaXMgZmxhZyB3aGVuIHdlIGZpbmQg
+YSBub24tY29uc3RhbnQgc3ViZXhwcmVzc2lvbi4KICAqLworLy8gVE9ETzogd2UgdXNlIExUX0lG
+IGJvdGggYXMgIkkgZG9uJ3Qga25vdyB3aGV0aGVyIGl0J3MgZmFsc2Ugb3IgdHJ1ZSIKKy8vIChl
+eGFtcGxlOiAiI2lmIGRlZmluZWQgRk9PIikgYW5kIHdoZW4gd2Ugc2VlIHN5bnRheCBlcnJvcgor
+Ly8gKGV4YW1wbGU6ICIjaWYgKDEgfHwgMiIgLSBubyBjbG9zaW5nIHBhcmVuISksIGJ1dCB0aGlz
+IGlzIHdyb25nLgorLy8gQmluYXJ5ICYmIGFuZCB8fCBuZWVkIHRvIGRpc3Rpbmd1aXNoIHRoZXNl
+IGNhc2VzIGluIG9yZGVyIHRvIGhhbmRsZSB0aGlzOgorLy8gIiNpZiBkZWZpbmVkIEtOT1dOX1VO
+REVGSU5FRCAmJiBGT08iIC0gZGlzY2FyZAorLy8gIiNpZiBkZWZpbmVkIEtOT1dOX1VOREVGSU5F
+RCAmJiAoc3ludGF4X2Vycm9yX2hlcmUiIC0gZG8gbm90IGRpc2NhcmQhCiBzdGF0aWMgTGluZXR5
+cGUKIGV2YWxfdW5hcnkoY29uc3Qgc3RydWN0IG9wcyAqb3BzLCBpbnQgKnZhbHAsIGNvbnN0IGNo
+YXIgKipjcHApCiB7CkBAIC02NzgsMzkgKzY5Myw2MCBAQCBldmFsX3VuYXJ5KGNvbnN0IHN0cnVj
+dCBvcHMgKm9wcywgaW50ICp2CiAJaWYgKCpjcCA9PSAnIScpIHsKIAkJZGVidWcoImV2YWwlZCAh
+Iiwgb3BzIC0gZXZhbF9vcHMpOwogCQljcCsrOwotCQlpZiAoZXZhbF91bmFyeShvcHMsIHZhbHAs
+ICZjcCkgPT0gTFRfSUYpCisJCWlmIChldmFsX3VuYXJ5KG9wcywgdmFscCwgJmNwKSA9PSBMVF9J
+RikgeworCQkJKmNwcCA9IGNwOwogCQkJcmV0dXJuIChMVF9JRik7CisJCX0KIAkJKnZhbHAgPSAh
+KnZhbHA7CisKIAl9IGVsc2UgaWYgKCpjcCA9PSAnKCcpIHsKKwkJTGluZXR5cGUgZXhwcl9yZXM7
+CisKIAkJY3ArKzsKLQkJZGVidWcoImV2YWwlZCAoIiwgb3BzIC0gZXZhbF9vcHMpOwotCQlpZiAo
+ZXZhbF90YWJsZShldmFsX29wcywgdmFscCwgJmNwKSA9PSBMVF9JRikKLQkJCXJldHVybiAoTFRf
+SUYpOworCQlkZWJ1ZygiZXZhbCVkICglcyIsIG9wcyAtIGV2YWxfb3BzLCBjcCk7CisJCWV4cHJf
+cmVzID0gZXZhbF90YWJsZShldmFsX29wcywgdmFscCwgJmNwKTsKIAkJY3AgPSBza2lwY29tbWVu
+dChjcCk7CisJCSpjcHAgPSBjcDsKIAkJaWYgKCpjcCsrICE9ICcpJykKIAkJCXJldHVybiAoTFRf
+SUYpOworCQkqY3BwID0gY3A7CisJCWlmIChleHByX3JlcyA9PSBMVF9JRikKKwkJCXJldHVybiAo
+TFRfSUYpOworCiAJfSBlbHNlIGlmIChpc2RpZ2l0KCh1bnNpZ25lZCBjaGFyKSpjcCkpIHsKIAkJ
+ZGVidWcoImV2YWwlZCBudW1iZXIiLCBvcHMgLSBldmFsX29wcyk7CiAJCSp2YWxwID0gc3RydG9s
+KGNwLCAmZXAsIDApOwogCQljcCA9IHNraXBzeW0oY3ApOworCiAJfSBlbHNlIGlmIChzdHJuY21w
+KGNwLCAiZGVmaW5lZCIsIDcpID09IDAgJiYgZW5kc3ltKGNwWzddKSkgeworCQlib29sIHBhcmVu
+czsKKwogCQljcCA9IHNraXBjb21tZW50KGNwKzcpOwotCQlkZWJ1ZygiZXZhbCVkIGRlZmluZWQi
+LCBvcHMgLSBldmFsX29wcyk7Ci0JCWlmICgqY3ArKyAhPSAnKCcpCi0JCQlyZXR1cm4gKExUX0lG
+KTsKLQkJY3AgPSBza2lwY29tbWVudChjcCk7CisJCWRlYnVnKCJldmFsJWQgZGVmaW5lZCAnJXMn
+Iiwgb3BzIC0gZXZhbF9vcHMsIGNwKTsKKwkJcGFyZW5zID0gKCpjcCA9PSAnKCcpOworCQlpZiAo
+cGFyZW5zKQorCQkJY3AgPSBza2lwY29tbWVudChjcCsxKTsKIAkJc3ltID0gZmluZHN5bShjcCk7
+Ci0JCWlmIChzeW0gPCAwKQotCQkJcmV0dXJuIChMVF9JRik7Ci0JCSp2YWxwID0gKHZhbHVlW3N5
+bV0gIT0gTlVMTCk7CiAJCWNwID0gc2tpcHN5bShjcCk7CiAJCWNwID0gc2tpcGNvbW1lbnQoY3Ap
+OwotCQlpZiAoKmNwKysgIT0gJyknKQorCQlpZiAocGFyZW5zKSB7CisJCQlpZiAoKmNwICE9ICcp
+JykKKwkJCQlyZXR1cm4gKExUX0lGKTsKKwkJCWNwID0gc2tpcGNvbW1lbnQoY3ArMSk7CisJCX0K
+KwkJKmNwcCA9IGNwOworCQlpZiAoc3ltIDwgMCkgeworCQkJZGVidWcoInN5bSBub3QgZm91bmQs
+IHJldHVybmluZyBMVF9JRiIpOwogCQkJcmV0dXJuIChMVF9JRik7CisJCX0KKwkJKnZhbHAgPSAo
+dmFsdWVbc3ltXSAhPSBOVUxMKTsKIAkJa2VlcHRoaXMgPSBmYWxzZTsKKwogCX0gZWxzZSBpZiAo
+IWVuZHN5bSgqY3ApKSB7CiAJCWRlYnVnKCJldmFsJWQgc3ltYm9sIiwgb3BzIC0gZXZhbF9vcHMp
+OwogCQlzeW0gPSBmaW5kc3ltKGNwKTsKKwkJY3AgPSBza2lwc3ltKGNwKTsKKwkJKmNwcCA9IGNw
+OwogCQlpZiAoc3ltIDwgMCkKIAkJCXJldHVybiAoTFRfSUYpOwogCQlpZiAodmFsdWVbc3ltXSA9
+PSBOVUxMKQpAQCAtNzIwLDggKzc1Niw4IEBAIGV2YWxfdW5hcnkoY29uc3Qgc3RydWN0IG9wcyAq
+b3BzLCBpbnQgKnYKIAkJCWlmICgqZXAgIT0gJ1wwJyB8fCBlcCA9PSB2YWx1ZVtzeW1dKQogCQkJ
+CXJldHVybiAoTFRfSUYpOwogCQl9Ci0JCWNwID0gc2tpcHN5bShjcCk7CiAJCWtlZXB0aGlzID0g
+ZmFsc2U7CisKIAl9IGVsc2UgewogCQlkZWJ1ZygiZXZhbCVkIGJhZCBleHByIiwgb3BzIC0gZXZh
+bF9vcHMpOwogCQlyZXR1cm4gKExUX0lGKTsKQEAgLTczOCwxNSArNzc0LDE4IEBAIGV2YWxfdW5h
+cnkoY29uc3Qgc3RydWN0IG9wcyAqb3BzLCBpbnQgKnYKIHN0YXRpYyBMaW5ldHlwZQogZXZhbF90
+YWJsZShjb25zdCBzdHJ1Y3Qgb3BzICpvcHMsIGludCAqdmFscCwgY29uc3QgY2hhciAqKmNwcCkK
+IHsKKwlMaW5ldHlwZSBsZWZ0X3NpZGU7CiAJY29uc3Qgc3RydWN0IG9wICpvcDsKIAljb25zdCBj
+aGFyICpjcDsKIAlpbnQgdmFsOwogCi0JZGVidWcoImV2YWwlZCIsIG9wcyAtIGV2YWxfb3BzKTsK
+KwlkZWJ1ZygiZXZhbCVkICclcyciLCBvcHMgLSBldmFsX29wcywgKmNwcCk7CisJbGVmdF9zaWRl
+ID0gb3BzLT5pbm5lcihvcHMrMSwgdmFscCwgY3BwKTsKIAljcCA9ICpjcHA7Ci0JaWYgKG9wcy0+
+aW5uZXIob3BzKzEsIHZhbHAsICZjcCkgPT0gTFRfSUYpCi0JCXJldHVybiAoTFRfSUYpOworCiAJ
+Zm9yICg7OykgeworCQlMaW5ldHlwZSByaWdodF9zaWRlOworCiAJCWNwID0gc2tpcGNvbW1lbnQo
+Y3ApOwogCQlmb3IgKG9wID0gb3BzLT5vcDsgb3AtPnN0ciAhPSBOVUxMOyBvcCsrKQogCQkJaWYg
+KHN0cm5jbXAoY3AsIG9wLT5zdHIsIHN0cmxlbihvcC0+c3RyKSkgPT0gMCkKQEAgLTc1NCwxNCAr
+NzkzLDM3IEBAIGV2YWxfdGFibGUoY29uc3Qgc3RydWN0IG9wcyAqb3BzLCBpbnQgKnYKIAkJaWYg
+KG9wLT5zdHIgPT0gTlVMTCkKIAkJCWJyZWFrOwogCQljcCArPSBzdHJsZW4ob3AtPnN0cik7Ci0J
+CWRlYnVnKCJldmFsJWQgJXMiLCBvcHMgLSBldmFsX29wcywgb3AtPnN0cik7Ci0JCWlmIChvcHMt
+PmlubmVyKG9wcysxLCAmdmFsLCAmY3ApID09IExUX0lGKQorCQlkZWJ1ZygiZXZhbCVkICclcyci
+LCBvcHMgLSBldmFsX29wcywgb3AtPnN0cik7CisJCXJpZ2h0X3NpZGUgPSBvcHMtPmlubmVyKG9w
+cysxLCAmdmFsLCAmY3ApOworCQkqY3BwID0gY3A7CisKKwkJLyogSWYgc2hvcnRfY2lyY3VpdF92
+YWwgaXMgMCBvciAxLCB3ZSBjYW4gaWdub3JlCisJCSAqIHJpZ2h0IHNpZGUgaWYgbGVmdCBzaXpl
+IGlzIGtub3duLCBhbmQgaXRzIHZhbHVlCisJCSAqIChpLmUuLCAqdmFscCkgaXMgMCBvciAhMCwg
+cmVzcGVjdGl2ZWx5ICovCisJCWlmIChsZWZ0X3NpZGUgIT0gTFRfSUYgJiYgb3AtPnNob3J0X2Np
+cmN1aXRfdmFsID09ICEhKnZhbHApIHsKKwkJCWRlYnVnKCJvcC0+c2hvcnRfY2lyY3VpdF92YWw6
+JWQgKnZhbHA6JWQgY3A6JyVzJyIsCisJCQkJCW9wLT5zaG9ydF9jaXJjdWl0X3ZhbCwgKnZhbHAs
+IGNwKTsKKwkJCSp2YWxwID0gISEqdmFscDsKKwkJCWJyZWFrOworCQl9CisJCS8qIFNhbWUgZm9y
+IHRoZSByaWdodCBzaWRlICovCisJCWlmIChyaWdodF9zaWRlICE9IExUX0lGICYmIG9wLT5zaG9y
+dF9jaXJjdWl0X3ZhbCA9PSAhIXZhbCkgeworCQkJZGVidWcoIm9wLT5zaG9ydF9jaXJjdWl0X3Zh
+bDolZCB2YWw6JWQgY3A6JyVzJyIsCisJCQkJCW9wLT5zaG9ydF9jaXJjdWl0X3ZhbCwgdmFsLCBj
+cCk7CisJCQlsZWZ0X3NpZGUgPSByaWdodF9zaWRlOworCQkJKnZhbHAgPSAhIXZhbDsKKwkJCWJy
+ZWFrOworCQl9CisKKwkJaWYgKGxlZnRfc2lkZSA9PSBMVF9JRiB8fCByaWdodF9zaWRlID09IExU
+X0lGKQogCQkJcmV0dXJuIChMVF9JRik7CiAJCSp2YWxwID0gb3AtPmZuKCp2YWxwLCB2YWwpOwor
+CQlsZWZ0X3NpZGUgPSByaWdodF9zaWRlOwogCX0KIAotCSpjcHAgPSBjcDsKLQlkZWJ1ZygiZXZh
+bCVkID0gJWQiLCBvcHMgLSBldmFsX29wcywgKnZhbHApOworCWRlYnVnKCJldmFsJWQgPSAlZCBM
+VF9JRjolZCIsIG9wcyAtIGV2YWxfb3BzLCAqdmFscCwgKGxlZnRfc2lkZSA9PSBMVF9JRikpOwor
+CWlmIChsZWZ0X3NpZGUgPT0gTFRfSUYpCisJCXJldHVybiAoTFRfSUYpOwogCXJldHVybiAoKnZh
+bHAgPyBMVF9UUlVFIDogTFRfRkFMU0UpOwogfQogCkBAIC03NzksNyArODQxLDcgQEAgaWZldmFs
+KGNvbnN0IGNoYXIgKipjcHApCiAJZGVidWcoImV2YWwgJXMiLCAqY3BwKTsKIAlrZWVwdGhpcyA9
+IGtpbGxjb25zdHMgPyBmYWxzZSA6IHRydWU7CiAJcmV0ID0gZXZhbF90YWJsZShldmFsX29wcywg
+JnZhbCwgY3BwKTsKLQlkZWJ1ZygiZXZhbCA9ICVkIiwgdmFsKTsKKwlkZWJ1ZygidmFsOiVkIHJl
+dDolZCBrZWVwdGhpczolZCIsIHZhbCwgcmV0LCBrZWVwdGhpcyk7CiAJcmV0dXJuIChrZWVwdGhp
+cyA/IExUX0lGIDogcmV0KTsKIH0KIApAQCAtODg2LDYgKzk0OCw3IEBAIHNraXBjb21tZW50KGNv
+bnN0IGNoYXIgKmNwKQogCQkJCWluY29tbWVudCA9IENfQ09NTUVOVDsKIAkJCWNvbnRpbnVlOwog
+CQlkZWZhdWx0OgorCQkJZGVidWcoImJ1ZyBhdCBsaW5lICVkIiwgX19MSU5FX18pOwogCQkJYWJv
+cnQoKTsgLyogYnVnICovCiAJCX0KIAlyZXR1cm4gKGNwKTsK
+--001636c5b314c16511046cdfd3e4--
