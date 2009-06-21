@@ -1,86 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbZFUKVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbZFUKcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbZFUKVG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 06:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZFUKU4
+	id S1754068AbZFUKcy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 06:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZFUKcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 06:20:56 -0400
-Received: from mail-fx0-f224.google.com ([209.85.220.224]:34472 "EHLO
-	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601AbZFUKUz convert rfc822-to-8bit (ORCPT
+	Sun, 21 Jun 2009 06:32:45 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57833 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbZFUKco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 06:20:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=KnK/WHjmCkZtxAK7wzCByRQCjnFWCLDWdVvlwPGNO0j8a81/p8PH6GmFvkcA8NBde/
-         7a/WLNcB4va2Pl/Q8SsdDVTSgHBZJePdXvf8FWc5VG2FU9ifqJocTBE9mdtAHya/lGyC
-         clBD7DxXpEoRt+JHtOMzhbstLIhYb77ckQ7hY=
-MIME-Version: 1.0
-In-Reply-To: <200906210628.35553.elendil@planet.nl>
-References: <20090620154824.72b5cd50@lappy.seanm.ca>
-	 <200906202256.46073.elendil@planet.nl>
-	 <20090620194250.5a3e826f@lappy.seanm.ca>
-	 <200906210628.35553.elendil@planet.nl>
-Date: Sun, 21 Jun 2009 13:20:56 +0300
-X-Google-Sender-Auth: 520b277c1dac94f7
-Message-ID: <84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
-Subject: Re: Badness on the Warp
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Frans Pop <elendil@planet.nl>
-Cc: Sean MacLennan <smaclennan@pikatech.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       David Gibson <david@gibson.dropbear.id.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 21 Jun 2009 06:32:44 -0400
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: w.sang@pengutronix.de
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Date: Sun, 21 Jun 2009 12:32:39 +0200
+Message-Id: <1245580359-4465-1-git-send-email-w.sang@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.1
+X-SA-Exim-Connect-IP: 92.198.50.58
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+Subject: [PATCH] [TRIVIAL] Documentation/sched-rt-group: Fix style issues & bump version
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 21, 2009 at 7:28 AM, Frans Pop<elendil@planet.nl> wrote:
-> On Sunday 21 June 2009, Sean MacLennan wrote:
->> I found the source of the badness. The backtrace is correct:
->>
->> uic_init_one
->
-> So that's in arch/powerpc/sysdev/uic.c.
->
->> ___alloc_bootmem
->> ___alloc_bootmem_nopanic
->> alloc_arch_preferred_bootmem
->>
->> In alloc_arch_preferred_bootmem we have:
->>
->>       if (WARN_ON_ONCE(slab_is_available()))
->>               return kzalloc(size, GFP_NOWAIT);
->>
->> Since the slab is available (it had better be or the call will return
->> NULL), we get the badness message, then a successful return from
->> kzalloc.
->>
->> I believe the author wants something like:
->>
->>       if (slab_is_available())
->>               return kzalloc(size, GFP_NOWAIT);
->>       else
->>               WARN_ON_ONCE(1);
->
-> Well, I myself have no idea. It could also indicate a bug in the uic code.
->
-> But let's CC some people responsible for this code. Pekka recently added
-> this WARN that triggers in your case; David and Paul look to be the
-> people most involved in the uic code.
->
-> Start of the thread is at http://lkml.org/lkml/2009/6/20/165.
+- add missing closing bracket
+- fix two 80-chars issues (as the rest of the document adheres to it)
+- bump a reference to kernel version, so the document does not feel aged
 
-The WARN_ON() is there to let us know that someone is doing a bootmem
-allocation but the slab allocator is already up. So the proper fix
-here is to use kmalloc() directly in the call-site that triggers this
-WARN_ON. I'm cc'ing Ben as he has been taking care of the fall-out
-from my patches on ppc.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org
+---
+ Documentation/scheduler/sched-rt-group.txt |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-                                  Pekka
+diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+index 1df7f9c..f1fd4af 100644
+--- a/Documentation/scheduler/sched-rt-group.txt
++++ b/Documentation/scheduler/sched-rt-group.txt
+@@ -73,7 +73,7 @@ The remaining CPU time will be used for user input and other tasks. Because
+ realtime tasks have explicitly allocated the CPU time they need to perform
+ their tasks, buffer underruns in the graphics or audio can be eliminated.
+ 
+-NOTE: the above example is not fully implemented as of yet (2.6.25). We still
++NOTE: the above example is not fully implemented as of yet (2.6.31). We still
+ lack an EDF scheduler to make non-uniform periods usable.
+ 
+ 
+@@ -140,14 +140,15 @@ The other option is:
+ 
+ .o CONFIG_CGROUP_SCHED (aka "Basis for grouping tasks" = "Control groups")
+ 
+-This uses the /cgroup virtual file system and "/cgroup/<cgroup>/cpu.rt_runtime_us"
+-to control the CPU time reserved for each control group instead.
++This uses the /cgroup virtual file system and
++"/cgroup/<cgroup>/cpu.rt_runtime_us" to control the CPU time reserved for each
++control group instead.
+ 
+ For more information on working with control groups, you should read
+ Documentation/cgroups/cgroups.txt as well.
+ 
+-Group settings are checked against the following limits in order to keep the configuration
+-schedulable:
++Group settings are checked against the following limits in order to keep the
++configuration schedulable:
+ 
+    \Sum_{i} runtime_{i} / global_period <= global_runtime / global_period
+ 
+@@ -189,7 +190,7 @@ Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
+ the biggest challenge as the current linux PI infrastructure is geared towards
+ the limited static priority levels 0-99. With deadline scheduling you need to
+ do deadline inheritance (since priority is inversely proportional to the
+-deadline delta (deadline - now).
++deadline delta (deadline - now)).
+ 
+ This means the whole PI machinery will have to be reworked - and that is one of
+ the most complex pieces of code we have.
+-- 
+1.6.3.1
+
