@@ -1,106 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbZFUV7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbZFUWAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbZFUV7q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 17:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZFUV7g
+	id S1755995AbZFUWAU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 18:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZFUWAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 17:59:36 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:39009 "EHLO
+	Sun, 21 Jun 2009 18:00:09 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:39012 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752818AbZFUV7f (ORCPT
+	with ESMTP id S1754446AbZFUWAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 17:59:35 -0400
+	Sun, 21 Jun 2009 18:00:08 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
-To: neilb@suse.de
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] MD: md, fix lock imbalance
-Date: Sun, 21 Jun 2009 23:59:36 +0200
-Message-Id: <1245621576-27066-1-git-send-email-jirislaby@gmail.com>
+To: sameo@linux.intel.com
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] MFD: sm501, fix lock imbalance
+Date: Mon, 22 Jun 2009 00:00:02 +0200
+Message-Id: <1245621602-27172-1-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.3.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add unlock and put to one of fail paths in md_alloc.
+Add omitted unlock in sm501_unit_power.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/md/md.c |   26 +++++++++++++++-----------
- 1 files changed, 15 insertions(+), 11 deletions(-)
+ drivers/mfd/sm501.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 0f11fd1..6264933 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -3833,7 +3833,7 @@ static int md_alloc(dev_t dev, char *name)
- 	int partitioned;
- 	int shift;
- 	int unit;
--	int error;
-+	int error, ret;
+diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+index 4c7b796..0cc5eef 100644
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -367,7 +367,8 @@ int sm501_unit_power(struct device *dev, unsigned int unit, unsigned int to)
+ 		break;
  
- 	if (!mddev)
- 		return -ENODEV;
-@@ -3849,9 +3849,8 @@ static int md_alloc(dev_t dev, char *name)
- 
- 	mutex_lock(&disks_mutex);
- 	if (mddev->gendisk) {
--		mutex_unlock(&disks_mutex);
--		mddev_put(mddev);
--		return -EEXIST;
-+		ret = -EEXIST;
-+		goto unlock;
+ 	default:
+-		return -1;
++		gate = -1;
++		goto already;
  	}
  
- 	if (name) {
-@@ -3864,16 +3863,16 @@ static int md_alloc(dev_t dev, char *name)
- 			if (mddev2->gendisk &&
- 			    strcmp(mddev2->gendisk->disk_name, name) == 0) {
- 				spin_unlock(&all_mddevs_lock);
--				return -EEXIST;
-+				ret = -EEXIST;
-+				goto unlock;
- 			}
- 		spin_unlock(&all_mddevs_lock);
- 	}
- 
- 	mddev->queue = blk_alloc_queue(GFP_KERNEL);
- 	if (!mddev->queue) {
--		mutex_unlock(&disks_mutex);
--		mddev_put(mddev);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto unlock;
- 	}
- 	mddev->queue->queuedata = mddev;
- 
-@@ -3887,8 +3886,8 @@ static int md_alloc(dev_t dev, char *name)
- 		mutex_unlock(&disks_mutex);
- 		blk_cleanup_queue(mddev->queue);
- 		mddev->queue = NULL;
--		mddev_put(mddev);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto put;
- 	}
- 	disk->major = MAJOR(mddev->unit);
- 	disk->first_minor = unit << shift;
-@@ -3918,8 +3917,13 @@ static int md_alloc(dev_t dev, char *name)
- 		kobject_uevent(&mddev->kobj, KOBJ_ADD);
- 		mddev->sysfs_state = sysfs_get_dirent(mddev->kobj.sd, "array_state");
- 	}
-+	ret = 0;
-+put:
- 	mddev_put(mddev);
--	return 0;
-+	return ret;
-+unlock:
-+	mutex_unlock(&disks_mutex);
-+	goto put;
- }
- 
- static struct kobject *md_probe(dev_t dev, int *part, void *data)
+ 	writel(mode, sm->regs + SM501_POWER_MODE_CONTROL);
 -- 
 1.6.3.2
 
