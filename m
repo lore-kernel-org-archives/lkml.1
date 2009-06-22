@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759139AbZFVVP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbZFVVQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759139AbZFVVP7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbZFVVPq
+	id S1759280AbZFVVQT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbZFVVPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:15:46 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35144 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752981AbZFVVPp (ORCPT
+	Mon, 22 Jun 2009 17:15:55 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:55300 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758130AbZFVVPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:15:45 -0400
-Date: Mon, 22 Jun 2009 23:15:40 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: torvalds@linux-foundation.org, Greg KH <greg@kroah.com>,
-       "corbet@lwn.net" <corbet@lwn.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
-Subject: Re: [PATCH] Documentation: add documentation summary for rc-series
-	and merge window
-Message-ID: <20090622211540.GD24236@elf.ucw.cz>
-References: <20090622180438.GG23972@bombadil.infradead.org> <20090622204500.GB24236@elf.ucw.cz> <43e72e890906221411od16be51k2fc811dbf223ed9f@mail.gmail.com>
+	Mon, 22 Jun 2009 17:15:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:content-type
+         :content-transfer-encoding:message-id;
+        b=TclNPYMH83PrA+xvM1ndZdMLINvDdGtIwqsQe26amYdUlxyvlx3RivAwwGRs0RA3Qn
+         c5RNsu//vMWyM/X1BwgZH6oSR/5odp4RgLrhyKSO/eyX0RHax9K2x804fzlbn8Kz8/b/
+         Y7X2O2qDGlHwX1W/o38DHAkKyRxpih1pS+tMk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT]: IDE fixes
+Date: Mon, 22 Jun 2009 23:20:45 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090619-10934-gace1e80-dirty; KDE/4.2.3; i686; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20090622.024216.03098051.davem@davemloft.net> <alpine.LFD.2.01.0906221039150.3240@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906221039150.3240@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <43e72e890906221411od16be51k2fc811dbf223ed9f@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906222320.46718.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-06-22 14:11:45, Luis R. Rodriguez wrote:
-> On Mon, Jun 22, 2009 at 1:45 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> > On Mon 2009-06-22 14:04:38, Luis R. Rodriguez wrote:
-> >> This is losely based on previous discussions on linux-kernel [1][2][3].
-> >> Lets also refer people reading the stable rules to
-> >> Documentation/development-process/.
-> >>
-> >> Also add the number of days it has taken between releases,
-> >> and provide the average for the last 10 releases: 86.0 days.
-> >>
-> >> [1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
-> >> [2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
-> >> [3] http://marc.info/?l=linux-kernel&m=124515657407679&w=2
-> >>
-> >> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> > NAK.
-> >
-> >> +2.0.2: RC-SERIES RULES
-> >> +
-> >> +This section summarizes what kind of patches are accepted before the merge
-> >> +window closes and after it closes. These patches are targeted for the kernel
-> >> +prior to its final release.
-> >> +
-> >> +The rc-series focus should really be to address regressions.
-> >> +
-> >> +2.0.2.0: RC-SERIES RULES PRIOR TO THE RC1 RELEASE
-> >> +
-> >> +These are the types of patches that will get accepted prior to a kernel rc1 release,
-> >> +during the merge window:
-> >> +
-> >> + - it must fix a regression
-> >> + - it must fix a security hole
-> >> + - it must fix a oops/kernel hang
-> >> +
-> >> +Non-intrusive bug fixes or small fixes will not be accepted. If the
-> >> patch in
-> >
-> > What? Prior to rc1, new features are accepted.
+On Monday 22 June 2009 19:40:22 Linus Torvalds wrote:
 > 
-> For maintainers yes, for developers sending to the subsystem
-> maintainer no, at least not for that kernel release being worked on. I
-> can try to make this a little clearer.
+> I really don't want to take this. I think you and Bartlomiej should spend 
+> a _lot_ more time and effort trying to resolve this. Me taking it just 
+> closes the doors for trying to be constructive about issues.
 
-Yes, it would be good if it was clearer.
+While this change may come as a surprise to many people I really think
+that it moves things forward and that David is the right person to take
+over.
 
-If maintainer accepts non-intrusive bugfixes during merge window is
-pretty much his decision, I'd say. I'd expect him to take them if he
-has bandwidth available.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I consider his handling of other trees to be top notch and by not being
+IDE/libata person he has the needed objectiveness w.r.t. to the current
+state of affairs in the both subsystems.
+
+Moreover since David happens to be affiliated with the same company that
+stands behind libata he will be more than careful to handle things on
+the technical basis with taking interest of all users as a top priority.
+
+I'm still around (same goes for all other major IDE people, though Sergei
+seems to be on vacation at the moment ;) and I have already declared
+the willingness to help in making the change as painless as possible for
+all parties involved.
