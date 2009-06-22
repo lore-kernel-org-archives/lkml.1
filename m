@@ -1,54 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZFVRKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZFVRN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZFVRKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZFVRKi
+	id S1757197AbZFVRN1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbZFVRNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:10:38 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42887 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753417AbZFVRKg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:10:36 -0400
-Date: Mon, 22 Jun 2009 18:11:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Greg Freemyer <greg.freemyer@gmail.com>,
-       David Miller <davem@davemloft.net>, bzolnier@gmail.com,
-       elendil@planet.nl, sparclinux@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: New IDE maintainer (was Re: cmd64x: irq 14: nobody cared -
- system 	is dreadfully slow)
-Message-ID: <20090622181100.43a56309@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A3FB956.6060401@garzik.org>
-References: <20090621.141950.160759111.davem@davemloft.net>
-	<200906220034.22430.bzolnier@gmail.com>
-	<20090621.155756.100422570.davem@davemloft.net>
-	<20090621.161343.181101055.davem@davemloft.net>
-	<87f94c370906212039sa23d49fh305d8f0d58a48d1f@mail.gmail.com>
-	<4A3FB956.6060401@garzik.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Jun 2009 13:13:18 -0400
+Received: from proxima.lp0.eu ([81.2.80.65]:48746 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752744AbZFVRNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:13:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=mmIVaAAM7PhJR4ZtbrMALFcc8cCisHCu2d1AZ49bVVfyjrSCIYr0kVtUVwOTqaKKNB4HToNnpt/lkeDb9HHwQg8Ff74MD68MuJQ0QRy4XoSJFdlfJlTOyAtjg1Ww8du6;
+Message-ID: <4A3FBBAE.6010005@simon.arlott.org.uk>
+Date: Mon, 22 Jun 2009 18:13:18 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090328)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, romieu@fr.zoreil.com
+Subject: Re: [PATCH] r8169: add phy_reset parameter
+References: <4A3E7FC5.6060400@simon.arlott.org.uk> <20090621.142930.251405926.davem@davemloft.net>
+In-Reply-To: <20090621.142930.251405926.davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There are a handful of IDE drivers not yet ported over to libata, all 
-> !x86 drivers; maybe there's an odd ARM platform or two in there, I 
-> haven't checked recently.
+On 21/06/09 22:29, David Miller wrote:
+> From: Simon Arlott <simon@fire.lp0.eu>
+> Date: Sun, 21 Jun 2009 19:45:25 +0100
+> 
+>> When booting over the network the physical link will already be up
+>> and configured appropriately, so there is no need to reset it and
+>> cause auto-negotiation to occur again. Adding an option to disable
+>> this makes it possible to avoid a 2 second delay while booting.
+>> 
+>> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> 
+> This is getting out of control.
 
-There are several drivers that are not supported in libata (and several
-only in libata, and several that work better in one than the other for
-reasons nobody can figure sometimes)
+I'll look into getting ipconfig to detect link up notifications so its
+sleep()s can then just be removed...
 
-Biggest legacy hanger on is the older PowerMac boxes because both people
-who planned to do the driver had the mac they were using simply die of
-old age on them.
+> We're not going to add a hundred different obscure module options to
+> eliminate delays and device resets.
 
-sgiioc4 is another obvious "modern machine" case. The rest are pretty
-obscure (eg mac68K drivers and IDE VLB drivers most of which don't
-actually work in the old IDE code even though there is code)
+What about detecting link up before calling rtl8169_phy_reset instead?
 
+I've tried not resetting the PHY but still setting the speed to auto
+1000-FD, however this still resets the link.
+
+The downside is that the speed won't be reset if the link is up while
+booting. This may actually be desirable but it's not the current
+behaviour. It could be possible to check if the speed is already set
+to auto 1000-FD, although as the comment setting it indicates, the
+8101 is a special case.
+
+On my system the PHY/link speed is also getting reset by the boot ROM,
+so I can't check that any change would be persisted.
+
+This works ok for me:
+[    0.469009] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+[    0.469134]   alloc irq_desc for 18 on node -1
+[    0.469143]   alloc kstat_irqs on node -1
+[    0.469164] r8169 0000:00:09.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+[    0.469315] r8169 0000:00:09.0: no PCI Express capability
+[    0.470354] eth0: RTL8169sc/8110sc at 0xbf700000, 00:30:18:b0:25:c2, XID 18000000 IRQ 18
+[    0.470498] r8169: eth0: PHY reset skipped (link up)
+[    0.470606] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+[    0.470719]   alloc irq_desc for 19 on node -1
+[    0.470728]   alloc kstat_irqs on node -1
+[    0.470742] r8169 0000:00:0b.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+[    0.470875] r8169 0000:00:0b.0: no PCI Express capability
+[    0.471870] eth1: RTL8169sc/8110sc at 0xbf704000, 00:30:18:b0:25:c3, XID 18000000 IRQ 19
+(eth1 has no link)
+
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 4e22462..ae3e174 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -1798,13 +1798,18 @@ static void rtl8169_init_phy(struct net_device *dev, struct rtl8169_private *tp)
+ 		mdio_write(ioaddr, 0x0b, 0x0000); //w 0x0b 15 0 0
+ 	}
+ 
+-	rtl8169_phy_reset(dev, tp);
++	/* Reset PHY/speed only if the link is not already up. */
++	if (tp->link_ok(ioaddr)) {
++		printk(KERN_INFO PFX "%s: PHY reset skipped (link up)\n", dev->name);
++	} else {
++		rtl8169_phy_reset(dev, tp);
+ 
+-	/*
+-	 * rtl8169_set_speed_xmii takes good care of the Fast Ethernet
+-	 * only 8101. Don't panic.
+-	 */
+-	rtl8169_set_speed(dev, AUTONEG_ENABLE, SPEED_1000, DUPLEX_FULL);
++		/*
++		 * rtl8169_set_speed_xmii takes good care of the Fast Ethernet
++		 * only 8101. Don't panic.
++		 */
++		rtl8169_set_speed(dev, AUTONEG_ENABLE, SPEED_1000, DUPLEX_FULL);
++	}
+ 
+ 	if ((RTL_R8(PHYstatus) & TBI_Enable) && netif_msg_link(tp))
+ 		printk(KERN_INFO PFX "%s: TBI auto-negotiating\n", dev->name);
+
+-- 
+Simon Arlott
