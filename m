@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZFVO46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZFVO5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757417AbZFVO46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757298AbZFVO4t
+	id S1757020AbZFVO5v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZFVO5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:56:49 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:24476 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751982AbZFVO4r (ORCPT
+	Mon, 22 Jun 2009 10:57:41 -0400
+Received: from mail-qy0-f171.google.com ([209.85.221.171]:42632 "EHLO
+	mail-qy0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbZFVO5l convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:56:47 -0400
-Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
-Cc: Brice Goglin <Brice.Goglin@inria.fr>, "'Andi Kleen'" <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-numa@vger.kernel.org,
-       Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-In-Reply-To: <4A3F95F1.4020507@lfbs.rwth-aachen.de>
-References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
-	 <87zldjn597.fsf@basil.nowhere.org>
-	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
-	 <20090612103251.GJ25568@one.firstfloor.org>
-	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
-	 <1245119977.6724.40.camel@lts-notebook>
-	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
-	 <1245164395.15138.40.camel@lts-notebook>
-	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
-	 <1245299856.6431.30.camel@lts-notebook> <4A3F7A49.6070805@inria.fr>
-	 <4A3F95F1.4020507@lfbs.rwth-aachen.de>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Mon, 22 Jun 2009 10:56:46 -0400
-Message-Id: <1245682606.7799.64.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 10:57:41 -0400
+MIME-Version: 1.0
+In-Reply-To: <a44ae5cd0906191432o7c7b602dsc099cff1c4fcd84a@mail.gmail.com>
+References: <a44ae5cd0906191432o7c7b602dsc099cff1c4fcd84a@mail.gmail.com>
+Date: Mon, 22 Jun 2009 10:57:42 -0400
+Message-ID: <7e0fb38c0906220757l73684e5bkbe5128531c7bccbe@mail.gmail.com>
+Subject: Re: 2.6.30-git14 -- BUG inotify_inode_mark_entry: Poison overwritten
+From: Eric Paris <eparis@parisplace.org>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: John McCutchan <john@johnmccutchan.com>, Robert Love <rlove@rlove.org>,
+       LKML <linux-kernel@vger.kernel.org>, Stephen Tweedie <sct@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 16:32 +0200, Stefan Lankes wrote:
-> 
-> Brice Goglin wrote:
-> > Lee Schermerhorn wrote:
-> >> On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
-> >>   
-> >>
-> >> Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
-> >> [along with my shared policy series atop which they sit in my tree].
-> >> Patches reside in:
-> >>
-> >> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
-> >>
-> >>   
-> > 
-> > I gave this patchset a try and indeed it seems to work fine, thanks a
-> > lot. But the migration performance isn't very good. I am seeing about
-> > 540MB/s when doing mbind+touch_all_pages on large buffers on a
-> > quad-barcelona machines. move_pages gets 640MB/s there. And my own
-> > next-touch implementation were near 800MB/s in the past.
-> 
-> I used a modified stream benchmark to evaluate the performance of Lee's 
-> and my version of the next-touch implementation. In this low-level 
-> benchmark is Lee's patch better than my patch. I think that Brice and I 
-> use the same technique to realize affinity-on-next-touch. Do you use 
-> another kernel version to evaluate the performance?
+On Fri, Jun 19, 2009 at 5:32 PM, Miles Lane<miles.lane@gmail.com> wrote:
+> I will send the .config file separately, to avoid rejection by vger.
+>
+> Linux ubuntu 2.6.30-git14 #4 SMP PREEMPT Fri Jun 19 16:40:52 EDT 2009
+> i686 GNU/Linux
+>
+> Gnu C                  4.4.0
+> Gnu make               3.81
+> binutils               2.19.51.20090515
+> util-linux             2.15.1-rc1
+> mount                  support
+> module-init-tools      3.8
+> e2fsprogs              1.41.5
+> reiserfsprogs          3.6.21
+> pcmciautils            014
+> Linux C Library        2.9
+> Dynamic linker (ldd)   2.9
+> Procps                 3.2.8
+> Net-tools              1.60
+> Kbd                    1.14.1
+> Sh-utils               7.4
+> wireless-tools         29
+> Modules Loaded         vfat fat sco bnep rfcomm l2cap bluetooth
+> snd_hda_codec snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm psmouse
+> snd_seq_dummy snd_seq_oss snd_seq_midi_event iTCO_wdt
+> iTCO_vendor_support ath9k snd_seq rng_core mac80211 ath snd_timer
+> snd_seq_device cfg80211 snd soundcore snd_page_alloc shpchp
+> pci_hotplug rtc_cmos rtc_core rtc_lib eeepc_laptop hwmon rfkill
+> hid_logitech usb_storage usb_libusual usbhid sg ehci_hcd uhci_hcd
+> usbcore atl1e
+>
+> Distro:  Ubuntu 9.10 development packages
+>
+> [   15.458756] idr_remove called for id=31 which is not allocated.
+> [   15.463938] Pid: 1446, comm: udevd Not tainted 2.6.30-git14 #4
+> [   15.469161] Call Trace:
+> [   15.474347]  [<c1309bab>] ? printk+0xf/0x14
+> [   15.479553]  [<c116ca04>] idr_remove+0xcd/0x128
+> [   15.484640]  [<c130b995>] ? _spin_lock+0x2c/0x34
+> [   15.489697]  [<c10cb5d9>] inotify_destroy_mark_entry+0x87/0x9a
+> [   15.494544]  [<c10cad13>] inotify_freeing_mark+0x8/0xa
+> [   15.499312]  [<c10c9af9>] fsnotify_destroy_mark_by_entry+0x119/0x13d
+> [   15.504466]  [<c10cb57a>] inotify_destroy_mark_entry+0x28/0x9a
+> [   15.509032]  [<c10cb665>] sys_inotify_rm_watch+0x79/0x98
+> [   15.513550]  [<c1002c5c>] syscall_call+0x7/0xb
 
-Hi, Stefan:
+Should be fixed by:
 
-I also used a [modified!] stream benchmark to test my patches.  One of
-the modifications was to dump the time it takes for one pass over the
-data arrays to a specific file description, if that file description was
-open at start time--e.g., via something like "4>stream_times".  Then, I
-increased the number of iterations to something large so that I could
-run other tests during the stream run.  I plotted the "time per
-iteration" vs iteration number and could see that after any transient
-load, the stream benchmark returned to a good [not sure if maximal]
-locality state.  The time per interation was comparable to hand
-affinitized of the threads.  Without automigration and hand
-affinitization, any transient load would scramble the location of the
-threads relative to the data region they were operating on due to load
-balancing.  The more nodes you have, the less likely you'll end up in a
-good state.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=528da3e9e237059a84a2625e942811cf824a6efd
 
-I was using a parallel kernel make [-j <2*nr_cpus>] as the load.  In
-addition to the stream returning to good locality, I noticed that the
-kernel build completed much faster in the presence of the stream load
-with automigration enabled.  I reported these results in a presentation
-at LCA'07.  Slides and video [yuck! :)] are available on line at the
-LCA'07 site.
+If you have any problems with Linus' latest kernels please let me know!
 
-Regards,
-Lee
-
+-Eric
