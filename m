@@ -1,174 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZFVJfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZFVJh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbZFVJfF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZFVJe4
+	id S1753387AbZFVJh6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbZFVJhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:34:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60805 "EHLO mx2.redhat.com"
+	Mon, 22 Jun 2009 05:37:51 -0400
+Received: from mga14.intel.com ([143.182.124.37]:2871 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244AbZFVJez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:34:55 -0400
-Date: Mon, 22 Jun 2009 10:32:28 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Chandra Seetharaman <sekharan@us.ibm.com>,
-       Christof Schmitt <christof.schmitt@de.ibm.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Hannes Reinecke <hare@suse.de>,
-       Jonathan Brassow <jbrassow@redhat.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, martin.petersen@oracle.com,
-       Mike Snitzer <snitzer@redhat.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Peter Rajnoha <prajnoha@redhat.com>,
-       Stefan Bader <stefan.bader@canonical.com>
-Subject: [git pull] device-mapper patches for 2.6.31-rc1
-Message-ID: <20090622093227.GH5744@agk-dp.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Chandra Seetharaman <sekharan@us.ibm.com>,
-	Christof Schmitt <christof.schmitt@de.ibm.com>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Hannes Reinecke <hare@suse.de>,
-	Jonathan Brassow <jbrassow@redhat.com>,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
-	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, martin.petersen@oracle.com,
-	Mike Snitzer <snitzer@redhat.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Milan Broz <mbroz@redhat.com>, Peter Rajnoha <prajnoha@redhat.com>,
-	Stefan Bader <stefan.bader@canonical.com>
+	id S1750765AbZFVJhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 05:37:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,267,1243839600"; 
+   d="scan'208";a="157059602"
+Date: Mon, 22 Jun 2009 17:37:25 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       Rik van Riel <riel@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Minchan Kim <minchan.kim@gmail.com>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 11/15] HWPOISON: The high level memory error handler in
+	the VM v8
+Message-ID: <20090622093725.GB11541@localhost>
+References: <20090620031608.624240019@intel.com> <20090620031626.106150781@intel.com> <20090621085721.GD8218@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: Red Hat UK Ltd. Registered in England and Wales, number
-	03798903. Registered Office: Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <20090621085721.GD8218@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Sun, Jun 21, 2009 at 04:57:21PM +0800, Andi Kleen wrote:
+> > v8:
+> > check for page_mapped_in_vma() on anon pages (Hugh, Fengguang)
+> 
+> This change was no good as discussed earlier.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git master
+My understanding is, we don't do page_mapped_in_vma() for file pages.
+But for anon pages, this check can avoid killing possibly good tasks.
 
-to get the following device-mapper changes for 2.6.31-rc1:
-
-Alasdair G Kergon (1):
-      dm: initialise tio in alloc_tio
-
-Chandra Seetharaman (1):
-      dm mpath: call activate fn for each path in pg_init
-
-Hannes Reinecke (1):
-      dm mpath: change attached scsi_dh
-
-Jonathan Brassow (1):
-      dm exception store: fix exstore lookup to be case insensitive
-
-Jonthan Brassow (2):
-      dm table: improve warning message when devices not freed before destruction
-      dm raid1: add userspace log
-
-Kiyoshi Ueda (8):
-      dm mpath: add start_io and nr_bytes to path selectors
-      dm mpath: add queue length load balancer
-      dm mpath: add service time load balancer
-      dm: prepare for request based option
-      dm: enable request based option
-      dm: do not set QUEUE_ORDERED_DRAIN if request based
-      dm: disable interrupt when taking map_lock
-      dm mpath: change to be request based
-
-Mike Snitzer (7):
-      dm table: ensure targets are aligned to logical_block_size
-      dm table: validate device logical_block_size
-      dm table: replace struct io_restrictions with struct queue_limits
-      dm table: establish queue limits by copying table limits
-      dm target:s introduce iterate devices fn
-      dm log: fix create_log_context to use logical_block_size of log device
-      dm: calculate queue limits during resume not load
-
-Mikulas Patocka (24):
-      dm mpath: validate table argument count
-      dm mpath: validate hw_handler argument count
-      dm raid1: keep retrying alloc if mempool_alloc failed
-      dm mpath: flush keventd queue in destructor
-      dm: avoid unsupported spanning of md stripe boundaries
-      dm: use i_size_read
-      dm: rename suspended_bdev to bdev
-      dm: always hold bdev reference
-      dm: make dm_flush return void
-      dm: process requeue in dm_wq_work
-      dm: store only first barrier error
-      dm: remove EOPNOTSUPP for barriers
-      dm: remove check that prevents mapping empty bios
-      dm: introduce num_flush_requests
-      dm: send empty barriers to targets in dm_flush
-      dm: linear support flush
-      dm: stripe support flush
-      dm crypt: support flush
-      dm delay: support barriers
-      dm mpath: support barriers
-      dm snapshot: support barriers
-      dm io: record eopnotsupp
-      dm io: retry after barrier error
-      dm snapshot: use barrier when writing exception store
-
-Milan Broz (2):
-      dm: sysfs skip output when device is being destroyed
-      dm ioctl: support cookies for udev
-
-Peter Rajnoha (1):
-      dm: sysfs add suspended attribute
-
- Documentation/device-mapper/dm-log.txt          |   54 ++
- Documentation/device-mapper/dm-queue-length.txt |   39 +
- Documentation/device-mapper/dm-service-time.txt |   91 ++
- drivers/md/Kconfig                              |   30 +
- drivers/md/Makefile                             |    5 +
- drivers/md/dm-crypt.c                           |   19 +-
- drivers/md/dm-delay.c                           |   26 +-
- drivers/md/dm-exception-store.c                 |    2 +-
- drivers/md/dm-exception-store.h                 |    2 +-
- drivers/md/dm-io.c                              |   14 +-
- drivers/md/dm-ioctl.c                           |   27 +-
- drivers/md/dm-linear.c                          |   15 +-
- drivers/md/dm-log-userspace-base.c              |  696 ++++++++++++++
- drivers/md/dm-log-userspace-transfer.c          |  276 ++++++
- drivers/md/dm-log-userspace-transfer.h          |   18 +
- drivers/md/dm-log.c                             |    9 +-
- drivers/md/dm-mpath.c                           |  334 +++++---
- drivers/md/dm-path-selector.h                   |    8 +-
- drivers/md/dm-queue-length.c                    |  263 ++++++
- drivers/md/dm-raid1.c                           |   17 +-
- drivers/md/dm-region-hash.c                     |    2 +-
- drivers/md/dm-round-robin.c                     |    2 +-
- drivers/md/dm-service-time.c                    |  339 +++++++
- drivers/md/dm-snap-persistent.c                 |    2 +-
- drivers/md/dm-snap.c                            |   11 +
- drivers/md/dm-stripe.c                          |   33 +-
- drivers/md/dm-sysfs.c                           |    9 +
- drivers/md/dm-table.c                           |  465 +++++++---
- drivers/md/dm.c                                 | 1133 ++++++++++++++++++++---
- drivers/md/dm.h                                 |   35 +-
- include/linux/Kbuild                            |    1 +
- include/linux/connector.h                       |    4 +-
- include/linux/device-mapper.h                   |   47 +-
- include/linux/dm-ioctl.h                        |   14 +-
- include/linux/dm-log-userspace.h                |  386 ++++++++
- 35 files changed, 3993 insertions(+), 435 deletions(-)
- create mode 100644 Documentation/device-mapper/dm-log.txt
- create mode 100644 Documentation/device-mapper/dm-queue-length.txt
- create mode 100644 Documentation/device-mapper/dm-service-time.txt
- create mode 100644 drivers/md/dm-log-userspace-base.c
- create mode 100644 drivers/md/dm-log-userspace-transfer.c
- create mode 100644 drivers/md/dm-log-userspace-transfer.h
- create mode 100644 drivers/md/dm-queue-length.c
- create mode 100644 drivers/md/dm-service-time.c
- create mode 100644 include/linux/dm-log-userspace.h
-
-Alasdair
--- 
-agk@redhat.com
+Thanks,
+Fengguang
