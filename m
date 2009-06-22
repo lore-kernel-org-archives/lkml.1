@@ -1,129 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbZFVP2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbZFVP2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757505AbZFVP2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbZFVP2H
+	id S1757502AbZFVP2l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 11:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbZFVP2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:28:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47700 "EHLO hera.kernel.org"
+	Mon, 22 Jun 2009 11:28:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39831 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755749AbZFVP2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:28:06 -0400
-Date: Mon, 22 Jun 2009 15:27:34 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, peterz@infradead.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1245683846.12092.1.camel@localhost.localdomain>
-References: <1245683846.12092.1.camel@localhost.localdomain>
-Subject: [tip:perfcounters/urgent] perf_counter tools: Set alias for page-faults
-Message-ID: <tip-c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3@git.kernel.org>
-Git-Commit-ID: c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 22 Jun 2009 15:27:35 +0000 (UTC)
+	id S1757483AbZFVP23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 11:28:29 -0400
+Subject: Re: [Patch] mm tracepoints update - use case.
+From: Larry Woodman <lwoodman@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?Q?Fr=E9=A6=98=E9=A7=BBic?= Weisbecker 
+	<fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, rostedt@goodmis.org
+In-Reply-To: <20090622115756.21F3.A69D9226@jp.fujitsu.com>
+References: <20090616170811.99A6.A69D9226@jp.fujitsu.com>
+	 <1245352954.3212.67.camel@dhcp-100-19-198.bos.redhat.com>
+	 <20090622115756.21F3.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Mon, 22 Jun 2009 11:28:08 -0400
+Message-Id: <1245684488.3212.111.camel@dhcp-100-19-198.bos.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3
-Gitweb:     http://git.kernel.org/tip/c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Mon, 22 Jun 2009 20:47:26 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 22 Jun 2009 17:25:53 +0200
+On Mon, 2009-06-22 at 12:37 +0900, KOSAKI Motohiro wrote:
 
-perf_counter tools: Set alias for page-faults
+Thanks for the feedback Kosaki! 
 
-"faults" should be alias for "page-faults"
+> Hi
+> 
+> > Thanks for the feedback Kosaki!
+> > 
+> > 
+> > > Scenario 1. OOM killer happend. why? and who bring it?
+> > 
+> > Doesnt the showmem() and stack trace to the console when the OOM kill
+> > occurred show enough in the majority of cases?  I realize that direct
+> > alloc_pages() calls are not accounted for here but that can be really
+> > invasive.
+> 
+> showmem() display _result_ of memory usage and fragmentation.
+> but Administrator often need to know the _reason_.
 
-Also fixed alignment and 80 characters issue
+Right, thats why I have mm tracepoints in locations like shrink_zone,
+shrink_active and shrink_inactive so we can drill down into exactly what
+happened when either kswapd ran or a direct reclaim occured out of the
+page allocator.  Since we will know the timestamps and the number of
+pages scanned and reclaimed we can tell the reason the page reclamation
+did not supply enough pages and therefore the OOM occurred.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <1245683846.12092.1.camel@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Do you think this is enough information or do you thine we need more?
 
+> 
+> Plus, kmemtrace already trace slab allocate/free activity.
+> You mean you think this is really invasive?
+> 
+> 
+> > > Scenario 2. page allocation failure by memory fragmentation
+> > 
+> > Are you talking about order>0 allocation failures here?  Most of the
+> > slabs are single page allocations now.
+> 
+> Yes, order>0.
+> but I confused. Why do you talk about slab, not page alloc?
+> 
+> Note, non-x86 architecture freqently use order-1 allocation for
+> making stack.
 
----
- tools/perf/util/parse-events.c |   36 ++++++++++++++++++------------------
- 1 files changed, 18 insertions(+), 18 deletions(-)
+OK, I can add a tracepoint in the lumpy reclaim logic when it fails to
+get enough contiguous memory to satisfy a high order allocation.
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index f569548..06af2fa 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -33,8 +33,7 @@ static struct event_symbol event_symbols[] = {
+> 
+> 
+> 
+> > > Scenario 3. try_to_free_pages() makes very long latency. why?
+> > 
+> > This is available in the mm tracepoints, they all include timestamps.
+> 
+> perhaps, no.
+> Administrator need to know the reason. not accumulated time. it's the result.
+> 
+> We can guess some reason
+>   - IO congestion
+
+This can be seen when the number of page scans is significantly greater
+than the number pf page frees and pagouts.  Do you thing we need to
+combine these tracepoints or add one to throttle_vm_writeout() when it
+needs to stall?
  
-   { CSW(CPU_CLOCK),		"cpu-clock",		""		},
-   { CSW(TASK_CLOCK),		"task-clock",		""		},
--  { CSW(PAGE_FAULTS),		"page-faults",		""		},
--  { CSW(PAGE_FAULTS),		"faults",		""		},
-+  { CSW(PAGE_FAULTS),		"page-faults",		"faults"	},
-   { CSW(PAGE_FAULTS_MIN),	"minor-faults",		""		},
-   { CSW(PAGE_FAULTS_MAJ),	"major-faults",		""		},
-   { CSW(CONTEXT_SWITCHES),	"context-switches",	"cs"		},
-@@ -71,24 +70,24 @@ static char *sw_event_names[] = {
- 
- #define MAX_ALIASES 8
- 
--static char *hw_cache [][MAX_ALIASES] = {
--	{ "L1-data"		, "l1-d", "l1d"					},
--	{ "L1-instruction"	, "l1-i", "l1i"					},
--	{ "L2"			, "l2"						},
--	{ "Data-TLB"		, "dtlb", "d-tlb"				},
--	{ "Instruction-TLB"	, "itlb", "i-tlb"				},
--	{ "Branch"		, "bpu" , "btb", "bpc"				},
-+static char *hw_cache[][MAX_ALIASES] = {
-+	{ "L1-data",		"l1-d",		"l1d"			},
-+	{ "L1-instruction",	"l1-i",		"l1i"			},
-+	{ "L2",			"l2"					},
-+	{ "Data-TLB",		"dtlb",		"d-tlb"			},
-+	{ "Instruction-TLB",	"itlb",		"i-tlb"			},
-+	{ "Branch",		"bpu" ,		"btb",		"bpc"	},
- };
- 
--static char *hw_cache_op [][MAX_ALIASES] = {
--	{ "Load"		, "read"					},
--	{ "Store"		, "write"					},
--	{ "Prefetch"		, "speculative-read", "speculative-load"	},
-+static char *hw_cache_op[][MAX_ALIASES] = {
-+	{ "Load",		"read"					},
-+	{ "Store",		"write"					},
-+	{ "Prefetch",		"speculative-read", "speculative-load"	},
- };
- 
--static char *hw_cache_result [][MAX_ALIASES] = {
--	{ "Reference"		, "ops", "access"				},
--	{ "Miss"								},
-+static char *hw_cache_result[][MAX_ALIASES] = {
-+	{ "Reference",		"ops",		"access"		},
-+	{ "Miss"							},
- };
- 
- char *event_name(int counter)
-@@ -160,7 +159,8 @@ static int parse_aliases(const char *str, char *names[][MAX_ALIASES], int size)
- 	return -1;
- }
- 
--static int parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
-+static int
-+parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
- {
- 	int cache_type = -1, cache_op = 0, cache_result = 0;
- 
-@@ -201,7 +201,7 @@ static int check_events(const char *str, unsigned int i)
- 
- 	if (strlen(event_symbols[i].alias))
- 		if (!strncmp(str, event_symbols[i].alias,
--		      strlen(event_symbols[i].alias)))
-+			     strlen(event_symbols[i].alias)))
- 			return 1;
- 	return 0;
- }
+>   - memory eating speed is fast than reclaim speed
+
+The anonymous and filemapped tracepoints combined with the reclaim
+tracepoints will tell us this, do you thing we need more tracepoints to
+pinpoint when allocations outpace reclamations?
+
+>   - memory fragmentation
+
+Would adding the order to the page_allocation tracepoint satisfy this?
+Currently this tracepoint only triggers when the allocation fails and we
+need to reclaim memory.  Another option would be to include the order
+information to the direct reclaim tracepoint so we can tell if it was
+triggered due to memory fragmentation.  Sorry but I navent seen many
+cases in which fragmented memory caused failures.
+
+> 
+> but it's only guess. we often need to get data.
+> 
+> 
+> > > Scenario 4. sar output that free memory dramatically reduced at 10 minute ago, and
+> > >             it already recover now. What's happen?
+> > 
+> > Is this really important?  It would take buffering lots of data to
+> > figure out what happened in the past.
+> 
+> ok, my scenario description is a bit wrong.
+> 
+> if userland process explicitly  consume memory or explicitely write
+> many data, it is true.
+> 
+> Is this more appropriate?
+> 
+> "userland process take the same action periodically, but only 10 minute ago
+> free memory reduced, why?"
+> 
+We could have a user space script that enabled specific tracepoints only
+when it noticed something like the free pages fell below some threshold
+and disabled it when free pages climbed back up above some other
+threshold.  Would this help?
+
+> 
+> 
+> > >   - suspects
+> > >     - kernel memory leak
+> > 
+> > Other than direct callers to the page allocator isnt that covered with
+> > the kmemtrace stuff?
+> 
+> Yeah.
+> perhaps, kmemtrace enhance to cover page allocator is good approach.
+> 
+> 
+> > >     - userland memory leak
+> > 
+> > The mm tracepoints track all user space allocations and frees(perhaps
+> > too many?).
+> 
+> hmhm.
+
+Is this a yes?  Would the user space script described above help?
+
+> 
+> 
+> > 
+> > >     - stupid driver use too much memory
+> > 
+> > hopefully kmemtrace will catch this?
+> 
+> ditto.
+> I agree with kmemtrace enhancement is good idea.
+> 
+> > 
+> > >     - userland application suddenly start to use much memory
+> > 
+> > The mm tracepoints track all user space allocations and frees.
+> 
+> ok.
+> 
+> 
+> > >   - what information are valuable?
+> > >     - slab usage information (kmemtrace already does)
+> > >     - page allocator usage information
+> > >     - rss of all processes at oom happend
+> > >     - why recent try_to_free_pages() can't reclaim any page?
+> > 
+> > The counters in the mm tracepoints do give counts but not the reasons
+> > that the pagereclaim code fails.
+> 
+> That's very important key point. please don't ignore.
+
+OK, would you suggest changing the code to count failures or simply
+adding a tracepoint to the failure path which would potentially capture
+lots more data?
+
+> 
+> 
+> 
+
