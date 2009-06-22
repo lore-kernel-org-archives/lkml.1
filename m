@@ -1,111 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZFVRN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZFVRUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757197AbZFVRN1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbZFVRNS
+	id S1754049AbZFVRUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZFVRUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:13:18 -0400
-Received: from proxima.lp0.eu ([81.2.80.65]:48746 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbZFVRNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:13:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=mmIVaAAM7PhJR4ZtbrMALFcc8cCisHCu2d1AZ49bVVfyjrSCIYr0kVtUVwOTqaKKNB4HToNnpt/lkeDb9HHwQg8Ff74MD68MuJQ0QRy4XoSJFdlfJlTOyAtjg1Ww8du6;
-Message-ID: <4A3FBBAE.6010005@simon.arlott.org.uk>
-Date: Mon, 22 Jun 2009 18:13:18 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090328)
+	Mon, 22 Jun 2009 13:20:10 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42376 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbZFVRUJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:20:09 -0400
+Date: Mon, 22 Jun 2009 19:20:04 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Marco Stornelli <marco.stornelli@gmail.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090622172003.GB21149@elf.ucw.cz>
+References: <4A33A7A2.1050608@gmail.com> <20090613155957.GA16220@shareable.org> <4A34A394.5040509@gmail.com> <20090621064040.GC1656@ucw.cz> <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz> <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, romieu@fr.zoreil.com
-Subject: Re: [PATCH] r8169: add phy_reset parameter
-References: <4A3E7FC5.6060400@simon.arlott.org.uk> <20090621.142930.251405926.davem@davemloft.net>
-In-Reply-To: <20090621.142930.251405926.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/06/09 22:29, David Miller wrote:
-> From: Simon Arlott <simon@fire.lp0.eu>
-> Date: Sun, 21 Jun 2009 19:45:25 +0100
+> > How do you handle hard-links, then?
 > 
->> When booting over the network the physical link will already be up
->> and configured appropriately, so there is no need to reset it and
->> cause auto-negotiation to occur again. Adding an option to disable
->> this makes it possible to avoid a 2 second delay while booting.
->> 
->> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> Indeed hard-links are not supported :) Due to the design of this fs
+> there are some limitations explained in the documentation as not
+> hard-link, only private memory mapping and so on. However this
+> limitations don't limit the fs itself because you must consider the
+> special goal of this fs.
+
+I did not see that in the changelog. If it is not general purpose
+filesystem, it is lot less interesting.
+
+> >> >From performance point of view:
+> >>
+> >> Sometimes ago I uploaded here (http://elinux.org/Pram_Fs) some benchmark
+> >> results to compare the performance with and without XIP in a real
+> >> embedded environment with bonnie++. You could use it as reference point.
+> >
+> > Well, so XIP helps. ext2 can do XIP too, IIRC. Is your performance
+> > better than ext2?
+> >
+> > Wait... those numbers you pointed me... claim to be as slow as
+> > 13MB/sec. That's very very bad. My harddrive is faster than that.
 > 
-> This is getting out of control.
+> As I said I did the test in a real embedded environment so to have
+> comparable result you should use the same environmente with the same
+> tools, with the same workload and so on.
 
-I'll look into getting ipconfig to detect link up notifications so its
-sleep()s can then just be removed...
+Even on real embedded hardware you should get better than 13MB/sec
+writing to _RAM_. I guess something is seriously wrong with pramfs.
 
-> We're not going to add a hundred different obscure module options to
-> eliminate delays and device resets.
-
-What about detecting link up before calling rtl8169_phy_reset instead?
-
-I've tried not resetting the PHY but still setting the speed to auto
-1000-FD, however this still resets the link.
-
-The downside is that the speed won't be reset if the link is up while
-booting. This may actually be desirable but it's not the current
-behaviour. It could be possible to check if the speed is already set
-to auto 1000-FD, although as the comment setting it indicates, the
-8101 is a special case.
-
-On my system the PHY/link speed is also getting reset by the boot ROM,
-so I can't check that any change would be persisted.
-
-This works ok for me:
-[    0.469009] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-[    0.469134]   alloc irq_desc for 18 on node -1
-[    0.469143]   alloc kstat_irqs on node -1
-[    0.469164] r8169 0000:00:09.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-[    0.469315] r8169 0000:00:09.0: no PCI Express capability
-[    0.470354] eth0: RTL8169sc/8110sc at 0xbf700000, 00:30:18:b0:25:c2, XID 18000000 IRQ 18
-[    0.470498] r8169: eth0: PHY reset skipped (link up)
-[    0.470606] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-[    0.470719]   alloc irq_desc for 19 on node -1
-[    0.470728]   alloc kstat_irqs on node -1
-[    0.470742] r8169 0000:00:0b.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-[    0.470875] r8169 0000:00:0b.0: no PCI Express capability
-[    0.471870] eth1: RTL8169sc/8110sc at 0xbf704000, 00:30:18:b0:25:c3, XID 18000000 IRQ 19
-(eth1 has no link)
-
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 4e22462..ae3e174 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -1798,13 +1798,18 @@ static void rtl8169_init_phy(struct net_device *dev, struct rtl8169_private *tp)
- 		mdio_write(ioaddr, 0x0b, 0x0000); //w 0x0b 15 0 0
- 	}
- 
--	rtl8169_phy_reset(dev, tp);
-+	/* Reset PHY/speed only if the link is not already up. */
-+	if (tp->link_ok(ioaddr)) {
-+		printk(KERN_INFO PFX "%s: PHY reset skipped (link up)\n", dev->name);
-+	} else {
-+		rtl8169_phy_reset(dev, tp);
- 
--	/*
--	 * rtl8169_set_speed_xmii takes good care of the Fast Ethernet
--	 * only 8101. Don't panic.
--	 */
--	rtl8169_set_speed(dev, AUTONEG_ENABLE, SPEED_1000, DUPLEX_FULL);
-+		/*
-+		 * rtl8169_set_speed_xmii takes good care of the Fast Ethernet
-+		 * only 8101. Don't panic.
-+		 */
-+		rtl8169_set_speed(dev, AUTONEG_ENABLE, SPEED_1000, DUPLEX_FULL);
-+	}
- 
- 	if ((RTL_R8(PHYstatus) & TBI_Enable) && netif_msg_link(tp))
- 		printk(KERN_INFO PFX "%s: TBI auto-negotiating\n", dev->name);
-
+								Pavel
 -- 
-Simon Arlott
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
