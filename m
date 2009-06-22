@@ -1,55 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZFVCyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZFVC6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbZFVCyY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 22:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZFVCyQ
+	id S1754932AbZFVC6N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 22:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbZFVC6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 22:54:16 -0400
-Received: from kroah.org ([198.145.64.141]:36672 "EHLO coco.kroah.org"
+	Sun, 21 Jun 2009 22:58:00 -0400
+Received: from mail.windriver.com ([147.11.1.11]:64948 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbZFVCyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 22:54:16 -0400
-Date: Sun, 21 Jun 2009 19:48:38 -0700
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       wey-yi.w.guy@intel.com
-Subject: Re: iwlwifi: show qos AC parameters
-Message-ID: <20090622024838.GB18153@kroah.com>
-References: <200906152114.n5FLEDT3015406@hera.kernel.org> <20090621110727.74d95b28@infradead.org>
+	id S1751648AbZFVC57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 22:57:59 -0400
+Message-ID: <4A3EEF9E.2020301@windriver.com>
+Date: Mon, 22 Jun 2009 10:42:38 +0800
+From: Wang Liming <liming.wang@windriver.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090621110727.74d95b28@infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: don't increment @pos in g_start()
+References: <4A3B347B.8090904@cn.fujitsu.com> <1245401968-25235-1-git-send-email-liming.wang@windriver.com> <4A3B5E40.8040607@cn.fujitsu.com> <4A3ED40E.6030303@cn.fujitsu.com>
+In-Reply-To: <4A3ED40E.6030303@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Jun 2009 02:57:51.0161 (UTC) FILETIME=[3B363290:01C9F2E5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 21, 2009 at 11:07:27AM -0700, Arjan van de Ven wrote:
-> On Mon, 15 Jun 2009 21:14:13 GMT
-> Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+Li Zefan wrote:
+> Li Zefan wrote:
+>> Liming Wang wrote:
+>>> how about this one?
+>>>
+>> Yeah, this should work, and cleaner than my version.
+>>
 > 
-> > +static ssize_t show_qos(struct device *d,
-> > +				struct device_attribute *attr, char
-> > *buf) +{
-> > +	struct iwl_priv *priv = (struct iwl_priv *)d->driver_data;
-> > +	char *p = buf;
-> > +	int   q;
-> > +
-> > +	for (q = 0; q < AC_NUM; q++) {
-> > +		p += sprintf(p, "\tcw_min\tcw_max\taifsn\ttxop\n");
-> > +		p += sprintf(p, "AC[%d]\t%u\t%u\t%u\t%u\n", q,
-> > +
+> Hmmm, the patch is cleaner in diffstat but the resulted code
+> isn't..
 > 
-> wonder what happened to the "one value per file" sysfs rule...
+> After yours:
+>    text    data     bss     dec     hex filename
+>   14879    5480    4240   24599    6017 kernel/trace/ftrace.o
+> 
+> After mine:
+>    text    data     bss     dec     hex filename
+>   14873    5480    4240   24593    6011 kernel/trace/ftrace.o
+Hmmm, if you prefer to smaller target size, I don't care.
+But in my system, I got the same size:
 
-Oh ick.
+   text    data     bss     dec     hex filename
+   14330    5019     104   19453    4bfd kernel/trace/ftrace.o
 
-Thanks Arjan for the pointer.
+I use objdump to compute the actual size of all modified functions:
 
-Who's responsible for this file, and when is it going to be changed?
+After mine:
+func	size
+g_start 0x50
+g_next  0x70
 
-thanks,
+After yours:
+func	 size
+__g_next 0x70
+g_next   0x20
+g_start  0x30
 
-greg k-h
+I used Steve git tree and commit e482f8395f215e0ad6557b2722cd9b9b308035c4.
+My gcc version is :
+gcc version 4.2.4
+
+I don't know where the difference.
+
+Liming Wang
+
+> 
+> 
+>>> It's wrong to increment @pos in g_start(). It causes some entries
+>>> lost when reading set_graph_function, if the output of the file
+>>> is large than PAGE_SIZE.
+>>>
+>>> [ Impact: fix missing entries when reading set_graph_function ]
+>>>
+>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>>> Signed-off-by: Liming Wang <liming.wang@windriver.com>
+>>> ---
+>>>  kernel/trace/ftrace.c |   14 +++++---------
+>>>  1 files changed, 5 insertions(+), 9 deletions(-)
+>>>
+>>> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+>>> index 134e580..1beaac6 100644
+>>> --- a/kernel/trace/ftrace.c
+>>> +++ b/kernel/trace/ftrace.c
+>>> @@ -2495,29 +2495,25 @@ static void *
+>>>  g_next(struct seq_file *m, void *v, loff_t *pos)
+>>>  {
+>>>  	unsigned long *array = m->private;
+>>> -	int index = *pos;
+>>>  
+>>> -	(*pos)++;
+>>> +	if (v)
+>>> +		(*pos)++;
+>>>  
+>>> -	if (index >= ftrace_graph_count)
+>>> +	if (*pos >= ftrace_graph_count)
+>>>  		return NULL;
+>>>  
+>>> -	return &array[index];
+>>> +	return &array[*pos];
+>>>  }
+>>>  
+>>>  static void *g_start(struct seq_file *m, loff_t *pos)
+>>>  {
+>>> -	void *p = NULL;
+>>> -
+>>>  	mutex_lock(&graph_lock);
+>>>  
+>>>  	/* Nothing, tell g_show to print all functions are enabled */
+>>>  	if (!ftrace_graph_count && !*pos)
+>>>  		return (void *)1;
+>>>  
+>>> -	p = g_next(m, p, pos);
+>>> -
+>>> -	return p;
+>>> +	return g_next(m, NULL, pos);
+>>>  }
+>>>  
+>>>  static void g_stop(struct seq_file *m, void *p)
+> 
+
