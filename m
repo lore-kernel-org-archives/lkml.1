@@ -1,111 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbZFVVZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759334AbZFVV0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbZFVVZq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZFVVZj
+	id S1759334AbZFVV0H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbZFVVZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:25:39 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:40687 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751124AbZFVVZi (ORCPT
+	Mon, 22 Jun 2009 17:25:55 -0400
+Received: from dallas.jonmasters.org ([72.29.103.172]:44129 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbZFVVZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:25:38 -0400
-Subject: [PATCH] Hugepages should be accounted as unevictable pages.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org
+	Mon, 22 Jun 2009 17:25:54 -0400
+Subject: Re: [PATCH] Add new TAINT_KSPLICE flag for when a Ksplice update
+ has been loaded.
+From: Jon Masters <jonathan@jonmasters.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Tim Abbott <tabbott@ksplice.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Anders Kaseorg <andersk@ksplice.com>,
+       Jeffrey B Arnold <jbarnold@ksplice.com>
+In-Reply-To: <1245660614.19816.203.camel@twins>
+References: <alpine.DEB.1.10.0906191422460.29844@vinegar-pot.mit.edu>
+	 <1245442307.16209.66.camel@laptop>
+	 <1245657114.3265.4074.camel@perihelion.bos.jonmasters.org>
+	 <1245660614.19816.203.camel@twins>
 Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 22 Jun 2009 14:25:41 -0700
-Message-Id: <1245705941.26649.19.camel@alok-dev1>
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Mon, 22 Jun 2009 17:25:32 -0400
+Message-Id: <1245705932.15044.41.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looking at the output of /proc/meminfo, a user might get confused in thinking
-that there are zero unevictable pages, though, in reality their can be
-hugepages which are inherently unevictable. 
+On Mon, 2009-06-22 at 10:50 +0200, Peter Zijlstra wrote:
+> On Mon, 2009-06-22 at 03:51 -0400, Jon Masters wrote:
+> > On Fri, 2009-06-19 at 22:11 +0200, Peter Zijlstra wrote:
+> > > On Fri, 2009-06-19 at 15:57 -0400, Tim Abbott wrote:
+> > > > Distributions and kerneloops.org have requested that the Ksplice
+> > > > rebootless update system taint the kernel the first time that a
+> > > > Ksplice update is installed, in order to assist with bug triage.
+> > > > 
+> > > > Ksplice uses a new taint flag, TAINT_KSPLICE, displayed as 'K', for
+> > > > this purpose.
+> > > > 
+> > > > We would like to confirm that this use of taint meets with the
+> > > > community's approval and get this taint flag registered in mainline.
+> > > > 
+> > > > Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> > > 
+> > > Since all of ksplice is still out-of-tree, it seems to me this taint
+> > > should be too.
+> > 
+> > Respectfully, I disagree.
+> > 
+> > The thing is, distribution maintainers and others would really benefit
+> > from knowing if this stuff is loaded today, before the possible eventual
+> > addition of ksplice upstream. We already have tainting for non-GPL code
+> > and I don't see us arguing about the fact that the kernel has no non-GPL
+> > code actually shipping in it to cause such taints to get set :)
+> 
+> But without ksplice patches you cannot ksplice, right?
 
-Though hugepages are not handled by the unevictable lru framework, they are
-infact unevictable in nature and global statistics counter should reflect that. 
+Nah. This is a common missunderstanding. Ksplice actually doesn't need
+any in-kernel patches, but it does include a rather uncomfortable (from
+upstream PoV) disassembler to help it with patching. To avoid this, the
+Ksplice guys are looking to get some of the split function sections
+stuff, etc. upstream so that they don't need the extraneous stuff.
 
-For instance, I have allocated 20 huge pages on my system, meminfo shows this 
+> That is, there is
+> a non trivial patch to the kernel to make this happen afaik.
 
-Unevictable:           0 kB
-Mlocked:               0 kB
-HugePages_Total:      20
-HugePages_Free:       20
-HugePages_Rsvd:        0
-HugePages_Surp:        0
+Well, actually there are several ways that could get in upstream - even
+just the base bits are useful. Upstream may never take the shadow data
+structure tracking kABI stuff that also comes with Ksplice (I can,
+however, think of a few distributions that might be interested in adding
+those bits for themselves sometime), but that can live in their module.
 
-After the patch:
+> If distros
+> ship that, then they can add this taint flag as well. No need to burden
+> mainline with any of that until it ksplice proper makes it in.
 
-Unevictable:       81920 kB
-Mlocked:               0 kB
-HugePages_Total:      20
-HugePages_Free:       20
-HugePages_Rsvd:        0
-HugePages_Surp:        0
+Nah. We need a flag. It's a really nice way to know "is this backtrace
+I'm seeing coming from the kernel that I shipped?". Just imagine you're
+one of the folks in $enterprise_vendor who needs to figure this out
+(sure you should get there from the linked module list if you've half a
+brain, but perhaps "you" is actually an automated tool, like sosreport
+on RH systems and I'm sure other vendors have their own equivalents).
 
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-
-Index: linux-2.6/Documentation/vm/unevictable-lru.txt
-===================================================================
---- linux-2.6.orig/Documentation/vm/unevictable-lru.txt	2009-06-22 11:49:27.000000000 -0700
-+++ linux-2.6/Documentation/vm/unevictable-lru.txt	2009-06-22 13:57:32.000000000 -0700
-@@ -71,6 +71,12 @@ The unevictable list addresses the follo
- 
-  (*) Those mapped into VM_LOCKED [mlock()ed] VMAs.
- 
-+ (*) Hugetlb pages are also unevictable. Hugepages are already implemented in
-+     a way that these pages don't reside on the LRU and hence are not iterated
-+     over during the vmscan. So there is no need to move around these pages
-+     across different LRU's. We just account these pages as unevictable for
-+     correct statistics.
-+
- The infrastructure may also be able to handle other conditions that make pages
- unevictable, either by definition or by circumstance, in the future.
- 
-Index: linux-2.6/mm/hugetlb.c
-===================================================================
---- linux-2.6.orig/mm/hugetlb.c	2009-06-22 11:49:57.000000000 -0700
-+++ linux-2.6/mm/hugetlb.c	2009-06-22 14:04:05.000000000 -0700
-@@ -533,6 +533,8 @@ static void update_and_free_page(struct 
- 				1 << PG_dirty | 1 << PG_active | 1 << PG_reserved |
- 				1 << PG_private | 1<< PG_writeback);
- 	}
-+	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
-+				-(pages_per_huge_page(h)));
- 	set_compound_page_dtor(page, NULL);
- 	set_page_refcounted(page);
- 	arch_release_hugepage(page);
-@@ -584,6 +586,8 @@ static void prep_new_huge_page(struct hs
- 	spin_lock(&hugetlb_lock);
- 	h->nr_huge_pages++;
- 	h->nr_huge_pages_node[nid]++;
-+	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
-+				pages_per_huge_page(h));
- 	spin_unlock(&hugetlb_lock);
- 	put_page(page); /* free it into the hugepage allocator */
- }
-@@ -749,6 +753,9 @@ static struct page *alloc_buddy_huge_pag
- 		 */
- 		h->nr_huge_pages_node[nid]++;
- 		h->surplus_huge_pages_node[nid]++;
-+		mod_zone_page_state(page_zone(page),
-+					NR_LRU_BASE + LRU_UNEVICTABLE,
-+					pages_per_huge_page(h));
- 		__count_vm_event(HTLB_BUDDY_PGALLOC);
- 	} else {
- 		h->nr_huge_pages--;
+Jon.
 
 
