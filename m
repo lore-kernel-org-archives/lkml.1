@@ -1,150 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758341AbZFVTWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbZFVT0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758341AbZFVTWf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 15:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbZFVTVP
+	id S1758158AbZFVT0b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 15:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZFVT0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 15:21:15 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:6273 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753991AbZFVTU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 15:20:59 -0400
-X-IronPort-AV: E=Sophos;i="4.42,270,1243839600"; 
-   d="scan'208";a="194527940"
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH 2/5] VFS: Add VFS helper functions for setting up private
- namespaces
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
-       linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 15:09:13 -0400
-Message-ID: <20090622190913.27923.61549.stgit@heimdal.trondhjem.org>
-In-Reply-To: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org>
-References: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 22 Jun 2009 15:26:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35966 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752344AbZFVT0X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 15:26:23 -0400
+Date: Mon, 22 Jun 2009 12:25:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org,
+       ext-jani.1.nikula@nokia.com
+Subject: Re: [PATCH] gpiolib: allow exported GPIO nodes to be named using
+ sysfs links
+Message-Id: <20090622122547.bc672764.akpm@linux-foundation.org>
+In-Reply-To: <1244711943-15364-1-git-send-email-ext-jani.1.nikula@nokia.com>
+References: <1244711943-15364-1-git-send-email-ext-jani.1.nikula@nokia.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 22 Jun 2009 19:21:00.0022 (UTC) FILETIME=[93501160:01C9F36E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The purpose of this patch is to improve the remote mount path lookup
-support for distributed filesystems such as the NFSv4 client.
+On Thu, 11 Jun 2009 12:19:03 +0300
+Jani Nikula <ext-jani.1.nikula@nokia.com> wrote:
 
-When given a mount command of the form "mount server:/foo/bar /mnt", the
-NFSv4 client is required to look up the filehandle for "server:/", and
-then look up each component of the remote mount path "foo/bar" in order
-to find the directory that is actually going to be mounted on /mnt.
-Following that remote mount path may involve following symlinks,
-crossing server-side mount points and even following referrals to
-filesystem volumes on other servers.
+> +int gpio_export_link(struct device *dev, const char *name, unsigned gpio)
+> +{
+> +	struct gpio_desc	*desc;
+> +	int			status = -EINVAL;
+> +
+> +	BUG_ON(dev == NULL);
+> +	BUG_ON(name == NULL);
 
-Since the standard VFS path lookup code already supports walking paths
-that contain all these features (using in-kernel automounts for
-following referrals) we would like to be able to reuse that rather than
-duplicate the full path traversal functionality in the NFSv4 client code.
-
-This patch therefore defines a VFS helper function create_mnt_ns(), that
-sets up a temporary filesystem namespace and attaches a root filesystem to
-it. It exports the create_mnt_ns() and put_mnt_ns() function for use by
-filesystem modules.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/namespace.c                |   45 ++++++++++++++++++++++++++++++++++-------
- include/linux/mnt_namespace.h |    1 +
- 2 files changed, 38 insertions(+), 8 deletions(-)
-
-
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 2465c05..9b766b0 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -1937,6 +1937,21 @@ dput_out:
- 	return retval;
- }
- 
-+static struct mnt_namespace *alloc_mnt_ns(void)
-+{
-+	struct mnt_namespace *new_ns;
-+
-+	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
-+	if (!new_ns)
-+		return ERR_PTR(-ENOMEM);
-+	atomic_set(&new_ns->count, 1);
-+	new_ns->root = NULL;
-+	INIT_LIST_HEAD(&new_ns->list);
-+	init_waitqueue_head(&new_ns->poll);
-+	new_ns->event = 0;
-+	return new_ns;
-+}
-+
- /*
-  * Allocate a new namespace structure and populate it with contents
-  * copied from the namespace of the passed in task structure.
-@@ -1948,14 +1963,9 @@ static struct mnt_namespace *dup_mnt_ns(struct mnt_namespace *mnt_ns,
- 	struct vfsmount *rootmnt = NULL, *pwdmnt = NULL;
- 	struct vfsmount *p, *q;
- 
--	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
--	if (!new_ns)
--		return ERR_PTR(-ENOMEM);
--
--	atomic_set(&new_ns->count, 1);
--	INIT_LIST_HEAD(&new_ns->list);
--	init_waitqueue_head(&new_ns->poll);
--	new_ns->event = 0;
-+	new_ns = alloc_mnt_ns();
-+	if (IS_ERR(new_ns))
-+		return new_ns;
- 
- 	down_write(&namespace_sem);
- 	/* First pass: copy the tree topology */
-@@ -2019,6 +2029,24 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
- 	return new_ns;
- }
- 
-+/**
-+ * create_mnt_ns - creates a private namespace and adds a root filesystem
-+ * @mnt: pointer to the new root filesystem mountpoint
-+ */
-+struct mnt_namespace *create_mnt_ns(struct vfsmount *mnt)
-+{
-+	struct mnt_namespace *new_ns;
-+
-+	new_ns = alloc_mnt_ns();
-+	if (!IS_ERR(new_ns)) {
-+		mnt->mnt_ns = new_ns;
-+		new_ns->root = mnt;
-+		list_add(&new_ns->list, &new_ns->root->mnt_list);
-+	}
-+	return new_ns;
-+}
-+EXPORT_SYMBOL(create_mnt_ns);
-+
- SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
- 		char __user *, type, unsigned long, flags, void __user *, data)
- {
-@@ -2264,3 +2292,4 @@ void put_mnt_ns(struct mnt_namespace *ns)
- 	release_mounts(&umount_list);
- 	kfree(ns);
- }
-+EXPORT_SYMBOL(put_mnt_ns);
-diff --git a/include/linux/mnt_namespace.h b/include/linux/mnt_namespace.h
-index 299d11a..3beb259 100644
---- a/include/linux/mnt_namespace.h
-+++ b/include/linux/mnt_namespace.h
-@@ -24,6 +24,7 @@ struct proc_mounts {
- 
- struct fs_struct;
- 
-+extern struct mnt_namespace *create_mnt_ns(struct vfsmount *mnt);
- extern struct mnt_namespace *copy_mnt_ns(unsigned long, struct mnt_namespace *,
- 		struct fs_struct *);
- extern void put_mnt_ns(struct mnt_namespace *ns);
+We usually don't bother with these assertions.  If the kernel will
+reliably oops if one of these is NULL, then that provides the same
+information anyway.
 
