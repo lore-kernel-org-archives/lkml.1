@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZFVK5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZFVLCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645AbZFVK5e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 06:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZFVK50
+	id S1755612AbZFVLCh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 07:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZFVLC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 06:57:26 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40435 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751138AbZFVK50 (ORCPT
+	Mon, 22 Jun 2009 07:02:28 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47139 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZFVLC2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 06:57:26 -0400
-Date: Mon, 22 Jun 2009 11:57:28 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: =?utf-8?B?5a6L5a6d5Y2O?= <21cnbao@gmail.com>
-Cc: lrg@slimlogic.co.uk, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH] New ASoC Drivers for ADI AD1938 codec
-Message-ID: <20090622105727.GA29144@opensource.wolfsonmicro.com>
-References: <1245403695-20537-1-git-send-email-21cnbao@gmail.com> <20090619104738.GF5270@sirena.org.uk> <3c17e3570906212008n6071e987sbcd4b9377364ae78@mail.gmail.com>
+	Mon, 22 Jun 2009 07:02:28 -0400
+Date: Mon, 22 Jun 2009 05:02:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Changli Gao <xiaosuo@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH update 2] SCSI: explain the hidden scsi_wait_scan
+	Kconfig variable
+Message-ID: <20090622110229.GR19977@parisc-linux.org>
+References: <4A384FE4.9090703@gmail.com> <20090617021254.GQ19977@parisc-linux.org> <tkrat.ad6f8fb712020451@s5r6.in-berlin.de> <1245338486.7586.13.camel@mulgrave.site> <20090618165926.GA13229@uranus.ravnborg.org> <tkrat.da2728358fccf96e@s5r6.in-berlin.de> <20090622095701.72c22150@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <3c17e3570906212008n6071e987sbcd4b9377364ae78@mail.gmail.com>
-X-Cookie: Don't get to bragging.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090622095701.72c22150@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 11:08:27AM +0800, 宋宝华 wrote:
+On Mon, Jun 22, 2009 at 09:57:01AM +0100, Alan Cox wrote:
+> On Thu, 18 Jun 2009 21:03:23 +0200 (CEST)
+> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> 
+> > People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
+> > item.  These patches aren't accepted upstream, so let's stop the ongoing
+> > irritation of people due to the unconditionally installed module and its
+> > Kconfig symbol.
+> 
+> How about the other possibility. People keepmaking it tunable because it
+> makes sense for it to be tunable. Far better IMHO to make it tunable "if
+> EMBEDDED"
 
-[Please reply in-line, interspersing your new text into the message
-you're replying to - it makes the discussion much easier to follow.]
+It doesn't make sense for it to be tunable.
 
-> Hi Mark,
-> ***For the new DAI format
-> According to I2S spec, it doesn't definite a I2S with TDM as a standard I2S.
-> http://www.nxp.com/acrobat_download/various/I2SBUS.pdf
+All it does is control whether or not scsi_wait_scan.ko is built.
+Everyone who's complained about it has been of the form "I turned off
+all modules, but this module gets built anyway".  For them, the answer
+is simple: Don't run "make modules_install".
 
-It's a de facto standard - several other vendors implement TDM in
-exactly the same fashion.  If you think about it this is a natural way
-to handle TDM in I2S.
-
-> It looks like you are admitting this kind of timing into I2S DAI too:
-> http://i3.6.cn/cvbnm/8f/3d/08/268a4560e0daa1b41d69b82419da06e1.jpg
-> I think I can follow it too.
-
-The timing you're showing there is essentially a DSP mode with the left
-and right channels alternating rather than an I2S style where the
-polarity of the LRCLK signal indicates if the data transmitted at the
-same time is for the left or right channel.  I'd need to think about it
-in slightly more detail but probably it is actually a DSP mode - with
-the DSP modes only one edge of the frame sync is used so the other edge
-can be anywhere else within the frame.
-
-> Due to my test boards, at present, the AD1938 is working in and supporting
-> TDM timing like the diagram:
-> http://i3.6.cn/cvbnm/2f/e2/f2/03ae2b51c4e90749972e70bf887f926f.jpg
-> It looks like DSP mode with TDM, so can I path related codes into
-> SND_SOC_DAIFMT_DSP switch?
-
-Yes, that's DSP mode.
-
-> ***For volume controls based on stereo pairs
-> Even though DAC1-DAC8 are named as DACL1,DACR1, DACL2,DACR2..., but the
-> DACLx and DACRx are not always in a pair, in fact, they are independent. As
-> a codec supporting 8 channels, it can be configed into 2, 2.1, 4.1, 5.1,
-> 6.1, 7.1, how to handle the pairs?
-
-That's fairly standard and not really a practical problem.  Since
-applications can address each channel of a stereo control independantly
-they don't loose any control from grouping the channels together.
-Having the stereo controls just makes it a bit easier when they are used
-that way.
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
