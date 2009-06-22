@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388AbZFVAhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751550AbZFVAkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751388AbZFVAhb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 20:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZFVAhX
+	id S1751550AbZFVAkL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 20:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZFVAj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 20:37:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65176 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750996AbZFVAhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 20:37:23 -0400
-Message-ID: <4A3ED2A1.40300@cn.fujitsu.com>
-Date: Mon, 22 Jun 2009 08:38:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Wang Liming <liming.wang@windriver.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] tracing_bprintk: don't increment @pos in t_start()
-References: <4A3B3372.4040608@cn.fujitsu.com> <4A3B3445.2050005@cn.fujitsu.com> <4A3B5CD7.3050601@windriver.com>
-In-Reply-To: <4A3B5CD7.3050601@windriver.com>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 21 Jun 2009 20:39:59 -0400
+Received: from mail-px0-f202.google.com ([209.85.216.202]:48494 "EHLO
+	mail-px0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbZFVAj7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 20:39:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=hwz285e7TBXVvwNYdsLkl0qrrSSLEvo4xQzpcYLpUdKni5MH/UTbcIen8GTifUMeX7
+         aBxTfYsALtpMawMYwwaluGAHc/ONFpNjRO5hb0aoZr6fSRU8qZvs6kh4SMy9DAXPT7LS
+         LFKbMDDupfk8kTHhyVx11mIo+JKv4z97hm/+c=
+Date: Mon, 22 Jun 2009 09:32:47 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       Rik van Riel <riel@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Minchan Kim <minchan.kim@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: pass mm to grab_swap_token
+Message-Id: <20090622093247.bc4f4c0f.minchan.kim@barrios-desktop>
+In-Reply-To: <Pine.LNX.4.64.0906211326520.6124@sister.anvils>
+References: <4A37DEE7.1000208@redhat.com>
+	<20090616181325.GC23969@random.random>
+	<Pine.LNX.4.64.0906161930050.24878@sister.anvils>
+	<20090616200852.GA16265@cmpxchg.org>
+	<Pine.LNX.4.64.0906162152250.12770@sister.anvils>
+	<20090616215200.GA19781@cmpxchg.org>
+	<Pine.LNX.4.64.0906211326520.6124@sister.anvils>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wang Liming wrote:
-> Hi,
-> 
-> Li Zefan wrote:
->> It's wrong to increment @pos in t_start(), otherwise we'll lose
->> some entries when reading printk_formats, if the output is large
->> than PAGE_SIZE.
->>
->> [ Impact: fix missing entries when reading printk_formats ]
->>
->> Reported-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>  kernel/trace/trace_printk.c |   26 ++++++--------------------
->>  1 files changed, 6 insertions(+), 20 deletions(-)
->>
->> diff --git a/kernel/trace/trace_printk.c b/kernel/trace/trace_printk.c
->> index 9bece96..7b62781 100644
->> --- a/kernel/trace/trace_printk.c
->> +++ b/kernel/trace/trace_printk.c
->> @@ -155,25 +155,19 @@ int __ftrace_vprintk(unsigned long ip, const
->> char *fmt, va_list ap)
->>  EXPORT_SYMBOL_GPL(__ftrace_vprintk);
->>  
->>  static void *
->> -t_next(struct seq_file *m, void *v, loff_t *pos)
->> +t_start(struct seq_file *m, loff_t *pos)
->>  {
->> -    const char **fmt = m->private;
->> -    const char **next = fmt;
->> -
->> -    (*pos)++;
->> +    const char **fmt = __start___trace_bprintk_fmt + *pos;
->>  
->>      if ((unsigned long)fmt >= (unsigned long)__stop___trace_bprintk_fmt)
->>          return NULL;
->> -
->> -    next = fmt;
->> -    m->private = ++next;
->> -
->>      return fmt;
->>  }
->>  
->> -static void *t_start(struct seq_file *m, loff_t *pos)
->> +static void *t_next(struct seq_file *m, void * v, loff_t *pos)
->>  {
->> -    return t_next(m, NULL, pos);
->> +    (*pos)++;
->> +    return t_start(m, pos);
->>  }
->>  
-> I prefer to .start to call .next, so I rewrite it to following:
-> 
+On Sun, 21 Jun 2009 14:02:43 +0100 (BST)
+Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
 
-Thanks for the comment, but I don't think .next calls .start is bad,
-and I'm not the only one doing this. Grep c_start() to see some of
-them.
+> If a kthread happens to use get_user_pages() on an mm (as KSM does),
+> there's a chance that it will end up trying to read in a swap page,
+> then oops in grab_swap_token() because the kthread has no mm: GUP
+> passes down the right mm, so grab_swap_token() ought to be using it.
+> 
+> We have not identified a stronger case than KSM's daemon (not yet
+> in mainline), but the issue must have come up before, since RHEL has
+> included a fix for this for years (though a different fix, they just
+> back out of grab_swap_token if current->mm is unset: which is what
+> we first proposed, but using the right mm here seems more correct).
+> 
+> Reported-by: Izik Eidus <ieidus@redhat.com>
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Acked-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
+I already added my sign to Hannes but it is folded in this patch.
+
+-- 
+Kinds Regards
+Minchan Kim
