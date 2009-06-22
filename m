@@ -1,83 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZFVQq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZFVQrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758447AbZFVQq6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757746AbZFVQpV
+	id S1756705AbZFVQrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbZFVQpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:45:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53536 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756172AbZFVQpR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:45:17 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 15/15] msm: fixups to match current code
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 18:43:18 +0100
-Message-ID: <20090622174316.25341.77853.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
-References: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
+	Mon, 22 Jun 2009 12:45:46 -0400
+Received: from kroah.org ([198.145.64.141]:36382 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758034AbZFVQpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 12:45:45 -0400
+Date: Mon, 22 Jun 2009 09:23:54 -0700
+From: Greg KH <greg@kroah.com>
+To: "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: iwlwifi: show qos AC parameters
+Message-ID: <20090622162354.GA19945@kroah.com>
+References: <200906152114.n5FLEDT3015406@hera.kernel.org> <20090621110727.74d95b28@infradead.org> <20090622024838.GB18153@kroah.com> <E9954878DD1FB34FAE5187FB88C58A3557072BE9@orsmsx506.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E9954878DD1FB34FAE5187FB88C58A3557072BE9@orsmsx506.amr.corp.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
+On Mon, Jun 22, 2009 at 07:06:14AM -0700, Guy, Wey-Yi W wrote:
+> Oh ok.
+> I will submit the patch to fix this.
 
-The tty layer is now a bit more fussy about reporting the right baud rate
-back. Make the msm driver match the current state of affairs.
+Also, all new sysfs files need an entry in Documentation/ABI/.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+thanks,
 
- drivers/serial/msm_serial.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
-
-
-diff --git a/drivers/serial/msm_serial.c b/drivers/serial/msm_serial.c
-index 1a7c856..698048f 100644
---- a/drivers/serial/msm_serial.c
-+++ b/drivers/serial/msm_serial.c
-@@ -229,7 +229,7 @@ static void msm_break_ctl(struct uart_port *port, int break_ctl)
- 		msm_write(port, UART_CR_CMD_STOP_BREAK, UART_CR);
- }
- 
--static void msm_set_baud_rate(struct uart_port *port, unsigned int baud)
-+static int msm_set_baud_rate(struct uart_port *port, unsigned int baud)
- {
- 	unsigned int baud_code, rxstale, watermark;
- 
-@@ -281,6 +281,7 @@ static void msm_set_baud_rate(struct uart_port *port, unsigned int baud)
- 	case 115200:
- 	default:
- 		baud_code = UART_CSR_115200;
-+		baud = 115200;
- 		rxstale = 31;
- 		break;
- 	}
-@@ -299,6 +300,8 @@ static void msm_set_baud_rate(struct uart_port *port, unsigned int baud)
- 
- 	/* set TX watermark */
- 	msm_write(port, 10, UART_TFWR);
-+
-+	return baud;
- }
- 
- static void msm_reset(struct uart_port *port)
-@@ -395,8 +398,10 @@ static void msm_set_termios(struct uart_port *port, struct ktermios *termios,
- 
- 	/* calculate and set baud rate */
- 	baud = uart_get_baud_rate(port, termios, old, 300, 115200);
--	msm_set_baud_rate(port, baud);
--
-+	baud = msm_set_baud_rate(port, baud);
-+	if (tty_termios_baud_rate(termios))
-+		tty_termios_encode_baud_rate(termios, baud, baud);
-+	
- 	/* calculate parity */
- 	mr = msm_read(port, UART_MR2);
- 	mr &= ~UART_MR2_PARITY_MODE;
-
+greg k-h
