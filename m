@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZFVGmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZFVGnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbZFVGmq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 02:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZFVGmh
+	id S1754773AbZFVGnm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 02:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZFVGnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 02:42:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50170 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbZFVGmg convert rfc822-to-8bit (ORCPT
+	Mon, 22 Jun 2009 02:43:35 -0400
+Received: from mga07.intel.com ([143.182.124.22]:9969 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752294AbZFVGne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 02:42:36 -0400
-Date: Sun, 21 Jun 2009 23:43:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [linux-pm] [patch update 2 fix] PM: Introduce core framework
- for  run-time PM of I/O devices
-Message-ID: <20090621234324.06fda564@infradead.org>
-In-Reply-To: <aec7e5c30906212320v3e3e991fyd028d005675f1e25@mail.gmail.com>
-References: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
-	<Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
-	<aec7e5c30906212320v3e3e991fyd028d005675f1e25@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 22 Jun 2009 02:43:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,266,1243839600"; 
+   d="scan'208";a="157018462"
+Message-ID: <4A3F2816.7040103@linux.intel.com>
+Date: Mon, 22 Jun 2009 08:43:34 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
+ to 	disk, mce related?
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3E7F38.7030300@linux.intel.com> <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com> <4A3EE668.5090400@jp.fujitsu.com>
+In-Reply-To: <4A3EE668.5090400@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009 15:20:43 +0900
-Magnus Damm <magnus.damm@gmail.com> wrote:
-
-> On Sat, Jun 20, 2009 at 11:30 PM, Alan
-> Stern<stern@rowland.harvard.edu> wrote:
-> > Some more thoughts...
-> >
-> > Magnus, you might have some insights here.  It occurred to me that
-> > some devices can switch power levels very quickly, and the drivers
-> > might therefore want the runtime suspend and resume methods to be
-> > called as soon as possible, even in interrupt context.
+Hidetoshi Seto wrote:
+> Maciej Rutecki wrote:
+>>> Also a "a few minutes" suggest something might be going wrong
+>>> with the poll handler.  Does the problem still happen
+>>> with you use CONFIG_X86_NEW_MCE again, but before
+>>> resume do
+>>>
+>>> echo 0 > /sys/device/system/machinecheck/machinecheck0/check_interval
+>>>
+>>> On the other hand you should get a crash very fast with
+>>>
+>>> echo 1 > /sys/device/system/machinecheck/machinecheck0/check_interval
+>> I didn't instructions from above, but I found something else. After
+>> normal boot I try:
+>>
+>> echo 1 > /sys/devices/system/machinecheck/machinecheck0/check_interval
+>>
+>> I I found this in dmesg:
+>>
+>> [  141.704025] ------------[ cut here ]------------
+>> [  141.704039] WARNING: at arch/x86/kernel/cpu/mcheck/mce.c:1102
+>> mcheck_timer+0xf5/0x100()
 > 
-> I'd like to call pm_request_suspend() from interrupt context. I don't
+> I see.  At least this warning will be cleared by following patch.
+>   WARN_ON(smp_processor_id() != data);
+> 
+> But I'm not sure whether this can cause system hangs or not.
 
-there are some really strong reasons to at least be able to call the
-resume function from an interrupt handler.... shared interrupts are one
-of them.
+It might actually. If two different handlers run on the same CPU
+they could re-add a timer twice, which might cause loops in the timer
+list etc.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Maciej, can you test Seto-san's patch please?
+
+BTW this is probably related to
+
+commit eea08f32adb3f97553d49a4f79a119833036000a
+Author: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Date:   Thu Apr 16 12:16:41 2009 +0530
+
+     timers: Logic to move non pinned timers
+
+it might be also useful to test if reverting that patch makes
+the problem go away. But with this patch we need the add_timer_on change.
+
+-Andi
