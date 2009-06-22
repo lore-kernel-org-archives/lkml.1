@@ -1,136 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbZFVMU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbZFVMZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbZFVMU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 08:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZFVMUU
+	id S1752765AbZFVMZj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 08:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZFVMZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 08:20:20 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53729 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbZFVMUT (ORCPT
+	Mon, 22 Jun 2009 08:25:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:8000 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbZFVMZ2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 08:20:19 -0400
-Message-ID: <ec48fff1916d3e82c3c4fc610245f0b6.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <18e69edd004ec13730246bd40600448c.squirrel@webmail-b.css.fujitsu.com>
-References: <20090622183707.dd9e665b.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090622105231.GA17242@elte.hu>
-    <18e69edd004ec13730246bd40600448c.squirrel@webmail-b.css.fujitsu.com>
-Date: Mon, 22 Jun 2009 21:20:19 +0900 (JST)
-Subject: Re: [RFC][PATCH] cgroup: fix permanent wait in rmdir
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>
-User-Agent: SquirrelMail/1.4.16
+	Mon, 22 Jun 2009 08:25:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=rHC7FxX/EUkBQs1+Njk1QanZO1eZrWCnSCJwS8LeGAlg5pQUyev9qit/6mQJs42AWF
+         n1LIsxhvz8lrmfaR7Z1Tk6gwMRN7w+sBzkhvAclhw9emBMyhptSh+fNaCg+y63ioDq8R
+         HtfEL0I2mX7k7Q2OiOY1hcAg7352LtVM6ZgPc=
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090622115239.GF24366@elte.hu>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
+	 <20090622115239.GF24366@elte.hu>
+Date: Mon, 22 Jun 2009 14:25:28 +0200
+Message-ID: <7c86c4470906220525x409bedadj29be01236e42ea1@mail.gmail.com>
+Subject: Re: I.5 - Mmaped count
+From: stephane eranian <eranian@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Ingo Molnar wrote:
+On Mon, Jun 22, 2009 at 1:52 PM, Ingo Molnar<mingo@elte.hu> wrote:
+>> 5/ Mmaped count
 >>
->> FYI, there's a new cgroup related list corruption warning/crash that
->> i've seen a lot of times in latest -tip tests:
+>> It is possible to read counts directly from user space for
+>> self-monitoring threads. This leverages a HW capability present on
+>> some processors. On X86, this is possible via RDPMC.
 >>
->> [  478.555544] ------------[ cut here ]------------
->> [  478.556523] WARNING: at lib/list_debug.c:26 __list_add+0x70/0xa0()
->> [  478.556523] Hardware name:
->> [  478.556523] list_add corruption. next->prev should be prev
->> (ffff88003e640448), but was ffff88003fa1a6e8. (next=ffff88003fa1a8a0).
->> [  478.556523] Modules linked in:
->> [  478.556523] Pid: 470, comm: kswapd0 Not tainted 2.6.30-tip #10989
->> [  478.556523] Call Trace:
->> [  478.556523]  [<ffffffff81306150>] ? __list_add+0x70/0xa0
->> [  478.556523]  [<ffffffff810598dc>] warn_slowpath_common+0x8c/0xc0
->> [  478.556523]  [<ffffffff81059999>] warn_slowpath_fmt+0x69/0x70
->> [  478.556523]  [<ffffffff81086e3b>] ? __lock_acquired+0x18b/0x2b0
->> [  478.556523]  [<ffffffff811022f0>] ? page_check_address+0x110/0x1a0
->> [  478.556523]  [<ffffffff812ebcf2>] ? cpumask_any_but+0x42/0xb0
->> [  478.556523]  [<ffffffff8108c528>] ? __lock_release+0x38/0x90
->> [  478.556523]  [<ffffffff811024e1>] ? page_referenced_one+0x91/0x120
->> [  478.556523]  [<ffffffff81306150>] __list_add+0x70/0xa0
->> [  478.556523]  [<ffffffff8111dc63>] mem_cgroup_add_lru_list+0x63/0x70
->> [  478.556523]  [<ffffffff810eaee4>] move_active_pages_to_lru+0xf4/0x180
->> [  478.556523]  [<ffffffff810eb758>] ? shrink_active_list+0x1f8/0x2a0
->> [  478.556523]  [<ffffffff810eb758>] ? shrink_active_list+0x1f8/0x2a0
->> [  478.556523]  [<ffffffff810eb794>] shrink_active_list+0x234/0x2a0
->> [  478.556523]  [<ffffffff810ec3c3>] shrink_zone+0x173/0x1f0
->> [  478.556523]  [<ffffffff810ece0a>] balance_pgdat+0x4da/0x4e0
->> [  478.556523]  [<ffffffff810eb240>] ? isolate_pages_global+0x0/0x60
->> [  478.556523]  [<ffffffff810ed3b6>] kswapd+0x106/0x150
->> [  478.556523]  [<ffffffff810752f0>] ? autoremove_wake_function+0x0/0x40
->> [  478.556523]  [<ffffffff810ed2b0>] ? kswapd+0x0/0x150
->> [  478.556523]  [<ffffffff8107516e>] kthread+0x9e/0xb0
->> [  478.556523]  [<ffffffff8100d2ba>] child_rip+0xa/0x20
->> [  478.556523]  [<ffffffff8100cc40>] ? restore_args+0x0/0x30
->> [  478.556523]  [<ffffffff81075085>] ? kthreadd+0xb5/0x100
->> [  478.556523]  [<ffffffff810750d0>] ? kthread+0x0/0xb0
->> [  478.556523]  [<ffffffff8100d2b0>] ? child_rip+0x0/0x20
->> [  478.556523] ---[ end trace 9f3122957c34141e ]---
->> [  484.923530] ------------[ cut here ]------------
->> [  484.924525] WARNING: at lib/list_debug.c:26 __list_add+0x70/0xa0()
->> [  484.924525] Hardware name:
->> [  484.924525] list_add corruption. next->prev should be prev
->> (ffff88003e640448), but was ffff88003fa192e8. (next=ffff88003fa14d88).
->> [  484.941152] Modules linked in:
->> [  484.941152] Pid: 470, comm: kswapd0 Tainted: G        W  2.6.30-tip
->> #10989
->> [  484.941152] Call Trace:
->> [  484.941152]  [<ffffffff81306150>] ? __list_add+0x70/0xa0
->> [  484.941152]  [<ffffffff810598dc>] warn_slowpath_common+0x8c/0xc0
->> [  484.941152]  [<ffffffff81059999>] warn_slowpath_fmt+0x69/0x70
->> [  484.941152]  [<ffffffff81086e3b>] ? __lock_acquired+0x18b/0x2b0
->> [  484.941152]  [<ffffffff811022f0>] ? page_check_address+0x110/0x1a0
->> [  484.941152]  [<ffffffff812ebcf2>] ? cpumask_any_but+0x42/0xb0
->> [  484.941152]  [<ffffffff8108c528>] ? __lock_release+0x38/0x90
->> [  484.941152]  [<ffffffff811024e1>] ? page_referenced_one+0x91/0x120
->> [  484.941152]  [<ffffffff81306150>] __list_add+0x70/0xa0
->> [  484.941152]  [<ffffffff8111dc63>] mem_cgroup_add_lru_list+0x63/0x70
->> [  484.941152]  [<ffffffff810eaee4>] move_active_pages_to_lru+0xf4/0x180
->> [  484.941152]  [<ffffffff810eb758>] ? shrink_active_list+0x1f8/0x2a0
->> [  484.941152]  [<ffffffff810eb758>] ? shrink_active_list+0x1f8/0x2a0
->> [  484.941152]  [<ffffffff810eb794>] shrink_active_list+0x234/0x2a0
->> [  484.941152]  [<ffffffff810ec3c3>] shrink_zone+0x173/0x1f0
->> [  484.941152]  [<ffffffff810ece0a>] balance_pgdat+0x4da/0x4e0
->> [  484.941152]  [<ffffffff810eb240>] ? isolate_pages_global+0x0/0x60
->> [  484.941152]  [<ffffffff810ed3b6>] kswapd+0x106/0x150
->> [  484.941152]  [<ffffffff810752f0>] ? autoremove_wake_function+0x0/0x40
->> [  484.941152]  [<ffffffff810ed2b0>] ? kswapd+0x0/0x150
->> [  484.941152]  [<ffffffff8107516e>] kthread+0x9e/0xb0
->> [  484.941152]  [<ffffffff8100d2ba>] child_rip+0xa/0x20
->> [  484.941152]  [<ffffffff8100cc40>] ? restore_args+0x0/0x30
->> [  484.941152]  [<ffffffff81075085>] ? kthreadd+0xb5/0x100
->> [  484.941152]  [<ffffffff810750d0>] ? kthread+0x0/0xb0
->> [  484.941152]  [<ffffffff8100d2b0>] ? child_rip+0x0/0x20
->> [  484.941152] ---[ end trace 9f3122957c34141f ]---
->> [  485.365631] ------------[ cut here ]------------
->> [  485.368029] WARNING: at lib/list_debug.c:26 __list_add+0x70/0xa0()
+>> The full 64-bit count is constructed by combining the hardware
+>> value extracted with an assembly instruction and a base value made
+>> available thru the mmap. There is an atomic generation count
+>> available to deal with the race condition.
 >>
->> has this been reported before? Is there a fix for it i missed?
+>> I believe there is a problem with this approach given that the PMU
+>> is shared and that events can be multiplexed. That means that even
+>> though you are self-monitoring, events get replaced on the PMU.
+>> The assembly instruction is unaware of that, it reads a register
+>> not an event.
 >>
-> Hmm, looks new one.
+>> On x86, assume event A is hosted in counter 0, thus you need
+>> RDPMC(0) to extract the count. But then, the event is replaced by
+>> another one which reuses counter 0. At the user level, you will
+>> still use RDPMC(0) but it will read the HW value from a different
+>> event and combine it with a base count from another one.
+>>
+>> To avoid this, you need to pin the event so it stays in the PMU at
+>> all times. Now, here is something unclear to me. Pinning does not
+>> mean stay in the SAME register, it means the event stays on the
+>> PMU but it can possibly change register. To prevent that, I
+>> believe you need to also set exclusive so that no other group can
+>> be scheduled, and thus possibly use the same counter.
+>>
+>> Looks like this is the only way you can make this actually work.
+>> Not setting pinned+exclusive, is another pitfall in which many
+>> people will fall into.
 >
-> Maybe related to my latest post which modifies __isolate_lru_page()
-> memcg: fix lru rotation in isolate_pages
+>   do {
+>     seq = pc->lock;
 >
-> I'll dig tomorrow, sorry.
+>     barrier()
+>     if (pc->index) {
+>       count = pmc_read(pc->index - 1);
+>       count += pc->offset;
+>     } else
+>       goto regular_read;
 >
-Ah, while I test 2.6.30-git18 (includes above patch), I don't see
-above stack dump (with LIST_DEBUG=y) under quick memory pressure test...
+>     barrier();
+>   } while (pc->lock != seq);
+>
+> We don't see the hole you are referring to. The sequence lock
+> ensures you get a consistent view.
+>
+Let's take an example, with two groups, one event in each group.
+Both events scheduled on counter0, i.e,, rdpmc(0). The 2 groups
+are multiplexed, one each tick. The user gets 2 file descriptors
+and thus two mmap'ed pages.
 
-Thanks,
--Kame
+Suppose the user wants to read, using the above loop, the value of the
+event in the first group BUT it's the 2nd group  that is currently active
+and loaded on counter0, i.e., rdpmc(0) returns the value of the 2nd event.
 
+Unless you tell me that pc->index is marked invalid (0) when the
+event is not scheduled. I don't see how you can avoid reading
+the wrong value. I am assuming that is the event is not scheduled
+lock remains constant.
 
-
-
+Assuming the event is active when you enter the loop and you
+read a value. How to get the timing information to scale the
+count?
