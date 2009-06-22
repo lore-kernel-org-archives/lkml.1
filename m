@@ -1,145 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZFVUmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZFVUpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbZFVUmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 16:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZFVUml
+	id S1756628AbZFVUpW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 16:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZFVUpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 16:42:41 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:17968 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751562AbZFVUmk convert rfc822-to-8bit (ORCPT
+	Mon, 22 Jun 2009 16:45:07 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58001 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZFVUpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 16:42:40 -0400
+	Mon, 22 Jun 2009 16:45:05 -0400
+Date: Mon, 22 Jun 2009 22:45:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: torvalds@linux-foundation.org, Greg KH <greg@kroah.com>,
+       "corbet@lwn.net" <corbet@lwn.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
+Subject: Re: [PATCH] Documentation: add documentation summary for rc-series
+	and merge window
+Message-ID: <20090622204500.GB24236@elf.ucw.cz>
+References: <20090622180438.GG23972@bombadil.infradead.org>
 MIME-Version: 1.0
-Message-ID: <636843ec-b290-4ea9-b629-1d364f3b1112@default>
-Date: Mon, 22 Jun 2009 13:41:19 -0700 (PDT)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
-       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>, jeremy@goop.org,
-       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
-       Rusty Russell <rusty@rustcorp.com.au>, akpm@osdl.org,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
-       sunil.mushran@oracle.com, linux-mm@kvack.org,
-       Himanshu Raj <rhim@microsoft.com>
-Subject: RE: [RFC] transcendent memory for Linux
-In-Reply-To: <20090622132702.6638d841@skybase>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1 (304090) [OL 9.0.0.6627]
-Content-Type: text/plain; charset=Windows-1252
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A3FEC75.01A6:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622180438.GG23972@bombadil.infradead.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Tmem has some similarity to IBM's Collaborative Memory Management,
-> > but creates more of a partnership between the kernel and the
-> > "privileged entity" and is not very invasive.  Tmem may be
-> > applicable for KVM and containers; there is some disagreement on
-> > the extent of its value. Tmem is highly complementary to ballooning
-> > (aka page granularity hot plug) and memory deduplication (aka
-> > transparent content-based page sharing) but still has value
-> > when neither are present.
+On Mon 2009-06-22 14:04:38, Luis R. Rodriguez wrote:
+> This is losely based on previous discussions on linux-kernel [1][2][3].
+> Lets also refer people reading the stable rules to
+> Documentation/development-process/.
+> 
+> Also add the number of days it has taken between releases,
+> and provide the average for the last 10 releases: 86.0 days.
+> 
+> [1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
+> [2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
+> [3] http://marc.info/?l=linux-kernel&m=124515657407679&w=2
+> 
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+NAK.
 
-Hi Martin --
+> +2.0.2: RC-SERIES RULES
+> +
+> +This section summarizes what kind of patches are accepted before the merge
+> +window closes and after it closes. These patches are targeted for the kernel
+> +prior to its final release.
+> +
+> +The rc-series focus should really be to address regressions.
+> +
+> +2.0.2.0: RC-SERIES RULES PRIOR TO THE RC1 RELEASE
+> +
+> +These are the types of patches that will get accepted prior to a kernel rc1 release,
+> +during the merge window:
+> +
+> + - it must fix a regression
+> + - it must fix a security hole
+> + - it must fix a oops/kernel hang
+> +
+> +Non-intrusive bug fixes or small fixes will not be accepted. If the
+> patch in
 
-Thanks much for taking the time to reply!
+What? Prior to rc1, new features are accepted.
+								Pavel
 
-> The basic idea seems to be that you reduce the amount of memory
-> available to the guest and as a compensation give the guest some
-> tmem, no?
-
-That's mostly right.  Tmem's primary role is to help
-with guests that have had their available memory reduced
-(via ballooning or hotplug or some future mechanism).
-However tmem additionally provides a way of providing otherwise
-unused-by-the-hypervisor ("fallow") memory to a guest,
-essentially expanding a guest kernel's page cache if
-no other guest is using the RAM anyway.
-
-And "as a compensation GIVE the guest some tmem" is misleading,
-because tmem (at least ephemeral tmem) is never "given"
-to a guest.  A better word might be "loaned" or "rented".
-The guest gets to use some tmem for awhile but if it
-doesn't use it effectively, the memory is "repossessed"
-(or the guest is "evicted" from using that memory)
-transparently so that it can be used more effectively
-elsewhere.
-
-> If that is the case then the effect of tmem is somewhat
-> comparable to the volatile page cache pages.
-
-There is definitely some similarity in that both are providing
-useful information to the hypervisor.  In CMM's case, the
-guest is passively providing info; in tmem's case it is
-actively providing info and making use of the info within
-the kernel, not just in the hypervsior, which is why I described it
-as "more of a partnership".
-
-> The big advantage of this approach is its simplicity, but there
-> are down sides as well:
-> 1) You need to copy the data between the tmem pool and the page
-> cache. At least temporarily there are two copies of the same
-> page around. That increases the total amount of used memory.
-
-Certainly this is theoretically true, but I think the increase
-is small and transient.  The kernel only puts the page into
-precache when it has decided to use that page for another
-purpose (due to memory pressure).  Until it actually
-"reprovisions" the page, the data is briefly duplicated.
-
-On the other hand, copying eliminates the need for fancy
-games with virtual mappings and TLB entries.  Copying appears
-to be getting much faster on recent CPUs; I'm not sure
-if this is also true of TLB operations.
-
-> 2) The guest has a smaller memory size. Either the memory is
-> large enough for the working set size in which case tmem is
-> ineffective...
-
-Yes, if the kernel has memory to "waste" (e.g. never refaults and
-never swaps), tmem is ineffective.  The goal of tmem is to optimize
-memory usage across an environment where there is contention
-among multiple users (guests) for a limited resource (RAM).
-If your environment always has enough RAM for every guest
-and there's never any contention, you don't want tmem... but
-I'd assert you've wasted money in your data center by buying
-too much RAM!
-
-> or the working set does not fit which increases
-> the memory pressure and the cpu cycles spent in the mm code.
-
-True, this is where preswap is useful.  Without tmem/preswap,
-"does not fit" means swap-to-disk or refaulting is required.
-Preswap alleviates the memory pressure by using tmem to
-essentially swap to "magic memory" and precache reduces the
-need for refaulting.
-
-> 3) There is an additional turning knob, the size of the tmem pool
-> for the guest. I see the need for a clever algorithm to determine
-> the size for the different tmem pools.
-
-Yes, some policy in the hypervisor is still required, essentially
-a "memory scheduler".  The working implementation (in Xen)
-uses FIFO, but modified by admin-configurable "weight" values
-to allow QoS and avoid DoS. 
-
-> Overall I would say its worthwhile to investigate the performance
-> impacts of the approach.
-
-Thanks.  I'd appreciate any thoughts or experience you have
-in this area (onlist or offlist) as I don't think there are
-any adequate benchmarks that aren't either myopic for a complex
-environment or contrived (and thus misleading) to prove an
-isolated point.
-
-I would also guess that tmem is more beneficial on recent
-multi-core processors, and more costly on older chips.
-
-Thanks again,
-Dan
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
