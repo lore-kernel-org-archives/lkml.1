@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbZFVIEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbZFVIIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbZFVIEh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 04:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZFVIEW
+	id S1754534AbZFVIIF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 04:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZFVIHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 04:04:22 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36432 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752435AbZFVIEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 04:04:22 -0400
-Date: Mon, 22 Jun 2009 18:04:20 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Simmons <jsimmons@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH] fbdev: work around old compiler bug
-Message-Id: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 04:07:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60489 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752435AbZFVIHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 04:07:50 -0400
+To: Robert Richter <robert.richter@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: Re: [PATCH 19/23] x86/oprofile: use 64 bit wrmsr functions
+From: Andi Kleen <andi@firstfloor.org>
+References: <1244810140-20595-1-git-send-email-robert.richter@amd.com>
+	<1244810140-20595-20-git-send-email-robert.richter@amd.com>
+	<87my803dz0.fsf@basil.nowhere.org>
+Date: Mon, 22 Jun 2009 10:07:51 +0200
+In-Reply-To: <87my803dz0.fsf@basil.nowhere.org> (Andi Kleen's message of "Mon, 22 Jun 2009 09:49:23 +0200")
+Message-ID: <87fxds3d48.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When building with a 4.1.x compiler on powerpc64 (at least) we get
-this error:
+Andi Kleen <andi@firstfloor.org> writes:
+>
+> I don't think if it causes real problems, but it looks suspicious.
 
-drivers/video/logo/logo_linux_mono.c:81: error: logo_linux_mono causes a section type conflict
+s/think/know/
 
-This was introduced by commit ae52bb2384f721562f15f719de1acb8e934733cb
-("fbdev: move logo externs to header file").  This is a partial revert
-of that commit sufficient to not hit the compiler bug.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- scripts/pnmtologo.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/pnmtologo.c b/scripts/pnmtologo.c
-index 64f5ddb..d10c389 100644
---- a/scripts/pnmtologo.c
-+++ b/scripts/pnmtologo.c
-@@ -237,7 +237,7 @@ static void write_header(void)
-     fprintf(out, " *  Linux logo %s\n", logoname);
-     fputs(" */\n\n", out);
-     fputs("#include <linux/linux_logo.h>\n\n", out);
--    fprintf(out, "static const unsigned char %s_data[] __initconst = {\n",
-+    fprintf(out, "static unsigned char %s_data[] __initdata = {\n",
- 	    logoname);
- }
- 
--- 
-1.6.3.1
-
+-Andi
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ak@linux.intel.com -- Speaking for myself only.
