@@ -1,194 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbZFVO1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbZFVO1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756369AbZFVO1N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbZFVO06
+	id S1756706AbZFVO1k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZFVO1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:26:58 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:62746 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755827AbZFVO05 (ORCPT
+	Mon, 22 Jun 2009 10:27:31 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:61307 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbZFVO1a convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:26:57 -0400
-Date: Mon, 22 Jun 2009 16:26:31 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Rob van der Heij <rvdheij@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
-Message-ID: <20090622162631.4b4dcee4@skybase>
-In-Reply-To: <alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>
-References: <20090603152223.083010123@de.ibm.com>
-	<alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 10:27:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=S5cKjAhAY1vUay23zTTwpqM+Q3GexMNyZRNhq9b/uLg9iPgpD3emUCQiYl6VmtCpFc
+         hi3tQg8XjU7ahPLQQvDg+4Sl2ySmL755VA1PTuNqSC02edwpLQirSB5fDcuPQZoPkfpD
+         vO6ip1B7ZFP9Lzx4N/YweGQ5gVwQ75k5+BnNI=
+MIME-Version: 1.0
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090622115703.GM24366@elte.hu>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
+	 <20090622115703.GM24366@elte.hu>
+Date: Mon, 22 Jun 2009 16:27:31 +0200
+Message-ID: <7c86c4470906220727l2a50753eg93c44006b8c2c589@mail.gmail.com>
+Subject: Re: II.1 - Fixed counters on Intel
+From: stephane eranian <eranian@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 22:52:51 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Mon, Jun 22, 2009 at 1:57 PM, Ingo Molnar<mingo@elte.hu> wrote:
+>> II/ X86 comments
+>>
+>>  1/ Fixed counters on Intel
+>>
+>> You cannot simply fall back to generic counters if you cannot find
+>> a fixed counter. There are model-specific bugs, for instance
+>> UNHALTED_REFERENCE_CYCLES (0x013c), does not measure the same
+>> thing on Nehalem when it is used in fixed counter 2 or a generic
+>> counter. The same is true on Core.
+>
+> This could be handled via a model specific quirk, if the erratum is
+> serious enough.
 
-> > version 2 of the profile patches. The only change is the in_interrupt()
-> > fix in tick_nohz_stop_idle(). I would like to know how to proceed with
-> > the issue.
-> > Andy, do you still prefer to handle the old style profiler analog to
-> > the oprofile patch? If yes I would drop patch #1 and extend patch #2
-> > with another tick_nohz_disable().  
-> 
-> Any update on this one ?
+Better demonstrated with an actual example on a 2.4GHz Quad: 10s noploop
 
-A solution to this problem should go upstream soon, no? How about this
-patch, it uses the tick_nohz_disable/tick_nohz_enable mechanic for 
-oprofile and the old style kernel profiler. Good enough ?
+$ pfmon -v --us-c
+-eunhalted_core_cycles,unhalted_reference_cycles,cpu_clk_unhalted:bus
+-u noploop 10
+[FIXED_CTRL(pmc16)=0xaa0 pmi0=1 en0=0x0 pmi1=1 en1=0x2 pmi2=1 en2=0x2]
+UNHALTED_CORE_CYCLES UNHALTED_REFERENCE_CYCLES
+[PERFEVTSEL0(pmc0)=0x51013c event_sel=0x3c umask=0x1 os=0 usr=1 en=1
+int=1 inv=0 edge=0 cnt_mask=0] CPU_CLK_UNHALTED
+noploop for 10 seconds
+23,833,577,042 UNHALTED_CORE_CYCLES
+23,853,100,716 UNHALTED_REFERENCE_CYCLES
+ 2,650,345,853 CPU_CLK_UNHALTED:BUS
 
----
-Subject: [PATCH] keep on ticking if a profiler is active
+0x013c on fixed counter2 = unhalted_reference_cycles
+0x013c on generic counter = cpu_clk_unhalted:bus
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Difference is significant, isn't it?
 
-On a NOHZ system with oprofile or the old style kernel profiler enabled
-the timer tick should not be stopped when a cpu goes idle. Currently
-a maximum of 1 tick is accounted if a cpu sleeps for a longer period of
-time. This does bad things to the percentages in the profiler output.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- drivers/oprofile/oprof.c |    3 +++
- include/linux/tick.h     |    4 ++++
- kernel/profile.c         |    4 ++++
- kernel/time/tick-sched.c |   27 ++++++++++++++++++++++++++-
- 4 files changed, 37 insertions(+), 1 deletion(-)
-
-diff -urpN linux-2.6/drivers/oprofile/oprof.c linux-2.6-patched/drivers/oprofile/oprof.c
---- linux-2.6/drivers/oprofile/oprof.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6-patched/drivers/oprofile/oprof.c	2009-06-22 11:26:50.000000000 +0200
-@@ -12,6 +12,7 @@
- #include <linux/init.h>
- #include <linux/oprofile.h>
- #include <linux/moduleparam.h>
-+#include <linux/tick.h>
- #include <asm/mutex.h>
- 
- #include "oprof.h"
-@@ -103,6 +104,7 @@ int oprofile_start(void)
- 	if (oprofile_started)
- 		goto out;
- 
-+	tick_nohz_disable(1);
- 	oprofile_reset_stats();
- 
- 	if ((err = oprofile_ops.start()))
-@@ -123,6 +125,7 @@ void oprofile_stop(void)
- 		goto out;
- 	oprofile_ops.stop();
- 	oprofile_started = 0;
-+	tick_nohz_enable();
- 	/* wake up the daemon to read what remains */
- 	wake_up_buffer_waiter();
- out:
-diff -urpN linux-2.6/include/linux/tick.h linux-2.6-patched/include/linux/tick.h
---- linux-2.6/include/linux/tick.h	2009-06-22 11:26:26.000000000 +0200
-+++ linux-2.6-patched/include/linux/tick.h	2009-06-22 11:26:50.000000000 +0200
-@@ -119,6 +119,8 @@ extern void tick_nohz_stop_sched_tick(in
- extern void tick_nohz_restart_sched_tick(void);
- extern ktime_t tick_nohz_get_sleep_length(void);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
-+extern void tick_nohz_enable(void);
-+extern void tick_nohz_disable(int wakeup);
- # else
- static inline void tick_nohz_stop_sched_tick(int inidle) { }
- static inline void tick_nohz_restart_sched_tick(void) { }
-@@ -129,6 +131,8 @@ static inline ktime_t tick_nohz_get_slee
- 	return len;
- }
- static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
-+static inline void tick_nohz_enable(void) { }
-+static inline void tick_nohz_disable(int wakeup) { }
- # endif /* !NO_HZ */
- 
- #endif
-diff -urpN linux-2.6/kernel/profile.c linux-2.6-patched/kernel/profile.c
---- linux-2.6/kernel/profile.c	2009-06-22 11:26:26.000000000 +0200
-+++ linux-2.6-patched/kernel/profile.c	2009-06-22 11:26:50.000000000 +0200
-@@ -24,6 +24,7 @@
- #include <linux/mutex.h>
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
-+#include <linux/tick.h>
- #include <asm/sections.h>
- #include <asm/irq_regs.h>
- #include <asm/ptrace.h>
-@@ -97,6 +98,8 @@ int profile_setup(char *str)
- 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
- 			prof_shift);
- 	}
-+	if (prof_on)
-+		tick_nohz_disable(0);
- 	return 1;
- }
- __setup("profile=", profile_setup);
-@@ -582,6 +585,7 @@ static int create_hash_tables(void)
- 	return 0;
- out_cleanup:
- 	prof_on = 0;
-+	tick_nohz_enable();
- 	smp_mb();
- 	on_each_cpu(profile_nop, NULL, 1);
- 	for_each_online_cpu(cpu) {
-diff -urpN linux-2.6/kernel/time/tick-sched.c linux-2.6-patched/kernel/time/tick-sched.c
---- linux-2.6/kernel/time/tick-sched.c	2009-06-22 11:26:26.000000000 +0200
-+++ linux-2.6-patched/kernel/time/tick-sched.c	2009-06-22 11:26:50.000000000 +0200
-@@ -124,6 +124,30 @@ static int __init setup_tick_nohz(char *
- 
- __setup("nohz=", setup_tick_nohz);
- 
-+/*
-+ * NO HZ currently disabled ?
-+ */
-+static atomic_t tick_nohz_disable_counter = ATOMIC_INIT(0);
-+
-+void tick_nohz_enable(void)
-+{
-+	atomic_dec(&tick_nohz_disable_counter);
-+}
-+EXPORT_SYMBOL_GPL(tick_nohz_enable);
-+
-+static void __tick_nohz_disable(void *dummy)
-+{
-+}
-+
-+void tick_nohz_disable(int wakeup)
-+{
-+	if (atomic_inc_return(&tick_nohz_disable_counter) == 1)
-+		if (wakeup)
-+			/* Wake up all cpus to make them start ticking. */
-+			smp_call_function(__tick_nohz_disable, NULL, 0);
-+}
-+EXPORT_SYMBOL_GPL(tick_nohz_disable);
-+
- /**
-  * tick_nohz_update_jiffies - update jiffies when idle was interrupted
-  *
-@@ -276,7 +300,8 @@ void tick_nohz_stop_sched_tick(int inidl
- 	next_jiffies = get_next_timer_interrupt(last_jiffies);
- 	delta_jiffies = next_jiffies - last_jiffies;
- 
--	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu))
-+	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu) ||
-+	    atomic_read(&tick_nohz_disable_counter) > 0)
- 		delta_jiffies = 1;
- 	/*
- 	 * Do not stop the tick, if we are only one off
+And the question becomes: how do I express that I want the fixed counter version
+of the event using the current PCL API, given both have the same encoding?
 
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+>
+>> You cannot simply look at the event field code to determine
+>> whether this is an event supported by a fixed counters. You must
+>> look at the other fields such as edge, invert, cnt-mask. If those
+>> are present then you have to fall back to using a generic counter
+>> as fixed counters only support priv level filtering. As indicated
+>> above, though, programming UNHALTED_REFERENCE_CYCLES on a generic
+>> counter does not count the same thing, therefore you need to fail
+>> if filters other than priv levels are present on this event.
+>
+> Agreed, we'll fix this.
+>
