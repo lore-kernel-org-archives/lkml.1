@@ -1,72 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZFVOcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbZFVOcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbZFVOcZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZFVOcS
+	id S1757140AbZFVOcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZFVOci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:32:18 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:35274 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752183AbZFVOcR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:32:17 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-X-IronPort-AV: E=Sophos;i="4.42,268,1243807200";   d="scan'208";a="16303031"
-Message-id: <4A3F95F1.4020507@lfbs.rwth-aachen.de>
-Date: Mon, 22 Jun 2009 16:32:17 +0200
-From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
- <87zldjn597.fsf@basil.nowhere.org>
- <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
- <20090612103251.GJ25568@one.firstfloor.org>
- <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
- <1245119977.6724.40.camel@lts-notebook>
- <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
- <1245164395.15138.40.camel@lts-notebook>
- <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
- <1245299856.6431.30.camel@lts-notebook> <4A3F7A49.6070805@inria.fr>
-In-reply-to: <4A3F7A49.6070805@inria.fr>
+	Mon, 22 Jun 2009 10:32:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53453 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752859AbZFVOch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 10:32:37 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 2/2] MN10300: Fix the vmlinux ldscript
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Date: Mon, 22 Jun 2009 15:32:36 +0100
+Message-ID: <20090622143236.3927.29414.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090622143231.3927.1495.stgit@warthog.procyon.org.uk>
+References: <20090622143231.3927.1495.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix the MN10300 vmlinux ldscript.  It needs to use various macros from
+asm-generic/vmlinux.lds.h to correctly include all that it needs to.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ arch/mn10300/kernel/vmlinux.lds.S |   60 ++++++++++---------------------------
+ 1 files changed, 16 insertions(+), 44 deletions(-)
 
 
-Brice Goglin wrote:
-> Lee Schermerhorn wrote:
->> On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
->>   
->>
->> Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
->> [along with my shared policy series atop which they sit in my tree].
->> Patches reside in:
->>
->> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
->>
->>   
-> 
-> I gave this patchset a try and indeed it seems to work fine, thanks a
-> lot. But the migration performance isn't very good. I am seeing about
-> 540MB/s when doing mbind+touch_all_pages on large buffers on a
-> quad-barcelona machines. move_pages gets 640MB/s there. And my own
-> next-touch implementation were near 800MB/s in the past.
-
-I used a modified stream benchmark to evaluate the performance of Lee's 
-and my version of the next-touch implementation. In this low-level 
-benchmark is Lee's patch better than my patch. I think that Brice and I 
-use the same technique to realize affinity-on-next-touch. Do you use 
-another kernel version to evaluate the performance?
-
-Stefan
+diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
+index 24de6b9..bcebcef 100644
+--- a/arch/mn10300/kernel/vmlinux.lds.S
++++ b/arch/mn10300/kernel/vmlinux.lds.S
+@@ -38,14 +38,10 @@ SECTIONS
+ 
+   _etext = .;			/* End of text section */
+ 
+-  . = ALIGN(16);		/* Exception table */
+-  __start___ex_table = .;
+-  __ex_table : { *(__ex_table) }
+-  __stop___ex_table = .;
+-
++  EXCEPTION_TABLE(16)
+   BUG_TABLE
+ 
+-  RODATA
++  RO_DATA(PAGE_SIZE)
+ 
+   /* writeable */
+   .data : {			/* Data */
+@@ -53,27 +49,19 @@ SECTIONS
+ 	CONSTRUCTORS
+ 	}
+ 
+-  . = ALIGN(PAGE_SIZE);
+-  __nosave_begin = .;
+-  .data_nosave : { *(.data.nosave) }
+-  . = ALIGN(PAGE_SIZE);
+-  __nosave_end = .;
+-
+-  . = ALIGN(PAGE_SIZE);
+-  .data.page_aligned : { *(.data.idt) }
++  .data_nosave : { NOSAVE_DATA; }
+ 
+-  . = ALIGN(32);
+-  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
++  .data.page_aligned : { PAGE_ALIGNED_DATA(PAGE_SIZE); }
++  .data.cacheline_aligned : { CACHELINE_ALIGNED_DATA(32); }
+ 
+   /* rarely changed data like cpu maps */
+   . = ALIGN(32);
+   .data.read_mostly : AT(ADDR(.data.read_mostly)) {
+-	*(.data.read_mostly)
++	READ_MOSTLY_DATA(32);
+ 	_edata = .;		/* End of data section */
+   }
+ 
+-  . = ALIGN(THREAD_SIZE);	/* init_task */
+-  .data.init_task : { *(.data.init_task) }
++  .data.init_task : { INIT_TASK(THREAD_SIZE); }
+ 
+   /* might get freed after init */
+   . = ALIGN(PAGE_SIZE);
+@@ -88,23 +76,18 @@ SECTIONS
+   __init_begin = .;
+   .init.text : {
+ 	_sinittext = .;
+-	*(.init.text)
++	INIT_TEXT;
+ 	_einittext = .;
+   }
+-  .init.data : { *(.init.data) }
+-  . = ALIGN(16);
+-  __setup_start = .;
+-  .setup.init : { KEEP(*(.init.setup)) }
+-  __setup_end = .;
++  .init.data : { INIT_DATA; }
++  .setup.init : { INIT_SETUP(16); }
+ 
+   __initcall_start = .;
+   .initcall.init : {
+ 	INITCALLS
+   }
+   __initcall_end = .;
+-  __con_initcall_start = .;
+-  .con_initcall.init : { *(.con_initcall.init) }
+-  __con_initcall_end = .;
++  .con_initcall.init : { CON_INITCALL; }
+ 
+   SECURITY_INIT
+   . = ALIGN(4);
+@@ -114,28 +97,17 @@ SECTIONS
+  .altinstr_replacement : { *(.altinstr_replacement) }
+   /* .exit.text is discard at runtime, not link time, to deal with references
+      from .altinstructions and .eh_frame */
+-  .exit.text : { *(.exit.text) }
+-  .exit.data : { *(.exit.data) }
++	.exit.text : { EXIT_TEXT; }
++	.exit.data : { EXIT_DATA; }
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-  . = ALIGN(PAGE_SIZE);
+-  __initramfs_start = .;
+-  .init.ramfs : { *(.init.ramfs) }
+-  __initramfs_end = .;
+-#endif
++  .init.ramfs : { INIT_RAM_FS; }
+ 
+   PERCPU(32)
+   . = ALIGN(PAGE_SIZE);
+   __init_end = .;
+   /* freed after init ends here */
+ 
+-  __bss_start = .;		/* BSS */
+-  .bss : {
+-	*(.bss.page_aligned)
+-	*(.bss)
+-  }
+-  . = ALIGN(4);
+-  __bss_stop = .;
++  BSS(4)
+ 
+   _end = . ;
+ 
+@@ -145,7 +117,7 @@ SECTIONS
+ 
+   /* Sections to be discarded */
+   /DISCARD/ : {
+-	*(.exitcall.exit)
++	EXIT_CALL
+ 	}
+ 
+   STABS_DEBUG
 
