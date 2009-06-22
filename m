@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbZFVRYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbZFVRZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756360AbZFVRYz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZFVRYs
+	id S1757276AbZFVRZX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbZFVRZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:24:48 -0400
-Received: from kroah.org ([198.145.64.141]:58605 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbZFVRYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:24:47 -0400
-Date: Mon, 22 Jun 2009 10:19:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-rt@pengutronix.de,
-       Thomas Gleixner <tglx@linutronix.de>, Ian Abbott <abbotti@mev.co.uk>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>
-Subject: Re: [PATCH -rt] disable building all staging drivers
-Message-ID: <20090622171948.GA15145@kroah.com>
-References: <1244929118-23326-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090614112802.GA4502@kroah.com> <20090614230044.GA21624@pengutronix.de> <20090622151515.GA16627@pengutronix.de>
+	Mon, 22 Jun 2009 13:25:12 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56765 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbZFVRZK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:25:10 -0400
+Date: Mon, 22 Jun 2009 19:25:07 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Eric Piel <eric.piel@tremplin-utc.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] lis3: fix typo
+Message-ID: <20090622172507.GB21299@elf.ucw.cz>
+References: <1245677888-16634-1-git-send-email-daniel@caiaq.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090622151515.GA16627@pengutronix.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1245677888-16634-1-git-send-email-daniel@caiaq.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 05:15:15PM +0200, Uwe Kleine-König wrote:
-> Hi Greg,
-> 
-> On Mon, Jun 15, 2009 at 01:00:44AM +0200, Uwe Kleine-König wrote:
-> > On Sun, Jun 14, 2009 at 04:28:02AM -0700, Greg KH wrote:
-> > > On Sat, Jun 13, 2009 at 11:38:38PM +0200, Uwe Kleine-König wrote:
-> > > > I know that at least COMEDI and RT2870 are broken with -rt,
-> > > 
-> > > I didn't know this, has anyone sent me a bug report?  What in -rt causes
-> > > these drivers to break?
-> > > 
-> > > > but Thomas requested disabling all of staging.  He's the maintainer.
-> > > 
-> > > This seems like a patch to ensure that the staging drivers never get a
-> > > chance to be fixed for any potential -rt issues.  How about just sending
-> > > me bug reports instead?
-> > I cannot reproduce the failure I saw for RT2870 at the moment.
-> OK, hit again:
-> 
-> 17:02:43 E: ERROR: "there_is_no_init_MUTEX_LOCKED_for_RT_semaphores" [drivers/staging/rt2870/rt2870sta.ko] undefined!
+On Mon 2009-06-22 15:38:05, Daniel Mack wrote:
+> Bit 0x80 in CTRL_REG3 is an ACTIVE_LOW rather than an ACTIVE_HIGH
+> function, I got that wrong during my last change.
 
-What needs to be done in the rt2870 driver to resolve this issue?
+Whole series looks okay to me, but I did not check the data sheets.
 
-thanks,
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-greg k-h
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
