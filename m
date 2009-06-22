@@ -1,168 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZFVWiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbZFVWjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbZFVWiA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 18:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZFVWhv
+	id S1755956AbZFVWjP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 18:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZFVWi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 18:37:51 -0400
-Received: from smtp2.netcologne.de ([194.8.194.112]:63649 "EHLO
-	smtp2.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZFVWhu (ORCPT
+	Mon, 22 Jun 2009 18:38:59 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33718 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751551AbZFVWi6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 18:37:50 -0400
-From: Mathias Kretschmer <posting@blx4.net>
-Organization: BLX4
-To: Karsten Keil <kernel@linux-pingi.de>
-Subject: Re: mISDN: WARNING: at kernel/softirq.c:124 local_bh_enable+0x8f/0xb0()
-Date: Tue, 23 Jun 2009 00:37:41 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; i686; ; )
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <200906051201.04185.isdn@linux-pingi.de> <200906091505.31537.kernel@linux-pingi.de>
-In-Reply-To: <200906091505.31537.kernel@linux-pingi.de>
+	Mon, 22 Jun 2009 18:38:58 -0400
+Date: Tue, 23 Jun 2009 00:38:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Marco <marco.stornelli@gmail.com>, Jamie Lokier <jamie@shareable.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090622223855.GA25996@elf.ucw.cz>
+References: <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz> <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com> <20090622172003.GB21149@elf.ucw.cz> <4A3FBFF0.40006@am.sony.com> <20090622173704.GC21299@elf.ucw.cz> <4A3FC84A.6060608@gmail.com> <20090622204031.GA24236@elf.ucw.cz> <4A3FFC89.4070006@am.sony.com> <20090622215753.GA25434@elf.ucw.cz>
 MIME-Version: 1.0
-Message-Id: <200906230037.42412.posting@blx4.net>
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_2eAQKXpXn+mtmtX"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622215753.GA25434@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_2eAQKXpXn+mtmtX
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon 2009-06-22 23:57:53, Pavel Machek wrote:
+> On Mon 2009-06-22 14:50:01, Tim Bird wrote:
+> > Pavel Machek wrote:
+> > >> block of fast non-volatile RAM that need to access data on it using a
+> > >> standard filesytem interface."
+> > > 
+> > > Turns a block of fast RAM into 13MB/sec disk. Hmm. I believe you are
+> > > better with ext2.
+> > 
+> > Not if you want the RAM-based filesystem to persist over a kernel
+> > invocation.
+> 
+> Yes, you'll need to code Persistent, RAM-based _block_device_. 
 
-Hi Karsten,
-
-applied your patch. Not sure if it fixed anything, though.
-Attached is another call trace which looks slightly different.
-
-Cheers,
-
-Mathias
-
-On Tuesday 09 June 2009 15:05:31 Karsten Keil wrote:
-> On Freitag, 5. Juni 2009 12:01:03 Karsten Keil wrote:
-> > Hi,
-> >
-> > I'm currently see this too from time to time, but have no idea about it.
->
-> ...
->
-> > > > [88563.318126] ------------[ cut here ]------------
-> > > > [88563.318129] WARNING: at kernel/softirq.c:124
-> > > > local_bh_enable+0x8f/0xb0() [88563.318130] Hardware name: empty
-> > > > [88563.318132] Modules linked in: usbtouchscreen dvb_usb_cinergyT2
-> > > > dummy bonding snd_emu10k1 snd_rawmidi snd_ac97_codec ath9k ac97_bus
-> > > > snd_pcm snd_page_alloc snd_util_mem forcedeth snd_hwdep
-> > > > [88563.318141] Pid: 826, comm: mISDN_hfc-pci.1 Not tainted
-> > > > 2.6.29.4-grsec #13 [88563.318142] Call Trace:
-> > > > [88563.318147]  [<ffffffff8025909a>] warn_slowpath+0xea/0x160
-> > > > [88563.318149]  [<ffffffff8025ee0f>] local_bh_enable+0x8f/0xb0
-> > > > [88563.318152]  [<ffffffff8065f284>] sk_filter+0x44/0xa0
-> > > > [88563.318154]  [<ffffffff8064548d>] sock_queue_rcv_skb+0x5d/0x120
-> > > > [88563.318156]  [<ffffffff8060410f>] mISDN_send+0x4f/0xa0
-> > > > [88563.318159]  [<ffffffff8060790e>] l2up_create+0x7e/0x100
-> > > > [88563.318161]  [<ffffffff8060b6e0>] l2_got_tei+0x0/0x90
-> > > > [88563.318163]  [<ffffffff8060b722>] l2_got_tei+0x42/0x90
-> > > > [88563.318164]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
-> > > > [88563.318167]  [<ffffffff8060cb00>] tei_id_assign+0x0/0x120
-> > > > [88563.318168]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
-> > > > [88563.318170]  [<ffffffff8060e373>] mgr_send+0x4d3/0x660
->
-> OK found it, it was in a inlined function call ph_data_ind() in mgr_send().
->
-> This patch should fix it (will send it upstream later).
->
->
-> From: Karsten Keil <keil@b1-systems.de>
-> Date: Tue, 9 Jun 2009 14:38:39 +0200
-> Subject: [PATCH] mISDN: Do not disable IRQ in ph_data_ind()
->
->
-> This fix triggering the WARN_ON_ONCE(in_irq() || irqs_disabled()); in
-> local_bh_enable().
->
-> Here is no need to grab this lock, this was wrong at all and may
-> cause a deadlock and access to freed memory, since on a TEI remove
-> the current listelement can be deleted under us. So this is clearly
-> a case for list_for_each_entry_safe.
->
-> Signed-off-by: Karsten Keil <keil@b1-systems.de>
-> ---
->  drivers/isdn/mISDN/tei.c |    7 ++-----
->  1 files changed, 2 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
-> index bfcdd97..e04bad6 100644
-> --- a/drivers/isdn/mISDN/tei.c
-> +++ b/drivers/isdn/mISDN/tei.c
-> @@ -862,8 +862,7 @@ static int
->  ph_data_ind(struct manager *mgr, struct sk_buff *skb)
->  {
->  	int		ret = -EINVAL;
-> -	struct layer2	*l2;
-> -	u_long		flags;
-> +	struct layer2	*l2, *nl2;
->  	u_char		mt;
->
->  	if (skb->len < 8) {
-> @@ -908,11 +907,9 @@ ph_data_ind(struct manager *mgr, struct sk_buff *skb)
->  		new_tei_req(mgr, &skb->data[4]);
->  		goto done;
->  	}
-> -	read_lock_irqsave(&mgr->lock, flags);
-> -	list_for_each_entry(l2, &mgr->layer2, list) {
-> +	list_for_each_entry_safe(l2, nl2, &mgr->layer2, list) {
->  		tei_ph_data_ind(l2->tm, mt, &skb->data[4], skb->len - 4);
->  	}
-> -	read_unlock_irqrestore(&mgr->lock, flags);
->  done:
->  	return ret;
->  }
-
-
-
-
-
-
---Boundary-00=_2eAQKXpXn+mtmtX
-Content-Type: text/plain;
-  charset="utf-8";
-  name="misdn.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="misdn.txt"
-
-Jun 21 21:49:27 [kernel] [  202.818502] ------------[ cut here ]------------
-Jun 21 21:49:27 [kernel] [  202.818520] WARNING: at kernel/softirq.c:141 local_bh_enable+0x8b/0xb0()
-Jun 21 21:49:27 [kernel] [  202.818525] Hardware name: empty
-Jun 21 21:49:27 [kernel] [  202.818528] Modules linked in: iscsi_trgt dummy bonding forcedeth usbtouchscreen
-Jun 21 21:49:27 [kernel] [  202.818542] Pid: 811, comm: mISDN_hfc-pci.1 Not tainted 2.6.30 #6
-Jun 21 21:49:27 [kernel] [  202.818546] Call Trace:
-Jun 21 21:49:27 [kernel] [  202.818556]  [<ffffffff8026b45b>] ? local_bh_enable+0x8b/0xb0
-Jun 21 21:49:27 [kernel] [  202.818562]  [<ffffffff8026b45b>] ? local_bh_enable+0x8b/0xb0
-Jun 21 21:49:27 [kernel] [  202.818572]  [<ffffffff80265ad9>] ? warn_slowpath_common+0x79/0xd0
-Jun 21 21:49:27 [kernel] [  202.818578]  [<ffffffff8026b45b>] ? local_bh_enable+0x8b/0xb0
-Jun 21 21:49:27 [kernel] [  202.818587]  [<ffffffff806ea8e4>] ? sk_filter+0x44/0xa0
-Jun 21 21:49:27 [kernel] [  202.818594]  [<ffffffff806d142d>] ? sock_queue_rcv_skb+0x5d/0x120
-Jun 21 21:49:27 [kernel] [  202.818604]  [<ffffffff8066738f>] ? mISDN_send+0x4f/0xa0
-Jun 21 21:49:27 [kernel] [  202.818610]  [<ffffffff8066c650>] ? l2_got_ui+0x0/0x70
-Jun 21 21:49:27 [kernel] [  202.818617]  [<ffffffff8066a837>] ? l2up+0x27/0x50
-Jun 21 21:49:27 [kernel] [  202.818623]  [<ffffffff80666052>] ? mISDN_FsmEvent+0x82/0x100
-Jun 21 21:49:27 [kernel] [  202.818630]  [<ffffffff8066e7ba>] ? l2_send+0x6fa/0x980
-Jun 21 21:49:27 [kernel] [  202.818636]  [<ffffffff8066bd40>] ? l2_pull_iqueue+0x0/0x310
-Jun 21 21:49:27 [kernel] [  202.818643]  [<ffffffff80670733>] ? mgr_bcast+0x83/0x160
-Jun 21 21:49:27 [kernel] [  202.818649]  [<ffffffff80669899>] ? mISDNStackd+0x429/0x670
-Jun 21 21:49:27 [kernel] [  202.818657]  [<ffffffff8027c930>] ? autoremove_wake_function+0x0/0x30
-Jun 21 21:49:27 [kernel] [  202.818663]  [<ffffffff80669470>] ? mISDNStackd+0x0/0x670
-Jun 21 21:49:27 [kernel] [  202.818668]  [<ffffffff80669470>] ? mISDNStackd+0x0/0x670
-Jun 21 21:49:27 [kernel] [  202.818674]  [<ffffffff8027c4d4>] ? kthread+0x54/0x90
-Jun 21 21:49:27 [kernel] [  202.818681]  [<ffffffff8022dfba>] ? child_rip+0xa/0x20
-Jun 21 21:49:27 [kernel] [  202.818687]  [<ffffffff8027c480>] ? kthread+0x0/0x90
-Jun 21 21:49:27 [kernel] [  202.818692]  [<ffffffff8022dfb0>] ? child_rip+0x0/0x20
-Jun 21 21:49:27 [kernel] [  202.818696] ---[ end trace d74f848acdfc6568 ]---
-
---Boundary-00=_2eAQKXpXn+mtmtX--
+More politely said: "I believe you would be better off modifying
+ramdisk to include the functionality for persistence."  New filesystem
+should not really be neccessary. ext2 for performance, ext3 if you
+need robustness from journalling, maybe something else makes sense,
+too.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
