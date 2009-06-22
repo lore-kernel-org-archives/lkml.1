@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZFVP5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbZFVQCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZFVP5X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZFVP5Q
+	id S1753184AbZFVQCo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZFVQCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:57:16 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41641 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751170AbZFVP5P (ORCPT
+	Mon, 22 Jun 2009 12:02:36 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:36477 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751240AbZFVQCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:57:15 -0400
-Date: Mon, 22 Jun 2009 16:56:59 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Sudeep K N <sudeepholla.maillist@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, drzeus-mmc@drzeus.cx,
-       linux-kernel@vger.kernel.org
-Subject: Re: Rootfs in eMMC: Kernel panic ...Attempted to kill init!
-Message-ID: <20090622155659.GE29188@n2100.arm.linux.org.uk>
-References: <366f00c80906180218p539f9df9md30f629787fabeb2@mail.gmail.com> <20090619134446.GI24573@n2100.arm.linux.org.uk> <366f00c80906220713o7ad61a8elb6b278b7313107d8@mail.gmail.com> <20090622154308.GC29188@n2100.arm.linux.org.uk> <1245685846.15580.107.camel@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245685846.15580.107.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Jun 2009 12:02:36 -0400
+Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>
+In-Reply-To: <20090622091626.GA3981@csn.ul.ie>
+References: <1245506908.6327.36.camel@localhost>
+	 <4A3CFFEC.1000805@gmail.com> <20090622113652.21E7.A69D9226@jp.fujitsu.com>
+	 <20090622091626.GA3981@csn.ul.ie>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Mon, 22 Jun 2009 12:02:33 -0400
+Message-Id: <1245686553.7799.102.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 04:50:46PM +0100, Catalin Marinas wrote:
-> On Mon, 2009-06-22 at 16:43 +0100, Russell King - ARM Linux wrote:
-> > On Mon, Jun 22, 2009 at 07:43:40PM +0530, Sudeep K N wrote:
-> > > Thanks for the suggestion.
-> > > With the logs it is clear that crash is in the userspace.
-> > > I am getting one of the 2 logs(below) randomly.
-> > > >From trial#2,
-> > > pgd = c60bc000
-> > > [00000000] *pgd=061ee031, *pte=00000000, *ppte=00000000
-> > > I could understand that the page tables are not proper.
-> > > I am not able understand how to proceed.
-> > > 
-> > > Trial#1:
-> > > VFS: Mounted root (ext2 filesystem).
-> > > Freeing init memory: 108K
-> > > linuxrc (1): undefined instruction: pc=40008100
-> > > Code: e08e3003 eb002842 e2801008 e58c217c (e0812103)
+On Mon, 2009-06-22 at 10:16 +0100, Mel Gorman wrote:
+> On Mon, Jun 22, 2009 at 11:39:53AM +0900, KOSAKI Motohiro wrote:
+> > (cc to Mel and some reviewer)
+
+[added Rik so that he can get multiple copies, too. :)]
+
 > > 
-> > Your processor is misbehaving; none of the above hex codes are undefined
-> > instructions, so you shouldn't be taking an undefined instruction trap.
+> > > Flags are:
+> > > 0000000000400000 -- __PG_MLOCKED
+> > > 800000000050000c -- my page flags
+> > >         3650000c -- Maxim's page flags
+> > > 0000000000693ce1 -- my PAGE_FLAGS_CHECK_AT_FREE
+> > 
+> > I guess commit da456f14d (page allocator: do not disable interrupts in
+> > free_page_mlock()) is a bit wrong.
+> > 
+> > current code is:
+> > -------------------------------------------------------------
+> > static void free_hot_cold_page(struct page *page, int cold)
+> > {
+> > (snip)
+> >         int clearMlocked = PageMlocked(page);
+> > (snip)
+> >         if (free_pages_check(page))
+> >                 return;
+> > (snip)
+> >         local_irq_save(flags);
+> >         if (unlikely(clearMlocked))
+> >                 free_page_mlock(page);
+> > -------------------------------------------------------------
+> > 
+> > Oh well, we remove PG_Mlocked *after* free_pages_check().
+> > Then, it makes false-positive warning.
+> > 
+> > Sorry, my review was also wrong. I think reverting this patch is better ;)
+> > 
 > 
-> The undefined instruction aborts are possible in this situation since
-> instructions are fetched via the I-cache while the abort handler shows
-> the code via the D-cache.
+> I think a revert is way overkill. The intention of the patch is sound -
+> reducing the number of times interrupts are disabled. Having pages
+> with the PG_locked bit is now somewhat of an expected situation. I'd
+> prefer to go with either
+> 
+> 1. Unconditionally clearing the bit with TestClearPageLocked as the
+>    patch already posted does
+> 2. Removing PG_locked from the free_pages_check()
+> 3. Unlocking the pages as we go when an mlocked VMA is being torn town
 
-However, you're missing a very important point.
+Mel,
 
-This early on, the I-cache for the non-kernel pages won't contain any
-entries except those placed there by this first binary - it's the very
-first user process which is receiving these exceptions.
+#3 SHOULD be happening in all cases.  The free_page_mlocked() function
+counts when this is not happening.  We tried to fix all cases that we
+encountered before this feature was submitted, but left the vm_stat
+there to report if more PG_mlocked leaks were introduced.  We also,
+inadvertently, left PG_mlocked in the flags to check at free.  We didn't
+hit this before your patch because free_page_mlock() did a test&clear on
+the PG_mlocked before checking the flags.  Since you moved the call, and
+used PageMlocked() instead of TestClearPageMlocked(), any PG_locked page
+will cause the bug.
 
-Second point is that the page concerned has only recently been mapped
-into that page.  I would be very very surprised if speculative
-instruction prefetch managed to dirty the exact right page via the
-kernel mapping to always cause the first process to fail in some way.
+So, we have another PG_mlocked flag leaking to free.  I don't think this
+is terribly serious in itself, and probably not deserving of a BUG_ON.
+It probably doesn't deserve a vm_stat, either, I guess.  However, it
+could indicate a more serious logic error and should be examined. So it
+would be nice to retain some indication that it's happening.
+
+> The patch that addresses 1 seemed ok to me. What do you think?
+> 
+
+Your alternative #2 sounds less expensive that test&clear.
+
+Lee
+
