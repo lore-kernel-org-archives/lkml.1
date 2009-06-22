@@ -1,105 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbZFVTWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758341AbZFVTWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758471AbZFVTWq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 15:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087AbZFVTWQ
+	id S1758341AbZFVTWf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 15:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbZFVTVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 15:22:16 -0400
-Received: from mail-pz0-f182.google.com ([209.85.222.182]:49720 "EHLO
-	mail-pz0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758199AbZFVTWO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 15:22:14 -0400
-X-Greylist: delayed 329 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 15:22:14 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=hk/3HqSzabFdSHevlykM9Ef5Tm2Ol/IJXvZ1LO44S6tZaoEjIJRVjKkP4esmvYs5fo
-         oC23U1DXe8sPruja8KbzwzQwEG0EiKuUOMTbr3+CQNQWh1c+lRv2mtjXog7chtPJlecW
-         uc+gO4M4PaiAqVRP1frEXLTcq7RNI5bZC/yUg=
-Message-ID: <4A3FD89A.8080809@gmail.com>
-Date: Mon, 22 Jun 2009 15:16:42 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Mon, 22 Jun 2009 15:21:15 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:6273 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753991AbZFVTU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 15:20:59 -0400
+X-IronPort-AV: E=Sophos;i="4.42,270,1243839600"; 
+   d="scan'208";a="194527940"
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH 2/5] VFS: Add VFS helper functions for setting up private
+ namespaces
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
+       linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Mon, 22 Jun 2009 15:09:13 -0400
+Message-ID: <20090622190913.27923.61549.stgit@heimdal.trondhjem.org>
+In-Reply-To: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org>
+References: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
- race conditions
-References: <alpine.DEB.1.10.0906201508460.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201640380.25534@makko.or.mcafeemobile.com> <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com> <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com> <4A3FABD9.7080108@novell.com> <alpine.DEB.1.10.0906220952090.10952@makko.or.mcafeemobile.com> <4A3FC2B1.4050107@novell.com> <alpine.DEB.1.10.0906221055480.10952@makko.or.mcafeemobile.com> <20090622184139.GG15228@redhat.com> <alpine.DEB.1.10.0906221146210.10952@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906221146210.10952@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig060E1F4B4B1897791689DB5D"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 22 Jun 2009 19:21:00.0022 (UTC) FILETIME=[93501160:01C9F36E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig060E1F4B4B1897791689DB5D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The purpose of this patch is to improve the remote mount path lookup
+support for distributed filesystems such as the NFSv4 client.
 
-Davide Libenzi wrote:
-> On Mon, 22 Jun 2009, Michael S. Tsirkin wrote:
->
->  =20
->> On Mon, Jun 22, 2009 at 11:03:22AM -0700, Davide Libenzi wrote:
->>    =20
->>> In your case of kernel-to-kernel scenario, why would you need eventfd=
- at=20
->>> all, if userspace role in that model is simply to create it?
->>>      =20
->> That's not 100% true. We have a mode where userspace is the producer
->> and/or consumer (migration mode) and we switch between that and
->> direct kernel-to-kernel communication.
->>    =20
->
-> Then you'd need to ask yourself how to handle your complex case inside =
-the=20
-> KVM code, so that other eventfd users are not affected by the extra fat=
-=20
-> needed to handle your scenarios. Thing that seem to be continuosly trie=
-d.
-> A file* based kernel-to-kernel interface is rather wrong IMO.
->  =20
+When given a mount command of the form "mount server:/foo/bar /mnt", the
+NFSv4 client is required to look up the filehandle for "server:/", and
+then look up each component of the remote mount path "foo/bar" in order
+to find the directory that is actually going to be mounted on /mnt.
+Following that remote mount path may involve following symlinks,
+crossing server-side mount points and even following referrals to
+filesystem volumes on other servers.
 
-Well, I will point out that the interface in question is
-eventfd_signal(struct file *), and you were the one that invented it
-afaict.  Can't help it if we like it :)
+Since the standard VFS path lookup code already supports walking paths
+that contain all these features (using in-kernel automounts for
+following referrals) we would like to be able to reuse that rather than
+duplicate the full path traversal functionality in the NFSv4 client code.
 
-BTW: The termination point of that call is incidental.  Afterall, it
-works the same for kernel-kernel or kernel-userspace.  The only relevant
-discussion point here is that your proposal breaks POLLHUP for
-eventfd_signal() users, and we have a real use case that cares.
+This patch therefore defines a VFS helper function create_mnt_ns(), that
+sets up a temporary filesystem namespace and attaches a root filesystem to
+it. It exports the create_mnt_ns() and put_mnt_ns() function for use by
+filesystem modules.
 
-Let me ask the question a different way: Lets say we all agree that
-eventfd_signal() cannot be file* based to be correct.  Is there a way
-you can think of that satisfies both the need to get rid of file* AND
-still deliver producer-release notification to consumers.  Ultimately
-that is all I care about.
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
--Greg
+ fs/namespace.c                |   45 ++++++++++++++++++++++++++++++++++-------
+ include/linux/mnt_namespace.h |    1 +
+ 2 files changed, 38 insertions(+), 8 deletions(-)
 
 
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 2465c05..9b766b0 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1937,6 +1937,21 @@ dput_out:
+ 	return retval;
+ }
+ 
++static struct mnt_namespace *alloc_mnt_ns(void)
++{
++	struct mnt_namespace *new_ns;
++
++	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
++	if (!new_ns)
++		return ERR_PTR(-ENOMEM);
++	atomic_set(&new_ns->count, 1);
++	new_ns->root = NULL;
++	INIT_LIST_HEAD(&new_ns->list);
++	init_waitqueue_head(&new_ns->poll);
++	new_ns->event = 0;
++	return new_ns;
++}
++
+ /*
+  * Allocate a new namespace structure and populate it with contents
+  * copied from the namespace of the passed in task structure.
+@@ -1948,14 +1963,9 @@ static struct mnt_namespace *dup_mnt_ns(struct mnt_namespace *mnt_ns,
+ 	struct vfsmount *rootmnt = NULL, *pwdmnt = NULL;
+ 	struct vfsmount *p, *q;
+ 
+-	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
+-	if (!new_ns)
+-		return ERR_PTR(-ENOMEM);
+-
+-	atomic_set(&new_ns->count, 1);
+-	INIT_LIST_HEAD(&new_ns->list);
+-	init_waitqueue_head(&new_ns->poll);
+-	new_ns->event = 0;
++	new_ns = alloc_mnt_ns();
++	if (IS_ERR(new_ns))
++		return new_ns;
+ 
+ 	down_write(&namespace_sem);
+ 	/* First pass: copy the tree topology */
+@@ -2019,6 +2029,24 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
+ 	return new_ns;
+ }
+ 
++/**
++ * create_mnt_ns - creates a private namespace and adds a root filesystem
++ * @mnt: pointer to the new root filesystem mountpoint
++ */
++struct mnt_namespace *create_mnt_ns(struct vfsmount *mnt)
++{
++	struct mnt_namespace *new_ns;
++
++	new_ns = alloc_mnt_ns();
++	if (!IS_ERR(new_ns)) {
++		mnt->mnt_ns = new_ns;
++		new_ns->root = mnt;
++		list_add(&new_ns->list, &new_ns->root->mnt_list);
++	}
++	return new_ns;
++}
++EXPORT_SYMBOL(create_mnt_ns);
++
+ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
+ 		char __user *, type, unsigned long, flags, void __user *, data)
+ {
+@@ -2264,3 +2292,4 @@ void put_mnt_ns(struct mnt_namespace *ns)
+ 	release_mounts(&umount_list);
+ 	kfree(ns);
+ }
++EXPORT_SYMBOL(put_mnt_ns);
+diff --git a/include/linux/mnt_namespace.h b/include/linux/mnt_namespace.h
+index 299d11a..3beb259 100644
+--- a/include/linux/mnt_namespace.h
++++ b/include/linux/mnt_namespace.h
+@@ -24,6 +24,7 @@ struct proc_mounts {
+ 
+ struct fs_struct;
+ 
++extern struct mnt_namespace *create_mnt_ns(struct vfsmount *mnt);
+ extern struct mnt_namespace *copy_mnt_ns(unsigned long, struct mnt_namespace *,
+ 		struct fs_struct *);
+ extern void put_mnt_ns(struct mnt_namespace *ns);
 
---------------enig060E1F4B4B1897791689DB5D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko/2JoACgkQP5K2CMvXmqGr0gCeK2kQyNY+o1cDVphkjt+AJ3K9
-1FQAn2TlKwTs4ZJcs46nfFxMvJ0j7Kxe
-=NEZm
------END PGP SIGNATURE-----
-
---------------enig060E1F4B4B1897791689DB5D--
