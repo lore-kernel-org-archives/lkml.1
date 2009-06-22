@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZFVEkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbZFVEsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbZFVEkX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 00:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZFVEkL
+	id S1752002AbZFVEsn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 00:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZFVEsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 00:40:11 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:45096 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbZFVEkL (ORCPT
+	Mon, 22 Jun 2009 00:48:35 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:44903 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZFVEse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 00:40:11 -0400
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, mel@csn.ul.ie,
-       tglx@linutronix.de, hpa@zytor.com, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       rusty@rustcorp.com.au, steiner@sgi.com, rientjes@google.com,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH] mm: clear N_HIGH_MEMORY map before se set it again -v4
-References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie>
- <4A0A64FB.4080504@kernel.org> <20090513145950.GB28097@csn.ul.ie>
- <4A0C4910.7090508@kernel.org> <4A0C4A2A.6080009@kernel.org>
- <20090514095414.ba8356e5.akpm@linux-foundation.org>
- <4A0C4F67.5080802@kernel.org>
- <20090514102554.b3a36f19.akpm@linux-foundation.org>
- <4A0C563A.3020100@kernel.org> <4A2758CB.9090404@kernel.org>
- <alpine.DEB.1.10.0906041236520.5377@gentwo.org> <4A27FAD4.2010104@kernel.org>
- <alpine.DEB.1.10.0906041309230.8080@gentwo.org> <4A2803D1.4070001@kernel.org>
- <m3bpokiv0u.fsf@pobox.com> <4A3B49BA.40100@kernel.org>
- <m3prd0havh.fsf@pobox.com> <4A3D7419.8040305@kernel.org>
-From: Nathan Lynch <ntl@pobox.com>
-Date: Sun, 21 Jun 2009 23:39:56 -0500
-In-Reply-To: <4A3D7419.8040305@kernel.org> (Yinghai Lu's message of "Sat\, 20
- Jun 2009 16\:43\:21 -0700")
-Message-ID: <m3my807ug3.fsf@pobox.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Mon, 22 Jun 2009 00:48:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=eK9Ks2ToHsCsVHQfTLnbrd9PqQ8+fxjaiVuOlnL+2zCkISUlaOiPk0aZuBTPD8Y0ZN
+         5TV8+569Q8PphekWhY69fZR+T3AzxRwwF7HPi/THte+JukIP1/qkLUysaxWEze/k81FA
+         zyl3wuB7tNjMCZzYL8Oq9eLH8OFBazX/S6BeU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: C664D804-5EE6-11DE-94C0-B5D1A546830D-04752483!a-sasl-quonix.pobox.com
+In-Reply-To: <20090621183658.2b408e69@lappy.seanm.ca>
+References: <20090620154824.72b5cd50@lappy.seanm.ca>
+	 <200906202256.46073.elendil@planet.nl>
+	 <20090620194250.5a3e826f@lappy.seanm.ca>
+	 <200906210628.35553.elendil@planet.nl>
+	 <84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
+	 <1245623104.16880.26.camel@pasglop>
+	 <20090621183658.2b408e69@lappy.seanm.ca>
+Date: Mon, 22 Jun 2009 07:48:35 +0300
+X-Google-Sender-Auth: c942a96535f8e1aa
+Message-ID: <84144f020906212148y77a05be6k8f96beb3cf31da2b@mail.gmail.com>
+Subject: Re: Badness on the Warp
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Frans Pop <elendil@planet.nl>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org,
+       David Gibson <david@gibson.dropbear.id.au>,
+       Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
-> please check
->
-> [PATCH] x86: only clear node_states for 64bit
->
-> Nathan reported that
-> | commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
-> | Author: Yinghai Lu <yinghai@kernel.org>
-> | Date:   Tue Jun 16 15:33:00 2009 -0700
-> |
-> |    page-allocator: clear N_HIGH_MEMORY map before we set it again
-> |    
-> |    SRAT tables may contains nodes of very small size.  The arch code may
-> |    decide to not activate such a node.  However, currently the early boot
-> |    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
-> |    active although these nodes have no present pages.
-> |    
-> |    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
->
-> the cpuset.mems cgroup attribute on an i386 kvm guest
->
-> try to fix it by only clear node_states[N_NORMAL_MEMORY] for 64bit only.
-> and need to do save/restore for that in find_zone_movable_pfn
+Hi Sean,
 
-This works for my setup, thanks.
+On Mon, Jun 22, 2009 at 1:36 AM, Sean MacLennan<smaclennan@pikatech.com> wrote:
+> On Mon, 22 Jun 2009 08:25:04 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+>> Right, our interrupt controllers need those fixes, they are low
+>> on my priority list since it's a reasonably harmless warning and I'm
+>> still chasing some actual breakage (though maybe not directly related
+>> to your patches).
+>>
+>> Kumar already submitted a couple, Frans, feel free to beat me
+>> at converting UIC (just use kmalloc directly in there instead
+>> of alloc_bootmem).
+>
+> I can make the changes to UIC if you want. They badness is harmless (it
+> ends up calling kzalloc anyway), but hard to explain to our PV (Product
+> Verification) department that they can ignore what looks like a crash ;)
+
+Right. We can also wrap the WARN_ON() in CONFIG_DEBUG_BOOTMEM or
+something too but I'd prefer a proper fix here.
+
+                                   Pekka
