@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbZFVMef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZFVMfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbZFVMef (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 08:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZFVMe1
+	id S1753881AbZFVMfj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 08:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZFVMfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 08:34:27 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:35040 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbZFVMeZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 08:34:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=axfJGKUZ0dC6useIq4xx2gQhxuIc+RtU64zvl3y9QL/dHe0h4NeeMf441yZzVP2TKC
-         wJd76HuE4MrCwXfw9q/rmPcCN7MwNgBkZfYtxvDmFtZEDAtZJpLsilVJIRd2nORI+W5d
-         mMqi3m260KjkO2AeN0AIe+p6OT8kqbDN/16nw=
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "linux-usb\@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kyungmin.park\@samsung.com" <kyungmin.park@samsung.com>
-Subject: Re: PROBLEM: kernel oops with g_serial USB gadget on 2.6.30
-References: <E4D3F24EA6C9E54F817833EAE0D912AC0228288428@bssrvexch01.BS.local>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 22 Jun 2009 14:33:50 +0200
-In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC0228288428@bssrvexch01.BS.local> (Marek Szyprowski's message of "Mon\, 22 Jun 2009 14\:04\:46 +0200")
-Message-ID: <87iqio5txt.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 22 Jun 2009 08:35:32 -0400
+Received: from mga09.intel.com ([134.134.136.24]:21672 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750790AbZFVMfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 08:35:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,268,1243839600"; 
+   d="scan'208";a="424248582"
+Message-ID: <4A3F7A93.5080004@linux.intel.com>
+Date: Mon, 22 Jun 2009 14:35:31 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
+ to 	disk, mce related?
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3E7F38.7030300@linux.intel.com>	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>	 <4A3EE668.5090400@jp.fujitsu.com>	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>	 <4A3F55C7.4030909@linux.intel.com> <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>
+In-Reply-To: <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Marek" == Marek Szyprowski <m.szyprowski@samsung.com> writes:
+Maciej Rutecki wrote:
+> 2009/6/22 Andi Kleen <ak@linux.intel.com>:
+> 
+>> Too bad. Were you able to set up a console during the hang?
+>>
+>> e.g. if you have a second system could you perhaps configure netconsole
+>> (See Documentation/networking/netconsole.txt) and capture the messages?
+>>
+> 
+> I configure netconsole. But it doesn't show any messages when system hangs:
 
- Marek> Hello,
+Was this with check_interval = 1 ?
 
- Marek> I would like to ask if someone has successfully used g_serial
- Marek> USB gadget driver with kernel 2.6.29 or 2.6.30? I'm developing
- Marek> a low level hardware driver for USB gadgets on ARM S3C6410
- Marek> platform. This driver is working quite fine (I've used it a
- Marek> lot with g_ether CDC/RNDIS ethernet gadget driver). During my
- Marek> development I've found the following bug in g_serial driver:
+Do you see something when you set it to 60 or so (you need to wait 60 seconds)?
 
-You are aware that Ben Dooks has written an UDC driver for the OTG
-controller on the s3c6410 which is now in mainline, right?
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5b7d70c6dbf2db786395cbd21750a1a4ce222f84
-
-I've used the g_serial driver on 2.6.29 without problems (not on
-s3c6410 though).
-
--- 
-Bye, Peter Korsgaard
+-Andi
