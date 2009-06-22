@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZFVP1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbZFVP2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZFVP1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbZFVP1M
+	id S1757027AbZFVP2S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 11:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZFVP2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:27:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58687 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbZFVP1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:27:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [patch update 2 fix] PM: Introduce core framework for run-time PM of I/O devices
-Date: Mon, 22 Jun 2009 17:27:28 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <Pine.LNX.4.44L0.0906221007140.3081-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906221007140.3081-100000@iolanthe.rowland.org>
+	Mon, 22 Jun 2009 11:28:04 -0400
+Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:64669 "EHLO
+	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752147AbZFVP2D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 11:28:03 -0400
+X-IronPort-AV: E=Sophos;i="4.42,269,1243807200"; 
+   d="scan'208";a="31722759"
+Message-ID: <4A3FA326.8030802@inria.fr>
+Date: Mon, 22 Jun 2009 17:28:38 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+CC: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
+       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>	 <87zldjn597.fsf@basil.nowhere.org>	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>	 <20090612103251.GJ25568@one.firstfloor.org>	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>	 <1245119977.6724.40.camel@lts-notebook>	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>	 <1245164395.15138.40.camel@lts-notebook>	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>	 <1245299856.6431.30.camel@lts-notebook>  <4A3F7A49.6070805@inria.fr> <1245680649.7799.54.camel@lts-notebook>
+In-Reply-To: <1245680649.7799.54.camel@lts-notebook>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906221727.29295.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 June 2009, Alan Stern wrote:
-> On Sun, 21 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > > Seriously, there _are_ places where drivers get bound to device before
-> > > those devices are registered.  This happens for example in USB when a
-> > > bunch of related interfaces are present in the same physical device.  
-> > > When the first interface is registered, its driver binds itself to all
-> > > the others even though they haven't been registered yet.
-> > 
-> > Well, the suspend functions could be protected against that under the
-> > assumption that no suspend is possible for resume_counter = 0 (then, the "good
-> > to go" value would be -1).
-> > 
-> > Still, the resume functions start from acquring a spinlock, which is not going
-> > to work if that spinlock is uninitialized.
-> 
-> The initialization needs to be improved.  Most of the code in
-> pm_runtime_init() should be called from device_pm_init(), and the rest
-> should be moved into a separate pm_runtime_add() routine to be called
-> from device_pm_add().
+Lee Schermerhorn wrote:
+>> I gave this patchset a try and indeed it seems to work fine, thanks a
+>> lot. But the migration performance isn't very good. I am seeing about
+>> 540MB/s when doing mbind+touch_all_pages on large buffers on a
+>> quad-barcelona machines. move_pages gets 640MB/s there. And my own
+>> next-touch implementation were near 800MB/s in the past.
+>>     
+>
+> Interesting.  Do you have any idea where the differences come from?  Are
+> you comparing them on the same kernel versions?  I don't know the
+> details of your implementation, but one possible area is the check for
+> "misplacement".  When migrate-on-fault is enabled, I check all pages
+> with page_mapcount() == 0 for misplacement in the [swap page] fault
+> path.  That, and other filtering to eliminate unnecessary migrations
+> could cause extra overhead.
+>   
 
-OK
+(I'll actually talk about this at the Linux Symposium) I used 2.6.27
+initially, with some 2.6.29 patches to fix the throughput of move_pages
+for large buffers. So move_pages was getting about 600MB/s there. Then
+my own (hacky) next-touch implementation was getting about 800MB/s. The
+main difference with your code is that mine only modifies the current
+process PTE without touching the other processes if the page is shared.
+So my code basically only supports private pages, it duplicates/migrates
+them on next-touch. I thought it was faster than move_pages because I
+didn't support shared-page migration. But, I found out later that
+move_pages could be further improved up to about 750MB/s (it will be in
+2.6.31).
 
-In that case, I think, the initialization of the spinlock and resume_counter
-can be put into the thing called by device_pm_init().
+So now, I'd expect both the next-touch migration and move_pages to have
+similar migration throughput, about 750-800MB/s on my quad-barcelona
+machine. Right now, I'm seeing less than that for both, so there might
+be a problem deeper. Actually, looking at COW performance when the new
+page is allocated on a remote numa node, I also see the throughput much
+lower in 2.6.29+ (about 720MB/s) than in 2.6.27 (about 850MB/s). Maybe a
+regression in the low-level page copy routine?
 
-> One of the things pm_runtime_add() could do is change the status from 
-> RPM_UNREGISTERED to RPM_ACTIVE.
+Brice
 
-If the status is initially (ie. at the device_pm_init() point) RPM_ACTIVE and
-resume_couter is initially 1, what are we going to need RPM_UNREGISTERED for?
-
-Rafael
