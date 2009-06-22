@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZFVN7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZFVN73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbZFVN7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 09:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZFVN7D
+	id S1756683AbZFVN73 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 09:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZFVN7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 22 Jun 2009 09:59:04 -0400
+Received: from dan.rpsys.net ([93.97.175.187]:58342 "EHLO dan.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751607AbZFVN7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 22 Jun 2009 09:59:03 -0400
-Received: from [212.98.175.89] ([212.98.175.89]:47237 "EHLO localdomain.by"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751551AbZFVN7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 09:59:02 -0400
-Date: Mon, 22 Jun 2009 16:59:35 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
-       Rabin Vincent <rabin@rab.in>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: BUG: scheduling while atomic
-Message-ID: <20090622135935.GB32155@localdomain.by>
-References: <20090619181529.GA3593@localdomain.by>
- <20090620174320.GA6791@debian>
- <20090620185452.GD3138@localdomain.by>
- <20090622105721.262179f9@lxorguk.ukuu.org.uk>
- <20090622113308.GA32155@localdomain.by>
- <20090622133612.22fd84b8@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090622133612.22fd84b8@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: delayed 354 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 09:59:02 EDT
+Subject: Re: 2.6.30: hald crashes on resume from STR apparently on LED
+	device
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: hal@lists.freedesktop.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200906211817.25878.arvidjaar@mail.ru>
+References: <200906142219.06891.arvidjaar@mail.ru>
+	 <200906211817.25878.arvidjaar@mail.ru>
+Content-Type: text/plain
+Date: Mon, 22 Jun 2009 14:57:24 +0100
+Message-Id: <1245679044.10200.17.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/22/09 13:36), Alan Cox wrote:
-> Just delete the tty_unthrottle() from drivers/net/ppp/ppp_async.c - it
-> never throttles the port so it never needs to unthrottle it 
+On Sun, 2009-06-21 at 18:17 +0400, Andrey Borzenkov wrote:
+> So what happens is simple. During suspend led device is removed; during 
+> resume it is recreated. Apparently removing led device cause hald-addon-
+> leds to exit (thus disconnecting D-Bus connection); and sometimes next 
+> "add" event comes too early, before hald had chance to notice missing 
+> addon.
 
-Right. Thanks.
-Will test.
+Note that its the underlying device that is being removed here and since
+the LED is connected to that its removed as well. The LED subsystem
+hasn't changed in how it works. I don't think that has any bearing on
+your patch though.
 
->
->(which is why it happened never to cause crashes before)
-> 
+Regards,
 
-	Sergey
+Richard
+
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
+
