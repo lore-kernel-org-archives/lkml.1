@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbZFVIzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZFVI4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbZFVIzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 04:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZFVIzb
+	id S1755941AbZFVI4Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 04:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZFVIz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 04:55:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:55831 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbZFVIza (ORCPT
+	Mon, 22 Jun 2009 04:55:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47423 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752398AbZFVIz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 04:55:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=n8s63hRFs8/Ozkpo67jQ25QJar0c0tJKvA+kJGNSi1MHurcz8zeWTFyo2upLp2Yj98
-         3koeNjrQ06C2m/mBzjVqVibh1gSrooXCkiZxCms34vNuYtVnEOEwUoToH/aQ751q15E4
-         zUTlbWN85X6qxXQrK2++DfrOHadd5/ZRGFuFc=
-Date: Mon, 22 Jun 2009 16:57:35 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Menage <menage@google.com>,
-       akpm@linux-foundation.org, jdike@addtoit.com,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
-Message-ID: <20090622085735.GB6499@cr0.nay.redhat.com>
-References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com> <4A3F4448.30502@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A3F4448.30502@panasas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Jun 2009 04:55:58 -0400
+Date: Mon, 22 Jun 2009 09:57:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Matthew Wilcox <matthew@wil.cx>,
+       Changli Gao <xiaosuo@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH update 2] SCSI: explain the hidden scsi_wait_scan
+ Kconfig variable
+Message-ID: <20090622095701.72c22150@lxorguk.ukuu.org.uk>
+In-Reply-To: <tkrat.da2728358fccf96e@s5r6.in-berlin.de>
+References: <4A384FE4.9090703@gmail.com>
+	<20090617021254.GQ19977@parisc-linux.org>
+	<tkrat.ad6f8fb712020451@s5r6.in-berlin.de>
+	<1245338486.7586.13.camel@mulgrave.site>
+	<20090618165926.GA13229@uranus.ravnborg.org>
+	<tkrat.da2728358fccf96e@s5r6.in-berlin.de>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 11:43:52AM +0300, Boaz Harrosh wrote:
->
->Stephan hi.
->
->The above breakage is the usual stuff we get every merge window. With people doing
->cross arch work and neglecting UML.
->
->Who is the person or people responsible for the large linux-next compilation rig?
->Is it possible to also add a UML traget, at least for the x86_64/x86_32 sub-arch?
+On Thu, 18 Jun 2009 21:03:23 +0200 (CEST)
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-Agreed.
+> People keep sending patches to expose CONFIG_SCSI_WAIT_SCAN as a tunable
+> item.  These patches aren't accepted upstream, so let's stop the ongoing
+> irritation of people due to the unconditionally installed module and its
+> Kconfig symbol.
 
-Stephan, could you please also do compiling tests for UML in your -next tree?
+How about the other possibility. People keepmaking it tunable because it
+makes sense for it to be tunable. Far better IMHO to make it tunable "if
+EMBEDDED"
 
-Thanks!
