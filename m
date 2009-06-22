@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZFVMPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbZFVMQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbZFVMPr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 08:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbZFVMPj
+	id S1753558AbZFVMQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 08:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750731AbZFVMQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 08:15:39 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:26682
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750731AbZFVMPi (ORCPT
+	Mon, 22 Jun 2009 08:16:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55132 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbZFVMQT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 08:15:38 -0400
-Message-ID: <4A3F75EB.7090107@panasas.com>
-Date: Mon, 22 Jun 2009 15:15:39 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd mailing-list <osd-dev@open-osd.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [osd-dev] [PATCH] open-osd: osdblk User Mode utility
-References: <4A391373.3050301@panasas.com> <4A3A370D.10704@panasas.com> <4A3A393F.4010101@panasas.com>
-In-Reply-To: <4A3A393F.4010101@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jun 2009 12:15:41.0659 (UTC) FILETIME=[292EE2B0:01C9F333]
+	Mon, 22 Jun 2009 08:16:19 -0400
+Date: Mon, 22 Jun 2009 14:16:16 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: eranian@gmail.com, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: IV.4 - Intel PEBS
+Message-ID: <20090622121616.GB6760@one.firstfloor.org>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622120052.GS24366@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622120052.GS24366@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/18/2009 03:55 PM, Boaz Harrosh wrote:
-> A minimal user-mode application to Create / Remove / Resize
-> OSD objects from a device, for use with the osdblk.ko block
-> device driver.
+On Mon, Jun 22, 2009 at 02:00:52PM +0200, Ingo Molnar wrote:
+> Having said that, PEBS is a hardware sampling feature that is
+> definitely saner than AMD's IBS. There's two immediate incremental
+> uses of it in perfcounters:
 > 
-> See inside patch for Usage instructions.
+>  - it makes flat sampling lower overhead by avoiding an NMI for all
+>    sample points.
 > 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
+>  - it makes flat sampled data more precise. (I.e. it can avoid the
+>    1-2 instructions 'skidding' of a sample position, for a handful
 
-This version had a bug which, if the partition did not exist
-it would fail to create the object.
+There are realistic examples where the non pebs "shadow" can be far more
+than that, even giving systematic error and hiding complete basic blocks.
 
-I have squashed the below patch into this one, on the open-osd
-git tree
+>    of PEBS-capable events.)
 
----
-Subject: [PATCH] {SQUASHME} open-osd: usr/osdblk: Need to also create the partition
+There are a more reasons, especially on Nehalem there are some useful things
+you can only measure with PEBS. e.g. memory latency or address
+histograms (although the later is quite complicated). Also it 
+has a lot more PEBS capable events than older parts.
 
-A fall out of the usr/osdblk application
+Long term the trend is likely that more and more advanced PMU features
+will require PEBS.
 
-Boaz
----
- usr/osdblk.c |   17 +++++++++++++++--
- 1 files changed, 15 insertions(+), 2 deletions(-)
+> Regarding demultiplexing on Nehalem: PEBS goes into the DS (Data
+> Store), and indeed on Nehalem all PEBS counters 'mix' their PEBS
+> records in the same stream of data. One possible model to support
+> them is to set the PEBS threshold to one, and hence generate an
+> interrupt for each PEBS record. At offset 0x90 of the PEBS record we
 
-diff --git a/usr/osdblk.c b/usr/osdblk.c
-index f7df257..b9982c0 100644
---- a/usr/osdblk.c
-+++ b/usr/osdblk.c
-@@ -74,7 +74,7 @@ static void usage(void)
- 	"       pid_no is the partition 64bit number of the object in question\n"
- 	"       Both 0xabc hex or decimal anotation can be used\n"
- 	"\n"
--	"--obj=obj_no | -o obj_no\n"
-+	"--oid=obj_no | -o obj_no\n"
- 	"       obj_no is the object 64bit number of the object in question\n"
- 	"       Both 0xabc hex or decimal anotation can be used\n"
- 	"\n"
-@@ -198,6 +198,19 @@ static int do_create(struct osd_dev *od, struct osd_obj_id *obj, u64 size)
- 		return -ENOMEM;
- 
- 	osdblk_make_credential(creds, obj, osd_req_is_ver1(or));
-+
-+	/* Create partition OK to fail (all ready exist) */
-+	osd_req_create_partition(or, obj->partition);
-+	ret = osdblk_exec(or, creds);
-+	osd_end_request(or);
-+
-+	if (ret)
-+		OSDBLK_INFO("pid=0x%llx exists\n", _LLU(obj->partition));
-+
-+	or = osd_start_request(od, GFP_KERNEL);
-+	if (unlikely(!or))
-+		return -ENOMEM;
-+
- 	osd_req_create_object(or, obj);
- 	ret = osdblk_exec(or, creds);
- 	osd_end_request(or);
-@@ -280,7 +293,7 @@ int main(int argc, char *argv[])
- 		{.name = "resize", .has_arg = 0, .flag = NULL, .val = 's'} ,
- 		{.name = "pid", .has_arg = 1, .flag = NULL, .val =  'p'} ,
- 		{.name = "oid", .has_arg = 1, .flag = NULL, .val =  'o'} ,
--		{.name = "size", .has_arg = 1, .flag = NULL, .val = 'l'} ,
-+		{.name = "length", .has_arg = 1, .flag = NULL, .val = 'l'} ,
- 
- 		{.name = 0, .has_arg = 0, .flag = 0, .val = 0} ,
- 	};
+Then you would need the NMIs again, the NMI avoidance in PEBS only
+works with higher thresholds.
+
+> As to enabling PEBS with the (CPU-)global latency recording filters,
+> we can do this transparantly for every PEBS supported event, or can
+> mandate PEBS scheduling when a PEBS only feature like load latency
+> is requested.
+> 
+> This means that for most purposes PEBS will be transparant.
+
+One disadvantage here is that you're giving away a lot of measuring 
+overhead: interrupts are always much more costly than a PEBS event directly
+written by the CPU.
+
+But when you support batching multiple PEBS events I suspect the consumer
+needs to be aware of the limitations,  e.g. no precise time stamps.
+
+-Andi
 -- 
-1.6.2.1
-
+ak@linux.intel.com -- Speaking for myself only.
