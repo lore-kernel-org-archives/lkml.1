@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZFVOc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbZFVOdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZFVOc6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbZFVOco
+	id S1757045AbZFVOdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZFVOcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:32:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53457 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757287AbZFVOcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:32:43 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] LDSCRIPT: Name INIT_RAM_FS consistently
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 22 Jun 2009 15:32:31 +0100
-Message-ID: <20090622143231.3927.1495.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 22 Jun 2009 10:32:46 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:48305 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757274AbZFVOcp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 10:32:45 -0400
+Subject: Re: Rootfs in eMMC: Kernel panic ...Attempted to kill init!
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Sudeep K N <sudeepholla.maillist@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.arm.linux.org.uk, drzeus-mmc@drzeus.cx,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1245680789.15580.85.camel@pc1117.cambridge.arm.com>
+References: <366f00c80906180218p539f9df9md30f629787fabeb2@mail.gmail.com>
+	 <20090619134446.GI24573@n2100.arm.linux.org.uk>
+	 <366f00c80906220713o7ad61a8elb6b278b7313107d8@mail.gmail.com>
+	 <1245680789.15580.85.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 22 Jun 2009 15:32:38 +0100
+Message-Id: <1245681158.15580.91.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Jun 2009 14:32:39.0802 (UTC) FILETIME=[4B93FDA0:01C9F346]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In asm-generic/vmlinux.lds.h, name INIT_RAM_FS consistently, no matter the
-setting of CONFIG_BLK_DEV_INITRD.  This corrects:
+On Mon, 2009-06-22 at 15:26 +0100, Catalin Marinas wrote:
+> On Mon, 2009-06-22 at 19:43 +0530, Sudeep K N wrote:
+> > Thanks for the suggestion.
+> > With the logs it is clear that crash is in the userspace.
+> > I am getting one of the 2 logs(below) randomly.
+> 
+> This sounds familiar: SMP -> writealloc cache policy (could be forced by
+> hardware) -> cache corruption in user space with ext2.
+> 
+> Does you driver use the DMA API? If not, does your eMMC driver flush the
+> cache (in case you hit one of the long-standing problems with PIO
+> drivers).
+> 
+> It's worth trying this hack:
+> 
+> http://article.gmane.org/gmane.linux.ports.arm.kernel/51556
 
-	commit ef53dae8658cf0e93d380983824a661067948d87
-	Author: Sam Ravnborg <sam@ravnborg.org>
-	Date:   Sun Jun 7 20:46:37 2009 +0200
-	Subject: Improve vmlinux.lds.h support for arch specific linker scripts
+To be more precise:
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
----
+If your system is ARM11MPCore based and your driver uses DMA, try this
+patch (in-software DMA cache maintenance operations broadcasting):
 
- include/asm-generic/vmlinux.lds.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+http://www.linux-arm.org/git?p=linux-2.6-stable.git;a=commitdiff_plain;h=95298b1792121e7068258de451caec7f3dda0e78
 
+If your driver is a PIO one, try this patch (flush_dcache_page called in
+the VFS layer):
 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 55413e5..92b73b6 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -625,7 +625,7 @@
- 	*(.init.ramfs)							\
- 	VMLINUX_SYMBOL(__initramfs_end) = .;
- #else
--#define INITRAMFS
-+#define INIT_RAM_FS
- #endif
- 
- /**
+http://www.linux-arm.org/git?p=linux-2.6-stable.git;a=commitdiff_plain;h=d763f5815aa21095141c3ba87011906a61505dad
+
+-- 
+Catalin
 
