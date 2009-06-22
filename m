@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbZFVQjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZFVQn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbZFVQjW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbZFVQiz
+	id S1753509AbZFVQn6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbZFVQnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:38:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41756 "EHLO
+	Mon, 22 Jun 2009 12:43:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37476 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756429AbZFVQiz (ORCPT
+	with ESMTP id S1750830AbZFVQnv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:38:55 -0400
+	Mon, 22 Jun 2009 12:43:51 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 02/15] serial: bfin_5xx: add missing spin_lock init
+Subject: [PATCH 03/15] serial: bfin_5xx: fix building as module when early
+	printk is enabled
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 18:37:24 +0100
-Message-ID: <20090622173115.25341.3717.stgit@t61.ukuu.org.uk>
+Date: Mon, 22 Jun 2009 18:41:47 +0100
+Message-ID: <20090622173729.25341.82857.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 References: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -27,28 +28,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mike Frysinger <vapier@gentoo.org>
 
-The Blackfin serial driver never initialized the spin_lock that is part of
-the serial core structure, but we never noticed because spin_lock's are
-rarely enabled on UP systems.  Yeah lockdep and friends.
+Since early printk only makes sense/works when the serial driver is built
+into the kernel, disable the option for this driver when it is going to be
+built as a module.  Otherwise we get build failures due to the ifdef
+handling.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/serial/bfin_5xx.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/serial/bfin_5xx.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 
 diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index e2f6b1b..d7fcca1 100644
+index d7fcca1..b4a7650 100644
 --- a/drivers/serial/bfin_5xx.c
 +++ b/drivers/serial/bfin_5xx.c
-@@ -1110,6 +1110,7 @@ static void __init bfin_serial_init_ports(void)
- 	bfin_serial_hw_init();
+@@ -38,6 +38,10 @@
+ #include <asm/cacheflush.h>
+ #endif
  
- 	for (i = 0; i < nr_active_ports; i++) {
-+		spin_lock_init(&bfin_serial_ports[i].port.lock);
- 		bfin_serial_ports[i].port.uartclk   = get_sclk();
- 		bfin_serial_ports[i].port.fifosize  = BFIN_UART_TX_FIFO_SIZE;
- 		bfin_serial_ports[i].port.ops       = &bfin_serial_pops;
++#ifdef CONFIG_SERIAL_BFIN_MODULE
++# undef CONFIG_EARLY_PRINTK
++#endif
++
+ /* UART name and device definitions */
+ #define BFIN_SERIAL_NAME	"ttyBF"
+ #define BFIN_SERIAL_MAJOR	204
 
