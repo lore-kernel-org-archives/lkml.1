@@ -1,52 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZFVSqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZFVSp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbZFVSqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 14:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZFVSqM
+	id S1753257AbZFVSp7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 14:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZFVSpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 14:46:12 -0400
-Received: from mx.treblig.org ([80.68.94.177]:35919 "EHLO mx.treblig.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751037AbZFVSqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 14:46:11 -0400
-Date: Mon, 22 Jun 2009 20:46:05 +0100
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org
-Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
-Message-ID: <20090622194605.GA25820@gallifrey>
-References: <20090613230842.GA18347@gallifrey> <4A349B67.1070603@zytor.com> <20090614122734.GA1499@gallifrey> <alpine.LRH.2.00.0906161126330.31685@twin.jikos.cz> <20090617193442.GA31944@gallifrey> <alpine.LNX.2.00.0906180126260.7457@wotan.suse.de> <20090620120357.GA11272@gallifrey>
+	Mon, 22 Jun 2009 14:45:50 -0400
+Received: from 174-143-236-118.static.slicehost.net ([174.143.236.118]:34022
+	"EHLO fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbZFVSpt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 14:45:49 -0400
+X-Greylist: delayed 1748 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 14:45:49 EDT
+Date: Mon, 22 Jun 2009 14:16:40 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Benny Halevy <bhalevy@panasas.com>
+Subject: nfsd changes for 2.6.31
+Message-ID: <20090622181640.GA19619@fieldses.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090620120357.GA11272@gallifrey>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.29.2-bytemark-kvm-tickless-2009-05-05 (i686)
-X-Uptime: 19:56:42 up 27 days, 12:18,  2 users,  load average: 0.07, 0.07, 0.02
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That I wrote.
-> 
-> Yes, with i8042.noaux it works; dmesg snippet included below.
-> 
-> And in reply to hpa, it doesn't have a mouse port.
+The following nfsd-related changes are available from the for-2.6.31
+branch at:
 
-Jiri,
-I saw you also asked for  a dmidecode -t system
-dmidecode says the machine has 'No SMBIOS nor DMI entry point'.
+  git://fieldses.org/git/linux-nfsd.git for-2.6.31
 
-Dave 
-P.S. Apologies for not keeping the threading correct - I hit 'd' once too
-often.
+(Not the usual URL: CITI is moving tomorrow and linux-nfs.org won't be
+up reliably for the next couple days, so I'm hosting this temporarily on
+my personal server.)
 
-Dave
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+This includes a few small preliminaries for further 4.1 changes
+(backchannel support and a DRC overhaul), but most of that will be
+queued up for 2.6.32.
+
+The NFSv4 server will now use ext4's i_version when available, though
+some more ext4 changes, and testing of performance impact, are needed to
+make it usable.
+
+The rest is miscellaneous cleanup and bugfixes.  Thanks to everyone who
+contributed!
+
+--b.
+
+Alexandros Batsakis (1):
+      nfsd41: move channel attributes from nfsd4_session to a nfsd4_channel_attr struct
+
+Andy Adamson (3):
+      nfsd41: sanity check client drc maxreqs
+      nfsd41: Backchannel: cleanup nfs4.0 callback encode routines
+      nfsd41: Backchannel: minorversion support for the back channel
+
+Anton Blanchard (1):
+      sunrpc: align cache_clean work's timer
+
+Benny Halevy (1):
+      update Documentation/filesystems/00-INDEX with new nfsd related docs.
+
+Bian Naimeng (1):
+      nfsd4: distinguish expired from stale stateids
+
+Christian Engelmayer (1):
+      sunrpc: potential memory leak in function rdma_read_xdr
+
+Chuck Lever (17):
+      SUNRPC: Fix error return value of svc_addr_len()
+      NFSD: Refactor transport removal out of __write_ports()
+      NFSD: Refactor transport addition out of __write_ports()
+      NFSD: Refactor portlist socket closing into a helper
+      NFSD: Refactor socket creation out of __write_ports()
+      NFSD: Note an additional requirement when passing TCP sockets to portlist
+      NFSD: Finish refactoring __write_ports()
+      NFSD: move lockd_up() before svc_addsock()
+      NFSD: Prevent a buffer overflow in svc_xprt_names()
+      SUNRPC: pass buffer size to svc_addsock()
+      SUNRPC: pass buffer size to svc_sock_names()
+      SUNRPC: Switch one_sock_name() to use snprintf()
+      SUNRPC: Support PF_INET6 in one_sock_name()
+      SUNRPC: Clean up one_sock_name()
+      NFSD: Stricter buffer size checking in write_recoverydir()
+      NFSD: Stricter buffer size checking in write_versions()
+      NFSD: Stricter buffer size checking in fs/nfsd/nfsctl.c
+
+Felix Blyakher (1):
+      lockd: call locks_release_private to cleanup per-filesystem state
+
+Greg Banks (3):
+      knfsd: reply cache cleanups
+      knfsd: fix reply cache memory corruption
+      knfsd: remove unreported filehandle stats counters
+
+H Hartley Sweeten (1):
+      net/sunrpc/svc_xprt.c: fix sparse warnings
+
+J. Bruce Fields (19):
+      nfsd: eliminate ENCODE_HEAD macro
+      nfsd4: delete obsolete xdr comments
+      nfsd: support ext4 i_version
+      nfsd: quiet compile warning
+      nfsd4: setclientid_confirm callback-change fixes
+      nfsd4: set shorter timeout
+      nfsd4: set cb_client inside setup_callback_client
+      nfsd4: create rpc callback client from server thread
+      nfsd4: lookup up callback cred only once
+      nfsd4: replace callback thread by asynchronous rpc
+      nfsd4: rename callback struct to cb_conn
+      nfsd4: eliminate struct nfs4_cb_recall
+      nfsd4: remove unused dl_trunc
+      nfsd4: track recall retries in nfs4_delegation
+      nfsd4: make recall callback an asynchronous rpc
+      Merge commit 'v2.6.30' into for-2.6.31
+      nfsd: track last inode only in use_wgather case
+      nfsd: Pull write-gathering code out of nfsd_vfs_write
+      nfsd: minor nfsd_vfs_write cleanup
+
+Mike Sager (1):
+      nfsd41: Remove ip address collision detection case
+
+NeilBrown (2):
+      nfsd: don't take nfsd_mutex twice when setting number of threads.
+      nfsd: optimise the starting of zero threads when none are running.
+
+Randy Dunlap (2):
+      nfsd: use C99 struct initializers
+      lockd: fix FILE_LOCKING=n build error
+
+Roel Kluin (1):
+      rpcgss: remove redundant test on unsigned
+
+Trond Myklebust (2):
+      nfsd: Use write gathering only with NFSv2
+      SUNRPC: Fix the TCP server's send buffer accounting
+
+Wang Chen (1):
+      nfsd: nfs4_stat_init cleanup
+
+Yu Zhiguo (3):
+      NFSv4: do exact check about attribute specified
+      NFSv4: kill off complicated macro 'PROC'
+      NFS: kill off complicated macro 'PROC'
+
+ Documentation/filesystems/00-INDEX      |    4 +
+ fs/Kconfig                              |    2 +
+ fs/lockd/svclock.c                      |    2 +
+ fs/locks.c                              |    3 +-
+ fs/nfs/Kconfig                          |    2 +-
+ fs/nfsd/export.c                        |   13 +-
+ fs/nfsd/nfs3proc.c                      |  237 ++++++++++++++++++++++---
+ fs/nfsd/nfs3xdr.c                       |    1 +
+ fs/nfsd/nfs4callback.c                  |  247 ++++++++++++++++----------
+ fs/nfsd/nfs4proc.c                      |  129 +++++++++++---
+ fs/nfsd/nfs4state.c                     |  171 ++++++++++--------
+ fs/nfsd/nfs4xdr.c                       |  296 ++++++++++++++-----------------
+ fs/nfsd/nfscache.c                      |   33 +++--
+ fs/nfsd/nfsctl.c                        |  294 +++++++++++++++++++------------
+ fs/nfsd/nfsfh.c                         |    6 -
+ fs/nfsd/nfsproc.c                       |  198 +++++++++++++++++----
+ fs/nfsd/nfssvc.c                        |   12 +-
+ fs/nfsd/vfs.c                           |   93 +++++-----
+ include/linux/fs.h                      |    1 +
+ include/linux/nfsd/cache.h              |    3 +-
+ include/linux/nfsd/nfsfh.h              |    7 +
+ include/linux/nfsd/state.h              |   44 +++---
+ include/linux/nfsd/xdr4.h               |   28 ++--
+ include/linux/sunrpc/svc_xprt.h         |    7 +-
+ include/linux/sunrpc/svcsock.h          |    7 +-
+ net/sunrpc/cache.c                      |    2 +-
+ net/sunrpc/svc_xprt.c                   |   57 ++++--
+ net/sunrpc/svcsock.c                    |  122 +++++++++----
+ net/sunrpc/xprtrdma/svc_rdma_recvfrom.c |    8 +-
+ 29 files changed, 1329 insertions(+), 700 deletions(-)
