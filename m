@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZFVRfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbZFVRhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbZFVRfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZFVRfo
+	id S1757907AbZFVRhT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZFVRhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:35:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53167 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751966AbZFVRfo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:35:44 -0400
-Date: Mon, 22 Jun 2009 13:34:36 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch] Remove low_latency flag setting from nozomi and mxser
- drivers
-Message-ID: <20090622133436.23b1442a@dhcp-100-2-144.bos.redhat.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 13:37:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50709 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbZFVRhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:37:08 -0400
+Date: Mon, 22 Jun 2009 19:37:04 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Marco Stornelli <marco.stornelli@gmail.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090622173704.GC21299@elf.ucw.cz>
+References: <4A33A7A2.1050608@gmail.com> <20090613155957.GA16220@shareable.org> <4A34A394.5040509@gmail.com> <20090621064040.GC1656@ucw.cz> <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz> <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com> <20090622172003.GB21149@elf.ucw.cz> <4A3FBFF0.40006@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A3FBFF0.40006@am.sony.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Ebbert <cebbert@redhat.com>
-Remove low_latency flag setting from nozomi and mxser drivers
+On Mon 2009-06-22 10:31:28, Tim Bird wrote:
+> Pavel Machek wrote:
+> >>> How do you handle hard-links, then?
+> >> Indeed hard-links are not supported :) Due to the design of this fs
+> >> there are some limitations explained in the documentation as not
+> >> hard-link, only private memory mapping and so on. However this
+> >> limitations don't limit the fs itself because you must consider the
+> >> special goal of this fs.
+> > 
+> > I did not see that in the changelog. If it is not general purpose
+> > filesystem, it is lot less interesting.
+> 
+> PRAMFS is not a general purpose filesystem. Please read
+> the introductory post to this thread, or look at
+> http://pramfs.sourceforge.net/ for more information.
 
-The kernel oopses if this flag is set.
+Yeah, I seen that. It directly contradicts what you say.
 
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+> Since the purpose of PRAMFS is to provide a filesystem
+> that is persistent across kernel instantions, it is not
+> designed for high speed.  Robustness in the face of
+> kernel crashes or bugs is the highest priority, so
+> PRAMFS has significant overhead to make the window
+> of writability to the filesystem RAM as small as possible.
 
---- linux-2.6.30.noarch.orig/drivers/char/nozomi.c
-+++ linux-2.6.30.noarch/drivers/char/nozomi.c
-@@ -1591,8 +1591,6 @@ static int ntty_open(struct tty_struct *
- 
- 	/* Enable interrupt downlink for channel */
- 	if (port->port.count == 1) {
--		/* FIXME: is this needed now ? */
--		tty->low_latency = 1;
- 		tty->driver_data = port;
- 		tty_port_tty_set(&port->port, tty);
- 		DBG1("open: %d", port->token_dl);
---- linux-2.6.30.noarch.orig/drivers/char/mxser.c
-+++ linux-2.6.30.noarch/drivers/char/mxser.c
-@@ -1048,8 +1048,6 @@ static int mxser_open(struct tty_struct 
- 	if (retval)
- 		return retval;
- 
--	/* unmark here for very high baud rate (ex. 921600 bps) used */
--	tty->low_latency = 1;
- 	return 0;
- }
- 
+Really? So why don't you use well known, reliable fs like ext3?
+
+> This is not a file system one would do kernel compiles on.
+> This is where someone would keep a small amount of sensitive
+> data, or crash logs that one needed to preserve over kernel
+> invocations.
+
+Really? Web page says:
+
+#2. If the backing-store RAM is comparable in access speed to system
+#memory, there's really no point in caching the file I/O data in the
+#page cache. Better to move file data directly between the user buffers
+#and the backing store RAM, i.e. use direct I/O. This prevents the
+#unnecessary 
+
+So you don't cache it "because its fast", and then it is 13MB/sec?
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
