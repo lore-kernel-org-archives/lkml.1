@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZFVRHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbZFVRIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbZFVRHl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbZFVRHc
+	id S1756568AbZFVRIi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZFVRIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:07:32 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:37076 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbZFVRHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:07:31 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 22 Jun 2009 10:01:19 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
- notifier race conditions
-In-Reply-To: <4A3FABD9.7080108@novell.com>
-Message-ID: <alpine.DEB.1.10.0906220952090.10952@makko.or.mcafeemobile.com>
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com> <4A3C004B.8010706@novell.com> <alpine.DEB.1.10.0906191421581.14884@makko.or.mcafeemobile.com>
- <4A3C07FF.3000406@novell.com> <alpine.DEB.1.10.0906191447330.14884@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com> <4A3C44DA.7000503@novell.com> <alpine.DEB.1.10.0906201202170.25534@makko.or.mcafeemobile.com>
- <alpine.DEB.1.10.0906201508460.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201640380.25534@makko.or.mcafeemobile.com> <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com>
- <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com> <4A3FABD9.7080108@novell.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 22 Jun 2009 13:08:31 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49430 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbZFVRIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:08:30 -0400
+Date: Mon, 22 Jun 2009 10:08:31 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       niv@us.ibm.com, lethal@linux-sh.org, kernel@wantstofly.org,
+       matthew@wil.cx
+Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
+Message-ID: <20090622170831.GF6754@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu> <11979.1241648574@redhat.com> <26931.1245670998@redhat.com> <20090622124951.GB30553@elte.hu> <20090622082941.c5c8b3f3.akpm@linux-foundation.org> <20090622160753.GE6754@linux.vnet.ibm.com> <4A3FB1A5.3060805@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A3FB1A5.3060805@us.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009, Gregory Haskins wrote:
+On Mon, Jun 22, 2009 at 09:30:29AM -0700, Darren Hart wrote:
+> Paul E. McKenney wrote:
+>> On Mon, Jun 22, 2009 at 08:29:41AM -0700, Andrew Morton wrote:
+>>> On Mon, 22 Jun 2009 14:49:51 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>>> * David Howells <dhowells@redhat.com> wrote:
+>>>>
+>>>>> Hi Paul,
+>>>>>
+>>>>> Are you going to push your RCU patch for this merge window?
+>>>> Andrew needs to be convinced for that to happen.
+>>>>
+>>> whome?  I rarely have firm opinions on anything.  iirc the question
+>>> here was "is it worth adding another RCU implementation to save 900
+>>> bytes"?
+>>>
+>>> I find it pretty hard to see how to come up with "yes" for that one but
+>>> it's hardly a huge issue.  If you guys feel otherwise then go wild.
+>> Well, I do need to pull the "expedited" interface into the bloatwatch
+>> version, and my update of rcutorture made me realize that I can cut
+>> out a few more bytes, so I will submit an update.  For what it is worth,
+>> here are the opinions expressed on LKML:
+>> +	Ingo Molnar: good documentation, minimal RCU implementation.
+>> ?	Andi Kleen: will there be !SMP systems in the future?
+>> +	Lennert Buytenhek: there will be !SMP ARM for a long time.
+>> +	Paul Mundt: good idea for more-constrained SH platforms.
+>> +	David Howells: Acked-by.  works on FRV board.
+>> ?	Andrew Morton: do we really need another RCU implementation?
+>> Of course, I well remember programming systems with 4K of core memory
+>> back in the 1970s, and therefore feel a bit guilty about sticking deep
+>> embedded platforms with the increase in memory footprint represented
+>> by Hierarchical RCU compared to Classic RCU.  And Bloatwatch RCU is much
+>> smaller and easier to understand/maintain than is Classic RCU.
+>> So, again, I will forward port, optimize, test, and resubmit.
+>
+> IIRC, in previous threads on this topic, the Bloatwatch edition was 
+> expected to replace Classic RCU.  If so, wouldn't that address Andrew's 
+> concern of "adding" another implementation?
 
-> Davide Libenzi wrote:
-> > On Sun, 21 Jun 2009, Gregory Haskins wrote:
-> >
-> >   
-> >> This looks great, Davide.  I am fairly certain I can now solve the races
-> >> and even implement Michael's DEASSIGN feature with this patch in place. 
-> >> I will actually fire it up tomorrow when I am back in the office and
-> >> give it a spin, but I do not spy any more races via visual inspection.
-> >>
-> >> Kind Regards,
-> >> -Greg
-> >>
-> >> PS: I was wrong with my previous statement about requiring an embeddable
-> >> object (eventfd_notifier for me, eventfd_pollcb for you).  I think you
-> >> can technically solve this issue minimally by merely locking the POLLHUP
-> >> and exposing the kref.  However, I think that leads to an more awkward
-> >> interface (e.g. we already have eventfd_fget() plus we add a new one
-> >> like eventfd_refget(), which might confuse users), so I prefer what you
-> >> did here.  Just thought I would throw that out there in case you would
-> >> prefer to change even fewer lines.
-> >>     
-> >
-> > I actually ended up exposing the eventfd context anyway, since IMO is a 
-> > better option instead of holding references to the eventfd file (that 
-> > makes VFS people uneasy).
-> >   
-> 
-> I liked "version - 1"  better ;)
-> 
-> I think ultimately we still want to hold the fget() for
-> eventfd_signal(), as it is the producer side.  Without it, we have no
-> way of knowing when the last producer goes away if they happen to be an
-> in-kernel user.
+Andrew expressed a preference for dropping Classic RCU without adding
+Bloatwatch RCU.  ;-)
 
-No you don't. Holding a file* reference does not give you any assurance 
-whatsoever that the last consumer did not go away. The f_count value will 
-simply be 1 (just you).
-If a producer side want to take proper action when the last consumer 
-leaves the building, it needs to register a pollcb hook and handle 
-POLLHUP.
-Exposing the opaque eventfd context, and basing the eventfd operations on 
-that one (instead of the live referenced file*) is a cleaner interface.
-Can you please base your IRQfd bits on top of that, so that we can give 
-this IRQfd thread a closure?
-
-
-- Davide
-
-
+						Thanx, Paul
