@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbZFVBfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbZFVBfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752092AbZFVBfD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 21:35:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZFVBew
+	id S1752436AbZFVBfo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 21:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZFVBfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 21:34:52 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57489 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbZFVBev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 21:34:51 -0400
-Message-ID: <4A3EE01C.5090600@cn.fujitsu.com>
-Date: Mon, 22 Jun 2009 09:36:28 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 21 Jun 2009 21:35:36 -0400
+Received: from tundra.namei.org ([65.99.196.166]:60403 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751444AbZFVBfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 21:35:36 -0400
+Date: Mon, 22 Jun 2009 11:33:45 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Valdis.Kletnieks@vt.edu, Pavel Machek <pavel@ucw.cz>,
+       Joseph Cihula <joseph.cihula@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, hpa@zytor.com,
+       andi@firstfloor.org, Chris Wright <chrisw@sous-sol.org>,
+       jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
+       shane.wang@intel.com
+Subject: Re: [RFC v4][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+ support
+In-Reply-To: <20090619212736.167d21eb@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LRH.2.00.0906221132410.18633@tundra.namei.org>
+References: <4A299051.40405@intel.com> <alpine.LRH.2.00.0906121509001.14633@tundra.namei.org> <20090619150514.GE1389@ucw.cz> <33858.1245433922@turing-police.cc.vt.edu> <20090619201159.35d259bb@lxorguk.ukuu.org.uk>
+ <20090619212736.167d21eb@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [BUG] bugs in jbd2_dev_to_name() (was Re: [PATCH 00/11] [GIT
- PULL] more updates for the tag format)
-References: <20090610092644.GA20889@elte.hu> <c62985530906100411o5a178352n53f7d247f6e9dba9@mail.gmail.com> <20090610130127.GA6647@mit.edu> <alpine.DEB.2.00.0906100911190.30552@gandalf.stny.rr.com> <20090610160303.GA10240@mit.edu> <20090611130318.GB14220@infradead.org> <20090611154751.GD9275@mit.edu> <20090611171434.GA6011@nowhere> <20090611192037.GA5116@mit.edu> <4A3B48DF.8080300@cn.fujitsu.com> <20090619123204.GC31377@mit.edu>
-In-Reply-To: <20090619123204.GC31377@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Fri, Jun 19, 2009 at 04:14:23PM +0800, Li Zefan wrote:
->>> 	rcu_read_lock();
->>> 	if (devcache[i] && devcache[i]->device == device) {
->>> 		ret = devcache[i]->devname;
->>> 		rcu_read_unlock();
->>> 		return ret;
->> It doesn't seem safe to dereference @ret outside rcu read section.
+On Fri, 19 Jun 2009, Alan Cox wrote:
+
+> > Personally (and I'm sure Intel disagrees with me) my bigger work
 > 
-> Note the comments at the beginning of the function:
-> 
+> worry rather ;)
 
-Ah, I overlooked the comments.
+Yes, I hope we hear more on the licensing of this blob -- I flagged it a 
+while back.
 
-But the patch that adds rcu locking around trace event prints
-never gets merged:
 
-http://lkml.org/lkml/2009/4/15/549
 
-Steven?
-
->     The caller should use rcu_read_lock() in order to make sure the
->     device name stays valid until its done with it.  We use
->     rcu_read_lock() as well to make sure we're safe in case the caller
->     gets sloppy, and because rcu_read_lock() is cheap and can be safely
->     nested.
-> 
-> I suppose I should change the wording to indicate that it adds a bit
-> more safety (as in, the crash won't happen inside this function, but
-> as far as the caller is concerned, all bets are off!)
-> 
-
+- James
+-- 
+James Morris
+<jmorris@namei.org>
