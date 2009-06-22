@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbZFVQpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZFVQpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbZFVQpf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZFVQof
+	id S1756511AbZFVQpt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbZFVQon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:44:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37500 "EHLO
+	Mon, 22 Jun 2009 12:44:43 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37504 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756033AbZFVQoe (ORCPT
+	with ESMTP id S1756899AbZFVQom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:44:34 -0400
+	Mon, 22 Jun 2009 12:44:42 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 09/15] tty: fix some bogns in the serqt_usb2 driver
+Subject: [PATCH 10/15] serial@ add OMAP wakeup-enable register
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 18:42:36 +0100
-Message-ID: <20090622174234.25341.7067.stgit@t61.ukuu.org.uk>
+Date: Mon, 22 Jun 2009 18:42:42 +0100
+Message-ID: <20090622174241.25341.71854.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 References: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,72 +25,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
 
-Remove the replicated urban legends from the comments and fix a couple of
-other silly calls
+Add the wakeup enable register to the list of OMAP-specific UART
+registers.  This is to support forthcoming OMAP PM enhancements which
+use the wakeup feature of the OMAP's 8250-based UART.
 
+Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/staging/serqt_usb2/serqt_usb2.c |   29 ++++++++++-------------------
- 1 files changed, 10 insertions(+), 19 deletions(-)
+ include/linux/serial_reg.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/staging/serqt_usb2/serqt_usb2.c b/drivers/staging/serqt_usb2/serqt_usb2.c
-index 581232b..90b29b5 100644
---- a/drivers/staging/serqt_usb2/serqt_usb2.c
-+++ b/drivers/staging/serqt_usb2/serqt_usb2.c
-@@ -284,21 +284,12 @@ static void ProcessModemStatus(struct quatech_port *qt_port,
- 	return;
- }
+diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
+index 96c0d93..850db2e 100644
+--- a/include/linux/serial_reg.h
++++ b/include/linux/serial_reg.h
+@@ -323,6 +323,7 @@
+ #define UART_OMAP_MVER		0x14	/* Module version register */
+ #define UART_OMAP_SYSC		0x15	/* System configuration register */
+ #define UART_OMAP_SYSS		0x16	/* System status register */
++#define UART_OMAP_WER		0x17	/* Wake-up enable register */
  
--static void ProcessRxChar(struct usb_serial_port *port, unsigned char Data)
-+static void ProcessRxChar(struct tty_struct *tty, struct usb_serial_port *port,
-+						unsigned char data)
- {
--	struct tty_struct *tty;
- 	struct urb *urb = port->read_urb;
--	tty = tty_port_tty_get(&port->port);
--
--	/* if we insert more than TTY_FLIPBUF_SIZE characters, we drop them. */
--
--	if (tty && urb->actual_length) {
--		tty_buffer_request_room(tty, 1);
--		tty_insert_flip_string(tty, &Data, 1);
--		/* tty_flip_buffer_push(tty); */
--	}
--
--	return;
-+	if (urb->actual_length)
-+		tty_insert_flip_char(tty, data, TTY_NORMAL);
- }
+ #endif /* _LINUX_SERIAL_REG_H */
  
- static void qt_write_bulk_callback(struct urb *urb)
-@@ -435,8 +426,10 @@ static void qt_read_bulk_callback(struct urb *urb)
- 				case 0xff:
- 					dbg("No status sequence. \n");
- 
--					ProcessRxChar(port, data[i]);
--					ProcessRxChar(port, data[i + 1]);
-+					if (tty) {
-+						ProcessRxChar(tty, port, data[i]);
-+						ProcessRxChar(tty, port, data[i + 1]);
-+					}
- 					i += 2;
- 					break;
- 				}
-@@ -444,10 +437,8 @@ static void qt_read_bulk_callback(struct urb *urb)
- 					continue;
- 			}
- 
--			if (tty && urb->actual_length) {
--				tty_buffer_request_room(tty, 1);
--				tty_insert_flip_string(tty, (data + i), 1);
--			}
-+			if (tty && urb->actual_length)
-+				tty_insert_flip_char(tty, data[i], TTY_NORMAL);
- 
- 		}
- 		tty_flip_buffer_push(tty);
 
