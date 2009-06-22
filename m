@@ -1,201 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZFVJ2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbZFVJ3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZFVJ2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbZFVJ20
+	id S1755916AbZFVJ3f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZFVJ30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:28:26 -0400
-Received: from mga03.intel.com ([143.182.124.21]:9514 "EHLO mga03.intel.com"
+	Mon, 22 Jun 2009 05:29:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56204 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755957AbZFVJ2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:28:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,267,1243839600"; 
-   d="scan'208";a="157057284"
-Date: Mon, 22 Jun 2009 17:27:54 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Minchan Kim <minchan.kim@gmail.com>,
-       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 12/15] HWPOISON: per process early kill option
-	prctl(PR_MEMORY_FAILURE_EARLY_KILL)
-Message-ID: <20090622092754.GC8110@localhost>
-References: <20090620031608.624240019@intel.com> <20090620031626.237671605@intel.com> <20090621085212.GC8218@one.firstfloor.org>
+	id S1750872AbZFVJ3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 05:29:25 -0400
+Date: Mon, 22 Jun 2009 11:29:27 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org
+Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
+In-Reply-To: <20090620120357.GA11272@gallifrey>
+Message-ID: <alpine.LNX.2.00.0906221125540.7457@wotan.suse.de>
+References: <20090613230842.GA18347@gallifrey> <4A349B67.1070603@zytor.com> <20090614122734.GA1499@gallifrey> <alpine.LRH.2.00.0906161126330.31685@twin.jikos.cz> <20090617193442.GA31944@gallifrey> <alpine.LNX.2.00.0906180126260.7457@wotan.suse.de>
+ <20090620120357.GA11272@gallifrey>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090621085212.GC8218@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 21, 2009 at 04:52:12PM +0800, Andi Kleen wrote:
-> On Sat, Jun 20, 2009 at 11:16:20AM +0800, Wu Fengguang wrote:
-> > The default option is late kill, ie. only kill the process when it actually
-> > tries to access the corrupted data. But an admin can still request a legacy
-> > application to be early killed by writing a wrapper tool which calls prctl()
-> > and exec the application:
-> > 
-> > 	# this_app_shall_be_early_killed  legacy_app
-> > 
-> > KVM needs the early kill signal. At early kill time it has good opportunity
-> > to isolate the corruption in guest kernel pages. It will be too late to do
-> > anything useful on late kill.
-> > 
-> > Proposed by Nick Pidgin.
-> 
-> If anything you would need two flags per process: one to signify
-> that the application set the flag and another what the actual
-> value is.
+On Sat, 20 Jun 2009, Dr. David Alan Gilbert wrote:
 
-OK.
+> > > > Booting with 'i8042.debug' will spit some more output into dmesg, which 
+> > > > might help us to see if i8042 is really properly initialized, or something 
+> > > > strange is going on during initialization.
+> > > Please find below the new dmesg created by appending i8042.debug; this was
+> > > taken from a slightly newer build of the same source kernel that I reported; this
+> > > build just had a few more things configured out (parallel port) but exhibits
+> > > the same symptom.
+> <old dmesg removed>
+> > Is there any change if you boot with 'i8042.noaux' kernel command-line 
+> > parameter?
+> Yes, with i8042.noaux it works; dmesg snippet included below.
 
-> Also you broke the existing qemu implementation now which obviously
-> doesn't know about this new flag.
+Could you please provide an output of 'dmidecode -t system' command?
 
-Yes, it is.
+Thanks,
 
-> I don't think we need this patch right now.
-
-There must be a policy and maybe a parameter.
-Till now there are three schemes:
-
-A) default to early kill; export vm.memory_failure_early_kill
-B) default to late kill; export prctl() parameters
-C) early kill if SIGBUS handler is installed, otherwise late kill;
-   no parameters is exported.
-
-If we don't do this patch, what would be your preferred policy?
-
-> > +static bool task_early_kill_elegible(struct task_struct *tsk)
-> > +{
-> > +	if (!tsk->mm)
-> > +		return false;
-> 
-> I don't think this can happen.
-
-It's for skipping kernel threads, you wrote that code :)
-
-> > +
-> > +	return tsk->flags & PF_EARLY_KILL;
-> 
-> This type mixing is also dangerous, if someone create e.g. a char bool
-> it would be always false.
-
-That's right. Here is the updated patch.
-
----
-HWPOISON: per process early kill option prctl(PR_SET_MEMORY_FAILURE_EARLY_KILL)
-
-This allows an application to request for early SIGBUS.BUS_MCEERR_AO
-notification as soon as memory corruption in its virtual address space is
-detected.
-
-The default option is late kill, ie. only kill the process when it actually
-tries to access the corrupted data. But an admin can still request a legacy
-application to be early killed by writing a wrapper tool which calls prctl()
-and exec the application:
-
-	# this_app_shall_be_early_killed  legacy_app
-
-KVM needs the early kill signal. At early kill time it has good opportunity
-to isolate the corruption in guest kernel pages. It will be too late to do
-anything useful on late kill.
-
-Proposed by Nick Pidgin.
-
-Cc: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- include/linux/prctl.h |    7 +++++++
- include/linux/sched.h |    1 +
- kernel/sys.c          |    9 +++++++++
- mm/memory-failure.c   |   12 ++++++++++--
- 4 files changed, 27 insertions(+), 2 deletions(-)
-
---- sound-2.6.orig/include/linux/prctl.h
-+++ sound-2.6/include/linux/prctl.h
-@@ -88,4 +88,11 @@
- #define PR_TASK_PERF_COUNTERS_DISABLE		31
- #define PR_TASK_PERF_COUNTERS_ENABLE		32
- 
-+/*
-+ * Send early SIGBUS.BUS_MCEERR_AO notification on memory corruption?
-+ * Useful for KVM and mission critical apps.
-+ */
-+#define PR_SET_MEMORY_FAILURE_EARLY_KILL	33
-+#define PR_GET_MEMORY_FAILURE_EARLY_KILL	34
-+
- #endif /* _LINUX_PRCTL_H */
---- sound-2.6.orig/include/linux/sched.h
-+++ sound-2.6/include/linux/sched.h
-@@ -1666,6 +1666,7 @@ extern cputime_t task_gtime(struct task_
- #define PF_MEMALLOC	0x00000800	/* Allocating memory */
- #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
- #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
-+#define PF_EARLY_KILL	0x00004000	/* kill me early on memory failure */
- #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
- #define PF_FROZEN	0x00010000	/* frozen for system suspend */
- #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
---- sound-2.6.orig/kernel/sys.c
-+++ sound-2.6/kernel/sys.c
-@@ -1545,6 +1545,15 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
- 				current->timer_slack_ns = arg2;
- 			error = 0;
- 			break;
-+		case PR_GET_MEMORY_FAILURE_EARLY_KILL:
-+			error = !!(me->flags & PF_EARLY_KILL);
-+			break;
-+		case PR_SET_MEMORY_FAILURE_EARLY_KILL:
-+			if (arg2)
-+				me->flags |= PF_EARLY_KILL;
-+			else
-+				me->flags &= ~PF_EARLY_KILL;
-+			break;
- 		default:
- 			error = -EINVAL;
- 			break;
---- sound-2.6.orig/mm/memory-failure.c
-+++ sound-2.6/mm/memory-failure.c
-@@ -214,6 +214,14 @@ static void kill_procs_ao(struct list_he
- 	}
- }
- 
-+static bool task_early_kill_elegible(struct task_struct *tsk)
-+{
-+	if (!tsk->mm)
-+		return false;
-+
-+	return !!(tsk->flags & PF_EARLY_KILL);
-+}
-+
- /*
-  * Collect processes when the error hit an anonymous page.
-  */
-@@ -231,7 +239,7 @@ static void collect_procs_anon(struct pa
- 		goto out;
- 
- 	for_each_process (tsk) {
--		if (!tsk->mm)
-+		if (!task_early_kill_elegible(tsk))
- 			continue;
- 		list_for_each_entry (vma, &av->head, anon_vma_node) {
- 			if (!page_mapped_in_vma(page, vma))
-@@ -271,7 +279,7 @@ static void collect_procs_file(struct pa
- 	for_each_process(tsk) {
- 		pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
- 
--		if (!tsk->mm)
-+		if (!task_early_kill_elegible(tsk))
- 			continue;
- 
- 		vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff,
+-- 
+Jiri Kosina
+SUSE Labs
