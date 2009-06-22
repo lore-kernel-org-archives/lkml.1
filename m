@@ -1,122 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbZFVQHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZFVQIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757483AbZFVQHL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbZFVQGC
+	id S1757977AbZFVQIB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZFVQHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:06:02 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:50404 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752946AbZFVQF4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:05:56 -0400
-Message-ID: <4A3FABD9.7080108@novell.com>
-Date: Mon, 22 Jun 2009 12:05:45 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Mon, 22 Jun 2009 12:07:53 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:48330 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751982AbZFVQHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 12:07:52 -0400
+Date: Mon, 22 Jun 2009 09:07:53 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       linux-kernel@vger.kernel.org, niv@us.ibm.com, dvhltc@us.ibm.com,
+       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
+Message-ID: <20090622160753.GE6754@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090506225115.GM6771@linux.vnet.ibm.com> <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu> <11979.1241648574@redhat.com> <26931.1245670998@redhat.com> <20090622124951.GB30553@elte.hu> <20090622082941.c5c8b3f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
- race conditions
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com> <4A3C004B.8010706@novell.com> <alpine.DEB.1.10.0906191421581.14884@makko.or.mcafeemobile.com> <4A3C07FF.3000406@novell.com> <alpine.DEB.1.10.0906191447330.14884@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com> <4A3C44DA.7000503@novell.com> <alpine.DEB.1.10.0906201202170.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201508460.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201640380.25534@makko.or.mcafeemobile.com> <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com> <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCE006001E27278A36189AAC3"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622082941.c5c8b3f3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCE006001E27278A36189AAC3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jun 22, 2009 at 08:29:41AM -0700, Andrew Morton wrote:
+> On Mon, 22 Jun 2009 14:49:51 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * David Howells <dhowells@redhat.com> wrote:
+> > 
+> > > Hi Paul,
+> > > 
+> > > Are you going to push your RCU patch for this merge window?
+> > 
+> > Andrew needs to be convinced for that to happen.
+> > 
+> 
+> whome?  I rarely have firm opinions on anything.  iirc the question
+> here was "is it worth adding another RCU implementation to save 900
+> bytes"?
+> 
+> I find it pretty hard to see how to come up with "yes" for that one but
+> it's hardly a huge issue.  If you guys feel otherwise then go wild.
 
-Davide Libenzi wrote:
-> On Sun, 21 Jun 2009, Gregory Haskins wrote:
->
->  =20
->> This looks great, Davide.  I am fairly certain I can now solve the rac=
-es
->> and even implement Michael's DEASSIGN feature with this patch in place=
-=2E=20
->> I will actually fire it up tomorrow when I am back in the office and
->> give it a spin, but I do not spy any more races via visual inspection.=
+Well, I do need to pull the "expedited" interface into the bloatwatch
+version, and my update of rcutorture made me realize that I can cut
+out a few more bytes, so I will submit an update.  For what it is worth,
+here are the opinions expressed on LKML:
 
->>
->> Kind Regards,
->> -Greg
->>
->> PS: I was wrong with my previous statement about requiring an embeddab=
-le
->> object (eventfd_notifier for me, eventfd_pollcb for you).  I think you=
++	Ingo Molnar: good documentation, minimal RCU implementation.
+?	Andi Kleen: will there be !SMP systems in the future?
++	Lennert Buytenhek: there will be !SMP ARM for a long time.
++	Paul Mundt: good idea for more-constrained SH platforms.
++	David Howells: Acked-by.  works on FRV board.
+?	Andrew Morton: do we really need another RCU implementation?
 
->> can technically solve this issue minimally by merely locking the POLLH=
-UP
->> and exposing the kref.  However, I think that leads to an more awkward=
+Of course, I well remember programming systems with 4K of core memory
+back in the 1970s, and therefore feel a bit guilty about sticking deep
+embedded platforms with the increase in memory footprint represented
+by Hierarchical RCU compared to Classic RCU.  And Bloatwatch RCU is much
+smaller and easier to understand/maintain than is Classic RCU.
 
->> interface (e.g. we already have eventfd_fget() plus we add a new one
->> like eventfd_refget(), which might confuse users), so I prefer what yo=
-u
->> did here.  Just thought I would throw that out there in case you would=
+So, again, I will forward port, optimize, test, and resubmit.
 
->> prefer to change even fewer lines.
->>    =20
->
-> I actually ended up exposing the eventfd context anyway, since IMO is a=
-=20
-> better option instead of holding references to the eventfd file (that=20
-> makes VFS people uneasy).
->  =20
-
-I liked "version - 1"  better ;)
-
-I think ultimately we still want to hold the fget() for
-eventfd_signal(), as it is the producer side.  Without it, we have no
-way of knowing when the last producer goes away if they happen to be an
-in-kernel user.
-
-Also, thinking about it some more, I think I like the non-wrapped pollcb
-variant better now.  This is because I can uhook the wqh in the POLLHUP
-and defer the kref_put() until later.  I think this combination gives me
-the most ideal environment (even though technically I should not expect
-more activity on the wait-queue after the POLLHUP).
-
-In either case, I whipped up a super-lite patch with just the bare
-minimum and then developed the KVM solution on top.  Things look really
-good, now, and I am happy with the result.  As an aside, it only has the
-following impact on the eventfd core:
-
- fs/eventfd.c            |   43 ++++++++++++++++++++++++++++++++++++-----=
---
- include/linux/eventfd.h |    7 +++++++
- 2 files changed, 43 insertions(+), 7 deletions(-)
-
-Ill post the series, including the KVM portions, for review.
-
-Thanks Davide,
--Greg
-
-
-
-
---------------enigCE006001E27278A36189AAC3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko/q9oACgkQlOSOBdgZUxnHfgCeMu/sjifsAbsK2K6pa7MOPL6O
-oQwAnjDW/YwtUkvRUvpP8run3493zvuX
-=6x7h
------END PGP SIGNATURE-----
-
---------------enigCE006001E27278A36189AAC3--
+							Thanx, Paul
