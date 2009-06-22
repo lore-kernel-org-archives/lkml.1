@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbZFVLxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZFVLxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752101AbZFVLxL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 07:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZFVLw6
+	id S1753283AbZFVLxg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 07:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZFVLx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 07:52:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51464 "EHLO mx3.mail.elte.hu"
+	Mon, 22 Jun 2009 07:53:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43097 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbZFVLw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 07:52:57 -0400
-Date: Mon, 22 Jun 2009 13:52:39 +0200
+	id S1751142AbZFVLx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 07:53:27 -0400
+Date: Mon, 22 Jun 2009 13:53:10 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: eranian@gmail.com
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -22,12 +22,13 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Corey J Ashford <cjashfor@us.ibm.com>,
        Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
        perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: I.5 - Mmaped count
-Message-ID: <20090622115239.GF24366@elte.hu>
+Subject: Re: I.6 - Group scheduling
+Message-ID: <20090622115310.GG24366@elte.hu>
 References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
@@ -41,52 +42,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 5/ Mmaped count
+> 6/ Group scheduling
 >
-> It is possible to read counts directly from user space for
-> self-monitoring threads. This leverages a HW capability present on
-> some processors. On X86, this is possible via RDPMC.
+> Looking at the existing code, it seems to me there is a risk of
+> starvation for groups, i.e., groups never scheduled on the PMU.
 >
-> The full 64-bit count is constructed by combining the hardware
-> value extracted with an assembly instruction and a base value made
-> available thru the mmap. There is an atomic generation count
-> available to deal with the race condition.
+> My understanding of the scheduling algorithm is:
 >
-> I believe there is a problem with this approach given that the PMU
-> is shared and that events can be multiplexed. That means that even
-> though you are self-monitoring, events get replaced on the PMU.
-> The assembly instruction is unaware of that, it reads a register
-> not an event.
+> - first try to �schedule pinned groups. If a pinned group
+>   fails, put it in error mode. read() will fail until the
+>   group gets another chance at being scheduled.
 >
-> On x86, assume event A is hosted in counter 0, thus you need
-> RDPMC(0) to extract the count. But then, the event is replaced by
-> another one which reuses counter 0. At the user level, you will
-> still use RDPMC(0) but it will read the HW value from a different
-> event and combine it with a base count from another one.
+> - then try to schedule the remaining groups. If a group fails
+>   just skip it.
 >
-> To avoid this, you need to pin the event so it stays in the PMU at
-> all times. Now, here is something unclear to me. Pinning does not
-> mean stay in the SAME register, it means the event stays on the
-> PMU but it can possibly change register. To prevent that, I
-> believe you need to also set exclusive so that no other group can
-> be scheduled, and thus possibly use the same counter.
+> If the group list does not change, then certain groups may always
+> fail. However, the ordering of the list changes because at every
+> tick, it is rotated. The head becomes the tail. Therefore, each
+> group eventually gets the first position and therefore gets the
+> full PMU to assign its events.
 >
-> Looks like this is the only way you can make this actually work.
-> Not setting pinned+exclusive, is another pitfall in which many
-> people will fall into.
+> This works as long as there is a guarantee the list will ALWAYS
+> rotate. If a thread does not run long enough for a tick, it may
+> never rotate.
 
-   do {
-     seq = pc->lock;
+You need to ensure the task never runs during the tick, this is a
+statistical propery that is bound to untrue for any 'normal'
+application.
 
-     barrier()
-     if (pc->index) {
-       count = pmc_read(pc->index - 1);
-       count += pc->offset;
-     } else
-       goto regular_read;
+This is similar to the old cputime hiding tricks. We don't think
+this will be a problem, you really need to actively avoid the tick
+to aggregate a significantly lower tick rate.
 
-     barrier();
-   } while (pc->lock != seq);
-
-We don't see the hole you are referring to. The sequence lock
-ensures you get a consistent view.
+In any case this can also be excluded via a natural extension
+mentioned above: scheduling based not on the scheduler tick but
+based on one of the counters.
