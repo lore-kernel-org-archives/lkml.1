@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbZFVSRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZFVSUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbZFVSRa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 14:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZFVSRV
+	id S1756438AbZFVSUg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 14:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZFVSU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 14:17:21 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:41507 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752496AbZFVSRU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 14:17:20 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 22 Jun 2009 11:11:12 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: "Michael S. Tsirkin" <mst@redhat.com>
-cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [KVM PATCH v3 3/3] KVM: Fix races in irqfd using new eventfd_kref_get
- interface
-In-Reply-To: <20090622174506.GD15228@redhat.com>
-Message-ID: <alpine.DEB.1.10.0906221105500.10952@makko.or.mcafeemobile.com>
-References: <20090622155504.22967.50532.stgit@dev.haskins.net> <20090622160556.22967.76273.stgit@dev.haskins.net> <20090622165708.GB15228@redhat.com> <4A3FBFF1.8050504@gmail.com> <20090622174506.GD15228@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 22 Jun 2009 14:20:27 -0400
+Received: from claw.goop.org ([74.207.240.146]:53147 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750886AbZFVSU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 14:20:26 -0400
+Message-ID: <4A3FCB68.3030004@goop.org>
+Date: Mon, 22 Jun 2009 11:20:24 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
+       linux-arch@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+       Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
+       Arnd Bergmann <arnd@arndb.de>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
+References: <20090622140807.25509.54448.stgit@bob.kio> <20090622143431.GT19977@parisc-linux.org>
+In-Reply-To: <20090622143431.GT19977@parisc-linux.org>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009, Michael S. Tsirkin wrote:
+On 06/22/09 07:34, Matthew Wilcox wrote:
+> On Mon, Jun 22, 2009 at 08:08:07AM -0600, Alex Chiang wrote:
+>   
+>> This was #define'd as 0 on all platforms, so let's get rid of it.
+>>
+>> This change makes pci_scan_slot() slightly easier to read.
+>>     
+>
+>   
+>> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+>> index f1ae247..b613cad 100644
+>> --- a/drivers/pci/probe.c
+>> +++ b/drivers/pci/probe.c
+>> @@ -1056,8 +1056,7 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
+>>  	if (dev && !dev->is_added)	/* new device? */
+>>  		nr++;
+>>  
+>> -	if ((dev && dev->multifunction) ||
+>> -	    (!dev && pcibios_scan_all_fns(bus, devfn))) {
+>> +	if (dev && dev->multifunction) {
+>>  		for (fn = 1; fn < 8; fn++) {
+>>  			dev = pci_scan_single_device(bus, devfn + fn);
+>>  			if (dev) {
+>>     
+>
+> What a good idea.  I was just looking at making this more complicated
+> (due to the ARI capability).
+>
+> I'd like to know what the KVM / Xen / ... people think about this.
+> I don't know if they rely on function 5 being able to show up out of
+> the blue.
+>   
 
-> Not really, it's impossible to document all races one have thought
-> about and avoided.
+We want to be able to export specific functions to a particular domain,
+so it might see a PCI device with only function 5.
 
-Well, when some new code has non-trivial locking/racing logics, you better 
-document it as clearly as possible, akpm announced time ago.
+It looks like we lose that ability with this patch, is that right?
 
-
-- Davide
-
-
+    J
