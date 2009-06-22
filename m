@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbZFVOdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZFVOel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbZFVOdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZFVOcq
+	id S1757128AbZFVOel (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZFVOed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:32:46 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:48305 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757274AbZFVOcp (ORCPT
+	Mon, 22 Jun 2009 10:34:33 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:34156 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbZFVOec (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:32:45 -0400
-Subject: Re: Rootfs in eMMC: Kernel panic ...Attempted to kill init!
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Sudeep K N <sudeepholla.maillist@gmail.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.arm.linux.org.uk, drzeus-mmc@drzeus.cx,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1245680789.15580.85.camel@pc1117.cambridge.arm.com>
-References: <366f00c80906180218p539f9df9md30f629787fabeb2@mail.gmail.com>
-	 <20090619134446.GI24573@n2100.arm.linux.org.uk>
-	 <366f00c80906220713o7ad61a8elb6b278b7313107d8@mail.gmail.com>
-	 <1245680789.15580.85.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 22 Jun 2009 15:32:38 +0100
-Message-Id: <1245681158.15580.91.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jun 2009 14:32:39.0802 (UTC) FILETIME=[4B93FDA0:01C9F346]
+	Mon, 22 Jun 2009 10:34:32 -0400
+Date: Mon, 22 Jun 2009 08:34:31 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alex Chiang <achiang@hp.com>
+Cc: jbarnes@virtuousgeek.org, linux-arch@vger.kernel.org,
+       Kyle McMartin <kyle@mcmartin.ca>, Tony Luck <tony.luck@intel.com>,
+       Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
+Message-ID: <20090622143431.GT19977@parisc-linux.org>
+References: <20090622140807.25509.54448.stgit@bob.kio>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622140807.25509.54448.stgit@bob.kio>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 15:26 +0100, Catalin Marinas wrote:
-> On Mon, 2009-06-22 at 19:43 +0530, Sudeep K N wrote:
-> > Thanks for the suggestion.
-> > With the logs it is clear that crash is in the userspace.
-> > I am getting one of the 2 logs(below) randomly.
+On Mon, Jun 22, 2009 at 08:08:07AM -0600, Alex Chiang wrote:
+> This was #define'd as 0 on all platforms, so let's get rid of it.
 > 
-> This sounds familiar: SMP -> writealloc cache policy (could be forced by
-> hardware) -> cache corruption in user space with ext2.
-> 
-> Does you driver use the DMA API? If not, does your eMMC driver flush the
-> cache (in case you hit one of the long-standing problems with PIO
-> drivers).
-> 
-> It's worth trying this hack:
-> 
-> http://article.gmane.org/gmane.linux.ports.arm.kernel/51556
+> This change makes pci_scan_slot() slightly easier to read.
 
-To be more precise:
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index f1ae247..b613cad 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1056,8 +1056,7 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
+>  	if (dev && !dev->is_added)	/* new device? */
+>  		nr++;
+>  
+> -	if ((dev && dev->multifunction) ||
+> -	    (!dev && pcibios_scan_all_fns(bus, devfn))) {
+> +	if (dev && dev->multifunction) {
+>  		for (fn = 1; fn < 8; fn++) {
+>  			dev = pci_scan_single_device(bus, devfn + fn);
+>  			if (dev) {
 
-If your system is ARM11MPCore based and your driver uses DMA, try this
-patch (in-software DMA cache maintenance operations broadcasting):
+What a good idea.  I was just looking at making this more complicated
+(due to the ARI capability).
 
-http://www.linux-arm.org/git?p=linux-2.6-stable.git;a=commitdiff_plain;h=95298b1792121e7068258de451caec7f3dda0e78
+I'd like to know what the KVM / Xen / ... people think about this.
+I don't know if they rely on function 5 being able to show up out of
+the blue.
 
-If your driver is a PIO one, try this patch (flush_dcache_page called in
-the VFS layer):
-
-http://www.linux-arm.org/git?p=linux-2.6-stable.git;a=commitdiff_plain;h=d763f5815aa21095141c3ba87011906a61505dad
+Anyway,
+Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
 
 -- 
-Catalin
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
