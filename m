@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbZFVPQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZFVPQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbZFVPQA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZFVPPw
+	id S1756254AbZFVPQW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 11:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZFVPQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:15:52 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:45214 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbZFVPPv (ORCPT
+	Mon, 22 Jun 2009 11:16:06 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:64798 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751854AbZFVPQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:15:51 -0400
-Date: Mon, 22 Jun 2009 17:15:15 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt@pengutronix.de,
-       Thomas Gleixner <tglx@linutronix.de>, Ian Abbott <abbotti@mev.co.uk>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>
-Subject: Re: [PATCH -rt] disable building all staging drivers
-Message-ID: <20090622151515.GA16627@pengutronix.de>
-References: <1244929118-23326-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090614112802.GA4502@kroah.com> <20090614230044.GA21624@pengutronix.de>
+	Mon, 22 Jun 2009 11:16:04 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: cmd64x: irq 14: nobody cared - system is dreadfully slow
+Date: Mon, 22 Jun 2009 17:16:04 +0200
+User-Agent: KMail/1.9.9
+Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200906211446.38598.elendil@planet.nl> <200906221604.17915.elendil@planet.nl> <200906221639.52205.bzolnier@gmail.com>
+In-Reply-To: <200906221639.52205.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090614230044.GA21624@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Message-Id: <200906221716.05983.elendil@planet.nl>
+X-OriginalArrivalTime: 22 Jun 2009 15:16:06.0446 (UTC) FILETIME=[5D424CE0:01C9F34C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Monday 22 June 2009, Bartlomiej Zolnierkiewicz wrote:
+> I promised to look into it but I still need a identify block content to
+> tell more (you can add #define DEBUG to the ide-probe.c so we will get
+> id before and after changing of transfer mode settings):
 
-On Mon, Jun 15, 2009 at 01:00:44AM +0200, Uwe Kleine-König wrote:
-> On Sun, Jun 14, 2009 at 04:28:02AM -0700, Greg KH wrote:
-> > On Sat, Jun 13, 2009 at 11:38:38PM +0200, Uwe Kleine-König wrote:
-> > > I know that at least COMEDI and RT2870 are broken with -rt,
-> > 
-> > I didn't know this, has anyone sent me a bug report?  What in -rt causes
-> > these drivers to break?
-> > 
-> > > but Thomas requested disabling all of staging.  He's the maintainer.
-> > 
-> > This seems like a patch to ensure that the staging drivers never get a
-> > chance to be fixed for any potential -rt issues.  How about just sending
-> > me bug reports instead?
-> I cannot reproduce the failure I saw for RT2870 at the moment.
-OK, hit again:
-
-17:02:43 E: ERROR: "there_is_no_init_MUTEX_LOCKED_for_RT_semaphores" [drivers/staging/rt2870/rt2870sta.ko] undefined!
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+probing for hdd: present=0, media=32, probetype=ATA
+probing for hdd: present=0, media=32, probetype=ATAPI
+hdd: dumping identify data
+c085 0000 0000 0000 0000 0000 0000 0000
+0000 0000 2020 2020 2020 2020 2020 2020
+2020 2020 2020 2020 0000 0000 0000 3841
+2045 2020 2020 4443 522d 4d4f 3520 5836
+412f 484b 2020 2020 2020 2020 2020 2020
+2020 2020 2020 2020 2020 2020 2020 0000
+0000 000f 0000 0003 0002 0200 0000 0000
+0000 0000 0000 0000 0000 0000 0701 0701
+0300 7800 7800 5802 7800 0000 0000 0000
+0000 0000 0000 3030 3030 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0700 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
