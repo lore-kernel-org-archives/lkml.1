@@ -1,144 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZFVIoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbZFVIqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZFVIoJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 04:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZFVIn5
+	id S1755415AbZFVIqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 04:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZFVIqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 04:43:57 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:20439
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752168AbZFVIn4 (ORCPT
+	Mon, 22 Jun 2009 04:46:15 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:59411 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbZFVIqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 04:43:56 -0400
-Message-ID: <4A3F4448.30502@panasas.com>
-Date: Mon, 22 Jun 2009 11:43:52 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Mon, 22 Jun 2009 04:46:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=e9ugRXpgz3AsBwWeayhy1Y0SkB5iR03xYs5UOCFpK4PRTWngxi/zCR2aOiA4dNzAUJ
+         Jj+NKUcZvA6SrqcQrYdFkddLX+FklbmMsFcfBi8gEHPlN1qFzn/mdhebYGO6JP43QAK+
+         vXspjuYxs5uqiaE0mHf0XQ1gIUX/aTFfnKLnI=
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Paul Menage <menage@google.com>, akpm@linux-foundation.org,
-       jdike@addtoit.com, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
-References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
-In-Reply-To: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+Date: Mon, 22 Jun 2009 12:46:15 +0400
+Message-ID: <a4423d670906220146t4601cf1eq2a6cd9cd70cc728c@mail.gmail.com>
+Subject: 2.6.30-07769: BUG: MAX_STACK_TRACE_ENTRIES too low! (tcp/dma)
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jun 2009 08:43:55.0502 (UTC) FILETIME=[93B930E0:01C9F315]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/20/2009 03:55 AM, Paul Menage wrote:
-> UML: Fix some apparent bitrot
-> 
-> - migration of net_device methods into net_device_ops
-> - dma_sync_single() changes
-> - cpumask_clear() -> cpumask_clear_cpu()
-> 
-> Signed-off-by: Paul Menage <menage@google.com>
-> 
-> --
-> 
-> Fixes the following compile errors:
-> 
-> include/linux/dma-mapping.h:113: error: redefinition of 'dma_sync_single'
-> arch/um/include/asm/dma-mapping.h:84: error: previous definition of 'dma_sync_single' was here
-> include/linux/dma-mapping.h: In function 'dma_sync_single':
-> include/linux/dma-mapping.h:117: error: implicit declaration of function 'dma_sync_single_for_cpu'
-> include/linux/dma-mapping.h: At top level:
-> include/linux/dma-mapping.h:120: error: redefinition of 'dma_sync_sg'
-> arch/um/include/asm/dma-mapping.h:91: error: previous definition of 'dma_sync_sg' was here
-> include/linux/dma-mapping.h: In function 'dma_sync_sg':
-> include/linux/dma-mapping.h:124: error: implicit declaration of function 'dma_sync_sg_for_cpu'
-> 
-> 
-> arch/um/drivers/slirp_kern.c: In function 'slirp_init':
-> arch/um/drivers/slirp_kern.c:35: error: 'struct net_device' has no member named 'init'
-> 
-> 
-> arch/um/include/asm/mmu_context.h: In function 'switch_mm':
-> arch/um/include/asm/mmu_context.h:38: warning: passing argument 1 of 'cpumask_clear' makes pointer from integer without
-> a cast
-> arch/um/include/asm/mmu_context.h:38: error: too many arguments to function 'cpumask_clear'
-> 
-> ---
+rsync triggers this big stack trace.
 
-Stephan hi.
-
-The above breakage is the usual stuff we get every merge window. With people doing
-cross arch work and neglecting UML.
-
-Who is the person or people responsible for the large linux-next compilation rig?
-Is it possible to also add a UML traget, at least for the x86_64/x86_32 sub-arch?
-
-Thanks
-Boaz
-
-> 
->  arch/um/drivers/slip_kern.c       |    1 -
->  arch/um/drivers/slirp_kern.c      |    1 -
->  arch/um/include/asm/dma-mapping.h |    4 ++--
->  arch/um/include/asm/mmu_context.h |    2 +-
->  4 files changed, 3 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/um/drivers/slip_kern.c b/arch/um/drivers/slip_kern.c
-> index 5ec1756..dd2aadc 100644
-> --- a/arch/um/drivers/slip_kern.c
-> +++ b/arch/um/drivers/slip_kern.c
-> @@ -30,7 +30,6 @@ static void slip_init(struct net_device *dev, void *data)
->  
->  	slip_proto_init(&spri->slip);
->  
-> -	dev->init = NULL;
->  	dev->hard_header_len = 0;
->  	dev->header_ops = NULL;
->  	dev->addr_len = 0;
-> diff --git a/arch/um/drivers/slirp_kern.c b/arch/um/drivers/slirp_kern.c
-> index f15a6e7..e376284 100644
-> --- a/arch/um/drivers/slirp_kern.c
-> +++ b/arch/um/drivers/slirp_kern.c
-> @@ -32,7 +32,6 @@ void slirp_init(struct net_device *dev, void *data)
->  
->  	slip_proto_init(&spri->slip);
->  
-> -	dev->init = NULL;
->  	dev->hard_header_len = 0;
->  	dev->header_ops = NULL;
->  	dev->addr_len = 0;
-> diff --git a/arch/um/include/asm/dma-mapping.h b/arch/um/include/asm/dma-mapping.h
-> index 90fc708..378de4b 100644
-> --- a/arch/um/include/asm/dma-mapping.h
-> +++ b/arch/um/include/asm/dma-mapping.h
-> @@ -79,14 +79,14 @@ dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
->  }
->  
->  static inline void
-> -dma_sync_single(struct device *dev, dma_addr_t dma_handle, size_t size,
-> +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
->  		enum dma_data_direction direction)
->  {
->  	BUG();
->  }
->  
->  static inline void
-> -dma_sync_sg(struct device *dev, struct scatterlist *sg, int nelems,
-> +dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
->  	    enum dma_data_direction direction)
->  {
->  	BUG();
-> diff --git a/arch/um/include/asm/mmu_context.h b/arch/um/include/asm/mmu_context.h
-> index edd719e..34d8130 100644
-> --- a/arch/um/include/asm/mmu_context.h
-> +++ b/arch/um/include/asm/mmu_context.h
-> @@ -35,7 +35,7 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
->  	unsigned cpu = smp_processor_id();
->  
->  	if(prev != next){
-> -		cpumask_clear(cpu, mm_cpumask(prev));
-> +		cpumask_clear_cpu(cpu, mm_cpumask(prev));
->  		cpumask_set_cpu(cpu, mm_cpumask(next));
->  		if(next != &init_mm)
->  			__switch_mm(&next->context.id);
-> 
-> 
+BUG: MAX_STACK_TRACE_ENTRIES too low!
+turning off the locking correctness validator.
+Pid: 1865, comm: rsync Not tainted 2.6.30-07769-gf234012 #1
+Call Trace:
+ [<ffffffff81080622>] save_trace+0xc2/0xe0
+ [<ffffffff810806a7>] add_lock_to_list+0x67/0x110
+ [<ffffffff81082721>] ? check_irq_usage+0xb1/0x110
+ [<ffffffff812f5e00>] ? add_dma_entry+0x50/0xa0
+ [<ffffffff81084b68>] __lock_acquire+0xe98/0x1250
+ [<ffffffff810690a8>] ? __kernel_text_address+0x78/0xa0
+ [<ffffffff812f5e00>] ? add_dma_entry+0x50/0xa0
+ [<ffffffff81084fc0>] lock_acquire+0xa0/0xe0
+ [<ffffffff812f5e00>] ? add_dma_entry+0x50/0xa0
+ [<ffffffff814eb11d>] _spin_lock_irqsave+0x5d/0xb0
+ [<ffffffff812f5e00>] ? add_dma_entry+0x50/0xa0
+ [<ffffffff81083330>] ? trace_hardirqs_on+0x20/0x40
+ [<ffffffff812f5e00>] add_dma_entry+0x50/0xa0
+ [<ffffffff812f75d9>] debug_dma_map_page+0x129/0x190
+ [<ffffffff81451f9e>] skb_dma_map+0xee/0x3c0
+ [<ffffffff813d8a3a>] bnx2_start_xmit+0x11a/0x4a0
+ [<ffffffff814569e8>] dev_hard_start_xmit+0x2a8/0x370
+ [<ffffffff814eaf57>] ? _spin_lock+0x77/0xa0
+ [<ffffffff8146c66e>] __qdisc_run+0x27e/0x2d0
+ [<ffffffff814eaf57>] ? _spin_lock+0x77/0xa0
+ [<ffffffff81456ed8>] dev_queue_xmit+0x2c8/0x4a0
+ [<ffffffff8147e3cf>] ip_finish_output+0x12f/0x370
+ [<ffffffff8147e6bb>] ip_output+0xab/0xe0
+ [<ffffffff814459ef>] ? lock_sock_nested+0x4f/0x140
+ [<ffffffff8147b4c7>] ip_local_out+0x77/0xa0
+ [<ffffffff8147c50c>] ip_queue_xmit+0x23c/0x450
+ [<ffffffff81082ec8>] ? mark_held_locks+0x78/0xb0
+ [<ffffffff810832ad>] ? trace_hardirqs_on_caller+0x17d/0x1e0
+ [<ffffffff814945e5>] tcp_transmit_skb+0x515/0x800
+ [<ffffffff81494ab6>] tcp_send_ack+0xe6/0x130
+ [<ffffffff81484e55>] tcp_cleanup_rbuf+0x75/0x150
+ [<ffffffff81487a1c>] tcp_recvmsg+0x5ac/0xf40
+ [<ffffffff810850a2>] ? lock_release_non_nested+0xa2/0x2f0
+ [<ffffffff810bbb1a>] ? might_fault+0x8a/0xf0
+ [<ffffffff81444ac1>] sock_common_recvmsg+0x41/0x70
+ [<ffffffff81440e42>] sock_aio_read+0x152/0x160
+ [<ffffffff810efcfe>] ? set_fd_set+0x4e/0x80
+ [<ffffffff810dd4b1>] do_sync_read+0x101/0x160
+ [<ffffffff8106c370>] ? autoremove_wake_function+0x0/0x60
+ [<ffffffff81070b91>] ? ktime_get_ts+0x71/0x90
+ [<ffffffff810efb07>] ? poll_select_copy_remaining+0x117/0x170
+ [<ffffffff810dde26>] vfs_read+0x196/0x1a0
+ [<ffffffff810ddf4f>] sys_read+0x5f/0xc0
+ [<ffffffff8100b9ab>] system_call_fastpath+0x16/0x1b
