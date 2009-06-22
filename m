@@ -1,61 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZFVQy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbZFVQzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbZFVQy4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbZFVQys
+	id S1756052AbZFVQzf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZFVQz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:54:48 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:54224 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZFVQys (ORCPT
+	Mon, 22 Jun 2009 12:55:27 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:1608 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbZFVQz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:54:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
-Date: Mon, 22 Jun 2009 18:53:47 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: jbarnes@virtuousgeek.org, linux-arch@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>, Tony Luck <tony.luck@intel.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>
-References: <20090622140807.25509.54448.stgit@bob.kio>
-In-Reply-To: <20090622140807.25509.54448.stgit@bob.kio>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Mon, 22 Jun 2009 12:55:26 -0400
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
+       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <4A3FA326.8030802@inria.fr>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+	 <87zldjn597.fsf@basil.nowhere.org>
+	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	 <20090612103251.GJ25568@one.firstfloor.org>
+	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+	 <1245119977.6724.40.camel@lts-notebook>
+	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+	 <1245164395.15138.40.camel@lts-notebook>
+	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
+	 <1245299856.6431.30.camel@lts-notebook>  <4A3F7A49.6070805@inria.fr>
+	 <1245680649.7799.54.camel@lts-notebook>  <4A3FA326.8030802@inria.fr>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Mon, 22 Jun 2009 12:55:24 -0400
+Message-Id: <1245689724.7799.124.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906221853.48029.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18KiIYFYfl9e4IplL0bEtFGbVAtilUKJk76sXi
- p9l/Rs1TfdwZ0WY6dK76hpPGvUsUyz1FqxCWLOQkPur6P+lCey
- sFyTgvoHspWOQiEEW11+Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 June 2009, Alex Chiang wrote:
-> --- a/include/asm-generic/pci.h
-> +++ b/include/asm-generic/pci.h
-> @@ -30,8 +30,6 @@ pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
->         res->end = region->end;
->  }
->  
-> -#define pcibios_scan_all_fns(a, b)     0
-> -
->  #ifndef HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
->  static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
->  {
+On Mon, 2009-06-22 at 17:28 +0200, Brice Goglin wrote:
+> Lee Schermerhorn wrote:
+> >> I gave this patchset a try and indeed it seems to work fine, thanks a
+> >> lot. But the migration performance isn't very good. I am seeing about
+> >> 540MB/s when doing mbind+touch_all_pages on large buffers on a
+> >> quad-barcelona machines. move_pages gets 640MB/s there. And my own
+> >> next-touch implementation were near 800MB/s in the past.
+> >>     
+> >
+> > Interesting.  Do you have any idea where the differences come from?  Are
+> > you comparing them on the same kernel versions?  I don't know the
+> > details of your implementation, but one possible area is the check for
+> > "misplacement".  When migrate-on-fault is enabled, I check all pages
+> > with page_mapcount() == 0 for misplacement in the [swap page] fault
+> > path.  That, and other filtering to eliminate unnecessary migrations
+> > could cause extra overhead.
+> >   
 > 
+> (I'll actually talk about this at the Linux Symposium) I used 2.6.27
+> initially, with some 2.6.29 patches to fix the throughput of move_pages
+> for large buffers. So move_pages was getting about 600MB/s there. Then
+> my own (hacky) next-touch implementation was getting about 800MB/s. The
+> main difference with your code is that mine only modifies the current
+> process PTE without touching the other processes if the page is shared.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+The primary difference should be at unmap time, right?  In the fault
+path, I only update the pte of the faulting task.  That's why I require
+the [anon] pages to be in the swap cache [or something similar].  I
+don't want to be fixing up other tasks' page tables in the context of
+the faulting task's fault handler.  If, later, another task touches the
+page, it will take a minor fault and find the [possibly migrated] page
+in the cache.  Hmmm, I guess all tasks WILL incur the minor fault if
+they touch the page after the unmap.  That could be part of the
+difference if you compare on the same kernel version.
+
+> So my code basically only supports private pages, it duplicates/migrates
+> them on next-touch. I thought it was faster than move_pages because I
+> didn't support shared-page migration. But, I found out later that
+> move_pages could be further improved up to about 750MB/s (it will be in
+> 2.6.31).
+> 
+> So now, I'd expect both the next-touch migration and move_pages to have
+> similar migration throughput, about 750-800MB/s on my quad-barcelona
+> machine. Right now, I'm seeing less than that for both, so there might
+> be a problem deeper. 
+
+Try booting with cgroup_disable=memory on the command line, if you have
+the memory resource controller configured in.  See what that does to
+your measurements.
+
+> Actually, looking at COW performance when the new
+> page is allocated on a remote numa node, I also see the throughput much
+> lower in 2.6.29+ (about 720MB/s) than in 2.6.27 (about 850MB/s). Maybe a
+> regression in the low-level page copy routine?
+
+??? I would expect low level page copying to be highly optimized per
+arch, and also fairly stable.  Based on recent experience, I'd more
+likely suspect the mm housekeeping overheads--e.g., global and per memcg
+lru management, ...  We seen a lot of new code in this area in the past
+few releases.
+
+Lee
+
