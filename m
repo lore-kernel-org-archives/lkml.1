@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbZFVLWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZFVL1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755690AbZFVLWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 07:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZFVLWM
+	id S1755697AbZFVL1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 07:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZFVL1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 07:22:12 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:48456 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZFVLWL (ORCPT
+	Mon, 22 Jun 2009 07:27:09 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:50240 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753580AbZFVL1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 07:22:11 -0400
-Subject: Re: [BUG] timer_migration interface accepts any number as input in
- 2.6.30-git9
-From: poornima nayak <mpnayak@linux.vnet.ibm.com>
-To: arun@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090617102126.GA28647@linux.vnet.ibm.com>
-References: <1245229936.3345.67.camel@localhost.localdomain>
-	 <20090617102126.GA28647@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 22 Jun 2009 16:52:08 +0530
-Message-Id: <1245669728.4368.1.camel@localhost.localdomain>
+	Mon, 22 Jun 2009 07:27:08 -0400
+Date: Mon, 22 Jun 2009 13:27:02 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
+       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>, jeremy@goop.org,
+       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org,
+       Himanshu Raj <rhim@microsoft.com>
+Subject: Re: [RFC] transcendent memory for Linux
+Message-ID: <20090622132702.6638d841@skybase>
+In-Reply-To: <cd40cd91-66e9-469d-b079-3a899a3ccadb@default>
+References: <cd40cd91-66e9-469d-b079-3a899a3ccadb@default>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arun, 
+On Fri, 19 Jun 2009 16:53:45 -0700 (PDT)
+Dan Magenheimer <dan.magenheimer@oracle.com> wrote:
 
-Patch given by you fixes the reported bug.
+> Tmem has some similarity to IBM's Collaborative Memory Management,
+> but creates more of a partnership between the kernel and the
+> "privileged entity" and is not very invasive.  Tmem may be
+> applicable for KVM and containers; there is some disagreement on
+> the extent of its value. Tmem is highly complementary to ballooning
+> (aka page granularity hot plug) and memory deduplication (aka
+> transparent content-based page sharing) but still has value
+> when neither are present.
 
-Regds
-Poornima
-On Wed, 2009-06-17 at 15:51 +0530, Arun R Bharadwaj wrote:
-> * poornima nayak <mpnayak@linux.vnet.ibm.com> [2009-06-17 14:42:16]:
-> 
-> > Hi
-> > 
-> > Timer migration interface /proc/sys/kernel/timer_migration in
-> > 2.6.30-git9 accepts any numerical value as input.
-> > Steps to reproduce 
-> > 1. echo -6666666 > /proc/sys/kernel/timer_migration
-> > 2. cat /proc/sys/kernel/timer_migration
-> > -6666666
-> > 
-> > 1. echo 44444444444444444444444444444444444444444444444444444444444 > /proc/sys/kernel/timer_migration
-> > 2. cat /proc/sys/kernel/timer_migration
-> > -1357789412
-> > 
-> > Expected behavior: Should 'echo: write error: Invalid argument' while
-> > setting any value other then 0 & 1
-> > 
-> > Regards
-> > Poornima
-> > 
-> 
-> Hi Poornima,
-> 
-> Thanks for reporting the bug.
-> Hope this patch removes the bug.
-> The patch is based against the latest -tip/master.
-> 
-> --arun
-> 
-> 
-> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> ---
->  kernel/sysctl.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> Index: linux.trees.git/kernel/sysctl.c
-> ===================================================================
-> --- linux.trees.git.orig/kernel/sysctl.c
-> +++ linux.trees.git/kernel/sysctl.c
-> @@ -335,7 +335,10 @@ static struct ctl_table kern_table[] = {
->  		.data		= &sysctl_timer_migration,
->  		.maxlen		= sizeof(unsigned int),
->  		.mode		= 0644,
-> -		.proc_handler	= &proc_dointvec,
-> +		.proc_handler	= &proc_dointvec_minmax,
-> +		.strategy	= &sysctl_intvec,
-> +		.extra1		= &zero,
-> +		.extra2		= &one,
->  	},
->  #endif
->  	{
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+The basic idea seems to be that you reduce the amount of memory
+available to the guest and as a compensation give the guest some
+tmem, no? If that is the case then the effect of tmem is somewhat
+comparable to the volatile page cache pages.
+
+The big advantage of this approach is its simplicity, but there
+are down sides as well:
+1) You need to copy the data between the tmem pool and the page
+cache. At least temporarily there are two copies of the same
+page around. That increases the total amount of used memory.
+2) The guest has a smaller memory size. Either the memory is
+large enough for the working set size in which case tmem is
+ineffective, or the working set does not fit which increases
+the memory pressure and the cpu cycles spent in the mm code.
+3) There is an additional turning knob, the size of the tmem pool
+for the guest. I see the need for a clever algorithm to determine
+the size for the different tmem pools.
+
+Overall I would say its worthwhile to investigate the performance
+impacts of the approach.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
