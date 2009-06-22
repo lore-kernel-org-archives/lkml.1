@@ -1,177 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbZFVRWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZFVRWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbZFVRWH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbZFVRVy
+	id S1757444AbZFVRWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757319AbZFVRWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:21:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40705 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754041AbZFVRVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:21:53 -0400
-Date: Mon, 22 Jun 2009 13:21:23 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] io-controller: Preempt a non-rt queue if a rt ioq is
-	present in ancestor or sibling groups
-Message-ID: <20090622172123.GE15600@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-21-git-send-email-vgoyal@redhat.com> <4A3F3648.7080007@cn.fujitsu.com>
+	Mon, 22 Jun 2009 13:22:07 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56613 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757218AbZFVRWG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:22:06 -0400
+Date: Mon, 22 Jun 2009 19:22:02 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: David Miller <davem@davemloft.net>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, swetland@google.com, arve@android.com,
+       linux@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com, Greg KH <greg@kroah.com>
+Subject: Re: defkeymap making machine useless (was Re: HTC Dream aka.
+	t-mobile g1 support)
+Message-ID: <20090622172201.GA21153@elf.ucw.cz>
+References: <d6200be20906171436y5280ed8do561d2d53d73ca78@mail.gmail.com> <20090618101309.GC28892@elf.ucw.cz> <a55d774e0906181233p35b60cd2ga401bd1304267643@mail.gmail.com> <20090618.123845.232783995.davem@davemloft.net> <20090618230704.GB8529@elf.ucw.cz> <alpine.LNX.2.00.0906221131380.7457@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A3F3648.7080007@cn.fujitsu.com>
+In-Reply-To: <alpine.LNX.2.00.0906221131380.7457@wotan.suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 03:44:08PM +0800, Gui Jianfeng wrote:
-> Preempt the ongoing non-rt ioq if there are rt ioqs waiting for dispatching
-> in ancestor or sibling groups. It will give other group's rt ioq an chance 
-> to dispatch ASAP.
+On Mon 2009-06-22 11:33:31, Jiri Kosina wrote:
+> On Fri, 19 Jun 2009, Pavel Machek wrote:
 > 
-
-Hi Gui,
-
-Will new preempton logic of traversing up the hiearchy so that both new
-queue and old queue are at same level to take a preemption decision not
-take care of above scenario?
-
-Please have a look at bfq_find_matching_entity().
-
-At the same time we probably don't want to preempt the non-rt queue
-with an RT queue in sibling group until and unless sibling group is an
-RT group.
-
-		root
-		/  \
-	   BEgrpA  BEgrpB
-	      |     |	
-	  BEioq1   RTioq2
-
-Above we got two BE group A and B and assume ioq in group A is being
-served and then an RT request in group B comes. Because group B is an
-BE class group, we should not preempt the queue in group A.
-
-Thanks
-Vivek
-
-
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |   44 +++++++++++++++++++++++++++++++++++++++-----
->  block/elevator-fq.h |    1 +
->  2 files changed, 40 insertions(+), 5 deletions(-)
+> > > > Yeah, I wasn't sure how to handle this.  We try to keep the 
+> > > > msm/dream stuff in a state that doesn't break other parts of the 
+> > > > tree, but there doesn't seem to be support for different keymaps for 
+> > > > different devices.
+> > > How it's supposed to work is that you have a specific keyboard driver 
+> > > and that emits PC keyboard codes into the core kernel using a 
+> > > translation table in your driver.
+> > Of course, Dream does  that.  But that's not _nearly_ enough. Dream
+> > lacks keys such as: esc, arrows, symbols (/;'[]\-=). That means that
+> > for +, you can't press shift-=, you need to press altgr-P.
 > 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 2ad40eb..80526fd 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -3245,8 +3245,16 @@ void elv_add_ioq_busy(struct elv_fq_data *efqd, struct io_queue *ioq)
->  	elv_mark_ioq_busy(ioq);
->  	efqd->busy_queues++;
->  	if (elv_ioq_class_rt(ioq)) {
-> +		struct io_entity *entity;
->  		struct io_group *iog = ioq_to_io_group(ioq);
-> +
->  		iog->busy_rt_queues++;
-> +		entity = iog->entity.parent;
-> +
-> +		for_each_entity(entity) {
-> +			iog = io_entity_to_iog(entity);
-> +			iog->sub_busy_rt_queues++;
-> +		}
->  	}
->  
->  #ifdef CONFIG_DEBUG_GROUP_IOSCHED
-> @@ -3290,9 +3298,18 @@ void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq,
->  	elv_clear_ioq_busy(ioq);
->  	BUG_ON(efqd->busy_queues == 0);
->  	efqd->busy_queues--;
-> +
->  	if (elv_ioq_class_rt(ioq)) {
-> +		struct io_entity *entity;
->  		struct io_group *iog = ioq_to_io_group(ioq);
-> +
->  		iog->busy_rt_queues--;
-> +		entity = iog->entity.parent;
-> +
-> +		for_each_entity(entity) {
-> +			iog = io_entity_to_iog(entity);
-> +			iog->sub_busy_rt_queues--;
-> +		}
->  	}
->  
->  	elv_deactivate_ioq(efqd, ioq, requeue);
-> @@ -3735,12 +3752,32 @@ int elv_iosched_expire_ioq(struct request_queue *q, int slice_expired,
->  	return ret;
->  }
->  
-> +static int check_rt_queue(struct io_queue *ioq)
-> +{
-> +	struct io_group *iog;
-> +	struct io_entity *entity;
-> +
-> +	iog = ioq_to_io_group(ioq);
-> +
-> +	if (iog->busy_rt_queues)
-> +		return 1;
-> +
-> +	entity = iog->entity.parent;
-> +
-> +	for_each_entity(entity) {
-> +		iog = io_entity_to_iog(entity);
-> +		if (iog->sub_busy_rt_queues)
-> +			return 1;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  /* Common layer function to select the next queue to dispatch from */
->  void *elv_fq_select_ioq(struct request_queue *q, int force)
->  {
->  	struct elv_fq_data *efqd = &q->elevator->efqd;
->  	struct io_queue *new_ioq = NULL, *ioq = elv_active_ioq(q->elevator);
-> -	struct io_group *iog;
->  	int slice_expired = 1;
->  
->  	if (!elv_nr_busy_ioq(q->elevator))
-> @@ -3811,12 +3848,9 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
->  	/*
->  	 * If we have a RT cfqq waiting, then we pre-empt the current non-rt
->  	 * cfqq.
-> -	 *
-> -	 * TODO: This does not seem right across the io groups. Fix it.
->  	 */
-> -	iog = ioq_to_io_group(ioq);
->  
-> -	if (!elv_ioq_class_rt(ioq) && iog->busy_rt_queues) {
-> +	if (!elv_ioq_class_rt(ioq) && check_rt_queue(ioq)) {
->  		/*
->  		 * We simulate this as cfqq timed out so that it gets to bank
->  		 * the remaining of its time slice.
-> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> index b3193f8..be6c1af 100644
-> --- a/block/elevator-fq.h
-> +++ b/block/elevator-fq.h
-> @@ -248,6 +248,7 @@ struct io_group {
->  	 * non-RT cfqq in service when this value is non-zero.
->  	 */
->  	unsigned int busy_rt_queues;
-> +	unsigned int sub_busy_rt_queues;
->  
->  	int deleting;
->  	unsigned short iocg_id;
-> -- 
-> 1.5.4.rc3
-> 
+> I don't seem to have enough context, but wouldn't writing a separate serio 
+> driver, which would do all the needed translations be enough here?
+
+Umm.
+
+Yes, we could parse the keyboard combinations in the keyboard driver,
+and then emulate the PC keyboard. It would be incredibly ugly. Such as:
+
+If user presses Alt+I, (labeled "-" on keyboard), emulate "Shift+="
+press, then let the defkeymap.map translate it back to "-".
+
+I... guess it will be nicer if the keyboard driver specifies which
+keymap to use?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
