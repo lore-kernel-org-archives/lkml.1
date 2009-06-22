@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbZFVSdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbZFVSlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbZFVSdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 14:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZFVSdj
+	id S1752375AbZFVSlI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 14:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZFVSk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 14:33:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:58667 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbZFVSdi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 14:33:38 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Marco <marco.stornelli@gmail.com>
-Subject: Re: [PATCH 06/14] Pramfs: Include files
-Date: Mon, 22 Jun 2009 20:33:20 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <4A33A7EC.6070008@gmail.com> <200906221317.04166.arnd@arndb.de> <4A3FC7F1.5050108@gmail.com>
-In-Reply-To: <4A3FC7F1.5050108@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 22 Jun 2009 14:40:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59738 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751622AbZFVSk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 14:40:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend to disk, mce related?
+Date: Mon, 22 Jun 2009 20:41:05 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Andi Kleen <ak@linux.intel.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com> <8db1092f0906221037m30c7966bx6870b4eeb9ee16ea@mail.gmail.com> <8db1092f0906221112y241abc19nb2b0a4a75ef253b4@mail.gmail.com>
+In-Reply-To: <8db1092f0906221112y241abc19nb2b0a4a75ef253b4@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906222033.20883.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/k7dNG2Z8oTn7WUAu1A0c8FfVkLChtBiTL0oR
- peP+b8fGGRUZG7XAQL+Ky4m/oM6R0Nc4vo1lc6fciIOgjfjiAZ
- 8M/+NxgU1JZWWfxBjtPwLIoAsy7QPbA
+Content-Disposition: inline
+Message-Id: <200906222041.06103.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 June 2009, Marco wrote:
+On Monday 22 June 2009, Maciej Rutecki wrote:
+> 2009/6/22 Maciej Rutecki <maciej.rutecki@gmail.com>:
 > 
-> Sorry, I meant it's not currently possible. At the moment the only way
-> to use it as rootfs it's to copy all the data in an already mounted
-> (empty) ram partition and reboot. However it's not my first item on my
-> todo list because I think that it's possible to use it as rootfs but it
-> isn't the standard use for this fs.
+> > I already do this test:
+> > 1. boot, check_interval=0*
+> > 2. suspend to disk
+> > 3. wait 10 minutes
+> > 4. resume
+> 5. After resume uptime shows 15 minutes
+> 6. wait 15 minutes; nothing happen
 
-Well, it doesn't have to work right away. What I'm asking to
-define the data structures in a way that keeps the layout stable
-across kernel updates. Since a future version of the file system
-might support cross-endian image creation, it would be good to
-define the data structures in a fixed endian mode already, so
-you don't have to change it in the future.
+Does it mean the box survived the test?
 
-	Arnd <><
+> *Note: I change check_interval for machinecheck0 and machinecheck1.
+> 
+> Perform any else tests?
+
+Yes, please.
+
+Before 2. in your procedure run 'echo core > /sys/power/pm_test'.  It will not
+hibernate then, but it'll run the hibernation sequence including suspending
+devices etc.  Next, it'll wait for 5 seconds and run the resume sequence.
+
+Please let me know if the box(es) work(s) correctly after that.
+
+Best,
+Rafael
