@@ -1,127 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbZFVIfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZFVIoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbZFVIfL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 04:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZFVIfA
+	id S1754689AbZFVIoJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 04:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZFVIn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 04:35:00 -0400
-Received: from ns2.gothnet.se ([82.193.160.251]:6517 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753314AbZFVIe7 (ORCPT
+	Mon, 22 Jun 2009 04:43:57 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:20439
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752168AbZFVIn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 04:34:59 -0400
-X-Greylist: delayed 954 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 04:34:59 EDT
-Message-ID: <4A3F3E3A.2030202@shipmail.org>
-Date: Mon, 22 Jun 2009 10:18:02 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-Organization: VMware
-User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
+	Mon, 22 Jun 2009 04:43:56 -0400
+Message-ID: <4A3F4448.30502@panasas.com>
+Date: Mon, 22 Jun 2009 11:43:52 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Dave Airlie <airlied@linux.ie>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alex Deucher <alexdeucher@gmail.com>, Andrew Lutomirski <luto@mit.edu>,
-       dri-devel@lists.sf.net, Jerome Glisse <jglisse@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] drm: previous pull req + 1.
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>	<4A3DABE1.50309@mit.edu>	<alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>	<alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>	<alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>	<cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>	<alpine.LFD.2.01.0906211223190.3119@localhost.localdomain> <alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Paul Menage <menage@google.com>, akpm@linux-foundation.org,
+       jdike@addtoit.com, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
+References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-BitDefender-Scanner: Mail not scanned due to license constraints
+X-OriginalArrivalTime: 22 Jun 2009 08:43:55.0502 (UTC) FILETIME=[93B930E0:01C9F315]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
->> On Sun, 21 Jun 2009, Andrew Lutomirski wrote:
->>     
->>>> Anyway, here's a totally UNTESTED patch that hopefully gives a warning on
->>>> where exactly we set the invalid bits. Andy, mind trying it out? You
->>>> should get the warnign much earlier, and it should have a much more useful
->>>> back-trace.
->>>>         
->>> Your patch worked.  Photo attached.
->>>       
->> Ok.
->>
->> So it's fb_mmap() that uses an invalid page frame number when it does the 
->> "io_remap_pfn_range()" thing. 
->>
->> And the way it gets that page frame number is basically
->>
->>  - Offset (in bytes) from start of mapping:
->>
->> 	off = vma->vm_pgoff << PAGE_SHIFT;
->> 	..
->>
->>  - frame buffer start address:
->>
->>         /* frame buffer memory */
->>         start = info->fix.smem_start;
->>         len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.smem_len);
->> 	..
->> 	off += start;
->>
->>  - do the remap:
->>
->> 	io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT, ..
->>
->> and there has been no changes to this logic in drivers/video/fbmem.c 
->> lately.
->>
->> What *has* changed is that we have a newradeon driver, and it looks like 
->> that new radeon driver is crap, and does this:
->>
->> 	info->fix.smem_start = (unsigned long)fbptr;
->>
->> which is totally screwed up. It assigns a _virtual_ address to that 
->> "smem_start" thing, even though it should be a physical one. 
->>
->> I don't know the radeon driver, so I don't know where to find the physical 
->> address.  It's also possible that there is no good single physical 
->> address, and the radeon driver should implement a "fb_mmap" function.
->>
->> Does this patch make the warning and the oops at least go away? Obviously 
->> it won't result in a working frame buffer, but that's a separate issue
->>
->> 		Linus
->>     
->
-> I noticed the same bogus line myself last night, I'll get Jerome to look 
-> at it since its his code, he was trying to be smart about how the 
-> radeon fbdev emulation should work, but fbdev isn't smart enough to do 
-> what he wants, so I've asked him to go back to the dumb pin the fbcon in 
-> VRAM until we can fix fbdev to do some sort of prepare/commit type hooks 
-> around blocks of reads/writes.
->
-> With the safe method we end up with an 8MB pinned fbcon on 32MB in some 
-> scenarios, which is still totally unacceptable from a user pov.
->
->   
-There is a ttm_fbdev_mmap() function in TTM that may help in this 
-situation. As with the standard ttm mmap it's using fault() which means 
-it's possible to move out the backing buffer object if you first reserve 
-it and then call unmap_mapping_range() on the relevant fbdev address 
-space to kill existing user-space mappings.
+On 06/20/2009 03:55 AM, Paul Menage wrote:
+> UML: Fix some apparent bitrot
+> 
+> - migration of net_device methods into net_device_ops
+> - dma_sync_single() changes
+> - cpumask_clear() -> cpumask_clear_cpu()
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
+> --
+> 
+> Fixes the following compile errors:
+> 
+> include/linux/dma-mapping.h:113: error: redefinition of 'dma_sync_single'
+> arch/um/include/asm/dma-mapping.h:84: error: previous definition of 'dma_sync_single' was here
+> include/linux/dma-mapping.h: In function 'dma_sync_single':
+> include/linux/dma-mapping.h:117: error: implicit declaration of function 'dma_sync_single_for_cpu'
+> include/linux/dma-mapping.h: At top level:
+> include/linux/dma-mapping.h:120: error: redefinition of 'dma_sync_sg'
+> arch/um/include/asm/dma-mapping.h:91: error: previous definition of 'dma_sync_sg' was here
+> include/linux/dma-mapping.h: In function 'dma_sync_sg':
+> include/linux/dma-mapping.h:124: error: implicit declaration of function 'dma_sync_sg_for_cpu'
+> 
+> 
+> arch/um/drivers/slirp_kern.c: In function 'slirp_init':
+> arch/um/drivers/slirp_kern.c:35: error: 'struct net_device' has no member named 'init'
+> 
+> 
+> arch/um/include/asm/mmu_context.h: In function 'switch_mm':
+> arch/um/include/asm/mmu_context.h:38: warning: passing argument 1 of 'cpumask_clear' makes pointer from integer without
+> a cast
+> arch/um/include/asm/mmu_context.h:38: error: too many arguments to function 'cpumask_clear'
+> 
+> ---
 
-We've experimented a little with this on the Poulsbo / Moorestown KMS 
-driver (we threw out the fbcon buffer when the X server was switched in) 
-but the problem turned out to be that fbdev always expects an always 
-present _kernel_ mapping and it seemed a bit too hard to block accesses 
-to that mapping while it was torn down and set up again to point to the 
-new location.
-In particular, the fbdev acceleration hooks seems to be called from 
-atomic context.
+Stephan hi.
 
-It would be very helpful if we could introduce an fbdev mutex that 
-protects fbdev accesses to the kernel map and to the fbdev acceleration 
-functions.
+The above breakage is the usual stuff we get every merge window. With people doing
+cross arch work and neglecting UML.
 
-/Thomas
+Who is the person or people responsible for the large linux-next compilation rig?
+Is it possible to also add a UML traget, at least for the x86_64/x86_32 sub-arch?
 
+Thanks
+Boaz
 
-
-
-
-
-
+> 
+>  arch/um/drivers/slip_kern.c       |    1 -
+>  arch/um/drivers/slirp_kern.c      |    1 -
+>  arch/um/include/asm/dma-mapping.h |    4 ++--
+>  arch/um/include/asm/mmu_context.h |    2 +-
+>  4 files changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/um/drivers/slip_kern.c b/arch/um/drivers/slip_kern.c
+> index 5ec1756..dd2aadc 100644
+> --- a/arch/um/drivers/slip_kern.c
+> +++ b/arch/um/drivers/slip_kern.c
+> @@ -30,7 +30,6 @@ static void slip_init(struct net_device *dev, void *data)
+>  
+>  	slip_proto_init(&spri->slip);
+>  
+> -	dev->init = NULL;
+>  	dev->hard_header_len = 0;
+>  	dev->header_ops = NULL;
+>  	dev->addr_len = 0;
+> diff --git a/arch/um/drivers/slirp_kern.c b/arch/um/drivers/slirp_kern.c
+> index f15a6e7..e376284 100644
+> --- a/arch/um/drivers/slirp_kern.c
+> +++ b/arch/um/drivers/slirp_kern.c
+> @@ -32,7 +32,6 @@ void slirp_init(struct net_device *dev, void *data)
+>  
+>  	slip_proto_init(&spri->slip);
+>  
+> -	dev->init = NULL;
+>  	dev->hard_header_len = 0;
+>  	dev->header_ops = NULL;
+>  	dev->addr_len = 0;
+> diff --git a/arch/um/include/asm/dma-mapping.h b/arch/um/include/asm/dma-mapping.h
+> index 90fc708..378de4b 100644
+> --- a/arch/um/include/asm/dma-mapping.h
+> +++ b/arch/um/include/asm/dma-mapping.h
+> @@ -79,14 +79,14 @@ dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
+>  }
+>  
+>  static inline void
+> -dma_sync_single(struct device *dev, dma_addr_t dma_handle, size_t size,
+> +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
+>  		enum dma_data_direction direction)
+>  {
+>  	BUG();
+>  }
+>  
+>  static inline void
+> -dma_sync_sg(struct device *dev, struct scatterlist *sg, int nelems,
+> +dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
+>  	    enum dma_data_direction direction)
+>  {
+>  	BUG();
+> diff --git a/arch/um/include/asm/mmu_context.h b/arch/um/include/asm/mmu_context.h
+> index edd719e..34d8130 100644
+> --- a/arch/um/include/asm/mmu_context.h
+> +++ b/arch/um/include/asm/mmu_context.h
+> @@ -35,7 +35,7 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+>  	unsigned cpu = smp_processor_id();
+>  
+>  	if(prev != next){
+> -		cpumask_clear(cpu, mm_cpumask(prev));
+> +		cpumask_clear_cpu(cpu, mm_cpumask(prev));
+>  		cpumask_set_cpu(cpu, mm_cpumask(next));
+>  		if(next != &init_mm)
+>  			__switch_mm(&next->context.id);
+> 
+> 
