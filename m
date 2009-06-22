@@ -1,119 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbZFVQjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbZFVQjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757655AbZFVQjA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZFVQiw
+	id S1755322AbZFVQjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbZFVQiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:38:52 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:12162 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbZFVQiv (ORCPT
+	Mon, 22 Jun 2009 12:38:55 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41756 "EHLO
+	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756429AbZFVQiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:38:51 -0400
-Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
-Cc: Brice Goglin <Brice.Goglin@inria.fr>, "'Andi Kleen'" <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-numa@vger.kernel.org,
-       Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-In-Reply-To: <4A3FA67A.8070908@lfbs.rwth-aachen.de>
-References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
-	 <87zldjn597.fsf@basil.nowhere.org>
-	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
-	 <20090612103251.GJ25568@one.firstfloor.org>
-	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
-	 <1245119977.6724.40.camel@lts-notebook>
-	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
-	 <1245164395.15138.40.camel@lts-notebook>
-	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
-	 <1245299856.6431.30.camel@lts-notebook> <4A3F7A49.6070805@inria.fr>
-	 <4A3F95F1.4020507@lfbs.rwth-aachen.de>
-	 <1245682606.7799.64.camel@lts-notebook>
-	 <4A3FA67A.8070908@lfbs.rwth-aachen.de>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Mon, 22 Jun 2009 12:38:49 -0400
-Message-Id: <1245688729.7799.108.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 22 Jun 2009 12:38:55 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 02/15] serial: bfin_5xx: add missing spin_lock init
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 22 Jun 2009 18:37:24 +0100
+Message-ID: <20090622173115.25341.3717.stgit@t61.ukuu.org.uk>
+In-Reply-To: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
+References: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 17:42 +0200, Stefan Lankes wrote:
-> 
-> Lee Schermerhorn wrote:
-> > On Mon, 2009-06-22 at 16:32 +0200, Stefan Lankes wrote:
-> >> Brice Goglin wrote:
-> >>> Lee Schermerhorn wrote:
-> >>>> On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
-> >>>>   
-> >>>>
-> >>>> Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
-> >>>> [along with my shared policy series atop which they sit in my tree].
-> >>>> Patches reside in:
-> >>>>
-> >>>> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
-> >>>>
-> >>>>   
-> >>> I gave this patchset a try and indeed it seems to work fine, thanks a
-> >>> lot. But the migration performance isn't very good. I am seeing about
-> >>> 540MB/s when doing mbind+touch_all_pages on large buffers on a
-> >>> quad-barcelona machines. move_pages gets 640MB/s there. And my own
-> >>> next-touch implementation were near 800MB/s in the past.
-> >> I used a modified stream benchmark to evaluate the performance of Lee's 
-> >> and my version of the next-touch implementation. In this low-level 
-> >> benchmark is Lee's patch better than my patch. I think that Brice and I 
-> >> use the same technique to realize affinity-on-next-touch. Do you use 
-> >> another kernel version to evaluate the performance?
-> > 
-> > Hi, Stefan:
-> > 
-> > I also used a [modified!] stream benchmark to test my patches.  One of
-> > the modifications was to dump the time it takes for one pass over the
-> > data arrays to a specific file description, if that file description was
-> > open at start time--e.g., via something like "4>stream_times".  Then, I
-> > increased the number of iterations to something large so that I could
-> > run other tests during the stream run.  I plotted the "time per
-> > iteration" vs iteration number and could see that after any transient
-> > load, the stream benchmark returned to a good [not sure if maximal]
-> > locality state.  The time per interation was comparable to hand
-> > affinitized of the threads.  Without automigration and hand
-> > affinitization, any transient load would scramble the location of the
-> > threads relative to the data region they were operating on due to load
-> > balancing.  The more nodes you have, the less likely you'll end up in a
-> > good state.
-> > 
-> > I was using a parallel kernel make [-j <2*nr_cpus>] as the load.  In
-> > addition to the stream returning to good locality, I noticed that the
-> > kernel build completed much faster in the presence of the stream load
-> > with automigration enabled.  I reported these results in a presentation
-> > at LCA'07.  Slides and video [yuck! :)] are available on line at the
-> > LCA'07 site.
-> 
-> I think that you use migration-on-fault in the context of automigration. 
-> Brice and I use affinity-on-next-touch/migration-on-fault in another 
-> context. If the access pattern of an application changed, we want to 
-> redistribute the pages in "nearly" ideal matter. Sometimes it is 
-> difficult to determine the ideal page distribution. In such cases, 
-> affinity-on-next-touch could be an attractive solution. In our test 
-> applications, we add at some certain points the system call to use 
-> affinity-on-next-touch and redistribute the pages. Assumed that the next 
-> thread use these pages very often, we improve the performance of our 
-> test applications.
+From: Mike Frysinger <vapier@gentoo.org>
 
-I understand.  That's one of the motivations for MPOL_MF_LAZY and the
-MPOL_MF_NOOP policy mode.  It simply unmaps [removes pte refs from] the
-pages, priming them for migrate on next touch, if they are "misplaced"
-relative to the task touching them.  It's useful for testing and that's
-my personal primary use case, but I did envision it for use in
-applications that know they're entering a new computation phase with
-different access patterns.
+The Blackfin serial driver never initialized the spin_lock that is part of
+the serial core structure, but we never noticed because spin_lock's are
+rarely enabled on UP systems.  Yeah lockdep and friends.
 
-Lee
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
 
+ drivers/serial/bfin_5xx.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+index e2f6b1b..d7fcca1 100644
+--- a/drivers/serial/bfin_5xx.c
++++ b/drivers/serial/bfin_5xx.c
+@@ -1110,6 +1110,7 @@ static void __init bfin_serial_init_ports(void)
+ 	bfin_serial_hw_init();
+ 
+ 	for (i = 0; i < nr_active_ports; i++) {
++		spin_lock_init(&bfin_serial_ports[i].port.lock);
+ 		bfin_serial_ports[i].port.uartclk   = get_sclk();
+ 		bfin_serial_ports[i].port.fifosize  = BFIN_UART_TX_FIFO_SIZE;
+ 		bfin_serial_ports[i].port.ops       = &bfin_serial_pops;
 
