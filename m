@@ -1,113 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbZFVOjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZFVOl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757133AbZFVOjw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZFVOjk
+	id S1756570AbZFVOl2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZFVOlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:39:40 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35536 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757021AbZFVOjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:39:39 -0400
-Date: Mon, 22 Jun 2009 17:39:41 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-cc: x86@kernel.org, yinghai@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: move init_gbpages() to setup_arch()
-Message-ID: <Pine.LNX.4.64.0906221731210.19474@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Mon, 22 Jun 2009 10:41:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39631 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751342AbZFVOlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 10:41:20 -0400
+Date: Mon, 22 Jun 2009 16:41:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Rob van der Heij <rvdheij@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
+Message-ID: <20090622144110.GA9771@elte.hu>
+References: <20090603152223.083010123@de.ibm.com> <alpine.LFD.2.00.0906092252150.3351@localhost.localdomain> <20090622162631.4b4dcee4@skybase>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090622162631.4b4dcee4@skybase>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-The init_gbpages() function is conditionally called from init_memory_mapping()
-function. There are two call-sites where this 'after_bootmem' condition can be
-true: setup_arch() and mem_init() via pci_iommu_alloc().
+* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 
-Therefore, it's safe to move the call to init_gbpages() to setup_arch() as it's
-always called before mem_init().
+> On Tue, 9 Jun 2009 22:52:51 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > > version 2 of the profile patches. The only change is the in_interrupt()
+> > > fix in tick_nohz_stop_idle(). I would like to know how to proceed with
+> > > the issue.
+> > > Andy, do you still prefer to handle the old style profiler analog to
+> > > the oprofile patch? If yes I would drop patch #1 and extend patch #2
+> > > with another tick_nohz_disable().  
+> > 
+> > Any update on this one ?
+> 
+> A solution to this problem should go upstream soon, no? How about this
+> patch, it uses the tick_nohz_disable/tick_nohz_enable mechanic for 
+> oprofile and the old style kernel profiler. Good enough ?
+> 
+> ---
+> Subject: [PATCH] keep on ticking if a profiler is active
+> 
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> On a NOHZ system with oprofile or the old style kernel profiler enabled
+> the timer tick should not be stopped when a cpu goes idle. Currently
+> a maximum of 1 tick is accounted if a cpu sleeps for a longer period of
+> time. This does bad things to the percentages in the profiler output.
+> 
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+> 
+>  drivers/oprofile/oprof.c |    3 +++
+>  include/linux/tick.h     |    4 ++++
+>  kernel/profile.c         |    4 ++++
+>  kernel/time/tick-sched.c |   27 ++++++++++++++++++++++++++-
+>  4 files changed, 37 insertions(+), 1 deletion(-)
 
-Cc: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- arch/x86/kernel/setup.c |   16 ++++++++++++++++
- arch/x86/mm/init.c      |   17 -----------------
- 2 files changed, 16 insertions(+), 17 deletions(-)
+Hm, this is rather ugly. Why not use hrtimers like 'perf' does when 
+it fallback-samples based on the timer tick?
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index be5ae80..de2cab1 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -289,6 +289,20 @@ void * __init extend_brk(size_t size, size_t align)
- 	return ret;
- }
- 
-+#ifdef CONFIG_X86_64
-+static void __init init_gbpages(void)
-+{
-+	if (direct_gbpages && cpu_has_gbpages)
-+		printk(KERN_INFO "Using GB pages for direct mapping\n");
-+	else
-+		direct_gbpages = 0;
-+}
-+#else
-+static inline void init_gbpages(void)
-+{
-+}
-+#endif
-+
- static void __init reserve_brk(void)
- {
- 	if (_brk_end > _brk_start)
-@@ -871,6 +885,8 @@ void __init setup_arch(char **cmdline_p)
- 
- 	reserve_brk();
- 
-+	init_gbpages();
-+
- 	/* max_pfn_mapped is updated here */
- 	max_low_pfn_mapped = init_memory_mapping(0, max_low_pfn<<PAGE_SHIFT);
- 	max_pfn_mapped = max_low_pfn_mapped;
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index f53b57e..47ce9a2 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -177,20 +177,6 @@ static int __meminit save_mr(struct map_range *mr, int nr_range,
- 	return nr_range;
- }
- 
--#ifdef CONFIG_X86_64
--static void __init init_gbpages(void)
--{
--	if (direct_gbpages && cpu_has_gbpages)
--		printk(KERN_INFO "Using GB pages for direct mapping\n");
--	else
--		direct_gbpages = 0;
--}
--#else
--static inline void init_gbpages(void)
--{
--}
--#endif
--
- /*
-  * Setup the direct mapping of the physical memory at PAGE_OFFSET.
-  * This runs before bootmem is initialized and gets pages directly from
-@@ -210,9 +196,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 
- 	printk(KERN_INFO "init_memory_mapping: %016lx-%016lx\n", start, end);
- 
--	if (!after_bootmem)
--		init_gbpages();
--
- #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
- 	/*
- 	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
--- 
-1.6.0.4
+That method has three advantages:
 
+ - no weird hookery needed
+ - resolution can go far beyond HZ
+ - it is evidently dynticks-safe
+
+	Ingo
