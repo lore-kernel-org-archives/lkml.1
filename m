@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbZFVVzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZFVV5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbZFVVzu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZFVVzn
+	id S1754412AbZFVV5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZFVV5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:55:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36475 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751327AbZFVVzm (ORCPT
+	Mon, 22 Jun 2009 17:57:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60046
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751527AbZFVV5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:55:42 -0400
-Date: Mon, 22 Jun 2009 14:54:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH 2/2] serial: bfin_5xx: fix building as module when early
- printk is enabled
-Message-Id: <20090622145421.3ff2f332.akpm@linux-foundation.org>
-In-Reply-To: <1244854093-2156-2-git-send-email-vapier@gentoo.org>
-References: <1244854093-2156-1-git-send-email-vapier@gentoo.org>
-	<1244854093-2156-2-git-send-email-vapier@gentoo.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 22 Jun 2009 17:57:30 -0400
+Date: Mon, 22 Jun 2009 14:57:34 -0700 (PDT)
+Message-Id: <20090622.145734.10729950.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: bzolnier@gmail.com, akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: IDE fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.01.0906221039150.3240@localhost.localdomain>
+References: <20090622.024216.03098051.davem@davemloft.net>
+	<alpine.LFD.2.01.0906221039150.3240@localhost.localdomain>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009 20:48:13 -0400
-Mike Frysinger <vapier@gentoo.org> wrote:
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 22 Jun 2009 10:40:22 -0700 (PDT)
 
-> Since early printk only makes sense/works when the serial driver is built
-> into the kernel, disable the option for this driver when it is going to be
-> built as a module.  Otherwise we get build failures due to the ifdef
-> handling.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
->  drivers/serial/bfin_5xx.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-> index d7fcca1..b4a7650 100644
-> --- a/drivers/serial/bfin_5xx.c
-> +++ b/drivers/serial/bfin_5xx.c
-> @@ -38,6 +38,10 @@
->  #include <asm/cacheflush.h>
->  #endif
->  
-> +#ifdef CONFIG_SERIAL_BFIN_MODULE
-> +# undef CONFIG_EARLY_PRINTK
-> +#endif
-> +
->  /* UART name and device definitions */
->  #define BFIN_SERIAL_NAME	"ttyBF"
->  #define BFIN_SERIAL_MAJOR	204
+> I really don't want to take this. I think you and Bartlomiej should spend 
+> a _lot_ more time and effort trying to resolve this. Me taking it just 
+> closes the doors for trying to be constructive about issues.
 
-And that _does_ look like -stable material.
+Bart said he's happy with this change of maintainership as it
+will allow him to work on IDE things that he simply had not time
+for due to the time spent with maintainership duties.
 
-Alan, I queued both these as to-be-merged-by-you.  So if you want me to
-stfu and merge them, please let me know.
-
+Sky isn't falling, don't worry.
