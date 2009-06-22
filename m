@@ -1,109 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZFVGdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZFVGiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313AbZFVGdf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 02:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZFVGdM
+	id S1753968AbZFVGiB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 02:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZFVGhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 02:33:12 -0400
-Received: from mail-fx0-f224.google.com ([209.85.220.224]:44990 "EHLO
-	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753901AbZFVGdH convert rfc822-to-8bit (ORCPT
+	Mon, 22 Jun 2009 02:37:54 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37565 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751347AbZFVGhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 02:33:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IA2hmQa+P/coVICj2kgw6SdXhAWgpBDN3UId1koqiT9UvAHGoKx2G5KQGittXVZHdu
-         dDSBiHfjXwqGmbG4p5Uf2EkkKJcdVM3STrCdFiw6iFgppj1QCbBbsQVR/0CYpCyEi30S
-         X/VLPS3tIhyclmBt2EXqaYhC88gu5Zi/VOmQc=
-MIME-Version: 1.0
-In-Reply-To: <20090621205245.GC3254@elf.ucw.cz>
-References: <4A33A7A2.1050608@gmail.com> <20090613155957.GA16220@shareable.org>
-	 <4A34A394.5040509@gmail.com> <20090621064040.GC1656@ucw.cz>
-	 <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz>
-Date: Mon, 22 Jun 2009 08:33:07 +0200
-Message-ID: <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-From: Marco Stornelli <marco.stornelli@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 22 Jun 2009 02:37:53 -0400
+Date: Mon, 22 Jun 2009 15:36:20 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, hugh.dickins@tiscali.co.uk,
+       jakub@redhat.com, roland@redhat.com, akpm@linux-foundation.org
+Subject: [PATCH] limit max map count to safe value under ELF v2
+Message-Id: <20090622153620.0fff5652.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/21 Pavel Machek <pavel@ucw.cz>:
->
->> >> 1. Disk-based filesystems such as ext2/ext3 were designed for optimum
->> >>    performance on spinning disk media, so they implement features such
->> >>    as block groups, which attempts to group inode data into a contiguous
->> >>    set of data blocks to minimize disk seeking when accessing files. For
->> >>    RAM there is no such concern; a file's data blocks can be scattered
->> >>    throughout the media with no access speed penalty at all. So block
->> >>    groups in a filesystem mounted over RAM just adds unnecessary
->> >>    complexity. A better approach is to use a filesystem specifically
->> >>    tailored to RAM media which does away with these disk-based features.
->> >>    This increases the efficient use of space on the media, i.e. more
->> >>    space is dedicated to actual file data storage and less to meta-data
->> >>    needed to maintain that file data.
->> >
->> > So... what is the performance difference between ext2 and your new
->> > filesystem?
->> >
->>
->> About the "space" you can read a detailed documentation on the site:
->>
->> http://pramfs.sourceforge.net/pramfs-spec.html
->
-> I do not see any numbers there. Do you think you can save significant
-> memory when storing for example kernel source trees?
+This is a replacement for 
+ elf-reduce-default-max_map_count-to-be-safe-value.patch
 
-There aren't benchmark, but I pointed it out because if you know ext2
-you can do a comparison.
+I think all necessary info are written in comments..
 
->
->> In addition I can do an example of "compact" information: ext2 uses
->> directory entry objects ("dentries") to associate file names to
->> inodes,
->
-> I'm not sure that on-disk directory entry == dentry.
->
->> and these dentries are located in data blocks owned by the parent
->> directory. In pramfs, directory inode's do not need to own any data
->> blocks, because all dentry information is contained within the inode's
->> themselves.
->
-> How do you handle hard-links, then?
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Indeed hard-links are not supported :) Due to the design of this fs
-there are some limitations explained in the documentation as not
-hard-link, only private memory mapping and so on. However this
-limitations don't limit the fs itself because you must consider the
-special goal of this fs.
+With ELF, at generating coredump, some more headers other than used vmas
+are added.
+When, max_map_count == 65536, a core generated by following kinds of
+code can be unreadable because the number of ELF's program header is
+written in 16bit in Ehdr (please see elf.h) and the number overflows.
+==
+	... = mmap(); (munmap, mprotect, etc...)
+	if (failed)
+		abort();
+==
+This can be happen in mmap/munmap/mprotect/etc...which calls
+split_vma().
 
->
->> >From performance point of view:
->>
->> Sometimes ago I uploaded here (http://elinux.org/Pram_Fs) some benchmark
->> results to compare the performance with and without XIP in a real
->> embedded environment with bonnie++. You could use it as reference point.
->
-> Well, so XIP helps. ext2 can do XIP too, IIRC. Is your performance
-> better than ext2?
->
-> Wait... those numbers you pointed me... claim to be as slow as
-> 13MB/sec. That's very very bad. My harddrive is faster than that.
->                                                                        Pavel
->
+I think 65536 is not safe as _default_ and reduce it to 65530 is good
+for avoiding unexpected corrupted core.
 
-As I said I did the test in a real embedded environment so to have
-comparable result you should use the same environmente with the same
-tools, with the same workload and so on.
+Anyway, max_map_count can be enlarged by sysctl if a user is brave..
 
-Marco
+Changelog: v1 -> v2
+ - set limit to 65530
+ - added more comments for explaining the reason of value.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ fs/binfmt_elf.c       |    5 ++++-
+ include/linux/sched.h |   16 ++++++++++++++--
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.30-git18/include/linux/sched.h
+===================================================================
+--- linux-2.6.30-git18.orig/include/linux/sched.h
++++ linux-2.6.30-git18/include/linux/sched.h
+@@ -349,8 +349,20 @@ extern int mutex_spin_on_owner(struct mu
+ struct nsproxy;
+ struct user_namespace;
+ 
+-/* Maximum number of active map areas.. This is a random (large) number */
+-#define DEFAULT_MAX_MAP_COUNT	65536
++/*
++ * Default maximum number of active map areas, this limits the number of vmas
++ * per mm struct. Users can overwrite this number by sysctl but there is a
++ * problem.
++ *
++ * When a program's coredump is generated as ELF format, a section is created
++ * per a vma. In ELF, the number of sections is represented in unsigned short.
++ * This means the number of sections should be smaller than 65535 at coredump.
++ * Because the kernel adds some informative sections to a image of program at
++ * generating coredump, we need some margin. The number of extra sections is
++ * 1-3 now and depends on arch. We use "5" as safe margin, here.
++ */
++#define MAPCOUNT_ELF_CORE_MARGIN	(5)
++#define DEFAULT_MAX_MAP_COUNT	(USHORT_MAX - MAPCOUNT_ELF_CORE_MARGIN)
+ 
+ extern int sysctl_max_map_count;
+ 
+Index: linux-2.6.30-git18/fs/binfmt_elf.c
+===================================================================
+--- linux-2.6.30-git18.orig/fs/binfmt_elf.c
++++ linux-2.6.30-git18/fs/binfmt_elf.c
+@@ -1929,7 +1929,10 @@ static int elf_core_dump(long signr, str
+ 	elf = kmalloc(sizeof(*elf), GFP_KERNEL);
+ 	if (!elf)
+ 		goto out;
+-	
++	/*
++	 * The number of segs are recored into ELF header as 16bit value.
++	 * Please check DEFAULT_MAX_MAP_COUNT definition when you modify here.
++	 */
+ 	segs = current->mm->map_count;
+ #ifdef ELF_CORE_EXTRA_PHDRS
+ 	segs += ELF_CORE_EXTRA_PHDRS;
+
