@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbZFVNon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbZFVNqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbZFVNon (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 09:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZFVNog
+	id S1756350AbZFVNqH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 09:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZFVNp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 09:44:36 -0400
-Received: from mail-fx0-f224.google.com ([209.85.220.224]:35339 "EHLO
-	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbZFVNof (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 09:44:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=PMbDzyOhcSN4UzkM0KCtDtpYi1hUec/si7012E8BHu+joMZ7eA1art7qPtORwJdI7h
-         tQt3krBVx5YdBpFonaiSKp5kSHUQbNc9w0ueuZwLPMnHWfyn3zLLkInJiGF9/O2YvXD0
-         HX8mB5mo40IwuLqqIOBH+wna/Cbtwb3hr9iKc=
+	Mon, 22 Jun 2009 09:45:56 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:51458 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751844AbZFVNpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 09:45:55 -0400
+Date: Mon, 22 Jun 2009 08:45:57 -0500
+From: Robin Holt <holt@sgi.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       kexec@lists.infradead.org
+Subject: Re: [PATCH 1/7] ia64, kdump: Mask MCA/INIT on freezing cpus
+Message-ID: <20090622134557.GC7084@sgi.com>
+References: <4A39E247.4030908@jp.fujitsu.com> <4A39E2CF.80901@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090622153701.1012ca3c@t61.ukuu.org.uk>
-References: <5d96567b0906220510q32d0280diec9a2179ed37216e@mail.gmail.com> 
-	<20090622153701.1012ca3c@t61.ukuu.org.uk>
-From: Raz <raziebe@gmail.com>
-Date: Mon, 22 Jun 2009 16:44:15 +0300
-Message-ID: <5d96567b0906220644p4c412163m26d7cb16e6e5c58d@mail.gmail.com>
-Subject: Permission to use list.h and atomic.h in user space
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: kernelnewbies <kernelnewbies@nl.linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A39E2CF.80901@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
-May I have permission to use atomic64.h ,atomic32.h and list.h in a
-proprietary software ?
-I do not know who the authors are.
-Thank you
-Raz
+> To avoid this problem, This patch inserts ia64_set_psr_mc() before the
+> deadloop to mask MCA/INIT on cpus going to be frozen.  I confirmed that
+> weird log like above are disappeared after applying this patch.
+
+Please do not do this.  Turning off MCA/INIT is just a horrible idea.
+When your code has a bug, the INIT of the cpu is the only tool we have
+to find out what it is doing short of putting special hardware onto the
+machine and trying to track it down.
+
+Without thinking about it, I have a gut feeling there must be some way
+to at least allow the MCA/INIT to make it through PROM and be delivered
+to the OS.  From there the OS should be able to sort out a way to handle
+kdump and MCAs received during a kdump.
+
+Thanks,
+Robin
