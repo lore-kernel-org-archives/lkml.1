@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbZFVT1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZFVTbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758002AbZFVT1W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 15:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZFVT1P
+	id S1757589AbZFVTbg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 15:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbZFVTb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 15:27:15 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:42529 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbZFVT1O (ORCPT
+	Mon, 22 Jun 2009 15:31:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:52642 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959AbZFVTbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 15:27:14 -0400
-Message-ID: <4A3FDAF1.6010700@novell.com>
-Date: Mon, 22 Jun 2009 15:26:41 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Mon, 22 Jun 2009 15:31:25 -0400
+Message-ID: <4A3FDBFE.8050509@2net.co.uk>
+Date: Mon, 22 Jun 2009 20:31:10 +0100
+From: Chris Simmonds <chris@2net.co.uk>
+Reply-To: chris@2net.co.uk
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Davide Libenzi <davidel@xmailserver.org>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix	notifier
- race conditions
-References: <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com> <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com> <4A3FABD9.7080108@novell.com> <alpine.DEB.1.10.0906220952090.10952@makko.or.mcafeemobile.com> <4A3FC2B1.4050107@novell.com> <alpine.DEB.1.10.0906221055480.10952@makko.or.mcafeemobile.com> <20090622184139.GG15228@redhat.com> <alpine.DEB.1.10.0906221146210.10952@makko.or.mcafeemobile.com> <20090622190537.GI15228@redhat.com>
-In-Reply-To: <20090622190537.GI15228@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4FB972CC3DEBD05729B7D291"
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Marco <marco.stornelli@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 06/14] Pramfs: Include files
+References: <4A33A7EC.6070008@gmail.com> <200906221317.04166.arnd@arndb.de> <4A3FC7F1.5050108@gmail.com> <200906222033.20883.arnd@arndb.de>
+In-Reply-To: <200906222033.20883.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+fvW/qtPWHM2CzSuqwh3xm2L6qfWNo98dtdPY
+ 67tuhicUGaIeTKkdV+mtdBw7ei+Jdu2PfNIEm5tzNk7NkQj7E5
+ U4KWBin2GJi7TEjLsDRENiI8H90Gs76cMgfXZX3VKc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4FB972CC3DEBD05729B7D291
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Arnd Bergmann wrote:
+> On Monday 22 June 2009, Marco wrote:
+>> Sorry, I meant it's not currently possible. At the moment the only way
+>> to use it as rootfs it's to copy all the data in an already mounted
+>> (empty) ram partition and reboot. However it's not my first item on my
+>> todo list because I think that it's possible to use it as rootfs but it
+>> isn't the standard use for this fs.
+> 
+> Well, it doesn't have to work right away. What I'm asking to
+> define the data structures in a way that keeps the layout stable
+> across kernel updates. Since a future version of the file system
+> might support cross-endian image creation, it would be good to
+> define the data structures in a fixed endian mode already, so
+> you don't have to change it in the future.
+> 
+> 	Arnd <><
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-embedded" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Michael S. Tsirkin wrote:
-> On Mon, Jun 22, 2009 at 11:51:42AM -0700, Davide Libenzi wrote:
->  =20
->> A file* based kernel-to-kernel interface is rather wrong IMO.
->>    =20
->
-> But eventfd_ctx should work fine.
->  =20
+I disagree: that adds an unnecessary overhead for those architectures 
+where the cpu byte order does not match the data structure ordering. I 
+think the data structures should be native endian and when mkpramfs is 
+written it can take a flag (e.g. -r) in the same way mkcramfs does.
 
-Yeah, and I guess we can always just say that qemu can't close the fd or
-something.  Seems hacky, but it might work if Davide insists we need his
-change.
-
--Greg
-
-
---------------enig4FB972CC3DEBD05729B7D291
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko/2vEACgkQlOSOBdgZUxnW/QCgiquVFMSHNbMvtFfEEuhD32Yu
-K/QAn08XEfUG3c5JrABiKNVsPuu1yoMG
-=UnRU
------END PGP SIGNATURE-----
-
---------------enig4FB972CC3DEBD05729B7D291--
+Chris Simmonds
