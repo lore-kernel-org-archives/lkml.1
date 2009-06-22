@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbZFVQGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbZFVQGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757463AbZFVQGn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757000AbZFVQGG
+	id S1757848AbZFVQGy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756691AbZFVQGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:06:06 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:41204 "EHLO
+	Mon, 22 Jun 2009 12:06:09 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42192 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755910AbZFVQF6 (ORCPT
+	with ESMTP id S1754657AbZFVQGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:05:58 -0400
+	Mon, 22 Jun 2009 12:06:03 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v3 1/3] kvm: prepare irqfd for having interrupts disabled
-	during eventfd->release
+Subject: [KVM PATCH v3 3/3] KVM: Fix races in irqfd using new eventfd_kref_get
+	interface
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
        paulmck@linux.vnet.ibm.com, davidel@xmailserver.org, mingo@elte.hu,
        rusty@rustcorp.com.au
-Date: Mon, 22 Jun 2009 12:05:46 -0400
-Message-ID: <20090622160546.22967.12334.stgit@dev.haskins.net>
+Date: Mon, 22 Jun 2009 12:05:57 -0400
+Message-ID: <20090622160556.22967.76273.stgit@dev.haskins.net>
 In-Reply-To: <20090622155504.22967.50532.stgit@dev.haskins.net>
 References: <20090622155504.22967.50532.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -29,179 +29,255 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to plug some race conditions on eventfd shutdown.  In order to
-do this, we need to change the context in which the release notification
-is delivered so that the wqh lock is now held.  However, there is currently
-code in the release callback that assumes it can sleep.
+This patch fixes all known races in irqfd, and paves the way to restore
+DEASSIGN support.  For details of the eventfd races, please see the patch
+presumably commited immediately prior to this one.
 
-We have a slight chicken and egg problem where we cant fix the race
-without adding the lock, and we can't add the lock without breaking
-the sleepy code.  Normally we could deal with this by making both
-changes in an atomic changeset.  However, we want to keep the eventfd
-and kvm specific changes isolated to ease the reviewer burden on upstream
-eventfd (at the specific request of upstream).  Therefore, we have this
-intermediate patch.
-
-This intermediate patch allows the release() method to work in an atomic
-context, at the expense of correctness w.r.t. memory-leaks.  Today we have
-a race condition.  With this patch applied we leak.  Both issues will be
-resolved later in the series.  It is the author's opinion that a leak is
-better for bisectability than the hang would be should we leave the sleepy
-code in place after the locking changeover.
+In a nutshell, we use eventfd_kref_get/put() to properly manage the
+lifetime of the underlying eventfd.  We also use careful coordination
+with our workqueue to ensure that all irqfd objects have terminated
+before we allow kvm to shutdown.  The logic used for shutdown walks
+all open irqfds and releases them.  This logic can be generalized in
+the future to allow a subset of irqfds to be released, thus allowing
+DEASSIGN support.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- virt/kvm/eventfd.c |   89 ++++++++++++++++------------------------------------
- 1 files changed, 27 insertions(+), 62 deletions(-)
+ virt/kvm/eventfd.c |  144 ++++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 110 insertions(+), 34 deletions(-)
 
 diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index a9e7de7..9656027 100644
+index 9656027..67985cd 100644
 --- a/virt/kvm/eventfd.c
 +++ b/virt/kvm/eventfd.c
-@@ -28,7 +28,6 @@
+@@ -28,6 +28,7 @@
  #include <linux/file.h>
  #include <linux/list.h>
  #include <linux/eventfd.h>
--#include <linux/srcu.h>
++#include <linux/kref.h>
  
  /*
   * --------------------------------------------------------------------
-@@ -38,8 +37,6 @@
+@@ -36,26 +37,68 @@
+  * Credit goes to Avi Kivity for the original idea.
   * --------------------------------------------------------------------
   */
++
++enum {
++	irqfd_flags_shutdown,
++};
++
  struct _irqfd {
--	struct mutex              lock;
--	struct srcu_struct        srcu;
  	struct kvm               *kvm;
++	struct kref              *eventfd;
  	int                       gsi;
  	struct list_head          list;
-@@ -53,48 +50,12 @@ static void
- irqfd_inject(struct work_struct *work)
- {
- 	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
--	struct kvm *kvm;
--	int idx;
-+	struct kvm *kvm = irqfd->kvm;
+ 	poll_table                pt;
+ 	wait_queue_head_t        *wqh;
+ 	wait_queue_t              wait;
+-	struct work_struct        inject;
++	struct work_struct        work;
++	unsigned long             flags;
+ };
  
--	idx = srcu_read_lock(&irqfd->srcu);
--
--	kvm = rcu_dereference(irqfd->kvm);
--	if (kvm) {
--		mutex_lock(&kvm->irq_lock);
--		kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
--		kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
--		mutex_unlock(&kvm->irq_lock);
--	}
--
--	srcu_read_unlock(&irqfd->srcu, idx);
--}
--
--static void
--irqfd_disconnect(struct _irqfd *irqfd)
--{
--	struct kvm *kvm;
--
--	mutex_lock(&irqfd->lock);
--
--	kvm = rcu_dereference(irqfd->kvm);
--	rcu_assign_pointer(irqfd->kvm, NULL);
--
--	mutex_unlock(&irqfd->lock);
--
--	if (!kvm)
--		return;
--
--	mutex_lock(&kvm->lock);
--	list_del(&irqfd->list);
--	mutex_unlock(&kvm->lock);
--
--	/*
--	 * It is important to not drop the kvm reference until the next grace
--	 * period because there might be lockless references in flight up
--	 * until then
--	 */
--	synchronize_srcu(&irqfd->srcu);
--	kvm_put_kvm(kvm);
-+	mutex_lock(&kvm->irq_lock);
-+	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
-+	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
-+	mutex_unlock(&kvm->irq_lock);
+ static void
+-irqfd_inject(struct work_struct *work)
++irqfd_release(struct _irqfd *irqfd)
++{
++	eventfd_kref_put(irqfd->eventfd);
++	kfree(irqfd);
++}
++
++static void
++irqfd_work(struct work_struct *work)
+ {
+-	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
++	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
+ 	struct kvm *kvm = irqfd->kvm;
+ 
+-	mutex_lock(&kvm->irq_lock);
+-	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
+-	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
+-	mutex_unlock(&kvm->irq_lock);
++	if (!test_bit(irqfd_flags_shutdown, &irqfd->flags)) {
++		/* Inject an interrupt */
++		mutex_lock(&kvm->irq_lock);
++		kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
++		kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
++		mutex_unlock(&kvm->irq_lock);
++	} else {
++		/* shutdown the irqfd */
++		struct _irqfd *_irqfd = NULL;
++
++		mutex_lock(&kvm->lock);
++
++		if (!list_empty(&irqfd->list))
++			_irqfd = irqfd;
++
++		if (_irqfd)
++			list_del(&_irqfd->list);
++
++		mutex_unlock(&kvm->lock);
++
++		/*
++		 * If the item is not currently on the irqfds list, we know
++		 * we are running concurrently with the KVM side trying to
++		 * remove this item as well.  Since the KVM side should be
++		 * holding the reference now, and will block behind a
++		 * flush_work(), lets just let them do the release() for us
++		 */
++		if (!_irqfd)
++			return;
++
++		irqfd_release(_irqfd);
++	}
  }
  
  static int
-@@ -103,26 +64,24 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
- 	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
+@@ -65,25 +108,20 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
  	unsigned long flags = (unsigned long)key;
  
-+	/*
-+	 * Assume we will be called with interrupts disabled
-+	 */
- 	if (flags & POLLIN)
- 		/*
--		 * The POLLIN wake_up is called with interrupts disabled.
--		 * Therefore we need to defer the IRQ injection until later
--		 * since we need to acquire the kvm->lock to do so.
-+		 * Defer the IRQ injection until later since we need to
-+		 * acquire the kvm->lock to do so.
- 		 */
- 		schedule_work(&irqfd->inject);
- 
+ 	/*
+-	 * Assume we will be called with interrupts disabled
++	 * called with interrupts disabled
+ 	 */
+-	if (flags & POLLIN)
+-		/*
+-		 * Defer the IRQ injection until later since we need to
+-		 * acquire the kvm->lock to do so.
+-		 */
+-		schedule_work(&irqfd->inject);
+-
  	if (flags & POLLHUP) {
  		/*
--		 * The POLLHUP is called unlocked, so it theoretically should
--		 * be safe to remove ourselves from the wqh using the locked
--		 * variant of remove_wait_queue()
-+		 * for now, just remove ourselves from the list and let
-+		 * the rest dangle.  We will fix this up later once
-+		 * the races in eventfd are fixed
+-		 * for now, just remove ourselves from the list and let
+-		 * the rest dangle.  We will fix this up later once
+-		 * the races in eventfd are fixed
++		 * ordering is important: shutdown flag must be visible
++		 * before we schedule
  		 */
--		remove_wait_queue(irqfd->wqh, &irqfd->wait);
--		flush_work(&irqfd->inject);
--		irqfd_disconnect(irqfd);
--
--		cleanup_srcu_struct(&irqfd->srcu);
--		kfree(irqfd);
-+		__remove_wait_queue(irqfd->wqh, &irqfd->wait);
-+		irqfd->wqh = NULL;
+ 		__remove_wait_queue(irqfd->wqh, &irqfd->wait);
+-		irqfd->wqh = NULL;
++		set_bit(irqfd_flags_shutdown, &irqfd->flags);
  	}
  
++	if (flags & (POLLHUP | POLLIN))
++		schedule_work(&irqfd->work);
++
  	return 0;
-@@ -150,8 +109,6 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
- 	if (!irqfd)
- 		return -ENOMEM;
+ }
  
--	mutex_init(&irqfd->lock);
--	init_srcu_struct(&irqfd->srcu);
+@@ -102,6 +140,7 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ {
+ 	struct _irqfd *irqfd;
+ 	struct file *file = NULL;
++	struct kref *kref = NULL;
+ 	int ret;
+ 	unsigned int events;
+ 
+@@ -112,7 +151,7 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
  	irqfd->kvm = kvm;
  	irqfd->gsi = gsi;
  	INIT_LIST_HEAD(&irqfd->list);
-@@ -172,8 +129,6 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+-	INIT_WORK(&irqfd->inject, irqfd_inject);
++	INIT_WORK(&irqfd->work, irqfd_work);
  
- 	events = file->f_op->poll(file, &irqfd->pt);
- 
--	kvm_get_kvm(kvm);
--
- 	mutex_lock(&kvm->lock);
+ 	file = eventfd_fget(fd);
+ 	if (IS_ERR(file)) {
+@@ -133,11 +172,13 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
  	list_add_tail(&irqfd->list, &kvm->irqfds);
  	mutex_unlock(&kvm->lock);
-@@ -211,6 +166,16 @@ kvm_irqfd_release(struct kvm *kvm)
- {
- 	struct _irqfd *irqfd, *tmp;
  
--	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list)
--		irqfd_disconnect(irqfd);
-+	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list) {
-+		if (irqfd->wqh)
-+			remove_wait_queue(irqfd->wqh, &irqfd->wait);
-+
-+		flush_work(&irqfd->inject);
-+
-+		mutex_lock(&kvm->lock);
-+		list_del(&irqfd->list);
-+		mutex_unlock(&kvm->lock);
-+
-+		kfree(irqfd);
+-	/*
+-	 * Check if there was an event already queued
+-	 */
+-	if (events & POLLIN)
+-		schedule_work(&irqfd->inject);
++	kref = eventfd_kref_get(file);
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++		goto fail;
 +	}
++
++	irqfd->eventfd = kref;
+ 
+ 	/*
+ 	 * do not drop the file until the irqfd is fully initialized, otherwise
+@@ -145,9 +186,18 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ 	 */
+ 	fput(file);
+ 
++	/*
++	 * Check if there was an event already queued
++	 */
++	if (events & POLLIN)
++		schedule_work(&irqfd->work);
++
+ 	return 0;
+ 
+ fail:
++	if (kref && !IS_ERR(kref))
++		eventfd_kref_put(kref);
++
+ 	if (file && !IS_ERR(file))
+ 		fput(file);
+ 
+@@ -161,21 +211,47 @@ kvm_irqfd_init(struct kvm *kvm)
+ 	INIT_LIST_HEAD(&kvm->irqfds);
+ }
+ 
++static struct _irqfd *
++irqfd_pop(struct kvm *kvm)
++{
++	struct _irqfd *irqfd = NULL;
++
++	mutex_lock(&kvm->lock);
++
++	if (!list_empty(&kvm->irqfds)) {
++		irqfd = list_first_entry(&kvm->irqfds, struct _irqfd, list);
++		list_del(&irqfd->list);
++	}
++
++	mutex_unlock(&kvm->lock);
++
++	return irqfd;
++}
++
+ void
+ kvm_irqfd_release(struct kvm *kvm)
+ {
+-	struct _irqfd *irqfd, *tmp;
++	struct _irqfd *irqfd;
+ 
+-	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list) {
+-		if (irqfd->wqh)
+-			remove_wait_queue(irqfd->wqh, &irqfd->wait);
++	while ((irqfd = irqfd_pop(kvm))) {
+ 
+-		flush_work(&irqfd->inject);
++		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+ 
+-		mutex_lock(&kvm->lock);
+-		list_del(&irqfd->list);
+-		mutex_unlock(&kvm->lock);
++		/*
++		 * We guarantee there will be no more notifications after
++		 * the remove_wait_queue returns.  Now lets make sure we
++		 * synchronize behind any outstanding work items before
++		 * releasing the resources
++		 */
++		flush_work(&irqfd->work);
+ 
+-		kfree(irqfd);
++		irqfd_release(irqfd);
+ 	}
++
++	/*
++	 * We need to wait in case there are any outstanding work-items
++	 * in flight that had already removed themselves from the list
++	 * prior to entry to this function
++	 */
++	flush_scheduled_work();
  }
 
