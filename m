@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbZFVObl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZFVOcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbZFVObl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZFVObd
+	id S1757173AbZFVOcZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZFVOcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:31:33 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:45559 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbZFVObd (ORCPT
+	Mon, 22 Jun 2009 10:32:18 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:35274 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752183AbZFVOcR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:31:33 -0400
-Message-ID: <4A3F95A6.5040503@nortel.com>
-Date: Mon, 22 Jun 2009 08:31:02 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-CC: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
-       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>, jeremy@goop.org,
-       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
-       sunil.mushran@oracle.com, linux-mm@kvack.org,
-       Himanshu Raj <rhim@microsoft.com>
-Subject: Re: [RFC] transcendent memory for Linux
-References: <cd40cd91-66e9-469d-b079-3a899a3ccadb@default>
-In-Reply-To: <cd40cd91-66e9-469d-b079-3a899a3ccadb@default>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jun 2009 14:31:08.0394 (UTC) FILETIME=[15183CA0:01C9F346]
+	Mon, 22 Jun 2009 10:32:17 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+X-IronPort-AV: E=Sophos;i="4.42,268,1243807200";   d="scan'208";a="16303031"
+Message-id: <4A3F95F1.4020507@lfbs.rwth-aachen.de>
+Date: Mon, 22 Jun 2009 16:32:17 +0200
+From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+ <87zldjn597.fsf@basil.nowhere.org>
+ <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+ <20090612103251.GJ25568@one.firstfloor.org>
+ <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+ <1245119977.6724.40.camel@lts-notebook>
+ <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+ <1245164395.15138.40.camel@lts-notebook>
+ <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
+ <1245299856.6431.30.camel@lts-notebook> <4A3F7A49.6070805@inria.fr>
+In-reply-to: <4A3F7A49.6070805@inria.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Magenheimer wrote:
 
-> What if there was a class of memory that is of unknown
-> and dynamically variable size, is addressable only indirectly
-> by the kernel, can be configured either as persistent or
-> as "ephemeral" (meaning it will be around for awhile, but
-> might disappear without warning), and is still fast enough
-> to be synchronously accessible?
+
+Brice Goglin wrote:
+> Lee Schermerhorn wrote:
+>> On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
+>>   
+>>
+>> Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
+>> [along with my shared policy series atop which they sit in my tree].
+>> Patches reside in:
+>>
+>> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
+>>
+>>   
 > 
-> We call this latter class "transcendent memory"
+> I gave this patchset a try and indeed it seems to work fine, thanks a
+> lot. But the migration performance isn't very good. I am seeing about
+> 540MB/s when doing mbind+touch_all_pages on large buffers on a
+> quad-barcelona machines. move_pages gets 640MB/s there. And my own
+> next-touch implementation were near 800MB/s in the past.
 
-While true that this memory is "exceeding usual limits", the more
-important criteria is that it may disappear.
+I used a modified stream benchmark to evaluate the performance of Lee's 
+and my version of the next-touch implementation. In this low-level 
+benchmark is Lee's patch better than my patch. I think that Brice and I 
+use the same technique to realize affinity-on-next-touch. Do you use 
+another kernel version to evaluate the performance?
 
-It might be clearer to just call it "ephemeral memory".
+Stefan
 
-There is going to be some overhead due to the extra copying, and at
-times there could be two copies of data in memory.  It seems possible
-that certain apps right a the borderline could end up running slower
-because they can't fit in the regular+ephemeral memory due to the
-duplication, while the same amount of memory used normally could have
-been sufficient.
-
-I suspect trying to optimize management of this could be difficult.
-
-Chris
