@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZFVPBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbZFVPBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbZFVPBU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZFVPBN
+	id S1756835AbZFVPBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 11:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbZFVPBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:01:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49130 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751233AbZFVPBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:01:12 -0400
-Date: Mon, 22 Jun 2009 15:00:39 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/urgent] perf report: Output more symbol related debug data
-Message-ID: <tip-d13c8eeb02770648dbd9097eb0ebeff70b2939be@git.kernel.org>
-Git-Commit-ID: d13c8eeb02770648dbd9097eb0ebeff70b2939be
-X-Mailer: tip-git-log-daemon
+	Mon, 22 Jun 2009 11:01:34 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44852 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753108AbZFVPBd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 11:01:33 -0400
+Date: Mon, 22 Jun 2009 11:01:33 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
+       <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch update 3] PM: Introduce core framework for run-time PM
+ of I/O devices
+In-Reply-To: <200906211446.26019.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906221017420.3081-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 22 Jun 2009 15:00:40 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d13c8eeb02770648dbd9097eb0ebeff70b2939be
-Gitweb:     http://git.kernel.org/tip/d13c8eeb02770648dbd9097eb0ebeff70b2939be
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Mon, 22 Jun 2009 16:52:51 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 22 Jun 2009 16:59:32 +0200
+On Sun, 21 Jun 2009, Rafael J. Wysocki wrote:
 
-perf report: Output more symbol related debug data
+> > Sorry, what I meant was that in each case the counter should be
+> > {inc,dec}remented if a new request had to be queued.  If one was
+> > already queued then the counter should be left alone.
+> > 
+> > The reason behind this is that a bunch of pm_request_suspend calls
+> > which all end up referring to the same workqueue item will result in a
+> > single async call to the runtime_suspend method.
+> 
+> Yes, that's why only the first one results in queuing up a request.
+> 
+> There is a problem with that if the later calls are supposed to use shorter
+> delays, but I have no real idea to handle this cleanly.
 
-Print more symbol relocation related info under -vv.
+Nor do I.  When the time-of-last-use and delay fields are implemented, 
+this should never arise.
 
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > Therefore they should cause a single decrement of the counter.  Likewise for
+> > pm_request_resume.
+> 
+> Hmm.  Why exactly do you think it's necessary to decrease the usage counter
+> in suspend functions?  You can't suspend a device more than once and you have
+> to resume it at the first request anyway.
+> 
+> I think it makes sense to increase the usage counter on every attempt to
+> resume, even if the device is not woken up as a result, because that means the
+> caller wants the device not to be suspended until the counter is decreased.
+> This way, even if the device is already active, multiple callers can prevent it
+> from suspending by calling pm_request_resume_get() or pm_runtime_resume_get()
+> and then dropping the references.
 
+Again, this boils down to how drivers decide to use the async 
+interface.  I can see justifications for both pm_request_resume_get 
+(which would always increment the counter) and pm_request_resume (which 
+would increment the counter only if a work item had to be queued).  And 
+of course, synchronous pm_runtime_resume should always increment the 
+counter.
 
----
- tools/perf/builtin-report.c |    3 ++-
- tools/perf/util/symbol.c    |    4 ++++
- 2 files changed, 6 insertions(+), 1 deletions(-)
+> Now, we can also make pm_request_suspend() and pm_runtime_suspend() drop
+> the usage counter (if it's greater than zero), but that implies a usage model
+> in which a resume function called when I/O is started should be balanced with a
+> suspend function called after the I/O has been finished.
+> 
+> However, I'd prefer a usage model in which ->runtime_idle() is called when the
+> I/O is finished and the usage counter is zero and it decides whether to call a
+> suspend function.
+> 
+> So, perhaps I should make resume functions increase the usage counter
+> unconditionally and introduce pm_runtime_idle() to be called when the I/O is
+> done?  That is, pm_runtime_idle() will decrement the usage counter, check if
+> it's zero and call ->runtime_idle() when that's the case (well, this is what
+> pm_runtime_put_notify() does right now, but maybe the name is wrong).
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 5eb5566..ae8fe37 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -814,7 +814,6 @@ resolve_symbol(struct thread *thread, struct map **mapp,
- 			*mapp = map;
- got_map:
- 		ip = map->map_ip(map, ip);
--		*ipp  = ip;
- 
- 		dso = map->dso;
- 	} else {
-@@ -828,6 +827,8 @@ got_map:
- 		dso = kernel_dso;
- 	}
- 	dprintf(" ...... dso: %s\n", dso ? dso->name : "<not found>");
-+	dprintf(" ...... map: %Lx -> %Lx\n", *ipp, ip);
-+	*ipp  = ip;
- 
- 	if (dsop)
- 		*dsop = dso;
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 01b62fa..9c659ef 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -535,6 +535,10 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
- 		gelf_getshdr(sec, &shdr);
- 		obj_start = sym.st_value;
- 
-+		if (verbose >= 2)
-+			printf("adjusting symbol: st_value: %Lx sh_addr: %Lx sh_offset: %Lx\n",
-+				(u64)sym.st_value, (u64)shdr.sh_addr, (u64)shdr.sh_offset);
-+
- 		sym.st_value -= shdr.sh_addr - shdr.sh_offset;
- 
- 		f = symbol__new(sym.st_value, sym.st_size,
+Maybe it should just be called pm_runtime_put.  There could be a
+separate pm_runtime_idle that doesn't decrement the counter but invokes
+the callback if the counter is already 0.  (This could be useful after
+a runtime_resume method returned -EBUSY.)
+
+> Also, there should be a function to use when it's only necessary to drop the
+> usage counter, without calling ->runtime_idle() (for example, if another code
+> path is supposed to call a suspend function directly).
+
+I don't see any reason for that.  It says: "The device isn't in use any
+more, but even though we support autosuspend we aren't going to try to
+suspend it now."  What's the point?  And as for the other code path, if
+the device is already suspended when it calls the suspend function
+directly, there's no harm done.
+
+Alan Stern
+
