@@ -1,102 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZFVHmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbZFVHqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbZFVHmT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 03:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZFVHmJ
+	id S1753615AbZFVHqV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 03:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZFVHqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 03:42:09 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34549 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbZFVHmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 03:42:08 -0400
-Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20090622113652.21E7.A69D9226@jp.fujitsu.com>
-References: <1245506908.6327.36.camel@localhost>
-	 <4A3CFFEC.1000805@gmail.com>  <20090622113652.21E7.A69D9226@jp.fujitsu.com>
-Date: Mon, 22 Jun 2009 10:42:09 +0300
-Message-Id: <1245656529.18751.22.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 22 Jun 2009 03:46:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64458 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752371AbZFVHqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 03:46:13 -0400
+Message-ID: <4A3F3648.7080007@cn.fujitsu.com>
+Date: Mon, 22 Jun 2009 15:44:08 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: [PATCH] io-controller: Preempt a non-rt queue if a rt ioq is present
+ in ancestor or sibling groups
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-21-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1245443858-8487-21-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 11:39 +0900, KOSAKI Motohiro wrote:
-> (cc to Mel and some reviewer)
-> 
-> > Flags are:
-> > 0000000000400000 -- __PG_MLOCKED
-> > 800000000050000c -- my page flags
-> >         3650000c -- Maxim's page flags
-> > 0000000000693ce1 -- my PAGE_FLAGS_CHECK_AT_FREE
-> 
-> I guess commit da456f14d (page allocator: do not disable interrupts in
-> free_page_mlock()) is a bit wrong.
-> 
-> current code is:
-> -------------------------------------------------------------
-> static void free_hot_cold_page(struct page *page, int cold)
-> {
-> (snip)
->         int clearMlocked = PageMlocked(page);
-> (snip)
->         if (free_pages_check(page))
->                 return;
-> (snip)
->         local_irq_save(flags);
->         if (unlikely(clearMlocked))
->                 free_page_mlock(page);
-> -------------------------------------------------------------
-> 
-> Oh well, we remove PG_Mlocked *after* free_pages_check().
-> Then, it makes false-positive warning.
-> 
-> Sorry, my review was also wrong. I think reverting this patch is better ;)
+Preempt the ongoing non-rt ioq if there are rt ioqs waiting for dispatching
+in ancestor or sibling groups. It will give other group's rt ioq an chance 
+to dispatch ASAP.
 
-Well, I am not sure we need to revert the patch. I'd argue it's simply a
-bug in free_pages_check() that can be fixed with something like this.
-Mel, what do you think?
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/elevator-fq.c |   44 +++++++++++++++++++++++++++++++++++++++-----
+ block/elevator-fq.h |    1 +
+ 2 files changed, 40 insertions(+), 5 deletions(-)
 
-			Pekka
-
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index d6792f8..b002b65 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -385,7 +385,7 @@ static inline void __ClearPageTail(struct page *page)
-  * these flags set.  It they are, there is a problem.
-  */
- #define PAGE_FLAGS_CHECK_AT_FREE \
--	(1 << PG_lru	 | 1 << PG_locked    | \
-+	(1 << PG_lru	 | \
- 	 1 << PG_private | 1 << PG_private_2 | \
- 	 1 << PG_buddy	 | 1 << PG_writeback | 1 << PG_reserved | \
- 	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index a5f3c27..ff7c713 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -497,6 +497,11 @@ static void free_page_mlock(struct page *page) { }
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 2ad40eb..80526fd 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -3245,8 +3245,16 @@ void elv_add_ioq_busy(struct elv_fq_data *efqd, struct io_queue *ioq)
+ 	elv_mark_ioq_busy(ioq);
+ 	efqd->busy_queues++;
+ 	if (elv_ioq_class_rt(ioq)) {
++		struct io_entity *entity;
+ 		struct io_group *iog = ioq_to_io_group(ioq);
++
+ 		iog->busy_rt_queues++;
++		entity = iog->entity.parent;
++
++		for_each_entity(entity) {
++			iog = io_entity_to_iog(entity);
++			iog->sub_busy_rt_queues++;
++		}
+ 	}
  
- static inline int free_pages_check(struct page *page)
+ #ifdef CONFIG_DEBUG_GROUP_IOSCHED
+@@ -3290,9 +3298,18 @@ void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq,
+ 	elv_clear_ioq_busy(ioq);
+ 	BUG_ON(efqd->busy_queues == 0);
+ 	efqd->busy_queues--;
++
+ 	if (elv_ioq_class_rt(ioq)) {
++		struct io_entity *entity;
+ 		struct io_group *iog = ioq_to_io_group(ioq);
++
+ 		iog->busy_rt_queues--;
++		entity = iog->entity.parent;
++
++		for_each_entity(entity) {
++			iog = io_entity_to_iog(entity);
++			iog->sub_busy_rt_queues--;
++		}
+ 	}
+ 
+ 	elv_deactivate_ioq(efqd, ioq, requeue);
+@@ -3735,12 +3752,32 @@ int elv_iosched_expire_ioq(struct request_queue *q, int slice_expired,
+ 	return ret;
+ }
+ 
++static int check_rt_queue(struct io_queue *ioq)
++{
++	struct io_group *iog;
++	struct io_entity *entity;
++
++	iog = ioq_to_io_group(ioq);
++
++	if (iog->busy_rt_queues)
++		return 1;
++
++	entity = iog->entity.parent;
++
++	for_each_entity(entity) {
++		iog = io_entity_to_iog(entity);
++		if (iog->sub_busy_rt_queues)
++			return 1;
++	}
++
++	return 0;
++}
++
+ /* Common layer function to select the next queue to dispatch from */
+ void *elv_fq_select_ioq(struct request_queue *q, int force)
  {
-+	/*
-+	 * Note: the page can have PG_mlock set here because we clear it
-+	 * lazily to avoid unnecessary disabling and enabling of interrupts in
-+	 * page free fastpath.
-+	 */
- 	if (unlikely(page_mapcount(page) |
- 		(page->mapping != NULL)  |
- 		(atomic_read(&page->_count) != 0) |
+ 	struct elv_fq_data *efqd = &q->elevator->efqd;
+ 	struct io_queue *new_ioq = NULL, *ioq = elv_active_ioq(q->elevator);
+-	struct io_group *iog;
+ 	int slice_expired = 1;
+ 
+ 	if (!elv_nr_busy_ioq(q->elevator))
+@@ -3811,12 +3848,9 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
+ 	/*
+ 	 * If we have a RT cfqq waiting, then we pre-empt the current non-rt
+ 	 * cfqq.
+-	 *
+-	 * TODO: This does not seem right across the io groups. Fix it.
+ 	 */
+-	iog = ioq_to_io_group(ioq);
+ 
+-	if (!elv_ioq_class_rt(ioq) && iog->busy_rt_queues) {
++	if (!elv_ioq_class_rt(ioq) && check_rt_queue(ioq)) {
+ 		/*
+ 		 * We simulate this as cfqq timed out so that it gets to bank
+ 		 * the remaining of its time slice.
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index b3193f8..be6c1af 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -248,6 +248,7 @@ struct io_group {
+ 	 * non-RT cfqq in service when this value is non-zero.
+ 	 */
+ 	unsigned int busy_rt_queues;
++	unsigned int sub_busy_rt_queues;
+ 
+ 	int deleting;
+ 	unsigned short iocg_id;
+-- 
+1.5.4.rc3
 
 
