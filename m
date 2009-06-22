@@ -1,57 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757739AbZFVV0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbZFVV1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757739AbZFVV0z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZFVV0r
+	id S1759439AbZFVV1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbZFVV1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:26:47 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:44146 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbZFVV0q (ORCPT
+	Mon, 22 Jun 2009 17:27:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33125 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751124AbZFVV13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:26:46 -0400
-Subject: Re: [PATCH 1/1] hwlat_detector: A system hardware latency detector
-From: Jon Masters <jonathan@jonmasters.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       rostedt@goodmis.org
-In-Reply-To: <20090622142014.2a1e675b.akpm@linux-foundation.org>
-References: <20090611045829.714510042@jonmasters.org>
-	 <20090611045939.103213179@jonmasters.org>
-	 <20090622121736.588ae743.akpm@linux-foundation.org>
-	 <1245704283.15044.28.camel@localhost.localdomain>
-	 <20090622142014.2a1e675b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Mon, 22 Jun 2009 17:26:50 -0400
-Message-Id: <1245706010.15044.42.camel@localhost.localdomain>
+	Mon, 22 Jun 2009 17:27:29 -0400
+Date: Mon, 22 Jun 2009 14:27:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: khilman@deeprootsystems.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] genirq: do not disable IRQ_WAKEUP marked irqs on
+ suspend
+Message-Id: <20090622142722.183fedc8.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0906122039420.2800@localhost.localdomain>
+References: <cMiA9-1MZ-13@gated-at.bofh.it>
+	<87fxe5fi9v.fsf@deeprootsystems.com>
+	<alpine.LFD.2.00.0906122005140.2800@localhost.localdomain>
+	<87hbylb8u3.fsf@deeprootsystems.com>
+	<alpine.LFD.2.00.0906122039420.2800@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 14:20 -0700, Andrew Morton wrote:
-> On Mon, 22 Jun 2009 16:58:03 -0400
-> Jon Masters <jonathan@jonmasters.org> wrote:
+On Fri, 12 Jun 2009 21:52:46 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> > So...I'll post another update (thanks again). Am I certainly too late
-> > for this merge window? That's ok too.
+> On Fri, 12 Jun 2009, Kevin Hilman wrote:
+> >   http://lkml.org/lkml/2009/5/4/448
+> > 
+> > Only difference is I did the checking outside of the lock, which is
+> > probably wrong.  In any case, you'll be interested in the thread that
+> > follows.
 > 
-> We're generally pretty relaxed about merging updates to just-added
-> subsystems.  There's not much point in releasing them in a
-> known-to-be-unfinished form.  And if a late fix _does_ break the
-> driver, that still isn't strictly a regression against the previous
-> kernel release.
+> Hmm, darn. That means that on hardware which has trouble with the
+> delayed disable and therefor uses it's own chip->disable_irq() method
+> the suspend logic is wreckaged.
 
-Ok, so there's my carrot...I'll go find the stick and beat myself until
-it's done. Thanks again, Andrew.
+Does this maen that your original patch is no longer applicable to
+mainline/-stable?
 
-Jon.
 
+> But there is always a way to get broken hardware tamed. :)
+> 
+> suspend does:
+> 	__disable_irq();
+> 		status |= IRQ_SUSPENDED;
+> 		chip->disable_irq();
+> 
+> resume does:
+>        __enable_irq();
+> 		status &= ~IRQ_SUSPENDED;
+> 		chip->enable_irq();
+> 
+> So
+> 
+> -      set_irq_handler(handle_level_irq);
+> +      set_irq_handler(my_own_handler);
+> 
+> +my_own_handler()
+> +{
+> +	if (!(status & IRQ_SUSPENDED)) {
+> +	       handle_level_irq();
+> +	} else {
+> +	       mask_at_hardware_level();
+> +	       status |= IRQ_PENDING;
+> +	       save_important_information();
+> +	} 
+> +}
+> 
+> my_disable_irq()
+> {
+> +	if (!(status & IRQ_SUSPENDED))
+> 	       mask_at_hardware_level();
+> }
+> 
+> my_enable_irq()
+> {
+> +	if (important_information_has_been_saved)
+> +	       replay_what_happened();
+> +
+>         unmask_at_hardware_level();
+> }
+> 
+> Ugly, but that might work somehow. Not sure about the replay part, but
+> that can be deferred via some more hackery as well :)
+> 
+> Raphael, these delayed disable and the chip->irq_disable() override
+> implications vs. suspend really need to be documented. The current
+> comment of suspend_device_irqs() is bogus:
+> 
+>  * During system-wide suspend or hibernation device interrupts need to be
+>  * disabled at the chip level and this function is provided for this purpose.
+>    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
