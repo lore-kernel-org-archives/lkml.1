@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbZFVSdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbZFVSdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757508AbZFVSdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 14:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZFVSdD
+	id S1758028AbZFVSdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 14:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZFVSdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 14:33:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41564 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752644AbZFVSdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 14:33:02 -0400
-Date: Mon, 22 Jun 2009 21:32:22 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [KVM PATCH v3 3/3] KVM: Fix races in irqfd using new
-	eventfd_kref_get interface
-Message-ID: <20090622183222.GF15228@redhat.com>
-References: <20090622155504.22967.50532.stgit@dev.haskins.net> <20090622160556.22967.76273.stgit@dev.haskins.net> <20090622165708.GB15228@redhat.com> <4A3FBFF1.8050504@gmail.com> <20090622174506.GD15228@redhat.com> <alpine.DEB.1.10.0906221105500.10952@makko.or.mcafeemobile.com>
+	Mon, 22 Jun 2009 14:33:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:58667 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbZFVSdi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 14:33:38 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Marco <marco.stornelli@gmail.com>
+Subject: Re: [PATCH 06/14] Pramfs: Include files
+Date: Mon, 22 Jun 2009 20:33:20 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <4A33A7EC.6070008@gmail.com> <200906221317.04166.arnd@arndb.de> <4A3FC7F1.5050108@gmail.com>
+In-Reply-To: <4A3FC7F1.5050108@gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906221105500.10952@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906222033.20883.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/k7dNG2Z8oTn7WUAu1A0c8FfVkLChtBiTL0oR
+ peP+b8fGGRUZG7XAQL+Ky4m/oM6R0Nc4vo1lc6fciIOgjfjiAZ
+ 8M/+NxgU1JZWWfxBjtPwLIoAsy7QPbA
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 11:11:12AM -0700, Davide Libenzi wrote:
-> On Mon, 22 Jun 2009, Michael S. Tsirkin wrote:
+On Monday 22 June 2009, Marco wrote:
 > 
-> > Not really, it's impossible to document all races one have thought
-> > about and avoided.
-> 
-> Well, when some new code has non-trivial locking/racing logics, you better 
-> document it as clearly as possible, akpm announced time ago.
+> Sorry, I meant it's not currently possible. At the moment the only way
+> to use it as rootfs it's to copy all the data in an already mounted
+> (empty) ram partition and reboot. However it's not my first item on my
+> todo list because I think that it's possible to use it as rootfs but it
+> isn't the standard use for this fs.
 
-Absolutely. But IMO documentation in the form of "fields A B C are
-protected by lock X" in a single place near field declaration is better
-than "we take lock X here to protect against race with user thread using
-fields A B C" sprinkled all over the code.
+Well, it doesn't have to work right away. What I'm asking to
+define the data structures in a way that keeps the layout stable
+across kernel updates. Since a future version of the file system
+might support cross-endian image creation, it would be good to
+define the data structures in a fixed endian mode already, so
+you don't have to change it in the future.
 
-
+	Arnd <><
