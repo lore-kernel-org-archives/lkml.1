@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbZFVSPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbZFVSRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757091AbZFVSPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 14:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZFVSPs
+	id S1757729AbZFVSRa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 14:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZFVSRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 14:15:48 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:30013 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbZFVSPr (ORCPT
+	Mon, 22 Jun 2009 14:17:21 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:41507 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752496AbZFVSRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 14:15:47 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=gNOMhzBCuQ1Nx12BOcT2ljIdwxCWNqZ5IAYdP2gwj3SJayOez2inCPsaWcCm40u9T
-	yNU9M04HTGNwnMvXnx/PA==
+	Mon, 22 Jun 2009 14:17:20 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 22 Jun 2009 11:11:12 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Michael S. Tsirkin" <mst@redhat.com>
+cc: Gregory Haskins <gregory.haskins@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [KVM PATCH v3 3/3] KVM: Fix races in irqfd using new eventfd_kref_get
+ interface
+In-Reply-To: <20090622174506.GD15228@redhat.com>
+Message-ID: <alpine.DEB.1.10.0906221105500.10952@makko.or.mcafeemobile.com>
+References: <20090622155504.22967.50532.stgit@dev.haskins.net> <20090622160556.22967.76273.stgit@dev.haskins.net> <20090622165708.GB15228@redhat.com> <4A3FBFF1.8050504@gmail.com> <20090622174506.GD15228@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Date: Mon, 22 Jun 2009 14:15:36 -0400
-Message-ID: <21c5ff280906221115v302d8b95t4a4ae2df86289056@mail.gmail.com>
-Subject: [patch] small sendfile fixes
-From: Robert Love <rlove@google.com>
-To: lkml <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Three fixes for sendfile, mostly related to sending large files from pseudo
-filesystems:
+On Mon, 22 Jun 2009, Michael S. Tsirkin wrote:
 
-- Fix sendfile for offsets > 300G. This can happen with pseudo filesystems.
-  This happens because the overflow check is using inode->i_sb->s_maxbytes
-  and not the superblock of the backing device's s_maxbytes. For a regular file
-  these are interchangible but for a special file these are different and you
-  want the latter.
+> Not really, it's impossible to document all races one have thought
+> about and avoided.
 
-- Don't compare against the max of the out_inode's superblock. Doesn't make
-  sense.
+Well, when some new code has non-trivial locking/racing logics, you better 
+document it as clearly as possible, akpm announced time ago.
 
-- For pseudo and other filesystems with s_maxbytes set to ~0ULL, max ends up
-  holding a negative number as it is signed. Check for and correct that.
 
-Git patch is against 2.6.30. I'd like Al to take a look and make sure
-my logic is right before applying.
+- Davide
 
-        Robert
 
-From: Mandeep Singh Baines <msb@google.com>
-Signed-off-by: Robert Love <rlove@google.com>
