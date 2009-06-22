@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZFVQoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZFVQpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbZFVQoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZFVQoY
+	id S1754823AbZFVQpP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755699AbZFVQob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:44:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37494 "EHLO
+	Mon, 22 Jun 2009 12:44:31 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37499 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755669AbZFVQoX (ORCPT
+	with ESMTP id S1756231AbZFVQoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:44:23 -0400
+	Mon, 22 Jun 2009 12:44:30 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 07/15] vt_ioctl: fix lock imbalance
+Subject: [PATCH 08/15] ppp: Fix throttling bugs
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 18:42:18 +0100
-Message-ID: <20090622174215.25341.97384.stgit@t61.ukuu.org.uk>
+Date: Mon, 22 Jun 2009 18:42:29 +0100
+Message-ID: <20090622174228.25341.88309.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 References: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,32 +25,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Alan Cox <alan@linux.intel.com>
 
-Don't return from switch/case directly in vt_ioctl. Set ret and break
-instead so that we unlock BKL.
+The ppp layer goes around calling the unthrottle method from non sleeping
+paths. This isn't safe because the unthrottle methods in the tty layer need
+to be able to sleep (consider a USB dongle).
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Until now this didn't show up because the ppp layer never actually throttled
+a port so the unthrottle was always a no-op. Currently it's a mutex taking
+path so warnings are spewed if the unthrottle occurs via certain paths.
+
+Fix this by removing the unneccessary unthrottle calls.
+
 Signed-off-by: Alan Cox <alan@linux.intel.com>
-Cc: stable@kernel.org
 ---
 
- drivers/char/vt_ioctl.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/net/ppp_async.c   |    1 -
+ drivers/net/ppp_synctty.c |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index e6ce632..7539bed 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -396,7 +396,8 @@ int vt_ioctl(struct tty_struct *tty, struct file * file,
- 	kbd = kbd_table + console;
- 	switch (cmd) {
- 	case TIOCLINUX:
--		return tioclinux(tty, arg);
-+		ret = tioclinux(tty, arg);
-+		break;
- 	case KIOCSOUND:
- 		if (!perm)
- 			goto eperm;
+diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
+index 6de8399..17c116b 100644
+--- a/drivers/net/ppp_async.c
++++ b/drivers/net/ppp_async.c
+@@ -356,7 +356,6 @@ ppp_asynctty_receive(struct tty_struct *tty, const unsigned char *buf,
+ 	if (!skb_queue_empty(&ap->rqueue))
+ 		tasklet_schedule(&ap->tsk);
+ 	ap_put(ap);
+-	tty_unthrottle(tty);
+ }
+ 
+ static void
+diff --git a/drivers/net/ppp_synctty.c b/drivers/net/ppp_synctty.c
+index d2fa2db..aa3d39f 100644
+--- a/drivers/net/ppp_synctty.c
++++ b/drivers/net/ppp_synctty.c
+@@ -397,7 +397,6 @@ ppp_sync_receive(struct tty_struct *tty, const unsigned char *buf,
+ 	if (!skb_queue_empty(&ap->rqueue))
+ 		tasklet_schedule(&ap->tsk);
+ 	sp_put(ap);
+-	tty_unthrottle(tty);
+ }
+ 
+ static void
 
