@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZFVI0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZFVI3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbZFVI0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 04:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZFVI0E
+	id S1754767AbZFVI3R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 04:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZFVI3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 04:26:04 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51754 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752995AbZFVI0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 04:26:03 -0400
-Date: Mon, 22 Jun 2009 18:26:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for June 22
-Message-Id: <20090622182600.129da88e.sfr@canb.auug.org.au>
-In-Reply-To: <20090622181920.496d160e.sfr@canb.auug.org.au>
-References: <20090622181920.496d160e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd"
+	Mon, 22 Jun 2009 04:29:06 -0400
+Received: from mail-fx0-f224.google.com ([209.85.220.224]:45041 "EHLO
+	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbZFVI3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 04:29:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=ej745K8SRjy0prQPtEPanb/GA2T6gxX3Nf9rHGRPaPO9PefwxYJI6uhNifbnSBGpuR
+         vEAhujrTP0l3BWeG2Xf4UDbTwT1Fp+G5iZ0iMWri8e/bk+EFyN+g8pm1qEGOFam+MI+2
+         UCWiAfMCPruivrMCn50XtUWQ/j3XrI9ONH3UM=
+MIME-Version: 1.0
+In-Reply-To: <7448ec710906210415v2d25a120m23c59b435e5267f2@mail.gmail.com>
+References: <7448ec710906210415v2d25a120m23c59b435e5267f2@mail.gmail.com>
+Date: Mon, 22 Jun 2009 11:29:07 +0300
+Message-ID: <7448ec710906220129l54dda1e0o86cb5fc738c67500@mail.gmail.com>
+Subject: A question about MUSB driver
+From: Pablo Bitton <pablo.bitton@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello to all,
 
-On Mon, 22 Jun 2009 18:19:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Changes since 20090619:
+I have a question about "davinci_source_power()" function at
+drivers/usb/musb/davinci.c
+(http://lxr.linux.no/linux+v2.6.30/drivers/usb/musb/davinci.c#L170).
 
-The current "git diff --stat -M stable..HEAD^" ends like this:
+If I am not wrong, it is using "#ifdef CONFIG_MACH_DAVINCI_EVM" and
+"machine_is_davinci_evm()"
+macro to conditionally turn VBUS-controlling GPIO on and off,
+depending on specific machine being DaVinci EVM.
 
-	835 files changed, 46602 insertions(+), 14044 deletions(-)
+Our team works on another DaVinci based board - that is based on the
+EVM, but has different machine ID and uses
+different GPIO for VBUS switching.
 
-So, we must be nearly there. :-)
+If we use "davinci.c" code without a change, it is compiled without
+VBUS handling code at all, which is certainly not what we need.
+How should we change the code/Makefile/build process to include VBUS
+handling for out specific board?
 
-$ git diff --dirstat -M stable..HEAD^
-   3.8% Documentation/
-   4.9% arch/arm/configs/
-   6.6% arch/arm/
-   4.3% arch/m68k/include/asm/
-   3.0% arch/x86/kvm/
-   3.3% arch/x86/
-   3.6% arch/
-   4.6% drivers/firewire/
-   5.2% drivers/md/
-   3.5% drivers/misc/
-   4.7% drivers/mtd/
-   4.0% drivers/pci/hotplug/
-   3.2% drivers/pci/pcie/
-   4.2% drivers/watchdog/
-  14.9% drivers/
-   7.1% fs/
-   4.1% include/linux/
-   9.5% mm/
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko/QBgACgkQjjKRsyhoI8yE1ACeM0lp3apJHUp/8PjhZRYe8Bhu
-eY0An3Fv1eH0FV3YmdM2KFGiror380kM
-=mBD+
------END PGP SIGNATURE-----
-
---Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd--
+Thanks in advance.
