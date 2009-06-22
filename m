@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZFVVAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZFVVCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbZFVVAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbZFVVA3
+	id S1758830AbZFVVCy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbZFVVCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:00:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58679 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758579AbZFVVA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:00:28 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [BUGFIX][ PATCH] kprobes: fix kprobe selftest configuration dependency
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Date: Mon, 22 Jun 2009 17:03:02 -0400
-Message-ID: <20090622210302.4984.82798.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Mon, 22 Jun 2009 17:02:38 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42459 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758786AbZFVVCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 17:02:36 -0400
+Date: Mon, 22 Jun 2009 23:02:31 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Marco Stornelli <marco.stornelli@gmail.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090622210231.GC24236@elf.ucw.cz>
+References: <20090613155957.GA16220@shareable.org> <4A34A394.5040509@gmail.com> <20090621064040.GC1656@ucw.cz> <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz> <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com> <20090622172003.GB21149@elf.ucw.cz> <4A3FBFF0.40006@am.sony.com> <20090622173704.GC21299@elf.ucw.cz> <4A3FD388.6040801@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A3FD388.6040801@am.sony.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Select CONFIG_KALLSYMS_ALL when CONFIG_KPROBES_SANITY_TEST=y.
-Kprobe selftest always fail without CONFIG_KALLSYMS_ALL=y, because
-kallsyms doesn't list up the target functions which are probed in this
-test.
+On Mon 2009-06-22 11:55:04, Tim Bird wrote:
+> Pavel Machek wrote:
+> > On Mon 2009-06-22 10:31:28, Tim Bird wrote:
+> >> Pavel Machek wrote:
+> >>> I did not see that in the changelog. If it is not general purpose
+> >>> filesystem, it is lot less interesting.
+> >> PRAMFS is not a general purpose filesystem. Please read
+> >> the introductory post to this thread, or look at
+> >> http://pramfs.sourceforge.net/ for more information.
+> > 
+> > Yeah, I seen that. It directly contradicts what you say.
+> 
+> Could you be more specific?  In what way does the
+> description on the website contradict what I said?
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
+You are saying top goal is robustness, while the web page says (home
+page, stop using frames!):
 
- lib/Kconfig.debug |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+"embedded systems have a block of non-volatile RAM seperate from
+normal system memory, i.e. of which the kernel maintains no memory
+page descriptors. For such systems it would be beneficial to mount a
+fast read/write filesystem over this "I/O memory", for storing
+frequently accessed data that must survive system reboots and power
+cycles"
 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 23067ab..661c675 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -727,6 +727,7 @@ config KPROBES_SANITY_TEST
- 	bool "Kprobes sanity tests"
- 	depends on DEBUG_KERNEL
- 	depends on KPROBES
-+	select KALLSYMS_ALL
- 	default n
- 	help
- 	  This option provides for testing basic kprobes functionality on
+Note the "frequently accessed" and "fast".
+
+IOW the web page is confusing. It does not talk about robustness at
+all.
 
 
+> >> Since the purpose of PRAMFS is to provide a filesystem
+> >> that is persistent across kernel instantions, it is not
+> >> designed for high speed.  Robustness in the face of
+> >> kernel crashes or bugs is the highest priority, so
+> >> PRAMFS has significant overhead to make the window
+> >> of writability to the filesystem RAM as small as possible.
+> > 
+> > Really? So why don't you use well known, reliable fs like ext3?
+> 
+> Are you sure you read the web site?  It directly addresses this
+> question.  From the web site: "1. Disk-based filesystems such as
+
+No, it does not. It explains that ext2 would be too slow on this, and
+explains that it will eat too much disk space. Please back that claims
+with numbers.
+
+If reliability is top concern, explain how you get away w/o
+journalling.
+								Pavel
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
