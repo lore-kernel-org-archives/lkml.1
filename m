@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZFVBBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbZFVBfD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753236AbZFVBBY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 21:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZFVBBP
+	id S1752092AbZFVBfD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 21:35:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZFVBew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 21:01:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36832 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbZFVBBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 21:01:15 -0400
-Date: Mon, 22 Jun 2009 11:01:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: linux-next: origin tree build warning
-Message-Id: <20090622110113.7cd89382.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__22_Jun_2009_11_01_13_+1000_m_cRvG2f5/ugGLE5"
+	Sun, 21 Jun 2009 21:34:52 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57489 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751174AbZFVBev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 21:34:51 -0400
+Message-ID: <4A3EE01C.5090600@cn.fujitsu.com>
+Date: Mon, 22 Jun 2009 09:36:28 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [BUG] bugs in jbd2_dev_to_name() (was Re: [PATCH 00/11] [GIT
+ PULL] more updates for the tag format)
+References: <20090610092644.GA20889@elte.hu> <c62985530906100411o5a178352n53f7d247f6e9dba9@mail.gmail.com> <20090610130127.GA6647@mit.edu> <alpine.DEB.2.00.0906100911190.30552@gandalf.stny.rr.com> <20090610160303.GA10240@mit.edu> <20090611130318.GB14220@infradead.org> <20090611154751.GD9275@mit.edu> <20090611171434.GA6011@nowhere> <20090611192037.GA5116@mit.edu> <4A3B48DF.8080300@cn.fujitsu.com> <20090619123204.GC31377@mit.edu>
+In-Reply-To: <20090619123204.GC31377@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__22_Jun_2009_11_01_13_+1000_m_cRvG2f5/ugGLE5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Theodore Tso wrote:
+> On Fri, Jun 19, 2009 at 04:14:23PM +0800, Li Zefan wrote:
+>>> 	rcu_read_lock();
+>>> 	if (devcache[i] && devcache[i]->device == device) {
+>>> 		ret = devcache[i]->devname;
+>>> 		rcu_read_unlock();
+>>> 		return ret;
+>> It doesn't seem safe to dereference @ret outside rcu read section.
+> 
+> Note the comments at the beginning of the function:
+> 
 
-Hi all,
+Ah, I overlooked the comments.
 
-Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+But the patch that adds rcu locking around trace event prints
+never gets merged:
 
-drivers/infiniband/hw/mthca/mthca_mr.c: In function 'mthca_arbel_write_mtt_=
-seg':
-drivers/infiniband/hw/mthca/mthca_mr.c:358: warning: 'dma_sync_single' is d=
-eprecated (declared at /scratch/sfr/next/include/linux/dma-mapping.h:113)
-drivers/infiniband/hw/mthca/mthca_mr.c: In function 'mthca_arbel_map_phys_f=
-mr':
-drivers/infiniband/hw/mthca/mthca_mr.c:810: warning: 'dma_sync_single' is d=
-eprecated (declared at /scratch/sfr/next/include/linux/dma-mapping.h:113)
+http://lkml.org/lkml/2009/4/15/549
 
-Introduced by commit dbe6f1869188b6e04e38aa861dd198befb08bcd7
-("dma-mapping: mark dma_sync_single and dma_sync_sg as deprecated").
+Steven?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>     The caller should use rcu_read_lock() in order to make sure the
+>     device name stays valid until its done with it.  We use
+>     rcu_read_lock() as well to make sure we're safe in case the caller
+>     gets sloppy, and because rcu_read_lock() is cheap and can be safely
+>     nested.
+> 
+> I suppose I should change the wording to indicate that it adds a bit
+> more safety (as in, the crash won't happen inside this function, but
+> as far as the caller is concerned, all bets are off!)
+> 
 
---Signature=_Mon__22_Jun_2009_11_01_13_+1000_m_cRvG2f5/ugGLE5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko+19kACgkQjjKRsyhoI8wCjgCgqPi+OiUfCupcAR+molNU1oD9
-I7cAmwb50Y98KUDhBW8IHC5fB+fOv/At
-=Q10J
------END PGP SIGNATURE-----
-
---Signature=_Mon__22_Jun_2009_11_01_13_+1000_m_cRvG2f5/ugGLE5--
