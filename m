@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZFVPdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZFVPet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbZFVPdV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZFVPdM
+	id S1757710AbZFVPet (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 11:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZFVPej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:33:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58743 "EHLO ogre.sisk.pl"
+	Mon, 22 Jun 2009 11:34:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49419 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750731AbZFVPdM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:33:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [linux-pm] [patch update 2 fix] PM: Introduce core framework for  run-time PM of I/O devices
-Date: Mon, 22 Jun 2009 17:33:42 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Magnus Damm <magnus.damm@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org> <aec7e5c30906212320v3e3e991fyd028d005675f1e25@mail.gmail.com> <20090621234324.06fda564@infradead.org>
-In-Reply-To: <20090621234324.06fda564@infradead.org>
+	id S1751850AbZFVPei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 11:34:38 -0400
+Date: Mon, 22 Jun 2009 17:34:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roel Kluin <roel.kluin@gmail.com>, git@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] tools: fread does not return negative on error
+Message-ID: <20090622153431.GA18466@elte.hu>
+References: <4A3FB09D.9050903@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906221733.44629.rjw@sisk.pl>
+In-Reply-To: <4A3FB09D.9050903@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0300]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 June 2009, Arjan van de Ven wrote:
-> On Mon, 22 Jun 2009 15:20:43 +0900
-> Magnus Damm <magnus.damm@gmail.com> wrote:
+
+* Roel Kluin <roel.kluin@gmail.com> wrote:
+
+> size_t res cannot be less than 0. fread returns 0 on error.
 > 
-> > On Sat, Jun 20, 2009 at 11:30 PM, Alan
-> > Stern<stern@rowland.harvard.edu> wrote:
-> > > Some more thoughts...
-> > >
-> > > Magnus, you might have some insights here.  It occurred to me that
-> > > some devices can switch power levels very quickly, and the drivers
-> > > might therefore want the runtime suspend and resume methods to be
-> > > called as soon as possible, even in interrupt context.
-> > 
-> > I'd like to call pm_request_suspend() from interrupt context. I don't
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Is this correct? please review.
 > 
-> there are some really strong reasons to at least be able to call the
-> resume function from an interrupt handler.... shared interrupts are one
-> of them.
+> diff --git a/tools/perf/util/strbuf.c b/tools/perf/util/strbuf.c
+> index eaba093..376a337 100644
+> --- a/tools/perf/util/strbuf.c
+> +++ b/tools/perf/util/strbuf.c
+> @@ -259,7 +259,7 @@ size_t strbuf_fread(struct strbuf *sb, size_t size, FILE *f)
+>  	res = fread(sb->buf + sb->len, 1, size, f);
+>  	if (res > 0)
+>  		strbuf_setlen(sb, sb->len + res);
+> -	else if (res < 0 && oldalloc == 0)
+> +	else if (res == 0 && oldalloc == 0)
+>  		strbuf_release(sb);
+>  	return res;
 
-Yes.  But that requires your hardware to be able to wake up fast enough, so I
-think we can introduce pm_runtime_resume_atomic() and
-pm_runtime_suspend_atomic() to be used with the devices that can do that, as
-proposed by Alan.
+This comes straight from Git's strbuf.c so i've Cc:-ed the Git list.
 
-Surely not all devices can do it, though.
+Roel, did you get some compiler warning that made you look at this 
+code?
 
-Best,
-Rafael
+	Ingo
