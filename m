@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752143AbZFVVzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbZFVVzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752143AbZFVVzF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZFVVy4
+	id S1753783AbZFVVzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZFVVzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:54:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55446 "EHLO
+	Mon, 22 Jun 2009 17:55:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36475 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751089AbZFVVy4 (ORCPT
+	by vger.kernel.org with ESMTP id S1751327AbZFVVzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:54:56 -0400
-Date: Mon, 22 Jun 2009 14:53:31 -0700
+	Mon, 22 Jun 2009 17:55:42 -0400
+Date: Mon, 22 Jun 2009 14:54:21 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Mike Frysinger <vapier@gentoo.org>
 Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
        uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH 1/2] serial: bfin_5xx: add missing spin_lock init
-Message-Id: <20090622145331.e6a485df.akpm@linux-foundation.org>
-In-Reply-To: <1244854093-2156-1-git-send-email-vapier@gentoo.org>
+Subject: Re: [PATCH 2/2] serial: bfin_5xx: fix building as module when early
+ printk is enabled
+Message-Id: <20090622145421.3ff2f332.akpm@linux-foundation.org>
+In-Reply-To: <1244854093-2156-2-git-send-email-vapier@gentoo.org>
 References: <1244854093-2156-1-git-send-email-vapier@gentoo.org>
+	<1244854093-2156-2-git-send-email-vapier@gentoo.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,33 +29,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Jun 2009 20:48:12 -0400
+On Fri, 12 Jun 2009 20:48:13 -0400
 Mike Frysinger <vapier@gentoo.org> wrote:
 
-> The Blackfin serial driver never initialized the spin_lock that is part of
-> the serial core structure, but we never noticed because spin_lock's are
-> rarely enabled on UP systems.  Yeah lockdep and friends.
+> Since early printk only makes sense/works when the serial driver is built
+> into the kernel, disable the option for this driver when it is going to be
+> built as a module.  Otherwise we get build failures due to the ifdef
+> handling.
 > 
-
-I'm sitting here wondering if we need this in -stable, but the changlog
-failed to provide sufficient information to determine this.
-
->  drivers/serial/bfin_5xx.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+>  drivers/serial/bfin_5xx.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
 > diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-> index e2f6b1b..d7fcca1 100644
+> index d7fcca1..b4a7650 100644
 > --- a/drivers/serial/bfin_5xx.c
 > +++ b/drivers/serial/bfin_5xx.c
-> @@ -1110,6 +1110,7 @@ static void __init bfin_serial_init_ports(void)
->  	bfin_serial_hw_init();
+> @@ -38,6 +38,10 @@
+>  #include <asm/cacheflush.h>
+>  #endif
 >  
->  	for (i = 0; i < nr_active_ports; i++) {
-> +		spin_lock_init(&bfin_serial_ports[i].port.lock);
->  		bfin_serial_ports[i].port.uartclk   = get_sclk();
->  		bfin_serial_ports[i].port.fifosize  = BFIN_UART_TX_FIFO_SIZE;
->  		bfin_serial_ports[i].port.ops       = &bfin_serial_pops;
+> +#ifdef CONFIG_SERIAL_BFIN_MODULE
+> +# undef CONFIG_EARLY_PRINTK
+> +#endif
+> +
+>  /* UART name and device definitions */
+>  #define BFIN_SERIAL_NAME	"ttyBF"
+>  #define BFIN_SERIAL_MAJOR	204
 
-It _should_ be possible to do this initialisation at compile-time.  But
-I expect it would be hard and/or ugly.
+And that _does_ look like -stable material.
+
+Alan, I queued both these as to-be-merged-by-you.  So if you want me to
+stfu and merge them, please let me know.
 
