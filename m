@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZFVJy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZFVJ4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbZFVJy0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZFVJyR
+	id S1755676AbZFVJ4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZFVJ4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:54:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43174 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbZFVJyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:54:17 -0400
-Message-ID: <4A3F54F9.9060506@redhat.com>
-Date: Mon, 22 Jun 2009 12:55:05 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <marcelo@kvack.org>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8 v3] KVM support for 1GB pages
-References: <1245417389-5527-1-git-send-email-joerg.roedel@amd.com> <4A3CC1FA.2070900@redhat.com> <20090622094013.GD5139@amd.com> <4A3F524C.8030902@redhat.com> <20090622094953.GE5139@amd.com>
-In-Reply-To: <20090622094953.GE5139@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 22 Jun 2009 05:56:35 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50040 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750765AbZFVJ4e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 05:56:34 -0400
+Subject: Re: [PATCH] kmemleak: use pr_fmt
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Joe Perches <joe@perches.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <1245440992.6201.17.camel@Joe-Laptop>
+References: <1245341337.29927.8.camel@Joe-Laptop.home>
+	 <1245405220.12653.25.camel@pc1117.cambridge.arm.com>
+	 <1245440992.6201.17.camel@Joe-Laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 22 Jun 2009 10:55:52 +0100
+Message-Id: <1245664552.15580.36.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Jun 2009 09:55:53.0811 (UTC) FILETIME=[A1A2DA30:01C9F31F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/22/2009 12:49 PM, Joerg Roedel wrote:
->>> After the rework it even fails to boot a guest with gbpages enabled. This week
->>> is a bit tight but I will debug this further next week.
->>>
->>>        
->> Does the failure happen only when both guest/host use gbpages, or does
->> it also happen if gbpages is disabled on either one?
->>      
->
-> It happens only when the guest uses gbpages. If I disable them at boot the
-> linux guest boots fine and runs stable.
->    
+On Fri, 2009-06-19 at 12:49 -0700, Joe Perches wrote:
+> On Fri, 2009-06-19 at 10:53 +0100, Catalin Marinas wrote:
+> > Thanks for the patch. It missed one pr_info case (actually invoked via
+> > the pr_helper macro).
+> 
+> This change will affect the seq_printf uses.
+> Some think the seq output should be immutable.
+> Perhaps that's important to you or others.
 
-This seems to point the finger at the write protection logic, either we 
-create a gbpage even though there are shadowed page tables in its area, 
-or (more likely) we don't break up a gbpage when we write protect a page.
+My point was that with your patch, the kmemleak kernel messages with
+pr_info were something like:
+
+kmemleak: kmemleak: unreferenced object ...
+kmemleak:   comm ...
+kmemleak:   backtrace:
+
+After dropping "kmemleak: " in the print_helper() call, kernel messages
+become (which I find nicer):
+
+kmemleak: unreferenced object ...
+kmemleak:   comm ...
+kmemleak:   backtrace:
+
+For the seq_printf() we really don't need the "kmemleak: " prefix since
+you read a kmemleak-specific file anyway. With my modification, the seq
+output becomes:
+
+unreferenced object ...
+  comm ...
+  backtrace:
+
+i.e. without the "kmemleak: " prefix on the "unreferenced ..." line.
 
 -- 
-error compiling committee.c: too many arguments to function
+Catalin
 
