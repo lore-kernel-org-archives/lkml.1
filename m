@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZFVJ15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZFVJ23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbZFVJ15 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZFVJ1t
+	id S1755953AbZFVJ23 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZFVJ2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:27:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32897
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750872AbZFVJ1s (ORCPT
+	Mon, 22 Jun 2009 05:28:20 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:37498 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754142AbZFVJ2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:27:48 -0400
-Date: Mon, 22 Jun 2009 02:27:52 -0700 (PDT)
-Message-Id: <20090622.022752.219499742.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: NMI watchdog + NOHZ question
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <87bpog3clx.fsf@basil.nowhere.org>
-References: <20090622.002722.53993293.davem@davemloft.net>
-	<87bpog3clx.fsf@basil.nowhere.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 22 Jun 2009 05:28:20 -0400
+Message-ID: <4A3F6AD5.1030703@linux.vnet.ibm.com>
+Date: Mon, 22 Jun 2009 13:28:21 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: gcov: enable GCOV_PROFILE_ALL for x86_64
+References: <200906182200.n5IM0jFq007278@hera.kernel.org> <20090620101424.GA21928@elte.hu>
+In-Reply-To: <20090620101424.GA21928@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Mon, 22 Jun 2009 10:18:50 +0200
-
-> David Miller <davem@davemloft.net> writes:
->>
->> Is there something fundamental that should be preventing this?
+Ingo Molnar wrote:
+> * Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 > 
-> Unless that changed recently when I wasn't looking NOHZ should only
-> stop timers when the CPU is idle. So when a driver is doing
-> something and the interrupts are not disabled for too long the timers
-> should be ticking.
+>> Gitweb:     http://git.kernel.org/linus/7bf99fb673f18408be1ebc958321ef4c3f6da9e2
+>> Commit:     7bf99fb673f18408be1ebc958321ef4c3f6da9e2
+>> Parent:     2521f2c228ad750701ba4702484e31d876dbc386
+>> Author:     Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+>> AuthorDate: Wed Jun 17 16:28:09 2009 -0700
+>> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
+>> CommitDate: Thu Jun 18 13:03:58 2009 -0700
+>> 
+>>     gcov: enable GCOV_PROFILE_ALL for x86_64
+>>     
+>>     Enable gcov profiling of the entire kernel on x86_64. Required changes
+>>     include disabling profiling for:
+>>     
+>>     * arch/kernel/acpi/realmode and arch/kernel/boot/compressed:
+>>       not linked to main kernel
+>>     * arch/vdso, arch/kernel/vsyscall_64 and arch/kernel/hpet:
+>>       profiling causes segfaults during boot (incompatible context)
 > 
-> Then when you're idle interrupts should be never off, so the NMI
-> watchdog cannot fire. On x86 often the NMI watchdog is in fact
-> stopped on idle.
+> This feature crashes on bootup:
 
-Thanks Andi.
-
-I think something else is afoot, because while using "nohz=off" makes
-the problem go away, simply adding a NMI watchdog touch after the
-schedule() call in cpu_idle() does not make the problem go away.
-
-Also, the cpu that gets the NMI watchdog is different from the cpu
-running the qla2xxx driver init.   That basically destroys the bulk
-of my theory :-)
+I can recreate the crash using your config. It looks like another object file in arch/x86 is incompatible with gcov profiling (most likely due to special stack usage) and needs to be excluded from profiling. I'm working on identifying this file but it will take a bit more time.
