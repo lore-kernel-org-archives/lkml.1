@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbZFVRch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZFVRcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbZFVRch (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbZFVRb7
+	id S1758086AbZFVRcu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbZFVRc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:31:59 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49075 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757664AbZFVRbz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:31:55 -0400
-Date: Mon, 22 Jun 2009 18:32:18 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jeff Garzik <jeff@garzik.org>, Greg Freemyer <greg.freemyer@gmail.com>,
-       David Miller <davem@davemloft.net>, bzolnier@gmail.com,
-       elendil@planet.nl, sparclinux@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: New IDE maintainer (was Re: cmd64x: irq 14: nobody cared -
- system  	is dreadfully slow)
-Message-ID: <20090622183218.15d340d5@lxorguk.ukuu.org.uk>
-In-Reply-To: <200906221921.21709.arnd@arndb.de>
-References: <20090621.141950.160759111.davem@davemloft.net>
-	<4A3FB956.6060401@garzik.org>
-	<20090622181100.43a56309@lxorguk.ukuu.org.uk>
-	<200906221921.21709.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Mon, 22 Jun 2009 13:32:27 -0400
+Received: from mga03.intel.com ([143.182.124.21]:65016 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757914AbZFVRcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:32:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,270,1243839600"; 
+   d="scan'208";a="157211577"
+Subject: Re: iwl3945 in 2.6.31-rc0: ad-hoc mode broken?
+From: reinette chatre <reinette.chatre@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090619222431.GA2398@elf.ucw.cz>
+References: <20090619222431.GA2398@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 22 Jun 2009 10:39:40 -0700
+Message-Id: <1245692380.24303.494.camel@rc-desk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Actually, m68k, m32r and h8300 currently can't use libata at all
-> for one reason or another, mostly missing support for dma-mapping.h
+Hi Pavel,
 
-That wants fixing and your ifdef patches looked a route to beat it into
-some kind of shape
+On Fri, 2009-06-19 at 15:24 -0700, Pavel Machek wrote:
+> Hi!
+> 
+> I tried using ad-hoc mode (against t-mobile G1) on -rc0, and was
+> unsuccessful -- never got dhcp. I had to reboot back to
+> 2.6.30... Should I try it few more times or is something broken?
+> 
+> (Also wifi LED stopped working on x60, but that's older issue).
+> 
 
-> side, it should be possible to convert almost any non-PCI ATA
-> chip to use drivers/ata/pata_platform.c or pata_of_platform.c.
+Are you testing Linus's repo here? Should we not maybe wait with testing
+until -rc1 is released?
 
-The ioc4 and the ppc ones are a bit harder as they have custom DMA
-descriptor tables and stuff. The rest I agree.
+Reinette
+
