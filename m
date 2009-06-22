@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbZFVQQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757101AbZFVQR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630AbZFVQQD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZFVQPz
+	id S1757101AbZFVQR4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZFVQRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:15:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52992 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751857AbZFVQPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:15:54 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090622160753.GE6754@linux.vnet.ibm.com>
-References: <20090622160753.GE6754@linux.vnet.ibm.com> <20090506225115.GM6771@linux.vnet.ibm.com> <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu> <11979.1241648574@redhat.com> <26931.1245670998@redhat.com> <20090622124951.GB30553@elte.hu> <20090622082941.c5c8b3f3.akpm@linux-foundation.org> 
-To: paulmck@linux.vnet.ibm.com
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       niv@us.ibm.com, dvhltc@us.ibm.com, lethal@linux-sh.org,
-       kernel@wantstofly.org, matthew@wil.cx
-Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
-Date: Mon, 22 Jun 2009 17:15:29 +0100
-Message-ID: <4851.1245687329@redhat.com>
+	Mon, 22 Jun 2009 12:17:49 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35337 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751982AbZFVQRs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 12:17:48 -0400
+Message-ID: <4A3FAD94.1050806@cs.helsinki.fi>
+Date: Mon, 22 Jun 2009 19:13:08 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       akpm@linux-foundation.org, sam@ravnborg.org, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip 2/5] x86: use asm-generic/dma-mapping-common.h
+References: <20090620155605.GD12901@elte.hu>	 <20090622135717T.fujita.tomonori@lab.ntt.co.jp>	 <1245650501.18751.0.camel@penberg-laptop>	 <20090622203333U.fujita.tomonori@lab.ntt.co.jp>	 <19f34abd0906220459w39271e29x99d578d0a49d593b@mail.gmail.com>	 <19f34abd0906220543v64b5418di8b97d36214d093cc@mail.gmail.com>	 <20090622124916.GA30553@elte.hu>	 <1245676212.15580.68.camel@pc1117.cambridge.arm.com>	 <1245676935.6227.5.camel@penberg-laptop> <1245684281.15580.102.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1245684281.15580.102.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+Catalin Marinas wrote:
+> kmemleak: Do not force the slab debugging Kconfig options
+> 
+> From: Catalin Marinas <catalin.marinas@arm.com>
+> 
+> Selecting DEBUG_SLAB or SLUB_DEBUG by the KMEMLEAK menu entry may cause
+> issues with other dependencies (KMEMCHECK). These configuration options
+> aren't strictly needed by kmemleak but they may increase the chances of
+> finding leaks. This patch also updates the KMEMLEAK config entry help
+> text.
+> 
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 
-> Of course, I well remember programming systems with 4K of core memory
-> back in the 1970s, and therefore feel a bit guilty about sticking deep
-> embedded platforms with the increase in memory footprint represented
-> by Hierarchical RCU compared to Classic RCU.  And Bloatwatch RCU is much
-> smaller and easier to understand/maintain than is Classic RCU.
-
-Both Fujitsu and Panasonic really want to keep the kernel size down.
-Squeezing a kernel into a megabyte or less of flash is one of the main aims,
-and anything that saves nearly 1K is not to be sneered at.
-
-David
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
