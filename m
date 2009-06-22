@@ -1,110 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbZFVU12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbZFVU2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbZFVU12 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 16:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbZFVU1R
+	id S1755699AbZFVU2Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 16:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZFVU2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 16:27:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58008 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbZFVU1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 16:27:16 -0400
-Date: Mon, 22 Jun 2009 14:00:15 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Heinz Diehl <htd@fancy-poultry.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       torvalds@linux-foundation.org, fengguang.wu@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       DCCP Mailing List <dccp@vger.kernel.org>,
-       Linux Networking Development Mailing List 
-	<netdev@vger.kernel.org>
-Subject: Re: [PATCH] profile: Suppress warning about large allocations when
-	profile=1 is specified
-Message-ID: <20090622170015.GC18558@ghostprotocols.net>
-References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org> <20090616223649.719ea378.akpm@linux-foundation.org> <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu> <20090617113534.GA21276@elte.hu> <20090617121913.GC28529@csn.ul.ie> <20090620100932.GA5863@fancy-poultry.org> <20090620195000.GC10878@csn.ul.ie> <20090620214835.GA6528@fancy-poultry.org> <20090622113104.GD3981@csn.ul.ie>
-MIME-Version: 1.0
+	Mon, 22 Jun 2009 16:28:16 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36710 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbZFVU2P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 16:28:15 -0400
+Date: Mon, 22 Jun 2009 22:30:34 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Chris Simmonds <chris@2net.co.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, Marco <marco.stornelli@gmail.com>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 06/14] Pramfs: Include files
+Message-ID: <20090622203034.GA12587@uranus.ravnborg.org>
+References: <4A33A7EC.6070008@gmail.com> <200906221317.04166.arnd@arndb.de> <4A3FC7F1.5050108@gmail.com> <200906222033.20883.arnd@arndb.de> <4A3FDBFE.8050509@2net.co.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622113104.GD3981@csn.ul.ie>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4A3FDBFE.8050509@2net.co.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Jun 22, 2009 at 12:31:05PM +0100, Mel Gorman escreveu:
-> On Sat, Jun 20, 2009 at 11:48:35PM +0200, Heinz Diehl wrote:
-> > On 20.06.2009, Mel Gorman wrote: 
-> > 
-> > > I can't figure out from this trace where the problem is coming from. Can
-> > > you post your .config and the full dmesg please?
-> > 
-> > Yes, of course. It's attached.
-> > 
+On Mon, Jun 22, 2009 at 08:31:10PM +0100, Chris Simmonds wrote:
+> Arnd Bergmann wrote:
+> >On Monday 22 June 2009, Marco wrote:
+> >>Sorry, I meant it's not currently possible. At the moment the only way
+> >>to use it as rootfs it's to copy all the data in an already mounted
+> >>(empty) ram partition and reboot. However it's not my first item on my
+> >>todo list because I think that it's possible to use it as rootfs but it
+> >>isn't the standard use for this fs.
+> >
+> >Well, it doesn't have to work right away. What I'm asking to
+> >define the data structures in a way that keeps the layout stable
+> >across kernel updates. Since a future version of the file system
+> >might support cross-endian image creation, it would be good to
+> >define the data structures in a fixed endian mode already, so
+> >you don't have to change it in the future.
+> >
+> >	Arnd <><
+> >--
+> >To unsubscribe from this list: send the line "unsubscribe linux-embedded" 
+> >in
+> >the body of a message to majordomo@vger.kernel.org
+> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
 > 
-> I have no idea why the stack trace is so badly managed but the problem appears
-> to be in DCCP so can you try the patch below please? It applies on top of the
-> profile=1 patch fix. If it works for you, I'll split out the patch properly
-> into three separate patches and repost.
-> 
-> Some questions though
-> 
-> 1. Could DCCP use alloc_large_system_hash()?
+> I disagree: that adds an unnecessary overhead for those architectures 
+> where the cpu byte order does not match the data structure ordering.
+It is not that we are talking big and complex stuff here.
+pramfs is likely to be used for small things and then having to
+fix endian on a few headers in the on-dsk format does not matter.
+Not compared to the potential disadvantages.
 
-Possibly. Ideally this should use whatever TCP is using now, as this
-came more or less intact from there. IIRC it was not shared because TCP
-used/uses alloc routines that were available only at boot time, DCCP
-can't use it because it can be loaded as a module.
+It should be possible to read a file-system on your x86 64bit
+box that you wrote with your small powerpc target.
 
-I'd say go with this patch and later, after FISL (this week) I'll look
-at this again.
-
-So, for the NOWARN bits:
-
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-Thanks,
-
-- Arnaldo
- 
-> 2. Any idea why the stack trace for the warning was so useless?
-> 
-> ==== CUT HERE ====
-> dccp: Suppress warning about large allocations from DCCP
-> 
-> The DCCP protocol tries to allocate some large hash tables during
-> initialisation using the largest size possible. The allocator warns if
-> the allocations are too large but the caller is able to handle
-> allocation failure. This patch disables the warnings in the case DCCP
-> requests too large an allocation.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> --- 
->  net/dccp/proto.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/dccp/proto.c b/net/dccp/proto.c
-> index 314a1b5..fd21676 100644
-> --- a/net/dccp/proto.c
-> +++ b/net/dccp/proto.c
-> @@ -1066,7 +1066,7 @@ static int __init dccp_init(void)
->  		       (dccp_hashinfo.ehash_size - 1))
->  			dccp_hashinfo.ehash_size--;
->  		dccp_hashinfo.ehash = (struct inet_ehash_bucket *)
-> -			__get_free_pages(GFP_ATOMIC, ehash_order);
-> +			__get_free_pages(GFP_ATOMIC|__GFP_NOWARN, ehash_order);
->  	} while (!dccp_hashinfo.ehash && --ehash_order > 0);
->  
->  	if (!dccp_hashinfo.ehash) {
-> @@ -1091,7 +1091,7 @@ static int __init dccp_init(void)
->  		    bhash_order > 0)
->  			continue;
->  		dccp_hashinfo.bhash = (struct inet_bind_hashbucket *)
-> -			__get_free_pages(GFP_ATOMIC, bhash_order);
-> +			__get_free_pages(GFP_ATOMIC|__GFP_NOWARN, bhash_order);
->  	} while (!dccp_hashinfo.bhash && --bhash_order >= 0);
->  
->  	if (!dccp_hashinfo.bhash) {
+	Sam
