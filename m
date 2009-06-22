@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZFVViR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZFVVie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZFVViR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZFVViF
+	id S1754686AbZFVVie (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZFVViY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:38:05 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:37932 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752128AbZFVViE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:38:04 -0400
-Subject: Re: Rootfs in eMMC: Kernel panic ...Attempted to kill init!
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Sudeep K N <sudeepholla.maillist@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, drzeus-mmc@drzeus.cx,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090622164604.GG29188@n2100.arm.linux.org.uk>
-References: <20090622164604.GG29188@n2100.arm.linux.org.uk>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 22 Jun 2009 22:37:52 +0100
-Message-Id: <1245706672.15241.6.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 22 Jun 2009 17:38:24 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:45241 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753252AbZFVViX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 17:38:23 -0400
+Message-ID: <4A3FF9D0.9040607@linux.vnet.ibm.com>
+Date: Mon, 22 Jun 2009 14:38:24 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: eranian@gmail.com, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: I.2 - Grouping
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622115017.GC24366@elte.hu>
+In-Reply-To: <20090622115017.GC24366@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jun 2009 21:37:53.0865 (UTC) FILETIME=[B3250B90:01C9F381]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 17:46 +0100, Russell King - ARM Linux wrote:
-> On Mon, Jun 22, 2009 at 05:13:16PM +0100, Catalin Marinas wrote:
-> > Could you or Sudeep clarify whether the driver uses DMA or PIO?
-> 
-> If I knew what this "eMMC" was...
 
-The only eMMC reference I could find is the omap_hsmmc.c driver.
-> 
-> > In my case (ext2 over pata_platform), there is no flush_dcache_page()
-> > call after the page was written with data from the CompactFlash (neither
-> > the driver nor the VFS layer do this and we used hardware tracing to
-> > double-check). When the page is mapped into user space,
-> > update_mmu_cache() is called but the page hasn't been marked as dirty
-> > and no D-cache flushing occurs. Calling flush_dcache_page() in
-> > mpage_end_io_read() works around this issue.
-> 
-> As already covered, there's no chance of adding such a call to the
-> generic kernel.  It's the responsibility of the drivers to ensure that
-> data they read in hits the underlying page - in the same way that DMA
-> does.
 
-I'm not proposing to add this call. My patch is a hack to get things
-working with any PIO driver. I just wanted to point to the problem I
-think Sudeep encountered.
+Ingo Molnar wrote:
+>> 2/ Grouping
+>>
+>> By design, an event can only be part of one group at a time.
+>> Events in a group are guaranteed to be active on the PMU at the
+>> same time. That means a group cannot have more events than there
+>> are available counters on the PMU. Tools may want to know the
+>> number of counters available in order to group their events
+>> accordingly, such that reliable ratios could be computed. It seems
+>> the only way to know this is by trial and error. This is not
+>> practical.
+> 
+> Groups are there to support heavily constrained PMUs, and for them
+> this is the only way, as there is no simple linear expression for
+> how many counters one can load on the PMU.
+> 
+> The ideal model to tooling is relatively independent PMU registers
+> (counters) with little constraints - most modern CPUs meet that
+> model.
+> 
+> All the existing tooling (tools/perf/) operates on that model and
+> this leads to easy programmability and flexible results. This model
+> needs no grouping of counters.
+> 
+> Could you please cite specific examples in terms of tools/perf/?
+> What feature do you think needs to know more about constraints? What
+> is the specific win in precision we could achieve via that?
 
-(to summarise for LKML) As it was mentioned in the past, most PIO
-drivers don't do any cache flushing. In the mmci.c driver you added a
-flush_dcache_call() but other block device drivers only get a pointer to
-a buffer and don't have direct access to a struct page pointer. Using
-virt_to_page(buffer) may help a bit but the driver would need to
-reconstruct the page structures already known to code like fs/mpage.c.
-There is also a bio_page() function but I'm not familiar enough with
-block device drivers to suggest the best approach.
+
+An example of this is that a user wants to monitor 10 events, and we have four 
+counters to work with.  Let's assume there is some mapping of events to counters 
+where you need only 3 groups to schedule the 10 events onto the PMU.  If you 
+leave it to the kernel (and don't group the events from user space), depending 
+on the kernel's fast event scheduling algorithm, it may take 6 groups to get all 
+of the requested events counted.  This leads to lower counts in the counters, 
+and more chance for the counters to miss event bursts, which leads to less 
+accurate scaled results.
+
+Currently the PAPI substrate for PCL does do this partitioning using a very dumb 
+algorithm.  But it could be improved, particularly if there was some better way 
+to get feedback from the kernel other than a "yes, these fit" or "no, these 
+don't fit".  I'm not sure what that way would be, though.  Perhaps an ioctl that 
+does a some sort of "dry scheduling" of events to groups in an optimal way. 
+This call would not need to lock any resources, and just use the kernel's 
+algorithm for event constraint checking.
+
+To me, this is not a big issue, but some sort of better mechanism might be 
+considered for a future update.
 
 -- 
-Catalin
+Regards,
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
 
