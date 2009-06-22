@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbZFVWjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZFVWjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755956AbZFVWjP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 18:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZFVWi7
+	id S1756647AbZFVWjs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 18:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZFVWjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 18:38:59 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33718 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZFVWi6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 18:38:58 -0400
-Date: Tue, 23 Jun 2009 00:38:55 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Marco <marco.stornelli@gmail.com>, Jamie Lokier <jamie@shareable.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-Message-ID: <20090622223855.GA25996@elf.ucw.cz>
-References: <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz> <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com> <20090622172003.GB21149@elf.ucw.cz> <4A3FBFF0.40006@am.sony.com> <20090622173704.GC21299@elf.ucw.cz> <4A3FC84A.6060608@gmail.com> <20090622204031.GA24236@elf.ucw.cz> <4A3FFC89.4070006@am.sony.com> <20090622215753.GA25434@elf.ucw.cz>
+	Mon, 22 Jun 2009 18:39:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53836 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbZFVWjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 18:39:41 -0400
+Date: Mon, 22 Jun 2009 21:24:54 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, jmorris@namei.org, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rework/fix is_single_threaded()
+Message-ID: <20090622192453.GA6066@redhat.com>
+References: <20090413214513.GA1119@redhat.com> <14878.1239876272@redhat.com> <20090416133658.GA6532@redhat.com> <20090416145444.GA12884@redhat.com> <20090618120716.fd1e4d92.akpm@linux-foundation.org> <20090618194238.GA17810@redhat.com> <20090622115148.5f1e5d1b.akpm@linux-foundation.org> <20090622171431.GA5010@redhat.com> <20090622140440.01d85542.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622215753.GA25434@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20090622140440.01d85542.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-06-22 23:57:53, Pavel Machek wrote:
-> On Mon 2009-06-22 14:50:01, Tim Bird wrote:
-> > Pavel Machek wrote:
-> > >> block of fast non-volatile RAM that need to access data on it using a
-> > >> standard filesytem interface."
-> > > 
-> > > Turns a block of fast RAM into 13MB/sec disk. Hmm. I believe you are
-> > > better with ext2.
-> > 
-> > Not if you want the RAM-based filesystem to persist over a kernel
-> > invocation.
-> 
-> Yes, you'll need to code Persistent, RAM-based _block_device_. 
+On 06/22, Andrew Morton wrote:
+>
+> On Mon, 22 Jun 2009 19:14:31 +0200
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > Sure, I can split these changes. Or we can just forget about this patch.
+>
+> noooo the world needs oleg patches.
 
-More politely said: "I believe you would be better off modifying
-ramdisk to include the functionality for persistence."  New filesystem
-should not really be neccessary. ext2 for performance, ext3 if you
-need robustness from journalling, maybe something else makes sense,
-too.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yeeeees, I am trying to blackmail ;)
+
+> > But what is the problem with this patch?
+>
+> The discussion between yourself and David seems to be unresolved, so
+> I have it in wait-and-see mode.
+>
+> > David, do you still dislike ->mmap_sem? I didn't see other objections,
+> > and again, imho tasklist_lock is worse.
+
+OK, I'll split and re-send.
+
+Unless David replies.
+
+Oleg.
+
