@@ -1,64 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbZFVNtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbZFVNuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbZFVNtw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 09:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZFVNto
+	id S1756823AbZFVNuR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 09:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbZFVNuC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 09:49:44 -0400
-Received: from mga06.intel.com ([134.134.136.21]:6378 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754439AbZFVNtn (ORCPT
+	Mon, 22 Jun 2009 09:50:02 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:39655 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754740AbZFVNuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 09:49:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,268,1243839600"; 
-   d="scan'208";a="526763696"
-Message-ID: <4A3F8BF7.6010406@linux.intel.com>
-Date: Mon, 22 Jun 2009 15:49:43 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
- to 	disk, mce related?
-References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3E7F38.7030300@linux.intel.com>	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>	 <4A3EE668.5090400@jp.fujitsu.com>	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>	 <4A3F55C7.4030909@linux.intel.com>	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>	 <4A3F7A93.5080004@linux.intel.com> <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>
-In-Reply-To: <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 22 Jun 2009 09:50:00 -0400
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
+       linux-kernel@vger.kernel.org, linux-numa@vger.kernel.org,
+       Boris Bierbaum <boris@lfbs.rwth-aachen.de>
+In-Reply-To: <4A3C8EAE.3030007@inria.fr>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+	 <87zldjn597.fsf@basil.nowhere.org>
+	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	 <20090612103251.GJ25568@one.firstfloor.org>
+	 <1245119132.6724.32.camel@lts-notebook>  <4A3C8EAE.3030007@inria.fr>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Mon, 22 Jun 2009 09:49:58 -0400
+Message-Id: <1245678598.7799.29.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> [   68.287417] ata2.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-> [   68.290331] ata2.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-> [   68.302257] ata1.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-> [   68.324357] ata1.00: configured for UDMA/133
-> [   69.656127] btusb 4-1:1.0: no reset_resume for driver btusb?
-> [   70.708015] usb 5-2: reset low speed USB device using uhci_hcd and address 3
+On Sat, 2009-06-20 at 09:24 +0200, Brice Goglin wrote:
+> Lee Schermerhorn wrote:
+> > My patches don't have per process enablement.  Rather, I chose to use
+> > per cpuset enablement.  I view cpusets as sort of "numa control groups"
+> > and thought this was an appropriate level at which to control this sort
+> > of behavior--analogous to memory_spread_{page|slab}.  That probably
+> > needs to be discussed more widely, tho'.
+> >   
 > 
-> It seems, that resume isn't resume completely.
-
-The USB reset messages are normally not serious
-
+> Could you explain why you actually want to enable/disable
+> migrate-on-fault on a cpuset (or process) basis? Why would an
+> administrator want to disable it? Aren't the existing cpuset memory
+> restriction abilities enough?
 > 
+> Brice
 > 
-> Also I try 20 seconds and find this in netconsole:
-> [  532.576128] BUG: soft lockup - CPU#1 stuck for 61s! [ksensors:2670]
-> [  532.576128] Modules linked in: i915 drm i2c_algo_bit video
-> backlight output ppdev lp rfcomm l2cap xt_tcpudp xt_limit snd[
-> 532.576128]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> [  532.576128]  [<c01a266d>] sys_read+0x3d/0x70
 
-Hmm strange lockup in the VFS, but in sensors context. Might or might not
-be related.
+Hello, Brice:
 
-Here's a debug patch for the poller: http://firstfloor.org/ak/mcp-debug
-Can you apply that and try again and send me the output?
+There are a couple of aspects to this question, I think?
 
-Thanks,
+1) why enable/disable at all?  why not always enabled?  
 
--Andi
+When I try out some new behavior such as migrate of fault, I start with
+the assumption [right or wrong] that not all users will want this
+behavior.  For migrate-on-fault, one probably won't run into it all that
+often unless the MPOL_MF_LAZY flag is used to forcibly unmap regions.
+However, with swap read-ahead, one could end up with anon pages in the
+swap cache with no pte references, and could experience unexpected
+migrations.  I've learned that some folks really don't like
+surprises :).  Now, when you consider the "automigration" feature
+["auto" here means "self" more than "automatic"], I think it's more
+important to be able to enable/disable it.  I've not seen any
+performance degradation when using it, but I feared that for some
+workloads, thrashing could cause such degradation.  Page migration isn't
+free.
+
+Also, because Linux runs on such a wide range of platforms, I don't want
+to burden smaller, embedded systems with the additional code, so I also
+try to make the feature source configurable.  I know we worry about the
+proliferation of config options, but it's easier to remove one after the
+fact, I think, than to retrofit it.
+
+2) Why a per cpuset control?
+
+I consider cpusets to be "numa control groups".  They constrain
+resources on a numa node [and related cpus] granularity, and control
+numa related behavior, such as migration when changing cpusets,
+spreading page cache and slab pages over nodes in the cpuset, ...  In
+fact, I think it would have been appropriate to call the cpuset control
+group the "numa control group" when cgroups were introduced, but it's
+too late for that now.
+
+Finally, and not a reason to include the controls in the mainline, it's
+REALLY useful during development.  One can boot a test kernel, and only
+enable the feature in a test cpuset, limiting the damage of, e.g., a
+reference counting bug or such.  It's also useful for measuring the
+overhead of the patches absent any actual page migrations.  However, if
+this feature ever makes it to mainline, the community will have its say
+on whether these controls should be included and how.
+
+Hope this helps,
+Lee
+
+
+
