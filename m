@@ -1,107 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZFVWVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZFVWWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZFVWVm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 18:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZFVWVf
+	id S1754985AbZFVWWb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 18:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZFVWWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 18:21:35 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59073 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbZFVWVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 18:21:34 -0400
-Subject: Re: Boot failure on the powerstation with 2.6.30 latest
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Brian King <brking@linux.vnet.ibm.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A3FAD31.2060703@linux.vnet.ibm.com>
-References: <1245683801.6901.8.camel@mulgrave.site>
-	 <4A3FAD31.2060703@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 08:21:21 +1000
-Message-Id: <1245709281.20062.7.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 18:22:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56772 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbZFVWWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 18:22:18 -0400
+Date: Mon, 22 Jun 2009 18:22:17 -0400
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: torvalds@linux-foundation.org
+Cc: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       "corbet@lwn.net" <corbet@lwn.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
+Subject: [PATCH v3.1415] Documentation: add documentation summary for
+	rc-series and merge window
+Message-ID: <20090622222217.GH23972@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 11:11 -0500, Brian King wrote:
-> James,
-> 
-> I was running into a similar hang on one of my Power boxes as well.
-> Reverting c868d550115b9ccc0027c67265b9520790f05601 allowed by system
-> to boot. It looks like that patch injected a bug where we can end up
-> waiting on an uninitialized mutex:
-> 
-> [c0000000009f3c30] c00000000052c7dc .mutex_lock+0x34/0x50
-> [c0000000009f3cb0] c00000000008b190 .get_online_cpus+0x3c/0x74
-> [c0000000009f3d40] c000000000146cd0 .kmem_cache_create+0xcc/0x548
-> [c0000000009f3e50] c000000000032ae0 .pgtable_cache_init+0x28/0x6c
-> [c0000000009f3ee0] c000000000780960 .start_kernel+0x1ec/0x520
-> [c0000000009f3f90] c0000000000083d8 .start_here_common+0x1c/0x44
-> 
-> The mutex gets initialized in cpu_hotplug_init, which doesn't get called until
-> after pgtable_cache_init.
+This is losely based on previous discussions on linux-kernel [1][2][3].
+Lets also refer people reading the stable rules to
+Documentation/development-process/.
 
-Ah good, I didn't have a chance to track that one down yet.
+Also add the number of days it has taken between releases,
+and provide the average for the last 10 releases: 86.0 days.
 
-So the problem here is that we must do pgtable_cache_init there because
-vmalloc is initialized right after, which relies on allocating page
-tables and that will need kmem caches on some archs.
+[1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
+[2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
+[3] http://marc.info/?l=linux-kernel&m=124515657407679&w=2
 
-So I suspect we need to sort out this mutex, either initializing it from
-elsewhere, moving cpu_hotplug_init() earlier, or avoiding it when the
-kernel state isn't SYSTEM_RUNNING, I haven't looked in details yet.
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+---
+ Documentation/development-process/2.Process |  158 +++++++++++++++++++++++++--
+ Documentation/stable_kernel_rules.txt       |    5 +
+ 2 files changed, 153 insertions(+), 10 deletions(-)
 
-Cheers,
-Ben.
-
-> -Brian
-> 
-> James Bottomley wrote:
-> > 2.6.30-rc8 worked fine ... unless this is a known problem, I suppose I
-> > can begin bisecting.
-> > 
-> > The boot log of the hang is:
-> > 
-> > Please wait, loading kernel...
-> >    Elf64 kernel loaded...
-> > Loading ramdisk...
-> > ramdisk loaded at 02500000, size: 8280 Kbytes
-> > OF stdout device is: /ht/isa@8/serial@2f8
-> > Preparing to boot Linux version 2.6.30 (jejb@claymoor) (gcc version 4.3.3 (Debian 4.3.3-10) ) #1 SMP Mon Jun 22 09:59:35 CDT 2009
-> > command line: root=/dev/sda3 ro console=ttyS0,19200n1 
-> > memory layout at init:
-> >   alloc_bottom : 0000000002d16000
-> >   alloc_top    : 0000000030000000
-> >   alloc_top_hi : 0000000080000000
-> >   rmo_top      : 0000000030000000
-> >   ram_top      : 0000000080000000
-> > instantiating rtas at 0x000000002fff5000... done
-> > boot cpu hw idx 0000000000000000
-> > starting cpu hw idx 0000000000000001... done
-> > starting cpu hw idx 0000000000000002... done
-> > starting cpu hw idx 0000000000000003... done
-> > copying OF device tree...
-> > Building dt strings...
-> > Building dt structure...
-> > Device tree strings 0x0000000003117000 -> 0x0000000003117640
-> > Device tree struct  0x0000000003118000 -> 0x000000000311b000
-> > Calling quiesce...
-> > returning from prom_init
-> > 
-> > So it looks like some type of early boot failure or handoff in head_64
-> > 
-> > James
-> > 
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
+diff --git a/Documentation/development-process/2.Process b/Documentation/development-process/2.Process
+index d750321..d4ca05d 100644
+--- a/Documentation/development-process/2.Process
++++ b/Documentation/development-process/2.Process
+@@ -7,20 +7,158 @@ course of one year, the kernel has since had to evolve a number of
+ processes to keep development happening smoothly.  A solid understanding of
+ how the process works is required in order to be an effective part of it.
+ 
++2.0:SUMMARY
++
++This section provides a brief summary of the kernel release rules.
++
++2.0.0: KERNEL RELEASE RULES
++
++Stable kernels are released when they are ready! This means there are
++absolutely no strict guidelines for sticking to specific dates for a
++kernel release.
++
++2.0.1: PATCH QUEUING FOR THE NEXT KERNEL RELEASE
++
++Linus maintains the development kernel, this means he accepts new
++features and drivers for the next kernel release. He however does not
++maintain every single line of the kernel. The kernel is broken down by
++different subsystems and each subsystem has its own maintainer. In order
++to aid the development of Linux maintainers subsystem have trees where
++they queue patches for the next kernel release. This is typically done
++with a foo-next-2.6.git tree where foo would be an arbitrary subsystem
++name. These trees typically are designed to have a clean git history
++to make pulling for Linus easier and as clean as possible.
++
++Subsystem maintainers can typically have their own development git trees
++apart from the foo-next-2.6.git trees as a breeding ground and test ground
++for bleeding edge patches. Subsystem maintainers are at complete freedom to
++maintain these trees however they see fit. Once patches have been proven
++stable enough in a development tree they tend to be moved to their
++respective foo-next-2.6.git tree.
++
++Subsystem development trees are *always* open for development and new patches
++are always accepted. After a new kernel is released subsystem maintainers
++tend to slow down in accepting patches into their development trees though
++so that the new development can eventually be rebased easily ontop of the
++next kernel rc1 release.
++
++If your patch is adding a new feature or changing a lot of code and you send
++it between a stable kernel release and prior to the rc1 kernel release it will
++likely be a while before it is merged into a development tree, so be patient
++during this time.
++
++2.0.1: MERGE WINDOW
++
++The merge window opens up after the next stable kernel is released and takes
++two weeks. The merge window is when maintainers of different subsystems send
++pull requests to Linus for code they have been queuing up for the next stable
++kernel. These are the foo-next-2.6.git trees.
++
++After the merge window the kernel is worked on through the rc-series of the
++kernel release. The rc-series focus is to address regressions. The merge window
++closes upon the first rc-series release, rc1.
++
++After a subsystem maintainer has sent his pull request to Linus during the merge
++window no further new development will be accepted for that foo-next-2.6.git
++tree and as such it marks the closure of development for that subsystem for that
++kernel cycle.
++
++2.0.2: MEETING DEADLINES FOR KERNEL RELEASES
++
++Developers wishing to target deadlines should simply work on their development
++without regards or consideration for inclusion to a specific kernel release.
++Once development is done it should simply be posted so the community can review it
++and it can eventually be merged into the appropriate development subsystem tree.
++
++If you insist on targeting a kernel release for deadlines you can try to be aware
++of the current rc cycle development and how soon it seems the next stable kernel
++release will be made.
++
++A good indication of when the next stable kernel release will be made is when
++Linus notes the last rc cycle released may be the last. By this time you
++should already have all your development done and merged in the respective
++development tree. If your code is not ready and merged into the respective
++maintainers development tree prior to the announced last potential rc kernel
++release chances are you missed getting your code in for the next kernel merge
++window. Exemptions here are new drivers, covered below.
++
++2.0.3: RC-SERIES RULES
++
++This section summarizes what kind of patches are accepted after a new stable kernel is
++released, before the merge window closes and after it closes. These patches are targeted
++for the kernel prior to its final release.
++
++2.0.3.0: RC-SERIES RULES PRIOR TO THE RC1 RELEASE
++
++Before the merge window closes, prior to the rc1 release, Linus accepts pull requests
++from different subsystem maintainers, with it go all the queued up material for the
++next kernel release for each respective subsystem, on all foo-next-2.6.git trees.
++After subsystem maintainers have sent their pull requests there are strict rules
++for new patches prior to the close of the merge window, marked by the rc1 release:
++
++ - patches must fix a regression
++ - patches must fix a security hole
++ - patches must fix a oops/kernel hang
++
++Non-intrusive bug fixes fixes will very likely not be accepted. Some maintainers
++may choose to accept some non-intrusive patches, depending on their work load.
++You should however not take it for granted such patches will get accepted. You
++should always just target the development kernel and provide a good commit to
++help with review.
++
++When in doubt consult with your subsystem maintainer or just allow him to
++do the judging of where the patches deserves to go to, an excellent commit log
++should help with this effort.
++
++2.0.3.1: RC-SERIES RULES AFTER THE RC1 RELEASE
++
++Linus does not accept more pull requests from subsystem maintainers after the
++rc1 release. This means you can expect no new features or new development after
++rc1.
++
++The same type of patches are accepted after the rc1 release with the addition
++of a slight warmer welcome for non-intrusive bug fix patches. Non-intrusive
++bug fixes must be important and address very clearly the bug they are fixing.
++Non-intrusive bug fixes can fix issues which are not a regression, security
++hole or a kernel oops/hang.
++
++Linus will not accept non-intrusive bug fix patches late in the rc-series, after
++the rc5, for example.
++
++You should never take it for granted non-intrusive bug fixes will be accepted.
++Ultimately it is up to the subsystem maintainers to decide whether to accept
++such a fix or not, which is why your commit log entry is critically important.
++You want to provide as much detail as is posisible in order to help maintainers
++make the right call.
++
++2.0.4 RC-SERIES NEW DRIVER EXEMPTION RULE
++
++The very first release a new driver or filesystem is special. New drivers
++are accepted during the rc-series! Patches for the same driver then are
++also accepted during the same rc-series of a kernel as well as fixes for it
++cannot regress as no previous kernels exists with it.
++
++After a driver has been present for one kernel release the relaxed rules for
++it during the rc-series are no longer applicable.
+ 
+ 2.1: THE BIG PICTURE
+ 
+ The kernel developers use a loosely time-based release process, with a new
+-major kernel release happening every two or three months.  The recent
+-release history looks like this:
+-
+-	2.6.26	July 13, 2008
+-	2.6.25	April 16, 2008
+-	2.6.24	January 24, 2008
+-	2.6.23	October 9, 2007
+-	2.6.22	July 8, 2007
+-	2.6.21	April 25, 2007
+-	2.6.20	February 4, 2007
++major kernel release happening about every two or three months. The current
++average time based on the last 10 releases is 86.0 days. The recent release
++history along with the number of days between each release looks like this:
++
++	2.6.30	June 10, 2009 - 78 days
++	2.6.29  March 23, 2009 - 89 days
++	2.6.28	December 29, 2008 - 76 days
++	2.6.27	October 8, 2008 - 88 days
++	2.6.26	July 13, 2008 - 88 days
++	2.6.25	April 16, 2008 - 83 days
++	2.6.24	January 24, 2008 - 108 days
++	2.6.23	October 9, 2007 - 94 days
++	2.6.22	July 8, 2007 - 75 days
++	2.6.21	April 25, 2007 - 81 days
++	2.6.20	February 4, 2007 - 68
+ 
+ Every 2.6.x release is a major kernel release with new features, internal
+ API changes, and more.  A typical 2.6 release can contain over 10,000
+diff --git a/Documentation/stable_kernel_rules.txt b/Documentation/stable_kernel_rules.txt
+index a452227..113e8c8 100644
+--- a/Documentation/stable_kernel_rules.txt
++++ b/Documentation/stable_kernel_rules.txt
+@@ -1,5 +1,10 @@
+ Everything you ever wanted to know about Linux 2.6 -stable releases.
+ 
++For further details, such as stable kernel release schedules, rc-series
++policies and process of development please refer to:
++
++Documentation/development-process/
++
+ Rules on what kind of patches are accepted, and which ones are not, into the
+ "-stable" tree:
+ 
+-- 
+1.6.3.1
 
