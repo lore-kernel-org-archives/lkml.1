@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZFVUCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbZFVUCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbZFVUCT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 16:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbZFVUBy
+	id S1758365AbZFVUCb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 16:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbZFVUCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 16:01:54 -0400
-Received: from [64.76.51.99] ([64.76.51.99]:52902 "HELO mosquera.umng.edu.co"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1751888AbZFVUBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 16:01:54 -0400
-Message-ID: <43636.41.220.75.16.1245700307.squirrel@webmail.umng.edu.co>
-Date: Mon, 22 Jun 2009 14:51:47 -0500 (COT)
-Subject: Your Account Expire in 2(Days)..
-From: u2900515@umng.edu.co
-Reply-To: webit.help@administrativos.com
-User-Agent: SquirrelMail/1.4.2
+	Mon, 22 Jun 2009 16:02:21 -0400
+Received: from [87.239.71.157] ([87.239.71.157]:56994 "EHLO mail.mendo.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758259AbZFVUCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 16:02:19 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 16:02:19 EDT
+Message-ID: <4A3FE1BA.10908@mendo.dk>
+Date: Mon, 22 Jun 2009 21:55:38 +0200
+From: Thomas Petersen <thomas@mendo.dk>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090604 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
+References: <20090521142026.GA5566@geggus.net> <1242924599.6687.1.camel@heimdal.trondhjem.org> <20090521165751.GA4428@geggus.net> <1242927133.6687.4.camel@heimdal.trondhjem.org> <gv4463$6fn$1@ultimate100.geggus.net>
+In-Reply-To: <gv4463$6fn$1@ultimate100.geggus.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Sven Geggus wrote:
+
+> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> 
+>> So what is the underlying filesystem that you are exporting, and what
+>> does your /etc/exports file look like?
+> 
+> The underlying filesystem is xfs and /etc/exports (unchanged) is here:
+> 
+> --cut--
+> /home/sven	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
 
 
+I switched to 2.6.29 on my server yesterday. It seemed to work fine but
+a few hours ago I began to get the same errors (reconnect_path: npd != pd).
+I have a diskless client which received stale nfs handles and stopped
+working properly. I have a laptop also which is still working ok but
+that client doesn't utilize the nfs filesystems that much.
 
-Dear Webmail/Yahoo users,
+I'm using gentoo on all computers. Both clients are using 2.6.28. Server
+switched from 2.6.27 to 2.6.29.
+I am using XFS on the server !
 
-This message was sent automatically by a program on Webmail admin center
-which periodically checks the size of inbox, where new messages are
-received. The program is run weekly to ensure no one's inbox grows too
-large. If your inbox becomes too large, you will be unable to receive new
-emails.
+There is a special thing about the server though and until I saw this
+discussion I thought that was the problem:
+I updated the kernel because I also replaced the hardware (except the
+harddrives). I switched from an old AMD Athlon (32 bit) to an AMD Phenom
+II (64 bit, 4 cores). The new kernel is compiled in 64 bit but all
+userland is still the old 32 bit compiled on the old Athlon. Everything
+runs through IA32 emulation.
 
-Just before this message was sent, you had 18 Megabytes (MB) or more of
-messages stored in your inbox. To help us re-set your SPACE on our
-database prior to maintain your INBOX, you must reply to this e-mail and
-enter your Current User name ( ... ... ... ... ) and Password ( ... ...
-... ... ) e-mail ( ... ... ... ... ).
-You will continue to receive this warning message periodically if your
-inbox size continues to be between 18 and 50 MB. If your inbox size
-grows
-to 50 MB, then a program on Webmail admin center will move your oldest
-email to a folder in your home directory to ensure that you will
-continue
-to be able to receive incoming email. You will be notified by email that
-this has taken place. If your inbox grows to 50 MB, you will be unable
-to
-receive new email as it will be returned to the sender.
-After you read this message, it is best to REPLY-To the following Email:
-webit.help@administrativos.com with the required
-information to upgrade MailBox.
-Note: Your Account Expire in 2(Days). Reply to this message immediately
-Reactivate your Account.
-Thank you for your cooperation.
-Webmail Help Desk.
--------------------------------------------
+Both clients are 32 bit machines.
+
+In a few days I'll start to update to 64 bit userland on the server and
+see if that has an effect on the problem.
+
+
+Thomas
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko/4boACgkQOaC6N60T7rze2gCfVRHI6H5hzyC4eX80H2hywJ81
+3/QAnA17/9MEO3Zm8eosOtfzU+q3sYi6
+=fgT+
+-----END PGP SIGNATURE-----
