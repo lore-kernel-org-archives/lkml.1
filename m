@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZFVSUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZFVSZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbZFVSUg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 14:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZFVSU1
+	id S1756550AbZFVSZA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 14:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZFVSYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 14:20:27 -0400
-Received: from claw.goop.org ([74.207.240.146]:53147 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbZFVSU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 14:20:26 -0400
-Message-ID: <4A3FCB68.3030004@goop.org>
-Date: Mon, 22 Jun 2009 11:20:24 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Mon, 22 Jun 2009 14:24:52 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:60006 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752644AbZFVSYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 14:24:51 -0400
+Date: Mon, 22 Jun 2009 13:24:51 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: cl@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com, mel@csn.ul.ie,
+       nickpiggin@yahoo.com.au, stable@kernel.org
+Subject: [PATCH] Fix handling of pagesets for downed cpus
+Message-ID: <20090622182451.GA15682@sgi.com>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
-       linux-arch@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
-References: <20090622140807.25509.54448.stgit@bob.kio> <20090622143431.GT19977@parisc-linux.org>
-In-Reply-To: <20090622143431.GT19977@parisc-linux.org>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/22/09 07:34, Matthew Wilcox wrote:
-> On Mon, Jun 22, 2009 at 08:08:07AM -0600, Alex Chiang wrote:
->   
->> This was #define'd as 0 on all platforms, so let's get rid of it.
->>
->> This change makes pci_scan_slot() slightly easier to read.
->>     
->
->   
->> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
->> index f1ae247..b613cad 100644
->> --- a/drivers/pci/probe.c
->> +++ b/drivers/pci/probe.c
->> @@ -1056,8 +1056,7 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
->>  	if (dev && !dev->is_added)	/* new device? */
->>  		nr++;
->>  
->> -	if ((dev && dev->multifunction) ||
->> -	    (!dev && pcibios_scan_all_fns(bus, devfn))) {
->> +	if (dev && dev->multifunction) {
->>  		for (fn = 1; fn < 8; fn++) {
->>  			dev = pci_scan_single_device(bus, devfn + fn);
->>  			if (dev) {
->>     
->
-> What a good idea.  I was just looking at making this more complicated
-> (due to the ARI capability).
->
-> I'd like to know what the KVM / Xen / ... people think about this.
-> I don't know if they rely on function 5 being able to show up out of
-> the blue.
->   
+After downing/upping a cpu, an attempt to set
+/proc/sys/vm/percpu_pagelist_fraction results in an oops in
+percpu_pagelist_fraction_sysctl_handler().
 
-We want to be able to export specific functions to a particular domain,
-so it might see a PCI device with only function 5.
+If a processor is downed then we need to set the pageset pointer back to the
+boot pageset.
 
-It looks like we lose that ability with this patch, is that right?
+Updates of the high water marks should not access pagesets of unpopulated zones
+(those pointer go to the boot pagesets which would be no longer functional if
+their size would be increased beyond zero).
 
-    J
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
+---
+
+This patch should go into the -stable tree as well.
+
+ mm/page_alloc.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux/mm/page_alloc.c
+===================================================================
+--- linux.orig/mm/page_alloc.c	2009-06-22 13:06:50.000000000 -0500
++++ linux/mm/page_alloc.c	2009-06-22 13:08:09.000000000 -0500
+@@ -3026,7 +3026,7 @@ bad:
+ 		if (dzone == zone)
+ 			break;
+ 		kfree(zone_pcp(dzone, cpu));
+-		zone_pcp(dzone, cpu) = NULL;
++		zone_pcp(dzone, cpu) = &boot_pageset[cpu];
+ 	}
+ 	return -ENOMEM;
+ }
+@@ -3041,7 +3041,7 @@ static inline void free_zone_pagesets(in
+ 		/* Free per_cpu_pageset if it is slab allocated */
+ 		if (pset != &boot_pageset[cpu])
+ 			kfree(pset);
+-		zone_pcp(zone, cpu) = NULL;
++		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+ 	}
+ }
+ 
+@@ -4659,7 +4659,7 @@ int percpu_pagelist_fraction_sysctl_hand
+ 	ret = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+ 	if (!write || (ret == -EINVAL))
+ 		return ret;
+-	for_each_zone(zone) {
++	for_each_populated_zone(zone) {
+ 		for_each_online_cpu(cpu) {
+ 			unsigned long  high;
+ 			high = zone->present_pages / percpu_pagelist_fraction;
