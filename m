@@ -1,77 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbZFVUCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbZFVUCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758365AbZFVUCb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 16:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbZFVUCV
+	id S1758351AbZFVUCq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 16:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087AbZFVUCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 16:02:21 -0400
-Received: from [87.239.71.157] ([87.239.71.157]:56994 "EHLO mail.mendo.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758259AbZFVUCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 16:02:19 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 16:02:19 EDT
-Message-ID: <4A3FE1BA.10908@mendo.dk>
-Date: Mon, 22 Jun 2009 21:55:38 +0200
-From: Thomas Petersen <thomas@mendo.dk>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090604 SeaMonkey/1.1.16
+	Mon, 22 Jun 2009 16:02:37 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:41560 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753523AbZFVUCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 16:02:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=JfChQfNXe2pL2hRXrlU7PFT61n2xXD8i59Ld2PpLLSnqOWImLmbjIJ3QVkNPW0CZle
+         Fbbov48j1wMiw7evBVCzeWypIhfC/KNg/XhshBOw4kVhLpuwZehU27BkQcRwto4eEwmu
+         iR9eK8SINpuUe5seXOltP4Dt/W0od2CiC56S0=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
-References: <20090521142026.GA5566@geggus.net> <1242924599.6687.1.camel@heimdal.trondhjem.org> <20090521165751.GA4428@geggus.net> <1242927133.6687.4.camel@heimdal.trondhjem.org> <gv4463$6fn$1@ultimate100.geggus.net>
-In-Reply-To: <gv4463$6fn$1@ultimate100.geggus.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090622120133.GT24366@elte.hu>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
+	 <20090622120133.GT24366@elte.hu>
+Date: Mon, 22 Jun 2009 22:02:37 +0200
+Message-ID: <7c86c4470906221302x2f18b0c2q1f719e1af5cdd44@mail.gmail.com>
+Subject: Re: IV.5 - Intel Last Branch Record (LBR)
+From: stephane eranian <eranian@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, Jun 22, 2009 at 2:01 PM, Ingo Molnar<mingo@elte.hu> wrote:
+>> 5/ Intel Last Branch Record (LBR)
+>>
+>> Intel processors since Netburst have a cyclic buffer hosted in
+>> registers which can record taken branches. Each taken branch is
+>> stored into a pair of LBR registers (source, destination). Up
+>> until Nehalem, there was not filtering capabilities for LBR. LBR
+>> is not an architected PMU feature.
+>>
+>> There is no counter associated with LBR. Nehalem has a LBR_SELECT
+>> MSR. However there are some constraints on it given it is shared
+>> by threads.
+>>
+>> LBR is only useful when sampling and therefore must be combined
+>> with a counter. LBR must also be configured to freeze on PMU
+>> interrupt.
+>>
+>> How is LBR going to be supported?
+>
+> If there's interest then one sane way to support it would be to
+> expose it as a new sampling format (PERF_SAMPLE_*).
+>
+LBR is very important, it becomes useable with Nehalem where you
+can filter on priv level. It is important for statistical basic block
+profiling, for instance. Another important feature is its ability to freeze
+on PMU interrupt.
 
-Sven Geggus wrote:
+LBR is also interesting because it yield a path to an event.
 
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> 
->> So what is the underlying filesystem that you are exporting, and what
->> does your /etc/exports file look like?
-> 
-> The underlying filesystem is xfs and /etc/exports (unchanged) is here:
-> 
-> --cut--
-> /home/sven	192.168.3.2(rw,no_root_squash,async,subtree_check) 192.168.3.6(rw,no_root_squash,async,subtree_check) 192.168.3.8(rw,no_root_squash,async,subtree_check)
+LBR on NHM (and others) is not that easy to handle because:
+   - need to read-modify-write IA32_DEBUGCTL
+   - LBR_TOS, the position pointer is read-only
+   - LBR_SELECT to configure LBR is shared at the core-level on NHM
 
+but it is very much worthwhile.
 
-I switched to 2.6.29 on my server yesterday. It seemed to work fine but
-a few hours ago I began to get the same errors (reconnect_path: npd != pd).
-I have a diskless client which received stale nfs handles and stopped
-working properly. I have a laptop also which is still working ok but
-that client doesn't utilize the nfs filesystems that much.
+> Regarding the constraints - if we choose to expose the branch-type
+> filtering capabilities of Nehalem, then that puts a constraint on
+> counter scheduling: two counters with conflicting constraints should
+> not be scheduled at once, but should be time-shared via the usual
+> mechanism.
+>
+You need to expose the branch filtering in some way. The return
+branch filter is useful for statistical call graph sampling, for instance.
+If you can't disable the other types of branches, then the relevance
+of the data drops.
 
-I'm using gentoo on all computers. Both clients are using 2.6.28. Server
-switched from 2.6.27 to 2.6.29.
-I am using XFS on the server !
-
-There is a special thing about the server though and until I saw this
-discussion I thought that was the problem:
-I updated the kernel because I also replaced the hardware (except the
-harddrives). I switched from an old AMD Athlon (32 bit) to an AMD Phenom
-II (64 bit, 4 cores). The new kernel is compiled in 64 bit but all
-userland is still the old 32 bit compiled on the old Athlon. Everything
-runs through IA32 emulation.
-
-Both clients are 32 bit machines.
-
-In a few days I'll start to update to 64 bit userland on the server and
-see if that has an effect on the problem.
-
-
-Thomas
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko/4boACgkQOaC6N60T7rze2gCfVRHI6H5hzyC4eX80H2hywJ81
-3/QAnA17/9MEO3Zm8eosOtfzU+q3sYi6
-=fgT+
------END PGP SIGNATURE-----
+> The typical use-case would be to have no or compatible LBR filter
+> attributes between counters though - so having the conflicts is not
+> an issue as long as it works according to the usual model.
+>
+Conflict arises when two events request different filter value. The conflict
+happens in both per-thread and per-cpu mode when HT is on. In per-cpu
+mode it can be controlled at the core level. But in per-thread mode, it
+has to be managed globally as a thread may migrate. Multiplexing
+as it is implemented manages groups attached to one thread or CPU.
+Here it would have to look across a pair of CPUs (or threads) and
+ensure that no two groups using LBR with conflicting filter selections
+can be scheduled at the same time on the two hyper-threads of the
+same core. I think it may be easier, for now, to say LBR_SELECT
+is global, first come, first serve.
