@@ -1,66 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZFVOE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZFVOFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbZFVOE0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZFVOER
+	id S1756021AbZFVOFj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZFVOFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:04:17 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:50965 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750964AbZFVOEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:04:16 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: cmd64x: irq 14: nobody cared - system is dreadfully slow
-Date: Mon, 22 Jun 2009 16:04:15 +0200
-User-Agent: KMail/1.9.9
-References: <200906211446.38598.elendil@planet.nl> <200906220843.14337.elendil@planet.nl> <200906221321.44672.bzolnier@gmail.com>
-In-Reply-To: <200906221321.44672.bzolnier@gmail.com>
-Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+	Mon, 22 Jun 2009 10:05:32 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:49965 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751355AbZFVOFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 10:05:31 -0400
+Date: Mon, 22 Jun 2009 09:05:22 -0500
+From: Erik Jacobson <erikj@sgi.com>
+To: Kurt Garloff <garloff@suse.de>,
+       Linux kernel list <linux-kernel@vger.kernel.org>,
+       Norbert Eicker <N.Eicker@fz-juelich.de>,
+       Greg Kroah-Hartman <GregKH@suse.de>,
+       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+       Len Brown <LenB@kernel.org>
+Subject: Re: [PATCH 0/3]: Discard reserved PXM bits for SRAT v1
+Message-ID: <20090622140522.GA5378@sgi.com>
+References: <20090518093352.GC15531@tpkurt2.garloff.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906221604.17915.elendil@planet.nl>
-X-OriginalArrivalTime: 22 Jun 2009 14:04:18.0665 (UTC) FILETIME=[559F1590:01C9F342]
+In-Reply-To: <20090518093352.GC15531@tpkurt2.garloff.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 June 2009, you wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: fix handling of unexpected IRQs vs request_irq()
->
-> Add ide_host_enable_irqs() helper and use it in ide_host_register()
-> before registering ports.  Then remove no longer needed IRQ unmasking
-> from in init_irq().
->
-> This should fix the problem with "screaming" shared IRQ on the first
-> port (after request_irq() call while we have the unexpected IRQ pending
-> on the second port) which was uncovered by my rework of the serialized
-> interfaces support.
+I just wanted to post in to the thread that this patch set solved both
+the node numbering (where there was a node0 and a node2) and the issue
+where all CPUs were showing up one the first node.
 
-Thanks Bart. This does solve the "nobody cared" problem.
-Tested-by: Frans Pop <elendil@planet.nl>
+I applied the three patches against 2.6.30-git14.
 
-I also tested it without David's initial patch (i.e. *with* 
-IDE_HFLAG_SERIALIZE in host-flags) and that seems to work fine too:
-ide0 at 0x1fe02c00000-0x1fe02c00007,0x1fe02c0000a on irq 14 (serialized)
-ide1 at 0x1fe02c00010-0x1fe02c00017,0x1fe02c0001a on irq 14 (serialized)
+We look forward to seeing the changes integrated.
 
-No idea whether serialized is to be preferred or not. Guess that's David's 
-call now.
+On this 2-socket Intel 5500 based system (Nehalem), the /sys stuff looks
+good:
+
+$ ls /sys/devices/system/node/node?
+/sys/devices/system/node/node0:
+cpu0  cpu2  cpulist  distance  numastat
+cpu1  cpu3  cpumap   meminfo   scan_unevictable_pages
+
+/sys/devices/system/node/node1:
+cpu4  cpu6  cpulist  distance  numastat
+cpu5  cpu7  cpumap   meminfo   scan_unevictable_pages
 
 
-I do still get the "bad DMA info in identify block" error for the CD 
-drive, so that's still a regression relative to 2.6.26:
- hdd: host max PIO5 wanted PIO255(auto-tune) selected PIO4
--hdd: MWDMA2 mode selected
-+hdd: bad DMA info in identify block
-+hdd: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+Where as, before, it looked like this (non-ordered, all CPUs showing up
+in node 0).
 
-Cheers,
-FJP
+# ls -ld /sys/devices/system/node/node*
+drwxr-xr-x 2 root root 0 2009-06-18 09:30 /sys/devices/system/node/node0
+drwxr-xr-x 2 root root 0 2009-06-18 09:30 /sys/devices/system/node/node2
+
+[root@cct201 ~]# ls /sys/devices/system/node/node0
+cpu0  cpu2  cpu4  cpu6  cpulist  distance  numastat
+cpu1  cpu3  cpu5  cpu7  cpumap   meminfo   scan_unevictable_pages
+
+
+System details:
+- SGI Altix XE 270
+- Supermicro X8DTN v 1.1 mainboard
+- 2 sockets of Xeon X5570
+
+
+/proc/cpuinfo snip
+
+[root@cct201 erikj]# cat /proc/cpuinfo
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 4
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5866.85
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 4
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 8212.05
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 2
+cpu cores	: 4
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5865.76
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 0
+siblings	: 4
+core id		: 3
+cpu cores	: 4
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5865.76
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 0
+cpu cores	: 4
+apicid		: 16
+initial apicid	: 16
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5828.64
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 1
+cpu cores	: 4
+apicid		: 18
+initial apicid	: 18
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5865.81
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 2
+cpu cores	: 4
+apicid		: 20
+initial apicid	: 20
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5865.80
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 26
+model name	: Intel(R) Xeon(R) CPU           X5570  @ 2.93GHz
+stepping	: 5
+cpu MHz		: 1600.000
+cache size	: 8192 KB
+physical id	: 1
+siblings	: 4
+core id		: 3
+cpu cores	: 4
+apicid		: 22
+initial apicid	: 22
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 11
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good xtopology tsc_reliable nonstop_tsc pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 sse4_2 popcnt lahf_lm ida tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5865.80
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
