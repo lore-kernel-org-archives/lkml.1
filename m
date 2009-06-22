@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZFVUAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbZFVUCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbZFVUAp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 16:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZFVUAi
+	id S1758143AbZFVUCA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 16:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZFVUBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 16:00:38 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:35636 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbZFVUAh (ORCPT
+	Mon, 22 Jun 2009 16:01:53 -0400
+Received: from mail-fx0-f224.google.com ([209.85.220.224]:61075 "EHLO
+	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbZFVUBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 16:00:37 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 22 Jun 2009 12:54:27 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Gregory Haskins <gregory.haskins@gmail.com>
-cc: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
- notifier race conditions
-In-Reply-To: <4A3FD89A.8080809@gmail.com>
-Message-ID: <alpine.DEB.1.10.0906221251330.10952@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906201508460.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201640380.25534@makko.or.mcafeemobile.com> <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com>
- <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com> <4A3FABD9.7080108@novell.com> <alpine.DEB.1.10.0906220952090.10952@makko.or.mcafeemobile.com> <4A3FC2B1.4050107@novell.com> <alpine.DEB.1.10.0906221055480.10952@makko.or.mcafeemobile.com>
- <20090622184139.GG15228@redhat.com> <alpine.DEB.1.10.0906221146210.10952@makko.or.mcafeemobile.com> <4A3FD89A.8080809@gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 22 Jun 2009 16:01:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=IHOD4JP/4afGw1dCJRuj6ScKHbt2WNJrIxgDFwdKs0I640jSMlhOkhAP9h40klqy3b
+         gleO8NUWm+LPTzcQyAcCogx7Y29vG5dGd0uA9jaPp2nu1R709ZoUJf9Y8MuR+KYME8R0
+         7AYk5WjTEn9F+xAUuA5nD9392muZmJHNHmEVQ=
+Date: Mon, 22 Jun 2009 22:01:50 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@lxorguk.ukuu.org.uk
+Subject: WARNING: at drivers/char/tty_ldisc.c:465 tty_ldisc_close
+Message-ID: <20090622200149.GA4257@nb-core2.darkstar.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009, Gregory Haskins wrote:
+Hello,
+with current git I see the following warning when rebooting the machine:
 
-> Davide Libenzi wrote:
-> > On Mon, 22 Jun 2009, Michael S. Tsirkin wrote:
-> >
-> >   
-> >> On Mon, Jun 22, 2009 at 11:03:22AM -0700, Davide Libenzi wrote:
-> >>     
-> >>> In your case of kernel-to-kernel scenario, why would you need eventfd at 
-> >>> all, if userspace role in that model is simply to create it?
-> >>>       
-> >> That's not 100% true. We have a mode where userspace is the producer
-> >> and/or consumer (migration mode) and we switch between that and
-> >> direct kernel-to-kernel communication.
-> >>     
-> >
-> > Then you'd need to ask yourself how to handle your complex case inside the 
-> > KVM code, so that other eventfd users are not affected by the extra fat 
-> > needed to handle your scenarios. Thing that seem to be continuosly tried.
-> > A file* based kernel-to-kernel interface is rather wrong IMO.
-> >   
-> 
-> Well, I will point out that the interface in question is
-> eventfd_signal(struct file *), and you were the one that invented it
-> afaict.  Can't help it if we like it :)
+[  287.872699] ------------[ cut here ]------------
+[  287.874306] WARNING: at /home/kronos/src/linux-2.6.git/drivers/char/tty_ldisc.c:465 tty_ldisc_close+0x27/0x4d()
+[  287.875829] Hardware name: F3Sa
+[  287.877387] Modules linked in: af_packet btusb bridge stp llc bnep sco rfcomm l2cap bluetooth ipv6 binfmt_misc acpi_cpufreq cpufreq_userspace cpufreq_stats cpufreq_conservative cpufreq_powersave cpufreq_ondemand freq_table kvm_intel kvm deflate zlib_deflate twofish_x86_64 twofish_common aes_x86_64 aes_generic blowfish des_generic cbc sha256_generic sha1_generic af_key ext3 jbd coretemp hwmon microcode loop snd_hda_codec_realtek arc4 ecb snd_hda_intel snd_hda_codec iwlagn snd_hwdep iwlcore snd_pcm mac80211 snd_seq snd_timer rtc_cmos snd_seq_device snd cfg80211 rtc_core soundcore video pcspkr evdev psmouse rtc_lib asus_laptop snd_page_alloc rfkill output processor battery ac button ext4 mbcache jbd2 crc16 usbhid hid dm_mod sg sr_mod cdrom sdhci_pci sdhci mmc_core ohci1394 sd_mod ieee1394 led_class ata_piix ahci uhci_hcd libata scsi_mod ehci_hcd usbcore intel_agp thermal fan unix
+[  287.885243] Pid: 4098, comm: login Not tainted 2.6.30-07769-gf234012 #127
+[  287.886049] Call Trace:
+[  287.886858]  [<ffffffff8104eb92>] ? finish_wait+0x5d/0x65
+[  287.887654]  [<ffffffff811b5daa>] ? tty_ldisc_close+0x27/0x4d
+[  287.888455]  [<ffffffff8103ae06>] warn_slowpath_common+0x77/0xa4
+[  287.889269]  [<ffffffff8103ae42>] warn_slowpath_null+0xf/0x11
+[  287.890039]  [<ffffffff811b5daa>] tty_ldisc_close+0x27/0x4d
+[  287.890814]  [<ffffffff811b5fdd>] tty_ldisc_reinit+0x15/0x4c
+[  287.891581]  [<ffffffff811b66f9>] tty_ldisc_hangup+0xfd/0x188
+[  287.892351]  [<ffffffff811af84d>] do_tty_hangup+0x104/0x335
+[  287.893117]  [<ffffffff811afdd8>] disassociate_ctty+0x52/0x23d
+[  287.893870]  [<ffffffff8103e287>] do_exit+0x2b2/0x70a
+[  287.894615]  [<ffffffff8103e752>] do_group_exit+0x73/0xa0
+[  287.895363]  [<ffffffff810481d7>] get_signal_to_deliver+0x380/0x3a1
+[  287.896133]  [<ffffffff8100b057>] do_notify_resume+0x8b/0x70b
+[  287.896887]  [<ffffffff8126e25c>] ? _spin_unlock_irqrestore+0x12/0x2b
+[  287.897644]  [<ffffffff8103dd46>] ? do_wait+0x238/0x361
+[  287.898398]  [<ffffffff81034766>] ? default_wake_function+0x0/0xf
+[  287.899154]  [<ffffffff8103df10>] ? sys_wait4+0xa1/0xb3
+[  287.899906]  [<ffffffff8100bc05>] sysret_signal+0x6d/0xb7
+[  287.900669] ---[ end trace 256501a14a678d82 ]---
 
-Yes, I did. The case for eventfd was dual. First, it was a communication 
-link between userspace and kernel, for things like KAIO. Second, it was a 
-faster and smaller userspace replacement for things people used pipes 
-before.
-In all those cases, at least one reference of the file* is alive in 
-userspace.
-Even with the above case in mind, today I'd still use the eventfd_ctx as 
-internal kernel API accessory.
+It's not 100% reproducible, but I have a few instances of the warning with
+different (post 2.6.30) kernel builds (I tend to build daily).
 
-
-
-- Davide
-
-
+Luca
