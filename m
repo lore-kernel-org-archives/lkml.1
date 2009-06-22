@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbZFVNhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZFVNi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752437AbZFVNhy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 09:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZFVNhr
+	id S1756170AbZFVNi1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 09:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZFVNiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 09:37:47 -0400
-Received: from edb171.neoplus.adsl.tpnet.pl ([83.22.243.171]:54206 "EHLO
-	krzysiek.podlesie.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751994AbZFVNhr (ORCPT
+	Mon, 22 Jun 2009 09:38:19 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:50737 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbZFVNiS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 09:37:47 -0400
-X-Greylist: delayed 1038 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 09:37:46 EDT
-From: Krzysztof Mazur <krzysiek@podlesie.net>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, Krzysztof Mazur <krzysiek@podlesie.net>
-Subject: [PATCH] generic arch_get_unmapped_area(): make sure that addr >= TASK_UNMAPPED_BASE
-Date: Mon, 22 Jun 2009 15:20:29 +0200
-Message-Id: <12456768291898-git-send-email-krzysiek@podlesie.net>
-X-Mailer: git-send-email 1.5.1.3
+	Mon, 22 Jun 2009 09:38:18 -0400
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Pavel Machek <pavel@ucw.cz>,
+       Eric Piel <eric.piel@tremplin-utc.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/4] lis3: fix typo
+Date: Mon, 22 Jun 2009 15:38:05 +0200
+Message-Id: <1245677888-16634-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generic arch_get_unmapped_area() use mm->free_area_cache for start_addr
-and addr even when it's smaller that TASK_UNMAPPED_BASE.
+Bit 0x80 in CTRL_REG3 is an ACTIVE_LOW rather than an ACTIVE_HIGH
+function, I got that wrong during my last change.
 
-	if (len > mm->cached_hole_size) {
-	        start_addr = addr = mm->free_area_cache;
-	} else {
-	        start_addr = addr = TASK_UNMAPPED_BASE;
- 	        mm->cached_hole_size = 0;
- 	}
-
-I don't know how it should work (maybe mm->free_area_cache should be
-never smaller than TASK_UNMAPPED_BASE, but it was 0 when I took strace
-below), but I copied code from x86-64's arch_get_unmapped_area(),
-there is:
-
-	if (((flags & MAP_32BIT) || test_thread_flag(TIF_IA32))
-	    && len <= mm->cached_hole_size) {
-		mm->cached_hole_size = 0;
-		mm->free_area_cache = begin;
-	}
-	addr = mm->free_area_cache;
-	if (addr < begin)
-		addr = begin;
-	start_addr = addr;
-
-Now with check for begin (TASK_UNMAPPED_BASE in generic code) it seems
-to be ok.
-
-Previously I had -EACCESS when process used legacy VA layout (for instance
-because of no RLIMIT_STACK limit):
-
-setrlimit(RLIMIT_STACK, {rlim_cur=RLIM_INFINITY, rlim_max=RLIM_INFINITY}) = 0
-...
-vfork(Process 1819 attached (waiting for parent)
-Process 1819 resumed (parent 1818 ready)
-)                                 = 1819
-[pid  1819] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
-[pid  1819] execve("/bin/sh", ["/bin/sh", "-c", "if test ! -f config.h; then \\\n  "...], [/* 26 vars */]) = 0
-[pid  1819] brk(0)                      = 0x8a01000
-[pid  1819] uname({sys="Linux", node="geronimo", ...}) = 0
-[pid  1819] access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
-[pid  1819] open("/etc/ld.so.cache", O_RDONLY) = 3
-[pid  1819] fstat64(3, {st_mode=S_IFREG|0644, st_size=105204, ...}) = 0
-[pid  1819] mmap2(NULL, 105204, PROT_READ, MAP_PRIVATE, 3, 0) = -1 EACCES (Permission denied)
-
-Signed-off-by: Krzysztof Mazur <krzysiek@podlesie.net>
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- mm/mmap.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
+ include/linux/lis3lv02d.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 34579b2..577cfc0 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1289,12 +1289,15 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 		    (!vma || addr + len <= vma->vm_start))
- 			return addr;
- 	}
--	if (len > mm->cached_hole_size) {
--	        start_addr = addr = mm->free_area_cache;
--	} else {
--	        start_addr = addr = TASK_UNMAPPED_BASE;
--	        mm->cached_hole_size = 0;
-+
-+	if (len <= mm->cached_hole_size) {
-+		mm->free_area_cache = TASK_UNMAPPED_BASE;
-+		mm->cached_hole_size = 0;
- 	}
-+	addr = mm->free_area_cache;
-+	if (addr < TASK_UNMAPPED_BASE)
-+		addr = TASK_UNMAPPED_BASE;
-+	start_addr = addr;
+diff --git a/include/linux/lis3lv02d.h b/include/linux/lis3lv02d.h
+index ad651f4..113778b 100644
+--- a/include/linux/lis3lv02d.h
++++ b/include/linux/lis3lv02d.h
+@@ -32,7 +32,7 @@ struct lis3lv02d_platform_data {
+ #define LIS3_IRQ2_DATA_READY	(4 << 3)
+ #define LIS3_IRQ2_CLICK		(7 << 3)
+ #define LIS3_IRQ_OPEN_DRAIN	(1 << 6)
+-#define LIS3_IRQ_ACTIVE_HIGH	(1 << 7)
++#define LIS3_IRQ_ACTIVE_LOW	(1 << 7)
+ 	unsigned char irq_cfg;
+ };
  
- full_search:
- 	for (vma = find_vma(mm, addr); ; vma = vma->vm_next) {
 -- 
-1.5.1.3
+1.6.3.1
 
