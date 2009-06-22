@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbZFVO43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZFVO46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757252AbZFVO43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbZFVO4J
+	id S1757417AbZFVO46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757298AbZFVO4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:56:09 -0400
-Received: from ares.ids.de ([88.79.252.171]:47042 "HELO ares.ids.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756964AbZFVO4H convert rfc822-to-8bit (ORCPT
+	Mon, 22 Jun 2009 10:56:49 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:24476 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751982AbZFVO4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:56:07 -0400
-X-Greylist: delayed 1489 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 10:55:57 EDT
-X-PGP-Universal: processed;
-	by ares.ids.de on Mon, 22 Jun 2009 16:30:24 +0200
-From: <Sergej.Stepanov@ids.de>
-To: <chris.pringle@oxtel.com>, <scottwood@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Date: Mon, 22 Jun 2009 16:31:07 +0200
-Subject: AW: PowerPC PCI DMA issues (prefetch/coherency?)
-Thread-Topic: PowerPC PCI DMA issues (prefetch/coherency?)
-Thread-Index: AcnwB8v0OR7NQk8dT4eVE0fA/grvlwDPPAh7
-Message-ID: <4206182445660643B9AEB8D4E55BBD0A08533B67B5@HERMES2>
-References: <4A37A503.3030209@oxtel.com>
-	<20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
-	<4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
-	<4A37D073.6020802@freescale.com> <4A38A21B.5060306@oxtel.com>
-	<4A38ED31.9030705@oxtel.com>,<4A3A23FA.1000407@oxtel.com>
-In-Reply-To: <4A3A23FA.1000407@oxtel.com>
-Accept-Language: de-DE
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: de-DE
-MIME-Version: 1.0
-Content-Language: de-DE
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 22 Jun 2009 10:56:47 -0400
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+Cc: Brice Goglin <Brice.Goglin@inria.fr>, "'Andi Kleen'" <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-numa@vger.kernel.org,
+       Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <4A3F95F1.4020507@lfbs.rwth-aachen.de>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+	 <87zldjn597.fsf@basil.nowhere.org>
+	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	 <20090612103251.GJ25568@one.firstfloor.org>
+	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+	 <1245119977.6724.40.camel@lts-notebook>
+	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+	 <1245164395.15138.40.camel@lts-notebook>
+	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
+	 <1245299856.6431.30.camel@lts-notebook> <4A3F7A49.6070805@inria.fr>
+	 <4A3F95F1.4020507@lfbs.rwth-aachen.de>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Mon, 22 Jun 2009 10:56:46 -0400
+Message-Id: <1245682606.7799.64.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->The other part of the fix is in asm-powerpc/pgtable32.h. _PAGE_BASE
->needs _PAGE_COHERENT in order to work correctly, and in fact there is
->now a comment in there to that affect in 2.6.29. Backporting that change
->has made it work on 2.6.26. Both this patch, and the fix to head_32.S
->are needed for it to work correctly on older kernels.
->
->Chris
+On Mon, 2009-06-22 at 16:32 +0200, Stefan Lankes wrote:
+> 
+> Brice Goglin wrote:
+> > Lee Schermerhorn wrote:
+> >> On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
+> >>   
+> >>
+> >> Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
+> >> [along with my shared policy series atop which they sit in my tree].
+> >> Patches reside in:
+> >>
+> >> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
+> >>
+> >>   
+> > 
+> > I gave this patchset a try and indeed it seems to work fine, thanks a
+> > lot. But the migration performance isn't very good. I am seeing about
+> > 540MB/s when doing mbind+touch_all_pages on large buffers on a
+> > quad-barcelona machines. move_pages gets 640MB/s there. And my own
+> > next-touch implementation were near 800MB/s in the past.
+> 
+> I used a modified stream benchmark to evaluate the performance of Lee's 
+> and my version of the next-touch implementation. In this low-level 
+> benchmark is Lee's patch better than my patch. I think that Brice and I 
+> use the same technique to realize affinity-on-next-touch. Do you use 
+> another kernel version to evaluate the performance?
 
-Hello Chris,
+Hi, Stefan:
 
-sorry for dummy, but if it possible, could you, please, send a corresponding summary patch of backporting you've done for older kernels?
-or just summary of that changes once again?
+I also used a [modified!] stream benchmark to test my patches.  One of
+the modifications was to dump the time it takes for one pass over the
+data arrays to a specific file description, if that file description was
+open at start time--e.g., via something like "4>stream_times".  Then, I
+increased the number of iterations to something large so that I could
+run other tests during the stream run.  I plotted the "time per
+iteration" vs iteration number and could see that after any transient
+load, the stream benchmark returned to a good [not sure if maximal]
+locality state.  The time per interation was comparable to hand
+affinitized of the threads.  Without automigration and hand
+affinitization, any transient load would scramble the location of the
+threads relative to the data region they were operating on due to load
+balancing.  The more nodes you have, the less likely you'll end up in a
+good state.
 
-Many thanks
+I was using a parallel kernel make [-j <2*nr_cpus>] as the load.  In
+addition to the stream returning to good locality, I noticed that the
+kernel build completed much faster in the presence of the stream load
+with automigration enabled.  I reported these results in a presentation
+at LCA'07.  Slides and video [yuck! :)] are available on line at the
+LCA'07 site.
 
-Sergej.
+Regards,
+Lee
+
