@@ -1,67 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbZFVJkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbZFVJmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298AbZFVJkn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbZFVJkd
+	id S1756408AbZFVJmX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZFVJmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:40:33 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:44521 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbZFVJkc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:40:32 -0400
-X-SpamScore: -36
-X-BigFish: VPS-36(zz1432R98dR936eN1805M9371Pzz1202hzzz32i6bh17ch43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KLMW72-04-U0P-01
-Date: Mon, 22 Jun 2009 11:40:13 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>
-CC: Marcelo Tosatti <marcelo@kvack.org>, kvm@vger.kernel.org,
+	Mon, 22 Jun 2009 05:42:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46145
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754023AbZFVJmK convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 05:42:10 -0400
+Date: Mon, 22 Jun 2009 02:42:14 -0700 (PDT)
+Message-Id: <20090622.024214.139570425.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8 v3] KVM support for 1GB pages
-Message-ID: <20090622094013.GD5139@amd.com>
-References: <1245417389-5527-1-git-send-email-joerg.roedel@amd.com> <4A3CC1FA.2070900@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <4A3CC1FA.2070900@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 22 Jun 2009 09:40:13.0563 (UTC) FILETIME=[713464B0:01C9F31D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 20, 2009 at 02:03:22PM +0300, Avi Kivity wrote:
-> On 06/19/2009 04:16 PM, Joerg Roedel wrote:
->> Hi,
->>
->> this is the third version of the patches for KVM to support 1GB pages. Changes
->> to the last version include:
->>
->> 	- changed reporting of 1GB page support to userspace to use
->> 	  SUPPORTED_CPUID ioctl
->> 	- added support for 1GB pages to the software page walker code too
->>
->> This code still only can make use of 1GB pages with nested paging enabled. I
->> will give the shadow paging code another debug round soon. Please comment or
->> consider to apply these patches.
->>
->>    
->
-> Can you describe how the code fails with shadow paging?
 
-After the rework it even fails to boot a guest with gbpages enabled. This week
-is a bit tight but I will debug this further next week.
+1) Last set of wireless updates from John Linville before he headed
+   out to LinuxTAG in Berlin and the wireless summit there.
 
-Joerg
+2) VIA Velocity bug fix from Dave Jones.  The length computed for
+   DMA unmap accidently evaluated to a boolean, and thus "0" or "1" :-(
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+   Another bug caught thanks to the DMA API debugging layer.
 
+3) PXA gadget bug fix for USBNET from David Brownell.
+
+4) IUCV protocol error return fixes for sendmsg(), from Hendrik Brueckner.
+
+5) qla3xxx sleeps while atomic, during reset, fix from Jiri Slaby.
+
+6) More whitelist IDs for CDC Ether from Jonas Sjöquist.
+
+7) Fix endianness bugs in pegasus usb-net, from Michael Buesch.
+
+8) NULL deref fix in routing cache when caching is disabled, from
+   Neil Horman.  There is another fix coming for this code soon.
+
+9) mv643xx_eth filter programming fix from Prabhanjan Sarnaik.
+
+10) be2net bug fixes from Sathya Perla, and mlx4_en fixes from
+    Yevgeny Petrilin.
+
+11) ISDN documentation index mismerge fix from Tilman Schmidt.
+
+I also anticipate some netfilter regression fixes from Patrick McHardy
+soon.
+
+Please pull thanks a lot!
+
+The following changes since commit f234012f52a37e48f2330e1ca2df69800e797c3b:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../drzeus/mmc
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-next-2.6.git master
+
+Alan Jenkins (4):
+      rfkill: rfkill_set_block() when suspended nitpick
+      rfkill: don't restore software blocked state on persistent devices
+      eeepc-laptop: read rfkill soft-blocked state on resume
+      rfkill: export persistent attribute in sysfs
+
+Andrey Yurovsky (2):
+      cfg80211: allow adding/deleting stations on mesh
+      cfg80211: allow setting station parameters in mesh
+
+Andy Gospodarek (1):
+      e1000e: stop unnecessary polling when using msi-x
+
+Dave Jones (1):
+      via-velocity: Fix velocity driver unmapping incorrect size.
+
+David Brownell (1):
+      usbnet cdc_subset: fix issues talking to PXA gadgets
+
+David S. Miller (1):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-next-2.6
+
+Dmitry Eremin-Solenikov (2):
+      ieee802154: use standard routine for printing dumps
+      MAINTAINERS: fix address of IEEE 802.15.4 git tree
+
+Florian Westphal (1):
+      r8169: remove unused variable
+
+Gabor Juhos (2):
+      ath9k: wait for beacon frame along with CAB
+      ath9k: restore PS mode, before we put the chip into FULL SLEEP state.
+
+Hendrik Brueckner (2):
+      af_iucv: Change if condition in sendmsg() for more readability
+      af_iucv: Return -EAGAIN if iucv msg limit is exceeded
+
+Hin-Tak Leung (1):
+      zd1211rw: adding 083a:e503 as a ZD1211B device
+
+Jiri Slaby (2):
+      ath5k: fix beacon_int handling
+      Net: qla3xxx, remove sleeping in atomic
+
+Joe Perches (1):
+      MAINTAINERS: Fix Atheros pattern paths
+
+Johannes Berg (1):
+      cfg80211: validate station settings
+
+Jonas Sjöquist (1):
+      cdc_ether: additional PID's to the whitelist
+
+Jouni Malinen (2):
+      ath9k: Fix PCI FATAL interrupts by restoring RETRY_TIMEOUT disabling
+      ath5k: avoid PCI FATAL interrupts by restoring RETRY_TIMEOUT disabling
+
+Michael Buesch (1):
+      pegasus usb-net: Fix endianness bugs
+
+Neil Horman (1):
+      ipv4: fix NULL pointer + success return in route lookup path
+
+Prabhanjan Sarnaik (1):
+      mv643xx_eth: fix unicast filter programming in promiscuous mode
+
+Sathya Perla (4):
+      be2net: Add MCC queue mechanism for BE cmds
+      be2net: Use MCC queue for cmds that may be called in BH context
+      be2net: cleanup multicast_set cmd to avoid mc_list copy
+      be2net: receive asynchronous link status notifications from BE
+
+Tilman Schmidt (1):
+      isdn: clean up documentation index
+
+Troy Moure (1):
+      acer-wmi: fix rfkill conversion
+
+Yevgeny Petrilin (6):
+      mlx4_en: Counting all the dropped packets on the TX side
+      mlx4_en: Removed redundant skb->len check
+      mlx4_en: using stop/start_all_queues
+      mlx4_en: Cancel port_up check in transmit function
+      mlx4_en: Removed redundant check on lso header size
+      mlx4_en: Remove redundant refill code on RX
+
+Zhu Yi (4):
+      iwmc3200wifi: check for iwm_priv_init error
+      iwmc3200wifi: add iwm_if_add and iwm_if_remove
+      iwmc3200wifi: fix potential kernel oops on module removal
+      iwmc3200wifi: add a mutex to protect iwm_reset_worker
+
+ Documentation/isdn/00-INDEX                |   19 +--
+ Documentation/rfkill.txt                   |    2 +
+ MAINTAINERS                                |    8 +-
+ drivers/net/benet/be.h                     |  102 ++++++---
+ drivers/net/benet/be_cmds.c                |  368 +++++++++++++++++++++-------
+ drivers/net/benet/be_cmds.h                |   80 ++++++-
+ drivers/net/benet/be_hw.h                  |    8 +-
+ drivers/net/benet/be_main.c                |  299 ++++++++++++++---------
+ drivers/net/e1000e/netdev.c                |    2 +-
+ drivers/net/mlx4/en_netdev.c               |    8 +-
+ drivers/net/mlx4/en_rx.c                   |   96 -------
+ drivers/net/mlx4/en_tx.c                   |   29 +--
+ drivers/net/mlx4/mlx4_en.h                 |    5 -
+ drivers/net/mv643xx_eth.c                  |    7 +-
+ drivers/net/qla3xxx.c                      |    2 +
+ drivers/net/r8169.c                        |    3 -
+ drivers/net/usb/Kconfig                    |    4 +-
+ drivers/net/usb/cdc_ether.c                |   25 ++
+ drivers/net/usb/cdc_subset.c               |    7 +-
+ drivers/net/usb/pegasus.c                  |   29 ++-
+ drivers/net/via-velocity.c                 |    2 +-
+ drivers/net/wireless/ath/ath5k/base.c      |   11 +-
+ drivers/net/wireless/ath/ath9k/main.c      |    2 +-
+ drivers/net/wireless/ath/ath9k/pci.c       |   18 ++
+ drivers/net/wireless/ath/ath9k/recv.c      |    7 +-
+ drivers/net/wireless/iwmc3200wifi/iwm.h    |    4 +
+ drivers/net/wireless/iwmc3200wifi/main.c   |   64 +++++-
+ drivers/net/wireless/iwmc3200wifi/netdev.c |   49 +++--
+ drivers/net/wireless/iwmc3200wifi/sdio.c   |   11 +-
+ drivers/net/wireless/zd1211rw/zd_usb.c     |    1 +
+ drivers/platform/x86/acer-wmi.c            |    4 +-
+ drivers/platform/x86/eeepc-laptop.c        |   50 ++++-
+ drivers/platform/x86/thinkpad_acpi.c       |   14 +-
+ include/linux/rfkill.h                     |   33 ++-
+ include/net/iucv/af_iucv.h                 |    2 -
+ net/ieee802154/af_ieee802154.c             |   12 +-
+ net/ipv4/route.c                           |   14 +-
+ net/iucv/af_iucv.c                         |  297 ++++++++++++++---------
+ net/rfkill/core.c                          |   56 +++--
+ net/wireless/nl80211.c                     |   95 ++++++--
+ 40 files changed, 1213 insertions(+), 636 deletions(-)
