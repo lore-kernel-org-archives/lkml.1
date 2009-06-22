@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZFVHdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZFVHfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbZFVHdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 03:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZFVHdl
+	id S1755353AbZFVHfw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 03:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbZFVHfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 03:33:41 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:57461 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbZFVHdk convert rfc822-to-8bit (ORCPT
+	Mon, 22 Jun 2009 03:35:45 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:34124 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752384AbZFVHfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 03:33:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iyKjFbdd7j9KD2/LUv5W3lXXAD6mTTMzt6F1/Nrx784nl6n2SHUzv3zuM7vmuuHSOS
-         qQA6gdrr6pW8bsUz8ggdv1L+Tsuqn9nBd0oQb+dg7GOeA6b7UHiWFxBRKhCV6KAWA1Gz
-         pecB1spfxGtDi6ZmBtXAJXBJtUovJTEXw5hXw=
+	Mon, 22 Jun 2009 03:35:44 -0400
+Message-ID: <4A3F344F.1070206@snapgear.com>
+Date: Mon, 22 Jun 2009 17:35:43 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <20090621234324.06fda564@infradead.org>
-References: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
-	 <Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
-	 <aec7e5c30906212320v3e3e991fyd028d005675f1e25@mail.gmail.com>
-	 <20090621234324.06fda564@infradead.org>
-Date: Mon, 22 Jun 2009 16:27:29 +0900
-Message-ID: <aec7e5c30906220027v63c88e8aj32950a8d84558cce@mail.gmail.com>
-Subject: Re: [linux-pm] [patch update 2 fix] PM: Introduce core framework for 
-	run-time PM of I/O devices
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Mike Frysinger <vapier@gentoo.org>
+CC: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] rmap: fixup page_referenced() for nommu systems
+References: <1245371813-30954-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1245371813-30954-1-git-send-email-vapier@gentoo.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 3:43 PM, Arjan van de Ven<arjan@infradead.org> wrote:
-> On Mon, 22 Jun 2009 15:20:43 +0900
-> Magnus Damm <magnus.damm@gmail.com> wrote:
->
->> On Sat, Jun 20, 2009 at 11:30 PM, Alan
->> Stern<stern@rowland.harvard.edu> wrote:
->> > Some more thoughts...
->> >
->> > Magnus, you might have some insights here. �It occurred to me that
->> > some devices can switch power levels very quickly, and the drivers
->> > might therefore want the runtime suspend and resume methods to be
->> > called as soon as possible, even in interrupt context.
->>
->> I'd like to call pm_request_suspend() from interrupt context. I don't
->
-> there are some really strong reasons to at least be able to call the
-> resume function from an interrupt handler.... shared interrupts are one
-> of them.
 
-I suppose you mean that you need to resume the hardware device before
-you can check if it has a pending interrupt source? If so then you
-also mean that suspended hardware devices may generate interrupts, no?
+Mike Frysinger wrote:
+> After the recent changes that went into mm/vmscan.c to overhaul stuff, we
+> ended up with these warnings on no-mmu systems:
+> mm/vmscan.c: In function ‘shrink_page_list’:
+> mm/vmscan.c:580: warning: unused variable ‘vm_flags’
+> mm/vmscan.c: In function ‘shrink_active_list’:
+> mm/vmscan.c:1294: warning: ‘vm_flags’ may be used uninitialized in this function
+> mm/vmscan.c:1242: note: ‘vm_flags’ was declared here
+> 
+> This is because the no-mmu function defines page_referenced() to work on
+> the first argument only (the page).  It does not clear the vm_flags given
+> to it because for no-mmu systems, they never actually get utilized.  Since
+> that is no longer strictly true, we need to set vm_flags to 0 like everyone
+> else so gcc can do proper dead code elimination without annoying us with
+> unused warnings.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-My plan for SuperH SoC is that runtime suspend always stops the clock,
-but register save and power off may happen. Regardless, interrupts are
-not generated from suspended hardware devices.
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 
-In the rare case of shared interrupts on SuperH we can just skip over
-the platform devices that have been runtime suspended since they will
-not have generated any interrupt.
 
-But yes, if there is hardware than can generate interrupts from
-suspended state then we need to resume from interrupt context. This
-probably means that the entire bus hierarchy must resume from
-interrupt context as well.
 
-/ magnus
+>  include/linux/rmap.h |    9 ++++++++-
+>  1 files changed, 8 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+> index 216d024..bf116d0 100644
+> --- a/include/linux/rmap.h
+> +++ b/include/linux/rmap.h
+> @@ -118,7 +118,14 @@ int try_to_munlock(struct page *);
+>  #define anon_vma_prepare(vma)	(0)
+>  #define anon_vma_link(vma)	do {} while (0)
+>  
+> -#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
+> +static inline int page_referenced(struct page *page, int is_locked,
+> +				  struct mem_cgroup *cnt,
+> +				  unsigned long *vm_flags)
+> +{
+> +	*vm_flags = 0;
+> +	return TestClearPageReferenced(page);
+> +}
+> +
+>  #define try_to_unmap(page, refs) SWAP_FAIL
+>  
+>  static inline int page_mkclean(struct page *page)
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
