@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbZFVQqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbZFVQqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbZFVQqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756772AbZFVQo4
+	id S1758132AbZFVQqF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbZFVQow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:44:56 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53533 "EHLO
+	Mon, 22 Jun 2009 12:44:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53532 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752496AbZFVQoz (ORCPT
+	with ESMTP id S1757603AbZFVQov (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:44:55 -0400
+	Mon, 22 Jun 2009 12:44:51 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 12/15] tty: n_hdlc add buffer flushing
+Subject: [PATCH 11/15] serial: samsung.c: mark s3c24xx_serial_remove as
+	__devexit
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 18:42:56 +0100
-Message-ID: <20090622174254.25341.14653.stgit@t61.ukuu.org.uk>
+Date: Mon, 22 Jun 2009 18:42:49 +0100
+Message-ID: <20090622174248.25341.69938.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 References: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,126 +26,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Fulghum <paulkf@microgate.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
 
-Add flush_buffer tty callback to flush rx buffers.
-Add TCFLSH ioctl processing to flush tx buffers.
-Increase default tx buffers from 1 to 3.
-Remove unneeded flush_buffer call in open callback.
-Remove vendor specific CVS version string.
+Mark the remove function as __devexit so it gets eliminated in
+CONFIG_HOTPLUG=n builds.  Saves ~100 bytes.
 
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+Acked-by: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/n_hdlc.c |   46 +++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 37 insertions(+), 9 deletions(-)
+ drivers/serial/s3c2400.c |    2 +-
+ drivers/serial/s3c2410.c |    2 +-
+ drivers/serial/s3c2412.c |    2 +-
+ drivers/serial/s3c2440.c |    2 +-
+ drivers/serial/s3c24a0.c |    2 +-
+ drivers/serial/s3c6400.c |    2 +-
+ drivers/serial/samsung.c |    2 +-
+ drivers/serial/samsung.h |    2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
 
 
-diff --git a/drivers/char/n_hdlc.c b/drivers/char/n_hdlc.c
-index 461ece5..1c43c8c 100644
---- a/drivers/char/n_hdlc.c
-+++ b/drivers/char/n_hdlc.c
-@@ -10,7 +10,6 @@
-  *	Paul Mackerras <Paul.Mackerras@cs.anu.edu.au>
-  *
-  * Original release 01/11/99
-- * $Id: n_hdlc.c,v 4.8 2003/05/06 21:18:51 paulkf Exp $
-  *
-  * This code is released under the GNU General Public License (GPL)
-  *
-@@ -79,7 +78,6 @@
-  */
+diff --git a/drivers/serial/s3c2400.c b/drivers/serial/s3c2400.c
+index 4873f29..fb00ed5 100644
+--- a/drivers/serial/s3c2400.c
++++ b/drivers/serial/s3c2400.c
+@@ -78,7 +78,7 @@ static int s3c2400_serial_probe(struct platform_device *dev)
  
- #define HDLC_MAGIC 0x239e
--#define HDLC_VERSION "$Revision: 4.8 $"
+ static struct platform_driver s3c2400_serial_drv = {
+ 	.probe		= s3c2400_serial_probe,
+-	.remove		= s3c24xx_serial_remove,
++	.remove		= __devexit_p(s3c24xx_serial_remove),
+ 	.driver		= {
+ 		.name	= "s3c2400-uart",
+ 		.owner	= THIS_MODULE,
+diff --git a/drivers/serial/s3c2410.c b/drivers/serial/s3c2410.c
+index 87c182e..b5d7cbc 100644
+--- a/drivers/serial/s3c2410.c
++++ b/drivers/serial/s3c2410.c
+@@ -90,7 +90,7 @@ static int s3c2410_serial_probe(struct platform_device *dev)
  
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -114,7 +112,7 @@
- #define MAX_HDLC_FRAME_SIZE 65535 
- #define DEFAULT_RX_BUF_COUNT 10
- #define MAX_RX_BUF_COUNT 60
--#define DEFAULT_TX_BUF_COUNT 1
-+#define DEFAULT_TX_BUF_COUNT 3
+ static struct platform_driver s3c2410_serial_drv = {
+ 	.probe		= s3c2410_serial_probe,
+-	.remove		= s3c24xx_serial_remove,
++	.remove		= __devexit_p(s3c24xx_serial_remove),
+ 	.driver		= {
+ 		.name	= "s3c2410-uart",
+ 		.owner	= THIS_MODULE,
+diff --git a/drivers/serial/s3c2412.c b/drivers/serial/s3c2412.c
+index fd017b3..11dcb90 100644
+--- a/drivers/serial/s3c2412.c
++++ b/drivers/serial/s3c2412.c
+@@ -123,7 +123,7 @@ static int s3c2412_serial_probe(struct platform_device *dev)
  
- struct n_hdlc_buf {
- 	struct n_hdlc_buf *link;
-@@ -199,6 +197,31 @@ static void n_hdlc_tty_wakeup(struct tty_struct *tty);
- #define tty2n_hdlc(tty)	((struct n_hdlc *) ((tty)->disc_data))
- #define n_hdlc2tty(n_hdlc)	((n_hdlc)->tty)
+ static struct platform_driver s3c2412_serial_drv = {
+ 	.probe		= s3c2412_serial_probe,
+-	.remove		= s3c24xx_serial_remove,
++	.remove		= __devexit_p(s3c24xx_serial_remove),
+ 	.driver		= {
+ 		.name	= "s3c2412-uart",
+ 		.owner	= THIS_MODULE,
+diff --git a/drivers/serial/s3c2440.c b/drivers/serial/s3c2440.c
+index 29cbb0a..06c5b0c 100644
+--- a/drivers/serial/s3c2440.c
++++ b/drivers/serial/s3c2440.c
+@@ -153,7 +153,7 @@ static int s3c2440_serial_probe(struct platform_device *dev)
  
-+static void flush_rx_queue(struct tty_struct *tty)
-+{
-+	struct n_hdlc *n_hdlc = tty2n_hdlc(tty);
-+	struct n_hdlc_buf *buf;
-+
-+	while ((buf = n_hdlc_buf_get(&n_hdlc->rx_buf_list)))
-+		n_hdlc_buf_put(&n_hdlc->rx_free_buf_list, buf);
-+}
-+
-+static void flush_tx_queue(struct tty_struct *tty)
-+{
-+	struct n_hdlc *n_hdlc = tty2n_hdlc(tty);
-+	struct n_hdlc_buf *buf;
-+	unsigned long flags;
-+
-+	while ((buf = n_hdlc_buf_get(&n_hdlc->tx_buf_list)))
-+		n_hdlc_buf_put(&n_hdlc->tx_free_buf_list, buf);
-+ 	spin_lock_irqsave(&n_hdlc->tx_buf_list.spinlock, flags);
-+	if (n_hdlc->tbuf) {
-+		n_hdlc_buf_put(&n_hdlc->tx_free_buf_list, n_hdlc->tbuf);
-+		n_hdlc->tbuf = NULL;
-+	}
-+	spin_unlock_irqrestore(&n_hdlc->tx_buf_list.spinlock, flags);
-+}
-+
- static struct tty_ldisc_ops n_hdlc_ldisc = {
- 	.owner		= THIS_MODULE,
- 	.magic		= TTY_LDISC_MAGIC,
-@@ -211,6 +234,7 @@ static struct tty_ldisc_ops n_hdlc_ldisc = {
- 	.poll		= n_hdlc_tty_poll,
- 	.receive_buf	= n_hdlc_tty_receive,
- 	.write_wakeup	= n_hdlc_tty_wakeup,
-+	.flush_buffer   = flush_rx_queue,
- };
+ static struct platform_driver s3c2440_serial_drv = {
+ 	.probe		= s3c2440_serial_probe,
+-	.remove		= s3c24xx_serial_remove,
++	.remove		= __devexit_p(s3c24xx_serial_remove),
+ 	.driver		= {
+ 		.name	= "s3c2440-uart",
+ 		.owner	= THIS_MODULE,
+diff --git a/drivers/serial/s3c24a0.c b/drivers/serial/s3c24a0.c
+index ebf2fd3..786a067 100644
+--- a/drivers/serial/s3c24a0.c
++++ b/drivers/serial/s3c24a0.c
+@@ -94,7 +94,7 @@ static int s3c24a0_serial_probe(struct platform_device *dev)
  
- /**
-@@ -341,10 +365,7 @@ static int n_hdlc_tty_open (struct tty_struct *tty)
- 	set_bit(TTY_NO_WRITE_SPLIT,&tty->flags);
- #endif
- 	
--	/* Flush any pending characters in the driver and discipline. */
--	if (tty->ldisc->ops->flush_buffer)
--		tty->ldisc->ops->flush_buffer(tty);
--
-+	/* flush receive data from driver */
- 	tty_driver_flush_buffer(tty);
- 		
- 	if (debuglevel >= DEBUG_LEVEL_INFO)	
-@@ -763,6 +784,14 @@ static int n_hdlc_tty_ioctl(struct tty_struct *tty, struct file *file,
- 		error = put_user(count, (int __user *)arg);
- 		break;
+ static struct platform_driver s3c24a0_serial_drv = {
+ 	.probe		= s3c24a0_serial_probe,
+-	.remove		= s3c24xx_serial_remove,
++	.remove		= __devexit_p(s3c24xx_serial_remove),
+ 	.driver		= {
+ 		.name	= "s3c24a0-uart",
+ 		.owner	= THIS_MODULE,
+diff --git a/drivers/serial/s3c6400.c b/drivers/serial/s3c6400.c
+index 3e37852..48f1a37 100644
+--- a/drivers/serial/s3c6400.c
++++ b/drivers/serial/s3c6400.c
+@@ -124,7 +124,7 @@ static int s3c6400_serial_probe(struct platform_device *dev)
  
-+	case TCFLSH:
-+		switch (arg) {
-+		case TCIOFLUSH:
-+		case TCOFLUSH:
-+			flush_tx_queue(tty);
-+		}
-+		/* fall through to default */
-+
- 	default:
- 		error = n_tty_ioctl_helper(tty, file, cmd, arg);
- 		break;
-@@ -919,8 +948,7 @@ static struct n_hdlc_buf* n_hdlc_buf_get(struct n_hdlc_buf_list *list)
- }	/* end of n_hdlc_buf_get() */
+ static struct platform_driver s3c6400_serial_drv = {
+ 	.probe		= s3c6400_serial_probe,
+-	.remove		= s3c24xx_serial_remove,
++	.remove		= __devexit_p(s3c24xx_serial_remove),
+ 	.driver		= {
+ 		.name	= "s3c6400-uart",
+ 		.owner	= THIS_MODULE,
+diff --git a/drivers/serial/samsung.c b/drivers/serial/samsung.c
+index 93b5d75..c8851a0 100644
+--- a/drivers/serial/samsung.c
++++ b/drivers/serial/samsung.c
+@@ -1174,7 +1174,7 @@ int s3c24xx_serial_probe(struct platform_device *dev,
  
- static char hdlc_banner[] __initdata =
--	KERN_INFO "HDLC line discipline: version " HDLC_VERSION
--	", maxframe=%u\n";
-+	KERN_INFO "HDLC line discipline maxframe=%u\n";
- static char hdlc_register_ok[] __initdata =
- 	KERN_INFO "N_HDLC line discipline registered.\n";
- static char hdlc_register_fail[] __initdata =
+ EXPORT_SYMBOL_GPL(s3c24xx_serial_probe);
+ 
+-int s3c24xx_serial_remove(struct platform_device *dev)
++int __devexit s3c24xx_serial_remove(struct platform_device *dev)
+ {
+ 	struct uart_port *port = s3c24xx_dev_to_port(&dev->dev);
+ 
+diff --git a/drivers/serial/samsung.h b/drivers/serial/samsung.h
+index 7afb948..d3fe315 100644
+--- a/drivers/serial/samsung.h
++++ b/drivers/serial/samsung.h
+@@ -72,7 +72,7 @@ struct s3c24xx_uart_port {
+ extern int s3c24xx_serial_probe(struct platform_device *dev,
+ 				struct s3c24xx_uart_info *uart);
+ 
+-extern int s3c24xx_serial_remove(struct platform_device *dev);
++extern int __devexit s3c24xx_serial_remove(struct platform_device *dev);
+ 
+ extern int s3c24xx_serial_initconsole(struct platform_driver *drv,
+ 				      struct s3c24xx_uart_info *uart);
 
