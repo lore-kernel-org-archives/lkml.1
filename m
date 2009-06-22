@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752977AbZFVV6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZFVWAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977AbZFVV6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZFVV56
+	id S1753779AbZFVWAn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 18:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZFVWAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:57:58 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59248 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbZFVV55 (ORCPT
+	Mon, 22 Jun 2009 18:00:35 -0400
+Received: from mail-fx0-f224.google.com ([209.85.220.224]:63637 "EHLO
+	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbZFVWAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:57:57 -0400
-Date: Mon, 22 Jun 2009 23:57:53 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Marco <marco.stornelli@gmail.com>, Jamie Lokier <jamie@shareable.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-Message-ID: <20090622215753.GA25434@elf.ucw.cz>
-References: <20090621064040.GC1656@ucw.cz> <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz> <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com> <20090622172003.GB21149@elf.ucw.cz> <4A3FBFF0.40006@am.sony.com> <20090622173704.GC21299@elf.ucw.cz> <4A3FC84A.6060608@gmail.com> <20090622204031.GA24236@elf.ucw.cz> <4A3FFC89.4070006@am.sony.com>
+	Mon, 22 Jun 2009 18:00:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=yCf/yeYsg0qyowaCaL2AikjL8y4zLZN8dP3g9uWMWBmghJnHSefZT/qN9P4QM/KlXW
+         Tp0JjWWGMGpqmLIwCvSaZ6vHEcqB2uObC4G5mx8/SeaqQiO5Yzo9O4C0PjA8yC0MU7u2
+         cvQ9W5vOX2uXmRbVz6rx0mhX1FczIOHlxOPsc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [GIT]: IDE fixes
+Date: Tue, 23 Jun 2009 00:06:30 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090619-10934-gace1e80-dirty; KDE/4.2.3; i686; ; )
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090622.024216.03098051.davem@davemloft.net> <alpine.LFD.2.01.0906221039150.3240@localhost.localdomain> <20090622.145734.10729950.davem@davemloft.net>
+In-Reply-To: <20090622.145734.10729950.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A3FFC89.4070006@am.sony.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906230006.30826.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-06-22 14:50:01, Tim Bird wrote:
-> Pavel Machek wrote:
-> >> block of fast non-volatile RAM that need to access data on it using a
-> >> standard filesytem interface."
-> > 
-> > Turns a block of fast RAM into 13MB/sec disk. Hmm. I believe you are
-> > better with ext2.
+On Monday 22 June 2009 23:57:34 David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Mon, 22 Jun 2009 10:40:22 -0700 (PDT)
 > 
-> Not if you want the RAM-based filesystem to persist over a kernel
-> invocation.
+> > I really don't want to take this. I think you and Bartlomiej should spend 
+> > a _lot_ more time and effort trying to resolve this. Me taking it just 
+> > closes the doors for trying to be constructive about issues.
+> 
+> Bart said he's happy with this change of maintainership as it
+> will allow him to work on IDE things that he simply had not time
+> for due to the time spent with maintainership duties.
 
-Yes, you'll need to code Persistent, RAM-based _block_device_. 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Small correction:
+
+I said it will allow me to work on _other_ things..
+
+> Sky isn't falling, don't worry.
+
+Agreed.
