@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZFVU0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbZFVU12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753216AbZFVU0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 16:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZFVU0j
+	id S1753117AbZFVU12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 16:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbZFVU1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 16:26:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57989 "EHLO mx2.redhat.com"
+	Mon, 22 Jun 2009 16:27:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58008 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751299AbZFVU0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 16:26:38 -0400
-Date: Mon, 22 Jun 2009 16:20:05 -0300
+	id S1750997AbZFVU1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 16:27:16 -0400
+Date: Mon, 22 Jun 2009 14:00:15 -0300
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Andrew Lutomirski <luto@mit.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jerome Glisse <jglisse@redhat.com>,
-       Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [git pull] drm: previous pull req + 1.
-Message-ID: <20090622192005.GA3000@ghostprotocols.net>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie> <4A3DABE1.50309@mit.edu> <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie> <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain> <alpine.LFD.2.01.0906210948340.3119@localhost.localdomain> <cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com> <alpine.LFD.2.01.0906211223190.3119@localhost.localdomain> <cb0375e10906211414j390fc590y4331896bddda9c0d@mail.gmail.com> <cb0375e10906211705q382f5211lf09e39ff637c1c0d@mail.gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Heinz Diehl <htd@fancy-poultry.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       torvalds@linux-foundation.org, fengguang.wu@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       DCCP Mailing List <dccp@vger.kernel.org>,
+       Linux Networking Development Mailing List 
+	<netdev@vger.kernel.org>
+Subject: Re: [PATCH] profile: Suppress warning about large allocations when
+	profile=1 is specified
+Message-ID: <20090622170015.GC18558@ghostprotocols.net>
+References: <200906162232.n5GMWRZe026963@imap1.linux-foundation.org> <20090616223649.719ea378.akpm@linux-foundation.org> <20090617111800.GA15261@elte.hu> <20090617113120.GA5061@elte.hu> <20090617113534.GA21276@elte.hu> <20090617121913.GC28529@csn.ul.ie> <20090620100932.GA5863@fancy-poultry.org> <20090620195000.GC10878@csn.ul.ie> <20090620214835.GA6528@fancy-poultry.org> <20090622113104.GD3981@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cb0375e10906211705q382f5211lf09e39ff637c1c0d@mail.gmail.com>
+In-Reply-To: <20090622113104.GD3981@csn.ul.ie>
 X-Url: http://oops.ghostprotocols.net:81/blog
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sun, Jun 21, 2009 at 08:05:36PM -0400, Andrew Lutomirski escreveu:
+Em Mon, Jun 22, 2009 at 12:31:05PM +0100, Mel Gorman escreveu:
+> On Sat, Jun 20, 2009 at 11:48:35PM +0200, Heinz Diehl wrote:
+> > On 20.06.2009, Mel Gorman wrote: 
+> > 
+> > > I can't figure out from this trace where the problem is coming from. Can
+> > > you post your .config and the full dmesg please?
+> > 
+> > Yes, of course. It's attached.
+> > 
 > 
-> David -- there are still plenty of bugs.  The kernel gets my monitor's
-> resolution wrong (X reads it off DDC correctly but I have to use
-> xrandr to force the resolution).
+> I have no idea why the stack trace is so badly managed but the problem appears
+> to be in DCCP so can you try the patch below please? It applies on top of the
+> profile=1 patch fix. If it works for you, I'll split out the patch properly
+> into three separate patches and repost.
+> 
+> Some questions though
+> 
+> 1. Could DCCP use alloc_large_system_hash()?
 
-No crashes here, but I was able to use an external Samsung SyncMaster
-226BW at 1680x1050 and now this resolution doesn't even appear as one of
-the possible resolutions on xrandr :-(
+Possibly. Ideally this should use whatever TCP is using now, as this
+came more or less intact from there. IIRC it was not shared because TCP
+used/uses alloc routines that were available only at boot time, DCCP
+can't use it because it can be loaded as a module.
 
-F11, uptodate:
+I'd say go with this patch and later, after FISL (this week) I'll look
+at this again.
 
-xorg-x11-drv-intel-2.7.0-7.fc11.x86_64
+So, for the NOWARN bits:
 
-Thinkpad T60W
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS,
-943/940GML Express Integrated Graphics Controller (rev 03)
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
-943/940GML Express Integrated Graphics Controller (rev 03)
-
-dmesg lines related: That DAC-6 line should be setting it to 1680x1050
-as has been till I switched to this new kernel:
-
-ACPI: Video Device [VID] (multi-head: yes  rom: no  post: no)
-[drm] Initialized drm 1.1.0 20060810
-i915 0000:00:02.0: power state changed by ACPI to D0
-i915 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-i915 0000:00:02.0: setting latency timer to 64
-<SNIP>
-allocated 1680x1050 fb: 0x007df000, bo ffff880037c3a780
-Console: switching to colour frame buffer device 160x64
-[drm] DAC-6: set mode 1280x1024 b <====================================
-<SNIP>
-[drm] LVDS-8: set mode 1680x1050 21
-fb0: inteldrmfb frame buffer device
-registered panic notifier
-[drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
+Thanks,
 
 - Arnaldo
+ 
+> 2. Any idea why the stack trace for the warning was so useless?
+> 
+> ==== CUT HERE ====
+> dccp: Suppress warning about large allocations from DCCP
+> 
+> The DCCP protocol tries to allocate some large hash tables during
+> initialisation using the largest size possible. The allocator warns if
+> the allocations are too large but the caller is able to handle
+> allocation failure. This patch disables the warnings in the case DCCP
+> requests too large an allocation.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> --- 
+>  net/dccp/proto.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/net/dccp/proto.c b/net/dccp/proto.c
+> index 314a1b5..fd21676 100644
+> --- a/net/dccp/proto.c
+> +++ b/net/dccp/proto.c
+> @@ -1066,7 +1066,7 @@ static int __init dccp_init(void)
+>  		       (dccp_hashinfo.ehash_size - 1))
+>  			dccp_hashinfo.ehash_size--;
+>  		dccp_hashinfo.ehash = (struct inet_ehash_bucket *)
+> -			__get_free_pages(GFP_ATOMIC, ehash_order);
+> +			__get_free_pages(GFP_ATOMIC|__GFP_NOWARN, ehash_order);
+>  	} while (!dccp_hashinfo.ehash && --ehash_order > 0);
+>  
+>  	if (!dccp_hashinfo.ehash) {
+> @@ -1091,7 +1091,7 @@ static int __init dccp_init(void)
+>  		    bhash_order > 0)
+>  			continue;
+>  		dccp_hashinfo.bhash = (struct inet_bind_hashbucket *)
+> -			__get_free_pages(GFP_ATOMIC, bhash_order);
+> +			__get_free_pages(GFP_ATOMIC|__GFP_NOWARN, bhash_order);
+>  	} while (!dccp_hashinfo.bhash && --bhash_order >= 0);
+>  
+>  	if (!dccp_hashinfo.bhash) {
