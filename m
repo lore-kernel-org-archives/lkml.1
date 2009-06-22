@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZFVOz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZFVO4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbZFVOz5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZFVOzu
+	id S1757123AbZFVO4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbZFVO4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:55:50 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:39842 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152AbZFVOzt (ORCPT
+	Mon, 22 Jun 2009 10:56:00 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56618 "EHLO
+	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756971AbZFVOz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:55:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rQIogPZzipEs6JSfw42Jub1096sRR4X0WMwNE93oIthgQWUnFpmzMU3vcCjGuaztsD
-         WRYPsPR5IKJPk/DH29QoESlMpJmMb8nwQuwSHzuBmbu5e6mVN1GrjpX+yAZTOpcw8pVk
-         ptjry55+slgqowYPI9EsEySN/YYMlDOYqFbq8=
+	Mon, 22 Jun 2009 10:55:59 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 2/2] parport_pc: set properly the dma_mask for parport_pc
+	device
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 22 Jun 2009 16:54:27 +0100
+Message-ID: <20090622155349.17809.246.stgit@t61.ukuu.org.uk>
+In-Reply-To: <20090622154702.17809.58975.stgit@t61.ukuu.org.uk>
+References: <20090622154702.17809.58975.stgit@t61.ukuu.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <4A3F8BF7.6010406@linux.intel.com>
-References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
-	 <4A3E7F38.7030300@linux.intel.com>
-	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>
-	 <4A3EE668.5090400@jp.fujitsu.com>
-	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>
-	 <4A3F55C7.4030909@linux.intel.com>
-	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>
-	 <4A3F7A93.5080004@linux.intel.com>
-	 <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>
-	 <4A3F8BF7.6010406@linux.intel.com>
-Date: Mon, 22 Jun 2009 16:55:50 +0200
-Message-ID: <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
-Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend to 
-	disk, mce related?
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/22 Andi Kleen <ak@linux.intel.com>:
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-> Here's a debug patch for the poller: http://firstfloor.org/ak/mcp-debug
-> Can you apply that and try again and send me the output?
->
+parport_pc_probe_port() creates the own 'parport_pc' device if the
+device argument is NULL. Then parport_pc_probe_port() doesn't
+initialize the dma_mask and coherent_dma_mask of the device and calls
+dma_alloc_coherent with it. dma_alloc_coherent fails because
+dma_alloc_coherent() doesn't accept the uninitialized dma_mask:
 
-Dmesg after resume:
-http://unixy.pl/maciek/download/kernel/2.6.30-git17/pc/dmesg-2.6.30-git17-patch.txt
+http://lkml.org/lkml/2009/6/16/150
 
-System hangs when uptime is roughly 5-6 minutes (when I don't change
-check_interval). netconsole doesn't show anything.
+Long ago, X86_32 and X86_64 had the own dma_alloc_coherent
+implementations; X86_32 accepted a device having dma_mask that is not
+initialized however X86_64 didn't. When we merged them, we chose to
+prohibit a device having dma_mask that is not initialized. I think
+that it's good to require drivers to set up dma_mask (and
+coherent_dma_mask) properly if the drivers want DMA.
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Reported-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
+Tested-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
+Cc: stable@kernel.org
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
+
+ drivers/parport/parport_pc.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
+index 7f1cca7..1032d5f 100644
+--- a/drivers/parport/parport_pc.c
++++ b/drivers/parport/parport_pc.c
+@@ -2290,6 +2290,9 @@ struct parport *parport_pc_probe_port(unsigned long int base,
+ 		if (IS_ERR(pdev))
+ 			return NULL;
+ 		dev = &pdev->dev;
++
++		dev->coherent_dma_mask = DMA_BIT_MASK(24);
++		dev->dma_mask = &dev->coherent_dma_mask;
+ 	}
+ 
+ 	ops = kmalloc(sizeof(struct parport_operations), GFP_KERNEL);
+
