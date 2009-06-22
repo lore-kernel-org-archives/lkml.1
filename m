@@ -1,48 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbZFVVOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759139AbZFVVP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756966AbZFVVOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZFVVON
+	id S1759139AbZFVVP7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbZFVVPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:14:13 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:59054 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbZFVVOM (ORCPT
+	Mon, 22 Jun 2009 17:15:46 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35144 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbZFVVPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:14:12 -0400
-Subject: Re: [PATCH -next] hwlat: depends on RING_BUFFER (build fix)
-From: Jon Masters <jonathan@jonmasters.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jon Masters <jcm@jonmasters.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4A3FA899.3040402@oracle.com>
-References: <20090622181920.496d160e.sfr@canb.auug.org.au>
-	 <4A3FA899.3040402@oracle.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Mon, 22 Jun 2009 17:14:11 -0400
-Message-Id: <1245705251.15044.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Mon, 22 Jun 2009 17:15:45 -0400
+Date: Mon, 22 Jun 2009 23:15:40 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: torvalds@linux-foundation.org, Greg KH <greg@kroah.com>,
+       "corbet@lwn.net" <corbet@lwn.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
+Subject: Re: [PATCH] Documentation: add documentation summary for rc-series
+	and merge window
+Message-ID: <20090622211540.GD24236@elf.ucw.cz>
+References: <20090622180438.GG23972@bombadil.infradead.org> <20090622204500.GB24236@elf.ucw.cz> <43e72e890906221411od16be51k2fc811dbf223ed9f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890906221411od16be51k2fc811dbf223ed9f@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 08:51 -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon 2009-06-22 14:11:45, Luis R. Rodriguez wrote:
+> On Mon, Jun 22, 2009 at 1:45 PM, Pavel Machek<pavel@ucw.cz> wrote:
+> > On Mon 2009-06-22 14:04:38, Luis R. Rodriguez wrote:
+> >> This is losely based on previous discussions on linux-kernel [1][2][3].
+> >> Lets also refer people reading the stable rules to
+> >> Documentation/development-process/.
+> >>
+> >> Also add the number of days it has taken between releases,
+> >> and provide the average for the last 10 releases: 86.0 days.
+> >>
+> >> [1] http://marc.info/?l=linux-kernel&m=122048427801324&w=2
+> >> [2] http://marc.info/?l=linux-netdev&m=122048757705315&w=2
+> >> [3] http://marc.info/?l=linux-kernel&m=124515657407679&w=2
+> >>
+> >> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> > NAK.
+> >
+> >> +2.0.2: RC-SERIES RULES
+> >> +
+> >> +This section summarizes what kind of patches are accepted before the merge
+> >> +window closes and after it closes. These patches are targeted for the kernel
+> >> +prior to its final release.
+> >> +
+> >> +The rc-series focus should really be to address regressions.
+> >> +
+> >> +2.0.2.0: RC-SERIES RULES PRIOR TO THE RC1 RELEASE
+> >> +
+> >> +These are the types of patches that will get accepted prior to a kernel rc1 release,
+> >> +during the merge window:
+> >> +
+> >> + - it must fix a regression
+> >> + - it must fix a security hole
+> >> + - it must fix a oops/kernel hang
+> >> +
+> >> +Non-intrusive bug fixes or small fixes will not be accepted. If the
+> >> patch in
+> >
+> > What? Prior to rc1, new features are accepted.
 > 
-> hwlat_detector build fails because it uses ring_buffer interfaces
-> without depending on RING_BUFFER.
+> For maintainers yes, for developers sending to the subsystem
+> maintainer no, at least not for that kernel release being worked on. I
+> can try to make this a little clearer.
 
-Thanks randy, I'll pull that in to my for-linus tree. Hope to see you in
-Montreal/Portland ;)
+Yes, it would be good if it was clearer.
 
-Jon.
-
-
+If maintainer accepts non-intrusive bugfixes during merge window is
+pretty much his decision, I'd say. I'd expect him to take them if he
+has bandwidth available.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
