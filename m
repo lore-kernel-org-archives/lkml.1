@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751550AbZFVAkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbZFVAna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751550AbZFVAkL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 20:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZFVAj7
+	id S1752476AbZFVAna (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 20:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZFVAnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 20:39:59 -0400
-Received: from mail-px0-f202.google.com ([209.85.216.202]:48494 "EHLO
-	mail-px0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZFVAj7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 20:39:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=hwz285e7TBXVvwNYdsLkl0qrrSSLEvo4xQzpcYLpUdKni5MH/UTbcIen8GTifUMeX7
-         aBxTfYsALtpMawMYwwaluGAHc/ONFpNjRO5hb0aoZr6fSRU8qZvs6kh4SMy9DAXPT7LS
-         LFKbMDDupfk8kTHhyVx11mIo+JKv4z97hm/+c=
-Date: Mon, 22 Jun 2009 09:32:47 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       Rik van Riel <riel@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Minchan Kim <minchan.kim@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: pass mm to grab_swap_token
-Message-Id: <20090622093247.bc4f4c0f.minchan.kim@barrios-desktop>
-In-Reply-To: <Pine.LNX.4.64.0906211326520.6124@sister.anvils>
-References: <4A37DEE7.1000208@redhat.com>
-	<20090616181325.GC23969@random.random>
-	<Pine.LNX.4.64.0906161930050.24878@sister.anvils>
-	<20090616200852.GA16265@cmpxchg.org>
-	<Pine.LNX.4.64.0906162152250.12770@sister.anvils>
-	<20090616215200.GA19781@cmpxchg.org>
-	<Pine.LNX.4.64.0906211326520.6124@sister.anvils>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 21 Jun 2009 20:43:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56375 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750996AbZFVAnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Jun 2009 20:43:22 -0400
+Message-ID: <4A3ED40E.6030303@cn.fujitsu.com>
+Date: Mon, 22 Jun 2009 08:45:02 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Liming Wang <liming.wang@windriver.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: don't increment @pos in g_start()
+References: <4A3B347B.8090904@cn.fujitsu.com> <1245401968-25235-1-git-send-email-liming.wang@windriver.com> <4A3B5E40.8040607@cn.fujitsu.com>
+In-Reply-To: <4A3B5E40.8040607@cn.fujitsu.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Jun 2009 14:02:43 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-
-> If a kthread happens to use get_user_pages() on an mm (as KSM does),
-> there's a chance that it will end up trying to read in a swap page,
-> then oops in grab_swap_token() because the kthread has no mm: GUP
-> passes down the right mm, so grab_swap_token() ought to be using it.
+Li Zefan wrote:
+> Liming Wang wrote:
+>> how about this one?
+>>
 > 
-> We have not identified a stronger case than KSM's daemon (not yet
-> in mainline), but the issue must have come up before, since RHEL has
-> included a fix for this for years (though a different fix, they just
-> back out of grab_swap_token if current->mm is unset: which is what
-> we first proposed, but using the right mm here seems more correct).
+> Yeah, this should work, and cleaner than my version.
 > 
-> Reported-by: Izik Eidus <ieidus@redhat.com>
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Acked-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-I already added my sign to Hannes but it is folded in this patch.
+Hmmm, the patch is cleaner in diffstat but the resulted code
+isn't..
 
--- 
-Kinds Regards
-Minchan Kim
+After yours:
+   text    data     bss     dec     hex filename
+  14879    5480    4240   24599    6017 kernel/trace/ftrace.o
+
+After mine:
+   text    data     bss     dec     hex filename
+  14873    5480    4240   24593    6011 kernel/trace/ftrace.o
+
+
+>> It's wrong to increment @pos in g_start(). It causes some entries
+>> lost when reading set_graph_function, if the output of the file
+>> is large than PAGE_SIZE.
+>>
+>> [ Impact: fix missing entries when reading set_graph_function ]
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>> Signed-off-by: Liming Wang <liming.wang@windriver.com>
+>> ---
+>>  kernel/trace/ftrace.c |   14 +++++---------
+>>  1 files changed, 5 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+>> index 134e580..1beaac6 100644
+>> --- a/kernel/trace/ftrace.c
+>> +++ b/kernel/trace/ftrace.c
+>> @@ -2495,29 +2495,25 @@ static void *
+>>  g_next(struct seq_file *m, void *v, loff_t *pos)
+>>  {
+>>  	unsigned long *array = m->private;
+>> -	int index = *pos;
+>>  
+>> -	(*pos)++;
+>> +	if (v)
+>> +		(*pos)++;
+>>  
+>> -	if (index >= ftrace_graph_count)
+>> +	if (*pos >= ftrace_graph_count)
+>>  		return NULL;
+>>  
+>> -	return &array[index];
+>> +	return &array[*pos];
+>>  }
+>>  
+>>  static void *g_start(struct seq_file *m, loff_t *pos)
+>>  {
+>> -	void *p = NULL;
+>> -
+>>  	mutex_lock(&graph_lock);
+>>  
+>>  	/* Nothing, tell g_show to print all functions are enabled */
+>>  	if (!ftrace_graph_count && !*pos)
+>>  		return (void *)1;
+>>  
+>> -	p = g_next(m, p, pos);
+>> -
+>> -	return p;
+>> +	return g_next(m, NULL, pos);
+>>  }
+>>  
+>>  static void g_stop(struct seq_file *m, void *p)
