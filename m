@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbZFVEsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZFVFWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752002AbZFVEsn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 00:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZFVEsf
+	id S1753958AbZFVFWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 01:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZFVFWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 00:48:35 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:44903 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbZFVEse (ORCPT
+	Mon, 22 Jun 2009 01:22:09 -0400
+Received: from exprod7og103.obsmtp.com ([64.18.2.159]:39129 "EHLO
+	exprod7og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZFVFWI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 00:48:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=eK9Ks2ToHsCsVHQfTLnbrd9PqQ8+fxjaiVuOlnL+2zCkISUlaOiPk0aZuBTPD8Y0ZN
-         5TV8+569Q8PphekWhY69fZR+T3AzxRwwF7HPi/THte+JukIP1/qkLUysaxWEze/k81FA
-         zyl3wuB7tNjMCZzYL8Oq9eLH8OFBazX/S6BeU=
+	Mon, 22 Jun 2009 01:22:08 -0400
+From: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+To: Jiri Slaby <jirislaby@gmail.com>, "Moore, Eric" <Eric.Moore@lsi.com>
+CC: DL-MPT Fusion Linux <DL-MPTFusionLinux@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "Support, Software" <support@lsi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 22 Jun 2009 10:52:05 +0530
+Subject: RE: [PATCH] fusion: mptsas, fix lock imbalance
+Thread-Topic: [PATCH] fusion: mptsas, fix lock imbalance
+Thread-Index: Acnyu4I9BCduHS0LRgC7gUtiXJEGuAAPWkhg
+Message-ID: <0D1E8821739E724A86F4D16902CE275C141A2C1DF0@inbmail01.lsi.com>
+References: <1245621541-27008-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1245621541-27008-1-git-send-email-jirislaby@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-In-Reply-To: <20090621183658.2b408e69@lappy.seanm.ca>
-References: <20090620154824.72b5cd50@lappy.seanm.ca>
-	 <200906202256.46073.elendil@planet.nl>
-	 <20090620194250.5a3e826f@lappy.seanm.ca>
-	 <200906210628.35553.elendil@planet.nl>
-	 <84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
-	 <1245623104.16880.26.camel@pasglop>
-	 <20090621183658.2b408e69@lappy.seanm.ca>
-Date: Mon, 22 Jun 2009 07:48:35 +0300
-X-Google-Sender-Auth: c942a96535f8e1aa
-Message-ID: <84144f020906212148y77a05be6k8f96beb3cf31da2b@mail.gmail.com>
-Subject: Re: Badness on the Warp
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Frans Pop <elendil@planet.nl>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       David Gibson <david@gibson.dropbear.id.au>,
-       Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sean,
+Jiri,
 
-On Mon, Jun 22, 2009 at 1:36 AM, Sean MacLennan<smaclennan@pikatech.com> wrote:
-> On Mon, 22 Jun 2009 08:25:04 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> Right, our interrupt controllers need those fixes, they are low
->> on my priority list since it's a reasonably harmless warning and I'm
->> still chasing some actual breakage (though maybe not directly related
->> to your patches).
->>
->> Kumar already submitted a couple, Frans, feel free to beat me
->> at converting UIC (just use kmalloc directly in there instead
->> of alloc_bootmem).
->
-> I can make the changes to UIC if you want. They badness is harmless (it
-> ends up calling kzalloc anyway), but hard to explain to our PV (Product
-> Verification) department that they can ignore what looks like a crash ;)
+Consider this as ACKED patch.
 
-Right. We can also wrap the WARN_ON() in CONFIG_DEBUG_BOOTMEM or
-something too but I'd prefer a proper fix here.
+- Kashyap Desai
 
-                                   Pekka
+-----Original Message-----
+From: Jiri Slaby [mailto:jirislaby@gmail.com] 
+Sent: Monday, June 22, 2009 3:29 AM
+To: Moore, Eric
+Cc: DL-MPT Fusion Linux; linux-scsi@vger.kernel.org; Support, Software; linux-kernel@vger.kernel.org; Jiri Slaby
+Subject: [PATCH] fusion: mptsas, fix lock imbalance
+
+Fix two typos in mptsas_not_responding_devices. It was mutex_lock instead
+of unlock.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/message/fusion/mptsas.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/message/fusion/mptsas.c b/drivers/message/fusion/mptsas.c
+index 20e0b44..55ff252 100644
+--- a/drivers/message/fusion/mptsas.c
++++ b/drivers/message/fusion/mptsas.c
+@@ -3518,7 +3518,7 @@ retry_page:
+ 		} else
+ 			mptsas_volume_delete(ioc, sas_info->fw.id);
+ 	}
+-	mutex_lock(&ioc->sas_device_info_mutex);
++	mutex_unlock(&ioc->sas_device_info_mutex);
+ 
+ 	/* expanders */
+ 	mutex_lock(&ioc->sas_topology_mutex);
+@@ -3549,7 +3549,7 @@ retry_page:
+ 			goto redo_expander_scan;
+ 		}
+ 	}
+-	mutex_lock(&ioc->sas_topology_mutex);
++	mutex_unlock(&ioc->sas_topology_mutex);
+ }
+ 
+ /**
+-- 
+1.6.3.2
+
