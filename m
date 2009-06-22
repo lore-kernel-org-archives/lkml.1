@@ -1,283 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbZFVQGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbZFVQHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757848AbZFVQGy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756691AbZFVQGJ
+	id S1757483AbZFVQHL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbZFVQGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:06:09 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:42192 "EHLO
+	Mon, 22 Jun 2009 12:06:02 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:50404 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbZFVQGD (ORCPT
+	with ESMTP id S1752946AbZFVQF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:06:03 -0400
+	Mon, 22 Jun 2009 12:05:56 -0400
+Message-ID: <4A3FABD9.7080108@novell.com>
+Date: Mon, 22 Jun 2009 12:05:45 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v3 3/3] KVM: Fix races in irqfd using new eventfd_kref_get
-	interface
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
-       paulmck@linux.vnet.ibm.com, davidel@xmailserver.org, mingo@elte.hu,
-       rusty@rustcorp.com.au
-Date: Mon, 22 Jun 2009 12:05:57 -0400
-Message-ID: <20090622160556.22967.76273.stgit@dev.haskins.net>
-In-Reply-To: <20090622155504.22967.50532.stgit@dev.haskins.net>
-References: <20090622155504.22967.50532.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: mst@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
+ race conditions
+References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com> <4A3C004B.8010706@novell.com> <alpine.DEB.1.10.0906191421581.14884@makko.or.mcafeemobile.com> <4A3C07FF.3000406@novell.com> <alpine.DEB.1.10.0906191447330.14884@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com> <4A3C44DA.7000503@novell.com> <alpine.DEB.1.10.0906201202170.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201508460.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201640380.25534@makko.or.mcafeemobile.com> <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com> <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCE006001E27278A36189AAC3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes all known races in irqfd, and paves the way to restore
-DEASSIGN support.  For details of the eventfd races, please see the patch
-presumably commited immediately prior to this one.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCE006001E27278A36189AAC3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-In a nutshell, we use eventfd_kref_get/put() to properly manage the
-lifetime of the underlying eventfd.  We also use careful coordination
-with our workqueue to ensure that all irqfd objects have terminated
-before we allow kvm to shutdown.  The logic used for shutdown walks
-all open irqfds and releases them.  This logic can be generalized in
-the future to allow a subset of irqfds to be released, thus allowing
-DEASSIGN support.
+Davide Libenzi wrote:
+> On Sun, 21 Jun 2009, Gregory Haskins wrote:
+>
+>  =20
+>> This looks great, Davide.  I am fairly certain I can now solve the rac=
+es
+>> and even implement Michael's DEASSIGN feature with this patch in place=
+=2E=20
+>> I will actually fire it up tomorrow when I am back in the office and
+>> give it a spin, but I do not spy any more races via visual inspection.=
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+>>
+>> Kind Regards,
+>> -Greg
+>>
+>> PS: I was wrong with my previous statement about requiring an embeddab=
+le
+>> object (eventfd_notifier for me, eventfd_pollcb for you).  I think you=
 
- virt/kvm/eventfd.c |  144 ++++++++++++++++++++++++++++++++++++++++------------
- 1 files changed, 110 insertions(+), 34 deletions(-)
+>> can technically solve this issue minimally by merely locking the POLLH=
+UP
+>> and exposing the kref.  However, I think that leads to an more awkward=
 
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 9656027..67985cd 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -28,6 +28,7 @@
- #include <linux/file.h>
- #include <linux/list.h>
- #include <linux/eventfd.h>
-+#include <linux/kref.h>
- 
- /*
-  * --------------------------------------------------------------------
-@@ -36,26 +37,68 @@
-  * Credit goes to Avi Kivity for the original idea.
-  * --------------------------------------------------------------------
-  */
-+
-+enum {
-+	irqfd_flags_shutdown,
-+};
-+
- struct _irqfd {
- 	struct kvm               *kvm;
-+	struct kref              *eventfd;
- 	int                       gsi;
- 	struct list_head          list;
- 	poll_table                pt;
- 	wait_queue_head_t        *wqh;
- 	wait_queue_t              wait;
--	struct work_struct        inject;
-+	struct work_struct        work;
-+	unsigned long             flags;
- };
- 
- static void
--irqfd_inject(struct work_struct *work)
-+irqfd_release(struct _irqfd *irqfd)
-+{
-+	eventfd_kref_put(irqfd->eventfd);
-+	kfree(irqfd);
-+}
-+
-+static void
-+irqfd_work(struct work_struct *work)
- {
--	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
-+	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
- 	struct kvm *kvm = irqfd->kvm;
- 
--	mutex_lock(&kvm->irq_lock);
--	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
--	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
--	mutex_unlock(&kvm->irq_lock);
-+	if (!test_bit(irqfd_flags_shutdown, &irqfd->flags)) {
-+		/* Inject an interrupt */
-+		mutex_lock(&kvm->irq_lock);
-+		kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
-+		kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
-+		mutex_unlock(&kvm->irq_lock);
-+	} else {
-+		/* shutdown the irqfd */
-+		struct _irqfd *_irqfd = NULL;
-+
-+		mutex_lock(&kvm->lock);
-+
-+		if (!list_empty(&irqfd->list))
-+			_irqfd = irqfd;
-+
-+		if (_irqfd)
-+			list_del(&_irqfd->list);
-+
-+		mutex_unlock(&kvm->lock);
-+
-+		/*
-+		 * If the item is not currently on the irqfds list, we know
-+		 * we are running concurrently with the KVM side trying to
-+		 * remove this item as well.  Since the KVM side should be
-+		 * holding the reference now, and will block behind a
-+		 * flush_work(), lets just let them do the release() for us
-+		 */
-+		if (!_irqfd)
-+			return;
-+
-+		irqfd_release(_irqfd);
-+	}
- }
- 
- static int
-@@ -65,25 +108,20 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
- 	unsigned long flags = (unsigned long)key;
- 
- 	/*
--	 * Assume we will be called with interrupts disabled
-+	 * called with interrupts disabled
- 	 */
--	if (flags & POLLIN)
--		/*
--		 * Defer the IRQ injection until later since we need to
--		 * acquire the kvm->lock to do so.
--		 */
--		schedule_work(&irqfd->inject);
--
- 	if (flags & POLLHUP) {
- 		/*
--		 * for now, just remove ourselves from the list and let
--		 * the rest dangle.  We will fix this up later once
--		 * the races in eventfd are fixed
-+		 * ordering is important: shutdown flag must be visible
-+		 * before we schedule
- 		 */
- 		__remove_wait_queue(irqfd->wqh, &irqfd->wait);
--		irqfd->wqh = NULL;
-+		set_bit(irqfd_flags_shutdown, &irqfd->flags);
- 	}
- 
-+	if (flags & (POLLHUP | POLLIN))
-+		schedule_work(&irqfd->work);
-+
- 	return 0;
- }
- 
-@@ -102,6 +140,7 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
- {
- 	struct _irqfd *irqfd;
- 	struct file *file = NULL;
-+	struct kref *kref = NULL;
- 	int ret;
- 	unsigned int events;
- 
-@@ -112,7 +151,7 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
- 	irqfd->kvm = kvm;
- 	irqfd->gsi = gsi;
- 	INIT_LIST_HEAD(&irqfd->list);
--	INIT_WORK(&irqfd->inject, irqfd_inject);
-+	INIT_WORK(&irqfd->work, irqfd_work);
- 
- 	file = eventfd_fget(fd);
- 	if (IS_ERR(file)) {
-@@ -133,11 +172,13 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
- 	list_add_tail(&irqfd->list, &kvm->irqfds);
- 	mutex_unlock(&kvm->lock);
- 
--	/*
--	 * Check if there was an event already queued
--	 */
--	if (events & POLLIN)
--		schedule_work(&irqfd->inject);
-+	kref = eventfd_kref_get(file);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		goto fail;
-+	}
-+
-+	irqfd->eventfd = kref;
- 
- 	/*
- 	 * do not drop the file until the irqfd is fully initialized, otherwise
-@@ -145,9 +186,18 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
- 	 */
- 	fput(file);
- 
-+	/*
-+	 * Check if there was an event already queued
-+	 */
-+	if (events & POLLIN)
-+		schedule_work(&irqfd->work);
-+
- 	return 0;
- 
- fail:
-+	if (kref && !IS_ERR(kref))
-+		eventfd_kref_put(kref);
-+
- 	if (file && !IS_ERR(file))
- 		fput(file);
- 
-@@ -161,21 +211,47 @@ kvm_irqfd_init(struct kvm *kvm)
- 	INIT_LIST_HEAD(&kvm->irqfds);
- }
- 
-+static struct _irqfd *
-+irqfd_pop(struct kvm *kvm)
-+{
-+	struct _irqfd *irqfd = NULL;
-+
-+	mutex_lock(&kvm->lock);
-+
-+	if (!list_empty(&kvm->irqfds)) {
-+		irqfd = list_first_entry(&kvm->irqfds, struct _irqfd, list);
-+		list_del(&irqfd->list);
-+	}
-+
-+	mutex_unlock(&kvm->lock);
-+
-+	return irqfd;
-+}
-+
- void
- kvm_irqfd_release(struct kvm *kvm)
- {
--	struct _irqfd *irqfd, *tmp;
-+	struct _irqfd *irqfd;
- 
--	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list) {
--		if (irqfd->wqh)
--			remove_wait_queue(irqfd->wqh, &irqfd->wait);
-+	while ((irqfd = irqfd_pop(kvm))) {
- 
--		flush_work(&irqfd->inject);
-+		remove_wait_queue(irqfd->wqh, &irqfd->wait);
- 
--		mutex_lock(&kvm->lock);
--		list_del(&irqfd->list);
--		mutex_unlock(&kvm->lock);
-+		/*
-+		 * We guarantee there will be no more notifications after
-+		 * the remove_wait_queue returns.  Now lets make sure we
-+		 * synchronize behind any outstanding work items before
-+		 * releasing the resources
-+		 */
-+		flush_work(&irqfd->work);
- 
--		kfree(irqfd);
-+		irqfd_release(irqfd);
- 	}
-+
-+	/*
-+	 * We need to wait in case there are any outstanding work-items
-+	 * in flight that had already removed themselves from the list
-+	 * prior to entry to this function
-+	 */
-+	flush_scheduled_work();
- }
+>> interface (e.g. we already have eventfd_fget() plus we add a new one
+>> like eventfd_refget(), which might confuse users), so I prefer what yo=
+u
+>> did here.  Just thought I would throw that out there in case you would=
 
+>> prefer to change even fewer lines.
+>>    =20
+>
+> I actually ended up exposing the eventfd context anyway, since IMO is a=
+=20
+> better option instead of holding references to the eventfd file (that=20
+> makes VFS people uneasy).
+>  =20
+
+I liked "version - 1"  better ;)
+
+I think ultimately we still want to hold the fget() for
+eventfd_signal(), as it is the producer side.  Without it, we have no
+way of knowing when the last producer goes away if they happen to be an
+in-kernel user.
+
+Also, thinking about it some more, I think I like the non-wrapped pollcb
+variant better now.  This is because I can uhook the wqh in the POLLHUP
+and defer the kref_put() until later.  I think this combination gives me
+the most ideal environment (even though technically I should not expect
+more activity on the wait-queue after the POLLHUP).
+
+In either case, I whipped up a super-lite patch with just the bare
+minimum and then developed the KVM solution on top.  Things look really
+good, now, and I am happy with the result.  As an aside, it only has the
+following impact on the eventfd core:
+
+ fs/eventfd.c            |   43 ++++++++++++++++++++++++++++++++++++-----=
+--
+ include/linux/eventfd.h |    7 +++++++
+ 2 files changed, 43 insertions(+), 7 deletions(-)
+
+Ill post the series, including the KVM portions, for review.
+
+Thanks Davide,
+-Greg
+
+
+
+
+--------------enigCE006001E27278A36189AAC3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko/q9oACgkQlOSOBdgZUxnHfgCeMu/sjifsAbsK2K6pa7MOPL6O
+oQwAnjDW/YwtUkvRUvpP8run3493zvuX
+=6x7h
+-----END PGP SIGNATURE-----
+
+--------------enigCE006001E27278A36189AAC3--
