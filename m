@@ -1,99 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZFVOKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZFVOMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbZFVOKt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZFVOKm
+	id S1756553AbZFVOMA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZFVOLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:10:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60174 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbZFVOKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:10:41 -0400
-Date: Mon, 22 Jun 2009 16:10:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2 -tip] perf_counter: parse-events.c introduce alias
-	member in event_symbol
-Message-ID: <20090622141009.GB6486@elte.hu>
-References: <1245669194.17153.6.camel@localhost.localdomain> <1245669268.17153.8.camel@localhost.localdomain> <20090622113256.GA22479@elte.hu> <1245675657.7537.3.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245675657.7537.3.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 22 Jun 2009 10:11:53 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36933 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732AbZFVOLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 10:11:52 -0400
+Date: Mon, 22 Jun 2009 16:11:47 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Speed of SDHCI subsystem
+Message-ID: <20090622161147.0769731a@mjolnir.ossman.eu>
+In-Reply-To: <20090617234550.116d7b7e@werewolf.home>
+References: <20090519003750.461abe7d@werewolf.home>
+	<20090603083341.7a2c84c8@mjolnir.ossman.eu>
+	<20090617234550.116d7b7e@werewolf.home>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-23028-1245679913-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+--=_freyr.ossman.eu-23028-1245679913-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 2009-06-22 at 13:32 +0200, Ingo Molnar wrote:
-> 
-> > Another nice thing would be for 'perf list' to actually start each 
-> > counter and stop it - and see whether it ticks. Perhaps that could 
-> > be a new sub-command: 'perf test' ?
-> > 
-> > New 'perf' subcommands are added easily:
-> > 
-> > create a new tools/perf/builtin-foo.c file, add it to 
-> > command-list.txt and to the Makefile - add it to perf.c's array of 
-> > built-in commands and add a Documentation/perf-foo.txt file to 
-> > generate manpages and usage strings for it.
-> > 
-> 
-> Ok this is just a ugly quick hack to get the idea what actually you are
-> looking for :
-> 
-> [RFC] perf_counter tools: introduce perf test to test each event for ticks
-> 
-> perf test to Test all events for whether it ticks
-> 
->   $ perf test
-> 
->   Performance counter stats for 'test':
-> 
->   task-clock-msecs      Tick
->   context-switches      Tick
->   CPU-migrations        Tick
->   page-faults           Tick
->   cycles                Tick
->   instructions          Tick
->   cache-references      Tick
->   cache-misses          Tick
-> 
->      0.007693869  seconds time elapsed.
+On Wed, 17 Jun 2009 23:45:50 +0200
+"J.A. Magall=C3=B3n" <jamagallon@ono.com> wrote:
 
-yeah, somethig like that. I'd suggest to print out the actual 
-measured events:
+>=20
+> Thanks, now its clear it is related to hardware limits.
+> I suppose this controler is a cheap one...
+> Things in the Aspire One are these:
+>=20
 
-    cache-references      10123 events
-    cache-misses             15 events
+*snip*
 
-and if something does not appear to be ticking then do something 
-like:
+> 04:00.0 System peripheral: JMicron Technologies, Inc. SD/MMC Host Control=
+ler
+> 04:00.2 SD Host controller: JMicron Technologies, Inc. Standard SD Host C=
+ontroller
+> 04:00.3 System peripheral: JMicron Technologies, Inc. MS Host Controller
+> 04:00.4 System peripheral: JMicron Technologies, Inc. xD Host Controller
 
-    cache-misses          <inactive>
+That chip is capable of very high speeds but unfortunately the systems
+aren't always properly wired for it so the high-speed mode was disabled
+by default in the chips.
 
-I.e. 'perf test' could be a quick way both to users and to 
-developers to see all possible hw and sw events.
+You can force it on by applying this patch:
 
-Perhaps builtin-test.c should also do specific testcases for certain 
-counters - say intentionally migrate to a CPU and back to see the 
-CPU-migration count.
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3Da4b76193774b463b922cab2f92450efb20d29ef0;hp=3Dd6d8de33415ca7598f=
+e66d933b6556fa8f89afe2
 
-Also, you seem to have copied builtin-stat.c, right? Try to 
-librarize as much of the functionality (into util/*) to make the 
-resulting linecount increase as small as possible.
+Rgds
+--=20
+     -- Pierre Ossman
 
-	Ingo
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-23028-1245679913-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAko/kScACgkQ7b8eESbyJLhnpQCgx3+O+u9X2l7zTcSjylN3AWBV
+sloAmwVkczAQKIq3xZ49Be/95pihUzXC
+=0pLF
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-23028-1245679913-0001-2--
