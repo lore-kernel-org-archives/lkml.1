@@ -1,73 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZFVWcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZFVWiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbZFVWcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 18:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZFVWcF
+	id S1755435AbZFVWiA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 18:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZFVWhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 18:32:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44377 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751240AbZFVWcE (ORCPT
+	Mon, 22 Jun 2009 18:37:51 -0400
+Received: from smtp2.netcologne.de ([194.8.194.112]:63649 "EHLO
+	smtp2.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZFVWhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 18:32:04 -0400
-Date: Mon, 22 Jun 2009 15:31:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sanjoy Mahajan <sanjoy@MIT.EDU>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: Re: X server hung, kernel said "task blocked for >120 secs"
- (2.6.30)
-Message-Id: <20090622153157.ac408188.akpm@linux-foundation.org>
-In-Reply-To: <E1MG1Gv-0001Vq-6T@approx.mit.edu>
-References: <E1MG1Gv-0001Vq-6T@approx.mit.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 18:37:50 -0400
+From: Mathias Kretschmer <posting@blx4.net>
+Organization: BLX4
+To: Karsten Keil <kernel@linux-pingi.de>
+Subject: Re: mISDN: WARNING: at kernel/softirq.c:124 local_bh_enable+0x8f/0xb0()
+Date: Tue, 23 Jun 2009 00:37:41 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; i686; ; )
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <200906051201.04185.isdn@linux-pingi.de> <200906091505.31537.kernel@linux-pingi.de>
+In-Reply-To: <200906091505.31537.kernel@linux-pingi.de>
+MIME-Version: 1.0
+Message-Id: <200906230037.42412.posting@blx4.net>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_2eAQKXpXn+mtmtX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc dri-devel)
+--Boundary-00=_2eAQKXpXn+mtmtX
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Sun, 14 Jun 2009 21:46:05 -0400
-Sanjoy Mahajan <sanjoy@MIT.EDU> wrote:
+Hi Karsten,
 
-> I'm running vanilla 2.6.30 on an otherwise Debian 'unstable' system -- a
-> TP T60 with Intel graphics and wireless (no tainting).  The X server
-> [xorg 1.6.1.901 (1.6.2 RC 1), intel driver 2.7.1] hung in a way that it
-> often has with other versions: The mouse cursor moves around as normal,
-> but the keyboard or mouse buttons don't do anything.  I used sysrq half
-> competently to send TERM and KILL signals and then reboot.
-> 
-> The log message below was in the /var/log/messages from when the problem
-> happened.  Should I report this information to freedesktop.org or is it
-> a kernel issue belonging on the bugzilla?
-> 
-> [228600.676053] INFO: task events/0:9 blocked for more than 120 seconds.
-> [228600.676058] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> [228600.676061] events/0      D 31efa204     0     9      2
-> [228600.676066]  c1bfc040 00000046 f7121a60 31efa204 c0439040 c0436134 c0101f70 f708f0c0
-> [228600.676075]  f708f274 00000000 00000000 f7121a8c c1bfc040 00000000 c011d842 c1bfc580
-> [228600.676083]  f708f0c0 f708f274 0366353a f626cac0 00000000 c0439040 c02f19c2 c03a8300
-> [228600.676090] Call Trace:
-> [228600.676099]  [<c0101f70>] ? __switch_to+0xbf/0x140
-> [228600.676105]  [<c011d842>] ? pick_next_task_fair+0x80/0x87
-> [228600.676111]  [<c02f19c2>] ? __schedule+0x6f2/0x74d
-> [228600.676115]  [<c02f1fc4>] ? __mutex_lock_common+0xe1/0x136
-> [228600.676120]  [<c02f2028>] ? __mutex_lock_slowpath+0xf/0x11
-> [228600.676123]  [<c02f1e78>] ? mutex_lock+0x10/0x1e
-> [228600.676127]  [<c02f1e78>] ? mutex_lock+0x10/0x1e
-> [228600.676133]  [<c0133e97>] ? queue_delayed_work_on+0x9c/0xa8
-> [228600.676150]  [<f8ff74f3>] ? i915_gem_retire_work_handler+0x1c/0x4e [i915]
-> [228600.676155]  [<c0133701>] ? worker_thread+0x13d/0x1bf
-> [228600.676168]  [<f8ff74d7>] ? i915_gem_retire_work_handler+0x0/0x4e [i915]
-> [228600.676174]  [<c01365a6>] ? autoremove_wake_function+0x0/0x2d
-> [228600.676178]  [<c01335c4>] ? worker_thread+0x0/0x1bf
-> [228600.676182]  [<c01362b6>] ? kthread+0x42/0x67
-> [228600.676186]  [<c0136274>] ? kthread+0x0/0x67
-> [228600.676190]  [<c0103ab7>] ? kernel_thread_helper+0x7/0x10
-> [228611.402991] SysRq : Keyboard mode set to system default
+applied your patch. Not sure if it fixed anything, though.
+Attached is another call trace which looks slightly different.
 
-I assume this is a regression?  Since 2.6.29?
+Cheers,
 
-Thanks.
+Mathias
+
+On Tuesday 09 June 2009 15:05:31 Karsten Keil wrote:
+> On Freitag, 5. Juni 2009 12:01:03 Karsten Keil wrote:
+> > Hi,
+> >
+> > I'm currently see this too from time to time, but have no idea about it.
+>
+> ...
+>
+> > > > [88563.318126] ------------[ cut here ]------------
+> > > > [88563.318129] WARNING: at kernel/softirq.c:124
+> > > > local_bh_enable+0x8f/0xb0() [88563.318130] Hardware name: empty
+> > > > [88563.318132] Modules linked in: usbtouchscreen dvb_usb_cinergyT2
+> > > > dummy bonding snd_emu10k1 snd_rawmidi snd_ac97_codec ath9k ac97_bus
+> > > > snd_pcm snd_page_alloc snd_util_mem forcedeth snd_hwdep
+> > > > [88563.318141] Pid: 826, comm: mISDN_hfc-pci.1 Not tainted
+> > > > 2.6.29.4-grsec #13 [88563.318142] Call Trace:
+> > > > [88563.318147]  [<ffffffff8025909a>] warn_slowpath+0xea/0x160
+> > > > [88563.318149]  [<ffffffff8025ee0f>] local_bh_enable+0x8f/0xb0
+> > > > [88563.318152]  [<ffffffff8065f284>] sk_filter+0x44/0xa0
+> > > > [88563.318154]  [<ffffffff8064548d>] sock_queue_rcv_skb+0x5d/0x120
+> > > > [88563.318156]  [<ffffffff8060410f>] mISDN_send+0x4f/0xa0
+> > > > [88563.318159]  [<ffffffff8060790e>] l2up_create+0x7e/0x100
+> > > > [88563.318161]  [<ffffffff8060b6e0>] l2_got_tei+0x0/0x90
+> > > > [88563.318163]  [<ffffffff8060b722>] l2_got_tei+0x42/0x90
+> > > > [88563.318164]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
+> > > > [88563.318167]  [<ffffffff8060cb00>] tei_id_assign+0x0/0x120
+> > > > [88563.318168]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
+> > > > [88563.318170]  [<ffffffff8060e373>] mgr_send+0x4d3/0x660
+>
+> OK found it, it was in a inlined function call ph_data_ind() in mgr_send().
+>
+> This patch should fix it (will send it upstream later).
+>
+>
+> From: Karsten Keil <keil@b1-systems.de>
+> Date: Tue, 9 Jun 2009 14:38:39 +0200
+> Subject: [PATCH] mISDN: Do not disable IRQ in ph_data_ind()
+>
+>
+> This fix triggering the WARN_ON_ONCE(in_irq() || irqs_disabled()); in
+> local_bh_enable().
+>
+> Here is no need to grab this lock, this was wrong at all and may
+> cause a deadlock and access to freed memory, since on a TEI remove
+> the current listelement can be deleted under us. So this is clearly
+> a case for list_for_each_entry_safe.
+>
+> Signed-off-by: Karsten Keil <keil@b1-systems.de>
+> ---
+>  drivers/isdn/mISDN/tei.c |    7 ++-----
+>  1 files changed, 2 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
+> index bfcdd97..e04bad6 100644
+> --- a/drivers/isdn/mISDN/tei.c
+> +++ b/drivers/isdn/mISDN/tei.c
+> @@ -862,8 +862,7 @@ static int
+>  ph_data_ind(struct manager *mgr, struct sk_buff *skb)
+>  {
+>  	int		ret = -EINVAL;
+> -	struct layer2	*l2;
+> -	u_long		flags;
+> +	struct layer2	*l2, *nl2;
+>  	u_char		mt;
+>
+>  	if (skb->len < 8) {
+> @@ -908,11 +907,9 @@ ph_data_ind(struct manager *mgr, struct sk_buff *skb)
+>  		new_tei_req(mgr, &skb->data[4]);
+>  		goto done;
+>  	}
+> -	read_lock_irqsave(&mgr->lock, flags);
+> -	list_for_each_entry(l2, &mgr->layer2, list) {
+> +	list_for_each_entry_safe(l2, nl2, &mgr->layer2, list) {
+>  		tei_ph_data_ind(l2->tm, mt, &skb->data[4], skb->len - 4);
+>  	}
+> -	read_unlock_irqrestore(&mgr->lock, flags);
+>  done:
+>  	return ret;
+>  }
+
+
+
+
+
+
+--Boundary-00=_2eAQKXpXn+mtmtX
+Content-Type: text/plain;
+  charset="utf-8";
+  name="misdn.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="misdn.txt"
+
+Jun 21 21:49:27 [kernel] [  202.818502] ------------[ cut here ]------------
+Jun 21 21:49:27 [kernel] [  202.818520] WARNING: at kernel/softirq.c:141 local_bh_enable+0x8b/0xb0()
+Jun 21 21:49:27 [kernel] [  202.818525] Hardware name: empty
+Jun 21 21:49:27 [kernel] [  202.818528] Modules linked in: iscsi_trgt dummy bonding forcedeth usbtouchscreen
+Jun 21 21:49:27 [kernel] [  202.818542] Pid: 811, comm: mISDN_hfc-pci.1 Not tainted 2.6.30 #6
+Jun 21 21:49:27 [kernel] [  202.818546] Call Trace:
+Jun 21 21:49:27 [kernel] [  202.818556]  [<ffffffff8026b45b>] ? local_bh_enable+0x8b/0xb0
+Jun 21 21:49:27 [kernel] [  202.818562]  [<ffffffff8026b45b>] ? local_bh_enable+0x8b/0xb0
+Jun 21 21:49:27 [kernel] [  202.818572]  [<ffffffff80265ad9>] ? warn_slowpath_common+0x79/0xd0
+Jun 21 21:49:27 [kernel] [  202.818578]  [<ffffffff8026b45b>] ? local_bh_enable+0x8b/0xb0
+Jun 21 21:49:27 [kernel] [  202.818587]  [<ffffffff806ea8e4>] ? sk_filter+0x44/0xa0
+Jun 21 21:49:27 [kernel] [  202.818594]  [<ffffffff806d142d>] ? sock_queue_rcv_skb+0x5d/0x120
+Jun 21 21:49:27 [kernel] [  202.818604]  [<ffffffff8066738f>] ? mISDN_send+0x4f/0xa0
+Jun 21 21:49:27 [kernel] [  202.818610]  [<ffffffff8066c650>] ? l2_got_ui+0x0/0x70
+Jun 21 21:49:27 [kernel] [  202.818617]  [<ffffffff8066a837>] ? l2up+0x27/0x50
+Jun 21 21:49:27 [kernel] [  202.818623]  [<ffffffff80666052>] ? mISDN_FsmEvent+0x82/0x100
+Jun 21 21:49:27 [kernel] [  202.818630]  [<ffffffff8066e7ba>] ? l2_send+0x6fa/0x980
+Jun 21 21:49:27 [kernel] [  202.818636]  [<ffffffff8066bd40>] ? l2_pull_iqueue+0x0/0x310
+Jun 21 21:49:27 [kernel] [  202.818643]  [<ffffffff80670733>] ? mgr_bcast+0x83/0x160
+Jun 21 21:49:27 [kernel] [  202.818649]  [<ffffffff80669899>] ? mISDNStackd+0x429/0x670
+Jun 21 21:49:27 [kernel] [  202.818657]  [<ffffffff8027c930>] ? autoremove_wake_function+0x0/0x30
+Jun 21 21:49:27 [kernel] [  202.818663]  [<ffffffff80669470>] ? mISDNStackd+0x0/0x670
+Jun 21 21:49:27 [kernel] [  202.818668]  [<ffffffff80669470>] ? mISDNStackd+0x0/0x670
+Jun 21 21:49:27 [kernel] [  202.818674]  [<ffffffff8027c4d4>] ? kthread+0x54/0x90
+Jun 21 21:49:27 [kernel] [  202.818681]  [<ffffffff8022dfba>] ? child_rip+0xa/0x20
+Jun 21 21:49:27 [kernel] [  202.818687]  [<ffffffff8027c480>] ? kthread+0x0/0x90
+Jun 21 21:49:27 [kernel] [  202.818692]  [<ffffffff8022dfb0>] ? child_rip+0x0/0x20
+Jun 21 21:49:27 [kernel] [  202.818696] ---[ end trace d74f848acdfc6568 ]---
+
+--Boundary-00=_2eAQKXpXn+mtmtX--
