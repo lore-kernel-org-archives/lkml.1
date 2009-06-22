@@ -1,227 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbZFVQqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZFVQq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbZFVQqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZFVQpI
+	id S1758447AbZFVQq6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757746AbZFVQpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:45:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53534 "EHLO
+	Mon, 22 Jun 2009 12:45:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53536 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757680AbZFVQpF (ORCPT
+	with ESMTP id S1756172AbZFVQpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:45:05 -0400
+	Mon, 22 Jun 2009 12:45:17 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 13/15] timbuart: Fix for tx_empty
+Subject: [PATCH 15/15] msm: fixups to match current code
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 18:43:03 +0100
-Message-ID: <20090622174301.25341.91770.stgit@t61.ukuu.org.uk>
+Date: Mon, 22 Jun 2009 18:43:18 +0100
+Message-ID: <20090622174316.25341.77853.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 References: <20090622172929.25341.31151.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+From: Alan Cox <alan@linux.intel.com>
 
-Hardware updated to support TX FIFO empty.
+The tty layer is now a bit more fussy about reporting the right baud rate
+back. Make the msm driver match the current state of affairs.
 
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/serial/timbuart.c |   50 +++++++++++++++++++++++----------------------
- 1 files changed, 25 insertions(+), 25 deletions(-)
+ drivers/serial/msm_serial.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
 
-diff --git a/drivers/serial/timbuart.c b/drivers/serial/timbuart.c
-index ac9e5d5..063a313 100644
---- a/drivers/serial/timbuart.c
-+++ b/drivers/serial/timbuart.c
-@@ -33,29 +33,29 @@ struct timbuart_port {
- 	struct uart_port	port;
- 	struct tasklet_struct	tasklet;
- 	int			usedma;
--	u8			last_ier;
-+	u32			last_ier;
- 	struct platform_device  *dev;
- };
- 
- static int baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 460800,
- 	921600, 1843200, 3250000};
- 
--static void timbuart_mctrl_check(struct uart_port *port, u8 isr, u8 *ier);
-+static void timbuart_mctrl_check(struct uart_port *port, u32 isr, u32 *ier);
- 
- static irqreturn_t timbuart_handleinterrupt(int irq, void *devid);
- 
- static void timbuart_stop_rx(struct uart_port *port)
- {
- 	/* spin lock held by upper layer, disable all RX interrupts */
--	u8 ier = ioread8(port->membase + TIMBUART_IER) & ~RXFLAGS;
--	iowrite8(ier, port->membase + TIMBUART_IER);
-+	u32 ier = ioread32(port->membase + TIMBUART_IER) & ~RXFLAGS;
-+	iowrite32(ier, port->membase + TIMBUART_IER);
+diff --git a/drivers/serial/msm_serial.c b/drivers/serial/msm_serial.c
+index 1a7c856..698048f 100644
+--- a/drivers/serial/msm_serial.c
++++ b/drivers/serial/msm_serial.c
+@@ -229,7 +229,7 @@ static void msm_break_ctl(struct uart_port *port, int break_ctl)
+ 		msm_write(port, UART_CR_CMD_STOP_BREAK, UART_CR);
  }
  
- static void timbuart_stop_tx(struct uart_port *port)
+-static void msm_set_baud_rate(struct uart_port *port, unsigned int baud)
++static int msm_set_baud_rate(struct uart_port *port, unsigned int baud)
  {
- 	/* spinlock held by upper layer, disable TX interrupt */
--	u8 ier = ioread8(port->membase + TIMBUART_IER) & ~TXBAE;
--	iowrite8(ier, port->membase + TIMBUART_IER);
-+	u32 ier = ioread32(port->membase + TIMBUART_IER) & ~TXBAE;
-+	iowrite32(ier, port->membase + TIMBUART_IER);
- }
+ 	unsigned int baud_code, rxstale, watermark;
  
- static void timbuart_start_tx(struct uart_port *port)
-@@ -72,14 +72,14 @@ static void timbuart_flush_buffer(struct uart_port *port)
- 	u8 ctl = ioread8(port->membase + TIMBUART_CTRL) | TIMBUART_CTRL_FLSHTX;
- 
- 	iowrite8(ctl, port->membase + TIMBUART_CTRL);
--	iowrite8(TXBF, port->membase + TIMBUART_ISR);
-+	iowrite32(TXBF, port->membase + TIMBUART_ISR);
- }
- 
- static void timbuart_rx_chars(struct uart_port *port)
- {
- 	struct tty_struct *tty = port->info->port.tty;
- 
--	while (ioread8(port->membase + TIMBUART_ISR) & RXDP) {
-+	while (ioread32(port->membase + TIMBUART_ISR) & RXDP) {
- 		u8 ch = ioread8(port->membase + TIMBUART_RXFIFO);
- 		port->icount.rx++;
- 		tty_insert_flip_char(tty, ch, TTY_NORMAL);
-@@ -97,7 +97,7 @@ static void timbuart_tx_chars(struct uart_port *port)
- {
- 	struct circ_buf *xmit = &port->info->xmit;
- 
--	while (!(ioread8(port->membase + TIMBUART_ISR) & TXBF) &&
-+	while (!(ioread32(port->membase + TIMBUART_ISR) & TXBF) &&
- 		!uart_circ_empty(xmit)) {
- 		iowrite8(xmit->buf[xmit->tail],
- 			port->membase + TIMBUART_TXFIFO);
-@@ -114,7 +114,7 @@ static void timbuart_tx_chars(struct uart_port *port)
- 		ioread8(port->membase + TIMBUART_BAUDRATE));
- }
- 
--static void timbuart_handle_tx_port(struct uart_port *port, u8 isr, u8 *ier)
-+static void timbuart_handle_tx_port(struct uart_port *port, u32 isr, u32 *ier)
- {
- 	struct timbuart_port *uart =
- 		container_of(port, struct timbuart_port, port);
-@@ -129,7 +129,7 @@ static void timbuart_handle_tx_port(struct uart_port *port, u8 isr, u8 *ier)
- 	if (isr & TXFLAGS) {
- 		timbuart_tx_chars(port);
- 		/* clear all TX interrupts */
--		iowrite8(TXFLAGS, port->membase + TIMBUART_ISR);
-+		iowrite32(TXFLAGS, port->membase + TIMBUART_ISR);
- 
- 		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
- 			uart_write_wakeup(port);
-@@ -148,7 +148,7 @@ static void timbuart_handle_tx_port(struct uart_port *port, u8 isr, u8 *ier)
- 	dev_dbg(port->dev, "%s - leaving\n", __func__);
- }
- 
--void timbuart_handle_rx_port(struct uart_port *port, u8 isr, u8 *ier)
-+void timbuart_handle_rx_port(struct uart_port *port, u32 isr, u32 *ier)
- {
- 	if (isr & RXFLAGS) {
- 		/* Some RX status is set */
-@@ -161,7 +161,7 @@ void timbuart_handle_rx_port(struct uart_port *port, u8 isr, u8 *ier)
- 			timbuart_rx_chars(port);
- 
- 		/* ack all RX interrupts */
--		iowrite8(RXFLAGS, port->membase + TIMBUART_ISR);
-+		iowrite32(RXFLAGS, port->membase + TIMBUART_ISR);
+@@ -281,6 +281,7 @@ static void msm_set_baud_rate(struct uart_port *port, unsigned int baud)
+ 	case 115200:
+ 	default:
+ 		baud_code = UART_CSR_115200;
++		baud = 115200;
+ 		rxstale = 31;
+ 		break;
  	}
+@@ -299,6 +300,8 @@ static void msm_set_baud_rate(struct uart_port *port, unsigned int baud)
  
- 	/* always have the RX interrupts enabled */
-@@ -173,11 +173,11 @@ void timbuart_handle_rx_port(struct uart_port *port, u8 isr, u8 *ier)
- void timbuart_tasklet(unsigned long arg)
- {
- 	struct timbuart_port *uart = (struct timbuart_port *)arg;
--	u8 isr, ier = 0;
-+	u32 isr, ier = 0;
- 
- 	spin_lock(&uart->port.lock);
- 
--	isr = ioread8(uart->port.membase + TIMBUART_ISR);
-+	isr = ioread32(uart->port.membase + TIMBUART_ISR);
- 	dev_dbg(uart->port.dev, "%s ISR: %x\n", __func__, isr);
- 
- 	if (!uart->usedma)
-@@ -188,7 +188,7 @@ void timbuart_tasklet(unsigned long arg)
- 	if (!uart->usedma)
- 		timbuart_handle_rx_port(&uart->port, isr, &ier);
- 
--	iowrite8(ier, uart->port.membase + TIMBUART_IER);
-+	iowrite32(ier, uart->port.membase + TIMBUART_IER);
- 
- 	spin_unlock(&uart->port.lock);
- 	dev_dbg(uart->port.dev, "%s leaving\n", __func__);
-@@ -196,9 +196,9 @@ void timbuart_tasklet(unsigned long arg)
- 
- static unsigned int timbuart_tx_empty(struct uart_port *port)
- {
--	u8 isr = ioread8(port->membase + TIMBUART_ISR);
-+	u32 isr = ioread32(port->membase + TIMBUART_ISR);
- 
--	return (isr & TXBAE) ? TIOCSER_TEMT : 0;
-+	return (isr & TXBE) ? TIOCSER_TEMT : 0;
+ 	/* set TX watermark */
+ 	msm_write(port, 10, UART_TFWR);
++
++	return baud;
  }
  
- static unsigned int timbuart_get_mctrl(struct uart_port *port)
-@@ -222,13 +222,13 @@ static void timbuart_set_mctrl(struct uart_port *port, unsigned int mctrl)
- 		iowrite8(TIMBUART_CTRL_RTS, port->membase + TIMBUART_CTRL);
- }
+ static void msm_reset(struct uart_port *port)
+@@ -395,8 +398,10 @@ static void msm_set_termios(struct uart_port *port, struct ktermios *termios,
  
--static void timbuart_mctrl_check(struct uart_port *port, u8 isr, u8 *ier)
-+static void timbuart_mctrl_check(struct uart_port *port, u32 isr, u32 *ier)
- {
- 	unsigned int cts;
- 
- 	if (isr & CTS_DELTA) {
- 		/* ack */
--		iowrite8(CTS_DELTA, port->membase + TIMBUART_ISR);
-+		iowrite32(CTS_DELTA, port->membase + TIMBUART_ISR);
- 		cts = timbuart_get_mctrl(port);
- 		uart_handle_cts_change(port, cts & TIOCM_CTS);
- 		wake_up_interruptible(&port->info->delta_msr_wait);
-@@ -255,9 +255,9 @@ static int timbuart_startup(struct uart_port *port)
- 	dev_dbg(port->dev, "%s\n", __func__);
- 
- 	iowrite8(TIMBUART_CTRL_FLSHRX, port->membase + TIMBUART_CTRL);
--	iowrite8(0xff, port->membase + TIMBUART_ISR);
-+	iowrite32(0x1ff, port->membase + TIMBUART_ISR);
- 	/* Enable all but TX interrupts */
--	iowrite8(RXBAF | RXBF | RXTT | CTS_DELTA,
-+	iowrite32(RXBAF | RXBF | RXTT | CTS_DELTA,
- 		port->membase + TIMBUART_IER);
- 
- 	return request_irq(port->irq, timbuart_handleinterrupt, IRQF_SHARED,
-@@ -270,7 +270,7 @@ static void timbuart_shutdown(struct uart_port *port)
- 		container_of(port, struct timbuart_port, port);
- 	dev_dbg(port->dev, "%s\n", __func__);
- 	free_irq(port->irq, uart);
--	iowrite8(0, port->membase + TIMBUART_IER);
-+	iowrite32(0, port->membase + TIMBUART_IER);
- }
- 
- static int get_bindex(int baud)
-@@ -359,10 +359,10 @@ static irqreturn_t timbuart_handleinterrupt(int irq, void *devid)
- 	struct timbuart_port *uart = (struct timbuart_port *)devid;
- 
- 	if (ioread8(uart->port.membase + TIMBUART_IPR)) {
--		uart->last_ier = ioread8(uart->port.membase + TIMBUART_IER);
-+		uart->last_ier = ioread32(uart->port.membase + TIMBUART_IER);
- 
- 		/* disable interrupts, the tasklet enables them again */
--		iowrite8(0, uart->port.membase + TIMBUART_IER);
-+		iowrite32(0, uart->port.membase + TIMBUART_IER);
- 
- 		/* fire off bottom half */
- 		tasklet_schedule(&uart->tasklet);
+ 	/* calculate and set baud rate */
+ 	baud = uart_get_baud_rate(port, termios, old, 300, 115200);
+-	msm_set_baud_rate(port, baud);
+-
++	baud = msm_set_baud_rate(port, baud);
++	if (tty_termios_baud_rate(termios))
++		tty_termios_encode_baud_rate(termios, baud, baud);
++	
+ 	/* calculate parity */
+ 	mr = msm_read(port, UART_MR2);
+ 	mr &= ~UART_MR2_PARITY_MODE;
 
