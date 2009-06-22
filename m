@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZFVJ4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbZFVJ5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbZFVJ4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZFVJ4f
+	id S1756009AbZFVJ5Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbZFVJ5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:56:35 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50040 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750765AbZFVJ4e (ORCPT
+	Mon, 22 Jun 2009 05:57:17 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38581 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750780AbZFVJ5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:56:34 -0400
-Subject: Re: [PATCH] kmemleak: use pr_fmt
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Joe Perches <joe@perches.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <1245440992.6201.17.camel@Joe-Laptop>
-References: <1245341337.29927.8.camel@Joe-Laptop.home>
-	 <1245405220.12653.25.camel@pc1117.cambridge.arm.com>
-	 <1245440992.6201.17.camel@Joe-Laptop>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 22 Jun 2009 10:55:52 +0100
-Message-Id: <1245664552.15580.36.camel@pc1117.cambridge.arm.com>
+	Mon, 22 Jun 2009 05:57:17 -0400
+Date: Mon, 22 Jun 2009 10:57:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Rabin Vincent <rabin@rab.in>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: BUG: scheduling while atomic
+Message-ID: <20090622105721.262179f9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090620185452.GD3138@localdomain.by>
+References: <20090619181529.GA3593@localdomain.by>
+	<20090620174320.GA6791@debian>
+	<20090620185452.GD3138@localdomain.by>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jun 2009 09:55:53.0811 (UTC) FILETIME=[A1A2DA30:01C9F31F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-19 at 12:49 -0700, Joe Perches wrote:
-> On Fri, 2009-06-19 at 10:53 +0100, Catalin Marinas wrote:
-> > Thanks for the patch. It missed one pr_info case (actually invoked via
-> > the pr_helper macro).
-> 
-> This change will affect the seq_printf uses.
-> Some think the seq output should be immutable.
-> Perhaps that's important to you or others.
+On Sat, 20 Jun 2009 21:54:52 +0300
+Sergey Senozhatsky <sergey.senozhatsky@mail.by> wrote:
 
-My point was that with your patch, the kmemleak kernel messages with
-pr_info were something like:
+> On (06/20/09 23:13), Rabin Vincent wrote:
+> > On Fri, Jun 19, 2009 at 09:15:29PM +0300, Sergey Senozhatsky wrote:
+> > > Hello.
+> > > I see lots of "BUG: scheduling while atomic" with current kernels (started with 2.6.30-git1, 2.6.30 is ok).
+> > > For example (2.6.30-git14):
+> > 
+> > Looks like the net softirq (via ppp) ends up calling tty_throttle(), and
+> > this causes problems because of the mutex_lock() added there by
+> > 38db8979.  I've cc'd the tty maintainer.
 
-kmemleak: kmemleak: unreferenced object ...
-kmemleak:   comm ...
-kmemleak:   backtrace:
-
-After dropping "kmemleak: " in the print_helper() call, kernel messages
-become (which I find nicer):
-
-kmemleak: unreferenced object ...
-kmemleak:   comm ...
-kmemleak:   backtrace:
-
-For the seq_printf() we really don't need the "kmemleak: " prefix since
-you read a kmemleak-specific file anyway. With my modification, the seq
-output becomes:
-
-unreferenced object ...
-  comm ...
-  backtrace:
-
-i.e. without the "kmemleak: " prefix on the "unreferenced ..." line.
-
--- 
-Catalin
-
+Fix on its way upstream.
