@@ -1,80 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZFVGsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbZFVGup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbZFVGsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 02:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZFVGsJ
+	id S1752772AbZFVGup (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 02:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZFVGuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 02:48:09 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:41209 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbZFVGsI (ORCPT
+	Mon, 22 Jun 2009 02:50:37 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:36315 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751002AbZFVGug (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 02:48:08 -0400
-Message-ID: <4A3F281F.9000408@in.ibm.com>
-Date: Mon, 22 Jun 2009 12:13:43 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Mon, 22 Jun 2009 02:50:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:cc:references:in-reply-to:subject:date
+         :mime-version:content-type:content-transfer-encoding:x-priority
+         :x-msmail-priority:x-mailer:x-mimeole;
+        b=LbQ8HrM52l4BBaGi2wE5Eiguh5qSgtyMj3BzcamTXzLQAjMHDPW3IWeTc48KS6UOdR
+         vVc4bxJknSQ23u9K1aCc+PImV/d6OGjA5NwcTipf6cmiERwA9Hpia5dldTG/ao0w7GMy
+         9pprpuIVtFL7snfDNSI/Af0ioJ6vlqHJRupmY=
+Message-ID: <5AA89A0287224699B8E5C0526CE0EA41@Lanx8664>
+From: "Jay Lan" <jay.zen.lan@gmail.com>
+To: "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
+       <linux-ia64@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Cc: "Haren Myneni" <hbabu@us.ibm.com>, <kexec@lists.infradead.org>,
+       "Vivek Goyal" <vgoyal@redhat.com>
+References: <4A39E247.4030908@jp.fujitsu.com>
+In-Reply-To: <4A39E247.4030908@jp.fujitsu.com>
+Subject: Re: [PATCH 0/7] Patches for kdump vs. INIT
+Date: Sun, 21 Jun 2009 23:31:13 -0700
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: alan@lxorguk.ukuu.org.uk, linuxppc-dev@ozlabs.org
-Subject: Re: Badness at drivers/char/tty_ldisc.c:210 during shutdown
-References: <4A3A2D2B.7070704@in.ibm.com>
-In-Reply-To: <4A3A2D2B.7070704@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6002.18005
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6002.18005
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sachin Sant wrote:
-> I came across the following badness message during shutdown on a 
-> Power6 box.
-> This was with 2.6.30-git12(3fe0344faf7fdcb158bd5c1a9aec960a8d70c8e8)
+Kdump with INIT on IPF worked on SGI's IA64 servers when i left SGI last 
+December.
+Is this problem something new to you after .27?
+
+SGI folks should test this patchset to ensure no surprise is introduced to 
+their servers.
+
+Cheers,
+jay
+
+----- Original Message ----- 
+From: "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>
+To: <linux-ia64@vger.kernel.org>; <linux-kernel@vger.kernel.org>
+Cc: "Haren Myneni" <hbabu@us.ibm.com>; <kexec@lists.infradead.org>; "Vivek 
+Goyal" <vgoyal@redhat.com>
+Sent: Wednesday, June 17, 2009 11:44 PM
+Subject: [PATCH 0/7] Patches for kdump vs. INIT
+
+
+> Hi Tony-san, and kdump folks,
 >
-> ------------[ cut here ]------------
-> Badness at drivers/char/tty_ldisc.c:210
-The badness message is still present with git18.
-
-------------[ cut here ]------------
-Badness at drivers/char/tty_ldisc.c:210
-NIP: c00000000040a3e8 LR: c00000000040a3d0 CTR: 0000000000000000
-REGS: c00000003cf6b7f0 TRAP: 0700   Not tainted  (2.6.30-git18)
-MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000424  XER: 00000001
-TASK = c00000003e308660[3846] 'vhangup' THREAD: c00000003cf68000 CPU: 1
-<6>GPR00: 0000000000000001 c00000003cf6ba70 c000000000ef48c0 0000000000000001 
-<6>GPR04: 0000000000000001 c00000003819f000 c000000000407b60 0000000000000000 
-<6>GPR08: 0000000000000000 0000000000000000 0000000000000001 c000000000e1bce8 
-<6>GPR12: 0000000044000428 c000000001002600 00000000ffffffff ffffffffffffffff 
-<6>GPR16: 0000000021fd8a50 0000000000000002 0000000000000000 0000000021fc03b0 
-<6>GPR20: 0000000000000000 0000000000000000 c00000003d04c700 0000000000000001 
-<6>GPR24: 0000000000000000 0000000000000000 0000000000000001 c000000040007e20 
-<6>GPR28: 0000000000000000 c0000000013ffd38 c000000000e7e860 c00000003cf6ba70 
-NIP [c00000000040a3e8] .tty_ldisc_put+0xbc/0xf4
-LR [c00000000040a3d0] .tty_ldisc_put+0xa4/0xf4
-Call Trace:
-[c00000003cf6ba70] [c00000000040a3d0] .tty_ldisc_put+0xa4/0xf4 (unreliable)
-[c00000003cf6bb10] [c00000000040a7c8] .tty_ldisc_reinit+0x38/0x80
-[c00000003cf6bba0] [c00000000040b1d8] .tty_ldisc_hangup+0x190/0x260
-[c00000003cf6bc40] [c000000000401090] .do_tty_hangup+0x188/0x4c0
-[c00000003cf6bd20] [c000000000401440] .tty_vhangup_self+0x34/0x54
-[c00000003cf6bdb0] [c00000000019236c] .sys_vhangup+0x38/0x58
-[c00000003cf6be30] [c000000000008534] syscall_exit+0x0/0x40
-Instruction dump:
-912b0088 4bcd17bd 60000000 e87e8008 7f44d378 481c04fd 60000000 801b0008 
-7c09fe70 7d200278 7c004850 54000ffe <0b000000> 7f63db78 4bd7c98d 60000000 
-
-Let me know if i can provide any other information.
-
-Thanks
--Sachin
-
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+> I got some trouble on kdump on IPF with INIT, and my investigation
+> proves there are some bugs and races in startup of kdump.
+> Here are fixes based on .30, for issues I found.
+>
+> Since it must be serious problem for (likely big) IPF servers if we
+> could fail to retrieve crashdump via kdump, so I believe these patches
+> should be applied asap.
+>
+>
+> Thanks,
+> H.Seto
+>
+> ===
+>
+> Hidetoshi Seto (7):
+>      ia64, kdump: Mask MCA/INIT on freezing cpus
+>      ia64, kexec: Make INIT safe while kdump/kexec
+>      ia64, kexec: Unregister MCA handler before kexec
+>      ia64, kdump: Don't offline APs
+>      ia64, kdump: Mask INIT first in panic-kdump path
+>      ia64, kdump: Try INIT regardless of kdump_on_init
+>      ia64, kdump: Short path to freeze CPUs
+>
+> arch/ia64/kernel/crash.c         |   85 
+> ++++++++++++++++++++++++++------------
+> arch/ia64/kernel/machine_kexec.c |   17 ++++++++
+> arch/ia64/kernel/mca.c           |   15 ++++++-
+> arch/ia64/kernel/mca_asm.S       |   47 +++++++++++++++++++++
+> 4 files changed, 136 insertions(+), 28 deletions(-)
+>
+>
+>
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
+> 
 
