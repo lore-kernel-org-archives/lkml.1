@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbZFVL6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbZFVL7C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756370AbZFVL6A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 07:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZFVL5w
+	id S1753060AbZFVL7C (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 07:59:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZFVL6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 07:57:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35025 "EHLO mx2.mail.elte.hu"
+	Mon, 22 Jun 2009 07:58:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35258 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbZFVL5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 07:57:51 -0400
-Date: Mon, 22 Jun 2009 13:57:34 +0200
+	id S1752040AbZFVL6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 07:58:52 -0400
+Date: Mon, 22 Jun 2009 13:58:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: eranian@gmail.com
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -22,8 +22,8 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Corey J Ashford <cjashfor@us.ibm.com>,
        Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
        perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: II.2 - Event knowledge missing
-Message-ID: <20090622115734.GN24366@elte.hu>
+Subject: Re: III.1 - Sampling period randomization
+Message-ID: <20090622115806.GO24366@elte.hu>
 References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -41,59 +41,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 2/ Event knowledge missing
+> III/ Requests
 >
-> There are constraints on events in Intel processors. Different
-> constraints do exist on AMD64 processors, especially with
-> uncore-releated events.
+> 1/ Sampling period randomization
+>
+> It is our experience (on Itanium, for instance), that for certain
+> sampling measurements, it is beneficial to randomize the sampling
+> period a bit. This is in particular the case when sampling on an
+> event that happens very frequently and which is not related to
+> timing, e.g., branch_instructions_retired. Randomization helps
+> mitigate the bias. You do not need something sophisticated. But
+> when you are using a kernel-level sampling buffer, you need to
+> have the kernel randomize. Randomization needs to be supported per
+> event.
 
-You raise the issue of uncore events in IV.1, but let us reply here
-primarily.
+This is on the todo list, it should be pretty straight forward to
+implement. Basically add a u64 randomize:1 flag and a u64 rand_size,
+and add some noise to hwc->sample_period in perf_counter_overflow(),
+just like the .freq path does.
 
-Un-core counters and events seem to be somewhat un-interesting to
-us. (Patches from those who find them interesting are welcome of
-course!)
+In fact the auto-freq sampling counters effectively randomize
+already, as the path of stabilization/convergence is never exactly
+the same. We could add a little bit of constant noise to the freq
+counter and it would auto-correct automatically.
 
-So they werent in the first line of PMU features to cherry-pick
-from.
+Since you seem to care abut this sub-feature, would you be
+interested in sending a patch for that? The essential steps are:
 
-The main problem with uncore events is that they are per physical
-package, and hence tying a piece of physical metric exposed via them
-to a particular workload is hard - unless full-system analysis is
-performed. 'Task driven' metrics seem far more useful to performance
-analysis (and those are the preferred analysis method of most
-user-space developers), as they allow particularized sampling and
-allow the tight connection between workload and metric.
+ - Take a new bit off perf_counter_attr::__reserved_1 and name
+   it attr.randomize.
 
-If, despite our expecations, uncore events prove to be useful,
-popular and required elements of performance analysis, they can be
-supported in perfcounters via various levels:
+ - Inject a few bits of trivial noise into the period calculated
+   in kernel/perf_counter.c:perf_adjust_period(). The best place
+   would be to add it right before this line:
 
- - a special raw ID range on x86, only to per CPU counters. The
-   low-level implementation reserves the uncore PMCs, so overlapping
-   allocation (and interaction between the cores via the MSRs) is
-   not possible.
+        hwc->sample_period = sample_period;
 
- - generic enumeration with full tooling support, time-sharing and
-   the whole set of features. The low-level backend would time-share
-   the resource between interested CPUs.
+   If you add a small relative fuzz of below 1% to sample_period
+   then the code will auto-correct.
 
-There is no limitation in the perfcounters design that somehow makes
-uncore events harder to support. The uncore counters _themselves_
-are limited to begin with - so rich features cannot be offered on
-top of them.
+ - All the tools deal just fine with variable periods already, so
+   there's no tooling updates needed, beyond adding a --randomize
+   flag to tools/perf/builtin-record.c.
 
-> In your model, those need to be taken care of by the kernel.
-> Should the kernel make the wrong decision, there would be no
-> work-around for user tools. Take the example I outlined just above
-> with Intel fixed counters.
-
-Yes. Why should there be a work-around for user tools if the fix is
-for the kernel? We don't try to work around random driver bugs in userspace
-either, we simply fix the kernel.
-
-> The current code-base does not have any constrained event support,
-> therefore bogus counts may be returned depending on the event
-> measured.
-
-Then we'll need to grow some when we run into them :-)
+Let us know if you need any help with any of this!
