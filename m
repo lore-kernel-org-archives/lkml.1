@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbZFVCLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZFVCTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754795AbZFVCLc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Jun 2009 22:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbZFVCLY
+	id S1754072AbZFVCTe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Jun 2009 22:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZFVCTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Jun 2009 22:11:24 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52407 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbZFVCLX (ORCPT
+	Sun, 21 Jun 2009 22:19:25 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:41075 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751903AbZFVCTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Jun 2009 22:11:23 -0400
-Date: Mon, 22 Jun 2009 11:11:20 +0900 (JST)
-Message-Id: <20090622.111120.683298528766430835.mitake@dcl.info.waseda.ac.jp>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Making fs/minix/minix.h double including safe
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Jun 2009 22:19:24 -0400
+Date: Mon, 22 Jun 2009 10:19:26 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [RFC 2/7] crypto: Use GHASH digest algorithm in GCM
+Message-ID: <20090622021926.GA8013@gondor.apana.org.au>
+References: <20090621134635.GA2980@gondor.apana.org.au> <1245634876.22246.320.camel@yhuang-dev.sh.intel.com> <20090622020305.GA7843@gondor.apana.org.au> <1245636447.22246.323.camel@yhuang-dev.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245636447.22246.323.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 22, 2009 at 10:07:27AM +0800, Huang Ying wrote:
+>
+> Oh, I see. I will do this.
 
-Hi,
+Just to be clear, it should be added to gcm_base, not gcm.
 
-This is a very VERY trivial fix for Minix file system.
-
-I happen to find that fs/minix/minix.h doesn't guard double include.
-Yes, I know this never cause something destructive
-because this is self-evidence that no source file includes minix.h twice,
-but I think fixing this is better than disregarding it.
-If you agree, please use it.
-
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-
-diff --git a/fs/minix/minix.h b/fs/minix/minix.h
-index cb7fdd1..9dcf95b 100644
---- a/fs/minix/minix.h
-+++ b/fs/minix/minix.h
-@@ -1,3 +1,6 @@
-+#ifndef FS_MINIX_H
-+#define FS_MINIX_H
-+
- #include <linux/fs.h>
- #include <linux/pagemap.h>
- #include <linux/minix_fs.h>
-@@ -86,3 +89,5 @@ static inline struct minix_inode_info *minix_i(struct inode *inode)
- {
- 	return list_entry(inode, struct minix_inode_info, vfs_inode);
- }
-+
-+#endif /* FS_MINIX_H */
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
