@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbZFVRhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbZFVRhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757907AbZFVRhT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZFVRhL
+	id S1758047AbZFVRhu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZFVRhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:37:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50709 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbZFVRhI (ORCPT
+	Mon, 22 Jun 2009 13:37:43 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:36531 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752147AbZFVRhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:37:08 -0400
-Date: Mon, 22 Jun 2009 19:37:04 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Marco Stornelli <marco.stornelli@gmail.com>,
-       Jamie Lokier <jamie@shareable.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-Message-ID: <20090622173704.GC21299@elf.ucw.cz>
-References: <4A33A7A2.1050608@gmail.com> <20090613155957.GA16220@shareable.org> <4A34A394.5040509@gmail.com> <20090621064040.GC1656@ucw.cz> <4A3E6F28.4090404@gmail.com> <20090621205245.GC3254@elf.ucw.cz> <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com> <20090622172003.GB21149@elf.ucw.cz> <4A3FBFF0.40006@am.sony.com>
+	Mon, 22 Jun 2009 13:37:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=t3TmW9hfS/ZWEkgYyZ0nelTcOh8oS+WMjUJ2Chp3W3DxCpGCwabKIm1VC3SBytfmNF
+         hPaXuVzaC8JjNBDOyM5wQVcDpdy8O1pIBVjH6XNNL4WZrPNcnyrD95Zfwwf/b4DmyBRk
+         iamlnarMe57uVG5dtdCqWUqTnQbRq0/A6Kh1k=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A3FBFF0.40006@am.sony.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A3FB7BE.9080203@linux.intel.com>
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
+	 <4A3EE668.5090400@jp.fujitsu.com>
+	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>
+	 <4A3F55C7.4030909@linux.intel.com>
+	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>
+	 <4A3F7A93.5080004@linux.intel.com>
+	 <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>
+	 <4A3F8BF7.6010406@linux.intel.com>
+	 <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
+	 <4A3FB7BE.9080203@linux.intel.com>
+Date: Mon, 22 Jun 2009 19:37:43 +0200
+Message-ID: <8db1092f0906221037m30c7966bx6870b4eeb9ee16ea@mail.gmail.com>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend to 
+	disk, mce related?
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-06-22 10:31:28, Tim Bird wrote:
-> Pavel Machek wrote:
-> >>> How do you handle hard-links, then?
-> >> Indeed hard-links are not supported :) Due to the design of this fs
-> >> there are some limitations explained in the documentation as not
-> >> hard-link, only private memory mapping and so on. However this
-> >> limitations don't limit the fs itself because you must consider the
-> >> special goal of this fs.
-> > 
-> > I did not see that in the changelog. If it is not general purpose
-> > filesystem, it is lot less interesting.
-> 
-> PRAMFS is not a general purpose filesystem. Please read
-> the introductory post to this thread, or look at
-> http://pramfs.sourceforge.net/ for more information.
+2009/6/22 Andi Kleen <ak@linux.intel.com>:
 
-Yeah, I seen that. It directly contradicts what you say.
+>
+> Weird.
+>
+> And again can you double check it doesn't hang with check_interval = 0
+> in this setup? (just to make sure)
 
-> Since the purpose of PRAMFS is to provide a filesystem
-> that is persistent across kernel instantions, it is not
-> designed for high speed.  Robustness in the face of
-> kernel crashes or bugs is the highest priority, so
-> PRAMFS has significant overhead to make the window
-> of writability to the filesystem RAM as small as possible.
+To be clear: I do s2disk immediately after boot. System never hangs
+after normal boot.
 
-Really? So why don't you use well known, reliable fs like ext3?
+I do this test:
 
-> This is not a file system one would do kernel compiles on.
-> This is where someone would keep a small amount of sensitive
-> data, or crash logs that one needed to preserve over kernel
-> invocations.
+1. boot, don't change check_interval
+2. suspend to disk
+3. wait 10 minutes
+4. resume
+5. When finish resume uptime shows 12 minutes
+6. hangs when uptime shows 15 minutes
 
-Really? Web page says:
+Second test:
+Another machine (laptop) has the same issue
+1. boot, don't change check_interval
+2. suspend to disk
+3. don't wait
+4. resume
+5. hangs when uptime shows 5 minutes
 
-#2. If the backing-store RAM is comparable in access speed to system
-#memory, there's really no point in caching the file I/O data in the
-#page cache. Better to move file data directly between the user buffers
-#and the backing store RAM, i.e. use direct I/O. This prevents the
-#unnecessary 
 
-So you don't cache it "because its fast", and then it is 13MB/sec?
+I already do this test:
+1. boot, check_interval=0
+2. suspend to disk
+3. wait 10 minutes
+4. resume
 
-									Pavel
+I show result in next e-mail, please be patient.
+
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Maciej Rutecki
+http://www.maciek.unixy.pl
