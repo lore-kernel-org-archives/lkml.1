@@ -1,228 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbZFVVXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbZFVVZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759686AbZFVVXX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 17:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbZFVVWO
+	id S1757997AbZFVVZq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 17:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZFVVZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 17:22:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59728 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759477AbZFVVWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 17:22:13 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC][ PATCH -tip v2 5/7] kprobes: x86: cleanup save/restore registers
-To: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Date: Mon, 22 Jun 2009 17:23:25 -0400
-Message-ID: <20090622212325.5384.46544.stgit@localhost.localdomain>
-In-Reply-To: <20090622212255.5384.53732.stgit@localhost.localdomain>
-References: <20090622212255.5384.53732.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 22 Jun 2009 17:25:39 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:40687 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751124AbZFVVZi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 17:25:38 -0400
+Subject: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 22 Jun 2009 14:25:41 -0700
+Message-Id: <1245705941.26649.19.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce SAVE/RESOTRE_REGS_STRING for cleanup kretprobe-trampoline asm
-code. These macros will be used for emulating interruption.
+Looking at the output of /proc/meminfo, a user might get confused in thinking
+that there are zero unevictable pages, though, in reality their can be
+hugepages which are inherently unevictable. 
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Anders Kaseorg <andersk@ksplice.com>
-Cc: Tim Abbott <tabbott@ksplice.com>
----
+Though hugepages are not handled by the unevictable lru framework, they are
+infact unevictable in nature and global statistics counter should reflect that. 
 
- arch/x86/kernel/kprobes.c |  128 ++++++++++++++++++++++++---------------------
- 1 files changed, 67 insertions(+), 61 deletions(-)
+For instance, I have allocated 20 huge pages on my system, meminfo shows this 
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index b77e050..979b7ed 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -568,6 +568,69 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 	return 0;
- }
+Unevictable:           0 kB
+Mlocked:               0 kB
+HugePages_Total:      20
+HugePages_Free:       20
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+
+After the patch:
+
+Unevictable:       81920 kB
+Mlocked:               0 kB
+HugePages_Total:      20
+HugePages_Free:       20
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+
+Index: linux-2.6/Documentation/vm/unevictable-lru.txt
+===================================================================
+--- linux-2.6.orig/Documentation/vm/unevictable-lru.txt	2009-06-22 11:49:27.000000000 -0700
++++ linux-2.6/Documentation/vm/unevictable-lru.txt	2009-06-22 13:57:32.000000000 -0700
+@@ -71,6 +71,12 @@ The unevictable list addresses the follo
  
-+#ifdef CONFIG_X86_64
-+#define SAVE_REGS_STRING		\
-+	/* Skip cs, ip, orig_ax. */	\
-+	"	subq $24, %rsp\n"	\
-+	"	pushq %rdi\n"		\
-+	"	pushq %rsi\n"		\
-+	"	pushq %rdx\n"		\
-+	"	pushq %rcx\n"		\
-+	"	pushq %rax\n"		\
-+	"	pushq %r8\n"		\
-+	"	pushq %r9\n"		\
-+	"	pushq %r10\n"		\
-+	"	pushq %r11\n"		\
-+	"	pushq %rbx\n"		\
-+	"	pushq %rbp\n"		\
-+	"	pushq %r12\n"		\
-+	"	pushq %r13\n"		\
-+	"	pushq %r14\n"		\
-+	"	pushq %r15\n"
-+#define RESTORE_REGS_STRING		\
-+	"	popq %r15\n"		\
-+	"	popq %r14\n"		\
-+	"	popq %r13\n"		\
-+	"	popq %r12\n"		\
-+	"	popq %rbp\n"		\
-+	"	popq %rbx\n"		\
-+	"	popq %r11\n"		\
-+	"	popq %r10\n"		\
-+	"	popq %r9\n"		\
-+	"	popq %r8\n"		\
-+	"	popq %rax\n"		\
-+	"	popq %rcx\n"		\
-+	"	popq %rdx\n"		\
-+	"	popq %rsi\n"		\
-+	"	popq %rdi\n"		\
-+	/* Skip orig_ax, ip, cs */	\
-+	"	addq $24, %rsp\n"
-+#else
-+#define SAVE_REGS_STRING		\
-+	/* Skip cs, ip, orig_ax and gs. */	\
-+	"	subl $16, %esp\n"	\
-+	"	pushl %fs\n"		\
-+	"	pushl %ds\n"		\
-+	"	pushl %es\n"		\
-+	"	pushl %eax\n"		\
-+	"	pushl %ebp\n"		\
-+	"	pushl %edi\n"		\
-+	"	pushl %esi\n"		\
-+	"	pushl %edx\n"		\
-+	"	pushl %ecx\n"		\
-+	"	pushl %ebx\n"
-+#define RESTORE_REGS_STRING		\
-+	"	popl %ebx\n"		\
-+	"	popl %ecx\n"		\
-+	"	popl %edx\n"		\
-+	"	popl %esi\n"		\
-+	"	popl %edi\n"		\
-+	"	popl %ebp\n"		\
-+	"	popl %eax\n"		\
-+	/* Skip ds, es, fs, gs, orig_ax, and ip. Note: don't pop cs here*/\
-+	"	addl $24, %esp\n"
-+#endif
+  (*) Those mapped into VM_LOCKED [mlock()ed] VMAs.
+ 
++ (*) Hugetlb pages are also unevictable. Hugepages are already implemented in
++     a way that these pages don't reside on the LRU and hence are not iterated
++     over during the vmscan. So there is no need to move around these pages
++     across different LRU's. We just account these pages as unevictable for
++     correct statistics.
 +
- /*
-  * When a retprobed function returns, this code saves registers and
-  * calls trampoline_handler() runs, which calls the kretprobe's handler.
-@@ -581,65 +644,16 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
- 			/* We don't bother saving the ss register */
- 			"	pushq %rsp\n"
- 			"	pushfq\n"
--			/*
--			 * Skip cs, ip, orig_ax.
--			 * trampoline_handler() will plug in these values
--			 */
--			"	subq $24, %rsp\n"
--			"	pushq %rdi\n"
--			"	pushq %rsi\n"
--			"	pushq %rdx\n"
--			"	pushq %rcx\n"
--			"	pushq %rax\n"
--			"	pushq %r8\n"
--			"	pushq %r9\n"
--			"	pushq %r10\n"
--			"	pushq %r11\n"
--			"	pushq %rbx\n"
--			"	pushq %rbp\n"
--			"	pushq %r12\n"
--			"	pushq %r13\n"
--			"	pushq %r14\n"
--			"	pushq %r15\n"
-+			SAVE_REGS_STRING
- 			"	movq %rsp, %rdi\n"
- 			"	call trampoline_handler\n"
- 			/* Replace saved sp with true return address. */
- 			"	movq %rax, 152(%rsp)\n"
--			"	popq %r15\n"
--			"	popq %r14\n"
--			"	popq %r13\n"
--			"	popq %r12\n"
--			"	popq %rbp\n"
--			"	popq %rbx\n"
--			"	popq %r11\n"
--			"	popq %r10\n"
--			"	popq %r9\n"
--			"	popq %r8\n"
--			"	popq %rax\n"
--			"	popq %rcx\n"
--			"	popq %rdx\n"
--			"	popq %rsi\n"
--			"	popq %rdi\n"
--			/* Skip orig_ax, ip, cs */
--			"	addq $24, %rsp\n"
-+			RESTORE_REGS_STRING
- 			"	popfq\n"
- #else
- 			"	pushf\n"
--			/*
--			 * Skip cs, ip, orig_ax and gs.
--			 * trampoline_handler() will plug in these values
--			 */
--			"	subl $16, %esp\n"
--			"	pushl %fs\n"
--			"	pushl %es\n"
--			"	pushl %ds\n"
--			"	pushl %eax\n"
--			"	pushl %ebp\n"
--			"	pushl %edi\n"
--			"	pushl %esi\n"
--			"	pushl %edx\n"
--			"	pushl %ecx\n"
--			"	pushl %ebx\n"
-+			SAVE_REGS_STRING
- 			"	movl %esp, %eax\n"
- 			"	call trampoline_handler\n"
- 			/* Move flags to cs */
-@@ -647,15 +661,7 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
- 			"	movl %edx, 52(%esp)\n"
- 			/* Replace saved flags with true return address. */
- 			"	movl %eax, 56(%esp)\n"
--			"	popl %ebx\n"
--			"	popl %ecx\n"
--			"	popl %edx\n"
--			"	popl %esi\n"
--			"	popl %edi\n"
--			"	popl %ebp\n"
--			"	popl %eax\n"
--			/* Skip ds, es, fs, gs, orig_ax and ip */
--			"	addl $24, %esp\n"
-+			RESTORE_REGS_STRING
- 			"	popf\n"
- #endif
- 			"	ret\n");
+ The infrastructure may also be able to handle other conditions that make pages
+ unevictable, either by definition or by circumstance, in the future.
+ 
+Index: linux-2.6/mm/hugetlb.c
+===================================================================
+--- linux-2.6.orig/mm/hugetlb.c	2009-06-22 11:49:57.000000000 -0700
++++ linux-2.6/mm/hugetlb.c	2009-06-22 14:04:05.000000000 -0700
+@@ -533,6 +533,8 @@ static void update_and_free_page(struct 
+ 				1 << PG_dirty | 1 << PG_active | 1 << PG_reserved |
+ 				1 << PG_private | 1<< PG_writeback);
+ 	}
++	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
++				-(pages_per_huge_page(h)));
+ 	set_compound_page_dtor(page, NULL);
+ 	set_page_refcounted(page);
+ 	arch_release_hugepage(page);
+@@ -584,6 +586,8 @@ static void prep_new_huge_page(struct hs
+ 	spin_lock(&hugetlb_lock);
+ 	h->nr_huge_pages++;
+ 	h->nr_huge_pages_node[nid]++;
++	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
++				pages_per_huge_page(h));
+ 	spin_unlock(&hugetlb_lock);
+ 	put_page(page); /* free it into the hugepage allocator */
+ }
+@@ -749,6 +753,9 @@ static struct page *alloc_buddy_huge_pag
+ 		 */
+ 		h->nr_huge_pages_node[nid]++;
+ 		h->surplus_huge_pages_node[nid]++;
++		mod_zone_page_state(page_zone(page),
++					NR_LRU_BASE + LRU_UNEVICTABLE,
++					pages_per_huge_page(h));
+ 		__count_vm_event(HTLB_BUDDY_PGALLOC);
+ 	} else {
+ 		h->nr_huge_pages--;
 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
