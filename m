@@ -1,64 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbZFVPbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZFVPba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbZFVPbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZFVPbD
+	id S1757781AbZFVPba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 11:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757699AbZFVPbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:31:03 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38877 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZFVPbC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:31:02 -0400
-Date: Mon, 22 Jun 2009 16:29:19 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Alex Chiang <achiang@hp.com>
-Cc: jbarnes@virtuousgeek.org, linux-arch@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>, Tony Luck <tony.luck@intel.com>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
-Message-ID: <20090622152919.GA29188@n2100.arm.linux.org.uk>
-References: <20090622140807.25509.54448.stgit@bob.kio>
+	Mon, 22 Jun 2009 11:31:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55665 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757649AbZFVPbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 11:31:14 -0400
+Date: Mon, 22 Jun 2009 11:30:31 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [RFC] IO scheduler based io controller (V5)
+Message-ID: <20090622153030.GA15600@redhat.com>
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <20090621152116.GC3728@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622140807.25509.54448.stgit@bob.kio>
+In-Reply-To: <20090621152116.GC3728@balbir.in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 08:08:07AM -0600, Alex Chiang wrote:
-> This was #define'd as 0 on all platforms, so let's get rid of it.
+On Sun, Jun 21, 2009 at 08:51:16PM +0530, Balbir Singh wrote:
+> * Vivek Goyal <vgoyal@redhat.com> [2009-06-19 16:37:18]:
 > 
-> This change makes pci_scan_slot() slightly easier to read.
+> > 
+> > Hi All,
+> > 
+> > Here is the V5 of the IO controller patches generated on top of 2.6.30.
+> [snip]
 > 
-> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> Cc: Russell King <linux@arm.linux.org.uk>
+> > Testing
+> > =======
+> >
+> 
+> [snip]
+> 
+> I've not been reading through the discussions in complete detail, but
+> I see no reference to async reads or aio. In the case of aio, aio
+> presumes the context of the user space process. Could you elaborate on
+> any testing you've done with these cases? 
+> 
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Hi Balbir,
 
-For:
+So far I had not done any testing with AIO. I have done some just now.
+Here are the results.
 
-> diff --git a/arch/arm/include/asm/pci.h b/arch/arm/include/asm/pci.h
-> index 0abf386..226cddd 100644
-> --- a/arch/arm/include/asm/pci.h
-> +++ b/arch/arm/include/asm/pci.h
-> @@ -6,8 +6,6 @@
->  
->  #include <mach/hardware.h> /* for PCIBIOS_MIN_* */
->  
-> -#define pcibios_scan_all_fns(a, b)	0
-> -
->  #ifdef CONFIG_PCI_HOST_ITE8152
->  /* ITE bridge requires setting latency timer to avoid early bus access
->     termination by PIC bus mater devices
+Test1 (AIO reads)
+================
+Set up two fio, AIO read jobs in two cgroup with weight 1000 and 500
+respectively. I am using cfq scheduler. Following are some lines from my test
+script.
 
-Thanks.
+===================================================================
+fio_args="--ioengine=libaio --rw=read --size=512M"
+
+echo 1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
+
+fio $fio_args --name=test1 --directory=/mnt/$BLOCKDEV/fio1/ --output=/mnt/$BLOCKDEV/fio1/test1.log --exec_postrun="../read-and-display-group-stats.sh $maj_dev $minor_dev" &
+
+fio $fio_args --name=test2 --directory=/mnt/$BLOCKDEV/fio2/ --output=/mnt/$BLOCKDEV/fio2/test2.log &
+===================================================================
+
+test1 and test2 are two groups with weight 1000 and 500 respectively.
+"read-and-display-group-stats.sh" is one small script which reads the
+test1 and test2 cgroup files to determine how much disk time each group
+got till first fio job finished.
+
+Following are the results.
+
+test1 statistics: time=8 16 5598   sectors=8 16 1049648 
+test2 statistics: time=8 16 2908   sectors=8 16 508560
+
+Above shows that by the time first fio (higher weight), finished, group
+test1 got 5598 ms of disk time and group test2 got 2908 ms of disk time.
+similarly the statistics for number of sectors transferred are also shown.
+
+Note that disk time given to group test1 is almost double of group2 disk
+time.
+
+
+Test2 (AIO Wries (direct))
+==========================
+Set up two fio, AIO direct write jobs in two cgroup with weight 1000 and 500
+respectively. I am using cfq scheduler. Following are some lines from my test
+script.
+
+===================================================================
+fio_args="--ioengine=libaio --rw=write --size=512M --direct=1"
+
+echo 1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
+
+fio $fio_args --name=test1 --directory=/mnt/$BLOCKDEV/fio1/ --output=/mnt/$BLOCKDEV/fio1/test1.log --exec_postrun="../read-and-display-group-stats.sh $maj_dev $minor_dev" &
+
+fio $fio_args --name=test2 --directory=/mnt/$BLOCKDEV/fio2/ --output=/mnt/$BLOCKDEV/fio2/test2.log &
+===================================================================
+
+test1 and test2 are two groups with weight 1000 and 500 respectively.
+"read-and-display-group-stats.sh" is one small script which reads the
+test1 and test2 cgroup files to determine how much disk time each group
+got till first fio job finished.
+
+Following are the results.
+
+test1 statistics: time=8 16 28029   sectors=8 16 1049656
+test2 statistics: time=8 16 14093   sectors=8 16 512600
+
+Above shows that by the time first fio (higher weight), finished, group
+test1 got 28029 ms of disk time and group test2 got 14093 ms of disk time.
+similarly the statistics for number of sectors transferred are also shown.
+
+Note that disk time given to group test1 is almost double of group2 disk
+time.
+
+Thanks
+Vivek
