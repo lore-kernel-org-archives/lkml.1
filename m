@@ -1,638 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbZFVIXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZFVI0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbZFVIXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 04:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZFVIWw
+	id S1755034AbZFVI0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 04:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZFVI0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 04:22:52 -0400
-Received: from mail-fx0-f224.google.com ([209.85.220.224]:51162 "EHLO
-	mail-fx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbZFVIWv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 04:22:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SfJ8/yLDAEep3MV5Z5wBJX433jBXyMdt9HScVOziIpnxDag/W3pJkno6vBLBf9tluV
-         IWNKPsQXb2runuVL4kT+KyJkV9PAKOPe+9mO7GQZDeR790XBzveSQGqbPgOuJqAlMYo1
-         DXasG46mCARfkiKWm2CIJwKNQnL5/3h/HEcOA=
-MIME-Version: 1.0
-In-Reply-To: <4A3F017B.2010409@bluewatersys.com>
-References: <4A3F017B.2010409@bluewatersys.com>
-Date: Mon, 22 Jun 2009 10:22:52 +0200
-Message-ID: <63386a3d0906220122x31d0b23fk7bd86145b719d9b5@mail.gmail.com>
-Subject: Re: [PATCH] SST25L (non JEDEC) SPI Flash driver
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
-       spi-devel-general@lists.sourceforge.net, mike@steroidmicros.com,
-       linux kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 04:26:04 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51754 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752995AbZFVI0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 04:26:03 -0400
+Date: Mon, 22 Jun 2009 18:26:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 22
+Message-Id: <20090622182600.129da88e.sfr@canb.auug.org.au>
+In-Reply-To: <20090622181920.496d160e.sfr@canb.auug.org.au>
+References: <20090622181920.496d160e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/22 Ryan Mallon <ryan@bluewatersys.com>:
+--Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Add support for the non JEDEC SST25L SPI Flash devices.
+On Mon, 22 Jun 2009 18:19:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
 >
-> Signed-off-by: Andre Renaud <andre@bluewatersys.com>
-> Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
-> ---
->
-> diff --git a/drivers/mtd/devices/Kconfig b/drivers/mtd/devices/Kconfig
-> index 325fab9..c222514 100644
-> --- a/drivers/mtd/devices/Kconfig
-> +++ b/drivers/mtd/devices/Kconfig
-> @@ -104,6 +104,16 @@ config M25PXX_USE_FAST_READ
->        help
->          This option enables FAST_READ access supported by ST M25Pxx.
->
-> +config MTD_SST25L
-> +       tristate "Support SST25L (non JEDEC) SPI Flash chips"
-> +       depends on SPI_MASTER
-> +       help
-> +         This enables access to the non JEDEC SST25L SPI flash chips, used
-> +         for program and data storage.
-> +
-> +         Set up your spi devices with the right board-specific platform data,
-> +         if you want to specify device partitioning.
-> +
->  config MTD_SLRAM
->        tristate "Uncached system RAM"
->        help
-> diff --git a/drivers/mtd/devices/Makefile b/drivers/mtd/devices/Makefile
-> index 0993d5c..ab5c9b9 100644
-> --- a/drivers/mtd/devices/Makefile
-> +++ b/drivers/mtd/devices/Makefile
-> @@ -16,3 +16,4 @@ obj-$(CONFIG_MTD_LART)                += lart.o
->  obj-$(CONFIG_MTD_BLOCK2MTD)    += block2mtd.o
->  obj-$(CONFIG_MTD_DATAFLASH)    += mtd_dataflash.o
->  obj-$(CONFIG_MTD_M25P80)       += m25p80.o
-> +obj-$(CONFIG_MTD_SST25L)       += sst25l.o
-> diff --git a/drivers/mtd/devices/sst25l.c b/drivers/mtd/devices/sst25l.c
-> new file mode 100644
-> index 0000000..8e62479
-> --- /dev/null
-> +++ b/drivers/mtd/devices/sst25l.c
-> @@ -0,0 +1,508 @@
-> +/*
-> + * drivers/mtd/sst25l.c
-> + *
-> + * Driver for SST25L SPI Flash chips
-> + *
-> + * Copyright (C) 2009 Bluewater Systems Ltd
-> + * Author: Andre Renaud <andre@bluewatersys.com>
-> + * Author: Ryan Mallon <ryan@bluewatersys.com>
-> + *
-> + * Based on m25p80.c
-> + *
-> + * This code is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/module.h>
-> +#include <linux/device.h>
-> +#include <linux/mutex.h>
-> +#include <linux/math64.h>
+> Changes since 20090619:
 
-I'm always suspicious about drivers doing maths, so I
-think this can be removed, see below...
+The current "git diff --stat -M stable..HEAD^" ends like this:
 
-> +#include <linux/interrupt.h>
-> +
-> +#include <linux/mtd/mtd.h>
-> +#include <linux/mtd/partitions.h>
-> +
-> +#include <linux/spi/spi.h>
-> +#include <linux/spi/flash.h>
-> +
-> +/* Erases can take up to 3 seconds! */
-> +#define MAX_READY_WAIT_JIFFIES msecs_to_jiffies(3000)
-> +
-> +#define SST25L_CMD_WRSR                0x01    /* Write status register */
-> +#define SST25L_CMD_WRDI                0x04    /* Write disable */
-> +#define SST25L_CMD_RDSR                0x05    /* Read status register */
-> +#define SST25L_CMD_WREN                0x06    /* Write enable */
-> +#define SST25L_CMD_READ                0x03    /* High speed read */
-> +
-> +#define SST25L_CMD_EWSR                0x50    /* Enable write status register */
-> +#define SST25L_CMD_BLOCK_ERASE 0x52    /* Erase sector */
-> +#define SST25L_CMD_READ_ID     0x90    /* Read device ID */
-> +#define SST25L_CMD_AAI_PROGRAM 0xaf    /* Auto address increment */
-> +
-> +#define SST25L_STATUS_BUSY     (1 << 0)        /* Chip is busy */
-> +#define SST25L_STATUS_WREN     (1 << 1)        /* Write enabled */
-> +#define SST25L_STATUS_BP0      (1 << 2)        /* Block protection 0 */
-> +#define SST25L_STATUS_BP1      (1 << 3)        /* Block protection 1 */
-> +
-> +struct sst25l_flash {
-> +       struct spi_device       *spi;
-> +       struct mutex            lock;
-> +       struct mtd_info         mtd;
-> +
-> +       int                     partitioned;
-> +};
-> +
-> +struct flash_info {
-> +       const char              *name;
-> +       u16                     device_id;
-> +       unsigned                page_size;
-> +       unsigned                nr_pages;
-> +       unsigned                erase_size;
-> +};
-> +
-> +#define to_sst25l_flash(x) container_of(x, struct sst25l_flash, mtd)
-> +
-> +static struct flash_info __devinitdata sst25l_flash_info[] = {
+	835 files changed, 46602 insertions(+), 14044 deletions(-)
 
-__devinitdata or __initdata?
-Check the definitions from include/linux/init.h. If it's hot-pluggable
-then it's fine!
+So, we must be nearly there. :-)
 
-> +       {"sst25lf020a", 0xbf43, 256, 1024, 32 * 1024},
-> +       {"sst25lf040a", 0xbf44, 256, 2048, 32 * 1024},
-> +};
-> +
-> +static int sst25l_status(struct sst25l_flash *flash, int *status)
-> +{
-> +       u8 command, response;
-> +       int err;
-> +
-> +       command = SST25L_CMD_RDSR;
-> +       err = spi_write_then_read(flash->spi, &command, 1, &response, 1);
-> +       if (err < 0)
-> +               return err;
-> +
-> +       *status = response;
-> +       return 0;
-> +}
-> +
-> +static int sst25l_write_enable(struct sst25l_flash *flash, int enable)
-> +{
-> +       u8 command[2];
-> +       int status, err;
-> +
-> +       command[0] = enable ? SST25L_CMD_WREN : SST25L_CMD_WRDI;
-> +       err = spi_write(flash->spi, command, 1);
-> +       if (err)
-> +               return err;
-> +
-> +       command[0] = SST25L_CMD_EWSR;
-> +       err = spi_write(flash->spi, command, 1);
-> +       if (err)
-> +               return err;
-> +
-> +       command[0] = SST25L_CMD_WRSR;
-> +       command[1] = enable ? 0 : SST25L_STATUS_BP0 | SST25L_STATUS_BP1;
-> +       err = spi_write(flash->spi, command, 2);
-> +       if (err)
-> +               return err;
-> +
-> +       if (enable) {
-> +               err = sst25l_status(flash, &status);
-> +               if (err)
-> +                       return err;
-> +               if (!(status & SST25L_STATUS_WREN))
-> +                       return -EROFS;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static int sst25l_wait_till_ready(struct sst25l_flash *flash)
-> +{
-> +       unsigned long deadline;
-> +       int status, err;
-> +
-> +       deadline = jiffies + MAX_READY_WAIT_JIFFIES;
-> +       do {
-> +               err = sst25l_status(flash, &status);
-> +               if (err)
-> +                       return err;
-> +               if (!(status & SST25L_STATUS_BUSY))
-> +                       return 0;
-> +
-> +               cond_resched();
-> +       } while (!time_after_eq(jiffies, deadline));
-> +
-> +       return -ETIMEDOUT;
-> +}
-> +
-> +static int sst25l_erase_block(struct sst25l_flash *flash, u32 offset)
-> +{
-> +       u8 command[4];
-> +       int err;
-> +
-> +       err = sst25l_write_enable(flash, 1);
-> +       if (err)
-> +               return err;
-> +
-> +       command[0] = SST25L_CMD_BLOCK_ERASE;
-> +       command[1] = offset >> 16;
-> +       command[2] = offset >> 8;
-> +       command[3] = offset;
-> +       err = spi_write(flash->spi, command, 4);
-> +       if (err)
-> +               return err;
-> +
-> +       err = sst25l_wait_till_ready(flash);
-> +       if (err)
-> +               return err;
-> +
-> +       return sst25l_write_enable(flash, 0);
-> +}
-> +
-> +static int sst25l_erase(struct mtd_info *mtd, struct erase_info *instr)
-> +{
-> +       struct sst25l_flash *flash = to_sst25l_flash(mtd);
-> +       u32 addr, end, rem;
-> +       int err;
-> +
-> +       /* Sanity checks */
-> +       if (instr->addr + instr->len > flash->mtd.size)
-> +               return -EINVAL;
-> +
-> +       div_u64_rem(instr->len, mtd->erasesize, &rem);
+$ git diff --dirstat -M stable..HEAD^
+   3.8% Documentation/
+   4.9% arch/arm/configs/
+   6.6% arch/arm/
+   4.3% arch/m68k/include/asm/
+   3.0% arch/x86/kvm/
+   3.3% arch/x86/
+   3.6% arch/
+   4.6% drivers/firewire/
+   5.2% drivers/md/
+   3.5% drivers/misc/
+   4.7% drivers/mtd/
+   4.0% drivers/pci/hotplug/
+   3.2% drivers/pci/pcie/
+   4.2% drivers/watchdog/
+  14.9% drivers/
+   7.1% fs/
+   4.1% include/linux/
+   9.5% mm/
 
-if ((instr->len & 0xFFFFFFFFU) % mtd->erasesize)
-  return -EINVAL;
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> +       if (rem)
-> +               return -EINVAL;
-> +
-> +       div_u64_rem(instr->addr, mtd->erasesize, &rem);
+--Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd
+Content-Type: application/pgp-signature
 
-Same thing again.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> +       if (rem)
-> +               return -EINVAL;
-> +
-> +       addr = instr->addr;
-> +       end = addr + instr->len;
-> +
-> +       mutex_lock(&flash->lock);
-> +
-> +       err = sst25l_wait_till_ready(flash);
-> +       if (err)
-> +               return err;
-> +
-> +       while (addr < end) {
-> +               err = sst25l_erase_block(flash, addr);
-> +               if (err) {
-> +                       mutex_unlock(&flash->lock);
-> +                       instr->state = MTD_ERASE_FAILED;
-> +                       dev_err(&flash->spi->dev, "Erase failed\n");
-> +                       return err;
-> +               }
-> +
-> +               addr += mtd->erasesize;
-> +       }
-> +
-> +       mutex_unlock(&flash->lock);
-> +
-> +       instr->state = MTD_ERASE_DONE;
-> +       mtd_erase_callback(instr);
-> +       return 0;
-> +}
-> +
-> +static int sst25l_read(struct mtd_info *mtd, loff_t from, size_t len,
-> +                      size_t *retlen, u_char *buf)
-> +{
-> +       struct sst25l_flash *flash = to_sst25l_flash(mtd);
-> +       struct spi_transfer transfer[2];
-> +       struct spi_message message;
-> +       u8 command[4];
-> +       int ret;
-> +
-> +       /* Sanity checking */
-> +       if (len == 0)
-> +               return 0;
-> +
-> +       if (from + len > flash->mtd.size)
-> +               return -EINVAL;
-> +
-> +       if (retlen)
-> +               *retlen = 0;
-> +
-> +       spi_message_init(&message);
-> +       memset(&transfer, 0, sizeof(transfer));
-> +
-> +       command[0] = SST25L_CMD_READ;
-> +       command[1] = from >> 16;
-> +       command[2] = from >> 8;
-> +       command[3] = from;
-> +
-> +       transfer[0].tx_buf = command;
-> +       transfer[0].len = sizeof(command);
-> +       spi_message_add_tail(&transfer[0], &message);
-> +
-> +       transfer[1].rx_buf = buf;
-> +       transfer[1].len = len;
-> +       spi_message_add_tail(&transfer[1], &message);
-> +
-> +       mutex_lock(&flash->lock);
-> +
-> +       /* Wait for previous write/erase to complete */
-> +       ret = sst25l_wait_till_ready(flash);
-> +       if (ret) {
-> +               mutex_unlock(&flash->lock);
-> +               return ret;
-> +       }
-> +
-> +       spi_sync(flash->spi, &message);
-> +
-> +       if (retlen && message.actual_length > sizeof(command))
-> +               *retlen += message.actual_length - sizeof(command);
-> +
-> +       mutex_unlock(&flash->lock);
-> +       return 0;
-> +}
-> +
-> +static int sst25l_write(struct mtd_info *mtd, loff_t to, size_t len,
-> +                       size_t *retlen, const u_char *buf)
-> +{
-> +       struct sst25l_flash *flash = to_sst25l_flash(mtd);
-> +       int i, j, ret, bytes, copied = 0;
-> +       u8 command[5];
-> +       u32 rem;
-> +
-> +       /* Sanity checks */
-> +       if (!len)
-> +               return 0;
-> +
-> +       if (to + len > flash->mtd.size)
-> +               return -EINVAL;
-> +
-> +       div_u64_rem(to, mtd->writesize, &rem);
+iEYEARECAAYFAko/QBgACgkQjjKRsyhoI8yE1ACeM0lp3apJHUp/8PjhZRYe8Bhu
+eY0An3Fv1eH0FV3YmdM2KFGiror380kM
+=mBD+
+-----END PGP SIGNATURE-----
 
-I see. But do you really want to do that with maths?
-Can't you just do some simple arithmetics since mtd->writesize is
-u32 anything in the higher 32 bits can be ignored (it will be
-divisible with any u32 value anyway!), so
-
-/* Need to be evenly divisible by writesize */
-if ((to & 0xFFFFFFFFU) % mtd->writesize)
-    return -EINVAL;
-
-does this work?
-
-> +       if (rem)
-> +               return -EINVAL;
-> +
-> +       mutex_lock(&flash->lock);
-> +
-> +       ret = sst25l_write_enable(flash, 1);
-> +       if (ret)
-> +               goto out;
-> +
-> +       for (i = 0; i < len; i += mtd->writesize) {
-> +               ret = sst25l_wait_till_ready(flash);
-> +               if (ret)
-> +                       goto out;
-> +
-> +               /* Write the first byte of the page */
-> +               command[0] = SST25L_CMD_AAI_PROGRAM;
-> +               command[1] = (to + i) >> 16;
-> +               command[2] = (to + i) >> 8;
-> +               command[3] = (to + i);
-> +               command[4] = buf[i];
-> +               ret = spi_write(flash->spi, command, 5);
-> +               if (ret < 0)
-> +                       goto out;
-> +               copied++;
-> +
-> +               /*
-> +                * Write the remaining bytes using auto address
-> +                * increment mode
-> +                */
-> +               bytes = min(mtd->writesize, len - i);
-> +               for (j = 1; j < bytes; j++, copied++) {
-> +                       ret = sst25l_wait_till_ready(flash);
-> +                       if (ret)
-> +                               goto out;
-> +
-> +                       command[1] = buf[i + j];
-> +                       ret = spi_write(flash->spi, command, 2);
-> +                       if (ret)
-> +                               goto out;
-> +               }
-> +       }
-> +
-> +out:
-> +       ret = sst25l_write_enable(flash, 0);
-> +
-> +       if (retlen)
-> +               *retlen = copied;
-> +
-> +       mutex_unlock(&flash->lock);
-> +       return ret;
-> +}
-> +
-> +static struct flash_info *__devinit sst25l_match_device(struct spi_device *spi)
-
-Or is it __init really? NB: this will save (very little) memory on your system.
-
-> +{
-> +       struct flash_info *flash_info = NULL;
-> +       u8 command[4], response;
-> +       int i, err;
-> +       u16 id;
-> +
-> +       command[0] = SST25L_CMD_READ_ID;
-> +       command[1] = 0;
-> +       command[2] = 0;
-> +       command[3] = 0;
-> +       err = spi_write_then_read(spi, command, sizeof(command), &response, 1);
-> +       if (err < 0) {
-> +               dev_err(&spi->dev, "error reading device id msb\n");
-> +               return NULL;
-> +       }
-> +
-> +       id = response << 8;
-> +
-> +       command[0] = SST25L_CMD_READ_ID;
-> +       command[1] = 0;
-> +       command[2] = 0;
-> +       command[3] = 1;
-> +       err = spi_write_then_read(spi, command, sizeof(command), &response, 1);
-> +       if (err < 0) {
-> +               dev_err(&spi->dev, "error reading device id lsb\n");
-> +               return NULL;
-> +       }
-> +
-> +       id |= response;
-> +
-> +       for (i = 0; i < ARRAY_SIZE(sst25l_flash_info); i++)
-> +               if (sst25l_flash_info[i].device_id == id)
-> +                       flash_info = &sst25l_flash_info[i];
-> +
-> +       if (!flash_info)
-> +               dev_err(&spi->dev, "unknown id %.4x\n", id);
-> +
-> +       return flash_info;
-> +}
-> +
-> +static int __devinit sst25l_probe(struct spi_device *spi)
-
-Or __init?
-
-> +{
-> +       struct flash_info *flash_info;
-> +       struct sst25l_flash *flash;
-> +       struct flash_platform_data *data;
-> +       int i;
-> +
-> +       flash_info = sst25l_match_device(spi);
-> +       if (!flash_info)
-> +               return -ENODEV;
-> +
-> +       flash = kzalloc(sizeof(struct sst25l_flash), GFP_KERNEL);
-> +       if (!flash)
-> +               return -ENOMEM;
-> +
-> +       flash->spi = spi;
-> +       mutex_init(&flash->lock);
-> +       dev_set_drvdata(&spi->dev, flash);
-> +
-> +       data = spi->dev.platform_data;
-> +       if (data && data->name)
-> +               flash->mtd.name = data->name;
-> +       else
-> +               flash->mtd.name = dev_name(&spi->dev);
-> +
-> +       flash->mtd.type         = MTD_NORFLASH;
-> +       flash->mtd.flags        = MTD_CAP_NORFLASH;
-> +       flash->mtd.erasesize    = flash_info->erase_size;
-> +       flash->mtd.writesize    = flash_info->page_size;
-> +       flash->mtd.size         = flash_info->page_size * flash_info->nr_pages;
-> +       flash->mtd.erase        = sst25l_erase;
-> +       flash->mtd.read         = sst25l_read;
-> +       flash->mtd.write        = sst25l_write;
-> +
-> +       dev_info(&spi->dev, "%s (%lld Kbytes)\n", flash_info->name,
-> +                (long long)flash->mtd.size >> 10);
-> +
-> +       DEBUG(MTD_DEBUG_LEVEL2,
-> +             "mtd .name = %s, .size = 0x%llx (%lldMiB) "
-> +             ".erasesize = 0x%.8x (%uKiB) .numeraseregions = %d\n",
-> +             flash->mtd.name,
-> +             (long long)flash->mtd.size, (long long)(flash->mtd.size >> 20),
-> +             flash->mtd.erasesize, flash->mtd.erasesize / 1024,
-> +             flash->mtd.numeraseregions);
-> +
-> +       if (flash->mtd.numeraseregions)
-> +               for (i = 0; i < flash->mtd.numeraseregions; i++)
-> +                       DEBUG(MTD_DEBUG_LEVEL2,
-> +                             "mtd.eraseregions[%d] = { .offset = 0x%llx, "
-> +                             ".erasesize = 0x%.8x (%uKiB), "
-> +                             ".numblocks = %d }\n",
-> +                             i, (long long)flash->mtd.eraseregions[i].offset,
-> +                             flash->mtd.eraseregions[i].erasesize,
-> +                             flash->mtd.eraseregions[i].erasesize / 1024,
-> +                             flash->mtd.eraseregions[i].numblocks);
-> +
-> +       if (mtd_has_partitions()) {
-> +               struct mtd_partition *parts = NULL;
-> +               int nr_parts = 0;
-> +
-> +               if (mtd_has_cmdlinepart()) {
-> +                       static const char *part_probes[] =
-> +                               {"cmdlinepart", NULL};
-> +
-> +                       nr_parts = parse_mtd_partitions(&flash->mtd,
-> +                                                       part_probes,
-> +                                                       &parts, 0);
-> +               }
-> +
-> +               if (nr_parts <= 0 && data && data->parts) {
-> +                       parts = data->parts;
-> +                       nr_parts = data->nr_parts;
-> +               }
-> +
-> +               if (nr_parts > 0) {
-> +                       for (i = 0; i < nr_parts; i++) {
-> +                               DEBUG(MTD_DEBUG_LEVEL2, "partitions[%d] = "
-> +                                     "{.name = %s, .offset = 0x%llx, "
-> +                                     ".size = 0x%llx (%lldKiB) }\n",
-> +                                     i, parts[i].name,
-> +                                     (long long)parts[i].offset,
-> +                                     (long long)parts[i].size,
-> +                                     (long long)(parts[i].size >> 10));
-> +                       }
-> +
-> +                       flash->partitioned = 1;
-> +                       return add_mtd_partitions(&flash->mtd,
-> +                                                 parts, nr_parts);
-> +               }
-> +
-> +       } else if (data->nr_parts) {
-> +               dev_warn(&spi->dev, "ignoring %d default partitions on %s\n",
-> +                        data->nr_parts, data->name);
-> +       }
-> +
-> +       return add_mtd_device(&flash->mtd) == 1 ? -ENODEV : 0;
-> +}
-> +
-> +static int __devexit sst25l_remove(struct spi_device *spi)
-
-Or __exit?
-
-> +{
-> +       struct sst25l_flash *flash = dev_get_drvdata(&spi->dev);
-> +       int ret;
-> +
-> +       if (mtd_has_partitions() && flash->partitioned)
-> +               ret = del_mtd_partitions(&flash->mtd);
-> +       else
-> +               ret = del_mtd_device(&flash->mtd);
-> +       if (ret == 0)
-> +               kfree(flash);
-> +       return ret;
-> +}
-> +
-> +static struct spi_driver sst25l_driver = {
-> +       .driver = {
-> +               .name   = "sst25l",
-> +               .bus    = &spi_bus_type,
-> +               .owner  = THIS_MODULE,
-> +       },
-> +       .probe          = sst25l_probe,
-> +       .remove         = __devexit_p(sst25l_remove),
-
-Or __exit_p()?
-
-> +};
-> +
-> +static int __init sst25l_init(void)
-> +{
-> +       return spi_register_driver(&sst25l_driver);
-> +}
-> +
-> +static void __exit sst25l_exit(void)
-> +{
-> +       spi_unregister_driver(&sst25l_driver);
-> +}
-> +
-> +module_init(sst25l_init);
-> +module_exit(sst25l_exit);
-> +
-> +MODULE_DESCRIPTION("MTD SPI driver for SST25L Flash chips");
-> +MODULE_AUTHOR("Andre Renaud <andre@bluewatersys.com>, "
-> +             "Ryan Mallon <ryan@bluewatersys.com>");
-> +MODULE_LICENSE("GPL");
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-Yours,
-Linus Walleij
+--Signature=_Mon__22_Jun_2009_18_26_00_+1000_oVLT.JfXL_OIVNxd--
