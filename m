@@ -1,113 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbZFVQhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbZFVQjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbZFVQhj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZFVQhb
+	id S1757655AbZFVQjA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZFVQiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:37:31 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:55191 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbZFVQha (ORCPT
+	Mon, 22 Jun 2009 12:38:52 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:12162 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbZFVQiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:37:30 -0400
-Date: Mon, 22 Jun 2009 18:37:24 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Rob van der Heij <rvdheij@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
-Message-ID: <20090622183724.03d9a6ba@skybase>
-In-Reply-To: <20090622154030.GA19076@elte.hu>
-References: <20090603152223.083010123@de.ibm.com>
-	<alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>
-	<20090622162631.4b4dcee4@skybase>
-	<20090622144110.GA9771@elte.hu>
-	<20090622165936.0bb776e1@skybase>
-	<20090622150553.GA14363@elte.hu>
-	<20090622171834.0df64aea@skybase>
-	<20090622152937.GA17512@elte.hu>
-	<20090622173611.3b583c95@skybase>
-	<20090622154030.GA19076@elte.hu>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Mon, 22 Jun 2009 12:38:51 -0400
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+Cc: Brice Goglin <Brice.Goglin@inria.fr>, "'Andi Kleen'" <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-numa@vger.kernel.org,
+       Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <4A3FA67A.8070908@lfbs.rwth-aachen.de>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+	 <87zldjn597.fsf@basil.nowhere.org>
+	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>
+	 <20090612103251.GJ25568@one.firstfloor.org>
+	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>
+	 <1245119977.6724.40.camel@lts-notebook>
+	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>
+	 <1245164395.15138.40.camel@lts-notebook>
+	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>
+	 <1245299856.6431.30.camel@lts-notebook> <4A3F7A49.6070805@inria.fr>
+	 <4A3F95F1.4020507@lfbs.rwth-aachen.de>
+	 <1245682606.7799.64.camel@lts-notebook>
+	 <4A3FA67A.8070908@lfbs.rwth-aachen.de>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Mon, 22 Jun 2009 12:38:49 -0400
+Message-Id: <1245688729.7799.108.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009 17:40:30 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
+On Mon, 2009-06-22 at 17:42 +0200, Stefan Lankes wrote:
 > 
-> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> Lee Schermerhorn wrote:
+> > On Mon, 2009-06-22 at 16:32 +0200, Stefan Lankes wrote:
+> >> Brice Goglin wrote:
+> >>> Lee Schermerhorn wrote:
+> >>>> On Wed, 2009-06-17 at 09:45 +0200, Stefan Lankes wrote:
+> >>>>   
+> >>>>
+> >>>> Today I rebased the migrate on fault patches to 2.6.30-mmotm-090612...
+> >>>> [along with my shared policy series atop which they sit in my tree].
+> >>>> Patches reside in:
+> >>>>
+> >>>> http://free.linux.hp.com/~lts/Patches/PageMigration/2.6.30-mmotm-090612-1220/
+> >>>>
+> >>>>   
+> >>> I gave this patchset a try and indeed it seems to work fine, thanks a
+> >>> lot. But the migration performance isn't very good. I am seeing about
+> >>> 540MB/s when doing mbind+touch_all_pages on large buffers on a
+> >>> quad-barcelona machines. move_pages gets 640MB/s there. And my own
+> >>> next-touch implementation were near 800MB/s in the past.
+> >> I used a modified stream benchmark to evaluate the performance of Lee's 
+> >> and my version of the next-touch implementation. In this low-level 
+> >> benchmark is Lee's patch better than my patch. I think that Brice and I 
+> >> use the same technique to realize affinity-on-next-touch. Do you use 
+> >> another kernel version to evaluate the performance?
+> > 
+> > Hi, Stefan:
+> > 
+> > I also used a [modified!] stream benchmark to test my patches.  One of
+> > the modifications was to dump the time it takes for one pass over the
+> > data arrays to a specific file description, if that file description was
+> > open at start time--e.g., via something like "4>stream_times".  Then, I
+> > increased the number of iterations to something large so that I could
+> > run other tests during the stream run.  I plotted the "time per
+> > iteration" vs iteration number and could see that after any transient
+> > load, the stream benchmark returned to a good [not sure if maximal]
+> > locality state.  The time per interation was comparable to hand
+> > affinitized of the threads.  Without automigration and hand
+> > affinitization, any transient load would scramble the location of the
+> > threads relative to the data region they were operating on due to load
+> > balancing.  The more nodes you have, the less likely you'll end up in a
+> > good state.
+> > 
+> > I was using a parallel kernel make [-j <2*nr_cpus>] as the load.  In
+> > addition to the stream returning to good locality, I noticed that the
+> > kernel build completed much faster in the presence of the stream load
+> > with automigration enabled.  I reported these results in a presentation
+> > at LCA'07.  Slides and video [yuck! :)] are available on line at the
+> > LCA'07 site.
 > 
-> > On Mon, 22 Jun 2009 17:29:37 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> > > 
-> > > > On Mon, 22 Jun 2009 17:05:53 +0200
-> > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > 
-> > > > > 
-> > > > > * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> > > > > 
-> > > > > > On Mon, 22 Jun 2009 16:41:10 +0200
-> > > > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > > > 
-> > > > > > > Hm, this is rather ugly. Why not use hrtimers like 'perf' does when 
-> > > > > > > it fallback-samples based on the timer tick?
-> > > > > > > 
-> > > > > > > That method has three advantages:
-> > > > > > > 
-> > > > > > >  - no weird hookery needed
-> > > > > > >  - resolution can go far beyond HZ
-> > > > > > >  - it is evidently dynticks-safe
-> > > > > > 
-> > > > > > Hmm, if we replace the HZ based oprofile tick with an hrtimer we 
-> > > > > > should add an interface to configure the sample interval as well, 
-> > > > > > no? Otherwise we just replace one timer event (HZ) with another 
-> > > > > > (hrtimer).
-> > > > > 
-> > > > > Even if the hrtimer is set with a 1/HZ period it's a better 
-> > > > > solution, as it's dynticks safe without invasive changes.
-> > > > 
-> > > > Ok, but the patch will be quite big. All the profile_tick() calls 
-> > > > from the architecture files will have to be removed. [...]
-> > > 
-> > > Hey, that's a bonus :)
-> > 
-> > It would remove some oddball code :-)
-> >  
-> > > > [...] And if we really want to keep things separate there will be 
-> > > > two sets of per-cpu hrtimer, one for the old style profiler and 
-> > > > one for oprofile. Any preference for the user space interface to 
-> > > > set the sample rate? A sysctl?
-> > > 
-> > > I dont think we want to keep things separate. Regarding old-style 
-> > > profiler, does anyone still use it? There's now a superior in-tree 
-> > > replacement for it, so we could phase it out.
-> > 
-> > Well, for my part I won't miss it. But to be able to remove the 
-> > profile_tick() calls from the architectures I either have to rip 
-> > out the old profiler now, or adapt it to use hrtimer as well.
-> 
-> Do we _have to_ touch it so widely right now? We could start with a 
-> deprecation warning in this cycle. Once it's deprecated we can 
-> remove all those calls.
+> I think that you use migration-on-fault in the context of automigration. 
+> Brice and I use affinity-on-next-touch/migration-on-fault in another 
+> context. If the access pattern of an application changed, we want to 
+> redistribute the pages in "nearly" ideal matter. Sometimes it is 
+> difficult to determine the ideal page distribution. In such cases, 
+> affinity-on-next-touch could be an attractive solution. In our test 
+> applications, we add at some certain points the system call to use 
+> affinity-on-next-touch and redistribute the pages. Assumed that the next 
+> thread use these pages very often, we improve the performance of our 
+> test applications.
 
-Hmm, I like that. Fix oprofile with hrtimer and leave profile_tick()
-as it is for now.
+I understand.  That's one of the motivations for MPOL_MF_LAZY and the
+MPOL_MF_NOOP policy mode.  It simply unmaps [removes pte refs from] the
+pages, priming them for migrate on next touch, if they are "misplaced"
+relative to the task touching them.  It's useful for testing and that's
+my personal primary use case, but I did envision it for use in
+applications that know they're entering a new computation phase with
+different access patterns.
 
--- 
-blue skies,
-   Martin.
+Lee
 
-"Reality continues to ruin my life." - Calvin.
 
