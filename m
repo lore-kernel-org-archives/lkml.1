@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZFVM0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZFVM1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbZFVM0z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 08:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZFVM0r
+	id S1756015AbZFVM1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 08:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZFVM1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 08:26:47 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:42617 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbZFVM0r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 08:26:47 -0400
-Date: Mon, 22 Jun 2009 13:26:43 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: "Aggarwal, Anuj" <anuj.aggarwal@ti.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>
-Message-ID: <20090622122643.GB4495@sirena.org.uk>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB0305AE7362@dbde02.ent.ti.com>
+	Mon, 22 Jun 2009 08:27:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34930 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753335AbZFVM1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 08:27:03 -0400
+Message-ID: <4A3F788A.9000007@redhat.com>
+Date: Mon, 22 Jun 2009 14:26:50 +0200
+From: Paolo Bonzini <pbonzini@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB0305AE7362@dbde02.ent.ti.com>
-X-Cookie: You will be successful in love.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: Regulator enable called without increasing the use_count
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [KVM PATCH v8 3/3] KVM: add iosignalfd support
+References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003045.15859.73197.stgit@dev.haskins.net> <20090622104435.GA11594@redhat.com> <4A3F757C.6030508@novell.com>
+In-Reply-To: <4A3F757C.6030508@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 05:06:36PM +0530, Aggarwal, Anuj wrote:
 
-> Why is it designed like that? Should I enable it again and then call the 
-> disable()?
+>>> + * Design note: We create one PIO/MMIO device (iosignalfd_group) which
+>>> + * aggregates  one or more iosignalfd_items.  Each item points to exactly one
+>>> + * eventfd, and can be registered to trigger on any write to the group
+>>> + * (wildcard), or to a write of a specific value.  If more than one item is to
+>>> + * be supported, the addr/len ranges must all be identical in the group.  If a
+>>> + * trigger value is to be supported on a particular item, the group range must
+>>> + * be exactly the width of the trigger.
+>>>     
+>> Some duplicate spaces in the text above, apparently at random places.
+> 
+> -ENOPARSE ;)
+> 
+> Can you elaborate?
 
-It's like that because regulators can be shared between mulitple
-consumers.  In order for that to work consumers can't disable regulators
-they didn't enable themselves (since otherwise they could be breaking
-another consumer) and so the can't increase the reference count.
+I see "aggregates  one".  The others are all at end of sentence, so I 
+think that Michael was not talking about those (git grep '\*.*\.  ').
 
-If your driver explicitly needs the regulator to be off at startup it
-should do an enable then a disable.  Otherwise it should just leave the
-regulator alone.  Machines can call regulator_has_full_constraints() to
-tell the core that any regulators which have not been explicitly enabled
-by consumers can be powered off at the end of init - at some point in
-the future this will become the default.
+Paolo
