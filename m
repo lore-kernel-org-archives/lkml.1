@@ -1,118 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757826AbZFVUmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZFVUmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757826AbZFVUmg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 16:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZFVUm3
+	id S1757914AbZFVUmu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 16:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZFVUml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 16:42:29 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:57891 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZFVUm2 (ORCPT
+	Mon, 22 Jun 2009 16:42:41 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:17968 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562AbZFVUmk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 16:42:28 -0400
+	Mon, 22 Jun 2009 16:42:40 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19007.60396.259650.682653@stoffel.org>
-Date: Mon, 22 Jun 2009 16:39:08 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bernd Schmidt <bernds_cb1@t-online.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Blackfin Architecture Team 
-	<uclinux-dist-devel@blackfin.uclinux.org>,
-       David Howells <dhowells@redhat.com>, stable@kernel.org
-Subject: Re: Fix for shared flat binary format in 2.6.30
-In-Reply-To: <alpine.LFD.2.01.0906221137580.3240@localhost.localdomain>
-References: <4A3F5EAE.7020402@t-online.de>
-	<alpine.LFD.2.01.0906221137580.3240@localhost.localdomain>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Message-ID: <636843ec-b290-4ea9-b629-1d364f3b1112@default>
+Date: Mon, 22 Jun 2009 13:41:19 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
+       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>, jeremy@goop.org,
+       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org,
+       Himanshu Raj <rhim@microsoft.com>
+Subject: RE: [RFC] transcendent memory for Linux
+In-Reply-To: <20090622132702.6638d841@skybase>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1 (304090) [OL 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: abhmt005.oracle.com [141.146.116.14]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4A3FEC75.01A6:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Linus" == Linus Torvalds <torvalds@linux-foundation.org> writes:
+> > Tmem has some similarity to IBM's Collaborative Memory Management,
+> > but creates more of a partnership between the kernel and the
+> > "privileged entity" and is not very invasive.  Tmem may be
+> > applicable for KVM and containers; there is some disagreement on
+> > the extent of its value. Tmem is highly complementary to ballooning
+> > (aka page granularity hot plug) and memory deduplication (aka
+> > transparent content-based page sharing) but still has value
+> > when neither are present.
 
-Linus> On Mon, 22 Jun 2009, Bernd Schmidt wrote:
->> 
->> This fixes a crash in 2.6.30 with shared flat binaries.  prepare_binfmt now
->> requires a cred pointer to be set up, which isn't done in binfmt_flat.c.
+Hi Martin --
 
-Linus> This has so many bugs in patch submission that I literally
-Linus> almost gave up despite it being a trivial patch.
+Thanks much for taking the time to reply!
 
-I just recently submitted a patch, and it took me a while to figure
-out a git flow for stupid, simple patches so that I, a moron, could
-understand it.  Here's what I've documented.  Maybe it should be added
-to Documentation/SubmittingPatches so that people like me, who only
-rarely use git for anything, can use it to submit stuff properly?
+> The basic idea seems to be that you reduce the amount of memory
+> available to the guest and as a compensation give the guest some
+> tmem, no?
 
-###################################################################
-# References
-http://linux.yyz.us/git-howto.html
-http://www.kernel.org/pub/software/scm/git/docs/git-format-patch.html
-http://www.kernel.org/pub/software/scm/git/docs/git-send-email.html
+That's mostly right.  Tmem's primary role is to help
+with guests that have had their available memory reduced
+(via ballooning or hotplug or some future mechanism).
+However tmem additionally provides a way of providing otherwise
+unused-by-the-hypervisor ("fallow") memory to a guest,
+essentially expanding a guest kernel's page cache if
+no other guest is using the RAM anyway.
 
+And "as a compensation GIVE the guest some tmem" is misleading,
+because tmem (at least ephemeral tmem) is never "given"
+to a guest.  A better word might be "loaned" or "rented".
+The guest gets to use some tmem for awhile but if it
+doesn't use it effectively, the memory is "repossessed"
+(or the guest is "evicted" from using that memory)
+transparently so that it can be used more effectively
+elsewhere.
 
-# One time commands
-> apt-get install git-email
-> git config --global user.name "John Stoffel"
-> git config --global user.email "john@stoffel.org"
+> If that is the case then the effect of tmem is somewhat
+> comparable to the volatile page cache pages.
 
-# Only to be done infrequently
-> mkdir /var/tmp/git-tree
-> cd /var/tmp/git-tree
-> git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
+There is definitely some similarity in that both are providing
+useful information to the hypervisor.  In CMM's case, the
+guest is passively providing info; in tmem's case it is
+actively providing info and making use of the info within
+the kernel, not just in the hypervsior, which is why I described it
+as "more of a partnership".
 
+> The big advantage of this approach is its simplicity, but there
+> are down sides as well:
+> 1) You need to copy the data between the tmem pool and the page
+> cache. At least temporarily there are two copies of the same
+> page around. That increases the total amount of used memory.
 
+Certainly this is theoretically true, but I think the increase
+is small and transient.  The kernel only puts the page into
+precache when it has decided to use that page for another
+purpose (due to memory pressure).  Until it actually
+"reprovisions" the page, the data is briefly duplicated.
 
-# Make a new branch <branch> for the patch you're doing.  In this
-  case, we'll do 'sym_hipd-ratelimit'
+On the other hand, copying eliminates the need for fancy
+games with virtual mappings and TLB entries.  Copying appears
+to be getting much faster on recent CPUs; I'm not sure
+if this is also true of TLB operations.
 
-> git checkout -b sym_hipd-ratelimit
+> 2) The guest has a smaller memory size. Either the memory is
+> large enough for the working set size in which case tmem is
+> ineffective...
 
-# Now edit the file
+Yes, if the kernel has memory to "waste" (e.g. never refaults and
+never swaps), tmem is ineffective.  The goal of tmem is to optimize
+memory usage across an environment where there is contention
+among multiple users (guests) for a limited resource (RAM).
+If your environment always has enough RAM for every guest
+and there's never any contention, you don't want tmem... but
+I'd assert you've wasted money in your data center by buying
+too much RAM!
 
-> vi drivers/scsi/sym53c8xx_2/sym_hipd.c
-> git commit -a
+> or the working set does not fit which increases
+> the memory pressure and the cpu cycles spent in the mm code.
 
-# Put in a simple message of a line or two.
+True, this is where preswap is useful.  Without tmem/preswap,
+"does not fit" means swap-to-disk or refaulting is required.
+Preswap alleviates the memory pressure by using tmem to
+essentially swap to "magic memory" and precache reduces the
+need for refaulting.
 
-    ratelimit parity error reporting, which helps alot on bootup over serial
-    console when you get 10,000+ lines of this message.
+> 3) There is an additional turning knob, the size of the tmem pool
+> for the guest. I see the need for a clever algorithm to determine
+> the size for the different tmem pools.
 
-# Now exit the editor
+Yes, some policy in the hypervisor is still required, essentially
+a "memory scheduler".  The working implementation (in Xen)
+uses FIFO, but modified by admin-configurable "weight" values
+to allow QoS and avoid DoS. 
 
-# Check the commit, which is the most recent one by default
+> Overall I would say its worthwhile to investigate the performance
+> impacts of the approach.
 
-> git log -1
+Thanks.  I'd appreciate any thoughts or experience you have
+in this area (onlist or offlist) as I don't think there are
+any adequate benchmarks that aren't either myopic for a complex
+environment or contrived (and thus misleading) to prove an
+isolated point.
 
-# See the actual patch with:
+I would also guess that tmem is more beneficial on recent
+multi-core processors, and more costly on older chips.
 
-> git diff master..HEAD
-
-# Make a patch you can send out, including any CC: and the signoff (-s)
-
-> git format-patch --cc=linux-scsi@vger.kernel.org --cc=stable@kernel.org -s
-0001-ratelimit-parity-error-reporting-which-helps-alot-on.patch
-
-# Now look the patch over and see if you need to edit the subject or
-# anything
-
-# In this case, I don't like the commit message
-vi 0001-ratelimit-parity-error-reporting-which-helps-alot-on.patch
-
-# Now do a dry run to send the email
-> git send-email --dry-run --to=linux-kernel@vger.kernel.org 0001-ratelimit-parity-error-reporting-which-helps-alot-on.patch
-
-# Looks good, send for real
-> git send-email --to=linux-kernel@vger.kernel.org 0001-ratelimit-parity-error-reporting-which-helps-alot-on.patch
-
-
-# Cleanup, got back to the main branch and merge in our change, just
-# for fun
-
-> git branch master
-> git merge sym_hipd-ratelimit
-
-
+Thanks again,
+Dan
