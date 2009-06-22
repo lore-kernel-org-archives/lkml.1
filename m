@@ -1,71 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZFVRmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbZFVRnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbZFVRmv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbZFVRmo
+	id S1757260AbZFVRnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZFVRnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:42:44 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:49159 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752981AbZFVRmn (ORCPT
+	Mon, 22 Jun 2009 13:43:46 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:54695 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbZFVRnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:42:43 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: I.1 - System calls - ioctl
-Date: Mon, 22 Jun 2009 19:41:48 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: Christoph Hellwig <hch@infradead.org>, eranian@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       "perfmon2-devel" <perfmon2-devel@lists.sourceforge.net>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622125837.GA9429@infradead.org> <20090622135611.GA5329@elte.hu>
-In-Reply-To: <20090622135611.GA5329@elte.hu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 22 Jun 2009 13:43:46 -0400
+Message-ID: <4A3FC2B1.4050107@novell.com>
+Date: Mon, 22 Jun 2009 13:43:13 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906221941.49470.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18up1kZGY1TFtsAk6pXKtKPuQr8Ohd0vh9HG78
- 1dTJvhqXs4hC0gs1AndoUdBBr8QlQQyCf275KqWvVIdyu0D8BM
- 7XXMuJphCTL7tL1dTZ1Ag==
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: mst@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier
+ race conditions
+References: <20090619183534.31118.30934.stgit@dev.haskins.net> <20090619185138.31118.14916.stgit@dev.haskins.net> <alpine.DEB.1.10.0906191156580.14884@makko.or.mcafeemobile.com> <4A3C004B.8010706@novell.com> <alpine.DEB.1.10.0906191421581.14884@makko.or.mcafeemobile.com> <4A3C07FF.3000406@novell.com> <alpine.DEB.1.10.0906191447330.14884@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906191525470.14884@makko.or.mcafeemobile.com> <4A3C44DA.7000503@novell.com> <alpine.DEB.1.10.0906201202170.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201508460.25534@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906201640380.25534@makko.or.mcafeemobile.com> <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com> <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com> <4A3FABD9.7080108@novell.com> <alpine.DEB.1.10.0906220952090.10952@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0906220952090.10952@makko.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig13D2C9EAE96AB08EF7FBCBEA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 June 2009, Ingo Molnar wrote:
-> There is another, more theoretical argument in favor of 
-> sys_perf_counter_chattr(): it is quite conceivable that as usage of 
-> perfcounters expands we want to change more and more attributes. So 
-> even though right now the ioctl just about manages to serve this 
-> role, it would be more future-proof to use sys_perf_counter_chattr() 
-> and deprecate the ioctl() straight away - to not even leave a 
-> chance for some ioctl crap to seep into the API.
-> 
-> So ... we are on two minds about this, and if people dont mind a 
-> second syscall entry, we are glad to add it.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig13D2C9EAE96AB08EF7FBCBEA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I think adding one or more system calls is definitely worth it
-if that means getting rid of the ioctl interface here. While I
-don't generally mind adding ioctl calls, I would much prefer to
-restrict their use to device files, sockets and to the existing
-cases for regular files.
+Davide Libenzi wrote:
+> On Mon, 22 Jun 2009, Gregory Haskins wrote:
+>
+>  =20
+>> Davide Libenzi wrote:
+>>    =20
+>>> On Sun, 21 Jun 2009, Gregory Haskins wrote:
+>>>
+>>>  =20
+>>>      =20
+>>>> This looks great, Davide.  I am fairly certain I can now solve the r=
+aces
+>>>> and even implement Michael's DEASSIGN feature with this patch in pla=
+ce.=20
+>>>> I will actually fire it up tomorrow when I am back in the office and=
 
-Conceptually, ioctl is a different class of interface from the
-'new system call' case, in a number of ways. For new subsystems
-I would just never mix them by allowing ioctl on something that
-was not returned by open() or socket().
+>>>> give it a spin, but I do not spy any more races via visual inspectio=
+n.
+>>>>
+>>>> Kind Regards,
+>>>> -Greg
+>>>>
+>>>> PS: I was wrong with my previous statement about requiring an embedd=
+able
+>>>> object (eventfd_notifier for me, eventfd_pollcb for you).  I think y=
+ou
+>>>> can technically solve this issue minimally by merely locking the POL=
+LHUP
+>>>> and exposing the kref.  However, I think that leads to an more awkwa=
+rd
+>>>> interface (e.g. we already have eventfd_fget() plus we add a new one=
 
-	Arnd <><
+>>>> like eventfd_refget(), which might confuse users), so I prefer what =
+you
+>>>> did here.  Just thought I would throw that out there in case you wou=
+ld
+>>>> prefer to change even fewer lines.
+>>>>    =20
+>>>>        =20
+>>> I actually ended up exposing the eventfd context anyway, since IMO is=
+ a=20
+>>> better option instead of holding references to the eventfd file (that=
+=20
+>>> makes VFS people uneasy).
+>>>  =20
+>>>      =20
+>> I liked "version - 1"  better ;)
+>>
+>> I think ultimately we still want to hold the fget() for
+>> eventfd_signal(), as it is the producer side.  Without it, we have no
+>> way of knowing when the last producer goes away if they happen to be a=
+n
+>> in-kernel user.
+>>    =20
+>
+> No you don't. Holding a file* reference does not give you any assurance=
+=20
+> whatsoever that the last consumer did not go away. The f_count value wi=
+ll=20
+> simply be 1 (just you).
+>  =20
+
+I am probably confused or perhaps have the wrong terminology, but isnt
+that "ok".  I am concerned about the consumer (the guy getting the
+POLLINs) to be able to detect POLLHUP when the last producer
+(f_ops->write() from userspace, eventfd_signal() from kernel) goes away.
+
+Consider the following sequence:
+
+-------------------
+
+userspace calls "fd =3D eventfd()", and gives one to KVM as an irqfd, and=
+
+the other to some PCI-passthrough device.
+
+The kvm/irqfd side acquires a kref, the pci side acquires a file.  At
+this moment, userspace has the fd, and the pci device has the file (for
+eventfd_signal()).  The fget() count is 2.  Userspace closes the fd
+because its done with it, and the count drops to 1.
+
+Some time later, pci does an fput(), and KVM sees the POLLHUP and cleans =
+up.
+
+-------------------
+
+In this new model, the POLLHUP would have gone out as soon as userspace
+closed the fd, even though the intended producer (the PCI device) and
+the consumer (the KVM guest) are still up and running.  This doesnt seem
+right to me.  Or am I missing something?
+
+Thanks Davide,
+-Greg
+
+
+--------------enig13D2C9EAE96AB08EF7FBCBEA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAko/wrEACgkQlOSOBdgZUxm7PgCfcIAZjgX7ozp9fl2VrTrIEUg8
+CH8AnR+EO72hctlJj22dV6KcRKZzVN2M
+=unaA
+-----END PGP SIGNATURE-----
+
+--------------enig13D2C9EAE96AB08EF7FBCBEA--
