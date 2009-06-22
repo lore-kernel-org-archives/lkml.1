@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbZFVJ5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbZFVJ6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbZFVJ5Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbZFVJ5R
+	id S1755909AbZFVJ6l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZFVJ6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:57:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38581 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750780AbZFVJ5R (ORCPT
+	Mon, 22 Jun 2009 05:58:34 -0400
+Received: from mga06.intel.com ([134.134.136.21]:17675 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750996AbZFVJ6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:57:17 -0400
-Date: Mon, 22 Jun 2009 10:57:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-Cc: Rabin Vincent <rabin@rab.in>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: BUG: scheduling while atomic
-Message-ID: <20090622105721.262179f9@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090620185452.GD3138@localdomain.by>
-References: <20090619181529.GA3593@localdomain.by>
-	<20090620174320.GA6791@debian>
-	<20090620185452.GD3138@localdomain.by>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Jun 2009 05:58:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,267,1243839600"; 
+   d="scan'208";a="526714928"
+Message-ID: <4A3F55C7.4030909@linux.intel.com>
+Date: Mon, 22 Jun 2009 11:58:31 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
+ to 	disk, mce related?
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3E7F38.7030300@linux.intel.com>	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>	 <4A3EE668.5090400@jp.fujitsu.com> <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>
+In-Reply-To: <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Jun 2009 21:54:52 +0300
-Sergey Senozhatsky <sergey.senozhatsky@mail.by> wrote:
 
-> On (06/20/09 23:13), Rabin Vincent wrote:
-> > On Fri, Jun 19, 2009 at 09:15:29PM +0300, Sergey Senozhatsky wrote:
-> > > Hello.
-> > > I see lots of "BUG: scheduling while atomic" with current kernels (started with 2.6.30-git1, 2.6.30 is ok).
-> > > For example (2.6.30-git14):
-> > 
-> > Looks like the net softirq (via ppp) ends up calling tty_throttle(), and
-> > this causes problems because of the mutex_lock() added there by
-> > 38db8979.  I've cc'd the tty maintainer.
+> 
+> Patch remove warning.
 
-Fix on its way upstream.
+Ok.
+
+
+> Tested-by Maciej Rutecki <maciej.rutecki@gmail.com>
+> 
+> _But_ still system hangs after resume and during s2disk (while use
+> echo 0 > /sys/devices...)
+
+Too bad. Were you able to set up a console during the hang?
+
+e.g. if you have a second system could you perhaps configure netconsole
+(See Documentation/networking/netconsole.txt) and capture the messages?
+
+-Andi
+
+
