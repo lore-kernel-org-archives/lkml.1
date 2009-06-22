@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbZFVNqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZFVNsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756350AbZFVNqH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 09:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZFVNp4
+	id S1756687AbZFVNsh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 09:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZFVNsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 09:45:56 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:51458 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751844AbZFVNpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 09:45:55 -0400
-Date: Mon, 22 Jun 2009 08:45:57 -0500
-From: Robin Holt <holt@sgi.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       kexec@lists.infradead.org
-Subject: Re: [PATCH 1/7] ia64, kdump: Mask MCA/INIT on freezing cpus
-Message-ID: <20090622134557.GC7084@sgi.com>
-References: <4A39E247.4030908@jp.fujitsu.com> <4A39E2CF.80901@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A39E2CF.80901@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Jun 2009 09:48:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40080 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbZFVNs3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 09:48:29 -0400
+Date: Mon, 22 Jun 2009 06:49:15 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [linux-pm] [patch update 2 fix] PM: Introduce core framework
+ for  run-time PM of I/O devices
+Message-ID: <20090622064915.741154a7@infradead.org>
+In-Reply-To: <aec7e5c30906220027v63c88e8aj32950a8d84558cce@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
+	<Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
+	<aec7e5c30906212320v3e3e991fyd028d005675f1e25@mail.gmail.com>
+	<20090621234324.06fda564@infradead.org>
+	<aec7e5c30906220027v63c88e8aj32950a8d84558cce@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> To avoid this problem, This patch inserts ia64_set_psr_mc() before the
-> deadloop to mask MCA/INIT on cpus going to be frozen.  I confirmed that
-> weird log like above are disappeared after applying this patch.
+On Mon, 22 Jun 2009 16:27:29 +0900
+Magnus Damm <magnus.damm@gmail.com> wrote:
 
-Please do not do this.  Turning off MCA/INIT is just a horrible idea.
-When your code has a bug, the INIT of the cpu is the only tool we have
-to find out what it is doing short of putting special hardware onto the
-machine and trying to track it down.
+> On Mon, Jun 22, 2009 at 3:43 PM, Arjan van de
+> Ven<arjan@infradead.org> wrote:
+> > On Mon, 22 Jun 2009 15:20:43 +0900
+> > Magnus Damm <magnus.damm@gmail.com> wrote:
+> >
+> >> On Sat, Jun 20, 2009 at 11:30 PM, Alan
+> >> Stern<stern@rowland.harvard.edu> wrote:
+> >> > Some more thoughts...
+> >> >
+> >> > Magnus, you might have some insights here.  It occurred to me
+> >> > that some devices can switch power levels very quickly, and the
+> >> > drivers might therefore want the runtime suspend and resume
+> >> > methods to be called as soon as possible, even in interrupt
+> >> > context.
+> >>
+> >> I'd like to call pm_request_suspend() from interrupt context. I
+> >> don't
+> >
+> > there are some really strong reasons to at least be able to call the
+> > resume function from an interrupt handler.... shared interrupts are
+> > one of them.
+> 
+> I suppose you mean that you need to resume the hardware device before
+> you can check if it has a pending interrupt source? If so then you
+> also mean that suspended hardware devices may generate interrupts, no?
 
-Without thinking about it, I have a gut feeling there must be some way
-to at least allow the MCA/INIT to make it through PROM and be delivered
-to the OS.  From there the OS should be able to sort out a way to handle
-kdump and MCAs received during a kdump.
+yes and no. For the shared interrupt case.. no.
+but yes for the hw I have in mind (and on my desk ;-) that can happen
+as well from the device itself.
 
-Thanks,
-Robin
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
