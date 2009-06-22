@@ -1,301 +1,565 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbZFVM67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbZFVNBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755107AbZFVM67 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 08:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZFVM6j
+	id S1756131AbZFVNBj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 09:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZFVNBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 08:58:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39527 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282AbZFVM6i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 08:58:38 -0400
-Date: Mon, 22 Jun 2009 08:58:37 -0400
-From: Christoph Hellwig <hch@infradead.org>
+	Mon, 22 Jun 2009 09:01:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48902 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751369AbZFVNBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 09:01:31 -0400
+Subject: Re: [PATCH 2/2 -tip] perf_counter: parse-events.c introduce alias
+ member in event_symbol
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: eranian@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: I.1 - System calls - ioctl
-Message-ID: <20090622125837.GA9429@infradead.org>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622114931.GB24366@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090622114931.GB24366@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090622113256.GA22479@elte.hu>
+References: <1245669194.17153.6.camel@localhost.localdomain>
+	 <1245669268.17153.8.camel@localhost.localdomain>
+	 <20090622113256.GA22479@elte.hu>
+Content-Type: text/plain
+Date: Mon, 22 Jun 2009 18:30:57 +0530
+Message-Id: <1245675657.7537.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 01:49:31PM +0200, Ingo Molnar wrote:
-> > How do you justify your usage of ioctl() in this context?
-> 
-> We can certainly do a separate sys_perf_counter_ctrl() syscall - and
-> we will do that if people think the extra syscall slot is worth it
-> in this case.
-> 
-> The (mild) counter-argument so far was that the current ioctls are
-> very simple over "IO" attributes of counters:
-> 
->  - enable
->  - disable
->  - reset
->  - refresh
->  - set-period
-> 
-> So they could be considered 'IO controls' in the classic sense and
-> act as a (mild) exception to the 'dont use ioctls' rule.
-> 
-> They are not some weird tacked-on syscall functionality - they
-> modify the IO properties of counters: on/off, value and rate. If
-> they go beyond that we'll put it all into a separate syscall and
-> deprecate the ioctl (which will have a relatively short half-time
-> due to the tools being hosted in the kernel repo).
-> 
-> This could happen right now in fact, if people think it's worth it.
+On Mon, 2009-06-22 at 13:32 +0200, Ingo Molnar wrote:
 
-Yet another multiplexer doesn't buy as anything over ioctls unless it
-adds more structure.  PERF_COUNTER_IOC_ENABLE/PERF_COUNTER_IOC_DISABLE/
-PERF_COUNTER_IOC_RESET are calls without any argument, so it's kinda
-impossible to add more structure.  perf_counter_refresh has an integer
-argument, and perf_counter_period aswell (with a slightly more
-complicated calling convention due to passing a pointer to the 64bit
-integer).  I don't see how moving this to syscalls would improve
-things.
+> Another nice thing would be for 'perf list' to actually start each 
+> counter and stop it - and see whether it ticks. Perhaps that could 
+> be a new sub-command: 'perf test' ?
+> 
+> New 'perf' subcommands are added easily:
+> 
+> create a new tools/perf/builtin-foo.c file, add it to 
+> command-list.txt and to the Makefile - add it to perf.c's array of 
+> built-in commands and add a Documentation/perf-foo.txt file to 
+> generate manpages and usage strings for it.
+> 
 
-But talking about syscalls the sys_perf_counter_open prototype is
-really ugly - it uses either the pid or cpu argument which is a pretty
-clear indicator it should actually be two sys calls.
+Ok this is just a ugly quick hack to get the idea what actually you are
+looking for :
 
-Incomplete patch without touching the actuall wire-up below to
-demonstrate it:
+[RFC] perf_counter tools: introduce perf test to test each event for ticks
 
+perf test to Test all events for whether it ticks
 
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c	2009-06-22 14:43:35.323966162 +0200
-+++ linux-2.6/kernel/perf_counter.c	2009-06-22 14:57:30.223807475 +0200
-@@ -1396,41 +1396,14 @@ __perf_counter_init_context(struct perf_
- 	ctx->task = task;
- }
- 
--static struct perf_counter_context *find_get_context(pid_t pid, int cpu)
-+static struct perf_counter_context *find_get_pid_context(pid_t pid)
- {
- 	struct perf_counter_context *parent_ctx;
- 	struct perf_counter_context *ctx;
--	struct perf_cpu_context *cpuctx;
- 	struct task_struct *task;
- 	unsigned long flags;
- 	int err;
- 
--	/*
--	 * If cpu is not a wildcard then this is a percpu counter:
--	 */
--	if (cpu != -1) {
--		/* Must be root to operate on a CPU counter: */
--		if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
--			return ERR_PTR(-EACCES);
--
--		if (cpu < 0 || cpu > num_possible_cpus())
--			return ERR_PTR(-EINVAL);
--
--		/*
--		 * We could be clever and allow to attach a counter to an
--		 * offline CPU and activate it when the CPU comes up, but
--		 * that's for later.
--		 */
--		if (!cpu_isset(cpu, cpu_online_map))
--			return ERR_PTR(-ENODEV);
--
--		cpuctx = &per_cpu(perf_cpu_context, cpu);
--		ctx = &cpuctx->ctx;
--		get_ctx(ctx);
--
--		return ctx;
--	}
--
- 	rcu_read_lock();
- 	if (!pid)
- 		task = current;
-@@ -3727,6 +3700,16 @@ static int perf_copy_attr(struct perf_co
- 	if (attr->read_format & ~(PERF_FORMAT_MAX-1))
- 		return -EINVAL;
- 
-+	if (!attr->exclude_kernel) {
-+		if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
-+			return -EACCES;
-+	}
+  $ perf test
+
+  Performance counter stats for 'test':
+
+  task-clock-msecs      Tick
+  context-switches      Tick
+  CPU-migrations        Tick
+  page-faults           Tick
+  cycles                Tick
+  instructions          Tick
+  cache-references      Tick
+  cache-misses          Tick
+
+     0.007693869  seconds time elapsed.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ tools/perf/Documentation/perf-test.txt |   24 ++
+ tools/perf/Makefile                    |    1 +
+ tools/perf/builtin-test.c              |  399 ++++++++++++++++++++++++++++++++
+ tools/perf/builtin.h                   |    1 +
+ tools/perf/command-list.txt            |    1 +
+ tools/perf/perf.c                      |    1 +
+ 6 files changed, 427 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/Documentation/perf-test.txt
+ create mode 100644 tools/perf/builtin-test.c
+
+diff --git a/tools/perf/Documentation/perf-test.txt b/tools/perf/Documentation/perf-test.txt
+new file mode 100644
+index 0000000..44cf495
+--- /dev/null
++++ b/tools/perf/Documentation/perf-test.txt
+@@ -0,0 +1,24 @@
++perf-test(1)
++============
 +
-+	if (attr->freq) {
-+		if (attr->sample_freq > sysctl_perf_counter_sample_rate)
-+			return -EINVAL;
-+	}
++NAME
++----
++perf-test - Test all events for whether it ticks
 +
- out:
- 	return ret;
++SYNOPSIS
++--------
++[verse]
++'perf test'
++
++DESCRIPTION
++-----------
++This command test all events whether it ticks.
++
++OPTIONS
++-------
++None
++
++SEE ALSO
++--------
++linkperf:perf-stat[1], linkperf:perf-top[1],
++linkperf:perf-record[1]
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 36d7eef..f5ac83f 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -335,6 +335,7 @@ BUILTIN_OBJS += builtin-list.o
+ BUILTIN_OBJS += builtin-record.o
+ BUILTIN_OBJS += builtin-report.o
+ BUILTIN_OBJS += builtin-stat.o
++BUILTIN_OBJS += builtin-test.o
+ BUILTIN_OBJS += builtin-top.o
  
-@@ -3736,52 +3719,16 @@ err_size:
- 	goto out;
- }
- 
--/**
-- * sys_perf_counter_open - open a performance counter, associate it to a task/cpu
-- *
-- * @attr_uptr:	event type attributes for monitoring/sampling
-- * @pid:		target pid
-- * @cpu:		target cpu
-- * @group_fd:		group leader counter fd
-- */
--SYSCALL_DEFINE5(perf_counter_open,
--		struct perf_counter_attr __user *, attr_uptr,
--		pid_t, pid, int, cpu, int, group_fd, unsigned long, flags)
-+static int do_perf_counter_open(struct perf_counter_attr *attr,
-+		struct perf_counter_context *ctx, int cpu, int group_fd)
- {
- 	struct perf_counter *counter, *group_leader;
--	struct perf_counter_attr attr;
--	struct perf_counter_context *ctx;
- 	struct file *counter_file = NULL;
- 	struct file *group_file = NULL;
- 	int fput_needed = 0;
- 	int fput_needed2 = 0;
- 	int ret;
- 
--	/* for future expandability... */
--	if (flags)
--		return -EINVAL;
--
--	ret = perf_copy_attr(attr_uptr, &attr);
--	if (ret)
--		return ret;
--
--	if (!attr.exclude_kernel) {
--		if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
--			return -EACCES;
--	}
--
--	if (attr.freq) {
--		if (attr.sample_freq > sysctl_perf_counter_sample_rate)
--			return -EINVAL;
--	}
--
--	/*
--	 * Get the target context (task or percpu):
--	 */
--	ctx = find_get_context(pid, cpu);
--	if (IS_ERR(ctx))
--		return PTR_ERR(ctx);
--
- 	/*
- 	 * Look up the group leader (we will attach this counter to it):
- 	 */
-@@ -3810,11 +3757,11 @@ SYSCALL_DEFINE5(perf_counter_open,
- 		/*
- 		 * Only a group leader can be exclusive or pinned
- 		 */
--		if (attr.exclusive || attr.pinned)
-+		if (attr->exclusive || attr->pinned)
- 			goto err_put_context;
- 	}
- 
--	counter = perf_counter_alloc(&attr, cpu, ctx, group_leader,
-+	counter = perf_counter_alloc(attr, cpu, ctx, group_leader,
- 				     GFP_KERNEL);
- 	ret = PTR_ERR(counter);
- 	if (IS_ERR(counter))
-@@ -3857,6 +3804,68 @@ err_put_context:
- 	goto out_fput;
- }
- 
-+SYSCALL_DEFINE4(perf_counter_open_pid,
-+		struct perf_counter_attr __user *, attr_uptr,
-+		pid_t, pid, int, group_fd, unsigned long, flags)
+ PERFLIBS = $(LIB_FILE)
+diff --git a/tools/perf/builtin-test.c b/tools/perf/builtin-test.c
+new file mode 100644
+index 0000000..0b8b25a
+--- /dev/null
++++ b/tools/perf/builtin-test.c
+@@ -0,0 +1,399 @@
++/*
++ * builtin-test.c
++ *
++ * Builtin test command: Tests each event and see whether it ticks
++ *
++ * Sample output:
++
++   $ perf test
++
++  Performance counter stats for 'test':
++
++  task-clock-msecs      Tick
++  context-switches      Tick
++  CPU-migrations        Tick
++  page-faults           Tick
++  cycles                Tick
++  instructions          Tick
++  cache-references      Tick
++  cache-misses          Tick
++
++     0.007693869  seconds time elapsed.
++
++ * (based on builtin-stat.c)
++ *
++ * Copyright (C) 2008, Red Hat Inc, Ingo Molnar <mingo@redhat.com>
++ * Copyright (C) 2009, Jaswinder Singh Rajput <jaswinder@kernel.org>
++ *
++ * Released under the GPL v2. (and only v2, not any later version)
++ */
++
++#include "perf.h"
++#include "builtin.h"
++#include "util/util.h"
++#include "util/parse-options.h"
++#include "util/parse-events.h"
++
++#include <sys/prctl.h>
++#include <math.h>
++
++static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
++
++  { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_TASK_CLOCK	},
++  { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CONTEXT_SWITCHES},
++  { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CPU_MIGRATIONS	},
++  { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_PAGE_FAULTS	},
++
++  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_CPU_CYCLES	},
++  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_INSTRUCTIONS	},
++  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_CACHE_REFERENCES},
++  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_CACHE_MISSES	},
++
++};
++
++static int			system_wide			=  0;
++static int			inherit				=  1;
++static int			verbose				=  0;
++
++static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
++
++static int			nr_cpus				=  0;
++static unsigned int		page_size;
++
++static int			scale				=  1;
++
++#define MAX_RUN 100
++
++static int			run_count		=  1;
++static int			run_idx			=  0;
++
++static u64			event_res[MAX_RUN][MAX_COUNTERS][3];
++static u64			event_scaled[MAX_RUN][MAX_COUNTERS];
++
++static u64			runtime_nsecs[MAX_RUN];
++static u64			walltime_nsecs[MAX_RUN];
++static u64			runtime_cycles[MAX_RUN];
++
++static u64			event_res_avg[MAX_COUNTERS][3];
++static u64			event_res_noise[MAX_COUNTERS][3];
++
++static u64			event_scaled_avg[MAX_COUNTERS];
++
++static u64			runtime_nsecs_avg;
++static u64			runtime_nsecs_noise;
++
++static u64			walltime_nsecs_avg;
++static u64			walltime_nsecs_noise;
++
++static u64			runtime_cycles_avg;
++static u64			runtime_cycles_noise;
++
++static void create_perf_stat_counter(int counter)
 +{
-+	struct perf_counter_attr attr;
-+	struct perf_counter_context *ctx;
-+	int ret;
++	struct perf_counter_attr *attr = attrs + counter;
 +
-+	/* for future expandability... */
-+	if (flags)
-+		return -EINVAL;
++	if (scale)
++		attr->read_format = PERF_FORMAT_TOTAL_TIME_ENABLED |
++				    PERF_FORMAT_TOTAL_TIME_RUNNING;
 +
-+	ret = perf_copy_attr(attr_uptr, &attr);
-+	if (ret)
-+		return ret;
++	if (system_wide) {
++		int cpu;
++		for (cpu = 0; cpu < nr_cpus; cpu ++) {
++			fd[cpu][counter] = sys_perf_counter_open(attr, -1, cpu, -1, 0);
++			if (fd[cpu][counter] < 0 && verbose) {
++				printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[cpu][counter], strerror(errno));
++			}
++		}
++	} else {
++		attr->inherit	= inherit;
++		attr->disabled	= 1;
 +
-+	ctx = find_get_pid_context(pid);
-+	if (IS_ERR(ctx))
-+		return PTR_ERR(ctx);
-+
-+	return do_perf_counter_open(&attr, ctx, -1, group_fd);
++		fd[0][counter] = sys_perf_counter_open(attr, 0, -1, -1, 0);
++		if (fd[0][counter] < 0 && verbose) {
++			printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[0][counter], strerror(errno));
++		}
++	}
 +}
 +
-+SYSCALL_DEFINE4(perf_counter_open_cpu,
-+		struct perf_counter_attr __user *, attr_uptr,
-+		int, cpu, int, group_fd, unsigned long, flags)
++/*
++ * Does the counter have nsecs as a unit?
++ */
++static inline int nsec_counter(int counter)
 +{
-+	struct perf_counter_attr attr;
-+	struct perf_counter_context *ctx;
-+	struct perf_cpu_context *cpuctx;
-+	int ret;
++	if (attrs[counter].type != PERF_TYPE_SOFTWARE)
++		return 0;
 +
-+	/* for future expandability... */
-+	if (flags)
-+		return -EINVAL;
++	if (attrs[counter].config == PERF_COUNT_SW_CPU_CLOCK)
++		return 1;
 +
-+	ret = perf_copy_attr(attr_uptr, &attr);
-+	if (ret)
-+		return ret;
++	if (attrs[counter].config == PERF_COUNT_SW_TASK_CLOCK)
++		return 1;
 +
-+	/* Must be root to operate on a CPU counter: */
-+	if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
-+		return -EACCES;
++	return 0;
++}
 +
-+	if (cpu < 0 || cpu > num_possible_cpus())
-+		return -EINVAL;
++/*
++ * Read out the results of a single counter:
++ */
++static void read_counter(int counter)
++{
++	u64 *count, single_count[3];
++	ssize_t res;
++	int cpu, nv;
++	int scaled;
++
++	count = event_res[run_idx][counter];
++
++	count[0] = count[1] = count[2] = 0;
++
++	nv = scale ? 3 : 1;
++	for (cpu = 0; cpu < nr_cpus; cpu ++) {
++		if (fd[cpu][counter] < 0)
++			continue;
++
++		res = read(fd[cpu][counter], single_count, nv * sizeof(u64));
++		assert(res == nv * sizeof(u64));
++		close(fd[cpu][counter]);
++		fd[cpu][counter] = -1;
++
++		count[0] += single_count[0];
++		if (scale) {
++			count[1] += single_count[1];
++			count[2] += single_count[2];
++		}
++	}
++
++	scaled = 0;
++	if (scale) {
++		if (count[2] == 0) {
++			event_scaled[run_idx][counter] = -1;
++			count[0] = 0;
++			return;
++		}
++
++		if (count[2] < count[1]) {
++			event_scaled[run_idx][counter] = 1;
++			count[0] = (unsigned long long)
++				((double)count[0] * count[1] / count[2] + 0.5);
++		}
++	}
++	/*
++	 * Save the full runtime - to allow normalization during printout:
++	 */
++	if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
++		attrs[counter].config == PERF_COUNT_SW_TASK_CLOCK)
++		runtime_nsecs[run_idx] = count[0];
++	if (attrs[counter].type == PERF_TYPE_HARDWARE &&
++		attrs[counter].config == PERF_COUNT_HW_CPU_CYCLES)
++		runtime_cycles[run_idx] = count[0];
++}
++
++static int run_perf_stat(int argc, const char **argv)
++{
++	unsigned long long t0, t1;
++	int status = 0;
++	int counter;
++	int pid;
++
++	if (!system_wide)
++		nr_cpus = 1;
++
++	for (counter = 0; counter < nr_counters; counter++)
++		create_perf_stat_counter(counter);
 +
 +	/*
-+	 * We could be clever and allow to attach a counter to an
-+	 * offline CPU and activate it when the CPU comes up, but
-+	 * that's for later.
++	 * Enable counters and exec the command:
 +	 */
-+	if (!cpu_isset(cpu, cpu_online_map))
-+		return -ENODEV;
++	t0 = rdclock();
++	prctl(PR_TASK_PERF_COUNTERS_ENABLE);
 +
-+	cpuctx = &per_cpu(perf_cpu_context, cpu);
-+	ctx = &cpuctx->ctx;
-+	get_ctx(ctx);
++	if ((pid = fork()) < 0)
++		perror("failed to fork");
 +
-+	return do_perf_counter_open(&attr, ctx, cpu, group_fd);
++	if (!pid) {
++		if (execvp(argv[0], (char **)argv)) {
++			perror(argv[0]);
++			exit(-1);
++		}
++	}
++
++	wait(&status);
++
++	prctl(PR_TASK_PERF_COUNTERS_DISABLE);
++	t1 = rdclock();
++
++	walltime_nsecs[run_idx] = t1 - t0;
++
++	for (counter = 0; counter < nr_counters; counter++)
++		read_counter(counter);
++
++	return WEXITSTATUS(status);
 +}
 +
- /*
-  * inherit a counter from parent task to child task:
-  */
-@@ -4027,7 +4036,7 @@ void perf_counter_exit_task(struct task_
- 	__perf_counter_task_sched_out(child_ctx);
++static void test_printout(int counter, u64 *count)
++{
++	fprintf(stderr, " %-20s", event_name(counter));
++
++	if (count[0])
++		fprintf(stderr, "  Tick");
++	else
++		fprintf(stderr, "  No Tick");
++}
++
++/*
++ * Print out the results of a single counter:
++ */
++static void print_counter(int counter)
++{
++	u64 *count;
++
++	count = event_res_avg[counter];
++
++	test_printout(counter, count);
++
++	fprintf(stderr, "\n");
++}
++
++static void update_avg(const char *name, int idx, u64 *avg, u64 *val)
++{
++	*avg += *val;
++
++	if (verbose > 1)
++		fprintf(stderr, "debug: %20s[%d]: %Ld\n", name, idx, *val);
++}
++/*
++ * Calculate the averages and noises:
++ */
++static void calc_avg(void)
++{
++	int i, j;
++
++	if (verbose > 1)
++		fprintf(stderr, "\n");
++
++	for (i = 0; i < run_count; i++) {
++		update_avg("runtime", 0, &runtime_nsecs_avg, runtime_nsecs + i);
++		update_avg("walltime", 0, &walltime_nsecs_avg, walltime_nsecs + i);
++		update_avg("runtime_cycles", 0, &runtime_cycles_avg, runtime_cycles + i);
++		for (j = 0; j < nr_counters; j++) {
++			update_avg("counter/0", j,
++				event_res_avg[j]+0, event_res[i][j]+0);
++			update_avg("counter/1", j,
++				event_res_avg[j]+1, event_res[i][j]+1);
++			update_avg("counter/2", j,
++				event_res_avg[j]+2, event_res[i][j]+2);
++			update_avg("scaled", j,
++				event_scaled_avg + j, event_scaled[i]+j);
++		}
++	}
++	runtime_nsecs_avg /= run_count;
++	walltime_nsecs_avg /= run_count;
++	runtime_cycles_avg /= run_count;
++
++	for (j = 0; j < nr_counters; j++) {
++		event_res_avg[j][0] /= run_count;
++		event_res_avg[j][1] /= run_count;
++		event_res_avg[j][2] /= run_count;
++	}
++
++	for (i = 0; i < run_count; i++) {
++		runtime_nsecs_noise +=
++			abs((s64)(runtime_nsecs[i] - runtime_nsecs_avg));
++		walltime_nsecs_noise +=
++			abs((s64)(walltime_nsecs[i] - walltime_nsecs_avg));
++		runtime_cycles_noise +=
++			abs((s64)(runtime_cycles[i] - runtime_cycles_avg));
++
++		for (j = 0; j < nr_counters; j++) {
++			event_res_noise[j][0] +=
++				abs((s64)(event_res[i][j][0] - event_res_avg[j][0]));
++			event_res_noise[j][1] +=
++				abs((s64)(event_res[i][j][1] - event_res_avg[j][1]));
++			event_res_noise[j][2] +=
++				abs((s64)(event_res[i][j][2] - event_res_avg[j][2]));
++		}
++	}
++}
++
++static void print_stat(int argc, const char **argv)
++{
++	int i, counter;
++
++	calc_avg();
++
++	fflush(stdout);
++
++	fprintf(stderr, "\n");
++	fprintf(stderr, " Performance counter stats for \'%s", argv[0]);
++
++	for (i = 1; i < argc; i++)
++		fprintf(stderr, " %s", argv[i]);
++
++	fprintf(stderr, "\'");
++	if (run_count > 1)
++		fprintf(stderr, " (%d runs)", run_count);
++	fprintf(stderr, ":\n\n");
++
++	for (counter = 0; counter < nr_counters; counter++)
++		print_counter(counter);
++
++
++	fprintf(stderr, "\n");
++	fprintf(stderr, " %14.9f  seconds time elapsed.\n",
++			(double)walltime_nsecs_avg/1e9);
++	fprintf(stderr, "\n");
++}
++
++static volatile int signr = -1;
++
++static void skip_signal(int signo)
++{
++	signr = signo;
++}
++
++static void sig_atexit(void)
++{
++	if (signr == -1)
++		return;
++
++	signal(signr, SIG_DFL);
++	kill(getpid(), signr);
++}
++
++int cmd_test(int argc, const char **argv, const char *prefix)
++{
++	int status;
++
++	page_size = sysconf(_SC_PAGE_SIZE);
++
++	memcpy(attrs, default_attrs, sizeof(attrs));
++
++	if (!nr_counters)
++		nr_counters = 8;
++
++	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
++	assert(nr_cpus <= MAX_NR_CPUS);
++	assert(nr_cpus >= 0);
++
++	/*
++	 * We dont want to block the signals - that would cause
++	 * child tasks to inherit that and Ctrl-C would not work.
++	 * What we want is for Ctrl-C to work in the exec()-ed
++	 * task, but being ignored by perf stat itself:
++	 */
++	atexit(sig_atexit);
++	signal(SIGINT,  skip_signal);
++	signal(SIGALRM, skip_signal);
++	signal(SIGABRT, skip_signal);
++
++	status = 0;
++	for (run_idx = 0; run_idx < run_count; run_idx++) {
++		if (run_count != 1 && verbose)
++			fprintf(stderr, "[ perf stat: executing run #%d ... ]\n", run_idx+1);
++		status = run_perf_stat(argc, argv);
++	}
++
++	print_stat(argc, argv);
++
++	return status;
++}
+diff --git a/tools/perf/builtin.h b/tools/perf/builtin.h
+index 51d1682..3ed0362 100644
+--- a/tools/perf/builtin.h
++++ b/tools/perf/builtin.h
+@@ -22,5 +22,6 @@ extern int cmd_stat(int argc, const char **argv, const char *prefix);
+ extern int cmd_top(int argc, const char **argv, const char *prefix);
+ extern int cmd_version(int argc, const char **argv, const char *prefix);
+ extern int cmd_list(int argc, const char **argv, const char *prefix);
++extern int cmd_test(int argc, const char **argv, const char *prefix);
  
- 	/*
--	 * Take the context lock here so that if find_get_context is
-+	 * Take the context lock here so that if find_get_pid_context is
- 	 * reading child->perf_counter_ctxp, we wait until it has
- 	 * incremented the context's refcount before we do put_ctx below.
- 	 */
+ #endif
+diff --git a/tools/perf/command-list.txt b/tools/perf/command-list.txt
+index eebce30..f53544c 100644
+--- a/tools/perf/command-list.txt
++++ b/tools/perf/command-list.txt
+@@ -7,4 +7,5 @@ perf-list			mainporcelain common
+ perf-record			mainporcelain common
+ perf-report			mainporcelain common
+ perf-stat			mainporcelain common
++perf-test			mainporcelain common
+ perf-top			mainporcelain common
+diff --git a/tools/perf/perf.c b/tools/perf/perf.c
+index 4eb7259..9f98f5e 100644
+--- a/tools/perf/perf.c
++++ b/tools/perf/perf.c
+@@ -262,6 +262,7 @@ static void handle_internal_command(int argc, const char **argv)
+ 		{ "record", cmd_record, 0 },
+ 		{ "report", cmd_report, 0 },
+ 		{ "stat", cmd_stat, 0 },
++		{ "test", cmd_test, 0 },
+ 		{ "top", cmd_top, 0 },
+ 		{ "annotate", cmd_annotate, 0 },
+ 		{ "version", cmd_version, 0 },
+-- 
+1.6.0.6
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
----end quoted text---
+
+
