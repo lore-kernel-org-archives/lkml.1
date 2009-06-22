@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbZFVRso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZFVRyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbZFVRso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 13:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZFVRsh
+	id S1754835AbZFVRyV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 13:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZFVRyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 13:48:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56374 "EHLO mx2.redhat.com"
+	Mon, 22 Jun 2009 13:54:12 -0400
+Received: from mga03.intel.com ([143.182.124.21]:13963 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753233AbZFVRsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 13:48:37 -0400
-Date: Mon, 22 Jun 2009 13:46:55 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Anders Kaseorg <andersk@ksplice.com>,
-       Jeffrey B Arnold <jbarnold@ksplice.com>
-Subject: Re: [PATCH] Add new TAINT_KSPLICE flag for when a Ksplice update
- has been loaded.
-Message-ID: <20090622134655.60b7c44a@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0906191422460.29844@vinegar-pot.mit.edu>
-References: <alpine.DEB.1.10.0906191422460.29844@vinegar-pot.mit.edu>
-Organization: Red Hat, Inc.
+	id S1752634AbZFVRyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 13:54:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,270,1243839600"; 
+   d="scan'208";a="157219365"
+Subject: Re: iwl3945 in 2.6.31-rc0: ad-hoc mode broken?
+From: reinette chatre <reinette.chatre@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090622174002.GD21299@elf.ucw.cz>
+References: <20090619222431.GA2398@elf.ucw.cz>
+	 <1245692380.24303.494.camel@rc-desk>  <20090622174002.GD21299@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 22 Jun 2009 11:01:26 -0700
+Message-Id: <1245693686.24303.515.camel@rc-desk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Jun 2009 15:57:21 -0400 (EDT)
-Tim Abbott <tabbott@ksplice.com> wrote:
+On Mon, 2009-06-22 at 10:40 -0700, Pavel Machek wrote:
+> On Mon 2009-06-22 10:39:40, reinette chatre wrote:
+> > Hi Pavel,
+> > 
+> > On Fri, 2009-06-19 at 15:24 -0700, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > I tried using ad-hoc mode (against t-mobile G1) on -rc0, and was
+> > > unsuccessful -- never got dhcp. I had to reboot back to
+> > > 2.6.30... Should I try it few more times or is something broken?
+> > > 
+> > > (Also wifi LED stopped working on x60, but that's older issue).
+> > > 
+> > 
+> > Are you testing Linus's repo here? Should we not maybe wait with testing
+> > until -rc1 is released?
+> 
+> WTF? Yes, I am testing Linus' tree (hence 2.6.31-rc0). I thought
+> 2.6. stable series is expected to work at all times, and it is bug if
+> it does not (otherwise git bisect is useless). Did you intentionally
+> break the tree or what?
 
-> Distributions and kerneloops.org have requested that the Ksplice
-> rebootless update system taint the kernel the first time that a
-> Ksplice update is installed, in order to assist with bug triage.
-> 
-> Ksplice uses a new taint flag, TAINT_KSPLICE, displayed as 'K', for
-> this purpose.
-> 
-> We would like to confirm that this use of taint meets with the
-> community's approval and get this taint flag registered in mainline.
-> 
+No. We include adhoc testing in our weekly tests on different hardware
+(3945) and have not seen any issues. We have not yet done any official
+testing on 2.6.31 as we usually do so only after -rc1 is released.
 
-How about a more generic taint flag that just says some user program has
-patched the running kernel?
+>  Or do you have fixes pending?
+
+All our fixes targeting 2.6.31 have been pushed. We do not have anything
+else pending.
+
+This is our first report of an issue in 2.6.31 and we will take a look.
+
+Reinette
+
+
+
+						
+
+
