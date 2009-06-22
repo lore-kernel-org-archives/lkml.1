@@ -1,39 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbZFVJCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbZFVJDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755040AbZFVJCB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZFVJBv
+	id S1755989AbZFVJDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZFVJDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:01:51 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49717 "EHLO mx2.suse.de"
+	Mon, 22 Jun 2009 05:03:03 -0400
+Received: from mga03.intel.com ([143.182.124.21]:57807 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbZFVJBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:01:50 -0400
-Date: Mon, 22 Jun 2009 11:01:52 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] HID: hiddev, fix lock imbalance
-In-Reply-To: <1245446651-1652-1-git-send-email-jirislaby@gmail.com>
-Message-ID: <alpine.LNX.2.00.0906221101290.7457@wotan.suse.de>
-References: <1245446651-1652-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1751002AbZFVJDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 05:03:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,267,1243839600"; 
+   d="scan'208";a="157051393"
+Date: Mon, 22 Jun 2009 17:02:33 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       Rik van Riel <riel@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Minchan Kim <minchan.kim@gmail.com>,
+       Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 11/15] HWPOISON: The high level memory error handler in
+	the VM v8
+Message-ID: <20090622090233.GB8110@localhost>
+References: <20090620031608.624240019@intel.com> <20090620031626.106150781@intel.com> <20090621085721.GD8218@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090621085721.GD8218@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Jun 2009, Jiri Slaby wrote:
+On Sun, Jun 21, 2009 at 04:57:21PM +0800, Andi Kleen wrote:
+> > v8:
+> > check for page_mapped_in_vma() on anon pages (Hugh, Fengguang)
+> 
+> This change was no good as discussed earlier.
+> 
+> > test and use page->mapping instead of page_mapping() (Fengguang)
+> > cleanup some early kill comments (Fengguang)
+> 
+> This stuff belongs into the manpage. I haven't written it yet,
+> but will. I don't think kernel source comments is the right place.
 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> ---
->  drivers/hid/usbhid/hiddev.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+OK. You may take this block
 
-Applied, thanks a lot for spotting that.
+        + * When the corrupted page data is not recoverable, the tasks mapped the page
+        + * have to be killed. We offer two kill options:
+        + * - early kill with SIGBUS.BUS_MCEERR_AO (optional)
+        + * - late  kill with SIGBUS.BUS_MCEERR_AR (mandatory)
+        + * A task will be early killed as soon as corruption is found in its virtual
+        + * address space, if it has called prctl(PR_MEMORY_FAILURE_EARLY_KILL, 1, ...);
+        + * Any task will be late killed when it tries to access its corrupted virtual
+        + * address. The early kill option offers KVM or other apps with large caches an
+        + * opportunity to isolate the corrupted page from its internal cache, so as to
+        + * avoid being late killed.
 
--- 
-Jiri Kosina
-SUSE Labs
+and/or this one into the man page :)
+
+        +=============================================================
+        +
+        +memory_failure_early_kill:
+        +
+        +Control how to kill processes when uncorrected memory error (typically
+        +a 2bit error in a memory module) is detected in the background by hardware
+        +that cannot be handled by the kernel. In some cases (like the page
+        +still having a valid copy on disk) the kernel will handle the failure
+        +transparently without affecting any applications. But if there is
+        +no other uptodate copy of the data it will kill to prevent any data
+        +corruptions from propagating.
+        +
+        +1: Kill all processes that have the corrupted and not reloadable page mapped
+        +as soon as the corruption is detected.  Note this is not supported
+        +for a few types of pages, like kernel internally allocated data or
+        +the swap cache, but works for the majority of user pages.
+        +
+        +0: Only unmap the corrupted page from all processes and only kill a process
+        +who tries to access it.
+        +
+        +The kill is done using a catchable SIGBUS with BUS_MCEERR_AO, so processes can
+        +handle this if they want to.
+        +
+        +This is only active on architectures/platforms with advanced machine
+        +check handling and depends on the hardware capabilities.
+        +
+         ==============================================================
+
+
+But I think these new comments are OK?
+
+        + * We don't aim to rescue 100% corruptions. That's unreasonable goal - the
+        + * kernel text and slab pages (including the big dcache/icache) are almost
+        + * impossible to isolate. We also try to keep the code clean by ignoring the
+        + * other thousands of small corruption windows.
+        + *
+
+And this:
+
+        @@ -275,6 +286,12 @@ static void collect_procs_file(struct pa
+
+                        vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff,
+                                              pgoff)
+        +                       /*
+        +                        * Send early kill signal to tasks whose vma covers
+        +                        * the page but not necessarily mapped it in its pte.
+        +                        * Applications who requested early kill normally want
+        +                        * to be informed of such data corruptions.
+        +                        */
+                                if (vma->vm_mm == tsk->mm)
+                                        add_to_kill(tsk, page, vma, to_kill, tkc);
+                }
+
+> > introduce invalidate_inode_page() and don't remove dirty/writeback pages
+> > from page cache (Nick, Fengguang)
+> 
+> I'm still dubious this is a good idea, it means potentially a lot 
+> of pages not covered.
+
+This is good for .31 I think. But for .32 we can sure cover more pages :)
+
+Thanks,
+Fengguang
