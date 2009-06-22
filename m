@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZFVO4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbZFVO43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbZFVO4P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbZFVO4A
+	id S1757252AbZFVO43 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbZFVO4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:56:00 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56618 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756971AbZFVOz7 (ORCPT
+	Mon, 22 Jun 2009 10:56:09 -0400
+Received: from ares.ids.de ([88.79.252.171]:47042 "HELO ares.ids.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756964AbZFVO4H convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:55:59 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 2/2] parport_pc: set properly the dma_mask for parport_pc
-	device
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 16:54:27 +0100
-Message-ID: <20090622155349.17809.246.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090622154702.17809.58975.stgit@t61.ukuu.org.uk>
-References: <20090622154702.17809.58975.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
+	Mon, 22 Jun 2009 10:56:07 -0400
+X-Greylist: delayed 1489 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 10:55:57 EDT
+X-PGP-Universal: processed;
+	by ares.ids.de on Mon, 22 Jun 2009 16:30:24 +0200
+From: <Sergej.Stepanov@ids.de>
+To: <chris.pringle@oxtel.com>, <scottwood@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Date: Mon, 22 Jun 2009 16:31:07 +0200
+Subject: AW: PowerPC PCI DMA issues (prefetch/coherency?)
+Thread-Topic: PowerPC PCI DMA issues (prefetch/coherency?)
+Thread-Index: AcnwB8v0OR7NQk8dT4eVE0fA/grvlwDPPAh7
+Message-ID: <4206182445660643B9AEB8D4E55BBD0A08533B67B5@HERMES2>
+References: <4A37A503.3030209@oxtel.com>
+	<20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
+	<4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
+	<4A37D073.6020802@freescale.com> <4A38A21B.5060306@oxtel.com>
+	<4A38ED31.9030705@oxtel.com>,<4A3A23FA.1000407@oxtel.com>
+In-Reply-To: <4A3A23FA.1000407@oxtel.com>
+Accept-Language: de-DE
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: de-DE
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>The other part of the fix is in asm-powerpc/pgtable32.h. _PAGE_BASE
+>needs _PAGE_COHERENT in order to work correctly, and in fact there is
+>now a comment in there to that affect in 2.6.29. Backporting that change
+>has made it work on 2.6.26. Both this patch, and the fix to head_32.S
+>are needed for it to work correctly on older kernels.
+>
+>Chris
 
-parport_pc_probe_port() creates the own 'parport_pc' device if the
-device argument is NULL. Then parport_pc_probe_port() doesn't
-initialize the dma_mask and coherent_dma_mask of the device and calls
-dma_alloc_coherent with it. dma_alloc_coherent fails because
-dma_alloc_coherent() doesn't accept the uninitialized dma_mask:
+Hello Chris,
 
-http://lkml.org/lkml/2009/6/16/150
+sorry for dummy, but if it possible, could you, please, send a corresponding summary patch of backporting you've done for older kernels?
+or just summary of that changes once again?
 
-Long ago, X86_32 and X86_64 had the own dma_alloc_coherent
-implementations; X86_32 accepted a device having dma_mask that is not
-initialized however X86_64 didn't. When we merged them, we chose to
-prohibit a device having dma_mask that is not initialized. I think
-that it's good to require drivers to set up dma_mask (and
-coherent_dma_mask) properly if the drivers want DMA.
+Many thanks
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Reported-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
-Tested-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
-Cc: stable@kernel.org
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- drivers/parport/parport_pc.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-index 7f1cca7..1032d5f 100644
---- a/drivers/parport/parport_pc.c
-+++ b/drivers/parport/parport_pc.c
-@@ -2290,6 +2290,9 @@ struct parport *parport_pc_probe_port(unsigned long int base,
- 		if (IS_ERR(pdev))
- 			return NULL;
- 		dev = &pdev->dev;
-+
-+		dev->coherent_dma_mask = DMA_BIT_MASK(24);
-+		dev->dma_mask = &dev->coherent_dma_mask;
- 	}
- 
- 	ops = kmalloc(sizeof(struct parport_operations), GFP_KERNEL);
-
+Sergej.
