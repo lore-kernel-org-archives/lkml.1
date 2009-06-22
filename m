@@ -1,177 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZFVSp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbZFVSqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753257AbZFVSp7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 14:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZFVSpu
+	id S1751805AbZFVSqw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 14:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZFVSqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 14:45:50 -0400
-Received: from 174-143-236-118.static.slicehost.net ([174.143.236.118]:34022
-	"EHLO fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbZFVSpt (ORCPT
+	Mon, 22 Jun 2009 14:46:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33901 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752030AbZFVSqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 14:45:49 -0400
-X-Greylist: delayed 1748 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jun 2009 14:45:49 EDT
-Date: Mon, 22 Jun 2009 14:16:40 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Benny Halevy <bhalevy@panasas.com>
-Subject: nfsd changes for 2.6.31
-Message-ID: <20090622181640.GA19619@fieldses.org>
+	Mon, 22 Jun 2009 14:46:44 -0400
+Date: Mon, 22 Jun 2009 11:44:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Blackfin Architecture Team 
+	<uclinux-dist-devel@blackfin.uclinux.org>,
+       David Howells <dhowells@redhat.com>, stable@kernel.org
+Subject: Re: Fix for shared flat binary format in 2.6.30
+In-Reply-To: <4A3F5EAE.7020402@t-online.de>
+Message-ID: <alpine.LFD.2.01.0906221137580.3240@localhost.localdomain>
+References: <4A3F5EAE.7020402@t-online.de>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following nfsd-related changes are available from the for-2.6.31
-branch at:
 
-  git://fieldses.org/git/linux-nfsd.git for-2.6.31
 
-(Not the usual URL: CITI is moving tomorrow and linux-nfs.org won't be
-up reliably for the next couple days, so I'm hosting this temporarily on
-my personal server.)
+On Mon, 22 Jun 2009, Bernd Schmidt wrote:
+>
+> This fixes a crash in 2.6.30 with shared flat binaries.  prepare_binfmt now
+> requires a cred pointer to be set up, which isn't done in binfmt_flat.c.
 
-This includes a few small preliminaries for further 4.1 changes
-(backchannel support and a DRC overhaul), but most of that will be
-queued up for 2.6.32.
+This has so many bugs in patch submission that I literally almost gave up 
+despite it being a trivial patch.
 
-The NFSv4 server will now use ext4's i_version when available, though
-some more ext4 changes, and testing of performance impact, are needed to
-make it usable.
+Attachements, wrong separators between explanation, wrong patch format 
+(hint: use "-p1" or some sane patch system that gets things right 
+_without_ crap), you name it. Very irritating.
 
-The rest is miscellaneous cleanup and bugfixes.  Thanks to everyone who
-contributed!
+I'm generally not interested in cleaning up after people who can't bother 
+to try to make patches in the right format. If you can't bother to spend 
+the small amount of time to make sure the patch is properly formatted, why 
+should I bother to apply it?
 
---b.
+It literally looks like you used SVN to generate that sh*t-for-brains 
+patch. If you have to use svn, at least learn to make it generate proper 
+patches.
 
-Alexandros Batsakis (1):
-      nfsd41: move channel attributes from nfsd4_session to a nfsd4_channel_attr struct
+(How? I don't know. Maybe "svn diff -p1" works? Why would _anybody_ ever 
+use SVN for the kernel anyway? The "S" stands for "Substandard").
 
-Andy Adamson (3):
-      nfsd41: sanity check client drc maxreqs
-      nfsd41: Backchannel: cleanup nfs4.0 callback encode routines
-      nfsd41: Backchannel: minorversion support for the back channel
+I applied this patch, but I want to just vent my frustration with it.
 
-Anton Blanchard (1):
-      sunrpc: align cache_clean work's timer
-
-Benny Halevy (1):
-      update Documentation/filesystems/00-INDEX with new nfsd related docs.
-
-Bian Naimeng (1):
-      nfsd4: distinguish expired from stale stateids
-
-Christian Engelmayer (1):
-      sunrpc: potential memory leak in function rdma_read_xdr
-
-Chuck Lever (17):
-      SUNRPC: Fix error return value of svc_addr_len()
-      NFSD: Refactor transport removal out of __write_ports()
-      NFSD: Refactor transport addition out of __write_ports()
-      NFSD: Refactor portlist socket closing into a helper
-      NFSD: Refactor socket creation out of __write_ports()
-      NFSD: Note an additional requirement when passing TCP sockets to portlist
-      NFSD: Finish refactoring __write_ports()
-      NFSD: move lockd_up() before svc_addsock()
-      NFSD: Prevent a buffer overflow in svc_xprt_names()
-      SUNRPC: pass buffer size to svc_addsock()
-      SUNRPC: pass buffer size to svc_sock_names()
-      SUNRPC: Switch one_sock_name() to use snprintf()
-      SUNRPC: Support PF_INET6 in one_sock_name()
-      SUNRPC: Clean up one_sock_name()
-      NFSD: Stricter buffer size checking in write_recoverydir()
-      NFSD: Stricter buffer size checking in write_versions()
-      NFSD: Stricter buffer size checking in fs/nfsd/nfsctl.c
-
-Felix Blyakher (1):
-      lockd: call locks_release_private to cleanup per-filesystem state
-
-Greg Banks (3):
-      knfsd: reply cache cleanups
-      knfsd: fix reply cache memory corruption
-      knfsd: remove unreported filehandle stats counters
-
-H Hartley Sweeten (1):
-      net/sunrpc/svc_xprt.c: fix sparse warnings
-
-J. Bruce Fields (19):
-      nfsd: eliminate ENCODE_HEAD macro
-      nfsd4: delete obsolete xdr comments
-      nfsd: support ext4 i_version
-      nfsd: quiet compile warning
-      nfsd4: setclientid_confirm callback-change fixes
-      nfsd4: set shorter timeout
-      nfsd4: set cb_client inside setup_callback_client
-      nfsd4: create rpc callback client from server thread
-      nfsd4: lookup up callback cred only once
-      nfsd4: replace callback thread by asynchronous rpc
-      nfsd4: rename callback struct to cb_conn
-      nfsd4: eliminate struct nfs4_cb_recall
-      nfsd4: remove unused dl_trunc
-      nfsd4: track recall retries in nfs4_delegation
-      nfsd4: make recall callback an asynchronous rpc
-      Merge commit 'v2.6.30' into for-2.6.31
-      nfsd: track last inode only in use_wgather case
-      nfsd: Pull write-gathering code out of nfsd_vfs_write
-      nfsd: minor nfsd_vfs_write cleanup
-
-Mike Sager (1):
-      nfsd41: Remove ip address collision detection case
-
-NeilBrown (2):
-      nfsd: don't take nfsd_mutex twice when setting number of threads.
-      nfsd: optimise the starting of zero threads when none are running.
-
-Randy Dunlap (2):
-      nfsd: use C99 struct initializers
-      lockd: fix FILE_LOCKING=n build error
-
-Roel Kluin (1):
-      rpcgss: remove redundant test on unsigned
-
-Trond Myklebust (2):
-      nfsd: Use write gathering only with NFSv2
-      SUNRPC: Fix the TCP server's send buffer accounting
-
-Wang Chen (1):
-      nfsd: nfs4_stat_init cleanup
-
-Yu Zhiguo (3):
-      NFSv4: do exact check about attribute specified
-      NFSv4: kill off complicated macro 'PROC'
-      NFS: kill off complicated macro 'PROC'
-
- Documentation/filesystems/00-INDEX      |    4 +
- fs/Kconfig                              |    2 +
- fs/lockd/svclock.c                      |    2 +
- fs/locks.c                              |    3 +-
- fs/nfs/Kconfig                          |    2 +-
- fs/nfsd/export.c                        |   13 +-
- fs/nfsd/nfs3proc.c                      |  237 ++++++++++++++++++++++---
- fs/nfsd/nfs3xdr.c                       |    1 +
- fs/nfsd/nfs4callback.c                  |  247 ++++++++++++++++----------
- fs/nfsd/nfs4proc.c                      |  129 +++++++++++---
- fs/nfsd/nfs4state.c                     |  171 ++++++++++--------
- fs/nfsd/nfs4xdr.c                       |  296 ++++++++++++++-----------------
- fs/nfsd/nfscache.c                      |   33 +++--
- fs/nfsd/nfsctl.c                        |  294 +++++++++++++++++++------------
- fs/nfsd/nfsfh.c                         |    6 -
- fs/nfsd/nfsproc.c                       |  198 +++++++++++++++++----
- fs/nfsd/nfssvc.c                        |   12 +-
- fs/nfsd/vfs.c                           |   93 +++++-----
- include/linux/fs.h                      |    1 +
- include/linux/nfsd/cache.h              |    3 +-
- include/linux/nfsd/nfsfh.h              |    7 +
- include/linux/nfsd/state.h              |   44 +++---
- include/linux/nfsd/xdr4.h               |   28 ++--
- include/linux/sunrpc/svc_xprt.h         |    7 +-
- include/linux/sunrpc/svcsock.h          |    7 +-
- net/sunrpc/cache.c                      |    2 +-
- net/sunrpc/svc_xprt.c                   |   57 ++++--
- net/sunrpc/svcsock.c                    |  122 +++++++++----
- net/sunrpc/xprtrdma/svc_rdma_recvfrom.c |    8 +-
- 29 files changed, 1329 insertions(+), 700 deletions(-)
+		Linus
