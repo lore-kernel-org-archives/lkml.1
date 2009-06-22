@@ -1,71 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZFVQIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbZFVQIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757977AbZFVQIB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZFVQHx
+	id S1757460AbZFVQIW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757974AbZFVQIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:07:53 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:48330 "EHLO e7.ny.us.ibm.com"
+	Mon, 22 Jun 2009 12:08:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45244 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbZFVQHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:07:52 -0400
-Date: Mon, 22 Jun 2009 09:07:53 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-       linux-kernel@vger.kernel.org, niv@us.ibm.com, dvhltc@us.ibm.com,
-       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
-Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
-Message-ID: <20090622160753.GE6754@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090506225115.GM6771@linux.vnet.ibm.com> <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu> <11979.1241648574@redhat.com> <26931.1245670998@redhat.com> <20090622124951.GB30553@elte.hu> <20090622082941.c5c8b3f3.akpm@linux-foundation.org>
+	id S1757979AbZFVQH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 12:07:59 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [RFC] IO scheduler based io controller (V5)
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com>
+	<20090621152116.GC3728@balbir.in.ibm.com>
+	<20090622153030.GA15600@redhat.com>
+	<x497hz4l1j9.fsf@segfault.boston.devel.redhat.com>
+	<20090622160207.GC15600@redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 22 Jun 2009 12:06:42 -0400
+In-Reply-To: <20090622160207.GC15600@redhat.com> (Vivek Goyal's message of
+	"Mon, 22 Jun 2009 12:02:07 -0400")
+Message-ID: <x493a9sl0bx.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090622082941.c5c8b3f3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 08:29:41AM -0700, Andrew Morton wrote:
-> On Mon, 22 Jun 2009 14:49:51 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * David Howells <dhowells@redhat.com> wrote:
-> > 
-> > > Hi Paul,
-> > > 
-> > > Are you going to push your RCU patch for this merge window?
-> > 
-> > Andrew needs to be convinced for that to happen.
-> > 
-> 
-> whome?  I rarely have firm opinions on anything.  iirc the question
-> here was "is it worth adding another RCU implementation to save 900
-> bytes"?
-> 
-> I find it pretty hard to see how to come up with "yes" for that one but
-> it's hardly a huge issue.  If you guys feel otherwise then go wild.
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-Well, I do need to pull the "expedited" interface into the bloatwatch
-version, and my update of rcutorture made me realize that I can cut
-out a few more bytes, so I will submit an update.  For what it is worth,
-here are the opinions expressed on LKML:
+> On Mon, Jun 22, 2009 at 11:40:42AM -0400, Jeff Moyer wrote:
+>> Vivek Goyal <vgoyal@redhat.com> writes:
+>> 
+>> > On Sun, Jun 21, 2009 at 08:51:16PM +0530, Balbir Singh wrote:
+>> >> * Vivek Goyal <vgoyal@redhat.com> [2009-06-19 16:37:18]:
+>> >> 
+>> >> > 
+>> >> > Hi All,
+>> >> > 
+>> >> > Here is the V5 of the IO controller patches generated on top of 2.6.30.
+>> >> [snip]
+>> >> 
+>> >> > Testing
+>> >> > =======
+>> >> >
+>> >> 
+>> >> [snip]
+>> >> 
+>> >> I've not been reading through the discussions in complete detail, but
+>> >> I see no reference to async reads or aio. In the case of aio, aio
+>> >> presumes the context of the user space process. Could you elaborate on
+>> >> any testing you've done with these cases? 
+>> >> 
+>> >
+>> > Hi Balbir,
+>> >
+>> > So far I had not done any testing with AIO. I have done some just now.
+>> > Here are the results.
+>> >
+>> > Test1 (AIO reads)
+>> > ================
+>> > Set up two fio, AIO read jobs in two cgroup with weight 1000 and 500
+>> > respectively. I am using cfq scheduler. Following are some lines from my test
+>> > script.
+>> >
+>> > ===================================================================
+>> > fio_args="--ioengine=libaio --rw=read --size=512M"
+>> 
+>> AIO doesn't make sense without O_DIRECT.
+>> 
+>
+> Ok, here are the read results with --direct=1 for reads. In previous posting,
+> writes were already direct.
+>
+> test1 statistics: time=8 16 20796   sectors=8 16 1049648
+> test2 statistics: time=8 16 10551   sectors=8 16 581160
+>
+>
+> Not sure why reads are so slow with --direct=1? In the previous test
+> (no direct IO), I had cleared the caches using
+> (echo 3 > /proc/sys/vm/drop_caches) so reads could not have come from page
+> cache?
 
-+	Ingo Molnar: good documentation, minimal RCU implementation.
-?	Andi Kleen: will there be !SMP systems in the future?
-+	Lennert Buytenhek: there will be !SMP ARM for a long time.
-+	Paul Mundt: good idea for more-constrained SH platforms.
-+	David Howells: Acked-by.  works on FRV board.
-?	Andrew Morton: do we really need another RCU implementation?
+O_DIRECT bypasses the page cache, and hence the readahead code.  Try
+driving deeper queue depths and/or using larger I/O sizes.
 
-Of course, I well remember programming systems with 4K of core memory
-back in the 1970s, and therefore feel a bit guilty about sticking deep
-embedded platforms with the increase in memory footprint represented
-by Hierarchical RCU compared to Classic RCU.  And Bloatwatch RCU is much
-smaller and easier to understand/maintain than is Classic RCU.
-
-So, again, I will forward port, optimize, test, and resubmit.
-
-							Thanx, Paul
+Cheers,
+Jeff
