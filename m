@@ -1,105 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbZFVNUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbZFVNWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbZFVNUR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 09:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZFVNUF
+	id S1752876AbZFVNWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 09:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbZFVNWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 09:20:05 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:28815 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbZFVNUD (ORCPT
+	Mon, 22 Jun 2009 09:22:16 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39781 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbZFVNWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 09:20:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=w0zgf4UDv8zmPIJus9KaYt9VhuAoGeMd7WvzwDgr+iDBEXohJiEGbLBIqXvlKNBYD0
-         juyBqITxTyAbHuYCO0PbQvVIi1nawlATg7dmWV1b/yFvdKKmSmnb6WJxJTpidl/E5s8e
-         KX0sUrTcpGjrsur/vO9Eg6sfpsZ0/XPtoD6Ss=
-Message-ID: <4A3F84FD.3090700@gmail.com>
-Date: Mon, 22 Jun 2009 09:19:57 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, avi@redhat.com, mtosatti@redhat.com,
-       paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [KVM PATCH v8 3/3] KVM: add iosignalfd support
-References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003045.15859.73197.stgit@dev.haskins.net> <20090622104435.GA11594@redhat.com> <4A3F757C.6030508@novell.com> <20090622123022.GC12867@redhat.com> <4A3F8170.7000508@gmail.com> <20090622131351.GE12867@redhat.com>
-In-Reply-To: <20090622131351.GE12867@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9831ACCC4F115803D27E67A4"
+	Mon, 22 Jun 2009 09:22:15 -0400
+Subject: Re: [PATCH -tip 2/5] x86: use asm-generic/dma-mapping-common.h
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       akpm@linux-foundation.org, sam@ravnborg.org, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1245676212.15580.68.camel@pc1117.cambridge.arm.com>
+References: <20090620155605.GD12901@elte.hu>
+	 <20090622135717T.fujita.tomonori@lab.ntt.co.jp>
+	 <1245650501.18751.0.camel@penberg-laptop>
+	 <20090622203333U.fujita.tomonori@lab.ntt.co.jp>
+	 <19f34abd0906220459w39271e29x99d578d0a49d593b@mail.gmail.com>
+	 <19f34abd0906220543v64b5418di8b97d36214d093cc@mail.gmail.com>
+	 <20090622124916.GA30553@elte.hu>
+	 <1245676212.15580.68.camel@pc1117.cambridge.arm.com>
+Date: Mon, 22 Jun 2009 16:22:15 +0300
+Message-Id: <1245676935.6227.5.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9831ACCC4F115803D27E67A4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-06-22 at 14:10 +0100, Catalin Marinas wrote:
+> On Mon, 2009-06-22 at 14:49 +0200, Ingo Molnar wrote:
+> > * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > > Seems to be CONFIG_DEBUG_SLAB=y that is the culprit in this case. Hm,
+> > > is Kconfig busted?
+> > > 
+> > > lib/Kconfig.debug:301:config DEBUG_SLAB
+> > > lib/Kconfig.debug-302-  bool "Debug slab memory allocations"
+> > > lib/Kconfig.debug:303:  depends on DEBUG_KERNEL && SLAB && !KMEMCHECK
+> > > 
+> > > fujita-config:1475:CONFIG_DEBUG_SLAB=y
+> > > fujita-config:1558:CONFIG_KMEMCHECK=y
+> > > 
+> > > ...what gives? Pekka?
+> > 
+> > Kmemleak introduced this piece of not so nice solution recently:
+> > 
+> > +config DEBUG_KMEMLEAK
+> > +       bool "Kernel memory leak detector"
+> > +       depends on DEBUG_KERNEL && EXPERIMENTAL && (X86 || ARM) && \
+> > +               !MEMORY_HOTPLUG
+> > +       select DEBUG_SLAB if SLAB
+> > +       select SLUB_DEBUG if SLUB
+> > +       select DEBUG_FS if SYSFS
+> > +       select STACKTRACE if STACKTRACE_SUPPORT
+> > +       select KALLSYMS
+> > 
+> > that should be a depends line, not a select line.
+> 
+> Kmemleak doesn't strictly need DEBUG_SLAB to make it a dependency. But
+> enabling it may reduce (in theory) the false negatives by poisoning the
+> allocated objects (and hence clearing any possible pointers to other
+> objects). But I don't have any figures to show this is the case. I'll
+> post a patch to drop those selects.
+> 
+> BTW, wouldn't it be feasible for kbuild to ignore the select statements
+> if the selected config has unmet dependencies?
 
-Michael S. Tsirkin wrote:
-> On Mon, Jun 22, 2009 at 09:04:48AM -0400, Gregory Haskins wrote:
->  =20
->> Sorry, Michael.  I missed that you had other comments after the
->> grammatical one.  Will answer inline
->>
->> Michael S. Tsirkin wrote:
->>    =20
->>> On Mon, Jun 22, 2009 at 08:13:48AM -0400, Gregory Haskins wrote:
->>>  =20
->>>      =20
->>>
->>>> If thats true, we are in trouble ;)
->>>>    =20
->>>>        =20
->>> I think it works at least on x86:
->>> http://en.wikipedia.org/wiki/Packed#x86_and_x86-64
->>>  =20
->>>      =20
->> Right, understood.  What I meant specifically is that if the (void*)va=
-l
->> pointer is allowed to be misaligned we are in trouble ;).  I haven't
->> studied the implementation in front of the MMIO callback recently, but=
- I
->> generally doubt thats the case.  More than likely this is some buffer
->> that was kmalloced and that should already be aligned to the machine w=
-ord.
->>
->> Kind Regards,
->> -Greg
->>
->>    =20
->
-> Yes, from what I saw of the code I think it can be BUG_ON.
-> Avi?
->
->  =20
+Hmm, no idea, lets cc some relevant people here. But can we remove the
+select and add a config option help text to kmemleak as a short-term
+solution?
 
-The question to ask is whether a guest can influence that condition.  If
-they can, its an attack vector to crash the host.  I suspect they can't,
-however.  Therefore, your recommendation is perhaps a good approach so
-this condition cannot ever go unnoticed.  Avi?
+			Pekka
 
--Greg
-
-
---------------enig9831ACCC4F115803D27E67A4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAko/hP0ACgkQP5K2CMvXmqEOjACfV/cMVIAUoycWu1N0+0aS440N
-7JcAnA2p/4jmgY9HWnK/SFVYvNBYEbag
-=Rv2O
------END PGP SIGNATURE-----
-
---------------enig9831ACCC4F115803D27E67A4--
