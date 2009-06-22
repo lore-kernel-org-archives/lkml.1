@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZFVF4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbZFVF5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752551AbZFVF4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 01:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZFVF4d
+	id S1752014AbZFVF5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 01:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZFVF5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 01:56:33 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51791 "EHLO mx1.suse.de"
+	Mon, 22 Jun 2009 01:57:11 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51809 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbZFVF4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 01:56:33 -0400
-Date: Mon, 22 Jun 2009 07:56:35 +0200
-Message-ID: <s5hmy80olpo.wl%tiwai@suse.de>
+	id S1751624AbZFVF5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 01:57:09 -0400
+Date: Mon, 22 Jun 2009 07:57:11 +0200
+Message-ID: <s5hljnkoloo.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: Jaroslav Kysela <perex@perex.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sound: fix check for return value in snd_pcm_hw_refine
-In-Reply-To: <20090621202659.76ae16e8@mako-desktop>
-References: <20090621202659.76ae16e8@mako-desktop>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, perex@perex.cz,
+       alsa-devel@alsa-project.org
+Subject: Re: [PATCH] via82xx: add option to disable 500ms delay in snd_via82xx_codec_wait
+In-Reply-To: <4A3E8108.5010001@simon.arlott.org.uk>
+References: <4A3E8108.5010001@simon.arlott.org.uk>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -26,36 +27,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sun, 21 Jun 2009 20:26:59 +0200,
-Mariusz Kozlowski wrote:
+At Sun, 21 Jun 2009 19:50:48 +0100,
+Simon Arlott wrote:
 > 
-> Hello,
+> There's a large 500ms delay in snd_via82xx_codec_wait() that, at least
+> on my hardware, appears to be unnecessary. The rest of the init of
+> the card works without logging any warnings or errors and both audio
+> and mixer settings work.
 > 
-> 'params' is a pointer and looking at the code this probably should be a check
-> for ioctl return value.
+> This adds an "nodelay" parameter to disable this (undocumented in the
+> code) large delay improving bootup time by 489-500ms.
 > 
-> 	Mariusz
+> [    1.034217] initcall alsa_card_via82xx_init+0x0/0x16 returned 0 after 505757 usecs
+> vs.
+> [    0.533136] initcall alsa_card_via82xx_init+0x0/0x16 returned 0 after 15915 usecs
 > 
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 
-Applied now.  Thanks!
+Thanks, applied now.
 
 
 Takashi
 
+> ---
+>  sound/pci/via82xx.c |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
 > 
-> diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-> index 84da3ba..ac2150e 100644
-> --- a/sound/core/pcm_native.c
-> +++ b/sound/core/pcm_native.c
-> @@ -320,7 +320,7 @@ int snd_pcm_hw_refine(struct snd_pcm_substream *substream,
->                      snd_mask_max(&params->masks[SNDRV_PCM_HW_PARAM_CHANNELS])) {
->  			changed = substream->ops->ioctl(substream,
->  					SNDRV_PCM_IOCTL1_FIFO_SIZE, params);
-> -			if (params < 0)
-> +			if (changed < 0)
->  				return changed;
->  		}
->  	}
+> diff --git a/sound/pci/via82xx.c b/sound/pci/via82xx.c
+> index 1ef58c5..949fcaf 100644
+> --- a/sound/pci/via82xx.c
+> +++ b/sound/pci/via82xx.c
+> @@ -85,6 +85,7 @@ static int joystick;
+>  static int ac97_clock = 48000;
+>  static char *ac97_quirk;
+>  static int dxs_support;
+> +static int nodelay;
+>  
+>  module_param(index, int, 0444);
+>  MODULE_PARM_DESC(index, "Index value for VIA 82xx bridge.");
+> @@ -102,6 +103,8 @@ module_param(ac97_quirk, charp, 0444);
+>  MODULE_PARM_DESC(ac97_quirk, "AC'97 workaround for strange hardware.");
+>  module_param(dxs_support, int, 0444);
+>  MODULE_PARM_DESC(dxs_support, "Support for DXS channels (0 = auto, 1 = enable, 2 = disable, 3 = 48k only, 4 = no VRA, 5 = enable any sample rate)");
+> +module_param(nodelay, int, 0444);
+> +MODULE_PARM_DESC(nodelay, "Disable 500ms init delay");
+>  
+>  /* just for backward compatibility */
+>  static int enable;
+> @@ -549,7 +552,8 @@ static void snd_via82xx_codec_wait(struct snd_ac97 *ac97)
+>  	int err;
+>  	err = snd_via82xx_codec_ready(chip, ac97->num);
+>  	/* here we need to wait fairly for long time.. */
+> -	msleep(500);
+> +	if (!nodelay)
+> +		msleep(500);
+>  }
+>  
+>  static void snd_via82xx_codec_write(struct snd_ac97 *ac97,
+> -- 
+> 1.6.3.1
+> 
+> -- 
+> Simon Arlott
 > 
