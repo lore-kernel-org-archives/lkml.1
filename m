@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZFVQaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbZFVQbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757516AbZFVQaj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 12:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZFVQac
+	id S1757552AbZFVQbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 12:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZFVQbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 12:30:32 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:54762 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752680AbZFVQab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 12:30:31 -0400
-Message-ID: <4A3FB1A5.3060805@us.ibm.com>
-Date: Mon, 22 Jun 2009 09:30:29 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       niv@us.ibm.com, lethal@linux-sh.org, kernel@wantstofly.org,
-       matthew@wil.cx
-Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
-References: <20090506225115.GM6771@linux.vnet.ibm.com> <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu> <11979.1241648574@redhat.com> <26931.1245670998@redhat.com> <20090622124951.GB30553@elte.hu> <20090622082941.c5c8b3f3.akpm@linux-foundation.org> <20090622160753.GE6754@linux.vnet.ibm.com>
-In-Reply-To: <20090622160753.GE6754@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 12:31:33 -0400
+Received: from stz-softwaretechnik.de ([217.160.223.211]:1455 "EHLO
+	stlx01.stz-softwaretechnik.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751994AbZFVQbc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 12:31:32 -0400
+Date: Mon, 22 Jun 2009 18:31:13 +0200
+From: Ralf Gross <rg@STZ-Softwaretechnik.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: io-scheduler tuning for better read/write ratio
+Message-ID: <20090622163113.GD12483@p15145560.pureserver.info>
+References: <20090616154342.GA7043@p15145560.pureserver.info> <4A37CB2A.6010209@davidnewall.com> <20090616184027.GB7043@p15145560.pureserver.info> <4A37E7DB.7030100@redhat.com> <20090616185600.GC7043@p15145560.pureserver.info> <x49d494c4u0.fsf@segfault.boston.devel.redhat.com> <x49fxdsl46y.fsf@segfault.boston.devel.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49fxdsl46y.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Mon, Jun 22, 2009 at 08:29:41AM -0700, Andrew Morton wrote:
->> On Mon, 22 Jun 2009 14:49:51 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> * David Howells <dhowells@redhat.com> wrote:
->>>
->>>> Hi Paul,
->>>>
->>>> Are you going to push your RCU patch for this merge window?
->>> Andrew needs to be convinced for that to happen.
->>>
->> whome?  I rarely have firm opinions on anything.  iirc the question
->> here was "is it worth adding another RCU implementation to save 900
->> bytes"?
->>
->> I find it pretty hard to see how to come up with "yes" for that one but
->> it's hardly a huge issue.  If you guys feel otherwise then go wild.
+Jeff Moyer schrieb:
+> Jeff Moyer <jmoyer@redhat.com> writes:
 > 
-> Well, I do need to pull the "expedited" interface into the bloatwatch
-> version, and my update of rcutorture made me realize that I can cut
-> out a few more bytes, so I will submit an update.  For what it is worth,
-> here are the opinions expressed on LKML:
+> > Ralf Gross <rg@stz-softwaretechnik.com> writes:
+> >
+> >> Casey Dahlin schrieb:
+> >>> On 06/16/2009 02:40 PM, Ralf Gross wrote:
+> >>> > David Newall schrieb:
+> >>> >> Ralf Gross wrote:
+> >>> >>> write throughput is much higher than the read throughput (40 MB/s
+> >>> >>> read, 90 MB/s write).
+> >>> > 
+> >>> > Hm, but I get higher read throughput (160-200 MB/s) if I don't write
+> >>> > to the device at the same time.
+> >>> > 
+> >>> > Ralf
+> >>> 
+> >>> How specifically are you testing? It could depend a lot on the
+> >>> particular access patterns you're using to test.
+> >>
+> >> I did the basic tests with tiobench. The real test is a test backup
+> >> (bacula) with 2 jobs that create 2 30 GB spool files on that device.
+> >> The jobs partially write to the device in parallel. Depending which
+> >> spool file reaches the 30 GB first, one starts reading from that file
+> >> and writing to tape, while to other is still spooling.
+> >
+> > We are missing a lot of details, here.  I guess the first thing I'd try
+> > would be bumping up the max_readahead_kb parameter, since I'm guessing
+> > that your backup application isn't driving very deep queue depths.  If
+> > that doesn't work, then please provide exact invocations of tiobench
+> > that reprduce the problem or some blktrace output for your real test.
 > 
-> +	Ingo Molnar: good documentation, minimal RCU implementation.
-> ?	Andi Kleen: will there be !SMP systems in the future?
-> +	Lennert Buytenhek: there will be !SMP ARM for a long time.
-> +	Paul Mundt: good idea for more-constrained SH platforms.
-> +	David Howells: Acked-by.  works on FRV board.
-> ?	Andrew Morton: do we really need another RCU implementation?
-> 
-> Of course, I well remember programming systems with 4K of core memory
-> back in the 1970s, and therefore feel a bit guilty about sticking deep
-> embedded platforms with the increase in memory footprint represented
-> by Hierarchical RCU compared to Classic RCU.  And Bloatwatch RCU is much
-> smaller and easier to understand/maintain than is Classic RCU.
-> 
-> So, again, I will forward port, optimize, test, and resubmit.
+> Any news, Ralf?
 
-IIRC, in previous threads on this topic, the Bloatwatch edition was 
-expected to replace Classic RCU.  If so, wouldn't that address Andrew's 
-concern of "adding" another implementation?
+sorry for the delay. atm there are large backups running and using the
+raid device for spooling. So I can't do any tests.
 
-Thanks,
+Re. read ahead: I tested different settings from 8Kb to 65Kb, this
+didn't help.
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+I'll do some more tests when the backups are done (3-4 more days).
+
+Thanks, Ralf
+
