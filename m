@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZFVJje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZFVJk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbZFVJje (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 05:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbZFVJj0
+	id S1756240AbZFVJk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 05:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZFVJkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 05:39:26 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42712 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755167AbZFVJjZ (ORCPT
+	Mon, 22 Jun 2009 05:40:20 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:59749 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbZFVJkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 05:39:25 -0400
-Date: Mon, 22 Jun 2009 11:41:43 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
-       ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Simmons <jsimmons@infradead.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] fbdev: work around old compiler bug
-Message-ID: <20090622094143.GA8121@uranus.ravnborg.org>
-References: <20090622180420.2e0424e4.sfr@canb.auug.org.au> <20090622183415.46fa786b.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090622183415.46fa786b.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 22 Jun 2009 05:40:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nQNHVkPz7ogXoEi2MQ6evrmt8J94jFyW24+7er/VkMeXmkoKK7zdcT/7EggGYRb2DX
+         6HFoCDxHTWNTdDwd7YijcN0ofp9VpFMow2Ux6m3nmFICcHgZYfXpf9/BLSvcKu4J6ONe
+         jlQ7usRpb0urLuETyohNixFk+M3fZG6HxGDcc=
+MIME-Version: 1.0
+In-Reply-To: <4A3E7F38.7030300@linux.intel.com>
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
+	 <4A3E7F38.7030300@linux.intel.com>
+Date: Mon, 22 Jun 2009 11:40:19 +0200
+Message-ID: <8db1092f0906220240h5f20a3e8y173fa4d58c56d29c@mail.gmail.com>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend to 
+	disk, mce related?
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, seto.hidetoshi@jp.fujitsu.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 06:34:15PM +1000, Stephen Rothwell wrote:
-> On Mon, 22 Jun 2009 18:04:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > When building with a 4.1.x compiler on powerpc64 (at least) we get
-> > this error:
-> 
-> Ignore this, it causes more problems:
-> 
-> drivers/video/logo/logo_linux_clut224.c:548: error: logo_linux_clut224_clut causes a section type conflict
-> 
-> I'll work on a better solution.
+2009/6/21 Andi Kleen <ak@linux.intel.com>:
 
-I have no time to experiemnt atm.
-But I have seen this before.
-It happens when we mix up const and non-const stuff.
+> Does it still happen with CONFIG_X86_OLD_MCE instead?
 
-I would assume the simple solution is to replace _initconst with _initdata
-for all users.
-If you get it to work with powerpc then it works for everyone (or so it is usually).
+Works without any problem:
+maciek@zlom:~$ cat /boot/config-2.6.30-git17 | grep -i mce
+CONFIG_X86_MCE=y
+CONFIG_X86_OLD_MCE=y
+CONFIG_X86_ANCIENT_MCE=y
+# CONFIG_X86_MCE_NONFATAL is not set
+# CONFIG_X86_MCE_P4THERMAL is not set
 
-	Sam
+Regards
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
