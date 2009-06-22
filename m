@@ -1,75 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbZFVP2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbZFVP2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757027AbZFVP2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 11:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZFVP2E
+	id S1757505AbZFVP2a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 11:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbZFVP2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 11:28:04 -0400
-Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:64669 "EHLO
-	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752147AbZFVP2D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 11:28:03 -0400
-X-IronPort-AV: E=Sophos;i="4.42,269,1243807200"; 
-   d="scan'208";a="31722759"
-Message-ID: <4A3FA326.8030802@inria.fr>
-Date: Mon, 22 Jun 2009 17:28:38 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 22 Jun 2009 11:28:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47700 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755749AbZFVP2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 11:28:06 -0400
+Date: Mon, 22 Jun 2009 15:27:34 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, peterz@infradead.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1245683846.12092.1.camel@localhost.localdomain>
+References: <1245683846.12092.1.camel@localhost.localdomain>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Set alias for page-faults
+Message-ID: <tip-c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3@git.kernel.org>
+Git-Commit-ID: c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: Stefan Lankes <lankes@lfbs.rwth-aachen.de>,
-       "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-numa@vger.kernel.org, Boris Bierbaum <boris@lfbs.rwth-aachen.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>	 <87zldjn597.fsf@basil.nowhere.org>	 <000001c9eac4$cb8b6690$62a233b0$@rwth-aachen.de>	 <20090612103251.GJ25568@one.firstfloor.org>	 <004001c9eb53$71991300$54cb3900$@rwth-aachen.de>	 <1245119977.6724.40.camel@lts-notebook>	 <003001c9ee8a$97e5b100$c7b11300$@rwth-aachen.de>	 <1245164395.15138.40.camel@lts-notebook>	 <000501c9ef1f$930fa330$b92ee990$@rwth-aachen.de>	 <1245299856.6431.30.camel@lts-notebook>  <4A3F7A49.6070805@inria.fr> <1245680649.7799.54.camel@lts-notebook>
-In-Reply-To: <1245680649.7799.54.camel@lts-notebook>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 22 Jun 2009 15:27:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Schermerhorn wrote:
->> I gave this patchset a try and indeed it seems to work fine, thanks a
->> lot. But the migration performance isn't very good. I am seeing about
->> 540MB/s when doing mbind+touch_all_pages on large buffers on a
->> quad-barcelona machines. move_pages gets 640MB/s there. And my own
->> next-touch implementation were near 800MB/s in the past.
->>     
->
-> Interesting.  Do you have any idea where the differences come from?  Are
-> you comparing them on the same kernel versions?  I don't know the
-> details of your implementation, but one possible area is the check for
-> "misplacement".  When migrate-on-fault is enabled, I check all pages
-> with page_mapcount() == 0 for misplacement in the [swap page] fault
-> path.  That, and other filtering to eliminate unnecessary migrations
-> could cause extra overhead.
->   
+Commit-ID:  c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3
+Gitweb:     http://git.kernel.org/tip/c0c22dbfa8ba3c5045eeb9c76d2822ffc44fefc3
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Mon, 22 Jun 2009 20:47:26 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 22 Jun 2009 17:25:53 +0200
 
-(I'll actually talk about this at the Linux Symposium) I used 2.6.27
-initially, with some 2.6.29 patches to fix the throughput of move_pages
-for large buffers. So move_pages was getting about 600MB/s there. Then
-my own (hacky) next-touch implementation was getting about 800MB/s. The
-main difference with your code is that mine only modifies the current
-process PTE without touching the other processes if the page is shared.
-So my code basically only supports private pages, it duplicates/migrates
-them on next-touch. I thought it was faster than move_pages because I
-didn't support shared-page migration. But, I found out later that
-move_pages could be further improved up to about 750MB/s (it will be in
-2.6.31).
+perf_counter tools: Set alias for page-faults
 
-So now, I'd expect both the next-touch migration and move_pages to have
-similar migration throughput, about 750-800MB/s on my quad-barcelona
-machine. Right now, I'm seeing less than that for both, so there might
-be a problem deeper. Actually, looking at COW performance when the new
-page is allocated on a remote numa node, I also see the throughput much
-lower in 2.6.29+ (about 720MB/s) than in 2.6.27 (about 850MB/s). Maybe a
-regression in the low-level page copy routine?
+"faults" should be alias for "page-faults"
 
-Brice
+Also fixed alignment and 80 characters issue
 
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1245683846.12092.1.camel@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/util/parse-events.c |   36 ++++++++++++++++++------------------
+ 1 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index f569548..06af2fa 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -33,8 +33,7 @@ static struct event_symbol event_symbols[] = {
+ 
+   { CSW(CPU_CLOCK),		"cpu-clock",		""		},
+   { CSW(TASK_CLOCK),		"task-clock",		""		},
+-  { CSW(PAGE_FAULTS),		"page-faults",		""		},
+-  { CSW(PAGE_FAULTS),		"faults",		""		},
++  { CSW(PAGE_FAULTS),		"page-faults",		"faults"	},
+   { CSW(PAGE_FAULTS_MIN),	"minor-faults",		""		},
+   { CSW(PAGE_FAULTS_MAJ),	"major-faults",		""		},
+   { CSW(CONTEXT_SWITCHES),	"context-switches",	"cs"		},
+@@ -71,24 +70,24 @@ static char *sw_event_names[] = {
+ 
+ #define MAX_ALIASES 8
+ 
+-static char *hw_cache [][MAX_ALIASES] = {
+-	{ "L1-data"		, "l1-d", "l1d"					},
+-	{ "L1-instruction"	, "l1-i", "l1i"					},
+-	{ "L2"			, "l2"						},
+-	{ "Data-TLB"		, "dtlb", "d-tlb"				},
+-	{ "Instruction-TLB"	, "itlb", "i-tlb"				},
+-	{ "Branch"		, "bpu" , "btb", "bpc"				},
++static char *hw_cache[][MAX_ALIASES] = {
++	{ "L1-data",		"l1-d",		"l1d"			},
++	{ "L1-instruction",	"l1-i",		"l1i"			},
++	{ "L2",			"l2"					},
++	{ "Data-TLB",		"dtlb",		"d-tlb"			},
++	{ "Instruction-TLB",	"itlb",		"i-tlb"			},
++	{ "Branch",		"bpu" ,		"btb",		"bpc"	},
+ };
+ 
+-static char *hw_cache_op [][MAX_ALIASES] = {
+-	{ "Load"		, "read"					},
+-	{ "Store"		, "write"					},
+-	{ "Prefetch"		, "speculative-read", "speculative-load"	},
++static char *hw_cache_op[][MAX_ALIASES] = {
++	{ "Load",		"read"					},
++	{ "Store",		"write"					},
++	{ "Prefetch",		"speculative-read", "speculative-load"	},
+ };
+ 
+-static char *hw_cache_result [][MAX_ALIASES] = {
+-	{ "Reference"		, "ops", "access"				},
+-	{ "Miss"								},
++static char *hw_cache_result[][MAX_ALIASES] = {
++	{ "Reference",		"ops",		"access"		},
++	{ "Miss"							},
+ };
+ 
+ char *event_name(int counter)
+@@ -160,7 +159,8 @@ static int parse_aliases(const char *str, char *names[][MAX_ALIASES], int size)
+ 	return -1;
+ }
+ 
+-static int parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
++static int
++parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
+ {
+ 	int cache_type = -1, cache_op = 0, cache_result = 0;
+ 
+@@ -201,7 +201,7 @@ static int check_events(const char *str, unsigned int i)
+ 
+ 	if (strlen(event_symbols[i].alias))
+ 		if (!strncmp(str, event_symbols[i].alias,
+-		      strlen(event_symbols[i].alias)))
++			     strlen(event_symbols[i].alias)))
+ 			return 1;
+ 	return 0;
+ }
