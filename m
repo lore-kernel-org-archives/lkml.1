@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZFVHfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZFVHmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbZFVHfw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 03:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbZFVHfp
+	id S1755407AbZFVHmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 03:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZFVHmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 03:35:45 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:34124 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752384AbZFVHfo (ORCPT
+	Mon, 22 Jun 2009 03:42:09 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34549 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbZFVHmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 03:35:44 -0400
-Message-ID: <4A3F344F.1070206@snapgear.com>
-Date: Mon, 22 Jun 2009 17:35:43 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Mike Frysinger <vapier@gentoo.org>
-CC: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       David McCullough <davidm@snapgear.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] rmap: fixup page_referenced() for nommu systems
-References: <1245371813-30954-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1245371813-30954-1-git-send-email-vapier@gentoo.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 22 Jun 2009 03:42:08 -0400
+Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20090622113652.21E7.A69D9226@jp.fujitsu.com>
+References: <1245506908.6327.36.camel@localhost>
+	 <4A3CFFEC.1000805@gmail.com>  <20090622113652.21E7.A69D9226@jp.fujitsu.com>
+Date: Mon, 22 Jun 2009 10:42:09 +0300
+Message-Id: <1245656529.18751.22.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Mike Frysinger wrote:
-> After the recent changes that went into mm/vmscan.c to overhaul stuff, we
-> ended up with these warnings on no-mmu systems:
-> mm/vmscan.c: In function ‘shrink_page_list’:
-> mm/vmscan.c:580: warning: unused variable ‘vm_flags’
-> mm/vmscan.c: In function ‘shrink_active_list’:
-> mm/vmscan.c:1294: warning: ‘vm_flags’ may be used uninitialized in this function
-> mm/vmscan.c:1242: note: ‘vm_flags’ was declared here
+On Mon, 2009-06-22 at 11:39 +0900, KOSAKI Motohiro wrote:
+> (cc to Mel and some reviewer)
 > 
-> This is because the no-mmu function defines page_referenced() to work on
-> the first argument only (the page).  It does not clear the vm_flags given
-> to it because for no-mmu systems, they never actually get utilized.  Since
-> that is no longer strictly true, we need to set vm_flags to 0 like everyone
-> else so gcc can do proper dead code elimination without annoying us with
-> unused warnings.
+> > Flags are:
+> > 0000000000400000 -- __PG_MLOCKED
+> > 800000000050000c -- my page flags
+> >         3650000c -- Maxim's page flags
+> > 0000000000693ce1 -- my PAGE_FLAGS_CHECK_AT_FREE
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-
-Acked-by: Greg Ungerer <gerg@uclinux.org>
-
-
-
->  include/linux/rmap.h |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
+> I guess commit da456f14d (page allocator: do not disable interrupts in
+> free_page_mlock()) is a bit wrong.
 > 
-> diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-> index 216d024..bf116d0 100644
-> --- a/include/linux/rmap.h
-> +++ b/include/linux/rmap.h
-> @@ -118,7 +118,14 @@ int try_to_munlock(struct page *);
->  #define anon_vma_prepare(vma)	(0)
->  #define anon_vma_link(vma)	do {} while (0)
->  
-> -#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
-> +static inline int page_referenced(struct page *page, int is_locked,
-> +				  struct mem_cgroup *cnt,
-> +				  unsigned long *vm_flags)
-> +{
-> +	*vm_flags = 0;
-> +	return TestClearPageReferenced(page);
-> +}
-> +
->  #define try_to_unmap(page, refs) SWAP_FAIL
->  
->  static inline int page_mkclean(struct page *page)
+> current code is:
+> -------------------------------------------------------------
+> static void free_hot_cold_page(struct page *page, int cold)
+> {
+> (snip)
+>         int clearMlocked = PageMlocked(page);
+> (snip)
+>         if (free_pages_check(page))
+>                 return;
+> (snip)
+>         local_irq_save(flags);
+>         if (unlikely(clearMlocked))
+>                 free_page_mlock(page);
+> -------------------------------------------------------------
+> 
+> Oh well, we remove PG_Mlocked *after* free_pages_check().
+> Then, it makes false-positive warning.
+> 
+> Sorry, my review was also wrong. I think reverting this patch is better ;)
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Well, I am not sure we need to revert the patch. I'd argue it's simply a
+bug in free_pages_check() that can be fixed with something like this.
+Mel, what do you think?
+
+			Pekka
+
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index d6792f8..b002b65 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -385,7 +385,7 @@ static inline void __ClearPageTail(struct page *page)
+  * these flags set.  It they are, there is a problem.
+  */
+ #define PAGE_FLAGS_CHECK_AT_FREE \
+-	(1 << PG_lru	 | 1 << PG_locked    | \
++	(1 << PG_lru	 | \
+ 	 1 << PG_private | 1 << PG_private_2 | \
+ 	 1 << PG_buddy	 | 1 << PG_writeback | 1 << PG_reserved | \
+ 	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index a5f3c27..ff7c713 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -497,6 +497,11 @@ static void free_page_mlock(struct page *page) { }
+ 
+ static inline int free_pages_check(struct page *page)
+ {
++	/*
++	 * Note: the page can have PG_mlock set here because we clear it
++	 * lazily to avoid unnecessary disabling and enabling of interrupts in
++	 * page free fastpath.
++	 */
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+ 		(atomic_read(&page->_count) != 0) |
+
+
