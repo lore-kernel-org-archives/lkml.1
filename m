@@ -1,157 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbZFVOza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZFVOz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234AbZFVOza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 10:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZFVOzT
+	id S1756981AbZFVOz5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 10:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZFVOzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 10:55:19 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56614 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751551AbZFVOzS (ORCPT
+	Mon, 22 Jun 2009 10:55:50 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:39842 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbZFVOzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 10:55:18 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 1/2] parport_pc: after superio probing restore original
-	register values
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 22 Jun 2009 16:51:49 +0100
-Message-ID: <20090622155142.17809.75363.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090622154702.17809.58975.stgit@t61.ukuu.org.uk>
-References: <20090622154702.17809.58975.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
+	Mon, 22 Jun 2009 10:55:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rQIogPZzipEs6JSfw42Jub1096sRR4X0WMwNE93oIthgQWUnFpmzMU3vcCjGuaztsD
+         WRYPsPR5IKJPk/DH29QoESlMpJmMb8nwQuwSHzuBmbu5e6mVN1GrjpX+yAZTOpcw8pVk
+         ptjry55+slgqowYPI9EsEySN/YYMlDOYqFbq8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <4A3F8BF7.6010406@linux.intel.com>
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
+	 <4A3E7F38.7030300@linux.intel.com>
+	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>
+	 <4A3EE668.5090400@jp.fujitsu.com>
+	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>
+	 <4A3F55C7.4030909@linux.intel.com>
+	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>
+	 <4A3F7A93.5080004@linux.intel.com>
+	 <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>
+	 <4A3F8BF7.6010406@linux.intel.com>
+Date: Mon, 22 Jun 2009 16:55:50 +0200
+Message-ID: <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend to 
+	disk, mce related?
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+2009/6/22 Andi Kleen <ak@linux.intel.com>:
 
-CONFIG_PARPORT_PC_SUPERIO probes for various superio chips by writing
-byte sequences to a set of different potential I/O ranges.  But the
-probed ranges are not exclusive to parallel ports.  Some of our boards
-just happen to have a watchdog in one of them.  Took us almost a week
-to figure out why some distros reboot without warning after running
-flawlessly for 3 hours.  For exactly 170 = 0xAA minutes, that is ...
+> Here's a debug patch for the poller: http://firstfloor.org/ak/mcp-debug
+> Can you apply that and try again and send me the output?
+>
 
-Fixed by restoring original values after probing.  Also fixed too small
-request_region() in detect_and_report_it87().
+Dmesg after resume:
+http://unixy.pl/maciek/download/kernel/2.6.30-git17/pc/dmesg-2.6.30-git17-patch.txt
 
-Signed-off-by: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Cc: <stable@kernel.org>
----
+System hangs when uptime is roughly 5-6 minutes (when I don't change
+check_interval). netconsole doesn't show anything.
 
- drivers/parport/parport_pc.c |   31 +++++++++++++++++++++++++------
- 1 files changed, 25 insertions(+), 6 deletions(-)
-
-
-diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-index 151bf5b..7f1cca7 100644
---- a/drivers/parport/parport_pc.c
-+++ b/drivers/parport/parport_pc.c
-@@ -1471,11 +1471,13 @@ static void __devinit decode_smsc(int efer, int key, int devid, int devrev)
- 
- static void __devinit winbond_check(int io, int key)
- {
--	int devid, devrev, oldid, x_devid, x_devrev, x_oldid;
-+	int origval, devid, devrev, oldid, x_devid, x_devrev, x_oldid;
- 
- 	if (!request_region(io, 3, __func__))
- 		return;
- 
-+	origval = inb(io); /* Save original value */
-+
- 	/* First probe without key */
- 	outb(0x20, io);
- 	x_devid = inb(io + 1);
-@@ -1495,6 +1497,8 @@ static void __devinit winbond_check(int io, int key)
- 	oldid = inb(io + 1);
- 	outb(0xaa, io);    /* Magic Seal */
- 
-+	outb(origval, io); /* in case we poked some entirely different hardware */
-+
- 	if ((x_devid == devid) && (x_devrev == devrev) && (x_oldid == oldid))
- 		goto out; /* protection against false positives */
- 
-@@ -1505,11 +1509,15 @@ out:
- 
- static void __devinit winbond_check2(int io, int key)
- {
--	int devid, devrev, oldid, x_devid, x_devrev, x_oldid;
-+	int origval[3], devid, devrev, oldid, x_devid, x_devrev, x_oldid;
- 
- 	if (!request_region(io, 3, __func__))
- 		return;
- 
-+	origval[0] = inb(io); /* Save original values */
-+	origval[1] = inb(io + 1);
-+	origval[2] = inb(io + 2);
-+
- 	/* First probe without the key */
- 	outb(0x20, io + 2);
- 	x_devid = inb(io + 2);
-@@ -1528,6 +1536,10 @@ static void __devinit winbond_check2(int io, int key)
- 	oldid = inb(io + 2);
- 	outb(0xaa, io);    /* Magic Seal */
- 
-+	outb(origval[0], io); /* in case we poked some entirely different hardware */
-+	outb(origval[1], io + 1);
-+	outb(origval[2], io + 2);
-+
- 	if (x_devid == devid && x_devrev == devrev && x_oldid == oldid)
- 		goto out; /* protection against false positives */
- 
-@@ -1538,11 +1550,13 @@ out:
- 
- static void __devinit smsc_check(int io, int key)
- {
--	int id, rev, oldid, oldrev, x_id, x_rev, x_oldid, x_oldrev;
-+	int origval, id, rev, oldid, oldrev, x_id, x_rev, x_oldid, x_oldrev;
- 
- 	if (!request_region(io, 3, __func__))
- 		return;
- 
-+	origval = inb(io); /* Save original value */
-+
- 	/* First probe without the key */
- 	outb(0x0d, io);
- 	x_oldid = inb(io + 1);
-@@ -1566,6 +1580,8 @@ static void __devinit smsc_check(int io, int key)
- 	rev = inb(io + 1);
- 	outb(0xaa, io);    /* Magic Seal */
- 
-+	outb(origval, io); /* in case we poked some entirely different hardware */
-+
- 	if (x_id == id && x_oldrev == oldrev &&
- 	    x_oldid == oldid && x_rev == rev)
- 		goto out; /* protection against false positives */
-@@ -1602,11 +1618,12 @@ static void __devinit detect_and_report_smsc(void)
- static void __devinit detect_and_report_it87(void)
- {
- 	u16 dev;
--	u8 r;
-+	u8 origval, r;
- 	if (verbose_probing)
- 		printk(KERN_DEBUG "IT8705 Super-IO detection, now testing port 2E ...\n");
--	if (!request_region(0x2e, 1, __func__))
-+	if (!request_region(0x2e, 2, __func__))
- 		return;
-+	origval = inb(0x2e);		/* Save original value */
- 	outb(0x87, 0x2e);
- 	outb(0x01, 0x2e);
- 	outb(0x55, 0x2e);
-@@ -1626,8 +1643,10 @@ static void __devinit detect_and_report_it87(void)
- 		outb(r | 8, 0x2F);
- 		outb(0x02, 0x2E);	/* Lock */
- 		outb(0x02, 0x2F);
-+	} else {
-+		outb(origval, 0x2e);	/* Oops, sorry to disturb */
- 	}
--	release_region(0x2e, 1);
-+	release_region(0x2e, 2);
- }
- #endif /* CONFIG_PARPORT_PC_SUPERIO */
- 
-
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
