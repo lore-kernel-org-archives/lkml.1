@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZFWV4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZFWV40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbZFWV4K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZFWVz6
+	id S1756636AbZFWV40 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbZFWV4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:55:58 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:55364 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbZFWVz6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:55:58 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 06/14] Pramfs: Include files
-Date: Tue, 23 Jun 2009 23:55:32 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: =?utf-8?q?J=C3=B6rn_Engel?= <joern@lazybastard.org>,
-       Marco <marco.stornelli@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Tim Bird <tim.bird@am.sony.com>, Chris Simmonds <chris@2net.co.uk>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <4A33A7EC.6070008@gmail.com> <20090623192648.GB23119@logfs.org> <1245791743.25547.3517.camel@macbook.infradead.org>
-In-Reply-To: <1245791743.25547.3517.camel@macbook.infradead.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 23 Jun 2009 17:56:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60292 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757586AbZFWV4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 17:56:03 -0400
+Message-ID: <4A414F55.2040808@redhat.com>
+Date: Tue, 23 Jun 2009 17:55:33 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: akataria@vmware.com
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>	 <1245732411.18339.6.camel@alok-dev1>	 <20090623135017.220D.A69D9226@jp.fujitsu.com>	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>	 <1245736441.18339.21.camel@alok-dev1>  <4A41481D.1060607@redhat.com> <1245793331.24110.33.camel@alok-dev1>
+In-Reply-To: <1245793331.24110.33.camel@alok-dev1>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906232355.34134.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX189cfSYKGgxCW6zV3L0qxYVYnoYkzbNhGwIDOf
- fAu0kmENo/R/sHwBVcPhQu/Uhz6fbyG9iYI/qdqR3ZL+Ebgcdz
- O08tSm0XN37C1FLsu2Alg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, David Woodhouse wrote:
-> And dd on /dev/mem would work, surely?
+Alok Kataria wrote:
+> On Tue, 2009-06-23 at 14:24 -0700, Rik van Riel wrote:
 
-Actually, reading from /dev/mem is only valid on real RAM. If the nvram
-is part of an IO memory mapping, you have to do mmap()+memcpy() rather
-than read(). So dd won't do it, but it's still easy to read from user
-space.
+>> I can see something reasonable on both sides of this
+>> particular debate.  However, even with this patch the
+>> "unevictable" statistic does not reclaim the total
+>> number of pages that are unevictable pages from a
+>> zone, so I am not sure how it helps you achieve your
+>> goal.
+> 
+> Yes but most of the other memory (page table and others) which is
+> unevictable is actually static in nature.  IOW, the amount of this other
+> kind of kernel unevictable pages can be actually interpolated from the
+> amount of physical memory on the system. 
 
-> I'd definitely recommend making it fixed-endian. Not doing so for JFFS2
-> was a mistake I frequently regretted.
+That would be a fair argument, if it were true.
 
-Right.
+Things like page tables and dentry/inode caches vary
+according to the use case and are allocated as needed.
+They are in no way "static in nature".
 
-	Arnd <><
+-- 
+All rights reversed.
