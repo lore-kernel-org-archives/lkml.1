@@ -1,247 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbZFWJNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbZFWJNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758389AbZFWJNU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 05:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZFWJND
+	id S1758813AbZFWJNb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 05:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZFWJNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 05:13:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37894 "EHLO mx2.redhat.com"
+	Tue, 23 Jun 2009 05:13:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37895 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752161AbZFWJNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 05:13:00 -0400
-Date: Tue, 23 Jun 2009 11:12:57 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, oleg@redhat.com
-Subject: Re: [RFC] tcp: race in receive part
-Message-ID: <20090623091257.GA4850@jolsa.lab.eng.brq.redhat.com>
-References: <20090618102727.GC3782@jolsa.lab.eng.brq.redhat.com> <4A3A49F2.6060705@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A3A49F2.6060705@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752463AbZFWJNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 05:13:01 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090623042442.GA15630@linux.vnet.ibm.com>
+References: <20090623042442.GA15630@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, niv@us.ibm.com, dvhltc@us.ibm.com,
+       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v5 RCU: the bloatwatch edition
+Date: Tue, 23 Jun 2009 10:12:38 +0100
+Message-ID: <28711.1245748358@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-thanks for an answer, and sorry for my late reply,
-we needed the cust permission to disclose the debug data.
+> This patch is a version of RCU designed for (!SMP && EMBEDDED)
+> provided as a proof of concept of a small-footprint RCU implementation.
+> In particular, the implementation of synchronize_rcu() is extremely
+> lightweight and high performance.  It passes rcutorture testing in each
+> of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> on x86.  This saves 1263 bytes compared to Classic RCU, and more than
+> three kilobytes compared to Hierarchical RCU (updated to 2.6.30):
 
+On FRV:
 
-On Thu, Jun 18, 2009 at 04:06:42PM +0200, Eric Dumazet wrote:
-> Jiri Olsa a écrit :
-> > Hi,
-> > 
-> > in RHEL4 we can see a race in the tcp layer. We were not able to reproduce 
-> > this on the upstream kernel, but since the issue occurs very rarelly
-> > (once per 8 days), we just might not be lucky.
-> > 
-> > I'm affraid this might be a long email, I'll try to structure it nicely.. :)
-> > 
-> 
-> Thanks for your mail and detailed analysis
-> 
-> > 
-> > 
-> > RACE DESCRIPTION
-> > ================
-> > 
-> > There's a nice pdf describing the issue (and sollution using locks) on
-> > https://bugzilla.redhat.com/attachment.cgi?id=345014
-> 
-> I could not reach this url unfortunatly 
-> 
-> --> "You are not authorized to access bug #494404. "
+	CONFIG_CLASSIC_RCU=y
 
-please try it now, the bug should be accessible now
+	   text    data     bss     dec     hex filename
+	    884      32      20     936     3a8 kernel/rcupdate.o
+	   2616     184       0    2800     af0 kernel/rcuclassic.o
 
-> 
-> > 
-> > 
-> > The race fires, when following code paths meet, and the tp->rcv_nxt and
-> > __add_wait_queue updates stay in CPU caches.
-> > 
-> > CPU1                         CPU2
-> > 
-> > 
-> > sys_select                   receive packet
-> >   ...                        ...
-> >   __add_wait_queue           update tp->rcv_nxt
-> >   ...                        ...
-> >   tp->rcv_nxt check          sock_def_readable
-> >   ...                        {
-> >   schedule                      ...
-> >                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> >                                         wake_up_interruptible(sk->sk_sleep)
-> >                                 ...
-> >                              }
-> > 
-> > If there were no cache the code would work ok, since the wait_queue and
-> > rcv_nxt are opposit to each other.
-> > 
-> > Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
-> > passed the tp->rcv_nxt check and sleeps, or will get the new value for
-> > tp->rcv_nxt and will return with new data mask.  
-> > In both cases the process (CPU1) is being added to the wait queue, so the
-> > waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
-> > 
-> > The bad case is when the __add_wait_queue changes done by CPU1 stay in its
-> > cache , and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
-> > endup calling schedule and sleep forever if there are no more data on the
-> > socket.
-> > 
-> > Adding smp_mb() calls before sock_def_readable call and after __add_wait_queue
-> > should prevent the above bad scenario.
-> > 
-> > The upstream patch is attached. It seems to prevent the issue.
-> > 
-> > 
-> > 
-> > CPU BUGS
-> > ========
-> > 
-> > The customer has been able to reproduce this problem only on one CPU model:
-> > Xeon E5345*2. They didn't reproduce on XEON MV, for example.
-> 
-> Is there an easy way to reproduce the problem ?
+	CONFIG_TREE_RCU=y
 
-there's a reproducer attached to the bug
+	   text    data     bss     dec     hex filename
+	    884      32      20     936     3a8 kernel/rcupdate.o
+	   4068     384       0    4452    1164 kernel/rcutree.o
 
-https://enterprise.redhat.com/issue-tracker/?module=download&fid=201560&key=f6f87caf6ac2dc1eb1173257c8a5ef78
+	CONFIG_TINY_RCU=y
 
-it is basically the client/server program. 
-They're passing messages to each other. When a message is sent,
-both of them expect message on the input before sending another message.
+	   text    data     bss     dec     hex filename
+	    836      32      20     888     378 kernel/rcupdate.o
+	    816      24       0     840     348 kernel/rcutiny.o
 
-Very rarely the code hits the place when the process which called select
-is not woken up by incomming data. Probably because of the memory cache
-incoherency. See backtrace in the 
+On MN10300:
 
-https://bugzilla.redhat.com/show_bug.cgi?id=494404#c1
+	CONFIG_CLASSIC_RCU=y
 
+	   text    data     bss     dec     hex filename
+	    900      28      48     976     3d0 kernel/rcupdate.o
+	   1777     184       0    1961     7a9 kernel/rcuclassic.o
 
-> 
-> > 
-> > That CPU model happens to have 2 possible issues, that might cause the issue:
-> > (see errata http://www.intel.com/Assets/PDF/specupdate/315338.pdf)
-> > 
-> > AJ39 and AJ18. The first one can be workarounded by BIOS upgrade,
-> > the other one has following notes:
-> 
-> AJ18 only matters on unaligned accesses, tcp code doesnt do this.
-> 
-> > 
-> >       Software should ensure at least one of the following is true when
-> >       modifying shared data by multiple agents:
-> >              • The shared data is aligned
-> >              • Proper semaphores or barriers are used in order to
-> >                 prevent concurrent data accesses.
-> > 
-> > 
-> > 
-> > RFC
-> > ===
-> > 
-> > I'm aware that not having this issue reproduced on upstream lowers the odds
-> > having this checked in. However AFAICS the issue is present. I'd appreciate
-> > any comment/ideas.
-> > 
-> > 
-> > thanks,
-> > jirka
-> > 
-> > 
-> > Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-> > 
-> > diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-> > index 17b89c5..f5d9dbf 100644
-> > --- a/net/ipv4/tcp.c
-> > +++ b/net/ipv4/tcp.c
-> > @@ -340,6 +340,11 @@ unsigned int tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
-> >  	struct tcp_sock *tp = tcp_sk(sk);
-> >  
-> >  	poll_wait(file, sk->sk_sleep, wait);
-> 
-> poll_wait() calls add_wait_queue() which contains a 
-> spin_lock_irqsave()/spin_unlock_irqrestore() pair
-> 
-> Documentation/memory-barriers.txt states in line 1123 :
-> 
-> 	Memory operations issued after the LOCK will be completed after the LOCK
-> 	operation has completed.
-> 
-> and line 1131 states :
-> 
-> 	Memory operations issued before the UNLOCK will be completed before the
-> 	UNLOCK operation has completed.
-> 
-> So yes, there is no full smp_mb() in poll_wait()
-> 
-> > +
-> > +	/* Get in sync with tcp_data_queue, tcp_urg
-> > +	   and tcp_rcv_established function. */
-> > +	smp_mb();
-> 
-> If this barrier is really necessary, I guess it should be done in poll_wait() itself.
-> 
-> Documentation/memory-barriers.txt misses some information about poll_wait()
-> 
-> 
-> 
-> 
-> > +
-> >  	if (sk->sk_state == TCP_LISTEN)
-> >  		return inet_csk_listen_poll(sk);
-> >  
-> > diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-> > index 2bdb0da..0606e5e 100644
-> > --- a/net/ipv4/tcp_input.c
-> > +++ b/net/ipv4/tcp_input.c
-> > @@ -4362,8 +4362,11 @@ queue_and_out:
-> >  
-> >  		if (eaten > 0)
-> >  			__kfree_skb(skb);
-> > -		else if (!sock_flag(sk, SOCK_DEAD))
-> > +		else if (!sock_flag(sk, SOCK_DEAD)) {
-> > +			/* Get in sync with tcp_poll function. */
-> > +			smp_mb();
-> >  			sk->sk_data_ready(sk, 0);
-> > +		}
-> >  		return;
-> >
-> 
-> Oh well... if smp_mb() is needed, I believe it should be done
-> right before "if (waitqueue_active(sk->sk_sleep) ... "
-> 
->  	read_lock(&sk->sk_callback_lock);
-> +	smp_mb();
->  	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
->  		wake_up_interruptible(sk->sk_sleep)
-> 
-> It would match other parts in kernel (see fs/splice.c, fs/aio.c, ...)
-> 
-> Strange thing is that read_lock() on x86 is a full memory barrier, as it uses
-> "lock subl $0x1,(%eax)"
-> 
-> Maybe we could define a smp_mb_after_read_lock()  (a compiler barrier() on x86)
-> 
+	CONFIG_TREE_RCU=y
 
-First version of the patch was actually in this layer, see
-https://bugzilla.redhat.com/attachment.cgi?id=345886
+	   text    data     bss     dec     hex filename
+	    900      28      48     976     3d0 kernel/rcupdate.o
+	   2733     384       0    3117     c2d kernel/rcutree.o
 
-I was adviced this could be to invasive (it was in waitqueue_active actually), 
-so I moved the change to the TCP layer itself... 
+	CONFIG_PREEMPT_RCU=y
 
-As far as I understand the problem there's need for 2 barriers to be
-sure, the memory will have correct data. One in the codepath calling the
-select (tcp_poll), and in the other one updating the available data status 
-(sock_def_readable), am I missing smth?
+	   text    data     bss     dec     hex filename
+	    961      28      48    1037     40d kernel/rcupdate.o
+	   3314     128       8    3450     d7a kernel/rcupreempt.o
 
+	CONFIG_TINY_RCU=y
 
-thanks,
-jirka
+	   text    data     bss     dec     hex filename
+	    865      28      48     941     3ad kernel/rcupdate.o
+	    500      24       0     524     20c kernel/rcutiny.o
+
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+Acked-by: David Howells <dhowells@redhat.com
