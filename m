@@ -1,56 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbZFWM6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbZFWM6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbZFWM6T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 08:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZFWM6K
+	id S1758167AbZFWM6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 08:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbZFWM6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 08:58:10 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:55079 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZFWM6J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 08:58:09 -0400
-Date: Tue, 23 Jun 2009 18:28:06 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: Re: [RFC][ PATCH -tip v2 4/7] kprobes: kprobes jump optimization
-	core
-Message-ID: <20090623125806.GD8340@linux.vnet.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212319.5384.56039.stgit@localhost.localdomain>
+	Tue, 23 Jun 2009 08:58:30 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:44667 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757117AbZFWM6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 08:58:30 -0400
+Date: Tue, 23 Jun 2009 05:58:32 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, niv@us.ibm.com, dvhltc@us.ibm.com,
+       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v5 RCU: the bloatwatch edition
+Message-ID: <20090623125832.GA6872@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090623042442.GA15630@linux.vnet.ibm.com> <28711.1245748358@redhat.com> <20090623093208.GD23698@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622212319.5384.56039.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090623093208.GD23698@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	/* .insn_size is initialized later */
-> +	.nr_garbage = 0,
-> +};
-
+On Tue, Jun 23, 2009 at 11:32:08AM +0200, Ingo Molnar wrote:
 > 
-> +#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
-> +	/* Init kprobe_optinsn_slots */
-> +	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
-> +#endif
-> +
+> * David Howells <dhowells@redhat.com> wrote:
+> 
+> > Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > This patch is a version of RCU designed for (!SMP && EMBEDDED)
+> > > provided as a proof of concept of a small-footprint RCU implementation.
+> > > In particular, the implementation of synchronize_rcu() is extremely
+> > > lightweight and high performance.  It passes rcutorture testing in each
+> > > of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> > > on x86.  This saves 1263 bytes compared to Classic RCU, and more than
+> > > three kilobytes compared to Hierarchical RCU (updated to 2.6.30):
+> > 
+> > On FRV:
+> > 
+> > 	CONFIG_CLASSIC_RCU=y
+> > 
+> > 	   text    data     bss     dec     hex filename
+> > 	    884      32      20     936     3a8 kernel/rcupdate.o
+> > 	   2616     184       0    2800     af0 kernel/rcuclassic.o
+> > 
+> > 	CONFIG_TREE_RCU=y
+> > 
+> > 	   text    data     bss     dec     hex filename
+> > 	    884      32      20     936     3a8 kernel/rcupdate.o
+> > 	   4068     384       0    4452    1164 kernel/rcutree.o
+> > 
+> > 	CONFIG_TINY_RCU=y
+> > 
+> > 	   text    data     bss     dec     hex filename
+> > 	    836      32      20     888     378 kernel/rcupdate.o
+> > 	    816      24       0     840     348 kernel/rcutiny.o
+> > 
+> > On MN10300:
+> > 
+> > 	CONFIG_CLASSIC_RCU=y
+> > 
+> > 	   text    data     bss     dec     hex filename
+> > 	    900      28      48     976     3d0 kernel/rcupdate.o
+> > 	   1777     184       0    1961     7a9 kernel/rcuclassic.o
+> > 
+> > 	CONFIG_TREE_RCU=y
+> > 
+> > 	   text    data     bss     dec     hex filename
+> > 	    900      28      48     976     3d0 kernel/rcupdate.o
+> > 	   2733     384       0    3117     c2d kernel/rcutree.o
+> > 
+> > 	CONFIG_PREEMPT_RCU=y
+> > 
+> > 	   text    data     bss     dec     hex filename
+> > 	    961      28      48    1037     40d kernel/rcupdate.o
+> > 	   3314     128       8    3450     d7a kernel/rcupreempt.o
+> > 
+> > 	CONFIG_TINY_RCU=y
+> > 
+> > 	   text    data     bss     dec     hex filename
+> > 	    865      28      48     941     3ad kernel/rcupdate.o
+> > 	    500      24       0     524     20c kernel/rcutiny.o
+> > 
+> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
+> > Acked-by: David Howells <dhowells@redhat.com
+> 
+> Ok, that's more convincing than 900 bytes on x86.
 
-What would be be the size of kprobe_optinsn_slots.insn_size if
-CONFIG_OPTPROBES is defined but __ARCH_WANT_KPROBES_INSN_SLOT is not
-defined? 
+It used to be 900 bytes.  In 2.6.30, it is 1263 bytes.  ;-)
 
--Srikar
+That said, I agree that FRV and MN10300 savings are more impressive.
+
+> Paul, i guess this is .32 material anyway, right?
+
+I am personally OK with it being .32, as long as David Howells,
+Lennert Buytenhek, and Paul Mundt are OK with that schedule.
+
+> Since there's plenty of time, could we perhaps also do the 
+> classic-rcu removal and integrate-rcupreempt-into-tree-rcu steps, to 
+> reduce the (significant) config complexity perhaps?
+
+Classic-RCU removal most certainly.  I am hoping to get the
+integrate-rcupreempt-into-tree-rcu piece done in .32 timeframe, but
+there is a chance that it may be a bit later.
+
+							Thanx, Paul
