@@ -1,188 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZFWSxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbZFWSzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbZFWSxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 14:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZFWSxi
+	id S1754936AbZFWSzZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 14:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZFWSzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 14:53:38 -0400
-Received: from mga11.intel.com ([192.55.52.93]:63239 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752347AbZFWSxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 14:53:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,276,1243839600"; 
-   d="scan'208";a="701867868"
-Subject: Re: [PATCH] cpufreq: remove dbs_mutex
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "mark.langsdorf@amd.com" <mark.langsdorf@amd.com>
-In-Reply-To: <20090623184040.GA6908@elte.hu>
-References: <4A2835D8.6040903@kernel.org> <20090611105211.GA6760@elte.hu>
-	 <20090620124817.GA22831@elte.hu> <200906212155.49849.trenn@suse.de>
-	 <20090623181748.GA31148@elte.hu>  <20090623184040.GA6908@elte.hu>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 11:51:56 -0700
-Message-Id: <1245783116.4534.17466.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Tue, 23 Jun 2009 14:55:15 -0400
+Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:33828 "HELO
+	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752173AbZFWSzO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 14:55:14 -0400
+X-Yahoo-Newman-Id: 569405.31565.bm@omp423.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=zRCLxb4L96SRmQ4X4rSK9IWpFuPD2J15J4Lpcj4n8YEGDty8q+0z4ATj/wGB6Ojacs9pCzTwEitB4huhctv+XegjJcjhP/1zvPihMOAOTIAUQlaDD25iFKlq24PAczzK2zYXAghAg4dxRB7wR5E0iGIvRJhKbrxMt6q/AOwIlQY=  ;
+X-YMail-OSG: uth1qRUVM1nnPvyFbq20a.OE1cKj47DGDyJvHYmamztqhRGVO_h3oAZ3pGzZnm7u1cuzW7M1I1LRLkP6I0gXTu084WtgXVAbKHV8H3oKSr6qnlCQU5XH5BctnfT46Yysdx040Pb_wMwyw9jWMVxU6GhAyrguEuOjaHRUtZhpSPCWcE0GyyPiXkXUGYU8cca0oL9LkTBpNg0fJo3TFQB0JhXG6KkROeXMDLsCg2OLaBFEB3fI34RfJcpVMl4fgpm2_JHKjwTGiDhKRj9UXnVztJgt9c3kyUO6oBP8r.D1DplvoVS5r7J1
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers with missing MISO pin
+Date: Tue, 23 Jun 2009 11:55:15 -0700
+User-Agent: KMail/1.9.10
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "spi-devel-general@lists.sourceforge.net" 
+	<spi-devel-general@lists.sourceforge.net>,
+       "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC0228288531@bssrvexch01.BS.local>
+In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC0228288531@bssrvexch01.BS.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906231155.15339.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 23 June 2009, Marek Szyprowski wrote:
+> There are some boards that do not strictly follow SPI standard and use only 3 wires
+> (SCLK, MOSI, SS) for connecting some simple auxiliary chips and controls them with GPIO
+> based 'spi controller'. In this configuration the MISO line is missing (it is not
+> required if the chip does not transfer any data back to host). The example of such
+> board is a NCP ARM S3C64XX based machine. This patch adds support for such non-standard
+> configuration in GPIO-based SPI controller.
+> 
+> Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+
+This is missing one integrity feature:  it should reject all
+requests that provide a read buffer, since obviously it can't
+satisfy any such requests.
+
+Also, please add a comment in spi_gpio_request() explaining
+this point:  that output-only configs exist, and you're
+supporting them by letting MISO be invalid.
+
+Address those two points and this will be almost OK.
 
 
-Mathieu Desnoyers sent a patch earlier that should address this problem.
+Thing is, this raises two related issues:  (a) there's the
+analagous input-only case where MOSI isn't used, e.g. for
+some kinds of sensor; and (b) there's also "real 3-wire SPI"
+(spi->mode & SPI_3WIRE) where interactions are limited to
+half duplex and one pin switches roles between MOSI and MISO.
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/00331.html
+Clearly this "output-only" case is a subset of SPI_3WIRE (the
+MOMI/SISO pin can't switch direction) so one more change I
+want to see is requiring that spi->mode flag be set in all
+SPI devices registered when this mode is used.
 
-Thanks,
-Venki
+If you have time, it would be good to generaize this patch
+to cover all of those 3-wire modes ... accept all half
+duplex calls, use gpio_direction_*() to switch direction.
 
-On Tue, 2009-06-23 at 11:40 -0700, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+If not -- e.g. nothing to test that with! -- then I can
+understand, but please make your changes with that model
+in mind, and leave an appropriate FIXME in place.
+
+- Dave
+
+p.s. I'll CC you on one more related patch.  Briefly,
+     there's a new spi_master->flags field that should
+     set SPI_MASTER_HALF_DUPLEX.  Arguably, this specific
+     case should also advertise something like NO_RX.
+
+
 > 
-> > * Thomas Renninger <trenn@suse.de> wrote:
-> > 
-> > > > Note, this bug warning still triggers rather frequently with 
-> > > > latest -git (fb20871) during bootup on two test-systems - 
-> > > > relevant portion of the bootlog attached below. As usual i can 
-> > > > test any fix for this.
-> > >
-> > > Best rip out the dbs_mutex in drivers/cpufreq/cpufreq_ondemand.c 
-> > > totally. I can provide several locking cleanups for cpufreq for 
-> > > .31 the next days, including dbs_mutex removal, which I think is 
-> > > not needed. The dbs_mutex removal which should fix this could then 
-> > > be marked: CC: stable@kernel.org
-> > 
-> > drivers/cpufreq/cpufreq_conservative.c too i guess?
-> > 
-> > Something like the patch below?
-> > 
-> > Utterly untested and such.
+> --- 
 > 
-> i tested it and this blatant blind ripping out of a layer of locking 
-> uncovered the next layer:
+> diff --git a/drivers/spi/spi_gpio.c b/drivers/spi/spi_gpio.c
+> index 26bd03e..16f74fd 100644
+> --- a/drivers/spi/spi_gpio.c
+> +++ b/drivers/spi/spi_gpio.c
+> @@ -114,7 +114,10 @@ static inline void setmosi(const struct spi_device *spi, int is_on)
+>  
+>  static inline int getmiso(const struct spi_device *spi)
+>  {
+> -	return !!gpio_get_value(SPI_MISO_GPIO);
+> +	if (gpio_is_valid(SPI_MISO_GPIO))
+> +		return !!gpio_get_value(SPI_MISO_GPIO);
+> +	else
+> +		return 0;
+>  }
+>  
+>  #undef pdata
+> @@ -243,9 +246,11 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+>  	if (value)
+>  		goto done;
+>  
+> -	value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
+> -	if (value)
+> -		goto free_mosi;
+> +	if (gpio_is_valid(SPI_MISO_GPIO)) {
+> +		value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
+> +		if (value)
+> +			goto free_mosi;
+> +	}
+>  
+>  	value = spi_gpio_alloc(SPI_SCK_GPIO, label, false);
+>  	if (value)
+> @@ -254,7 +259,8 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+>  	goto done;
+>  
+>  free_miso:
+> -	gpio_free(SPI_MISO_GPIO);
+> +	if (gpio_is_valid(SPI_MISO_GPIO))
+> +		gpio_free(SPI_MISO_GPIO);
+>  free_mosi:
+>  	gpio_free(SPI_MOSI_GPIO);
+>  done:
+> @@ -308,7 +314,8 @@ static int __init spi_gpio_probe(struct platform_device *pdev)
+>  	if (status < 0) {
+>  		spi_master_put(spi_gpio->bitbang.master);
+>  gpio_free:
+> -		gpio_free(SPI_MISO_GPIO);
+> +		if (gpio_is_valid(SPI_MISO_GPIO))
+> +			gpio_free(SPI_MISO_GPIO);
+>  		gpio_free(SPI_MOSI_GPIO);
+>  		gpio_free(SPI_SCK_GPIO);
+>  		spi_master_put(master);
+> @@ -332,7 +339,8 @@ static int __exit spi_gpio_remove(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, NULL);
+>  
+> -	gpio_free(SPI_MISO_GPIO);
+> +	if (gpio_is_valid(SPI_MISO_GPIO))
+> +		gpio_free(SPI_MISO_GPIO);
+>  	gpio_free(SPI_MOSI_GPIO);
+>  	gpio_free(SPI_SCK_GPIO);
 > 
-> [  144.961483] =======================================================
-> [  144.961685] [ INFO: possible circular locking dependency detected ]
-> [  144.961785] 2.6.30-tip-08973-gb747c8d-dirty #6295
-> [  144.961878] -------------------------------------------------------
-> [  144.961974] S99local/8461 is trying to acquire lock:
-> [  144.962016]  (&(&dbs_info->work)->work){+.+...}, at: [<c109962a>] wait_on_work+0x0/0xba
-> [  144.962016] 
-> [  144.962016] but task is already holding lock:
-> [  144.962016]  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
-> [  144.962016] 
-> [  144.962016] which lock already depends on the new lock.
 > 
-> (see below for the full details)
 > 
-> I guess someone who knows the cpufreq code will have to fix the 
-> locking in this code for real.
-> 
-> 	Ingo
-> 
-> [  144.767335] CPUFREQ: ondemand sampling_rate_max sysfs file is deprecated - used by: cat
-> [  144.961480] 
-> [  144.961483] =======================================================
-> [  144.961685] [ INFO: possible circular locking dependency detected ]
-> [  144.961785] 2.6.30-tip-08973-gb747c8d-dirty #6295
-> [  144.961878] -------------------------------------------------------
-> [  144.961974] S99local/8461 is trying to acquire lock:
-> [  144.962016]  (&(&dbs_info->work)->work){+.+...}, at: [<c109962a>] wait_on_work+0x0/0xba
-> [  144.962016] 
-> [  144.962016] but task is already holding lock:
-> [  144.962016]  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
-> [  144.962016] 
-> [  144.962016] which lock already depends on the new lock.
-> [  144.962016] 
-> [  144.962016] 
-> [  144.962016] the existing dependency chain (in reverse order) is:
-> [  144.962016] 
-> [  144.962016] -> #1 (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}:
-> [  144.962016]        [<c10bcd0d>] check_prev_add+0xf0/0x151
-> [  144.962016]        [<c10bcdd3>] check_prevs_add+0x65/0xbf
-> [  144.962016]        [<c10bce9e>] validate_chain+0x71/0x99
-> [  144.962016]        [<c10bd184>] __lock_acquire+0x2be/0x33d
-> [  144.962016]        [<c10bd27f>] lock_acquire+0x7c/0x9f
-> [  144.962016]        [<c23b1b36>] down_write+0x32/0x95
-> [  144.962016]        [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
-> [  144.962016]        [<c1f627cd>] do_dbs_timer+0x50/0x160
-> [  144.962016]        [<c1098de1>] run_workqueue+0xec/0x243
-> [  144.962016]        [<c109badf>] worker_thread+0x13b/0x14c
-> [  144.962016]        [<c10a05ed>] kthread+0x89/0x92
-> [  144.962016]        [<c10064a7>] kernel_thread_helper+0x7/0x10
-> [  144.962016]        [<ffffffff>] 0xffffffff
-> [  144.962016] 
-> [  144.962016] -> #0 (&(&dbs_info->work)->work){+.+...}:
-> [  144.962016]        [<c10bcc50>] check_prev_add+0x33/0x151
-> [  144.962016]        [<c10bcdd3>] check_prevs_add+0x65/0xbf
-> [  144.962016]        [<c10bce9e>] validate_chain+0x71/0x99
-> [  144.962016]        [<c10bd184>] __lock_acquire+0x2be/0x33d
-> [  144.962016]        [<c10bd27f>] lock_acquire+0x7c/0x9f
-> [  144.962016]        [<c1099662>] wait_on_work+0x38/0xba
-> [  144.962016]        [<c109975c>] __cancel_work_timer+0x78/0x99
-> [  144.962016]        [<c109978d>] cancel_delayed_work_sync+0x10/0x12
-> [  144.962016]        [<c1f62710>] dbs_timer_exit+0x17/0x19
-> [  144.962016]        [<c1f62d68>] cpufreq_governor_dbs+0x23f/0x2df
-> [  144.962016]        [<c1f5e7cb>] __cpufreq_governor+0x9a/0xde
-> [  144.962016]        [<c1f5ea3c>] __cpufreq_set_policy+0x22d/0x2fa
-> [  144.967630]        [<c1f5ebce>] store_scaling_governor+0xc5/0x108
-> [  144.967630]        [<c1f5e11d>] store+0xa4/0xbd
-> [  144.967630]        [<c11fa00f>] flush_write_buffer+0x6d/0x81
-> [  144.967630]        [<c11fb23f>] sysfs_write_file+0x66/0xa6
-> [  144.967630]        [<c11814e0>] vfs_write+0x1ad/0x1f9
-> [  144.967630]        [<c1181fc6>] sys_write+0x5e/0x80
-> [  144.967630]        [<c100582b>] sysenter_do_call+0x12/0x38
-> [  144.967630]        [<ffffffff>] 0xffffffff
-> [  144.967630] 
-> [  144.967630] other info that might help us debug this:
-> [  144.967630] 
-> [  144.967630] 2 locks held by S99local/8461:
-> [  144.967630]  #0:  (&buffer->mutex){+.+.+.}, at: [<c11fb201>] sysfs_write_file+0x28/0xa6
-> [  144.967630]  #1:  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
-> [  144.967630] 
-> [  144.967630] stack backtrace:
-> [  144.967630] Pid: 8461, comm: S99local Tainted: G        W  2.6.30-tip-08973-gb747c8d-dirty #6295
-> [  144.967630] Call Trace:
-> [  144.967630]  [<c10bb9d8>] print_circular_bug_tail+0x5d/0x68
-> [  144.967630]  [<c10bcc50>] check_prev_add+0x33/0x151
-> [  144.967630]  [<c10b8974>] ? list_add_tail_rcu+0xd/0xf
-> [  144.967630]  [<c10bcdd3>] check_prevs_add+0x65/0xbf
-> [  144.967630]  [<c10bce9e>] validate_chain+0x71/0x99
-> [  144.967630]  [<c10bd184>] __lock_acquire+0x2be/0x33d
-> [  144.967630]  [<c10bd27f>] lock_acquire+0x7c/0x9f
-> [  144.967630]  [<c109962a>] ? wait_on_work+0x0/0xba
-> [  144.967630]  [<c1099662>] wait_on_work+0x38/0xba
-> [  144.967630]  [<c109962a>] ? wait_on_work+0x0/0xba
-> [  144.967630]  [<c110c292>] ? ftrace_likely_update+0x11/0x22
-> [  144.967630]  [<c109975c>] __cancel_work_timer+0x78/0x99
-> [  144.967630]  [<c109978d>] cancel_delayed_work_sync+0x10/0x12
-> [  144.967630]  [<c1f62710>] dbs_timer_exit+0x17/0x19
-> [  144.967630]  [<c1f62d68>] cpufreq_governor_dbs+0x23f/0x2df
-> [  144.967630]  [<c1f5e7cb>] __cpufreq_governor+0x9a/0xde
-> [  144.967630]  [<c1f5ea3c>] __cpufreq_set_policy+0x22d/0x2fa
-> [  144.967630]  [<c1f5ebce>] store_scaling_governor+0xc5/0x108
-> [  144.967630]  [<c1f60123>] ? handle_update+0x0/0x2d
-> [  144.967630]  [<c1f5dd6f>] ? lock_policy_rwsem_write+0xa3/0xec
-> [  144.967630]  [<c1f5e11d>] store+0xa4/0xbd
-> [  144.967630]  [<c11fa00f>] flush_write_buffer+0x6d/0x81
-> [  144.967630]  [<c11fb23f>] sysfs_write_file+0x66/0xa6
-> [  144.967630]  [<c11814e0>] vfs_write+0x1ad/0x1f9
-> [  144.967630]  [<c1181fc6>] sys_write+0x5e/0x80
-> [  144.967630]  [<c100582b>] sysenter_do_call+0x12/0x38
-> [  146.085749] PM: Adding info for No Bus:vcs4
-> [  146.085864] PM: Adding info for No Bus:vcsa4
-> [  146.090924] PM: Adding info for No Bus:vcs9
-> [  146.091077] PM: Adding info for No Bus:vcsa9
-> [  146.092977] PM: Adding info for No Bus:vcs3
+
+
 
