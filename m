@@ -1,366 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbZFWXNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760292AbZFWXN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759168AbZFWXNR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 19:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbZFWXNC
+	id S1760292AbZFWXN3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 19:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759927AbZFWXNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 19:13:02 -0400
-Received: from smtpq3.gn.mail.iss.as9143.net ([212.54.34.166]:52717 "EHLO
-	smtpq3.gn.mail.iss.as9143.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754021AbZFWXNA (ORCPT
+	Tue, 23 Jun 2009 19:13:17 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:46488 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760015AbZFWXNP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 19:13:00 -0400
-X-Greylist: delayed 1207 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jun 2009 19:12:59 EDT
-Date: Wed, 24 Jun 2009 00:52:45 +0200
-From: Dick Streefland <dick@streefland.net>
-To: linux-kbuild@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] kconfig: simplification of scripts/extract-ikconfig
-Message-ID: <20090623225245.GA10443@streefland.net>
+	Tue, 23 Jun 2009 19:13:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:reply-to:organization:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=e54WnZoydYkug8S2rY1NNbKUZzdcv4ILUCUI0U/cMpaK+5vQPmOe83Q+zue15uE3e1
+         WFszUsrss25JzOdzWL1VffFqyREdJe2guVrTqo/40L27BtLa7olpzXgiJ5jZ/vEF5IsG
+         DV3WU/6GgEh+Q7+l/eQvrIUG6KPIWx3EcbkJE=
+Message-ID: <4A41618D.4020900@laptop.org>
+Date: Tue, 23 Jun 2009 19:13:17 -0400
+From: "Richard A. Smith" <richard@laptop.org>
+Reply-To: richard@laptop.org
+Organization: One Laptop per Child
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-ZiggoSMTP-MailScanner-Information: Please contact the ISP for more information
-X-ZiggoSMTP-MailScanner-ID: 1MJEr7-0002UX-Lh
-X-ZiggoSMTP-MailScanner: Found to be clean
-X-ZiggoSMTP-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.091, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
-	TW_IK 0.08, TW_NM 0.08, TW_PN 0.08, TW_RG 0.08)
-X-ZiggoSMTP-MailScanner-From: dick@streefland.net
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+CC: Andres Salomon <dilinger@collabora.co.uk>, cbou@mail.ru,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
+       dsaxena@laptop.org
+Subject: Re: [PATCH 3/5] power_supply: add a TRICKLE_CHARGING status, and
+ add it to the olpc driver
+References: <20090622234607.11f61bec@mycelium.queued.net> <20090623103717.GH5422@sirena.org.uk> <4A412CC0.6050500@laptop.org> <20090623224434.GB16188@opensource.wolfsonmicro.com>
+In-Reply-To: <20090623224434.GB16188@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've rewritten the extract-ikconfig script to extract the kernel
-configuration from a kernel compiled with CONFIG_IKCONFIG. The main
-motivation for the rewrite was to remove the dependency on the
-external C program binoffset.c, which is compiled on the initial run.
+Mark Brown wrote:
 
-The binoffset executable is invoked with a relative path, which means
-that the old script can only be run from the top of the kernel tree,
-and only when you have write permission in the scripts directory.
-The new script uses echo/grep/tail/zcat only, and can be invoked from
-anywhere. The binoffset.c program has been removed.
+> The problem here is that anything which is already looking at these
+> statuses is going to have to be able to cope with the information too.
+> In the OLPC case it probably doesn't matter so much if they get
+> confused since this is an unusual case but in the embedded case it's
+> much more normal (and more likely to happen while a user interacts with
+> the device since that tends to burn power which is a problem if you're
+> charging off USB).
 
-Signed-off-by: Dick Streefland <dick@streefland.net>
----
+> A separate file with the detailed information would sidestep this since
+> it's a new interface.  I'm not strongly opposed to adding the new states
+> but I do think it's worth considering other ways of doing this.
 
- Documentation/dontdiff   |    1 -
- scripts/.gitignore       |    1 -
- scripts/binoffset.c      |  163 ----------------------------------------------
- scripts/extract-ikconfig |  108 +++++++++++-------------------
- 4 files changed, 39 insertions(+), 234 deletions(-)
+I've got no problems with a new interface.  But, i'm also not the person 
+writing the driver. :)
 
-diff --git a/Documentation/dontdiff b/Documentation/dontdiff
-index 88519da..6fef118 100644
---- a/Documentation/dontdiff
-+++ b/Documentation/dontdiff
-@@ -68,7 +68,6 @@ autoconf.h*
- bbootsect
- bin2c
- binkernel.spec
--binoffset
- bootsect
- bounds.h
- bsetup
-diff --git a/scripts/.gitignore b/scripts/.gitignore
-index b939fbd..a1f52cb 100644
---- a/scripts/.gitignore
-+++ b/scripts/.gitignore
-@@ -6,4 +6,3 @@ kallsyms
- pnmtologo
- bin2c
- unifdef
--binoffset
-diff --git a/scripts/binoffset.c b/scripts/binoffset.c
-deleted file mode 100644
-index 1a2e39b..0000000
---- a/scripts/binoffset.c
-+++ /dev/null
-@@ -1,163 +0,0 @@
--/***************************************************************************
-- * binoffset.c
-- * (C) 2002 Randy Dunlap <rdunlap@xenotime.net>
--
--#   This program is free software; you can redistribute it and/or modify
--#   it under the terms of the GNU General Public License as published by
--#   the Free Software Foundation; either version 2 of the License, or
--#   (at your option) any later version.
--#
--#   This program is distributed in the hope that it will be useful,
--#   but WITHOUT ANY WARRANTY; without even the implied warranty of
--#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--#   GNU General Public License for more details.
--#
--#   You should have received a copy of the GNU General Public License
--#   along with this program; if not, write to the Free Software
--#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
--
--# binoffset.c:
--# - searches a (binary) file for a specified (binary) pattern
--# - returns the offset of the located pattern or ~0 if not found
--# - exits with exit status 0 normally or non-0 if pattern is not found
--#   or any other error occurs.
--
--****************************************************************/
--
--#include <stdio.h>
--#include <stdlib.h>
--#include <string.h>
--#include <errno.h>
--#include <unistd.h>
--#include <fcntl.h>
--#include <sys/types.h>
--#include <sys/stat.h>
--#include <sys/mman.h>
--
--#define VERSION		"0.1"
--#define BUF_SIZE	(16 * 1024)
--#define PAT_SIZE	100
--
--char		*progname;
--char		*inputname;
--int		inputfd;
--unsigned int	bix;			/* buf index */
--unsigned char	patterns [PAT_SIZE] = {0}; /* byte-sized pattern array */
--int		pat_len;		/* actual number of pattern bytes */
--unsigned char	*madr;			/* mmap address */
--size_t		filesize;
--int		num_matches = 0;
--off_t		firstloc = 0;
--
--void usage (void)
--{
--	fprintf (stderr, "%s ver. %s\n", progname, VERSION);
--	fprintf (stderr, "usage:  %s filename pattern_bytes\n",
--			progname);
--	fprintf (stderr, "        [prints location of pattern_bytes in file]\n");
--	exit (1);
--}
--
--void get_pattern (int pat_count, char *pats [])
--{
--	int ix, err, tmp;
--
--#ifdef DEBUG
--	fprintf (stderr,"get_pattern: count = %d\n", pat_count);
--	for (ix = 0; ix < pat_count; ix++)
--		fprintf (stderr, "  pat # %d:  [%s]\n", ix, pats[ix]);
--#endif
--
--	for (ix = 0; ix < pat_count; ix++) {
--		tmp = 0;
--		err = sscanf (pats[ix], "%5i", &tmp);
--		if (err != 1 || tmp > 0xff) {
--			fprintf (stderr, "pattern or value error in pattern # %d [%s]\n",
--					ix, pats[ix]);
--			usage ();
--		}
--		patterns [ix] = tmp;
--	}
--	pat_len = pat_count;
--}
--
--void search_pattern (void)
--{
--	for (bix = 0; bix < filesize; bix++) {
--		if (madr[bix] == patterns[0]) {
--			if (memcmp (&madr[bix], patterns, pat_len) == 0) {
--				if (num_matches == 0)
--					firstloc = bix;
--				num_matches++;
--			}
--		}
--	}
--}
--
--#ifdef NOTDEF
--size_t get_filesize (int fd)
--{
--	off_t end_off = lseek (fd, 0, SEEK_END);
--	lseek (fd, 0, SEEK_SET);
--	return (size_t) end_off;
--}
--#endif
--
--size_t get_filesize (int fd)
--{
--	int err;
--	struct stat stat;
--
--	err = fstat (fd, &stat);
--	fprintf (stderr, "filesize: %ld\n", err < 0 ? (long)err : stat.st_size);
--	if (err < 0)
--		return err;
--	return (size_t) stat.st_size;
--}
--
--int main (int argc, char *argv [])
--{
--	progname = argv[0];
--
--	if (argc < 3)
--		usage ();
--
--	get_pattern (argc - 2, argv + 2);
--
--	inputname = argv[1];
--
--	inputfd = open (inputname, O_RDONLY);
--	if (inputfd == -1) {
--		fprintf (stderr, "%s: cannot open '%s'\n",
--				progname, inputname);
--		exit (3);
--	}
--
--	filesize = get_filesize (inputfd);
--
--	madr = mmap (0, filesize, PROT_READ, MAP_PRIVATE, inputfd, 0);
--	if (madr == MAP_FAILED) {
--		fprintf (stderr, "mmap error = %d\n", errno);
--		close (inputfd);
--		exit (4);
--	}
--
--	search_pattern ();
--
--	if (munmap (madr, filesize))
--		fprintf (stderr, "munmap error = %d\n", errno);
--
--	if (close (inputfd))
--		fprintf (stderr, "%s: error %d closing '%s'\n",
--				progname, errno, inputname);
--
--	fprintf (stderr, "number of pattern matches = %d\n", num_matches);
--	if (num_matches == 0)
--		firstloc = ~0;
--	printf ("%ld\n", firstloc);
--	fprintf (stderr, "%ld\n", firstloc);
--
--	exit (num_matches ? 0 : 2);
--}
--
--/* end binoffset.c */
-diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
-index 72997c3..96b245f 100755
---- a/scripts/extract-ikconfig
-+++ b/scripts/extract-ikconfig
-@@ -1,78 +1,48 @@
- #!/bin/sh
--# extracts .config info from a [b]zImage file
--# uses: binoffset (new), dd, zcat, strings, grep
--# $arg1 is [b]zImage filename
--
--binoffset="./scripts/binoffset"
--test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
--
--IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
--IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
--dump_config() {
--    file="$1"
--
--    start=`$binoffset $file $IKCFG_ST 2>/dev/null`
--    [ "$?" != "0" ] && start="-1"
--    if [ "$start" -eq "-1" ]; then
--	return
--    fi
--    end=`$binoffset $file $IKCFG_ED 2>/dev/null`
--
--    start=`expr $start + 8`
--    size=`expr $end - $start`
--
--    dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
--
--    clean_up
--    exit 0
--}
--
--
--usage()
-+# ----------------------------------------------------------------------
-+# extract-ikconfig - Extract the .config file from a kernel image
-+#
-+# This will only work when the kernel was compiled with CONFIG_IKCONFIG.
-+#
-+# (c) 2009, Dick Streefland <dick@streefland.net>
-+# Licensed under the terms of the GNU General Public License.
-+# ----------------------------------------------------------------------
-+
-+gzip_header=`/bin/echo -en '\x1f\x8b\x08'`
-+ikconfig_header="IKCFG_ST$gzip_header"
-+
-+dump_config()
- {
--	echo "  usage: extract-ikconfig [b]zImage_filename"
--}
--
--clean_up()
--{
--	if [ "$TMPFILE" != "" ]; then
--		rm -f $TMPFILE
-+	if	pos=`grep -abo "$ikconfig_header" "$1"`
-+	then
-+		pos=${pos%%:*}
-+		tail -c+$(($pos+8+1)) "$1" | zcat -q
-+		exit 0
- 	fi
- }
- 
--if [ $# -lt 1 ]
-+# Check invocation:
-+me=${0##*/}
-+img=$1
-+if	[ $# -ne 1 -o ! -s "$img" ]
- then
--	usage
--	exit 1
-+	echo "Usage: $me <kernel-image>" >&2
-+	exit 2
- fi
- 
--TMPFILE=`mktemp -t ikconfig-XXXXXX` || exit 1
--image="$1"
--
--# vmlinux: Attempt to dump the configuration from the file directly
--dump_config "$image"
--
--GZHDR1="0x1f 0x8b 0x08 0x00"
--GZHDR2="0x1f 0x8b 0x08 0x08"
--
--# vmlinux.gz: Check for a compressed images
--off=`$binoffset "$image" $GZHDR1 2>/dev/null`
--[ "$?" != "0" ] && off="-1"
--if [ "$off" -eq "-1" ]; then
--	off=`$binoffset "$image" $GZHDR2 2>/dev/null`
--	[ "$?" != "0" ] && off="-1"
--fi
--if [ "$off" -eq "0" ]; then
--	zcat <"$image" >"$TMPFILE"
--	dump_config "$TMPFILE"
--elif [ "$off" -ne "-1" ]; then
--	(dd ibs="$off" skip=1 count=0 && dd bs=512k) <"$image" 2>/dev/null | \
--		zcat >"$TMPFILE"
--	dump_config "$TMPFILE"
--fi
--
--echo "ERROR: Unable to extract kernel configuration information."
--echo "       This kernel image may not have the config info."
--
--clean_up
-+# Initial attempt for uncompressed images or objects:
-+dump_config "$img"
-+
-+# That didn't work, so decompress and try again:
-+tmp=/tmp/ikconfig$$
-+trap "rm -f $tmp" 0
-+for	pos in `grep -abo "$gzip_header" "$img"`
-+do
-+	pos=${pos%%:*}
-+	tail -c+$(($pos+1)) "$img" | zcat -q > $tmp
-+	dump_config $tmp
-+done
-+
-+# Bail out:
-+echo "$me: Cannot find kernel config." >&2
- exit 1
+I can change my script to test for the presence of this new interface 
+and use that if it exists rather easily.  I already have to handle a few 
+cases like that where Andres changed things when I wasn't watching.
+
+Suggestions on what it would look like?
+
+-- 
+Richard Smith  <richard@laptop.org>
+One Laptop Per Child
