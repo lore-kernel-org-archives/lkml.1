@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbZFWAeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbZFWAgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752958AbZFWAeE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 20:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZFWAdy
+	id S1756693AbZFWAgR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 20:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZFWAgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 20:33:54 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35998 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbZFWAdx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 20:33:53 -0400
-Message-ID: <4A4022EA.1020506@jp.fujitsu.com>
-Date: Tue, 23 Jun 2009 09:33:46 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-CC: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       kexec@lists.infradead.org
-Subject: Re: [PATCH 1/7] ia64, kdump: Mask MCA/INIT on freezing cpus
-References: <4A39E247.4030908@jp.fujitsu.com> <4A39E2CF.80901@jp.fujitsu.com> <20090622134557.GC7084@sgi.com>
-In-Reply-To: <20090622134557.GC7084@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 20:36:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50450 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751912AbZFWAgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 20:36:09 -0400
+Date: Tue, 23 Jun 2009 10:36:04 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: linux-next: origin tree build warning
+Message-Id: <20090623103604.9d60b2d8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__23_Jun_2009_10_36_04_+1000_d1BnpUbfX/b4lTX."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Holt wrote:
->> To avoid this problem, This patch inserts ia64_set_psr_mc() before the
->> deadloop to mask MCA/INIT on cpus going to be frozen.  I confirmed that
->> weird log like above are disappeared after applying this patch.
-> 
-> Please do not do this.  Turning off MCA/INIT is just a horrible idea.
-> When your code has a bug, the INIT of the cpu is the only tool we have
-> to find out what it is doing short of putting special hardware onto the
-> machine and trying to track it down.
+--Signature=_Tue__23_Jun_2009_10_36_04_+1000_d1BnpUbfX/b4lTX.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch never mask MCA/INIT while the system is running normally.
-The first place I inserted the masking is just after panic, and just after
-INIT is asserted.  This patch doesn't prevent you from taking kdump or
-stack trace on your machine.
+Hi Linus,
 
-Maybe I could not catch what you pointed.
-One of the problems I'm targeting here is that there is no way to allow
-INIT while kernel transition.  What are you expecting with INIT if it is
-asserted on the beginning of the 2nd kernel?
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-And note that this patch 1 of 7 is necessary to run the INIT handler of
-the 2nd kernel, which might be registered by the 2nd kernel.
+drivers/mfd/ab3100-core.c:563: warning: initialization from incompatible po=
+inter type
 
-> Without thinking about it, I have a gut feeling there must be some way
-> to at least allow the MCA/INIT to make it through PROM and be delivered
-> to the OS.  From there the OS should be able to sort out a way to handle
-> kdump and MCAs received during a kdump.
+Introduced by commit 14fa56917d73d823538151b0429d98211fa439c1 ("mfd: add
+U300 AB3100 core support").
 
-Do you mean that the 2nd kernel should be able to handle MCA/INIT from its
-boot up?  I guess the word PROM is nearly equal to PAL/SAL firmware, if so
-then I don't think there are good generic interface/procedure could be
-useful here.  Do you have any concrete idea?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__23_Jun_2009_10_36_04_+1000_d1BnpUbfX/b4lTX.
+Content-Type: application/pgp-signature
 
-Thanks,
-H.Seto
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkpAI3QACgkQjjKRsyhoI8zI7ACgmaDOEX9rNXXC+vVQGwBPaVMq
+458An0FWTiU5v9WMBXHsVcKbIn2RMVCC
+=sNsS
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__23_Jun_2009_10_36_04_+1000_d1BnpUbfX/b4lTX.--
