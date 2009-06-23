@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZFWKHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbZFWKJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbZFWKHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 06:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZFWKH1
+	id S1757143AbZFWKJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 06:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZFWKJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 06:07:27 -0400
-Received: from www.tglx.de ([62.245.132.106]:54496 "EHLO www.tglx.de"
+	Tue, 23 Jun 2009 06:09:42 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55782 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbZFWKH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 06:07:26 -0400
-Date: Tue, 23 Jun 2009 12:05:38 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: kerneloops.org report for the week of June 14 2009
-In-Reply-To: <20090614173331.18f01123@infradead.org>
-Message-ID: <alpine.LFD.2.00.0906231201430.2767@localhost.localdomain>
-References: <20090614173331.18f01123@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752239AbZFWKJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 06:09:41 -0400
+Date: Tue, 23 Jun 2009 12:09:43 +0200 (CEST)
+From: Jiri Kosina <trivial@kernel.org>
+X-X-Sender: jkosina@wotan.suse.de
+To: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix a typo in linux/workqueue.h
+In-Reply-To: <1245748897-24912-1-git-send-email-dmitri.vorobiev@movial.com>
+Message-ID: <alpine.LNX.2.00.0906231209210.7457@wotan.suse.de>
+References: <1245748897-24912-1-git-send-email-dmitri.vorobiev@movial.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Jun 2009, Arjan van de Ven wrote:
-> Rank 3: getnstimeofday (warning)
-> 	Reported 309 times (2446 total reports)
-> 	[suspend resume] getnstimeofday() is called before timekeeping is
-        resumed
+On Tue, 23 Jun 2009, Dmitri Vorobiev wrote:
 
-> Rank 6: hres_timers_resume (warning)
-> 	Reported 188 times (1024 total reports)
-> 	[suspend resume] hres_timers_resume() is incorrectly called with
->       interrupts on
+> Change "useing" -> "using".
+> 
+> Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+> ---
+>  include/linux/workqueue.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+> index 13e1adf..f3a61fd 100644
+> --- a/include/linux/workqueue.h
+> +++ b/include/linux/workqueue.h
+> @@ -94,7 +94,7 @@ struct execute_work {
+>  /*
+>   * initialize all of a work item in one go
+>   *
+> - * NOTE! No point in using "atomic_long_set()": useing a direct
+> + * NOTE! No point in using "atomic_long_set()": using a direct
+>   * assignment of the work data initializer allows the compiler
+>   * to generate better code.
+>   */
 
-Both have the same root cause. Something enables interrupts in the
-early resume path. IIRC, there was a culprit identified
-recently. Rafael ?
+Applied to trivial queue, thanks Dmitri.
 
-Thanks,
+-- 
+Jiri Kosina
+SUSE Labs
 
-	tglx
