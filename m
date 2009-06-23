@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbZFWVay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758359AbZFWVbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758081AbZFWVay (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbZFWVaW
+	id S1758359AbZFWVbW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbZFWVbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:30:22 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:49553 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756227AbZFWVaT (ORCPT
+	Tue, 23 Jun 2009 17:31:10 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:55833 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756227AbZFWVbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:30:19 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] ide-cd: Improve "weird block size" error message
-Date: Tue, 23 Jun 2009 23:30:18 +0200
-User-Agent: KMail/1.9.9
-References: <200906222101.38586.elendil@planet.nl> <200906230951.24615.elendil@planet.nl> <20090623.035926.155211513.davem@davemloft.net>
-In-Reply-To: <20090623.035926.155211513.davem@davemloft.net>
-Cc: bzolnier@gmail.com, sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Tue, 23 Jun 2009 17:31:09 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 23 Jun 2009 14:25:05 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, avi@redhat.com,
+       kvm@vger.kernel.org, ghaskins@novell.com,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
+In-Reply-To: <20090623142511.c9068655.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0906231423490.17001@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com> <20090623131239.711d9f83.akpm@linux-foundation.org> <alpine.DEB.1.10.0906231355130.17001@makko.or.mcafeemobile.com>
+ <20090623142511.c9068655.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906232330.20519.elendil@planet.nl>
-X-OriginalArrivalTime: 23 Jun 2009 21:30:21.0400 (UTC) FILETIME=[CFDE1D80:01C9F449]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, David Miller wrote:
-> ide-cd: Don't warn on bogus block size unless it actually matters.
->
-> Frans Pop reported that his CDROM drive reports a blocksize of 2352,
-> and this causes new warnings due to commit
-> e8e7b9eb11c34ee18bde8b7011af41938d1ad667 ("ide-cd: fix oops when using
-> growisofs").
->
-> What we're trying to do is make sure that "blocklen >> SECTOR_BITS"
-> is something the block layer won't choke on.
->
-> And for Frans case "2352 >> SECTOR_BITS" is equal to
-> "2048 >> SECTOR_BITS", and thats "4".
+On Tue, 23 Jun 2009, Andrew Morton wrote:
 
-Pedantic correction: Frans' case
+> That isn't for us to decide. Entire syscalls can be disabled in config.
 
-> So warning in this case gives no real benefit.
->
-> Reported-by: Frans Pop <elendil@planet.nl>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
+That is not a well defined separate syscall though. It's a member/feature 
+of the aiocb.
 
-As expected, it's gone. Nice.
 
-Tested-by: Frans Pop <elendil@planet.nl>
+- Davide
+
+
