@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbZFWHPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbZFWHP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbZFWHPr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 03:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758265AbZFWHOi
+	id S1758105AbZFWHP7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 03:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758252AbZFWHOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 03:14:38 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:14135 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758258AbZFWHOf (ORCPT
+	Tue, 23 Jun 2009 03:14:39 -0400
+Received: from vms173007pub.verizon.net ([206.46.173.7]:62729 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757312AbZFWHOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 03:14:35 -0400
+	Tue, 23 Jun 2009 03:14:12 -0400
 From: Len Brown <lenb@kernel.org>
 To: sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org
 Cc: Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 8/8] SFI: expose IO-APIC routines to SFI, not just ACPI
-Date: Tue, 23 Jun 2009 03:14:06 -0400
-Message-id: <5ee3ec9f54201bf40549672017dc0a7880cb67b0.1245740912.git.len.brown@intel.com>
+Subject: [PATCH 5/8] SFI: Hook e820 memory map initialization
+Date: Tue, 23 Jun 2009 03:14:03 -0400
+Message-id: <d3bcd312f3ebabd86c79fbd53983021e4cd7b56a.1245740912.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.6.3.3.334.g916e1
 In-reply-to: <1245741246-6503-1-git-send-email-lenb@kernel.org>
 References: <1245741246-6503-1-git-send-email-lenb@kernel.org>
@@ -28,66 +28,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Feng Tang <feng.tang@intel.com>
 
-change condition from
-	#ifdef CONFIG_ACPI
-to
-	#if defined(CONFIG_ACPI) || defined(CONFIG_SFI)
-
-for several io_apic related APIs which will be used by both
-ACPI and SFI.
-
-this change will ensure the success kernel build whe
-CONFIG_SFI=y and CONFIG_ACPI=n
-
 Signed-off-by: Feng Tang <feng.tang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/include/asm/io_apic.h |    4 ++--
- arch/x86/kernel/apic/io_apic.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kernel/e820.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 9d826e4..2e5ff36 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -150,13 +150,13 @@ extern int timer_through_8259;
- #define io_apic_assign_pci_irqs \
- 	(mp_irq_entries && !skip_ioapic_setup && io_apic_irqs)
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 0062813..f5f5ff2 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -20,6 +20,7 @@
+ #include <linux/pfn.h>
+ #include <linux/suspend.h>
+ #include <linux/firmware-map.h>
++#include <linux/sfi.h>
  
--#ifdef CONFIG_ACPI
-+#if defined(CONFIG_ACPI) || defined(CONFIG_SFI)
- extern int io_apic_get_unique_id(int ioapic, int apic_id);
- extern int io_apic_get_version(int ioapic);
- extern int io_apic_get_redir_entries(int ioapic);
- extern int io_apic_set_pci_routing(int ioapic, int pin, int irq,
- 				   int edge_level, int active_high_low);
--#endif /* CONFIG_ACPI */
-+#endif /* CONFIG_ACPI || CONFIG_SFI */
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
+@@ -1403,6 +1404,10 @@ char *__init default_machine_specific_memory_setup(void)
+ 	  < 0) {
+ 		u64 mem_size;
  
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 30da617..2705476 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3904,7 +3904,7 @@ int __init arch_probe_nr_irqs(void)
-                           ACPI-based IOAPIC Configuration
-    -------------------------------------------------------------------------- */
- 
--#ifdef CONFIG_ACPI
-+#if defined(CONFIG_ACPI) || defined(CONFIG_SFI)
- 
- #ifdef CONFIG_X86_32
- int __init io_apic_get_unique_id(int ioapic, int apic_id)
-@@ -4045,7 +4045,7 @@ int acpi_get_override_irq(int bus_irq, int *trigger, int *polarity)
- 	return 0;
- }
- 
--#endif /* CONFIG_ACPI */
-+#endif /* CONFIG_ACPI || CONFIG_SFI */
- 
- /*
-  * This function currently is only a helper for the i386 smp boot process where
++		/* if SFI mmap table exists, use SFI to setup e820 mmap */
++		if (!sfi_init_memory_map())
++			return "SFI";
++
+ 		/* compare results from other methods and take the greater */
+ 		if (boot_params.alt_mem_k
+ 		    < boot_params.screen_info.ext_mem_k) {
 -- 
 1.6.0.6
 
