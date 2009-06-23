@@ -1,184 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbZFWVdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZFWVd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbZFWVdo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbZFWVci
+	id S1757575AbZFWVd5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758526AbZFWVck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:32:38 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:48931 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757936AbZFWVcc (ORCPT
+	Tue, 23 Jun 2009 17:32:40 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:41020 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758019AbZFWVcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:32:32 -0400
+	Tue, 23 Jun 2009 17:32:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=SzBwTvKdeX3DGsKxbvLUSJPJOZOL5Qy8b8WqducGgGxSO9liRM6ku/bQnltyeg9BIR
-         6ISwdfXk3G9tD5JAA/6qop0rzRwCAuQWXUe5EauqCaE+Ydt9DgHAy6EYVDqw8nAwrb4G
-         Yo/VIzvz+9eKbsuJxzvT208kTefFpGwB6QC4M=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=iCwH0C6O/ojckMs/nIymJ2qQT/SC3rNoS0KiCoQ0oR2JolowxOBoTVYUyjbg+FfHzM
+         hb5y4ztccDSJTwBaTouYXyYkb3OvlPElcoZYV0izoijCskF5eo7UaKGohKJVdMibEpTM
+         7AeJvqcx6dBcq2CPmfozJPLkrlFOV+7JXHekw=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: David Miller <davem@davemloft.net>
-Subject: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
-Date: Tue, 23 Jun 2009 23:29:11 +0200
+Subject: [patch 5/6] ide: fix races in handling of user-space SET XFER commands
+Date: Tue, 23 Jun 2009 23:35:51 +0200
 User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090623-11043-g1684859-dirty; KDE/4.2.3; i686; ; )
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200906232335.51621.bzolnier@gmail.com>
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906232329.11648.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: allow ide_dev_read_id() to be called from the IRQ context
+Subject: [PATCH] ide: fix races in handling of user-space SET XFER commands
 
-* Un-static __ide_wait_stat().
+* Make cmd->tf_flags field 'u16' and add IDE_TFLAG_SET_XFER taskfile flag.
 
-* Allow ide_dev_read_id() helper to be called from the IRQ context by
-  adding irq_ctx flag and using mdelay()/__ide_wait_stat() when needed.
+* Update ide_finish_cmd() to set xfer / re-read id if the new flag is set.
 
-* Switch ide_driveid_update() to set irq_ctx flag.
+* Convert set_xfer_rate() (write handler for /proc/ide/hd?/current_speed)
+  and ide_cmd_ioctl() (HDIO_DRIVE_CMD ioctl handler) to use the new flag.
 
-This change is needed for the consecutive patch which fixes races in
-handling of user-space SET XFER commands but for improved bisectability
-and clarity it is better to do it in a separate patch.
+* Remove no longer needed disable_irq_nosync() + enable_irq() from
+  ide_config_drive_speed().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-I'm not completely happy with this version of patch since I originally
-intended to unify ide_busy_sleep() with __ide_wait_stat() first..
+These races are easily triggable (i.e. 'hdparm -Xmode' results in the "bad
+status" error during ide_driveid_update() phase) and I was no longer able to
+reproduce them with this patch applied.
 
- drivers/ide/ide-iops.c  |    6 +++---
- drivers/ide/ide-probe.c |   31 +++++++++++++++++++++----------
- include/linux/ide.h     |    3 ++-
- 3 files changed, 26 insertions(+), 14 deletions(-)
+ drivers/ide/ide-ioctls.c   |    8 ++------
+ drivers/ide/ide-iops.c     |   10 ----------
+ drivers/ide/ide-proc.c     |   10 ++--------
+ drivers/ide/ide-taskfile.c |    9 ++++++++-
+ include/linux/ide.h        |    3 ++-
+ 5 files changed, 14 insertions(+), 26 deletions(-)
 
+Index: b/drivers/ide/ide-ioctls.c
+===================================================================
+--- a/drivers/ide/ide-ioctls.c
++++ b/drivers/ide/ide-ioctls.c
+@@ -166,6 +166,8 @@ static int ide_cmd_ioctl(ide_drive_t *dr
+ 			err = -EINVAL;
+ 			goto abort;
+ 		}
++
++		cmd.tf_flags |= IDE_TFLAG_SET_XFER;
+ 	}
+ 
+ 	err = ide_raw_taskfile(drive, &cmd, buf, args[3]);
+@@ -173,12 +175,6 @@ static int ide_cmd_ioctl(ide_drive_t *dr
+ 	args[0] = tf->status;
+ 	args[1] = tf->error;
+ 	args[2] = tf->nsect;
+-
+-	if (!err && xfer_rate) {
+-		/* active-retuning-calls future */
+-		ide_set_xfer_rate(drive, xfer_rate);
+-		ide_driveid_update(drive);
+-	}
+ abort:
+ 	if (copy_to_user((void __user *)arg, &args, 4))
+ 		err = -EFAULT;
 Index: b/drivers/ide/ide-iops.c
 ===================================================================
 --- a/drivers/ide/ide-iops.c
 +++ b/drivers/ide/ide-iops.c
-@@ -102,8 +102,8 @@ EXPORT_SYMBOL(ide_fixstring);
-  * setting a timer to wake up at half second intervals thereafter,
-  * until timeout is achieved, before timing out.
-  */
--static int __ide_wait_stat(ide_drive_t *drive, u8 good, u8 bad,
--			   unsigned long timeout, u8 *rstat)
-+int __ide_wait_stat(ide_drive_t *drive, u8 good, u8 bad,
-+		    unsigned long timeout, u8 *rstat)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	const struct ide_tp_ops *tp_ops = hwif->tp_ops;
-@@ -316,7 +316,7 @@ int ide_driveid_update(ide_drive_t *driv
- 		return 0;
+@@ -363,14 +363,6 @@ int ide_config_drive_speed(ide_drive_t *
+ 	 * this point (lost interrupt).
+ 	 */
  
+-	/*
+-	 *	FIXME: we race against the running IRQ here if
+-	 *	this is called from non IRQ context. If we use
+-	 *	disable_irq() we hang on the error path. Work
+-	 *	is needed.
+-	 */
+-	disable_irq_nosync(hwif->irq);
+-
+ 	udelay(1);
+ 	tp_ops->dev_select(drive);
  	SELECT_MASK(drive, 1);
--	rc = ide_dev_read_id(drive, ATA_CMD_ID_ATA, id);
-+	rc = ide_dev_read_id(drive, ATA_CMD_ID_ATA, id, 1);
+@@ -394,8 +386,6 @@ int ide_config_drive_speed(ide_drive_t *
+ 
  	SELECT_MASK(drive, 0);
  
- 	if (rc)
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -238,6 +238,7 @@ static void do_identify(ide_drive_t *dri
-  *	@drive: drive to identify
-  *	@cmd: command to use
-  *	@id: buffer for IDENTIFY data
-+ *	@irq_ctx: flag set when called from the IRQ context
-  *
-  *	Sends an ATA(PI) IDENTIFY request to a drive and waits for a response.
-  *
-@@ -246,7 +247,7 @@ static void do_identify(ide_drive_t *dri
-  *			2  device aborted the command (refused to identify itself)
-  */
- 
--int ide_dev_read_id(ide_drive_t *drive, u8 cmd, u16 *id)
-+int ide_dev_read_id(ide_drive_t *drive, u8 cmd, u16 *id, int irq_ctx)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct ide_io_ports *io_ports = &hwif->io_ports;
-@@ -263,7 +264,10 @@ int ide_dev_read_id(ide_drive_t *drive, 
- 		tp_ops->write_devctl(hwif, ATA_NIEN | ATA_DEVCTL_OBS);
- 
- 	/* take a deep breath */
--	msleep(50);
-+	if (irq_ctx)
-+		mdelay(50);
-+	else
-+		msleep(50);
- 
- 	if (io_ports->ctl_addr &&
- 	    (hwif->host_flags & IDE_HFLAG_BROKEN_ALTSTATUS) == 0) {
-@@ -295,12 +299,19 @@ int ide_dev_read_id(ide_drive_t *drive, 
- 
- 	timeout = ((cmd == ATA_CMD_ID_ATA) ? WAIT_WORSTCASE : WAIT_PIDENTIFY) / 2;
- 
--	if (ide_busy_sleep(drive, timeout, use_altstatus))
--		return 1;
+-	enable_irq(hwif->irq);
 -
- 	/* wait for IRQ and ATA_DRQ */
--	msleep(50);
--	s = tp_ops->read_status(hwif);
-+	if (irq_ctx) {
-+		rc = __ide_wait_stat(drive, ATA_DRQ, BAD_R_STAT, timeout, &s);
-+		if (rc)
-+			return 1;
-+	} else {
-+		rc = ide_busy_sleep(drive, timeout, use_altstatus);
-+		if (rc)
-+			return 1;
+ 	if (error) {
+ 		(void) ide_dump_status(drive, "set_drive_speed_status", stat);
+ 		return error;
+Index: b/drivers/ide/ide-proc.c
+===================================================================
+--- a/drivers/ide/ide-proc.c
++++ b/drivers/ide/ide-proc.c
+@@ -195,7 +195,6 @@ ide_devset_get(xfer_rate, current_speed)
+ static int set_xfer_rate (ide_drive_t *drive, int arg)
+ {
+ 	struct ide_cmd cmd;
+-	int err;
+ 
+ 	if (arg < XFER_PIO_0 || arg > XFER_UDMA_6)
+ 		return -EINVAL;
+@@ -206,14 +205,9 @@ static int set_xfer_rate (ide_drive_t *d
+ 	cmd.tf.nsect   = (u8)arg;
+ 	cmd.valid.out.tf = IDE_VALID_FEATURE | IDE_VALID_NSECT;
+ 	cmd.valid.in.tf  = IDE_VALID_NSECT;
++	cmd.tf_flags   = IDE_TFLAG_SET_XFER;
+ 
+-	err = ide_no_data_taskfile(drive, &cmd);
+-
+-	if (!err) {
+-		ide_set_xfer_rate(drive, (u8) arg);
+-		ide_driveid_update(drive);
+-	}
+-	return err;
++	return ide_no_data_taskfile(drive, &cmd);
+ }
+ 
+ ide_devset_rw(current_speed, xfer_rate);
+Index: b/drivers/ide/ide-taskfile.c
+===================================================================
+--- a/drivers/ide/ide-taskfile.c
++++ b/drivers/ide/ide-taskfile.c
+@@ -322,10 +322,17 @@ static void ide_error_cmd(ide_drive_t *d
+ void ide_finish_cmd(ide_drive_t *drive, struct ide_cmd *cmd, u8 stat)
+ {
+ 	struct request *rq = drive->hwif->rq;
+-	u8 err = ide_read_error(drive);
++	u8 err = ide_read_error(drive), nsect = cmd->tf.nsect;
++	u8 set_xfer = !!(cmd->tf_flags & IDE_TFLAG_SET_XFER);
+ 
+ 	ide_complete_cmd(drive, cmd, stat, err);
+ 	rq->errors = err;
 +
-+		msleep(50);
-+		s = tp_ops->read_status(hwif);
++	if (err == 0 && set_xfer) {
++		ide_set_xfer_rate(drive, nsect);
++		ide_driveid_update(drive);
 +	}
++
+ 	ide_complete_rq(drive, err ? -EIO : 0, blk_rq_bytes(rq));
+ }
  
- 	if (OK_STAT(s, ATA_DRQ, BAD_R_STAT)) {
- 		/* drive returned ID */
-@@ -406,10 +417,10 @@ static int do_probe (ide_drive_t *drive,
- 
- 	if (OK_STAT(stat, ATA_DRDY, ATA_BUSY) ||
- 	    present || cmd == ATA_CMD_ID_ATAPI) {
--		rc = ide_dev_read_id(drive, cmd, id);
-+		rc = ide_dev_read_id(drive, cmd, id, 0);
- 		if (rc)
- 			/* failed: try again */
--			rc = ide_dev_read_id(drive, cmd, id);
-+			rc = ide_dev_read_id(drive, cmd, id, 0);
- 
- 		stat = tp_ops->read_status(hwif);
- 
-@@ -424,7 +435,7 @@ static int do_probe (ide_drive_t *drive,
- 			msleep(50);
- 			tp_ops->exec_command(hwif, ATA_CMD_DEV_RESET);
- 			(void)ide_busy_sleep(drive, WAIT_WORSTCASE, 0);
--			rc = ide_dev_read_id(drive, cmd, id);
-+			rc = ide_dev_read_id(drive, cmd, id, 0);
- 		}
- 
- 		/* ensure drive IRQ is clear */
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1081,6 +1081,7 @@ extern void ide_fixstring(u8 *, const in
+@@ -258,6 +258,7 @@ enum {
+ 	IDE_TFLAG_DYN			= (1 << 5),
+ 	IDE_TFLAG_FS			= (1 << 6),
+ 	IDE_TFLAG_MULTI_PIO		= (1 << 7),
++	IDE_TFLAG_SET_XFER		= (1 << 8),
+ };
  
- int ide_busy_sleep(ide_drive_t *, unsigned long, int);
+ enum {
+@@ -294,7 +295,7 @@ struct ide_cmd {
+ 		} out, in;
+ 	} valid;
  
-+int __ide_wait_stat(ide_drive_t *, u8, u8, unsigned long, u8 *);
- int ide_wait_stat(ide_startstop_t *, ide_drive_t *, u8, u8, unsigned long);
+-	u8			tf_flags;
++	u16			tf_flags;
+ 	u8			ftf_flags;	/* for TASKFILE ioctl */
+ 	int			protocol;
  
- ide_startstop_t ide_do_park_unpark(ide_drive_t *, struct request *);
-@@ -1169,7 +1170,7 @@ int ide_no_data_taskfile(ide_drive_t *, 
- 
- int ide_taskfile_ioctl(ide_drive_t *, unsigned long);
- 
--int ide_dev_read_id(ide_drive_t *, u8, u16 *);
-+int ide_dev_read_id(ide_drive_t *, u8, u16 *, int);
- 
- extern int ide_driveid_update(ide_drive_t *);
- extern int ide_config_drive_speed(ide_drive_t *, u8);
