@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbZFWQzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760854AbZFWQzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760816AbZFWQzD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZFWQyy
+	id S1760854AbZFWQzW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758661AbZFWQzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:54:54 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:44871
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754799AbZFWQyy (ORCPT
+	Tue, 23 Jun 2009 12:55:01 -0400
+Received: from eu1sys200aog102.obsmtp.com ([207.126.144.113]:45971 "EHLO
+	eu1sys200aog102.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759719AbZFWQzA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:54:54 -0400
-Message-ID: <4A4116FA.1060603@microgate.com>
-Date: Tue, 23 Jun 2009 11:55:06 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] synclink_gt fix transmit race and timeout
-References: <1245181451.3727.5.camel@x2.microgate.com>	<20090622231937.2d32898e.akpm@linux-foundation.org>	<1245770161.3701.42.camel@x2.microgate.com> <20090623092739.5a8e9dd5.akpm@linux-foundation.org>
-In-Reply-To: <20090623092739.5a8e9dd5.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 12:55:00 -0400
+X-Greylist: delayed 1862 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jun 2009 12:54:56 EDT
+Subject: genirq default_disable()
+From: Pawel MOLL <pawel.moll@st.com>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Jun 2009 17:23:38 +0100
+Message-Id: <1245774218.14443.120.camel@bri1004.bri.st.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I did have a couple of other comments on the patch which seem to have
-> been missed?
+Folks,
 
-Let's see, there was:
-"It fails to explain the user-visible effects of the bug which was fixed."
+A quick question about the interrupt management... (the story takes
+place in kernel/irq/chip.c ;-)
 
-On Tue, 23 Jun 2009 10:16:01 -0500 Paul Fulghum <paulkf@microgate.com> wrote:
-> When all the DMA buffers are full,
-> no further data is accepted from a user application calling
-> write() until a timeout occurs and the transmitter and
-> DMA controller are reset.
+Here we have the default_enable():
 
-That addresses the user-visible effects.
+static void default_enable(unsigned int irq)
+{
+        struct irq_desc *desc = irq_to_desc(irq);
 
-Then there was:
-"Those who need to make should-we-backport-this-to-stable
-decisions need to know this. Often we are told, often we can guess."
+        desc->chip->unmask(irq);
+        desc->status &= ~IRQ_MASKED;
+}
 
-My opinion on if this should be back ported to a stable branch:
+It calls chip->unmask(), which absolutely makes sense...
 
-Probably not. It effects a small minority of users
-in rare instances with non-fatal consequences, just reduced
-performance. Updated drivers for all 2.6 and 2.4 kernels are already
-available on our website. If stable maintainers want to back port it
-I'm all for it, but they are likely busy enough with critical changes.
+The default_disable(), however, is not symmetric:
 
--- 
-Paul Fulghum
-MicroGate Systems, Ltd.
-=Customer Driven, by Design=
-(800)444-1982
-(512)345-7791 (Direct)
-(512)343-9046 (Fax)
-Central Time Zone (GMT -5h)
-www.microgate.com
+static void default_disable(unsigned int irq)
+{
+}
+
+Is there any reason why it shouldn't call chip->mask()?
+
+I'll be more then happy to prepare a patch doing so, but maybe it's a
+feature not a bug and I'm just missing something?
+
+Best regards
+
+Paweł
+
