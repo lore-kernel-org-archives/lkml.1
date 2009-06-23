@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZFWNrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbZFWNre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbZFWNrF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:47:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758608AbZFWNqo
+	id S1759936AbZFWNre (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbZFWNr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:46:44 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:49740 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757060AbZFWNqn convert rfc822-to-8bit (ORCPT
+	Tue, 23 Jun 2009 09:47:27 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:48046 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755396AbZFWNr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:46:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=SGFI2YpHAq2BKBv5KiJZ+aKisMxjQ2HSG65Da3GCwOzavJn/e9GUqugEPcdqvJZJmS
-         DoCgXzb6RCjC4sDcC7NxuXVbcAE3TzRx5L2CZG3AeiLR3mFVz0tdHvJQJ3z5qiY7I29t
-         FSX7URiPWNtb+R5iZxndx3VuB1gCBzmIH8Q8w=
+	Tue, 23 Jun 2009 09:47:26 -0400
+Date: Tue, 23 Jun 2009 22:46:27 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, niv@us.ibm.com,
+       dvhltc@us.ibm.com, kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v5 RCU: the bloatwatch edition
+Message-ID: <20090623134627.GB26674@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	niv@us.ibm.com, dvhltc@us.ibm.com, kernel@wantstofly.org,
+	matthew@wil.cx
+References: <20090623042442.GA15630@linux.vnet.ibm.com> <28711.1245748358@redhat.com> <20090623093208.GD23698@elte.hu> <20090623125832.GA6872@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20090623133954.GA11764@fluff.org.uk>
-References: <1245763114-7753-1-git-send-email-vapier@gentoo.org> 
-	<20090623133954.GA11764@fluff.org.uk>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 23 Jun 2009 09:46:25 -0400
-Message-ID: <8bd0f97a0906230646l248aa5e2t2922a3ba7bdc19d9@mail.gmail.com>
-Subject: Re: [PATCH] USB: isp1760: allow platform devices to customize 
-	devflags
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: gregkh@suse.de, bigeasy@linuxtronix.de, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623125832.GA6872@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 09:39, Ben Dooks wrote:
-> On Tue, Jun 23, 2009 at 09:18:34AM -0400, Mike Frysinger wrote:
->> From: Michael Hennerich <michael.hennerich@analog.com>
->>
->> Platform device support was merged earlier, but support for boards to
->> customize the devflags aspect of the controller was not.  We want this on
->> Blackfin systems to control the bus width, but might as well expose all of
->> the fields while we're at it.
->>
->> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->> ---
->>  drivers/usb/host/isp1760-hcd.c |    4 ++++
->>  drivers/usb/host/isp1760-hcd.h |    2 ++
->>  drivers/usb/host/isp1760-if.c  |   21 ++++++++++++++++++++-
->>  include/linux/usb/isp1760.h    |   18 ++++++++++++++++++
->>  4 files changed, 44 insertions(+), 1 deletions(-)
->>  create mode 100644 include/linux/usb/isp1760.h
->>
->> diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
->> index 1543846..9600a58 100644
->> --- a/drivers/usb/host/isp1760-hcd.c
->> +++ b/drivers/usb/host/isp1760-hcd.c
->> @@ -386,6 +386,10 @@ static int isp1760_hc_setup(struct usb_hcd *hcd)
->>               hwmode |= HW_DACK_POL_HIGH;
->>       if (priv->devflags & ISP1760_FLAG_DREQ_POL_HIGH)
->>               hwmode |= HW_DREQ_POL_HIGH;
->> +     if (priv->devflags & ISP1760_FLAG_INTR_POL_HIGH)
->> +             hwmode |= HW_INTR_HIGH_ACT;
->> +     if (priv->devflags & ISP1760_FLAG_INTR_EDGE_TRIG)
->> +             hwmode |= HW_INTR_EDGE_TRIG;
->
-> better move these to the irq resource flags from the resource array
-> in the platfrom device.
-
-dont really know what you mean.  the setup() function is shared
-between multiple bus types (pci/platform/...), so the bits cant really
-be pushed from the setup() to the platform resources ...
--mike
+On Tue, Jun 23, 2009 at 05:58:32AM -0700, Paul E. McKenney wrote:
+> On Tue, Jun 23, 2009 at 11:32:08AM +0200, Ingo Molnar wrote:
+> > Paul, i guess this is .32 material anyway, right?
+> 
+> I am personally OK with it being .32, as long as David Howells,
+> Lennert Buytenhek, and Paul Mundt are OK with that schedule.
+> 
+It's hard to see how this is going to cause any regressions, so I don't
+see any problem with this going in to 2.6.31. OTOH, it's not too
+pressing, so 2.6.32 is ok for me too.
