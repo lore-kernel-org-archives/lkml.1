@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbZFWNMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbZFWNNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbZFWNMq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbZFWNMh
+	id S1759172AbZFWNNO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZFWNNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:12:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53919 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756435AbZFWNMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:12:36 -0400
-Message-ID: <4A40D499.6000805@redhat.com>
-Date: Tue, 23 Jun 2009 09:11:53 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 23 Jun 2009 09:13:07 -0400
+Received: from 207-172-69-77.c3-0.smr-ubr3.sbo-smr.ma.static.cable.rcn.com ([207.172.69.77]:54694
+	"EHLO thaum.luto.us" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754252AbZFWNNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:13:06 -0400
+Message-ID: <4A40D4D7.9070306@mit.edu>
+Date: Tue, 23 Jun 2009 09:12:55 -0400
+From: Andy Lutomirski <luto@mit.edu>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: Re: [RFC][ PATCH -tip v2 4/7] kprobes: kprobes jump optimization
- core
-References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212319.5384.56039.stgit@localhost.localdomain> <20090623125806.GD8340@linux.vnet.ibm.com>
-In-Reply-To: <20090623125806.GD8340@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jerome Glisse <jglisse@redhat.com>
+CC: airlied@gmail.com, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] radeon: fix radeon kms framebuffer device
+References: <1245687358-10481-1-git-send-email-jglisse@redhat.com> <4A404049.1080707@mit.edu>
+In-Reply-To: <4A404049.1080707@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srikar Dronamraju wrote:
->> +	/* .insn_size is initialized later */
->> +	.nr_garbage = 0,
->> +};
-> 
->> +#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
->> +	/* Init kprobe_optinsn_slots */
->> +	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
->> +#endif
->> +
-> 
-> What would be be the size of kprobe_optinsn_slots.insn_size if
-> CONFIG_OPTPROBES is defined but __ARCH_WANT_KPROBES_INSN_SLOT is not
-> defined? 
+Andy Lutomirski wrote:
+> Jerome Glisse wrote:
+>> smem.start is a physical address which kernel can remap to access
+>> video memory of the fb buffer. We now pin the fb buffer into vram
+>> by doing so we are loosing vram but fbdev need to be reworked to
+>> allow change in framebuffer address.
+>
+> I tested this (and the corresponding 2/2 initialization order, but 
+> with radeon as a module), and plymouth seems to be fully functional 
+> (graphical boot, password prompt, etc).
+>
+> (The driver set the wrong mode, but that's a different issue.)
+>
+> Thanks!
+>
+> Tested-by: Andy Lutomirski <luto@mit.edu>
+>
+Got an oops after awhile:
 
-No problem. If __ARCH_WANT_KPROBES_INSN_SLOT is not defined,
-kprobe_optinsn_slots doesn't exist.
+BUG: Bad page state in process gpg-agent  pfn:37dd5
+page:ffffea0000c38698 flags:200000000050000c count:0 mapcount:0 
+mapping:(null) index:7fd35e311
+Pid: 3131, comm: gpg-agent Not tainted 2.6.30 #5
+Call Trace:
+ [<ffffffff810bc99b>] bad_page+0x115/0x13e
+ [<ffffffff810bcbd3>] free_pages_check+0x3c/0x6d
+ [<ffffffff810bde8f>] free_hot_cold_page+0x4e/0x151
+ [<ffffffff810bdfce>] __pagevec_free+0x3c/0x65
+ [<ffffffff810c1c82>] release_pages+0x1a5/0x1cb
+ [<ffffffff810de357>] free_pages_and_swap_cache+0x6d/0x9e
+ [<ffffffff810d584b>] tlb_finish_mmu+0x41/0x63
+ [<ffffffff810d5b3f>] exit_mmap+0xfb/0x138
+ [<ffffffff8104beae>] mmput+0x55/0xc1
+ [<ffffffff81050626>] exit_mm+0x10e/0x12f
+ [<ffffffff8105226f>] do_exit+0x1b4/0x6a8
+ [<ffffffff8106c6b0>] ? up_read+0x1c/0x32
+ [<ffffffff810527e2>] do_group_exit+0x7f/0xac
+ [<ffffffff81052834>] sys_exit_group+0x25/0x3d
+ [<ffffffff8100beab>] system_call_fastpath+0x16/0x1b
 
-Thank you,
-> 
-> -Srikar
+I don't know if this is related to the drm changes.
 
--- 
-Masami Hiramatsu
+Back to 2.6.29 for me :)  (I actually use this machine, so I'd rather 
+not run kernels that cause random corruption.)
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+--Andy
