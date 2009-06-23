@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZFWHkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZFWHna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbZFWHkc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 03:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZFWHkY
+	id S1755396AbZFWHna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 03:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZFWHnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 03:40:24 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:64256 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbZFWHkY convert rfc822-to-8bit (ORCPT
+	Tue, 23 Jun 2009 03:43:23 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:45331 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751451AbZFWHnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 03:40:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=a2ozr8XV8WA0mHoL0xSyzepaJMBAmlNDe/CN3hT8VmitbojTI7pCvGNekUHzkZVhR2
-         gu+AbVjMQ4dT8AgRQXiW+zw/9mganYMF+zxmI8UmjsuscjV/TSPNSEQzv3l5X2QQuKeO
-         JJWfwgGTkHZWrMmbajTzvTPj35A/1veedBN2E=
+	Tue, 23 Jun 2009 03:43:23 -0400
+Message-ID: <4A408774.9010401@linux.vnet.ibm.com>
+Date: Tue, 23 Jun 2009 09:42:44 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <19008.9265.758076.907649@cargo.ozlabs.ibm.com>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
-	 <20090622115239.GF24366@elte.hu>
-	 <7c86c4470906220525x409bedadj29be01236e42ea1@mail.gmail.com>
-	 <1245674154.19816.228.camel@twins>
-	 <19008.9265.758076.907649@cargo.ozlabs.ibm.com>
-Date: Tue, 23 Jun 2009 09:40:25 +0200
-Message-ID: <7c86c4470906230040x83b3c11j99e7c8016ac8e843@mail.gmail.com>
-Subject: Re: I.5 - Mmaped count
-From: stephane eranian <eranian@googlemail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
-       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: gcov: enable GCOV_PROFILE_ALL for x86_64
+References: <200906182200.n5IM0jFq007278@hera.kernel.org> <20090620101424.GA21928@elte.hu> <4A3F6AD5.1030703@linux.vnet.ibm.com> <20090622105609.GA17456@elte.hu>
+In-Reply-To: <20090622105609.GA17456@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul,
+Ingo Molnar wrote:
+> the GCOV code cannot be enabled in distros right now, due to the 
+> high compiler-generated overhead, and due to the fact that the gcov 
+> data structures used are single threaded. (which makes a gcov 
+> enabled kernel very slow on SMP, due to the global cacheline 
+> bounces)
 
-On Tue, Jun 23, 2009 at 2:39 AM, Paul Mackerras<paulus@samba.org> wrote:
->
-> Hmmm, when the counter is running, what you want is not so much the
-> total time so far as a way to compute the total time so far from the
-> current TSC/timebase value.  So we would need to export tstamp_enabled
-> and tstamp_running plus a scale/offset for converting the TSC/timebase
-> value to nanoseconds consistent with ctx->time.  On powerpc that's
-> pretty straightforward because the timebases, but on x86 I gather the
-> offset and maybe also the scale would need to be per-cpu (which is OK,
-> because all the values in the mmapped page are only useful on one
-> specific CPU).
->
-I think you should make it such that reading via mmap and read() are
-equivalent, one is just lower overhead than the other. Otherwise it would
-make it more difficult for tools in case of multiplexing where you could
-fallback to read() and there you would not get the same information.
+I definitely agree that the gcov kernel support shouldn't be active on 
+distro kernels. In my opinion that is also not a strict requirement for 
+code coverage testing. If you're only looking at the resulting overall 
+coverage rate, than yes, having the mechanism active all the time would 
+be a good thing. But the real use of code coverage testing lies in being 
+able to look at what parts of the code are not hit by a test case. That 
+requires preparation (getting the source) and focus on one kernel 
+version. So in my opinion, the extra effort of building and installing 
+the instrumented kernel is not a limiting factor.
 
+> IMO it would be _much_ better to implement hardware-assisted 
+> call-graph tracking:
+> 
+>  - Use the BTS (Branch Trace Store) facilities to hardware-sample 
+>    all branches+calls (optionally, dynamically enable-able)
+> 
+>  - Post-process the raw branch trace information (in the kernel
+>    BTS-overflow irq handler) to calculate call-coverage information.
+> 
+> Unlike the unconditional GCC based GCOV stuff that is currently 
+> upstream, BTS tracing is supported by a large range of hardware and 
+> it can be enabled _transparently_, so it could be built in and 
+> enabled by distros too, to test code coverage.
 
-> How would we compute the scale and offset on x86, given the current
-> TSC value and ctx->time?
->
-> Paul.
->
+This is a very interesting idea. You could get branch level coverage 
+information out of this. Some open questions that I could think of:
+* how to map branch addresses to source code lines
+* how to determine how many branches there are during initialization to 
+allocate enough resources
+
+> Would you be interested in looking at (and implementing) this?
+
+While it sounds tempting, I don't think that I can spare the time to 
+effectively work on this, so I'll have to decline.
+
