@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbZFWGHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbZFWGIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbZFWGHg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 02:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZFWGH2
+	id S1758153AbZFWGIO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 02:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZFWGIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 02:07:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44525 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbZFWGH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 02:07:28 -0400
-Date: Tue, 23 Jun 2009 16:07:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for June 23
-Message-Id: <20090623160725.e6c7f733.sfr@canb.auug.org.au>
-In-Reply-To: <20090623153357.61f4a9a2.sfr@canb.auug.org.au>
-References: <20090623153357.61f4a9a2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Tue, 23 Jun 2009 02:08:07 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40772 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751576AbZFWGIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 02:08:06 -0400
+Date: Tue, 23 Jun 2009 15:06:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: akataria@vmware.com
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+Message-Id: <20090623150630.31c0dff5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1245736441.18339.21.camel@alok-dev1>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	<1245732411.18339.6.camel@alok-dev1>
+	<20090623135017.220D.A69D9226@jp.fujitsu.com>
+	<20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+	<1245736441.18339.21.camel@alok-dev1>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__23_Jun_2009_16_07_25_+1000_A93vZt7q/MdJ/v_G"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__23_Jun_2009_16_07_25_+1000_A93vZt7q/MdJ/v_G
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 22 Jun 2009 22:54:01 -0700
+Alok Kataria <akataria@vmware.com> wrote:
 
-$ git diff --shortstat -M stable..HEAD^
- 556 files changed, 27596 insertions(+), 7123 deletions(-)
-$ git diff --dirstat -M stable..HEAD^
-   3.8% Documentation/vm/
-   4.8% arch/x86/kvm/
-   5.4% arch/x86/
-   3.4% drivers/acpi/
-   7.5% drivers/firewire/
-   8.5% drivers/md/
-   5.8% drivers/misc/
-   4.3% drivers/scsi/
-   6.9% drivers/watchdog/
-  15.3% drivers/
-   3.4% fs/
-   6.1% include/linux/
-  15.5% mm/
+> > > 
+> > > I don't have any strong oppose reason, but I also don't have any strong
+> > > agree reason.
+> > > 
+> > I think "don't include Hugepage" is sane. Hugepage is something _special_, now.
+> > 
+> Kamezawa-san, 
+> 
+> I agree that hugepages are special in the sense that they are
+> implemented specially and don't actually reside on the LRU like any
+> other locked memory. But, both of these memory types (mlocked and
+> hugepages) are actually unevictable and can't be reclaimed back, so i
+> don't see a reason why should accounting not reflect that.
+> 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I bet we should rename "Unevictable" to "Mlocked" or "Pinned" rather than
+take nr_hugepages into account. I think this "Unevictable" in meminfo means
+- pages which are evictable in their nature (because in LRU) but a user pinned it -
 
---Signature=_Tue__23_Jun_2009_16_07_25_+1000_A93vZt7q/MdJ/v_G
-Content-Type: application/pgp-signature
+How about rename "Unevictable" to "Pinned" or "Locked" ?
+(Mlocked + locked shmem's + ramfs?)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+We have other "unevictable" pages other than Hugepage anyway.
+ - page table
+ - some slab
+ - kernel's page
+ - anon pages in swapless system
+ etc...
 
-iEYEARECAAYFAkpAcR0ACgkQjjKRsyhoI8xVRACfZHjN+rYWip5bsuehrQZb8d61
-T4sAn2pNInrGv/iJppeRuwr8voef5LD6
-=L9kg
------END PGP SIGNATURE-----
+BTW, I use following calculation for quick check if I want all "Unevicatable" pages.
 
---Signature=_Tue__23_Jun_2009_16_07_25_+1000_A93vZt7q/MdJ/v_G--
+Unevictable = Total - (Active+Inactive) + (50-70%? of slab)
+
+This # of is not-reclaimable memory.
+
+Thanks,
+-Kame
+
+
+> Thanks,
+> Alok
+> 
+> > Thanks,
+> > -Kame
+> > 
+> 
+> 
+
