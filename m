@@ -1,85 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbZFWOr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbZFWOuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760026AbZFWOr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 10:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZFWOru
+	id S1759015AbZFWOuY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 10:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZFWOuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 10:47:50 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:59298 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbZFWOrt convert rfc822-to-8bit (ORCPT
+	Tue, 23 Jun 2009 10:50:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38815 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752090AbZFWOuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 10:47:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ol21ubUh+/kkQ8LVNS0exWnrZ2DXN7fOtxd6Lj0ssdjL9b3SxBbcf721NgMVN6P8gE
-         F/e2HWvUBgW+ZZZ674tC0Ft2pair+R7a2qEdESuJogshxnlPzdkekP06cVnma9Qba+gi
-         l82KPMc/BN3gofnXAf9lLKvfNayj8vaE+7Wv0=
-MIME-Version: 1.0
-In-Reply-To: <4A404EC6.8080902@jp.fujitsu.com>
-References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>
-	 <4A3EE668.5090400@jp.fujitsu.com>
-	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>
-	 <4A3F55C7.4030909@linux.intel.com>
-	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>
-	 <4A3F7A93.5080004@linux.intel.com>
-	 <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>
-	 <4A3F8BF7.6010406@linux.intel.com>
-	 <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
-	 <4A404EC6.8080902@jp.fujitsu.com>
-Date: Tue, 23 Jun 2009 16:47:49 +0200
-Message-ID: <8db1092f0906230747j1bcfe041r11bd0ffbeaa8e41a@mail.gmail.com>
-Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend to 
-	disk, mce related?
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andi Kleen <ak@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 23 Jun 2009 10:50:12 -0400
+Date: Tue, 23 Jun 2009 07:50:48 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: kerneloops.org report for the week of June 14 2009
+Message-ID: <20090623075048.36f50deb@infradead.org>
+In-Reply-To: <20090623115510.GC9497@elte.hu>
+References: <20090614173331.18f01123@infradead.org>
+	<alpine.LFD.2.00.0906231201430.2767@localhost.localdomain>
+	<20090623115510.GC9497@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/23 Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>:
+On Tue, 23 Jun 2009 13:55:10 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
->
-> Maciej, could you try this patch?
+> 
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Sun, 14 Jun 2009, Arjan van de Ven wrote:
+> > > Rank 3: getnstimeofday (warning)
+> > > 	Reported 309 times (2446 total reports)
+> > > 	[suspend resume] getnstimeofday() is called before
+> > > timekeeping is
+> >         resumed
+> > 
+> > > Rank 6: hres_timers_resume (warning)
+> > > 	Reported 188 times (1024 total reports)
+> > > 	[suspend resume] hres_timers_resume() is incorrectly
+> > > called with interrupts on
+> > 
+> > Both have the same root cause. Something enables interrupts in the 
+> > early resume path. IIRC, there was a culprit identified recently. 
+> > Rafael ?
+> 
+> This can be debugged automatically today, using lockdep, by using a 
+> 'helper lock':
+> 
+>   static DEFINE_PER_CPU(struct lockdep_map, helper_lock);
+> 
+> Then mark the lock irq-safe by doing something like:
+> 
+> static void mark_lock_irqsafe(void)
+> {
+> 	unsigned long flags;
+> 	int cpu;
+> 
+> 	local_irq_save(flags);
+> 	irq_enter(0);
+> 
+> 	for_each_online_cpu(cpu) {
+> 		lock_acquire(&per_cpu(helper_lock, cpu), 0, 0, 0, 0,
+> NULL, 0); lock_release(&per_cpu(helper_lock, cpu), 0, 0, 0, 0, NULL,
+> 0); }
+> 
+> 	irq_exit(0);
+> 	local_irq_restore(flags);
+> }
+> 
+> Then, the resume path, when it disables irqs, you can disallow 
+> irq-enable via:
+> 
+> 	local_irq_disable();
+> 	lock_acquire(&__get_cpu_var(helper_lock), 0, 0, 0, 0, NULL,
+> 0); ...
+> 	<extensive suspend or resume codepaths, callbacks> 
+> 	...
+> 	lock_release(&__get_cpu_var(helper_lock), 0, 0, 0, 0, NULL,
+> 0); local_irq_enable();
+> 
+> And lockdep will warn if any function inbetween enables IRQs, by 
+> emitting a splat about incorrectly enabled hardirqs. It will warn 
+> about the specific place and will emit a relevant backtrace, - not 
+> just the handler in general.
 
-Tested in 2 systems (for 17 and 30 minutes). Works without any
-problems. Thanks for patch!
+looks like an interesting approach; it'll pinpoint the bad guy exactly
+where he's enabling interrupts.. (assuming he's using kernel facilities
+of course)
 
->
-> ===
-> [PATCH] x86: Fix mce resume on 32bit
->
-> Calling mcheck_init() on resume is required only with CONFIG_X86_OLD_MCE=y.
->
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> ---
->  arch/x86/power/cpu.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-> index d277ef1..b3d20b9 100644
-> --- a/arch/x86/power/cpu.c
-> +++ b/arch/x86/power/cpu.c
-> @@ -244,7 +244,7 @@ static void __restore_processor_state(struct saved_context *ctxt)
->        do_fpu_end();
->        mtrr_ap_init();
->
-> -#ifdef CONFIG_X86_32
-> +#ifdef CONFIG_X86_OLD_MCE
->        mcheck_init(&boot_cpu_data);
->  #endif
->  }
-
-Tested-by Maciej Rutecki <maciej.rutecki@gmail.com>
 
 
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
