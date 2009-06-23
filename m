@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZFWIbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbZFWIbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbZFWIbG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZFWIax
+	id S1757666AbZFWIbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZFWIbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:30:53 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:59215 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbZFWIaw convert rfc822-to-8bit (ORCPT
+	Tue, 23 Jun 2009 04:31:34 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49862 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbZFWIbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:30:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=q5iHE+aB7dXwn7ehIOOmkk9mJ5ThUaUS+RCncyj3C5DpuPsbCTj25FE5USGgcVmOMs
-         Ert092ZrfLPt35xP5YkaABlwocIKGIRaQEmLOLN8eCHbVPhsXhHNp87TxWjTkttr5mY1
-         H3e8LyXO1YvtViN+z0VRBFS9bhLrGUgx3+e8k=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <19008.37301.779108.964118@cargo.ozlabs.ibm.com>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
-	 <20090622115017.GC24366@elte.hu>
-	 <19008.25905.550815.222975@drongo.ozlabs.ibm.com>
-	 <7c86c4470906230036o677e6c48j923a7431b9912372@mail.gmail.com>
-	 <19008.37301.779108.964118@cargo.ozlabs.ibm.com>
-Date: Tue, 23 Jun 2009 10:30:53 +0200
-Message-ID: <7c86c4470906230130t69345d91w524d6d13216dc8db@mail.gmail.com>
-Subject: Re: I.2 - Grouping
-From: stephane eranian <eranian@googlemail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
-       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 23 Jun 2009 04:31:32 -0400
+Subject: Re: [PATCH 06/14] Pramfs: Include files
+From: David Woodhouse <dwmw2@infradead.org>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Chris Simmonds <chris@2net.co.uk>, Arnd Bergmann <arnd@arndb.de>,
+       Marco <marco.stornelli@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090623055735.GA23119@logfs.org>
+References: <4A33A7EC.6070008@gmail.com> <200906221317.04166.arnd@arndb.de>
+	 <4A3FC7F1.5050108@gmail.com> <200906222033.20883.arnd@arndb.de>
+	 <4A3FDBFE.8050509@2net.co.uk> <20090622214155.GA19332@logfs.org>
+	 <1245709239.25547.394.camel@macbook.infradead.org>
+	 <20090623055735.GA23119@logfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Jun 2009 09:31:20 +0100
+Message-Id: <1245745880.25547.1637.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 10:26 AM, Paul Mackerras<paulus@samba.org> wrote:
-> stephane eranian writes:
->
->> What happens if I do:
->>    fd0 = perf_counter_open(&hwc1, getpid(), -1, -1, 0);
->>    fd1 = perf_counter_open(&hwc2, getpid(), -1, fd0, 0);
->>
->> And then:
->>    fd2 = perf_counter_open(&hwc2, getpid(), -1, fd1, 0);
->
-> That perf_counter_open call will fail with an EINVAL error because fd1
-> is not a group leader.
->
-Okay. Thanks.
+On Tue, 2009-06-23 at 07:57 +0200, Jörn Engel wrote:
+> 
+> Feel free to improve the test.  It is admittedly crap and designed to
+> support Chris' argument.  But seeing that it still fails to do so and
+> Arnd has already shown one improvement that weakened Chris' argument,
+> I
+> guess we can all agree that further improvments won't change the
+> conclusion, can we? ;)
 
-But that leads me to another question related to grouping
-which was hinted for by Peter's comment about IBS.
+True. At this point, I'm actually more interested in just how crap the
+kernel code is, that's generated by your test. We don't have a portable
+way to store a wrong-endian number. Using st_le32() on PowerPC we can
+get it down to something like this...
 
-Can you have multiple sampling events in a group?
+le32:   27777875 cycles
+be32:   26564494 cycles
+loops: 100000000
+le32:   21739926 cycles
+be32:   20289854 cycles
+loops: 100000000
+le32:   25206069 cycles
+be32:   20289854 cycles
+loops: 100000000
+le32:   21739435 cycles
+be32:   17391303 cycles
+loops: 100000000
+le32:   22197744 cycles
+be32:   17391305 cycles
+loops: 100000000
+le32:   22195411 cycles
+be32:   21946167 cycles
+loops: 100000000
+
+  a0:   7f 4c 42 e6     mftbl   r26
+  a4:   2c 1a 00 00     cmpwi   r26,0
+  a8:   41 a2 ff f8     beq-    a0 <.init_module+0x54>
+  ac:   3c 00 05 f5     lis     r0,1525
+  b0:   3b 7f 00 70     addi    r27,r31,112
+  b4:   60 00 e1 00     ori     r0,r0,57600
+  b8:   7d 20 dc 2c     lwbrx   r9,0,r27
+  bc:   39 29 00 01     addi    r9,r9,1
+  c0:   79 29 00 20     clrldi  r9,r9,32
+  c4:   7d 20 dd 2c     stwbrx  r9,0,r27
+  c8:   34 00 ff ff     addic.  r0,r0,-1
+  cc:   40 82 ff ec     bne+    b8 <.init_module+0x6c>
+  d0:   7f ac 42 e6     mftbl   r29
+  d4:   2c 1d 00 00     cmpwi   r29,0
+  d8:   41 a2 ff f8     beq-    d0 <.init_module+0x84>
+  dc:   3c 00 05 f5     lis     r0,1525
+  e0:   60 00 e1 00     ori     r0,r0,57600
+  e4:   81 3f 00 74     lwz     r9,116(r31)
+  e8:   39 29 00 01     addi    r9,r9,1
+  ec:   91 3f 00 74     stw     r9,116(r31)
+  f0:   34 00 ff ff     addic.  r0,r0,-1
+  f4:   40 82 ff f0     bne+    e4 <.init_module+0x98>
+  f8:   7f 8c 42 e6     mftbl   r28
+
+Interestingly, if we get rid of the (gratuitous, afaict) clrldi at 0xc0,
+the little-endian version goes _faster_:
+
+le32:   18839472 cycles
+be32:   21946166 cycles
+loops: 100000000
+le32:   25923621 cycles
+be32:   29629625 cycles
+loops: 100000000
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
