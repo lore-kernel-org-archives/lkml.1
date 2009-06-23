@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbZFWRAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbZFWRAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbZFWRAf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 13:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758439AbZFWRAS
+	id S1760656AbZFWRAr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 13:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760024AbZFWRAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 13:00:18 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:14719 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755524AbZFWRAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 13:00:16 -0400
-X-IronPort-AV: E=Sophos;i="4.42,276,1243839600"; 
-   d="scan'208";a="195006649"
-Subject: Re: [PATCH 04/10] sunrpc: Use rcu_barrier() on unload.
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Jesper Dangaard Brouer <hawk@comx.dk>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       Patrick McHardy <kaber@trash.net>, christine.caulfield@googlemail.com,
-       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-In-Reply-To: <20090623150414.22490.14888.stgit@localhost>
-References: <20090623150330.22490.87327.stgit@localhost>
-	 <20090623150414.22490.14888.stgit@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 23 Jun 2009 12:59:13 -0400
-Message-Id: <1245776353.9586.1.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 23 Jun 2009 17:00:06.0681 (UTC) FILETIME=[0F245890:01C9F424]
+	Tue, 23 Jun 2009 13:00:36 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:19330 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759296AbZFWRAd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 13:00:33 -0400
+X-SpamScore: -24
+X-BigFish: VPS-24(z34a4jz1432R98dR4015L1805Mzz1202hzzz32i6bh17ch43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KLPB89-04-MNN-01
+Date: Tue, 23 Jun 2009 19:00:12 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/8] kvm/mmu: rename is_largepage_backed to
+	mapping_level
+Message-ID: <20090623170012.GH5139@amd.com>
+References: <1245417389-5527-1-git-send-email-joerg.roedel@amd.com> <1245417389-5527-4-git-send-email-joerg.roedel@amd.com> <20090623155933.GA3651@amt.cnet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090623155933.GA3651@amt.cnet>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 23 Jun 2009 17:00:13.0199 (UTC) FILETIME=[1306E9F0:01C9F424]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 17:04 +0200, Jesper Dangaard Brouer wrote:
-> The sunrpc module uses rcu_call() thus it should use rcu_barrier() on
-> module unload.
+On Tue, Jun 23, 2009 at 12:59:33PM -0300, Marcelo Tosatti wrote:
+> Hi Joerg,
 > 
-> Have not verified that the possibility for new call_rcu() callbacks
-> has been disabled.  As a hint for checking, the functions calling
-> call_rcu() (unx_destroy_cred and generic_destroy_cred) are
-> registered as crdestroy function pointer in struct rpc_credops.
+> On Fri, Jun 19, 2009 at 03:16:24PM +0200, Joerg Roedel wrote:
+> >  	gfn = unalias_gfn(kvm, gfn);
+> > -	write_count = slot_largepage_idx(gfn,
+> > -					 gfn_to_memslot_unaliased(kvm, gfn));
+> > -	*write_count += 1;
+> > +
+> > +	for (i = PT_DIRECTORY_LEVEL;
+> > +	     i < PT_PAGE_TABLE_LEVEL + KVM_NR_PAGE_SIZES; ++i) {
+> > +		slot          = gfn_to_memslot_unaliased(kvm, gfn);
 > 
-> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
-> ---
-> 
->  net/sunrpc/sunrpc_syms.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/net/sunrpc/sunrpc_syms.c b/net/sunrpc/sunrpc_syms.c
-> index 843629f..adaa819 100644
-> --- a/net/sunrpc/sunrpc_syms.c
-> +++ b/net/sunrpc/sunrpc_syms.c
-> @@ -66,6 +66,7 @@ cleanup_sunrpc(void)
->  #ifdef CONFIG_PROC_FS
->  	rpc_proc_exit();
->  #endif
-> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
->  }
->  MODULE_LICENSE("GPL");
->  module_init(init_sunrpc);
-> 
+> Can't you move this call out of the loop?
 
-Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+True. Will do this.
+
+> > @@ -1704,7 +1739,7 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+> >  	if ((pte_access & ACC_WRITE_MASK)
+> >  	    || (write_fault && !is_write_protection(vcpu) && !user_fault)) {
+> >  
+> > -		if (largepage && has_wrprotected_page(vcpu->kvm, gfn)) {
+> > +		if (largepage && has_wrprotected_page(vcpu->kvm, gfn, 1)) {
+> 
+> It seems direct_map is missing the large pte overwrite check that
+> fetch() contains:
+> 
+>                 if (is_large_pte(*sptep)) {
+>                         rmap_remove(vcpu->kvm, sptep);
+>                         __set_spte(sptep, shadow_trap_nonpresent_pte);
+>                         kvm_flush_remote_tlbs(vcpu->kvm);
+>                 }
+> 
+> (perhaps its not a possible scenario at the moment, but...).
+
+
+This function is only called from mmu_set_spte which takes care of this.
+
+Thanks,
+
+	Joerg
+
 -- 
-Trond Myklebust
-Linux NFS client maintainer
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
