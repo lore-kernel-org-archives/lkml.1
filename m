@@ -1,82 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbZFWNgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbZFWNhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759379AbZFWNgY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZFWNgP
+	id S1758813AbZFWNhB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZFWNgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:36:15 -0400
-Received: from nox.protox.org ([88.191.38.29]:56067 "EHLO nox.protox.org"
+	Tue, 23 Jun 2009 09:36:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49235 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753975AbZFWNgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:36:15 -0400
-Subject: Re: [PATCH 1/2] radeon: fix radeon kms framebuffer device
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Andy Lutomirski <luto@mit.edu>
-Cc: Jerome Glisse <jglisse@redhat.com>, airlied@gmail.com,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-In-Reply-To: <4A40D4D7.9070306@mit.edu>
-References: <1245687358-10481-1-git-send-email-jglisse@redhat.com>
-	 <4A404049.1080707@mit.edu>  <4A40D4D7.9070306@mit.edu>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 15:35:09 +0200
-Message-Id: <1245764109.2674.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1755779AbZFWNgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:36:53 -0400
+Date: Tue, 23 Jun 2009 15:36:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Miroslav Lichvar <mlichvar@redhat.com>
+Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT pull] ntp updates for 2.6.31
+Message-ID: <20090623133625.GA3026@elte.hu>
+References: <1f1b08da0906151316s7d25f8ceraa1bc967a8abe172@mail.gmail.com> <1f1b08da0906151641u4cd964e6vf1a61afe50cc1d90@mail.gmail.com> <20090616090647.GD13771@elte.hu> <20090616125248.GA23541@localhost> <1245253102.6067.94.camel@jstultz-laptop> <20090617172325.GA32332@localhost> <20090617172601.GA3493@elte.hu> <20090618121320.GA13025@localhost> <20090623095745.GC30634@elte.hu> <20090623131628.GA11827@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623131628.GA11827@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 09:12 -0400, Andy Lutomirski wrote:
-> Andy Lutomirski wrote:
-> > Jerome Glisse wrote:
-> >> smem.start is a physical address which kernel can remap to access
-> >> video memory of the fb buffer. We now pin the fb buffer into vram
-> >> by doing so we are loosing vram but fbdev need to be reworked to
-> >> allow change in framebuffer address.
-> >
-> > I tested this (and the corresponding 2/2 initialization order, but 
-> > with radeon as a module), and plymouth seems to be fully functional 
-> > (graphical boot, password prompt, etc).
-> >
-> > (The driver set the wrong mode, but that's a different issue.)
-> >
-> > Thanks!
-> >
-> > Tested-by: Andy Lutomirski <luto@mit.edu>
-> >
-> Got an oops after awhile:
-> 
-> BUG: Bad page state in process gpg-agent  pfn:37dd5
-> page:ffffea0000c38698 flags:200000000050000c count:0 mapcount:0 
-> mapping:(null) index:7fd35e311
-> Pid: 3131, comm: gpg-agent Not tainted 2.6.30 #5
-> Call Trace:
->  [<ffffffff810bc99b>] bad_page+0x115/0x13e
->  [<ffffffff810bcbd3>] free_pages_check+0x3c/0x6d
->  [<ffffffff810bde8f>] free_hot_cold_page+0x4e/0x151
->  [<ffffffff810bdfce>] __pagevec_free+0x3c/0x65
->  [<ffffffff810c1c82>] release_pages+0x1a5/0x1cb
->  [<ffffffff810de357>] free_pages_and_swap_cache+0x6d/0x9e
->  [<ffffffff810d584b>] tlb_finish_mmu+0x41/0x63
->  [<ffffffff810d5b3f>] exit_mmap+0xfb/0x138
->  [<ffffffff8104beae>] mmput+0x55/0xc1
->  [<ffffffff81050626>] exit_mm+0x10e/0x12f
->  [<ffffffff8105226f>] do_exit+0x1b4/0x6a8
->  [<ffffffff8106c6b0>] ? up_read+0x1c/0x32
->  [<ffffffff810527e2>] do_group_exit+0x7f/0xac
->  [<ffffffff81052834>] sys_exit_group+0x25/0x3d
->  [<ffffffff8100beab>] system_call_fastpath+0x16/0x1b
-> 
-> I don't know if this is related to the drm changes.
-> 
-> Back to 2.6.29 for me :)  (I actually use this machine, so I'd rather 
-> not run kernels that cause random corruption.)
-> 
-> --Andy
 
-Could you get a trace using Linus pte check patch he posted earlier
-on the other thread ?
+* Miroslav Lichvar <mlichvar@redhat.com> wrote:
 
-Jerome
+> On Tue, Jun 23, 2009 at 11:57:45AM +0200, Ingo Molnar wrote:
+> > > > Wouldnt the goal be to calibrate as fast as possible? (Without 
+> > > > any bad oscillation)
+> > > 
+> > > Not really. It depends on how noisy is the input signal. On an 
+> > > idle LAN the jitter is just few microseconds, but over internet it 
+> > > easily reaches miliseconds. Over a certain point faster PLL will 
+> > > just make things worse.
+> > 
+> > That is what i called 'bad oscillation' - a 'too fast' PLL that 
+> > over-compensates and does not converge well enough.
+> > 
+> > Is there a claim that this change causes that? (John's testing 
+> > suggested that there's no such effect)
+> 
+> I think John's tests were done on LAN and in an environment with 
+> sudden temperature changes. This is the case where frequency 
+> variations strongly dominate the noise and faster PLL performs 
+> better.
 
+I'd also expect this to be quite similar to most everyday Linux 
+uses.
+
+> On the opposite side is an idle machine in a room with stable 
+> temperature syncing over wireless or dial-up. I don't have access 
+> to such machine, but in simulations (noise with exponential 
+> distribution) I see that offset RMS doubles when the time constant 
+> is decreased by 2.
+
+The thing is, an idle machine in a room with stable temperature is 
+in a good position anyway to have stable time, right? We should 
+rather care about the common-case of temperature variations, 
+reboots, etc.
+
+That is where NTP _helps the most_ - as the physical environment is 
+very entropy laden to begin with.
+
+> Maybe for most of the users the change would be an improvement. I 
+> don't have any statistics to back it up or claim otherwise. 
+> However, if the constant needs to be adjusted, it's better to do 
+> it in NTP.
+>
+> > > PLL is mainly about handling the signal noise, frequency adjusting 
+> > > is secondary. When the noise is very low or the update interval is 
+> > > long enough, the frequency variations caused by temperature 
+> > > changes will dominate the signal noise and this is where FLL 
+> > > should kick in.
+> > > 
+> > > The PLL/FLL switching is controlled by update interval. Ideally it 
+> > > would be adaptive, but NTP is not that sophisticated. By default, 
+> > > FLL is enabled when the interval is longer than 2048 seconds. This 
+> > > is of course not the optimal value for all systems.
+> > > 
+> > > Unfortunately in kernel it can be configured only to 2048 or 256 
+> > > and NTP never uses the shorter one. The NTP daemon has its own 
+> > > loop which can be used instead and it allows to use arbitrary 
+> > > values though.
+> > 
+> > How about going towards the ideal, adaptive design, to which ntpd 
+> > passes in time samples and which observes noise and converges as 
+> > quickly as possible (given the noise level) and stays stable once 
+> > there? I guess we need extensions to the NTP syscall for that.
+> 
+> Not sure how hard that would be. The ntp-hackers list is a better 
+> place to discuss such modifications.
+> 
+> Other NTP clients don't have to use the PLL interface. For 
+> example, chrony uses only the SINGLESHOT mode and sets the 
+> frequency directly. It has an adaptive model using linear 
+> regression, it converges really fast and in my tests performs 
+> better than NTP.
+
+That's good. Could this be integrated into the kernel, for even 
+better results?
+
+> > The NTP code in kernel/time/ntp.c is now reasonably clean for 
+> > efforts like that.
+> > 
+> > It would also pave the way to properly support PPS devices in 
+> > the kernel. Would you be interested in things like this?
+> 
+> I'm not very familiar with the PPS API, is there something wrong 
+> with it?
+
+The PPS patches i've seen just export IRQ timestamps to user-space.
+
+That is not very robust in my opinion when it comes to do time 
+approximations - to get quick, low-latency action and precise 
+measurements it's best to keep the critical path as short as 
+possible, and within a single source code repository: i.e. within 
+the kernel.
+
+There's little policy really, other than setting some general 
+parameters. NTPd can still provide the raw _network time_ 
+timestamps, as that is probably best fetched by user-space and fed 
+to the kernel.
+
+	Ingo
