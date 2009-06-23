@@ -1,415 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbZFWXw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZFWX4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759273AbZFWXw6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 19:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZFWXwu
+	id S1758198AbZFWX4q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 19:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZFWX4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 19:52:50 -0400
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:47136
-	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752818AbZFWXws (ORCPT
+	Tue, 23 Jun 2009 19:56:36 -0400
+Received: from fed1rmmtao106.cox.net ([68.230.241.40]:62559 "EHLO
+	fed1rmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753201AbZFWX4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 19:52:48 -0400
-Message-ID: <4A416B58.8020902@bluewatersys.com>
-Date: Wed, 24 Jun 2009 11:55:04 +1200
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 23 Jun 2009 19:56:35 -0400
+X-VR-Score: -120.00
+X-Authority-Analysis: v=1.0 c=1 a=F_o4wktclTQA:10 a=pGLkceISAAAA:8
+ a=RugydN6MN-EL_xpUAtIA:9 a=CnmhoajxNzVp6HneV7RAqSx8cH8A:4 a=MSl-tDqOz04A:10
+X-CM-Score: 0.00
+To: =?utf-8?Q?Ren=C3=A9?= Scharfe <rene.scharfe@lsrfire.ath.cx>
+Cc: roel kluin <roel.kluin@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       git@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Junio C Hamano <gitster@pobox.com>
+Subject: Re: [PATCH] fread does not return negative on error
+References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
+	<25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
+	<4A3FB479.2090902@lsrfire.ath.cx>
+From: Junio C Hamano <gitster@pobox.com>
+Date: Tue, 23 Jun 2009 16:56:32 -0700
+In-Reply-To: <4A3FB479.2090902@lsrfire.ath.cx> (=?utf-8?Q?=22Ren=C3=A9?=
+ Scharfe"'s message of "Mon\, 22 Jun 2009 18\:42\:33 +0200")
+Message-ID: <7vhby64i8f.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: linux kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
-       avorontsov@ru.mvista.com, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] ds2782 battery gas gauge driver
-References: <4A371CDF.3070407@bluewatersys.com> <20090617110908.17b47a18@hyperion.delvare> <4A397BA2.9030702@bluewatersys.com>
-In-Reply-To: <4A397BA2.9030702@bluewatersys.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryan Mallon wrote:
+René Scharfe <rene.scharfe@lsrfire.ath.cx> writes:
+
+> the following patch is for git.  I just removed the unneeded check for
+> res == 0 from your version.  Does it look OK?
+
+The patch looks good, and both of our in-tree users do error out when the
+returned value is 0 (imap-send.c checks with "<= 0" which looks a tad
+amateurish, though) correctly.
+
+Funny, there is no caller of this function in the original context this
+bug originally found, which I think is linux-2.6/tools/perf ;-).
+
+Thanks.
+
+> From: Roel Kluin <roel.kluin@gmail.com>
 >
-> Updated patch below.
+> size_t res cannot be less than 0. fread returns 0 on error.
 >
->   
-Any further comments on this? I got an IP blocked bounce on Anton's
-cbou@mail.ru, so have CC'ed his other address here.
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > ---
-> Add support for the DS2782 stand-alone I2C gas-gauge
+>  strbuf.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 >
-> Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
-> ---
->
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 33da112..b9c818f 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -43,6 +43,13 @@ config BATTERY_DS2760
->  	help
->  	  Say Y here to enable support for batteries with ds2760 chip.
->  
-> +config BATTERY_DS2782
-> +	tristate "DS2782 standalone gas-gauge"
-> +	depends on I2C
-> +	help
-> +	  Say Y here to enable support for the DS2782 standalone battery
-> +	  gas-gauge.
-> +
->  config BATTERY_PMU
->  	tristate "Apple PMU battery"
->  	depends on PPC32 && ADB_PMU
-> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-> index 2fcf41d..ad1ac61 100644
-> --- a/drivers/power/Makefile
-> +++ b/drivers/power/Makefile
-> @@ -19,6 +19,7 @@ obj-$(CONFIG_APM_POWER)		+= apm_power.o
->  obj-$(CONFIG_WM8350_POWER)	+= wm8350_power.o
->  
->  obj-$(CONFIG_BATTERY_DS2760)	+= ds2760_battery.o
-> +obj-$(CONFIG_BATTERY_DS2782)	+= ds2782_battery.o
->  obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
->  obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
->  obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
-> diff --git a/drivers/power/ds2782_battery.c b/drivers/power/ds2782_battery.c
-> new file mode 100644
-> index 0000000..cfd4d28
-> --- /dev/null
-> +++ b/drivers/power/ds2782_battery.c
-> @@ -0,0 +1,321 @@
-> +/*
-> + * drivers/power/ds2782_battery.c
-> + *
-> + * I2C client/driver for the Maxim/Dallas DS2782 Stand-Alone Fuel Gauge IC
-> + *
-> + * Copyright (C) 2009 Bluewater Systems Ltd
-> + * Author: Ryan Mallon <ryan@bluewatersys.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/i2c.h>
-> +#include <linux/idr.h>
-> +#include <linux/power_supply.h>
-> +
-> +#define DS2782_REG_RARC		0x06	/* Remaining active relative capacity */
-> +
-> +#define DS2782_REG_VOLT_MSB	0x0c
-> +#define DS2782_REG_TEMP_MSB	0x0a
-> +#define DS2782_REG_CURRENT_MSB	0x0e
-> +
-> +/* EEPROM Block */
-> +#define DS2782_REG_RSNSP	0x69	/* Sense resistor value */
-> +
-> +/* Current unit measurement in uA for a 1 milli-ohm sense resistor */
-> +#define DS2782_CURRENT_UNITS	1563
-> +
-> +#define to_ds2782_info(x) container_of(x, struct ds2782_info, battery)
-> +
-> +struct ds2782_info {
-> +	struct i2c_client	*client;
-> +	struct power_supply	battery;
-> +	int			id;
-> +};
-> +
-> +static DEFINE_IDR(battery_id);
-> +static DEFINE_MUTEX(battery_lock);
-> +
-> +static inline int ds2782_read_reg(struct ds2782_info *info, int reg, u8 *val)
-> +{
-> +	int ret = i2c_smbus_read_byte_data(info->client, reg);
-> +	if (ret < 0) {
-> +		dev_err(&info->client->dev, "register read failed\n");
-> +		return ret;
-> +	}
-> +
-> +	*val = ret;
-> +	return 0;
-> +}
-> +
-> +static inline int ds2782_read_reg16(struct ds2782_info *info, int reg_msb,
-> +				    s16 *val)
-> +{
-> +	int ret = swab16(i2c_smbus_read_word_data(info->client, reg_msb));
-> +	if (ret < 0) {
-> +		dev_err(&info->client->dev, "register read failed\n");
-> +		return ret;
-> +	}
-> +
-> +	*val = ret;
-> +	return 0;
-> +}
-> +
-> +static int ds2782_get_temp(struct ds2782_info *info, int *temp)
-> +{
-> +	s16 raw;
-> +	int err;
-> +
-> +	/*
-> +	 * Temperature is measured in units of 0.125 degrees celcius, the
-> +	 * power_supply class measures temperature in tenths of degrees
-> +	 * celsius. The temperature value is stored as a 10 bit number, plus
-> +	 * sign in the upper bits of a 16 bit register.
-> +	 */
-> +	err = ds2782_read_reg16(info, DS2782_REG_TEMP_MSB, &raw);
-> +	if (err)
-> +		return err;
-> +	*temp = ((raw / 32) * 125) / 100;
-> +	return 0;
-> +}
-> +
-> +static int ds2782_get_current(struct ds2782_info *info, int *current_uA)
-> +{
-> +	int sense_res, err;
-> +	u8 sense_res_raw;
-> +	s16 raw;
-> +
-> +	/*
-> +	 * The units of measurement for current are dependent on the value of
-> +	 * the sense resistor.
-> +	 */
-> +	err = ds2782_read_reg(info, DS2782_REG_RSNSP, &sense_res_raw);
-> +	if (err)
-> +		return err;
-> +	if (sense_res_raw == 0) {
-> +		dev_err(&info->client->dev, "sense resistor value is 0\n");
-> +		return -ENXIO;
-> +	}
-> +	sense_res = 1000 / sense_res_raw;
-> +
-> +	dev_dbg(&info->client->dev, "sense resistor = %d milli-ohms\n",
-> +		sense_res);
-> +	err = ds2782_read_reg16(info, DS2782_REG_CURRENT_MSB, &raw);
-> +	if (err)
-> +		return err;
-> +	*current_uA = raw * (DS2782_CURRENT_UNITS / sense_res);
-> +	return 0;
-> +}
-> +
-> +static int ds2782_get_voltage(struct ds2782_info *info, int *voltage_uA)
-> +{
-> +	s16 raw;
-> +	int err;
-> +
-> +	/*
-> +	 * Voltage is measured in units of 4.88mV. The voltage is stored as
-> +	 * a 10-bit number plus sign, in the upper bits of a 16-bit register
-> +	 */
-> +	err = ds2782_read_reg16(info, DS2782_REG_VOLT_MSB, &raw);
-> +	if (err)
-> +		return err;
-> +	*voltage_uA = (raw / 32) * 4800;
-> +	return 0;
-> +}
-> +
-> +static int ds2782_get_capacity(struct ds2782_info *info, int *capacity)
-> +{
-> +	int err;
-> +	u8 raw;
-> +
-> +	err = ds2782_read_reg(info, DS2782_REG_RARC, &raw);
-> +	if (err)
-> +		return err;
-> +	*capacity = raw;
-> +	return raw;
-> +}
-> +
-> +static int ds2782_get_status(struct ds2782_info *info, int *status)
-> +{
-> +	int err, current_uA, capacity;
-> +
-> +	err = ds2782_get_current(info, &current_uA);
-> +	if (err)
-> +		return err;
-> +
-> +	err = ds2782_get_capacity(info, &capacity);
-> +	if (err)
-> +		return err;
-> +
-> +	if (capacity == 100)
-> +		*status = POWER_SUPPLY_STATUS_FULL;
-> +	else if (current_uA == 0)
-> +		*status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-> +	else if (current_uA < 0)
-> +		*status = POWER_SUPPLY_STATUS_DISCHARGING;
-> +	else
-> +		*status = POWER_SUPPLY_STATUS_CHARGING;
-> +
-> +	return 0;
-> +}
-> +
-> +static int ds2782_battery_get_property(struct power_supply *psy,
-> +				       enum power_supply_property prop,
-> +				       union power_supply_propval *val)
-> +{
-> +	struct ds2782_info *info = to_ds2782_info(psy);
-> +	int ret;
-> +
-> +	switch (prop) {
-> +	case POWER_SUPPLY_PROP_STATUS:
-> +		ret = ds2782_get_status(info, &val->intval);
-> +		break;
-> +
-> +	case POWER_SUPPLY_PROP_CAPACITY:
-> +		ret = ds2782_get_capacity(info, &val->intval);
-> +		break;
-> +
-> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +		ret = ds2782_get_voltage(info, &val->intval);
-> +		break;
-> +
-> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
-> +		ret = ds2782_get_current(info, &val->intval);
-> +		break;
-> +
-> +	case POWER_SUPPLY_PROP_TEMP:
-> +		ret = ds2782_get_temp(info, &val->intval);
-> +		break;
-> +
-> +	default:
-> +		ret = -EINVAL;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static enum power_supply_property ds2782_battery_props[] = {
-> +	POWER_SUPPLY_PROP_STATUS,
-> +	POWER_SUPPLY_PROP_CAPACITY,
-> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> +	POWER_SUPPLY_PROP_CURRENT_NOW,
-> +	POWER_SUPPLY_PROP_TEMP,
-> +};
-> +
-> +static void ds2782_power_supply_init(struct power_supply *battery)
-> +{
-> +	battery->type			= POWER_SUPPLY_TYPE_BATTERY;
-> +	battery->properties		= ds2782_battery_props;
-> +	battery->num_properties		= ARRAY_SIZE(ds2782_battery_props);
-> +	battery->get_property		= ds2782_battery_get_property;
-> +	battery->external_power_changed	= NULL;
-> +}
-> +
-> +static int ds2782_battery_remove(struct i2c_client *client)
-> +{
-> +	struct ds2782_info *info = i2c_get_clientdata(client);
-> +
-> +	power_supply_unregister(&info->battery);
-> +	kfree(info->battery.name);
-> +
-> +	mutex_lock(&battery_lock);
-> +	idr_remove(&battery_id, info->id);
-> +	mutex_unlock(&battery_lock);
-> +
-> +	i2c_set_clientdata(client, info);
-> +
-> +	kfree(info);
-> +	return 0;
-> +}
-> +
-> +static int ds2782_battery_probe(struct i2c_client *client,
-> +				const struct i2c_device_id *id)
-> +{
-> +	struct ds2782_info *info;
-> +	int ret, num;
-> +
-> +	/* Get an ID for this battery */
-> +	ret = idr_pre_get(&battery_id, GFP_KERNEL);
-> +	if (ret == 0) {
-> +		ret = -ENOMEM;
-> +		goto fail_id;
-> +	}
-> +
-> +	mutex_lock(&battery_lock);
-> +	ret = idr_get_new(&battery_id, client, &num);
-> +	mutex_unlock(&battery_lock);
-> +	if (ret < 0)
-> +		goto fail_id;
-> +
-> +	info = kzalloc(sizeof(struct ds2782_info), GFP_KERNEL);
-> +	if (!info) {
-> +		ret = -ENOMEM;
-> +		goto fail_info;
-> +	}
-> +
-> +	info->battery.name = kasprintf(GFP_KERNEL, "ds2782-%d", num);
-> +	if (!info->battery.name) {
-> +		ret = -ENOMEM;
-> +		goto fail_name;
-> +	}
-> +
-> +	i2c_set_clientdata(client, info);
-> +	info->client = client;
-> +	ds2782_power_supply_init(&info->battery);
-> +
-> +	ret = power_supply_register(&client->dev, &info->battery);
-> +	if (ret) {
-> +		dev_err(&client->dev, "failed to register battery\n");
-> +		goto fail_register;
-> +	}
-> +
-> +	return 0;
-> +
-> +fail_register:
-> +	kfree(info->battery.name);
-> +fail_name:
-> +	i2c_set_clientdata(client, info);
-> +	kfree(info);
-> +fail_info:
-> +	mutex_lock(&battery_lock);
-> +	idr_remove(&battery_id, num);
-> +	mutex_unlock(&battery_lock);
-> +fail_id:
-> +	return ret;
-> +}
-> +
-> +static const struct i2c_device_id ds2782_id[] = {
-> +	{"ds2782", 0},
-> +	{},
-> +};
-> +
-> +static struct i2c_driver ds2782_battery_driver = {
-> +	.driver 	= {
-> +		.name	= "ds2782-battery",
-> +	},
-> +	.probe		= ds2782_battery_probe,
-> +	.remove		= ds2782_battery_remove,
-> +	.id_table	= ds2782_id,
-> +};
-> +
-> +static int __init ds2782_init(void)
-> +{
-> +	return i2c_add_driver(&ds2782_battery_driver);
-> +}
-> +
-> +static void __exit ds2782_exit(void)
-> +{
-> +	i2c_del_driver(&ds2782_battery_driver);
-> +}
-> +
-> +module_init(ds2782_init);
-> +module_exit(ds2782_exit);
-> +
-> +MODULE_AUTHOR("Ryan Mallon <ryan@bluewatersys.com>");
-> +MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC driver");
-> +MODULE_LICENSE("GPL");
->
->
->   
-
-
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
-
+> diff --git a/strbuf.c b/strbuf.c
+> index a884960..f03d117 100644
+> --- a/strbuf.c
+> +++ b/strbuf.c
+> @@ -260,7 +260,7 @@ size_t strbuf_fread(struct strbuf *sb, size_t size, FILE *f)
+>  	res = fread(sb->buf + sb->len, 1, size, f);
+>  	if (res > 0)
+>  		strbuf_setlen(sb, sb->len + res);
+> -	else if (res < 0 && oldalloc == 0)
+> +	else if (oldalloc == 0)
+>  		strbuf_release(sb);
+>  	return res;
+>  }
