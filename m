@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbZFWN7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbZFWODD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbZFWN7x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758366AbZFWN7q
+	id S1759462AbZFWODD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 10:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbZFWOCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:59:46 -0400
-Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:43334
-	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756833AbZFWN7q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:59:46 -0400
-X-IronPort-AV: E=Sophos;i="4.42,275,1243807200"; 
-   d="scan'208";a="42282174"
-Message-ID: <4A40DFF5.7010207@inria.fr>
-Date: Tue, 23 Jun 2009 16:00:21 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
+	Tue, 23 Jun 2009 10:02:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60377 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754583AbZFWOCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 10:02:54 -0400
+Subject: Re: [PATCH 2/2 -tip] perf_counter: parse-events.c introduce alias
+ member in event_symbol
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [perf] howto switch from pfmon
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu> <20090623134749.GA6897@elte.hu>
-In-Reply-To: <20090623134749.GA6897@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090623082411.GC11181@elte.hu>
+References: <1245669194.17153.6.camel@localhost.localdomain>
+	 <1245669268.17153.8.camel@localhost.localdomain>
+	 <20090622113256.GA22479@elte.hu>
+	 <1245675657.7537.3.camel@localhost.localdomain>
+	 <20090622141009.GB6486@elte.hu>
+	 <1245700551.6167.5.camel@localhost.localdomain>
+	 <20090623082411.GC11181@elte.hu>
+Content-Type: text/plain
+Date: Tue, 23 Jun 2009 19:32:12 +0530
+Message-Id: <1245765732.3776.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->   
->>  $ perf stat -e cycles -e instructions -e r1000ffe0 ./hackbench 10
->>  Time: 0.186
->>     
->
-> Correction: that should be r10000ffe0.
->   
+On Tue, 2009-06-23 at 10:24 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > 
+> > perf test also need some command to execute otherwise it will also 
+> > show long list of <inactive>
+> 
+> I think what it should do is to execute test-cases _internally_. Not 
+> just execute some random command on the system and hope for events.
+> 
 
-Oh thanks a lot, it seems to work now!
+Can you suggest some good test cases where we can get numbers for almost
+all the events on each and every run.
 
-One strange thing I noticed: sometimes perf reports that there were some
-accesses to target numa nodes 4-7 while my box only has 4 numa nodes:
-If I request counters only for the non-existing target numa nodes (4-7,
-with -e r1000010e0 -e r1000020e0 -e r1000040e0 -e r1000080e0), I always
-get 4 zeros.
-But if I mix some couinters from the existing nodes (0-3) with some
-counters from non-existing nodes (4-7), the non-existing ones report
-some small but non-empty values.
-Does it ring any bell?
 
-Brice
+> >  context-switches                                         7956
+> >  CPU-migrations                                              7
+> 
+> this needs to be provoked intentionally via sched_setaffinity(): 
+> first migrate to cpu0, then to cpu1.
+> 
+
+There should be some option from user or we test it each time.
+
+> >  L1-data-Cache-Load-Referencees                      398303881
+> >  L1-data-Cache-Load-Misses                             3552374
+> >  L1-data-Cache-Store-Referencees                        270178
+> >  L1-data-Cache-Store-Misses                         <inactive>
+> 
+> this is probably inactive due to AMD not having events for that and 
+> the generic cache event being 0 there, right?
+> 
+
+Yes, it is not set for AMD.
+
+Thanks,
+--
+JSR
 
