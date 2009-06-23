@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZFWFzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZFWF4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754616AbZFWFzo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZFWFzg
+	id S1753346AbZFWF4M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 01:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZFWFz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:55:36 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:37340 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751080AbZFWFzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:55:36 -0400
-Date: Tue, 23 Jun 2009 00:55:36 -0500
-From: Robin Holt <holt@sgi.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Robin Holt <holt@sgi.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
-       Haren Myneni <hbabu@us.ibm.com>, kexec@lists.infradead.org
-Subject: Re: [PATCH 1/7] ia64, kdump: Mask MCA/INIT on freezing cpus
-Message-ID: <20090623055536.GE6865@sgi.com>
-References: <4A39E247.4030908@jp.fujitsu.com> <4A39E2CF.80901@jp.fujitsu.com> <20090622134557.GC7084@sgi.com> <4A4022EA.1020506@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4022EA.1020506@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 23 Jun 2009 01:55:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33940 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752250AbZFWFz6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 01:55:58 -0400
+Date: Mon, 22 Jun 2009 22:55:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] printk boot_delay: use loops_per_msec instead of 
+ printk_delay_msec
+Message-Id: <20090622225553.8aa1dfb7.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0906160202r7124b8a7x29ace04cd910df52@mail.gmail.com>
+References: <a8e1da0906160202r7124b8a7x29ace04cd910df52@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 09:33:46AM +0900, Hidetoshi Seto wrote:
-> Robin Holt wrote:
-...
-> Do you mean that the 2nd kernel should be able to handle MCA/INIT from its
-> boot up?  I guess the word PROM is nearly equal to PAL/SAL firmware, if so
-> then I don't think there are good generic interface/procedure could be
-> useful here.  Do you have any concrete idea?
+On Tue, 16 Jun 2009 17:02:24 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
 
-No concrete ideas.  Just a really uneasy feeling whenever the INIT
-is disabled.
+> Sorry, should post this firstly because the previous printk_delay
+> patch depends on this,
+> please review, thanks.
+> --
+> 
+> Use loops_per_msec instead of printk_delay_msec for boot printk delay.
+> 
 
-On SGI's ia64 servers, when the INIT is first received, our PROM (PAL/SAL)
-records the processors state.  This record remains for the next reset
-or for salinfo to transfer to disk.  We can dump all the records in a
-format somewhat similar to the output in /var/log/salinfo/decoded.
+The changelog is poor, because it fails to describe _why_ this change
+is being made.  I rewrote it to
 
-On more occasions than I could even begin to describe, those records
-have helped us determine what the processor was doing despite it even
-ignoring interrupts.  This includes everything except when MCA/INIT
-handling is disabled or PMIs are being processed.
+  Rename `printk_delay_msec' to `loops_per_msec', because the patch
+  "printk: add printk_delay to make messages readable for some
+  scenarios" wishes to more appropriately use the `printk_delay_msec'
+  identifier.
 
-If you could give this some consideration, I would appreciate it.
-I really don't have the time to dedicate to thinking all the way through
-and therefore will not stand in the way of any patch you propose.
-If I can be of help in any way, please let me know.
+> 
+> --- linux-2.6.orig/kernel/printk.c	2009-06-15 10:53:10.000000000 +0800
+> +++ linux-2.6/kernel/printk.c	2009-06-15 13:17:13.000000000 +0800
+> @@ -198,12 +198,11 @@ __setup("log_buf_len=", log_buf_len_setu
+>  #ifdef CONFIG_BOOT_PRINTK_DELAY
+> 
+>  static unsigned int boot_delay; /* msecs delay after each printk
+> during bootup */
+> -static unsigned long long printk_delay_msec; /* per msec, based on
+> boot_delay */
 
-Thanks,
-Robin
+Your email client is wordwrapping the patches.
+
