@@ -1,100 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZFWFFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbZFWFF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbZFWFFL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZFWFFA
+	id S1753135AbZFWFF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 01:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbZFWFFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:05:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37247 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751410AbZFWFE7 (ORCPT
+	Tue, 23 Jun 2009 01:05:50 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37874 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101AbZFWFFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:04:59 -0400
-Date: Mon, 22 Jun 2009 22:04:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Richard =?ISO-8859-1?Q?R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-Cc: spi-devel-general@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org,
-       Andrei Konovalov <akonovalov@ru.mvista.com>,
-       John Linn <john.linn@xilinx.com>
-Subject: Re: [RESEND][PATCH] SPI: xilinx_spi: Added platform driver and
- support for DS570
-Message-Id: <20090622220419.a60dbe71.akpm@linux-foundation.org>
-In-Reply-To: <4A366622.2050606@mocean-labs.com>
-References: <4A366622.2050606@mocean-labs.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Jun 2009 01:05:49 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: akataria@vmware.com
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <1245732411.18339.6.camel@alok-dev1>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com> <1245732411.18339.6.camel@alok-dev1>
+Message-Id: <20090623135017.220D.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 23 Jun 2009 14:05:47 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-This appears to be a ppc thing, so let's cc that list.  Let's also cc
-the driver's author and other contributors.  Please cc these people on
-future versions of the patch also.
-
-On Mon, 15 Jun 2009 17:17:54 +0200 Richard R__jfors <richard.rojfors.ext@mocean-labs.com> wrote:
-
-> This patch splits xilinx_spi into three parts, an OF and a platform
-> driver and generic part.
+> > > Unevictable:           0 kB
+> > > Mlocked:               0 kB
+> > > HugePages_Total:      20
+> > > HugePages_Free:       20
+> > > HugePages_Rsvd:        0
+> > > HugePages_Surp:        0
+> > > 
+> > > After the patch:
+> > > 
+> > > Unevictable:       81920 kB
+> > > Mlocked:               0 kB
+> > > HugePages_Total:      20
+> > > HugePages_Free:       20
+> > > HugePages_Rsvd:        0
+> > > HugePages_Surp:        0
+> > 
+> > At first, We should clarify the spec of unevictable.
+> > Currently, Unevictable field mean the number of pages in unevictable-lru
+> > and hugepage never insert any lru.
+> > 
+> > I think this patch will change this rule.
 > 
-> The generic part now also works on X86 and also supports the Xilinx
-> SPI IP DS570
+> I agree, and that's why I added a comment to the documentation file to
+> that effect. If you think its not explicit or doesn't explain what its
+> supposed to we can add something more there.
 > 
->
-> ...
->
-> +#ifndef CONFIG_PPC
-> +#define in_8(addr) ioread8(addr)
-> +#define in_be16(addr) ioread16(addr)
-> +#define in_be32(addr) ioread32(addr)
-> +
-> +#define out_8(addr, b) iowrite8(b, addr)
-> +#define out_be16(addr, w) iowrite16(w, addr)
-> +#define out_be32(addr, l) iowrite32(l, addr)
-> +#endif
+> IMO, the proc output should give the total number of unevictable pages
+> in the system and, since hugepages are also in fact unevictable so I
+> don't see a reason why they shouldn't be accounted accordingly.
+> What do you think ? 
 
-Why do we need these?
+ummm...
 
-> +#define XSPI_WRITE8(xspi, offs, val) \
-> +	do { \
-> +		if (xspi->model == XILINX_SPI_MODEL_DS464) \
-> +			out_8(xspi->regs + offs, (val) & 0xff); \
-> +		else \
-> +			XSPI_WRITE32(xspi, offs, val); \
-> +	} while (0)
-> +
-> +#define XSPI_WRITE16(xspi, offs, val) \
-> +	do { \
-> +		if (xspi->model == XILINX_SPI_MODEL_DS464) \
-> +			out_be16(xspi->regs + offs, (val) & 0xffff); \
-> +		else \
-> +			XSPI_WRITE32(xspi, offs, val); \
-> +	} while (0)
-> +
-> +#define XSPI_WRITE32(xspi, offs, val) \
-> +	out_be32(xspi->regs + offs, val)
-> +
-> +#define XSPI_READ8(xspi, offs) \
-> +	(xspi->model == XILINX_SPI_MODEL_DS464) ? \
-> +		in_8(xspi->regs + offs) : XSPI_READ32(xspi, offs)
-> +
-> +#define XSPI_READ16(xspi, offs) \
-> +	(xspi->model == XILINX_SPI_MODEL_DS464) ? \
-> +	in_be16(xspi->regs + offs) : XSPI_READ32(xspi, offs)
-> +
-> +#define XSPI_READ32(xspi, offs) \
-> +	in_be32(xspi->regs + offs)
+I'm not sure this unevictable definition is good idea or not. currently
+hugepage isn't only non-account memory, but also various kernel memory doesn't
+account.
 
-I'm seeing no reason why these had to be implemented as macros. 
-They're ugly, add considerable code bloat and, because they evaluate
-their args multiple times they will fail if passed as expression with
-side-effects.
+one of drawback is that zone_page_state(UNEVICTABLE) lost to mean #-of-unevictable-pages.
+e.g.  following patch is wrong?
 
-I suggest that they be reimplemented as lower-case, uninlined C functions.
+fs/proc/meminfo.c meminfo_proc_show()
+----------------------------
+-                K(pages[LRU_UNEVICTABLE]),
++                K(pages[LRU_UNEVICTABLE]) + hstate->nr_huge_pages,
+
+
+Plus, I didn't find any practical benefit in this patch. do you have it?
+or You only want to natural definition?
+
+I don't have any strong oppose reason, but I also don't have any strong
+agree reason.
+
+
+Lee, What do you think?
+
+
 
 
