@@ -1,137 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZFWRhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZFWRj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZFWRhJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 13:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZFWRg6
+	id S1754692AbZFWRj5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 13:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbZFWRjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 13:36:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39879 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbZFWRg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 13:36:57 -0400
-Date: Tue, 23 Jun 2009 13:39:00 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk, rjones@redhat.com, linux-fsdevel@vger.kernel.org
-Subject: [PATCH][REGRESSION] vfs: fix ref counting error
-Message-ID: <20090623173900.GF27045@dhcp231-156.rdu.redhat.com>
+	Tue, 23 Jun 2009 13:39:49 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:27751 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbZFWRjt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 13:39:49 -0400
+X-IronPort-AV: E=Sophos;i="4.42,276,1243814400"; 
+   d="scan'208";a="82440652"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 23 Jun 2009 10:39:51 -0700
+Message-ID: <adad48uq26w.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-OriginalArrivalTime: 23 Jun 2009 17:39:51.0713 (UTC) FILETIME=[9CBB5910:01C9F429]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a regression introduced by
+Linus, please pull from
 
-2a737871108de9ba8930f7650d549f1383767f8b
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-which causes a ref counting bug which keeps us from being able to umount a
-volume.
+This tree is also available from kernel.org mirrors at:
 
-When doing a do_filp_lookup, we do not do a path_put on the cached root path if
-we succeed in creating a file, we only do it in the failure case.  This causes
-the following testcase to be unable to unmount the volume
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-=== Wrapper script ===
-#!/bin/sh -
+This has a few more fixes for 2.6.31-rc1; however everything here
+should be a fix appropriate for -rc2 as well, so if this misses the
+end of the merge window then I think it should still be OK to pull.
 
-set -e
+Alexander Schmidt (1):
+      IB/ehca: Bump version number
 
-dd if=/dev/zero of=/tmp/fs bs=1024k count=10
-/sbin/mkfs.ext2 -F /tmp/fs
+Faisal Latif (2):
+      RDMA/nes: Fix max_qp_init_rd_atom returned from query device
+      RDMA/nes: Fix FIN state handling under error conditions
 
-rm -rf /tmp/mnt
-mkdir /tmp/mnt
+Hannes Hering (1):
+      IB/ehca: Tolerate dynamic memory operations before driver load
 
-mount -o loop /tmp/fs /tmp/mnt
+Peter Huewe (1):
+      RDMA: Add __init/__exit macros to addr.c and cma.c
 
-/tmp/test
+Roel Kluin (1):
+      IB/ehca: Ensure that guid_entry index is not negative
 
-====
+Roland Dreier (3):
+      IB/mthca: Replace dma_sync_single() use with proper functions
+      mlx4_core: Fix dma_sync_single_for_cpu() with matching for_device() calls
+      Merge branches 'ehca', 'misc', 'mlx4', 'mthca' and 'nes' into for-linus
 
-=== test code ===
-
-#define _XOPEN_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-int
-main (int argc, char *argv[])
-{
-  int fd, r;
-
-  if (chdir ("/") == -1) {
-    perror ("chdir");
-    exit (1);
-  }
-
-  if (chroot ("/tmp/mnt") == -1) {
-    perror ("chroot#1");
-    exit (1);
-  }
-  fd = open ("/hello", O_WRONLY|O_CREAT|O_NOCTTY, 0666);
-  if (fd == -1) {
-    perror ("open");
-    exit (1);
-  }
-  if (chroot (".") == -1) {
-    perror ("chroot#2");
-    exit (1);
-  }
-  if (close (fd) == -1) {
-    perror ("close");
-    exit (1);
-  }
-
-  r = system ("umount /tmp/mnt");
-  if (r == -1 || WEXITSTATUS(r) != 0) {
-    fprintf (stderr, "umount failed\n");
-    exit (1);
-  }
-
-  exit (0);
-}
-
-===
-
-This testcase was provided by Richard Jones, and with this patch it exits
-successfully.  This patch was also tested with a broader testsuite that the
-problem was originally exposed by and was fixed.  Thanks, 
-
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
-Reported-by: Richard Jones <rjones@redhat.com>
-Tested-by: Richard Jones <rjones@redhat.com>
----
- fs/namei.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/fs/namei.c b/fs/namei.c
-index 527119a..94c52b3 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1758,6 +1758,9 @@ do_last:
- 			goto exit;
- 		}
- 		filp = nameidata_to_filp(&nd, open_flag);
-+
-+		if (nd.root.mnt)
-+			path_put(&nd.root);
- 		mnt_drop_write(nd.path.mnt);
- 		return filp;
- 	}
-@@ -1812,6 +1815,8 @@ ok:
- 		goto exit;
- 	}
- 	filp = nameidata_to_filp(&nd, open_flag);
-+	if (nd.root.mnt)
-+		path_put(&nd.root);
- 	/*
- 	 * It is now safe to drop the mnt write
- 	 * because the filp has had a write taken
--- 
-1.6.2.2
-
+ drivers/infiniband/core/addr.c         |    4 +-
+ drivers/infiniband/core/cma.c          |    4 +-
+ drivers/infiniband/hw/ehca/ehca_hca.c  |    2 +-
+ drivers/infiniband/hw/ehca/ehca_main.c |   20 +-
+ drivers/infiniband/hw/ehca/ehca_mrmw.c |  508 +++++++++++++++++++++++++++++++-
+ drivers/infiniband/hw/ehca/ehca_mrmw.h |   13 +-
+ drivers/infiniband/hw/mthca/mthca_mr.c |   13 +-
+ drivers/infiniband/hw/nes/nes_cm.c     |    8 +-
+ drivers/infiniband/hw/nes/nes_verbs.c  |    2 +-
+ drivers/net/mlx4/mr.c                  |   14 +-
+ 10 files changed, 554 insertions(+), 34 deletions(-)
