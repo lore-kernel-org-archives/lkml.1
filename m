@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbZFWArb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZFWAsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbZFWArb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 20:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZFWArD
+	id S1754969AbZFWAsJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 20:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZFWAr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 20:47:03 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:42802 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbZFWArA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 20:47:00 -0400
+	Mon, 22 Jun 2009 20:47:57 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:51493 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbZFWAr4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 20:47:56 -0400
+Date: Tue, 23 Jun 2009 06:17:16 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "menage@google.com" <menage@google.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] fix bad page removal from LRU (Was Re:
+	[RFC][PATCH] cgroup: fix permanent wait in rmdir
+Message-ID: <20090623004716.GD8642@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090622183707.dd9e665b.kamezawa.hiroyu@jp.fujitsu.com> <20090622105231.GA17242@elte.hu> <20090623085755.9cf75da2.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19008.9265.758076.907649@cargo.ozlabs.ibm.com>
-Date: Tue, 23 Jun 2009 10:39:13 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
-       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: I.5 - Mmaped count
-In-Reply-To: <1245674154.19816.228.camel@twins>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
-	<20090622115239.GF24366@elte.hu>
-	<7c86c4470906220525x409bedadj29be01236e42ea1@mail.gmail.com>
-	<1245674154.19816.228.camel@twins>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090623085755.9cf75da2.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-23 08:57:55]:
 
-> I think we would have to add that do the data page,.. something like the
-> below?
+> I think this is a fix for the problem. Sorry for regression.
+> fix for "memcg: fix lru rotation in isolate_pages" patch in 2.6.30-git18.
 > 
-> Paulus?
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
+> A page isolated is "cursor_page" not "page".
+> This causes list corruption finally.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > ---
-> Index: linux-2.6/include/linux/perf_counter.h
+>  mm/vmscan.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.30-git18/mm/vmscan.c
 > ===================================================================
-> --- linux-2.6.orig/include/linux/perf_counter.h
-> +++ linux-2.6/include/linux/perf_counter.h
-> @@ -232,6 +232,10 @@ struct perf_counter_mmap_page {
->  	__u32	lock;			/* seqlock for synchronization */
->  	__u32	index;			/* hardware counter identifier */
->  	__s64	offset;			/* add to hardware counter value */
-> +	__u64	total_time;		/* total time counter active */
-> +	__u64	running_time;		/* time counter on cpu */
-> +
-> +	__u64	__reserved[123];	/* align at 1k */
->  
->  	/*
->  	 * Control data for the mmap() data buffer.
-> Index: linux-2.6/kernel/perf_counter.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/perf_counter.c
-> +++ linux-2.6/kernel/perf_counter.c
-> @@ -1782,6 +1782,12 @@ void perf_counter_update_userpage(struct
->  	if (counter->state == PERF_COUNTER_STATE_ACTIVE)
->  		userpg->offset -= atomic64_read(&counter->hw.prev_count);
->  
-> +	userpg->total_time = counter->total_time_enabled +
-> +			atomic64_read(&counter->child_total_time_enabled);
-> +
-> +	userpg->running_time = counter->total_time_running +
-> +			atomic64_read(&counter->child_total_time_running);
+> --- linux-2.6.30-git18.orig/mm/vmscan.c
+> +++ linux-2.6.30-git18/mm/vmscan.c
+> @@ -932,7 +932,7 @@ static unsigned long isolate_lru_pages(u
+>  				continue;
+>  			if (__isolate_lru_page(cursor_page, mode, file) == 0) {
+>  				list_move(&cursor_page->lru, dst);
+> -				mem_cgroup_del_lru(page);
+> +				mem_cgroup_del_lru(cursor_page);
+>  				nr_taken++;
+>  				scan++;
+>  			}
 
-Hmmm, when the counter is running, what you want is not so much the
-total time so far as a way to compute the total time so far from the
-current TSC/timebase value.  So we would need to export tstamp_enabled
-and tstamp_running plus a scale/offset for converting the TSC/timebase
-value to nanoseconds consistent with ctx->time.  On powerpc that's
-pretty straightforward because the timebases, but on x86 I gather the
-offset and maybe also the scale would need to be per-cpu (which is OK,
-because all the values in the mmapped page are only useful on one
-specific CPU).
+Good catch!
 
-How would we compute the scale and offset on x86, given the current
-TSC value and ctx->time?
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Paul.
+-- 
+	Balbir
