@@ -1,170 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZFWGmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZFWGnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbZFWGmx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 02:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZFWGmo
+	id S1754006AbZFWGnF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 02:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZFWGmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 02:42:44 -0400
-Received: from mailout1.samsung.com ([203.254.224.24]:54956 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbZFWGmn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 02:42:43 -0400
-Date: Tue, 23 Jun 2009 08:41:40 +0200
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: RE: PROBLEM: kernel oops with g_serial USB gadget on 2.6.30
-In-reply-to: <200906222026.51511.david-b@pacbell.net>
-To: "'David Brownell'" <david-b@pacbell.net>
-Cc: "'Alan Stern'" <stern@rowland.harvard.edu>,
-       "'Peter Korsgaard'" <jacmet@sunsite.dk>,
-       "'USB list'" <linux-usb@vger.kernel.org>,
-       "'Kernel development list'" <linux-kernel@vger.kernel.org>,
-       kyungmin.park@samsung.com,
-       "'Marek Szyprowski'" <m.szyprowski@samsung.com>
-Message-id: <001c01c9f3cd$ad02b1d0$07081570$%szyprowski@samsung.com>
-MIME-version: 1.0
-X-Mailer: Microsoft Office Outlook 12.0
-Content-type: text/plain; charset=iso-8859-2
-Content-language: pl
-Content-transfer-encoding: 8BIT
-Thread-index: AcnzsnWhgutvJSPdQsy6XmaaqIUYGwAGX/XA
-References: <001201c9f341$20b8b710$622a2530$%szyprowski@samsung.com>
- <Pine.LNX.4.44L0.0906221004590.2991-100000@iolanthe.rowland.org>
- <001301c9f343$7e16ed80$7a44c880$%szyprowski@samsung.com>
- <200906222026.51511.david-b@pacbell.net>
+	Tue, 23 Jun 2009 02:42:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43426 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753877AbZFWGmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 02:42:50 -0400
+Date: Tue, 23 Jun 2009 03:42:12 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: [GIT PATCHES for 2.6.31] V4L/DVB updates
+Message-ID: <20090623034212.2f9183c6@pedra.chehab.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Linus,
 
-On Tuesday, June 23, 2009 5:27 AM, David Brownell wrote:
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 
-> > > This is just a guess...  But there's a good possibility that the
-> oops
-> > > was caused by recent changes to the serial layer which have not
-> been
-> > > propagated through to the g_serial driver.
-> >
-> > How recent these changes are? I did a test on another ARM-based Linux
-> > platform with old 2.6.28 kernel and the result was exactly the same
-> as
-> > above...
-> 
-> Just for the record, the reworked g_serial code merged in 2.6.27
-> and was mostly developed on 2.6.25 and 2.6.26 ... and it included
-> a lot of stress testing.  No such mutex_lock() in_irq() bug showed
-> up at that time.  And that was running with all practical kernel
-> debug options, so it should have showed up if it were that easy.
-> 
-> I do however recall turning up several regressions in how "sparse"
-> lock checking behaved.  As in, it broke when faced with common
-> idioms like needing to temporarily drop a lock deep in a call stack.
-> 
-> Now, the serial layer has been getting a *LONG* overdue incremental
-> overhaul since before that started.  So there's been plenty of time
-> for incompatible changes to sneak in; I believe Alan Cox focuses on
-> host side things, out of defensive necessity.
-> 
-> Like, oh, changing a spinlock to a mutex.   You might change the
-> low_latency setting and review how that's now supposed to behave.
+For yet another series of improvements. 
 
-In in gs_open() function in drivers/usb/gadget/u_serial.c, after the 
-line 780 I've added:
+Probably one of the most more visible to the users is the support 
+for Logitech cameras based on stv06xx chipset. This also removes the 
+driver need for merging a few out-of-tree driver for those cameras.
 
-tty->low_latency = 1;
+With the improvements on gspca, we'll get rid of two V4L1 only drivers 
+on some future version. I'll later update the 
+Documentation/feature-removal-schedule.txt to reflect those changes.
 
-This helped a bit, but after a few serial transfers I got the same 
-bug again.
+The rest of the series are bug fixes, a few api improvements for 
+embedded, and usual new board additions. The full log is enclosed.
 
-With mutex debugging and preemptive kernel turned off I got the
-following crash:
+Cheers,
+Mauro.
 
-# ls >/dev/ttyGS0
-[   80.070000] BUG: scheduling while atomic: ls/497/0x00000100
-[   80.070000] Modules linked in:
-[   80.070000]
-[   80.070000] Pid: 497, comm:                   ls
-[   80.070000] CPU: 0    Not tainted  (2.6.30 #340)
-[   80.080000] PC is at n_tty_write+0x1fc/0x39c
-[   80.080000] LR is at gs_write_room+0x38/0x54
-[   80.090000] pc : [<c013d7d4>]    lr : [<c0184fb0>]    psr: 60000013
-[   80.090000] sp : c6573ee0  ip : 00000020  fp : c6505400
-[   80.100000] r10: c6505380  r9 : c6f13f00  r8 : c6572000
-[   80.100000] r7 : 0000005a  r6 : c6505400  r5 : c6505000  r4 : 00001fff
-[   80.110000] r3 : 000000a0  r2 : 00000015  r1 : c6e6eb40  r0 : 0000005a
-[   80.120000] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment
-user
-[   80.120000] Control: 00c5387d  Table: 56580008  DAC: 00000015
+---
 
-With preemptive kernel and mutex debuging:
+ Documentation/video4linux/CARDLIST.cx88            |    6 +-
+ Documentation/video4linux/CARDLIST.em28xx          |    1 +
+ Documentation/video4linux/v4l2-framework.txt       |   24 +
+ drivers/media/common/ir-keymaps.c                  |   23 +
+ drivers/media/dvb/frontends/stv0900.h              |    7 +-
+ drivers/media/dvb/frontends/stv0900_core.c         |  100 ++-
+ drivers/media/dvb/frontends/stv0900_priv.h         |    2 +
+ drivers/media/dvb/frontends/stv090x.c              |   11 +-
+ drivers/media/dvb/frontends/tda10048.c             |    1 +
+ drivers/media/dvb/siano/smscoreapi.c               |    4 +-
+ drivers/media/radio/radio-tea5764.c                |    4 +-
+ drivers/media/video/Kconfig                        |    6 +-
+ drivers/media/video/cx18/cx18-controls.c           |    2 +
+ drivers/media/video/cx231xx/cx231xx-avcore.c       |   19 +-
+ drivers/media/video/cx231xx/cx231xx-video.c        |   26 +-
+ drivers/media/video/cx231xx/cx231xx.h              |    3 -
+ drivers/media/video/cx2341x.c                      |    2 +
+ drivers/media/video/cx23885/cx23885-dvb.c          |   33 +-
+ drivers/media/video/cx23885/cx23885-video.c        |   11 +-
+ drivers/media/video/cx88/cx88-cards.c              |   94 ++-
+ drivers/media/video/cx88/cx88-video.c              |   11 +-
+ drivers/media/video/em28xx/em28xx-cards.c          |   56 ++
+ drivers/media/video/em28xx/em28xx-dvb.c            |    1 +
+ drivers/media/video/em28xx/em28xx-video.c          |   38 +-
+ drivers/media/video/em28xx/em28xx.h                |    1 +
+ drivers/media/video/gspca/gspca.c                  |    8 +-
+ drivers/media/video/gspca/ov519.c                  |  981 ++++++++++++++++++--
+ drivers/media/video/gspca/sonixj.c                 |  181 +++-
+ drivers/media/video/gspca/stv06xx/Makefile         |    3 +-
+ drivers/media/video/gspca/stv06xx/stv06xx.c        |   53 +-
+ drivers/media/video/gspca/stv06xx/stv06xx.h        |   11 +
+ drivers/media/video/gspca/stv06xx/stv06xx_hdcs.c   |   10 +-
+ drivers/media/video/gspca/stv06xx/stv06xx_sensor.h |    3 +-
+ drivers/media/video/gspca/stv06xx/stv06xx_st6422.c |  453 +++++++++
+ drivers/media/video/gspca/stv06xx/stv06xx_st6422.h |   59 ++
+ drivers/media/video/ivtv/ivtv-controls.c           |    2 +
+ drivers/media/video/mt9m001.c                      |   12 +-
+ drivers/media/video/mt9t031.c                      |   14 +-
+ drivers/media/video/mt9v022.c                      |   12 +-
+ drivers/media/video/ov511.c                        |    2 -
+ drivers/media/video/pvrusb2/pvrusb2-audio.c        |   14 +-
+ drivers/media/video/pvrusb2/pvrusb2-cs53l32a.c     |   24 +-
+ drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c  |   37 +-
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c          |   60 +-
+ drivers/media/video/pvrusb2/pvrusb2-video-v4l.c    |   35 +-
+ drivers/media/video/pxa_camera.c                   |   34 +-
+ drivers/media/video/saa7134/saa7134-video.c        |   11 +-
+ drivers/media/video/sh_mobile_ceu_camera.c         |   12 +-
+ drivers/media/video/tcm825x.c                      |    4 +-
+ drivers/media/video/usbvideo/Kconfig               |    5 +-
+ drivers/media/video/v4l2-common.c                  |  181 ++++-
+ drivers/media/video/vivi.c                         |   11 +-
+ drivers/media/video/w9968cf.c                      |   35 +-
+ drivers/media/video/zoran/zoran_driver.c           |   14 +-
+ include/linux/videodev2.h                          |    4 +-
+ include/media/ir-common.h                          |    2 +
+ include/media/v4l2-common.h                        |   26 +
+ include/media/v4l2-i2c-drv.h                       |    5 +-
+ include/media/v4l2-subdev.h                        |    7 +-
+ 59 files changed, 2322 insertions(+), 489 deletions(-)
+ create mode 100644 drivers/media/video/gspca/stv06xx/stv06xx_st6422.c
+ create mode 100644 drivers/media/video/gspca/stv06xx/stv06xx_st6422.h
 
-[   26.800000] BUG: sleeping function called from invalid context at
-kernel/mutex.c:280
-[   26.800000] in_atomic(): 1, irqs_disabled(): 0, pid: 500, name: ls
-[   26.810000] no locks held by ls/500.
-[   26.810000] [<c0025c30>] (unwind_backtrace+0x0/0xdc) from [<c0272570>]
-(mutex_lock_nested+0x28/0x304)
-[   26.820000] [<c0272570>] (mutex_lock_nested+0x28/0x304) from [<c0153b0c>]
-(echo_set_canon_col+0x20/0x48)
-[   26.830000] [<c0153b0c>] (echo_set_canon_col+0x20/0x48) from [<c0155b2c>]
-(n_tty_receive_buf+0xbf8/0xecc)
-[   26.840000] [<c0155b2c>] (n_tty_receive_buf+0xbf8/0xecc) from
-[<c0158054>] (flush_to_ldisc+0x104/0x1b0)
-[   26.850000] [<c0158054>] (flush_to_ldisc+0x104/0x1b0) from [<c019e0b8>]
-(gs_rx_push+0x118/0x1cc)
-[   26.860000] [<c019e0b8>] (gs_rx_push+0x118/0x1cc) from [<c003d794>]
-(tasklet_action+0x78/0xc8)
-[   26.870000] [<c003d794>] (tasklet_action+0x78/0xc8) from [<c003dc28>]
-(__do_softirq+0x6c/0xf4)
-[   26.880000] [<c003dc28>] (__do_softirq+0x6c/0xf4) from [<c003dcf4>]
-(irq_exit+0x44/0x5c)
-[   26.890000] [<c003dcf4>] (irq_exit+0x44/0x5c) from [<c001f054>]
-(_text+0x54/0x6c)
-[   26.890000] [<c001f054>] (_text+0x54/0x6c) from [<c001fc04>]
-(__irq_usr+0x44/0xa0)
-[   26.900000] Exception stack(0xc65a9fb0 to 0xc65a9ff8)
-[   26.910000] 9fa0:                                     4022e68c 000007b2
-40215e98 00000001
-[   26.910000] 9fc0: 4022e68c 4022fef8 4022d000 00002f28 00000001 00001688
-beb16a34 00000028
-[   26.920000] 9fe0: 4022d000 beb1693c 401904e0 4018f620 20000010 ffffffff
-[   26.930000] ------------[ cut here ]------------
-[   26.930000] WARNING: at kernel/mutex.c:207 mutex_lock_nested+0xa4/0x304()
-[   26.940000] Modules linked in:
-[   26.940000] [<c0025c30>] (unwind_backtrace+0x0/0xdc) from [<c0038e4c>]
-(warn_slowpath_common+0x4c/0x80)
-[   26.950000] [<c0038e4c>] (warn_slowpath_common+0x4c/0x80) from
-[<c02725ec>] (mutex_lock_nested+0xa4/0x304)
-[   26.960000] [<c02725ec>] (mutex_lock_nested+0xa4/0x304) from [<c0153b0c>]
-(echo_set_canon_col+0x20/0x48)
-[   26.970000] [<c0153b0c>] (echo_set_canon_col+0x20/0x48) from [<c0155b2c>]
-(n_tty_receive_buf+0xbf8/0xecc)
-[   26.980000] [<c0155b2c>] (n_tty_receive_buf+0xbf8/0xecc) from
-[<c0158054>] (flush_to_ldisc+0x104/0x1b0)
-[   26.990000] [<c0158054>] (flush_to_ldisc+0x104/0x1b0) from [<c019e0b8>]
-(gs_rx_push+0x118/0x1cc)
-[   27.000000] [<c019e0b8>] (gs_rx_push+0x118/0x1cc) from [<c003d794>]
-(tasklet_action+0x78/0xc8)
-[   27.010000] [<c003d794>] (tasklet_action+0x78/0xc8) from [<c003dc28>]
-(__do_softirq+0x6c/0xf4)
-[   27.020000] [<c003dc28>] (__do_softirq+0x6c/0xf4) from [<c003dcf4>]
-(irq_exit+0x44/0x5c)
-[   27.030000] [<c003dcf4>] (irq_exit+0x44/0x5c) from [<c001f054>]
-(_text+0x54/0x6c)
-[   27.030000] [<c001f054>] (_text+0x54/0x6c) from [<c001fc04>]
-(__irq_usr+0x44/0xa0)
-[   27.040000] Exception stack(0xc65a9fb0 to 0xc65a9ff8)
-[   27.050000] 9fa0:                                     4022e68c 000007b2
-40215e98 00000001
-[   27.050000] 9fc0: 4022e68c 4022fef8 4022d000 00002f28 00000001 00001688
-beb16a34 00000028
-[   27.060000] 9fe0: 4022d000 beb1693c 401904e0 4018f620 20000010 ffffffff
-[   27.070000] ---[ end trace 675aa93c2a01b9b1 ]---
+Abylay Ospan (2):
+      V4L/DVB (12096): Bug fix: stv0900 register read must using i2c in one transaction
+      V4L/DVB (12097): Implement reading uncorrected blocks for stv0900
 
-Best regards
---
-Marek Szyprowski
-Samsung Poland R&D Center
+Devin Heitmueller (3):
+      V4L/DVB (12100): em28xx: make sure the analog GPIOs are set if we used a card hint
+      V4L/DVB (12101): em28xx: add support for EVGA inDtube
+      V4L/DVB (12102): em28xx: add Remote control support for EVGA inDtube
 
+Hans Verkuil (8):
+      V4L/DVB (12104): ivtv/cx18: fix regression: class controls are no longer seen
+      V4L/DVB (12107): smscoreapi: fix compile warning
+      V4L/DVB (12108): v4l2-i2c-drv.h: add comment describing when not to use this header.
+      V4L/DVB (12109): radio-tea5764: fix incorrect rxsubchans value
+      V4L/DVB (12111): tcm825x: remove incorrect __exit_p wrapper
+      V4L/DVB (12112): cx231xx: fix uninitialized variable.
+      V4L/DVB (12125): v4l2: add new s_config subdev ops and v4l2_i2c_new_subdev_cfg/board calls
+      V4L/DVB (12128): v4l2: update framework documentation.
 
+Hans de Goede (23):
+      V4L/DVB (12071): gspca: fix NULL pointer deref in query_ctrl
+      V4L/DVB (12072): gspca-ov519: add extra controls
+      V4L/DVB (12073): gspca_ov519: limit ov6630 qvif uv swap fix to ov66308AF
+      V4L/DVB (12074): gspca_ov519: Add 320x240 and 160x120 support for cif sensor cams
+      V4L/DVB (12075): gspca_ov519: check ov518 packet numbers
+      V4L/DVB (12076): gspca_ov519: Fix led inversion with some cams
+      V4L/DVB (12077): gspca_ov519: Fix 320x240 with ov7660 sensor
+      V4L/DVB (12078): gspca_ov519: Better default contrast for ov6630
+      V4L/DVB (12079): gspca_ov519: add support for the ov511 bridge
+      V4L/DVB (12080): gspca_ov519: Fix ov518+ with OV7620AE (Trust spacecam 320)
+      V4L/DVB (12081): gspca_ov519: Cleanup some sensor special cases
+      V4L/DVB (12082): gspca_stv06xx: Add support for st6422 bridge and sensor
+      V4L/DVB (12083): ov511: remove ov518 usb id's from the driver
+      V4L/DVB (12084): ov511: mark as deprecated
+      V4L/DVB (12085): gspca_ov519: constify ov518 inititial register value tables
+      V4L/DVB (12086): gspca_sonixj: Fix control index numbering
+      V4L/DVB (12087): gspca_sonixj: enable support for 0c45:613e camera
+      V4L/DVB (12088): Mark the v4l1 uvcvideo quickcam messenger driver as deprecated
+      V4L/DVB (12089): gspca_sonixj: increase 640x480 frame-buffersize
+      V4L/DVB (12090): gspca_sonixj: enable autogain control for the ov7620
+      V4L/DVB (12091): gspca_sonixj: Add light frequency control
+      V4L/DVB (12092): gspca_sonixj + ov7630: invert vflip control instead of changing default
+      V4L/DVB (12093): gspca_sonixj: Name saturation control saturation, not color
+
+Igor M. Liplianin (2):
+      V4L/DVB (12095): Change lnbh24 configure bits for NetUP card.
+      V4L/DVB (12098): Create table for customize stv0900 ts registers.
+
+Manu Abraham (2):
+      V4L/DVB (12130): Fix a redundant compiler warning
+      V4L/DVB (12131): BUGFIX: An incorrect Carrier Recovery Loop optimization table was being
+
+Mauro Carvalho Chehab (1):
+      V4L/DVB (12010): cx88: Properly support Leadtek TV2000 XP Global
+
+Michael Krufky (2):
+      V4L/DVB (12115): tda10048: add missing entry to pll_tab for 3.8 MHz IF
+      V4L/DVB (12116): cx23885: ensure correct IF freq is used on HVR1200 & HVR1700
+
+Mike Isely (5):
+      V4L/DVB (12118): pvrusb2: Fix hardware scaling when used with cx25840
+      V4L/DVB (12119): pvrusb2: Re-fix hardware scaling on video standard change
+      V4L/DVB (12120): pvrusb2: Change initial default frequency setting
+      V4L/DVB (12121): pvrusb2: Improve handling of routing schemes
+      V4L/DVB (12122): pvrusb2: De-obfuscate code which handles routing schemes
+
+Trent Piepho (14):
+      V4L/DVB (11901): v4l2: Create helper function for bounding and aligning images
+      V4L/DVB (11902): pxa-camera: Use v4l bounding/alignment function
+      V4L/DVB (11903): sh_mobile_ceu_camera: Use v4l bounding/alignment function
+      V4L/DVB (11904): zoran: Use v4l bounding/alignment functiob
+      V4L/DVB (11905): vivi: Use v4l bounding/alignment function
+      V4L/DVB (11906): saa7134: Use v4l bounding/alignment function
+      V4L/DVB (11907): cx88: Use v4l bounding/alignment function
+      V4L/DVB (11908): w8968cf: Use v4l bounding/alignment function
+      V4L/DVB (11909): cx23885: Use v4l bounding/alignment function
+      V4L/DVB (11910): mt9: Use v4l bounding/alignment function
+      V4L/DVB (11911): cx231xx: Use v4l bounding/alignment function
+      V4L/DVB (11912): em28xx: Use v4l bounding/alignment function
+      V4L/DVB (11913): cx231xx: TRY_FMT should not actually set anything
+      V4L/DVB (12003): v4l2: Move bounding code outside I2C ifdef block
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
