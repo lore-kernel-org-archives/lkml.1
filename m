@@ -1,53 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbZFWAIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZFWAYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757805AbZFWAIA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 20:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZFWAHx
+	id S1754657AbZFWAYL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 20:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbZFWAX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 20:07:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37669 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752538AbZFWAHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 20:07:52 -0400
-Subject: Re: [git pull] drm: previous pull req + 1.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>
-Cc: Dave Airlie <airlied@linux.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alex Deucher <alexdeucher@gmail.com>, Andrew Lutomirski <luto@mit.edu>,
-       dri-devel@lists.sf.net, Jerome Glisse <jglisse@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A3F3E3A.2030202@shipmail.org>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
-	 <4A3DABE1.50309@mit.edu>
-	 <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
-	 <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
-	 <alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
-	 <cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
-	 <alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
-	 <alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
-	 <4A3F3E3A.2030202@shipmail.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Jun 2009 10:00:13 +1000
-Message-Id: <1245715213.4017.13.camel@pasglop>
+	Mon, 22 Jun 2009 20:23:57 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52669 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbZFWAX4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 20:23:56 -0400
+Date: Tue, 23 Jun 2009 09:22:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC][PATCH] cgroup: fix permanent wait in rmdir
+Message-Id: <20090623092223.a44e7b20.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090622183707.dd9e665b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090622183707.dd9e665b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 10:18 +0200, Thomas Hellström wrote:
+On Mon, 22 Jun 2009 18:37:07 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> It would be very helpful if we could introduce an fbdev mutex that 
-> protects fbdev accesses to the kernel map and to the fbdev acceleration 
-> functions.
+> previous discussion was this => http://marc.info/?t=124478543600001&r=1&w=2
+> 
+> I think this is a minimum fix (in code size and behavior) and because
+> we can take a BIG LOCK, this kind of check is necessary, anyway.
+> Any comments are welcome.
 
-As far as I can remember, all fbdev operations are done under the
-console semaphore.
+I'll split this into 2 patches...and I found I should check page-migration, too.
+Then, modifing swap account logic is not help, at last.
 
-(I know I did fix a bunch of that crap ages ago).
+Thanks,
+-Kame
 
-Cheers,
-Ben.
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Now, cgroup has a logic to wait until ready-to-rmdir for avoiding
+> frequent -EBUSY at rmdir.
+>  (See Commit ec64f51545fffbc4cb968f0cea56341a4b07e85a
+>   cgroup: fix frequent -EBUSY at rmdir.
+> 
+> Nishimura-san reported bad case for waiting and This is a fix to
+> make it reliable. A thread waiting for thread cannot be waken up
+> when a refcnt gotten by css_tryget() isn't put immediately.
+> (Original code assumed css_put() will be called soon.)
+> 
+> memcg has this case and this is a fix for the problem. This adds
+> retry_rmdir() callback to subsys and check we can sleep or not
+> before sleeping and export CGRP_WAIT_ON_RMDIR flag to subsys.
+> 
+> Note: another solution will be adding "rmdir state" to subsys.
+> But it will be much complicated than this do-enough-check solution.
+> 
+> Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  Documentation/cgroups/cgroups.txt |   11 +++++++++++
+>  include/linux/cgroup.h            |    9 +++++++++
+>  kernel/cgroup.c                   |   25 +++++++++++++++++++++----
+>  mm/memcontrol.c                   |   29 ++++++++++++++++++++++++++---
+>  4 files changed, 67 insertions(+), 7 deletions(-)
+> 
+> Index: linux-2.6.30-git18/include/linux/cgroup.h
+> ===================================================================
+> --- linux-2.6.30-git18.orig/include/linux/cgroup.h
+> +++ linux-2.6.30-git18/include/linux/cgroup.h
+> @@ -192,6 +192,14 @@ struct cgroup {
+>  	struct rcu_head rcu_head;
+>  };
+>  
+> +void __cgroup_wakeup_rmdir_waiters(void);
+> +static inline void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
+> +{
+> +	if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
+> +		__cgroup_wakeup_rmdir_waiters();
+> +}
+> +
+> +
+>  /*
+>   * A css_set is a structure holding pointers to a set of
+>   * cgroup_subsys_state objects. This saves space in the task struct
+> @@ -374,6 +382,7 @@ struct cgroup_subsys {
+>  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
+>  						  struct cgroup *cgrp);
+>  	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+> +	int (*retry_rmdir)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+>  	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+>  	int (*can_attach)(struct cgroup_subsys *ss,
+>  			  struct cgroup *cgrp, struct task_struct *tsk);
+> Index: linux-2.6.30-git18/kernel/cgroup.c
+> ===================================================================
+> --- linux-2.6.30-git18.orig/kernel/cgroup.c
+> +++ linux-2.6.30-git18/kernel/cgroup.c
+> @@ -636,6 +636,23 @@ static int cgroup_call_pre_destroy(struc
+>  		}
+>  	return ret;
+>  }
+> +/*
+> + * Call subsys's retry_rmdir() handler. If this returns non-Zero, we retry
+> + * rmdir immediately and call pre_destroy again.
+> + */
+> +static int cgroup_check_retry_rmdir(struct cgroup *cgrp)
+> +{
+> +	struct cgroup_subsys *ss;
+> +	int ret = 0;
+> +
+> +	for_each_subsys(cgrp->root, ss)
+> +		if (ss->pre_destroy) {
+> +			ret = ss->retry_rmdir(ss, cgrp);
+> +			if (ret)
+> +				break;
+> +		}
+> +	return ret;
+> +}
+>  
+>  static void free_cgroup_rcu(struct rcu_head *obj)
+>  {
+> @@ -738,10 +755,9 @@ static void cgroup_d_remove_dir(struct d
+>   */
+>  DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
+>  
+> -static void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
+> +void __cgroup_wakeup_rmdir_waiters(void)
+>  {
+> -	if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
+> -		wake_up_all(&cgroup_rmdir_waitq);
+> +	wake_up_all(&cgroup_rmdir_waitq);
+>  }
+>  
+>  static int rebind_subsystems(struct cgroupfs_root *root,
+> @@ -2722,7 +2738,8 @@ again:
+>  
+>  	if (!cgroup_clear_css_refs(cgrp)) {
+>  		mutex_unlock(&cgroup_mutex);
+> -		schedule();
+> +		if (!cgroup_check_retry_rmdir(cgrp))
+> +			schedule();
+>  		finish_wait(&cgroup_rmdir_waitq, &wait);
+>  		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+>  		if (signal_pending(current))
+> Index: linux-2.6.30-git18/mm/memcontrol.c
+> ===================================================================
+> --- linux-2.6.30-git18.orig/mm/memcontrol.c
+> +++ linux-2.6.30-git18/mm/memcontrol.c
+> @@ -179,7 +179,6 @@ struct mem_cgroup {
+>  
+>  	/* set when res.limit == memsw.limit */
+>  	bool		memsw_is_minimum;
+> -
+>  	/*
+>  	 * statistics. This must be placed at the end of memcg.
+>  	 */
+> @@ -1428,6 +1427,9 @@ __mem_cgroup_commit_charge_swapin(struct
+>  		return;
+>  	if (!ptr)
+>  		return;
+> +	/* We access ptr->css.cgroup later. keep 1 refcnt here. */
+> +	css_get(&ptr->css);
+> +
+>  	pc = lookup_page_cgroup(page);
+>  	mem_cgroup_lru_del_before_commit_swapcache(page);
+>  	__mem_cgroup_commit_charge(ptr, pc, ctype);
+> @@ -1457,8 +1459,16 @@ __mem_cgroup_commit_charge_swapin(struct
+>  		}
+>  		rcu_read_unlock();
+>  	}
+> -	/* add this page(page_cgroup) to the LRU we want. */
+> -
+> +	/*
+> +	 * At swapin, "ptr" is got from swap_cgroup and not from task. Then,
+> +	 * this ptr can be under rmdir(). Under race with rmdir(), we may
+> +	 * charge against cgroup which a thread is waiting for restart rmdir().
+> +	 * It can be waken up when css's refcnt goes to 0 but we charged...
+> +	 * Because we can't do css_get()->charge in atomic, at swapin, we have
+> +	 * to check there is no waiter for rmdir.
+> +	 */
+> +	cgroup_wakeup_rmdir_waiters(ptr->css.cgroup);
+> +	css_put(&ptr->css);
+>  }
+>  
+>  void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
+> @@ -2556,6 +2566,7 @@ mem_cgroup_create(struct cgroup_subsys *
+>  
+>  	if (parent)
+>  		mem->swappiness = get_swappiness(parent);
+> +
+>  	atomic_set(&mem->refcnt, 1);
+>  	return &mem->css;
+>  free_out:
+> @@ -2571,6 +2582,17 @@ static int mem_cgroup_pre_destroy(struct
+>  	return mem_cgroup_force_empty(mem, false);
+>  }
+>  
+> +static int mem_cgroup_retry_rmdir(struct cgroup_subsys *ss,
+> +				  struct cgroup *cont)
+> +{
+> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+> +
+> +	if (res_counter_read_u64(&memcg->res, RES_USAGE))
+> +		return 1;
+> +	return 0;
+> +}
+> +
+> +
+>  static void mem_cgroup_destroy(struct cgroup_subsys *ss,
+>  				struct cgroup *cont)
+>  {
+> @@ -2610,6 +2632,7 @@ struct cgroup_subsys mem_cgroup_subsys =
+>  	.subsys_id = mem_cgroup_subsys_id,
+>  	.create = mem_cgroup_create,
+>  	.pre_destroy = mem_cgroup_pre_destroy,
+> +	.retry_rmdir = mem_cgroup_retry_rmdir,
+>  	.destroy = mem_cgroup_destroy,
+>  	.populate = mem_cgroup_populate,
+>  	.attach = mem_cgroup_move_task,
+> Index: linux-2.6.30-git18/Documentation/cgroups/cgroups.txt
+> ===================================================================
+> --- linux-2.6.30-git18.orig/Documentation/cgroups/cgroups.txt
+> +++ linux-2.6.30-git18/Documentation/cgroups/cgroups.txt
+> @@ -500,6 +500,17 @@ there are not tasks in the cgroup. If pr
+>  rmdir() will fail with it. From this behavior, pre_destroy() can be
+>  called multiple times against a cgroup.
+>  
+> +int retry_rmdir(struct cgroup_subsys *ss, struct cgroup *cgrp);
+> +
+> +Called at rmdir right after the kernel finds there are remaining refcnt on
+> +subsystems after pre_destroy(). When retry_rmdir() returns 0, the caller enter
+> +sleep and wakes up when css's refcnt goes down to 0 by css_put().
+> +When this returns 1, the caller doesn't sleep and retry rmdir immediately.
+> +This is useful when the subsys knows remaining css's refcnt is not temporal
+> +and to calling pre_destroy() again is proper way to remove that.
+> +(or proper way to retrun -EBUSY.)
+> +
+> +
+>  int can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
+>  	       struct task_struct *task)
+>  (cgroup_mutex held by caller)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
