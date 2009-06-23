@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbZFWVpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbZFWVpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757599AbZFWVpS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbZFWVpH
+	id S1758722AbZFWVpy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbZFWVpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:45:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37322 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751527AbZFWVpE (ORCPT
+	Tue, 23 Jun 2009 17:45:47 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:3620 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756433AbZFWVpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:45:04 -0400
-Date: Tue, 23 Jun 2009 14:44:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
-       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
-Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
-Message-Id: <20090623144416.04c34268.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0906231423490.17001@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
-	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
-	<20090623131239.711d9f83.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231355130.17001@makko.or.mcafeemobile.com>
-	<20090623142511.c9068655.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231423490.17001@makko.or.mcafeemobile.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 17:45:46 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5655"; a="19799277"
+From: davidb@quicinc.com
+Date: Tue, 23 Jun 2009 14:45:43 -0700
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Swetland <swetland@google.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "san@android.com" <san@android.com>,
+       "rlove@google.com" <rlove@google.com>, Greg KH <greg@kroah.com>,
+       Arve Hj??nnev??g <arve@google.com>
+Subject: Re: HTC Dream in 2.6.31-git? (was Re: HTC Dream aka. t-mobile g1
+	support)
+Message-ID: <20090623214543.GA22725@huya.quicinc.com>
+References: <a55d774e0906101455r455f0f88g65c74ecdf37a572@mail.gmail.com> <20090611082532.GE8592@elf.ucw.cz> <a55d774e0906110148m69debe8fu9ff9970c0fe30bcd@mail.gmail.com> <20090612150504.GA15084@elf.ucw.cz> <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com> <20090615170103.GE25040@elf.ucw.cz> <a55d774e0906151132m5584409epe0b7581fde5ec184@mail.gmail.com> <20090617091139.GA4536@elf.ucw.cz> <a55d774e0906170240w631cdfbfq52647d1c438647cb@mail.gmail.com> <20090623130615.GB897@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623130615.GB897@elf.ucw.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 14:25:05 -0700 (PDT)
-Davide Libenzi <davidel@xmailserver.org> wrote:
+On Tue, Jun 23, 2009 at 06:06:15AM -0700, Pavel Machek wrote:
 
-> On Tue, 23 Jun 2009, Andrew Morton wrote:
-> 
-> > That isn't for us to decide. Entire syscalls can be disabled in config.
-> 
-> That is not a well defined separate syscall though. It's a member/feature 
-> of the aiocb.
+> Is there version of linux-msm tree for 2.6.31-git ...? (even 2.6.30 version
+> would help). I tried naively porting patches forward, but resulting
+> kernel would not boot :-(.
 
-I don't know what this means, really.
+Not yet, at least not yet in our tree.  I'm hoping to get to this
+fairly soon.
 
-AIO eventfd support is a relatively recently added enhancement to AIO,
-is it not?  Applications which continue to use the pre-May07 AIO
-features will continue to work as before (they darn well better).  So
-for such applications, AIO=y/EVENTFD=n kernels are usable and useful,
-and eliminating this option is a loss?
+Is the Dream the only target that people here actually have, or
+did anyone get a Magic recently?  I'm trying to track down one of
+the G1's we purchased, since they all seem to have become
+people's personal phones.
 
-Either way, I believe that this change should be unbundled from the
-unrelated KVM one so we can handle it separately.
+David
