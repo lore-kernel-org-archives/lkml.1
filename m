@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZFWXqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbZFWXs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759609AbZFWXqb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 19:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbZFWXqY
+	id S1758951AbZFWXs0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 19:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbZFWXsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 19:46:24 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:41085 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755848AbZFWXqX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 19:46:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:reply-to:organization:user-agent
-         :mime-version:to:cc:subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=U0OnHcYxkLKRL6vgeGw5FSl8qYjXlaW6spTsBTxN0gy8IOQejEzBr05dRPL5LCsly4
-         zsnoh3gwMPfnR2Q2kJIOO97bcm5B/3qWmGvKdOdsgyYXC+Mq/7a46utWkI0dp1ArQIua
-         RAybAc2ZaqsH2SZskCSGaU38d2ZhC8ldFuNzo=
-Message-ID: <4A416952.2050809@laptop.org>
-Date: Tue, 23 Jun 2009 19:46:26 -0400
-From: "Richard A. Smith" <richard@laptop.org>
-Reply-To: richard@laptop.org
-Organization: One Laptop per Child
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: Andres Salomon <dilinger@collabora.co.uk>, cbou@mail.ru,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
-       dsaxena@laptop.org
-Subject: Re: [PATCH 3/5] power_supply: add a TRICKLE_CHARGING status, and
- add it to the olpc driver
-References: <20090622234607.11f61bec@mycelium.queued.net> <20090623103717.GH5422@sirena.org.uk> <4A412CC0.6050500@laptop.org> <20090623224434.GB16188@opensource.wolfsonmicro.com> <4A41618D.4020900@laptop.org> <20090623232537.GE16188@opensource.wolfsonmicro.com>
-In-Reply-To: <20090623232537.GE16188@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 23 Jun 2009 19:48:18 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:40380 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755115AbZFWXsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 19:48:18 -0400
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: akataria@vmware.com
+Cc: Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <1245799709.24110.70.camel@alok-dev1>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	 <1245732411.18339.6.camel@alok-dev1>
+	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
+	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1245736441.18339.21.camel@alok-dev1>  <4A41481D.1060607@redhat.com>
+	 <1245793331.24110.33.camel@alok-dev1>  <4A414F55.2040808@redhat.com>
+	 <1245794811.24110.41.camel@alok-dev1>  <4A415D62.20109@redhat.com>
+	 <1245799709.24110.70.camel@alok-dev1>
+Content-Type: text/plain
+Date: Tue, 23 Jun 2009 16:48:17 -0700
+Message-Id: <1245800897.31856.28.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Tue, Jun 23, 2009 at 07:13:17PM -0400, Richard A. Smith wrote:
->> Mark Brown wrote:
-> 
->>> A separate file with the detailed information would sidestep this since
->>> it's a new interface.  I'm not strongly opposed to adding the new states
->>> but I do think it's worth considering other ways of doing this.
-> 
->> I've got no problems with a new interface.  But, i'm also not the person  
->> writing the driver. :)
-> 
-> It's really no bother from the driver point of view either way, it's the
-> user space applications that are the concern here - are they going to
-> cope well with a new state appearing there?
+On Tue, 2009-06-23 at 16:28 -0700, Alok Kataria wrote:
+> Now regarding the patch that I posted, I need a way to get the
+> hugepages count, there are 2 ways of doing this. 
+> 1. exporting hugetlb_total_pages function for module usage.
 
-I can only speak for OLPC's usage.  But my script, the documentation on 
-our wiki, and HAL are the only things that I know of that use that info 
-and none of them should have any problem with it changing.
+Unfortunately, that won't even be enough.  That only accounts for the
+default hstate.  There may be several hstate if the system supports
+multiple large page sizes.  It's all exported in sysfs, but I don't see
+any simple way (other than sys_open()) for a module to get at it.
 
--- 
-Richard Smith  <richard@laptop.org>
-One Laptop Per Child
+-- Dave
+
