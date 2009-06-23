@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbZFWJEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbZFWJGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758138AbZFWJEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 05:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbZFWJEn
+	id S1758076AbZFWJGo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 05:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZFWJGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 05:04:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53175 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757241AbZFWJEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 05:04:42 -0400
-Date: Tue, 23 Jun 2009 11:03:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Feng Tang <feng.tang@intel.com>
-Cc: Len Brown <lenb@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>
-Subject: Re: [PATCH 3/8] SFI: core support
-Message-ID: <20090623090347.GA21616@elte.hu>
-References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com> <8d9bab79ce1169afd419035f70177e52d47626ca.1245740912.git.len.brown@intel.com> <20090623075643.GC6397@elte.hu> <20090623163246.1cdf755e@feng-desktop>
+	Tue, 23 Jun 2009 05:06:36 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:40787 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbZFWJGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 05:06:36 -0400
+Date: Tue, 23 Jun 2009 11:06:14 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Jeff Arnold <jbarnold@MIT.EDU>,
+       Mikael Starvik <mikael.starvik@axis.com>
+Subject: Re: [PATCH] cris: use new macros for .data.init_task.
+Message-ID: <20090623090614.GZ12383@axis.com>
+References: <1241135077-8001-1-git-send-email-tabbott@mit.edu> <1241135077-8001-2-git-send-email-tabbott@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090623163246.1cdf755e@feng-desktop>
+In-Reply-To: <1241135077-8001-2-git-send-email-tabbott@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 01, 2009 at 01:44:37AM +0200, Tim Abbott wrote:
+> .data.init_task should not need a separate output section; this change
+> moves it into the .data section.
 
-* Feng Tang <feng.tang@intel.com> wrote:
+Hi,
 
-> On Tue, 23 Jun 2009 15:56:43 +0800
-> Ingo Molnar <mingo@elte.hu> wrote:
+Sorry about not picking this up earlier, but what's the status of
+the prerequisite macros? From what I can see, the prerequisite for
+the first part of the patch is now in mainline, but there seems to
+be no users of INIT_TASK_DATA yet.
+(And it looks a bit dodgy as it uses INIT_TASK without any argument...)
+
+Should I split up your patch or is there any reason to keep them together?
+
+/Jesper
+
+> Signed-off-by: Tim Abbott <tabbott@mit.edu>
+> Cc: Mikael Starvik <starvik@axis.com>
+> Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+> Cc: dev-etrax@axis.com
+> ---
+>  arch/cris/kernel/process.c     |    3 +--
+>  arch/cris/kernel/vmlinux.lds.S |    4 +---
+>  2 files changed, 2 insertions(+), 5 deletions(-)
 > 
-> 
-> > >
-> > > +#ifdef CONFIG_X86_LOCAL_APIC
-> > > +static u64 sfi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
-> > > +#endif
-> > 
-> > if SFI adds a 'depends on X86_LOCAL_APIC' the ugly #ifdef can be
-> > dropped.
-> 
-> When Len designed the SFI spec, he considered the possibility of 
-> being used by multiple archs, so we chose not to add a x86 
-> dependency, though adding these
-> #ifdef does make code ugly :P
+> diff --git a/arch/cris/kernel/process.c b/arch/cris/kernel/process.c
+> index 4df0b32..7a270c6 100644
+> --- a/arch/cris/kernel/process.c
+> +++ b/arch/cris/kernel/process.c
+> @@ -49,8 +49,7 @@ EXPORT_SYMBOL(init_mm);
+>   * way process stacks are handled. This is done by having a special
+>   * "init_task" linker map entry..
+>   */
+> -union thread_union init_thread_union 
+> -	__attribute__((__section__(".data.init_task"))) =
+> +union thread_union init_thread_union __init_task_data =
+>  		{ INIT_THREAD_INFO(init_task) };
+>  
+>  /*
+> diff --git a/arch/cris/kernel/vmlinux.lds.S b/arch/cris/kernel/vmlinux.lds.S
+> index 0d2adfc..e4f7490 100644
+> --- a/arch/cris/kernel/vmlinux.lds.S
+> +++ b/arch/cris/kernel/vmlinux.lds.S
+> @@ -62,14 +62,12 @@ SECTIONS
+>  	___data_start = . ;
+>  	__Sdata = . ;
+>  	.data : {			/* Data */
+> +		INIT_TASK_DATA(PAGE_SIZE)
+>  		DATA_DATA
+>  	}
+>  	__edata = . ;			/* End of data section. */
+>  	_edata = . ;
+>  
+> -	. = ALIGN(PAGE_SIZE);	/* init_task and stack, must be aligned. */
+> -	.data.init_task : { *(.data.init_task) }
+> -
+>  	. = ALIGN(PAGE_SIZE);		/* Init code and data. */
+>  	__init_begin = .;
+>  	.init.text : {
+> -- 
+> 1.6.2.1
 
-But the file i commented on is arch/x86/kernel/sfi.c, not 
-drivers/sfi/.
-
-Those #ifdefs arent _that_ bad (and are used elsewhere in x86 code 
-too) - but generally some effort should be spent in new code on 
-trying to eliminate them.
-
-> > In general, nice stuff - basically SFI is cleanly implemented 
-> > ACPI tables without any of the run-code-in-acpi-tables 
-> > complications, right?
-> 
-> Thanks for the comments, I really got inspired :). The expectation 
-> for SFI is to be able to run cleanly with CONFIG_ACPI=n, and it 
-> works fine on some intel platform.
-
-Ok, cool!
-
-	Ingo
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
