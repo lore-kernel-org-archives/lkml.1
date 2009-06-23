@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZFWEPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbZFWEQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbZFWEPb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 00:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbZFWEPX
+	id S1751898AbZFWEQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 00:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbZFWEQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 00:15:23 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:35814 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbZFWEPW (ORCPT
+	Tue, 23 Jun 2009 00:16:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51906
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750729AbZFWEQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 00:15:22 -0400
-Date: Tue, 23 Jun 2009 13:13:33 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH] cgroup: fix permanent wait in rmdir
-Message-Id: <20090623131333.be387c84.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090623092223.a44e7b20.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090622183707.dd9e665b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090623092223.a44e7b20.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 23 Jun 2009 00:16:03 -0400
+Date: Mon, 22 Jun 2009 21:16:06 -0700 (PDT)
+Message-Id: <20090622.211606.28120054.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cs5520: add missing IRQ setup for the second port
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200906230305.55283.bzolnier@gmail.com>
+References: <20090622.163136.246300819.davem@davemloft.net>
+	<200906230230.14074.bzolnier@gmail.com>
+	<200906230305.55283.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 09:22:23 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Mon, 22 Jun 2009 18:37:07 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > previous discussion was this => http://marc.info/?t=124478543600001&r=1&w=2
-> > 
-> > I think this is a minimum fix (in code size and behavior) and because
-> > we can take a BIG LOCK, this kind of check is necessary, anyway.
-> > Any comments are welcome.
-> 
-> I'll split this into 2 patches...and I found I should check page-migration, too.
-I'll wait a new version, but can you explain in advance this page-migration case ?
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Tue, 23 Jun 2009 03:05:55 +0200
 
-> > +static int mem_cgroup_retry_rmdir(struct cgroup_subsys *ss,
-> > +				  struct cgroup *cont)
-> > +{
-> > +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-> > +
-> > +	if (res_counter_read_u64(&memcg->res, RES_USAGE))
-It should be &mem->res.
+> Please give people some time (few days) to review and comment patches before
+> applying them.  I don't trust my own patches too much so I'm always looking
+> for some peer review (usually all host driver patches go through Sergei, in
+> this case Frans would have probably shot the patch down)..
 
-> > +		return 1;
-> > +	return 0;
-> > +}
-> > +
-> > +
+Just because it's in my tree doesn't mean it's on it's way to
+Linus yet.
 
+Every patch will sit for at least a day or two until I really
+push things to him.  Allowing for such errors to be spotted.
 
-Thanks,
-Daisuke Nishimura.
-
-> Then, modifing swap account logic is not help, at last.
-> 
-> Thanks,
-> -Kame
-> 
+I can easily revert this and that's exactly what I will do.
