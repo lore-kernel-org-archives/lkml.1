@@ -1,138 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbZFWLzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZFWLzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759243AbZFWLzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759156AbZFWLyy
+	id S1756792AbZFWLzm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZFWLz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:54:54 -0400
-Received: from av12-2-sn2.hy.skanova.net ([81.228.8.186]:44856 "EHLO
-	av12-2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759070AbZFWLyx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:54:53 -0400
-Message-ID: <4A40C28E.1070109@mocean-labs.com>
-Date: Tue, 23 Jun 2009 13:54:54 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Tue, 23 Jun 2009 07:55:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49796 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756330AbZFWLz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 07:55:27 -0400
+Date: Tue, 23 Jun 2009 13:55:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: kerneloops.org report for the week of June 14 2009
+Message-ID: <20090623115510.GC9497@elte.hu>
+References: <20090614173331.18f01123@infradead.org> <alpine.LFD.2.00.0906231201430.2767@localhost.localdomain>
 MIME-Version: 1.0
-To: linux-input@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kwangwoo.lee@gmail.com,
-       Thierry Reding <thierry.reding@avionic-design.de>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] tsc2007: make platform callbacks optional
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0906231201430.2767@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The platform callbacks are only called if supplied. Makes the driver
-to fallback on only pressure calculation to decide when the pen is up.
 
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
----
-Index: linux-2.6.30/drivers/input/touchscreen/tsc2007.c
-===================================================================
---- linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 943)
-+++ linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 945)
-@@ -59,6 +59,10 @@
- #define READ_X		(ADC_ON_12BIT | TSC2007_MEASURE_X)
- #define PWRDOWN		(TSC2007_12BIT | TSC2007_POWER_OFF_IRQ_EN)
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-+#define PEN_STATE_UP	0x00
-+#define PEN_STATE_DOWN	0x01
-+#define PEN_STATE_IRQ	0x01
-+
- struct ts_event {
- 	u16	x;
- 	u16	y;
-@@ -76,7 +80,7 @@
- 	u16			model;
- 	u16			x_plate_ohms;
+> On Sun, 14 Jun 2009, Arjan van de Ven wrote:
+> > Rank 3: getnstimeofday (warning)
+> > 	Reported 309 times (2446 total reports)
+> > 	[suspend resume] getnstimeofday() is called before timekeeping is
+>         resumed
+> 
+> > Rank 6: hres_timers_resume (warning)
+> > 	Reported 188 times (1024 total reports)
+> > 	[suspend resume] hres_timers_resume() is incorrectly called with
+> >       interrupts on
+> 
+> Both have the same root cause. Something enables interrupts in the 
+> early resume path. IIRC, there was a culprit identified recently. 
+> Rafael ?
 
--	unsigned		pendown;
-+	unsigned		penstate;
- 	int			irq;
+This can be debugged automatically today, using lockdep, by using a 
+'helper lock':
 
- 	int			(*get_pendown_state)(void);
-@@ -149,15 +153,18 @@
- 	 *
- 	 * The only safe way to check for the pen up condition is in the
- 	 * work function by reading the pen signal state (it's a GPIO and IRQ).
-+	 *
-+	 * But sadly we don't always have the possibility to use such callback
-+	 * in that case rely on the pressure anyway
- 	 */
- 	if (rt) {
- 		struct input_dev *input = ts->input;
+  static DEFINE_PER_CPU(struct lockdep_map, helper_lock);
 
--		if (!ts->pendown) {
-+		if (ts->penstate != PEN_STATE_DOWN) {
- 			dev_dbg(&ts->client->dev, "DOWN\n");
+Then mark the lock irq-safe by doing something like:
 
- 			input_report_key(input, BTN_TOUCH, 1);
--			ts->pendown = 1;
-+			ts->penstate = PEN_STATE_DOWN;
- 		}
+static void mark_lock_irqsafe(void)
+{
+	unsigned long flags;
+	int cpu;
 
- 		input_report_abs(input, ABS_X, x);
-@@ -168,7 +175,9 @@
+	local_irq_save(flags);
+	irq_enter(0);
 
- 		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
- 			x, y, rt);
--	}
-+	} else if (!ts->get_pendown_state)
-+		/* no callback to check pendown state, use pressure */
-+		ts->penstate = PEN_STATE_UP;
+	for_each_online_cpu(cpu) {
+		lock_acquire(&per_cpu(helper_lock, cpu), 0, 0, 0, 0, NULL, 0);
+		lock_release(&per_cpu(helper_lock, cpu), 0, 0, 0, 0, NULL, 0);
+	}
 
- 	schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
- }
-@@ -195,7 +204,14 @@
- {
- 	struct tsc2007 *ts =
- 		container_of(to_delayed_work(work), struct tsc2007, work);
--	if (unlikely(!ts->get_pendown_state() && ts->pendown)) {
-+
-+	/* either we have the pendown callback, and use it, otherwise
-+	 * we look at the pendown variable
-+	 */
-+	if ((ts->get_pendown_state && unlikely(!ts->get_pendown_state()) &&
-+		ts->penstate != PEN_STATE_UP) ||
-+		(!ts->get_pendown_state &&
-+		unlikely(ts->penstate == PEN_STATE_UP))) {
- 		struct input_dev *input = ts->input;
+	irq_exit(0);
+	local_irq_restore(flags);
+}
 
- 		dev_dbg(&ts->client->dev, "UP\n");
-@@ -204,7 +220,7 @@
- 		input_report_abs(input, ABS_PRESSURE, 0);
- 		input_sync(input);
+Then, the resume path, when it disables irqs, you can disallow 
+irq-enable via:
 
--		ts->pendown = 0;
-+		ts->penstate = PEN_STATE_UP;
- 		enable_irq(ts->irq);
- 	} else {
- 		/* pen is still down, continue with the measurement */
-@@ -219,8 +235,9 @@
- {
- 	struct tsc2007 *ts = handle;
+	local_irq_disable();
+	lock_acquire(&__get_cpu_var(helper_lock), 0, 0, 0, 0, NULL, 0);
+	...
+	<extensive suspend or resume codepaths, callbacks> 
+	...
+	lock_release(&__get_cpu_var(helper_lock), 0, 0, 0, 0, NULL, 0);
+	local_irq_enable();
 
--	if (likely(ts->get_pendown_state())) {
-+	if (!ts->get_pendown_state || likely(ts->get_pendown_state())) {
- 		disable_irq_nosync(ts->irq);
-+		ts->penstate = PEN_STATE_IRQ;
- 		schedule_delayed_work(&ts->work, 0);
- 	}
+And lockdep will warn if any function inbetween enables IRQs, by 
+emitting a splat about incorrectly enabled hardirqs. It will warn 
+about the specific place and will emit a relevant backtrace, - not 
+just the handler in general.
 
-@@ -264,7 +281,8 @@
- 	ts->get_pendown_state = pdata->get_pendown_state;
- 	ts->clear_penirq      = pdata->clear_penirq;
+This should work just fine with current lockdep facilities.
 
--	pdata->init_platform_hw();
-+	if (pdata->init_platform_hw)
-+		pdata->init_platform_hw();
+Rafael?
 
- 	snprintf(ts->phys, sizeof(ts->phys),
- 		 "%s/input0", dev_name(&client->dev));
+	Ingo
