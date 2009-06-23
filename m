@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZFWAsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZFWAy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbZFWAsJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 20:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZFWAr5
+	id S1757254AbZFWAy3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 20:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZFWAyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 20:47:57 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:51493 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751912AbZFWAr4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 20:47:56 -0400
-Date: Tue, 23 Jun 2009 06:17:16 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH] fix bad page removal from LRU (Was Re:
-	[RFC][PATCH] cgroup: fix permanent wait in rmdir
-Message-ID: <20090623004716.GD8642@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090622183707.dd9e665b.kamezawa.hiroyu@jp.fujitsu.com> <20090622105231.GA17242@elte.hu> <20090623085755.9cf75da2.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090623085755.9cf75da2.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Jun 2009 20:54:21 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53018 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751512AbZFWAyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 20:54:20 -0400
+Subject: Re: Regression: ppc powerstation boot hang caused by slab
+ initialisation code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <1245712892.17035.39.camel@mulgrave.site>
+References: <1245708635.17035.6.camel@mulgrave.site>
+	 <1245709633.20062.13.camel@pasglop>
+	 <1245710457.17035.9.camel@mulgrave.site>  <1245711062.4017.1.camel@pasglop>
+	 <1245712892.17035.39.camel@mulgrave.site>
+Content-Type: text/plain
+Date: Tue, 23 Jun 2009 10:32:11 +1000
+Message-Id: <1245717131.4017.19.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-23 08:57:55]:
-
-> I think this is a fix for the problem. Sorry for regression.
-> fix for "memcg: fix lru rotation in isolate_pages" patch in 2.6.30-git18.
+On Mon, 2009-06-22 at 18:21 -0500, James Bottomley wrote:
+> On Tue, 2009-06-23 at 08:51 +1000, Benjamin Herrenschmidt wrote:
+> > Ah, I notice you use SLAB, that's the second report of hangs with it due to
+> > the changes. You can try SLUB while I'm looking, might help.
 > 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> A page isolated is "cursor_page" not "page".
-> This causes list corruption finally.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/vmscan.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.30-git18/mm/vmscan.c
-> ===================================================================
-> --- linux-2.6.30-git18.orig/mm/vmscan.c
-> +++ linux-2.6.30-git18/mm/vmscan.c
-> @@ -932,7 +932,7 @@ static unsigned long isolate_lru_pages(u
->  				continue;
->  			if (__isolate_lru_page(cursor_page, mode, file) == 0) {
->  				list_move(&cursor_page->lru, dst);
-> -				mem_cgroup_del_lru(page);
-> +				mem_cgroup_del_lru(cursor_page);
->  				nr_taken++;
->  				scan++;
->  			}
+> Yes, switching to slub fixes it ... although given that the identified
+> problem commit is a slab one, that's understandable ...
 
-Good catch!
+Patch on its way (separate thread). BTW. Any reason why you don't have
+IRQSTACKs ? We really need to make that not an option....
 
-Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cheers,
+Ben.
 
--- 
-	Balbir
+
