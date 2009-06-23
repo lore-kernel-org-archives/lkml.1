@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZFWVZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbZFWV0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbZFWVZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZFWVZQ
+	id S1757705AbZFWV0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZFWV0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:25:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40737 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753521AbZFWVZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:25:15 -0400
-Message-ID: <4A41481D.1060607@redhat.com>
-Date: Tue, 23 Jun 2009 17:24:45 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
-References: <20090623093459.2204.A69D9226@jp.fujitsu.com>	 <1245732411.18339.6.camel@alok-dev1>	 <20090623135017.220D.A69D9226@jp.fujitsu.com>	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com> <1245736441.18339.21.camel@alok-dev1>
-In-Reply-To: <1245736441.18339.21.camel@alok-dev1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 23 Jun 2009 17:26:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57359 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754517AbZFWV0L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 17:26:11 -0400
+Date: Tue, 23 Jun 2009 14:25:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
+       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
+Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
+Message-Id: <20090623142511.c9068655.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0906231355130.17001@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
+	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
+	<20090623131239.711d9f83.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906231355130.17001@makko.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
+On Tue, 23 Jun 2009 13:59:07 -0700 (PDT)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-> Both, while working on an module I noticed that there is no way direct
-> way to get any information regarding the total number of unrecliamable
-> (unevictable) pages in the system. While reading through the kernel
-> sources i came across this unevictalbe LRU framework and thought that
-> this should actually work towards providing  total unevictalbe pages in
-> the system irrespective of where they reside.
+> On Tue, 23 Jun 2009, Andrew Morton wrote:
+> 
+> > On Tue, 23 Jun 2009 12:25:36 -0700 (PDT)
+> > Davide Libenzi <davidel@xmailserver.org> wrote:
+> > 
+> > > Another cleanup this patch does, is making AIO select EVENTFD, instead of 
+> > > adding a bunch of empty function stubs inside eventfd.h in order to 
+> > > handle the (AIO && !EVENTFD) case.
+> > 
+> > Given that we're trying to squeak this patch into 2.6.31, it's quite
+> > unfortunate to include unrelated changes.  Especially ones which
+> > involve the always-problematic "select".  Although this one looks less
+> > than usually deadly due to the simple dependencies of AIO and eventfd.
+> > 
+> > However...
+> > 
+> > Is this a good way of fixing the (AIO && !EVENTFD) case?  Surely if the
+> > developer selected this combination, he doesn't want to carry the
+> > overhead of including eventfd.  IOW, if AIO can work acceptably without
+> > eventfd being compiled into the kernel then adding the stubs is a
+> > superior solution.
+> 
+> IMO when someone says "AIO included in the kernel", should get the whole 
+> AIO functionality and not part of it.
+> People already started using KAIO+eventfd, and a (AIO && !EVENTFD) config 
+> will make their code fail.
 
-The unevictable count tells you how many _userspace_
-pages are not evictable.
-
-There are countless accounted and unaccounted kernel
-allocations that show up (or not) in other fields in
-/proc/meminfo.
-
-I can see something reasonable on both sides of this
-particular debate.  However, even with this patch the
-"unevictable" statistic does not reclaim the total
-number of pages that are unevictable pages from a
-zone, so I am not sure how it helps you achieve your
-goal.
-
--- 
-All rights reversed.
+That isn't for us to decide. Entire syscalls can be disabled in config.
