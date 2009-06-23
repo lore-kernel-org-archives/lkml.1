@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZFWWY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759783AbZFWWZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbZFWWY4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 18:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbZFWWYs
+	id S1759783AbZFWWZc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 18:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZFWWZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 18:24:48 -0400
-Received: from claw.goop.org ([74.207.240.146]:51306 "EHLO claw.goop.org"
+	Tue, 23 Jun 2009 18:25:24 -0400
+Received: from mail.open.by ([193.232.92.17]:63292 "EHLO post.open.by"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753751AbZFWWYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 18:24:47 -0400
-Message-ID: <4A41562F.1040901@goop.org>
-Date: Tue, 23 Jun 2009 15:24:47 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1754833AbZFWWZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 18:25:23 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8817 [Jun 23 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Wed, 24 Jun 2009 00:26:48 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: kmemleak: Early log buffer exceeded
+Message-ID: <20090623212648.GA9502@localdomain.by>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
-       jbarnes@virtuousgeek.org, linux-arch@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>, Tony Luck <tony.luck@intel.com>,
-       Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-       Avi Kivity <avi@redhat.com>, Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
-References: <20090622140807.25509.54448.stgit@bob.kio>	 <20090622143431.GT19977@parisc-linux.org> <4A3FCB68.3030004@goop.org>	 <20090622183056.GY19977@parisc-linux.org> <1245714008.4017.7.camel@pasglop>	 <20090623190826.GJ19977@parisc-linux.org>  <4A413C66.5010306@goop.org> <1245793758.10356.27.camel@pasglop>
-In-Reply-To: <1245793758.10356.27.camel@pasglop>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/23/09 14:49, Benjamin Herrenschmidt wrote:
-> I think Willy was actually suggesting that you start using our
-> OF/device-tree stuff though which is a slightly more invasive deal but
-> might end up useful for other things in the long run :-)
->   
+Hello.
+I can see on my both machines
 
-I guess we could fake up OF-like datastructures or something, but I
-don't see what wide application that would have.  It might help in this
-case, but its a lot more complex than just calling
-pci_scan_single_device() at the appropriate place.
+[    0.000135] kmemleak: Early log buffer exceeded
+[    0.000140] Pid: 0, comm: swapper Not tainted 2.6.30-dbginfo-nv-git19 #7
+[    0.000144] Call Trace:
+[    0.000153]  [<c1418ecc>] ? printk+0x23/0x36
+[    0.000160]  [<c10f7c12>] log_early+0xf2/0x110
+[    0.000165]  [<c10f8788>] kmemleak_alloc+0x1f8/0x2c0
+[    0.000171]  [<c10f28fb>] ? cache_alloc_debugcheck_after+0xeb/0x1e0
+[    0.000176]  [<c10f496a>] ? __kmalloc+0xfa/0x240
+[    0.000182]  [<c10761fc>] ? trace_hardirqs_on_caller+0x14c/0x1a0
+[    0.000187]  [<c10f4a15>] __kmalloc+0x1a5/0x240
+[    0.000192]  [<c10f4d8d>] ? alloc_arraycache+0x2d/0x80
+[    0.000198]  [<c10f4d8d>] alloc_arraycache+0x2d/0x80
+[    0.000203]  [<c10f4e7c>] do_tune_cpucache+0x9c/0x3a0
+[    0.000208]  [<c10f5322>] enable_cpucache+0x42/0x110
+[    0.000215]  [<c15ff7c4>] kmem_cache_init_late+0x32/0x82
+[    0.000221]  [<c15e2995>] start_kernel+0x24c/0x366
+[    0.000226]  [<c15e2517>] ? unknown_bootoption+0x0/0x1dd
+[    0.000231]  [<c15e2088>] __init_begin+0x88/0xa1
 
-Do you have any other cases in mind where it would be helpful?
+mm/kmemleak.c
+static struct early_log early_log[200];
 
-    J
+static void log_early(int op_type, const void *ptr, size_t size,
+		      int min_count, unsigned long offset, size_t length)
+{
+...
+	if (crt_early_log >= ARRAY_SIZE(early_log)) {
+		print  Early log buffer exceeded;
+		call dump_stack, etc.
+
+So, my questions are:
+1. Is 200 really enough? Why 200 not 512, 1024 (for example)?
+//If this has been already discussed - please point me.
+
+2. When (crt_early_log >= ARRAY_SIZE(early_log)) == 1 we just can see stack.
+Since we have "full" early_log maybe it'll be helpfull to see it? 
+//For example like at void __init kmemleak_init(void)
+
+	Sergey
