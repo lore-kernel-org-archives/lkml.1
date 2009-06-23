@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZFWS4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbZFWS6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbZFWS4e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 14:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZFWS42
+	id S1752381AbZFWS6e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 14:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZFWS61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 14:56:28 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:59928 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752582AbZFWS41 (ORCPT
+	Tue, 23 Jun 2009 14:58:27 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34789 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750775AbZFWS60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 14:56:27 -0400
-To: Vipin Bhandari <vipin.bhandari@ti.com>
-Cc: linux-kernel@vger.kernel.org,
-       davinci-linux-open-source@linux.davincidsp.com, drzeus-mmc@drzeus.cx
-Subject: Re: [PATCH v5] DaVinci: MMC: MMC/SD controller driver for DaVinci family.
-References: <1245757600-1073-1-git-send-email-vipin.bhandari@ti.com>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Tue, 23 Jun 2009 11:56:27 -0700
-In-Reply-To: <1245757600-1073-1-git-send-email-vipin.bhandari@ti.com> (Vipin Bhandari's message of "Tue\, 23 Jun 2009 07\:46\:40 -0400")
-Message-ID: <87zlbykcdg.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 23 Jun 2009 14:58:26 -0400
+Date: Tue, 23 Jun 2009 14:56:46 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@vinegar-pot.mit.edu
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Anders Kaseorg <andersk@ksplice.com>,
+       Jeffrey B Arnold <jbarnold@ksplice.com>,
+       "Waseem S. Daher" <wdaher@ksplice.com>, devel@ksplice.com
+Subject: Re: [PATCH] Add new TAINT_KSPLICE flag for when a Ksplice update
+ has been loaded.
+In-Reply-To: <20090622075346.e9489feb.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0906221100140.26465@vinegar-pot.mit.edu>
+References: <alpine.DEB.1.10.0906191422460.29844@vinegar-pot.mit.edu> <1245442307.16209.66.camel@laptop> <1245657114.3265.4074.camel@perihelion.bos.jonmasters.org> <1245660614.19816.203.camel@twins> <alpine.DEB.1.10.0906220928010.26465@vinegar-pot.mit.edu>
+ <20090622075346.e9489feb.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vipin Bhandari <vipin.bhandari@ti.com> writes:
+On Mon, 22 Jun 2009, Andrew Morton wrote:
+> Have the ksplice people considered using /proc/sys/kernel/tainted and
+> TAINT_USER?
 
-> This patch adds support for MMC/SD controller driver for all DaVinci family
-> SoC. This patch supports davinci family SoC's DM6446, DM355, DM365 and
-> DA830/OMAPL137.
->
-> The patch has been tested on DM355 EVM.
->
-> The MMCSD controller specifications for DM355 can be found at
-> http://focus.ti.com/general/docs/litabsmultiplefilelist.tsp?literatureNumber=spruee2c
->
-> Signed-off-by: Vipin Bhandari <vipin.bhandari@ti.com>
-> Signed-off-by: Purshotam Kumar <purushotam@ti.com>
-> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+We're thinking about using TAINT_USER to indicate when a user has 
+installed a Ksplice update that they generated on their own.  We'd like to 
+be able to distinguish between the cases (1) where a user has generated a 
+potentially-bad Ksplice update by providing their own naughty patch and 
+(2) where a user is running binary Ksplice updates provided by a vendor 
+that is taking care to use Ksplice properly.  Our patch currently uses 
+TAINT_KSPLICE to indicate whether _any_ Ksplice update has been applied.
 
-Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+	-Tim Abbott
+
 
