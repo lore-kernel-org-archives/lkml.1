@@ -1,468 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZFWCGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZFWCH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZFWCGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 22:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZFWCGH
+	id S1754799AbZFWCH2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 22:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZFWCHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 22:06:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39932 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707AbZFWCGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 22:06:05 -0400
-Date: Mon, 22 Jun 2009 22:05:15 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
-	elevaotor layer
-Message-ID: <20090623020515.GA3620@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com> <20090622084612.GD3728@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090622084612.GD3728@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Jun 2009 22:07:16 -0400
+Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:57716 "HELO
+	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751511AbZFWCHP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 22:07:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=owfLQ4z9RtEv/a9rppeve8SpK7AV8IM0sL+0TRm1GIXh37qCPSJGgwpMgzFbZJIrvEcCz472ijuUOGYmy6ujUvi2dsOtQvUiLbVBV46Bdiq5lvc7nwjMM8rrYAZBRJ25;
+Date: Mon, 22 Jun 2009 19:07:12 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas =?UTF-8?B?SGVs?= =?UTF-8?B?bHN0csO2bQ==?= 
+	<thomas@shipmail.org>,
+       Dave Airlie <airlied@linux.ie>, Alex Deucher <alexdeucher@gmail.com>,
+       Andrew Lutomirski <luto@mit.edu>, dri-devel@lists.sf.net,
+       Jerome Glisse <jglisse@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] drm: previous pull req + 1.
+Message-ID: <20090622190712.4c0ace71@jbarnes-g45>
+In-Reply-To: <1245722325.4017.29.camel@pasglop>
+References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
+	<4A3DABE1.50309@mit.edu>
+	<alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
+	<alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
+	<alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
+	<cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
+	<alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
+	<alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
+	<4A3F3E3A.2030202@shipmail.org>
+	<1245715213.4017.13.camel@pasglop>
+	<alpine.LFD.2.01.0906221721450.3240@localhost.localdomain>
+	<1245719079.4017.25.camel@pasglop>
+	<20090622181832.771dac03@jbarnes-g45>
+	<1245722325.4017.29.camel@pasglop>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 02:16:12PM +0530, Balbir Singh wrote:
-> * Vivek Goyal <vgoyal@redhat.com> [2009-06-19 16:37:20]:
-> 
-> > This is common fair queuing code in elevator layer. This is controlled by
-> > config option CONFIG_ELV_FAIR_QUEUING. This patch initially only introduces
-> > flat fair queuing support where there is only one group, "root group" and all
-> > the tasks belong to root group.
+On Tue, 23 Jun 2009 11:58:44 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Mon, 2009-06-22 at 18:18 -0700, Jesse Barnes wrote:
+> > I think it could work, but ideally we'd keep the kernel fbcon object
+> > pinned, and keep printing into it even while some other gfx app is
+> > running.  That way we don't have to dump the whole queue into it
+> > when a
+> > panic occurs, we can just switch buffers (something like this would
+> > also be handy for dual head debugging; one head running your desktop
+> > and the other a debug console printing all the messages).  That's
+> > slightly more invasive surgery though...  I should have a chance to
+> > do something like that as part of the kdb/kms work I'll be doing
+> > with Jason.
 > > 
-> > This elevator layer changes are backward compatible. That means any ioscheduler
-> > using old interfaces will continue to work.
-> > 
-> > This code is essentially the CFQ code for fair queuing. The primary difference
-> > is that flat rounding robin algorithm of CFQ has been replaced with BFQ (WF2Q+).
-> >
+> Do we really need that ?
 > 
-> The patch is quite long and to be honest requires a long time to
-> review, which I don't mind. I suspect my frequently diverted mind is
-> likely to miss a lot in a big patch like this. Could you consider
-> splitting this further if possible. I think you'll notice the number
-> of reviews will also increase.
->  
-
-Hi Balbir,
-
-Thanks for the review. Yes, this is a big patch. I will try to break it
-down further.
-
-Fabio has already responded to most of the questions. I will try to cover
-rest.
-
-[..]
-> > +static inline struct io_queue *elv_close_cooperator(struct request_queue *q,
-> > +					struct io_queue *ioq, int probe);
-> > +struct io_entity *bfq_lookup_next_entity(struct io_sched_data *sd,
-> > +						 int extract);
-> > +
-> > +static inline int elv_prio_slice(struct elv_fq_data *efqd, int sync,
-> > +					unsigned short prio)
+> We can easily repaint (ie, regenerate the fb content from the pseudo
+> vgacon image kept by the console layer).
 > 
-> Why is the return type int and not unsigned int or unsigned long? Can
-> the return value ever be negative?
+> So if we want the kernel to "take" over, it's reasonably easy to
+> make it also repaint the content of the fb.
 
-Actually this function was a replacement for cfq_prio_slice() hence return
-type int. But as slice value can never be negative, I can make it unsigned
-int.
+For just repainting panic messages, probably not.  For the dual head
+case I talked about though it would sure be nice...
 
-[..]
-> > + * bfq_gt - compare two timestamps.
-> > + * @a: first ts.
-> > + * @b: second ts.
-> > + *
-> > + * Return @a > @b, dealing with wrapping correctly.
-> > + */
-> > +static inline int bfq_gt(bfq_timestamp_t a, bfq_timestamp_t b)
-> > +{
-> > +	return (s64)(a - b) > 0;
-> > +}
-> > +
+> How, of course, kicking out usespace with unmap_mapping_ranges() isn't
+> going to work well from an oops or something at interrupt time, we
+> do need to have a reasonably safe path for these things, which is why
+> I believe that sort of emergency printing should be done without
+> any acceleration, just basic manual painting in the front buffer...
 > 
-> a and b are of type u64, but cast to s64 to deal with wrapping?
-> Correct?
+> Should we even bother changing the mode ? Not sure...
 
-Yes.
+Yeah I don't think we should try to change the mode, unless we really
+have to for whatever reason.  fbcon should generally be able to paint
+to whatever we have up as long as we set it up properly.
 
-> 
-> > +/**
-> > + * bfq_delta - map service into the virtual time domain.
-> > + * @service: amount of service.
-> > + * @weight: scale factor.
-> > + */
-> > +static inline bfq_timestamp_t bfq_delta(bfq_service_t service,
-> > +					bfq_weight_t weight)
-> > +{
-> > +	bfq_timestamp_t d = (bfq_timestamp_t)service << WFQ_SERVICE_SHIFT;
-> > +
-> 
-> Why is the case required? Does the compiler complain? service is
-> already of the correct type.
-> 
-> > +	do_div(d, weight);
-> 
-> On a 64 system both d and weight are 64 bit, but on a 32 bit system
-> weight is 32 bits. do_div expects a 64 bit dividend and 32 bit divisor
-> - no?
-> 
-
-d is of type "bfq_timestamp_t" which is u64 irrespective of 64 or 32 bit
-system. I think it might make sense to change type of "weight" from
-unsigned long to unsigned int so that it is 32bit on both 64 and 32bit
-systems. Will do...
-
-
-> > +	return d;
-> > +}
-> > +
-> > +/**
-> > + * bfq_calc_finish - assign the finish time to an entity.
-> > + * @entity: the entity to act upon.
-> > + * @service: the service to be charged to the entity.
-> > + */
-> > +static inline void bfq_calc_finish(struct io_entity *entity,
-> > +				   bfq_service_t service)
-> > +{
-> > +	BUG_ON(entity->weight == 0);
-> > +
-> > +	entity->finish = entity->start + bfq_delta(service, entity->weight);
-> > +}
-> 
-> Should we BUG_ON (entity->finish == entity->start)? Or is that
-> expected when the entity has no service time left.
-> 
-
-As Fabio said, that with preemption logic, I guess theoritically, it is
-possible that a io queue is preempted without any service received and
-requeued back. Hence it might not be a very good idea to
-BUG_ON(entity->finish == entity->start); 
-
-[..]
-> > +/**
-> > + * bfq_extract - remove an entity from a tree.
-> > + * @root: the tree root.
-> > + * @entity: the entity to remove.
-> > + */
-> > +static inline void bfq_extract(struct rb_root *root, struct io_entity *entity)
-> > +{
-> 
-> Extract is not common terminology, why not use bfq_remove()?
-> 
-
-*_remove() also sounds good. Will replace *_extract() with *_remove().
-
-> > +	BUG_ON(entity->tree != root);
-> > +
-> > +	entity->tree = NULL;
-> > +	rb_erase(&entity->rb_node, root);
-> 
-> Don't you want to make entity->tree = NULL after rb_erase?
-
-As Fabio said that it happens under queue spinlock held. But from
-readability point of view, it probably looks better to first remove it
-from rb tree then reset entity fields. Will change the order...
-
-> 
-> > +}
-> > +
-> > +/**
-> > + * bfq_idle_extract - extract an entity from the idle tree.
-> > + * @st: the service tree of the owning @entity.
-> > + * @entity: the entity being removed.
-> > + */
-> > +static void bfq_idle_extract(struct io_service_tree *st,
-> > +				struct io_entity *entity)
-> > +{
-> > +	struct rb_node *next;
-> > +
-> > +	BUG_ON(entity->tree != &st->idle);
-> > +
-> > +	if (entity == st->first_idle) {
-> > +		next = rb_next(&entity->rb_node);
-> 
-> What happens if next is NULL?
-> 
-> > +		st->first_idle = bfq_entity_of(next);
-> > +	}
-> > +
-> > +	if (entity == st->last_idle) {
-> > +		next = rb_prev(&entity->rb_node);
-> 
-> What happens if next is NULL?
-> 
-> > +		st->last_idle = bfq_entity_of(next);
-
-bfq_entity_of() is capable of handling next == NULL.
-
-I can change it to following if you think it is more readable.
-
-	if (entity == st->first_idle) {
-		next = rb_next(&entity->rb_node);
-		if (next)
-			st->first_idle = bfq_entity_of(next);
-		else
-			st->first_idle = NULL;
-	}
-
-[..]
-
-> > +static void elv_ioq_update_io_thinktime(struct io_queue *ioq)
-> > +{
-> > +	struct elv_fq_data *efqd = ioq->efqd;
-> > +	unsigned long elapsed = jiffies - ioq->last_end_request;
-> > +	unsigned long ttime = min(elapsed, 2UL * efqd->elv_slice_idle);
-> > +
-> > +	ioq->ttime_samples = (7*ioq->ttime_samples + 256) / 8;
-> > +	ioq->ttime_total = (7*ioq->ttime_total + 256*ttime) / 8;
-> > +	ioq->ttime_mean = (ioq->ttime_total + 128) / ioq->ttime_samples;
-> > +}
-> 
-> Not sure I understand the magical 7, 8, 2, 128 and 256. Please help me
-> understand the algorithm.
-
-Taken from CFQ. 
-
-> > +int elv_init_ioq(struct elevator_queue *eq, struct io_queue *ioq,
-> > +			void *sched_queue, int ioprio_class, int ioprio,
-> > +			int is_sync)
-> > +{
-> > +	struct elv_fq_data *efqd = &eq->efqd;
-> > +	struct io_group *iog = io_lookup_io_group_current(efqd->queue);
-> > +
-> > +	RB_CLEAR_NODE(&ioq->entity.rb_node);
-> > +	atomic_set(&ioq->ref, 0);
-> > +	ioq->efqd = efqd;
-> > +	elv_ioq_set_ioprio_class(ioq, ioprio_class);
-> > +	elv_ioq_set_ioprio(ioq, ioprio);
-> > +	ioq->pid = current->pid;
-> 
-> Is pid used for cgroup association later? I don't see why we save the
-> pid otherwise? If yes, why not store the cgroup of the current->pid?
-> 
-
-This is just for logging purposes (blktrace), useful for CFQ where every task
-context sets up one queue and this number becomes the identifier for the queue.
-Look at elv_log_ioq(), which uses ioq->pid.
-
-[..]
-> > + * coop tells that io scheduler selected a queue for us and we did not
-> 
-> coop?
-
-coop refers to "cooperating". I guess "coop" is not descriptive. I will
-change the name to "cooperating" and also put more description for
-clarity.
-
-[..]
-> > diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> > new file mode 100644
-> > index 0000000..5b6c1cc
-> > --- /dev/null
-> > +++ b/block/elevator-fq.h
-> > @@ -0,0 +1,473 @@
-> > +/*
-> > + * BFQ: data structures and common functions prototypes.
-> > + *
-> > + * Based on ideas and code from CFQ:
-> > + * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-> > + *
-> > + * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-> > + *		      Paolo Valente <paolo.valente@unimore.it>
-> > + * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-> > + * 	              Nauman Rafique <nauman@google.com>
-> > + */
-> > +
-> > +#include <linux/blkdev.h>
-> > +
-> > +#ifndef _BFQ_SCHED_H
-> > +#define _BFQ_SCHED_H
-> > +
-> > +#define IO_IOPRIO_CLASSES	3
-> > +
-> > +typedef u64 bfq_timestamp_t;
-> > +typedef unsigned long bfq_weight_t;
-> > +typedef unsigned long bfq_service_t;
-> 
-> Does this abstraction really provide any benefit? Why not directly use
-> the standard C types, make the code easier to read.
-
-I think using standard C type is better now. Will get rid of these
-abstractions. Fabio also seems to be ok with this change.
-
-> 
-> > +struct io_entity;
-> > +struct io_queue;
-> > +
-> > +#ifdef CONFIG_ELV_FAIR_QUEUING
-> > +
-> > +#define ELV_ATTR(name) \
-> > +	__ATTR(name, S_IRUGO|S_IWUSR, elv_##name##_show, elv_##name##_store)
-> > +
-> > +/**
-> > + * struct bfq_service_tree - per ioprio_class service tree.
-> 
-> Comment is old, does not reflect the newer name
-
-Yes, this is all over the code. I have not taken care of updating the
-comments from original bfq code. Will do it.
-
-> 
-> > + * @active: tree for active entities (i.e., those backlogged).
-> > + * @idle: tree for idle entities (i.e., those not backlogged, with V <= F_i).
-> > + * @first_idle: idle entity with minimum F_i.
-> > + * @last_idle: idle entity with maximum F_i.
-> > + * @vtime: scheduler virtual time.
-> > + * @wsum: scheduler weight sum; active and idle entities contribute to it.
-> > + *
-> > + * Each service tree represents a B-WF2Q+ scheduler on its own.  Each
-> > + * ioprio_class has its own independent scheduler, and so its own
-> > + * bfq_service_tree.  All the fields are protected by the queue lock
-> > + * of the containing efqd.
-> > + */
-> > +struct io_service_tree {
-> > +	struct rb_root active;
-> > +	struct rb_root idle;
-> > +
-> > +	struct io_entity *first_idle;
-> > +	struct io_entity *last_idle;
-> > +
-> > +	bfq_timestamp_t vtime;
-> > +	bfq_weight_t wsum;
-> > +};
-> > +
-> > +/**
-> > + * struct bfq_sched_data - multi-class scheduler.
-> 
-> Again the naming convention is broken, you need to change several
-> bfq's to io's :)
-
-Yes. Will do. :-)
-
-> > +/*
-> > + * A common structure embedded by every io scheduler into their respective
-> > + * queue structure.
-> > + */
-> > +struct io_queue {
-> > +	struct io_entity entity;
-> 
-> So the io_queue has an abstract entity called io_entity that contains
-> it QoS parameters? Correct?
-> 
-> > +	atomic_t ref;
-> > +	unsigned int flags;
-> > +
-> > +	/* Pointer to generic elevator data structure */
-> > +	struct elv_fq_data *efqd;
-> > +	pid_t pid;
-> 
-> Why do we store the pid?
-
-pid of the process which caused io queue creation.
-
-> 
-> > +
-> > +	/* Number of requests queued on this io queue */
-> > +	unsigned long nr_queued;
-> > +
-> > +	/* Requests dispatched from this queue */
-> > +	int dispatched;
-> > +
-> > +	/* Keep a track of think time of processes in this queue */
-> > +	unsigned long last_end_request;
-> > +	unsigned long ttime_total;
-> > +	unsigned long ttime_samples;
-> > +	unsigned long ttime_mean;
-> > +
-> > +	unsigned long slice_end;
-> > +
-> > +	/* Pointer to io scheduler's queue */
-> > +	void *sched_queue;
-> > +};
-> > +
-> > +struct io_group {
-> > +	struct io_sched_data sched_data;
-> > +
-> > +	/* async_queue and idle_queue are used only for cfq */
-> > +	struct io_queue *async_queue[2][IOPRIO_BE_NR];
-> 
-> Again the 2 is confusing
-> 
-
-Taken from CFQ. CFQ supports 8 prio levels for RT and BE class. We
-maintain one async queue pointer per prio level for both RT and BE class.
-Above number 2 is for RT and BE class.
-
-> > +	struct io_queue *async_idle_queue;
-> > +
-> > +	/*
-> > +	 * Used to track any pending rt requests so we can pre-empt current
-> > +	 * non-RT cfqq in service when this value is non-zero.
-> > +	 */
-> > +	unsigned int busy_rt_queues;
-> > +};
-> > +
-> > +struct elv_fq_data {
-> 
-> What does fq stand for?
-
-Fair queuing. Any suggestions to make it better?
-
-> 
-> > +	struct io_group *root_group;
-> > +
-> > +	struct request_queue *queue;
-> > +	unsigned int busy_queues;
-> > +
-> > +	/* Number of requests queued */
-> > +	int rq_queued;
-> > +
-> > +	/* Pointer to the ioscheduler queue being served */
-> > +	void *active_queue;
-> > +
-> > +	int rq_in_driver;
-> > +	int hw_tag;
-> > +	int hw_tag_samples;
-> > +	int rq_in_driver_peak;
-> 
-> Some comments of _in_driver and _in_driver_peak would be nice.
-
-Taken from CFQ. So somebody familiar with CFQ code can quickly relate. 
-But anyway, I will put two lines of comments.
-
-> 
-> > +
-> > +	/*
-> > +	 * elevator fair queuing layer has the capability to provide idling
-> > +	 * for ensuring fairness for processes doing dependent reads.
-> > +	 * This might be needed to ensure fairness among two processes doing
-> > +	 * synchronous reads in two different cgroups. noop and deadline don't
-> > +	 * have any notion of anticipation/idling. As of now, these are the
-> > +	 * users of this functionality.
-> > +	 */
-> > +	unsigned int elv_slice_idle;
-> > +	struct timer_list idle_slice_timer;
-> > +	struct work_struct unplug_work;
-> > +
-> > +	unsigned int elv_slice[2];
-> 
-> Why [2] makes the code hearder to read
-
-Taken from CFQ. it represents base slice length for sync and async queues.
-With put a line of comment.
-
-Thanks
-Vivek
+-- 
+Jesse Barnes, Intel Open Source Technology Center
