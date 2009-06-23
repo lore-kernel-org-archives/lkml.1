@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZFWNAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbZFWNDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758960AbZFWNAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZFWNAh
+	id S1757666AbZFWNDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZFWNDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:00:37 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:55613 "EHLO dan.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbZFWNAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:00:36 -0400
-Subject: Re: Bug in tdo24m
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Aviv Laufer <aviv.laufer@gmail.com>
-Cc: eric.miao@marvell.com, linux-kernel@vger.kernel.org
-In-Reply-To: <87972c700906230516n538ad959nbd4b1ea21943ffc2@mail.gmail.com>
-References: <87972c700906230516n538ad959nbd4b1ea21943ffc2@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 13:58:53 +0100
-Message-Id: <1245761933.5987.20.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 09:03:13 -0400
+Received: from mailfilter6.ihug.co.nz ([203.109.136.6]:48434 "EHLO
+	mailfilter6.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbZFWNDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:03:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjVHAN5vQEpBeDlE/2dsb2JhbACOZQKIbIFtJoYAsFiCMweBUAWFcA
+X-IronPort-AV: E=Sophos;i="4.42,275,1243771200"; 
+   d="scan'208";a="106768427"
+MIME-Version: 1.0
+Date: Wed, 24 Jun 2009 01:03:09 +1200
+From: Camelot <info@cgl.com>
+To: undisclosed-recipients:;
+Subject: REF NO.REF:UKL/74-A0802742009
+Reply-To: claimsdomain@9.cn
+Message-ID: <380ac0748eec4ed36db3cda7830c9aab@ihug.co.nz>
+SenderIP: 65.120.57.68
+User-Agent: Vodafone Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 2009-06-23 at 15:16 +0300, Aviv Laufer wrote:
-> I have found a bug in tdo24m.c .
-> There is a call to kmalloc with the second param is sizeeof (flag)
-> instead of flag.
-> This cause  a crash.
-
-Thats quite a nasty bug and its surprising its not been found before
-now! Can you resubmit the patch with description and most importantly a
-Signed-off-by line please (see Documentation/SubmittingPatches)?
-
-Cheers,
-
-Richard
-
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+REF NO.REF:UKL/74-A0802742009
+Congrats in our Uk monthly online award bonanza by sending
+yourName,Add,Age,Tel to(claimsdomain@9.cn) for 891,934GBP.send your data
+for more details.Choose your claims option.
+          (1)Courier Delivery
+          (2)Bank Transfer
 
