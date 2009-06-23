@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbZFWUmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZFWUpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbZFWUmG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 16:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZFWUl6
+	id S1755977AbZFWUpi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 16:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbZFWUpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 16:41:58 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57043 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752228AbZFWUl5 (ORCPT
+	Tue, 23 Jun 2009 16:45:31 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:57800 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbZFWUpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 16:41:57 -0400
-Date: Tue, 23 Jun 2009 15:42:02 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] NFS: Correct the NFS mount path when following a
-	referral
-Message-ID: <20090623204202.GA25969@us.ibm.com>
-References: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org> <20090622190914.27923.84173.stgit@heimdal.trondhjem.org>
+	Tue, 23 Jun 2009 16:45:31 -0400
+Date: Tue, 23 Jun 2009 21:45:24 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Len Brown <lenb@kernel.org>
+Cc: sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI): initial
+	support
+Message-ID: <20090623204524.GA15891@srcf.ucam.org>
+References: <1245741246-6503-1-git-send-email-lenb@kernel.org> <20090623183153.GB12814@srcf.ucam.org> <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain> <20090623185120.GA13824@srcf.ucam.org> <alpine.LFD.2.00.0906231541400.23079@localhost.localdomain> <20090623202302.GA15265@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622190914.27923.84173.stgit@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090623202302.GA15265@srcf.ucam.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Trond Myklebust (Trond.Myklebust@netapp.com):
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
-> 
->  fs/nfs/super.c |   24 ++++++++++++++++++++++++
->  1 files changed, 24 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-> index 8da7e59..daecbad 100644
-> --- a/fs/nfs/super.c
-> +++ b/fs/nfs/super.c
-> @@ -2548,6 +2548,27 @@ static struct vfsmount *nfs_do_root_mount(struct file_system_type *fs_type,
->  	return root_mnt;
->  }
-> 
-> +static void nfs_fix_devname(const struct path *path, struct vfsmount *mnt)
-> +{
-> +	char *page = (char *) __get_free_page(GFP_KERNEL);
-> +	char *devname, *tmp;
-> +
-> +	if (page == NULL)
-> +		return;
-> +	devname = nfs_path(path->mnt->mnt_devname,
-> +			path->mnt->mnt_root, path->dentry,
-> +			page, PAGE_SIZE);
-> +	if (devname == NULL)
-> +		goto out_freepage;
-> +	tmp = kstrdup(devname, GFP_KERNEL);
-> +	if (tmp == NULL)
-> +		goto out_freepage;
-> +	kfree(mnt->mnt_devname);
-> +	mnt->mnt_devname = tmp;
+I think I've got a clearer understanding of my objections to this now. 
+The first is that SFI is designed to support the subset of information 
+that's in ACPI and which can't be intuited by the OS. However, that 
+subset is predicated on the system looking like Moorestown. A system 
+that wants to provide any information beyond that subset can't use SFI 
+unless it defines additional tables.
 
-(looking through patch 3 a bit) is this expected to be safe because all
-callers will send in a mnt which was privately mounted as nfs root_mnt through
-vfs_kern_mount?  So that at this point noone else can have a ref to
-mnt?
+And that brings me onto my second issue. ACPI is sufficiently 
+generalised that there's little need for vendors to add additional 
+tables. SFI isn't, and so vendor adoption is going to require 
+vendor-specific tables. This potentially results in SFI bloating out to 
+cover much of the functionality of ACPI, while at the same time turning 
+into a namespacing nightmare. Without a formal process for adding new 
+tables and without any kind of certification requirements before 
+claiming SFI compatibility, we're looking at a real risk of collisions.
 
-If that isn't the intent, then this seems problematic...  (If it is, it
-seems worth commenting both so that every reader doesn't feel compelled
-to verify, and so that no new callers will naively violate that
-expectation)
+SFI appears to be presented as a generic firmware interface, but in 
+reality it's currently tightly wed to Moorestown and I don't see any way 
+that that can be fixed without reinventing chunks of ACPI. I'm certainly 
+not enthusiastic about seeing this presented as a fait accompli in 
+generic driver code, rather than under arch/x86/moorestown.
 
-thanks,
--serge
-
-> +out_freepage:
-> +	free_page((unsigned long)page);
-> +}
-> +
->  static int nfs_follow_remote_path(struct vfsmount *root_mnt,
->  		const char *export_path, struct vfsmount *mnt_target)
->  {
-> @@ -2574,6 +2595,9 @@ static int nfs_follow_remote_path(struct vfsmount *root_mnt,
->  	mnt_target->mnt_sb = s;
->  	mnt_target->mnt_root = dget(nd.path.dentry);
-> 
-> +	/* Correct the device pathname */
-> +	nfs_fix_devname(&nd.path, mnt_target);
-> +
->  	path_put(&nd.path);
->  	down_write(&s->s_umount);
->  	return 0;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
