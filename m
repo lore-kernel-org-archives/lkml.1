@@ -1,255 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZFWFo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZFWFwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbZFWFo7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZFWFou
+	id S1753804AbZFWFwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 01:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZFWFwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:44:50 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36319 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbZFWFot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:44:49 -0400
-Date: Tue, 23 Jun 2009 15:33:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 23
-Message-Id: <20090623153357.61f4a9a2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Tue, 23 Jun 2009 01:52:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34972 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751076AbZFWFwD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 01:52:03 -0400
+Date: Mon, 22 Jun 2009 22:51:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] printk: add printk_delay to make messages readable for
+ some  scenarios
+Message-Id: <20090622225154.61a95f60.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0906160154r3c7ab4d4u378efe4f5545e077@mail.gmail.com>
+References: <a8e1da0906160154r3c7ab4d4u378efe4f5545e077@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__23_Jun_2009_15_33_57_+1000_cTKzXOppjkStO+1s"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__23_Jun_2009_15_33_57_+1000_cTKzXOppjkStO+1s
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 16 Jun 2009 16:54:12 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
 
-Hi all,
+> When syslog is not possible, at the same time there's no serial/net console
+> available, it will be hard to read the printk messages.
+> For example oops/panic/warning messages in shutdown phase.
+> 
+> Here add a printk delay feature, we can make each printk message
+> delay some milliseconds.
+> 
+> Setting the delay by proc/sysctl interface: /proc/sys/kernel/printk_delay
+> 
+> The value range from 0 - 10000, default value is 0
+> 
 
-Changes since 20090622:
+Seems OK(ish).
 
-My fixes tree contains this one commit:
+> ---
+> Documentation/sysctl/kernel.txt |    8 ++++++++
+> include/linux/kernel.h          |    2 ++
+> include/linux/sysctl.h          |    1 +
+> kernel/printk.c                 |   14 ++++++++++++++
+> kernel/sysctl.c                 |   12 ++++++++++++
+> 5 files changed, 37 insertions(+)
+> 
+> --- linux-2.6.orig/kernel/printk.c	2009-06-16 11:07:15.000000000 +0800
+> +++ linux-2.6/kernel/printk.c	2009-06-16 11:31:01.000000000 +0800
+> @@ -638,6 +638,19 @@ static int recursion_bug;
+>  static int new_text_line = 1;
+>  static char printk_buf[1024];
+> 
+> +int printk_delay_msec;
+> +
+> +static inline void printk_delay(void)
+> +{
+> +	if (unlikely(printk_delay_msec)) {
+> +		int m = printk_delay_msec;
+> +		while (m--) {
+> +			mdelay(1);
+> +			touch_nmi_watchdog();
+> +		}
+> +	}
+> +}
+> +
+>  asmlinkage int vprintk(const char *fmt, va_list args)
+>  {
+>  	int printed_len = 0;
+> @@ -647,6 +660,7 @@ asmlinkage int vprintk(const char *fmt,
+>  	char *p;
+> 
+>  	boot_delay_msec();
+> +	printk_delay();
+> 
+>  	preempt_disable();
+>  	/* This stops the holder of console_sem just where we want him */
+> --- linux-2.6.orig/include/linux/kernel.h	2009-04-18 19:48:06.000000000 +0800
+> +++ linux-2.6/include/linux/kernel.h	2009-06-16 11:24:43.000000000 +0800
+> @@ -243,6 +243,8 @@ extern int printk_ratelimit(void);
+>  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+>  				   unsigned int interval_msec);
+> 
+> +extern int printk_delay_msec;
+> +
 
-	fbdev: work around old compiler bug (this works around a bug in
-old compilers).
+Sigh.
 
-This tree fails to build for powerpc allyesconfig.
+It's pretty dumb to clutter up kernel.h just because we want to share a
+declaration with sysctl.c.  And it was pretty dumb to fill sysctl.c with
+extern declarations.
 
-The slab tree lost its conflict and build failure.
+What we should do is to create a new header file which contains all the
+declarations which sysctl.c needs.  Include that from within sysctl.c
+and all .c files which which to share declarations with sysctl.c.
 
-----------------------------------------------------------------------------
+But that's all a matter for another patchset.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+>  /*
+>   * Print a one-time message (analogous to WARN_ONCE() et al):
+>   */
+> --- linux-2.6.orig/kernel/sysctl.c	2009-06-15 10:33:11.000000000 +0800
+> +++ linux-2.6/kernel/sysctl.c	2009-06-16 11:29:52.000000000 +0800
+> @@ -102,6 +102,7 @@ static int __maybe_unused one = 1;
+>  static int __maybe_unused two = 2;
+>  static unsigned long one_ul = 1;
+>  static int one_hundred = 100;
+> +static int ten_thousand = 10000;
+> 
+>  /* this is needed for the proc_doulongvec_minmax of vm_dirty_bytes */
+>  static unsigned long dirty_bytes_min = 2 * PAGE_SIZE;
+> @@ -699,6 +700,17 @@ static struct ctl_table kern_table[] = {
+>  		.mode		= 0644,
+>  		.proc_handler	= &proc_dointvec,
+>  	},
+> +	{
+> +		.ctl_name	= KERN_PRINTK_DELAY,
+> +		.procname	= "printk_delay",
+> +		.data		= &printk_delay_msec,
+> +		.maxlen		= sizeof(int),
+> +		.mode		= 0644,
+> +		.proc_handler	= &proc_dointvec_minmax,
+> +		.strategy	= &sysctl_intvec,
+> +		.extra1		= &zero,
+> +		.extra2		= &ten_thousand,
+> +	},
+>  #endif
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+See that endif there?  If CONFIG_PRINTK=n, we'll get an unused-var
+warning for `ten_thousand'.  Another sysctl.c wart.  I'll fix it.
 
-Below is a summary of the state of the merge.
+>  	{
+>  		.ctl_name	= KERN_NGROUPS_MAX,
+> --- linux-2.6.orig/include/linux/sysctl.h	2009-04-09 16:23:01.000000000 +0800
+> +++ linux-2.6/include/linux/sysctl.h	2009-06-16 12:30:14.000000000 +0800
+> @@ -163,6 +163,7 @@ enum
+>  	KERN_MAX_LOCK_DEPTH=74,
+>  	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
+>  	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
+> +	KERN_PRINTK_DELAY = 77,	/* int: tune printk delay*/
 
-We are up to 130 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+No, we don't do this any more.  I'll fix that too.
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
+Please retest the result.
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
 
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+diff -puN include/linux/sysctl.h~printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-fix include/linux/sysctl.h
+--- a/include/linux/sysctl.h~printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-fix
++++ a/include/linux/sysctl.h
+@@ -163,7 +163,6 @@ enum
+ 	KERN_MAX_LOCK_DEPTH=74,
+ 	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
+ 	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
+-	KERN_PRINTK_DELAY = 77,	/* int: tune printk delay*/
+ };
+ 
+ 
+--- a/kernel/sysctl.c~printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-fix
++++ a/kernel/sysctl.c
+@@ -103,7 +103,9 @@ static int __maybe_unused one = 1;
+ static int __maybe_unused two = 2;
+ static unsigned long one_ul = 1;
+ static int one_hundred = 100;
++#ifdef CONFIG_PRINTK
+ static int ten_thousand = 10000;
++#endif
+ 
+ /* this is needed for the proc_doulongvec_minmax of vm_dirty_bytes */
+ static unsigned long dirty_bytes_min = 2 * PAGE_SIZE;
+@@ -710,7 +712,7 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+-		.ctl_name	= KERN_PRINTK_DELAY,
++		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "printk_delay",
+ 		.data		= &printk_delay_msec,
+ 		.maxlen		= sizeof(int),
+_
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
-CONFLICT (content): Merge conflict in drivers/input/evdev.c
-CONFLICT (content): Merge conflict in drivers/platform/x86/eeepc-laptop.c
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-CONFLICT (add/add): Merge conflict in drivers/staging/serqt_usb2/serqt_usb2=
-.c
-CONFLICT (content): Merge conflict in include/linux/rfkill.h
-$ git reset --hard HEAD^
-Merging refs/next/20090619/microblaze
-Merging mips/mips-for-linux-next
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/platform/x86/eeepc-laptop.c
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
-Merging asm-generic/next
-Merging quilt/driver-core
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Tue__23_Jun_2009_15_33_57_+1000_cTKzXOppjkStO+1s
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpAaUUACgkQjjKRsyhoI8yNdQCdH0qqvDje0yr7PXdUyb2JAWCg
-g0UAnRw8XbRE60wTrHtv6uWBjg9zMu0+
-=8jiP
------END PGP SIGNATURE-----
-
---Signature=_Tue__23_Jun_2009_15_33_57_+1000_cTKzXOppjkStO+1s--
