@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZFWTYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZFWT0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbZFWTYj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZFWTYc
+	id S1755311AbZFWT0Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 15:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZFWT0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:24:32 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:51033 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZFWTYb (ORCPT
+	Tue, 23 Jun 2009 15:26:14 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:47443 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753878AbZFWT0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:24:31 -0400
-Date: Tue, 23 Jun 2009 21:26:51 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Feng Tang <feng.tang@intel.com>
-Cc: Len Brown <lenb@kernel.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/8] SFI: include/linux/sfi.h
-Message-ID: <20090623192650.GB23124@uranus.ravnborg.org>
-References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com> <b3fb5fa65a532941d61a8c8415495f752aac540d.1245740912.git.len.brown@intel.com> <20090623090654.GC19062@uranus.ravnborg.org> <20090623235217.17fe844c@feng-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623235217.17fe844c@feng-desktop>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 23 Jun 2009 15:26:13 -0400
+X-Auth-Info: GWx2JHzxBtgJ+OJImfX7G/1ZssN4tVXCdtHqoAN7+ho=
+Message-ID: <4A412C53.8050607@grandegger.com>
+Date: Tue, 23 Jun 2009 21:26:11 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: David Miller <davem@davemloft.net>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] can: let SJA1000 driver depend on HAS_IOMEM
+References: <20090623073120.GA5955@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090623073120.GA5955@osiris.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 11:52:17PM +0800, Feng Tang wrote:
-> On Tue, 23 Jun 2009 17:06:54 +0800
-> Sam Ravnborg <sam@ravnborg.org> wrote:
+Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> > > +/*
-> > > + * Table structures must be byte-packed to match the SFI
-> > > specification,
-> > > + * as they are provided by the BIOS.
-> > > + */
-> > > +#pragma pack(1)
-> > > +struct sfi_table_header {
-> > > +	char signature[SFI_SIGNATURE_SIZE];
-> > > +	u32 length;
-> > > +	u8 revision;
-> > > +	u8 checksum;
-> > > +	char oem_id[SFI_OEM_ID_SIZE];
-> > > +	char oem_table_id[SFI_OEM_TABLE_ID_SIZE];
-> > > +};
-> > Are they endian specific?
-> > In that case use the correct endian specific types.
+> Fixes this compile error on s390:
 > 
-> I can try to answer this question, Len, correct me if I'm wrong.
+> drivers/net/can/sja1000/sja1000_platform.c: In function 'sp_read_reg':
+> drivers/net/can/sja1000/sja1000_platform.c:42: error: implicit declaration of function 'ioread8'
+> drivers/net/can/sja1000/sja1000_platform.c: In function 'sp_write_reg':
+> drivers/net/can/sja1000/sja1000_platform.c:47: error: implicit declaration of function 'iowrite8'
+> drivers/net/can/sja1000/sja1000_platform.c: In function 'sp_probe':
+> drivers/net/can/sja1000/sja1000_platform.c:79: error: implicit declaration of function 'ioremap_nocache'
 > 
-> These SFI tables are just byte strings, and created by FW, FW can chose
-> to use big-endian or little-endian in these tables based on what platform
-> they are used. So it's transparent for SFI driver code.
+> Cc: Wolfgang Grandegger <wg@grandegger.com>
+> Cc: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  drivers/net/can/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/net/can/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/can/Kconfig
+> +++ linux-2.6/drivers/net/can/Kconfig
+> @@ -36,7 +36,7 @@ config CAN_CALC_BITTIMING
+>  	  If unsure, say Y.
+>  
+>  config CAN_SJA1000
+> -	depends on CAN_DEV
+> +	depends on CAN_DEV && HAS_IOMEM
+>  	tristate "Philips SJA1000"
+>  	---help---
+>  	  Driver for the SJA1000 CAN controllers from Philips or NXP
 
-But we have "u32 length;" - but I guess the signature
-tell the endian then.
+Hm, this Kconfig entry is not directly responsible for building
+sja1000_platform.o. It builds sja1000.o, which does not rely on
+HAS_IOMEM. It should be added to "config CAN_SJA1000_PLATFORM" instead.
+Does the patch below work for you?
 
-	Sam
+Wolfgang.
+
+---
+ drivers/net/can/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: net-next-2.6/drivers/net/can/Kconfig
+===================================================================
+--- net-next-2.6.orig/drivers/net/can/Kconfig
++++ net-next-2.6/drivers/net/can/Kconfig
+@@ -42,7 +42,7 @@ config CAN_SJA1000
+ 	  Driver for the SJA1000 CAN controllers from Philips or NXP
+
+ config CAN_SJA1000_PLATFORM
+-	depends on CAN_SJA1000
++	depends on HAS_IOMEM && CAN_SJA1000
+ 	tristate "Generic Platform Bus based SJA1000 driver"
+ 	---help---
+ 	  This driver adds support for the SJA1000 chips connected to
+
+
