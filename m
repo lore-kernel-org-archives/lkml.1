@@ -1,114 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbZFWM6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZFWM73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758167AbZFWM6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 08:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbZFWM6a
+	id S1757624AbZFWM73 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 08:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZFWM7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 08:58:30 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:44667 "EHLO e1.ny.us.ibm.com"
+	Tue, 23 Jun 2009 08:59:19 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:51012 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757117AbZFWM6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 08:58:30 -0400
-Date: Tue, 23 Jun 2009 05:58:32 -0700
+	id S1752397AbZFWM7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 08:59:18 -0400
+Date: Tue, 23 Jun 2009 05:59:20 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, niv@us.ibm.com, dvhltc@us.ibm.com,
-       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
-Subject: Re: [PATCH] v5 RCU: the bloatwatch edition
-Message-ID: <20090623125832.GA6872@linux.vnet.ibm.com>
+Cc: Darren Hart <dvhltc@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       niv@us.ibm.com, lethal@linux-sh.org, kernel@wantstofly.org,
+       matthew@wil.cx
+Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
+Message-ID: <20090623125920.GB6872@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090623042442.GA15630@linux.vnet.ibm.com> <28711.1245748358@redhat.com> <20090623093208.GD23698@elte.hu>
+References: <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu> <11979.1241648574@redhat.com> <26931.1245670998@redhat.com> <20090622124951.GB30553@elte.hu> <20090622082941.c5c8b3f3.akpm@linux-foundation.org> <20090622160753.GE6754@linux.vnet.ibm.com> <4A3FB1A5.3060805@us.ibm.com> <20090622170831.GF6754@linux.vnet.ibm.com> <20090623094846.GB30634@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090623093208.GD23698@elte.hu>
+In-Reply-To: <20090623094846.GB30634@elte.hu>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 11:32:08AM +0200, Ingo Molnar wrote:
+On Tue, Jun 23, 2009 at 11:48:46AM +0200, Ingo Molnar wrote:
 > 
-> * David Howells <dhowells@redhat.com> wrote:
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> > Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > On Mon, Jun 22, 2009 at 09:30:29AM -0700, Darren Hart wrote:
+> > > Paul E. McKenney wrote:
+> > >> On Mon, Jun 22, 2009 at 08:29:41AM -0700, Andrew Morton wrote:
+> > >>> On Mon, 22 Jun 2009 14:49:51 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> > >>>
+> > >>>> * David Howells <dhowells@redhat.com> wrote:
+> > >>>>
+> > >>>>> Hi Paul,
+> > >>>>>
+> > >>>>> Are you going to push your RCU patch for this merge window?
+> > >>>> Andrew needs to be convinced for that to happen.
+> > >>>>
+> > >>> whome?  I rarely have firm opinions on anything.  iirc the question
+> > >>> here was "is it worth adding another RCU implementation to save 900
+> > >>> bytes"?
+> > >>>
+> > >>> I find it pretty hard to see how to come up with "yes" for that one but
+> > >>> it's hardly a huge issue.  If you guys feel otherwise then go wild.
+> > >> Well, I do need to pull the "expedited" interface into the bloatwatch
+> > >> version, and my update of rcutorture made me realize that I can cut
+> > >> out a few more bytes, so I will submit an update.  For what it is worth,
+> > >> here are the opinions expressed on LKML:
+> > >> +	Ingo Molnar: good documentation, minimal RCU implementation.
+> > >> ?	Andi Kleen: will there be !SMP systems in the future?
+> > >> +	Lennert Buytenhek: there will be !SMP ARM for a long time.
+> > >> +	Paul Mundt: good idea for more-constrained SH platforms.
+> > >> +	David Howells: Acked-by.  works on FRV board.
+> > >> ?	Andrew Morton: do we really need another RCU implementation?
+> > >> Of course, I well remember programming systems with 4K of core memory
+> > >> back in the 1970s, and therefore feel a bit guilty about sticking deep
+> > >> embedded platforms with the increase in memory footprint represented
+> > >> by Hierarchical RCU compared to Classic RCU.  And Bloatwatch RCU is much
+> > >> smaller and easier to understand/maintain than is Classic RCU.
+> > >> So, again, I will forward port, optimize, test, and resubmit.
+> > >
+> > > IIRC, in previous threads on this topic, the Bloatwatch edition was 
+> > > expected to replace Classic RCU.  If so, wouldn't that address Andrew's 
+> > > concern of "adding" another implementation?
 > > 
-> > > This patch is a version of RCU designed for (!SMP && EMBEDDED)
-> > > provided as a proof of concept of a small-footprint RCU implementation.
-> > > In particular, the implementation of synchronize_rcu() is extremely
-> > > lightweight and high performance.  It passes rcutorture testing in each
-> > > of the four relevant configurations (combinations of NO_HZ and PREEMPT)
-> > > on x86.  This saves 1263 bytes compared to Classic RCU, and more than
-> > > three kilobytes compared to Hierarchical RCU (updated to 2.6.30):
-> > 
-> > On FRV:
-> > 
-> > 	CONFIG_CLASSIC_RCU=y
-> > 
-> > 	   text    data     bss     dec     hex filename
-> > 	    884      32      20     936     3a8 kernel/rcupdate.o
-> > 	   2616     184       0    2800     af0 kernel/rcuclassic.o
-> > 
-> > 	CONFIG_TREE_RCU=y
-> > 
-> > 	   text    data     bss     dec     hex filename
-> > 	    884      32      20     936     3a8 kernel/rcupdate.o
-> > 	   4068     384       0    4452    1164 kernel/rcutree.o
-> > 
-> > 	CONFIG_TINY_RCU=y
-> > 
-> > 	   text    data     bss     dec     hex filename
-> > 	    836      32      20     888     378 kernel/rcupdate.o
-> > 	    816      24       0     840     348 kernel/rcutiny.o
-> > 
-> > On MN10300:
-> > 
-> > 	CONFIG_CLASSIC_RCU=y
-> > 
-> > 	   text    data     bss     dec     hex filename
-> > 	    900      28      48     976     3d0 kernel/rcupdate.o
-> > 	   1777     184       0    1961     7a9 kernel/rcuclassic.o
-> > 
-> > 	CONFIG_TREE_RCU=y
-> > 
-> > 	   text    data     bss     dec     hex filename
-> > 	    900      28      48     976     3d0 kernel/rcupdate.o
-> > 	   2733     384       0    3117     c2d kernel/rcutree.o
-> > 
-> > 	CONFIG_PREEMPT_RCU=y
-> > 
-> > 	   text    data     bss     dec     hex filename
-> > 	    961      28      48    1037     40d kernel/rcupdate.o
-> > 	   3314     128       8    3450     d7a kernel/rcupreempt.o
-> > 
-> > 	CONFIG_TINY_RCU=y
-> > 
-> > 	   text    data     bss     dec     hex filename
-> > 	    865      28      48     941     3ad kernel/rcupdate.o
-> > 	    500      24       0     524     20c kernel/rcutiny.o
-> > 
-> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > Acked-by: David Howells <dhowells@redhat.com
+> > Andrew expressed a preference for dropping Classic RCU without 
+> > adding Bloatwatch RCU.  ;-)
 > 
-> Ok, that's more convincing than 900 bytes on x86.
+> Yes. In Linux there's no forced 'tie-in' of features and we'll 
+> brutally untie them and use the most productive combination, if 
+> justified technically ;-)
 
-It used to be 900 bytes.  In 2.6.30, it is 1263 bytes.  ;-)
-
-That said, I agree that FRV and MN10300 savings are more impressive.
-
-> Paul, i guess this is .32 material anyway, right?
-
-I am personally OK with it being .32, as long as David Howells,
-Lennert Buytenhek, and Paul Mundt are OK with that schedule.
-
-> Since there's plenty of time, could we perhaps also do the 
-> classic-rcu removal and integrate-rcupreempt-into-tree-rcu steps, to 
-> reduce the (significant) config complexity perhaps?
-
-Classic-RCU removal most certainly.  I am hoping to get the
-integrate-rcupreempt-into-tree-rcu piece done in .32 timeframe, but
-there is a chance that it may be a bit later.
+;-)
 
 							Thanx, Paul
