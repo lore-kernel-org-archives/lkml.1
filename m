@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZFWLOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbZFWLR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbZFWLOF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZFWLNy
+	id S1757577AbZFWLR7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZFWLRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:13:54 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:60646 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752367AbZFWLNx (ORCPT
+	Tue, 23 Jun 2009 07:17:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49693 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbZFWLRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:13:53 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] ide-cd: Improve "weird block size" error message
-Date: Tue, 23 Jun 2009 13:13:53 +0200
-User-Agent: KMail/1.9.9
-Cc: bzolnier@gmail.com, sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200906222101.38586.elendil@planet.nl> <200906230951.24615.elendil@planet.nl> <20090623.035926.155211513.davem@davemloft.net>
-In-Reply-To: <20090623.035926.155211513.davem@davemloft.net>
+	Tue, 23 Jun 2009 07:17:51 -0400
+Date: Tue, 23 Jun 2009 07:17:52 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: merging the per-bdi writeback patchset
+Message-ID: <20090623111752.GA23813@infradead.org>
+References: <20090623081156.GT31415@kernel.dk> <20090623110933.GA16565@infradead.org> <20090623111209.GZ31415@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906231313.55057.elendil@planet.nl>
-X-OriginalArrivalTime: 23 Jun 2009 11:13:55.0494 (UTC) FILETIME=[B28CBC60:01C9F3F3]
+In-Reply-To: <20090623111209.GZ31415@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, David Miller wrote:
-> Therefore, any objections to something like this?
->
-> ide-cd: Don't warn on bogus block size unless it actually matters.
->
-> Frans Pop reported that his CDROM drive reports a blocksize of 2352,
-> and this causes new warnings due to commit
-> e8e7b9eb11c34ee18bde8b7011af41938d1ad667 ("ide-cd: fix oops when using
-> growisofs").
->
-> What we're trying to do is make sure that "blocklen >> SECTOR_BITS"
-> is something the block layer won't choke on.
->
-> And for Frans case "2352 >> SECTOR_BITS" is equal to
-> "2048 >> SECTOR_BITS", and thats "4".
+On Tue, Jun 23, 2009 at 01:12:10PM +0200, Jens Axboe wrote:
+> > Last time we discussed this you said you're happy with 2.6.32.  I really
+> > want to take a more detailed look and put that on the not so urgent list
+> > because ou didn't seem to rush for .31.  So my vote goes for waiting a
+> > bit longer.
+> 
+> Yeah, 2.6.32 works for me too, .31 would have been nice though so I
+> don't have to carry it around anymore. But either is fine, if you and
+> Andrew want more time to review this stuff, then lets just settle for
+> .32.
 
-So basically there's garbage in unused bits?
+Yes, I'd really prefer more time.  I also expect to come up with some
+more changes in that area.  Your patch makes the differences between
+kupdate and pdflush-stye writeback look even more ugly then it already
+is, so I want to see i there's some nicer way to handle it.  I also want
+to take a look if it makes sense to distangle data integrity and
+background writeback somehow.
 
-> So warning in this case gives no real benefit.
-
-Fine by me. I'll be glad to be rid of that error :-)
-I'll give your patch a try with my next build.
-
-But I think my patch still makes sense for those cases where the original 
-error _does_ exist. Unless your patch fixes those as well, but we can't 
-know that for sure, can we?
