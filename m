@@ -1,49 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZFWT5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZFWUBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbZFWT5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756791AbZFWT5o
+	id S1754490AbZFWUBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 16:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757029AbZFWUBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:57:44 -0400
-Received: from mga05.intel.com ([192.55.52.89]:60762 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756015AbZFWT5n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:57:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,277,1243839600"; 
-   d="scan'208";a="701884950"
-Message-ID: <4A4133B6.704@linux.intel.com>
-Date: Tue, 23 Jun 2009 21:57:42 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 23 Jun 2009 16:01:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45119 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756440AbZFWUBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 16:01:18 -0400
+Date: Tue, 23 Jun 2009 20:00:46 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, peterz@infradead.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1245757369.3776.1.camel@localhost.localdomain>
+References: <1245757369.3776.1.camel@localhost.localdomain>
+Subject: [tip:perfcounters/urgent] perf stat: Fix verbose for perf stat
+Message-ID: <tip-cca03c0aeb18a975abec28df518a2b64ae3e6964@git.kernel.org>
+Git-Commit-ID: cca03c0aeb18a975abec28df518a2b64ae3e6964
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
- to 	disk, mce related?
-References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3EE668.5090400@jp.fujitsu.com>	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>	 <4A3F55C7.4030909@linux.intel.com>	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>	 <4A3F7A93.5080004@linux.intel.com>	 <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>	 <4A3F8BF7.6010406@linux.intel.com>	 <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>	 <4A404EC6.8080902@jp.fujitsu.com> <8db1092f0906230747j1bcfe041r11bd0ffbeaa8e41a@mail.gmail.com>
-In-Reply-To: <8db1092f0906230747j1bcfe041r11bd0ffbeaa8e41a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Jun 2009 20:00:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej Rutecki wrote:
-> 2009/6/23 Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>:
-> 
->> Maciej, could you try this patch?
-> 
-> Tested in 2 systems (for 17 and 30 minutes). Works without any
-> problems. Thanks for patch!
+Commit-ID:  cca03c0aeb18a975abec28df518a2b64ae3e6964
+Gitweb:     http://git.kernel.org/tip/cca03c0aeb18a975abec28df518a2b64ae3e6964
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Tue, 23 Jun 2009 17:12:49 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 23 Jun 2009 21:58:44 +0200
 
-Ok great. Thanks for testing. Peter please put Seto-san's patch into urgent.
+perf stat: Fix verbose for perf stat
 
-Acked-by: Andi Kleen <ak@linux.intel.com>
+Error message should use stderr for verbose (-v), otherwise
+message will be lost for:
 
-Thanks.
+ $ ./perf stat -v <cmd>  > /dev/null
 
--Andi
+For example on AMD bus-cycles event is not available so now
+it looks like:
+
+ $ ./perf stat -v -e bus-cycles ls > /dev/null
+Error: counter 0, sys_perf_counter_open() syscall returned with -1 (Invalid argument)
+
+ Performance counter stats for 'ls':
+
+  <not counted>  bus-cycles
+
+    0.006765877  seconds time elapsed.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1245757369.3776.1.camel@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/builtin-stat.c |   20 ++++++++++++--------
+ 1 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 6d3eeac..5e04fcc 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -109,6 +109,10 @@ static u64			walltime_nsecs_noise;
+ static u64			runtime_cycles_avg;
+ static u64			runtime_cycles_noise;
+ 
++
++#define ERR_PERF_OPEN \
++"Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n"
++
+ static void create_perf_stat_counter(int counter)
+ {
+ 	struct perf_counter_attr *attr = attrs + counter;
+@@ -119,20 +123,20 @@ static void create_perf_stat_counter(int counter)
+ 
+ 	if (system_wide) {
+ 		int cpu;
+-		for (cpu = 0; cpu < nr_cpus; cpu ++) {
++		for (cpu = 0; cpu < nr_cpus; cpu++) {
+ 			fd[cpu][counter] = sys_perf_counter_open(attr, -1, cpu, -1, 0);
+-			if (fd[cpu][counter] < 0 && verbose) {
+-				printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[cpu][counter], strerror(errno));
+-			}
++			if (fd[cpu][counter] < 0 && verbose)
++				fprintf(stderr, ERR_PERF_OPEN, counter,
++					fd[cpu][counter], strerror(errno));
+ 		}
+ 	} else {
+ 		attr->inherit	= inherit;
+ 		attr->disabled	= 1;
+ 
+ 		fd[0][counter] = sys_perf_counter_open(attr, 0, -1, -1, 0);
+-		if (fd[0][counter] < 0 && verbose) {
+-			printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[0][counter], strerror(errno));
+-		}
++		if (fd[0][counter] < 0 && verbose)
++			fprintf(stderr, ERR_PERF_OPEN, counter,
++				fd[0][counter], strerror(errno));
+ 	}
+ }
+ 
+@@ -168,7 +172,7 @@ static void read_counter(int counter)
+ 	count[0] = count[1] = count[2] = 0;
+ 
+ 	nv = scale ? 3 : 1;
+-	for (cpu = 0; cpu < nr_cpus; cpu ++) {
++	for (cpu = 0; cpu < nr_cpus; cpu++) {
+ 		if (fd[cpu][counter] < 0)
+ 			continue;
+ 
