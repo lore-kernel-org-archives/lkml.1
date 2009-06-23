@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbZFWN3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbZFWN3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756983AbZFWN3K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZFWN2z
+	id S1759501AbZFWN3Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757933AbZFWN3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:28:55 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:38821 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbZFWN2y (ORCPT
+	Tue, 23 Jun 2009 09:29:02 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:53721 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758996AbZFWN27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:28:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type
-         :content-transfer-encoding;
-        b=O0D3926oI7AZroC7bm7wMeSynbSoe6a+w/JzxvcV7+1cv+GEOV+XVlbnMhPVZfwSQi
-         xgIVPHLdFH0nGG9Pbi/FOrvGT8dY7e3eIGeCvSLcWO43CU7NBiJ3R0kXGCnPBcvIf8gf
-         lbgxrP7pp/szK8PPu+uD5uOfOULzUsKVbtGA0=
+	Tue, 23 Jun 2009 09:28:59 -0400
+Date: Tue, 23 Jun 2009 18:58:57 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>
+Subject: Hardware Breakpoint interfaces for mainline?
+Message-ID: <20090623132857.GA4242@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
 MIME-Version: 1.0
-From: Aviv Laufer <aviv.laufer@gmail.com>
-Date: Tue, 23 Jun 2009 16:28:36 +0300
-Message-ID: <87972c700906230628l69a8a08ds4d182128bbd5dbe@mail.gmail.com>
-Subject: [PATCH] /drivers/video/backlight/tdo24m - crash on kmalloc
-To: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is  a crash in tdo24m module caused by a call to kmalloc with
-the second parameter sizeof(flag) instead of flag.
+Hi Ingo,
+	The hardware breakpoint patches and the ksym tracer (an ftrace
+plugin), as you know, are part of the -tip tree.
 
-Signed-off-by: Aviv Laufer <aviv.laufer@gmail.com>
----
+The patches to use debug registers by the kernel have been pursued since
+long (IIRC, since kprobe days) and their recent inclusion in -tip tree
+is done after accomodating your suggestions about the breakpoint
+infrastructure's design and after introducing an associated use-case in
+ftrace (ksym tracer).
 
+The breakpoint interfaces along with ksym tracer can be a fine addition
+to the kernel's debugging abilities in a variety of ways such as debugging
+memory corruption, data/memory access profiling, etc.
 
---- linux-2.6.30/drivers/video/backlight/tdo24m.c.orig	2009-06-23
-15:08:02.000000000 +0300
-+++ linux-2.6.30/drivers/video/backlight/tdo24m.c	2009-06-23
-15:09:05.000000000 +0300
-@@ -356,7 +356,7 @@ static int __devinit tdo24m_probe(struct
- 	lcd->power = FB_BLANK_POWERDOWN;
- 	lcd->mode = MODE_VGA;	/* default to VGA */
+Your recent concerns about a few usability issues and minor bugs in ksym
+tracer have been addressed and the relevant patches have been submitted
+for inclusion in -tip.
 
--	lcd->buf = kmalloc(TDO24M_SPI_BUFF_SIZE, sizeof(GFP_KERNEL));
-+	lcd->buf = kmalloc(TDO24M_SPI_BUFF_SIZE, GFP_KERNEL);
- 	if (lcd->buf == NULL) {
- 		kfree(lcd);
- 		return -ENOMEM;
+I believe that it is still your plan to submit this feature for mainline
+inclusion during this merge window, allowing developers to benefit from
+the debug register's abilities in x86 and spur further development of
+features on it.
+
+In this context, do you find a concern that still require the patches to
+remain in -tip? Or are there plans to submit the hardware breakpoint
+patchset for upstream inclusion during this 2.6.31 merge window itself?
+
+Kindly let me know of your plans for this feature.
+
+Thanks,
+K.Prasad
+
