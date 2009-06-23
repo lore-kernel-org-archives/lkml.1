@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760365AbZFWPEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbZFWPF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760365AbZFWPEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760254AbZFWPEB
+	id S1760592AbZFWPF0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760252AbZFWPEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:04:01 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:36328 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760155AbZFWPD5 (ORCPT
+	Tue, 23 Jun 2009 11:04:23 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:55708 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755669AbZFWPEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:03:57 -0400
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-Subject: [PATCH 01/10] ext4: Use rcu_barrier() on module unload.
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       "Patrick McHardy" <kaber@trash.net>, christine.caulfield@googlemail.com,
-       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
-       johannes@sipsolutions.net, yoshfuji@linux-ipv6.org,
-       shemminger@linux-foundation.org, linux-nfs@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-ext4@vger.kernel.org,
-       tytso@mit.edu, adilger@sun.com, netfilter-devel@vger.kernel.org
-Date: Tue, 23 Jun 2009 17:03:59 +0200
-Message-ID: <20090623150358.22490.24818.stgit@localhost>
-In-Reply-To: <20090623150330.22490.87327.stgit@localhost>
-References: <20090623150330.22490.87327.stgit@localhost>
-User-Agent: StGIT/0.14.2
+	Tue, 23 Jun 2009 11:04:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=CSqdDhOsQLs/MzBsHOOBLQz9sxB5/PuJlS7VMQjm2hVUAlnSSBMeZ0ta8n5yKWFGBq
+         Sd8pmxzuFtIAkGYMNC+d5zRHmOTbhgpf96bhz5GWRrBQndW/gLDqEPYgApSRW7zpJB17
+         yJxJqy6wIDz4fWiZ/o45lzsw5r2e1wnh9SVr0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <8db1092f0906230803s1e069a24w865329c302ffe0df@mail.gmail.com>
+References: <8db1092f0906230803s1e069a24w865329c302ffe0df@mail.gmail.com>
+Date: Tue, 23 Jun 2009 17:04:22 +0200
+Message-ID: <8db1092f0906230804g55eafc5alb5600c5cf729a007@mail.gmail.com>
+Subject: Re: [2.6.30-git17] Touchpad stops working after suspend to disk
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, dmitry.torokhov@gmail.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ext4 module uses rcu_call() thus it should use rcu_barrier()on
-module unload.
+2009/6/23 Maciej Rutecki <maciej.rutecki@gmail.com>:
+> Tested kernel: 2.6.30-git17
+> Last known good: 2.6.30
 
-The kmem cache ext4_pspace_cachep is sometimes free'ed using
-call_rcu() callbacks.  Thus, we must wait for completion of call_rcu()
-before doing kmem_cache_destroy().
 
-I have difficult determining if no new call_rcu() callbacks can be envoked.
-Would the maintainer please verify this?
+dmesg, config:
+http://unixy.pl/maciek/download/kernel/2.6.30-git17/laptop/
 
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
----
 
- fs/ext4/mballoc.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index 519a0a6..e271a9e 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -2902,8 +2902,10 @@ int __init init_ext4_mballoc(void)
- 
- void exit_ext4_mballoc(void)
- {
--	/* XXX: synchronize_rcu(); */
-+	/* Wait for completion of call_rcu()'s on ext4_pspace_cachep */
-+	rcu_barrier();
- 	kmem_cache_destroy(ext4_pspace_cachep);
-+
- 	kmem_cache_destroy(ext4_ac_cachep);
- 	kmem_cache_destroy(ext4_free_ext_cachep);
- }
-
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
