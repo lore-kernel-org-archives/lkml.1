@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZFWPN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759759AbZFWPOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbZFWPN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbZFWPNT
+	id S1759759AbZFWPOh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbZFWPOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:13:19 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:48579 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbZFWPNS (ORCPT
+	Tue, 23 Jun 2009 11:14:24 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:42724 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753653AbZFWPOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:13:18 -0400
-To: hch@infradead.org
-CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, adilger@sun.com, dhowells@redhat.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-In-reply-to: <20090623143408.GA2147@infradead.org> (message from Christoph
-	Hellwig on Tue, 23 Jun 2009 10:34:08 -0400)
-Subject: Re: [RFC] O_NOACC: open without any access
-References: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org>
-Message-Id: <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 23 Jun 2009 17:13:00 +0200
+	Tue, 23 Jun 2009 11:14:23 -0400
+Message-ID: <4A40F14F.5050403@shipmail.org>
+Date: Tue, 23 Jun 2009 17:14:23 +0200
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Dave Airlie <airlied@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>, Jerome Glisse <jglisse@redhat.com>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [PATCH] radeon: use vmalloc instead of kmalloc
+References: <1245691561-15336-1-git-send-email-jglisse@redhat.com>	<1245756936.19816.1652.camel@twins> <21d7e9970906230442n3dcfeff8le0ffc3b8ea0c3bd0@mail.gmail.com>
+In-Reply-To: <21d7e9970906230442n3dcfeff8le0ffc3b8ea0c3bd0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Christoph Hellwig wrote:
-> On Tue, Jun 23, 2009 at 04:12:22PM +0200, Miklos Szeredi wrote:
-> > > an issue ioctls + stat / etc on it ut not actually read/write it.
-> > 
-> > Two differences between open("foo", 3) and open("foo", O_NOACC):
-> > 
-> >   1) open with "3" requires _read_and_write_ permissions on foo, but
-> >      does not allow either read or write.  Not sure what the logic in
-> >      that, but that's the way it has always been.
-> 
-> Which is a quite sensible requirement if we want to do ioctls.
+Dave Airlie skrev:
+> On Tue, Jun 23, 2009 at 9:35 PM, Peter Zijlstra<peterz@infradead.org> wrote:
+>   
+>> On Mon, 2009-06-22 at 19:26 +0200, Jerome Glisse wrote:
+>>     
+>>> We don't need to allocated contiguous pages in cs codepath
+>>> so use vmalloc instead.
+>>>       
+>> Best would be to not require >PAGE_SIZE allocations at all of course.
+>>     
+>
+> It gets messy when you have copy from user and spinlocks, it would be nice
+> to just parse the userspace PAGE_SIZE at a time, but it would mean dropping
+> a lock we probably need to hold.
+>
+>   
+>> But barring that, it would be great to have something like:
+>>
+>>  ptr = kmalloc(size, GFP_KERNEL | __GFP_NOWARN);
+>>  if (!ptr)
+>>    ptr = vmalloc(size);
+>>     
+>
+> we have a drm_calloc_large workaround already for the Intel driver which also
+> need this.
+>   
+One problem with multiple vmallocs per command submission is 
+performance. Judging from previous work, drivers that are doing this 
+tend to get very cpu-hungry. Since Radeon is only allowing a single 
+process into the command submission path at once, what about 
+pre-allocating a single larger vmalloced buffer at first command 
+submission and take care to flush user-space before the submitted 
+command stream gets too big.
 
-Right, but that makes it useless for things which want to open it
-despite having no permission on the file.  For example some programs
-do:
+>> Also, how long do these allocations live? vmalloc space can be quite
+>> limited (i386) and it can fragment too.
+>>     
+>
+> Only an ioctl lifetime so they aren't that bad. We however do have some vmaps
+> that might be quite large, mainly the fbcon framebuffer (up to 8MB in
+> some cases)
+>   
+That one would be ioremapped, not vmapped right? Not that it matters 
+because it's using vmalloc space anyway, but it wouldn't be worse than a 
+traditionally ioremapped framebuffer.
 
-	fd = open(".", 0);
-        chdir(someplace);
-	/* do something */
-	fchdir(fd);
+Thomas
 
-or for that matter:
+> Dave.
+>
+> ------------------------------------------------------------------------------
+> Are you an open source citizen? Join us for the Open Source Bridge conference!
+> Portland, OR, June 17-19. Two days of sessions, one day of unconference: $250.
+> Need another reason to go? 24-hour hacker lounge. Register today!
+> http://ad.doubleclick.net/clk;215844324;13503038;v?http://opensourcebridge.org
+> --
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/dri-devel
+>   
 
-	fd = open("foo", 0);
-	fstat(fd, &stat1);
-	if (something)
-		fchmod(fd, ...);
-	close(fd);
-
-Note: neither chmod() nor chdir() (nor host of others) require either
-read or write permissions on the file, so we _should_ be able to do
-this kind of thing without open() requiring them.
-
-Thanks,
-Miklos
