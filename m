@@ -1,174 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbZFWNkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZFWNlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759092AbZFWNkb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZFWNkW
+	id S1759705AbZFWNlu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZFWNlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:40:22 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:55432 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754657AbZFWNkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:40:21 -0400
-Date: Tue, 23 Jun 2009 14:39:54 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: gregkh@suse.de, bigeasy@linuxtronix.de, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH] USB: isp1760: allow platform devices to customize
-	devflags
-Message-ID: <20090623133954.GA11764@fluff.org.uk>
-References: <1245763114-7753-1-git-send-email-vapier@gentoo.org>
-MIME-Version: 1.0
+	Tue, 23 Jun 2009 09:41:42 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:52528 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752299AbZFWNll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:41:41 -0400
+Date: Tue, 23 Jun 2009 15:42:40 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in elevaotor layer
+Message-ID: <20090623134240.GU28770@gandalf.sssup.it>
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com> <20090622084612.GD3728@balbir.in.ibm.com> <20090622124313.GF28770@gandalf.sssup.it> <20090623024337.GC3620@redhat.com> <20090623041052.GS28770@gandalf.sssup.it> <20090623073252.GJ8642@balbir.in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245763114-7753-1-git-send-email-vapier@gentoo.org>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090623073252.GJ8642@balbir.in.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 09:18:34AM -0400, Mike Frysinger wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+> From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Date: Tue, Jun 23, 2009 01:02:52PM +0530
+>
+> * Fabio Checconi <fchecconi@gmail.com> [2009-06-23 06:10:52]:
 > 
-> Platform device support was merged earlier, but support for boards to
-> customize the devflags aspect of the controller was not.  We want this on
-> Blackfin systems to control the bus width, but might as well expose all of
-> the fields while we're at it.
+> > > From: Vivek Goyal <vgoyal@redhat.com>
+> > > Date: Mon, Jun 22, 2009 10:43:37PM -0400
+> > >
+> > > On Mon, Jun 22, 2009 at 02:43:13PM +0200, Fabio Checconi wrote:
+> > > 
+> > ...
+> > > > > Please help me understand this, we sort the tree by finish time, but
+> > > > > search by vtime, start_time. The worst case could easily be O(N),
+> > > > > right?
+> > > > > 
+> > > > 
+> > > > no, (again, the full answer is in the paper); the nice property of
+> > > > min_start is that it partitions the tree in two regions, one with
+> > > > eligible entities and one without any of them.  once we know that
+> > > > there is one eligible entity (checking the min_start at the root)
+> > > > we can find the node i with min(F_i) subject to S_i < V walking down
+> > > > a single path from the root to the leftmost eligible entity.  (we
+> > > > need to go to the right only if the subtree on the left contains 
+> > > > no eligible entities at all.)  since the RB tree is balanced this
+> > > > can be done in O(log N).
+> > > > 
+> > > 
+> > > Hi Fabio,
+> > > 
+> > > When I go thorough the paper you mentioned above, they seem to have
+> > > sorted the tree based on eligible time (looks like equivalent of start
+> > > time) and then keep track of minimum deadline on each node (equivalnet of
+> > > finish time).
+> > > 
+> > > We seem to be doing reverse in BFQ where we sort tree on finish time
+> > > and keep track of minimum start time on each node. Is there any specific
+> > > reason behind that?
+> > > 
+> > 
+> > Well... no specific reasons...  I think that our implementation is easier
+> > to understand than the one of the paper, because it actually uses finish
+> > times as the ordering key, and min_start to quickly locate eligible
+> > subtrees, following the definition of the algorithm.
+> > 
 > 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
->  drivers/usb/host/isp1760-hcd.c |    4 ++++
->  drivers/usb/host/isp1760-hcd.h |    2 ++
->  drivers/usb/host/isp1760-if.c  |   21 ++++++++++++++++++++-
->  include/linux/usb/isp1760.h    |   18 ++++++++++++++++++
->  4 files changed, 44 insertions(+), 1 deletions(-)
->  create mode 100644 include/linux/usb/isp1760.h
+> Is it still O(log N)?
 > 
-> diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
-> index 1543846..9600a58 100644
-> --- a/drivers/usb/host/isp1760-hcd.c
-> +++ b/drivers/usb/host/isp1760-hcd.c
-> @@ -386,6 +386,10 @@ static int isp1760_hc_setup(struct usb_hcd *hcd)
->  		hwmode |= HW_DACK_POL_HIGH;
->  	if (priv->devflags & ISP1760_FLAG_DREQ_POL_HIGH)
->  		hwmode |= HW_DREQ_POL_HIGH;
-> +	if (priv->devflags & ISP1760_FLAG_INTR_POL_HIGH)
-> +		hwmode |= HW_INTR_HIGH_ACT;
-> +	if (priv->devflags & ISP1760_FLAG_INTR_EDGE_TRIG)
-> +		hwmode |= HW_INTR_EDGE_TRIG;
 
-better move these to the irq resource flags from the resource array
-in the platfrom device.
-  
->  	/*
->  	 * We have to set this first in case we're in 16-bit mode.
-> diff --git a/drivers/usb/host/isp1760-hcd.h b/drivers/usb/host/isp1760-hcd.h
-> index 462f494..6931ef5 100644
-> --- a/drivers/usb/host/isp1760-hcd.h
-> +++ b/drivers/usb/host/isp1760-hcd.h
-> @@ -142,6 +142,8 @@ typedef void (packet_enqueue)(struct usb_hcd *hcd, struct isp1760_qh *qh,
->  #define ISP1760_FLAG_DACK_POL_HIGH	0x00000010 /* DACK active high */
->  #define ISP1760_FLAG_DREQ_POL_HIGH	0x00000020 /* DREQ active high */
->  #define ISP1760_FLAG_ISP1761		0x00000040 /* Chip is ISP1761 */
-> +#define ISP1760_FLAG_INTR_POL_HIGH	0x00000080 /* Interrupt polarity active high */
-> +#define ISP1760_FLAG_INTR_EDGE_TRIG	0x00000100 /* Interrupt edge triggered */
->  
->  /* chip memory management */
->  struct memory_chunk {
-> diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
-> index d4feebf..1c9f977 100644
-> --- a/drivers/usb/host/isp1760-if.c
-> +++ b/drivers/usb/host/isp1760-if.c
-> @@ -3,6 +3,7 @@
->   * Currently there is support for
->   * - OpenFirmware
->   * - PCI
-> + * - PDEV (generic platform device centralized driver model)
->   *
->   * (c) 2007 Sebastian Siewior <bigeasy@linutronix.de>
->   *
-> @@ -11,6 +12,7 @@
->  #include <linux/usb.h>
->  #include <linux/io.h>
->  #include <linux/platform_device.h>
-> +#include <linux/usb/isp1760.h>
->  
->  #include "../core/hcd.h"
->  #include "isp1760-hcd.h"
-> @@ -308,6 +310,8 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
->  	struct resource *mem_res;
->  	struct resource *irq_res;
->  	resource_size_t mem_size;
-> +	struct isp1760_platform_data *priv = pdev->dev.platform_data;
-> +	unsigned int devflags = 0;
->  	unsigned long irqflags = IRQF_SHARED | IRQF_DISABLED;
->  
->  	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> @@ -330,8 +334,23 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
->  	}
->  	irqflags |= irq_res->flags & IRQF_TRIGGER_MASK;
->  
-> +	if (priv) {
-> +		if (priv->is_isp1761)
-> +			devflags |= ISP1760_FLAG_ISP1761;
-> +		if (priv->bus_width_16)
-> +			devflags |= ISP1760_FLAG_BUS_WIDTH_16;
-> +		if (priv->port1_otg)
-> +			devflags |= ISP1760_FLAG_OTG_EN;
-> +		if (priv->analog_oc)
-> +			devflags |= ISP1760_FLAG_ANALOG_OC;
-> +		if (priv->dack_polarity_high)
-> +			devflags |= ISP1760_FLAG_DACK_POL_HIGH;
-> +		if (priv->dreq_polarity_high)
-> +			devflags |= ISP1760_FLAG_DREQ_POL_HIGH;
-> +	}
-> +
->  	hcd = isp1760_register(mem_res->start, mem_size, irq_res->start,
-> -			       irqflags, &pdev->dev, dev_name(&pdev->dev), 0);
-> +			       irqflags, &pdev->dev, dev_name(&pdev->dev), devflags);
->  	if (IS_ERR(hcd)) {
->  		pr_warning("isp1760: Failed to register the HCD device\n");
->  		ret = -ENODEV;
-> diff --git a/include/linux/usb/isp1760.h b/include/linux/usb/isp1760.h
-> new file mode 100644
-> index 0000000..de7de53
-> --- /dev/null
-> +++ b/include/linux/usb/isp1760.h
-> @@ -0,0 +1,18 @@
-> +/*
-> + * board initialization should put one of these into dev->platform_data
-> + * and place the isp1760 onto platform_bus named "isp1760-hcd".
-> + */
-> +
-> +#ifndef __LINUX_USB_ISP1760_H
-> +#define __LINUX_USB_ISP1760_H
-> +
-> +struct isp1760_platform_data {
-> +	unsigned is_isp1761:1;			/* Chip is ISP1761 */
-> +	unsigned bus_width_16:1;		/* 16/32-bit data bus width */
-> +	unsigned port1_otg:1;			/* Port 1 supports OTG */
-> +	unsigned analog_oc:1;			/* Analog overcurrent */
-> +	unsigned dack_polarity_high:1;		/* DACK active high */
-> +	unsigned dreq_polarity_high:1;		/* DREQ active high */
-> +};
-> +
-> +#endif /* __LINUX_USB_ISP1760_H */
-> -- 
-> 1.6.3.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+Yes, it goes along a single path from the root to a leaf of a balanced
+tree (i.e., it starts from the root, and at the end of each iteration
+it selects the left or the right child of the current node), thus it is
+O(log N).
