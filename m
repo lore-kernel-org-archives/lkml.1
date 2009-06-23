@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbZFWQAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbZFWQFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757792AbZFWQAb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZFWQAQ
+	id S1756181AbZFWQFT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZFWQFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:00:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54100 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752584AbZFWQAP (ORCPT
+	Tue, 23 Jun 2009 12:05:08 -0400
+Received: from smurf.noris.de ([192.109.102.42]:36169 "EHLO
+	smurf.intern.smurf.noris.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754014AbZFWQFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:00:15 -0400
-Date: Tue, 23 Jun 2009 17:01:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Alexander Holler <holler@ahsoftware.de>,
-       Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartmann <greg@kroah.com>
-Subject: Re: asynchronous calls an the lack of --wait-for-completion options
-  (e.g. modprobe, losetup, cryptsetup)
-Message-ID: <20090623170141.41fe1565@lxorguk.ukuu.org.uk>
-In-Reply-To: <ac3eb2510906230435r6489ddafqb15214f190d4eae8@mail.gmail.com>
-References: <4A38F229.70504@ahsoftware.de>
-	<4A3AE162.7040407@gmail.com>
-	<ac3eb2510906201220v7fc1d51ve4a9937a3d73d3d4@mail.gmail.com>
-	<4A3F7440.3030603@ahsoftware.de>
-	<ac3eb2510906230435r6489ddafqb15214f190d4eae8@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 12:05:07 -0400
+Date: Tue, 23 Jun 2009 18:04:08 +0200
+From: Matthias Urlichs <smurf@smurf.noris.de>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andy Whitcroft <apw@canonical.com>,
+       Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Reduce AACRAID hardware queue size
+Message-ID: <20090623160408.GA22716@smurf.noris.de>
+References: <1245756306-29023-1-git-send-email-apw@canonical.com> <1245756306-29023-2-git-send-email-apw@canonical.com> <1245771089.4149.88.camel@mulgrave.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245771089.4149.88.camel@mulgrave.site>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 13:35:07 +0200
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+Hi,
 
-> On Mon, Jun 22, 2009 at 14:08, Alexander Holler<holler@ahsoftware.de> wrote:
-> > On 20.06.2009 21:20, Kay Sievers wrote:
+James Bottomley:
+> Firstly, Matthias, can you see if on an unmodified aacraid, this fixes
+> the problem for you:
 > 
-> > Anyway, I still think, that the creation of the device-node is (seen from a
-> > user-point) part of the module-initialization or part of the operation of
-> > the userland-tool (like modprobe, losetup or cryptsetup). So in my point of
-> > view, they should at least offer an option to wait until udev finished that
-> > operation and should not rely on the user to call udevadm.
+> echo 63 > /sys/block/<disk>/queue/max_sectors_kb
 > 
-> That would be all solved properly by "devtmpfs":
->    http://lkml.org/lkml/2009/4/30/182
+Thank you, I'll do that tonight.
 
-which unsolves lots of other problems and has good reasons why people
-object to it.
+-- 
+Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |  smurf@smurf.noris.de
+Disclaimer: The quote was selected randomly. Really. | http://smurf.noris.de
+ - -
+Why did the chicken cross the road?
 
-Sorting out waiting behaviour and fixing udev to do jobs once is a user
-space problem and while it might benefit from some tiny bits of kernel
-help re-implementing devfs (which we've been through before thank you) is
-not the cure but replacing a minor ailment with a nasty disease
+Ralph Waldo Emerson: It didn't cross the road; it transcended it.
