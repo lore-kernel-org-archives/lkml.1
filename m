@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbZFWFx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbZFWFyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756190AbZFWFx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZFWFxt
+	id S1756260AbZFWFyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 01:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZFWFyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:53:49 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34703 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751076AbZFWFxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:53:48 -0400
-Date: Tue, 23 Jun 2009 15:53:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: linux-next: kvm tree build failure
-Message-Id: <20090623155345.11219074.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Tue, 23 Jun 2009 01:54:02 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:53077 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756549AbZFWFx6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 01:53:58 -0400
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	 <1245732411.18339.6.camel@alok-dev1>
+	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
+	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 22 Jun 2009 22:54:01 -0700
+Message-Id: <1245736441.18339.21.camel@alok-dev1>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__23_Jun_2009_15_53_45_+1000_T3Vu.BVqZ7N2gpP_"
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__23_Jun_2009_15_53_45_+1000_T3Vu.BVqZ7N2gpP_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Avi,
+On Mon, 2009-06-22 at 22:11 -0700, KAMEZAWA Hiroyuki wrote:
+> On Tue, 23 Jun 2009 14:05:47 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > I'm not sure this unevictable definition is good idea or not. currently
+> > hugepage isn't only non-account memory, but also various kernel memory doesn't
+> > account.
+> > 
+> > one of drawback is that zone_page_state(UNEVICTABLE) lost to mean #-of-unevictable-pages.
+Kosaki-san,
+I don't see the reason, why is it important to have the count of number
+of pages on unevictable-lru. 
+Instead zone_page_state(UNEVICTABLE) now correctly tells how many of
+these pages from this zone are actually unevictable.
 
-Today's linux-next build (s390 allmodconfig) failed like this:
+> > e.g.  following patch is wrong?
+> > 
+> > fs/proc/meminfo.c meminfo_proc_show()
+> > ----------------------------
+> > -                K(pages[LRU_UNEVICTABLE]),
+> > +                K(pages[LRU_UNEVICTABLE]) + hstate->nr_huge_pages,
+> > 
+> > 
+> > Plus, I didn't find any practical benefit in this patch. do you have it?
+> > or You only want to natural definition?
 
-In file included from include/trace/ftrace.h:261,
-                 from include/trace/define_trace.h:56,
-                 from include/trace/events/kvm.h:55,
-                 from arch/s390/kvm/../../../virt/kvm/kvm_main.c:63:
-include/trace/events/kvm.h: In function 'ftrace_raw_output_kvm_ack_irq':
-include/trace/events/kvm.h:31: error: 'KVM_IRQCHIP_PIC_MASTER' undeclared (=
-first use in this function)
-include/trace/events/kvm.h:31: error: (Each undeclared identifier is report=
-ed only once
-include/trace/events/kvm.h:31: error: for each function it appears in.)
-include/trace/events/kvm.h:31: error: 'KVM_IRQCHIP_PIC_SLAVE' undeclared (f=
-irst use in this function)
-include/trace/events/kvm.h:31: error: 'KVM_IRQCHIP_IOAPIC' undeclared (firs=
-t use in this function)
+Both, while working on an module I noticed that there is no way direct
+way to get any information regarding the total number of unrecliamable
+(unevictable) pages in the system. While reading through the kernel
+sources i came across this unevictalbe LRU framework and thought that
+this should actually work towards providing  total unevictalbe pages in
+the system irrespective of where they reside.
 
-Caused by commit acb57be20f6b600848a99796d8f115ec079b8b08 ("KVM: convert
-custom marker based tracing to event traces").
+So both there is a need as well as, (IMO) this should be the natural
+definition for unevictable pages.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> > 
+> > I don't have any strong oppose reason, but I also don't have any strong
+> > agree reason.
+> > 
+> I think "don't include Hugepage" is sane. Hugepage is something _special_, now.
+> 
+Kamezawa-san, 
 
---Signature=_Tue__23_Jun_2009_15_53_45_+1000_T3Vu.BVqZ7N2gpP_
-Content-Type: application/pgp-signature
+I agree that hugepages are special in the sense that they are
+implemented specially and don't actually reside on the LRU like any
+other locked memory. But, both of these memory types (mlocked and
+hugepages) are actually unevictable and can't be reclaimed back, so i
+don't see a reason why should accounting not reflect that.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Thanks,
+Alok
 
-iEYEARECAAYFAkpAbekACgkQjjKRsyhoI8yABgCfVIInV/NOtcgZXWOCXx36kUX4
-krYAnRDMqMBGPMypuRzjOXtfiCXGud7x
-=dBGG
------END PGP SIGNATURE-----
+> Thanks,
+> -Kame
+> 
 
---Signature=_Tue__23_Jun_2009_15_53_45_+1000_T3Vu.BVqZ7N2gpP_--
