@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbZFWPj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbZFWPkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760596AbZFWPj6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758309AbZFWPju
+	id S1760545AbZFWPkZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbZFWPjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:39:50 -0400
-Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:52782 "HELO
-	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751777AbZFWPjt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:39:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=LYtsm3hGQx7sGemSwokloGtiyUsSVESv5nrrglSFQYTskjDpwVIo8ZveMQCAKP2gP58JDLHHmGMfmrSfed12bauJ70MvWbiVzbc3wYAJUTYvK+HosCpcf9mg5HzMirOa;
-Date: Tue, 23 Jun 2009 08:39:44 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Michel =?UTF-8?B?RMOkbnplcg==?= <michel@daenzer.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Thomas@netline-mail2.netline.ch, Dave Airlie <airlied@linux.ie>,
-       Andrew Lutomirski <luto@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jerome Glisse <jglisse@redhat.com>, dri-devel@lists.sf.net,
-       Alex Deucher <alexdeucher@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git pull] drm: previous pull req + 1.
-Message-ID: <20090623083944.3e86ed2e@jbarnes-g45>
-In-Reply-To: <1245743280.5580.2203.camel@thor.local>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
-	<4A3DABE1.50309@mit.edu>
-	<alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
-	<alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
-	<alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
-	<cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
-	<alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
-	<alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
-	<4A3F3E3A.2030202@shipmail.org>
-	<1245715213.4017.13.camel@pasglop>
-	<alpine.LFD.2.01.0906221721450.3240@localhost.localdomain>
-	<1245719079.4017.25.camel@pasglop>
-	<20090622181832.771dac03@jbarnes-g45>
-	<1245743280.5580.2203.camel@thor.local>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 23 Jun 2009 11:39:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:42134 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759701AbZFWPjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 11:39:51 -0400
+Date: Tue, 23 Jun 2009 17:39:36 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Greg KH <greg@kroah.com>
+cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       linux-kernel@vger.kernel.org, linux-rt@pengutronix.de,
+       Ian Abbott <abbotti@mev.co.uk>,
+       Frank Mori Hess <fmhess@users.sourceforge.net>
+Subject: Re: [PATCH -rt] disable building all staging drivers
+In-Reply-To: <20090623151701.GD30806@kroah.com>
+Message-ID: <alpine.LFD.2.00.0906231737580.2767@localhost.localdomain>
+References: <1244929118-23326-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090614112802.GA4502@kroah.com> <20090614230044.GA21624@pengutronix.de> <20090622151515.GA16627@pengutronix.de> <20090622171948.GA15145@kroah.com>
+ <alpine.LFD.2.00.0906231216220.2767@localhost.localdomain> <20090623151701.GD30806@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 09:48:00 +0200
-Michel Dänzer <michel@daenzer.net> wrote:
-> > > In fact, nowdays, we do have the infrastructure to be smart and
-> > > enforce that. IE. Instead of using a boring remap_page_ranges() in
-> > > fb_mmap() we could use a fault handler. When in KD_TEXT, we fail
-> > > them, when in KD_GRAPHICS, we service them, and we
-> > > unmap_mapping_range() when switching. Something like that...
-> > > 
-> > > Dunno how that interacts with the new DRM thingy though.
-> > 
-> > I think it could work, but ideally we'd keep the kernel fbcon object
-> > pinned, and keep printing into it even while some other gfx app is
-> > running.
+On Tue, 23 Jun 2009, Greg KH wrote:
+> > But, after looking into that code I really have to ask you whether you
+> > are serious about fixing it instead of rewriting it from scratch and
+> > just keep the code as is for reference to the hardware details.
 > 
-> It doesn't need to be pinned for that, does it? I think in the long
-> run it's a bad idea to have it pinned all the time, think of machines
-> with only 8 MB of VRAM...
+> That is exactly what the code is there for.  There are other groups
+> rewriting these drivers from scratch, and hopefully they will be done in
+> a kernel release or two and then these drivers can go away.
 
-Yeah, in the general case we shouldn't have to pin it...
+Ok. I just wondered :)
 
-> > (something like this would also be handy for dual head debugging;
-> > one head running your desktop and the other a debug console
-> > printing all the messages).
-> 
-> On a side note, I did precisely that about ten years ago on my
-> Amiga. :) Granted, that was using two separate framebuffer devices (X
-> glint driver on top of pm2fb, debug messages on amifb), but I think
-> even that case isn't possible ATM. I agree it would be nice, though
-> realistically there's hardly a way around a second machine for
-> graphics driver development anyway.
+> If, in the mean time, you don't want them to be built for -rt kernels,
+> just send me a Kconfig patch for the individual drivers, not for the
+> whole of the staging tree.
 
-Oh I know, most operating systems have reasonable debugging facilities,
-and have had for a long time.  Linux is the one lagging here.
+Sure, I can mark them individually broken on RT in the -rt patch
+itself if we stomp over such issues.
 
-I agree it probably won't be that helpful for low level gfx debugging,
-but I'm trying to think beyond that too. :)
+Thanks,
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+	tglx
