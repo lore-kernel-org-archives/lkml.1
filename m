@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZFWVYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZFWVZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbZFWVYi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZFWVY3
+	id S1756077AbZFWVZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZFWVZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:24:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40110 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751248AbZFWVY3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:24:29 -0400
-Date: Tue, 23 Jun 2009 14:23:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix error handling in add_disk
-Message-Id: <20090623142357.b2050c14.akpm@linux-foundation.org>
-In-Reply-To: <200906171231.10438.knikanth@suse.de>
-References: <200906171231.10438.knikanth@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Jun 2009 17:25:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40737 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753521AbZFWVZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 17:25:15 -0400
+Message-ID: <4A41481D.1060607@redhat.com>
+Date: Tue, 23 Jun 2009 17:24:45 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: akataria@vmware.com
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>	 <1245732411.18339.6.camel@alok-dev1>	 <20090623135017.220D.A69D9226@jp.fujitsu.com>	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com> <1245736441.18339.21.camel@alok-dev1>
+In-Reply-To: <1245736441.18339.21.camel@alok-dev1>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Jun 2009 12:31:10 +0530
-Nikanth Karthikesan <knikanth@suse.de> wrote:
+Alok Kataria wrote:
 
-> Fix error handling in add_disk. Also add WARN_ON()'s in case
-> of error, which can be removed once the callers handle the error.
-> 
+> Both, while working on an module I noticed that there is no way direct
+> way to get any information regarding the total number of unrecliamable
+> (unevictable) pages in the system. While reading through the kernel
+> sources i came across this unevictalbe LRU framework and thought that
+> this should actually work towards providing  total unevictalbe pages in
+> the system irrespective of where they reside.
 
-I have a vague ancestral memory that some of the unchecked errors which
-you're now checking for actually do happen in practice, and that this
-"fix" will end up breaking currently-working setups.
+The unevictable count tells you how many _userspace_
+pages are not evictable.
 
-Or maybe I'm thinking of a similar but different piece of code (maybe
-it was the partition code?).
+There are countless accounted and unaccounted kernel
+allocations that show up (or not) in other fields in
+/proc/meminfo.
 
-Still, I think it would be prudent to initially make this patch
-continue to ignore the errors.  So add the warnings, but don't change
-the response to errors.  Then we can get the change distributed for a
-bit of testing and if that all looks good then we can add the control
-flow changes later.
+I can see something reasonable on both sides of this
+particular debate.  However, even with this patch the
+"unevictable" statistic does not reclaim the total
+number of pages that are unevictable pages from a
+zone, so I am not sure how it helps you achieve your
+goal.
 
->  	retval = blk_alloc_devt(&disk->part0, &devt);
->  	if (retval) {
->  		WARN_ON(1);
-> -		return;
-> +		goto err_out;
->  	}
-> ...
-> +	if (retval) {
-> +		WARN_ON(1);
-> +		goto err_free_devt;
-> +	}
-> ...
-> +	if (retval) {
-> +		WARN_ON(1);
-> +		goto err_free_region;
-> +	}
-> ...
-> -	WARN_ON(retval);
-> +	if (retval) {
-> +		WARN_ON(1);
-> +		goto err_free_queue;
-> +	}
-
-These all can be coded as
-
-	if (WARN_ON(retval))
-		goto foo;
-
+-- 
+All rights reversed.
