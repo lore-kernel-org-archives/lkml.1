@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbZFWOzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbZFWO4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759712AbZFWOzf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 10:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbZFWOz2
+	id S1759536AbZFWO4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 10:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbZFWO4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 10:55:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34802 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754225AbZFWOz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 10:55:28 -0400
-Date: Tue, 23 Jun 2009 16:55:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: eranian@gmail.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Rob Fowler <rjf@renci.org>,
-       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: [perfmon2] IV.3 - AMD IBS
-Message-ID: <20090623145508.GC13415@elte.hu>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622120018.GR24366@elte.hu> <4A3F9062.6000303@renci.org> <1245737987.19816.1477.camel@twins> <7c86c4470906230119g6df76304xbec11dc682176b09@mail.gmail.com> <20090623140538.GA10451@elte.hu> <7c86c4470906230725t2d86cd2eybabeba454f3aff81@mail.gmail.com>
+	Tue, 23 Jun 2009 10:56:02 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:44857 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756366AbZFWO4A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 10:56:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=rnjwJWlpl7Oeg7y1GqajdCCQY2L2UagsOW6KNAVruo3LWsBx8EVxDaiL6Fj7bfGl1/
+         8z3u2ORk3x+Sf0ahhh3+tJt7wntrsfnoKU97bw3vTKd61ASD60ny6hkChNPBK1GOmUZW
+         VO7bG4EAijj8mxzLGsNgSve8N1IEhGdpXQ6C0=
+Message-ID: <4A40ECFF.7060706@gmail.com>
+Date: Tue, 23 Jun 2009 10:55:59 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7c86c4470906230725t2d86cd2eybabeba454f3aff81@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com,
+       paulmck@linux.vnet.ibm.com, davidel@xmailserver.org, mingo@elte.hu,
+       rusty@rustcorp.com.au
+Subject: Re: [KVM PATCH v3 3/3] KVM: Fix races in irqfd using new eventfd_kref_get
+ interface
+References: <20090622155504.22967.50532.stgit@dev.haskins.net> <20090622160556.22967.76273.stgit@dev.haskins.net> <20090622165708.GB15228@redhat.com> <4A3FBFF1.8050504@gmail.com>
+In-Reply-To: <4A3FBFF1.8050504@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigEDF22799EF04853ACE249580"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigEDF22799EF04853ACE249580
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* stephane eranian <eranian@googlemail.com> wrote:
-
-> On Tue, Jun 23, 2009 at 4:05 PM, Ingo Molnar<mingo@elte.hu> wrote:
-> >
-> > * stephane eranian <eranian@googlemail.com> wrote:
-> >
-> >> > The most natural way to support IBS would be to have a special
-> >> > sampling cycle counter and use that as group lead and add non
-> >> > sampling siblings to that group to get individual elements.
-> >> >
-> >> As discussed in my message, I think the way to support IBS is to
-> >> create two pseudo-events (like your perf_hw_event_ids), one for
-> >> fetch and one for op (because they could be measured
-> >> simultaneously). The sample_period field would be used to express
-> >> the IBS*CTL maxcnt, subject to the verification that the bottom 4
-> >> bits must be 0. And then, you add two new sampling formats
-> >> PERF_SAMPLE_IBSFETCH, PERF_SAMPLE_IBSOP. Those would only work
-> >> with IBS pseudo events. Once you have the randomize option in
-> >> perf_counter_attr, you could even enable IBSFETCH randomization.
-> >
-> > I'd suggest to start smaller, and first express the 'precise' 
-> > nature of IBS transparently, by simply mapping it to one of the 
-> > generic events. (cycles and instructions both appears to be 
-> > possible)
+Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+>  =20
 >
-> IBS is precise by nature.
+>>  And note that multiple works can run on irqfd
+>> in parallel.
+>>  =20
+>>    =20
+>
+> They can?  I thought work-queue items were guaranteed to only schedule
+> once?  If what you say is true, its broken, I agree, and Ill need to
+> revisit.  Let me get back to you.
+>  =20
 
-(yes. Did you understand my comments above as saying the opposite?)
+<sigh> Yep, you are right.  This is broken in my code. :(
 
-> [...] It does not work like PEBS. It tags an instruction and then 
-> collects info about it. When it retires, IBS freezes and triggers 
-> an interrupt like a regular counter interrupt. Except this time, 
-> you don't care about the interrupted IP, you use the instruction 
-> address in the IBS data register, it is guaranteed to correspond 
-> to the tagged instruction.
-> 
-> The sampling period expresses the delay before picking the 
-> instruction to tag. And as I said before, it is only 20 bits and 
-> the bottom 4 bits must be zero (as they cannot be encoded).
+Will address in the next spin.  Good catch.
 
-The 20 bits delay is in cycles, right? So this in itself still lends 
-itself to be transparently provided as a PERF_COUNT_HW_CPU_CYCLES 
-counter.
+-Greg
 
-	Ingo
+
+
+
+--------------enigEDF22799EF04853ACE249580
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpA7QAACgkQP5K2CMvXmqGThgCcCXUL9ohvwvOBz+rB1T69Bbhj
+8wkAn0i/colSjspjpu0RceNDc08aLYzs
+=GSND
+-----END PGP SIGNATURE-----
+
+--------------enigEDF22799EF04853ACE249580--
