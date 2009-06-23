@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbZFWRKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbZFWRTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753029AbZFWRKz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 13:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZFWRKo
+	id S1752560AbZFWRTJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 13:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZFWRS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 13:10:44 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:57785 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752607AbZFWRKm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 13:10:42 -0400
-X-SpamScore: -24
-X-BigFish: VPS-24(z34a4jz1432R98dR4015L1805Mzz1202hzzz32i17ch6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KLPBP7-03-SKN-01
-Date: Tue, 23 Jun 2009 19:10:22 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <marcelo@kvack.org>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/8] kvm/mmu: make direct mapping paths aware of
-	mapping levels
-Message-ID: <20090623171022.GI5139@amd.com>
-References: <1245417389-5527-1-git-send-email-joerg.roedel@amd.com> <1245417389-5527-6-git-send-email-joerg.roedel@amd.com> <20090623164728.GB3651@amt.cnet>
+	Tue, 23 Jun 2009 13:18:57 -0400
+Received: from gate.lvk.cs.msu.su ([158.250.17.1]:57091 "EHLO lvk.cs.msu.su"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751830AbZFWRS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 13:18:57 -0400
+X-Greylist: delayed 1420 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jun 2009 13:18:56 EDT
+From: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+To: linux-kernel@vger.kernel.org
+Subject: [rt-preempt / powerpc] Looks like tick_sched_timer() is a major latency source
+Date: Tue, 23 Jun 2009 20:55:11 +0400
+User-Agent: KMail/1.9.9
+Cc: Alexander Kaliadin <akaliadin@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090623164728.GB3651@amt.cnet>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 23 Jun 2009 17:10:23.0436 (UTC) FILETIME=[7EC1B0C0:01C9F425]
+Message-Id: <200906232055.12412@zigzag.lvk.cs.msu.su>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 01:47:28PM -0300, Marcelo Tosatti wrote:
-> On Fri, Jun 19, 2009 at 03:16:26PM +0200, Joerg Roedel wrote:
-> > @@ -254,7 +254,7 @@ static int is_last_spte(u64 pte, int level)
-> >  {
-> >  	if (level == PT_PAGE_TABLE_LEVEL)
-> >  		return 1;
-> > -	if (level == PT_DIRECTORY_LEVEL && is_large_pte(pte))
-> > +	if (is_large_pte(pte))
-> >  		return 1;
-> 
-> Wouldnt it be safer to check for bit 7 only on the levels
-> we're sure it means large page?
+Hi
 
-If we are not on PT_PAGE_TABLE_LEVEL and this bit does not mean "large page"
-then bit 7 is MBZ and harware would fault. So it should be safe to just check
-for bit 7 here.
+I was trying to get minimum possible in-kernel latencies on a freescale 
+8360 CPU based board (powerpc arch). There is a project where <30 us worst 
+case latency is required, and question was - is it possible to use 
+linux+preempt-rt (which is preferred for a number of reason) or not.
 
+I used 2.6.29.5-rt21 kernel, which, for my best knowledge, was the 
+last "release" of preempt-rt at the moment when I started.
 
-> >  	kvm_get_pfn(pfn);
-> >  	mmu_set_spte(vcpu, spte, page->role.access, pte_access, 0, 0,
-> > -		     gpte & PT_DIRTY_MASK, NULL, largepage,
-> > +		     gpte & PT_DIRTY_MASK, NULL, level,
-> >  		     gpte_to_gfn(gpte), pfn, true);
-> 
-> It would be better to just turn off updates to large sptes via          
-> update_pte path, so just nuke them and let the pagefault path
-> handle.
+I used 8360's Generic Timer Module to both to generate interrupts and to 
+measure lanencies. GTM timers continue to count after firing an interrupt, 
+so latency may be measured my reading current timer value and comparing 
+that with the value at which interrupt was generated. I believe this 
+method is both simple and accurate.
 
-Yeah true. Thats in the shadow paging patch. Maybe I can get it into a state to
-be postable again ;-)
+The result is:
 
-Thanks,
+- average latency up to IRQF_NODELAY interrupt header is 2-3 us, even on a 
+system with high i/o and cpu load. To generate load, I used a flood ping 
+and several 'while true; do true; done' cpu-eaters.
 
-	Joerg
+- but worst-case latency is BAD. I occasionally got >50 us even on idle 
+system.
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+I tried hard to identify the latency source, and at some moment discovered 
+tick_sched_timer() from kernel/time/tick-sched.c. This routine is called 
+from timer interrupt with hardware interrupts disabled, and may execute 
+for 50 us and more.
 
+Could someone please comment on this?
+Is it possible to move (part of) tick_sched_timer() call tree out of 
+hardware-interrupts-disabled context without breaking things?
+
+Nikita
+
+Please CC: reply to my e-mail address. Thanks.
