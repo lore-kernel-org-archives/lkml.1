@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbZFWPlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZFWPl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760718AbZFWPlL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759712AbZFWPk6
+	id S1760882AbZFWPl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760740AbZFWPlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:40:58 -0400
-Received: from outbound-mail-302.bluehost.com ([67.222.53.9]:48888 "HELO
-	outbound-mail-302.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759589AbZFWPk5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:40:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=WUs9DeRHgx6RTQOBf4qJWJ1I1oIX3PDPchemG5BrxtL2aRPiOsYgnn/yo2tunoqOMxuUgqKrVg1oA4E9MmYyoTOX1sTwuzsJl5PFw9AekI6hLwP0rxOqtCSrH8Fh0diA;
-Date: Tue, 23 Jun 2009 08:40:44 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas =?UTF-8?B?SGVs?= =?UTF-8?B?bHN0csO2bQ==?= 
-	<thomas@shipmail.org>,
-       Dave Airlie <airlied@linux.ie>, Alex Deucher <alexdeucher@gmail.com>,
-       Andrew Lutomirski <luto@mit.edu>, dri-devel@lists.sf.net,
-       Jerome Glisse <jglisse@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] drm: previous pull req + 1.
-Message-ID: <20090623084044.7906f2d0@jbarnes-g45>
-In-Reply-To: <1245723975.4017.33.camel@pasglop>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
-	<4A3DABE1.50309@mit.edu>
-	<alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
-	<alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
-	<alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
-	<cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
-	<alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
-	<alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
-	<4A3F3E3A.2030202@shipmail.org>
-	<1245715213.4017.13.camel@pasglop>
-	<alpine.LFD.2.01.0906221721450.3240@localhost.localdomain>
-	<1245719079.4017.25.camel@pasglop>
-	<20090622181832.771dac03@jbarnes-g45>
-	<1245722325.4017.29.camel@pasglop>
-	<20090622190712.4c0ace71@jbarnes-g45>
-	<1245723975.4017.33.camel@pasglop>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 23 Jun 2009 11:41:14 -0400
+Received: from kroah.org ([198.145.64.141]:42553 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760837AbZFWPlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 11:41:13 -0400
+Date: Tue, 23 Jun 2009 08:29:16 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: linux-next: driver-core tree build failure
+Message-ID: <20090623152916.GA27467@kroah.com>
+References: <20090623160100.ab086e63.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623160100.ab086e63.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 12:26:15 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Mon, 2009-06-22 at 19:07 -0700, Jesse Barnes wrote:
+On Tue, Jun 23, 2009 at 04:01:00PM +1000, Stephen Rothwell wrote:
+> Hi Greg,
 > 
-> > Yeah I don't think we should try to change the mode, unless we
-> > really have to for whatever reason.  fbcon should generally be able
-> > to paint to whatever we have up as long as we set it up properly.
+> Today's linux-next build (arm omap_osk_5912_defconfig) failed like this:
 > 
-> Well... it may not. IE. The text consoles can be using a different
-> mode than X, and so fbcon will be all setup for that ... (including
-> how many lines/columns etc...).
+> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_caps_num':
+> drivers/video/omap/omapfb_main.c:1253: error: 'struct device' has no member named 'driver_data'
+> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_caps_text':
+> drivers/video/omap/omapfb_main.c:1273: error: 'struct device' has no member named 'driver_data'
+> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_panel_name':
+> drivers/video/omap/omapfb_main.c:1320: error: 'struct device' has no member named 'driver_data'
+> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_bklight_level':
+> drivers/video/omap/omapfb_main.c:1329: error: 'struct device' has no member named 'driver_data'
+> drivers/video/omap/omapfb_main.c: In function 'omapfb_store_bklight_level':
+> drivers/video/omap/omapfb_main.c:1344: error: 'struct device' has no member named 'driver_data'
+> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_bklight_max':
+> drivers/video/omap/omapfb_main.c:1363: error: 'struct device' has no member named 'driver_data'
+> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_ctrl_name':
+> drivers/video/omap/omapfb_main.c:1396: error: 'struct device' has no member named 'driver_data'
+> 
+> Caused by commit 53d8ba57f16029a47ed5df9840ab6c3f9abd3727 ("Driver core:
+> move dev_get/set_drvdata to drivers/base/dd.c") from the driver-core tree.
+> 
+> I see more grepping in your future :-)
 
-Yeah, I was suggesting we change fbcon's view of the world at panic
-time, rather than trying to change the mode.  It's a bit of surgery
-though...
+Heh, thanks, I got i386, x86-64, and ppc64 working properly this time
+around, but new things keep slipping in :)
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I'll go resolve these as well.
+
+thanks,
+
+greg k-h
