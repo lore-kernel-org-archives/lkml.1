@@ -1,44 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZFWFT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbZFWFX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZFWFT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZFWFTU
+	id S1755386AbZFWFX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 01:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZFWFXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:19:20 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:58692 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbZFWFTT (ORCPT
+	Tue, 23 Jun 2009 01:23:21 -0400
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:36425 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750951AbZFWFXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:19:19 -0400
-X-IronPort-AV: E=Sophos;i="4.42,273,1243814400"; 
-   d="scan'208";a="179305183"
-From: Roland Dreier <rdreier@cisco.com>
-To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-Cc: Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       raisch@de.ibm.com, ewg@lists.openfabrics.org,
-       Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>
-Subject: Re: [ewg] Re: [PATCH 2.6.31 try 2] ehca: Tolerate dynamic memory operations and huge pages
-References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-	<20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 22 Jun 2009 22:19:21 -0700
-In-Reply-To: <20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
-	(Alexander Schmidt's message of "Tue, 16 Jun 2009 09:10:21 +0200")
-Message-ID: <adabpofr0h2.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Jun 2009 05:19:21.0828 (UTC) FILETIME=[2A74EA40:01C9F3C2]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Tue, 23 Jun 2009 01:23:20 -0400
+To: torvalds@linux-foundation.org, hpa@zytor.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, alain@knaff.lu
+Subject: [PATCH 3/3] lzma/gzip: Fix potential oops when input data is truncated
+Message-Id: <E1MIyTY-0003c9-H6@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Tue, 23 Jun 2009 06:23:20 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, applied.
+If the lzma/gzip decompressors are called with insufficient input
+data (len > 0 & fill = NULL), they will attempt to call the fill
+function to obtain more data, leading to a kernel oops.
 
- > -#define HCAD_VERSION "0026"
- > +#define HCAD_VERSION "0027"
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ lib/decompress_inflate.c |    8 ++++++++
+ lib/decompress_unlzma.c  |   10 +++++++++-
+ 2 files changed, 17 insertions(+), 1 deletions(-)
 
-the driver version was already 0027 (since bde2cfaf), so I dropped this chunk.
+diff --git a/lib/decompress_inflate.c b/lib/decompress_inflate.c
+index bfe605a..aeae9ba 100644
+--- a/lib/decompress_inflate.c
++++ b/lib/decompress_inflate.c
+@@ -27,6 +27,11 @@
+ 
+ #define GZIP_IOBUF_SIZE (16*1024)
+ 
++static int nofill(void *buffer, unsigned int len)
++{
++	return -1;
++}
++
+ /* Included from initramfs et al code */
+ STATIC int INIT gunzip(unsigned char *buf, int len,
+ 		       int(*fill)(void*, unsigned int),
+@@ -76,6 +81,9 @@ STATIC int INIT gunzip(unsigned char *buf, int len,
+ 		goto gunzip_nomem4;
+ 	}
+ 
++	if (!fill)
++		fill = nofill;
++
+ 	if (len == 0)
+ 		len = fill(zbuf, GZIP_IOBUF_SIZE);
+ 
+diff --git a/lib/decompress_unlzma.c b/lib/decompress_unlzma.c
+index d3f9468..08776f3 100644
+--- a/lib/decompress_unlzma.c
++++ b/lib/decompress_unlzma.c
+@@ -82,6 +82,11 @@ struct rc {
+ #define RC_MODEL_TOTAL_BITS 11
+ 
+ 
++static int nofill(void *buffer, unsigned int len)
++{
++	return -1;
++}
++
+ /* Called twice: once at startup and once in rc_normalize() */
+ static void INIT rc_read(struct rc *rc)
+ {
+@@ -97,7 +102,10 @@ static inline void INIT rc_init(struct rc *rc,
+ 				       int (*fill)(void*, unsigned int),
+ 				       char *buffer, int buffer_size)
+ {
+-	rc->fill = fill;
++	if (fill)
++		rc->fill = fill;
++	else
++		rc->fill = nofill;
+ 	rc->buffer = (uint8_t *)buffer;
+ 	rc->buffer_size = buffer_size;
+ 	rc->buffer_end = rc->buffer + rc->buffer_size;
+-- 
+1.6.1.2
+
