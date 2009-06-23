@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZFWVm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759670AbZFWVnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbZFWVm1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758914AbZFWVmL
+	id S1759670AbZFWVnN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZFWVm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:42:11 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:39531 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758247AbZFWVmK (ORCPT
+	Tue, 23 Jun 2009 17:42:59 -0400
+Received: from 42.mail-out.ovh.net ([213.251.189.42]:55656 "HELO
+	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756180AbZFWVm6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:42:10 -0400
-Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Rik van Riel <riel@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <4A41481D.1060607@redhat.com>
-References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
-	 <1245732411.18339.6.camel@alok-dev1>
-	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
-	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1245736441.18339.21.camel@alok-dev1>  <4A41481D.1060607@redhat.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 23 Jun 2009 14:42:11 -0700
-Message-Id: <1245793331.24110.33.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 17:42:58 -0400
+Date: Tue, 23 Jun 2009 23:36:47 +0200
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: pierre@ossman.eu, avictor.za@gmail.com, linux-kernel@vger.kernel.org,
+       haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       rob@emanuele.us
+Subject: Re: [PATCH 2/2] AT91: atmel-mci: Platform configuration to the the
+ atmel-mci driver
+Message-ID: <20090623213647.GP23512@game.jcrosoft.org>
+References: <95818a17c2b96d3769f4e1d3de26208647111758.1245778411.git.nicolas.ferre@atmel.com>
+ <f8889fb59887a970581697beb313363a6a065606.1245778411.git.nicolas.ferre@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f8889fb59887a970581697beb313363a6a065606.1245778411.git.nicolas.ferre@atmel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Ovh-Tracer-Id: 5503117271780338540
+X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2009-06-23 at 14:24 -0700, Rik van Riel wrote:
-> Alok Kataria wrote:
+On 19:39 Tue 23 Jun     , Nicolas Ferre wrote:
+> From: Rob Emanuele <rob@emanuele.us>
 > 
-> > Both, while working on an module I noticed that there is no way direct
-> > way to get any information regarding the total number of unrecliamable
-> > (unevictable) pages in the system. While reading through the kernel
-> > sources i came across this unevictalbe LRU framework and thought that
-> > this should actually work towards providing  total unevictalbe pages in
-> > the system irrespective of where they reside.
+> Created a modified version of the at91sam9g20 evaluation kit platform
+> (board-sam9g20ek-2slot-mmc.c) and device support to make use of the updated
+> atmel-mci driver.
+> As the use of two slots modify GPIO pin allocation, we create another board
+> file.
 > 
-> The unevictable count tells you how many _userspace_
-> pages are not evictable.
+> Signed-off-by: Rob Emanuele <rob@emanuele.us>
+> [nicolas.ferre@atmel.com: printk, slot_count modification in at91sam9260_devices.c file]
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
+> This requires getting the most updated arch/arm/tools/mach-types from
+> http://www.arm.linux.org.uk/developer/machines/download.php to have the machine
+> type for the at91sam9g20ek-2slot-mmc board.
 > 
-> There are countless accounted and unaccounted kernel
-> allocations that show up (or not) in other fields in
-> /proc/meminfo.
+>  arch/arm/mach-at91/Kconfig                     |    7 +
+>  arch/arm/mach-at91/Makefile                    |    1 +
+>  arch/arm/mach-at91/at91sam9260_devices.c       |   96 ++++++++
+>  arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c |  277 ++++++++++++++++++++++++
+>  arch/arm/mach-at91/include/mach/board.h        |    5 +
+>  5 files changed, 386 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/arm/mach-at91/board-sam9g20ek-2slot-mmc.c
 > 
+> diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
+> index 323b47f..5c8d770 100644
+> --- a/arch/arm/mach-at91/Kconfig
+> +++ b/arch/arm/mach-at91/Kconfig
+> @@ -276,6 +276,13 @@ config MACH_AT91SAM9G20EK
+>  	help
+>  	  Select this if you are using Atmel's AT91SAM9G20-EK Evaluation Kit.
+>  
+> +config MACH_AT91SAM9G20EK_2MMC
+> +	bool "Atmel AT91SAM9G20-EK Evaluation Kit modified for 2 MMC Slots"
+> +	depends on ARCH_AT91SAM9G20
+> +	help
+> +	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
+> +	  Rev A or B modified for 2 MMC Slots.
+create a new machine id for just such update :(
+is this not possible to detect it and use the same machine?
 
-> I can see something reasonable on both sides of this
-> particular debate.  However, even with this patch the
-> "unevictable" statistic does not reclaim the total
-> number of pages that are unevictable pages from a
-> zone, so I am not sure how it helps you achieve your
-> goal.
-> 
-
-Yes but most of the other memory (page table and others) which is
-unevictable is actually static in nature.  IOW, the amount of this other
-kind of kernel unevictable pages can be actually interpolated from the
-amount of physical memory on the system. 
-
-One thing that i forgot to mention earlier is that, I just need a way to
-provide a hint about the total locked memory  on the system and it
-doesn't need to be the exact number at that point in time.
-
-Lee, due to this reason lazy culling of unevictable pages is fine too. 
-
-Hugepages, similar to mlocked pages, are special because the user could
-specify how much memory it wants to reserve for this purpose. So that
-needs to be taken into consideration i.e it cannot be calculated in some
-way. 
-
-Thanks,
-Alok
-
-
+Best Regards,
+J.
