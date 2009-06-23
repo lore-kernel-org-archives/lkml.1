@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbZFWVeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbZFWVez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbZFWVeo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbZFWVeR
+	id S1759567AbZFWVez (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759296AbZFWVeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:34:17 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:58816 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758961AbZFWVeP (ORCPT
+	Tue, 23 Jun 2009 17:34:21 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:55840 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759273AbZFWVeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:34:15 -0400
-Date: Tue, 23 Jun 2009 17:33:59 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI): initial support
-In-reply-to: <20090623202302.GA15265@srcf.ucam.org>
-Message-id: <alpine.LFD.2.00.0906231715060.32098@localhost.localdomain>
-References: <1245741246-6503-1-git-send-email-lenb@kernel.org>
- <20090623183153.GB12814@srcf.ucam.org>
- <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain>
- <20090623185120.GA13824@srcf.ucam.org>
- <alpine.LFD.2.00.0906231541400.23079@localhost.localdomain>
- <20090623202302.GA15265@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 23 Jun 2009 17:34:19 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 23 Jun 2009 14:28:17 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Davide Libenzi <davidel@xmailserver.org>, linux-kernel@vger.kernel.org,
+       avi@redhat.com, kvm@vger.kernel.org, ghaskins@novell.com,
+       rusty@rustcorp.com.au, bcrl@kvack.org
+Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
+In-Reply-To: <20090623142909.42776e75.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0906231426020.17001@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com> <20090623131848.b876d42e.akpm@linux-foundation.org> <alpine.DEB.1.10.0906231400010.17001@makko.or.mcafeemobile.com>
+ <20090623142909.42776e75.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Matthew Garrett wrote:
+On Tue, 23 Jun 2009, Andrew Morton wrote:
 
-> On Tue, Jun 23, 2009 at 04:00:55PM -0400, Len Brown wrote:
+> > > > +struct eventfd_ctx *eventfd_ctx_get(struct eventfd_ctx *ctx)
+> > > > +{
+> > > > +	kref_get(&ctx->kref);
+> > > > +	return ctx;
+> > > > +}
+> > > > +EXPORT_SYMBOL_GPL(eventfd_ctx_get);
+> > > 
+> > > doesn't match the code.
 > 
-> > But given that the hardware is fixed (it was fixed over a year ago),
-> > the question becomes what does ACPI mean on such a platform?
-> > It turns out that if you look at the ACPI spec and delete all the
-> > things that could not possibly apply to MRST, then you are left
-> > with very little.
-> 
-> Right, but instead you've effectively taken ACPI, done s/XSDT/SYST/ and 
-> then only supported a subset of the static tables and added some others.
+> You appear to have not seen the above sentence.
 
-sfi_acpi_table_parse(ACPI_SIG_MCFG, NULL, NULL, 0, pci_parse_mcfg);
+I saw that and have already fixed it. Sorry I missed the ACK.
 
-is used today to provide access to a standard PCI-SIG-defined ACPI-wrapped
-static MMCONFIG table via a standard ACPI XSDT.
 
-No, this doesn't mean that the platform firmware supports ACPI mode.
-The XSDT simply keeps the SFI table name space from conflicting
-with the ACPI table name-space.
 
-If there is a need to access another ACPI defined/reserved signature
-table, the same mechanism can be used -- just fill in the signature
-and the routine to parse the table.
+> yeah, I never trust people.  You might lose the email or jump on a
+> plane and disappear for three weeks, then it all gets forgotten about
+> and lost.
 
-> In return we gain two implementations to debug. I'm absolutely fine with 
-> the concept of a cut-down ACPI, but I'm pretty uncomfortable with it 
-> being implemented as a single-vendor spec.  Right now SFI's a 
-> reimplementation of functionality we already have for the benefit of a 
-> single chipset, whereas instead it could have been a refactoring of the 
-> ACPI codebase to allow vendors to include whatever subset of the ACPI 
-> functionality they felt necessary.
+Jumping on a plane. Check. Disappearing for 6 weeks. Check. ;)
 
-It is a fact that the list of things that SFI could have been,
-and the list of things that SFI is not,
-are _both_ much larger than the list of things it is.
 
-cheers,
--Len Brown, Intel Open Source Technology Center
+- Davide
+
 
