@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbZFWP4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760708AbZFWP46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760360AbZFWP4r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbZFWP4Y
+	id S1760708AbZFWP46 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760083AbZFWP4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:56:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53221 "EHLO mx2.redhat.com"
+	Tue, 23 Jun 2009 11:56:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53236 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756875AbZFWP4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:56:23 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu>
-References: <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu> <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: dhowells@redhat.com, hch@infradead.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, adilger@sun.com, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org
-Subject: Re: [RFC] O_NOACC: open without any access
-Date: Tue, 23 Jun 2009 16:52:17 +0100
-Message-ID: <16370.1245772337@redhat.com>
+	id S1759965AbZFWP4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 11:56:34 -0400
+Date: Tue, 23 Jun 2009 18:56:07 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
+Message-ID: <20090623155607.GB21423@redhat.com>
+References: <20090623150008.GA21059@redhat.com> <4A40F311.80105@novell.com> <20090623153144.GA21423@redhat.com> <4A40F879.3040408@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A40F879.3040408@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Tue, Jun 23, 2009 at 11:44:57AM -0400, Gregory Haskins wrote:
+> >>  This proposed approach forces us into a
+> >> potential O(256) algorithm in the hotpath (all MMIO/PIO exits will hit
+> >> this, not just in-kernel users).  How would you address this?
+> >>     
+> >
+> > Two ideas that come to mind:
+> > - add addr/len fields to devices, use these to speed up lookup
+> >   
+> 
+> Yep, thats what I was thinking as well.  We can have the top-level
+> (group) be an rbtree on addr/len, and then walk the list of items at
+> that address linearly using your read/write() approach.
+> 
+> 
+> > - add a small cache that can be scanned first
+> >   
+> 
+> Yep, I think we may want to do this anyway independent of the search alg.
+> 
+> > In both cases, you first do a fast lookup, ask the device whether
+> > it wants the transaction, then resort to linear scan if not
+> >   
+> 
+> -Greg
+> 
 
-> Right, but that makes it useless for things which want to open it
-> despite having no permission on the file.
+Looks like we have a concensus then.
 
-For my purposes, if I'm going to emulate pioctl() in userspace, I also need to
-be able to open device files that don't have drivers available, and when you
-do open a dev file in this manner, it must _not_ call the ->open() routine of
-the device driver.
-
-David
+-- 
+MST
