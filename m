@@ -1,274 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZFWKdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZFWKdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbZFWKdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 06:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZFWKdD
+	id S1755510AbZFWKdi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 06:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbZFWKda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 06:33:03 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:35052 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbZFWKdB (ORCPT
+	Tue, 23 Jun 2009 06:33:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37184 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbZFWKd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 06:33:01 -0400
-Message-ID: <4A40AF2A.3050509@gmail.com>
-Date: Tue, 23 Jun 2009 12:32:10 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Jiri Olsa <jolsa@redhat.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, oleg@redhat.com
-Subject: Re: [RFC] tcp: race in receive part
-References: <20090618102727.GC3782@jolsa.lab.eng.brq.redhat.com> <4A3A49F2.6060705@gmail.com> <20090623091257.GA4850@jolsa.lab.eng.brq.redhat.com>
-In-Reply-To: <20090623091257.GA4850@jolsa.lab.eng.brq.redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 23 Jun 2009 12:32:28 +0200 (CEST)
+	Tue, 23 Jun 2009 06:33:29 -0400
+Subject: Re: mm: dirty page problem
+From: Peter Zijlstra <peterz@infradead.org>
+To: xue yong <ultraice.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <fc71709d0906230202w14da8ffdpf457f7a6ed658a28@mail.gmail.com>
+References: <fc71709d0906230117h2bee4d7en9f3aadeae3cb9545@mail.gmail.com>
+	 <fc71709d0906230202w14da8ffdpf457f7a6ed658a28@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 23 Jun 2009 12:33:39 +0200
+Message-Id: <1245753219.19816.1586.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Olsa a écrit :
-> Hi,
+On Tue, 2009-06-23 at 17:02 +0800, xue yong wrote:
+> I did some search in the changlogs between 2..6.16 adn 2.6.19.
+> I found this in http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.19
 > 
-> thanks for an answer, and sorry for my late reply,
-> we needed the cust permission to disclose the debug data.
+> and I concluded that the kernel below 2.6.19 can't tracking shared
+> dirty pages, am I right?
 > 
+> commit edc79b2a46ed854595e40edcf3f8b37f9f14aa3f
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Mon Sep 25 23:30:58 2006 -0700
+> 
+>     [PATCH] mm: balance dirty pages
 
-I see ! Now this is me with litle time as I am traveling right now.
-
+> commit d08b3851da41d0ee60851f2c75b118e1f7a5fc89
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Mon Sep 25 23:30:57 2006 -0700
 > 
-> On Thu, Jun 18, 2009 at 04:06:42PM +0200, Eric Dumazet wrote:
->> Jiri Olsa a écrit :
->>> Hi,
->>>
->>> in RHEL4 we can see a race in the tcp layer. We were not able to reproduce 
->>> this on the upstream kernel, but since the issue occurs very rarelly
->>> (once per 8 days), we just might not be lucky.
->>>
->>> I'm affraid this might be a long email, I'll try to structure it nicely.. :)
->>>
->> Thanks for your mail and detailed analysis
->>
->>>
->>> RACE DESCRIPTION
->>> ================
->>>
->>> There's a nice pdf describing the issue (and sollution using locks) on
->>> https://bugzilla.redhat.com/attachment.cgi?id=345014
->> I could not reach this url unfortunatly 
->>
->> --> "You are not authorized to access bug #494404. "
-> 
-> please try it now, the bug should be accessible now
-> 
+>     [PATCH] mm: tracking shared dirty pages
 
-Thanks, this doc is indeed nice :)
+Correct, prior to .19 we didn't have effective tracking of dirty pages.
+munmap() and msync() would walk the page tables and collect dirty pages,
+but without explicit action these pages would stay hidden.
 
-But adding an write_lock()/write_unlock() in tcp_poll() was overkill
-It had an sm_mb() implied because of the nesting of locks.
+These patches you found change that by mapping clean shared pages RO and
+taking a fault on the dirtying write. We once again map then RO when
+they'd be written out to disk.
 
->>>
->>> The race fires, when following code paths meet, and the tp->rcv_nxt and
->>> __add_wait_queue updates stay in CPU caches.
->>>
->>> CPU1                         CPU2
->>>
->>>
->>> sys_select                   receive packet
->>>   ...                        ...
->>>   __add_wait_queue           update tp->rcv_nxt
->>>   ...                        ...
->>>   tp->rcv_nxt check          sock_def_readable
->>>   ...                        {
->>>   schedule                      ...
->>>                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
->>>                                         wake_up_interruptible(sk->sk_sleep)
->>>                                 ...
->>>                              }
->>>
->>> If there were no cache the code would work ok, since the wait_queue and
->>> rcv_nxt are opposit to each other.
->>>
->>> Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
->>> passed the tp->rcv_nxt check and sleeps, or will get the new value for
->>> tp->rcv_nxt and will return with new data mask.  
->>> In both cases the process (CPU1) is being added to the wait queue, so the
->>> waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
->>>
->>> The bad case is when the __add_wait_queue changes done by CPU1 stay in its
->>> cache , and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
->>> endup calling schedule and sleep forever if there are no more data on the
->>> socket.
->>>
->>> Adding smp_mb() calls before sock_def_readable call and after __add_wait_queue
->>> should prevent the above bad scenario.
->>>
->>> The upstream patch is attached. It seems to prevent the issue.
->>>
->>>
->>>
->>> CPU BUGS
->>> ========
->>>
->>> The customer has been able to reproduce this problem only on one CPU model:
->>> Xeon E5345*2. They didn't reproduce on XEON MV, for example.
->> Is there an easy way to reproduce the problem ?
-> 
-> there's a reproducer attached to the bug
-> 
-> https://enterprise.redhat.com/issue-tracker/?module=download&fid=201560&key=f6f87caf6ac2dc1eb1173257c8a5ef78
-> 
-> it is basically the client/server program. 
-> They're passing messages to each other. When a message is sent,
-> both of them expect message on the input before sending another message.
-> 
-> Very rarely the code hits the place when the process which called select
-> is not woken up by incomming data. Probably because of the memory cache
-> incoherency. See backtrace in the 
-> 
-> https://bugzilla.redhat.com/show_bug.cgi?id=494404#c1
-> 
-> 
->>> That CPU model happens to have 2 possible issues, that might cause the issue:
->>> (see errata http://www.intel.com/Assets/PDF/specupdate/315338.pdf)
->>>
->>> AJ39 and AJ18. The first one can be workarounded by BIOS upgrade,
->>> the other one has following notes:
->> AJ18 only matters on unaligned accesses, tcp code doesnt do this.
->>
->>>       Software should ensure at least one of the following is true when
->>>       modifying shared data by multiple agents:
->>>              • The shared data is aligned
->>>              • Proper semaphores or barriers are used in order to
->>>                 prevent concurrent data accesses.
->>>
->>>
->>>
->>> RFC
->>> ===
->>>
->>> I'm aware that not having this issue reproduced on upstream lowers the odds
->>> having this checked in. However AFAICS the issue is present. I'd appreciate
->>> any comment/ideas.
->>>
->>>
->>> thanks,
->>> jirka
->>>
->>>
->>> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
->>>
->>> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
->>> index 17b89c5..f5d9dbf 100644
->>> --- a/net/ipv4/tcp.c
->>> +++ b/net/ipv4/tcp.c
->>> @@ -340,6 +340,11 @@ unsigned int tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
->>>  	struct tcp_sock *tp = tcp_sk(sk);
->>>  
->>>  	poll_wait(file, sk->sk_sleep, wait);
->> poll_wait() calls add_wait_queue() which contains a 
->> spin_lock_irqsave()/spin_unlock_irqrestore() pair
->>
->> Documentation/memory-barriers.txt states in line 1123 :
->>
->> 	Memory operations issued after the LOCK will be completed after the LOCK
->> 	operation has completed.
->>
->> and line 1131 states :
->>
->> 	Memory operations issued before the UNLOCK will be completed before the
->> 	UNLOCK operation has completed.
->>
->> So yes, there is no full smp_mb() in poll_wait()
->>
->>> +
->>> +	/* Get in sync with tcp_data_queue, tcp_urg
->>> +	   and tcp_rcv_established function. */
->>> +	smp_mb();
->> If this barrier is really necessary, I guess it should be done in poll_wait() itself.
->>
->> Documentation/memory-barriers.txt misses some information about poll_wait()
->>
->>
->>
->>
->>> +
->>>  	if (sk->sk_state == TCP_LISTEN)
->>>  		return inet_csk_listen_poll(sk);
->>>  
->>> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
->>> index 2bdb0da..0606e5e 100644
->>> --- a/net/ipv4/tcp_input.c
->>> +++ b/net/ipv4/tcp_input.c
->>> @@ -4362,8 +4362,11 @@ queue_and_out:
->>>  
->>>  		if (eaten > 0)
->>>  			__kfree_skb(skb);
->>> -		else if (!sock_flag(sk, SOCK_DEAD))
->>> +		else if (!sock_flag(sk, SOCK_DEAD)) {
->>> +			/* Get in sync with tcp_poll function. */
->>> +			smp_mb();
->>>  			sk->sk_data_ready(sk, 0);
->>> +		}
->>>  		return;
->>>
->> Oh well... if smp_mb() is needed, I believe it should be done
->> right before "if (waitqueue_active(sk->sk_sleep) ... "
->>
->>  	read_lock(&sk->sk_callback_lock);
->> +	smp_mb();
->>  	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
->>  		wake_up_interruptible(sk->sk_sleep)
->>
->> It would match other parts in kernel (see fs/splice.c, fs/aio.c, ...)
->>
->> Strange thing is that read_lock() on x86 is a full memory barrier, as it uses
->> "lock subl $0x1,(%eax)"
->>
->> Maybe we could define a smp_mb_after_read_lock()  (a compiler barrier() on x86)
->>
-> 
-> First version of the patch was actually in this layer, see
-> https://bugzilla.redhat.com/attachment.cgi?id=345886
-> 
-> I was adviced this could be to invasive (it was in waitqueue_active actually), 
-> so I moved the change to the TCP layer itself... 
-> 
-> As far as I understand the problem there's need for 2 barriers to be
-> sure, the memory will have correct data. One in the codepath calling the
-> select (tcp_poll), and in the other one updating the available data status 
-> (sock_def_readable), am I missing smth?
-> 
-
-Hmm, I am not saying your patch doesnt fix the problem, I am saying it
-is a partial fix of a general problem. We might have same problem(s) in other
-parts of network stack. This is a very serious issue.
-
-Point 1 :
-
-You added an smp_mb() call in tcp_poll(). This one looks fine to solve
-the problem for tcp sockets. What about other protocols ? Do we have
-same problem ?
-
-Point 2 :
-
-You added several smp_mb() calls in tcp input path. In my first
-reply, I said it was probably better to add smp_mb() in a single 
-place, right before "if (waitqueue_active(sk->sk_sleep) ... ",
-but in all paths (input path & output path).
-
-Point 3 :
-
-The optimization we could do, defining
-a smp_mb_after_read_lock() that could be a nop on x86
-
-	read_lock(&sk->sk_callback_lock); // "lock subl $0x1,(%eax)" on x86
-	smp_mb_after_read_lock(); /* compiler barrier() on x86 */
-	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
- 		wake_up_interruptible(sk->sk_sleep);
-
-Am I missing something ?
-
-;)
 
