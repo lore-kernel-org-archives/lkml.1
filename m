@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbZFWLGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbZFWLJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbZFWLGU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbZFWLGL
+	id S1753959AbZFWLJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZFWLJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:06:11 -0400
-Received: from mga05.intel.com ([192.55.52.89]:1055 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757865AbZFWLGK (ORCPT
+	Tue, 23 Jun 2009 07:09:33 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:64329 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbZFWLJc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:06:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,275,1243839600"; 
-   d="scan'208";a="701733376"
-Message-ID: <4A40B721.7020409@linux.intel.com>
-Date: Tue, 23 Jun 2009 13:06:09 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 23 Jun 2009 07:09:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=weriC3fj5h1102V9ysYEBSQX8bsLJFSef8wuBwS7s0eWptQgM/udRaW6kpQsy7Ckpy
+         Qb49H4ozu2FjM71b4Ph4hv5vi/m/6ZHg+EK6uOSI+da2/HU6tGvdktyhxRAZs6vDyLcZ
+         1eXlbYgdgazP+zpbT9yCUCwMKijz1eKJyxIPY=
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
- to  disk, mce related?
-References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>  <4A3E7F38.7030300@linux.intel.com>  <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>  <4A3EE668.5090400@jp.fujitsu.com>  <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>  <4A3F55C7.4030909@linux.intel.com>  <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>  <4A3F7A93.5080004@linux.intel.com>  <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>  <4A3F8BF7.6010406@linux.intel.com> <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com> <4A404EC6.8080902@jp.fujitsu.com> <Pine.LNX.4.64.0906231142540.5287@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0906231142540.5287@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200906231040.46767.arnd@arndb.de>
+References: <20090623111430D.fujita.tomonori@lab.ntt.co.jp> 
+	<1245724420-26317-1-git-send-email-vapier@gentoo.org> <200906231040.46767.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 23 Jun 2009 07:09:14 -0400
+Message-ID: <8bd0f97a0906230409u5ec65e45je59cc2bea4852cde@mail.gmail.com>
+Subject: Re: [PATCH 2/2 v2] Blackfin: fix dma-mapping build errors
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 23, 2009 at 04:40, Arnd Bergmann wrote:
+> On Tuesday 23 June 2009, Mike Frysinger wrote:
+>> +static inline void dma_sync_sg_for_device(struct device *dev,
+>> +                                     struct scatterlist *sg,
+>> +                                     int nents, enum dma_data_direction dir)
+>> +{
+>> +}
+>
+> If you flush the dcache in dma_map_sg, you probably also need to
+> flush it in dma_sync_*_for_device:
+>
+> static inline void
+> dma_sync_sg_for_device(struct device *dev, struct scatterlist *sglist,
+>                      int nents, enum dma_data_direction direction)
+> {
+>       struct scatterlist *sg;
+>       int i;
+>
+>       for_each_sg(sglist, sg, nents, i)
+>               invalidate_dcache_range(sg_virt(sg), sg_virt(sg) + sg->length);
+> }
 
-> Your patch puts an end to all that.  Something for Andi to rush to
-> Linus for -rc1 I think - though I won't be in the least surprised if
-> Andi decides on something a little different, it's rather surprising
-> to have that mcheck_init() call from over there in just the one case.
-> 
-> Thanks again,
-> Hugh
-
-
-Yes patch looks good. I was just waiting for reports if it really fixes
-the problem.
-
--Andi
+i'll just integrate this into the patch you sent previously during the
+next merge window.  these new functions werent actually being used
+anywhere on Blackfin systems, so i'm not terribly worried about them
+for now.
+-mike
