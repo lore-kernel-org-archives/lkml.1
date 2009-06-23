@@ -1,122 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZFWUBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZFWUB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbZFWUBe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 16:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757029AbZFWUBU
+	id S1755190AbZFWUB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 16:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbZFWUBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 16:01:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45119 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756440AbZFWUBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 16:01:18 -0400
-Date: Tue, 23 Jun 2009 20:00:46 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, peterz@infradead.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1245757369.3776.1.camel@localhost.localdomain>
-References: <1245757369.3776.1.camel@localhost.localdomain>
-Subject: [tip:perfcounters/urgent] perf stat: Fix verbose for perf stat
-Message-ID: <tip-cca03c0aeb18a975abec28df518a2b64ae3e6964@git.kernel.org>
-Git-Commit-ID: cca03c0aeb18a975abec28df518a2b64ae3e6964
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Jun 2009 20:00:47 +0000 (UTC)
+	Tue, 23 Jun 2009 16:01:22 -0400
+Received: from vms173011pub.verizon.net ([206.46.173.11]:61353 "EHLO
+	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757022AbZFWUBT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 16:01:19 -0400
+Date: Tue, 23 Jun 2009 16:00:55 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI): initial support
+In-reply-to: <20090623185120.GA13824@srcf.ucam.org>
+Message-id: <alpine.LFD.2.00.0906231541400.23079@localhost.localdomain>
+References: <1245741246-6503-1-git-send-email-lenb@kernel.org>
+ <20090623183153.GB12814@srcf.ucam.org>
+ <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain>
+ <20090623185120.GA13824@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cca03c0aeb18a975abec28df518a2b64ae3e6964
-Gitweb:     http://git.kernel.org/tip/cca03c0aeb18a975abec28df518a2b64ae3e6964
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Tue, 23 Jun 2009 17:12:49 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 23 Jun 2009 21:58:44 +0200
+On Tue, 23 Jun 2009, Matthew Garrett wrote:
 
-perf stat: Fix verbose for perf stat
+> On Tue, Jun 23, 2009 at 02:41:28PM -0400, Len Brown wrote:
+> > On Tue, 23 Jun 2009, Matthew Garrett wrote:
+> > 
+> > > There seems to be a huge amount of overlap between SFI and ACPI.
+> > > Couldn't this have simply taken the form of some additional ACPI tables 
+> > > and a decoupling of ACPI enumeration from runtime AML interpretation? 
+> > > How final is this spec?
+> > 
+> > > I realise that we're pretty much constrained to implementing this if 
+> > > hardware actually ships with it, but it seems to be an additional 
+> > > firmware interface with no real benefit - as far as I can tell it's not 
+> > > possible for a platform to meaningfully implement both ACPI and SFI 
+> > > without duplicating information?
+> > 
+> > Please let me know if your questions are not thoroughly answered here:
+> > http://simplefirmware.org/faq
+> 
+> Yeah, I read that and it didn't really seem to clear things up. There's 
+> no especially meaningful reason for a specialised platform to include 
+> any AML code - the closest equivalent case I'm thinking of is "acpi=ht" 
+> where we parse some static ACPI tables but don't do any runtime 
+> interpretation. In this universe, SFI would simply have been some 
+> specced additional tables and a build option to include table parsing 
+> but not the interpreter.
+> 
+> I appreciate that if this is what's going to be on the hardware then 
+> we're stuck with it, but I'm hugely unconvinced that this couldn't have 
+> taken the form of "embedded ACPI" rather than an entire new firmware 
+> interface.
 
-Error message should use stderr for verbose (-v), otherwise
-message will be lost for:
+Fundamentally, Moorestown is an x86 processor
+married to a cell-phone chipset.
 
- $ ./perf stat -v <cmd>  > /dev/null
+It does not have x86 legacy PC compatibility,
+and it does not have any ACPI registers.
+It does not support SMM, and thus can't emulate the above.
 
-For example on AMD bus-cycles event is not available so now
-it looks like:
+One can argue the merits of the architecture..
+The software person will always argue for compatibility (and be right)
+and the hardware product person will have their own reasons (and be 
+right).
 
- $ ./perf stat -v -e bus-cycles ls > /dev/null
-Error: counter 0, sys_perf_counter_open() syscall returned with -1 (Invalid argument)
+But given that the hardware is fixed (it was fixed over a year ago),
+the question becomes what does ACPI mean on such a platform?
+It turns out that if you look at the ACPI spec and delete all the
+things that could not possibly apply to MRST, then you are left
+with very little.
 
- Performance counter stats for 'ls':
+Yes, the ACPI OS code could have been sliced up for the benefit
+of MRST.  But doing so would have had an extremely small benefit
+to MRST, and would have inflicted serious damage to CONFIG_ACPI
+on the rest of the industry.  So I decided it was a better idea
+to make a clean break for the benefit of both platforms.
 
-  <not counted>  bus-cycles
+Note that while it makes sense for a single kernel to support
+both ACPI and SFI to be able to run on both platforms, it does
+not make any sense for a platform to export both.  If that were
+to occur (say in a prototype), the platform's SFI suport would
+simply be ignored by the OS.
 
-    0.006765877  seconds time elapsed.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <1245757369.3776.1.camel@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+thanks,
+-Len Brown, Intel Open Source Technolgy Center
 
 
----
- tools/perf/builtin-stat.c |   20 ++++++++++++--------
- 1 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 6d3eeac..5e04fcc 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -109,6 +109,10 @@ static u64			walltime_nsecs_noise;
- static u64			runtime_cycles_avg;
- static u64			runtime_cycles_noise;
- 
-+
-+#define ERR_PERF_OPEN \
-+"Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n"
-+
- static void create_perf_stat_counter(int counter)
- {
- 	struct perf_counter_attr *attr = attrs + counter;
-@@ -119,20 +123,20 @@ static void create_perf_stat_counter(int counter)
- 
- 	if (system_wide) {
- 		int cpu;
--		for (cpu = 0; cpu < nr_cpus; cpu ++) {
-+		for (cpu = 0; cpu < nr_cpus; cpu++) {
- 			fd[cpu][counter] = sys_perf_counter_open(attr, -1, cpu, -1, 0);
--			if (fd[cpu][counter] < 0 && verbose) {
--				printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[cpu][counter], strerror(errno));
--			}
-+			if (fd[cpu][counter] < 0 && verbose)
-+				fprintf(stderr, ERR_PERF_OPEN, counter,
-+					fd[cpu][counter], strerror(errno));
- 		}
- 	} else {
- 		attr->inherit	= inherit;
- 		attr->disabled	= 1;
- 
- 		fd[0][counter] = sys_perf_counter_open(attr, 0, -1, -1, 0);
--		if (fd[0][counter] < 0 && verbose) {
--			printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[0][counter], strerror(errno));
--		}
-+		if (fd[0][counter] < 0 && verbose)
-+			fprintf(stderr, ERR_PERF_OPEN, counter,
-+				fd[0][counter], strerror(errno));
- 	}
- }
- 
-@@ -168,7 +172,7 @@ static void read_counter(int counter)
- 	count[0] = count[1] = count[2] = 0;
- 
- 	nv = scale ? 3 : 1;
--	for (cpu = 0; cpu < nr_cpus; cpu ++) {
-+	for (cpu = 0; cpu < nr_cpus; cpu++) {
- 		if (fd[cpu][counter] < 0)
- 			continue;
- 
