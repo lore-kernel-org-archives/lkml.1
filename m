@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZFWRVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZFWRW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZFWRVw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 13:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZFWRVo
+	id S1754049AbZFWRW0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 13:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbZFWRWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 13:21:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48360 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbZFWRVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 13:21:43 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090623173340.66f71915@lxorguk.ukuu.org.uk>
-References: <20090623173340.66f71915@lxorguk.ukuu.org.uk> <20090623170610.7fd8a3f8@lxorguk.ukuu.org.uk> <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu> <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org> <16370.1245772337@redhat.com> <16755.1245773452@redhat.com> 
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: dhowells@redhat.com, Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@ZenIV.linux.org.uk, adilger@sun.com,
-       akpm@linux-foundation.org
-Subject: Re: [RFC] O_NOACC: open without any access
-Date: Tue, 23 Jun 2009 18:20:48 +0100
-Message-ID: <17391.1245777648@redhat.com>
+	Tue, 23 Jun 2009 13:22:19 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:56231 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751976AbZFWRWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 13:22:18 -0400
+X-Greylist: delayed 1335 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jun 2009 13:22:18 EDT
+Date: Tue, 23 Jun 2009 19:00:06 +0200
+To: linux-kernel@vger.kernel.org
+Subject: finding reasons for disk spin ups
+Message-ID: <20090623170006.GC30649@gamma.logic.tuwien.ac.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hi all,
+(please cc)
 
-> Which means the device could be unloaded, something else loaded and your
-> handle wouldn't be invalidated but would be stale ?
+is there a way I can find the reasons why my disk is spinning up again
+and again? I tried to monitor io with
+	iotop -o -d 0.01 -b -qqq -t
+but sometimes the disks spins up without anything showing up.
+The partitions are mounted with noatime.
 
-It would not be stale.  The O_NOACC handle would effectively be a route to the
-inode on the underlying fs, and so shouldn't affect normal opens that do get
-routed to the device driver.
+Is there any kernel interface telling me why/whcih process called for
+the sync so that the disk wakes up?
 
-However, Miklos's O_FILESYSTEM suggestion would work as a differentiation to
-O_NOACC, if you want the latter to go to the device driver.
+Thanks a lot
 
-> Perhaps it would make more sense to me if I knew why you needed to do this ?
+Norbert
 
-How about I give you an example:
-
-There's a pioctl to kick a file out of the local cache and reload it.  AFS
-symlinks are stored in the local cache, and so you might conceivably want to
-eject one from the local cache on your machine.  This is an operation on the
-symlink object itself, _not_ on the target of the symlink.
-
-However, unless I can open a symlink without it giving me an error or trying
-to open the target, I cannot issue an ioctl() upon it.
-
-Also, this is a command, not an attribute, and so using lsetxattr() is a bit
-of a violation of semantics, and, furthermore, it's not an attribute of the
-file.
-
-
-Now, consider that I may, at some point in the future, or in some other netfs,
-need to deal with device files.  I may want to eject a dev file from the
-cache; I might want to lock one into the cache.  I need to affect the
-filesystem object underlying the device file, not the device driver's opinion
-of the device file.  The device driver knows nothing about the filesystem's
-local caching, and shouldn't have to deal with it.  I need a way to operate on
-a device file without (a) incurring ->open() side effects of a dev file, (b)
-pestering the device driver, (c) incurring a failure because the dev file
-doesn't have a corresponding driver, or (d) requiring permission to open that
-dev file.
-
-
-It is probably worth adding an fscachectl() syscall to handle caching commands,
-since these are fairly simple and need to be applied to NFS as well as AFS, but
-there are other file commands too (not just things that get attributes).  See:
-
-	http://www.openafs.org/cgi-bin/cvsweb.cgi/openafs/doc/pdf/fscm-ispec.pdf?rev=1.1&content-type=text/x-cvsweb-markup
-
-for more information.
-
-David
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+`My doctor says that I have a malformed public-duty gland
+and a natural deficiency in moral fibre, and that I am
+therefore excused from saving Universes.'
+                 --- Ford's last ditch attempt to get out of helping
+                 --- Slartibartfast.
+                 --- Douglas Adams, The Hitchhikers Guide to the Galaxy
