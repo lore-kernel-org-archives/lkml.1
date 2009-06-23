@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZFWIHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZFWIJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbZFWIHs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZFWIHe
+	id S1754473AbZFWIJh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZFWIJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:07:34 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56177 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbZFWIHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:07:31 -0400
-Message-ID: <4A408D32.9010500@jp.fujitsu.com>
-Date: Tue, 23 Jun 2009 17:07:14 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 23 Jun 2009 04:09:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48874 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751228AbZFWIJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:09:23 -0400
+Date: Tue, 23 Jun 2009 10:09:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Feng Tang <feng.tang@intel.com>
+Cc: Len Brown <lenb@kernel.org>,
+       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH 2/8] SFI: include/linux/sfi.h
+Message-ID: <20090623080908.GA11181@elte.hu>
+References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com> <b3fb5fa65a532941d61a8c8415495f752aac540d.1245740912.git.len.brown@intel.com> <20090623072811.GB6397@elte.hu> <20090623154724.08a51ea3@feng-desktop> <20090623080047.GE6397@elte.hu> <20090623160225.1ebb5540@feng-desktop>
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-CC: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       kexec@lists.infradead.org
-Subject: Re: [PATCH 1/7] ia64, kdump: Mask MCA/INIT on freezing cpus
-References: <4A39E247.4030908@jp.fujitsu.com> <4A39E2CF.80901@jp.fujitsu.com> <20090622134557.GC7084@sgi.com> <4A4022EA.1020506@jp.fujitsu.com> <20090623055536.GE6865@sgi.com>
-In-Reply-To: <20090623055536.GE6865@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623160225.1ebb5540@feng-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Holt wrote:
-> On Tue, Jun 23, 2009 at 09:33:46AM +0900, Hidetoshi Seto wrote:
->> Robin Holt wrote:
-> ...
->> Do you mean that the 2nd kernel should be able to handle MCA/INIT from its
->> boot up?  I guess the word PROM is nearly equal to PAL/SAL firmware, if so
->> then I don't think there are good generic interface/procedure could be
->> useful here.  Do you have any concrete idea?
+
+* Feng Tang <feng.tang@intel.com> wrote:
+
+> On Tue, 23 Jun 2009 16:00:47 +0800
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> No concrete ideas.  Just a really uneasy feeling whenever the INIT
-> is disabled.
+> > 
+> > * Feng Tang <feng.tang@intel.com> wrote:
+> > 
+> > > For these arch_early_ioremap/arch_early_iounmap API, do you mean 
+> > > we should put it in a sfi.h under "asm" folder? The reason we put 
+> > > it here is to give a arch independent API declaration here and let 
+> > > each arch implement its own func.
+> > 
+> > Yeah, i'd suggest to create a new early-remap.h and 
+> > early-remap.c kind of file to collect the existing bits for 
+> > that. It's a bit ugly (not really the fault of SFI - these are 
+> > pre-existing facilities) and might need some love - we better 
+> > move it apart so that the light of attention shines on it.
+> > 
+> > What's the target merge of the SFI stuff, 2.6.31?
+> 
+> AFAIK, Len's target is for 2.6.32
 
-Don't worry, don't be afraid.
-Again, my patches don't disable INIT until kdump is invoked.
-(And if kdump is invoked via INIT, it have already masked at the begging
- of INIT handlers.)
+Ah, ok - then there's time. The code is almost good for .31 btw ;-)
 
-> If you could give this some consideration, I would appreciate it.
-> I really don't have the time to dedicate to thinking all the way through
-> and therefore will not stand in the way of any patch you propose.
-> If I can be of help in any way, please let me know.
-
-I know you guys are busy with this and that...
-
-It would be the best if you could test my patches soon on SGI servers,
-but I would appreciate it too if you could let me know if you have any
-trouble on the patches later.
-
-
-Thanks,
-H.Seto
-
+	Ingo
