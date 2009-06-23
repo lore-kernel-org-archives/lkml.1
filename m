@@ -1,177 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761020AbZFWQg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbZFWQkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761020AbZFWQg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759644AbZFWQgi
+	id S1759823AbZFWQkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbZFWQkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:36:38 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:56010 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753359AbZFWQgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:36:37 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: pierre@ossman.eu, avictor.za@gmail.com
-Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, rob@emanuele.us,
-       nicolas.ferre@atmel.com
-Subject: [PATCH 1/2] atmel-mci: Unified Atmel MCI drivers (AVR32 & AT91)
-Date: Tue, 23 Jun 2009 19:39:30 +0200
-Message-Id: <1245778771-8158-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1245200079-6323-1-git-send-email-rob@emanuele.us>
-References: <1245200079-6323-1-git-send-email-rob@emanuele.us>
-Message-Id: <95818a17c2b96d3769f4e1d3de26208647111758.1245778411.git.nicolas.ferre@atmel.com>
+	Tue, 23 Jun 2009 12:40:39 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:43483 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZFWQki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:40:38 -0400
+Date: Wed, 24 Jun 2009 01:39:40 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       niv@us.ibm.com, dvhltc@us.ibm.com, dhowells@redhat.com,
+       kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH -tip] v5 RCU: the bloatwatch edition
+Message-ID: <20090623163939.GE26674@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, mingo@elte.hu,
+	akpm@linux-foundation.org, niv@us.ibm.com, dvhltc@us.ibm.com,
+	dhowells@redhat.com, kernel@wantstofly.org, matthew@wil.cx
+References: <20090623042442.GA15630@linux.vnet.ibm.com> <20090623161217.GA15298@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623161217.GA15298@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Emanuele <rob@emanuele.us>
+On Tue, Jun 23, 2009 at 09:12:17AM -0700, Paul E. McKenney wrote:
+> This patch is a -tip version of RCU designed for (!SMP && EMBEDDED)
+> provided as a proof of concept of a small-footprint RCU implementation.
+> In particular, the implementation of synchronize_rcu() is extremely
+> lightweight and high performance.  It passes rcutorture testing in each
+> of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> on x86.  This saves 1263 bytes compared to Classic RCU, and more than
+> three kilobytes compared to Hierarchical RCU (updated to 2.6.30):
+> 
+[snip]
 
-Unification of the atmel-mci driver to support the AT91 processors MCI
-interface.  The atmel-mci driver currently supports the AVR32 and this patch
-adds AT91 support.
-Add read/write proof selection switch dependent on chip availability of this
-feature.
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Acked-by: David Howells <dhowells@redhat.com>
 
-To use this new driver on a at91 the platform driver for your board needs to
-updated.
-
-Signed-off-by: Rob Emanuele <rob@emanuele.us>
-[nicolas.ferre@atmel.com indent, Kconfig comment and one printk modification]
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- drivers/mmc/host/Kconfig     |   16 ++++++++++++----
- drivers/mmc/host/atmel-mci.c |   33 ++++++++++++++++++++++++++++++---
- 2 files changed, 42 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index b4cf691..e779049 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -124,6 +124,12 @@ config MMC_AU1X
- 
- 	  If unsure, say N.
- 
-+choice
-+	prompt "Atmel SD/MMC Driver"
-+	default MMC_ATMELMCI if AVR32
-+	help
-+	  Choose which driver to use for the Atmel MCI Silicon
-+
- config MMC_AT91
- 	tristate "AT91 SD/MMC Card Interface support"
- 	depends on ARCH_AT91
-@@ -134,17 +140,19 @@ config MMC_AT91
- 
- config MMC_ATMELMCI
- 	tristate "Atmel Multimedia Card Interface support"
--	depends on AVR32
-+	depends on AVR32 || ARCH_AT91
- 	help
- 	  This selects the Atmel Multimedia Card Interface driver. If
--	  you have an AT32 (AVR32) platform with a Multimedia Card
--	  slot, say Y or M here.
-+	  you have an AT32 (AVR32) or AT91 platform with a Multimedia
-+	  Card slot, say Y or M here.
- 
- 	  If unsure, say N.
- 
-+endchoice
-+
- config MMC_ATMELMCI_DMA
- 	bool "Atmel MCI DMA support (EXPERIMENTAL)"
--	depends on MMC_ATMELMCI && DMA_ENGINE && EXPERIMENTAL
-+	depends on MMC_ATMELMCI && AVR32 && DMA_ENGINE && EXPERIMENTAL
- 	help
- 	  Say Y here to have the Atmel MCI driver use a DMA engine to
- 	  do data transfers and thus increase the throughput and
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 7b603e4..065fa81 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -30,6 +30,7 @@
- #include <asm/io.h>
- #include <asm/unaligned.h>
- 
-+#include <mach/cpu.h>
- #include <mach/board.h>
- 
- #include "atmel-mci-regs.h"
-@@ -210,6 +211,18 @@ struct atmel_mci_slot {
- 	set_bit(event, &host->pending_events)
- 
- /*
-+ * Enable or disable features/registers based on
-+ * whether the processor supports them
-+ */
-+static bool mci_has_rwproof(void)
-+{
-+	if (cpu_is_at91sam9261() || cpu_is_at91rm9200())
-+		return false;
-+	else
-+		return true;
-+}
-+
-+/*
-  * The debugfs stuff below is mostly optimized away when
-  * CONFIG_DEBUG_FS is not set.
-  */
-@@ -276,8 +289,13 @@ static void atmci_show_status_reg(struct seq_file *s,
- 		[3]	= "BLKE",
- 		[4]	= "DTIP",
- 		[5]	= "NOTBUSY",
-+		[6]	= "ENDRX",
-+		[7]	= "ENDTX",
- 		[8]	= "SDIOIRQA",
- 		[9]	= "SDIOIRQB",
-+		[12]	= "SDIOWAIT",
-+		[14]	= "RXBUFF",
-+		[15]	= "TXBUFE",
- 		[16]	= "RINDE",
- 		[17]	= "RDIRE",
- 		[18]	= "RCRCE",
-@@ -285,6 +303,11 @@ static void atmci_show_status_reg(struct seq_file *s,
- 		[20]	= "RTOE",
- 		[21]	= "DCRCE",
- 		[22]	= "DTOE",
-+		[23]	= "CSTOE",
-+		[24]	= "BLKOVRE",
-+		[25]	= "DMADONE",
-+		[26]	= "FIFOEMPTY",
-+		[27]	= "XFRDONE",
- 		[30]	= "OVRE",
- 		[31]	= "UNRE",
- 	};
-@@ -849,13 +872,15 @@ static void atmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 			clkdiv = 255;
- 		}
- 
-+		host->mode_reg = MCI_MR_CLKDIV(clkdiv);
-+
- 		/*
- 		 * WRPROOF and RDPROOF prevent overruns/underruns by
- 		 * stopping the clock when the FIFO is full/empty.
- 		 * This state is not expected to last for long.
- 		 */
--		host->mode_reg = MCI_MR_CLKDIV(clkdiv) | MCI_MR_WRPROOF
--					| MCI_MR_RDPROOF;
-+		if (mci_has_rwproof())
-+			host->mode_reg |= (MCI_MR_WRPROOF | MCI_MR_RDPROOF);
- 
- 		if (list_empty(&host->queue))
- 			mci_writel(host, MR, host->mode_reg);
-@@ -1648,8 +1673,10 @@ static int __init atmci_probe(struct platform_device *pdev)
- 			nr_slots++;
- 	}
- 
--	if (!nr_slots)
-+	if (!nr_slots) {
-+		dev_err(&pdev->dev, "init failed: no slot defined\n");
- 		goto err_init_slot;
-+	}
- 
- 	dev_info(&pdev->dev,
- 			"Atmel MCI controller at 0x%08lx irq %d, %u slots\n",
--- 
-1.5.3.7
-
+Acked-by: Paul Mundt <lethal@linux-sh.org>
