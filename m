@@ -1,88 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbZFWIvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZFWIwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbZFWIvL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZFWIu6
+	id S1754693AbZFWIwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZFWIwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:50:58 -0400
-Received: from mga06.intel.com ([134.134.136.21]:38468 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751543AbZFWIu5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:50:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,274,1243839600"; 
-   d="scan'208";a="424519176"
-Date: Tue, 23 Jun 2009 16:34:20 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: eranian@gmail.com
-Cc: Yong Wang <yong.y.wang@linux.intel.com>,
-       "Wang, Yong Y" <yong.y.wang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: perf_counter Atom patch
-Message-ID: <20090623083420.GB23534@ywang-moblin2.bj.intel.com>
-References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com> <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com> <7c86c4470906230045k578bc146wa0e09e4094d937a5@mail.gmail.com> <20090623075959.GA23534@ywang-moblin2.bj.intel.com> <7c86c4470906230127g4f574b61p24f109c7a94c6e39@mail.gmail.com>
+	Tue, 23 Jun 2009 04:52:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43077 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751642AbZFWIwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:52:13 -0400
+Date: Tue, 23 Jun 2009 08:51:47 GMT
+From: tip-bot for Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+       mpnayak@linux.vnet.ibm.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       arun@linux.vnet.ibm.com, tglx@linutronix.de, mpnayak@linux.vnet.ibm.com,
+       mingo@elte.hu
+In-Reply-To: <20090623043058.GA3249@linux.vnet.ibm.com>
+References: <20090623043058.GA3249@linux.vnet.ibm.com>
+Subject: [tip:timers/urgent] timers: Fix timer_migration interface which accepts any number as input
+Message-ID: <tip-bfdb4d9f0f611687d71cf6a460efc9e755f4a462@git.kernel.org>
+Git-Commit-ID: bfdb4d9f0f611687d71cf6a460efc9e755f4a462
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <7c86c4470906230127g4f574b61p24f109c7a94c6e39@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Jun 2009 08:51:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 10:27:47AM +0200, stephane eranian wrote:
-> Hi,
-> 
-> On Tue, Jun 23, 2009 at 9:59 AM, Yong Wang<yong.y.wang@linux.intel.com> wrote:
-> > On Tue, Jun 23, 2009 at 09:45:03AM +0200, stephane eranian wrote:
-> >>
-> >> Unfortunately, I don't have a N270 to compare with your results.
-> >> We need to verify whether or not N270 implements the fixed counters.
-> >> Does it report architected perfmon v3 or v1?
-> >>
-> >
-> > All Atom processors report perfmon v3 as specified in SDM. N270 is no
-> > exception.
-> >
-> V3 does not set a minimal number of fixed counters, could be zero. But
-> that seems
-> odd. Let me ask around.
-> 
+Commit-ID:  bfdb4d9f0f611687d71cf6a460efc9e755f4a462
+Gitweb:     http://git.kernel.org/tip/bfdb4d9f0f611687d71cf6a460efc9e755f4a462
+Author:     Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+AuthorDate: Tue, 23 Jun 2009 10:00:58 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 23 Jun 2009 10:49:33 +0200
 
-The Atom spec update says CPUID.0AH.EDX should be 0x0503 in errata
-section. I assume future offerings will more likely to add more new
-counters in stead of remove existing ones. Correct me if I'm wrong;-)
+timers: Fix timer_migration interface which accepts any number as input
 
-> >> > The return value of CPUID(0xa) is indeed bogus, too and there is another quirk for that in
-> >> > intel_pmu_init() in arch/x86/kernel/cpu/perf_counter.c
-> >> >
-> >> > x86_pmu.num_counters_fixed	= max((int)edx.split.num_counters_fixed, 3);
-> >> >
-> >> > Is this what you were talking about?
-> >>
-> >> Not quite, because with the max() you'd have a problem on Intel Core
-> >> Duo/Solo processors
-> >> as they do implement the first generation of architected perfmon and
-> >> that one did not have
-> >> fixed counters. So you'd have to special case family=6 model=14.
-> >
-> > That has been taken into account actually. Only perfmon v2 and above are
-> > supported as you see in intel_pmu_init().
-> >
-> > 	if (version < 2)
-> > 		return -ENODEV;
-> >
-> I assume this is a current limitation of the implementation. If you
-> see version <  2
-> you could simply consider having 0 fixed counters and everything else would work
-> as expected. But there is a catch, unfortunately, in that there is erratum AE49
-> which says that there is only one enable bit to control the two generic counters
-> on Core Duo/Solo.
-> 
+Poornima Nayek reported:
 
-Ideally we could consider having 0 fixed counters for Core Duo/Solo. But
-like you said, the erratum you pointed out just complicates things much.
+| Timer migration interface /proc/sys/kernel/timer_migration in
+| 2.6.30-git9 accepts any numerical value as input.
+|
+| Steps to reproduce:
+| 1. echo -6666666 > /proc/sys/kernel/timer_migration
+| 2. cat /proc/sys/kernel/timer_migration
+| -6666666
+|
+| 1. echo 44444444444444444444444444444444444444444444444444444444444 > /proc/sys/kernel/timer_migration
+| 2. cat /proc/sys/kernel/timer_migration
+| -1357789412
+|
+| Expected behavior: Should 'echo: write error: Invalid argument' while
+| setting any value other then 0 & 1
 
+Restrict valid values to 0 and 1.
+
+Reported-by: Poornima Nayak <mpnayak@linux.vnet.ibm.com>
+Tested-by: Poornima Nayak <mpnayak@linux.vnet.ibm.com>
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: poornima nayak <mpnayak@linux.vnet.ibm.com>
+Cc: Arun Bharadwaj <arun@linux.vnet.ibm.com>
+LKML-Reference: <20090623043058.GA3249@linux.vnet.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/sysctl.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 62e4ff9..c428ba1 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -335,7 +335,10 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &sysctl_timer_migration,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec,
++		.proc_handler	= &proc_dointvec_minmax,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &zero,
++		.extra2		= &one,
+ 	},
+ #endif
+ 	{
