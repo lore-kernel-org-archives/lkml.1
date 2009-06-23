@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbZFWIq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZFWIse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbZFWIq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZFWIqW
+	id S1757874AbZFWIse (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZFWIs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:46:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54814 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751107AbZFWIqV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:46:21 -0400
-Date: Tue, 23 Jun 2009 09:47:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kevin Huang (=?big5?B?tsCzzaTl?=) <Kevin.Huang@rdc.com.tw>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <greg@kroah.com>, <torvalds@linux-foundation.org>
-Subject: Re: Staging: add pata_rdc driver
-Message-ID: <20090623094706.5df94c96@lxorguk.ukuu.org.uk>
-In-Reply-To: <07905E0D268758488D76D7D747F21BB602B1FD86@rdc8.rdc>
-References: <200906200109.n5K19iaC012636@hera.kernel.org>
-	<20090622133222.3a689f22@lxorguk.ukuu.org.uk>
-	<07905E0D268758488D76D7D747F21BB602B1FD86@rdc8.rdc>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=big5
-Content-Transfer-Encoding: 8bit
+	Tue, 23 Jun 2009 04:48:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53699 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497AbZFWIsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:48:25 -0400
+Date: Tue, 23 Jun 2009 10:48:28 +0200 (CEST)
+From: Jiri Kosina <trivial@kernel.org>
+X-X-Sender: jkosina@wotan.suse.de
+To: =?ISO-8859-15?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block: adding __init/__exit macros to DAC960.c
+In-Reply-To: <200906230004.36995.PeterHuewe@gmx.de>
+Message-ID: <alpine.LNX.2.00.0906231048070.7457@wotan.suse.de>
+References: <200906121307.29865.PeterHuewe@gmx.de> <200906230004.36995.PeterHuewe@gmx.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1491735369-1245746908=:7457"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 10:16:03 +0800
-Kevin Huang (¶À³Í¤å) <Kevin.Huang@rdc.com.tw> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> I just know all pata follow the ATA ATAPI Host Adapters Standard.pdf.
-> This standard describes all hardware interfaces for pata. (like sata and AHCI standard spec.)
-> 
-> The original draft does not have any Configuration Registers for Host Adapters. Then Intel proposes ATA Controller PCI Configuration Registers for this lack of the original draft, and T13 accept this proposal.
+--168427776-1491735369-1245746908=:7457
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-If your controller is in fact following the Intel proposal then the
-interface is basically ata_piix (minus the various intel special cases)
-and that makes it very much easier to produce a driver rapidly rather
-than clean up the existing pata_rdc.
+On Tue, 23 Jun 2009, Peter Hüwe wrote:
 
-> Our new controller have crypto function and crypto configuration registers.
-> So it don¡¦t like Intel controller.
+> > Trivial patch which adds the __init and __exit macros to the module_init /
+> > module_exit functions from drivers/block/DAC960.c
+> > linux version 2.6.30
+> I was wondering if there is anything wrong with the patch or is it still in 
+> the review phase ?
 
-It seems to be very very close in interface, and that does mean that
-there is a fast way to get it up and running which is to clone ata_piix,
-remove the irrelevant bits and tweak it. Then of course things like the
-crypto function can be added on top.
+I have applied it to trivial queue, thanks Peter.
 
-Is the documentation for the ATA part available ?
+-- 
+Jiri Kosina
+SUSE Labs
 
-Alan
+--168427776-1491735369-1245746908=:7457--
