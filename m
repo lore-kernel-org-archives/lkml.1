@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbZFWUq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbZFWUqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756785AbZFWUq2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 16:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbZFWUqF
+	id S1757356AbZFWUqw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 16:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZFWUqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 16:46:05 -0400
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:40367
-	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755725AbZFWUqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 16:46:04 -0400
-Message-ID: <4A413F8F.6030500@bluewatersys.com>
-Date: Wed, 24 Jun 2009 08:48:15 +1200
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 23 Jun 2009 16:46:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42117 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754532AbZFWUqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 16:46:43 -0400
+Message-ID: <4A413F9D.1080303@redhat.com>
+Date: Tue, 23 Jun 2009 16:48:29 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-CC: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
-       spi-devel-general@lists.sourceforge.net, mike@steroidmicros.com,
-       linux kernel <linux-kernel@vger.kernel.org>, dedekind@infradead.org
-Subject: Re: [PATCH] SST25L (non JEDEC) SPI Flash driver
-References: <4A3F017B.2010409@bluewatersys.com>	 <63386a3d0906220122x31d0b23fk7bd86145b719d9b5@mail.gmail.com>	 <4A3FFE02.8020001@bluewatersys.com> <63386a3d0906230004m66360f4fhbdc80c8e552a01d0@mail.gmail.com>
-In-Reply-To: <63386a3d0906230004m66360f4fhbdc80c8e552a01d0@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [RFC][ PATCH -tip v2 0/7] kprobes: Kprobes jump optimization
+ support
+References: <20090622212255.5384.53732.stgit@localhost.localdomain> <87vdmn179n.fsf@basil.nowhere.org> <4A40DDAD.6020202@redhat.com> <87bpoe29jo.fsf@basil.nowhere.org> <4A4110A3.2060808@redhat.com> <20090623203738.GG6760@one.firstfloor.org>
+In-Reply-To: <20090623203738.GG6760@one.firstfloor.org>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Walleij wrote:
-> 2009/6/22 Ryan Mallon <ryan@bluewatersys.com>:
+Andi Kleen wrote:
+> On Tue, Jun 23, 2009 at 01:28:03PM -0400, Masami Hiramatsu wrote:
+>> Hmm, would you know what is the actual name of that section and option?
 > 
->> Out of curiosity: I'm not too clear on what makes a particular chip
->> hot-pluggable. I think technically the sst25l chip could be put onto a
->> hot-pluggable board or power domain. Can't most devices be made
->> hot-pluggable? Is the general rule to make devices non hot-pluggable if
->> most/all boards in the mainline do not allow it to be hot-plugged?
+> -freorder-blocks-and-partition
 > 
-> I haven't seen any rule about it, but nominally the drivers support the
-> configurations found in the kernel tree, so if some board physically
-> existing and soon-to-run linux hotplugs chips like this, then have it
-> __dev{init|exit} else __{init|exit} IMHO.
+> .text.unlikely
+
+Thanks,
+
 > 
-> Of course you can design for all plausible use cases but it will pile up
-> indefinitely. Personally I try to not design software for a hardware until it
-> exists, and I like the IETF catch-phrase "rough consensus and running
-> code" and this sort of fits that :-)
+>> I think another possible solution is decoding those sections and
+>> black-listing the target functions when making vmlinux or loading
+>> modules.
+> 
+> Note that this can be pretty much all functions if you're unlucky.
 
-Okay, thanks. Thats basically the conclusion we came to as well: if
-someone else wants to hotplug this chip in the future they can post a
-patch for it.
+Sure, in that case, I have two options;
+- Disable above option by kconfig.
+- Black-listing the target addresses, instead of functions.
 
-BTW, most of my other patches go via the ARM list, which uses the patch
-system. Whats the procedure for most other lists, do patches just get
-collected by the subsection maintainer when they are okay?
+Thank you,
 
-~Ryan
+> 
+> -Andi
+> 
 
 -- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
+Masami Hiramatsu
 
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
