@@ -1,148 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759799AbZFWOls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZFWOl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759799AbZFWOls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 10:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758421AbZFWOlY
+	id S1760023AbZFWOl7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 10:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759741AbZFWOlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 10:41:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37449 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758597AbZFWOlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 10:41:21 -0400
-Date: Tue, 23 Jun 2009 10:38:56 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 07/20] io-controller: Export disk time used and nr
-	sectors dipatched through cgroups
-Message-ID: <20090623143856.GB4262@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-8-git-send-email-vgoyal@redhat.com> <4A40C64E.8040305@cn.fujitsu.com>
+	Tue, 23 Jun 2009 10:41:45 -0400
+Received: from email.renci.org ([152.54.4.63]:58194 "EHLO mx1.renci.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759881AbZFWOlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 10:41:44 -0400
+Message-ID: <4A40E969.9000504@renci.org>
+Date: Tue, 23 Jun 2009 10:40:41 -0400
+From: Rob Fowler <rjf@renci.org>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A40C64E.8040305@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>, eranian@gmail.com,
+       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: [perfmon2] IV.3 - AMD IBS
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>	 <20090622120018.GR24366@elte.hu>  <4A3F9062.6000303@renci.org> <1245737987.19816.1477.camel@twins>
+In-Reply-To: <1245737987.19816.1477.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: No, Score=-1.4 required=5.0 tests=ALL_TRUSTED
+X-MS-Exchange-Organization-SCL: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 08:10:54PM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> > +
-> > +static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
-> > +				struct cftype *cftype, struct seq_file *m)
-> > +{
-> > +	struct io_cgroup *iocg;
-> > +	struct io_group *iog;
-> > +	struct hlist_node *n;
-> > +
-> > +	if (!cgroup_lock_live_group(cgroup))
-> > +		return -ENODEV;
-> > +
-> > +	iocg = cgroup_to_io_cgroup(cgroup);
-> > +
-> > +	spin_lock_irq(&iocg->lock);
-> 
-> It's better to make use of rcu_read_lock instead since it's
-> a read action.
-> 
+I'm up to my neck in other stuff, so this will be short.
 
-Thanks Gui. Queued for next posting.
+Yes, IBS is a very different model of performance measurement that
+doesn't fit well with the traditional model.  It does do what the
+HW engineers need for understanding multi unit out of order processors, though.
 
-Vivek
+The separation of the fetch and op monitoring is an artifact of the separation
+and de-coupling of the front and back end pipelines.  The front end IBS events
+deal with stuff that happens in fetching:  TLB and cache misses, mis-predictions, etc.
+The back end IBS events deal with computing and data fetch/store.
 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
+There are two "conventional" counters involved: the tag-to-retire and completion-to-retire
+counts.  These can be accumulated, histogrammed, etc just like any conventional event, though
+you need to add the counter contents to the accumulator rather than just increment.
+
+The rest of the bits are predicates that can be used to filter the events into bins.
+With n bits, you might need 2^n bins to accumulate all possibilities.
+Sections 5 and 6 of the AMD software optimization guide provide some useful boolean expressions
+for defining meaningful derived events.
+
+In an old version of Rice HPCToolkit (now disappeared from the web) we
+had a tool called xprof that processed DEC DCPI/ProfileMe binary files to
+produce profiles with ~20 derived events that we thought would be useful.  The cost
+of collecting all of this didn't vary by the amount we collected, so you would select
+the ones you wanted to view at analysis time, not at execute time.  There was also a
+mechanism for specifying other events. Nathan Tallent can provide details.
+
+The Linear and Physical Address registers are an opportunity for someone to build data profiling
+tools, or a combined instructions and data tool.
+
+The critical thing is for the kernel, driver, and library builders to not do something that will
+stand in the way of this.
+
+Peter Zijlstra wrote:
+> On Mon, 2009-06-22 at 10:08 -0400, Rob Fowler wrote:
+>> Ingo Molnar wrote:
+>>>> 3/ AMD IBS
+>>>>
+>>>> How is AMD IBS going to be implemented?
+>>>>
+>>>> IBS has two separate sets of registers. One to capture fetch
+>>>> related data and another one to capture instruction execution
+>>>> data. For each, there is one config register but multiple data
+>>>> registers. In each mode, there is a specific sampling period and
+>>>> IBS can interrupt.
+>>>>
+>>>> It looks like you could define two pseudo events or event types
+>>>> and then define a new record_format and read_format. That formats
+>>>> would only be valid for an IBS event.
+>>>>
+>>>> Is that how you intend to support IBS?
+>>> That is indeed one of the ways we thought of, not really nice, but
+>>> then, IBS is really weird, what were those AMD engineers thinking
+>>> :-)
+>> Actually, IBS has roots in DEC's "ProfileMe" for Alpha EV67 and later
+>> processors.   Those of us who used it there found it to be an extremely
+>> powerful, low-overhead mechanism for directly collecting information about
+>> how well the micro-architecture is performing.  In particular, it can tell
+>> you, not only which instructions take a long time to traverse the pipe, but
+>> it also tells you which instructions delay other instructions and by how much.
+>> This is extremely valuable if you are either working on instruction scheduling
+>> in a compiler, or are modifying a program to give the compiler the opportunity
+>> to do a good job.
+>>
+>> A core group of engineers who worked on Alpha went on to AMD.
+>>
+>> An unfortunate problem with IBS on AMD is that good support isn't common in the "mainstream"
+>> open source community.
 > 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 2ad40eb..d779282 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -1418,7 +1418,7 @@ static int io_cgroup_disk_time_read(struct cgroup *cgroup,
->  
->  	iocg = cgroup_to_io_cgroup(cgroup);
->  
-> -	spin_lock_irq(&iocg->lock);
-> +	rcu_read_lock();
->  	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
->  		/*
->  		 * There might be groups which are not functional and
-> @@ -1430,7 +1430,7 @@ static int io_cgroup_disk_time_read(struct cgroup *cgroup,
->  					iog->entity.total_service);
->  		}
->  	}
-> -	spin_unlock_irq(&iocg->lock);
-> +	rcu_read_unlock();
->  	cgroup_unlock();
->  
->  	return 0;
-> @@ -1448,7 +1448,7 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
->  
->  	iocg = cgroup_to_io_cgroup(cgroup);
->  
-> -	spin_lock_irq(&iocg->lock);
-> +	rcu_read_lock();
->  	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
->  		/*
->  		 * There might be groups which are not functional and
-> @@ -1460,7 +1460,7 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
->  					iog->entity.total_sector_service);
->  		}
->  	}
-> -	spin_unlock_irq(&iocg->lock);
-> +	rcu_read_unlock();
->  	cgroup_unlock();
->  
->  	return 0;
-> @@ -1478,7 +1478,7 @@ static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
->  		return -ENODEV;
->  
->  	iocg = cgroup_to_io_cgroup(cgroup);
-> -	spin_lock_irq(&iocg->lock);
-> +	rcu_read_lock();
->  	/* Loop through all the io groups and print statistics */
->  	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
->  		/*
-> @@ -1491,7 +1491,7 @@ static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
->  					iog->queue_duration);
->  		}
->  	}
-> -	spin_unlock_irq(&iocg->lock);
-> +	rcu_read_unlock();
->  	cgroup_unlock();
->  
->  	return 0;
-> -- 
-> 1.5.4.rc3
+> The 'problem' I have with IBS is that its basically a cycle counter
+> coupled with a pretty arbitrary number of output dimensions separated
+> into two groups, ops and fetches.
 > 
+> This is a very weird configuration in that it has a miss-match with the
+> traditional one value per counter thing.
 > 
+> The most natural way to support IBS would be to have a special sampling
+> cycle counter and use that as group lead and add non sampling siblings
+> to that group to get individual elements.
 > 
-> > +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-> > +		/*
-> > +		 * There might be groups which are not functional and
-> > +		 * waiting to be reclaimed upon cgoup deletion.
-> > +		 */
-> > +		if (iog->key) {
-> > +			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-> > +					MINOR(iog->dev),
-> > +					iog->entity.total_sector_service);
-> > +		}
-> > +	}
-> > +	spin_unlock_irq(&iocg->lock);
-> > +	cgroup_unlock();
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >
+> This is however quite cumbersome.
+> 
+> One thing to consider when building an IBS interface is its future
+> extensibility. In which fashion would IBS be extended?, additional
+> output dimensions or something else all-together?
+
+-- 
+Robert J. Fowler
+Chief Domain Scientist, HPC
+Renaissance Computing Institute
+The University of North Carolina at Chapel Hill
+100 Europa Dr, Suite 540
+Chapel Hill, NC 27517
+V: 919.445.9670
+F: 919 445.9669
+rjf@renci.org
