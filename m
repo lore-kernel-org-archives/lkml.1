@@ -1,107 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZFWDjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZFWDlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbZFWDjx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 23:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZFWDjl
+	id S1757223AbZFWDlQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 23:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZFWDlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 23:39:41 -0400
-Received: from mga02.intel.com ([134.134.136.20]:32681 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752511AbZFWDjk convert rfc822-to-8bit (ORCPT
+	Mon, 22 Jun 2009 23:41:02 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34134 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbZFWDlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 23:39:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,273,1243839600"; 
-   d="scan'208";a="526963251"
-From: "Wang, Yong Y" <yong.y.wang@intel.com>
-To: "eranian@gmail.com" <eranian@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
-Date: Tue, 23 Jun 2009 11:38:36 +0800
-Subject: RE: perf_counter Atom patch
-Thread-Topic: perf_counter Atom patch
-Thread-Index: Acnzd7W+LJf0q1C+SPuJ7hbMoHeBlgANx2pQ
-Message-ID: <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
-References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
-In-Reply-To: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 22 Jun 2009 23:41:00 -0400
+Message-ID: <4A404EC6.8080902@jp.fujitsu.com>
+Date: Tue, 23 Jun 2009 12:40:54 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Andi Kleen <ak@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
+ to 	disk, mce related?
+References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3E7F38.7030300@linux.intel.com>	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>	 <4A3EE668.5090400@jp.fujitsu.com>	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>	 <4A3F55C7.4030909@linux.intel.com>	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>	 <4A3F7A93.5080004@linux.intel.com>	 <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>	 <4A3F8BF7.6010406@linux.intel.com> <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
+In-Reply-To: <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: stephane eranian [mailto:eranian@googlemail.com] 
+Maciej Rutecki wrote:
+> 2009/6/22 Andi Kleen <ak@linux.intel.com>:
 > 
-> I would like to better understand what makes you think
-> this is the case.
+>> Here's a debug patch for the poller: http://firstfloor.org/ak/mcp-debug
+>> Can you apply that and try again and send me the output?
+>>
 > 
-
-Because I observed that the output of 'perf stat -e 0:0 -e 0:1 -e 0:6 <cmd>'
-is always like below without the quirk.
-
- Performance counter stats for '<cmd>':
-
-              0  cycles
-              0  instructions
-              0  bus-cycles
-
-> Perfmon is working on Atom and there, fixed counters work perfectly:
-> $ head -6 /proc/cpuinfo
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 6
-> model		: 28
-> model name	: Intel(R) Atom(TM) CPU  230   @ 1.60GHz
-> stepping	: 2
-> ...
-
-My cpuinfo is below and the only difference I can see is 270 vs 230.
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 28
-model name      : Intel(R) Atom(TM) CPU N270   @ 1.60GHz
-stepping        : 2
-
-> $ pfmon -v --us-c -e
-> unhalted_core_cycles,unhalted_reference_cycles,instructions_retired
-> noploop 10
-> [FIXED_CTRL(pmc16)=0xaaa pmi0=1 en0=0x2 any0=0 pmi1=1 en1=0x2 any1=0
-> pmi2=1 en2=0x2 any2=0] INSTRUCTIONS_RETIRED UNHALTED_CORE_CYCLES
-> UNHALTED_REFERENCE_CYCLES
-> [FIXED_CTR0(pmd16)]
-> [FIXED_CTR1(pmd17)]
-> [FIXED_CTR2(pmd18)]
-> noploop for 10 seconds
-> 15,902,604,169 UNHALTED_CORE_CYCLES
-> 15,902,586,180 UNHALTED_REFERENCE_CYCLES
-> 7,941,842,505 INSTRUCTIONS_RETIRED
+> Dmesg after resume:
+> http://unixy.pl/maciek/download/kernel/2.6.30-git17/pc/dmesg-2.6.30-git17-patch.txt
+> 
+> System hangs when uptime is roughly 5-6 minutes (when I don't change
+> check_interval). netconsole doesn't show anything.
 > 
 
-Could you pls try to revert my patch, run 'perf stat -e 0:0 -e 0:1 -e 0:6 <cmd>' and see
-whether the counters count or not? I tried pfmon on my atom box but it always runs into
-segfault. If the fixed counters work for you, I will ask Atom hw foks here in Intel why this
-is the case and revise the code accordingly.
+I found in the dmesg that mce_init() and mce_cpu_features() are called
+on cpu0 twice in short time:
 
-> 
-> I seem to recall that what may be bogus on Atom is what is returned by
-> CPUID(0xa)
-> for the fixed counters. But they are there and they work. Thus, I
-> believe, the quirk
-> should be  at the location where CPUID(0xa) is invoked not 
-> where you've put it.
-> 
+[   82.989005] mcp on cpu 0 flags 2 banks ecc39e70
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:502
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:506
+[   82.989005] bank 0
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 1
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 2
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 3
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 4
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 5
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] mcp on cpu 0 finished
+[   82.989005] CPU0: Thermal LVT vector (0xfa) already installed
+[   82.989005] PM: Restoring platform NVS memory
+[   82.989005] mcp on cpu 0 flags 2 banks ecc39e70
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:502
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:506
+[   82.989005] bank 0
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 1
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 2
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 3
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 4
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] bank 5
+[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
+[   82.989005] mcp on cpu 0 finished
+[   82.989005] CPU0: Thermal LVT vector (0xfa) already installed
 
-The return value of CPUID(0xa) is indeed bogus, too and there is another quirk for that in
-intel_pmu_init() in arch/x86/kernel/cpu/perf_counter.c
+mce_cpu_features() (which prints "Thermal ...") is always paired with
+mce_init(), and is called only from mcheck_init() and mce_resume().
 
-x86_pmu.num_counters_fixed      = max((int)edx.split.num_counters_fixed, 3);
+One of the above would be from mce_resume(), and if another was from
+mcheck_init(), then setup_timer() in mce_init_timer() will break the
+pending timer...
 
-Is this what you were talking about?
+[arch/x86/power/cpu.c]
+> static void __restore_processor_state(struct saved_context *ctxt)
+> {
+>  :
+> #ifdef CONFIG_X86_32
+>         mcheck_init(&boot_cpu_data);
+> #endif
+> }
+
+Hum?
+
+Maciej, could you try this patch? 
+
+Thanks,
+H.Seto
+
+===
+[PATCH] x86: Fix mce resume on 32bit
+
+Calling mcheck_init() on resume is required only with CONFIG_X86_OLD_MCE=y.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ arch/x86/power/cpu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index d277ef1..b3d20b9 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -244,7 +244,7 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	do_fpu_end();
+ 	mtrr_ap_init();
+ 
+-#ifdef CONFIG_X86_32
++#ifdef CONFIG_X86_OLD_MCE
+ 	mcheck_init(&boot_cpu_data);
+ #endif
+ }
+-- 
+1.6.3
+
