@@ -1,33 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbZFWGIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZFWGMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758153AbZFWGIO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 02:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZFWGIH
+	id S1758001AbZFWGMs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 02:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZFWGMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 02:08:07 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40772 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbZFWGIG (ORCPT
+	Tue, 23 Jun 2009 02:12:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36070 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752250AbZFWGMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 02:08:06 -0400
-Date: Tue, 23 Jun 2009 15:06:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: akataria@vmware.com
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
-Message-Id: <20090623150630.31c0dff5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1245736441.18339.21.camel@alok-dev1>
-References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
-	<1245732411.18339.6.camel@alok-dev1>
-	<20090623135017.220D.A69D9226@jp.fujitsu.com>
-	<20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
-	<1245736441.18339.21.camel@alok-dev1>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 23 Jun 2009 02:12:40 -0400
+Date: Mon, 22 Jun 2009 23:11:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.30] nvidiafb: fix missing space in log message
+Message-Id: <20090622231131.772eea06.akpm@linux-foundation.org>
+In-Reply-To: <18999.49010.127368.554600@pilspetsen.it.uu.se>
+References: <18999.49010.127368.554600@pilspetsen.it.uu.se>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,54 +26,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009 22:54:01 -0700
-Alok Kataria <akataria@vmware.com> wrote:
+On Tue, 16 Jun 2009 17:51:14 +0200 Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-> > > 
-> > > I don't have any strong oppose reason, but I also don't have any strong
-> > > agree reason.
-> > > 
-> > I think "don't include Hugepage" is sane. Hugepage is something _special_, now.
-> > 
-> Kamezawa-san, 
+> On bootup nvidiafb prints the following on my Apple G5:
 > 
-> I agree that hugepages are special in the sense that they are
-> implemented specially and don't actually reside on the LRU like any
-> other locked memory. But, both of these memory types (mlocked and
-> hugepages) are actually unevictable and can't be reclaimed back, so i
-> don't see a reason why should accounting not reflect that.
+> 	nvidiafb: CRTC 1appears to have a CRT attached
 > 
-
-I bet we should rename "Unevictable" to "Mlocked" or "Pinned" rather than
-take nr_hugepages into account. I think this "Unevictable" in meminfo means
-- pages which are evictable in their nature (because in LRU) but a user pinned it -
-
-How about rename "Unevictable" to "Pinned" or "Locked" ?
-(Mlocked + locked shmem's + ramfs?)
-
-We have other "unevictable" pages other than Hugepage anyway.
- - page table
- - some slab
- - kernel's page
- - anon pages in swapless system
- etc...
-
-BTW, I use following calculation for quick check if I want all "Unevicatable" pages.
-
-Unevictable = Total - (Active+Inactive) + (50-70%? of slab)
-
-This # of is not-reclaimable memory.
-
-Thanks,
--Kame
-
-
-> Thanks,
-> Alok
+> There should be a space between the '1' and the 'appears'.
 > 
-> > Thanks,
-> > -Kame
-> > 
+> Fix: add the space
 > 
+> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 > 
+> diff -rupN linux-2.6.30/drivers/video/nvidia/nv_setup.c linux-2.6.30.nvidiafb-logmsg-missing-space/drivers/video/nvidia/nv_setup.c
+> --- linux-2.6.30/drivers/video/nvidia/nv_setup.c	2009-06-10 12:00:46.000000000 +0200
+> +++ linux-2.6.30.nvidiafb-logmsg-missing-space/drivers/video/nvidia/nv_setup.c	2009-06-16 17:41:21.000000000 +0200
+> @@ -543,7 +543,7 @@ int NVCommonSetup(struct fb_info *info)
+>  		} else if (analog_on_B) {
+>  			CRTCnumber = outputBfromCRTC;
+>  			FlatPanel = 0;
+> -			printk("nvidiafb: CRTC %i"
+> +			printk("nvidiafb: CRTC %i "
+>  			       "appears to have a "
+>  			       "CRT attached\n", CRTCnumber);
+>  		} else if (slaved_on_A) {
+
+Yeah, someone seems to have gone checkpatch-crazy there.
+
+Let's be slightly less nutty and do
+
+--- a/drivers/video/nvidia/nv_setup.c~nvidiafb-fix-missing-space-in-log-message
++++ a/drivers/video/nvidia/nv_setup.c
+@@ -543,8 +543,7 @@ int NVCommonSetup(struct fb_info *info)
+ 		} else if (analog_on_B) {
+ 			CRTCnumber = outputBfromCRTC;
+ 			FlatPanel = 0;
+-			printk("nvidiafb: CRTC %i"
+-			       "appears to have a "
++			printk("nvidiafb: CRTC %i appears to have a "
+ 			       "CRT attached\n", CRTCnumber);
+ 		} else if (slaved_on_A) {
+ 			CRTCnumber = 0;
+_
+
+Which happens to exactly copy the printk from five lines earlier...
+
+
+		} else if (analog_on_A) {
+			CRTCnumber = outputAfromCRTC;
+			FlatPanel = 0;
+			printk("nvidiafb: CRTC %i appears to have a "
+			       "CRT attached\n", CRTCnumber);
+		} else if (analog_on_B) {
+			CRTCnumber = outputBfromCRTC;
+			FlatPanel = 0;
+			printk("nvidiafb: CRTC %i appears to have a "
+			       "CRT attached\n", CRTCnumber);
 
