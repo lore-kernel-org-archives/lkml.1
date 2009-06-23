@@ -1,143 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbZFWPe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbZFWPc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761346AbZFWPe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761063AbZFWPeO
+	id S1760916AbZFWPc2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758697AbZFWP34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:34:14 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:49773 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761015AbZFWPeM (ORCPT
+	Tue, 23 Jun 2009 11:29:56 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:49575 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756870AbZFWP3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:34:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer;
-        b=FVzzFV02gp+Eng4cr7Oakk4W9JyqkSPpcinej4GESETaQZGH2lAklv/tpJ/esbFCjr
-         o7hmTyo7vdtOvD0HSY3u55nyyNxQF3HxlmgXs0oAlMUjLxGjxILhHPBt1FeYFSjVbC6e
-         3U6BN08rz7kmI1JpkTAqHMceeACJr9ydo9DpI=
-Subject: [PATCH 4/4] MFD/PCAP: fix irq bottom handler
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       openezx-devel <openezx-devel@lists.openezx.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tgc4hscGhLnpIvWczUZu"
-Date: Tue, 23 Jun 2009 12:34:13 -0300
-Message-Id: <1245771253.7750.44.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 23 Jun 2009 11:29:51 -0400
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+Subject: [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       "Patrick McHardy" <kaber@trash.net>, christine.caulfield@googlemail.com,
+       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
+       johannes@sipsolutions.net, yoshfuji@linux-ipv6.org,
+       shemminger@linux-foundation.org, linux-nfs@vger.kernel.org,
+       bfields@fieldses.org, neilb@suse.de, linux-ext4@vger.kernel.org,
+       tytso@mit.edu, adilger@sun.com, netfilter-devel@vger.kernel.org
+Date: Tue, 23 Jun 2009 17:04:29 +0200
+Message-ID: <20090623150429.22490.15113.stgit@localhost>
+In-Reply-To: <20090623150330.22490.87327.stgit@localhost>
+References: <20090623150330.22490.87327.stgit@localhost>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The decnet module unloading as been disabled with a '#if 0' statement,
+because it have had issues.  Perhaps using rcu_barrier() will fix
+these issues?
 
---=-tgc4hscGhLnpIvWczUZu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Any maintainers with input?
 
-Mask interrupts before servicing them and loop while pcap asserts the inter=
-rupt
-line.
-
-Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
-
+Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
 ---
- drivers/mfd/ezx-pcap.c |   49 ++++++++++++++++++++++++++------------------=
----
- 1 files changed, 27 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/mfd/ezx-pcap.c b/drivers/mfd/ezx-pcap.c
-index c512202..732664f 100644
---- a/drivers/mfd/ezx-pcap.c
-+++ b/drivers/mfd/ezx-pcap.c
-@@ -17,6 +17,7 @@
- #include <linux/irq.h>
- #include <linux/mfd/ezx-pcap.h>
- #include <linux/spi/spi.h>
-+#include <linux/gpio.h>
-=20
- #define PCAP_ADC_MAXQ		8
- struct pcap_adc_request {
-@@ -155,34 +156,38 @@ static void pcap_isr_work(struct work_struct *work)
- 	u32 msr, isr, int_sel, service;
- 	int irq;
-=20
--	ezx_pcap_read(pcap, PCAP_REG_MSR, &msr);
--	ezx_pcap_read(pcap, PCAP_REG_ISR, &isr);
-+	do {
-+		ezx_pcap_read(pcap, PCAP_REG_MSR, &msr);
-+		ezx_pcap_read(pcap, PCAP_REG_ISR, &isr);
-=20
--	/* We cant service/ack irqs that are assigned to port 2 */
--	if (!(pdata->config & PCAP_SECOND_PORT)) {
--		ezx_pcap_read(pcap, PCAP_REG_INT_SEL, &int_sel);
--		isr &=3D ~int_sel;
--	}
--	ezx_pcap_write(pcap, PCAP_REG_ISR, isr);
-+		/* We cant service/ack irqs that are assigned to port 2 */
-+		if (!(pdata->config & PCAP_SECOND_PORT)) {
-+			ezx_pcap_read(pcap, PCAP_REG_INT_SEL, &int_sel);
-+			isr &=3D ~int_sel;
-+		}
-=20
--	local_irq_disable();
--	service =3D isr & ~msr;
-+		ezx_pcap_write(pcap, PCAP_REG_MSR, isr | msr);
-+		ezx_pcap_write(pcap, PCAP_REG_ISR, isr);
-=20
--	for (irq =3D pcap->irq_base; service; service >>=3D 1, irq++) {
--		if (service & 1) {
--			struct irq_desc *desc =3D irq_to_desc(irq);
-+		local_irq_disable();
-+		service =3D isr & ~msr;
-+		for (irq =3D pcap->irq_base; service; service >>=3D 1, irq++) {
-+			if (service & 1) {
-+				struct irq_desc *desc =3D irq_to_desc(irq);
-=20
--			if (WARN(!desc, KERN_WARNING
--					"Invalid PCAP IRQ %d\n", irq))
--				break;
-+				if (WARN(!desc, KERN_WARNING
-+						"Invalid PCAP IRQ %d\n", irq))
-+					break;
-=20
--			if (desc->status & IRQ_DISABLED)
--				note_interrupt(irq, desc, IRQ_NONE);
--			else
--				desc->handle_irq(irq, desc);
-+				if (desc->status & IRQ_DISABLED)
-+					note_interrupt(irq, desc, IRQ_NONE);
-+				else
-+					desc->handle_irq(irq, desc);
-+			}
- 		}
--	}
--	local_irq_enable();
-+		local_irq_enable();
-+		ezx_pcap_write(pcap, PCAP_REG_MSR, pcap->msr);
-+	} while (gpio_get_value(irq_to_gpio(pcap->spi->irq)));
+ net/decnet/af_decnet.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
+index d351b8d..bff12da 100644
+--- a/net/decnet/af_decnet.c
++++ b/net/decnet/af_decnet.c
+@@ -2393,6 +2393,10 @@ module_init(decnet_init);
+  * Prevent DECnet module unloading until its fixed properly.
+  * Requires an audit of the code to check for memory leaks and
+  * initialisation problems etc.
++ *
++ * hawk@comx.dk 2009-06-19:
++ *  I have added a rcu_barrier() which should plug some of your
++ *  module unload issues.  Maintainers please try it out...
+  */
+ #if 0
+ static void __exit decnet_exit(void)
+@@ -2413,6 +2417,8 @@ static void __exit decnet_exit(void)
+ 	proc_net_remove(&init_net, "decnet");
+ 
+ 	proto_unregister(&dn_proto);
++
++	rcu_barrier_bh(); /* Wait for completion of call_rcu_bh()'s */
  }
-=20
- static void pcap_irq_handler(unsigned int irq, struct irq_desc *desc)
---=20
-tg: (524551c..) pcap/fix-irq-handler (depends on: pcap/set_ts_bits)
-
---=20
-Daniel Ribeiro
-
---=-tgc4hscGhLnpIvWczUZu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
- assinada digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpA9fUACgkQw3OYl0G0liQmEACeIxJOtwfX0uogvCrW32WsHND8
-B04AnjjVpMTa9P6o8kgC0ILjBDeARJHn
-=lN1q
------END PGP SIGNATURE-----
-
---=-tgc4hscGhLnpIvWczUZu--
+ module_exit(decnet_exit);
+ #endif
 
