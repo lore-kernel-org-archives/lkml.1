@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZFWNlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759719AbZFWNnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759705AbZFWNlu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZFWNlm
+	id S1759719AbZFWNnf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZFWNn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:41:42 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:52528 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752299AbZFWNll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:41:41 -0400
-Date: Tue, 23 Jun 2009 15:42:40 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in elevaotor layer
-Message-ID: <20090623134240.GU28770@gandalf.sssup.it>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com> <20090622084612.GD3728@balbir.in.ibm.com> <20090622124313.GF28770@gandalf.sssup.it> <20090623024337.GC3620@redhat.com> <20090623041052.GS28770@gandalf.sssup.it> <20090623073252.GJ8642@balbir.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 23 Jun 2009 09:43:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54642 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752337AbZFWNn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:43:27 -0400
+Date: Tue, 23 Jun 2009 15:43:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH v4] ftrace: document basic ftracer/ftracer graph needs
+Message-ID: <20090623134319.GC3026@elte.hu>
+References: <20090614012457.GD5986@nowhere> <1244948719-22216-1-git-send-email-vapier@gentoo.org> <8bd0f97a0906230530j1cc0efc8i85e9234b2fa0417a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090623073252.GJ8642@balbir.in.ibm.com>
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0906230530j1cc0efc8i85e9234b2fa0417a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Date: Tue, Jun 23, 2009 01:02:52PM +0530
->
-> * Fabio Checconi <fchecconi@gmail.com> [2009-06-23 06:10:52]:
-> 
-> > > From: Vivek Goyal <vgoyal@redhat.com>
-> > > Date: Mon, Jun 22, 2009 10:43:37PM -0400
-> > >
-> > > On Mon, Jun 22, 2009 at 02:43:13PM +0200, Fabio Checconi wrote:
-> > > 
-> > ...
-> > > > > Please help me understand this, we sort the tree by finish time, but
-> > > > > search by vtime, start_time. The worst case could easily be O(N),
-> > > > > right?
-> > > > > 
-> > > > 
-> > > > no, (again, the full answer is in the paper); the nice property of
-> > > > min_start is that it partitions the tree in two regions, one with
-> > > > eligible entities and one without any of them.  once we know that
-> > > > there is one eligible entity (checking the min_start at the root)
-> > > > we can find the node i with min(F_i) subject to S_i < V walking down
-> > > > a single path from the root to the leftmost eligible entity.  (we
-> > > > need to go to the right only if the subtree on the left contains 
-> > > > no eligible entities at all.)  since the RB tree is balanced this
-> > > > can be done in O(log N).
-> > > > 
-> > > 
-> > > Hi Fabio,
-> > > 
-> > > When I go thorough the paper you mentioned above, they seem to have
-> > > sorted the tree based on eligible time (looks like equivalent of start
-> > > time) and then keep track of minimum deadline on each node (equivalnet of
-> > > finish time).
-> > > 
-> > > We seem to be doing reverse in BFQ where we sort tree on finish time
-> > > and keep track of minimum start time on each node. Is there any specific
-> > > reason behind that?
-> > > 
-> > 
-> > Well... no specific reasons...  I think that our implementation is easier
-> > to understand than the one of the paper, because it actually uses finish
-> > times as the ordering key, and min_start to quickly locate eligible
-> > subtrees, following the definition of the algorithm.
-> > 
-> 
-> Is it still O(log N)?
-> 
 
-Yes, it goes along a single path from the root to a leaf of a balanced
-tree (i.e., it starts from the root, and at the end of each iteration
-it selects the left or the right child of the current node), thus it is
-O(log N).
+* Mike Frysinger <vapier.adi@gmail.com> wrote:
+
+> On Sat, Jun 13, 2009 at 23:05, Mike Frysinger wrote:
+> > While implementing ftracer and ftracer graph support, I found the exact
+> > arch implementation details to be a bit lacking (and my x86 foo ain't
+> > great).  So after pounding out support for the Blackfin arch, start
+> > documenting the requirements/details.
+> 
+> Steven: were you going to pick this up ?  or should i forward to Andrew ?
+
+The .32 development window for the tracing tree starts in about a 
+week. We'll probably fast-track your documentation bits to mainline 
+- but until then we try to watch for regressions and make sure -rc1 
+is round.
+
+Thanks,
+
+	Ingo
