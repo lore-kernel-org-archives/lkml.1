@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZFWQ2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760338AbZFWQ3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbZFWQ2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759527AbZFWQ2X
+	id S1760338AbZFWQ3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZFWQ3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:28:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49453 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759410AbZFWQ2W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:28:22 -0400
-Date: Tue, 23 Jun 2009 09:27:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Fulghum <paulkf@microgate.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] synclink_gt fix transmit race and timeout
-Message-Id: <20090623092739.5a8e9dd5.akpm@linux-foundation.org>
-In-Reply-To: <1245770161.3701.42.camel@x2.microgate.com>
-References: <1245181451.3727.5.camel@x2.microgate.com>
-	<20090622231937.2d32898e.akpm@linux-foundation.org>
-	<1245770161.3701.42.camel@x2.microgate.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Jun 2009 12:29:14 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:49374 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751796AbZFWQ3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:29:14 -0400
+Message-ID: <4A4102C5.4060509@atmel.com>
+Date: Tue, 23 Jun 2009 18:28:53 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Rob Emanuele <rob@emanuele.us>
+CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH 1/6] atmel-mci: Unified Atmel MCI drivers (AVR32 & AT91)
+References: <1245200079-6323-1-git-send-email-rob@emanuele.us>	<4A38BDB8.5030804@atmel.com> <20090617120849.4b11386a@hskinnemoen-d830>
+In-Reply-To: <20090617120849.4b11386a@hskinnemoen-d830>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 10:16:01 -0500 Paul Fulghum <paulkf@microgate.com> wrote:
+Haavard Skinnemoen :
+> Nicolas Ferre wrote:
+>>> -#define ATMCI_DATA_ERROR_FLAGS	(MCI_DCRCE | MCI_DTOE | MCI_OVRE | MCI_UNRE)
+>>> +#define ATMCI_DATA_ERROR_FLAGS	(MCI_RINDE | MCI_RDIRE | MCI_RCRCE  \
+>>> +				 | MCI_RENDE | MCI_RTOE | MCI_DCRCE \
+>>> +				 | MCI_DTOE | MCI_OVRE | MCI_UNRE)  
+>> Haavard, is it ok to add those flags on an AVR32 platform for now ?
+> 
+> It probably doesn't hurt on AVR32. But I'm not a great fan since it
+> seems like the wrong thing to do, and it may simply mask the real
+> problem.
 
-> On Mon, 2009-06-22 at 23:19 -0700, Andrew Morton wrote:
-> > On Tue, 16 Jun 2009 14:44:11 -0500 Paul Fulghum <paulkf@microgate.com> wrote:
-> > 
-> > > Fix race condition when adding transmit data to active DMA buffer ring
-> > > that can cause transmit stall.
-> 
-> > It's not a terribly good changelog, sorry.
-> > It fails to describe the race condition?
-> 
-> I attempted to say what was done in the change log and
-> let the patch describe the details of how it was done.
-> But I can see that might not be enough.
-> 
-> How's this? :
-> 
-> If after adding transmit data to the transmit DMA ring the
-> transmit DMA controller has become inactive before reading
-> the new data and the serial transmitter is still active sending
-> data already in the transmit FIFO and/or shift register,
-> then wait for the serial transmitter to become idle before
-> reactivating the transmit DMA controller.
-> 
-> Otherwise the transmit DMA controller may present the
-> new data to the serial transmitter in a small timing window
-> just as the serial transmitter transitions to the idle state.
-> Hitting this window results in the serial transmitter entering
-> an inconsistent state where it does not process the new data
-> and does not signal the transition to the idle state.
-> 
-> >From the driver perspective, this condition appears as an
-> active transmit DMA controller (correct) with unsent DMA buffers 
-> (correct) and an active serial transmitter (wrong), even though
-> no data is actually being sent. When all the DMA buffers are full,
-> no further data is accepted from a user application calling
-> write() until a timeout occurs and the transmitter and
-> DMA controller are reset.
-> 
+Agreed.
 
-That covers it ;) But I stil lcan't work out whether we shoul backport
-this into -stable.
+To move forward, I will submit a first patch series without those flags
+added.
 
-> 
-> If this is good enough, I will resubmit the patch with
-> the updated change log.
-
-I updated the patch.
-
-I did have a couple of other comments on the patch which seem to have
-been missed?
+Best regards,
+-- 
+Nicolas Ferre
 
