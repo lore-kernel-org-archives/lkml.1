@@ -1,97 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbZFWT5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZFWT5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbZFWT5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZFWT5R
+	id S1756766AbZFWT5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 15:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbZFWT5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:57:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60777 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbZFWT5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:57:16 -0400
-Date: Tue, 23 Jun 2009 21:56:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
-Message-ID: <20090623195656.GC8777@elte.hu>
-References: <1245760130.3776.6.camel@localhost.localdomain>
+	Tue, 23 Jun 2009 15:57:33 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:49152 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754512AbZFWT5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 15:57:32 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] asm-generic fixes
+Date: Tue, 23 Jun 2009 21:56:45 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier@gentoo.org>, Paul Mundt <lethal@linux-sh.org>,
+       Magnus Damm <magnus.damm@gmail.com>,
+       Richard Henderson <rth@twiddle.net>
+References: <200906231720.38105.arnd@arndb.de> <alpine.LFD.2.01.0906231126460.3240@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906231126460.3240@localhost.localdomain>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245760130.3776.6.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906232156.46865.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/C5tWzxI8OtZeIipUCv02mJjFFzfOiVyx5ZE4
+ vjv2tAWWHkZxFq4RMGYfVPAS1GOQZOH/Ea9XqNydBNMdeNIdtu
+ 3SdtjPjjfTCZFhCdiEeVA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 23 June 2009, Linus Torvalds wrote:
+> You might need to make 'result', 'carry', and 'w' be 'unsigned int' too.
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Yes, you're right.
 
-> After :
-> 
->  Performance counter stats for 'ls -lR /usr/include/':
-> 
->       259250339  L1-d-load-refs        (scaled from 22.73%)
->         1187200  L1-d-load-miss        (scaled from 23.01%)
->          150454  L1-d-store-refs       (scaled from 23.01%)
->          494252  L1-d-prefetch-refs    (scaled from 23.29%)
->          362661  L1-d-prefetch-miss    (scaled from 23.73%)
->       247343449  L1-i-load-refs        (scaled from 23.71%)
->         4804990  L1-i-load-miss        (scaled from 23.85%)
->          108711  L1-i-prefetch-refs    (scaled from 23.83%)
->         6260313  L2-load-refs          (scaled from 23.82%)
->          605425  L2-load-miss          (scaled from 23.82%)
->         6898075  L2-store-refs         (scaled from 23.96%)
->       248334160  d-TLB-load-refs       (scaled from 23.95%)
->         3812835  d-TLB-load-miss       (scaled from 23.87%)
->       253208496  i-TLB-load-refs       (scaled from 23.73%)
->            5873  i-TLB-load-miss       (scaled from 23.46%)
->       110891027  Branch-load-refs      (scaled from 23.21%)
->         5529622  Branch-load-miss      (scaled from 23.02%)
+> Now, it's possible (even likely) that even with a 64-bit word, we'll never 
+> actually do large enough areas that 'result' would ever have very many 
+> bits set in the 32+ bit region, and since we do end up folding to 16 bits 
+> twice (once after the loop and once at the end), it probably gets things 
+> right in most cases. But I doubt "probably" is strong enough. Somebody 
+> should check.
 
-here's an edited version of my suggestions:
+I think it would overrun only if we have more than 65536 u32 words of
+0xffffffff in a single IP packet, on a 64 bit machine. A more obvious
+reason to change it is that it relies on from32to16() actually behaving
+like a from47to16() function on 64-bit. Changing it to use unsigned int
+throughout makes it both more obvious and more consistent between
+32 and 64 bit unsigned long types.
 
->       259250339  dL1-loads              (scaled from 22.73%)
->         1187200  dL1-load-misses        (scaled from 23.01%)
->          150454  dL1-stores             (scaled from 23.01%)
->          494252  dL1-prefetches         (scaled from 23.29%)
->          362661  dL1-prefetch-misses    (scaled from 23.73%)
->       247343449  iL1-loads              (scaled from 23.71%)
->         4804990  iL1-load-misses        (scaled from 23.85%)
->          108711  iL1-prefetches         (scaled from 23.83%)
->         6260313  LLC-loads              (scaled from 23.82%)
->          605425  LLC-load-misses        (scaled from 23.82%)
->         6898075  LLC-stores             (scaled from 23.96%)
->       248334160  dTLB-loads             (scaled from 23.95%)
->         3812835  dTLB-load-misses       (scaled from 23.87%)
->       253208496  iTLB-loads             (scaled from 23.73%)
->            5873  iTLB-load-misses       (scaled from 23.46%)
->       110891027  branches               (scaled from 23.21%)
->         5529622  branch-misses          (scaled from 23.02%)
+> Or just see arch/alpha/lib/checksum.c, which does the whole 64-bit case.
+> Maybe lib/checksum.c should be lib/checksum_{32,64}.c.
 
-We can leave out 'refs' i think - without any qualification 
-statements like '247343449 iL1-loads' are still unambigious i think.
+Mike Frysinger earlier suggested just making the do_csum function optional
+in this file because this is the one that most architectures would override.
 
-Plus we can abbreviate dL1/iL1/dTLB/iTLB. The capitalization 
-matters. Also, note that it's LLC (Last Level Cache), not L2.
+The alpha code is the only 64-bit platform implementing do_csum in C, so
+if Richard wants to use the generic code in its current form, he could simply
+override the do_csum implementation.
 
-( Sidenote: L2 can still be an alias for LLC, even though some CPUs 
-  have a L3 too. )
+I've now added these two patches:
 
-Note, branches are special - we dont really have 'branch loads', 
-branches are executions. 'Branches' and 'Branch-misses' are the 
-right term.
+commit 217a8c7b6af924379a2083439b4bb606f332e7b1
+Author: Arnd Bergmann <arnd@arndb.de>
+Date:   Tue Jun 23 21:37:26 2009 +0200
 
-Do you agree?
+    lib/checksum.c: make do_csum optional
+    
+    Mike Frysinger suggested that do_csum should be optional
+    so that an architecture can use the generic checksum code
+    but still provide an optimized fast-path for the most
+    critical function.
+    
+    This can mean an implementation using inline assembly,
+    or in case of Alpha one using 64-bit arithmetic in C.
+    
+    Cc: Mike Frysinger <vapier@gentoo.org>
+    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-	Ingo
+diff --git a/lib/checksum.c b/lib/checksum.c
+index 886b48d..b08c2d0 100644
+--- a/lib/checksum.c
++++ b/lib/checksum.c
+@@ -37,6 +37,7 @@
+ 
+ #include <asm/byteorder.h>
+ 
++#ifndef do_csum
+ static inline unsigned short from32to16(unsigned int x)
+ {
+ 	/* add up 16-bit and 16-bit for 16+c bit */
+@@ -102,6 +103,7 @@ static unsigned int do_csum(const unsigned char *buff, int len)
+ out:
+ 	return result;
+ }
++#endif
+ 
+ /*
+  *	This is a version of ip_compute_csum() optimized for IP headers,
+
+commit 5cb59758c3e2170b24e9c0d659eb6c03872155c0
+Author: Arnd Bergmann <arnd@arndb.de>
+Date:   Tue Jun 23 21:22:58 2009 +0200
+
+    lib/checksum.c: use 32-bit arithmetic consistently
+    
+    The use of 'unsigned long' variables in the 32-bit part of do_csum()
+    is confusing at best, and potentially broken for long input on 64-bit
+    machines.
+    
+    This changes the code to use 'unsigned int' instead, which makes
+    the code behave in the same (correct) way on both 32 and 64 bit
+    machines.
+    
+    Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
+    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+diff --git a/lib/checksum.c b/lib/checksum.c
+index b2e2fd4..886b48d 100644
+--- a/lib/checksum.c
++++ b/lib/checksum.c
+@@ -37,7 +37,7 @@
+ 
+ #include <asm/byteorder.h>
+ 
+-static inline unsigned short from32to16(unsigned long x)
++static inline unsigned short from32to16(unsigned int x)
+ {
+ 	/* add up 16-bit and 16-bit for 16+c bit */
+ 	x = (x & 0xffff) + (x >> 16);
+@@ -49,7 +49,7 @@ static inline unsigned short from32to16(unsigned long x)
+ static unsigned int do_csum(const unsigned char *buff, int len)
+ {
+ 	int odd, count;
+-	unsigned long result = 0;
++	unsigned int result = 0;
+ 
+ 	if (len <= 0)
+ 		goto out;
+@@ -73,9 +73,9 @@ static unsigned int do_csum(const unsigned char *buff, int len)
+ 		}
+ 		count >>= 1;		/* nr of 32-bit words.. */
+ 		if (count) {
+-			unsigned long carry = 0;
++			unsigned int carry = 0;
+ 			do {
+-				unsigned long w = *(unsigned int *) buff;
++				unsigned int w = *(unsigned int *) buff;
+ 				count--;
+ 				buff += 4;
+ 				result += carry;
