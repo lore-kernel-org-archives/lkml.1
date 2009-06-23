@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbZFXAEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbZFXAF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760280AbZFXAEf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 20:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760083AbZFXAEV
+	id S1759168AbZFXAF6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 20:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbZFXAFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 20:04:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36852 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760123AbZFXAEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 20:04:20 -0400
-Message-ID: <4A416D7B.4060804@kernel.org>
-Date: Wed, 24 Jun 2009 09:04:11 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Miklos Szeredi <miklos@szeredi.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] FUSE: make request_wait_answer() wait for ->end()
- completion
-References: <1245317073-24000-1-git-send-email-tj@kernel.org>	<1245317073-24000-3-git-send-email-tj@kernel.org> <20090623165354.073a61fe.akpm@linux-foundation.org>
-In-Reply-To: <20090623165354.073a61fe.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 00:04:13 +0000 (UTC)
+	Tue, 23 Jun 2009 20:05:51 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:44404 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753770AbZFXAFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 20:05:50 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, devel@ksplice.com,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH 1/2] Add new macros for page-aligned data and bss sections.
+Date: Tue, 23 Jun 2009 19:59:35 -0400
+Message-Id: <1245801576-13374-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1245801452-13222-1-git-send-email-tabbott@ksplice.com>
+References: <1245801452-13222-1-git-send-email-tabbott@ksplice.com>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(restoring cc list)
+This patch is preparation for replacing most uses of
+".bss.page_aligned" and ".data.page_aligned" in the kernel with
+macros, so that the section name can later be changed without having
+to touch a lot of the kernel.
 
-Andrew Morton wrote:
-> On Thu, 18 Jun 2009 18:24:31 +0900
-> Tejun Heo <tj@kernel.org> wrote:
-> 
->> -	/** Request completion callback */
->> +	/** Request completion callback.  This function is called from
->> +	    the kernel context of the FUSE server if the request isn't
->> +	    being aborted.  If the request is being aborted, it's
->> +	    called from the kernel context of the aborting process. */
-> 
-> The comment pretends to be kerneldoc but isn't.
-> 
-> Like this:
-> 
-> 	/*
-> 	 * Request completion callback.  This function is called from
-> 	 * the kernel context of the FUSE server if the request isn't
-> 	 * being aborted.  If the request is being aborted, it's
-> 	 * called from the kernel context of the aborting process.
-> 	 */
-> 
-> please.
+The long-term goal here is to be able to change the kernel's magic
+section names to those that are compatible with -ffunction-sections
+-fdata-sections.  This requires renaming all magic sections with names
+of the form ".data.foo".
 
-All the sorrounding comments were formatted in false-kerneldoc format,
-so it will look a bit weird that way.  Hmm... I'll add a patch to
-change the surrounding comments too.
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Acked-by: David Howells <dhowells@redhat.com>
+---
+ include/linux/linkage.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Thanks.
-
+diff --git a/include/linux/linkage.h b/include/linux/linkage.h
+index fee9e59..691f591 100644
+--- a/include/linux/linkage.h
++++ b/include/linux/linkage.h
+@@ -22,6 +22,15 @@
+ #define __page_aligned_bss	__section(.bss.page_aligned) __aligned(PAGE_SIZE)
+ 
+ /*
++ * For assembly routines.
++ *
++ * Note when using these that you must specify the appropriate
++ * alignment directives yourself
++ */
++#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw"
++#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw"
++
++/*
+  * This is used by architectures to keep arguments on the stack
+  * untouched by the compiler by keeping them live until the end.
+  * The argument stack may be owned by the assembly-language
 -- 
-tejun
+1.6.3.1
+
