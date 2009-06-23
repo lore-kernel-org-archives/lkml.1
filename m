@@ -1,79 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZFWIXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZFWIYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbZFWIXA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZFWIWo
+	id S1757050AbZFWIYE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZFWIXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:22:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43080 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751410AbZFWIWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:22:42 -0400
-Date: Tue, 23 Jun 2009 08:21:58 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, peterz@infradead.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1245703959.6167.16.camel@localhost.localdomain>
-References: <1245703959.6167.16.camel@localhost.localdomain>
-Subject: [tip:perfcounters/urgent] perf stat: Fix command option / manpage
-Message-ID: <tip-dee412066aeb16c43cf31599948c1a1de385df56@git.kernel.org>
-Git-Commit-ID: dee412066aeb16c43cf31599948c1a1de385df56
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Jun 2009 08:21:58 +0000 (UTC)
+	Tue, 23 Jun 2009 04:23:51 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:33971 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbZFWIXt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:23:49 -0400
+Subject: Re: [PATCH] proc connector: add event for process becoming session
+ leader
+From: Scott James Remnant <scott@ubuntu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Matt Helsley <matthltc@us.ibm.com>
+In-Reply-To: <20090622161909.e5706885.akpm@linux-foundation.org>
+References: <E1MGUmL-00036A-EE@zelda.netsplit.com>
+	 <20090622161909.e5706885.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DnFNN84UR4ufDIiUsIuP"
+Date: Tue, 23 Jun 2009 09:23:40 +0100
+Message-Id: <1245745420.3477.16.camel@wing-commander>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  dee412066aeb16c43cf31599948c1a1de385df56
-Gitweb:     http://git.kernel.org/tip/dee412066aeb16c43cf31599948c1a1de385df56
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Tue, 23 Jun 2009 02:22:39 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 23 Jun 2009 10:20:02 +0200
 
-perf stat: Fix command option / manpage
+--=-DnFNN84UR4ufDIiUsIuP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--l is not supported, it should be -S for scale.
+On Mon, 2009-06-22 at 16:19 -0700, Andrew Morton wrote:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <1245703959.6167.16.camel@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Let's cc the Process Events developer..
+>=20
+Ah great, thanks - I couldn't find an e-mail address.
 
+> On Mon, 15 Jun 2009 13:03:08 +0100
+> Scott James Remnant <scott@ubuntu.com> wrote:
+>=20
+> > The act of a process becoming a session leader is a useful signal to a
+> > supervising init daemon such as Upstart.
+> >=20
+> > While a daemon will normally do this as part of the process of becoming
+> > a daemon, it is rare for its children to do so.  When the children do,
+> > it is nearly always a sign that the child should be considered detached
+> > from the parent and not supervised along with it.
+> >=20
+> > The poster-child example is OpenSSH; the per-login children call setsid=
+()
+> > so that they may control the pty connected to them.  If the primary dae=
+mon
+> > dies or is restarted, we do not want to consider the per-login children
+> > and want to respawn the primary daemon without killing the children.
+> >=20
+> > This patch adds a new PROC_SID_EVENT and associated structure to the
+> > proc_event event_data union, it arranges for this to be emitted when
+> > the special PIDTYPE_SID pid is set.
+> >=20
+>=20
+> hm, well, I don't have much useful to say about the overall idea, but
+> it seems to slot into the existing code simply enough.
+>=20
+> > ---
+> >  drivers/connector/cn_proc.c |   25 +++++++++++++++++++++++++
+> >  include/linux/cn_proc.h     |   10 ++++++++++
+> >  kernel/exit.c               |    4 +++-
+> >  3 files changed, 38 insertions(+), 1 deletions(-)
+>=20
+> We seem to have forgotten to document this entire interface, so I can't
+> ding you for forgetting to update the forgotten documentation.
+>=20
+> > diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
+> > index c5afc98..7d48cd9 100644
+> > --- a/drivers/connector/cn_proc.c
+> > +++ b/drivers/connector/cn_proc.c
+> > @@ -139,6 +139,31 @@ void proc_id_connector(struct task_struct *task, i=
+nt which_id)
+> >  	cn_netlink_send(msg, CN_IDX_PROC, GFP_KERNEL);
+> >  }
+> > =20
+> > +void proc_sid_connector(struct task_struct *task)
+>=20
+> It would be nice to have a nice comment explaining what this function
+> does.  Ditto all the others in there, really.
+>=20
+> > +{
+> > +	struct cn_msg *msg;
+> > +	struct proc_event *ev;
+> > +	struct timespec ts;
+> > +	__u8 buffer[CN_PROC_MSG_SIZE];
+> > +
+> > +	if (atomic_read(&proc_event_num_listeners) < 1)
+> > +		return;
+> > +
+> > +	msg =3D (struct cn_msg*)buffer;
+> > +	ev =3D (struct proc_event*)msg->data;
+>=20
+> Please pass all patches through scripts/checkpatch.pl.
+>=20
+> > +	get_seq(&msg->seq, &ev->cpu);
+> > +	ktime_get_ts(&ts); /* get high res monotonic timestamp */
+> > +	put_unaligned(timespec_to_ns(&ts), (__u64 *)&ev->timestamp_ns);
+> > +	ev->what =3D PROC_EVENT_SID;
+> > +	ev->event_data.sid.process_pid =3D task->pid;
+>=20
+> This is a bit of a worry.  In a containerised environment, pids are not
+> unique.  Now what do we do?
+>=20
+I must admit, that I just copy and pasted the existing functions - bugs
+and all :-)
 
----
- tools/perf/Documentation/perf-stat.txt |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+> > +	ev->event_data.sid.process_tgid =3D task->tgid;
+> > +
+> > +	memcpy(&msg->id, &cn_proc_event_id, sizeof(msg->id));
+> > +	msg->ack =3D 0; /* not used */
+> > +	msg->len =3D sizeof(*ev);
+> > +	cn_netlink_send(msg, CN_IDX_PROC, GFP_KERNEL);
+> > +}
+> > +
+> >  void proc_exit_connector(struct task_struct *task)
+> >  {
+> >  	struct cn_msg *msg;
+> > diff --git a/include/linux/cn_proc.h b/include/linux/cn_proc.h
+> > index b8125b2..47dac5e 100644
+> > --- a/include/linux/cn_proc.h
+> > +++ b/include/linux/cn_proc.h
+> > @@ -52,6 +52,7 @@ struct proc_event {
+> >  		PROC_EVENT_EXEC =3D 0x00000002,
+> >  		PROC_EVENT_UID  =3D 0x00000004,
+> >  		PROC_EVENT_GID  =3D 0x00000040,
+> > +		PROC_EVENT_SID  =3D 0x00000080,
+> >  		/* "next" should be 0x00000400 */
+> >  		/* "last" is the last process event: exit */
+> >  		PROC_EVENT_EXIT =3D 0x80000000
+> > @@ -89,6 +90,11 @@ struct proc_event {
+> >  			} e;
+> >  		} id;
+> > =20
+> > +		struct sid_proc_event {
+> > +			__kernel_pid_t process_pid;
+> > +			__kernel_pid_t process_tgid;
+> > +		} sid;
+> > +
+> >  		struct exit_proc_event {
+> >  			__kernel_pid_t process_pid;
+> >  			__kernel_pid_t process_tgid;
+> > @@ -102,6 +108,7 @@ struct proc_event {
+> >  void proc_fork_connector(struct task_struct *task);
+> >  void proc_exec_connector(struct task_struct *task);
+> >  void proc_id_connector(struct task_struct *task, int which_id);
+> > +void proc_sid_connector(struct task_struct *task);
+> >  void proc_exit_connector(struct task_struct *task);
+> >  #else
+> >  static inline void proc_fork_connector(struct task_struct *task)
+> > @@ -114,6 +121,9 @@ static inline void proc_id_connector(struct task_st=
+ruct *task,
+> >  				     int which_id)
+> >  {}
+> > =20
+> > +static inline void proc_sid_connector(struct task_struct *task)
+> > +{}
+> > +
+> >  static inline void proc_exit_connector(struct task_struct *task)
+> >  {}
+> >  #endif	/* CONFIG_PROC_EVENTS */
+> > diff --git a/kernel/exit.c b/kernel/exit.c
+> > index b6c90b5..5162589 100644
+> > --- a/kernel/exit.c
+> > +++ b/kernel/exit.c
+> > @@ -360,8 +360,10 @@ void __set_special_pids(struct pid *pid)
+> >  {
+> >  	struct task_struct *curr =3D current->group_leader;
+> > =20
+> > -	if (task_session(curr) !=3D pid)
+> > +	if (task_session(curr) !=3D pid) {
+> >  		change_pid(curr, PIDTYPE_SID, pid);
+> > +		proc_sid_connector(curr);
+> > +	}
+> > =20
+> >  	if (task_pgrp(curr) !=3D pid)
+> >  		change_pid(curr, PIDTYPE_PGID, pid);
+>=20
 
-diff --git a/tools/perf/Documentation/perf-stat.txt b/tools/perf/Documentation/perf-stat.txt
-index c368a72..0d74346 100644
---- a/tools/perf/Documentation/perf-stat.txt
-+++ b/tools/perf/Documentation/perf-stat.txt
-@@ -8,8 +8,8 @@ perf-stat - Run a command and gather performance counter statistics
- SYNOPSIS
- --------
- [verse]
--'perf stat' [-e <EVENT> | --event=EVENT] [-l] [-a] <command>
--'perf stat' [-e <EVENT> | --event=EVENT] [-l] [-a] -- <command> [<options>]
-+'perf stat' [-e <EVENT> | --event=EVENT] [-S] [-a] <command>
-+'perf stat' [-e <EVENT> | --event=EVENT] [-S] [-a] -- <command> [<options>]
- 
- DESCRIPTION
- -----------
-@@ -40,7 +40,7 @@ OPTIONS
- -a::
-         system-wide collection
- 
---l::
-+-S::
-         scale counter values
- 
- EXAMPLES
+Scott
+--=20
+Scott James Remnant
+scott@ubuntu.com
+
+--=-DnFNN84UR4ufDIiUsIuP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpAkQwACgkQSnQiFMl4yK6/TgCgjKac+2iHUeLFXlZnjes58QDH
+M/AAoKyXRhILnHtWSz94e4woi70F1djf
+=bijE
+-----END PGP SIGNATURE-----
+
+--=-DnFNN84UR4ufDIiUsIuP--
+
