@@ -1,91 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZFWHvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbZFWHvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbZFWHvW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 03:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZFWHvO
+	id S1758016AbZFWHvg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 03:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbZFWHv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 03:51:14 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:63977 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbZFWHvO convert rfc822-to-8bit (ORCPT
+	Tue, 23 Jun 2009 03:51:26 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:63369 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757408AbZFWHvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 03:51:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=aO0Ww8WICtaXV9n8c4utJfeHzqzblffEn1frG6Vscd1kmKHDSTkZ2C1FjBSil+k+37
-         JnFHMkm6wpfr/gLjqUQSrF6Y4iwB/W9Rl3IhrtqsQwggT/eJDJSuRJiVPPJl4DA3+cqn
-         3JxziJAGYyoW5dl3xPzsBpG0L63L3fwTDwyrc=
+	Tue, 23 Jun 2009 03:51:24 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide-cd: Improve "weird block size" error message
+Date: Tue, 23 Jun 2009 09:51:23 +0200
+User-Agent: KMail/1.9.9
+Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200906211446.38598.elendil@planet.nl> <200906222101.38586.elendil@planet.nl> <200906222335.06700.bzolnier@gmail.com>
+In-Reply-To: <200906222335.06700.bzolnier@gmail.com>
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
-References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
-	 <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
-Date: Tue, 23 Jun 2009 09:45:03 +0200
-Message-ID: <7c86c4470906230045k578bc146wa0e09e4094d937a5@mail.gmail.com>
-Subject: Re: perf_counter Atom patch
-From: stephane eranian <eranian@googlemail.com>
-To: "Wang, Yong Y" <yong.y.wang@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       Andi Kleen <andi@firstfloor.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906230951.24615.elendil@planet.nl>
+X-OriginalArrivalTime: 23 Jun 2009 07:51:25.0372 (UTC) FILETIME=[68833FC0:01C9F3D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 22 June 2009, Bartlomiej Zolnierkiewicz wrote:
+> On Monday 22 June 2009 21:01:37 Frans Pop wrote:
+> > There is one thing I should mention here. I have been seeing the
+> > following error with this CD drive:
+> > ide-cd: hdd: weird block size 2352
+> > ide-cd: hdd: default to 2kb block size
+>
+> This is just a harmless warning coming from enabling of the workaround
+> for weird ATAPI devices (the one you have in this sparc machine seems
+> to score really high on the weirdness scale ;) introduced by commit
+> e8e7b9e.
 
-On Tue, Jun 23, 2009 at 5:38 AM, Wang, Yong Y<yong.y.wang@intel.com> wrote:
->> From: stephane eranian [mailto:eranian@googlemail.com]
->>
->> I would like to better understand what makes you think
->> this is the case.
->>
->
-> Because I observed that the output of 'perf stat -e 0:0 -e 0:1 -e 0:6 <cmd>'
-> is always like below without the quirk.
->
->  Performance counter stats for '<cmd>':
->
->              0  cycles
->              0  instructions
->              0  bus-cycles
->
->> Perfmon is working on Atom and there, fixed counters work perfectly:
->> $ head -6 /proc/cpuinfo
->> processor     : 0
->> vendor_id     : GenuineIntel
->> cpu family    : 6
->> model         : 28
->> model name    : Intel(R) Atom(TM) CPU  230   @ 1.60GHz
->> stepping      : 2
->> ...
->
-> My cpuinfo is below and the only difference I can see is 270 vs 230.
->
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 28
-> model name      : Intel(R) Atom(TM) CPU N270   @ 1.60GHz
-> stepping        : 2
->
-Unfortunately, I don't have a N270 to compare with your results.
-We need to verify whether or not N270 implements the fixed counters.
-Does it report architected perfmon v3 or v1?
+In that case I'd like to propose the following patch. Currently the error
+can get printed much to frequently when there's a disc in the drive.
+Example:
 
-> The return value of CPUID(0xa) is indeed bogus, too and there is another quirk for that in
-> intel_pmu_init() in arch/x86/kernel/cpu/perf_counter.c
->
-> x86_pmu.num_counters_fixed      = max((int)edx.split.num_counters_fixed, 3);
->
-> Is this what you were talking about?
+Jun 13 18:06:28 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:06:28 gimli kernel: ide-cd: hdd: default to 2kb block size
+Jun 13 18:06:32 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:06:42 gimli kernel: ide-cd: hdd: default to 2kb block size
+Jun 13 18:07:02 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:07:02 gimli kernel: ide-cd: hdd: default to 2kb block size
+Jun 13 18:07:05 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:07:05 gimli kernel: ide-cd: hdd: default to 2kb block size
+Jun 13 18:07:09 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:07:09 gimli kernel: ide-cd: hdd: default to 2kb block size
+Jun 13 18:07:14 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:07:14 gimli kernel: ide-cd: hdd: default to 2kb block size
+Jun 13 18:07:35 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:07:35 gimli kernel: ide-cd: hdd: default to 2kb block size
+Jun 13 18:07:51 gimli kernel: ide-cd: hdd: weird block size 2352
+Jun 13 18:07:51 gimli kernel: ide-cd: hdd: default to 2kb block size
 
-Not quite, because with the max() you'd have a problem on Intel Core
-Duo/Solo processors
-as they do implement the first generation of architected perfmon and
-that one did not have
-fixed counters. So you'd have to special case family=6 model=14.
+I was not using the CD at all here. I suspect HAL's stupid polling to be
+the culprit as I first saw it after upgrading X.Org packages to a version
+which depends on HAL. I since disabled polling for the device, but I
+still feel that warning once should be sufficient as IIUC the value is
+device dependent and not medium dependent.
+
+With the patch it only gets printed once, when the driver is initialized.
+
+Cheers,
+FJP
+
+---
+From: Frans Pop <elendil@planet.nl>
+Subject: ide-cd: Improve "weird block size" error message
+
+Currently the error gets repeated too frequently, for example
+each time HAL polls the device when a disc is present. Avoid that
+by using printk_once instead of printk.
+Also join the error and corrective action messages into a single line.
+
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 4a19686..7ec6996 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -886,10 +886,9 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
+ 	case 4096:
+ 		break;
+ 	default:
+-		printk(KERN_ERR PFX "%s: weird block size %u\n",
++		printk_once(KERN_ERR PFX "%s: weird block size %u; "
++				"setting default block size to 2048\n",
+ 				drive->name, blocklen);
+-		printk(KERN_ERR PFX "%s: default to 2kb block size\n",
+-				drive->name);
+ 		blocklen = 2048;
+ 		break;
+ 	}
