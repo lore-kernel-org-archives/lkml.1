@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbZFWQKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760223AbZFWQLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759408AbZFWQKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbZFWQKY
+	id S1760223AbZFWQLB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbZFWQKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:10:24 -0400
-Received: from web50102.mail.re2.yahoo.com ([206.190.38.30]:23382 "HELO
-	web50102.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754100AbZFWQKX convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:10:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=0gosCqO43+b1js7Jl0+iSzdXRVZlkvQ9aimCyJFKbHTyNXmTj/kcSINjEy8ZTbV/wBultdAl7Q/El8lhnd2jPnK++EQvRAc4hCPyrNs7pQgUbc5voIGz4iT4hlEBHwTXtx39KBCzzrlic+y6qmcBf5lzaf/dSaGjYKZKHD9bbZw=;
-Message-ID: <589165.9933.qm@web50102.mail.re2.yahoo.com>
-X-YMail-OSG: p_vMdS8VM1mRGYrWM4HNvvHqtoqhQv5XmRy7CRLhdlKd7w87he8-
-X-Mailer: YahooMailClassic/5.4.17 YahooMailWebService/0.7.289.15
-Date: Tue, 23 Jun 2009 09:10:24 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH] MAINTAINERS: pair names/addresses in EDAC-I82975X
-To: LKML <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Ranganathan Desikan <rdesikan@jetzbroadband.com>,
-       "Arvind R." <arvind@acarlab.com>, bluesmoke-devel@lists.sourceforge.net
+	Tue, 23 Jun 2009 12:10:46 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:32778 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753653AbZFWQKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:10:45 -0400
+Date: Tue, 23 Jun 2009 09:10:44 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lennert Buytenhek <kernel@wantstofly.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, niv@us.ibm.com,
+       dvhltc@us.ibm.com, lethal@linux-sh.org, matthew@wil.cx,
+       linux@arm.linux.org.uk
+Subject: Re: [PATCH] v5 RCU: the bloatwatch edition
+Message-ID: <20090623161044.GB6748@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090623042442.GA15630@linux.vnet.ibm.com> <28711.1245748358@redhat.com> <20090623093208.GD23698@elte.hu> <20090623125832.GA6872@linux.vnet.ibm.com> <20090623154701.GA19647@mail.wantstofly.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623154701.GA19647@mail.wantstofly.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- On Thu, 6/18/09, Joe Perches <joe@perches.com> wrote:
-
-> From: Joe Perches <joe@perches.com>
-> Subject: [PATCH] MAINTAINERS: pair names/addresses in EDAC-I82975X
-> To: "LKML" <linux-kernel@vger.kernel.org>
-> Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ranganathan Desikan" <rdesikan@jetzbroadband.com>, "Arvind R." <arvind@acarlab.com>, bluesmoke-devel@lists.sourceforge.net
-> Date: Thursday, June 18, 2009, 12:54 PM
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-
+On Tue, Jun 23, 2009 at 05:47:01PM +0200, Lennert Buytenhek wrote:
+> On Tue, Jun 23, 2009 at 05:58:32AM -0700, Paul E. McKenney wrote:
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index fb94add..e139389 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2052,8 +2052,8 @@ F:   
-> drivers/edac/i5400_edac.c
->  
->  EDAC-I82975X
->  P:    Ranganathan Desikan
-> -P:    Arvind R.
->  M:    rdesikan@jetzbroadband.com
-> +P:    Arvind R.
->  M:    arvind@acarlab.com
->  L:    bluesmoke-devel@lists.sourceforge.net
-> (moderated for non-subscribers)
->  W:    bluesmoke.sourceforge.net
+> > > > > This patch is a version of RCU designed for (!SMP && EMBEDDED)
+> > > > > provided as a proof of concept of a small-footprint RCU implementation.
+> > > > > In particular, the implementation of synchronize_rcu() is extremely
+> > > > > lightweight and high performance.  It passes rcutorture testing in each
+> > > > > of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> > > > > on x86.  This saves 1263 bytes compared to Classic RCU, and more than
+> > > > > three kilobytes compared to Hierarchical RCU (updated to 2.6.30):
+> > > > 
+> > > > On FRV:
+> > > > 
+> > > > 	CONFIG_CLASSIC_RCU=y
+> > > > 
+> > > > 	   text    data     bss     dec     hex filename
+> > > > 	    884      32      20     936     3a8 kernel/rcupdate.o
+> > > > 	   2616     184       0    2800     af0 kernel/rcuclassic.o
+> > > > 
+> > > > 	CONFIG_TREE_RCU=y
+> > > > 
+> > > > 	   text    data     bss     dec     hex filename
+> > > > 	    884      32      20     936     3a8 kernel/rcupdate.o
+> > > > 	   4068     384       0    4452    1164 kernel/rcutree.o
+> > > > 
+> > > > 	CONFIG_TINY_RCU=y
+> > > > 
+> > > > 	   text    data     bss     dec     hex filename
+> > > > 	    836      32      20     888     378 kernel/rcupdate.o
+> > > > 	    816      24       0     840     348 kernel/rcutiny.o
+> > > > 
+> > > > On MN10300:
+> > > > 
+> > > > 	CONFIG_CLASSIC_RCU=y
+> > > > 
+> > > > 	   text    data     bss     dec     hex filename
+> > > > 	    900      28      48     976     3d0 kernel/rcupdate.o
+> > > > 	   1777     184       0    1961     7a9 kernel/rcuclassic.o
+> > > > 
+> > > > 	CONFIG_TREE_RCU=y
+> > > > 
+> > > > 	   text    data     bss     dec     hex filename
+> > > > 	    900      28      48     976     3d0 kernel/rcupdate.o
+> > > > 	   2733     384       0    3117     c2d kernel/rcutree.o
+> > > > 
+> > > > 	CONFIG_PREEMPT_RCU=y
+> > > > 
+> > > > 	   text    data     bss     dec     hex filename
+> > > > 	    961      28      48    1037     40d kernel/rcupdate.o
+> > > > 	   3314     128       8    3450     d7a kernel/rcupreempt.o
+> > > > 
+> > > > 	CONFIG_TINY_RCU=y
+> > > > 
+> > > > 	   text    data     bss     dec     hex filename
+> > > > 	    865      28      48     941     3ad kernel/rcupdate.o
+> > > > 	    500      24       0     524     20c kernel/rcutiny.o
+> > > > 
+> > > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > 
+> > > > Acked-by: David Howells <dhowells@redhat.com
+> > > 
+> > > Ok, that's more convincing than 900 bytes on x86.
+> > 
+> > It used to be 900 bytes.  In 2.6.30, it is 1263 bytes.  ;-)
+> > 
+> > That said, I agree that FRV and MN10300 savings are more impressive.
+> > 
+> > > Paul, i guess this is .32 material anyway, right?
+> > 
+> > I am personally OK with it being .32, as long as David Howells,
+> > Lennert Buytenhek, and Paul Mundt are OK with that schedule.
 > 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> I like the patch, as nearly all ARM systems in the field right now are
+> non-SMP.  Russell King (CCd) is the ARM maintainer, so he should comment
+> on the proposed timeline.
+
+OK, I will submit a patch against -tip.  If Russell needs Bloatwatch
+RCU more quickly, we still have my earlier v5 patch against 2.6.30.
+
+							Thanx, Paul
