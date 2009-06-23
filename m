@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbZFWPJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZFWPN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760545AbZFWPJy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZFWPJp
+	id S1759578AbZFWPN2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbZFWPNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:09:45 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:50314 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753903AbZFWPJo (ORCPT
+	Tue, 23 Jun 2009 11:13:19 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48579 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbZFWPNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:09:44 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.31-rc0-git: lsusb stopped working?
-Date: Tue, 23 Jun 2009 17:09:44 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com
-References: <20090623135529.GA2668@elf.ucw.cz>
-In-reply-To: <20090623135529.GA2668@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906231709.45851.elendil@planet.nl>
-X-OriginalArrivalTime: 23 Jun 2009 15:09:46.0357 (UTC) FILETIME=[A51F1250:01C9F414]
+	Tue, 23 Jun 2009 11:13:18 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, adilger@sun.com, dhowells@redhat.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
+In-reply-to: <20090623143408.GA2147@infradead.org> (message from Christoph
+	Hellwig on Tue, 23 Jun 2009 10:34:08 -0400)
+Subject: Re: [RFC] O_NOACC: open without any access
+References: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org>
+Message-Id: <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 23 Jun 2009 17:13:00 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On thinkpad x60. Otherwise usb seems to work, including btusb dongle.
+On Tue, 23 Jun 2009, Christoph Hellwig wrote:
+> On Tue, Jun 23, 2009 at 04:12:22PM +0200, Miklos Szeredi wrote:
+> > > an issue ioctls + stat / etc on it ut not actually read/write it.
+> > 
+> > Two differences between open("foo", 3) and open("foo", O_NOACC):
+> > 
+> >   1) open with "3" requires _read_and_write_ permissions on foo, but
+> >      does not allow either read or write.  Not sure what the logic in
+> >      that, but that's the way it has always been.
 > 
-> /proc/bus/usb does not seem to exists.
+> Which is a quite sensible requirement if we want to do ioctls.
 
-Correct. usbfs has been removed in 2.6.31.
+Right, but that makes it useless for things which want to open it
+despite having no permission on the file.  For example some programs
+do:
 
-It's strange that lsusb no longer works for you. I've verified that on 
-Debian stable (Lenny) it does still work after I unmount /proc/bus/usb.
-I guess Debian must have a newer version of usbutils, or one built with 
-libusb support.
+	fd = open(".", 0);
+        chdir(someplace);
+	/* do something */
+	fchdir(fd);
 
-The fact that your USB devices work means they do have libusb support.
+or for that matter:
 
-$ dpkg -l usbutils
-ii  usbutils        0.73-10         Linux USB utilities
+	fd = open("foo", 0);
+	fstat(fd, &stat1);
+	if (something)
+		fchmod(fd, ...);
+	close(fd);
 
-Note that /proc/bus/usb/devices has been moved to debugfs and there's also 
-work being done (see linux-usb archive) on a script that can list 
-equivalent info by walking /sys.
+Note: neither chmod() nor chdir() (nor host of others) require either
+read or write permissions on the file, so we _should_ be able to do
+this kind of thing without open() requiring them.
 
-For all the above: AFAIK and IIUC :-)
-
-Cheers,
-FJP
+Thanks,
+Miklos
