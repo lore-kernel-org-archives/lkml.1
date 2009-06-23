@@ -1,38 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZFWHgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZFWHkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbZFWHgf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 03:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZFWHg2
+	id S1754330AbZFWHkc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 03:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZFWHkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 03:36:28 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:48221 "EHLO
+	Tue, 23 Jun 2009 03:40:24 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:64256 "EHLO
 	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbZFWHg1 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751437AbZFWHkY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 03:36:27 -0400
+	Tue, 23 Jun 2009 03:40:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=mime-version:reply-to:in-reply-to:references:date:message-id
          :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=hsEXybdqpt977zA2oMhE37307zumSxNXzH/tnba/D2fL6DPckHfFMido/dR2FR4yAB
-         VlKVQNxjsFEQ7TIGi3De7+Wa3k1BpG/eWb8Gwm4ISCGcLdx+zOdN2qcSZOg4ERbiAE/z
-         JD3PZip9jz5iCwaHQFLgimxkrPK4e4C1L87R0=
+        b=a2ozr8XV8WA0mHoL0xSyzepaJMBAmlNDe/CN3hT8VmitbojTI7pCvGNekUHzkZVhR2
+         gu+AbVjMQ4dT8AgRQXiW+zw/9mganYMF+zxmI8UmjsuscjV/TSPNSEQzv3l5X2QQuKeO
+         JJWfwgGTkHZWrMmbajTzvTPj35A/1veedBN2E=
 MIME-Version: 1.0
 Reply-To: eranian@gmail.com
-In-Reply-To: <19008.25905.550815.222975@drongo.ozlabs.ibm.com>
+In-Reply-To: <19008.9265.758076.907649@cargo.ozlabs.ibm.com>
 References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
-	 <20090622115017.GC24366@elte.hu>
-	 <19008.25905.550815.222975@drongo.ozlabs.ibm.com>
-Date: Tue, 23 Jun 2009 09:36:28 +0200
-Message-ID: <7c86c4470906230036o677e6c48j923a7431b9912372@mail.gmail.com>
-Subject: Re: I.2 - Grouping
+	 <20090622115239.GF24366@elte.hu>
+	 <7c86c4470906220525x409bedadj29be01236e42ea1@mail.gmail.com>
+	 <1245674154.19816.228.camel@twins>
+	 <19008.9265.758076.907649@cargo.ozlabs.ibm.com>
+Date: Tue, 23 Jun 2009 09:40:25 +0200
+Message-ID: <7c86c4470906230040x83b3c11j99e7c8016ac8e843@mail.gmail.com>
+Subject: Re: I.5 - Mmaped count
 From: stephane eranian <eranian@googlemail.com>
 To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
        Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
        Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
@@ -43,49 +45,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 7:16 AM, Paul Mackerras<paulus@samba.org> wrote:
-> Ingo Molnar writes:
->
->> > 2/ Grouping
->> >
->> > By design, an event can only be part of one group at a time.
->
-> To clarify this statement of Stephane's, a _counter_ can only be in
-> one group.  You can have multiple counters counting the same _event_
-> and those counters can (obviously) be in different groups.
->
-Okay.
+Paul,
 
-What happens if I do:
-   fd0 = perf_counter_open(&hwc1, getpid(), -1, -1, 0);
-   fd1 = perf_counter_open(&hwc2, getpid(), -1, fd0, 0);
+On Tue, Jun 23, 2009 at 2:39 AM, Paul Mackerras<paulus@samba.org> wrote:
+>
+> Hmmm, when the counter is running, what you want is not so much the
+> total time so far as a way to compute the total time so far from the
+> current TSC/timebase value.  So we would need to export tstamp_enabled
+> and tstamp_running plus a scale/offset for converting the TSC/timebase
+> value to nanoseconds consistent with ctx->time.  On powerpc that's
+> pretty straightforward because the timebases, but on x86 I gather the
+> offset and maybe also the scale would need to be per-cpu (which is OK,
+> because all the values in the mmapped page are only useful on one
+> specific CPU).
+>
+I think you should make it such that reading via mmap and read() are
+equivalent, one is just lower overhead than the other. Otherwise it would
+make it more difficult for tools in case of multiplexing where you could
+fallback to read() and there you would not get the same information.
 
-And then:
-   fd2 = perf_counter_open(&hwc2, getpid(), -1, fd1, 0);
 
->> > Events in a group are guaranteed to be active on the PMU at the
->> > same time. That means a group cannot have more events than there
->> > are available counters on the PMU. Tools may want to know the
->> > number of counters available in order to group their events
->> > accordingly, such that reliable ratios could be computed. It seems
->> > the only way to know this is by trial and error. This is not
->> > practical.
->>
->> Groups are there to support heavily constrained PMUs, and for them
->> this is the only way, as there is no simple linear expression for
->> how many counters one can load on the PMU.
+> How would we compute the scale and offset on x86, given the current
+> TSC value and ctx->time?
 >
-> That's not the only reason for having groups, or even the main reason
-> IMO.  The main reason for having groups is to provide a way to ask the
-> scheduler to ensure that two or more counters are always scheduled
-> together, so that you can meaningfully do arithmetic operations on the
-> counter values that would be sensitive to the statistical noise
-> introduced by the scheduling, such as ratios and differences.
+> Paul.
 >
-> In other words, grouping is there because we don't guarantee to have
-> all counters scheduled onto the PMU whenever possible.  Heavily
-> constrained PMUs increase the need for scheduling, but even if
-> counters are completely orthogonal there are only a fixed number of
-> them so we still need to schedule counters at some point.
->
-I agree completely.
