@@ -1,75 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZFWT10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZFWT3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbZFWT10 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbZFWT1Q
+	id S1756352AbZFWT3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 15:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZFWT2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:27:16 -0400
-Received: from lazybastard.de ([212.112.238.170]:47676 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753367AbZFWT1P (ORCPT
+	Tue, 23 Jun 2009 15:28:53 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:55228 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751381AbZFWT2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:27:15 -0400
-Date: Tue, 23 Jun 2009 21:26:49 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Marco <marco.stornelli@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Bird <tim.bird@am.sony.com>,
-       Chris Simmonds <chris@2net.co.uk>, Arnd Bergmann <arnd@arndb.de>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/14] Pramfs: Include files
-Message-ID: <20090623192648.GB23119@logfs.org>
-References: <4A33A7EC.6070008@gmail.com> <200906221317.04166.arnd@arndb.de> <4A3FC7F1.5050108@gmail.com> <200906222033.20883.arnd@arndb.de> <4A3FDBFE.8050509@2net.co.uk> <20090622203034.GA12587@uranus.ravnborg.org> <4A3FFF17.9020701@am.sony.com> <20090623042106.GA17159@uranus.ravnborg.org> <4A411319.4020108@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A411319.4020108@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 23 Jun 2009 15:28:53 -0400
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20090623150630.31c0dff5.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	 <1245732411.18339.6.camel@alok-dev1>
+	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
+	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1245736441.18339.21.camel@alok-dev1>
+	 <20090623150630.31c0dff5.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 23 Jun 2009 12:28:55 -0700
+Message-Id: <1245785335.24110.19.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 June 2009 19:38:33 +0200, Marco wrote:
+
+On Mon, 2009-06-22 at 23:06 -0700, KAMEZAWA Hiroyuki wrote:
+> On Mon, 22 Jun 2009 22:54:01 -0700
+> Alok Kataria <akataria@vmware.com> wrote:
 > 
-> dd? You haven't got any device file to have a dump. I think we're going
-> a bit out of scope. I had some doubt to support rootfs in pram and after
-> some feedback and the comments of this review I think I'll remove it
-> from the next release (to understand some aspects of this fs with the
-> kernel community was my main goal for this review). I agree to use the
-> native endian. As I said the important thing is that if an user want to
-> use it in a 64bit environment then the fs must work well and then it
-> must be designed to support even this situation, I think it's obvious.
+> > > > 
+> > > > I don't have any strong oppose reason, but I also don't have any strong
+> > > > agree reason.
+> > > > 
+> > > I think "don't include Hugepage" is sane. Hugepage is something _special_, now.
+> > > 
+> > Kamezawa-san, 
+> > 
+> > I agree that hugepages are special in the sense that they are
+> > implemented specially and don't actually reside on the LRU like any
+> > other locked memory. But, both of these memory types (mlocked and
+> > hugepages) are actually unevictable and can't be reclaimed back, so i
+> > don't see a reason why should accounting not reflect that.
+> > 
+> 
+> I bet we should rename "Unevictable" to "Mlocked" or "Pinned" rather than
+> take nr_hugepages into account. I think this "Unevictable" in meminfo means
+> - pages which are evictable in their nature (because in LRU) but a user pinned it -
+> 
+> How about rename "Unevictable" to "Pinned" or "Locked" ?
+> (Mlocked + locked shmem's + ramfs?)
+> 
 
-Glancing at the discussion with Pawel, I see two paths to follow.  One
-is to turn pramfs into a full-features all-round general-purpose
-filesystem with mkfs, fsck, xattr and any number of additional features.
-That way lies doom, as you would compete against ext2+xip and have
-little new to offer.
+As Lee also pointed out, i don't see why is this # of pages on
+unevictable_lru important for the user.
+IMO, it doesn't give any useful information, other than confusing us to
+believe that only these are unevictable.
 
-The other path is to make/keep pramfs as simple as possible for
-comparatively specialized purposes, like flight recorder data and dump
-information.  Main selling point here is the amount of vulnerable code
-in the total package.  ext2 + block layer + vfs helpers is relatively
-large and many things may go wrong in a panic situation.
+Is there something else that I am missing here ?
 
-So I agree with you that many things expected from general purpose
-filesystems simply don't apply to pramfs.  Moving mkfs into the kernel
-is a fair tradeoff, when the required code is small.  Endianness is a
-different case imo.  dd may not work, but a jtag probe will happily get
-you the dump to your development machine.
+> We have other "unevictable" pages other than Hugepage anyway.
+>  - page table
+>  - some slab
+>  - kernel's page
+>  - anon pages in swapless system
+>  etc...
 
-And even within the same box you can have more than one architecture and
-endianness.  http://www.top500.org/system/9707 will show you one such
-beast, which happens to have the top bragging rights at the moment.  I
-don't want to endorse such strange beasts, but there is no good reason
-not to support reading the ppc-written fs from the opteron.  In fact,
-there is no reason full stop.
+I agree there are these other pages which are unevictable, but they are
+pages used by the kernel itself, and they will always be locked/utilized
+by the kernel. 
+The unevictable pages (hugepages and mlocked and others) on the other
+hand are pages which the user explicitly asked to be locked/pinned.
 
-Jörn
+So i think, these other-evictable pages that you mentioned, are
+different in a way. 
 
--- 
-Beware of bugs in the above code; I have only proved it correct, but
-not tried it.
--- Donald Knuth
+> 
+> BTW, I use following calculation for quick check if I want all "Unevicatable" pages.
+> 
+> Unevictable = Total - (Active+Inactive) + (50-70%? of slab)
+> 
+> This # of is not-reclaimable memory.
+
+I don't see how this would get the correct value either, mlocked or
+hugepages are not accounted by either of the Active or Inactive regions.
+
+
+Thanks,
+Alok
+
+> 
+> Thanks,
+> -Kame
+> 
+> 
+> > Thanks,
+> > Alok
+> > 
+> > > Thanks,
+> > > -Kame
+> > > 
+> > 
+> > 
+> 
+
