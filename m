@@ -1,143 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZFWMNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbZFWMSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbZFWMNR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 08:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZFWMNA
+	id S1756950AbZFWMSu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 08:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZFWMSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 08:13:00 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58539 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753275AbZFWMNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 08:13:00 -0400
-Message-ID: <4A40C64E.8040305@cn.fujitsu.com>
-Date: Tue, 23 Jun 2009 20:10:54 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 23 Jun 2009 08:18:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45510 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752157AbZFWMSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 08:18:40 -0400
+Message-ID: <4A40C856.2050002@redhat.com>
+Date: Tue, 23 Jun 2009 15:19:34 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 07/20] io-controller: Export disk time used and nr sectors
- dipatched through cgroups
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-8-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1245443858-8487-8-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+To: Gregory Haskins <ghaskins@novell.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH RFC] pass write value to in_range pointers
+References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003045.15859.73197.stgit@dev.haskins.net> <20090622151631.GA14780@redhat.com> <4A3FA6FC.9030301@novell.com> <20090622160833.GA15228@redhat.com> <4A3FB156.3030301@novell.com> <20090622172720.GC15228@redhat.com> <4A405436.1080100@gmail.com> <20090623114438.GD17635@redhat.com> <4A40C2E7.9000705@redhat.com> <4A40C434.9090306@novell.com>
+In-Reply-To: <4A40C434.9090306@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> +
-> +static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
-> +				struct cftype *cftype, struct seq_file *m)
-> +{
-> +	struct io_cgroup *iocg;
-> +	struct io_group *iog;
-> +	struct hlist_node *n;
-> +
-> +	if (!cgroup_lock_live_group(cgroup))
-> +		return -ENODEV;
-> +
-> +	iocg = cgroup_to_io_cgroup(cgroup);
-> +
-> +	spin_lock_irq(&iocg->lock);
+On 06/23/2009 03:01 PM, Gregory Haskins wrote:
+> Ok, so for now I will just crank up the io_bus array, and we can address
+> scale another day.  Can I just drop patch 2/3 and let the io_bus govern
+> the limit?
+>    
 
-It's better to make use of rcu_read_lock instead since it's
-a read action.
+So long as we have a runtime-discoverable limit, yes.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 2ad40eb..d779282 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1418,7 +1418,7 @@ static int io_cgroup_disk_time_read(struct cgroup *cgroup,
- 
- 	iocg = cgroup_to_io_cgroup(cgroup);
- 
--	spin_lock_irq(&iocg->lock);
-+	rcu_read_lock();
- 	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
- 		/*
- 		 * There might be groups which are not functional and
-@@ -1430,7 +1430,7 @@ static int io_cgroup_disk_time_read(struct cgroup *cgroup,
- 					iog->entity.total_service);
- 		}
- 	}
--	spin_unlock_irq(&iocg->lock);
-+	rcu_read_unlock();
- 	cgroup_unlock();
- 
- 	return 0;
-@@ -1448,7 +1448,7 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
- 
- 	iocg = cgroup_to_io_cgroup(cgroup);
- 
--	spin_lock_irq(&iocg->lock);
-+	rcu_read_lock();
- 	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
- 		/*
- 		 * There might be groups which are not functional and
-@@ -1460,7 +1460,7 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
- 					iog->entity.total_sector_service);
- 		}
- 	}
--	spin_unlock_irq(&iocg->lock);
-+	rcu_read_unlock();
- 	cgroup_unlock();
- 
- 	return 0;
-@@ -1478,7 +1478,7 @@ static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
- 		return -ENODEV;
- 
- 	iocg = cgroup_to_io_cgroup(cgroup);
--	spin_lock_irq(&iocg->lock);
-+	rcu_read_lock();
- 	/* Loop through all the io groups and print statistics */
- 	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
- 		/*
-@@ -1491,7 +1491,7 @@ static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
- 					iog->queue_duration);
- 		}
- 	}
--	spin_unlock_irq(&iocg->lock);
-+	rcu_read_unlock();
- 	cgroup_unlock();
- 
- 	return 0;
 -- 
-1.5.4.rc3
-
-
-
-> +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-> +		/*
-> +		 * There might be groups which are not functional and
-> +		 * waiting to be reclaimed upon cgoup deletion.
-> +		 */
-> +		if (iog->key) {
-> +			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-> +					MINOR(iog->dev),
-> +					iog->entity.total_sector_service);
-> +		}
-> +	}
-> +	spin_unlock_irq(&iocg->lock);
-> +	cgroup_unlock();
-> +
-> +	return 0;
-> +}
-> +
->
+error compiling committee.c: too many arguments to function
 
