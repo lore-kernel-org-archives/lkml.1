@@ -1,72 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZFWHna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZFWHtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbZFWHna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 03:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZFWHnX
+	id S1754921AbZFWHtK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 03:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZFWHs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 03:43:23 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:45331 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751451AbZFWHnX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 03:43:23 -0400
-Message-ID: <4A408774.9010401@linux.vnet.ibm.com>
-Date: Tue, 23 Jun 2009 09:42:44 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
+	Tue, 23 Jun 2009 03:48:56 -0400
+Received: from mga11.intel.com ([192.55.52.93]:60908 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751437AbZFWHs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 03:48:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,274,1243839600"; 
+   d="scan'208";a="701687854"
+Date: Tue, 23 Jun 2009 15:47:24 +0800
+From: Feng Tang <feng.tang@intel.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: gcov: enable GCOV_PROFILE_ALL for x86_64
-References: <200906182200.n5IM0jFq007278@hera.kernel.org> <20090620101424.GA21928@elte.hu> <4A3F6AD5.1030703@linux.vnet.ibm.com> <20090622105609.GA17456@elte.hu>
-In-Reply-To: <20090622105609.GA17456@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+CC: Len Brown <lenb@kernel.org>,
+       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: Re: [PATCH 2/8] SFI: include/linux/sfi.h
+Message-ID: <20090623154724.08a51ea3@feng-desktop>
+In-Reply-To: <20090623072811.GB6397@elte.hu>
+References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com>
+	<b3fb5fa65a532941d61a8c8415495f752aac540d.1245740912.git.len.brown@intel.com>
+	<20090623072811.GB6397@elte.hu>
+Organization: intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> the GCOV code cannot be enabled in distros right now, due to the 
-> high compiler-generated overhead, and due to the fact that the gcov 
-> data structures used are single threaded. (which makes a gcov 
-> enabled kernel very slow on SMP, due to the global cacheline 
-> bounces)
+On Tue, 23 Jun 2009 15:28:11 +0800
+Ingo Molnar <mingo@elte.hu> wrote:
 
-I definitely agree that the gcov kernel support shouldn't be active on 
-distro kernels. In my opinion that is also not a strict requirement for 
-code coverage testing. If you're only looking at the resulting overall 
-coverage rate, than yes, having the mechanism active all the time would 
-be a good thing. But the real use of code coverage testing lies in being 
-able to look at what parts of the code are not hit by a test case. That 
-requires preparation (getting the source) and focus on one kernel 
-version. So in my opinion, the extra effort of building and installing 
-the instrumented kernel is not a limiting factor.
-
-> IMO it would be _much_ better to implement hardware-assisted 
-> call-graph tracking:
 > 
->  - Use the BTS (Branch Trace Store) facilities to hardware-sample 
->    all branches+calls (optionally, dynamically enable-able)
+> * Len Brown <lenb@kernel.org> wrote:
 > 
->  - Post-process the raw branch trace information (in the kernel
->    BTS-overflow irq handler) to calculate call-coverage information.
+> > +/*
+> > + * Table structures must be byte-packed to match the SFI
+> > specification,
+> > + * as they are provided by the BIOS.
+> > + */
+> > +#pragma pack(1)
 > 
-> Unlike the unconditional GCC based GCOV stuff that is currently 
-> upstream, BTS tracing is supported by a large range of hardware and 
-> it can be enabled _transparently_, so it could be built in and 
-> enabled by distros too, to test code coverage.
+> We use __attribute__((packed)) for that generally.
+> 
+> > +struct sfi_table_header {
+> > +	char signature[SFI_SIGNATURE_SIZE];
+> > +	u32 length;
+> > +	u8 revision;
+> > +	u8 checksum;
+> > +	char oem_id[SFI_OEM_ID_SIZE];
+> > +	char oem_table_id[SFI_OEM_TABLE_ID_SIZE];
+> > +};
+> 
+> Please use more readable structure definitions, such as:
+> 
+> > +struct sfi_table_header {
+> > +	char			signature[SFI_SIGNATURE_SIZE];
+> > +	u32			length;
+> > +	u8			revision;
+> > +	u8			checksum;
+> > +	char			oem_id[SFI_OEM_ID_SIZE];
+> > +	char
+> > oem_table_id[SFI_OEM_TABLE_ID_SIZE]; +};
+> 
+> > +void __init __iomem *
+> > +arch_early_ioremap(unsigned long phys, unsigned long size);
+> > +void __init arch_early_iounmap(void __iomem *virt, unsigned long
+> > size);
+> 
+> Why is this in sfr.h? Should be in a separate series.
 
-This is a very interesting idea. You could get branch level coverage 
-information out of this. Some open questions that I could think of:
-* how to map branch addresses to source code lines
-* how to determine how many branches there are during initialization to 
-allocate enough resources
+Thanks for your great comments, will address them.
 
-> Would you be interested in looking at (and implementing) this?
+For these arch_early_ioremap/arch_early_iounmap API, do you mean we should
+put it in a sfi.h under "asm" folder? The reason we put it here is to
+give a arch independent API declaration here and let each arch implement
+its own func.
 
-While it sounds tempting, I don't think that I can spare the time to 
-effectively work on this, so I'll have to decline.
+Thanks,
+Feng
 
+> 
+> > +static inline int sfi_init_memory_map(void) { return -1; }
+> > +static inline int sfi_init(void) { return 0; }
+> > +static inline void sfi_init_late(void)	{}
+> 
+> Seems half-aligned. Please align consistently, such as:
+> 
+> static inline int sfi_init_memory_map(void)	{ return -1; }
+> static inline int sfi_init(void)		{ return  0; }
+> static inline void sfi_init_late(void)		{ }
+> 
+> or dont align at all.
+> 
+> 	Ingo
