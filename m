@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZFWIJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZFWILm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbZFWIJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZFWIJY
+	id S1753543AbZFWILm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZFWIL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:09:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48874 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751228AbZFWIJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:09:23 -0400
-Date: Tue, 23 Jun 2009 10:09:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Feng Tang <feng.tang@intel.com>
-Cc: Len Brown <lenb@kernel.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 2/8] SFI: include/linux/sfi.h
-Message-ID: <20090623080908.GA11181@elte.hu>
-References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com> <b3fb5fa65a532941d61a8c8415495f752aac540d.1245740912.git.len.brown@intel.com> <20090623072811.GB6397@elte.hu> <20090623154724.08a51ea3@feng-desktop> <20090623080047.GE6397@elte.hu> <20090623160225.1ebb5540@feng-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623160225.1ebb5540@feng-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 23 Jun 2009 04:11:28 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:43193 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751451AbZFWIL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:11:26 -0400
+Date: Tue, 23 Jun 2009 10:11:23 +0200
+From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       raisch@de.ibm.com, ewg@lists.openfabrics.org,
+       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [ewg] Re: [PATCH 2.6.31 try 2] ehca: Tolerate dynamic memory
+ operations and huge pages
+Message-ID: <20090623101123.72690731@BL3D1974.boeblingen.de.ibm.com>
+In-Reply-To: <adabpofr0h2.fsf@cisco.com>
+References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
+	<20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
+	<adabpofr0h2.fsf@cisco.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 22 Jun 2009 22:19:21 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-* Feng Tang <feng.tang@intel.com> wrote:
-
-> On Tue, 23 Jun 2009 16:00:47 +0800
-> Ingo Molnar <mingo@elte.hu> wrote:
+> thanks, applied.
 > 
-> > 
-> > * Feng Tang <feng.tang@intel.com> wrote:
-> > 
-> > > For these arch_early_ioremap/arch_early_iounmap API, do you mean 
-> > > we should put it in a sfi.h under "asm" folder? The reason we put 
-> > > it here is to give a arch independent API declaration here and let 
-> > > each arch implement its own func.
-> > 
-> > Yeah, i'd suggest to create a new early-remap.h and 
-> > early-remap.c kind of file to collect the existing bits for 
-> > that. It's a bit ugly (not really the fault of SFI - these are 
-> > pre-existing facilities) and might need some love - we better 
-> > move it apart so that the light of attention shines on it.
-> > 
-> > What's the target merge of the SFI stuff, 2.6.31?
+>  > -#define HCAD_VERSION "0026"
+>  > +#define HCAD_VERSION "0027"
 > 
-> AFAIK, Len's target is for 2.6.32
+> the driver version was already 0027 (since bde2cfaf), so I dropped this chunk.
 
-Ah, ok - then there's time. The code is almost good for .31 btw ;-)
+thank you for applying, we would like to increase the version number for this
+patch, so please also apply the following:
 
-	Ingo
+ehca: Increment version number for DMEM toleration
+
+Signed-off-by: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- infiniband.git.orig/drivers/infiniband/hw/ehca/ehca_main.c
++++ infiniband.git/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -52,7 +52,7 @@
+ #include "ehca_tools.h"
+ #include "hcp_if.h"
+ 
+-#define HCAD_VERSION "0027"
++#define HCAD_VERSION "0028"
+ 
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
