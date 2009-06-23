@@ -1,111 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760223AbZFWQLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbZFWQLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760223AbZFWQLB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbZFWQKq
+	id S1759537AbZFWQLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbZFWQLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:10:46 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:32778 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753653AbZFWQKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:10:45 -0400
-Date: Tue, 23 Jun 2009 09:10:44 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lennert Buytenhek <kernel@wantstofly.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, niv@us.ibm.com,
-       dvhltc@us.ibm.com, lethal@linux-sh.org, matthew@wil.cx,
-       linux@arm.linux.org.uk
-Subject: Re: [PATCH] v5 RCU: the bloatwatch edition
-Message-ID: <20090623161044.GB6748@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090623042442.GA15630@linux.vnet.ibm.com> <28711.1245748358@redhat.com> <20090623093208.GD23698@elte.hu> <20090623125832.GA6872@linux.vnet.ibm.com> <20090623154701.GA19647@mail.wantstofly.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623154701.GA19647@mail.wantstofly.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 23 Jun 2009 12:11:37 -0400
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.66]:41253 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753275AbZFWQLg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:11:36 -0400
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Wed, 24 Jun 2009 01:10:41 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: Andrew Randrianasulu <randrik_a@yahoo.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
+       mingo@elte.hu, nishimura@mxp.nes.nec.co.jp
+Subject: Re: list_add corruption in current Linus's tree?
+Message-Id: <20090624011041.3c89a451.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <309427.75128.qm@web65313.mail.ac2.yahoo.com>
+References: <309427.75128.qm@web65313.mail.ac2.yahoo.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 05:47:01PM +0200, Lennert Buytenhek wrote:
-> On Tue, Jun 23, 2009 at 05:58:32AM -0700, Paul E. McKenney wrote:
-> 
-> > > > > This patch is a version of RCU designed for (!SMP && EMBEDDED)
-> > > > > provided as a proof of concept of a small-footprint RCU implementation.
-> > > > > In particular, the implementation of synchronize_rcu() is extremely
-> > > > > lightweight and high performance.  It passes rcutorture testing in each
-> > > > > of the four relevant configurations (combinations of NO_HZ and PREEMPT)
-> > > > > on x86.  This saves 1263 bytes compared to Classic RCU, and more than
-> > > > > three kilobytes compared to Hierarchical RCU (updated to 2.6.30):
-> > > > 
-> > > > On FRV:
-> > > > 
-> > > > 	CONFIG_CLASSIC_RCU=y
-> > > > 
-> > > > 	   text    data     bss     dec     hex filename
-> > > > 	    884      32      20     936     3a8 kernel/rcupdate.o
-> > > > 	   2616     184       0    2800     af0 kernel/rcuclassic.o
-> > > > 
-> > > > 	CONFIG_TREE_RCU=y
-> > > > 
-> > > > 	   text    data     bss     dec     hex filename
-> > > > 	    884      32      20     936     3a8 kernel/rcupdate.o
-> > > > 	   4068     384       0    4452    1164 kernel/rcutree.o
-> > > > 
-> > > > 	CONFIG_TINY_RCU=y
-> > > > 
-> > > > 	   text    data     bss     dec     hex filename
-> > > > 	    836      32      20     888     378 kernel/rcupdate.o
-> > > > 	    816      24       0     840     348 kernel/rcutiny.o
-> > > > 
-> > > > On MN10300:
-> > > > 
-> > > > 	CONFIG_CLASSIC_RCU=y
-> > > > 
-> > > > 	   text    data     bss     dec     hex filename
-> > > > 	    900      28      48     976     3d0 kernel/rcupdate.o
-> > > > 	   1777     184       0    1961     7a9 kernel/rcuclassic.o
-> > > > 
-> > > > 	CONFIG_TREE_RCU=y
-> > > > 
-> > > > 	   text    data     bss     dec     hex filename
-> > > > 	    900      28      48     976     3d0 kernel/rcupdate.o
-> > > > 	   2733     384       0    3117     c2d kernel/rcutree.o
-> > > > 
-> > > > 	CONFIG_PREEMPT_RCU=y
-> > > > 
-> > > > 	   text    data     bss     dec     hex filename
-> > > > 	    961      28      48    1037     40d kernel/rcupdate.o
-> > > > 	   3314     128       8    3450     d7a kernel/rcupreempt.o
-> > > > 
-> > > > 	CONFIG_TINY_RCU=y
-> > > > 
-> > > > 	   text    data     bss     dec     hex filename
-> > > > 	    865      28      48     941     3ad kernel/rcupdate.o
-> > > > 	    500      24       0     524     20c kernel/rcutiny.o
-> > > > 
-> > > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > 
-> > > > Acked-by: David Howells <dhowells@redhat.com
-> > > 
-> > > Ok, that's more convincing than 900 bytes on x86.
-> > 
-> > It used to be 900 bytes.  In 2.6.30, it is 1263 bytes.  ;-)
-> > 
-> > That said, I agree that FRV and MN10300 savings are more impressive.
-> > 
-> > > Paul, i guess this is .32 material anyway, right?
-> > 
-> > I am personally OK with it being .32, as long as David Howells,
-> > Lennert Buytenhek, and Paul Mundt are OK with that schedule.
-> 
-> I like the patch, as nearly all ARM systems in the field right now are
-> non-SMP.  Russell King (CCd) is the ARM maintainer, so he should comment
-> on the proposed timeline.
+On Tue, 23 Jun 2009 08:48:04 -0700 (PDT)
+Andrew Randrianasulu <randrik_a@yahoo.com> wrote:
 
-OK, I will submit a patch against -tip.  If Russell needs Bloatwatch
-RCU more quickly, we still have my earlier v5 patch against 2.6.30.
+> 
+> Hello!
+> 
+> I'm currently using vanilla kernel form kernel.org, up to commit d888a4c76c51092993643f8992bf55b3c28da483. Since yesterday i saw many warnings like this in dmesg:
+> 
+> ------------[ cut here ]------------
+> WARNING: at lib/list_debug.c:26 __list_add+0x27/0x5c()
+> Hardware name: MS-6380E
+> list_add corruption. next->prev should be prev (cf801454), but was c22302fc. (next=c2282c28).
+> Modules linked in: radeon ttm drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect sg snd_seq_dummy snd_seq_oss sd_mod snd_seq_midi_event snd_seq snd_pcm_oss snd_mixer_oss ipv6 nfsd lockd nfs_acl auth_rpcgss sunrpc usb_storage scsi_mod usb_libusual tuner_simple tuner_types ppdev tda9887 tda8290 snd_cs4236 snd_mpu401 snd_emu10k1 snd_via82xx snd_wavefront snd_ac97_codec snd_wss_lib ac97_bus snd_opl3_lib uhci_hcd saa7134 snd_mpu401_uart snd_pcm ir_common snd_rawmidi snd_timer snd_page_alloc ehci_hcd snd_util_mem videobuf_dma_sg snd_seq_device snd_hwdep videobuf_core snd parport_pc tveeprom usbcore rtc_cmos rtc_core emu10k1_gp ns558 soundcore parport floppy gameport rtc_lib shpchp 8139too pci_hotplug via_agp xfs exportfs ufs agpgart tuner v4l2_common videodev v4l1_compat w83627hf hwmon_vid hwmon i2c_viapro i2c_dev fbcon tileblit font bitblit softcursor fb
+> Pid: 4000, comm: X Tainted: G        W  2.6.30-i486 #17
+> Call Trace:
+>  [<c1033bd6>] warn_slowpath_common+0x65/0x95
+>  [<c1033c44>] warn_slowpath_fmt+0x29/0x2c
+>  [<c1156ebf>] __list_add+0x27/0x5c
+>  [<c10b9381>] mem_cgroup_add_lru_list+0x43/0x55
+>  [<c10975b4>] add_page_to_lru_list+0x3d/0x42
+>  [<c10978a1>] ____pagevec_lru_add+0xea/0x12c
+>  [<c1097be4>] lru_add_drain+0x3c/0x86
+>  [<c10a68a3>] unmap_region+0x34/0x10d
+>  [<c10a7629>] do_munmap+0x1df/0x235
+>  [<c10a76b4>] sys_munmap+0x35/0x44
+>  [<c1002bc5>] syscall_call+0x7/0xb
+> ---[ end trace fda7f44fa2651cfc ]---
+> 
+> but many, many more. Should i create bug in kernel bugzilla, or it is known  issue?
+> 
+It's a known issue.
 
-							Thanx, Paul
+I think Andrew has already queued the fix(http://lkml.org/lkml/2009/6/22/566).
+
+Thank you for your report.
+
+Daisuke Nishimura.
+
